@@ -1,0 +1,6 @@
+# For dev
+sphinx
+
+# Used for code checking.
+pyflakes
+flake8
