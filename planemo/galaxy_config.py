@@ -8,7 +8,13 @@ from tempfile import mkdtemp
 from six.moves.urllib.request import urlretrieve
 
 from planemo import galaxy_run
+from planemo.io import warn
 from galaxy.tools.deps import commands
+
+NO_TEST_DATA_MESSAGE = (
+    "planemo couldn't find a target test-data directory, you should likely "
+    "create a test-data directory of pass an explicit path using --test-data."
+)
 
 WEB_SERVER_CONFIG_TEMPLATE = """
 [server:main]
@@ -79,11 +85,13 @@ def find_test_data(path, **kwds):
             test_data = os.path.join(possible_dir, "test-data")
             if os.path.exists(test_data):
                 return test_data
+    warn(NO_TEST_DATA_MESSAGE)
     return None
 
 
 @contextlib.contextmanager
 def galaxy_config(tool_path, **kwds):
+    test_data_dir = find_test_data(tool_path, **kwds)
     if kwds.get("install_galaxy", None):
         galaxy_root = None
     else:
@@ -99,25 +107,10 @@ def galaxy_config(tool_path, **kwds):
         created_config_directory = True
         config_directory = mkdtemp()
     try:
-        if kwds.get("install_galaxy", None):
-            install_cmds = [
-                galaxy_run.DEACTIVATE_COMMAND,
-                "cd %s" % config_directory,
-                galaxy_run.DOWNLOAD_GALAXY,
-                "tar -zxvf master | tail",
-                "cd galaxy-central-master",
-                "virtualenv .venv",
-                ". .venv/bin/activate; sh scripts/common_startup.sh"
-            ]
-            commands.shell(";".join(install_cmds))
+        if __install_galaxy_if_needed(config_directory, kwds):
             galaxy_root = config_join("galaxy-central-master")
 
-        tool_path = os.path.join(tool_path)
-        if os.path.isdir(tool_path):
-            tool_definition = '''<tool_dir dir="%s" />'''
-        else:
-            tool_definition = '''<tool file="%s" />'''
-
+        tool_definition = __tool_conf_entry_for(tool_path)
         empty_tool_conf = config_join("empty_tool_conf.xml")
         tool_conf = config_join("tool_conf.xml")
         database_location = config_join("galaxy.sqlite")
@@ -163,24 +156,20 @@ def galaxy_config(tool_path, **kwds):
                                           "integrated_tool_panel_conf.xml"),
             migrated_tools_config=empty_tool_conf,
         )
+        __handle_kwd_overrides(properties, kwds)
+
         # TODO: consider following property
-        # tool_dependency_dir = None
-        # watch_tools = False
+        # watch_tool = False
         # datatypes_config_file = config/datatypes_conf.xml
         # welcome_url = /static/welcome.html
         # logo_url = /
         # sanitize_all_html = True
         # serve_xss_vulnerable_mimetypes = False
-        # job_config_file = config/job_conf.xml
         # track_jobs_in_database = None
         # outputs_to_working_directory = False
         # retry_job_output_collection = 0
 
-        env = {}
-        for key, value in properties.iteritems():
-            var = "GALAXY_CONFIG_OVERRIDE_%s" % key.upper()
-            value = __sub(value, template_args)
-            env[var] = value
+        env = __build_env_for_galaxy(properties, template_args)
         # No need to download twice - would GALAXY_TEST_DATABASE_CONNECTION
         # work?
         if preseeded_database:
@@ -188,6 +177,8 @@ def galaxy_config(tool_path, **kwds):
         env["GALAXY_TEST_MIGRATED_TOOL_CONF"] = empty_tool_conf
         env["GALAXY_TEST_SHED_TOOL_CONF"] = empty_tool_conf
         env["GALAXY_TEST_TOOL_CONF"] = tool_conf
+        if test_data_dir:
+            env["GALAXY_TEST_FILE_DIR"] = test_data_dir
 
         web_config = __sub(WEB_SERVER_CONFIG_TEMPLATE, template_args)
         open(config_join("galaxy.ini"), "w").write(web_config)
@@ -199,6 +190,52 @@ def galaxy_config(tool_path, **kwds):
     finally:
         if created_config_directory:
             shutil.rmtree(config_directory)
+
+
+def __tool_conf_entry_for(tool_path):
+    if os.path.isdir(tool_path):
+        tool_definition = '''<tool_dir dir="%s" />'''
+    else:
+        tool_definition = '''<tool file="%s" />'''
+    return tool_definition
+
+
+def __install_galaxy_if_needed(config_directory, kwds):
+    installed = False
+    if kwds.get("install_galaxy", None):
+        install_cmds = [
+            galaxy_run.DEACTIVATE_COMMAND,
+            "cd %s" % config_directory,
+            galaxy_run.DOWNLOAD_GALAXY,
+            "tar -zxvf master | tail",
+            "cd galaxy-central-master",
+            "virtualenv .venv",
+            ". .venv/bin/activate; sh scripts/common_startup.sh"
+        ]
+        commands.shell(";".join(install_cmds))
+        installed = True
+    return installed
+
+
+def __build_env_for_galaxy(properties, template_args):
+    env = {}
+    for key, value in properties.iteritems():
+        var = "GALAXY_CONFIG_OVERRIDE_%s" % key.upper()
+        value = __sub(value, template_args)
+        env[var] = value
+    return env
+
+
+def __handle_kwd_overrides(properties, kwds):
+    kwds_gx_properties = [
+        'job_config_file',
+        'dependency_resolvers_config_file',
+        'tool_dependency_dir',
+    ]
+    for prop in kwds_gx_properties:
+        val = kwds.get(prop, None)
+        if val:
+            properties[prop] = val
 
 
 def __sub(template, args):

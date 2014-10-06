@@ -20,6 +20,45 @@ def galaxy_root_option():
     )
 
 
+def dependency_resolvers_option():
+    return click.option(
+        "--dependency_resolvers_config_file",
+        type=click.Path(
+            exists=True,
+            file_okay=True,
+            dir_okay=False,
+            resolve_path=True
+        ),
+        help="Dependency resolver configuration for Galaxy to target.",
+    )
+
+
+def job_config_option():
+    return click.option(
+        "--job_config_file",
+        type=click.Path(
+            exists=True,
+            file_okay=True,
+            dir_okay=False,
+            resolve_path=True
+        ),
+        help="Job configuration file for Galaxy to target.",
+    )
+
+
+def tool_dependency_dir_option():
+    return click.option(
+        "--tool_dependency_dir",
+        type=click.Path(
+            exists=True,
+            file_okay=False,
+            dir_okay=True,
+            resolve_path=True
+        ),
+        help="Tool dependency dir for Galaxy to target.",
+    )
+
+
 def install_galaxy_option():
     return click.option(
         "--install_galaxy",

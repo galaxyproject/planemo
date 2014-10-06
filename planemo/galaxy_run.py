@@ -7,7 +7,7 @@ DEACTIVATE_COMMAND = "type deactivate >/dev/null 2>&1 && deactivate"
 # server because run.sh does this).
 ACTIVATE_COMMAND = "[ -e .venv ] && . .venv/bin/activate"
 
-
+# TODO: Mac-y curl variant of this.
 DOWNLOAD_GALAXY = (
     "wget https://codeload.github.com/jmchilton/galaxy-central/tar.gz/master"
 )
