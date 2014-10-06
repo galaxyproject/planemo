@@ -37,12 +37,6 @@ def dockerfile_build(path, dockerfile=None, error=log.error, **kwds):
     if dockerfile is None:
         dockerfile = "Dockerfile"
 
-    docker_host_args = dict(
-        docker_cmd=kwds["docker_cmd"],
-        sudo=kwds["docker_sudo"],
-        sudo_cmd=kwds["docker_sudo_cmd"],
-        host=kwds["docker_host"]
-    )
     docker_command_parts = docker_util.build_command(
         image_identifier,
         dockerfile,
@@ -55,6 +49,6 @@ def dockerfile_build(path, dockerfile=None, error=log.error, **kwds):
         save_image_command_parts = docker_util.build_save_image_command(
             image_identifier,
             destination,
-            **docker_host_args
+            **docker_host_args(**kwds)
         )
         commands.execute(save_image_command_parts)
