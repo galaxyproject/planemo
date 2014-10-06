@@ -5,7 +5,6 @@ TODO
 Critical Bugs
 -------------
 
-- Use repositories test-data instead of Galaxy's.
 - planemo serve doesn't kill Galaxy server properly.
 
 linting
