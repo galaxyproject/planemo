@@ -14,7 +14,7 @@ incompatible changes coming.
 
 import os
 
-from ..brew_ext import DEFAULT_HOMEBREW_ROOT, recipe_cellar_path, build_env_statements
+from ..brew_exts import DEFAULT_HOMEBREW_ROOT, recipe_cellar_path, build_env_statements
 from ..resolvers import DependencyResolver, INDETERMINATE_DEPENDENCY, Dependency
 
 # TODO: Implement prefer version linked...
