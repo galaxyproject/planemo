@@ -33,6 +33,14 @@ def dependency_resolvers_option():
     )
 
 
+def brew_dependency_resolution():
+    return click.option(
+        "--brew_dependency_resolution",
+        is_flag=True,
+        help="Configure Galaxy to use brew dependency resolution.",
+    )
+
+
 def job_config_option():
     return click.option(
         "--job_config_file",

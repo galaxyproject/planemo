@@ -19,6 +19,7 @@ from galaxy.tools.deps.commands import shell
 @options.dependency_resolvers_option()
 @options.job_config_option()
 @options.tool_dependency_dir_option()
+@options.brew_dependency_resolution()
 @pass_context
 def cli(ctx, path, **kwds):
     """Launch a Galaxy instance with the specified tool in the tool panel.
