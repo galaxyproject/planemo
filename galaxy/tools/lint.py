@@ -51,7 +51,7 @@ class LintContext(object):
                 return
             self.printed_linter_info = True
             print("Applying linter %s... %s" % (name, status))
-        
+
         for message in self.error_messages:
             self.found_errors = True
             print_linter_info()

@@ -37,7 +37,7 @@ class HomebrewDependencyResolver(DependencyResolver):
 
         if self.versionless and self.prefer_version not in [PREFER_VERSION_LATEST]:
             raise Exception(UNKNOWN_PREFER_VERSION_MESSAGE)
-        
+
         cellar_root = kwds.get('cellar', None)
         if cellar_root is None:
             cellar_root = os.path.join(DEFAULT_HOMEBREW_ROOT, "Cellar")
