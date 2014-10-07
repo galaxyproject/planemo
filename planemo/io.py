@@ -2,9 +2,9 @@ import click
 from galaxy.tools.deps import commands
 
 
-def shell(cmds):
+def shell(cmds, **kwds):
     info(cmds)
-    return commands.shell(cmds)
+    return commands.shell(cmds, **kwds)
 
 
 def info(message, *args):

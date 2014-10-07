@@ -3,9 +3,17 @@ import os
 import click
 
 from planemo.cli import pass_context
-from planemo.io import warn
+from planemo.io import warn, info
 from planemo import options
 from galaxy.tools.deps.commands import shell
+
+PREPARE_MESSAGE = (
+    "Place commands to prepare an Ubuntu VM for use with your tool(s) "
+    "in the .travis/setup_custom_dependencies.bash shell script. Be sure to"
+    "add these new files to your git repository with 'git add .travis "
+    ".travis.yml' and then commit. You will also need to register your github "
+    "tool project with Travi CI by visiting https://travis-ci.org/."
+)
 
 TRAVIS_YML = """
 # This is a special configuration file to run tests on Travis-CI via
@@ -27,9 +35,9 @@ install:
  - . planemo-venv/bin/activate
  - pip install git+https://github.com/jmchilton/planemo.git
  - planemo travis_before_install
+ - . ${TRAVIS_BUILD_DIR}/.travis/env.sh # source enviornment created by planemo
 
 script:
- - . planemo-venv/bin/activate
  - planemo test --install_galaxy ${TRAVIS_BUILD_DIR}
 """
 
@@ -60,3 +68,4 @@ def cli(ctx, path):
         warn(".travis.yml file already exists, not overwriting.")
     if not os.path.exists(setup_sh):
         open(setup_sh, "w").write("#!/bin/bash\n")
+    info(PREPARE_MESSAGE)
