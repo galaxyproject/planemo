@@ -73,6 +73,13 @@ disposable Galaxy instance just for testing by passing it
 
 	% planemo t --install_galaxy
 
+**Warning**: The features of planemo that require a ``--galaxy_root`` will
+only work with the latest ``galaxy-central`` ``default`` branch. Planemo will
+not work when used with older versions of Galaxy - even the latest stable
+``latest_2014.10.06``. Planemo will stablize with the next release of Galaxy
+and serious attempts at backward compatibility going forward will be made at
+that time.
+
 Once tools have been linted and tested - the tools can be viewed in a
 Galaxy interface using the ``serve`` (``s``) `command
 <http://planemo.readthedocs.org/en/latest/commands.html#serve-command>`_.::
