@@ -5,7 +5,8 @@ from galaxy.tools.deps.commands import shell
 
 FIX_EGGS_DIR = 'mkdir -p "$HOME/.python-eggs"; chmod 700 "$HOME/.python-eggs"'
 CUSTOM_DEPS = (
-    '/bin/bash ${TRAVIS_BUILD_DIR}/.travis/setup_custom_dependencies.bash'
+    '[ -e ${TRAVIS_BUILD_DIR}/.travis/setup_custom_dependencies.bash ] && '
+    '. ${TRAVIS_BUILD_DIR}/.travis/setup_custom_dependencies.bash'
 )
 
 
