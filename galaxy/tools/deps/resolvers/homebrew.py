@@ -76,7 +76,7 @@ class HomebrewDependencyResolver(DependencyResolver):
         if not os.path.exists(recipe_base_path):
             return []
 
-        names = os.path.listdir(recipe_base_path)
+        names = os.listdir(recipe_base_path)
         return filter(lambda n: os.path.isdir(os.path.join(recipe_base_path, n)), names)
 
 
@@ -86,7 +86,7 @@ class HomebrewDependency(Dependency):
         self.commands = commands
 
     def shell_commands(self, requirement):
-        return self.commands
+        return self.commands.replace("\n", ";") + "\n"
 
 
 def _string_as_bool( value ):

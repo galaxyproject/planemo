@@ -30,6 +30,7 @@ RUN_TESTS_CMD = (
 @options.dependency_resolvers_option()
 @options.job_config_option()
 @options.tool_dependency_dir_option()
+@options.brew_dependency_resolution()
 @pass_context
 def cli(ctx, path, **kwds):
     """Run the tests in the specified tool tests in a Galaxy instance.
@@ -49,7 +50,7 @@ def cli(ctx, path, **kwds):
     against that same Galaxy root - but this may not be bullet proof yet so
     please careful and do not try this against production Galaxy instances.
     """
-    with galaxy_config.galaxy_config(path, **kwds) as config:
+    with galaxy_config.galaxy_config(path, for_tests=True, **kwds) as config:
         info("Testing using galaxy_root %s", config.galaxy_root)
         # TODO: Allow running dockerized Galaxy here instead.
         server_ini = os.path.join(config.config_directory, "galaxy.ini")
