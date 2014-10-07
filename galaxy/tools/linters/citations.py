@@ -12,7 +12,7 @@ def lint_citations(tool_xml, lint_ctx):
         return
 
     valid_citations = 0
-    for citation in citations.children():
+    for citation in citations[0]:
         if citation.tag != "citation":
             lint_ctx.warn("Unknown tag discovered in citations block [%s], will be ignored." % citation.tag)
         if "type" in citation.attrib:
