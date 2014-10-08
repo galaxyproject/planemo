@@ -50,7 +50,8 @@ docs:
 	rm -f docs/planemo.rst
 	rm -f docs/modules.rst
 	sphinx-apidoc -o docs/ planemo
-	sphinx-apidoc -o docs/ galaxy	
+	sphinx-apidoc -o docs/ galaxy
+	python scripts/commands_to_rst.py
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	open docs/_build/html/index.html

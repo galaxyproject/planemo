@@ -20,7 +20,8 @@ dependencies.::
     /home/john/.linuxbrew/Cellar/bowtie2/2.1.0/bin/bowtie2
 
 By default this will attempt to attempt to install these recipes as needed.
-This automatic installation can be skipped with the ``--skip_install`` flag.
+This automatic installation can be skipped with the ``--skip_install``
+flag.
 
 Intead of injecting the enviornment into your current shell using the above
 idiom, the ``--shell`` flag can be sent to launch a new subshell when

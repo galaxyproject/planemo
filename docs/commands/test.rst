@@ -32,11 +32,20 @@ please careful and do not try this against production Galaxy instances.
 **Options**::
 
 
-      --test_output PATH       Output test report.
-      --galaxy_root DIRECTORY  Root of development galaxy directory to execute
-                               command with.
-      --install_galaxy         Download and configure a disposable copy of Galaxy
-                               from github.
-      --test-data DIRECTORY    test-data directory to for specified tool(s).
-      --help                   Show this message and exit.
+      --test_output PATH              Output test report.
+      --galaxy_root DIRECTORY         Root of development galaxy directory to
+                                      execute command with.
+      --install_galaxy                Download and configure a disposable copy of
+                                      Galaxy from github.
+      --test-data DIRECTORY           test-data directory to for specified
+                                      tool(s).
+      --dependency_resolvers_config_file PATH
+                                      Dependency resolver configuration for Galaxy
+                                      to target.
+      --job_config_file PATH          Job configuration file for Galaxy to target.
+      --tool_dependency_dir DIRECTORY
+                                      Tool dependency dir for Galaxy to target.
+      --brew_dependency_resolution    Configure Galaxy to use brew dependency
+                                      resolution.
+      --help                          Show this message and exit.
     

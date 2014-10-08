@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 
 import os
+import sys
 from string import Template
 
 from click.testing import CliRunner
+
+project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, project_dir)
+
 from planemo.cli import list_cmds
 from planemo import cli
 
