@@ -5,6 +5,7 @@ import click
 from planemo.cli import pass_context
 from planemo.io import warn, info
 from planemo import options
+from planemo import RAW_CONTENT_URL
 from galaxy.tools.deps.commands import shell
 
 PREPARE_MESSAGE = (
@@ -15,6 +16,7 @@ PREPARE_MESSAGE = (
     "tool project with Travi CI by visiting https://travis-ci.org/."
 )
 
+TRAVIS_TEST_SCRIPT_URL = RAW_CONTENT_URL + "scripts/travis_test.sh"
 TRAVIS_YML = """
 # This is a special configuration file to run tests on Travis-CI via
 # GitHub notifications when changes are committed.
@@ -29,17 +31,9 @@ TRAVIS_YML = """
 # (which will still have a system python installed).
 language: java
 
-install:
- - sudo apt-get install -y python-virtualenv
- - virtualenv planemo-venv
- - . planemo-venv/bin/activate
- - pip install git+https://github.com/jmchilton/planemo.git
- - planemo travis_before_install
- - . ${TRAVIS_BUILD_DIR}/.travis/env.sh # source enviornment created by planemo
-
 script:
- - planemo test --install_galaxy ${TRAVIS_BUILD_DIR}
-"""
+ - wget -O- %s | /bin/bash -x
+""" % TRAVIS_TEST_SCRIPT_URL
 
 
 @click.command('travis_init')
@@ -59,6 +53,9 @@ def cli(ctx, path):
     These tests were inspired by work original done and documented by Peter
     Cock here http://bit.ly/gxtravisci.
     """
+    # TODO: Option --verbose_travis_yaml to unroll travis_test.sh line by line
+    # and place all but last in 'install' section and last in 'script'. Would
+    # require a yaml dependency though.
     shell("mkdir -p '%s/.travis'" % path)
     travis_yml = os.path.join(path, ".travis.yml")
     setup_sh = os.path.join(path, ".travis", "setup_custom_dependencies.bash")
