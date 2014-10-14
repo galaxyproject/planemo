@@ -27,5 +27,7 @@ Upload a tool directory as a tarball to a tool shed.
                             specified).
       --shed_password TEXT  Password for shed auth (required unless shed_key is
                             specified).
+      --tar_only            Produce tar file for upload but do not publish to a
+                            tool shed.
       --help                Show this message and exit.
     

@@ -13,7 +13,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/jmchilton/planemo/issues.
+Report bugs at https://github.com/galaxyproject/planemo/issues.
 
 If you are reporting a bug, please include:
 
@@ -45,7 +45,7 @@ articles, and such.
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/jmchilton/planemo/issues.
+The best way to send feedback is to file an issue at https://github.com/galaxyproject/planemo/issues.
 
 If you are proposing a feature:
 
@@ -105,8 +105,8 @@ Before you submit a pull request, check that it meets these guidelines:
 
 1. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring.
-2. The pull request should work for Python 2.6, 2.7, and 3.4. Check
-   https://travis-ci.org/jmchilton/planemo/pull_requests
+2. The pull request should work for Python 2.6 and 2.7. Check
+   https://travis-ci.org/galaxyproject/planemo/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
 .. Tips

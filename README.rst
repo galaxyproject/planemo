@@ -2,8 +2,8 @@
 Planemo
 ===============================
 
-.. image:: https://travis-ci.org/jmchilton/planemo.png?branch=master
-        :target: https://travis-ci.org/jmchilton/planemo
+.. image:: https://travis-ci.org/galaxyproject/planemo.png?branch=master
+        :target: https://travis-ci.org/galaxyproject/planemo
 
 .. image:: https://readthedocs.org/projects/pip/badge/?version=latest
 		:target: https://planemo.readthedocs.org.
@@ -18,7 +18,7 @@ Command-line utilities to assist in building tools for the Galaxy_ project.
 
 * Free software: Academic Free License version 3.0
 * Documentation: https://planemo.readthedocs.org.
-* Code: https://github.com/jmchilton/planemo
+* Code: https://github.com/galaxyproject/planemo
 
 Quick Start
 -----------
@@ -30,7 +30,7 @@ this example creates a new one (in ``.venv``).
 ::
 
    % virtualenv .venv; . .venv/bin/activate
-   % pip install git+https://github.com/jmchilton/planemo.git
+   % pip install git+https://github.com/galaxyproject/planemo.git
 
 This quick start will assume you will have a directory with one or more
 tool XML files. If none is available, one can be quickly create for
@@ -154,7 +154,7 @@ Homebrew_ and linuxbrew_ with Galaxy. One angle is resolving tool requirements
 using ``brew``. An experimental approach to versioning brew recipes will be
 used. See full discussion on the homebrew-science issues page here -
 https://github.com/Homebrew/homebrew-science/issues/1191. Information on the
-implementation can be found https://github.com/jmchilton/brew-tests until a
+implementation can be found https://github.com/jmchilton/platform-brew until a
 more permanent project home is setup.
 
 ::

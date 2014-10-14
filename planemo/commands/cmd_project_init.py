@@ -9,7 +9,8 @@ from planemo import options
 from planemo.io import warn, shell
 from galaxy.tools.deps.commands import which
 
-DOWNLOAD_URL = "https://codeload.github.com/jmchilton/planemo/tar.gz/master"
+SOURCE_HOST = "https://codeload.github.com"
+DOWNLOAD_URL = "%s/galaxyproject/planemo/tar.gz/master" % SOURCE_HOST
 UNTAR_FILTER = "--strip-components=3 --wildcards --no-anchored '%s/**'"
 UNTAR_CMD = "tar -C %s -zxvf - " + UNTAR_FILTER
 

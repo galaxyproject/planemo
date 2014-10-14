@@ -28,7 +28,7 @@ setup(
     long_description=readme + '\n\n' + history,
     author='Galaxy Project and Community',
     author_email='jmchilton@gmail.com',
-    url='https://github.com/jmchilton/planemo',
+    url='https://github.com/galaxyproject/planemo',
     packages=[
         'planemo',
         'planemo.commands',
