@@ -202,7 +202,7 @@ def galaxy_config(tool_path, for_tests=False, **kwds):
         # work?
         if preseeded_database:
             env["GALAXY_TEST_DB_TEMPLATE"] = DATABASE_TEMPLATE_URL
-
+        env["GALAXY_TEST_UPLOAD_ASYNC"] = "false"
         web_config = __sub(WEB_SERVER_CONFIG_TEMPLATE, template_args)
         open(config_join("galaxy.ini"), "w").write(web_config)
         tool_conf_contents = __sub(TOOL_CONF_TEMPLATE, template_args)
