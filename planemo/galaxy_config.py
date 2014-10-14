@@ -40,6 +40,12 @@ TOOL_CONF_TEMPLATE = """<toolbox>
 </toolbox>
 """
 
+EMPTY_JOB_METRICS_TEMPLATE = """<?xml version="1.0"?>
+<job_metrics>
+</job_metrics>
+"""
+
+
 BREW_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
   <homebrew />
   <!--
@@ -123,6 +129,7 @@ def galaxy_config(tool_path, for_tests=False, **kwds):
             galaxy_root = config_join("galaxy-central-master")
 
         __handle_dependency_resolution(config_directory, kwds)
+        __handle_job_metrics(config_directory, kwds)
         tool_definition = __tool_conf_entry_for(tool_path)
         empty_tool_conf = config_join("empty_tool_conf.xml")
         tool_conf = config_join("tool_conf.xml")
@@ -165,6 +172,9 @@ def galaxy_config(tool_path, for_tests=False, **kwds):
             debug="${debug}",
             integrated_tool_panel_config=("${temp_directory}/"
                                           "integrated_tool_panel_conf.xml"),
+            # Use in-memory database for kombu to avoid database contention
+            # during tests.
+            amqp_internal_connection="sqlalchemy+sqlite://",
             migrated_tools_config=empty_tool_conf,
             test_data_dir=test_data_dir,  # TODO: make gx respect this
         )
@@ -271,9 +281,16 @@ def __handle_dependency_resolution(config_directory, kwds):
         kwds["dependency_resolvers_config_file"] = resolvers_conf
 
 
+def __handle_job_metrics(config_directory, kwds):
+    metrics_conf = os.path.join(config_directory, "job_metrics_conf.xml")
+    open(metrics_conf, "w").write(EMPTY_JOB_METRICS_TEMPLATE)
+    kwds["job_metrics_config_file"] = metrics_conf
+
+
 def __handle_kwd_overrides(properties, kwds):
     kwds_gx_properties = [
         'job_config_file',
+        'job_metrics_config_file',
         'dependency_resolvers_config_file',
         'tool_dependency_dir',
     ]
