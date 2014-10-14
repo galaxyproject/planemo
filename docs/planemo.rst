@@ -19,6 +19,14 @@ planemo.cli module
     :undoc-members:
     :show-inheritance:
 
+planemo.config module
+---------------------
+
+.. automodule:: planemo.config
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.galaxy_config module
 ----------------------------
 
@@ -47,6 +55,14 @@ planemo.options module
 ----------------------
 
 .. automodule:: planemo.options
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.shed module
+-------------------
+
+.. automodule:: planemo.shed
     :members:
     :undoc-members:
     :show-inheritance:

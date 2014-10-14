@@ -13,7 +13,8 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 requirements = [
     'Click',
-    'six'
+    'six',
+    'pyyaml',
 ]
 
 test_requirements = [

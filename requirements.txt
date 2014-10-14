@@ -1,3 +1,5 @@
 wheel==0.23.0
 Click
 six
+pyyaml
+git+https://github.com/afgane/bioblend.git

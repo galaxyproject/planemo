@@ -2,6 +2,8 @@ import os
 import sys
 import click
 from .io import error
+from .config import read_global_config
+
 
 CONTEXT_SETTINGS = dict(auto_envvar_prefix='PLANEMO')
 COMMAND_ALIASES = {
@@ -16,6 +18,13 @@ class Context(object):
     def __init__(self):
         self.verbose = False
         self.home = os.getcwd()
+        self._global_config = None
+
+    @property
+    def global_config(self):
+        if self._global_config is None:
+            self._global_config = read_global_config()
+        return self._global_config
 
     def log(self, msg, *args):
         """Logs a message to stderr."""
