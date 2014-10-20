@@ -24,6 +24,11 @@ RUN_TESTS_CMD = (
     type=click.Path(file_okay=True, resolve_path=True),
     help="Output test report.", default="tool_test_output.html"
 )
+@click.option(
+    "--job_output_files",
+    type=click.Path(file_okay=False, resolve_path=True),
+    help="Write job outputs to directory.", default=None,
+)
 @options.galaxy_root_option()
 @options.install_galaxy_option()
 @options.test_data_option()
@@ -56,6 +61,8 @@ def cli(ctx, path, **kwds):
         server_ini = os.path.join(config.config_directory, "galaxy.ini")
         config.env["GALAXY_CONFIG_FILE"] = server_ini
         config.env["GALAXY_TEST_VERBOSE_ERRORS"] = "true"
+        if kwds["job_output_files"]:
+            config.env["GALAXY_TEST_SAVE"] = kwds["job_output_files"]
         cd_to_galaxy_command = "cd %s" % config.galaxy_root
         cmd = "; ".join([
             galaxy_run.DEACTIVATE_COMMAND,
