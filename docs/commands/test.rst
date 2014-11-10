@@ -33,6 +33,7 @@ please careful and do not try this against production Galaxy instances.
 
 
       --test_output PATH              Output test report.
+      --job_output_files DIRECTORY    Write job outputs to directory.
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
       --install_galaxy                Download and configure a disposable copy of
