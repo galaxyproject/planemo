@@ -62,7 +62,7 @@ Once tools are syntically correct - it is time to test. The ``test``
 `command <http://planemo.readthedocs.org/en/latest/commands.html#test-command>`_
 can be used to test a tool or directory of tools.::
 
-	% planemo test --galxy_root=../galaxy-central randomlines.xml
+	% planemo test --galaxy_root=../galaxy-central randomlines.xml
 
 If no ``--galaxy_root`` is defined, ``planemo`` will search parent 
 directories for what looks like a galaxy root directory and use that
