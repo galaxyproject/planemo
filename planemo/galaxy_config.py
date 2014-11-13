@@ -95,21 +95,37 @@ def find_test_data(path, **kwds):
     if test_data:
         return os.path.abspath(test_data)
     else:
-        if not os.path.isdir(path):
-            tool_dir = os.path.dirname(path)
-        else:
-            tool_dir = path
-        for possible_dir in [tool_dir, "."]:
-            test_data = os.path.join(possible_dir, "test-data")
-            if os.path.exists(test_data):
-                return test_data
+        test_data = __search_tool_path_for(path, "test-data")
+        if test_data:
+            return test_data
     warn(NO_TEST_DATA_MESSAGE)
+    return None
+
+
+def find_tool_data_table(path, **kwds):
+    tool_data_table = kwds.get("tool_data_table", None)
+    if tool_data_table:
+        return os.path.abspath(tool_data_table)
+    else:
+        return __search_tool_path_for(path, "tool_data_table_conf.xml.test")
+
+
+def __search_tool_path_for(path, target):
+    if not os.path.isdir(path):
+        tool_dir = os.path.dirname(path)
+    else:
+        tool_dir = path
+    for possible_dir in [tool_dir, "."]:
+        possible_path = os.path.join(possible_dir, target)
+        if os.path.exists(possible_path):
+            return possible_path
     return None
 
 
 @contextlib.contextmanager
 def galaxy_config(tool_path, for_tests=False, **kwds):
     test_data_dir = find_test_data(tool_path, **kwds)
+    tool_data_table = find_tool_data_table(tool_path, **kwds)
     if kwds.get("install_galaxy", None):
         galaxy_root = None
     else:
@@ -170,6 +186,7 @@ def galaxy_config(tool_path, for_tests=False, **kwds):
             id_secret="${id_secret}",
             log_level="${log_level}",
             debug="${debug}",
+            tool_data_table_config_path=tool_data_table,
             integrated_tool_panel_config=("${temp_directory}/"
                                           "integrated_tool_panel_conf.xml"),
             # Use in-memory database for kombu to avoid database contention
