@@ -301,4 +301,6 @@ def __handle_kwd_overrides(properties, kwds):
 
 
 def __sub(template, args):
+    if template is None:
+        return ''
     return Template(template).safe_substitute(args)
