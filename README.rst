@@ -149,9 +149,9 @@ commands.
 Brew
 -----------
 
-The Galaxy development team is explorig different options for integrating
-Homebrew_ and linuxbrew_ with Galaxy. One angle is resolving tool requirements
-using ``brew``. An experimental approach to versioning brew recipes will be
+The Galaxy development team is exploring different options for integrating
+Homebrew_ and linuxbrew_ with Galaxy. One angle is resolving the tool requirements
+using ``brew``. An experimental approach for versioning of brew recipes will be
 used. See full discussion on the homebrew-science issues page here -
 https://github.com/Homebrew/homebrew-science/issues/1191. Information on the
 implementation can be found https://github.com/jmchilton/platform-brew until a
