@@ -27,7 +27,7 @@ TRAVIS_YML = """
 # http://blastedbio.blogspot.com/2013/09/using-travis-ci-for-testing-galaxy-tools.html
 
 # We need Python 2.6 or 2.7 to run Galaxy but many Galaxy tools also need Java
-# to run he simplest way to get that installed is to just start with "java".
+# to run the simplest way to get that installed is to just start with "java".
 # (which will still have a system python installed).
 language: java
 
