@@ -86,7 +86,10 @@ def build_tarball(tool_path):
     try:
         with tarfile.open(temp_path, "w:gz") as tar:
             for name in os.listdir(tool_path):
-                path = os.path.join(tool_path, name)
+                if os.path.islink(name):
+                    path = os.path.realpath(name)
+                else:
+                    path = os.path.join(tool_path, name)
                 tar.add(path, name, recursive=True, exclude=_tar_excludes)
     finally:
         os.close(fd)
