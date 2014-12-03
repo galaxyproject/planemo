@@ -1,8 +1,10 @@
 import sys
+import traceback
 import click
 
 from planemo.cli import pass_context
 from planemo.io import info
+from planemo.io import error
 from planemo import options
 
 from galaxy.tools.loader_directory import load_tool_elements_from_path
@@ -31,7 +33,8 @@ def cli(ctx, path, report_level="all", fail_level="warn"):
     """
     exit = 0
     lint_args = dict(level=report_level, fail_level=fail_level)
-    for (tool_path, tool_xml) in load_tool_elements_from_path(path):
+    tools = load_tool_elements_from_path(path, load_exception_handler)
+    for (tool_path, tool_xml) in tools:
         if tool_xml.getroot().tag != "tool":
             if ctx.verbose:
                 info(SKIP_XML_MESSAGE % tool_path)
@@ -40,3 +43,8 @@ def cli(ctx, path, report_level="all", fail_level="warn"):
         if not lint_xml(tool_xml, **lint_args):
             exit = 1
     sys.exit(exit)
+
+
+def load_exception_handler(path, exc_info):
+    error("Error loading tool with path %s" % path)
+    traceback.print_exception(*exc_info, limit=1, file=sys.stderr)
