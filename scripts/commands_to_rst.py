@@ -15,7 +15,7 @@ from planemo import cli
 planemo_cli = cli.planemo
 runner = CliRunner()
 
-INTERNAL_COMMANDS = ['travis_before_install']
+INTERNAL_COMMANDS = ['travis_before_install', 'shed_download']
 
 COMMAND_TEMPLATE = Template('''
 ``${command}`` command

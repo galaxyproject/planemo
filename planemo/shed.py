@@ -7,6 +7,8 @@ try:
 except ImportError:
     toolshed = None
 
+from planemo.io import untar_to
+
 
 # Planemo generated or consumed files that do not need to be uploaded to the
 # tool shed.
@@ -21,6 +23,10 @@ SHED_SHORT_NAMES = {
     "testtoolshed": "https://testtoolshed.g2.bx.psu.edu/",
     "local": "http://localhost:9009/"
 }
+REPOSITORY_DOWNLOAD_TEMPLATE = (
+    "%srepository/download?repository_id=%s"
+    "&changeset_revision=default&file_type=gz"
+)
 
 
 def shed_repo_config(path):
@@ -33,6 +39,7 @@ def shed_repo_config(path):
 
 
 def tool_shed_client(ctx, **kwds):
+    read_only = kwds.get("read_only", False)
     shed_target = kwds.get("shed_target")
     global_config = ctx.global_config
     if global_config and "sheds" in global_config:
@@ -45,9 +52,14 @@ def tool_shed_client(ctx, **kwds):
         return kwds.get("shed_%s" % key, None) or shed_config.get(key, None)
 
     url = _tool_shed_url(kwds)
-    key = prop("key")
-    email = prop("email")
-    password = prop("password")
+    if read_only:
+        key = None
+        email = None
+        password = None
+    else:
+        key = prop("key")
+        email = prop("email")
+        password = prop("password")
     tsi = toolshed.ToolShedInstance(
         url=url,
         key=key,
@@ -76,6 +88,18 @@ def find_repository_id(ctx, tsi, path, **kwds):
         raise Exception(message % (owner, name))
     repo_id = matching_repos[0]["id"]
     return repo_id
+
+
+def download_tarball(ctx, tsi, path, **kwds):
+    destination = kwds.get('destination', 'shed_download.tar.gz')
+    repo_id = find_repository_id(ctx, tsi, path, **kwds)
+    base_url = tsi.base_url
+    download_url = REPOSITORY_DOWNLOAD_TEMPLATE % (base_url, repo_id)
+    if not destination.endswith("gz"):
+        untar_args = "-xvzf - -C %s --strip-components 1" % destination
+    else:
+        untar_args = None
+    untar_to(download_url, destination, untar_args)
 
 
 def build_tarball(tool_path):

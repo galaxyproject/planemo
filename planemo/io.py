@@ -29,14 +29,16 @@ def warn(message, *args):
 
 
 def untar_to(url, path, tar_args):
-    if not os.path.exists(path):
-        os.makedirs(path)
-
     if which("wget"):
-        download_cmd = "wget -O - %s"
+        download_cmd = "wget --recursive -O - '%s'"
     else:
-        download_cmd = "curl %s"
+        download_cmd = "curl '%s'"
     download_cmd = download_cmd % url
+    if tar_args:
+        if not os.path.exists(path):
+            os.makedirs(path)
 
-    untar_cmd = "tar %s" % tar_args
-    shell("%s | %s" % (download_cmd, untar_cmd))
+        untar_cmd = "tar %s" % tar_args
+        shell("%s | %s" % (download_cmd, untar_cmd))
+    else:
+        shell("%s > '%s'" % (download_cmd, path))
