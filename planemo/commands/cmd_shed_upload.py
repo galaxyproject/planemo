@@ -18,30 +18,23 @@ from planemo.io import shell
     '--message',
     help="Commit message for tool shed upload."
 )
-@click.option(
-    '--owner',
-    help="Tool shed repository owner (username)."
-)
-@click.option(
-    '--name',
-    help="Repository name (default to tool directory name)."
-)
-@click.option(
-    '--shed_target',
-    help="Tool shed to target (toolshed/testtoolshed/local/url).",
-    default="toolshed",
-)
+@options.shed_owner_option()
+@options.shed_name_option()
+@options.shed_target_option()
 @click.option(
     '--shed_key',
-    help="API key for shed access (required unless e-mail/pass specified)."
+    help="API key for Tool Shed access (required unless e-mail/pass "
+         "specified)."
 )
 @click.option(
     '--shed_email',
-    help="E-mail for shed auth (required unless shed_key is specified)."
+    help="E-mail for Tool Shed auth (required unless shed_key is "
+         "specified)."
 )
 @click.option(
     '--shed_password',
-    help="Password for shed auth (required unless shed_key is specified)."
+    help="Password for Tool Shed auth (required unless shed_key is "
+         "specified)."
 )
 @click.option(
     '--tar_only',
