@@ -42,7 +42,7 @@ from planemo.io import shell
     help="Produce tar file for upload but do not publish to a tool shed.",
 )
 @pass_context
-def cli(ctx, path, template=None, **kwds):
+def cli(ctx, path, **kwds):
     """Upload a tool directory as a tarball to a tool shed.
     """
     tar_path = shed.build_tarball(path)
