@@ -10,6 +10,14 @@ from planemo.io import info
 from planemo.io import shell
 
 
+tar_path = click.Path(
+    exists=True,
+    file_okay=True,
+    dir_okay=False,
+    resolve_path=True,
+)
+
+
 # TODO: Implement alternative tool per repo upload strategy.
 # TODO: Use git commit hash and origin to generated commit message.
 @click.command("shed_upload")
@@ -48,11 +56,20 @@ from planemo.io import shell
     is_flag=True,
     help="Produce tar file for upload but do not publish to a tool shed.",
 )
+@click.option(
+    '--tar',
+    help="Specify a pre-existing tar file instead of automatically building "
+         "one as part of this command.",
+    type=tar_path,
+    default=None,
+)
 @pass_context
 def cli(ctx, path, template=None, **kwds):
     """Upload a tool directory as a tarball to a tool shed.
     """
-    tar_path = shed.build_tarball(path)
+    tar_path = kwds.get("tar", None)
+    if not tar_path:
+        tar_path = shed.build_tarball(path)
     if kwds["tar_only"]:
         shell("cp %s shed_upload.tar.gz" % tar_path)
         return 0
