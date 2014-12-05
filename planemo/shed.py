@@ -95,11 +95,18 @@ def download_tarball(ctx, tsi, path, **kwds):
     repo_id = find_repository_id(ctx, tsi, path, **kwds)
     base_url = tsi.base_url
     download_url = REPOSITORY_DOWNLOAD_TEMPLATE % (base_url, repo_id)
-    if not destination.endswith("gz"):
-        untar_args = "-xvzf - -C %s --strip-components 1" % destination
+    to_directory = not destination.endswith("gz")
+    if to_directory:
+        untar_args = "-xzf - -C %s --strip-components 1" % destination
     else:
         untar_args = None
     untar_to(download_url, destination, untar_args)
+    if to_directory:
+        clean = kwds.get("clean", False)
+        if clean:
+            archival_file = os.path.join(destination, ".hg_archival.txt")
+            if os.path.exists(archival_file):
+                os.remove(archival_file)
 
 
 def build_tarball(tool_path):

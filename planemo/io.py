@@ -30,7 +30,7 @@ def warn(message, *args):
 
 def untar_to(url, path, tar_args):
     if which("wget"):
-        download_cmd = "wget --recursive -O - '%s'"
+        download_cmd = "wget -q --recursive -O - '%s'"
     else:
         download_cmd = "curl '%s'"
     download_cmd = download_cmd % url
