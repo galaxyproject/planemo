@@ -164,3 +164,28 @@ def docker_host_option():
         help="Docker host to target when executing docker commands " +
              "(defaults to localhost)."
     )
+
+
+def shed_owner_option():
+    return click.option(
+        '--owner',
+        help="Tool Shed repository owner (username)."
+    )
+
+
+def shed_name_option():
+    return click.option(
+        '--name',
+        help="Tool Shed repository name (defaults to the inferred "
+             "tool directory name)."
+    )
+
+
+def shed_target_option():
+    return click.option(
+        '--shed_target',
+        help="Tool Shed to target (this can be 'toolshed', 'testtoolshed', "
+             "'local' (alias for http://localhost:9009/) or an arbitrary"
+             "url).",
+        default="toolshed",
+    )
