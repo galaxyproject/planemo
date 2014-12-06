@@ -32,11 +32,16 @@ please careful and do not try this against production Galaxy instances.
 **Options**::
 
 
-      --test_output PATH              Output test report.
+      --test_output PATH              Output test report (HTML - for humans).
+      --test_output_xunit PATH        Output test report (xUnit style - for
+                                      computers).
       --job_output_files DIRECTORY    Write job outputs to specified directory.
       --update_test_data              Update test-data directory with job outputs
                                       (normally written to directory
                                       --job_output_files if specified.)
+      --skip_summary                  Force planemo to skip extra summary of test
+                                      results beyond whatGalaxy prints to standard
+                                      out and error.
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
       --install_galaxy                Download and configure a disposable copy of
