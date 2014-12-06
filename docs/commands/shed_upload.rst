@@ -29,5 +29,7 @@ Upload a tool directory as a tarball to a tool shed.
                             specified).
       --tar_only            Produce tar file for upload but do not publish to a
                             tool shed.
+      --tar PATH            Specify a pre-existing tar file instead of
+                            automatically building one as part of this command.
       --help                Show this message and exit.
     
