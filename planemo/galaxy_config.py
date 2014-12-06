@@ -67,7 +67,7 @@ FAILED_TO_FIND_GALAXY_EXCEPTION = (
 
 GalaxyConfig = namedtuple(
     'GalaxyConfig',
-    ['galaxy_root', 'config_directory', 'env']
+    ['galaxy_root', 'config_directory', 'env', 'test_data_dir']
 )
 
 
@@ -226,7 +226,7 @@ def galaxy_config(tool_path, for_tests=False, **kwds):
         open(tool_conf, "w").write(tool_conf_contents)
         open(empty_tool_conf, "w").write(EMPTY_TOOL_CONF_TEMPLATE)
 
-        yield GalaxyConfig(galaxy_root, config_directory, env)
+        yield GalaxyConfig(galaxy_root, config_directory, env, test_data_dir)
     finally:
         if created_config_directory:
             shutil.rmtree(config_directory)
