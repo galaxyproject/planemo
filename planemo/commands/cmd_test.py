@@ -12,8 +12,10 @@ from planemo import galaxy_run
 from galaxy.tools.deps.commands import shell
 
 RUN_TESTS_CMD = (
-    "sh run_tests.sh functional.test_toolbox && "
-    "cp run_functional_tests.html %s"
+    "sh run_tests.sh functional.test_toolbox; "
+    "return_code=$?; "
+    "cp run_functional_tests.html %s; "
+    'sh -c "exit $return_code"'
 )
 
 
