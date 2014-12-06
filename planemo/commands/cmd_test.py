@@ -24,12 +24,20 @@ RUN_TESTS_CMD = (
 @click.option(
     "--test_output",
     type=click.Path(file_okay=True, resolve_path=True),
-    help="Output test report.", default="tool_test_output.html"
+    help="Output test report.",
+    default="tool_test_output.html",
 )
 @click.option(
     "--job_output_files",
     type=click.Path(file_okay=False, resolve_path=True),
-    help="Write job outputs to directory.", default=None,
+    help="Write job outputs to specified directory.",
+    default=None,
+)
+@click.option(
+    "--update_test_data",
+    is_flag=True,
+    help="Update test-data directory with job outputs (normally written to "
+         "directory --job_output_files if specified.)"
 )
 @options.galaxy_root_option()
 @options.install_galaxy_option()
@@ -58,9 +66,13 @@ def cli(ctx, path, **kwds):
     please careful and do not try this against production Galaxy instances.
     """
     with galaxy_config.galaxy_config(path, for_tests=True, **kwds) as config:
+        config_directory = config.config_directory
+        job_output_files = kwds.get("job_output_files", None)
+        if job_output_files is None:
+            job_output_files = os.path.join(config_directory, "jobfiles")
         info("Testing using galaxy_root %s", config.galaxy_root)
         # TODO: Allow running dockerized Galaxy here instead.
-        server_ini = os.path.join(config.config_directory, "galaxy.ini")
+        server_ini = os.path.join(config_directory, "galaxy.ini")
         config.env["GALAXY_CONFIG_FILE"] = server_ini
         config.env["GALAXY_TEST_VERBOSE_ERRORS"] = "true"
         if kwds["job_output_files"]:
@@ -73,5 +85,9 @@ def cli(ctx, path, **kwds):
             RUN_TESTS_CMD % kwds["test_output"],
         ])
         info("Running commands [%s]", cmd)
-        if shell(cmd, env=config.env):
+        return_code = shell(cmd, env=config.env)
+        if kwds.get('update_test_data', False):
+            update_cp_args = (job_output_files, config.test_data_dir)
+            shell('cp -r "%s"/* "%s"' % update_cp_args)
+        if return_code:
             sys.exit(1)
