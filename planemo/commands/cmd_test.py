@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import xml.etree.ElementTree as ET
@@ -25,7 +26,7 @@ GENERIC_PROBLEMS_MESSAGE = ("One or more tests failed. See %s for detailed "
 GENERIC_TESTS_PASSED_MESSAGE = "No failed tests encountered."
 
 RUN_TESTS_CMD = (
-    "sh run_tests.sh --report_file %s %s "
+    "sh run_tests.sh --report_file %s %s %s "
     " functional.test_toolbox"
 )
 
@@ -57,10 +58,12 @@ RUN_TESTS_CMD = (
          "directory --job_output_files if specified.)"
 )
 @click.option(
-    "--skip_summary",
-    is_flag=True,
-    help="Force planemo to skip extra summary of test results beyond what"
-         "Galaxy prints to standard out and error."
+    "--summary",
+    type=click.Choice(['none', 'minimal', 'compact']),
+    default="minimal",
+    help=("Summary style printed to planemo's standard output (see output "
+          "reports for more complete summary). Set to 'none' to disable "
+          "completely.")
 )
 @options.galaxy_root_option()
 @options.install_galaxy_option()
@@ -97,6 +100,7 @@ def cli(ctx, path, **kwds):
             job_output_files = os.path.join(config_directory, "jobfiles")
 
         xunit_supported, xunit_report_file = __xunit_state(kwds, config)
+        structured_report_file = __structured_report_file(kwds, config)
 
         info("Testing using galaxy_root %s", config.galaxy_root)
         # TODO: Allow running dockerized Galaxy here instead.
@@ -110,29 +114,66 @@ def cli(ctx, path, **kwds):
             galaxy_run.DEACTIVATE_COMMAND,
             cd_to_galaxy_command,
             galaxy_run.ACTIVATE_COMMAND,
-            __run_tests_cmd(html_report_file, xunit_report_file),
+            __run_tests_cmd(
+                html_report_file,
+                xunit_report_file,
+                structured_report_file,
+            ),
         ])
         info("Running commands [%s]", cmd)
         return_code = shell(cmd, env=config.env)
         if kwds.get('update_test_data', False):
             update_cp_args = (job_output_files, config.test_data_dir)
             shell('cp -r "%s"/* "%s"' % update_cp_args)
-        if not kwds.get("skip_summary", False):
-            if xunit_report_file:
-                summarize_tests_xunit(xunit_report_file, html_report_file)
-            else:
-                if return_code:
-                    warn(GENERIC_PROBLEMS_MESSAGE % html_report_file)
-                else:
-                    info(GENERIC_TESTS_PASSED_MESSAGE)
+        summary_style = kwds.get("summary")
+        if summary_style != "none":
+            __handle_summary(
+                return_code,
+                xunit_report_file,
+                html_report_file,
+                structured_report_file,
+                **kwds
+            )
         if return_code:
             sys.exit(1)
 
 
-def summarize_tests_xunit(xunit_report_file, html_report_file):
-    if not os.path.exists(xunit_report_file):
+def __handle_summary(
+    return_code,
+    xunit_report_file,
+    html_report_file,
+    structured_report_file,
+    **kwds
+):
+    if xunit_report_file and (not os.path.exists(xunit_report_file)):
         warn(NO_XUNIT_MESSAGE)
-        return
+        xunit_report_file = None
+
+    if xunit_report_file:
+        __summarize_tests_full(
+            xunit_report_file,
+            html_report_file,
+            structured_report_file,
+            **kwds
+        )
+    else:
+        if return_code:
+            warn(GENERIC_PROBLEMS_MESSAGE % html_report_file)
+        else:
+            info(GENERIC_TESTS_PASSED_MESSAGE)
+
+
+def __summarize_tests_full(
+    xunit_report_file,
+    html_report_file,
+    structured_report_file,
+    **kwds
+):
+    try:
+        structured_data = json.load(open(structured_report_file, "r"))["tests"]
+    except Exception:
+        # Older Galaxy's will not support this option.
+        structured_data = {}
 
     xunit_tree = ET.parse(xunit_report_file)
     xunit_root = xunit_tree.getroot()
@@ -148,7 +189,6 @@ def summarize_tests_xunit(xunit_report_file, html_report_file):
     num_problems = num_skips + num_errors + num_failures
     if num_problems == 0:
         info(ALL_TESTS_PASSED_MESSAGE % num_tests)
-        return
 
     if num_problems:
         message_args = (num_problems, num_tests, html_report_file)
@@ -156,33 +196,66 @@ def summarize_tests_xunit(xunit_report_file, html_report_file):
         warn(message)
 
     for testcase_el in xunit_root.findall("testcase"):
-        name_raw = testcase_el.attrib["name"]
-        tool_and_num = name_raw.split("TestForTool_", 1)[-1]
-        if "test_tool_" in tool_and_num:
-            tool, num = tool_and_num.split(".test_tool_", 1)
-            try:
-                num = int(num)
-            except ValueError:
-                pass
-            # Tempted to but something human friendly in here like
-            # num + 1 - but then it doesn't match HTML report.
-            label = "%s[%s]" % (tool, num)
-        else:
-            label = tool_and_num
-        passed = len(list(testcase_el)) == 0
-        if not passed:
-            state = click.style("failed", bold=True, fg='red')
-        else:
-            state = click.style("passed", bold=True, fg='green')
-        click.echo(label + ": " + state)
+        __summarize_test_case(structured_data, testcase_el)
 
 
-def __run_tests_cmd(html_report_file, xunit_report_file):
+def __summarize_test_case(structured_data, testcase_el, **kwds):
+    summary_style = kwds.get("summary")
+    name_raw = testcase_el.attrib["name"]
+    tool_and_num = name_raw.split("TestForTool_", 1)[-1]
+    if "test_tool_" in tool_and_num:
+        tool, num = tool_and_num.split(".test_tool_", 1)
+        try:
+            num = int(num)
+        except ValueError:
+            pass
+        # Tempted to but something human friendly in here like
+        # num + 1 - but then it doesn't match HTML report.
+        label = "%s[%s]" % (tool, num)
+    else:
+        label = tool_and_num
+    passed = len(list(testcase_el)) == 0
+    if not passed:
+        state = click.style("failed", bold=True, fg='red')
+    else:
+        state = click.style("passed", bold=True, fg='green')
+    click.echo(label + ": " + state)
+    if summary_style != "minimal":
+        __print_command_line(structured_data, name_raw)
+
+
+def __print_command_line(structured_data, test_id):
+    try:
+        test = [d for d in structured_data if d["id"] == test_id][0]["data"]
+    except (KeyError, IndexError):
+        # Failed to find structured data for this test - likely targetting
+        # and older Galaxy version.
+        return
+
+    execution_problem = test.get("execution_problem", None)
+    if execution_problem:
+        click.echo("| command: *could not execute job, no command generated* ")
+        return
+
+    try:
+        command = test["job"]["command_line"]
+    except (KeyError, IndexError):
+        click.echo("| command: *failed to determine command for job* ")
+        return
+
+    click.echo("| command: %s" % command)
+
+
+def __run_tests_cmd(html_report_file, xunit_report_file, sd_report_file):
     if xunit_report_file:
         xunit_arg = "--xunit_report_file %s" % xunit_report_file
     else:
         xunit_arg = ""
-    return RUN_TESTS_CMD % (html_report_file, xunit_arg)
+    if sd_report_file:
+        sd_arg = "--structured_data_report_file %s" % sd_report_file
+    else:
+        sd_arg = ""
+    return RUN_TESTS_CMD % (html_report_file, xunit_arg, sd_arg)
 
 
 def __xunit_state(kwds, config):
@@ -198,3 +271,16 @@ def __xunit_state(kwds, config):
         xunit_report_file = None
 
     return xunit_supported, xunit_report_file
+
+
+def __structured_report_file(kwds, config):
+    structured_data_supported = True
+    if shell("grep -q structured_data '%s'/run_tests.sh" % config.galaxy_root):
+        structured_data_supported = False
+
+    structured_report_file = None
+    if structured_data_supported:
+        conf_dir = config.config_directory
+        structured_report_file = os.path.join(conf_dir, "structured_data.xml")
+
+    return structured_report_file

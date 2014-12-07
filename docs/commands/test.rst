@@ -39,9 +39,11 @@ please careful and do not try this against production Galaxy instances.
       --update_test_data              Update test-data directory with job outputs
                                       (normally written to directory
                                       --job_output_files if specified.)
-      --skip_summary                  Force planemo to skip extra summary of test
-                                      results beyond whatGalaxy prints to standard
-                                      out and error.
+      --summary [none|minimal|compact]
+                                      Summary style printed to planemo's standard
+                                      output (see output reports for more complete
+                                      summary). Set to 'none' to disable
+                                      completely.
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
       --install_galaxy                Download and configure a disposable copy of
