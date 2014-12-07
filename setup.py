@@ -32,6 +32,7 @@ setup(
     packages=[
         'planemo',
         'planemo.commands',
+        'planemo.reports',
         'galaxy',
         'galaxy.tools',
         'galaxy.tools.linters',

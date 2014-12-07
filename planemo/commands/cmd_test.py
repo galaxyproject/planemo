@@ -9,6 +9,8 @@ from planemo import options
 from planemo import galaxy_config
 from planemo import galaxy_run
 from planemo import galaxy_test
+from planemo.reports import build_report
+
 
 from galaxy.tools.deps.commands import shell
 
@@ -143,6 +145,13 @@ def cli(ctx, path, **kwds):
             html_report_file,
             return_code,
         )
+
+        try:
+            test_data = test_results.structured_data
+            new_report = build_report.build_report(test_data)
+            open(test_results.output_html_path, "w").write(new_report)
+        except Exception:
+            pass
 
         __handle_summary(
             test_results,
