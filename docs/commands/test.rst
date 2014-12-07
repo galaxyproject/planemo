@@ -35,6 +35,7 @@ please careful and do not try this against production Galaxy instances.
       --test_output PATH              Output test report (HTML - for humans).
       --test_output_xunit PATH        Output test report (xUnit style - for
                                       computers).
+      --test_output_json PATH         Output test report (planemo json).
       --job_output_files DIRECTORY    Write job outputs to specified directory.
       --update_test_data              Update test-data directory with job outputs
                                       (normally written to directory
