@@ -21,6 +21,13 @@ class GalaxyTestResults(object):
             structured_data_tests = {}
         self.structured_data = structured_data
         self.structured_data_tests = structured_data_tests
+
+        structured_data_by_id = {}
+        for test in self.structured_data_tests:
+            structured_data_by_id[test["id"]] = test["data"]
+        self.structured_data_by_id = structured_data_by_id
+        print structured_data_by_id
+
         self.xunit_tree = ET.parse(output_xml_path)
         self.__merge_xunit()
         try:
@@ -48,6 +55,24 @@ class GalaxyTestResults(object):
         self.structured_data["summary"] = summary
         self.num_tests = num_tests
         self.num_problems = num_skips + num_errors + num_failures
+
+        for testcase_el in self.xunit_testcase_elements:
+            id = testcase_el.get("name")
+            test_data = self.structured_data_by_id.get(id)
+            if not test_data:
+                continue
+            problem_el = None
+            for problem_type in ["skip", "failure", "error"]:
+                problem_el = testcase_el.find(problem_type)
+                if problem_el is not None:
+                    break
+            if problem_el is not None:
+                status = problem_el.tag
+                test_data["problem_type"] = problem_el.attrib["type"]
+                test_data["problem_log"] = problem_el.text
+            else:
+                status = "success"
+            test_data["status"] = status
 
     @property
     def all_tests_passed(self):
