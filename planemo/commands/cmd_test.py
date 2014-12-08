@@ -24,7 +24,7 @@ PROBLEM_COUNT_MESSAGE = ("There were problems with %d test(s) - out of %d "
                          "test(s) executed. See %s for detailed breakdown.")
 GENERIC_PROBLEMS_MESSAGE = ("One or more tests failed. See %s for detailed "
                             "breakdown.")
-GENERIC_TESTS_PASSED_MESSAGE = "No failed tests encountered."
+GENERIC_TESTS_PASSED_MESSAGE = "No failing tests encountered."
 
 RUN_TESTS_CMD = (
     "sh run_tests.sh --report_file %s %s %s "
