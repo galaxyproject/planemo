@@ -132,54 +132,51 @@ def cli(ctx, path, **kwds):
         if kwds.get('update_test_data', False):
             update_cp_args = (job_output_files, config.test_data_dir)
             shell('cp -r "%s"/* "%s"' % update_cp_args)
-        summary_style = kwds.get("summary")
-        if summary_style != "none":
-            __handle_summary(
-                return_code,
-                xunit_report_file,
-                html_report_file,
-                structured_report_file,
-                **kwds
-            )
+
+        if xunit_report_file and (not os.path.exists(xunit_report_file)):
+            warn(NO_XUNIT_MESSAGE)
+            xunit_report_file = None
+
+        test_results = galaxy_test.GalaxyTestResults(
+            structured_report_file,
+            xunit_report_file,
+            html_report_file,
+            return_code,
+        )
+
+        __handle_summary(
+            test_results,
+            **kwds
+        )
+
         if return_code:
             sys.exit(1)
 
 
 def __handle_summary(
-    return_code,
-    xunit_report_file,
-    html_report_file,
-    structured_report_file,
+    test_results,
     **kwds
 ):
-    if xunit_report_file and (not os.path.exists(xunit_report_file)):
-        warn(NO_XUNIT_MESSAGE)
-        xunit_report_file = None
+    summary_style = kwds.get("summary")
+    if summary_style == "none":
+        return
 
-    if xunit_report_file:
+    if test_results.has_details:
         __summarize_tests_full(
-            xunit_report_file,
-            html_report_file,
-            structured_report_file,
+            test_results,
             **kwds
         )
     else:
-        if return_code:
-            warn(GENERIC_PROBLEMS_MESSAGE % html_report_file)
+        if test_results.exit_code:
+            warn(GENERIC_PROBLEMS_MESSAGE % test_results.output_html_path)
         else:
             info(GENERIC_TESTS_PASSED_MESSAGE)
 
 
 def __summarize_tests_full(
-    xunit_report_file,
-    html_report_file,
-    structured_report_file,
+    test_results,
     **kwds
 ):
-    test_results = galaxy_test.GalaxyTestResults(
-        structured_report_file,
-        xunit_report_file
-    )
     num_tests = test_results.num_tests
     num_problems = test_results.num_problems
 
@@ -191,13 +188,14 @@ def __summarize_tests_full(
         info(ALL_TESTS_PASSED_MESSAGE % num_tests)
 
     if num_problems:
+        html_report_file = test_results.output_html_path
         message_args = (num_problems, num_tests, html_report_file)
         message = PROBLEM_COUNT_MESSAGE % message_args
         warn(message)
 
     for testcase_el in test_results.xunit_testcase_elements:
         structured_data_tests = test_results.structured_data_tests
-        __summarize_test_case(structured_data_tests, testcase_el)
+        __summarize_test_case(structured_data_tests, testcase_el, **kwds)
 
 
 def __summarize_test_case(structured_data, testcase_el, **kwds):

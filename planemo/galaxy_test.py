@@ -10,7 +10,15 @@ class GalaxyTestResults(object):
     abstracts away the difference (someday).
     """
 
-    def __init__(self, output_json_path, output_xml_path):
+    def __init__(
+        self,
+        output_json_path,
+        output_xml_path,
+        output_html_path,
+        exit_code,
+    ):
+        self.output_html_path = output_html_path
+        self.exit_code = exit_code
         try:
             output_json_f = open(output_json_path, "r")
             structured_data = json.load(output_json_f)
@@ -26,10 +34,14 @@ class GalaxyTestResults(object):
         for test in self.structured_data_tests:
             structured_data_by_id[test["id"]] = test["data"]
         self.structured_data_by_id = structured_data_by_id
-        print structured_data_by_id
 
-        self.xunit_tree = ET.parse(output_xml_path)
-        self.__merge_xunit()
+        if output_xml_path:
+            self.xunit_tree = ET.parse(output_xml_path)
+            self.__merge_xunit()
+            self.has_details = True
+        else:
+            self.xunit_tree = ET.fromstring("<testsuite />")
+            self.has_details = False
         try:
             json.dump(self.structured_data, open(output_json_path, "w"))
         except Exception:
