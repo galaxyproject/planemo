@@ -1,7 +1,5 @@
-import json
 import os
 import sys
-import xml.etree.ElementTree as ET
 
 import click
 
@@ -10,20 +8,25 @@ from planemo.io import info, warn
 from planemo import options
 from planemo import galaxy_config
 from planemo import galaxy_run
+from planemo import galaxy_test
+from planemo.reports import build_report
+
 
 from galaxy.tools.deps.commands import shell
 
 XUNIT_UPGRADE_MESSAGE = ("This version of Galaxy does not support xUnit - "
                          "please update to newest development brach.")
-NO_XUNIT_MESSAGE = ("Cannot locate xUnit report for tests - update to a new "
+NO_XUNIT_MESSAGE = ("Cannot locate xUnit report option for tests - update "
                     "Galaxy for more detailed breakdown.")
+NO_JSON_MESSAGE = ("Cannot locate json report option for tests - update "
+                   "Galaxy for more detailed breakdown.")
 NO_TESTS_MESSAGE = "No tests were executed - see Galaxy output for details."
 ALL_TESTS_PASSED_MESSAGE = "All %d test(s) executed passed."
 PROBLEM_COUNT_MESSAGE = ("There were problems with %d test(s) - out of %d "
                          "test(s) executed. See %s for detailed breakdown.")
 GENERIC_PROBLEMS_MESSAGE = ("One or more tests failed. See %s for detailed "
                             "breakdown.")
-GENERIC_TESTS_PASSED_MESSAGE = "No failed tests encountered."
+GENERIC_TESTS_PASSED_MESSAGE = "No failing tests encountered."
 
 RUN_TESTS_CMD = (
     "sh run_tests.sh --report_file %s %s %s "
@@ -43,6 +46,12 @@ RUN_TESTS_CMD = (
     "--test_output_xunit",
     type=click.Path(file_okay=True, resolve_path=True),
     help="Output test report (xUnit style - for computers).",
+    default=None,
+)
+@click.option(
+    "--test_output_json",
+    type=click.Path(file_okay=True, resolve_path=True),
+    help="Output test report (planemo json).",
     default=None,
 )
 @click.option(
@@ -125,78 +134,77 @@ def cli(ctx, path, **kwds):
         if kwds.get('update_test_data', False):
             update_cp_args = (job_output_files, config.test_data_dir)
             shell('cp -r "%s"/* "%s"' % update_cp_args)
-        summary_style = kwds.get("summary")
-        if summary_style != "none":
-            __handle_summary(
-                return_code,
-                xunit_report_file,
-                html_report_file,
-                structured_report_file,
-                **kwds
-            )
+
+        if xunit_report_file and (not os.path.exists(xunit_report_file)):
+            warn(NO_XUNIT_MESSAGE)
+            xunit_report_file = None
+
+        test_results = galaxy_test.GalaxyTestResults(
+            structured_report_file,
+            xunit_report_file,
+            html_report_file,
+            return_code,
+        )
+
+        try:
+            test_data = test_results.structured_data
+            new_report = build_report.build_report(test_data)
+            open(test_results.output_html_path, "w").write(new_report)
+        except Exception:
+            pass
+
+        __handle_summary(
+            test_results,
+            **kwds
+        )
+
         if return_code:
             sys.exit(1)
 
 
 def __handle_summary(
-    return_code,
-    xunit_report_file,
-    html_report_file,
-    structured_report_file,
+    test_results,
     **kwds
 ):
-    if xunit_report_file and (not os.path.exists(xunit_report_file)):
-        warn(NO_XUNIT_MESSAGE)
-        xunit_report_file = None
+    summary_style = kwds.get("summary")
+    if summary_style == "none":
+        return
 
-    if xunit_report_file:
+    if test_results.has_details:
         __summarize_tests_full(
-            xunit_report_file,
-            html_report_file,
-            structured_report_file,
+            test_results,
             **kwds
         )
     else:
-        if return_code:
-            warn(GENERIC_PROBLEMS_MESSAGE % html_report_file)
+        if test_results.exit_code:
+            warn(GENERIC_PROBLEMS_MESSAGE % test_results.output_html_path)
         else:
             info(GENERIC_TESTS_PASSED_MESSAGE)
 
 
 def __summarize_tests_full(
-    xunit_report_file,
-    html_report_file,
-    structured_report_file,
+    test_results,
     **kwds
 ):
-    try:
-        structured_data = json.load(open(structured_report_file, "r"))["tests"]
-    except Exception:
-        # Older Galaxy's will not support this option.
-        structured_data = {}
+    num_tests = test_results.num_tests
+    num_problems = test_results.num_problems
 
-    xunit_tree = ET.parse(xunit_report_file)
-    xunit_root = xunit_tree.getroot()
-    xunit_attrib = xunit_root.attrib
-    num_tests = int(xunit_attrib.get("tests", 0))
-    num_failures = int(xunit_attrib.get("failures", 0))
-    num_errors = int(xunit_attrib.get("errors", 0))
-    num_skips = int(xunit_attrib.get("skips", 0))
     if num_tests == 0:
         warn(NO_TESTS_MESSAGE)
         return
 
-    num_problems = num_skips + num_errors + num_failures
     if num_problems == 0:
         info(ALL_TESTS_PASSED_MESSAGE % num_tests)
 
     if num_problems:
+        html_report_file = test_results.output_html_path
         message_args = (num_problems, num_tests, html_report_file)
         message = PROBLEM_COUNT_MESSAGE % message_args
         warn(message)
 
-    for testcase_el in xunit_root.findall("testcase"):
-        __summarize_test_case(structured_data, testcase_el)
+    for testcase_el in test_results.xunit_testcase_elements:
+        structured_data_tests = test_results.structured_data_tests
+        __summarize_test_case(structured_data_tests, testcase_el, **kwds)
 
 
 def __summarize_test_case(structured_data, testcase_el, **kwds):
@@ -279,8 +287,12 @@ def __structured_report_file(kwds, config):
         structured_data_supported = False
 
     structured_report_file = None
-    if structured_data_supported:
+    structured_report_file = kwds.get("test_output_json", None)
+    if structured_report_file is None and structured_data_supported:
         conf_dir = config.config_directory
-        structured_report_file = os.path.join(conf_dir, "structured_data.xml")
+        structured_report_file = os.path.join(conf_dir, "structured_data.json")
+    elif structured_report_file is not None and not structured_data_supported:
+        warn(NO_JSON_MESSAGE)
+        structured_report_file = None
 
     return structured_report_file

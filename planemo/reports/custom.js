@@ -1,0 +1,132 @@
+
+var renderTestResults = function(testData) {
+	var summary = testData["summary"];
+	var numTests = summary["num_tests"];
+	var numProblems = summary["num_errors"] + summary["num_failures"] + summary["num_skips"];
+	var $overview = $("#overview-content");
+	var $progress = $(".progress");
+	if(numTests == 0) {
+		$overview.addClass("alert").addClass("alert-danger").text("No tests were executed.");
+		$progress.append($('<div class="progress-bar progress-bar-warning" role="progressbar" style="width: 100%" />'));
+	} else if(numProblems > 0) {
+		$overview.addClass("alert").addClass("alert-danger").text("There were problems with " + numProblems + " test(s) out of " + numTests + ".");
+		var problemPercent = (numProblems/(1.0 * numTests)) * 100.0;
+		var successPercent = 100.0 - problemPercent;
+		$progress.append($('<div class="progress-bar progress-bar-success" role="progressbar" style="width: ' + successPercent  +  '%" />'));
+		$progress.append($('<div class="progress-bar progress-bar-danger" role="progressbar" style="width: ' + problemPercent  +  '%" />'));
+	} else {
+		$overview.addClass("alert").addClass("alert-success").text("All " + numTests + " test(s) successfully executed.");
+		$progress.append($('<div class="progress-bar progress-bar-success" role="progressbar" style="width: 100%" />'));
+	}
+
+	var $sidebar = $("#nav-sidebar-tests");
+	for(var index in testData["tests"]) {
+		var test = testData["tests"][index];
+		var testResult = new TestResult(test);
+		var rawId = testResult.rawId;
+
+		var panelType = testResult.passed ? "panel-success" : "panel-danger";
+		var $panel = $('<div class="panel">');
+		$panel.addClass(panelType);
+
+		var $panelHeading = $('<div class="panel-heading">');
+		var $panelTitle = $('<div class="panel-title">');
+		var $a = $('<a class="collapsed" data-toggle="collapse">');
+		$a.attr("id", rawId);
+		$a.attr("data-target", "#collapse"  + index);
+		var testName = testResult.toolName + " (Test #" + (testResult.testIndex + 1) + ")"
+		$a.text(testName);
+		var $navLink = $('<a>').attr('href', '#' + rawId).text(testName)
+		if(!testResult.passed) {
+			$navLink.addClass("text-danger");
+		} else {
+			$navLink.addClass("text-success");
+		}
+		$sidebar.append($('<li>').append( $navLink ) );
+		$panelTitle.append($a)
+		$panelHeading.append($panelTitle);
+
+		var $panelBody = $('<div class="panel-body panel-collapse collapse" >');
+		$panelBody.attr("id", "collapse" + index);
+
+		var $status = $('<div>').text("status: " + testResult.status);
+		$panelBody.append($status);
+		if(testResult.problems.length > 0) {
+			var $problemsLabel = $('<div>').text("problems: ");
+			var $problemsDiv = $('<div style="margin-left:10px;">');
+			var $problemsUl = $('<ul>');
+			for(var problemIndex in testResult.problems) {
+				$problemsUl.append($('<li>').append($('<code>').text(testResult.problems[problemIndex])));
+			}
+			$problemsDiv.append($problemsUl);
+			$panelBody.append($problemsLabel).append($problemsDiv);
+		}
+		var $commandLabel = $('<div>command:</div>');
+		var $stdoutLabel = $('<div>job standard output:</div>');
+		var $stderrLabel = $('<div>job standard error:</div>');
+		var $command;
+		if(testResult.command !== null) {
+			$command = $('<pre class="pre-scrollable" style="margin-left:10px;">').text(testResult.command);
+		} else {
+			$command = $('<div class="alert alert-warning" style="margin-left:10px;">').text("No command recorded.");
+		}
+		var $stdout;
+		if(testResult.stdout !== null) {
+			$stdout = $('<pre class="pre-scrollable" style="margin-left:10px;">').text(testResult.stdout);
+		} else {
+			$stdout = $('<div class="alert alert-warning" style="margin-left:10px;">').text("No standard output recorded.");
+		}
+		var $stderr;
+		if(testResult.stderr !== null) {
+			$stderr = $('<pre class="pre-scrollable" style="margin-left:10px;">').text(testResult.stderr);
+		} else {
+			$stderr = $('<div class="alert alert-warning" style="margin-left:10px;">').text("No standard error recorded.");
+		}
+		$panelBody
+			.append($commandLabel)
+			.append($command)
+			.append($stdoutLabel)
+			.append($stdout)
+			.append($stderrLabel)
+			.append($stderr);
+		if(!testResult.passed) {
+			var $logLabel = $('<div>log:</div>');
+			var $log = $('<pre class="pre-scrollable" style="margin-left: 10px;">').text(testResult.problemLog);
+			$panelBody.append($logLabel).append($log);
+		}
+
+		$panel.append($panelHeading).append($panelBody);
+		$(".main").append($panel);
+	}
+}
+
+var TestResult = function(data) {
+	this.rawId = data["id"];
+
+	var testMethod = this.rawId.split("TestForTool_")[1];
+	var toolName = testMethod.split(".test_tool_")[0];
+	var testIndex = testMethod.split(".test_tool_")[1];
+	this.toolName = toolName;
+	this.testIndex = parseInt(testIndex);
+	console.log(data);
+	this.status = data["data"]["status"];
+	var job = data["data"]["job"];
+	if(job) {
+		this.stdout = data["data"]["job"]["stdout"];
+		this.stderr = data["data"]["job"]["stderr"];
+		this.command = data["data"]["job"]["command_line"];		
+	} else {
+		this.stdout = null;
+		this.stderr = null;
+		this.command = null;
+	}
+	this.problems = [];
+	var outputProblems = data["data"]["output_problems"] || [];
+	var executionProblem = data["data"]["execution_problem"];
+	this.problems.push.apply(this.problems, outputProblems);
+	if(executionProblem) {
+		this.problems.push(executionProblem);
+	}
+	this.problemLog = data["data"]["problem_log"];
+	this.passed = (this.status == "success");
+}
