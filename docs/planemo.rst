@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
 
     planemo.commands
+    planemo.reports
 
 Submodules
 ----------
@@ -47,6 +48,14 @@ planemo.galaxy_test module
 --------------------------
 
 .. automodule:: planemo.galaxy_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.github_util module
+--------------------------
+
+.. automodule:: planemo.github_util
     :members:
     :undoc-members:
     :show-inheritance:
