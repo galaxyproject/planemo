@@ -13,6 +13,7 @@ Contents:
 
    readme
    installation
+   configuration
    commands
    contributing
    history
