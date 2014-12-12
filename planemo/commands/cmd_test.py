@@ -100,7 +100,8 @@ def cli(ctx, path, **kwds):
     against that same Galaxy root - but this may not be bullet proof yet so
     please careful and do not try this against production Galaxy instances.
     """
-    with galaxy_config.galaxy_config(path, for_tests=True, **kwds) as config:
+    kwds["for_tests"] = True
+    with galaxy_config.galaxy_config(ctx, path, **kwds) as config:
         config_directory = config.config_directory
         html_report_file = kwds["test_output"]
 

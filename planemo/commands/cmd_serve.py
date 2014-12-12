@@ -43,7 +43,7 @@ def cli(ctx, path, **kwds):
     # TODO: Setup an admin user.
     # TODO: Pass through more parameters.
     # TODO: Populate test-data directory as FTP directory.
-    with galaxy_config.galaxy_config(path, **kwds) as config:
+    with galaxy_config.galaxy_config(ctx, path, **kwds) as config:
         # TODO: Allow running dockerized Galaxy here instead.
         run_script = os.path.join(config.galaxy_root, "run.sh")
         server_ini = os.path.join(config.config_directory, "galaxy.ini")

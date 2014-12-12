@@ -71,10 +71,12 @@ GalaxyConfig = namedtuple(
 )
 
 
-def find_galaxy_root(**kwds):
+def find_galaxy_root(ctx, **kwds):
     galaxy_root = kwds.get("galaxy_root", None)
     if galaxy_root:
         return galaxy_root
+    elif ctx.global_config.get("galaxy_root", None):
+        return ctx.global_config["galaxy_root"]
     else:
         par_dir = os.getcwd()
         while True:
@@ -123,13 +125,13 @@ def __search_tool_path_for(path, target):
 
 
 @contextlib.contextmanager
-def galaxy_config(tool_path, for_tests=False, **kwds):
+def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
     test_data_dir = find_test_data(tool_path, **kwds)
     tool_data_table = find_tool_data_table(tool_path, **kwds)
     if kwds.get("install_galaxy", None):
         galaxy_root = None
     else:
-        galaxy_root = find_galaxy_root(**kwds)
+        galaxy_root = find_galaxy_root(ctx, **kwds)
 
     config_directory = kwds.get("config_directory", None)
 
