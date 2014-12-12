@@ -74,7 +74,11 @@ GalaxyConfig = namedtuple(
 @contextlib.contextmanager
 def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
     test_data_dir = __find_test_data(tool_path, **kwds)
-    tool_data_table = __find_tool_data_table(tool_path, **kwds)
+    tool_data_table = __find_tool_data_table(
+        tool_path,
+        test_data_dir=test_data_dir,
+        **kwds
+    )
     if kwds.get("install_galaxy", None):
         galaxy_root = None
     else:
@@ -214,23 +218,28 @@ def __find_test_data(path, **kwds):
     return None
 
 
-def __find_tool_data_table(path, **kwds):
+def __find_tool_data_table(path, test_data_dir, **kwds):
     tool_data_table = kwds.get("tool_data_table", None)
     if tool_data_table:
         return os.path.abspath(tool_data_table)
     else:
-        return __search_tool_path_for(path, "tool_data_table_conf.xml.test")
+        return __search_tool_path_for(
+            path,
+            "tool_data_table_conf.xml.test",
+            [test_data_dir] if test_data_dir else [],
+        )
 
 
-def __search_tool_path_for(path, target):
+def __search_tool_path_for(path, target, extra_paths=[]):
     if not os.path.isdir(path):
         tool_dir = os.path.dirname(path)
     else:
         tool_dir = path
-    for possible_dir in [tool_dir, "."]:
+    possible_dirs = [tool_dir, "."] + extra_paths
+    for possible_dir in possible_dirs:
         possible_path = os.path.join(possible_dir, target)
         if os.path.exists(possible_path):
-            return possible_path
+            return os.path.abspath(possible_path)
     return None
 
 
