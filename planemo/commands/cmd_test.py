@@ -130,8 +130,13 @@ def cli(ctx, path, **kwds):
                 structured_report_file,
             ),
         ])
-        info("Running commands [%s]", cmd)
-        return_code = shell(cmd, env=config.env)
+        action = "Testing tools"
+        return_code = galaxy_run.run_galaxy_command(
+            ctx,
+            cmd,
+            config.env,
+            action
+        )
         if kwds.get('update_test_data', False):
             update_cp_args = (job_output_files, config.test_data_dir)
             shell('cp -r "%s"/* "%s"' % update_cp_args)

@@ -3,12 +3,9 @@ import os
 import click
 
 from planemo.cli import pass_context
-from planemo.io import info
 from planemo import galaxy_config
 from planemo import galaxy_run
 from planemo import options
-
-from galaxy.tools.deps.commands import shell
 
 
 @click.command('serve')
@@ -53,5 +50,5 @@ def cli(ctx, path, **kwds):
             run_script,
         ]
         cmd = "; ".join(cmds)
-        info("Starting galaxy with command [%s]", cmd)
-        shell(cmd, env=config.env)
+        action = "Starting galaxy"
+        galaxy_run.run_galaxy_command(ctx, cmd, config.env, action)
