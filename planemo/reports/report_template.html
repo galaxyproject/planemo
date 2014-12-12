@@ -67,8 +67,19 @@
     ${bootstrap_script}
     ${custom_script}
     <script>
-      var test_data = ${json_test_data};
-      renderTestResults(test_data);
+      var testDataUrl = getUrlParameter("test_data_url");
+      if(testDataUrl) {
+      $.ajax(
+        {'url': testDataUrl,
+         'type': 'GET',
+        }
+        )
+        .success(function(content) { renderTestResults( $.parseJSON(content) ); })
+        .failure(function() { alert("Failed to load test data.")} );
+      } else {
+        var test_data = ${json_test_data};
+        renderTestResults(test_data);
+      }
     </script>
   </body>
 </html>

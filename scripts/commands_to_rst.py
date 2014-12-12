@@ -15,7 +15,13 @@ from planemo import cli
 planemo_cli = cli.planemo
 runner = CliRunner()
 
-INTERNAL_COMMANDS = ['travis_before_install', 'shed_download']
+# Don't document the following commands - they should not be considered part
+# of the planemo API.
+INTERNAL_COMMANDS = [
+    'create_gist',
+    'travis_before_install',
+    'shed_download',
+]
 
 COMMAND_TEMPLATE = Template('''
 ``${command}`` command

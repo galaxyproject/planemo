@@ -52,7 +52,7 @@ RUN_TESTS_CMD = (
     "--test_output_json",
     type=click.Path(file_okay=True, resolve_path=True),
     help="Output test report (planemo json).",
-    default=None,
+    default="tool_test_output.json",
 )
 @click.option(
     "--job_output_files",
