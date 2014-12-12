@@ -71,67 +71,14 @@ GalaxyConfig = namedtuple(
 )
 
 
-def find_galaxy_root(ctx, **kwds):
-    galaxy_root = kwds.get("galaxy_root", None)
-    if galaxy_root:
-        return galaxy_root
-    elif ctx.global_config.get("galaxy_root", None):
-        return ctx.global_config["galaxy_root"]
-    else:
-        par_dir = os.getcwd()
-        while True:
-            run = os.path.join(par_dir, "run.sh")
-            config = os.path.join(par_dir, "config")
-            if os.path.isfile(run) and os.path.isdir(config):
-                return par_dir
-            new_par_dir = os.path.dirname(par_dir)
-            if new_par_dir == par_dir:
-                break
-            par_dir = new_par_dir
-    raise Exception(FAILED_TO_FIND_GALAXY_EXCEPTION)
-
-
-def find_test_data(path, **kwds):
-    # Find test data directory associated with path.
-    test_data = kwds.get("test_data", None)
-    if test_data:
-        return os.path.abspath(test_data)
-    else:
-        test_data = __search_tool_path_for(path, "test-data")
-        if test_data:
-            return test_data
-    warn(NO_TEST_DATA_MESSAGE)
-    return None
-
-
-def find_tool_data_table(path, **kwds):
-    tool_data_table = kwds.get("tool_data_table", None)
-    if tool_data_table:
-        return os.path.abspath(tool_data_table)
-    else:
-        return __search_tool_path_for(path, "tool_data_table_conf.xml.test")
-
-
-def __search_tool_path_for(path, target):
-    if not os.path.isdir(path):
-        tool_dir = os.path.dirname(path)
-    else:
-        tool_dir = path
-    for possible_dir in [tool_dir, "."]:
-        possible_path = os.path.join(possible_dir, target)
-        if os.path.exists(possible_path):
-            return possible_path
-    return None
-
-
 @contextlib.contextmanager
 def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
-    test_data_dir = find_test_data(tool_path, **kwds)
-    tool_data_table = find_tool_data_table(tool_path, **kwds)
+    test_data_dir = __find_test_data(tool_path, **kwds)
+    tool_data_table = __find_tool_data_table(tool_path, **kwds)
     if kwds.get("install_galaxy", None):
         galaxy_root = None
     else:
-        galaxy_root = find_galaxy_root(ctx, **kwds)
+        galaxy_root = __find_galaxy_root(ctx, **kwds)
 
     config_directory = kwds.get("config_directory", None)
 
@@ -234,6 +181,59 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
             shutil.rmtree(config_directory)
 
 
+def __find_galaxy_root(ctx, **kwds):
+    galaxy_root = kwds.get("galaxy_root", None)
+    if galaxy_root:
+        return galaxy_root
+    elif ctx.global_config.get("galaxy_root", None):
+        return ctx.global_config["galaxy_root"]
+    else:
+        par_dir = os.getcwd()
+        while True:
+            run = os.path.join(par_dir, "run.sh")
+            config = os.path.join(par_dir, "config")
+            if os.path.isfile(run) and os.path.isdir(config):
+                return par_dir
+            new_par_dir = os.path.dirname(par_dir)
+            if new_par_dir == par_dir:
+                break
+            par_dir = new_par_dir
+    raise Exception(FAILED_TO_FIND_GALAXY_EXCEPTION)
+
+
+def __find_test_data(path, **kwds):
+    # Find test data directory associated with path.
+    test_data = kwds.get("test_data", None)
+    if test_data:
+        return os.path.abspath(test_data)
+    else:
+        test_data = __search_tool_path_for(path, "test-data")
+        if test_data:
+            return test_data
+    warn(NO_TEST_DATA_MESSAGE)
+    return None
+
+
+def __find_tool_data_table(path, **kwds):
+    tool_data_table = kwds.get("tool_data_table", None)
+    if tool_data_table:
+        return os.path.abspath(tool_data_table)
+    else:
+        return __search_tool_path_for(path, "tool_data_table_conf.xml.test")
+
+
+def __search_tool_path_for(path, target):
+    if not os.path.isdir(path):
+        tool_dir = os.path.dirname(path)
+    else:
+        tool_dir = path
+    for possible_dir in [tool_dir, "."]:
+        possible_path = os.path.join(possible_dir, target)
+        if os.path.exists(possible_path):
+            return possible_path
+    return None
+
+
 def __tool_conf_entry_for(tool_path):
     if os.path.isdir(tool_path):
         tool_definition = '''<tool_dir dir="%s" />'''
@@ -323,3 +323,5 @@ def __sub(template, args):
     if template is None:
         return ''
     return Template(template).safe_substitute(args)
+
+__all__ = ["galaxy_config"]
