@@ -18,7 +18,13 @@ def load_exception_handler(path, exc_info):
 def load_tool_elements_from_path(path, load_exception_handler=load_exception_handler):
     tool_elements = []
     for file in __find_tool_files(path):
-        if __looks_like_a_tool(file):
+        try:
+            looks_like_a_tool = __looks_like_a_tool(file)
+        except IOError:
+            # Some problem reading the tool file, skip.
+            continue
+
+        if looks_like_a_tool:
             try:
                 tool_elements.append((file, loader.load_tool(file)))
             except Exception:
