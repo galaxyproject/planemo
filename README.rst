@@ -23,9 +23,20 @@ Command-line utilities to assist in building tools for the Galaxy_ project.
 Quick Start
 -----------
 
-This quick start demonstrates using ``planemo`` commands to help 
-develop Galaxy tools. First install planemo into a ``virtualenv`` - 
-this example creates a new one (in ``.venv``).
+This quick start demonstrates using ``planemo`` commands to help
+develop Galaxy tools. Planemo can quickly be installed via
+Homebrew_ or as a more traditional Python project.
+
+To install using Homebrew_ or linuxbrew_:
+
+::
+
+   brew tap galaxyproject/tap
+   brew install planemo
+
+For a more traditional Python installation simply setup a virtualenv
+for ``planemo`` (this example creates a new one in ``.venv``) and then
+install with ``pip``.
 
 ::
 
