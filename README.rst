@@ -56,7 +56,8 @@ On OSX Mavericks, if gnutar is not installed, please install with homebrew using
 
 Force the demo to initialize in the mytools directory:
 
-   % cd mytools
+   % cd mytools;
+   
    % wget -q --recursive -O - 'https://codeload.github.com/galaxyproject/planemo/tar.gz/master' | gnutar -C . -zxvf - --strip-components=3 --wildcards --no-anchored 'demo/**'
 
 
