@@ -20,7 +20,7 @@ History
   requests. `Pull Request 40`_
 * Fix for properly resolving links during Tool Shed publishing (thanks to Dave
   Bouvier). `Pull Request 29`_
-* Fix for citation linter (thanks to Michael Cursoe for the bug report). af39061_
+* Fix for citation linter (thanks to Michael Crusoe for the bug report). af39061_
 * Fix tool scanning for tool files with fewer than 10 lines (thanks to Dan
   Blankenberg). a2c13e4_
 * Automate more of Travis CI testing so the scripts added to tool repository
