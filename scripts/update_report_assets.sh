@@ -22,21 +22,19 @@ PLANEMO_ROOT="$PLANEMO_SCRIPTS_DIR/.."
 
 cd "$PLANEMO_ROOT"
 
-BOWER_PACKAGES = "
+BOWER_PACKAGES="
 	bootstrap
 "
-BOWER_ASSETS = "
+BOWER_ASSETS="
     bootstrap/dist/css/bootstrap.min.css
     bootstrap/dist/js/bootstrap.min.js 
     jquery/dist/jquery.min.js
 "
-
-bower install bootstrap
 
 for package in $BOWER_PACKAGES; do
 	bower install "$package"
 done
 
 for assert in $BOWER_ASSETS; do
-	cp "bower_components/$assert" `basename $asset`
+	cp "bower_components/$assert" $PLANEMO_ROOT/planemo/report/`basename $asset`
 done
