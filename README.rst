@@ -48,18 +48,16 @@ tool XML files. If none is available, one can be quickly create for
 demonstrating ``planemo`` as follows ``mkdir mytools; cd mytools; planemo
 project_init --template=demo``.
 
-On OSX Mavericks, if gnutar is not installed, please install with homebrew using:
 
 
-::
-   % brew install gnu-tar;
-
-Force the demo to initialize in the mytools directory:
+On OSX Mavericks, if gnutar is not installed, please install with homebrew using ``brew install gnu-tar``.
+Once installed, please add this to your ``.bashrc`` 
 
 ::
-   % cd mytools; 
-   % wget -q --recursive -O - 'https://codeload.github.com/galaxyproject/planemo/tar.gz/master' | gnutar -C . -zxvf - --strip-components=3 --wildcards --no-anchored 'demo/**'
 
+   % PATH="/usr/local/opt/gnu-tar/libexec/gnubin:$PATH"
+
+Now rerun ``planemo project_init --template=demo`` in your ``mytools`` directory.
 
 
 Planemo can check tools containing XML for common problems and best 
