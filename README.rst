@@ -50,16 +50,14 @@ project_init --template=demo``.
 
 On OSX Mavericks, if gnutar is not installed, please install with homebrew using:
 
+
+::
    % brew install gnu-tar;
-   
-   % cd /usr/bin;
-   
-   % sudo ln -s /usr/local/opt/gnu-tar/libexec/gnubin/tar gnutar  
 
 Force the demo to initialize in the mytools directory:
 
-   % cd mytools;
-   
+::
+   % cd mytools; 
    % wget -q --recursive -O - 'https://codeload.github.com/galaxyproject/planemo/tar.gz/master' | gnutar -C . -zxvf - --strip-components=3 --wildcards --no-anchored 'demo/**'
 
 
