@@ -34,6 +34,7 @@ setup(
         'planemo.commands',
         'planemo.reports',
         'galaxy',
+        'galaxy.eggs',
         'galaxy.tools',
         'galaxy.tools.linters',
         'galaxy.tools.deps',

@@ -43,9 +43,12 @@ install with ``pip``.
    % virtualenv .venv; . .venv/bin/activate
    % pip install git+https://github.com/galaxyproject/planemo.git
 
-To prevent errors:
- * Please do not install Planemo into the same virtualenv with Galaxy.
- * Please do not use Galaxy from Planemo's virtualenv.
+If *not* using the brew recipe, Planemo and Galaxy `may conflict
+<http://planemo.readthedocs.org/en/latest/installation.html>`_ with
+each other - to prevent errors:
+
+* Do not install Planemo into Galaxy's virtualenv.
+* Do not use Galaxy from Planemo's virtualenv.
 
 This quick start will assume you will have a directory with one or more
 tool XML files. If none is available, one can be quickly create for
