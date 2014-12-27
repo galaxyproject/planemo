@@ -55,6 +55,18 @@ tool XML files. If none is available, one can be quickly create for
 demonstrating ``planemo`` as follows ``mkdir mytools; cd mytools; planemo
 project_init --template=demo``.
 
+
+
+On OSX Mavericks, if gnutar is not installed, please install with homebrew using ``brew install gnu-tar``.
+Once installed, please add this to your ``.bashrc`` 
+
+::
+
+   % PATH="/usr/local/opt/gnu-tar/libexec/gnubin:$PATH"
+
+Now rerun ``planemo project_init --template=demo`` in your ``mytools`` directory.
+
+
 Planemo can check tools containing XML for common problems and best 
 practices using the ``lint`` `command <http://planemo.readthedocs.org/en/latest/commands.html#lint-command>`_
 (also aliased as ``l``). ::
