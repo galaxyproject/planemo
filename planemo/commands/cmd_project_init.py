@@ -1,17 +1,23 @@
 """
 """
 import os
+import tempfile
+import shutil
 
 import click
 
 from planemo.cli import pass_context
 from planemo import options
-from planemo.io import warn, untar_to
+from planemo.io import (
+    warn,
+    untar_to,
+    shell
+)
 
 SOURCE_HOST = "https://codeload.github.com"
 DOWNLOAD_URL = "%s/galaxyproject/planemo/tar.gz/master" % SOURCE_HOST
-UNTAR_FILTER = "--strip-components=3 --wildcards --no-anchored '%s/**'"
-UNTAR_ARGS = "-C %s -zxvf - " + UNTAR_FILTER
+UNTAR_FILTER = "--strip-components=2"
+UNTAR_ARGS = " -C %s -zxf - " + UNTAR_FILTER
 
 
 @click.command("project_init")
@@ -31,5 +37,11 @@ def cli(ctx, path, template=None, **kwds):
     if template is None:
         return
 
-    untar_args = UNTAR_ARGS % (path, template)
-    untar_to(DOWNLOAD_URL, path, untar_args)
+    tempdir = tempfile.mkdtemp()
+    try:
+        untar_args = UNTAR_ARGS % (tempdir)
+        untar_to(DOWNLOAD_URL, tempdir, untar_args)
+        shell("ls '%s'" % (tempdir))
+        shell("mv '%s/%s'/* '%s'" % (tempdir, template, path))
+    finally:
+        shutil.rmtree(tempdir)
