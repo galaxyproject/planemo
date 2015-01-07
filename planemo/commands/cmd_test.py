@@ -81,6 +81,7 @@ RUN_TESTS_CMD = (
 @options.job_config_option()
 @options.tool_dependency_dir_option()
 @options.brew_dependency_resolution()
+@options.shed_brew_dependency_resolution()
 @pass_context
 def cli(ctx, path, **kwds):
     """Run the tests in the specified tool tests in a Galaxy instance.

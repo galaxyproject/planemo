@@ -44,7 +44,7 @@ instances.
       --job_config_file PATH          Job configuration file for Galaxy to target.
       --tool_dependency_dir DIRECTORY
                                       Tool dependency dir for Galaxy to target.
-      --brew_dependency_resolution    Configure Galaxy to use brew dependency
-                                      resolution.
+      --brew_dependency_resolution    Configure Galaxy to use plain brew
+                                      dependency resolution.
       --help                          Show this message and exit.
     

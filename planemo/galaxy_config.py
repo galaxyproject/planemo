@@ -54,6 +54,16 @@ BREW_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
 </dependency_resolvers>
 """
 
+SHED_BREW_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
+  <tool_shed_tap />
+</dependency_resolvers>
+"""
+
+# Provide some shortcuts for simple/common dependency resolutions strategies.
+STOCK_DEPENDENCY_RESOLUTION_STRATEGIES = {
+    "brew_dependency_resolution": BREW_DEPENDENCY_RESOLUTION_CONF,
+    "shed_brew_dependency_resolution": SHED_BREW_DEPENDENCY_RESOLUTION_CONF,
+}
 
 EMPTY_TOOL_CONF_TEMPLATE = """<toolbox></toolbox>"""
 
@@ -297,16 +307,32 @@ def __build_test_env(properties, env):
 
 
 def __handle_dependency_resolution(config_directory, kwds):
-    if kwds.get("brew_dependency_resolution"):
-        if kwds.get("dependency_resolvers_config_file", None):
-            raise click.UsageError(
-                "Cannot specify both brew_dependnecy_resolution"
-                " and dependency_resolvers_config_file"
+    resolutions_strategies = [
+        "brew_dependency_resolution",
+        "dependency_resolvers_config_file",
+        "shed_brew_dependency_resolution",
+    ]
+
+    selected_strategies = 0
+    for key in resolutions_strategies:
+        if kwds.get(key):
+            selected_strategies += 1
+
+    if selected_strategies > 1:
+        message = "At most one option from [%s] may be specified"
+        raise click.UsageError(message % resolutions_strategies)
+
+    for key in STOCK_DEPENDENCY_RESOLUTION_STRATEGIES:
+        if kwds.get(key):
+            resolvers_conf = os.path.join(
+                config_directory,
+                "resolvers_conf.xml"
             )
-        resolvers_conf = os.path.join(config_directory, "resolvers_conf.xml")
-        open(resolvers_conf, "w").write(BREW_DEPENDENCY_RESOLUTION_CONF)
-        kwds["tool_dependency_dir"] = os.path.join("config_directory", "deps")
-        kwds["dependency_resolvers_config_file"] = resolvers_conf
+            conf_contents = STOCK_DEPENDENCY_RESOLUTION_STRATEGIES[key]
+            open(resolvers_conf, "w").write(conf_contents)
+            dependency_dir = os.path.join("config_directory", "deps")
+            kwds["tool_dependency_dir"] = dependency_dir
+            kwds["dependency_resolvers_config_file"] = resolvers_conf
 
 
 def __handle_job_metrics(config_directory, kwds):
