@@ -59,8 +59,7 @@ please careful and do not try this against production Galaxy instances.
                                       Tool dependency dir for Galaxy to target.
       --brew_dependency_resolution    Configure Galaxy to use plain brew
                                       dependency resolution.
-      --shed_brew_dependency_resolution
-                                      Configure Galaxy to use brewed Tool Shed
+      --shed_dependency_resolution    Configure Galaxy to use brewed Tool Shed
                                       dependency resolution.
       --help                          Show this message and exit.
     

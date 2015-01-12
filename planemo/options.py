@@ -41,9 +41,9 @@ def brew_dependency_resolution():
     )
 
 
-def shed_brew_dependency_resolution():
+def shed_dependency_resolution():
     return click.option(
-        "--shed_brew_dependency_resolution",
+        "--shed_dependency_resolution",
         is_flag=True,
         help=("Configure Galaxy to use brewed Tool Shed dependency"
               " resolution."),

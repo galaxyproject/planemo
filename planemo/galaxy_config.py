@@ -54,7 +54,7 @@ BREW_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
 </dependency_resolvers>
 """
 
-SHED_BREW_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
+SHED_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
   <tool_shed_tap />
 </dependency_resolvers>
 """
@@ -62,7 +62,7 @@ SHED_BREW_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
 # Provide some shortcuts for simple/common dependency resolutions strategies.
 STOCK_DEPENDENCY_RESOLUTION_STRATEGIES = {
     "brew_dependency_resolution": BREW_DEPENDENCY_RESOLUTION_CONF,
-    "shed_brew_dependency_resolution": SHED_BREW_DEPENDENCY_RESOLUTION_CONF,
+    "shed_dependency_resolution": SHED_DEPENDENCY_RESOLUTION_CONF,
 }
 
 EMPTY_TOOL_CONF_TEMPLATE = """<toolbox></toolbox>"""
@@ -310,7 +310,7 @@ def __handle_dependency_resolution(config_directory, kwds):
     resolutions_strategies = [
         "brew_dependency_resolution",
         "dependency_resolvers_config_file",
-        "shed_brew_dependency_resolution",
+        "shed_dependency_resolution",
     ]
 
     selected_strategies = 0
