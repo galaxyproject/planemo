@@ -33,14 +33,21 @@ RUN_TESTS_CMD = (
     " functional.test_toolbox"
 )
 
+OUTPUT_DFEAULTS = {
+    "output": "tool_test_output.html",
+    "output_json": "tool_test_output.json",
+    "output_xunit": None,
+}
+
 
 @click.command('test')
 @options.optional_tools_arg()
 @click.option(
     "--test_output",
     type=click.Path(file_okay=True, resolve_path=True),
-    help="Output test report (HTML - for humans).",
-    default="tool_test_output.html",
+    help=("Output test report (HTML - for humans) defaults to "
+          "tool_test_output.html."),
+    default=None,
 )
 @click.option(
     "--test_output_xunit",
@@ -51,8 +58,9 @@ RUN_TESTS_CMD = (
 @click.option(
     "--test_output_json",
     type=click.Path(file_okay=True, resolve_path=True),
-    help="Output test report (planemo json).",
-    default="tool_test_output.json",
+    help=("Output test report (planemo json) defaults to "
+          "tool_test_output.json."),
+    default=None,
 )
 @click.option(
     "--job_output_files",
@@ -101,6 +109,9 @@ def cli(ctx, path, **kwds):
     against that same Galaxy root - but this may not be bullet proof yet so
     please careful and do not try this against production Galaxy instances.
     """
+    for name, default in OUTPUT_DFEAULTS.items():
+        __populate_default_output(ctx, name, kwds, default)
+
     kwds["for_tests"] = True
     with galaxy_config.galaxy_config(ctx, path, **kwds) as config:
         config_directory = config.config_directory
@@ -167,6 +178,22 @@ def cli(ctx, path, **kwds):
 
         if return_code:
             sys.exit(1)
+
+
+def __populate_default_output(ctx, type, kwds, default):
+    kwd_key = "test_%s" % type
+    kwd_value = kwds.get(kwd_key, None)
+    if kwd_value is None:
+        global_config = ctx.global_config
+        global_config_key = "default_test_%s" % type
+        if global_config_key in global_config:
+            default_value = global_config[global_config_key]
+        else:
+            default_value = default
+
+        if default_value:
+            default_value = os.path.abspath(default_value)
+        kwds[kwd_key] = default_value
 
 
 def __handle_summary(
