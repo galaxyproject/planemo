@@ -1,4 +1,4 @@
-galaxy.jobs package
+planemo_ext package
 ===================
 
 Subpackages
@@ -6,12 +6,12 @@ Subpackages
 
 .. toctree::
 
-    galaxy.jobs.metrics
+    planemo_ext.galaxy
 
 Module contents
 ---------------
 
-.. automodule:: galaxy.jobs
+.. automodule:: planemo_ext
     :members:
     :undoc-members:
     :show-inheritance:

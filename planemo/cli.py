@@ -1,5 +1,12 @@
 import os
 import sys
+
+# Hack to place Galaxy modules on PYTHONPATH - without
+# actually having them on the real external PYTHONPATH.
+import planemo_ext
+planemo_ext_path = planemo_ext.__path__[0]
+sys.path.append(os.path.join(planemo_ext_path))
+
 import click
 from .io import error
 from .config import read_global_config
