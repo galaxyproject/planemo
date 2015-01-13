@@ -143,9 +143,9 @@ def cli(ctx, path, **kwds):
 
         cd_to_galaxy_command = "cd %s" % config.galaxy_root
         cmd = "; ".join([
-            galaxy_run.DEACTIVATE_COMMAND,
             cd_to_galaxy_command,
-            galaxy_run.ACTIVATE_COMMAND,
+            galaxy_run.ACTIVATE_COMMAND,  # TODO: this should be moved to
+                                          # run_tests.sh to match run.sh.
             __run_tests_cmd(
                 html_report_file,
                 xunit_report_file,

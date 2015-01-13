@@ -265,7 +265,6 @@ def __install_galaxy_if_needed(config_directory, kwds):
     installed = False
     if kwds.get("install_galaxy", None):
         install_cmds = [
-            galaxy_run.DEACTIVATE_COMMAND,
             "cd %s" % config_directory,
             galaxy_run.DOWNLOAD_GALAXY,
             "tar -zxvf master | tail",

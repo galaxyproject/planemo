@@ -2,10 +2,6 @@ from planemo.io import info
 from galaxy.tools.deps.commands import shell
 
 
-# planemo environment contains a copy a deeply restricted subset of Galaxy, so
-# for Galaxy to function we need to deactivate any virtualenv we are in.
-DEACTIVATE_COMMAND = "type deactivate >/dev/null 2>&1 && deactivate"
-
 # Activate galaxy's virtualenv if present (needed for tests say but not for
 # server because run.sh does this).
 ACTIVATE_COMMAND = "[ -e .venv ] && . .venv/bin/activate"
