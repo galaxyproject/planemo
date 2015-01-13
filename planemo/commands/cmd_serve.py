@@ -46,7 +46,6 @@ def cli(ctx, path, **kwds):
         server_ini = os.path.join(config.config_directory, "galaxy.ini")
         config.env["GALAXY_CONFIG_FILE"] = server_ini
         cmds = [
-            galaxy_run.DEACTIVATE_COMMAND,
             run_script,
         ]
         cmd = "; ".join(cmds)
