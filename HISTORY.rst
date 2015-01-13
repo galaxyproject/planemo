@@ -4,6 +4,21 @@ History
 -------
 
 ---------------------
+0.2.0 (2015-01-13)
+---------------------
+
+* Improvements to way Planemo loads its own copy of Galaxy modules to prevent
+  various conflicts when launching Galaxy from Planemo. `Pull Request 56`_
+* Allow setting various test output options in ``~/.planemo.yml`` and disabling
+  JSON output. 21bb463_
+* More experimental Brew and Tool Shed options that should not be considered
+  part of Planemo's stable API. See bit.ly/gxbrew1 for more details.
+* Fix ``project_init`` for BSD tar (thanks to Nitesh Turaga for the bug
+  report.) a4110a8_
+* Documentation fixes for tool linting command (thanks to Nicola Soranzo).
+  `Pull Request 51`_
+
+---------------------
 0.1.0 (2014-12-16)
 ---------------------
 
@@ -37,6 +52,8 @@ History
 * Initial work on the project - commands for testing, linting, serving Galaxy
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
+.. _Pull Request 56: https://github.com/galaxyproject/planemo/pull/56
+.. _Pull Request 51: https://github.com/galaxyproject/planemo/pull/51
 .. _Pull Request 40: https://github.com/galaxyproject/planemo/pull/40
 .. _Pull Request 29: https://github.com/galaxyproject/planemo/pull/29
 .. _Pull Request 22: https://github.com/galaxyproject/planemo/pull/22
@@ -44,6 +61,8 @@ History
 .. _Pull Request 33: https://github.com/galaxyproject/planemo/pull/33
 .. _Pull Request 6: https://github.com/galaxyproject/planemo/pull/6
 .. _Pull Request 1: https://github.com/galaxyproject/planemo/pull/1
+.. _a4110a8: https://github.com/galaxyproject/planemo/commit/a4110a85a770988e5cd3c31ccc9475717897d59c
+.. _21bb463: https://github.com/galaxyproject/planemo/commit/21bb463ad6c321bcb669603049a5e89a69766ad9
 .. _af39061: https://github.com/galaxyproject/planemo/commit/af390612004dab636d8696839bb723d39f97c85d
 .. _20a8680: https://github.com/galaxyproject/planemo/commit/20a86807cb7ea87db2dbc0197ae08a40df3ab2bc
 .. _44de95c: https://github.com/galaxyproject/planemo/commit/44de95c0d7087a5822941959f9a062f6382e329b
