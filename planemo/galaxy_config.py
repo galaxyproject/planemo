@@ -3,6 +3,7 @@ from collections import namedtuple
 import contextlib
 import os
 import shutil
+import urllib
 from string import Template
 from tempfile import mkdtemp
 from six.moves.urllib.request import urlretrieve
@@ -67,8 +68,9 @@ STOCK_DEPENDENCY_RESOLUTION_STRATEGIES = {
 
 EMPTY_TOOL_CONF_TEMPLATE = """<toolbox></toolbox>"""
 
-DOWNLOADS_URL = "https://github.com/jmchilton/galaxy-downloads/raw/master/"
-DATABASE_TEMPLATE_URL = DOWNLOADS_URL + "db_gx_rev_0120.sqlite"
+DOWNLOADS_URL = ("https://raw.githubusercontent.com/"
+                 "jmchilton/galaxy-downloads/master/")
+LATEST_URL = DOWNLOADS_URL + "latest.sqlite"
 
 FAILED_TO_FIND_GALAXY_EXCEPTION = (
     "Failed to find Galaxy root directory - please explicitly specify one "
@@ -114,9 +116,12 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
         tool_conf = config_join("tool_conf.xml")
         database_location = config_join("galaxy.sqlite")
         preseeded_database = True
+
         try:
-            urlretrieve(DATABASE_TEMPLATE_URL, database_location)
+            template_url = DOWNLOADS_URL + urllib.urlopen(LATEST_URL).read()
+            urlretrieve(template_url, database_location)
         except Exception:
+            # No network access - just roll forward from null.
             preseeded_database = False
 
         template_args = dict(
@@ -181,7 +186,7 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
         # No need to download twice - would GALAXY_TEST_DATABASE_CONNECTION
         # work?
         if preseeded_database:
-            env["GALAXY_TEST_DB_TEMPLATE"] = DATABASE_TEMPLATE_URL
+            env["GALAXY_TEST_DB_TEMPLATE"] = os.path.abspath(database_location)
         env["GALAXY_TEST_UPLOAD_ASYNC"] = "false"
         web_config = __sub(WEB_SERVER_CONFIG_TEMPLATE, template_args)
         open(config_join("galaxy.ini"), "w").write(web_config)
