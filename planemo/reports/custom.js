@@ -56,7 +56,7 @@ var renderTestResults = function(testData) {
 			var $problemsDiv = $('<div style="margin-left:10px;">');
 			var $problemsUl = $('<ul>');
 			for(var problemIndex in testResult.problems) {
-				$problemsUl.append($('<li>').append($('<code>').text(testResult.problems[problemIndex])));
+				$problemsUl.append($('<li>').append($('<pre>').text(testResult.problems[problemIndex])));
 			}
 			$problemsDiv.append($problemsUl);
 			$panelBody.append($problemsLabel).append($problemsDiv);
@@ -114,7 +114,7 @@ var TestResult = function(data) {
 	if(job) {
 		this.stdout = data["data"]["job"]["stdout"];
 		this.stderr = data["data"]["job"]["stderr"];
-		this.command = data["data"]["job"]["command_line"];		
+		this.command = data["data"]["job"]["command_line"];
 	} else {
 		this.stdout = null;
 		this.stderr = null;
@@ -137,10 +137,10 @@ function getUrlParameter(sParam)
 {
     var sPageURL = window.location.search.substring(1);
     var sURLVariables = sPageURL.split('&');
-    for (var i = 0; i < sURLVariables.length; i++) 
+    for (var i = 0; i < sURLVariables.length; i++)
     {
         var sParameterName = sURLVariables[i].split('=');
-        if (sParameterName[0] == sParam) 
+        if (sParameterName[0] == sParam)
         {
             return sParameterName[1];
         }
