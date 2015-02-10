@@ -30,8 +30,3 @@ install with ``pip``.
 
    % virtualenv .venv; . .venv/bin/activate
    % pip install git+https://github.com/galaxyproject/planemo.git
-
-Warning: Do not install Planemo into Galaxy's virtual environment or attempt
-to run Galaxy while Planemo's virtual environmnt is active - Planemo is
-distributed with an incomplete subset of Galaxy libraries that will conflict
-with Galaxy and prevent it from being able to startup.
