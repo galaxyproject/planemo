@@ -43,6 +43,10 @@ install with ``pip``.
    % virtualenv .venv; . .venv/bin/activate
    % pip install git+https://github.com/galaxyproject/planemo.git
 
+Planemo is also available a `virtual appliance
+<https://planemo.readthedocs.org/en/latest/appliance.html>`_ for Docker_ or Vagrant_ (bundled
+with a preconfigured Galaxy server optimized for tool development).
+
 This quick start will assume you will have a directory with one or more
 tool XML files. If none is available, one can be quickly create for
 demonstrating ``planemo`` as follows ``mkdir mytools; cd mytools; planemo
@@ -198,3 +202,4 @@ and `brew_env
 .. _Docker: https://www.docker.com/
 .. _Homebrew: http://brew.sh/
 .. _linuxbrew: https://github.com/Homebrew/linuxbrew
+.. _Vagrant: https://www.vagrantup.com/
