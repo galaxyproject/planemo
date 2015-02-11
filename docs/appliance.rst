@@ -71,7 +71,9 @@ appear in the left panel.
 A Codebox_ IDE is available at http://localhost:8010/ide/ which should open
 right to your tools folder and which lets you open a real terminal. This
 terminal lets you run ``planemo``, build ``Dockerfile`` s, manage Galaxy,
-etc... right from the web browser.
+etc... right from the web browser. For wider monitors -
+http://localhost:8010/planemo/ will display the Codebox_ IDE and Galaxy side
+by side.
 
 Building the Appliance
 ======================
