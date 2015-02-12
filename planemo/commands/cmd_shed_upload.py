@@ -65,42 +65,8 @@ tar_path = click.Path(
 )
 @pass_context
 def cli(ctx, path, **kwds):
-    """Upload a tool directory as a tarball to a tool shed.
+    """Handle possible recursion through paths for uploading files to a toolshed
     """
-
-    def __handle_upload(ctx, path, **kwds):
-        tar_path = kwds.get("tar", None)
-        if not tar_path:
-            tar_path = shed.build_tarball(path)
-        if kwds["tar_only"]:
-            shell("cp %s shed_upload.tar.gz" % tar_path)
-            return 0
-        tsi = shed.tool_shed_client(ctx, **kwds)
-        update_kwds = {}
-        message = kwds.get("message", None)
-        if message:
-            update_kwds["commit_message"] = message
-        try:
-            repo_id = shed.find_repository_id(ctx, tsi, path, **kwds)
-        except Exception as e:
-            error("Could not update %s" % path)
-            try:
-                error(e.read())
-            except:
-                # I've seen a case where the error couldn't be read, so now
-                # wrapped in try/except
-                pass
-            return -1
-
-        try:
-            tsi.repositories.update_repository(repo_id, tar_path,
-                                               **update_kwds)
-        except Exception as e:
-            error("Could not update %s" % path)
-            error(e.read())
-            return -1
-        info("Repository %s updated successfully." % path)
-
     if kwds['recursive']:
         if kwds['name'] is not None:
             error("--name is incompatible with --recursive")
@@ -120,3 +86,38 @@ def cli(ctx, path, **kwds):
         return None if all(x is None for x in ret_codes) else -1
     else:
         return __handle_upload(ctx, path, **kwds)
+
+
+def __handle_upload(ctx, path, **kwds):
+    """Upload a tool directory as a tarball to a tool shed.
+    """
+    tar_path = kwds.get("tar", None)
+    if not tar_path:
+        tar_path = shed.build_tarball(path)
+    if kwds["tar_only"]:
+        shell("cp %s shed_upload.tar.gz" % tar_path)
+        return 0
+    tsi = shed.tool_shed_client(ctx, **kwds)
+    update_kwds = {}
+    message = kwds.get("message", None)
+    if message:
+        update_kwds["commit_message"] = message
+    try:
+        repo_id = shed.find_repository_id(ctx, tsi, path, **kwds)
+    except Exception as e:
+        error("Could not update %s" % path)
+        try:
+            error(e.read())
+        except:
+            # I've seen a case where the error couldn't be read, so now
+            # wrapped in try/except
+            pass
+        return -1
+
+    try:
+        tsi.repositories.update_repository(repo_id, tar_path, **update_kwds)
+    except Exception as e:
+        error("Could not update %s" % path)
+        error(e.read())
+        return -1
+    info("Repository %s updated successfully." % path)
