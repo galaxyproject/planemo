@@ -9,6 +9,8 @@ from planemo.io import error
 from planemo.io import info
 from planemo.io import shell
 
+import fnmatch
+import os
 
 tar_path = click.Path(
     exists=True,
@@ -16,7 +18,6 @@ tar_path = click.Path(
     dir_okay=False,
     resolve_path=True,
 )
-
 
 # TODO: Implement alternative tool per repo upload strategy.
 # TODO: Use git commit hash and origin to generated commit message.
@@ -56,25 +57,64 @@ tar_path = click.Path(
     type=tar_path,
     default=None,
 )
+@click.option(
+    '--recurse',
+    is_flag=True,
+    help="Recursively search from specific path for repositories to publish to a tool shed",
+)
 @pass_context
 def cli(ctx, path, **kwds):
     """Upload a tool directory as a tarball to a tool shed.
     """
-    tar_path = kwds.get("tar", None)
-    if not tar_path:
-        tar_path = shed.build_tarball(path)
-    if kwds["tar_only"]:
-        shell("cp %s shed_upload.tar.gz" % tar_path)
-        return 0
-    tsi = shed.tool_shed_client(ctx, **kwds)
-    update_kwds = {}
-    message = kwds.get("message", None)
-    if message:
-        update_kwds["commit_message"] = message
-    repo_id = shed.find_repository_id(ctx, tsi, path, **kwds)
-    try:
-        tsi.repositories.update_repository(repo_id, tar_path, **update_kwds)
-    except Exception as e:
-        error(e.read())
-        return -1
-    info("Repository updated successfully.")
+
+    def __handle_upload(ctx, path, **kwds):
+        tar_path = kwds.get("tar", None)
+        if not tar_path:
+            tar_path = shed.build_tarball(path)
+        if kwds["tar_only"]:
+            shell("cp %s shed_upload.tar.gz" % tar_path)
+            return 0
+        tsi = shed.tool_shed_client(ctx, **kwds)
+        update_kwds = {}
+        message = kwds.get("message", None)
+        if message:
+            update_kwds["commit_message"] = message
+        try:
+            repo_id = shed.find_repository_id(ctx, tsi, path, **kwds)
+        except Exception as e:
+            error("Could not update %s" % path)
+            try:
+                error(e.read())
+            except:
+                # I've seen a case where the error couldn't be read, so now wrapped in try/except
+                pass
+            return -1
+
+        try:
+            tsi.repositories.update_repository(repo_id, tar_path, **update_kwds)
+        except Exception as e:
+            error("Could not update %s" % path)
+            error(e.read())
+            return -1
+        info("Repository %s updated successfully." % path)
+
+    if kwds['recurse']:
+        if kwds['name'] is not None:
+            error("--name is incompatible with --recurse")
+            return -1
+        if kwds['tar'] is not None:
+            error("--tar is incompatible with --recurse")
+            return -1
+
+        ret_codes = []
+        for base_path, dirnames, filenames in os.walk(path):
+            for filename in fnmatch.filter(filenames, '.shed.yml'):
+                ret_codes.append(
+                    __handle_upload(ctx, base_path, **kwds)
+                )
+        # "Good" returns are Nones, everything else is a -1 and should be
+        # passed upwards.
+        return None if all(x is None for x in ret_codes) else -1
+    else:
+        return __handle_upload(ctx, path, **kwds)
+
