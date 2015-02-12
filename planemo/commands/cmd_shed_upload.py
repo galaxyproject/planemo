@@ -19,6 +19,7 @@ tar_path = click.Path(
     resolve_path=True,
 )
 
+
 # TODO: Implement alternative tool per repo upload strategy.
 # TODO: Use git commit hash and origin to generated commit message.
 @click.command("shed_upload")
@@ -58,9 +59,9 @@ tar_path = click.Path(
     default=None,
 )
 @click.option(
-    '--recurse',
+    '-r', '--recursive',
     is_flag=True,
-    help="Recursively search from specific path for repositories to publish to a tool shed",
+    help="Recursively search for repositories to publish to a tool shed",
 )
 @pass_context
 def cli(ctx, path, **kwds):
@@ -86,24 +87,26 @@ def cli(ctx, path, **kwds):
             try:
                 error(e.read())
             except:
-                # I've seen a case where the error couldn't be read, so now wrapped in try/except
+                # I've seen a case where the error couldn't be read, so now
+                # wrapped in try/except
                 pass
             return -1
 
         try:
-            tsi.repositories.update_repository(repo_id, tar_path, **update_kwds)
+            tsi.repositories.update_repository(repo_id, tar_path,
+                                               **update_kwds)
         except Exception as e:
             error("Could not update %s" % path)
             error(e.read())
             return -1
         info("Repository %s updated successfully." % path)
 
-    if kwds['recurse']:
+    if kwds['recursive']:
         if kwds['name'] is not None:
-            error("--name is incompatible with --recurse")
+            error("--name is incompatible with --recursive")
             return -1
         if kwds['tar'] is not None:
-            error("--tar is incompatible with --recurse")
+            error("--tar is incompatible with --recursive")
             return -1
 
         ret_codes = []
@@ -117,4 +120,3 @@ def cli(ctx, path, **kwds):
         return None if all(x is None for x in ret_codes) else -1
     else:
         return __handle_upload(ctx, path, **kwds)
-
