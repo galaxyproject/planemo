@@ -6,7 +6,7 @@ from galaxy.tools.deps import docker_util
 
 def test_data_option():
     return click.option(
-        "--test-data",
+        "--test_data",
         type=click.Path(exists=True, file_okay=False, resolve_path=True),
         help='test-data directory to for specified tool(s).'
     )
