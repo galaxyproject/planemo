@@ -11,6 +11,7 @@ try:
 except ImportError:
     grp = None
 import errno
+import urlparse
 from tempfile import NamedTemporaryFile
 from logging import getLogger
 log = getLogger(__name__)
@@ -168,3 +169,27 @@ def listify( item, do_strip=False ):
             return item.split( ',' )
     else:
         return [ item ]
+
+
+def mask_password_from_url( url ):
+    """
+    Masks out passwords from connection urls like the database connection in galaxy.ini
+
+    >>> mask_password_from_url( 'sqlite+postgresql://user:password@localhost/' )
+    'sqlite+postgresql://user:********@localhost/'
+    >>> mask_password_from_url( 'amqp://user:amqp@localhost' )
+    'amqp://user:********@localhost'
+    >>> mask_password_from_url( 'amqp://localhost')
+    'amqp://localhost'
+    """
+    split = urlparse.urlsplit(url)
+    if split.password:
+        if url.count(split.password) == 1:
+            url = url.replace(split.password, "********")
+        else:
+            # This can manipulate the input other than just masking password,
+            # so the previous string replace method is preferred when the
+            # password doesn't appear twice in the url
+            split._replace(netloc=split.netloc.replace("%s:%s" % (split.username, split.password), '%s:********' % split.username))
+            url = urlparse.urlunsplit(split)
+    return url
