@@ -85,6 +85,7 @@ OUTPUT_DFEAULTS = {
 @options.galaxy_root_option()
 @options.install_galaxy_option()
 @options.test_data_option()
+@options.tool_data_table_option()
 @options.dependency_resolvers_option()
 @options.job_config_option()
 @options.tool_dependency_dir_option()

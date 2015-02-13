@@ -238,10 +238,14 @@ def __find_tool_data_table(path, test_data_dir, **kwds):
     if tool_data_table:
         return os.path.abspath(tool_data_table)
     else:
+        extra_paths = [test_data_dir] if test_data_dir else []
         return __search_tool_path_for(
             path,
             "tool_data_table_conf.xml.test",
-            [test_data_dir] if test_data_dir else [],
+            extra_paths,
+        ) or __search_tool_path_for(  # if all else fails just use sample
+            path,
+            "tool_data_table_conf.xml.sample"
         )
 
 
