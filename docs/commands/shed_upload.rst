@@ -12,7 +12,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-Upload a tool directory as a tarball to a tool shed.
+Handle possible recursion through paths for uploading files to a toolshed
 
 **Options**::
 
@@ -34,5 +34,7 @@ Upload a tool directory as a tarball to a tool shed.
                             tool shed.
       --tar PATH            Specify a pre-existing tar file instead of
                             automatically building one as part of this command.
+      -r, --recursive       Recursively search for repositories to publish to a
+                            tool shed
       --help                Show this message and exit.
     

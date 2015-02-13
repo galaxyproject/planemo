@@ -36,7 +36,7 @@ instances.
                                       execute command with.
       --install_galaxy                Download and configure a disposable copy of
                                       Galaxy from github.
-      --test-data DIRECTORY           test-data directory to for specified
+      --test_data DIRECTORY           test-data directory to for specified
                                       tool(s).
       --dependency_resolvers_config_file PATH
                                       Dependency resolver configuration for Galaxy

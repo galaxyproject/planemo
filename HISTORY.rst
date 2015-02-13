@@ -4,6 +4,23 @@ History
 -------
 
 ---------------------
+0.3.0 (2015-02-13)
+---------------------
+
+ * Add option (``-r``) to the ``shed_upload`` command to recursively upload
+   subdirectories (thanks to Eric Rasche). `Pull Request 68`_
+ * Fix diff formatting in test reports (thanks to Eric Rasche).
+   `Pull Request 63`_
+ * Grab updated test database to speed up testing (thanks to approach from
+   Eric Rasche and Dannon Baker). `Issue 61`_, dff4f33_
+ * Fix test data command-line argument name (was ``test-data`` now it is
+   ``test_data``). 834bfb2_
+ * Use ``tool_data_table_conf.xml.sample`` file if
+   ``tool_data_table_conf.xml.test`` is unavailable. Should allow some
+  new tools to be tested without modifying Galaxy's global
+  ``tool_data_table_conf.xml`` file. ac4f828_
+
+---------------------
 0.2.0 (2015-01-13)
 ---------------------
 
@@ -52,6 +69,9 @@ History
 * Initial work on the project - commands for testing, linting, serving Galaxy
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
+.. _Pull Request 68: https://github.com/galaxyproject/planemo/pull/68
+.. _Issue 61: https://github.com/galaxyproject/planemo/issues/61
+.. _Pull Request 63: https://github.com/galaxyproject/planemo/pull/63
 .. _Pull Request 56: https://github.com/galaxyproject/planemo/pull/56
 .. _Pull Request 51: https://github.com/galaxyproject/planemo/pull/51
 .. _Pull Request 40: https://github.com/galaxyproject/planemo/pull/40
@@ -61,6 +81,9 @@ History
 .. _Pull Request 33: https://github.com/galaxyproject/planemo/pull/33
 .. _Pull Request 6: https://github.com/galaxyproject/planemo/pull/6
 .. _Pull Request 1: https://github.com/galaxyproject/planemo/pull/1
+.. _ac4f828: https://github.com/galaxyproject/planemo/ac4f82898f7006799142503a33c3978428660ce7
+.. _834bfb2: https://github.com/galaxyproject/planemo/commit/834bfb2929d367892a3abe9c0b88d5a0277d7905
+.. _dff4f33: https://github.com/galaxyproject/planemo/commit/dff4f33c750a8dbe651c38e149a26dd42e706a82
 .. _a4110a8: https://github.com/galaxyproject/planemo/commit/a4110a85a770988e5cd3c31ccc9475717897d59c
 .. _21bb463: https://github.com/galaxyproject/planemo/commit/21bb463ad6c321bcb669603049a5e89a69766ad9
 .. _af39061: https://github.com/galaxyproject/planemo/commit/af390612004dab636d8696839bb723d39f97c85d
