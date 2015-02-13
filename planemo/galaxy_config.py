@@ -70,6 +70,7 @@ EMPTY_TOOL_CONF_TEMPLATE = """<toolbox></toolbox>"""
 
 DOWNLOADS_URL = ("https://raw.githubusercontent.com/"
                  "jmchilton/galaxy-downloads/master/")
+DOWNLOADABLE_MIGRATION_VERSIONS = [127, 120, 117]
 LATEST_URL = DOWNLOADS_URL + "latest.sqlite"
 
 FAILED_TO_FIND_GALAXY_EXCEPTION = (
@@ -106,7 +107,9 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
         created_config_directory = True
         config_directory = mkdtemp()
     try:
+        latest_galaxy = False
         if __install_galaxy_if_needed(config_directory, kwds):
+            latest_galaxy = True
             galaxy_root = config_join("galaxy-central-master")
 
         __handle_dependency_resolution(config_directory, kwds)
@@ -118,9 +121,13 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
         preseeded_database = True
 
         try:
-            template_url = DOWNLOADS_URL + urllib.urlopen(LATEST_URL).read()
-            urlretrieve(template_url, database_location)
-        except Exception:
+            _download_database_template(
+                galaxy_root,
+                database_location,
+                latest=latest_galaxy
+            )
+        except Exception as e:
+            print e
             # No network access - just roll forward from null.
             preseeded_database = False
 
@@ -198,6 +205,41 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
     finally:
         if created_config_directory:
             shutil.rmtree(config_directory)
+
+
+def _download_database_template(galaxy_root, database_location, latest=False):
+    if latest:
+        template_url = DOWNLOADS_URL + urllib.urlopen(LATEST_URL).read()
+        urlretrieve(template_url, database_location)
+        return True
+
+    newest_migration = _newest_migration_version(galaxy_root)
+    download_migration = None
+    for migration in DOWNLOADABLE_MIGRATION_VERSIONS:
+        if newest_migration > migration:
+            download_migration = migration
+            break
+
+    if download_migration:
+        download_name = "db_gx_rev_0%d.sqlite" % download_migration
+        download_url = DOWNLOADS_URL + download_name
+        urlretrieve(download_url, database_location)
+        return True
+    else:
+        return False
+
+
+def _newest_migration_version(galaxy_root):
+    versions = os.path.join(galaxy_root, "lib/galaxy/model/migrate/versions")
+    version = max(map(_file_name_to_migration_version, os.listdir(versions)))
+    return version
+
+
+def _file_name_to_migration_version(name):
+    try:
+        return int(name[0:4])
+    except ValueError:
+        return -1
 
 
 def __find_galaxy_root(ctx, **kwds):
