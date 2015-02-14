@@ -23,7 +23,7 @@ test_requirements = [
 
 setup(
     name='planemo',
-    version='0.2.0',
+    version='0.3.0',
     description='Command-line utilities to assist in building tools for the Galaxy project (http://galaxyproject.org/).',
     long_description=readme + '\n\n' + history,
     author='Galaxy Project and Community',
