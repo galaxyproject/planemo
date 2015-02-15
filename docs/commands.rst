@@ -14,6 +14,7 @@ documentation describes these commands.
 .. include:: commands/docker_build.rst
 .. include:: commands/docker_shell.rst
 .. include:: commands/lint.rst
+.. include:: commands/normalize.rst
 .. include:: commands/project_init.rst
 .. include:: commands/serve.rst
 .. include:: commands/share_test.rst
