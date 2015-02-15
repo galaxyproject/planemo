@@ -18,7 +18,6 @@ Contents:
    contributing
    appliance
    history
-   todo
 
 Indices and tables
 ==================
