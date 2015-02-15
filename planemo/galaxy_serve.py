@@ -11,7 +11,7 @@ def serve(ctx, path, **kwds):
     # TODO: Populate test-data directory as FTP directory.
     with galaxy_config.galaxy_config(ctx, path, **kwds) as config:
         # TODO: Allow running dockerized Galaxy here instead.
-        run_script = os.path.join(config.galaxy_root, "run.sh")
+        run_script = os.path.join(config.galaxy_root, "run.sh") + " --reload"
         server_ini = os.path.join(config.config_directory, "galaxy.ini")
         config.env["GALAXY_CONFIG_FILE"] = server_ini
         cmds = [
