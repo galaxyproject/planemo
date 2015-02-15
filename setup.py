@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 
+import re
+import ast
 try:
     from setuptools import setup
 except ImportError:
@@ -21,9 +23,15 @@ test_requirements = [
     # TODO: put package test requirements here
 ]
 
+_version_re = re.compile(r'__version__\s+=\s+(.*)')
+
+with open('planemo/__init__.py', 'rb') as f:
+    version = str(ast.literal_eval(_version_re.search(
+        f.read().decode('utf-8')).group(1)))
+
 setup(
     name='planemo',
-    version='0.3.0',
+    version=version,
     description='Command-line utilities to assist in building tools for the Galaxy project (http://galaxyproject.org/).',
     long_description=readme + '\n\n' + history,
     author='Galaxy Project and Community',
