@@ -42,6 +42,9 @@ setup(
         'planemo_ext.galaxy.tools.deps.resolvers',
         'planemo_ext.galaxy.util',
     ],
+    data_files=[('tool_factory_2', ['tool_factory_2/rgToolFactory2.xml',
+                                    'tool_factory_2/rgToolFactory2.py',
+                                    'tool_factory_2/getlocalrpackages.py'])],
     entry_points='''
         [console_scripts]
         planemo=planemo.cli:planemo
