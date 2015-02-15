@@ -18,6 +18,7 @@ requirements = [
     'six',
     'pyyaml',
     'jinja2',
+    'docutils',
 ]
 
 test_requirements = [
@@ -53,7 +54,9 @@ setup(
     ],
     data_files=[('tool_factory_2', ['tool_factory_2/rgToolFactory2.xml',
                                     'tool_factory_2/rgToolFactory2.py',
-                                    'tool_factory_2/getlocalrpackages.py'])],
+                                    'tool_factory_2/getlocalrpackages.py']),
+                ('planemo_ext/galaxy/util', ['planemo_ext/galaxy/util/docutils_template.txt']),
+               ],
     entry_points='''
         [console_scripts]
         planemo=planemo.cli:planemo

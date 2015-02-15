@@ -10,13 +10,19 @@ try:
     import grp
 except ImportError:
     grp = None
+try:
+    import docutils.core
+    import docutils.writers.html4css1
+except ImportError:
+    pass
 import errno
 import urlparse
 from tempfile import NamedTemporaryFile
-from logging import getLogger
-log = getLogger(__name__)
+import logging
+log = logging.getLogger(__name__)
 
 BUFFER_SIZE = 4096
+DEFAULT_ENCODING = os.environ.get('GALAXY_DEFAULT_ENCODING', 'utf-8')
 
 
 def enum(**enums):
@@ -130,6 +136,8 @@ def xml_text(root, name=None):
 # asbool implementation pulled from PasteDeploy
 truthy = frozenset(['true', 'yes', 'on', 'y', 't', '1'])
 falsy = frozenset(['false', 'no', 'off', 'n', 'f', '0'])
+
+
 def asbool(obj):
     if isinstance(obj, basestring):
         obj = obj.strip().lower()
@@ -193,3 +201,29 @@ def mask_password_from_url( url ):
             split._replace(netloc=split.netloc.replace("%s:%s" % (split.username, split.password), '%s:********' % split.username))
             url = urlparse.urlunsplit(split)
     return url
+
+
+def unicodify( value, encoding=DEFAULT_ENCODING, error='replace', default=None ):
+    """
+    Returns a unicode string or None
+    """
+
+    if isinstance( value, unicode ):
+        return value
+    try:
+        return unicode( str( value ), encoding, error )
+    except:
+        return default
+
+
+def rst_to_html( s ):
+    """Convert a blob of reStructuredText to HTML"""
+    log = logging.getLogger( "docutils" )
+
+    class FakeStream( object ):
+        def write( self, str ):
+            if len( str ) > 0 and not str.isspace():
+                log.warn( str )
+    return unicodify( docutils.core.publish_string( s,
+                      writer=docutils.writers.html4css1.Writer(),
+                      settings_overrides={ "embed_stylesheet": False, "template": os.path.join(os.path.dirname(__file__), "docutils_template.txt"), "warning_stream": FakeStream() } ) )
