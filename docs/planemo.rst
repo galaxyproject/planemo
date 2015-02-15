@@ -44,6 +44,14 @@ planemo.galaxy_run module
     :undoc-members:
     :show-inheritance:
 
+planemo.galaxy_serve module
+---------------------------
+
+.. automodule:: planemo.galaxy_serve
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.galaxy_test module
 --------------------------
 
