@@ -32,12 +32,8 @@ paste.app_factory = galaxy.web.buildapp:app_factory
 """
 
 TOOL_CONF_TEMPLATE = """<toolbox>
-  <section id="data_source" name="Data Source">
-    <tool file="data_source/upload.xml" />
-  </section>
-  <section id="testing" name="Test Tools">
-    ${tool_definition}
-  </section>
+  <tool file="data_source/upload.xml" />
+  ${tool_definition}
 </toolbox>
 """
 
