@@ -92,6 +92,14 @@ planemo.shed module
     :undoc-members:
     :show-inheritance:
 
+planemo.tool_builder module
+---------------------------
+
+.. automodule:: planemo.tool_builder
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

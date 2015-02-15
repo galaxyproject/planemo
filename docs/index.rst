@@ -14,6 +14,7 @@ Contents:
    readme
    installation
    configuration
+   writing
    commands
    contributing
    appliance

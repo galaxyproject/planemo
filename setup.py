@@ -17,6 +17,7 @@ requirements = [
     'Click',
     'six',
     'pyyaml',
+    'jinja2',
 ]
 
 test_requirements = [
