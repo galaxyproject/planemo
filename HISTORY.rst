@@ -7,46 +7,46 @@ History
 0.4.0-dev
 ---------------------
 
- * Implement ``tool_init`` command for bootstrapping creation of new
-   tools (with `tutorial <http://planemo.readthedocs.org/en/latest/writing.html>`_.) 78f8274_
- * Implement ``normalize`` command for reorganizing tool XML and macro
-   debugging. e8c1d45_
- * Implement ``tool_factory`` command to spin up Galaxy pre-configured the
-   `Tool Factory
-   <http://bioinformatics.oxfordjournals.org/content/early/2012/09/27/bioinformatics.bts573.full.pdf>`_. 9e746b4_
- * Added basic linting of ``command`` blocks. b8d90ab_
- * Improved linting of ``help`` blocks, including verifying valid
-   `reStructuredText`. 411a8da_
- * Fix bug related to ``serve`` command not killing Galaxy properly when complete. 53a6766_
- * Have ``serve`` command display tools at the top level instead of in shallow sections. badc25f_
- * Add additional dependencies to ``setup.py`` more functionality works out
-   of the box.
- * Fix terrible error message related to ``bioblend`` being unavailable.
-   `Issue 70`_
- * Various smaller documentation and project structure improvements.
+* Implement ``tool_init`` command for bootstrapping creation of new
+  tools (with `tutorial <http://planemo.readthedocs.org/en/latest/writing.html>`_.) 78f8274_
+* Implement ``normalize`` command for reorganizing tool XML and macro
+  debugging. e8c1d45_
+* Implement ``tool_factory`` command to spin up Galaxy pre-configured the
+  `Tool Factory
+  <http://bioinformatics.oxfordjournals.org/content/early/2012/09/27/bioinformatics.bts573.full.pdf>`_. 9e746b4_
+* Added basic linting of ``command`` blocks. b8d90ab_
+* Improved linting of ``help`` blocks, including verifying valid
+  `reStructuredText`. 411a8da_
+* Fix bug related to ``serve`` command not killing Galaxy properly when complete. 53a6766_
+* Have ``serve`` command display tools at the top level instead of in shallow sections. badc25f_
+* Add additional dependencies to ``setup.py`` more functionality works out
+  of the box. 85b9614_
+* Fix terrible error message related to ``bioblend`` being unavailable.
+  `Issue 70`_
+* Various smaller documentation and project structure improvements.
 
 ---------------------
 0.3.1 (2015-02-15)
 ---------------------
 
- * Fixes to get PyPI workflow working properly.
+* Fixes to get PyPI workflow working properly.
 
 ---------------------
 0.3.0 (2015-02-13)
 ---------------------
 
- * Add option (``-r``) to the ``shed_upload`` command to recursively upload
-   subdirectories (thanks to Eric Rasche). `Pull Request 68`_
- * Fix diff formatting in test reports (thanks to Eric Rasche).
-   `Pull Request 63`_
- * Grab updated test database to speed up testing (thanks to approach from
-   Eric Rasche and Dannon Baker). `Issue 61`_, dff4f33_
- * Fix test data command-line argument name (was ``test-data`` now it is
-   ``test_data``). 834bfb2_
- * Use ``tool_data_table_conf.xml.sample`` file if
-   ``tool_data_table_conf.xml.test`` is unavailable. Should allow some
-   new tools to be tested without modifying Galaxy's global
-   ``tool_data_table_conf.xml`` file. ac4f828_
+* Add option (``-r``) to the ``shed_upload`` command to recursively upload
+  subdirectories (thanks to Eric Rasche). `Pull Request 68`_
+* Fix diff formatting in test reports (thanks to Eric Rasche).
+  `Pull Request 63`_
+* Grab updated test database to speed up testing (thanks to approach from
+  Eric Rasche and Dannon Baker). `Issue 61`_, dff4f33_
+* Fix test data command-line argument name (was ``test-data`` now it is
+  ``test_data``). 834bfb2_
+* Use ``tool_data_table_conf.xml.sample`` file if
+  ``tool_data_table_conf.xml.test`` is unavailable. Should allow some
+  new tools to be tested without modifying Galaxy's global
+  ``tool_data_table_conf.xml`` file. ac4f828_
 
 ---------------------
 0.2.0 (2015-01-13)
@@ -111,6 +111,7 @@ History
 .. _Pull Request 6: https://github.com/galaxyproject/planemo/pull/6
 .. _Pull Request 1: https://github.com/galaxyproject/planemo/pull/1
 
+.. _85b9614: https://github.com/galaxyproject/planemo/85b961465f46351507f80ddc3758349535060502
 .. _53a6766: https://github.com/galaxyproject/planemo/commit/53a6766cdebdddc976189f6dc6a264bb4105c4bf
 .. _badc25f: https://github.com/galaxyproject/planemo/commit/badc25fca495b61457ffb2e027f3fe9cf17c798f
 .. _411a8da: https://github.com/galaxyproject/planemo/commit/411a8da21c92ba37c7ad95bfce9928d9b8fd998e
