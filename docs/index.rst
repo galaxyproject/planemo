@@ -14,10 +14,11 @@ Contents:
    readme
    installation
    configuration
+   appliance
    writing
    commands
    contributing
-   appliance
+   developing
    history
 
 Indices and tables
