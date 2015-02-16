@@ -8,6 +8,9 @@ Planemo
 .. image:: https://readthedocs.org/projects/pip/badge/?version=latest
 		:target: https://planemo.readthedocs.org.
 
+.. image:: https://pypip.in/d/planemo/badge.png
+    :target: https://pypi.python.org/pypi/planemo/
+
 .. .. image:: https://badge.fury.io/py/planemo.png
 ..    :target: http://badge.fury.io/py/planemo
 .. .. image:: https://pypip.in/d/planemo/badge.png
