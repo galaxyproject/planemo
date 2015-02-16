@@ -9,37 +9,37 @@
 #import os
 #set dev_env = os.environ.get('GALAXY_DEVELOPMENT_ENVIRONMENT', '0') == '1'
 #if not $dev_env and ( $__user_email__ not in $__admin_users__ ):
-     rgToolFactory2.py --bad_user $__user_email__ $dev_env
+     rgToolFactory2.py --bad_user $__user_email__
 #else:
     rgToolFactory2.py --script_path "$runme" --interpreter "$interp.interpreter" 
      --tool_name "$tool_name"  --user_email "$__user_email__" --citations "$citeme"
      --envshpath "$interp.envpath"
 
-    #if $make_TAB.value=="yes":
+    #if str($make_TAB)=="yes":
           --output_tab "$output1"
           --output_format "$output_format"
     #end if
-    #if $makeMode.make_Tool=="yes":
+    #if str($makeMode.make_Tool)=="yes":
       --make_Tool "$makeMode.make_Tool"
       --tool_desc "$makeMode.tool_desc"
       --tool_version "$makeMode.tool_version"
       --new_tool "$new_tool"
       --help_text "$helpme"
-      #if $make_HTML.value=="yes":
+      #if str($make_HTML)=="yes":
           #if $makeMode.include_deps.value=="yes":
              --include_dependencies "yes"
           #end if
       #end if
     #end if
-    #if $additional_parameters != 'None':
-      #if $edit_params.value == "yes":
+    #if str($additional_parameters) != 'None':
+      #if str($edit_params) == "yes":
          --edit_additional_parameters
       #end if
       #for i in $additional_parameters:
         --additional_parameters "$i.param_name,$i.param_value,$i.param_label,$i.param_help,$i.param_type"
       #end for
     #end if
-    #if $make_HTML.value=="yes":
+    #if str($make_HTML)=="yes":
       --output_dir "$html_file.files_path" --output_html "$html_file" --make_HTML "yes"
     #else:
        --output_dir "."
@@ -52,13 +52,13 @@
             #end if
         #end for
     #end if
-#end if
+#end if 
   </command>
   <inputs>
     <param name="input_tab"  type="data"  label="Select one or more input file(s) from your history" optional="true" size="120" multiple="true"
        help="Use the multiple input widget (above/right of input box) for multiple inputs - your script MUST be ready to parse the command line right - see samples below"/>
     <param name="input_formats" type="select" multiple="true" label="Select the datatype(s) that your tool/script accepts as input"
-      help="If your datatype is not listed here, it has to be added in galaxy's datatypes_conf.xml">
+      help="If your datatype is not listed here, it has to be added in galaxy's datatypes_conf.xml" value="tabular">
        <options from_parameter="tool.app.datatypes_registry.upload_file_formats">
         <column name="value" index="0"/>
        </options>
@@ -134,13 +134,13 @@
         <option value="">I do not want a new history output file</option>
     </param>
     <param name="output_format" type="select" multiple="false" label="Select the datatype that your tool/script emits as output"
-      help="If your datatype is not listed here, it has to be added in galaxy's datatypes_conf.xml">
+      help="If your datatype is not listed here, it has to be added in galaxy's datatypes_conf.xml" value="tabular">
      <options from_parameter="tool.app.datatypes_registry.upload_file_formats">
         <column name="value" index="0"/>
      </options>
     </param>
     <conditional name="interp">
-    <param name="interpreter" type="select" label="Select the interpreter for your code. This must be available on the path of the execution host">
+    <param name="interpreter" type="select" label="Select the interpreter for your code.">
         <option value="Rscript" selected="true">Rscript</option>
         <option value="python">python</option>
         <option value="perl">perl</option>
@@ -355,21 +355,29 @@ in their environment magically - well, using env on the CL
  # additional parameters need to be parsed !
  # then echo parameters to the output file
  import sys
+ import os
  import argparse
+
  argp=argparse.ArgumentParser()
- argp.add_argument('--INNAMES',default=None)
- argp.add_argument('--INPATHS',default=None)
- argp.add_argument('--OUTPATH',default=None)
+ argp.add_argument('--innames',default=None)
+ argp.add_argument('--inpaths',default=None)
+ argp.add_argument('--outpath',default=None)
  argp.add_argument('--additional_parameters',default=[],action="append")
  argp.add_argument('otherargs', nargs=argparse.REMAINDER)
  args = argp.parse_args()
- f= open(args.OUTPATH,'w')
+ opath = args.outpath
+ odir = os.path.split(opath)[0]
+ try:
+    os.makedirs(odir)
+    print '### made',odir
+ except:
+    pass
+ f= open(opath,'w')
  s = '### args=%s\n' % str(args)
  f.write(s)
  s = 'sys.argv=%s\n' % sys.argv
- f.write(s) 
+ f.write(s)
  f.close()
-
 
 
 ***Rscript***::
@@ -438,7 +446,7 @@ Licensed under the LGPL_
 .. _LGPL: http://www.gnu.org/copyleft/lesser.html
 .. _GTF:  https://bitbucket.org/fubar/galaxytoolfactory
 .. _GTFI:  https://bitbucket.org/fubar/galaxytoolfactory/issues
-.. _Paper: http://bioinformatics.oxfordjournals.org/cgi/reprint/bts573?ijkey=lczQh1sWrMwdYWJ&amp;keytype=ref
+.. _Paper: http://bioinformatics.oxfordjournals.org/cgi/reprint/bts573
 
 
 </help>

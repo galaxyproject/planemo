@@ -75,3 +75,6 @@ release:
 	[ $$CONTINUE = "y" ] || [ $$CONTINUE = "Y" ] || (echo "Exiting."; exit 1;)
 	@echo "Releasing"
 	twine upload dist/*
+
+update-extern:
+	sh scripts/update_extern.sh
