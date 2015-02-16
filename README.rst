@@ -74,7 +74,7 @@ or (like all available commands) be accessed by passing it ``--help``.::
     ...
 
 Once tools are syntically correct - it is time to test. The ``test`` 
-`command <http://planemo.readthedocs.org/en/latest/commands.html#test-command>`_
+`command <http://planemo.readthedocs.org/en/latest/commands.html#test-command>`__
 can be used to test a tool or directory of tools.::
 
 	% planemo test --galaxy_root=../galaxy-central randomlines.xml
@@ -102,7 +102,7 @@ example of such a report for Tophat.
 
 Once tools have been linted and tested - the tools can be viewed in a
 Galaxy interface using the ``serve`` (``s``) `command
-<http://planemo.readthedocs.org/en/latest/commands.html#serve-command>`_.::
+<http://planemo.readthedocs.org/en/latest/commands.html#serve-command>`__.::
 
 	% planemo serve
 
@@ -116,7 +116,7 @@ requests. `Travis CI <http://travis-ci.org/>`_ is a service providing free
 testing and deep integration with GitHub_.
 
 The ``travis_init`` `command
-<http://planemo.readthedocs.org/en/latest/commands.html#travis_init-command>`_
+<http://planemo.readthedocs.org/en/latest/commands.html#travis_init-command>`__
 will bootstrap a project with files to ease  contineous inegration of tools
 using a Planemo driven approach inspired by this great `blog post
 <http://bit.ly/gxtravisci>`_ by `Peter Cock <https://github.com/peterjc>`_.

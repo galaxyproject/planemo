@@ -1,6 +1,9 @@
 # For dev
 sphinx
 
+# Used to check readme.
+warehouse
+
 # Used for code checking.
 pyflakes
 flake8
