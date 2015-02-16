@@ -19,7 +19,11 @@ History
    `reStructuredText`. 411a8da_
  * Fix bug related to ``serve`` command not killing Galaxy properly when complete. 53a6766_
  * Have ``serve`` command display tools at the top level instead of in shallow sections. badc25f_
- * Various smaller documentation improvements.
+ * Add additional dependencies to ``setup.py`` more functionality works out
+   of the box.
+ * Fix terrible error message related to ``bioblend`` being unavailable.
+   `Issue 70`_
+ * Various smaller documentation and project structure improvements.
 
 ---------------------
 0.3.1 (2015-02-15)
@@ -93,6 +97,7 @@ History
 * Initial work on the project - commands for testing, linting, serving Galaxy
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
+.. _Issue 70: https://github.com/galaxyproject/planemo/issues/70
 .. _Pull Request 68: https://github.com/galaxyproject/planemo/pull/68
 .. _Issue 61: https://github.com/galaxyproject/planemo/issues/61
 .. _Pull Request 63: https://github.com/galaxyproject/planemo/pull/63
