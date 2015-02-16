@@ -11,7 +11,8 @@ python:
 install:
   - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then pip install unittest2; fi
   - pip install -r requirements.txt
-  - pip install pyflakes flake8
+  - pip install pyflakes flake8 readme
 
 # command to run tests, e.g. python setup.py test
-script: make lint && make test
+script: make lint && make test && if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then true; else make lint-readme; fi
+
