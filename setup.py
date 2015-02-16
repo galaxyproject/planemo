@@ -19,6 +19,8 @@ requirements = [
     'pyyaml',
     'jinja2',
     'docutils',
+    'PyGithub',
+    'bioblend',
 ]
 
 test_requirements = [
