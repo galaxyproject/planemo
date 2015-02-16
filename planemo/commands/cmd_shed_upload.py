@@ -103,16 +103,9 @@ def __handle_upload(ctx, path, **kwds):
     message = kwds.get("message", None)
     if message:
         update_kwds["commit_message"] = message
-    try:
-        repo_id = shed.find_repository_id(ctx, tsi, path, **kwds)
-    except Exception as e:
-        error("Could not update %s" % path)
-        try:
-            error(e.read())
-        except:
-            # I've seen a case where the error couldn't be read, so now
-            # wrapped in try/except
-            pass
+
+    repo_id = __find_repository(ctx, tsi, path, kwds)
+    if repo_id is None:
         return -1
 
     try:
@@ -127,3 +120,22 @@ def __handle_upload(ctx, path, **kwds):
             error(exception_content)
         return -1
     info("Repository %s updated successfully." % path)
+
+
+def __find_repository(ctx, tsi, path, **kwds):
+    """Extracted into separate function to reduce complexity though it's not a
+    really sensible change since we now have to catch the error code separately
+    whenever we call this function elsewhere.
+    """
+    try:
+        repo_id = shed.find_repository_id(ctx, tsi, path, **kwds)
+        return repo_id
+    except Exception as e:
+        error("Could not update %s" % path)
+        try:
+            error(e.read())
+        except:
+            # I've seen a case where the error couldn't be read, so now
+            # wrapped in try/except
+            pass
+    return None
