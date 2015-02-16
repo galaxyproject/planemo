@@ -4,6 +4,30 @@ History
 -------
 
 ---------------------
+0.4.0-dev
+---------------------
+
+ * Implement ``tool_init`` command for bootstrapping creation of new
+   tools (with `tutorial <http://planemo.readthedocs.org/en/latest/writing.html>`_.) 78f8274_
+ * Implement ``normalize`` command for reorganizing tool XML and macro
+   debugging. e8c1d45_
+ * Implement ``tool_factory`` command to spin up Galaxy pre-configured the
+   `Tool Factory
+   <http://bioinformatics.oxfordjournals.org/content/early/2012/09/27/bioinformatics.bts573.full.pdf>`_. 9e746b4_
+ * Added basic linting of ``command`` blocks. b8d90ab_
+ * Improved linting of ``help`` blocks, including verifying valid
+   `reStructuredText`. 411a8da_
+ * Fix bug related to ``serve`` command not killing Galaxy properly when complete. 53a6766_
+ * Have ``serve`` command display tools at the top level instead of in shallow sections. badc25f_
+ * Various smaller documentation improvements.
+
+---------------------
+0.3.1 (2015-02-15)
+---------------------
+
+ * Fixes to get PyPI workflow working properly.
+
+---------------------
 0.3.0 (2015-02-13)
 ---------------------
 
@@ -81,7 +105,15 @@ History
 .. _Pull Request 33: https://github.com/galaxyproject/planemo/pull/33
 .. _Pull Request 6: https://github.com/galaxyproject/planemo/pull/6
 .. _Pull Request 1: https://github.com/galaxyproject/planemo/pull/1
-.. _ac4f828: https://github.com/galaxyproject/planemo/ac4f82898f7006799142503a33c3978428660ce7
+
+.. _53a6766: https://github.com/galaxyproject/planemo/commit/53a6766cdebdddc976189f6dc6a264bb4105c4bf
+.. _badc25f: https://github.com/galaxyproject/planemo/commit/badc25fca495b61457ffb2e027f3fe9cf17c798f
+.. _411a8da: https://github.com/galaxyproject/planemo/commit/411a8da21c92ba37c7ad95bfce9928d9b8fd998e
+.. _b8d90ab: https://github.com/galaxyproject/planemo/commit/b8d90abab8bf53ae2e7cca4317223c01af9ab68c
+.. _e8c1d45: https://github.com/galaxyproject/planemo/commit/e8c1d45f0c9a11bcf69ec2967836c3b8f432dd97
+.. _78f8274: https://github.com/galaxyproject/planemo/commit/78f82747996e4a28f96c85ad72efe5e54c8c74bd
+.. _9e746b4: https://github.com/galaxyproject/planemo/commit/9e746b455e3b15219878cddcdeda722979639401
+.. _ac4f828: https://github.com/galaxyproject/planemo/commit/ac4f82898f7006799142503a33c3978428660ce7
 .. _834bfb2: https://github.com/galaxyproject/planemo/commit/834bfb2929d367892a3abe9c0b88d5a0277d7905
 .. _dff4f33: https://github.com/galaxyproject/planemo/commit/dff4f33c750a8dbe651c38e149a26dd42e706a82
 .. _a4110a8: https://github.com/galaxyproject/planemo/commit/a4110a85a770988e5cd3c31ccc9475717897d59c

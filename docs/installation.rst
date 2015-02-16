@@ -29,4 +29,4 @@ install with ``pip``.
 ::
 
    % virtualenv .venv; . .venv/bin/activate
-   % pip install git+https://github.com/galaxyproject/planemo.git
+   % pip install planemo

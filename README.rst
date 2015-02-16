@@ -41,7 +41,7 @@ install with ``pip``.
 ::
 
    % virtualenv .venv; . .venv/bin/activate
-   % pip install git+https://github.com/galaxyproject/planemo.git
+   % pip install planemo
 
 Planemo is also available a `virtual appliance
 <https://planemo.readthedocs.org/en/latest/appliance.html>`_ for Docker_ or Vagrant_ (bundled
