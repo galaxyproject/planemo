@@ -32,7 +32,7 @@ clean-test:
 	rm -fr htmlcov/
 
 lint:
-	flake8 --max-complexity 11 planemo tests
+	flake8 --max-complexity 11 planemo tests && python setup.py check -r -s
 
 test:
 	python setup.py test
