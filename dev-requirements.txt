@@ -4,3 +4,6 @@ sphinx
 # Used for code checking.
 pyflakes
 flake8
+
+# For release
+wheel
