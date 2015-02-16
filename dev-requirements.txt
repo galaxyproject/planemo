@@ -2,7 +2,7 @@
 sphinx
 
 # Used to check readme.
-warehouse
+readme
 
 # Used for code checking.
 pyflakes

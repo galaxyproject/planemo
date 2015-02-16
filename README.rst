@@ -163,9 +163,9 @@ following commands.::
     % $(planemo docker_shell --from_tag bowtie2.xml)
 
 For more details see the documentation for the `docker_build
-<http://planemo.readthedocs.org/en/latest/commands.html#docker_build-command>`_
+<http://planemo.readthedocs.org/en/latest/commands.html#docker_build-command>`__
 and `docker_shell
-<http://planemo.readthedocs.org/en/latest/commands.html#docker_shell-command>`_
+<http://planemo.readthedocs.org/en/latest/commands.html#docker_shell-command>`__
 commands.
 
 -----------
@@ -196,9 +196,9 @@ more permanent project home is setup.
     /home/john/.linuxbrew/Cellar/bowtie2/2.1.0/bin/bowtie2
 
 For more information see the documentation for the `brew
-<http://planemo.readthedocs.org/en/latest/commands.html#brew-command>`_
+<http://planemo.readthedocs.org/en/latest/commands.html#brew-command>`__
 and `brew_env
-<http://planemo.readthedocs.org/en/latest/commands.html#brew_env-command>`_ commands.
+<http://planemo.readthedocs.org/en/latest/commands.html#brew_env-command>`__ commands.
 
 .. _Galaxy: (http://galaxyproject.org/)
 .. _GitHub: https://github.com/
