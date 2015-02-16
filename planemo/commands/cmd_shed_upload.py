@@ -8,6 +8,7 @@ from planemo import shed
 from planemo.io import error
 from planemo.io import info
 from planemo.io import shell
+import json
 
 import fnmatch
 import os
@@ -117,7 +118,12 @@ def __handle_upload(ctx, path, **kwds):
     try:
         tsi.repositories.update_repository(repo_id, tar_path, **update_kwds)
     except Exception as e:
-        error("Could not update %s" % path)
-        error(e.read())
+        exception_content = e.read()
+        try:
+            upstream_error = json.loads(exception_content)
+            error(upstream_error['err_msg'])
+        except:
+            error("Could not update %s" % path)
+            error(exception_content)
         return -1
     info("Repository %s updated successfully." % path)
