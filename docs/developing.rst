@@ -25,5 +25,6 @@ This release checklist is based on the `Pocoo Release Management Workflow
  * ``git commit``
  * ``git push origin``
  * ``git push --tags origin``
+ * Update planemo homebrew recipe to new version.
 
 This requires ``~/.pypirc`` file.
