@@ -73,6 +73,12 @@ setup(
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
+        'Environment :: Console',
+        'License :: OSI Approved :: Academic Free License (AFL)',
+        'Operating System :: POSIX',
+        'Topic :: Software Development',
+        'Topic :: Software Development :: Code Generators',
+        'Topic :: Software Development :: Testing'
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
         'Programming Language :: Python :: 2.6',
