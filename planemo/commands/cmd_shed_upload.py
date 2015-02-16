@@ -115,9 +115,10 @@ def __handle_upload(ctx, path, **kwds):
         try:
             upstream_error = json.loads(exception_content)
             error(upstream_error['err_msg'])
-        except:
+        except Exception as e2:
             error("Could not update %s" % path)
             error(exception_content)
+            error(e2.read())
         return -1
     info("Repository %s updated successfully." % path)
 
@@ -134,8 +135,8 @@ def __find_repository(ctx, tsi, path, **kwds):
         error("Could not update %s" % path)
         try:
             error(e.read())
-        except:
+        except Exception as e2:
             # I've seen a case where the error couldn't be read, so now
             # wrapped in try/except
-            pass
+            error(e2.read())
     return None
