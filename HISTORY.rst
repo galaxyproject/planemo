@@ -4,6 +4,12 @@ History
 -------
 
 ---------------------
+0.4.1 (2015-02-16)
+---------------------
+
+* Fix README.rst so it renders properly on PyPI.
+
+---------------------
 0.4.0 (2015-02-16)
 ---------------------
 
@@ -111,7 +117,8 @@ History
 .. _Pull Request 6: https://github.com/galaxyproject/planemo/pull/6
 .. _Pull Request 1: https://github.com/galaxyproject/planemo/pull/1
 
-.. _85b9614: https://github.com/galaxyproject/planemo/85b961465f46351507f80ddc3758349535060502
+.. _3499ca0: https://github.com/galaxyproject/planemo/commit/3499ca0a15affcaf8ac9efc55880da40b0626679
+.. _85b9614: https://github.com/galaxyproject/planemo/commit/85b961465f46351507f80ddc3758349535060502
 .. _53a6766: https://github.com/galaxyproject/planemo/commit/53a6766cdebdddc976189f6dc6a264bb4105c4bf
 .. _badc25f: https://github.com/galaxyproject/planemo/commit/badc25fca495b61457ffb2e027f3fe9cf17c798f
 .. _411a8da: https://github.com/galaxyproject/planemo/commit/411a8da21c92ba37c7ad95bfce9928d9b8fd998e
