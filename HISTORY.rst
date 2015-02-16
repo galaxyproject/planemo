@@ -4,7 +4,7 @@ History
 -------
 
 ---------------------
-0.4.0-dev
+0.4.0 (2015-02-16)
 ---------------------
 
 * Implement ``tool_init`` command for bootstrapping creation of new
