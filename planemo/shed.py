@@ -27,6 +27,9 @@ REPOSITORY_DOWNLOAD_TEMPLATE = (
     "%srepository/download?repository_id=%s"
     "&changeset_revision=default&file_type=gz"
 )
+BIOBLEND_UNAVAILABLE = ("This functionality requires the bioblend library "
+                        " which is unavailable, please install `pip install "
+                        "bioblend`")
 
 
 def shed_repo_config(path):
@@ -39,6 +42,8 @@ def shed_repo_config(path):
 
 
 def tool_shed_client(ctx, **kwds):
+    if toolshed is None:
+        raise Exception(BIOBLEND_UNAVAILABLE)
     read_only = kwds.get("read_only", False)
     shed_target = kwds.get("shed_target")
     global_config = ctx.global_config
