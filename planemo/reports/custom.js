@@ -25,7 +25,7 @@ var renderTestResults = function(testData) {
 		var testResult = new TestResult(test);
 		var rawId = testResult.rawId;
 
-		var panelType = testResult.passed ? "panel-success" : "panel-danger";
+		var panelType = testResult.passed ? "panel-success panel-success-custom" : "panel-danger panel-danger-custom";
 		var $panel = $('<div class="panel">');
 		$panel.addClass(panelType);
 
@@ -34,13 +34,13 @@ var renderTestResults = function(testData) {
 		var $a = $('<a class="collapsed" data-toggle="collapse">');
 		$a.attr("id", rawId);
 		$a.attr("data-target", "#collapse"  + index);
-		var testName = testResult.toolName + " (Test #" + (testResult.testIndex + 1) + ")"
+		var testName = testResult.toolName + " (Test #" + (testResult.testIndex + 1) + (testResult.passed ? "" : ", Failed") + ")";
 		$a.text(testName);
 		var $navLink = $('<a>').attr('href', '#' + rawId).text(testName)
 		if(!testResult.passed) {
-			$navLink.addClass("text-danger");
+			$navLink.addClass("text-danger text-danger-custom");
 		} else {
-			$navLink.addClass("text-success");
+			$navLink.addClass("text-success text-success-custom");
 		}
 		$sidebar.append($('<li>').append( $navLink ) );
 		$panelTitle.append($a)

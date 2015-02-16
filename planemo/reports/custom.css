@@ -104,3 +104,19 @@ body {
   display: inline-block;
   border-radius: 50%;
 }
+
+.text-success-custom{
+    color: rgba(6, 108, 8, 1);
+}
+.text-danger-custom{
+    font-weight: bold;
+    color: rgba(213, 24, 20, 1);
+}
+.panel-danger-custom .panel-title{
+    font-weight: bold;
+    color: rgba(213, 24, 20, 1);
+}t status
+
+.panel-success-custom .panel-title{
+    color: rgba(6, 108, 8, 1);
+}t status
