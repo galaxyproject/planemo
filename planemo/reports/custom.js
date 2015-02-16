@@ -34,7 +34,7 @@ var renderTestResults = function(testData) {
 		var $a = $('<a class="collapsed" data-toggle="collapse">');
 		$a.attr("id", rawId);
 		$a.attr("data-target", "#collapse"  + index);
-		var testName = testResult.toolName + " (Test #" + (testResult.testIndex + 1) + ")"
+		var testName = testResult.toolName + " (Test #" + (testResult.testIndex + 1) + (testResult.passed ? "" : ", Failed") + ")";
 		$a.text(testName);
 		var $navLink = $('<a>').attr('href', '#' + rawId).text(testName)
 		if(!testResult.passed) {
