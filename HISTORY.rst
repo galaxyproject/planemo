@@ -41,8 +41,8 @@ History
    ``test_data``). 834bfb2_
  * Use ``tool_data_table_conf.xml.sample`` file if
    ``tool_data_table_conf.xml.test`` is unavailable. Should allow some
-  new tools to be tested without modifying Galaxy's global
-  ``tool_data_table_conf.xml`` file. ac4f828_
+   new tools to be tested without modifying Galaxy's global
+   ``tool_data_table_conf.xml`` file. ac4f828_
 
 ---------------------
 0.2.0 (2015-01-13)

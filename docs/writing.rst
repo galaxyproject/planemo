@@ -64,9 +64,9 @@ start by doing that.
 
 The ``tool_init`` command can take various complex arguments - but the two
 most basic ones are shown above ``--id`` and ``--name``. Every Galaxy tool
-needs an ``id` (this a short identifier used by Galaxy itself to identify the
+needs an ``id`` (this a short identifier used by Galaxy itself to identify the
 tool) and a ``name`` (this is display to the Galaxy user and should be a short
-description of the tool). In general ``name`` can have whitespace and ``id``
+description of the tool). A tool's ``name`` can have whitespace but its ``id``
 should not.
 
 The above command will generate the file ``seqtk_seq.xml`` - which should look
