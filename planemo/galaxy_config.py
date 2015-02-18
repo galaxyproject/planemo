@@ -17,7 +17,7 @@ from galaxy.tools.deps import commands
 
 NO_TEST_DATA_MESSAGE = (
     "planemo couldn't find a target test-data directory, you should likely "
-    "create a test-data directory of pass an explicit path using --test-data."
+    "create a test-data directory or pass an explicit path using --test-data."
 )
 
 WEB_SERVER_CONFIG_TEMPLATE = """
