@@ -104,7 +104,7 @@ def __handle_upload(ctx, path, **kwds):
     if message:
         update_kwds["commit_message"] = message
 
-    repo_id = __find_repository(ctx, tsi, path, kwds)
+    repo_id = __find_repository(ctx, tsi, path, **kwds)
     if repo_id is None:
         return -1
 
