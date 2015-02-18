@@ -135,8 +135,8 @@ def __find_repository(ctx, tsi, path, **kwds):
         error("Could not update %s" % path)
         try:
             error(e.read())
-        except Exception as e2:
+        except AttributeError:
             # I've seen a case where the error couldn't be read, so now
             # wrapped in try/except
-            error(e2.read())
+            error("Could not find repository in toolshed")
     return None
