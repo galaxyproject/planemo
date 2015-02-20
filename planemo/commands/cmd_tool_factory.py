@@ -25,5 +25,5 @@ def cli(ctx, **kwds):
     """
     # TODO: de-duplicate option handling with cmd_serve.
     mod_dir = os.path.dirname(__file__)
-    tf_dir = os.path.join(mod_dir, '..', '..', 'tool_factory_2')
+    tf_dir = os.path.join(mod_dir, '..', '..', 'planemo_ext', 'tool_factory_2')
     galaxy_serve.serve(ctx, os.path.abspath(tf_dir), **kwds)
