@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified"
+    >
+  
+  <xs:complexType name="Command">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">This tag specifies how Galaxy should invoke the tool's executable, passing its required input parameter values (the command line specification links the parameters supplied in the form with the actual tool executable). Any word inside it starting with a dollar sign ($) will be treated as a variable whose values can be acquired from one of three sources: parameters, metadata, or output files. After the substitution of variables with their values, the content is interpreted with Cheetah and finally given to the interpreter specified in the corresponding attribute (if any).</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="interpreter" type="xs:string">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">This attribute defines the programming language in which the tool's executable file is written. Any language can be used (tools can be written in Python, C, Perl, Java, etc.). The executable file must be in the same directory of the XML file. If instead this attribute is not specified, the tag content should be a Bash command calling executable(s) available in the $PATH. </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+</xs:schema>

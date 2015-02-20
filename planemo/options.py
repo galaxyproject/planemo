@@ -249,3 +249,38 @@ def shed_password_option():
         help="Password for Tool Shed auth (required unless shed_key is "
              "specified)."
     )
+
+
+def lint_xsd_option():
+    return click.option(
+        '--xsd',
+        is_flag=True,
+        default=False,
+        help=("Include experimental tool XSD validation in linting "
+              "process (requires xmllint on PATH or lxml installed).")
+    )
+
+
+def report_level_option():
+    return click.option(
+        '--report_level',
+        type=click.Choice(['all', 'warn', 'error']),
+        default="all",
+    )
+
+
+def fail_level_option():
+    return click.option(
+        '--fail_level',
+        type=click.Choice(['warn', 'error']),
+        default="warn"
+    )
+
+
+def recursive_shed_option():
+    return click.option(
+        '-r',
+        '--recursive',
+        is_flag=True,
+        help="Recursively perform command for nested repository directories.",
+    )

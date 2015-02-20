@@ -1,5 +1,6 @@
 """ Utilities for reasoning about Galaxy test results.
 """
+from __future__ import absolute_import
 import json
 import xml.etree.ElementTree as ET
 

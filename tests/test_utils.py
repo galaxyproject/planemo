@@ -8,6 +8,9 @@ from click.testing import CliRunner
 from planemo import cli
 from sys import version_info
 
+from galaxy.tools.deps.commands import which
+
+
 if version_info < (2, 7):
     from unittest2 import TestCase, skip
 else:
@@ -56,6 +59,24 @@ def skip_unless_environ(var):
         return lambda func: func
     template = "Environment variable %s not found, dependent test skipped."
     return skip(template % var)
+
+
+def skip_unless_module(module):
+    available = True
+    try:
+        __import__(module)
+    except ImportError:
+        available = False
+    if available:
+        return lambda func: func
+    template = "Module %s could not be loaded, dependent test skipped."
+    return skip(template % module)
+
+
+def skip_unless_executable(executable):
+    if which(executable):
+        return lambda func: func
+    return skip("PATH doesn't contain executable %s" % executable)
 
 
 __all__ = [

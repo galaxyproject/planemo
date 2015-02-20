@@ -1,0 +1,3 @@
+<command interpreter="python">
+	moo.py --arg 1
+</command>
