@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.5.0-dev
+0.5.0 (2015-02-22)
 ---------------------
 
 * Implement ``--version`` option. `Issue 78`_
