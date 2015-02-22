@@ -149,6 +149,14 @@ def optional_project_arg(exists=True):
     )
 
 
+def no_cleanup_option():
+    return click.option(
+        "--no_cleanup",
+        is_flag=True,
+        help=("Do not cleanup temp files created for and by Galaxy.")
+    )
+
+
 def docker_cmd_option():
     return click.option(
         '--docker_cmd',

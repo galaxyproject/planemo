@@ -9,6 +9,7 @@ from planemo import galaxy_serve
 @click.command('tool_factory')
 @options.galaxy_root_option()
 @options.install_galaxy_option()
+@options.no_cleanup_option()
 @options.test_data_option()
 @options.dependency_resolvers_option()
 @options.job_config_option()

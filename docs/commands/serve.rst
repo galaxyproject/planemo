@@ -36,6 +36,8 @@ instances.
                                       execute command with.
       --install_galaxy                Download and configure a disposable copy of
                                       Galaxy from github.
+      --no_cleanup                    Do not cleanup temp files created for and by
+                                      Galaxy.
       --test_data DIRECTORY           test-data directory to for specified
                                       tool(s).
       --dependency_resolvers_config_file PATH

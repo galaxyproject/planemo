@@ -9,6 +9,7 @@ from planemo import options
 @options.optional_tools_arg()
 @options.galaxy_root_option()
 @options.install_galaxy_option()
+@options.no_cleanup_option()
 @options.test_data_option()
 @options.dependency_resolvers_option()
 @options.job_config_option()

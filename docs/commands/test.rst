@@ -61,6 +61,8 @@ please careful and do not try this against production Galaxy instances.
                                       execute command with.
       --install_galaxy                Download and configure a disposable copy of
                                       Galaxy from github.
+      --no_cleanup                    Do not cleanup temp files created for and by
+                                      Galaxy.
       --test_data DIRECTORY           test-data directory to for specified
                                       tool(s).
       --tool_data_table PATH          tool_data_table_conf.xml file to for

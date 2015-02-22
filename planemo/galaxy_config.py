@@ -200,7 +200,8 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
 
         yield GalaxyConfig(galaxy_root, config_directory, env, test_data_dir)
     finally:
-        if created_config_directory:
+        cleanup = not kwds.get("no_cleanup", False)
+        if created_config_directory and cleanup:
             shutil.rmtree(config_directory)
 
 

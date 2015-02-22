@@ -84,6 +84,7 @@ OUTPUT_DFEAULTS = {
 )
 @options.galaxy_root_option()
 @options.install_galaxy_option()
+@options.no_cleanup_option()
 @options.test_data_option()
 @options.tool_data_table_option()
 @options.dependency_resolvers_option()
