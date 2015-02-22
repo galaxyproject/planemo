@@ -9,6 +9,12 @@ History
 0.5.0-dev
 ---------------------
 
+* Implement ``--version`` option. `Issue 78`_
+* Implement ``--no_cleanup`` option for ``test`` and ``serve`` commands to
+  persist temp files. 2e41e0a_
+* Fix bug that left temp files undeleted. `Issue 80`_
+* More improvements to release process. fba3874_
+
 ---------------------
 0.4.2 (2015-02-21)
 ---------------------
@@ -118,6 +124,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _2e41e0a: https://github.com/galaxyproject/planemo/commit/2e41e0a
+.. _fba3874: https://github.com/galaxyproject/planemo/commit/fba3874
+.. _Issue 78: https://github.com/galaxyproject/planemo/issues/78
+.. _Issue 80: https://github.com/galaxyproject/planemo/issues/80
 
 
 .. _Issue 83: https://github.com/galaxyproject/planemo/issues/83
