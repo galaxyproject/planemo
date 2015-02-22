@@ -3,6 +3,8 @@
 History
 -------
 
+.. to_doc
+
 ---------------------
 0.5.0-dev
 ---------------------
@@ -114,6 +116,9 @@ History
 
 * Initial work on the project - commands for testing, linting, serving Galaxy
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
+
+.. github_links
+
 
 .. _Issue 83: https://github.com/galaxyproject/planemo/issues/83
 .. _Issue 70: https://github.com/galaxyproject/planemo/issues/70
