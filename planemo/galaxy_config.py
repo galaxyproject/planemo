@@ -140,7 +140,7 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
             log_level=kwds.get("log_level", "DEBUG"),
         )
         properties = dict(
-            file_path="${temp_directory}files",
+            file_path="${temp_directory}/files",
             new_file_path="${temp_directory}/tmp",
             tool_config_file=tool_conf,
             check_migrate_tools="False",
