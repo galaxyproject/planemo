@@ -4,6 +4,14 @@ History
 -------
 
 ---------------------
+0.4.2 (2015-02-21)
+---------------------
+
+* Fix setup.py for installing non-Python data from PyPI (required newer
+  for ``tool_factory`` command and reStructuredText linting). Thanks to
+  Damion Dooley for the bug report. `Issue 83`_
+
+---------------------
 0.4.1 (2015-02-16)
 ---------------------
 
@@ -103,6 +111,7 @@ History
 * Initial work on the project - commands for testing, linting, serving Galaxy
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
+.. _Issue 83: https://github.com/galaxyproject/planemo/issues/83
 .. _Issue 70: https://github.com/galaxyproject/planemo/issues/70
 .. _Pull Request 68: https://github.com/galaxyproject/planemo/pull/68
 .. _Issue 61: https://github.com/galaxyproject/planemo/issues/61
