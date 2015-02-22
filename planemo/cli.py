@@ -11,6 +11,7 @@ sys.path.append(os.path.join(planemo_ext_path))
 
 from .io import error  # noqa, import must happen after Galaxy hack
 from .config import read_global_config  # noqa, ditto
+from planemo import __version__  # noqa, ditto
 
 
 CONTEXT_SETTINGS = dict(auto_envvar_prefix='PLANEMO')
@@ -85,6 +86,7 @@ class PlanemoCLI(click.MultiCommand):
 
 
 @click.command(cls=PlanemoCLI, context_settings=CONTEXT_SETTINGS)
+@click.version_option(__version__)
 @click.option('-v', '--verbose', is_flag=True,
               help='Enables verbose mode.')
 @pass_context
