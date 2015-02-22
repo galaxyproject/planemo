@@ -6,7 +6,8 @@ python:
 #  - "3.4"
   - "2.7"
   - "2.6"
-  - "pypy"
+# pypy option seems very unreliable lately, lots of errors downloading dependencies.
+#  - "pypy"
 
 install:
   - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then pip install unittest2; fi
