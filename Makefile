@@ -59,11 +59,18 @@ docs:
 	$(MAKE) -C docs html
 	open docs/_build/html/index.html
 
-release: clean
-	python setup.py sdist upload
-	python setup.py bdist_wheel upload
-
 dist: clean
-	python setup.py sdist
-	python setup.py bdist_wheel
+	python setup.py sdist bdist_egg bdist_wheel
 	ls -l dist
+
+release-test: dist
+	twine upload -r test dist/*
+	echo "Review https://testpypi.python.org/pypi/planemo"
+
+release:
+	@while [ -z "$$CONTINUE" ]; do \
+		read -r -p "Have you executed release-test and reviewed results? [y/N]: " CONTINUE; \
+	done ; \
+	[ $$CONTINUE = "y" ] || [ $$CONTINUE = "Y" ] || (echo "Exiting."; exit 1;)
+	@echo "Releasing"
+	twine upload dist/*

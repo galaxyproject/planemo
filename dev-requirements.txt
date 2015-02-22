@@ -10,3 +10,4 @@ flake8
 
 # For release
 wheel
+twine
