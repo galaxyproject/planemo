@@ -1,6 +1,6 @@
 
 ``brew_init`` command
-===============================
+======================================
 
 This section is auto-generated from the help text for the planemo command
 ``brew_init``. This help message can be generated with ``planemo brew_init

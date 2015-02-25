@@ -30,3 +30,6 @@ install with ``pip``.
 
    % virtualenv .venv; . .venv/bin/activate
    % pip install planemo
+
+.. _Homebrew: http://brew.sh/
+.. _linuxbrew: https://github.com/Homebrew/linuxbrew

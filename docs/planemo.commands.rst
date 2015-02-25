@@ -12,6 +12,14 @@ planemo.commands.cmd_brew module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd_brew_env module
+------------------------------------
+
+.. automodule:: planemo.commands.cmd_brew_env
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd_brew_init module
 -------------------------------------
 
@@ -20,10 +28,18 @@ planemo.commands.cmd_brew_init module
     :undoc-members:
     :show-inheritance:
 
-planemo.commands.cmd_brew_shell module
---------------------------------------
+planemo.commands.cmd_config_init module
+---------------------------------------
 
-.. automodule:: planemo.commands.cmd_brew_shell
+.. automodule:: planemo.commands.cmd_config_init
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_create_gist module
+---------------------------------------
+
+.. automodule:: planemo.commands.cmd_create_gist
     :members:
     :undoc-members:
     :show-inheritance:
@@ -52,6 +68,22 @@ planemo.commands.cmd_lint module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd_normalize module
+-------------------------------------
+
+.. automodule:: planemo.commands.cmd_normalize
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_project_init module
+----------------------------------------
+
+.. automodule:: planemo.commands.cmd_project_init
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd_serve module
 ---------------------------------
 
@@ -60,10 +92,58 @@ planemo.commands.cmd_serve module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd_share_test module
+--------------------------------------
+
+.. automodule:: planemo.commands.cmd_share_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_shed_diff module
+-------------------------------------
+
+.. automodule:: planemo.commands.cmd_shed_diff
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_shed_download module
+-----------------------------------------
+
+.. automodule:: planemo.commands.cmd_shed_download
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_shed_upload module
+---------------------------------------
+
+.. automodule:: planemo.commands.cmd_shed_upload
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_syntax module
+----------------------------------
+
+.. automodule:: planemo.commands.cmd_syntax
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd_test module
 --------------------------------
 
 .. automodule:: planemo.commands.cmd_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_tool_factory module
+----------------------------------------
+
+.. automodule:: planemo.commands.cmd_tool_factory
     :members:
     :undoc-members:
     :show-inheritance:

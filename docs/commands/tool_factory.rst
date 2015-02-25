@@ -1,6 +1,6 @@
 
 ``tool_factory`` command
-===============================
+======================================
 
 This section is auto-generated from the help text for the planemo command
 ``tool_factory``. This help message can be generated with ``planemo tool_factory

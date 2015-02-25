@@ -1,6 +1,6 @@
 
 ``travis_init`` command
-===============================
+======================================
 
 This section is auto-generated from the help text for the planemo command
 ``travis_init``. This help message can be generated with ``planemo travis_init

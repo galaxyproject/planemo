@@ -1,6 +1,6 @@
 
 ``lint`` command
-===============================
+======================================
 
 This section is auto-generated from the help text for the planemo command
 ``lint``. This help message can be generated with ``planemo lint
