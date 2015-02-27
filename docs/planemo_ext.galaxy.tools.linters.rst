@@ -12,6 +12,14 @@ planemo_ext.galaxy.tools.linters.citations module
     :undoc-members:
     :show-inheritance:
 
+planemo_ext.galaxy.tools.linters.command module
+-----------------------------------------------
+
+.. automodule:: planemo_ext.galaxy.tools.linters.command
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo_ext.galaxy.tools.linters.help module
 --------------------------------------------
 

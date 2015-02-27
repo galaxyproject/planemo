@@ -6,7 +6,6 @@ Subpackages
 
 .. toctree::
 
-    planemo_ext.galaxy.eggs
     planemo_ext.galaxy.jobs
     planemo_ext.galaxy.objectstore
     planemo_ext.galaxy.tools

@@ -51,9 +51,10 @@ coverage:
 
 docs:
 	rm -f docs/planemo.rst
+	rm -f docs/planemo_ext.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ planemo
-	sphinx-apidoc -o docs/ planemo_ext
+	sphinx-apidoc -f -o docs/ planemo_ext planemo_ext/galaxy/eggs
+	sphinx-apidoc -f -o docs/ planemo
 	python scripts/commands_to_rst.py
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
