@@ -165,7 +165,7 @@ test passed.
 
 ::
 
-    % planemo --galaxy_root=/path/to/galaxy t
+    % planemo t --galaxy_root=/path/to/galaxy
     ...
     All 1 test(s) executed passed.
     seqtk_seq[0]: passed
@@ -174,7 +174,7 @@ Now we can open Galaxy
 
 ::
 
-    % planemo --galaxy_root=/path/to/galaxy s
+    % planemo s --galaxy_root=/path/to/galaxy
     ...
     serving on http://127.0.0.1:9090
 
