@@ -150,6 +150,9 @@ def asbool(obj):
     return bool(obj)
 
 
+string_as_bool = asbool
+
+
 def force_symlink(source, link_name):
     try:
         os.symlink(source, link_name)
@@ -198,7 +201,7 @@ def mask_password_from_url( url ):
             # This can manipulate the input other than just masking password,
             # so the previous string replace method is preferred when the
             # password doesn't appear twice in the url
-            split._replace(netloc=split.netloc.replace("%s:%s" % (split.username, split.password), '%s:********' % split.username))
+            split = split._replace(netloc=split.netloc.replace("%s:%s" % (split.username, split.password), '%s:********' % split.username))
             url = urlparse.urlunsplit(split)
     return url
 
