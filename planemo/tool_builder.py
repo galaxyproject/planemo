@@ -106,7 +106,12 @@ def build(**kwds):
         name = "input%d" % (i + 1)
         inputs.append(Input(input_file, name=name))
         test_case.params.append((name, input_file))
-        command = command.replace(input_file, "$%s" % name)
+        if '"%s"' % input_file in command:
+            # Sample command already wrapped filename in double quotes
+            command = command.replace(input_file, '$%s' % name)
+        else:
+            # In case of spaces, best to wrap filename in double quotes
+            command = command.replace(input_file, '"%s"' % name)
 
     outputs = kwds.get("output", [])
     del kwds["output"]
@@ -124,7 +129,12 @@ def build(**kwds):
         output = Output(name=name, from_path=output_file)
         outputs.append(output)
         test_case.outputs.append((name, output_file))
-        command = command.replace(output_file, "$%s" % output.name)
+        if '"%s"' % input_file in command:
+            # Sample command already wrapped filename in double quotes
+            command = command.replace(output_file, '$%s' % output.name)
+        else:
+            # In case of spaces, best to wrap filename in double quotes
+            command = command.replace(output_file, '"$%s"' % output.name)
 
     requirements = kwds["requirement"]
     del kwds["requirement"]
