@@ -69,16 +69,95 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
 def build(**kwds):
     if Template is None:
         raise Exception(NO_JINJA2_MESSAGE)
-
-    command = kwds.get("command")
-    if not command:
-        command = kwds.get("example_command", None)
-        if command:
-            del kwds["example_command"]
-
-    help_text = kwds.get("help_text")
+    # Test case to build up from supplied inputs and outputs, ultimately
+    # ignored unless kwds["test_case"] is truthy.
     test_case = TestCase()
 
+    command = _find_command(kwds)
+
+    _handle_help(kwds)
+
+    # process raw inputs
+    inputs = kwds.get("input", [])
+    del kwds["input"]
+    inputs = map(Input, inputs or [])
+
+    # alternatively process example inputs
+    example_inputs = kwds["example_input"]
+    del kwds["example_input"]
+    for i, input_file in enumerate(example_inputs or []):
+        name = "input%d" % (i + 1)
+        inputs.append(Input(input_file, name=name))
+        test_case.params.append((name, input_file))
+        command = _replace_file_in_command(command, input_file, name)
+
+    # handle raw outputs (from_work_dir ones) as well as named_outputs
+    outputs = kwds.get("output", [])
+    del kwds["output"]
+    outputs = map(Output, outputs or [])
+
+    named_outputs = kwds.get("named_output", [])
+    del kwds["named_output"]
+    for named_output in enumerate(named_outputs or []):
+        outputs.append(Output(name=named_output))
+
+    # handle example outputs
+    example_outputs = kwds["example_output"]
+    del kwds["example_output"]
+    for i, output_file in enumerate(example_outputs or []):
+        name = "output%d" % (i + 1)
+        output = Output(name=name, from_path=output_file)
+        outputs.append(output)
+        test_case.outputs.append((name, output_file))
+        command = _replace_file_in_command(command, output_file, output.name)
+
+    kwds["inputs"] = inputs
+    kwds["outputs"] = outputs
+
+    # handle requirements and containers
+    _handle_requirements(kwds)
+
+    kwds["command"] = command
+
+    # finally wrap up tests
+    tests, test_files = _handle_tests(kwds, test_case)
+    kwds["tests"] = tests
+
+    # Render tool content from template.
+    contents = _render_tool(kwds)
+
+    return ToolDescription(contents, test_files)
+
+
+def _render_tool(kwds):
+    """ Apply supplied template variables to TOOL_TEMPLATE to generate
+    the final tool.
+    """
+    template = Template(TOOL_TEMPLATE)
+    contents = template.render(**kwds)
+    return contents
+
+
+def _replace_file_in_command(command, specified_file, name):
+    """ Replace example file with cheetah variable name in supplied command
+    or command template. Be sure to quote the name.
+    """
+    # TODO: check if the supplied variant was single quoted already.
+    if '"%s"' % specified_file in command:
+        # Sample command already wrapped filename in double quotes
+        command = command.replace(specified_file, '$%s' % name)
+    else:
+        # In case of spaces, best to wrap filename in double quotes
+        command = command.replace(specified_file, '"$%s"' % name)
+    return command
+
+
+def _handle_help(kwds):
+    """ Convert supplied help parameters into a help variable for template.
+    If help_text is supplied, use as is. If help is specified from a command,
+    run the command and use that help text.
+    """
+    help_text = kwds.get("help_text")
     if not help_text:
         help_from_command = kwds.get("help_from_command")
         if help_from_command:
@@ -95,47 +174,25 @@ def build(**kwds):
 
     kwds["help"] = help_text
 
-    # process raw inputs
-    inputs = kwds.get("input", [])
-    del kwds["input"]
-    inputs = map(Input, inputs or [])
 
-    example_inputs = kwds["example_input"]
-    del kwds["example_input"]
-    for i, input_file in enumerate(example_inputs or []):
-        name = "input%d" % (i + 1)
-        inputs.append(Input(input_file, name=name))
-        test_case.params.append((name, input_file))
-        if '"%s"' % input_file in command:
-            # Sample command already wrapped filename in double quotes
-            command = command.replace(input_file, '$%s' % name)
-        else:
-            # In case of spaces, best to wrap filename in double quotes
-            command = command.replace(input_file, '"%s"' % name)
+def _handle_tests(kwds, test_case):
+    """ Given state built up from handling rest of arguments (test_case) and
+    supplied kwds - build tests for template and corresponding test files.
+    """
+    test_files = []
+    if kwds["test_case"]:
+        tests = [test_case]
+        test_files.extend(map(lambda x: x[1], test_case.params))
+        test_files.extend(map(lambda x: x[1], test_case.outputs))
+    else:
+        tests = []
+    return tests, test_files
 
-    outputs = kwds.get("output", [])
-    del kwds["output"]
-    outputs = map(Output, outputs or [])
 
-    named_outputs = kwds.get("named_output", [])
-    del kwds["named_output"]
-    for named_output in enumerate(named_outputs or []):
-        outputs.append(Output(name=named_output))
-
-    example_outputs = kwds["example_output"]
-    del kwds["example_output"]
-    for i, output_file in enumerate(example_outputs or []):
-        name = "output%d" % (i + 1)
-        output = Output(name=name, from_path=output_file)
-        outputs.append(output)
-        test_case.outputs.append((name, output_file))
-        if '"%s"' % input_file in command:
-            # Sample command already wrapped filename in double quotes
-            command = command.replace(output_file, '$%s' % output.name)
-        else:
-            # In case of spaces, best to wrap filename in double quotes
-            command = command.replace(output_file, '"$%s"' % output.name)
-
+def _handle_requirements(kwds):
+    """ Convert requirements and containers specified from the command-line
+    into abstract format for consumption by the template.
+    """
     requirements = kwds["requirement"]
     del kwds["requirement"]
     requirements = map(Requirement, requirements or [])
@@ -144,22 +201,21 @@ def build(**kwds):
     del kwds["container"]
     containers = map(Container, container or [])
 
-    kwds["inputs"] = inputs
-    kwds["outputs"] = outputs
     kwds["requirements"] = requirements
     kwds["containers"] = containers
-    kwds["command"] = command
-    test_files = []
-    if kwds["test_case"]:
-        kwds["tests"] = [test_case]
-        test_files.extend(map(lambda x: x[1], test_case.params))
-        test_files.extend(map(lambda x: x[1], test_case.outputs))
-    else:
-        kwds["tests"] = []
-    template = Template(TOOL_TEMPLATE)
-    contents = template.render(**kwds)
 
-    return ToolDescription(contents, test_files)
+
+def _find_command(kwds):
+    """ Find base command from supplied arguments or just return None if no
+    such command was supplied (template will just replace this with TODO
+    item).
+    """
+    command = kwds.get("command")
+    if not command:
+        command = kwds.get("example_command", None)
+        if command:
+            del kwds["example_command"]
+    return command
 
 
 class ToolDescription(object):
