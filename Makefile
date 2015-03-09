@@ -38,7 +38,7 @@ lint-readme:
 	python setup.py check -r -s
 
 test:
-	python setup.py test
+	nosetests tests planemo
 
 test-all:
 	tox
