@@ -62,6 +62,13 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
         TODO: Fill in help.
 {%- endif %}
     ]]></help>
+{%- if doi %}
+    <citations>
+{%- for single_doi in doi %}
+        <citation type="doi">{{ single_doi }}</citation>
+{%- endfor %}
+    </citations>
+{%- endif %}
 </tool>
 """
 

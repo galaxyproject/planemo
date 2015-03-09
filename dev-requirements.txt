@@ -1,3 +1,7 @@
+# For testing
+nose
+coverage
+
 # For dev
 sphinx
 

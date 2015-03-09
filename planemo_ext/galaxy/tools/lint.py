@@ -17,10 +17,11 @@ def lint_xml(tool_xml, level=LEVEL_ALL, fail_level=LEVEL_WARN):
                 lint_context.lint(module, name, value, tool_xml)
     found_warns = lint_context.found_warns
     found_errors = lint_context.found_errors
-    if level == LEVEL_WARN and (found_warns or found_errors):
-        return False
+    if fail_level == LEVEL_WARN:
+        lint_fail = (found_warns or found_errors)
     else:
-        return found_errors
+        lint_fail = found_errors
+    return not lint_fail
 
 
 class LintContext(object):

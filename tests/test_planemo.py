@@ -8,48 +8,50 @@ test_planemo
 Tests for `planemo` module.
 """
 
-from click.testing import CliRunner
-
-import unittest
-
-from planemo import cli
+from .test_utils import CliTestCase
+from .test_utils import main
 
 
-# More information on testing click applications at following link.
-# http://click.pocoo.org/3/testing/#basic-testing
-class TestPlanemo(unittest.TestCase):
+class TestPlanemo(CliTestCase):
 
     def test_commands_have_help(self):
-        commands = cli.list_cmds()
-        runner = CliRunner()
+        commands = self._cli.list_cmds()
         for command in commands:
-            planemo_cli = cli.planemo
-            result = runner.invoke(planemo_cli, [command, "--help"])
-            if result.exit_code != 0:
-                message = "Planemo command %s has invalid --help." % command
-                raise AssertionError(message)
+            self._check_exit_code([command, "--help"])
 
     def test_responds_to_desired_commands(self):
-        commands = cli.list_cmds()
+        commands = self._cli.list_cmds()
 
         def assert_responds_to(command):
             assert command in commands, "No command %s" % command
 
-        assert_responds_to("docker_shell")
-        assert_responds_to("docker_build")
         assert_responds_to("brew_init")
         assert_responds_to("brew")
         assert_responds_to("brew_env")
         assert_responds_to("config_init")
+        assert_responds_to("create_gist")
+        assert_responds_to("docker_build")
+        assert_responds_to("docker_shell")
         assert_responds_to("lint")
+        assert_responds_to("normalize")
         assert_responds_to("project_init")
-        assert_responds_to("shed_upload")
         assert_responds_to("serve")
+        assert_responds_to("shed_diff")
+        assert_responds_to("shed_download")
+        assert_responds_to("shed_upload")
         assert_responds_to("syntax")
         assert_responds_to("test")
+        assert_responds_to("tool_factory")
+        assert_responds_to("tool_init")
         assert_responds_to("travis_before_install")
         assert_responds_to("travis_init")
 
+    def test_planemo_version_command(self):
+        self._check_exit_code(["--version"])
+
+    def test_planemo_help_command(self):
+        self._check_exit_code(["--help"])
+
 
 if __name__ == '__main__':
-    unittest.main()
+    main()

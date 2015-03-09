@@ -153,6 +153,15 @@ from planemo import tool_builder
     help="Add a Docker image identifier for this tool."
 )
 @click.option(
+    "--doi",
+    type=click.STRING,
+    default=None,
+    multiple=True,
+    prompt=False,
+    help=("Supply a DOI (http://www.doi.org/) easing citation of the tool "
+          "for Galxy users (e.g. 10.1101/014043).")
+)
+@click.option(
     "--test_case",
     is_flag=True,
     default=None,

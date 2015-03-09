@@ -11,8 +11,12 @@ python:
 
 install:
   - if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then pip install unittest2; fi
+  - pip install coveralls --use-mirrors  # Required for coveralls reporting.
   - pip install -r requirements.txt
-  - pip install pyflakes flake8 readme
+  - pip install pyflakes flake8 readme coverage
+
+after_success:
+  - coveralls
 
 # command to run tests, e.g. python setup.py test
 script: make lint && make test && if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then true; else make lint-readme; fi
