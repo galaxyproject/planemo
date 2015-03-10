@@ -65,9 +65,10 @@ startup the appliance. This is as easy as
 Launching the Appliance (Google Compute Engine)
 ===============================================
 
-The Google Compute Engine version is different from the other versions of the
-appliance in that it runs on a remote 'cloud' machine, which requires an
-account (with a configured and active payment method) at cloud.google.com.
+The `GCE`_ version of the appliance is different in that it doesn't run locally
+on your computer, but on a remote 'cloud' machine.  Using this variant of the
+appliance requires a `Google Cloud Platform <https://cloud.google.com>`_
+account with an active payment method.
 
 The first thing you'll want to do is get the gcloud_ administration utility
 installed and configured.  Once you've installed gcloud, you can authenticate
@@ -132,4 +133,5 @@ environments such as Amazon Web Services and Google Compute Engine.
 .. _linuxbrew: https://github.com/Homebrew/linuxbrew
 .. _Vagrant: https://www.vagrantup.com/
 .. _Codebox: https://www.codebox.io/
+.. _GCE: https://cloud.google.com/compute/
 .. _gcloud: https://cloud.google.com/sdk/gcloud/
