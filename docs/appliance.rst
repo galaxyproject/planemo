@@ -21,7 +21,7 @@ The `Docker`_ version of the planemo appliance can be launched using the
 following command (which will pull the appliance down from `Docker Hub
 <https://registry.hub.docker.com/u/planemo/box/>`_).
 
-:: 
+::
 
     docker run -d -p 8010:80 -v `pwd`:/opt/galaxy/tools -t planemo/box
 
@@ -31,7 +31,7 @@ This assumes your tools are in your current working directory (just replace
 The above command will print a container ID which you can later use to kill
 Docker
 
-:: 
+::
 
     docker kill <container_id>
 
@@ -70,19 +70,25 @@ appliance in that it runs on a remote 'cloud' machine, which requires an
 account (with a configured and active payment method) at cloud.google.com.
 
 The first thing you'll want to do is get the gcloud_ administration utility
-installed and configured.  Once you've installed gcloud, you can authenticate with
+installed and configured.  Once you've installed gcloud, you can authenticate
+and (optionally) set your default project, zone, and region (example below, but
+you should choose whatever region and zone are appropriate for your location).
+If you set these defaults, you will not have to supply them to all subsequent
+commands.
 
 ::
 
     gcloud auth login
+    gcloud config set project YOUR-PROJECT-NAME
+    gcloud config set compute/region us-central1    (replace us-central1 with another region if desired)
+    gcloud config set compute/zone us-central1-f    (same for the zone us-central1-f)
 
-Import the image to your account with the following statement, replacing
-YOUR-PROJECT-NAME with the appropriate GCE project name.  This will only need
-to be done one time, unless you delete the image from your account.
+Import the image to your account with the following statement.  This will only
+need to be done one time, unless you delete the image from your account.
 
 ::
 
-    gcutil --project="YOUR-PROJECT-NAME" addimage planemo-machine-image http://storage.googleapis.com/galaxyproject_images/planemo_machine.image.tar.gz
+    gcloud compute images create planemo-machine --source-uri=http://storage.googleapis.com/galaxyproject_images/planemo_machine.image.tar.gz
 
 To launch the image as a fresh instance, use the following command.  This
 command will, upon completion, display an external ip address that you can
@@ -90,7 +96,7 @@ navigate to in your web browser.
 
 ::
 
-    gcloud compute instances create planemo --machine-type n1-standard-2 --image planemo-machine-image --zone us-central1-f --tags http-server
+    gcloud compute instances create planemo --machine-type n1-standard-2 --image planemo-machine --tags http-server
 
 If you'd like to SSH in to the instance at this point, it's easy to do with:
 
