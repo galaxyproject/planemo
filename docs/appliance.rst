@@ -61,6 +61,43 @@ startup the appliance. This is as easy as
 	vagrant up
 
 
+Launching the Appliance (Google Compute Engine)
+===============================================
+
+The Google Compute Engine version is different from the other versions of the
+appliance in that it runs on a remote 'cloud' machine, which requires an
+account (with a configured and active payment method) at cloud.google.com.
+
+The first thing you'll want to do is get the gcloud_ administration utility
+installed and configured.  Once you've installed gcloud, you can authenticate with
+
+::
+
+    gcloud auth login
+
+Import the image to your account with the following statement, replacing
+YOUR-PROJECT-NAME with the appropriate GCE project name.  This will only need
+to be done one time, unless you delete the image from your account.
+
+::
+
+    gcutil --project="YOUR-PROJECT-NAME" addimage planemo-machine-image http://storage.googleapis.com/galaxyproject_images/planemo_machine.image.tar.gz
+
+To launch the image as a fresh instance, use the following command.  This
+command will, upon completion, display an external ip address that you can
+navigate to in your web browser.
+
+::
+
+    gcloud compute instances create planemo --machine-type n1-standard-2 --image planemo-machine-image --zone us-central1-f --tags http-server
+
+If you'd like to SSH in to the instance at this point, it's easy to do with:
+
+::
+
+    gcloud compute ssh planemo
+
+
 Using the Appliance
 ====================
 
@@ -88,3 +125,4 @@ environments such as Amazon Web Services and Google Compute Engine.
 .. _linuxbrew: https://github.com/Homebrew/linuxbrew
 .. _Vagrant: https://www.vagrantup.com/
 .. _Codebox: https://www.codebox.io/
+.. _gcloud: https://cloud.google.com/sdk/gcloud/
