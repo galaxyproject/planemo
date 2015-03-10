@@ -1,3 +1,6 @@
+The Basics
+====================================================
+
 This guide is going to demontrate building up Galaxy tools wrappers for
 commands from Heng Li's Seqtk_ package - a package for processing sequence
 data in FASTA and FASTQ files. For fully worked through Seqtk wrappers -

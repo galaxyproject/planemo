@@ -11,6 +11,8 @@ for obtaining the virtual appliance if you have not done so already.
 .. include:: _writing_test_and_serve_appliance.rst
 .. include:: _writing_parameters.rst
 .. include:: _writing_scripts.rst
+.. include:: _writing_suites.rst
+.. include:: _writing_collections.rst
 .. include:: _writing_conclusion.rst
 
 .. _Galaxy: (http://galaxyproject.org/)

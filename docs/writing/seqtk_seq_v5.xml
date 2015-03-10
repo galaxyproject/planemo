@@ -10,6 +10,13 @@
               $shift_quality
               -q $quality_min
               -X $quality_max
+              #if $mask_regions
+              -M $mask_regions
+              #end if
+              #if $sample
+              -f $sample.faction
+              -s $sample.seed
+              #end if
               -a $input1 > $output1
     ]]></command>
     <inputs>
@@ -21,6 +28,19 @@
                value="0" min="0" max="255" help="(-q)" />
         <param name="quality_max" type="integer" label="Mask bases with quality higher than" 
                value="255" min="0" max="255" help="(-X)" />
+        <param name="mask_regions" type="data" label="Mask regions in BED" 
+               format="bed" help="(-M)" optional="true" />
+        <conditional>
+            <param name="sample" type="boolean" label="Sample fraction of sequences" />
+            <when value="true">
+                <param name="fraction" label="Fraction" type="float" value="1.0"
+                       help="(-f)" />
+                <param name="seed" label="Random seed" type="integer" value="11"
+                       help="(-s)" />
+            </when>
+            <when value="false">
+            </when>
+        </conditional>
     </inputs>
     <outputs>
         <data name="output1" format="fasta" from_work_dir="2.fasta" />
