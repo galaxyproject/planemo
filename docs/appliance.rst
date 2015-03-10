@@ -52,6 +52,7 @@ the appliance can be enabled by first creating a `Vagrantfile` in your tool
 directory - the following demonstrates an example of such file.
 
 .. literalinclude:: Vagrantfile
+   :language: ruby
 
 This file must literally be named ``Vagrantfile``. Next you will need to
 startup the appliance. This is as easy as

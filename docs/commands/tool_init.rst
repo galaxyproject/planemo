@@ -19,6 +19,8 @@ Generate a tool outline from supplied arguments.
 
       --test_case               For use with --example_commmand, generate a tool
                                 test case from the supplied example.
+      --doi TEXT                Supply a DOI (http://www.doi.org/) easing citation
+                                of the tool for Galxy users (e.g. 10.1101/014043).
       --container TEXT          Add a Docker image identifier for this tool.
       --requirement TEXT        Add a tool requirement package (e.g. 'seqtk' or
                                 'seqtk@1.68').

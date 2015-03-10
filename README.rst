@@ -11,11 +11,6 @@ Planemo
 .. image:: https://pypip.in/d/planemo/badge.png
     :target: https://pypi.python.org/pypi/planemo/
 
-.. .. image:: https://badge.fury.io/py/planemo.png
-..    :target: http://badge.fury.io/py/planemo
-.. .. image:: https://pypip.in/d/planemo/badge.png
-..        :target: https://pypi.python.org/pypi/planemo
-
 
 Command-line utilities to assist in building tools for the Galaxy_ project.
 
@@ -93,11 +88,7 @@ testing by passing it ``-install_galaxy`` instead of a Galaxy root.::
 	% planemo t --install_galaxy
 
 **Warning**: The features of Planemo that require a ``--galaxy_root`` will
-only work with the latest ``galaxy-central`` ``default`` branch. Planemo will
-not work when used with older versions of Galaxy - even the latest stable
-``latest_2014.10.06``. Planemo will stablize with the next release of Galaxy
-and serious attempts at backward compatibility going forward will be made at
-that time.
+only work with Galaxy releases from 2015.
 
 Planemo will create a HTML an output report in the current directory named
 ``tool_test_output.html`` (override with ``--test_output``). `Here <http://galaxyproject.github.io/planemo/tool_test_viewer.html?test_data_url=https://gist.githubusercontent.com/jmchilton/9d4351c9545d34209904/raw/9ed285d3cf98e435fc4a743320363275949ad63c/index>`_ is an
