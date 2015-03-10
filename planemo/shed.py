@@ -123,8 +123,8 @@ def build_tarball(tool_path):
     fd, temp_path = mkstemp()
     repo_config = shed_repo_config(tool_path)
     ignore_list = []
-    for shed_ignore in repo_config.get('shed_ignore', []):
-        ignore_list.extend( glob.glob( os.path.join(tool_path, shed_ignore) ) )
+    for shed_ignore in repo_config.get('ignore', []):
+        ignore_list.extend(glob.glob(os.path.join(tool_path, shed_ignore)))
     try:
         with tarfile.open(temp_path, "w:gz") as tar:
             for name in os.listdir(tool_path):
