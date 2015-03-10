@@ -2,6 +2,8 @@ import os
 from tempfile import mkstemp
 import tarfile
 import yaml
+import glob
+
 try:
     from bioblend import toolshed
 except ImportError:
@@ -119,14 +121,19 @@ def build_tarball(tool_path):
     responsible for deleting this file.
     """
     fd, temp_path = mkstemp()
+    repo_config = shed_repo_config(tool_path)
+    ignore_list = []
+    for shed_ignore in repo_config.get('ignore', []):
+        ignore_list.extend(glob.glob(os.path.join(tool_path, shed_ignore)))
     try:
         with tarfile.open(temp_path, "w:gz") as tar:
             for name in os.listdir(tool_path):
-                if os.path.islink(name):
-                    path = os.path.realpath(name)
-                else:
-                    path = os.path.join(tool_path, name)
-                tar.add(path, name, recursive=True, exclude=_tar_excludes)
+                if not os.path.join(tool_path, name) in ignore_list:
+                    if os.path.islink(name):
+                        path = os.path.realpath(name)
+                    else:
+                        path = os.path.join(tool_path, name)
+                    tar.add(path, name, recursive=True, exclude=_tar_excludes)
     finally:
         os.close(fd)
     return temp_path
