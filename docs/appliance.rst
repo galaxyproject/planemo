@@ -11,7 +11,7 @@ development - Galaxy will monitor your tool directory for changes and reload
 the tools as they are modified, the server will directly log you into Galaxy
 as an admin (no need to worry about user management or configuration), and
 Galaxy is configured to use a `PostgreSQL
-<http://www.postgresql.org/>`_ database backend and execute jobs via `SLURM
+<http://www.postgresql.org/>`_ database back end and execute jobs via `SLURM
 <https://computing.llnl.gov/linux/slurm/>`_ for robustness.
 
 Launching the Appliance (Docker)
@@ -45,7 +45,7 @@ on running persistent Galaxy processes in Docker.
 Launching the Appliance (Vagrant)
 ==================================
 
-The latest version`Vagrant`_ version of the planemo appliance can be found
+The latest `Vagrant`_ version of the planemo appliance can be found
 `here <https://images.galaxyproject.org/planemo/latest.box>`_. Once you have
 installed `Vagrant`_ (`download now <http://www.vagrantup.com/downloads>`_),
 the appliance can be enabled by first creating a `Vagrantfile` in your tool
@@ -70,10 +70,10 @@ appear in the left panel.
 
 A Codebox_ IDE is available at http://localhost:8010/ide/ which should open
 right to your tools folder and which lets you open a real terminal. This
-terminal lets you run ``planemo``, build ``Dockerfile`` s, manage Galaxy,
-etc... right from the web browser. For wider monitors -
-http://localhost:8010/planemo/ will display the Codebox_ IDE and Galaxy side
-by side.
+terminal lets you run ``planemo``, build a ``Dockerfile``, manage Galaxy, and
+more -- right from the web browser.  For wider monitors -
+http://localhost:8010/planemo/ will display the Codebox_ IDE and Galaxy side by
+side.
 
 Building the Appliance
 ======================
