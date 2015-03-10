@@ -5,9 +5,10 @@ help:
 	@echo "clean-build - remove build artifacts"
 	@echo "clean-pyc - remove Python file artifacts"
 	@echo "clean-test - remove test and coverage artifacts"
+	@echo "setup-venv - setup a development virutalenv in current directory."
 	@echo "lint - check style with flake8"
+	@echo "lint-readme - check README formatting for PyPI"
 	@echo "test - run tests quickly with the default Python"
-	@echo "test-all - run tests on every Python version with tox"
 	@echo "coverage - check code coverage quickly with the default Python"
 	@echo "docs - generate Sphinx HTML documentation, including API docs"
 	@echo "release - package and upload a release"
@@ -31,42 +32,51 @@ clean-test:
 	rm -f .coverage
 	rm -fr htmlcov/
 
+setup-venv:
+	if [ -f .venv ]; then virtualenv .venv; fi;
+	. .venv/bin/activate && pip install -r requirements.txt && pip install -r dev-requirements.txt
+
 lint:
-	flake8 --max-complexity 11 planemo tests
+	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; flake8 --max-complexity 11 planemo tests
 
 lint-readme:
-	python setup.py check -r -s
+	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; python setup.py check -r -s
 
 test:
-	nosetests tests planemo
-
-test-all:
-	tox
+	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; nosetests tests planemo
 
 coverage:
 	coverage run --source planemo setup.py test
 	coverage report -m
 	coverage html
-	open htmlcov/index.html
+	open htmlcov/index.html || xdg-open htmlcov/index.htm
 
 docs:
 	rm -f docs/planemo.rst
 	rm -f docs/planemo_ext.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -f -o docs/ planemo_ext planemo_ext/galaxy/eggs
-	sphinx-apidoc -f -o docs/ planemo
-	python scripts/commands_to_rst.py
-	$(MAKE) -C docs clean
-	$(MAKE) -C docs html
-	open docs/_build/html/index.html
+	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; sphinx-apidoc -f -o docs/ planemo_ext planemo_ext/galaxy/eggs
+	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; sphinx-apidoc -f -o docs/ planemo
+	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; python scripts/commands_to_rst.py
+	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; $(MAKE) -C docs clean
+	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; $(MAKE) -C docs html
+
+open-docs: docs
+	open docs/_build/html/index.html || xdg-open docs/_build/html/index.html
+
+open-rtd: docs
+	open https://planemo.readthedocs.org || xdg-open https://planemo.readthedocs.org
+
+open-project:
+	open https://github.com/galaxyproject/planemo || xdg-open https://github.com/galaxyproject/planemo
 
 dist: clean
-	python setup.py sdist bdist_egg bdist_wheel
+	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; python setup.py sdist bdist_egg bdist_wheel
 	ls -l dist
 
 release-test: dist
-	twine upload -r test dist/*
-	echo "Review https://testpypi.python.org/pypi/planemo"
+	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; twine upload -r test dist/*
+	open https://testpypi.python.org/pypi/planemo || https://testpypi.python.org/pypi/planemo
 
 release:
 	@while [ -z "$$CONTINUE" ]; do \
@@ -74,7 +84,7 @@ release:
 	done ; \
 	[ $$CONTINUE = "y" ] || [ $$CONTINUE = "Y" ] || (echo "Exiting."; exit 1;)
 	@echo "Releasing"
-	twine upload dist/*
+	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; twine upload dist/*
 
 update-extern:
 	sh scripts/update_extern.sh
