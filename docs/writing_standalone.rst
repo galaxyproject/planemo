@@ -2,10 +2,10 @@
 Building Galaxy Tools Using Planemo
 =====================================
 
-This tutorial is a gentle introduction to writing Galaxy_ tools using the
+This tutorial is a gentle introduction to writing Galaxy_ tools using
 Planemo_. Please read the `installation instructions
 <http://planemo.readthedocs.org/en/latest/installation.html>`__ for Planemo_
-if you have not already it installed it.
+if you have not already installed it.
 
 .. include:: _writing_intro.rst
 .. include:: _writing_test_and_serve.rst
