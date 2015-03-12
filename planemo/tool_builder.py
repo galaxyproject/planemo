@@ -10,6 +10,16 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
 {%- if description %}
     <description>{{ description }}</description>
 {% endif %}
+{%- if macros %}
+    <macros>
+        <import>macros.xml</import>
+    </macros>
+    <expand macro="requirements" />
+    <expand macro="stdio" />
+{%- if version_command %}
+    <expand macro="version_command" />
+{% endif %}
+{%- else %}
     <stdio>
         <exit_code range="1:" />
     </stdio>
@@ -24,6 +34,7 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
 {%- if version_command %}
     <version_command>{{ version_command }}</version_command>
 {%- endif %}
+{% endif %}
     <command><![CDATA[
 {%- if command %}
         {{ command }}
@@ -62,6 +73,9 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
         TODO: Fill in help.
 {%- endif %}
     ]]></help>
+{%- if macros %}
+    <expand macro="citations" />
+{%- else %}
 {%- if doi %}
     <citations>
 {%- for single_doi in doi %}
@@ -69,7 +83,41 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
 {%- endfor %}
     </citations>
 {%- endif %}
+{%- endif %}
 </tool>
+"""
+
+MACROS_TEMPLATE = """<macros>
+    <xml name="requirements">
+        <requirements>
+{%- for requirement in requirements %}
+        {{ requirement }}
+{%- endfor %}
+            <yield/>
+{%- for container in containers %}
+        {{ container }}
+{%- endfor %}
+        </requirements>
+    </xml>
+    <xml name="stdio">
+        <stdio>
+            <exit_code range="1:" />
+        </stdio>
+    </xml>
+    <xml name="citations">
+        <citations>
+{%- for single_doi in doi %}
+            <citation type="doi">{{ single_doi }}</citation>
+{%- endfor %}
+            <yield />
+        </citations>
+    </xml>
+{%- if version_command %}
+    <xml name="version_command">
+        <version_command>{{ version_command }}</version_command>
+    </xml>
+{%- endif %}
+</macros>
 """
 
 
@@ -131,16 +179,20 @@ def build(**kwds):
     kwds["tests"] = tests
 
     # Render tool content from template.
-    contents = _render_tool(kwds)
+    contents = _render(kwds)
 
-    return ToolDescription(contents, test_files)
+    macro_contents = None
+    if kwds["macros"]:
+        macro_contents = _render(kwds, MACROS_TEMPLATE)
+
+    return ToolDescription(contents, macro_contents, test_files)
 
 
-def _render_tool(kwds):
+def _render(kwds, template_str=TOOL_TEMPLATE):
     """ Apply supplied template variables to TOOL_TEMPLATE to generate
     the final tool.
     """
-    template = Template(TOOL_TEMPLATE)
+    template = Template(template_str)
     contents = template.render(**kwds)
     return contents
 
@@ -227,8 +279,9 @@ def _find_command(kwds):
 
 class ToolDescription(object):
 
-    def __init__(self, contents, test_files):
+    def __init__(self, contents, macro_contents, test_files):
         self.contents = contents
+        self.macro_contents = macro_contents
         self.test_files = test_files
 
 

@@ -1,19 +1,5 @@
-
+import os
 from .test_utils import CliTestCase
-
-
-INIT_COMMAND = [
-    "tool_init", "--force",
-    "--id", "seqtk_seq",
-    "--name", "Convert to FASTA (seqtk)",
-    "--requirement", "seqtk@1.0-r68",
-    "--example_command", "seqtk seq -a 2.fastq > 2.fasta",
-    "--example_input", "2.fastq",
-    "--example_output", "2.fasta",
-    "--test_case",
-    "--help_text", "The help text.",
-    "--doi", "10.1101/014043"
-]
 
 
 class BuildAndLintTestCase(CliTestCase):
@@ -22,6 +8,13 @@ class BuildAndLintTestCase(CliTestCase):
         with self._isolate():
             self._check_exit_code(_init_command())
             self._check_lint(exit_code=0)
+
+    def test_build_and_lint_with_macros(self):
+        with self._isolate() as f:
+            self._check_exit_code(_init_command(macros=True))
+            self._check_lint(exit_code=0)
+            macros_file = os.path.join(f, "macros.xml")
+            assert os.path.exists(macros_file)
 
     def test_lint_fails_if_no_help(self):
         with self._isolate():
@@ -43,7 +36,7 @@ class BuildAndLintTestCase(CliTestCase):
         self._check_exit_code(lint_cmd, exit_code=exit_code)
 
 
-def _init_command(test_case=True, help_text=True, doi=True):
+def _init_command(test_case=True, help_text=True, doi=True, macros=False):
     command = [
         "tool_init", "--force",
         "--id", "seqtk_seq",
@@ -59,4 +52,6 @@ def _init_command(test_case=True, help_text=True, doi=True):
         command.extend(["--help_text", "The help text."])
     if doi:
         command.extend(["--doi", "10.1101/014043"])
+    if macros:
+        command.append("--macros")
     return command

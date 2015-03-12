@@ -43,6 +43,7 @@ class CliTestCase(TestCase):
                 result.output,
             )
             raise AssertionError(message)
+        return result
 
 
 __all__ = [

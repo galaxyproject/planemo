@@ -34,6 +34,7 @@ def cli(ctx, path, report_level="all", fail_level="warn"):
     exit = 0
     lint_args = dict(level=report_level, fail_level=fail_level)
     tools = load_tool_elements_from_path(path, load_exception_handler)
+    valid_tools = 0
     for (tool_path, tool_xml) in tools:
         if tool_xml.getroot().tag != "tool":
             if ctx.verbose:
@@ -42,6 +43,10 @@ def cli(ctx, path, report_level="all", fail_level="warn"):
         info("Linting tool %s" % tool_path)
         if not lint_xml(tool_xml, **lint_args):
             exit = 1
+        else:
+            valid_tools += 1
+    if exit == 0 and valid_tools == 0:
+        exit = 2
     sys.exit(exit)
 
 

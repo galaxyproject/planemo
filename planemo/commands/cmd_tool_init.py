@@ -4,6 +4,9 @@ from planemo.cli import pass_context
 from planemo import io
 from planemo import tool_builder
 
+REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
+                          " it has relevant planemo-generated definitions.")
+
 
 # --input_format
 # --output_format
@@ -169,6 +172,13 @@ from planemo import tool_builder
     help=("For use with --example_commmand, generate a tool test case from "
           "the supplied example."),
 )
+@click.option(
+    "--macros",
+    is_flag=True,
+    default=None,
+    prompt=False,
+    help="Generate a macros.xml for reuse across many tools.",
+)
 @click.command("tool_init")
 @pass_context
 def cli(ctx, **kwds):
@@ -186,6 +196,12 @@ def cli(ctx, **kwds):
     tool_description = tool_builder.build(**kwds)
     open(output, "w").write(tool_description.contents)
     io.info("Tool written to %s" % output)
+    macros = kwds["macros"]
+    macros_file = "macros.xml"
+    if macros and not os.path.exists(macros_file):
+        open(macros_file, "w").write(tool_description.macro_contents)
+    else:
+        io.info(REUSING_MACROS_MESSAGE)
     if tool_description.test_files:
         if not os.path.exists("test-data"):
             io.info("No test-data directory, creating one.")
