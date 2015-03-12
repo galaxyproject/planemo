@@ -39,7 +39,10 @@ Tools can also consume collections if they must or should process multiple
 files at once. We will discuss three cases - consuming pairs of datasets,
 consuming lists, and consuming arbitrary collections.
 
-.. warning:: If you find yourself consuming a collection of files and calling the underlying application multiple times within the tool command block, you are likely doing something wrong. Just process and pair or a single dataset and allow the user to map over the collection.
+.. warning:: If you find yourself consuming a collection of files and calling
+    the underlying application multiple times within the tool command block,  you
+    are likely doing something wrong. Just process and pair or a single dataset
+    and allow the user to map over the collection.
 
 Dataset collections are in their infancy - so for tools which process datasets
 the recommended best practice is to allow users to either supply paired
@@ -114,7 +117,7 @@ For instance:
     --input "$input"
     #end for
 
-or using the single form of this expression:
+or using the single-line form of this expression:
 
 ::
 
@@ -129,9 +132,33 @@ the idiom:
 
     --input "${",".join(map(str, $inputs))}"
 
-TODO: test that statement!
 
-TODO: mention identifiers
+Identifiers
+-------------------------------
+
+As mentioned previously sample identifiers are preserved through mapping
+steps, during reduction steps one may likely want to use these - for
+reporting, comparisons, etc.... When using these multiple ``data`` parameters
+the dataset objects expose a field called ``element_identifier``. When these
+parameters are used with individual datasets - this will just default to being
+the dataset's name, but when used with collections this parameter will be the
+element_identifier (i.e. the preserved sample name).
+
+For instance, imagine merging a collection of tabular datasets into a single
+table with a new column indicating the sample name the corresponding rows were
+derived from using a little ficitious program called ``merge_rows``.
+
+::
+
+    #import re
+    #for $input in $inputs 
+    merge_rows --name "${re.sub('[^\w\-_]', '_', $input.element_identifier)}" --file "$input" --to $output;
+    #end for
+
+
+.. note:: Here we are rewriting the element identifiers to assure everything is safe to
+    put on the command-line. In the future collections will not be able to contain
+    keys are potentially harmful and this won't be nessecary.
 
 Some example tools which consume collections include:
 
@@ -144,6 +171,46 @@ Also see the tools-devteam repository `Pull Request #20 <https://github.com/gala
 -------------------------------
 Processing Collections
 -------------------------------
+
+The above three cases (users mapping over single tools, consuming pairs, and
+consuming lists using `multiple` ``data`` parameters) are hopefully the most
+common ways to consume collections as a tool author - but the
+``data_collection`` parameter type allows one to handle more cases than just
+these.
+
+We have already seen that in ``command`` blocks ``data_collection`` parameters
+can be accessed as arrays by element identifier (e.g.
+``$input_collection["left"]``). This applies for lists and higher-order
+structures as well as pairs. The valid element identifiers can be iterated
+over using the ``keys`` method.
+
+::
+
+    #for $key in $input_collection.keys()
+    --input_name $key
+    --input $input_collection[$key]
+    #end for
+
+::
+
+    #for $input in $input_collection
+    --input $input
+    #end for
+
+Importantly, the ``keys`` method and direct iteration are both strongly
+ordered. If you take a list of files, do a bunch of processing on them to
+produce another list, and then consume both collections in a tools - the
+elements will match up if iterated over simultaneously.
+
+Finally, if processing arbitrarily nested collections - one can access the
+``is_collection`` attribute to determine if a given element is another
+collection or just a dataset.
+
+::
+
+    #for $input in $input_collection
+    --nested ${input.is_collection}
+    #end for
 
 Some example tools which consume collections include:
 

@@ -17,6 +17,7 @@ Generate a tool outline from supplied arguments.
 **Options**::
 
 
+      --macros                  Generate a macros.xml for reuse across many tools.
       --test_case               For use with --example_commmand, generate a tool
                                 test case from the supplied example.
       --doi TEXT                Supply a DOI (http://www.doi.org/) easing citation
