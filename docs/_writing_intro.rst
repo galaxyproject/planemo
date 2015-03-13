@@ -1,13 +1,13 @@
 The Basics
 ====================================================
 
-This guide is going to demontrate building up Galaxy tools wrappers for
+This guide is going to demonstrate building up Galaxy tools wrappers for
 commands from Heng Li's Seqtk_ package - a package for processing sequence
 data in FASTA and FASTQ files. For fully worked through Seqtk wrappers -
 checkout Eric Rasche's `wrappers <https://github.com/galaxyproject/tools-
 iuc/tree/master/tools/seqtk>`_ on Github.
 
-To get started lets install Seqtk, download an example FASTQ file, and test
+To get started let's install Seqtk, download an example FASTQ file, and test
 out the a simple Seqtk command - ``seq`` which converts FASTQ files into
 FASTA. Here we are going to use ``brew`` to install seqtk - but however you
 obtain it should be fine.
@@ -54,7 +54,7 @@ obtain it should be fine.
 
 Galaxy tool files are just simple XML files, so at this point one could just
 open a text editor and start implementing the tool. Planemo has a command
-``tool_init`` to quickly generate some of the boilerplate XML, so lets
+``tool_init`` to quickly generate some of the boilerplate XML, so let's
 start by doing that.
 
 ::
@@ -64,7 +64,7 @@ start by doing that.
 The ``tool_init`` command can take various complex arguments - but the two
 most basic ones are shown above ``--id`` and ``--name``. Every Galaxy tool
 needs an ``id`` (this a short identifier used by Galaxy itself to identify the
-tool) and a ``name`` (this is display to the Galaxy user and should be a short
+tool) and a ``name`` (this is displayed to the Galaxy user and should be a short
 description of the tool). A tool's ``name`` can have whitespace but its ``id``
 should not.
 
@@ -79,7 +79,7 @@ still need to open up the editor and fill out the command template, describe
 input parameters, tool outputs, writeup a help section, etc....
 
 The ``tool_init`` command can do a little bit better than this as well. We can
-use the test command we generated above ``seqtk seq -a 2.fastq > 2.fasta`` as
+use the test command we tried above ``seqtk seq -a 2.fastq > 2.fasta`` as
 an example to generate a command block by specifing the inputs and the outputs
 as follows.
 
@@ -99,7 +99,7 @@ definitions for the input and output as well as an actual command template.
 .. literalinclude:: writing/seqtk_seq_v2.xml
    :language: xml
 
-As shown above the command ``seqtk seq`` generates a help message for this the
+As shown above the command ``seqtk seq`` generates a help message for the
 ``seq`` command. ``tool_init`` can take that help message and stick it right
 in the generated tool file using the ``help_from_command`` option. Generally
 command help messages aren't exactly appropriate for Galaxy tool wrappers
@@ -154,8 +154,8 @@ with best practices.
 
 By default ``lint`` will find all the tools in your current working directory,
 but we could have specified a particular tool with ``planemo lint
-seqtk_seq.xml``. The only warning we received here is telling us the tool
-lacks citations. Seqtk_ is unpublished, but if there were a paper to cite we
+seqtk_seq.xml``. The only warning we received here is telling us that the tool
+lacks citation. Seqtk_ is unpublished, but if there was a paper to cite we
 could have done so by passing in the DOI_ (e.g. ``--doi '10.1101/010538'``).
 
 Next we can run our tool's functional test with the ``test`` (or just ``t``)
