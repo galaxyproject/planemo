@@ -6,7 +6,7 @@
     All 1 test(s) executed passed.
     seqtk_seq[0]: passed
 
-Now we can open Galaxy 
+Now we can open Galaxy with the ``serve`` (or just ``s``).
 
 ::
 
