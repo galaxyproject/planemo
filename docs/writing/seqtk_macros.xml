@@ -1,0 +1,18 @@
+<macros>
+    <xml name="requirements">
+        <requirements>
+        <requirement type="package" version="1.0-r68">seqtk</requirement>
+            <yield/>
+        </requirements>
+    </xml>
+    <xml name="stdio">
+        <stdio>
+            <exit_code range="1:" />
+        </stdio>
+    </xml>
+    <xml name="citations">
+        <citations>
+            <yield />
+        </citations>
+    </xml>
+</macros>
