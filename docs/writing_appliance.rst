@@ -13,6 +13,7 @@ for obtaining the virtual appliance if you have not done so already.
 .. include:: _writing_scripts.rst
 .. include:: _writing_suites.rst
 .. include:: _writing_collections.rst
+.. include:: _writing_how_do_i.rst
 .. include:: _writing_conclusion.rst
 
 .. _Galaxy: (http://galaxyproject.org/)
