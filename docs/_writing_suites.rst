@@ -30,11 +30,9 @@ This will produce the two files in your current directory instead of just one
 .. literalinclude:: writing/seqtk_seq_with_macros.xml
    :language: xml
    :emphasize-lines: 2-6,46
-   :caption: seqtk_seq.xml
 
 .. literalinclude:: writing/seqtk_macros.xml
    :language: xml
-   :caption: macros.xml
 
 Further reading:
 
