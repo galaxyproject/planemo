@@ -9,6 +9,13 @@ History
 0.6.0.dev0
 ---------------------
 
+* Many enhancements to the tool building documentation - descriptions of macros, collections, simple and conditional parameters, etc...
+* Fix ``tool_init`` to quote file names (thanks to Peter Cock).  `Pull Request 98`_.
+* Allow ignoring file patterns in ``.shed.yml`` (thanks to Björn Grüning). `Pull Request 99`_
+* Add ``--macros`` flag to ``tool_init`` command to generate a macro file as part of tool generation. ec6e30f_
+* Add linting of tag order for tool XML files. 4823c5e_
+* Add linting of ``stdio`` tags in tool XML files. 8207026_
+* More tests, much higher test coverage. 0bd4ff0_
 
 ---------------------
 0.5.0 (2015-02-22)
@@ -129,6 +136,12 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 98: https://github.com/galaxyproject/planemo/pull/98
+.. _0bd4ff0: https://github.com/galaxyproject/planemo/commit/0bd4ff0
+.. _Pull Request 99: https://github.com/galaxyproject/planemo/pull/99
+.. _ec6e30f: https://github.com/galaxyproject/planemo/commit/ec6e30f
+.. _8207026: https://github.com/galaxyproject/planemo/commit/8207026
+.. _4823c5e: https://github.com/galaxyproject/planemo/commit/4823c5e
 .. _2e41e0a: https://github.com/galaxyproject/planemo/commit/2e41e0a
 .. _fba3874: https://github.com/galaxyproject/planemo/commit/fba3874
 .. _Issue 78: https://github.com/galaxyproject/planemo/issues/78

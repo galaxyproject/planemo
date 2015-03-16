@@ -44,6 +44,14 @@ planemo_ext.galaxy.tools.linters.outputs module
     :undoc-members:
     :show-inheritance:
 
+planemo_ext.galaxy.tools.linters.stdio module
+---------------------------------------------
+
+.. automodule:: planemo_ext.galaxy.tools.linters.stdio
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo_ext.galaxy.tools.linters.tests module
 ---------------------------------------------
 
@@ -56,6 +64,14 @@ planemo_ext.galaxy.tools.linters.top_level module
 -------------------------------------------------
 
 .. automodule:: planemo_ext.galaxy.tools.linters.top_level
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo_ext.galaxy.tools.linters.xml_order module
+-------------------------------------------------
+
+.. automodule:: planemo_ext.galaxy.tools.linters.xml_order
     :members:
     :undoc-members:
     :show-inheritance:
