@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.6.0.dev0
+0.6.0 (2015-03-16)
 ---------------------
 
 * Many enhancements to the tool building documentation - descriptions of macros, collections, simple and conditional parameters, etc...
