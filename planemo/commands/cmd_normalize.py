@@ -9,22 +9,7 @@ from galaxy.tools.loader import (
     load_tool,
     raw_tool_xml_tree,
 )
-
-
-TAG_ORDER = [
-    'description',
-    'macros',
-    'requirements',
-    'code',
-    'stdio',
-    'version_command',
-    'command',
-    'inputs',
-    'outputs',
-    'tests',
-    'help',
-    'citations',
-]
+from galaxy.tools.linters.xml_order import TAG_ORDER
 
 
 @click.command('normalize')

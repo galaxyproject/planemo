@@ -20,9 +20,6 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
     <expand macro="version_command" />
 {% endif %}
 {%- else %}
-    <stdio>
-        <exit_code range="1:" />
-    </stdio>
     <requirements>
 {%- for requirement in requirements %}
         {{ requirement }}
@@ -31,6 +28,9 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
         {{ container }}
 {%- endfor %}
     </requirements>
+    <stdio>
+        <exit_code range="1:" />
+    </stdio>
 {%- if version_command %}
     <version_command>{{ version_command }}</version_command>
 {%- endif %}
