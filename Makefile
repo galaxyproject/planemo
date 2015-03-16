@@ -76,7 +76,7 @@ dist: clean
 
 release-test: dist
 	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; twine upload -r test dist/*
-	open https://testpypi.python.org/pypi/planemo || https://testpypi.python.org/pypi/planemo
+	open https://testpypi.python.org/pypi/planemo || xdg-open https://testpypi.python.org/pypi/planemo
 
 release:
 	@while [ -z "$$CONTINUE" ]; do \
