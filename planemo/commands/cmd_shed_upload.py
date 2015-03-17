@@ -60,6 +60,13 @@ tar_path = click.Path(
     default=None,
 )
 @click.option(
+    '--force_repository_creation',
+    help="If a repository cannot be found for the specified user/repo name "
+         "pair, then automatically create the repository in the toolshed.",
+    is_flag=True,
+    default=False
+)
+@click.option(
     '-r', '--recursive',
     is_flag=True,
     help="Recursively search for repositories to publish to a tool shed",
@@ -104,9 +111,7 @@ def __handle_upload(ctx, path, **kwds):
     if message:
         update_kwds["commit_message"] = message
     repo_id = __find_repository(ctx, tsi, path, **kwds)
-    # TODO: support optional creation instead of defaulting to attempting to
-    # create if we can't find it?
-    if repo_id is None:
+    if repo_id is None and kwds["force_repository_creation"]:
         repo_id = __create_repository(ctx, tsi, path, **kwds)
     # failing to create the repo, give up
     if repo_id is None:
