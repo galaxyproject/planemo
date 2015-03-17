@@ -110,7 +110,19 @@ def create_repository(ctx, tsi, path, **kwds):
     type = repo_config.get("type", "unrestricted")
     remote_repository_url = repo_config.get("remote_repository_url", None)
     homepage_url = repo_config.get("homepage_url", None)
-    category_ids = repo_config.get("category_ids", None)
+    categories = repo_config.get("categories", [])
+    # Translate human readable category names into their associated IDs
+    category_list = tsi.repositories.get_categories()
+
+    print category_list
+    category_ids = []
+    for cat in categories:
+        matching_cats = [x for x in category_list if x['name'] == cat]
+        if not matching_cats:
+            message = "Failed to find category %s" % cat
+            raise Exception(message)
+        category_ids.append(matching_cats[0]['id'])
+    print category_ids
 
     if name is None:
         name = os.path.basename(os.path.abspath(path))
@@ -122,8 +134,8 @@ def create_repository(ctx, tsi, path, **kwds):
 
     repo = tsi.repositories.create_repository(
         name=name,
-        description=description,
-        long_description=long_description,
+        synopsis=description,
+        description=long_description,
         type=type,
         remote_repository_url=remote_repository_url,
         homepage_url=homepage_url,
