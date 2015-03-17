@@ -99,8 +99,8 @@ def create_repository(ctx, tsi, path, **kwds):
     repo_config = shed_repo_config(path)
     name = kwds.get("name", None) or repo_config.get("name", None)
 
-    synopsis = repo_config.get("synopsis", None)
     description = repo_config.get("description", None)
+    long_description = repo_config.get("long_description", None)
     type = repo_config.get("type", "unrestricted")
     remote_repository_url = repo_config.get("remote_repository_url", None)
     homepage_url = repo_config.get("homepage_url", None)
@@ -109,15 +109,15 @@ def create_repository(ctx, tsi, path, **kwds):
     if name is None:
         name = os.path.basename(os.path.abspath(path))
 
-    # Synopsis is required, as is name.
-    if synopsis is None:
-        message = "Synopsis is required for automatic creation of repositories"
+    # description is required, as is name.
+    if description is None:
+        message = "description is required for automatic creation of repositories"
         raise Exception(message)
 
     repo = tsi.repositories.create_repository(
         name=name,
-        synopsis=synopsis,
         description=description,
+        long_description=long_description,
         type=type,
         remote_repository_url=remote_repository_url,
         homepage_url=homepage_url,
