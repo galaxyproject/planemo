@@ -114,7 +114,6 @@ def create_repository(ctx, tsi, path, **kwds):
     # Translate human readable category names into their associated IDs
     category_list = tsi.repositories.get_categories()
 
-    print category_list
     category_ids = []
     for cat in categories:
         matching_cats = [x for x in category_list if x['name'] == cat]
@@ -122,7 +121,6 @@ def create_repository(ctx, tsi, path, **kwds):
             message = "Failed to find category %s" % cat
             raise Exception(message)
         category_ids.append(matching_cats[0]['id'])
-    print category_ids
 
     if name is None:
         name = os.path.basename(os.path.abspath(path))
