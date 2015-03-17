@@ -105,14 +105,22 @@ def __handle_upload(ctx, path, **kwds):
         update_kwds["commit_message"] = message
 
     repo_id = __find_repository(ctx, tsi, path, **kwds)
+    # TODO: support optional creation instead of defaulting to attempting to
+    # create if we can't find it?
+    if repo_id is None:
+        repo_id = __create_repository(ctx, tsi, path, **kwds)
+    # failing to create the repo, give up
     if repo_id is None:
         return -1
+    # TODO: support updating repo information if it changes in the config file
 
     try:
         tsi.repositories.update_repository(repo_id, tar_path, **update_kwds)
     except Exception as e:
         exception_content = e.read()
         try:
+            # Galaxy passes nice JSON messages as their errors, which bioblend
+            # blindly returns. Attempt to parse those.
             upstream_error = json.loads(exception_content)
             error(upstream_error['err_msg'])
         except Exception as e2:
@@ -124,9 +132,7 @@ def __handle_upload(ctx, path, **kwds):
 
 
 def __find_repository(ctx, tsi, path, **kwds):
-    """Extracted into separate function to reduce complexity though it's not a
-    really sensible change since we now have to catch the error code separately
-    whenever we call this function elsewhere.
+    """More advanced error handling for finding a repository by ID
     """
     try:
         repo_id = shed.find_repository_id(ctx, tsi, path, **kwds)
@@ -140,3 +146,15 @@ def __find_repository(ctx, tsi, path, **kwds):
             # wrapped in try/except
             error("Could not find repository in toolshed")
     return None
+
+
+def __create_repository(ctx, tsi, path, **kwds):
+    """Wrapper for creating the endpoint if it doesn't exist
+    """
+    try:
+        repo = shed.create_repository(ctx, tsi, path, **kwds)
+        return repo['id']
+    # Have to catch missing snyopsis/bioblend exceptions
+    except Exception as e:
+        error(e.read())
+        return None

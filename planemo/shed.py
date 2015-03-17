@@ -95,6 +95,37 @@ def find_repository_id(ctx, tsi, path, **kwds):
     return repo_id
 
 
+def create_repository(ctx, tsi, path, **kwds):
+    repo_config = shed_repo_config(path)
+    name = kwds.get("name", None) or repo_config.get("name", None)
+
+    synopsis = repo_config.get("synopsis", None)
+    description = repo_config.get("description", None)
+    type = repo_config.get("type", "unrestricted")
+    remote_repository_url = repo_config.get("remote_repository_url", None)
+    homepage_url = repo_config.get("homepage_url", None)
+    category_ids = repo_config.get("category_ids", None)
+
+    if name is None:
+        name = os.path.basename(os.path.abspath(path))
+
+    # Synopsis is required, as is name.
+    if synopsis is None:
+        message = "Synopsis is required for automatic creation of repositories"
+        raise Exception(message)
+
+    repo = tsi.repositories.create_repository(
+        name=name,
+        synopsis=synopsis,
+        description=description,
+        type=type,
+        remote_repository_url=remote_repository_url,
+        homepage_url=homepage_url,
+        category_ids=category_ids
+    )
+    return repo
+
+
 def download_tarball(ctx, tsi, path, **kwds):
     destination = kwds.get('destination', 'shed_download.tar.gz')
     repo_id = find_repository_id(ctx, tsi, path, **kwds)
