@@ -103,7 +103,6 @@ def __handle_upload(ctx, path, **kwds):
     message = kwds.get("message", None)
     if message:
         update_kwds["commit_message"] = message
-
     repo_id = __find_repository(ctx, tsi, path, **kwds)
     # TODO: support optional creation instead of defaulting to attempting to
     # create if we can't find it?
@@ -156,5 +155,10 @@ def __create_repository(ctx, tsi, path, **kwds):
         return repo['id']
     # Have to catch missing snyopsis/bioblend exceptions
     except Exception as e:
-        error(e.read())
+        # TODO: galaxyproject/bioblend#126
+        try:
+            upstream_error = json.loads(e.read())
+            error(upstream_error['err_msg'])
+        except Exception as e2:
+            error(str(e))
         return None
