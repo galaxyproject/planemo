@@ -166,4 +166,5 @@ def __create_repository(ctx, tsi, path, **kwds):
             error(upstream_error['err_msg'])
         except Exception as e2:
             error(str(e))
+            error(str(e2))
         return None
