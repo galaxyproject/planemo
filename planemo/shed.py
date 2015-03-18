@@ -121,7 +121,7 @@ def create_repository(ctx, tsi, path, **kwds):
 
     # description is required, as is name.
     if description is None:
-        message = "description is required for automatic creation of repositories"
+        message = "description required for automatic creation of repositories"
         raise Exception(message)
 
     repo = tsi.repositories.create_repository(
