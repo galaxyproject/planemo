@@ -42,7 +42,7 @@ class ShedTestCase(CliTestCase):
             )
             open(".shed.yml", "w").write(shed_yml_contents)
             init_cmd = [
-                "shed_repo_create",
+                "shed_create",
                 "--shed_key", shed_api_key,
                 "--shed_target", shed_url
             ]

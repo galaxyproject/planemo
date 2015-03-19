@@ -14,7 +14,7 @@ import json
 
 # TODO: Implement alternative tool per repo upload strategy.
 # TODO: Use git commit hash and origin to generated commit message.
-@click.command("shed_repo_create")
+@click.command("shed_create")
 @options.optional_project_arg(exists=True)
 @options.shed_owner_option()
 @options.shed_name_option()
