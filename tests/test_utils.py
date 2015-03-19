@@ -3,10 +3,14 @@ app and unittest.
 """
 from click.testing import CliRunner
 
-from unittest import (
-    TestCase,
-)
 from planemo import cli
+from sys import version_info
+
+if version_info < (2, 7):
+    from unittest2 import TestCase
+else:
+    from unittest import TestCase
+
 
 EXIT_CODE_MESSAGE = ("Planemo command [%s] resulted in unexpected exit code "
                      "[%s], expected exit code [%s]]. Command output [%s]")
