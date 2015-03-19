@@ -142,6 +142,47 @@ def create_repository(ctx, tsi, path, **kwds):
     return repo
 
 
+def create_repository(ctx, tsi, path, **kwds):
+    repo_config = shed_repo_config(path)
+    name = kwds.get("name", None) or repo_config.get("name", None)
+
+    description = repo_config.get("description", None)
+    long_description = repo_config.get("long_description", None)
+    type = repo_config.get("type", "unrestricted")
+    remote_repository_url = repo_config.get("remote_repository_url", None)
+    homepage_url = repo_config.get("homepage_url", None)
+    categories = repo_config.get("categories", [])
+    # Translate human readable category names into their associated IDs
+    category_list = tsi.repositories.get_categories()
+
+    category_ids = []
+    for cat in categories:
+        matching_cats = [x for x in category_list if x['name'] == cat]
+        if not matching_cats:
+            message = "Failed to find category %s" % cat
+            raise Exception(message)
+        category_ids.append(matching_cats[0]['id'])
+
+    if name is None:
+        name = os.path.basename(os.path.abspath(path))
+
+    # description is required, as is name.
+    if description is None:
+        message = "description required for automatic creation of repositories"
+        raise Exception(message)
+
+    repo = tsi.repositories.create_repository(
+        name=name,
+        synopsis=description,
+        description=long_description,
+        type=type,
+        remote_repository_url=remote_repository_url,
+        homepage_url=homepage_url,
+        category_ids=category_ids
+    )
+    return repo
+
+
 def download_tarball(ctx, tsi, path, **kwds):
     destination = kwds.get('destination', 'shed_download.tar.gz')
     repo_id = find_repository_id(ctx, tsi, path, **kwds)
