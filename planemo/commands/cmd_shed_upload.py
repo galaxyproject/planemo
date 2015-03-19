@@ -164,7 +164,6 @@ def __create_repository(ctx, tsi, path, **kwds):
         try:
             upstream_error = json.loads(e.read())
             error(upstream_error['err_msg'])
-        except Exception as e2:
+        except Exception:
             error(str(e))
-            error(str(e2))
         return None
