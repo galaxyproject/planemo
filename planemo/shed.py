@@ -176,7 +176,7 @@ def build_tarball(tool_path):
                 for name in files:
                     full_path = os.path.join(root, name)
                     relative_path = os.path.relpath(full_path, tool_path)
-                    if not relative_path in ignore_list:
+                    if relative_path not in ignore_list:
                         if os.path.islink(full_path):
                             path = os.path.realpath(full_path)
                         else:
