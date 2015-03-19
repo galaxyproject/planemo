@@ -7,8 +7,8 @@ from planemo import options
 from planemo import shed
 from planemo.io import error
 from planemo.io import info
-from planemo.io import shell
 import json
+
 
 # TODO: Implement alternative tool per repo upload strategy.
 # TODO: Use git commit hash and origin to generated commit message.
@@ -72,6 +72,6 @@ def __create_repository(ctx, tsi, path, **kwds):
         try:
             upstream_error = json.loads(e.read())
             error(upstream_error['err_msg'])
-        except Exception as e2:
+        except Exception:
             error(str(e))
         return None
