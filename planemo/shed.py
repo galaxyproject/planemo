@@ -91,10 +91,14 @@ def find_repository_id(ctx, tsi, path, **kwds):
 
     matching_repos = filter(matches, repos)
     if not matching_repos:
-        message = "Failed to find repository for owner/name %s/%s"
-        raise Exception(message % (owner, name))
-    repo_id = matching_repos[0]["id"]
-    return repo_id
+        if not kwds.get("allow_none", False):
+            message = "Failed to find repository for owner/name %s/%s"
+            raise Exception(message % (owner, name))
+        else:
+            return None
+    else:
+        repo_id = matching_repos[0]["id"]
+        return repo_id
 
 
 def download_tarball(ctx, tsi, path, **kwds):

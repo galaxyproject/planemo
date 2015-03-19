@@ -1,5 +1,7 @@
 """
 """
+import sys
+
 import click
 
 from planemo.cli import pass_context
@@ -39,14 +41,20 @@ def cli(ctx, path, **kwds):
     tsi = shed.tool_shed_client(ctx, **kwds)
     repo_id = __find_repository(ctx, tsi, path, **kwds)
     if repo_id is None:
-        __create_repository(ctx, tsi, path, **kwds)
-        info("Repository created")
+        if __create_repository(ctx, tsi, path, **kwds):
+            info("Repository created")
+        else:
+            sys.exit(2)
+    else:
+        sys.exit(1)
 
 
 def __find_repository(ctx, tsi, path, **kwds):
     """More advanced error handling for finding a repository by ID
     """
     try:
+        kwds = kwds.copy()
+        kwds["allow_none"] = True
         repo_id = shed.find_repository_id(ctx, tsi, path, **kwds)
         return repo_id
     except Exception as e:
