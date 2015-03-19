@@ -173,7 +173,6 @@ def build_tarball(tool_path):
     try:
         with tarfile.open(temp_path, "w:gz") as tar:
             for root, _, files in os.walk(tool_path, followlinks=True):
-                # print os.path.relpath(root, tool_path)
                 for name in files:
                     full_path = os.path.join(root, name)
                     relative_path = os.path.relpath(full_path, tool_path)
