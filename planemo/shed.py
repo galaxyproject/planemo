@@ -181,7 +181,10 @@ def build_tarball(tool_path):
                             path = os.path.realpath(full_path)
                         else:
                             path = full_path
-                        tar.add(path, relative_path, recursive=True, exclude=_tar_excludes)
+                        tar.add(path,
+                                relative_path,
+                                recursive=True,
+                                exclude=_tar_excludes)
     finally:
         os.close(fd)
     return temp_path
