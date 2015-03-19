@@ -2,7 +2,6 @@ wheel==0.23.0
 Click
 six
 pyyaml
-bioblend
+bioblend>=0.5.3
 docutils
 jinja2
-
