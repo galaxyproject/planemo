@@ -1,15 +1,17 @@
 """ Provide abstractions over click testing of the
 app and unittest.
 """
+import os
+
 from click.testing import CliRunner
 
 from planemo import cli
 from sys import version_info
 
 if version_info < (2, 7):
-    from unittest2 import TestCase
+    from unittest2 import TestCase, skip
 else:
-    from unittest import TestCase
+    from unittest import TestCase, skip
 
 
 EXIT_CODE_MESSAGE = ("Planemo command [%s] resulted in unexpected exit code "
@@ -47,6 +49,13 @@ class CliTestCase(TestCase):
             )
             raise AssertionError(message)
         return result
+
+
+def skip_unless_environ(var):
+    if var in os.environ:
+        return lambda func: func
+    template = "Environment variable %s not found, dependent test skipped."
+    return skip(template % var)
 
 
 __all__ = [

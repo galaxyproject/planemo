@@ -143,6 +143,21 @@ def build_tarball(tool_path):
     return temp_path
 
 
+def username(tsi):
+    user = _user(tsi)
+    return user["username"]
+
+
+def _user(tsi):
+    """ Fetch user information from the ToolShed API for given
+    key.
+    """
+    # TODO: this should be done with an actual bioblend method,
+    # see https://github.com/galaxyproject/bioblend/issues/130.
+    response = tsi.make_get_request(tsi.url + "/users")
+    return response.json()[0]
+
+
 def _tool_shed_url(kwds):
     url = kwds.get("shed_target")
     if url in SHED_SHORT_NAMES:
