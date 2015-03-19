@@ -5,7 +5,6 @@ from click.testing import CliRunner
 
 from unittest import (
     TestCase,
-    main,
 )
 from planemo import cli
 
@@ -49,5 +48,4 @@ class CliTestCase(TestCase):
 __all__ = [
     "TestCase",
     "CliTestCase",
-    "main",
 ]

@@ -9,7 +9,6 @@ Tests for `planemo` module.
 """
 
 from .test_utils import CliTestCase
-from .test_utils import main
 
 
 class TestPlanemo(CliTestCase):
@@ -51,7 +50,3 @@ class TestPlanemo(CliTestCase):
 
     def test_planemo_help_command(self):
         self._check_exit_code(["--help"])
-
-
-if __name__ == '__main__':
-    main()
