@@ -18,6 +18,7 @@ documentation describes these commands.
 .. include:: commands/project_init.rst
 .. include:: commands/serve.rst
 .. include:: commands/share_test.rst
+.. include:: commands/shed_create.rst
 .. include:: commands/shed_diff.rst
 .. include:: commands/shed_upload.rst
 .. include:: commands/syntax.rst
