@@ -31,6 +31,7 @@ Futher reading:
 
 - `bibtex.xml <https://github.com/jmchilton/galaxy/blob/dev/test/functional/tools/bibtex.xml>`__ (test tool with a bunch of random examples)
 - `bwa-mem.xml <https://github.com/jmchilton/bwa-mem/commit/0425264039950bfd9ded06997a08cc8b4ee1ad8f>`__ (BWA-MEM tool by Anton Nekrutenko demonstrating citation of an arXiv article)
+- `macros.xml <https://github.com/galaxyproject/tools-devteam/blob/master/tool_collections/vcflib/macros.xml#L15>`__ (Macros for vcflib tool demonstrating citing a github repository)
 
 --------------------------------------------------
 \.\.\. declare a Docker container for my tool?
