@@ -19,21 +19,9 @@ import json
 @options.shed_owner_option()
 @options.shed_name_option()
 @options.shed_target_option()
-@click.option(
-    '--shed_key',
-    help="API key for Tool Shed access (required unless e-mail/pass "
-         "specified)."
-)
-@click.option(
-    '--shed_email',
-    help="E-mail for Tool Shed auth (required unless shed_key is "
-         "specified)."
-)
-@click.option(
-    '--shed_password',
-    help="Password for Tool Shed auth (required unless shed_key is "
-         "specified)."
-)
+@options.shed_key_option()
+@options.shed_email_option()
+@options.shed_password_option()
 @pass_context
 def cli(ctx, path, **kwds):
     """Create a repository in the toolshed from a .shed.yml file

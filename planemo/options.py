@@ -214,3 +214,27 @@ def shed_target_option():
              "url).",
         default="toolshed",
     )
+
+
+def shed_key_option():
+    return click.option(
+        '--shed_key',
+        help="API key for Tool Shed access (required unless e-mail/pass "
+             "specified)."
+    )
+
+
+def shed_email_option():
+    return click.option(
+        '--shed_email',
+        help="E-mail for Tool Shed auth (required unless shed_key is "
+             "specified)."
+    )
+
+
+def shed_password_option():
+    return click.option(
+        '--shed_password',
+        help="Password for Tool Shed auth (required unless shed_key is "
+             "specified)."
+    )
