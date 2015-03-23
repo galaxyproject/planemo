@@ -172,13 +172,19 @@ def build_tarball(tool_path):
         ignore_list.extend(glob.glob(os.path.join(tool_path, shed_ignore)))
     try:
         with tarfile.open(temp_path, "w:gz") as tar:
-            for name in os.listdir(tool_path):
-                if not os.path.join(tool_path, name) in ignore_list:
-                    if os.path.islink(name):
-                        path = os.path.realpath(name)
-                    else:
-                        path = os.path.join(tool_path, name)
-                    tar.add(path, name, recursive=True, exclude=_tar_excludes)
+            for root, _, files in os.walk(tool_path, followlinks=True):
+                for name in files:
+                    full_path = os.path.join(root, name)
+                    relative_path = os.path.relpath(full_path, tool_path)
+                    if relative_path not in ignore_list:
+                        if os.path.islink(full_path):
+                            path = os.path.realpath(full_path)
+                        else:
+                            path = full_path
+                        tar.add(path,
+                                relative_path,
+                                recursive=True,
+                                exclude=_tar_excludes)
     finally:
         os.close(fd)
     return temp_path
