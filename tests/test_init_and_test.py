@@ -7,5 +7,10 @@ class InitAndTestTestCase(CliTestCase):
         with self._isolate():
             init_cmd = ["project_init", "--template", "demo", "basic"]
             self._check_exit_code(init_cmd)
-            test_cmd = ["test", "--install_galaxy", "basic/cat.xml"]
+            test_cmd = [
+                "test",
+                "--no_cache_galaxy",
+                "--install_galaxy",
+                "basic/cat.xml"
+            ]
             self._check_exit_code(test_cmd)

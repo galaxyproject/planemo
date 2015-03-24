@@ -103,7 +103,7 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
         config_directory = mkdtemp()
     try:
         latest_galaxy = False
-        if _install_galaxy_if_needed(config_directory, kwds):
+        if _install_galaxy_if_needed(ctx, config_directory, kwds):
             latest_galaxy = True
             galaxy_root = config_join("galaxy-dev")
 
@@ -309,24 +309,50 @@ def _tool_conf_entry_for(tool_path):
     return tool_definition
 
 
-def _install_galaxy_if_needed(config_directory, kwds):
+def _install_galaxy_if_needed(ctx, config_directory, kwds):
     installed = False
     if kwds.get("install_galaxy", None):
-        _install_galaxy_via_download(config_directory, kwds)
+        if not kwds.get("no_cache_galaxy", False):
+            _install_galaxy_via_git(ctx, config_directory, kwds)
+        else:
+            _install_galaxy_via_download(config_directory, kwds)
         installed = True
     return installed
 
 
 def _install_galaxy_via_download(config_directory, kwds):
+    command = galaxy_run.DOWNLOAD_GALAXY + "; tar -zxvf dev | tail"
+    _install_with_command(config_directory, command)
+
+
+def _install_galaxy_via_git(ctx, config_directory, kwds):
+    _ensure_galaxy_repository_available(ctx)
+    workspace = ctx.workspace
+    gx_repo = os.path.join(workspace, "gx_repo")
+    command = "git clone %s galaxy-dev" % (gx_repo)
+    _install_with_command(config_directory, command)
+
+
+def _install_with_command(config_directory, command):
     install_cmds = [
         "cd %s" % config_directory,
-        galaxy_run.DOWNLOAD_GALAXY,
-        "tar -zxvf master | tail",
+        command,
         "cd galaxy-dev",
         "type virtualenv >/dev/null 2>&1 && virtualenv .venv",
         galaxy_run.ACTIVATE_COMMAND,
     ]
     shell(";".join(install_cmds))
+
+
+def _ensure_galaxy_repository_available(ctx):
+    workspace = ctx.workspace
+    gx_repo = os.path.join(workspace, "gx_repo")
+    if os.path.exists(gx_repo):
+        # Attempt fetch - but don't fail if not interweb, etc...
+        shell("git --git-dir %s fetch >/dev/null 2>&1" % gx_repo)
+    else:
+        remote_repo = "https://github.com/galaxyproject/galaxy"
+        shell("git clone --bare %s %s" % (remote_repo, gx_repo))
 
 
 def _build_env_for_galaxy(properties, template_args):

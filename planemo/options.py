@@ -92,6 +92,17 @@ def install_galaxy_option():
     )
 
 
+def no_cache_galaxy_option():
+    return click.option(
+        "--no_cache_galaxy",
+        is_flag=True,
+        help=("Skip caching of downloaded Galaxy obtained with "
+              "--install_galaxy. Not caching this results in faster "
+              "downloads (no git) - so is better on throw away instances such "
+              "with TravisCI. ")
+    )
+
+
 def brew_option():
     return click.option(
         '--brew',

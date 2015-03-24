@@ -25,14 +25,17 @@ COMMAND_ALIASES = {
 class Context(object):
 
     def __init__(self):
-        self.verbose = False
         self.home = os.getcwd()
         self._global_config = None
+        # Will be set by planemo CLI driver
+        self.verbose = False
+        self.planemo_config = None
+        self.planemo_directory = None
 
     @property
     def global_config(self):
         if self._global_config is None:
-            self._global_config = read_global_config()
+            self._global_config = read_global_config(self.planemo_config)
         return self._global_config
 
     def log(self, msg, *args):
@@ -45,6 +48,19 @@ class Context(object):
         """Logs a message to stderr only if verbose is enabled."""
         if self.verbose:
             self.log(msg, *args)
+
+    @property
+    def workspace(self):
+        if not self.planemo_directory:
+            raise Exception("No planemo workspace defined.")
+        workspace = self.planemo_directory
+        if not os.path.exists(workspace):
+            os.makedirs(workspace)
+        if not os.path.isdir(workspace):
+            template = "Planemo workspace directory [%s] unavailable."
+            message = template % workspace
+            raise Exception(message)
+        return workspace
 
 
 pass_context = click.make_pass_decorator(Context, ensure=True)
@@ -89,7 +105,15 @@ class PlanemoCLI(click.MultiCommand):
 @click.version_option(__version__)
 @click.option('-v', '--verbose', is_flag=True,
               help='Enables verbose mode.')
+@click.option('--config',
+              default="~/.planemo.yml",
+              help="Planemo configuration YAML file.")
+@click.option('--directory',
+              default="~/.planemo",
+              help="Workspace for planemo.")
 @pass_context
-def planemo(ctx, verbose):
+def planemo(ctx, config, directory, verbose):
     """Utilities to assist with the development of Galaxy tools."""
     ctx.verbose = verbose
+    ctx.planemo_config = os.path.expanduser(config)
+    ctx.planemo_directory = os.path.expanduser(directory)
