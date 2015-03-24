@@ -8,7 +8,7 @@ ACTIVATE_COMMAND = "[ -e .venv ] && . .venv/bin/activate"
 
 # TODO: Mac-y curl variant of this.
 DOWNLOAD_GALAXY = (
-    "wget https://codeload.github.com/jmchilton/galaxy-central/tar.gz/master"
+    "wget https://codeload.github.com/galaxyproject/galaxy/tar.gz/dev"
 )
 
 

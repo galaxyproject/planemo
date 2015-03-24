@@ -105,7 +105,7 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
         latest_galaxy = False
         if _install_galaxy_if_needed(config_directory, kwds):
             latest_galaxy = True
-            galaxy_root = config_join("galaxy-central-master")
+            galaxy_root = config_join("galaxy-dev")
 
         _handle_dependency_resolution(config_directory, kwds)
         _handle_job_metrics(config_directory, kwds)
@@ -322,7 +322,7 @@ def _install_galaxy_via_download(config_directory, kwds):
         "cd %s" % config_directory,
         galaxy_run.DOWNLOAD_GALAXY,
         "tar -zxvf master | tail",
-        "cd galaxy-central-master",
+        "cd galaxy-dev",
         "type virtualenv >/dev/null 2>&1 && virtualenv .venv",
         galaxy_run.ACTIVATE_COMMAND,
     ]
