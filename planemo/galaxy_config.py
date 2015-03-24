@@ -12,8 +12,7 @@ import click
 
 from planemo import galaxy_run
 from planemo.io import warn
-
-from galaxy.tools.deps import commands
+from planemo.io import shell
 
 NO_TEST_DATA_MESSAGE = (
     "planemo couldn't find a target test-data directory, you should likely "
@@ -313,17 +312,21 @@ def _tool_conf_entry_for(tool_path):
 def _install_galaxy_if_needed(config_directory, kwds):
     installed = False
     if kwds.get("install_galaxy", None):
-        install_cmds = [
-            "cd %s" % config_directory,
-            galaxy_run.DOWNLOAD_GALAXY,
-            "tar -zxvf master | tail",
-            "cd galaxy-central-master",
-            "type virtualenv >/dev/null 2>&1 && virtualenv .venv",
-            galaxy_run.ACTIVATE_COMMAND,
-        ]
-        commands.shell(";".join(install_cmds))
+        _install_galaxy_via_download(config_directory, kwds)
         installed = True
     return installed
+
+
+def _install_galaxy_via_download(config_directory, kwds):
+    install_cmds = [
+        "cd %s" % config_directory,
+        galaxy_run.DOWNLOAD_GALAXY,
+        "tar -zxvf master | tail",
+        "cd galaxy-central-master",
+        "type virtualenv >/dev/null 2>&1 && virtualenv .venv",
+        galaxy_run.ACTIVATE_COMMAND,
+    ]
+    shell(";".join(install_cmds))
 
 
 def _build_env_for_galaxy(properties, template_args):
