@@ -82,8 +82,8 @@ GalaxyConfig = namedtuple(
 
 @contextlib.contextmanager
 def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
-    test_data_dir = __find_test_data(tool_path, **kwds)
-    tool_data_table = __find_tool_data_table(
+    test_data_dir = _find_test_data(tool_path, **kwds)
+    tool_data_table = _find_tool_data_table(
         tool_path,
         test_data_dir=test_data_dir,
         **kwds
@@ -91,7 +91,7 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
     if kwds.get("install_galaxy", None):
         galaxy_root = None
     else:
-        galaxy_root = __find_galaxy_root(ctx, **kwds)
+        galaxy_root = _find_galaxy_root(ctx, **kwds)
 
     config_directory = kwds.get("config_directory", None)
 
@@ -104,13 +104,13 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
         config_directory = mkdtemp()
     try:
         latest_galaxy = False
-        if __install_galaxy_if_needed(config_directory, kwds):
+        if _install_galaxy_if_needed(config_directory, kwds):
             latest_galaxy = True
             galaxy_root = config_join("galaxy-central-master")
 
-        __handle_dependency_resolution(config_directory, kwds)
-        __handle_job_metrics(config_directory, kwds)
-        tool_definition = __tool_conf_entry_for(tool_path)
+        _handle_dependency_resolution(config_directory, kwds)
+        _handle_job_metrics(config_directory, kwds)
+        tool_definition = _tool_conf_entry_for(tool_path)
         empty_tool_conf = config_join("empty_tool_conf.xml")
         tool_conf = config_join("tool_conf.xml")
         database_location = config_join("galaxy.sqlite")
@@ -170,7 +170,7 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
             properties["database_connection"] = \
                 "sqlite:///${database_location}?isolation_level=IMMEDIATE"
 
-        __handle_kwd_overrides(properties, kwds)
+        _handle_kwd_overrides(properties, kwds)
 
         # TODO: consider following property
         # watch_tool = False
@@ -183,8 +183,8 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
         # outputs_to_working_directory = False
         # retry_job_output_collection = 0
 
-        env = __build_env_for_galaxy(properties, template_args)
-        __build_test_env(properties, env)
+        env = _build_env_for_galaxy(properties, template_args)
+        _build_test_env(properties, env)
 
         # No need to download twice - would GALAXY_TEST_DATABASE_CONNECTION
         # work?
@@ -192,9 +192,9 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
             env["GALAXY_TEST_DB_TEMPLATE"] = os.path.abspath(database_location)
         env["GALAXY_TEST_UPLOAD_ASYNC"] = "false"
         env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
-        web_config = __sub(WEB_SERVER_CONFIG_TEMPLATE, template_args)
+        web_config = _sub(WEB_SERVER_CONFIG_TEMPLATE, template_args)
         open(config_join("galaxy.ini"), "w").write(web_config)
-        tool_conf_contents = __sub(TOOL_CONF_TEMPLATE, template_args)
+        tool_conf_contents = _sub(TOOL_CONF_TEMPLATE, template_args)
         open(tool_conf, "w").write(tool_conf_contents)
         open(empty_tool_conf, "w").write(EMPTY_TOOL_CONF_TEMPLATE)
 
@@ -240,7 +240,7 @@ def _file_name_to_migration_version(name):
         return -1
 
 
-def __find_galaxy_root(ctx, **kwds):
+def _find_galaxy_root(ctx, **kwds):
     galaxy_root = kwds.get("galaxy_root", None)
     if galaxy_root:
         return galaxy_root
@@ -260,36 +260,36 @@ def __find_galaxy_root(ctx, **kwds):
     raise Exception(FAILED_TO_FIND_GALAXY_EXCEPTION)
 
 
-def __find_test_data(path, **kwds):
+def _find_test_data(path, **kwds):
     # Find test data directory associated with path.
     test_data = kwds.get("test_data", None)
     if test_data:
         return os.path.abspath(test_data)
     else:
-        test_data = __search_tool_path_for(path, "test-data")
+        test_data = _search_tool_path_for(path, "test-data")
         if test_data:
             return test_data
     warn(NO_TEST_DATA_MESSAGE)
     return None
 
 
-def __find_tool_data_table(path, test_data_dir, **kwds):
+def _find_tool_data_table(path, test_data_dir, **kwds):
     tool_data_table = kwds.get("tool_data_table", None)
     if tool_data_table:
         return os.path.abspath(tool_data_table)
     else:
         extra_paths = [test_data_dir] if test_data_dir else []
-        return __search_tool_path_for(
+        return _search_tool_path_for(
             path,
             "tool_data_table_conf.xml.test",
             extra_paths,
-        ) or __search_tool_path_for(  # if all else fails just use sample
+        ) or _search_tool_path_for(  # if all else fails just use sample
             path,
             "tool_data_table_conf.xml.sample"
         )
 
 
-def __search_tool_path_for(path, target, extra_paths=[]):
+def _search_tool_path_for(path, target, extra_paths=[]):
     if not os.path.isdir(path):
         tool_dir = os.path.dirname(path)
     else:
@@ -302,7 +302,7 @@ def __search_tool_path_for(path, target, extra_paths=[]):
     return None
 
 
-def __tool_conf_entry_for(tool_path):
+def _tool_conf_entry_for(tool_path):
     if os.path.isdir(tool_path):
         tool_definition = '''<tool_dir dir="%s" />'''
     else:
@@ -310,7 +310,7 @@ def __tool_conf_entry_for(tool_path):
     return tool_definition
 
 
-def __install_galaxy_if_needed(config_directory, kwds):
+def _install_galaxy_if_needed(config_directory, kwds):
     installed = False
     if kwds.get("install_galaxy", None):
         install_cmds = [
@@ -326,16 +326,16 @@ def __install_galaxy_if_needed(config_directory, kwds):
     return installed
 
 
-def __build_env_for_galaxy(properties, template_args):
+def _build_env_for_galaxy(properties, template_args):
     env = {}
     for key, value in properties.iteritems():
         var = "GALAXY_CONFIG_OVERRIDE_%s" % key.upper()
-        value = __sub(value, template_args)
+        value = _sub(value, template_args)
         env[var] = value
     return env
 
 
-def __build_test_env(properties, env):
+def _build_test_env(properties, env):
     # Keeping these environment variables around for a little while but they
     # many are probably not needed as of the following commit.
     # https://bitbucket.org/galaxy/galaxy-central/commits/d7dd1f9
@@ -354,7 +354,7 @@ def __build_test_env(properties, env):
             env[test_key] = value
 
 
-def __handle_dependency_resolution(config_directory, kwds):
+def _handle_dependency_resolution(config_directory, kwds):
     resolutions_strategies = [
         "brew_dependency_resolution",
         "dependency_resolvers_config_file",
@@ -383,13 +383,13 @@ def __handle_dependency_resolution(config_directory, kwds):
             kwds["dependency_resolvers_config_file"] = resolvers_conf
 
 
-def __handle_job_metrics(config_directory, kwds):
+def _handle_job_metrics(config_directory, kwds):
     metrics_conf = os.path.join(config_directory, "job_metrics_conf.xml")
     open(metrics_conf, "w").write(EMPTY_JOB_METRICS_TEMPLATE)
     kwds["job_metrics_config_file"] = metrics_conf
 
 
-def __handle_kwd_overrides(properties, kwds):
+def _handle_kwd_overrides(properties, kwds):
     kwds_gx_properties = [
         'job_config_file',
         'job_metrics_config_file',
@@ -402,7 +402,7 @@ def __handle_kwd_overrides(properties, kwds):
             properties[prop] = val
 
 
-def __sub(template, args):
+def _sub(template, args):
     if template is None:
         return ''
     return Template(template).safe_substitute(args)
