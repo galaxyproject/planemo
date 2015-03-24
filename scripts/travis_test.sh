@@ -2,7 +2,7 @@
 sudo apt-get install -y python-virtualenv
 virtualenv planemo-venv
 . planemo-venv/bin/activate
-pip install git+https://github.com/jmchilton/planemo.git
+pip install planemo
 planemo travis_before_install
  . ${TRAVIS_BUILD_DIR}/.travis/env.sh # source environment created by planemo
 planemo test --install_galaxy ${TRAVIS_BUILD_DIR}
