@@ -15,6 +15,8 @@ from planemo.io import untar_to
 # Planemo generated or consumed files that do not need to be uploaded to the
 # tool shed.
 PLANEMO_FILES = [
+    "shed_upload.tar.gz",
+    "tool_test_output.json",
     "tool_test_output.html",
     ".travis",
     ".travis.yml",
