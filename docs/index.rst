@@ -17,6 +17,7 @@ Contents:
    appliance
    writing
    commands
+   conduct
    contributing
    developing
    history
