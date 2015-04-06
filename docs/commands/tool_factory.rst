@@ -26,6 +26,11 @@ http://www.ncbi.nlm.nih.gov/pubmed/23024011.
                                       execute command with.
       --install_galaxy                Download and configure a disposable copy of
                                       Galaxy from github.
+      --no_cache_galaxy               Skip caching of downloaded Galaxy obtained
+                                      with --install_galaxy. Not caching this
+                                      results in faster downloads (no git) - so is
+                                      better on throw away instances such with
+                                      TravisCI.
       --no_cleanup                    Do not cleanup temp files created for and by
                                       Galaxy.
       --test_data DIRECTORY           test-data directory to for specified
