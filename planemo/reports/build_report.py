@@ -5,7 +5,7 @@ from pkg_resources import resource_string
 TITLE = "Tool Test Results (powered by Planemo)"
 LINKS_HTML = """
     <li><a href="https://galaxyproject.org">Galaxy</a></li>
-    <li><a href="https://planemo.readthedocs.com">Planemo</a></li>
+    <li><a href="https://planemo.readthedocs.org">Planemo</a></li>
 """
 
 
