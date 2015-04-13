@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.7.0.dev0
+0.7.0 (2015-04-13)
 ---------------------
 
 * Implement `shed_create` command to create Tool Shed repositories from
