@@ -21,7 +21,7 @@ History
 * Add a `Contributor Code of Conduct
   <https://planemo.readthedocs.org/en/latest/conduct.html>`__.
   `Pull Request 113`_
-* Omit ``tool_test_output.json `` from Tool Shed tar file created with
+* Omit ``tool_test_output.json`` from Tool Shed tar file created with
   ``shed_upload`` (thanks to Dave Bouvier). `Pull Request 111`_
 * Update required version of bioblend_ to ``0.5.3``. Fixed `Issue 88`_.
 * Initial work on implementing tests cases for Tool Shed functionality.
