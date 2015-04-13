@@ -26,6 +26,7 @@ History
 * Update required version of bioblend_ to ``0.5.3``. Fixed `Issue 88`_.
 * Initial work on implementing tests cases for Tool Shed functionality.
   182fe57_
+* Fix incorrect link in HTML test report (thanks to Martin Čech). 4c71299_
 * Download Galaxy from the new, official Github repository. 7c69bf6_
 * Update travis_test to install stable planemo from PyPI. 39fedd2_
 * Enable caching on ``--install_galaxy`` by default (disable with
@@ -162,6 +163,7 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _4c71299: https://github.com/galaxyproject/planemo/commit/4c71299
 .. _Pull Request 111: https://github.com/galaxyproject/planemo/pull/111
 .. _Pull Request 99: https://github.com/galaxyproject/planemo/pull/99
 .. _Pull Request 101: https://github.com/galaxyproject/planemo/pull/101
