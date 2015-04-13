@@ -2,7 +2,7 @@
 Developing
 ==========
 
-This section contains documentation for developers of planemo.
+This section contains documentation for the maintainers of planemo.
 
 Release Checklist
 -----------------
@@ -37,9 +37,10 @@ are fine.
 * Update release date and description in ``HISTORY.rst``.
 * ``make docs`` and review changelog.
 * ``git add HISTORY.rst planemo/__init__.py; git commit -m "Version <version>"``
-* ``make release-test``
-* Review `Test PyPI <https://testpypi.python.org/pypi/planemo>`_ for errors (install with ``pip install -i https://testpypi.python.org/pypi planemo``).
 * ``make release``
+    * Review `Test PyPI site <https://testpypi.python.org/pypi/planemo>`_
+      for errors.
+    * Test intall ``pip install -i https://testpypi.python.org/pypi planemo``.
 * ``git tag <release>``
 * Update version info in ``planemo/__init__.py`` (n+1.dev0) and create new entry in HISTORY.rst.
 * ``git add HISTORY.rst planemo/__init__.py; git commit -m "Start work on new version"``

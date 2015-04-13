@@ -9,6 +9,27 @@ History
 0.7.0.dev0
 ---------------------
 
+* Implement `shed_create` command to create Tool Shed repositories from
+  ``.shed.yml`` files (thanks to Eric Rasche). `Pull Request 101`_
+* Allow automatic creation of missing repositories  during ``shed_upload``
+  with the new ``--force_repository_creation`` flag (thanks to Eric Rasche).
+  `Pull Request 102`_
+* Allow specifying files to exclude in ``.shed.yml`` when creating tar files
+  for ``shed_upload`` (thanks to Björn Grüning). `Pull Request 99`_
+* Resolve symbolic links when building Tool Shed tar files with
+  ``shed_upload`` (thanks to Dave Bouvier). `Pull Request 104`_
+* Add a `Contributor Code of Conduct
+  <https://planemo.readthedocs.org/en/latest/conduct.html>`__.
+  `Pull Request 113`_
+* Omit ``tool_test_output.json `` from Tool Shed tar file created with
+  ``shed_upload`` (thanks to Dave Bouvier). `Pull Request 111`_
+* Update required version of bioblend_ to ``0.5.3``. Fixed `Issue 88`_.
+* Initial work on implementing tests cases for Tool Shed functionality.
+  182fe57_
+* Download Galaxy from the new, official Github repository. 7c69bf6_
+* Update travis_test to install stable planemo from PyPI. 39fedd2_
+* Enable caching on ``--install_galaxy`` by default (disable with
+  ``--no_cache_galaxy``). d755fe7_
 
 ---------------------
 0.6.0 (2015-03-16)
@@ -141,6 +162,17 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 111: https://github.com/galaxyproject/planemo/pull/111
+.. _Pull Request 99: https://github.com/galaxyproject/planemo/pull/99
+.. _Pull Request 101: https://github.com/galaxyproject/planemo/pull/101
+.. _Pull Request 102: https://github.com/galaxyproject/planemo/pull/102
+.. _Issue 88: https://github.com/galaxyproject/planemo/issues/88
+.. _182fe57: https://github.com/galaxyproject/planemo/commit/182fe57
+.. _Pull Request 104: https://github.com/galaxyproject/planemo/pull/104
+.. _7c69bf6: https://github.com/galaxyproject/planemo/commit/7c69bf6
+.. _39fedd2: https://github.com/galaxyproject/planemo/commit/39fedd2
+.. _d755fe7: https://github.com/galaxyproject/planemo/commit/d755fe7
+.. _Pull Request 113: https://github.com/galaxyproject/planemo/pull/113
 .. _Pull Request 98: https://github.com/galaxyproject/planemo/pull/98
 .. _0bd4ff0: https://github.com/galaxyproject/planemo/commit/0bd4ff0
 .. _Pull Request 99: https://github.com/galaxyproject/planemo/pull/99
@@ -192,3 +224,5 @@ History
 .. _a2c13e4: https://github.com/galaxyproject/planemo/commit/a2c13e46259e3be35de1ecaae858ba818bb94734
 .. _36f7cb11: https://github.com/galaxyproject/planemo/commit/36f7cb114f77731f90860d513a930e10ce5c1ba5
 .. _b9232e55: https://github.com/galaxyproject/planemo/commit/b9232e55e713abbd1d9ce8b0b34cbec6c701dc17
+
+.. _bioblend: https://github.com/galaxyproject/bioblend/

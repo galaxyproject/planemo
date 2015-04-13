@@ -2,6 +2,10 @@
 Contributing
 ============
 
+Please note that this project is released with a `Contributor Code of Conduct 
+<https://planemo.readthedocs.org/en/latest/conduct.html>`__. By participating
+in this project you agree to abide by its terms.
+
 Contributions are welcome, and they are greatly appreciated! Every
 little bit helps, and credit will always be given.
 
