@@ -36,12 +36,15 @@ from galaxy.tools.linters.xml_order import TAG_ORDER
 )
 @pass_context
 def cli(ctx, path, expand_macros=False, **kwds):
-    """Generate normalized tool XML from input.
+    """Generate normalized tool XML from input (breaks formatting).
+
+    This will break the formatting of your tool and is currently only intended
+    for viewing macro expansions for for use with XSD validation (see
+    https://github.com/JeanFred/Galaxy-XSD for instance). Please do not use
+    the output as is - it frequently makes tool less readable not more.
 
     The top-level blocks will be reordered and whitespace fixed according to
     the tool development best practices outlined on the Galaxy wiki.
-
-    See also https://wiki.galaxyproject.org/Tools/BestPractices.
 
     ::
 
