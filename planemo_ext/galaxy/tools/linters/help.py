@@ -12,7 +12,7 @@ def lint_help(tool_xml, lint_ctx):
         lint_ctx.warn("No help section found, consider adding a help section to your tool.")
         return
 
-    help = helps[0].text
+    help = helps[0].text or ''
     if not help.strip():
         lint_ctx.warn("Help section appears to be empty.")
         return
