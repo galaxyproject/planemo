@@ -79,6 +79,17 @@ Further reading:
 - `deseq2 tool <https://github.com/bgruening/galaxytools/tree/master/tools/deseq2>`__
   by Björn Grüning demonstrating advanced ``code`` file validation.
 
+-------------------------------------------------
+\.\.\. determined the user submitting a job?
+-------------------------------------------------
+
+The variable ``$__user_email__`` (as well as ``$__user_name__`` and
+``$__user_id__) is available when building up your command in
+the tool's ``<command>`` block. The following tool demonstrates the use of
+this and a few other special parameters available to all tools.
+
+- `special_params.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/special_params.xml>`__
+
 ------------------------------------------
 \.\.\. test with multiple value inputs?
 ------------------------------------------
@@ -87,8 +98,8 @@ To write tests that supply multiple values to a ``multiple="true"`` ``select`` o
 
 Here are examples of each:
 
- - `multi_data_param.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/multi_data_param.xml>`__
- - `muti_select.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/multi_select.xml>`__
+- `multi_data_param.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/multi_data_param.xml>`__
+- `muti_select.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/multi_select.xml>`__
 
 ------------------------------------------
 \.\.\. test dataset collections?
