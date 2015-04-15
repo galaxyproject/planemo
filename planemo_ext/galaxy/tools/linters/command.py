@@ -15,4 +15,15 @@ def lint_command(tool_xml, lint_ctx):
     if "TODO" in command:
         lint_ctx.warn("Command template contains TODO text.")
 
-    lint_ctx.info("Tool contains a command.")
+    command_attrib = command.attrib
+    interpreter_type = None
+    for key, value in command_attrib.items():
+        if key == "interpreter":
+            interpreter_type = value
+        else:
+            lint_ctx.warn("Unknown attribute [%s] encountered on command tag." % key)
+
+    interpreter_info = ""
+    if interpreter_type:
+        interpreter_info = " with interpreter of type [%s]" % interpreter_type
+    lint_ctx.info("Tool contains a command%s." % interpreter_info)
