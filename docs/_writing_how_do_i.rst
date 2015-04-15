@@ -80,7 +80,7 @@ Further reading:
   by Björn Grüning demonstrating advanced ``code`` file validation.
 
 -------------------------------------------------
-\.\.\. determined the user submitting a job?
+\.\.\. determine the user submitting a job?
 -------------------------------------------------
 
 The variable ``$__user_email__`` (as well as ``$__user_name__`` and
