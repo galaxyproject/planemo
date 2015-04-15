@@ -84,7 +84,7 @@ Further reading:
 -------------------------------------------------
 
 The variable ``$__user_email__`` (as well as ``$__user_name__`` and
-``$__user_id__) is available when building up your command in
+``$__user_id__``) is available when building up your command in
 the tool's ``<command>`` block. The following tool demonstrates the use of
 this and a few other special parameters available to all tools.
 
