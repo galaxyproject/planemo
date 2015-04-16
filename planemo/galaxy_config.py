@@ -16,7 +16,7 @@ from planemo.io import shell
 
 NO_TEST_DATA_MESSAGE = (
     "planemo couldn't find a target test-data directory, you should likely "
-    "create a test-data directory or pass an explicit path using --test-data."
+    "create a test-data directory or pass an explicit path using --test_data."
 )
 
 WEB_SERVER_CONFIG_TEMPLATE = """
