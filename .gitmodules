@@ -1,0 +1,3 @@
+[submodule "planemo/xml/xsd/tool"]
+	path = planemo/xml/xsd/tool
+	url = https://github.com/JeanFred/Galaxy-XSD

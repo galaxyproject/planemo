@@ -1,8 +1,10 @@
-import os
-from tempfile import mkstemp
-import tarfile
-import yaml
+import fnmatch
 import glob
+import os
+import tarfile
+from tempfile import mkstemp
+
+import yaml
 
 try:
     from bioblend import toolshed
@@ -190,6 +192,24 @@ def build_tarball(tool_path):
     finally:
         os.close(fd)
     return temp_path
+
+
+def walk_repositories(path):
+    """ Recurse through directories and find effective repositories. """
+    for base_path, dirnames, filenames in os.walk(path):
+        for filename in fnmatch.filter(filenames, '.shed.yml'):
+            yield base_path
+
+
+def for_each_repository(function, path):
+    ret_codes = []
+    for base_path in walk_repositories(path):
+        ret_codes.append(
+            function(base_path)
+        )
+    # "Good" returns are Nones, everything else is a -1 and should be
+    # passed upwards.
+    return 0 if all((not x) for x in ret_codes) else -1
 
 
 def username(tsi):

@@ -7,21 +7,20 @@ LEVEL_WARN = "warn"
 LEVEL_ERROR = "error"
 
 
-def lint_xml(tool_xml, level=LEVEL_ALL, fail_level=LEVEL_WARN):
-    import galaxy.tools.linters
+def lint_xml(tool_xml, level=LEVEL_ALL, fail_level=LEVEL_WARN, extra_modules=[]):
     lint_context = LintContext(level=level)
+    lint_xml_with(lint_context, tool_xml, extra_modules)
+    return not lint_context.failed(fail_level)
+
+
+def lint_xml_with(lint_context, tool_xml, extra_modules=[]):
+    import galaxy.tools.linters
     linter_modules = submodules.submodules(galaxy.tools.linters)
+    linter_modules.extend(extra_modules)
     for module in linter_modules:
         for (name, value) in inspect.getmembers(module):
             if callable(value) and name.startswith("lint_"):
-                lint_context.lint(module, name, value, tool_xml)
-    found_warns = lint_context.found_warns
-    found_errors = lint_context.found_errors
-    if fail_level == LEVEL_WARN:
-        lint_fail = (found_warns or found_errors)
-    else:
-        lint_fail = found_errors
-    return not lint_fail
+                lint_context.lint(name, value, tool_xml)
 
 
 class LintContext(object):
@@ -31,14 +30,14 @@ class LintContext(object):
         self.found_errors = False
         self.found_warns = False
 
-    def lint(self, module, name, lint_func, tool_xml):
+    def lint(self, name, lint_func, lint_target):
         name = name.replace("tsts", "tests")
         self.printed_linter_info = False
         self.valid_messages = []
         self.info_messages = []
         self.warn_messages = []
         self.error_messages = []
-        lint_func(tool_xml, self)
+        lint_func(lint_target, self)
         # TODO: colorful emoji if in click CLI.
         if self.error_messages:
             status = "FAIL"
@@ -89,3 +88,12 @@ class LintContext(object):
 
     def warn(self, message, *args):
         self.__handle_message(self.warn_messages, message, *args)
+
+    def failed(self, fail_level):
+        found_warns = self.found_warns
+        found_errors = self.found_errors
+        if fail_level == LEVEL_WARN:
+            lint_fail = (found_warns or found_errors)
+        else:
+            lint_fail = found_errors
+        return lint_fail

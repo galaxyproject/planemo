@@ -10,8 +10,6 @@ from planemo.io import info
 from planemo.io import shell
 import json
 
-import fnmatch
-import os
 
 tar_path = click.Path(
     exists=True,
@@ -54,15 +52,15 @@ tar_path = click.Path(
     is_flag=True,
     default=False
 )
-@click.option(
-    '-r', '--recursive',
-    is_flag=True,
-    help="Recursively search for repositories to publish to a tool shed",
-)
+@options.recursive_shed_option()
 @pass_context
 def cli(ctx, path, **kwds):
     """Handle possible recursion through paths for uploading files to a toolshed
     """
+
+    def upload(path):
+        return __handle_upload(ctx, **kwds)
+
     if kwds['recursive']:
         if kwds['name'] is not None:
             error("--name is incompatible with --recursive")
@@ -71,17 +69,9 @@ def cli(ctx, path, **kwds):
             error("--tar is incompatible with --recursive")
             return -1
 
-        ret_codes = []
-        for base_path, dirnames, filenames in os.walk(path):
-            for filename in fnmatch.filter(filenames, '.shed.yml'):
-                ret_codes.append(
-                    __handle_upload(ctx, base_path, **kwds)
-                )
-        # "Good" returns are Nones, everything else is a -1 and should be
-        # passed upwards.
-        return None if all(x is None for x in ret_codes) else -1
+        return shed.for_each_repository(upload, path)
     else:
-        return __handle_upload(ctx, path, **kwds)
+        return upload(path)
 
 
 def __handle_upload(ctx, path, **kwds):
@@ -121,6 +111,7 @@ def __handle_upload(ctx, path, **kwds):
             error(e2.read())
         return -1
     info("Repository %s updated successfully." % path)
+    return 0
 
 
 def __find_repository(ctx, tsi, path, **kwds):
