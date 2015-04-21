@@ -7,6 +7,7 @@ TAG_ORDER = [
     'version_command',
     'command',
     'inputs',
+    'configfiles',
     'outputs',
     'tests',
     'help',
