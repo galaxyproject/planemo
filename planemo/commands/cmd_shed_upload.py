@@ -59,7 +59,7 @@ def cli(ctx, path, **kwds):
     """
 
     def upload(path):
-        return __handle_upload(ctx, **kwds)
+        return __handle_upload(ctx, path, **kwds)
 
     if kwds['recursive']:
         if kwds['name'] is not None:
