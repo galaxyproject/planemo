@@ -2,11 +2,13 @@
 app and unittest.
 """
 import os
+from shutil import rmtree
+from tempfile import mkdtemp
+from sys import version_info
 
 from click.testing import CliRunner
 
 from planemo import cli
-from sys import version_info
 
 from galaxy.tools.deps.commands import which
 
@@ -16,7 +18,9 @@ if version_info < (2, 7):
 else:
     from unittest import TestCase, skip
 
-
+TEST_DIR = os.path.dirname(__file__)
+TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
+TEST_REPOS_DIR = os.path.join(TEST_DATA_DIR, "repos")
 EXIT_CODE_MESSAGE = ("Planemo command [%s] resulted in unexpected exit code "
                      "[%s], expected exit code [%s]]. Command output [%s]")
 
@@ -52,6 +56,15 @@ class CliTestCase(TestCase):
             )
             raise AssertionError(message)
         return result
+
+
+class TempDirectoryTestCase(TestCase):
+
+    def setUp(self):  # noqa
+        self.temp_directory = mkdtemp()
+
+    def tearDown(self):  # noqa
+        rmtree(self.temp_directory)
 
 
 def skip_unless_environ(var):

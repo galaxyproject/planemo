@@ -3,12 +3,11 @@ import os
 from .test_utils import (
     skip_unless_module,
     skip_unless_executable,
+    TEST_DIR,
 )
 
 from planemo.xml import validation
 from planemo import shed_lint
-
-TEST_PATH = os.path.dirname(__file__)
 
 
 @skip_unless_module("lxml")
@@ -63,4 +62,5 @@ def _assert_validates(schema, target, xsd_validator=None):
 
 
 def _path(filename):
-    return os.path.join(TEST_PATH, filename)
+    # TODO: move all test data into tests/data
+    return os.path.join(TEST_DIR, filename)

@@ -1,8 +1,13 @@
 import fnmatch
 import glob
+import hashlib
 import os
 import tarfile
-from tempfile import mkstemp
+from tempfile import (
+    mkstemp,
+    mkdtemp,
+)
+import shutil
 
 import yaml
 
@@ -11,8 +16,19 @@ try:
 except ImportError:
     toolshed = None
 
+from planemo.io import error
 from planemo.io import untar_to
 
+SHED_CONFIG_NAME = '.shed.yml'
+NO_REPOSITORIES_MESSAGE = ("Could not find any .shed.yml files or a --name to "
+                           "describe the target repository.")
+NAME_INVALID_MESSAGE = ("Cannot use --name argument when multiple directories "
+                        "in target contain .shed.yml files.")
+NAME_REQUIRED_MESSAGE = ("No repository name discovered but oneis required.")
+CONFLICTING_NAMES_MESSAGE = ("The supplied name argument --name conflicts "
+                             "with value discovered in .shed.yml.")
+PARSING_PROBLEM = ("Problem parsing file .shed.yml in directory %s, skipping "
+                   "repository. Message: [%s].")
 
 # Planemo generated or consumed files that do not need to be uploaded to the
 # tool shed.
@@ -39,7 +55,7 @@ BIOBLEND_UNAVAILABLE = ("This functionality requires the bioblend library "
 
 
 def shed_repo_config(path):
-    shed_yaml_path = os.path.join(path, ".shed.yml")
+    shed_yaml_path = os.path.join(path, SHED_CONFIG_NAME)
     if os.path.exists(shed_yaml_path):
         with open(shed_yaml_path, "r") as f:
             return yaml.load(f)
@@ -169,29 +185,23 @@ def build_tarball(tool_path):
     """Build a tool-shed tar ball for the specified path, caller is
     responsible for deleting this file.
     """
-    fd, temp_path = mkstemp()
-    repo_config = shed_repo_config(tool_path)
-    ignore_list = []
-    for shed_ignore in repo_config.get('ignore', []):
-        ignore_list.extend(glob.glob(os.path.join(tool_path, shed_ignore)))
-    try:
-        with tarfile.open(temp_path, "w:gz") as tar:
-            for root, _, files in os.walk(tool_path, followlinks=True):
-                for name in files:
-                    full_path = os.path.join(root, name)
-                    relative_path = os.path.relpath(full_path, tool_path)
-                    if relative_path not in ignore_list:
-                        if os.path.islink(full_path):
-                            path = os.path.realpath(full_path)
-                        else:
-                            path = full_path
-                        tar.add(path,
-                                relative_path,
-                                recursive=True,
-                                exclude=_tar_excludes)
-    finally:
-        os.close(fd)
-    return temp_path
+
+    # Not really how realize_effective_repositories was meant to be used.
+    # It should be pushed up a level into the thing that is uploading tar
+    # balls to iterate over them - but placing it here for now because
+    # it address some bugs.
+    for realized_repository in realize_effective_repositories(tool_path):
+        fd, temp_path = mkstemp()
+        try:
+            tar = tarfile.open(temp_path, "w:gz")
+            try:
+                tar.add(realized_repository.path, arcname=".", recursive=True)
+            finally:
+                tar.close()
+        finally:
+            os.close(fd)
+        return temp_path
+    raise Exception("Problem not valid repositories found.")
 
 
 def walk_repositories(path):
@@ -234,10 +244,135 @@ def _tool_shed_url(kwds):
     return url
 
 
-def _tar_excludes(path):
-    name = os.path.basename(path)
-    if name.startswith(".git"):
-        return True
-    elif name in PLANEMO_FILES:
-        return True
-    return False
+def realize_effective_repositories(path, **kwds):
+    """ Expands folders in a source code repository into tool shed
+    repositories.
+
+    Each folder may have nested repositories and each folder may corresponding
+    to many repositories (for instance if a folder has n tools in the source
+    code repository but are published to the tool shed as one repository per
+    tool).
+    """
+    raw_repo_objects = _find_raw_repositories(path, **kwds)
+    temp_directory = mkdtemp()
+    try:
+        for raw_repo_object in raw_repo_objects:
+            yield raw_repo_object.realize_to(temp_directory)
+    finally:
+        shutil.rmtree(temp_directory)
+
+
+def _find_raw_repositories(path, **kwds):
+    name = kwds.get("name", None)
+    recursive = kwds.get("recursive", False)
+
+    shed_file_dirs = []
+    if recursive:
+        for base_path, dirnames, filenames in os.walk(path):
+            for filename in fnmatch.filter(filenames, SHED_CONFIG_NAME):
+                shed_file_dirs.append(base_path)
+    elif os.path.exists(os.path.join(path, SHED_CONFIG_NAME)):
+        shed_file_dirs.append(path)
+
+    config_name = None
+    if len(shed_file_dirs) == 1:
+        config = shed_repo_config(shed_file_dirs[0])
+        config_name = config.get("name", None)
+
+    if len(shed_file_dirs) < 2 and config_name is None:
+        name = os.path.basename(path)
+
+    if len(shed_file_dirs) > 1 and name is not None:
+        raise Exception(NAME_INVALID_MESSAGE)
+    if config_name is not None and name is not None:
+        if config_name != name:
+            raise Exception(CONFLICTING_NAMES_MESSAGE)
+    raw_dirs = shed_file_dirs or [path]
+    kwds_copy = kwds.copy()
+    kwds_copy["name"] = name
+    return _build_raw_repo_objects(raw_dirs, **kwds_copy)
+
+
+def _build_raw_repo_objects(raw_dirs, **kwds):
+    """
+    From specific directories with .shed.yml files or specified directly from
+    the comman-line build abstract description of directories that should be
+    expanded out into shed repositories.
+    """
+    name = kwds.get("name", None)
+    skip_errors = kwds.get("skip_errors", False)
+
+    raw_repo_objects = []
+    for raw_dir in raw_dirs:
+        try:
+            config = shed_repo_config(raw_dir)
+        except Exception as e:
+            if skip_errors:
+                error_message = PARSING_PROBLEM % (raw_dir, e)
+                error(error_message)
+            else:
+                raise
+        if name:
+            config["name"] = name
+        raw_repo_object = RawRepositoryDirectory(raw_dir, config)
+        raw_repo_objects.append(raw_repo_object)
+    return raw_repo_objects
+
+
+class RawRepositoryDirectory(object):
+
+    def __init__(self, path, config):
+        self.path = path
+        self.config = config
+        self.name = config["name"]
+
+    @property
+    def _hash(self):
+        return hashlib.md5(self.name).hexdigest()
+
+    def realize_to(self, parent_directory):
+        directory = os.path.join(parent_directory, self._hash)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        ignore_list = []
+        for shed_ignore in self.config.get('ignore', []):
+            ignore_list.extend(glob.glob(os.path.join(self.path, shed_ignore)))
+
+        for root, _, files in os.walk(self.path, followlinks=True):
+            for name in files:
+                full_path = os.path.join(root, name)
+                relative_path = os.path.relpath(full_path, self.path)
+                implicit_ignore = self._implicit_ignores(relative_path)
+                explicit_ignore = (full_path in ignore_list)
+                if implicit_ignore or explicit_ignore:
+                    continue
+
+                self._realize_file(relative_path, directory)
+        return RealizedRepositry(directory, self.config)
+
+    def _realize_file(self, relative_path, directory):
+        source_path = os.path.join(self.path, relative_path)
+        if os.path.islink(source_path):
+            source_path = os.path.realpath(source_path)
+        target_path = os.path.join(directory, relative_path)
+        target_dir = os.path.dirname(target_path)
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
+        os.symlink(source_path, target_path)
+
+    def _implicit_ignores(self, relative_path):
+        name = os.path.basename(relative_path)
+        print relative_path
+        if relative_path.startswith(".git"):
+            return True
+        elif name in PLANEMO_FILES:
+            return True
+        return False
+
+
+class RealizedRepositry(object):
+
+    def __init__(self, path, config):
+        self.path = path
+        self.config = config
