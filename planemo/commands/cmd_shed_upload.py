@@ -1,5 +1,8 @@
 """
 """
+import json
+import sys
+
 import click
 
 from planemo.cli import pass_context
@@ -8,7 +11,6 @@ from planemo import shed
 from planemo.io import error
 from planemo.io import info
 from planemo.io import shell
-import json
 
 
 tar_path = click.Path(
@@ -69,9 +71,10 @@ def cli(ctx, path, **kwds):
             error("--tar is incompatible with --recursive")
             return -1
 
-        return shed.for_each_repository(upload, path)
+        exit_code = shed.for_each_repository(upload, path)
     else:
-        return upload(path)
+        exit_code = upload(path)
+    sys.exit(exit_code)
 
 
 def __handle_upload(ctx, path, **kwds):

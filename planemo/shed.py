@@ -63,12 +63,12 @@ def shed_repo_config(path):
         return {}
 
 
-def tool_shed_client(ctx, **kwds):
+def tool_shed_client(ctx=None, **kwds):
     if toolshed is None:
         raise Exception(BIOBLEND_UNAVAILABLE)
     read_only = kwds.get("read_only", False)
     shed_target = kwds.get("shed_target")
-    global_config = ctx.global_config
+    global_config = getattr(ctx, "global_config", {})
     if global_config and "sheds" in global_config:
         sheds_config = global_config["sheds"]
         shed_config = sheds_config.get(shed_target, {})
@@ -97,11 +97,12 @@ def tool_shed_client(ctx, **kwds):
 
 
 def find_repository_id(ctx, tsi, path, **kwds):
+    global_config = getattr(ctx, "global_config", {})
     repo_config = shed_repo_config(path)
     owner = kwds.get("owner", None) or repo_config.get("owner", None)
     name = kwds.get("name", None) or repo_config.get("name", None)
     if owner is None:
-        owner = ctx.global_config.get("shed_username", None)
+        owner = global_config.get("shed_username", None)
     if name is None:
         name = os.path.basename(os.path.abspath(path))
     repos = tsi.repositories.get_repositories()
@@ -131,16 +132,7 @@ def create_repository(ctx, tsi, path, **kwds):
     remote_repository_url = repo_config.get("remote_repository_url", None)
     homepage_url = repo_config.get("homepage_url", None)
     categories = repo_config.get("categories", [])
-    # Translate human readable category names into their associated IDs
-    category_list = tsi.repositories.get_categories()
-
-    category_ids = []
-    for cat in categories:
-        matching_cats = [x for x in category_list if x['name'] == cat]
-        if not matching_cats:
-            message = "Failed to find category %s" % cat
-            raise Exception(message)
-        category_ids.append(matching_cats[0]['id'])
+    category_ids = find_category_ids(tsi, categories)
 
     if name is None:
         name = os.path.basename(os.path.abspath(path))
@@ -162,10 +154,27 @@ def create_repository(ctx, tsi, path, **kwds):
     return repo
 
 
+def find_category_ids(tsi, categories):
+    """ Translate human readable category names into their associated IDs.
+    """
+    category_list = tsi.repositories.get_categories()
+
+    category_ids = []
+    for cat in categories:
+        matching_cats = [x for x in category_list if x['name'] == cat]
+        if not matching_cats:
+            message = "Failed to find category %s" % cat
+            raise Exception(message)
+        category_ids.append(matching_cats[0]['id'])
+    return category_ids
+
+
 def download_tarball(ctx, tsi, path, **kwds):
     destination = kwds.get('destination', 'shed_download.tar.gz')
     repo_id = find_repository_id(ctx, tsi, path, **kwds)
     base_url = tsi.base_url
+    if not base_url.endswith("/"):
+        base_url += "/"
     download_url = REPOSITORY_DOWNLOAD_TEMPLATE % (base_url, repo_id)
     to_directory = not destination.endswith("gz")
     if to_directory:

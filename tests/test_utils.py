@@ -1,17 +1,23 @@
 """ Provide abstractions over click testing of the
 app and unittest.
 """
+import contextlib
 import os
-from shutil import rmtree
 from tempfile import mkdtemp
+import shutil
 from sys import version_info
 
 from click.testing import CliRunner
 
 from planemo import cli
+from planemo import shed
+from planemo import io
 
 from galaxy.tools.deps.commands import which
-
+from .shed_app_test_utils import (
+    mock_shed,
+    setup_mock_shed,
+)
 
 if version_info < (2, 7):
     from unittest2 import TestCase, skip
@@ -54,8 +60,42 @@ class CliTestCase(TestCase):
                 expected_exit_code,
                 result.output,
             )
+            if result.exception:
+                message += " Exception [%s]." % str(result.exception)
             raise AssertionError(message)
         return result
+
+    @contextlib.contextmanager
+    def _isolate_repo(self, name):
+        with self._isolate() as f:
+            repo = os.path.join(TEST_REPOS_DIR, name)
+            io.shell("cp -r '%s'/. '%s'" % (repo, f))
+            yield f
+
+
+class CliShedTestCase(CliTestCase):
+
+    def setUp(self):  # noqa
+        super(CliShedTestCase, self).setUp()
+        self.mock_shed = setup_mock_shed()
+
+    def tearDown(self):  # noqa
+        super(CliShedTestCase, self).tearDown()
+        self.mock_shed.shutdown()
+
+    def _shed_args(self, read_only=False):
+        args = [
+            "--shed_target", self.mock_shed.url,
+        ]
+        if not read_only:
+            args.extend(["--shed_key", "ignored"])
+        return args
+
+
+@contextlib.contextmanager
+def mock_shed_client():
+    with mock_shed() as mock_shed_obj:
+        yield shed.tool_shed_client(shed_target=mock_shed_obj.url)
 
 
 class TempDirectoryTestCase(TestCase):
@@ -64,7 +104,7 @@ class TempDirectoryTestCase(TestCase):
         self.temp_directory = mkdtemp()
 
     def tearDown(self):  # noqa
-        rmtree(self.temp_directory)
+        shutil.rmtree(self.temp_directory)
 
 
 def skip_unless_environ(var):
