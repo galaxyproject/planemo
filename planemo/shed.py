@@ -128,7 +128,7 @@ def create_repository(ctx, tsi, path, **kwds):
 
     description = repo_config.get("description", None)
     long_description = repo_config.get("long_description", None)
-    type = repo_config.get("type", "unrestricted")
+    type = repo_config.get("type", None)
     remote_repository_url = repo_config.get("remote_repository_url", None)
     homepage_url = repo_config.get("homepage_url", None)
     categories = repo_config.get("categories", [])
@@ -136,6 +136,13 @@ def create_repository(ctx, tsi, path, **kwds):
 
     if name is None:
         name = os.path.basename(os.path.abspath(path))
+
+    if type is None and name.startswith("package_"):
+        type = "tool_dependency_definition"
+    elif type is None and name.startswith("suite_"):
+        type = "repository_suite_definition"
+    elif type is None:
+        type = "unrestricted"
 
     # description is required, as is name.
     if description is None:
