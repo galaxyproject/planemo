@@ -125,24 +125,16 @@ def find_repository_id(ctx, tsi, path, **kwds):
 def create_repository(ctx, tsi, path, **kwds):
     repo_config = shed_repo_config(path)
     name = kwds.get("name", None) or repo_config.get("name", None)
+    if name is None:
+        name = path_to_repo_name(path)
 
     description = repo_config.get("description", None)
     long_description = repo_config.get("long_description", None)
-    type = repo_config.get("type", None)
+    repo_type = shed_repo_type(repo_config, name)
     remote_repository_url = repo_config.get("remote_repository_url", None)
     homepage_url = repo_config.get("homepage_url", None)
     categories = repo_config.get("categories", [])
     category_ids = find_category_ids(tsi, categories)
-
-    if name is None:
-        name = path_to_repo_name(path)
-
-    if type is None and name.startswith("package_"):
-        type = "tool_dependency_definition"
-    elif type is None and name.startswith("suite_"):
-        type = "repository_suite_definition"
-    elif type is None:
-        type = "unrestricted"
 
     # description is required, as is name.
     if description is None:
@@ -153,7 +145,7 @@ def create_repository(ctx, tsi, path, **kwds):
         name=name,
         synopsis=description,
         description=long_description,
-        type=type,
+        type=repo_type,
         remote_repository_url=remote_repository_url,
         homepage_url=homepage_url,
         category_ids=category_ids
@@ -255,6 +247,17 @@ def _user(tsi):
 
 def path_to_repo_name(path):
     return os.path.basename(os.path.abspath(path))
+
+
+def shed_repo_type(config, name):
+    repo_type = config.get("type", None)
+    if repo_type is None and name.startswith("package_"):
+        repo_type = "tool_dependency_definition"
+    elif repo_type is None and name.startswith("suite_"):
+        repo_type = "repository_suite_definition"
+    elif repo_type is None:
+        repo_type = "unrestricted"
+    return repo_type
 
 
 def _tool_shed_url(kwds):
