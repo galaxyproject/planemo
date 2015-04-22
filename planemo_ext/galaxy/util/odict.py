@@ -2,7 +2,14 @@
 Ordered dictionary implementation.
 """
 
-from UserDict import UserDict
+try:
+    from galaxy import eggs
+    eggs.require("six")
+except ImportError:
+    # Allow code to operate outside Galaxy.
+    pass
+
+from six.moves import UserDict
 
 
 class odict(UserDict):

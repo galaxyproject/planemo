@@ -174,15 +174,6 @@ class ObjectStore(object):
         """
         raise NotImplementedError()
 
-    ## def get_staging_command( id ):
-    ##     """
-    ##     Return a shell command that can be prepended to the job script to stage the
-    ##     dataset -- runs on worker nodes.
-    ##
-    ##     Note: not sure about the interface here. Should this return a filename, command
-    ##     tuple? Is this even a good idea, seems very useful for S3, other object stores?
-    ##     """
-
 
 class DiskObjectStore(ObjectStore):
     """
@@ -193,7 +184,7 @@ class DiskObjectStore(ObjectStore):
     >>> import tempfile
     >>> file_path=tempfile.mkdtemp()
     >>> obj = Bunch(id=1)
-    >>> s = DiskObjectStore(Bunch(umask=077, job_working_directory=file_path, new_file_path=file_path, object_store_check_old_style=False), file_path=file_path)
+    >>> s = DiskObjectStore(Bunch(umask=0o077, job_working_directory=file_path, new_file_path=file_path, object_store_check_old_style=False), file_path=file_path)
     >>> s.create(obj)
     >>> s.exists(obj)
     True
@@ -206,7 +197,7 @@ class DiskObjectStore(ObjectStore):
         self.check_old_style = config.object_store_check_old_style
         self.extra_dirs['job_work'] = config.job_working_directory
         self.extra_dirs['temp'] = config.new_file_path
-        #The new config_xml overrides universe settings.
+        # The new config_xml overrides universe settings.
         if config_xml is not None:
             for e in config_xml:
                 if e.tag == 'files_dir':
@@ -296,7 +287,7 @@ class DiskObjectStore(ObjectStore):
             # Create the file if it does not exist
             if not dir_only:
                 open(path, 'w').close()  # Should be rb?
-                umask_fix_perms(path, self.config.umask, 0666)
+                umask_fix_perms(path, self.config.umask, 0o666)
 
     def empty(self, obj, **kwargs):
         return os.path.getsize(self.get_filename(obj, **kwargs)) == 0
@@ -320,7 +311,7 @@ class DiskObjectStore(ObjectStore):
             if self.exists(obj, **kwargs):
                 os.remove(path)
                 return True
-        except OSError, ex:
+        except OSError as ex:
             log.critical('%s delete error %s' % (self._get_filename(obj, **kwargs), ex))
         return False
 
@@ -343,8 +334,8 @@ class DiskObjectStore(ObjectStore):
     def update_from_file(self, obj, file_name=None, create=False, **kwargs):
         """ `create` parameter is not used in this implementation """
         preserve_symlinks = kwargs.pop( 'preserve_symlinks', False )
-        #FIXME: symlinks and the object store model may not play well together
-        #these should be handled better, e.g. registering the symlink'd file as an object
+        # FIXME: symlinks and the object store model may not play well together
+        # these should be handled better, e.g. registering the symlink'd file as an object
         if create:
             self.create(obj, **kwargs)
         if file_name and self.exists(obj, **kwargs):
@@ -353,9 +344,8 @@ class DiskObjectStore(ObjectStore):
                     force_symlink( os.readlink( file_name ), self.get_filename( obj, **kwargs ) )
                 else:
                     shutil.copy( file_name, self.get_filename( obj, **kwargs ) )
-            except IOError, ex:
-                log.critical('Error copying %s to %s: %s' % (file_name,
-                    self._get_filename(obj, **kwargs), ex))
+            except IOError as ex:
+                log.critical('Error copying %s to %s: %s' % (file_name, self._get_filename(obj, **kwargs), ex))
                 raise ex
 
     def get_object_url(self, obj, **kwargs):
@@ -392,39 +382,39 @@ class NestedObjectStore(ObjectStore):
         super(NestedObjectStore, self).shutdown()
 
     def exists(self, obj, **kwargs):
-        return self.__call_method('exists', obj, False, False, **kwargs)
+        return self._call_method('exists', obj, False, False, **kwargs)
 
     def file_ready(self, obj, **kwargs):
-        return self.__call_method('file_ready', obj, False, False, **kwargs)
+        return self._call_method('file_ready', obj, False, False, **kwargs)
 
     def create(self, obj, **kwargs):
         random.choice(self.backends.values()).create(obj, **kwargs)
 
     def empty(self, obj, **kwargs):
-        return self.__call_method('empty', obj, True, False, **kwargs)
+        return self._call_method('empty', obj, True, False, **kwargs)
 
     def size(self, obj, **kwargs):
-        return self.__call_method('size', obj, 0, False, **kwargs)
+        return self._call_method('size', obj, 0, False, **kwargs)
 
     def delete(self, obj, **kwargs):
-        return self.__call_method('delete', obj, False, False, **kwargs)
+        return self._call_method('delete', obj, False, False, **kwargs)
 
     def get_data(self, obj, **kwargs):
-        return self.__call_method('get_data', obj, ObjectNotFound, True, **kwargs)
+        return self._call_method('get_data', obj, ObjectNotFound, True, **kwargs)
 
     def get_filename(self, obj, **kwargs):
-        return self.__call_method('get_filename', obj, ObjectNotFound, True, **kwargs)
+        return self._call_method('get_filename', obj, ObjectNotFound, True, **kwargs)
 
     def update_from_file(self, obj, **kwargs):
         if kwargs.get('create', False):
             self.create(obj, **kwargs)
             kwargs['create'] = False
-        return self.__call_method('update_from_file', obj, ObjectNotFound, True, **kwargs)
+        return self._call_method('update_from_file', obj, ObjectNotFound, True, **kwargs)
 
     def get_object_url(self, obj, **kwargs):
-        return self.__call_method('get_object_url', obj, None, False, **kwargs)
+        return self._call_method('get_object_url', obj, None, False, **kwargs)
 
-    def __call_method(self, method, obj, default, default_is_exception, **kwargs):
+    def _call_method(self, method, obj, default, default_is_exception, **kwargs):
         """
         Check all children object stores for the first one with the dataset
         """
@@ -432,8 +422,7 @@ class NestedObjectStore(ObjectStore):
             if store.exists(obj, **kwargs):
                 return store.__getattribute__(method)(obj, **kwargs)
         if default_is_exception:
-            raise default( 'objectstore, __call_method failed: %s on %s, kwargs: %s'
-                % ( method, str( obj ), str( kwargs ) ) )
+            raise default( 'objectstore, _call_method failed: %s on %s, kwargs: %s' % ( method, str( obj ), str( kwargs ) ) )
         else:
             return default
 
@@ -527,21 +516,19 @@ class DistributedObjectStore(NestedObjectStore):
                 try:
                     obj.object_store_id = random.choice(self.weighted_backend_ids)
                 except IndexError:
-                    raise ObjectInvalid( 'objectstore.create, could not generate obj.object_store_id: %s, kwargs: %s'
-                        % ( str( obj ), str( kwargs ) ) )
+                    raise ObjectInvalid( 'objectstore.create, could not generate obj.object_store_id: %s, kwargs: %s' % ( str( obj ), str( kwargs ) ) )
                 create_object_in_session( obj )
                 log.debug("Selected backend '%s' for creation of %s %s" % (obj.object_store_id, obj.__class__.__name__, obj.id))
             else:
                 log.debug("Using preferred backend '%s' for creation of %s %s" % (obj.object_store_id, obj.__class__.__name__, obj.id))
             self.backends[obj.object_store_id].create(obj, **kwargs)
 
-    def __call_method(self, method, obj, default, default_is_exception, **kwargs):
+    def _call_method(self, method, obj, default, default_is_exception, **kwargs):
         object_store_id = self.__get_store_id_for(obj, **kwargs)
         if object_store_id is not None:
             return self.backends[object_store_id].__getattribute__(method)(obj, **kwargs)
         if default_is_exception:
-            raise default( 'objectstore, __call_method failed: %s on %s, kwargs: %s'
-                % ( method, str( obj ), str( kwargs ) ) )
+            raise default( 'objectstore, _call_method failed: %s on %s, kwargs: %s' % ( method, str( obj ), str( kwargs ) ) )
         else:
             return default
 

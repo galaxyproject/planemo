@@ -89,9 +89,6 @@ class IRODSObjectStore( DiskObjectStore, ObjectStore ):
             path = path_join( path, alt_name if alt_name else default_name )
 
         path = path_join( self.root_collection_path, path )
-
-        #log.debug( 'iRODS path for %s %s is %s', obj.__class__.__name__, obj.id, path )
-
         return path
 
     def __get_cache_path( self, obj, **kwargs ):
@@ -155,7 +152,7 @@ class IRODSObjectStore( DiskObjectStore, ObjectStore ):
                 # that we can prevent overwriting
                 doi = irods.dataObjInp_t()
                 doi.objPath = rods_path
-                doi.createMode = 0640
+                doi.createMode = 0o640
                 doi.dataSize = 0  # 0 actually means "unknown", although literally 0 would be preferable
                 irods.addKeyVal( doi.condInput, irods.DEST_RESC_NAME_KW, self.default_resource )
                 status = irods.rcDataObjCreate( self.rods_conn, doi )
@@ -198,7 +195,7 @@ class IRODSObjectStore( DiskObjectStore, ObjectStore ):
             return True
         except AttributeError:
             log.warning( 'delete(): operation failed: object does not exist: %s', rods_path )
-        except AssertionError, e:
+        except AssertionError as e:
             # delete() does not raise on deletion failure
             log.error( 'delete(): operation failed: %s', e )
         finally:
@@ -225,10 +222,6 @@ class IRODSObjectStore( DiskObjectStore, ObjectStore ):
     @local_extra_dirs
     def get_filename( self, obj, **kwargs ):
         log.debug( "get_filename(): called on %s %s. For better performance, avoid this method and use get_data() instead.", obj.__class__.__name__, obj.id )
-
-        # For finding all places where get_filename is called...
-        #log.debug( ''.join( traceback.format_stack() ) )
-
         cached_path = self.__get_cache_path( obj, **kwargs )
 
         if not self.exists( obj, **kwargs ):
@@ -270,7 +263,7 @@ class IRODSObjectStore( DiskObjectStore, ObjectStore ):
             # otherwise deal with this potential deadlock and interrupted
             # transfers
             time.sleep( 5 )
-            log.debug( "get_filename(): waiting on incoming '%s' for %s %s",  incoming_path, obj.__class__.__name__, obj.id )
+            log.debug( "get_filename(): waiting on incoming '%s' for %s %s", incoming_path, obj.__class__.__name__, obj.id )
 
         return os.path.abspath( cached_path )
 
@@ -288,7 +281,7 @@ class IRODSObjectStore( DiskObjectStore, ObjectStore ):
         # put will create if necessary
         doi = irods.dataObjInp_t()
         doi.objPath = self.__get_rods_path( obj, **kwargs )
-        doi.createMode = 0640
+        doi.createMode = 0o640
         doi.dataSize = os.stat( file_name ).st_size
         doi.numThreads = 0
         irods.addKeyVal( doi.condInput, irods.DEST_RESC_NAME_KW, self.default_resource )

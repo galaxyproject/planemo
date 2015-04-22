@@ -16,7 +16,7 @@ try:
 except ImportError:
     pass
 import errno
-import urlparse
+from six.moves.urllib import parse
 from tempfile import NamedTemporaryFile
 import logging
 log = logging.getLogger(__name__)
@@ -193,7 +193,7 @@ def mask_password_from_url( url ):
     >>> mask_password_from_url( 'amqp://localhost')
     'amqp://localhost'
     """
-    split = urlparse.urlsplit(url)
+    split = parse.urlsplit(url)
     if split.password:
         if url.count(split.password) == 1:
             url = url.replace(split.password, "********")
@@ -202,7 +202,7 @@ def mask_password_from_url( url ):
             # so the previous string replace method is preferred when the
             # password doesn't appear twice in the url
             split = split._replace(netloc=split.netloc.replace("%s:%s" % (split.username, split.password), '%s:********' % split.username))
-            url = urlparse.urlunsplit(split)
+            url = parse.urlunsplit(split)
     return url
 
 
