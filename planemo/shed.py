@@ -372,7 +372,6 @@ class RawRepositoryDirectory(object):
 
     def _implicit_ignores(self, relative_path):
         name = os.path.basename(relative_path)
-        print relative_path
         if relative_path.startswith(".git"):
             return True
         elif name in PLANEMO_FILES:

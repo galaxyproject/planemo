@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 from collections import namedtuple
 import contextlib
 import os
@@ -122,7 +123,7 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
                 latest=latest_galaxy
             )
         except Exception as e:
-            print e
+            print(e)
             # No network access - just roll forward from null.
             preseeded_database = False
 

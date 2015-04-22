@@ -52,12 +52,6 @@ def repository_download():
     return send_file(path)
 
 
-@app.errorhandler(404)
-def page_not_found(e):
-    print "Test problem, accessing invalid URL."
-    return json.dumps({"err_msg": "Cannot find page."}), 404
-
-
 @app.route('/shutdown', methods=['POST'])
 def shutdown():
     # Used to shutdown test server.

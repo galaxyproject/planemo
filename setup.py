@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 
-import re
 import ast
+import re
+import sys
 try:
     from setuptools import setup
 except ImportError:
@@ -22,6 +23,12 @@ requirements = [
     'PyGithub',
     'bioblend',
 ]
+
+# Latest stable bioblend does not support Python 3, setup dev dependency.
+dependency_links = []
+if sys.version_info[0] != 2:
+    dependency_links = ['git://github.com/galaxyproject/bioblend#egg=bioblend']
+
 
 test_requirements = [
     # TODO: put package test requirements here
@@ -76,6 +83,7 @@ setup(
                  'planemo_ext': 'planemo_ext'},
     include_package_data=True,
     install_requires=requirements,
+    dependency_links=dependency_links,
     license="AFL",
     zip_safe=False,
     keywords='planemo',
