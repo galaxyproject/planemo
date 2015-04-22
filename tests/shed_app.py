@@ -17,12 +17,12 @@ app = Flask(__name__)
 @app.route("/api/repositories")
 def get_repositories():
     repos = app.config["model"].get_repositories()
-    return json.dumps(repos.values())
+    return json.dumps(list(repos.values()))
 
 
 @app.route('/api/repositories', methods=['POST'])
 def create_repository():
-    repo = json.loads(request.data)
+    repo = json.loads(request.data.decode("utf-8"))
     # TODO: rework things to not need to hardcode this
     # i.e. simulate key stuff also.
     repo["owner"] = "iuc"

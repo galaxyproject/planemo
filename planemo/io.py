@@ -1,4 +1,6 @@
+from __future__ import print_function
 import os
+import sys
 
 import click
 from galaxy.tools.deps import commands
@@ -13,19 +15,26 @@ def shell(cmds, **kwds):
 def info(message, *args):
     if args:
         message = message % args
-    click.echo(click.style(message, bold=True, fg='green'))
+    _echo(click.style(message, bold=True, fg='green'))
 
 
 def error(message, *args):
     if args:
         message = message % args
-    click.echo(click.style(message, bold=True, fg='red'), err=True)
+    _echo(click.style(message, bold=True, fg='red'), err=True)
 
 
 def warn(message, *args):
     if args:
         message = message % args
-    click.echo(click.style(message, fg='red'), err=True)
+    _echo(click.style(message, fg='red'), err=True)
+
+
+def _echo(message, err=False):
+    if sys.version_info[0] == 2:
+        click.echo(message, err=err)
+    else:
+        print(message)
 
 
 def untar_to(url, path, tar_args):

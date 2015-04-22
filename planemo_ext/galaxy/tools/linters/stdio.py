@@ -23,7 +23,7 @@ def lint_stdio(tool_xml, lint_ctx):
 
 
 def _lint_exit_code(child, lint_ctx):
-    for key, value in child.attrib.iteritems():
+    for key, value in child.attrib.items():
         if key == "range":
             # TODO: validate
             pass

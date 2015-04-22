@@ -17,6 +17,7 @@ except ImportError:
     pass
 import errno
 from six.moves.urllib import parse
+from six import text_type
 from tempfile import NamedTemporaryFile
 import logging
 log = logging.getLogger(__name__)
@@ -211,7 +212,7 @@ def unicodify( value, encoding=DEFAULT_ENCODING, error='replace', default=None )
     Returns a unicode string or None
     """
 
-    if isinstance( value, unicode ):
+    if isinstance( value, text_type ):
         return value
     try:
         return unicode( str( value ), encoding, error )

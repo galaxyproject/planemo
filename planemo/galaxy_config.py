@@ -4,7 +4,8 @@ from collections import namedtuple
 import contextlib
 import os
 import shutil
-import urllib
+from six.moves.urllib.request import urlopen
+from six import iteritems
 from string import Template
 from tempfile import mkdtemp
 from six.moves.urllib.request import urlretrieve
@@ -207,7 +208,7 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
 
 def _download_database_template(galaxy_root, database_location, latest=False):
     if latest:
-        template_url = DOWNLOADS_URL + urllib.urlopen(LATEST_URL).read()
+        template_url = DOWNLOADS_URL + urlopen(LATEST_URL).read()
         urlretrieve(template_url, database_location)
         return True
 
@@ -358,7 +359,7 @@ def _ensure_galaxy_repository_available(ctx):
 
 def _build_env_for_galaxy(properties, template_args):
     env = {}
-    for key, value in properties.iteritems():
+    for key, value in iteritems(properties):
         var = "GALAXY_CONFIG_OVERRIDE_%s" % key.upper()
         value = _sub(value, template_args)
         env[var] = value

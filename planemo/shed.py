@@ -110,7 +110,7 @@ def find_repository_id(ctx, tsi, path, **kwds):
     def matches(r):
         return r["owner"] == owner and r["name"] == name
 
-    matching_repos = filter(matches, repos)
+    matching_repos = list(filter(matches, repos))
     if not matching_repos:
         if not kwds.get("allow_none", False):
             message = "Failed to find repository for owner/name %s/%s"
@@ -337,7 +337,7 @@ class RawRepositoryDirectory(object):
 
     @property
     def _hash(self):
-        return hashlib.md5(self.name).hexdigest()
+        return hashlib.md5(self.name.encode('utf-8')).hexdigest()
 
     def realize_to(self, parent_directory):
         directory = os.path.join(parent_directory, self._hash)

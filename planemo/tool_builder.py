@@ -135,7 +135,7 @@ def build(**kwds):
     # process raw inputs
     inputs = kwds.get("input", [])
     del kwds["input"]
-    inputs = map(Input, inputs or [])
+    inputs = list(map(Input, inputs or []))
 
     # alternatively process example inputs
     example_inputs = kwds["example_input"]
@@ -149,7 +149,7 @@ def build(**kwds):
     # handle raw outputs (from_work_dir ones) as well as named_outputs
     outputs = kwds.get("output", [])
     del kwds["output"]
-    outputs = map(Output, outputs or [])
+    outputs = list(map(Output, outputs or []))
 
     named_outputs = kwds.get("named_output", [])
     del kwds["named_output"]

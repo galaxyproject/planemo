@@ -34,10 +34,10 @@ def load_tool_elements_from_path(path, load_exception_handler=load_exception_han
 
 
 def __looks_like_a_tool(path):
-    with open(path) as f:
+    with open(path, "r") as f:
         for i in range(10):
             try:
-                line = f.next()
+                line = next(f)
             except StopIteration:
                 break
             if "<tool" in line:
