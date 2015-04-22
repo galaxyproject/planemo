@@ -3,6 +3,7 @@ import re
 import yaml
 from galaxy.tools.lint import LintContext
 from planemo.lint import lint_xsd
+from planemo.shed import path_to_repo_name
 from planemo.tool_lint import (
     build_lint_args,
     yield_tool_xmls,
@@ -92,6 +93,9 @@ def lint_shed_yaml(path, lint_ctx):
 
 
 def _lint_shed_contents(lint_ctx, path, shed_contents):
+    name = shed_contents.get("name", None)
+    effective_name = name or path_to_repo_name(path)
+
     def _lint_if_present(key, func, *args):
         value = shed_contents.get(key, None)
         if value is not None:
@@ -101,7 +105,6 @@ def _lint_shed_contents(lint_ctx, path, shed_contents):
 
     _lint_if_present("owner", _validate_repo_owner)
     _lint_if_present("name", _validate_repo_name)
-    effective_name = shed_contents.get("name", None) or os.path.basename(path)
     _lint_if_present("type", _validate_repo_type, effective_name)
 
 

@@ -104,7 +104,7 @@ def find_repository_id(ctx, tsi, path, **kwds):
     if owner is None:
         owner = global_config.get("shed_username", None)
     if name is None:
-        name = os.path.basename(os.path.abspath(path))
+        name = path_to_repo_name(path)
     repos = tsi.repositories.get_repositories()
 
     def matches(r):
@@ -135,7 +135,7 @@ def create_repository(ctx, tsi, path, **kwds):
     category_ids = find_category_ids(tsi, categories)
 
     if name is None:
-        name = os.path.basename(os.path.abspath(path))
+        name = path_to_repo_name(path)
 
     if type is None and name.startswith("package_"):
         type = "tool_dependency_definition"
@@ -253,6 +253,10 @@ def _user(tsi):
     return response.json()[0]
 
 
+def path_to_repo_name(path):
+    return os.path.basename(os.path.abspath(path))
+
+
 def _tool_shed_url(kwds):
     url = kwds.get("shed_target")
     if url in SHED_SHORT_NAMES:
@@ -296,7 +300,7 @@ def _find_raw_repositories(path, **kwds):
         config_name = config.get("name", None)
 
     if len(shed_file_dirs) < 2 and config_name is None:
-        name = os.path.basename(path)
+        name = path_to_repo_name(path)
 
     if len(shed_file_dirs) > 1 and name is not None:
         raise Exception(NAME_INVALID_MESSAGE)
