@@ -16,8 +16,11 @@ try:
 except ImportError:
     toolshed = None
 
-from planemo.io import error
-from planemo.io import untar_to
+from planemo.io import (
+    error,
+    untar_to,
+    can_write_to_path,
+)
 
 SHED_CONFIG_NAME = '.shed.yml'
 NO_REPOSITORIES_MESSAGE = ("Could not find any .shed.yml files or a --name to "
@@ -56,6 +59,54 @@ BIOBLEND_UNAVAILABLE = ("This functionality requires the bioblend library "
 REPO_TYPE_UNRESTRICTED = "unrestricted"
 REPO_TYPE_TOOL_DEP = "tool_dependency_definition"
 REPO_TYPE_SUITE = "repository_suite_definition"
+
+# Generate with python scripts/categories.py
+CURRENT_CATEGORIES = [
+    "Assembly",
+    "ChIP-seq",
+    "Combinatorial Selections",
+    "Computational chemistry",
+    "Convert Formats",
+    "Data Managers",
+    "Data Source",
+    "Fasta Manipulation",
+    "Fastq Manipulation",
+    "Genome-Wide Association Study",
+    "Genomic Interval Operations",
+    "Graphics",
+    "Imaging",
+    "Metabolomics",
+    "Metagenomics",
+    "Micro-array Analysis",
+    "Next Gen Mappers",
+    "Ontology Manipulation",
+    "Phylogenetics",
+    "Proteomics",
+    "RNA",
+    "SAM",
+    "Sequence Analysis",
+    "Statistics",
+    "Systems Biology",
+    "Text Manipulation",
+    "Tool Dependency Packages",
+    "Tool Generators",
+    "Transcriptomics",
+    "Variant Analysis",
+    "Visualization",
+    "Web Services",
+]
+
+
+def shed_init(ctx, path, **kwds):
+    if not os.path.exists(path):
+        os.makedirs(path)
+    shed_config_path = os.path.join(path, SHED_CONFIG_NAME)
+    if not can_write_to_path(shed_config_path, **kwds):
+        # .shed.yml exists and no --force sent.
+        return 1
+
+    _create_shed_config(ctx, shed_config_path, **kwds)
+    return 0
 
 
 def shed_repo_config(path):
@@ -288,6 +339,34 @@ def realize_effective_repositories(path, **kwds):
             yield raw_repo_object.realize_to(temp_directory)
     finally:
         shutil.rmtree(temp_directory)
+
+
+def _create_shed_config(ctx, path, **kwds):
+    name = kwds.get("name", None) or path_to_repo_name(os.path.dirname(path))
+    owner = kwds.get("owner", None)
+    if owner is None:
+        owner = ctx.global_config.get("shed_username", None)
+    description = kwds.get("description", None) or name
+    long_description = kwds.get("long_description", None)
+    remote_repository_url = kwds.get("remote_repository_url", None)
+    homepage_url = kwds.get("homepage_url", None)
+    categories = kwds.get("category", [])
+    config = dict(
+        name=name,
+        owner=owner,
+        description=description,
+        long_description=long_description,
+        remote_repository_url=remote_repository_url,
+        homepage_url=homepage_url,
+        categories=categories,
+    )
+    # Remove empty entries...
+    for k in list(config.keys()):
+        if config[k] is None:
+            del config[k]
+
+    with open(path, "w") as f:
+        yaml.dump(config, f)
 
 
 def _find_raw_repositories(path, **kwds):

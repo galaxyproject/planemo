@@ -55,7 +55,7 @@ def test_find_category_ids():
     with mock_shed_client() as tsi:
         category_ids = shed.find_category_ids(
             tsi,
-            ["Text Utils"]
+            ["Text Manipulation"]
         )
         assert category_ids == ["c1"]
 

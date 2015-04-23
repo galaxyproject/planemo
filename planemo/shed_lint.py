@@ -8,6 +8,7 @@ from planemo.shed import (
     REPO_TYPE_UNRESTRICTED,
     REPO_TYPE_TOOL_DEP,
     REPO_TYPE_SUITE,
+    CURRENT_CATEGORIES,
 )
 from planemo.tool_lint import (
     build_lint_args,
@@ -111,6 +112,7 @@ def _lint_shed_contents(lint_ctx, path, shed_contents):
     _lint_if_present("owner", _validate_repo_owner)
     _lint_if_present("name", _validate_repo_name)
     _lint_if_present("type", _validate_repo_type, effective_name)
+    _lint_if_present("categories", _validate_categories)
 
 
 def _validate_repo_type(repo_type, name):
@@ -151,4 +153,19 @@ def _validate_repo_owner(owner):
         msg = "Owner cannot be more than 255 characters in length"
     if not(VALID_PUBLICNAME_RE.match(owner)):
         msg = "Owner must contain only lower-case letters, numbers and '-'"
+    return msg
+
+
+def _validate_categories(categories):
+    msg = None
+    if len(categories) == 0:
+        msg = "Repository should specify one or more categories."
+    else:
+        for category in categories:
+            unknown_categories = []
+            if category not in CURRENT_CATEGORIES:
+                unknown_categories.append(category)
+            if unknown_categories:
+                msg = "Categories [%s] unknown." % unknown_categories
+
     return msg

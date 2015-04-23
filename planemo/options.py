@@ -4,6 +4,15 @@ import click
 from galaxy.tools.deps import docker_util
 
 
+def force_option(what="files"):
+    return click.option(
+        "-f",
+        "--force",
+        is_flag=True,
+        help="Overwrite existing %s if present." % what,
+    )
+
+
 def test_data_option():
     return click.option(
         "--test_data",
