@@ -1,8 +1,12 @@
-from .test_utils import CliTestCase
+from .test_utils import (
+    CliTestCase,
+    skip_if_environ,
+)
 
 
 class InitAndTestTestCase(CliTestCase):
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_init_and_test(self):
         with self._isolate():
             init_cmd = ["project_init", "--template", "demo", "basic"]

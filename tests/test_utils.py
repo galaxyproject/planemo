@@ -114,6 +114,13 @@ def skip_unless_environ(var):
     return skip(template % var)
 
 
+def skip_if_environ(var):
+    if var not in os.environ:
+        return lambda func: func
+    template = "Environment variable %s set, dependent test skipped."
+    return skip(template % var)
+
+
 def skip_unless_module(module):
     available = True
     try:
