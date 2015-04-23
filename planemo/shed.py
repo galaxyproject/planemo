@@ -1,6 +1,7 @@
 import fnmatch
 import glob
 import hashlib
+import json
 import os
 import tarfile
 from tempfile import (
@@ -106,6 +107,26 @@ def shed_init(ctx, path, **kwds):
         return 1
 
     _create_shed_config(ctx, shed_config_path, **kwds)
+    repo_dependencies_path = os.path.join(path, "repository_dependencies.xml")
+    from_workflow = kwds.get("from_workflow", None)
+
+    if from_workflow:
+        workflow_name = os.path.basename(from_workflow)
+        workflow_target = os.path.join(path, workflow_name)
+        if not os.path.exists(workflow_target):
+            shutil.copyfile(from_workflow, workflow_target)
+
+        if not can_write_to_path(repo_dependencies_path, **kwds):
+            return 1
+
+        repo_pairs = _parse_repos_from_workflow(from_workflow)
+        contents = '<repositories description="">'
+        line_template = '  <repository owner="%s" name="%s" />'
+        for (owner, name) in repo_pairs:
+            contents += line_template % (owner, name)
+        contents += "</repositories>"
+        open(repo_dependencies_path, "w").write(contents)
+
     return 0
 
 
@@ -367,6 +388,29 @@ def _create_shed_config(ctx, path, **kwds):
 
     with open(path, "w") as f:
         yaml.dump(config, f)
+
+
+def _parse_repos_from_workflow(path):
+    workflow_json = json.load(open(path, "r"))
+    steps = workflow_json["steps"]
+    tool_ids = set()
+    for value in steps.values():
+        step_type = value["type"]
+        if step_type != "tool":
+            continue
+        tool_id = value["tool_id"]
+        if "/repos/" in tool_id:
+            tool_ids.add(tool_id)
+
+    repo_pairs = set()
+    for tool_id in tool_ids:
+        tool_repo_info = tool_id.split("/repos/", 1)[1]
+        tool_repo_parts = tool_repo_info.split("/")
+        owner = tool_repo_parts[0]
+        name = tool_repo_parts[1]
+        repo_pairs.add((owner, name))
+
+    return repo_pairs
 
 
 def _find_raw_repositories(path, **kwds):

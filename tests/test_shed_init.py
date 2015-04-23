@@ -2,7 +2,16 @@ import os
 
 import yaml
 
-from .test_utils import CliShedTestCase
+from .test_utils import (
+    CliShedTestCase,
+    TEST_REPOS_DIR,
+)
+
+TEST_WORKFLOW_PATH = os.path.join(
+    TEST_REPOS_DIR,
+    "workflow_1",
+    "blast_top_hit_species.ga"
+)
 
 
 class ShedInitTestCase(CliShedTestCase):
@@ -50,3 +59,19 @@ class ShedInitTestCase(CliShedTestCase):
             assert len(categories) == 3
             assert "SAM" in categories
             assert "Statistics" in categories
+
+    def test_from_workflow(self):
+        with self._isolate() as f:
+            init_command = ["shed_init", "--owner", "iuc"]
+            init_command += ["--category", "Sequence Analysis"]
+            init_command += ["--name", "blasthits"]
+            init_command += ["--from_workflow", TEST_WORKFLOW_PATH]
+            self._check_exit_code(init_command)
+
+            repo_deps_path = os.path.join(f, "repository_dependencies.xml")
+            wf_path = os.path.join(f, "blast_top_hit_species.ga")
+            assert os.path.exists(repo_deps_path)
+            assert os.path.exists(wf_path)
+
+            # lint repository as a way of verifying repository_dependencies
+            self._check_exit_code(["shed_lint"])

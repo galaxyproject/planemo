@@ -9,13 +9,12 @@ from planemo import shed
 
 @click.command("shed_init")
 @options.optional_project_arg()
-# TODO:
-# @click.option(
-#    "--from_workflow",
-#    type=click.Path(exists=True, file_okay=True, resolve_path=True),
-#    help=('Attempt to generate repository dependencies from specified '
-#          'workflow.')
-# )
+@click.option(
+    "--from_workflow",
+    type=click.Path(exists=True, file_okay=True, resolve_path=True),
+    help=('Attempt to generate repository dependencies from specified '
+          'workflow.')
+)
 @click.option(
     "--description",
     help='Specify repository description for .shed.yml.'
