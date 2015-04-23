@@ -2,6 +2,7 @@ import os
 import re
 import yaml
 from galaxy.tools.lint import LintContext
+from galaxy.tools.linters.help import rst_invalid
 from planemo.lint import lint_xsd
 from planemo.shed import (
     path_to_repo_name,
@@ -55,6 +56,11 @@ def lint_repository(ctx, path, **kwds):
         lint_shed_yaml,
         path,
     )
+    lint_ctx.lint(
+        "readme",
+        lint_readme,
+        path,
+    )
     if kwds["tools"]:
         for (tool_path, tool_xml) in yield_tool_xmls(ctx, path):
             info("+Linting tool %s" % tool_path)
@@ -67,6 +73,41 @@ def lint_repository(ctx, path, **kwds):
     if failed:
         error("Failed linting")
     return 1 if failed else 0
+
+
+def lint_readme(path, lint_ctx):
+    readme_rst = os.path.join(path, "README.rst")
+    readme = os.path.join(path, "README")
+    readme_txt = os.path.join(path, "README.txt")
+
+    readme_found = False
+    for readme in [readme_rst, readme, readme_txt]:
+        if os.path.exists(readme):
+            readme_found = readme
+
+    if not readme_found and os.path.exists("README.md"):
+        lint_ctx.warn("Tool Shed doesn't render markdown, "
+                      "README.md is invalid readme.")
+        return
+
+    if not readme_found:
+        # TODO: filter on TYPE and make this a warning if
+        # unrestricted repository - need to update iuc standards
+        # first though.
+        lint_ctx.info("No README found skipping.")
+        return
+
+    if readme_found.endswith(".rst"):
+        readme_text = open(readme_found, "r").read()
+        invalid_rst = rst_invalid(readme_text)
+        if invalid_rst:
+            template = "Invalid restructured text found in README [%s]."
+            msg = template % invalid_rst
+            lint_ctx.warn(msg)
+            return
+        lint_ctx.info("README found containing valid reStructuredText.")
+    else:
+        lint_ctx.info("README found containing plain text.")
 
 
 def lint_tool_dependencies(path, lint_ctx):
