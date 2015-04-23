@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<repositories description="This workflow requires the NCBI BLAST+ tools etc">
+    <repository owner="devteam" name="ncbi_blast_plus" />
+    <repository owner="devteam" name="fasta_to_tabular" />
+    <repository owner="peterjc" name="sample_seqs" />
+    <repository owner="bgruening" name="unique" />
+    <!-- Also uses tool_id join1, Count1, and sort1 which are currently
+         still shipped with Galaxy itself rather than via the Tool Shed -->
+</repositories>

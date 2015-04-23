@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<repositories description="A suite of Galaxy tools designed to work with version 1.2 of the SAMtools package.">
+    <repository name="data_manager_sam_fasta_index_builder" owner="devteam" />
+    <repository name="bam_to_sam" owner="devteam" />
+    <repository name="sam_to_bam" owner="devteam" />
+    <repository name="samtools_bedcov" owner="devteam" />
+    <repository name="samtools_calmd" owner="devteam" />
+    <repository name="samtools_flagstat" owner="devteam" />
+    <repository name="samtools_idxstat" owner="devteam" />
+    <repository name="samtools_mpileup" owner="devteam" />
+    <repository name="samtools_phase" owner="devteam" />
+    <repository name="samtools_reheader" owner="devteam" />
+    <repository name="samtools_rmdup" owner="devteam" />
+    <repository name="samtools_slice_bam" owner="devteam" />
+    <repository name="samtools_sort" owner="devteam" />
+    <repository name="samtools_split" owner="devteam" />
+    <repository name="samtools_stats" owner="devteam" />
+</repositories>

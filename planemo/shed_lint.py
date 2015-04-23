@@ -3,7 +3,12 @@ import re
 import yaml
 from galaxy.tools.lint import LintContext
 from planemo.lint import lint_xsd
-from planemo.shed import path_to_repo_name
+from planemo.shed import (
+    path_to_repo_name,
+    REPO_TYPE_UNRESTRICTED,
+    REPO_TYPE_TOOL_DEP,
+    REPO_TYPE_SUITE,
+)
 from planemo.tool_lint import (
     build_lint_args,
     yield_tool_xmls,
@@ -24,9 +29,9 @@ VALID_REPOSITORYNAME_RE = re.compile("^[a-z0-9\_]+$")
 VALID_PUBLICNAME_RE = re.compile("^[a-z0-9\-]+$")
 
 VALID_REPOSITORY_TYPES = [
-    "unrestricted",
-    "tool_dependency_definition",
-    "repository_suite_definition",
+    REPO_TYPE_UNRESTRICTED,
+    REPO_TYPE_TOOL_DEP,
+    REPO_TYPE_SUITE,
 ]
 
 

@@ -53,6 +53,10 @@ BIOBLEND_UNAVAILABLE = ("This functionality requires the bioblend library "
                         " which is unavailable, please install `pip install "
                         "bioblend`")
 
+REPO_TYPE_UNRESTRICTED = "unrestricted"
+REPO_TYPE_TOOL_DEP = "tool_dependency_definition"
+REPO_TYPE_SUITE = "repository_suite_definition"
+
 
 def shed_repo_config(path):
     shed_yaml_path = os.path.join(path, SHED_CONFIG_NAME)
@@ -189,7 +193,7 @@ def download_tarball(ctx, tsi, path, **kwds):
                 os.remove(archival_file)
 
 
-def build_tarball(tool_path):
+def build_tarball(tool_path, **kwds):
     """Build a tool-shed tar ball for the specified path, caller is
     responsible for deleting this file.
     """
@@ -198,7 +202,8 @@ def build_tarball(tool_path):
     # It should be pushed up a level into the thing that is uploading tar
     # balls to iterate over them - but placing it here for now because
     # it address some bugs.
-    for realized_repository in realize_effective_repositories(tool_path):
+    effective_repositories = realize_effective_repositories(tool_path, **kwds)
+    for realized_repository in effective_repositories:
         fd, temp_path = mkstemp()
         try:
             tar = tarfile.open(temp_path, "w:gz")
@@ -252,11 +257,11 @@ def path_to_repo_name(path):
 def shed_repo_type(config, name):
     repo_type = config.get("type", None)
     if repo_type is None and name.startswith("package_"):
-        repo_type = "tool_dependency_definition"
+        repo_type = REPO_TYPE_TOOL_DEP
     elif repo_type is None and name.startswith("suite_"):
-        repo_type = "repository_suite_definition"
+        repo_type = REPO_TYPE_SUITE
     elif repo_type is None:
-        repo_type = "unrestricted"
+        repo_type = REPO_TYPE_UNRESTRICTED
     return repo_type
 
 
@@ -302,7 +307,7 @@ def _find_raw_repositories(path, **kwds):
         config = shed_repo_config(shed_file_dirs[0])
         config_name = config.get("name", None)
 
-    if len(shed_file_dirs) < 2 and config_name is None:
+    if len(shed_file_dirs) < 2 and config_name is None and name is None:
         name = path_to_repo_name(path)
 
     if len(shed_file_dirs) > 1 and name is not None:
@@ -348,13 +353,14 @@ class RawRepositoryDirectory(object):
         self.path = path
         self.config = config
         self.name = config["name"]
+        self.type = shed_repo_type(config, self.name)
 
     @property
     def _hash(self):
         return hashlib.md5(self.name.encode('utf-8')).hexdigest()
 
     def realize_to(self, parent_directory):
-        directory = os.path.join(parent_directory, self._hash)
+        directory = os.path.join(parent_directory, self._hash, self.name)
         if not os.path.exists(directory):
             os.makedirs(directory)
 
@@ -385,6 +391,16 @@ class RawRepositoryDirectory(object):
         os.symlink(source_path, target_path)
 
     def _implicit_ignores(self, relative_path):
+        # Filter out "unwanted files" :) like READMEs for special
+        # repository types.
+        if self.type == REPO_TYPE_TOOL_DEP:
+            if relative_path != "tool_dependencies.xml":
+                return True
+
+        if self.type == REPO_TYPE_SUITE:
+            if relative_path != "repository_dependencies.xml":
+                return True
+
         name = os.path.basename(relative_path)
         if relative_path.startswith(".git"):
             return True

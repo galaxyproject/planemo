@@ -82,7 +82,7 @@ def __handle_upload(ctx, path, **kwds):
     """
     tar_path = kwds.get("tar", None)
     if not tar_path:
-        tar_path = shed.build_tarball(path)
+        tar_path = shed.build_tarball(path, **kwds)
     if kwds["tar_only"]:
         shell("cp %s shed_upload.tar.gz" % tar_path)
         return 0
