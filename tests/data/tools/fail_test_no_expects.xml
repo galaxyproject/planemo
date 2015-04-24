@@ -1,0 +1,23 @@
+<tool id="copy" name="Copy Dataset" version="1.0">
+    <description>copies a dataset</description>
+    <command>
+        cp $input $output
+    </command>
+    <inputs>
+        <param name="input1" type="data" format="txt" label="Concatenate Dataset"/>
+    </inputs>
+    <outputs>
+        <data name="output" format="txt"/>
+    </outputs>
+    <tests>
+        <test>
+            <param name="input1" value="1.bed"/>
+      </test>
+    </tests>
+    <help>
+        Some Awesome Help!
+    </help>
+    <citations>
+        <citation type="doi">10.1101/014043</citation>
+    </citations>
+</tool>

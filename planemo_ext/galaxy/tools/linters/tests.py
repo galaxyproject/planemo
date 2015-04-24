@@ -8,9 +8,19 @@ def lint_tsts(tool_xml, lint_ctx):
 
     num_valid_tests = 0
     for test in tests:
+        has_test = False
+        if "expect_failure" in test.attrib or "expect_exit_code" in test.attrib:
+            has_test = True
+        if len(test.findall("assert_stdout")) > 0:
+            has_test = True
+        if len(test.findall("assert_stdout")) > 0:
+            has_test = True
+
         outputs = test.findall("output")
-        if not outputs:
-            lint_ctx.warn("No outputs defined for tests, this test is likely invalid.")
+        if len(outputs) > 0:
+            has_test = True
+        if not has_test:
+            lint_ctx.warn("No outputs or expectations defined for tests, this test is likely invalid.")
         else:
             num_valid_tests += 1
 
