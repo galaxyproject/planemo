@@ -1,6 +1,7 @@
 """ Provide abstractions over click testing of the
 app and unittest.
 """
+from __future__ import print_function
 import contextlib
 import os
 from tempfile import mkdtemp
@@ -90,6 +91,14 @@ class CliShedTestCase(CliTestCase):
         if not read_only:
             args.extend(["--shed_key", "ignored"])
         return args
+
+    def _print_shed_info(self):
+        tsi = shed.tool_shed_client(
+            None,
+            shed_target=self.mock_shed.url,
+            key="ignored",
+        )
+        print(tsi.repositories.get_repositories())
 
 
 @contextlib.contextmanager

@@ -133,11 +133,14 @@ def shed_init(ctx, path, **kwds):
 
 def shed_repo_config(path):
     shed_yaml_path = os.path.join(path, SHED_CONFIG_NAME)
+    config = {}
     if os.path.exists(shed_yaml_path):
         with open(shed_yaml_path, "r") as f:
-            return yaml.load(f)
-    else:
-        return {}
+            config = yaml.load(f)
+
+    if config is None:  # yaml may yield None
+        config = {}
+    return config
 
 
 def tool_shed_client(ctx=None, **kwds):

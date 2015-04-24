@@ -4,6 +4,7 @@ commands.
 from os.path import exists, join
 import os
 import tarfile
+import shutil
 
 from .test_utils import CliShedTestCase
 
@@ -47,6 +48,16 @@ class ShedUploadTestCase(CliShedTestCase):
             self._check_exit_code(create_command)
             self._check_exit_code(create_command, exit_code=1)
 
+    def test_upload_recusrive(self):
+        with self._isolate_repo("multi_repos_nested") as f:
+            upload_command = [
+                "shed_upload", "-r", "--force_repository_creation"
+            ]
+            upload_command.extend(self._shed_args())
+            self._check_exit_code(upload_command)
+            self._verify_upload(f, ["cat1.xml", "macros.xml"], ["cat1"])
+            self._verify_upload(f, ["cat2.xml", "macros.xml"], ["cat2"])
+
     def test_upload_filters_invalid_suite(self):
         with self._isolate_repo("suite_1") as f:
             # No .shed.yml, make sure to test it can infer type
@@ -85,11 +96,16 @@ class ShedUploadTestCase(CliShedTestCase):
             assert exists(join(target, "README.rst"))
 
     def _verify_single_uploaded(self, f):
-        target = self._download_repo(f)
-        assert exists(join(target, "cat.xml"))
+        self._verify_upload(f, ["cat.xml"])
 
-    def _download_repo(self, f):
+    def _verify_upload(self, f, download_files=[], download_args=[]):
+        target = self._download_repo(f, download_args)
+        for download_file in download_files:
+            assert exists(join(target, download_file))
+
+    def _download_repo(self, f, download_args=[]):
         download_command = ["shed_download"]
+        download_command.extend(download_args)
         download_command.extend(self._shed_args(read_only=True))
         self._check_exit_code(download_command)
         download = join(f, "shed_download.tar.gz")
@@ -98,6 +114,8 @@ class ShedUploadTestCase(CliShedTestCase):
 
     def _untar(self, f, path):
         target = join(f, "download")
+        if exists(target):
+            shutil.rmtree(target)
         os.makedirs(target)
         tar = tarfile.open(path, "r:gz")
         tar.extractall(path=target)
