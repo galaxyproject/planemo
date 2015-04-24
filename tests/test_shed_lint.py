@@ -19,6 +19,6 @@ class ShedLineTestCase(CliTestCase):
     def test_invalid_repos(self):
         # And now
         with self._isolate_repo("bad_readme_rst"):
-            self._check_exit_code(["shed_lint"], exit_code=1)
+            self._check_exit_code(["shed_lint"], exit_code=-1)
         with self._isolate_repo("bad_readme_md"):
-            self._check_exit_code(["shed_lint"], exit_code=1)
+            self._check_exit_code(["shed_lint"], exit_code=-1)

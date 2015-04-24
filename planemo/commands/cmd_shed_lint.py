@@ -23,12 +23,9 @@ from planemo import shed_lint
 def cli(ctx, path, recursive=False, **kwds):
     """Check a Tool Shed repository for common problems.
     """
-    def lint(path):
+    def lint(realized_repository):
+        path = realized_repository.real_path
         return shed_lint.lint_repository(ctx, path, **kwds)
 
-    if recursive:
-        exit_code = shed.for_each_repository(lint, path)
-    else:
-        exit_code = lint(path)
-
+    exit_code = shed.for_each_repository(lint, path)
     sys.exit(exit_code)

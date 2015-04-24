@@ -1,3 +1,6 @@
+name: single_tool_exclude
+owner: iuc
+description: A single tool with an ignore.
 ignore: 
  - related_file
 

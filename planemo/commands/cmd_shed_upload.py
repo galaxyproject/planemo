@@ -59,41 +59,37 @@ tar_path = click.Path(
 def cli(ctx, path, **kwds):
     """Handle possible recursion through paths for uploading files to a toolshed
     """
+    def upload(realized_repository):
+        return __handle_upload(ctx, realized_repository, **kwds)
 
-    def upload(path):
-        return __handle_upload(ctx, path, **kwds)
-
-    if kwds['recursive']:
-        if kwds['name'] is not None:
-            error("--name is incompatible with --recursive")
-            return -1
-        if kwds['tar'] is not None:
-            error("--tar is incompatible with --recursive")
-            return -1
-
-        exit_code = shed.for_each_repository(upload, path)
-    else:
-        exit_code = upload(path)
+    exit_code = shed.for_each_repository(upload, path, **kwds)
     sys.exit(exit_code)
 
 
-def __handle_upload(ctx, path, **kwds):
+def __handle_upload(ctx, realized_repository, **kwds):
     """Upload a tool directory as a tarball to a tool shed.
     """
+    path = realized_repository.path
     tar_path = kwds.get("tar", None)
     if not tar_path:
         tar_path = shed.build_tarball(path, **kwds)
     if kwds["tar_only"]:
-        shell("cp %s shed_upload.tar.gz" % tar_path)
+        suffix = ""
+        if realized_repository.multiple:
+            name = realized_repository.config["name"]
+            suffix = "_%s" % name.replace("-", "_")
+        shell("cp %s shed_upload%s.tar.gz" % (tar_path, suffix))
         return 0
     tsi = shed.tool_shed_client(ctx, **kwds)
     update_kwds = {}
     message = kwds.get("message", None)
     if message:
         update_kwds["commit_message"] = message
-    repo_id = __find_repository(ctx, tsi, path, **kwds)
+
+    # TODO: this needs to use realized repository
+    repo_id = realized_repository.find_repository_id(ctx, tsi)
     if repo_id is None and kwds["force_repository_creation"]:
-        repo_id = __create_repository(ctx, tsi, path, **kwds)
+        repo_id = realized_repository.create(ctx, tsi)
     # failing to create the repo, give up
     if repo_id is None:
         return -1
@@ -109,43 +105,9 @@ def __handle_upload(ctx, path, **kwds):
             upstream_error = json.loads(exception_content)
             error(upstream_error['err_msg'])
         except Exception as e2:
-            error("Could not update %s" % path)
+            error("Could not update %s" % realized_repository.name)
             error(exception_content)
             error(e2.read())
         return -1
-    info("Repository %s updated successfully." % path)
+    info("Repository %s updated successfully." % realized_repository.name)
     return 0
-
-
-def __find_repository(ctx, tsi, path, **kwds):
-    """More advanced error handling for finding a repository by ID
-    """
-    try:
-        repo_id = shed.find_repository_id(ctx, tsi, path, **kwds)
-        return repo_id
-    except Exception as e:
-        error("Could not update %s" % path)
-        try:
-            error(e.read())
-        except AttributeError:
-            # I've seen a case where the error couldn't be read, so now
-            # wrapped in try/except
-            error("Could not find repository in toolshed")
-    return None
-
-
-def __create_repository(ctx, tsi, path, **kwds):
-    """Wrapper for creating the endpoint if it doesn't exist
-    """
-    try:
-        repo = shed.create_repository(ctx, tsi, path, **kwds)
-        return repo['id']
-    # Have to catch missing snyopsis/bioblend exceptions
-    except Exception as e:
-        # TODO: galaxyproject/bioblend#126
-        try:
-            upstream_error = json.loads(e.read())
-            error(upstream_error['err_msg'])
-        except Exception:
-            error(str(e))
-        return None

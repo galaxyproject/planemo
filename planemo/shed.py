@@ -177,14 +177,23 @@ def tool_shed_client(ctx=None, **kwds):
 
 
 def find_repository_id(ctx, tsi, path, **kwds):
-    global_config = getattr(ctx, "global_config", {})
-    repo_config = shed_repo_config(path)
-    owner = kwds.get("owner", None) or repo_config.get("owner", None)
+    repo_config = kwds.get("config", None)
+    if repo_config is None:
+        repo_config = shed_repo_config(path)
     name = kwds.get("name", None) or repo_config.get("name", None)
-    if owner is None:
-        owner = global_config.get("shed_username", None)
     if name is None:
         name = path_to_repo_name(path)
+    find_kwds = kwds.copy()
+    if "name" in find_kwds:
+        del find_kwds["name"]
+    return _find_repository_id(ctx, tsi, name, repo_config, **find_kwds)
+
+
+def _find_repository_id(ctx, tsi, name, repo_config, **kwds):
+    global_config = getattr(ctx, "global_config", {})
+    owner = kwds.get("owner", None) or repo_config.get("owner", None)
+    if owner is None:
+        owner = global_config.get("shed_username", None)
     repos = tsi.repositories.get_repositories()
 
     def matches(r):
@@ -207,7 +216,10 @@ def create_repository(ctx, tsi, path, **kwds):
     name = kwds.get("name", None) or repo_config.get("name", None)
     if name is None:
         name = path_to_repo_name(path)
+    return create_repository_for(ctx, tsi, name, repo_config)
 
+
+def create_repository_for(ctx, tsi, name, repo_config):
     description = repo_config.get("description", None)
     long_description = repo_config.get("long_description", None)
     repo_type = shed_repo_type(repo_config, name)
@@ -269,7 +281,7 @@ def download_tarball(ctx, tsi, path, **kwds):
                 os.remove(archival_file)
 
 
-def build_tarball(tool_path, **kwds):
+def build_tarball(realized_path, **kwds):
     """Build a tool-shed tar ball for the specified path, caller is
     responsible for deleting this file.
     """
@@ -278,33 +290,24 @@ def build_tarball(tool_path, **kwds):
     # It should be pushed up a level into the thing that is uploading tar
     # balls to iterate over them - but placing it here for now because
     # it address some bugs.
-    effective_repositories = realize_effective_repositories(tool_path, **kwds)
-    for realized_repository in effective_repositories:
-        fd, temp_path = mkstemp()
+    fd, temp_path = mkstemp()
+    try:
+        tar = tarfile.open(temp_path, "w:gz")
         try:
-            tar = tarfile.open(temp_path, "w:gz")
-            try:
-                tar.add(realized_repository.path, arcname=".", recursive=True)
-            finally:
-                tar.close()
+            tar.add(realized_path, arcname=".", recursive=True)
         finally:
-            os.close(fd)
-        return temp_path
-    raise Exception("Problem not valid repositories found.")
+            tar.close()
+    finally:
+        os.close(fd)
+    return temp_path
 
 
-def walk_repositories(path):
-    """ Recurse through directories and find effective repositories. """
-    for base_path, dirnames, filenames in os.walk(path):
-        for filename in fnmatch.filter(filenames, '.shed.yml'):
-            yield base_path
-
-
-def for_each_repository(function, path):
+def for_each_repository(function, path, **kwds):
     ret_codes = []
-    for base_path in walk_repositories(path):
+    effective_repositories = realize_effective_repositories(path, **kwds)
+    for realized_repository in effective_repositories:
         ret_codes.append(
-            function(base_path)
+            function(realized_repository)
         )
     # "Good" returns are Nones, everything else is a -1 and should be
     # passed upwards.
@@ -455,6 +458,7 @@ def _build_raw_repo_objects(raw_dirs, **kwds):
     the comman-line build abstract description of directories that should be
     expanded out into shed repositories.
     """
+    multiple = len(raw_dirs) > 1
     name = kwds.get("name", None)
     skip_errors = kwds.get("skip_errors", False)
 
@@ -470,18 +474,19 @@ def _build_raw_repo_objects(raw_dirs, **kwds):
                 raise
         if name:
             config["name"] = name
-        raw_repo_object = RawRepositoryDirectory(raw_dir, config)
+        raw_repo_object = RawRepositoryDirectory(raw_dir, config, multiple)
         raw_repo_objects.append(raw_repo_object)
     return raw_repo_objects
 
 
 class RawRepositoryDirectory(object):
 
-    def __init__(self, path, config):
+    def __init__(self, path, config, multiple):
         self.path = path
         self.config = config
         self.name = config["name"]
         self.type = shed_repo_type(config, self.name)
+        self.multiple = multiple  # operation over many repos?
 
     @property
     def _hash(self):
@@ -506,7 +511,12 @@ class RawRepositoryDirectory(object):
                     continue
 
                 self._realize_file(relative_path, directory)
-        return RealizedRepositry(directory, self.config)
+        return RealizedRepositry(
+            realized_path=directory,
+            real_path=self.path,
+            config=self.config,
+            multiple=self.multiple
+        )
 
     def _realize_file(self, relative_path, directory):
         source_path = os.path.join(self.path, relative_path)
@@ -539,6 +549,50 @@ class RawRepositoryDirectory(object):
 
 class RealizedRepositry(object):
 
-    def __init__(self, path, config):
-        self.path = path
+    def __init__(self, realized_path, real_path, config, multiple):
+        self.path = realized_path
+        self.real_path = real_path
         self.config = config
+        self.name = config["name"]
+        self.multiple = multiple
+
+    def find_repository_id(self, ctx, tsi):
+        try:
+            repo_id = _find_repository_id(
+                ctx,
+                tsi,
+                name=self.name,
+                repo_config=self.config,
+                allow_none=True,
+            )
+            return repo_id
+        except Exception as e:
+            error("Could not update %s" % self.name)
+            try:
+                error(e.read())
+            except AttributeError:
+                # I've seen a case where the error couldn't be read, so now
+                # wrapped in try/except
+                error("Could not query for repository in toolshed")
+        return None
+
+    def create(self, ctx, tsi):
+        """Wrapper for creating the endpoint if it doesn't exist
+        """
+        try:
+            repo = create_repository_for(
+                ctx,
+                tsi,
+                self.name,
+                self.config,
+            )
+            return repo['id']
+        # Have to catch missing snyopsis/bioblend exceptions
+        except Exception as e:
+            # TODO: galaxyproject/bioblend#126
+            try:
+                upstream_error = json.loads(e.read())
+                error(upstream_error['err_msg'])
+            except Exception:
+                error(str(e))
+            return None

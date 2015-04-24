@@ -46,7 +46,7 @@ class ShedUploadTestCase(CliShedTestCase):
             create_command = ["shed_create"]
             create_command.extend(self._shed_args())
             self._check_exit_code(create_command)
-            self._check_exit_code(create_command, exit_code=1)
+            self._check_exit_code(create_command, exit_code=-1)
 
     def test_upload_recusrive(self):
         with self._isolate_repo("multi_repos_nested") as f:
@@ -72,6 +72,38 @@ class ShedUploadTestCase(CliShedTestCase):
             # this got filtered
             assert not exists(join(target, "README.rst"))
 
+    def test_upload_filters_ignore(self):
+        with self._isolate_repo("single_tool_exclude") as f:
+            upload_command = ["shed_upload", "--force_repository_creation"]
+            upload_command.extend(self._shed_args())
+            self._check_exit_code(upload_command)
+            target = self._verify_upload(f)
+            assert not exists(join(target, "related_file"))
+
+    def test_tar_with_symlinks(self):
+        with self._isolate_repo("multi_repos_nested") as f:
+            upload_command = ["shed_upload", "--force_repository_creation"]
+            upload_command.append("cat2")
+            upload_command.extend(self._shed_args())
+            self._check_exit_code(upload_command)
+            target = self._verify_upload(f, ["macros.xml"], ["cat2"])
+            with open(join(target, "macros.xml"), "r") as macro_f:
+                macro_contents = macro_f.read()
+                assert macro_contents.startswith("<macros>")
+
+    def test_upload_filters_git(self):
+        with self._isolate_repo("single_tool") as f:
+            mock_git_dir = join(f, ".git")
+            os.makedirs(mock_git_dir)
+            index_path = os.path.join(mock_git_dir, "index_file")
+            with open(index_path, "w") as index_f:
+                index_f.write("test")
+            upload_command = ["shed_upload", "--force_repository_creation"]
+            upload_command.extend(self._shed_args())
+            self._check_exit_code(upload_command)
+            target = self._verify_upload(f)
+            assert not exists(join(target, ".git"))
+
     def test_upload_filters_invalid_package(self):
         with self._isolate_repo("package_1") as f:
             upload_command = ["shed_upload", "--tar_only"]
@@ -96,12 +128,13 @@ class ShedUploadTestCase(CliShedTestCase):
             assert exists(join(target, "README.rst"))
 
     def _verify_single_uploaded(self, f):
-        self._verify_upload(f, ["cat.xml"])
+        self._verify_upload(f, ["cat.xml", "related_file", "test-data/1.bed"])
 
     def _verify_upload(self, f, download_files=[], download_args=[]):
         target = self._download_repo(f, download_args)
         for download_file in download_files:
-            assert exists(join(target, download_file))
+            assert exists(join(target, download_file)), download_file
+        return target
 
     def _download_repo(self, f, download_args=[]):
         download_command = ["shed_download"]
