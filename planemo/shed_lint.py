@@ -85,7 +85,8 @@ def lint_readme(path, lint_ctx):
         if os.path.exists(readme):
             readme_found = readme
 
-    if not readme_found and os.path.exists("README.md"):
+    readme_md = os.path.join(path, "README.md")
+    if not readme_found and os.path.exists(readme_md):
         lint_ctx.warn("Tool Shed doesn't render markdown, "
                       "README.md is invalid readme.")
         return
