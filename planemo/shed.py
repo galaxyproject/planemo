@@ -1,6 +1,7 @@
 import fnmatch
 import glob
 import hashlib
+import json
 import os
 import tarfile
 from tempfile import (
@@ -16,8 +17,11 @@ try:
 except ImportError:
     toolshed = None
 
-from planemo.io import error
-from planemo.io import untar_to
+from planemo.io import (
+    error,
+    untar_to,
+    can_write_to_path,
+)
 
 SHED_CONFIG_NAME = '.shed.yml'
 NO_REPOSITORIES_MESSAGE = ("Could not find any .shed.yml files or a --name to "
@@ -52,6 +56,79 @@ REPOSITORY_DOWNLOAD_TEMPLATE = (
 BIOBLEND_UNAVAILABLE = ("This functionality requires the bioblend library "
                         " which is unavailable, please install `pip install "
                         "bioblend`")
+
+REPO_TYPE_UNRESTRICTED = "unrestricted"
+REPO_TYPE_TOOL_DEP = "tool_dependency_definition"
+REPO_TYPE_SUITE = "repository_suite_definition"
+
+# Generate with python scripts/categories.py
+CURRENT_CATEGORIES = [
+    "Assembly",
+    "ChIP-seq",
+    "Combinatorial Selections",
+    "Computational chemistry",
+    "Convert Formats",
+    "Data Managers",
+    "Data Source",
+    "Fasta Manipulation",
+    "Fastq Manipulation",
+    "Genome-Wide Association Study",
+    "Genomic Interval Operations",
+    "Graphics",
+    "Imaging",
+    "Metabolomics",
+    "Metagenomics",
+    "Micro-array Analysis",
+    "Next Gen Mappers",
+    "Ontology Manipulation",
+    "Phylogenetics",
+    "Proteomics",
+    "RNA",
+    "SAM",
+    "Sequence Analysis",
+    "Statistics",
+    "Systems Biology",
+    "Text Manipulation",
+    "Tool Dependency Packages",
+    "Tool Generators",
+    "Transcriptomics",
+    "Variant Analysis",
+    "Visualization",
+    "Web Services",
+]
+
+
+def shed_init(ctx, path, **kwds):
+    if not os.path.exists(path):
+        os.makedirs(path)
+    shed_config_path = os.path.join(path, SHED_CONFIG_NAME)
+    if not can_write_to_path(shed_config_path, **kwds):
+        # .shed.yml exists and no --force sent.
+        return 1
+
+    _create_shed_config(ctx, shed_config_path, **kwds)
+    repo_dependencies_path = os.path.join(path, "repository_dependencies.xml")
+    from_workflow = kwds.get("from_workflow", None)
+
+    if from_workflow:
+        workflow_name = os.path.basename(from_workflow)
+        workflow_target = os.path.join(path, workflow_name)
+        if not os.path.exists(workflow_target):
+            shutil.copyfile(from_workflow, workflow_target)
+
+        if not can_write_to_path(repo_dependencies_path, **kwds):
+            return 1
+
+        repo_pairs = _parse_repos_from_workflow(from_workflow)
+        contents = '<repositories description="">'
+        line_template = '  <repository owner="%s" name="%s" />'
+        for (owner, name) in repo_pairs:
+            contents += line_template % (owner, name)
+        contents += "</repositories>"
+        with open(repo_dependencies_path, "w") as f:
+            f.write(contents)
+
+    return 0
 
 
 def shed_repo_config(path):
@@ -104,7 +181,7 @@ def find_repository_id(ctx, tsi, path, **kwds):
     if owner is None:
         owner = global_config.get("shed_username", None)
     if name is None:
-        name = os.path.basename(os.path.abspath(path))
+        name = path_to_repo_name(path)
     repos = tsi.repositories.get_repositories()
 
     def matches(r):
@@ -125,24 +202,16 @@ def find_repository_id(ctx, tsi, path, **kwds):
 def create_repository(ctx, tsi, path, **kwds):
     repo_config = shed_repo_config(path)
     name = kwds.get("name", None) or repo_config.get("name", None)
+    if name is None:
+        name = path_to_repo_name(path)
 
     description = repo_config.get("description", None)
     long_description = repo_config.get("long_description", None)
-    type = repo_config.get("type", None)
+    repo_type = shed_repo_type(repo_config, name)
     remote_repository_url = repo_config.get("remote_repository_url", None)
     homepage_url = repo_config.get("homepage_url", None)
     categories = repo_config.get("categories", [])
     category_ids = find_category_ids(tsi, categories)
-
-    if name is None:
-        name = os.path.basename(os.path.abspath(path))
-
-    if type is None and name.startswith("package_"):
-        type = "tool_dependency_definition"
-    elif type is None and name.startswith("suite_"):
-        type = "repository_suite_definition"
-    elif type is None:
-        type = "unrestricted"
 
     # description is required, as is name.
     if description is None:
@@ -153,7 +222,7 @@ def create_repository(ctx, tsi, path, **kwds):
         name=name,
         synopsis=description,
         description=long_description,
-        type=type,
+        type=repo_type,
         remote_repository_url=remote_repository_url,
         homepage_url=homepage_url,
         category_ids=category_ids
@@ -197,7 +266,7 @@ def download_tarball(ctx, tsi, path, **kwds):
                 os.remove(archival_file)
 
 
-def build_tarball(tool_path):
+def build_tarball(tool_path, **kwds):
     """Build a tool-shed tar ball for the specified path, caller is
     responsible for deleting this file.
     """
@@ -206,7 +275,8 @@ def build_tarball(tool_path):
     # It should be pushed up a level into the thing that is uploading tar
     # balls to iterate over them - but placing it here for now because
     # it address some bugs.
-    for realized_repository in realize_effective_repositories(tool_path):
+    effective_repositories = realize_effective_repositories(tool_path, **kwds)
+    for realized_repository in effective_repositories:
         fd, temp_path = mkstemp()
         try:
             tar = tarfile.open(temp_path, "w:gz")
@@ -253,6 +323,21 @@ def _user(tsi):
     return response.json()[0]
 
 
+def path_to_repo_name(path):
+    return os.path.basename(os.path.abspath(path))
+
+
+def shed_repo_type(config, name):
+    repo_type = config.get("type", None)
+    if repo_type is None and name.startswith("package_"):
+        repo_type = REPO_TYPE_TOOL_DEP
+    elif repo_type is None and name.startswith("suite_"):
+        repo_type = REPO_TYPE_SUITE
+    elif repo_type is None:
+        repo_type = REPO_TYPE_UNRESTRICTED
+    return repo_type
+
+
 def _tool_shed_url(kwds):
     url = kwds.get("shed_target")
     if url in SHED_SHORT_NAMES:
@@ -278,6 +363,58 @@ def realize_effective_repositories(path, **kwds):
         shutil.rmtree(temp_directory)
 
 
+def _create_shed_config(ctx, path, **kwds):
+    name = kwds.get("name", None) or path_to_repo_name(os.path.dirname(path))
+    owner = kwds.get("owner", None)
+    if owner is None:
+        owner = ctx.global_config.get("shed_username", None)
+    description = kwds.get("description", None) or name
+    long_description = kwds.get("long_description", None)
+    remote_repository_url = kwds.get("remote_repository_url", None)
+    homepage_url = kwds.get("homepage_url", None)
+    categories = kwds.get("category", [])
+    config = dict(
+        name=name,
+        owner=owner,
+        description=description,
+        long_description=long_description,
+        remote_repository_url=remote_repository_url,
+        homepage_url=homepage_url,
+        categories=categories,
+    )
+    # Remove empty entries...
+    for k in list(config.keys()):
+        if config[k] is None:
+            del config[k]
+
+    with open(path, "w") as f:
+        yaml.dump(config, f)
+
+
+def _parse_repos_from_workflow(path):
+    with open(path, "r") as f:
+        workflow_json = json.load(f)
+    steps = workflow_json["steps"]
+    tool_ids = set()
+    for value in steps.values():
+        step_type = value["type"]
+        if step_type != "tool":
+            continue
+        tool_id = value["tool_id"]
+        if "/repos/" in tool_id:
+            tool_ids.add(tool_id)
+
+    repo_pairs = set()
+    for tool_id in tool_ids:
+        tool_repo_info = tool_id.split("/repos/", 1)[1]
+        tool_repo_parts = tool_repo_info.split("/")
+        owner = tool_repo_parts[0]
+        name = tool_repo_parts[1]
+        repo_pairs.add((owner, name))
+
+    return repo_pairs
+
+
 def _find_raw_repositories(path, **kwds):
     name = kwds.get("name", None)
     recursive = kwds.get("recursive", False)
@@ -295,8 +432,8 @@ def _find_raw_repositories(path, **kwds):
         config = shed_repo_config(shed_file_dirs[0])
         config_name = config.get("name", None)
 
-    if len(shed_file_dirs) < 2 and config_name is None:
-        name = os.path.basename(path)
+    if len(shed_file_dirs) < 2 and config_name is None and name is None:
+        name = path_to_repo_name(path)
 
     if len(shed_file_dirs) > 1 and name is not None:
         raise Exception(NAME_INVALID_MESSAGE)
@@ -341,13 +478,14 @@ class RawRepositoryDirectory(object):
         self.path = path
         self.config = config
         self.name = config["name"]
+        self.type = shed_repo_type(config, self.name)
 
     @property
     def _hash(self):
         return hashlib.md5(self.name.encode('utf-8')).hexdigest()
 
     def realize_to(self, parent_directory):
-        directory = os.path.join(parent_directory, self._hash)
+        directory = os.path.join(parent_directory, self._hash, self.name)
         if not os.path.exists(directory):
             os.makedirs(directory)
 
@@ -378,6 +516,16 @@ class RawRepositoryDirectory(object):
         os.symlink(source_path, target_path)
 
     def _implicit_ignores(self, relative_path):
+        # Filter out "unwanted files" :) like READMEs for special
+        # repository types.
+        if self.type == REPO_TYPE_TOOL_DEP:
+            if relative_path != "tool_dependencies.xml":
+                return True
+
+        if self.type == REPO_TYPE_SUITE:
+            if relative_path != "repository_dependencies.xml":
+                return True
+
         name = os.path.basename(relative_path)
         if relative_path.startswith(".git"):
             return True

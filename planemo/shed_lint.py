@@ -2,7 +2,15 @@ import os
 import re
 import yaml
 from galaxy.tools.lint import LintContext
+from galaxy.tools.linters.help import rst_invalid
 from planemo.lint import lint_xsd
+from planemo.shed import (
+    path_to_repo_name,
+    REPO_TYPE_UNRESTRICTED,
+    REPO_TYPE_TOOL_DEP,
+    REPO_TYPE_SUITE,
+    CURRENT_CATEGORIES,
+)
 from planemo.tool_lint import (
     build_lint_args,
     yield_tool_xmls,
@@ -23,9 +31,9 @@ VALID_REPOSITORYNAME_RE = re.compile("^[a-z0-9\_]+$")
 VALID_PUBLICNAME_RE = re.compile("^[a-z0-9\-]+$")
 
 VALID_REPOSITORY_TYPES = [
-    "unrestricted",
-    "tool_dependency_definition",
-    "repository_suite_definition",
+    REPO_TYPE_UNRESTRICTED,
+    REPO_TYPE_TOOL_DEP,
+    REPO_TYPE_SUITE,
 ]
 
 
@@ -48,6 +56,11 @@ def lint_repository(ctx, path, **kwds):
         lint_shed_yaml,
         path,
     )
+    lint_ctx.lint(
+        "readme",
+        lint_readme,
+        path,
+    )
     if kwds["tools"]:
         for (tool_path, tool_xml) in yield_tool_xmls(ctx, path):
             info("+Linting tool %s" % tool_path)
@@ -60,6 +73,42 @@ def lint_repository(ctx, path, **kwds):
     if failed:
         error("Failed linting")
     return 1 if failed else 0
+
+
+def lint_readme(path, lint_ctx):
+    readme_rst = os.path.join(path, "README.rst")
+    readme = os.path.join(path, "README")
+    readme_txt = os.path.join(path, "README.txt")
+
+    readme_found = False
+    for readme in [readme_rst, readme, readme_txt]:
+        if os.path.exists(readme):
+            readme_found = readme
+
+    readme_md = os.path.join(path, "README.md")
+    if not readme_found and os.path.exists(readme_md):
+        lint_ctx.warn("Tool Shed doesn't render markdown, "
+                      "README.md is invalid readme.")
+        return
+
+    if not readme_found:
+        # TODO: filter on TYPE and make this a warning if
+        # unrestricted repository - need to update iuc standards
+        # first though.
+        lint_ctx.info("No README found skipping.")
+        return
+
+    if readme_found.endswith(".rst"):
+        readme_text = open(readme_found, "r").read()
+        invalid_rst = rst_invalid(readme_text)
+        if invalid_rst:
+            template = "Invalid restructured text found in README [%s]."
+            msg = template % invalid_rst
+            lint_ctx.warn(msg)
+            return
+        lint_ctx.info("README found containing valid reStructuredText.")
+    else:
+        lint_ctx.info("README found containing plain text.")
 
 
 def lint_tool_dependencies(path, lint_ctx):
@@ -92,6 +141,9 @@ def lint_shed_yaml(path, lint_ctx):
 
 
 def _lint_shed_contents(lint_ctx, path, shed_contents):
+    name = shed_contents.get("name", None)
+    effective_name = name or path_to_repo_name(path)
+
     def _lint_if_present(key, func, *args):
         value = shed_contents.get(key, None)
         if value is not None:
@@ -101,8 +153,8 @@ def _lint_shed_contents(lint_ctx, path, shed_contents):
 
     _lint_if_present("owner", _validate_repo_owner)
     _lint_if_present("name", _validate_repo_name)
-    effective_name = shed_contents.get("name", None) or os.path.basename(path)
     _lint_if_present("type", _validate_repo_type, effective_name)
+    _lint_if_present("categories", _validate_categories)
 
 
 def _validate_repo_type(repo_type, name):
@@ -143,4 +195,19 @@ def _validate_repo_owner(owner):
         msg = "Owner cannot be more than 255 characters in length"
     if not(VALID_PUBLICNAME_RE.match(owner)):
         msg = "Owner must contain only lower-case letters, numbers and '-'"
+    return msg
+
+
+def _validate_categories(categories):
+    msg = None
+    if len(categories) == 0:
+        msg = "Repository should specify one or more categories."
+    else:
+        for category in categories:
+            unknown_categories = []
+            if category not in CURRENT_CATEGORIES:
+                unknown_categories.append(category)
+            if unknown_categories:
+                msg = "Categories [%s] unknown." % unknown_categories
+
     return msg

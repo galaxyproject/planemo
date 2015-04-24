@@ -18,6 +18,13 @@ def info(message, *args):
     _echo(click.style(message, bold=True, fg='green'))
 
 
+def can_write_to_path(path, **kwds):
+    if not kwds["force"] and os.path.exists(path):
+        error("%s already exists, exiting." % path)
+        return False
+    return True
+
+
 def error(message, *args):
     if args:
         message = message % args

@@ -1,6 +1,10 @@
 import os
+import sys
+
 import click
+
 from planemo.cli import pass_context
+from planemo import options
 from planemo import io
 from planemo import tool_builder
 
@@ -18,12 +22,7 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
     prompt=True,
     help="Short identifier for new tool (no whitespace)",
 )
-@click.option(
-    "-f",
-    "--force",
-    is_flag=True,
-    help="Overwrite existing tool if present.",
-)
+@options.force_option(what="tool")
 @click.option(
     "-t",
     "--tool",
@@ -190,9 +189,8 @@ def cli(ctx, **kwds):
     output = kwds.get("tool")
     if not output:
         output = "%s.xml" % kwds.get("id")
-    if not kwds["force"] and os.path.exists(output):
-        io.error("%s already exists, exiting." % output)
-        return 1
+    if not io.can_write_to_path(output, **kwds):
+        sys.exit(1)
     tool_description = tool_builder.build(**kwds)
     open(output, "w").write(tool_description.contents)
     io.info("Tool written to %s" % output)

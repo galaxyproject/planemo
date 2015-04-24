@@ -1,0 +1,331 @@
+{
+    "a_galaxy_workflow": "true", 
+    "annotation": "", 
+    "format-version": "0.1", 
+    "name": "Species of top BLAST hits", 
+    "steps": {
+        "0": {
+            "annotation": "", 
+            "id": 0, 
+            "input_connections": {}, 
+            "inputs": [
+                {
+                    "description": "", 
+                    "name": "Transcriptome FASTA file"
+                }
+            ], 
+            "label": null, 
+            "name": "Input dataset", 
+            "outputs": [], 
+            "position": {
+                "left": 242, 
+                "top": 119
+            }, 
+            "tool_errors": null, 
+            "tool_id": null, 
+            "tool_state": "{\"name\": \"Transcriptome FASTA file\"}", 
+            "tool_version": null, 
+            "type": "data_input", 
+            "user_outputs": [], 
+            "uuid": "e445b44b-02a7-4fd1-8944-cd680f967062"
+        }, 
+        "1": {
+            "annotation": "This workflow is deliberately a simple/crude assessment, and there is no need to run BLASTX on all the sequences - a sample of 1000 should be enough.", 
+            "id": 1, 
+            "input_connections": {
+                "input_file": {
+                    "id": 0, 
+                    "output_name": "output"
+                }
+            }, 
+            "inputs": [], 
+            "label": null, 
+            "name": "Sub-sample sequences files", 
+            "outputs": [
+                {
+                    "name": "output_file", 
+                    "type": "input"
+                }
+            ], 
+            "position": {
+                "left": 435, 
+                "top": 119
+            }, 
+            "post_job_actions": {
+                "RenameDatasetActionoutput_file": {
+                    "action_arguments": {
+                        "newname": "1000 sequences from #{input_file}"
+                    }, 
+                    "action_type": "RenameDatasetAction", 
+                    "output_name": "output_file"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/peterjc/sample_seqs/sample_seqs/0.2.1", 
+            "tool_state": "{\"__page__\": 0, \"input_file\": \"null\", \"__rerun_remap_job_id__\": null, \"sampling\": \"{\\\"count\\\": \\\"1000\\\", \\\"type\\\": \\\"desired_count\\\", \\\"__current_case__\\\": 2}\", \"chromInfo\": \"\\\"/mnt/galaxy/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"interleaved\": \"\\\"False\\\"\"}", 
+            "tool_version": "0.2.1", 
+            "type": "tool", 
+            "user_outputs": [], 
+            "uuid": "87ce69ef-5fb0-41b0-9575-d3b96544f8be"
+        }, 
+        "2": {
+            "annotation": "We only want one line per query, so limit this to the best scoring target sequence. Assumes current NCBI nr database is available locally as \"nr\".", 
+            "id": 2, 
+            "input_connections": {
+                "query": {
+                    "id": 1, 
+                    "output_name": "output_file"
+                }
+            }, 
+            "inputs": [], 
+            "label": null, 
+            "name": "NCBI BLAST+ blastx", 
+            "outputs": [
+                {
+                    "name": "output1", 
+                    "type": "tabular"
+                }
+            ], 
+            "position": {
+                "left": 489, 
+                "top": 263
+            }, 
+            "post_job_actions": {
+                "RenameDatasetActionoutput1": {
+                    "action_arguments": {
+                        "newname": "Top BLAST match"
+                    }, 
+                    "action_type": "RenameDatasetAction", 
+                    "output_name": "output1"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/devteam/ncbi_blast_plus/ncbi_blastx_wrapper/0.1.01", 
+            "tool_state": "{\"evalue_cutoff\": \"\\\"0.001\\\"\", \"__page__\": 0, \"adv_opts\": \"{\\\"adv_optional_id_files_opts\\\": {\\\"adv_optional_id_files_opts_selector\\\": \\\"none\\\", \\\"__current_case__\\\": 0}, \\\"matrix\\\": \\\"BLOSUM62\\\", \\\"adv_opts_selector\\\": \\\"advanced\\\", \\\"ungapped\\\": \\\"False\\\", \\\"filter_query\\\": \\\"True\\\", \\\"word_size\\\": \\\"0\\\", \\\"__current_case__\\\": 1, \\\"parse_deflines\\\": \\\"False\\\", \\\"strand\\\": \\\"-strand both\\\", \\\"max_hits\\\": \\\"1\\\"}\", \"__rerun_remap_job_id__\": null, \"db_opts\": \"{\\\"db_opts_selector\\\": \\\"db\\\", \\\"subject\\\": \\\"\\\", \\\"histdb\\\": \\\"\\\", \\\"__current_case__\\\": 0, \\\"database\\\": \\\"nr\\\"}\", \"query_gencode\": \"\\\"1\\\"\", \"query\": \"null\", \"output\": \"{\\\"out_format\\\": \\\"cols\\\", \\\"std_cols\\\": [\\\"qseqid\\\", \\\"sseqid\\\", \\\"pident\\\", \\\"length\\\", \\\"mismatch\\\", \\\"gapopen\\\", \\\"qstart\\\", \\\"qend\\\", \\\"sstart\\\", \\\"send\\\", \\\"evalue\\\", \\\"bitscore\\\"], \\\"ids_cols\\\": null, \\\"tax_cols\\\": [\\\"staxids\\\", \\\"sscinames\\\", \\\"scomnames\\\", \\\"sblastnames\\\", \\\"sskingdoms\\\"], \\\"__current_case__\\\": 2, \\\"misc_cols\\\": null, \\\"ext_cols\\\": null}\", \"chromInfo\": \"\\\"/mnt/galaxy/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\"}", 
+            "tool_version": "0.1.01", 
+            "type": "tool", 
+            "user_outputs": [], 
+            "uuid": "1559a0b0-0b66-40f9-b777-2f062fcda4cc"
+        }, 
+        "3": {
+            "annotation": "Having a tabular file of all 1000 sequences is used in the \"join\" step to count the sequences giving no BLAST hit.", 
+            "id": 3, 
+            "input_connections": {
+                "input": {
+                    "id": 1, 
+                    "output_name": "output_file"
+                }
+            }, 
+            "inputs": [], 
+            "label": null, 
+            "name": "FASTA-to-Tabular", 
+            "outputs": [
+                {
+                    "name": "output", 
+                    "type": "tabular"
+                }
+            ], 
+            "position": {
+                "left": 696, 
+                "top": 139
+            }, 
+            "post_job_actions": {
+                "HideDatasetActionoutput": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "output"
+                }, 
+                "RenameDatasetActionoutput": {
+                    "action_arguments": {
+                        "newname": "1000 sequences as tabular"
+                    }, 
+                    "action_type": "RenameDatasetAction", 
+                    "output_name": "output"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/devteam/fasta_to_tabular/fasta2tab/1.1.0", 
+            "tool_state": "{\"__page__\": 0, \"keep_first\": \"\\\"0\\\"\", \"descr_columns\": \"\\\"2\\\"\", \"input\": \"null\", \"chromInfo\": \"\\\"/mnt/galaxy/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"__rerun_remap_job_id__\": null}", 
+            "tool_version": "1.1.0", 
+            "type": "tool", 
+            "user_outputs": [], 
+            "uuid": "31f11208-b2bd-4d9d-9745-dc1a6ed7ccf9"
+        }, 
+        "4": {
+            "annotation": "Some BLAST matches will give multiple HSPs, and thus multiple lines in the tabular output. We only want one line per query.", 
+            "id": 4, 
+            "input_connections": {
+                "input": {
+                    "id": 2, 
+                    "output_name": "output1"
+                }
+            }, 
+            "inputs": [], 
+            "label": null, 
+            "name": "Unique", 
+            "outputs": [
+                {
+                    "name": "outfile", 
+                    "type": "input"
+                }
+            ], 
+            "position": {
+                "left": 665, 
+                "top": 376
+            }, 
+            "post_job_actions": {
+                "HideDatasetActionoutfile": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "outfile"
+                }, 
+                "RenameDatasetActionoutfile": {
+                    "action_arguments": {
+                        "newname": "One HSP per BLAST hit"
+                    }, 
+                    "action_type": "RenameDatasetAction", 
+                    "output_name": "outfile"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/bgruening/unique/bg_uniq/0.3", 
+            "tool_state": "{\"__page__\": 0, \"ignore_case\": \"\\\"False\\\"\", \"adv_opts\": \"{\\\"column_end\\\": {\\\"__class__\\\": \\\"UnvalidatedValue\\\", \\\"value\\\": \\\"2\\\"}, \\\"column_start\\\": {\\\"__class__\\\": \\\"UnvalidatedValue\\\", \\\"value\\\": \\\"1\\\"}, \\\"adv_opts_selector\\\": \\\"advanced\\\", \\\"__current_case__\\\": 1}\", \"__rerun_remap_job_id__\": null, \"is_numeric\": \"\\\"False\\\"\", \"input\": \"null\", \"chromInfo\": \"\\\"/mnt/galaxy/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\"}", 
+            "tool_version": "0.3", 
+            "type": "tool", 
+            "user_outputs": [], 
+            "uuid": "acf948e3-71dc-4f35-8357-3998bd0abdd8"
+        }, 
+        "5": {
+            "annotation": "We don't need all the columns in this join, but the key is to assign \"None\" to the sequences with no BLAST hits.", 
+            "id": 5, 
+            "input_connections": {
+                "input1": {
+                    "id": 3, 
+                    "output_name": "output"
+                }, 
+                "input2": {
+                    "id": 4, 
+                    "output_name": "outfile"
+                }
+            }, 
+            "inputs": [], 
+            "label": null, 
+            "name": "Join two Datasets", 
+            "outputs": [
+                {
+                    "name": "out_file1", 
+                    "type": "input"
+                }
+            ], 
+            "position": {
+                "left": 827, 
+                "top": 263
+            }, 
+            "post_job_actions": {
+                "HideDatasetActionout_file1": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "out_file1"
+                }, 
+                "RenameDatasetActionout_file1": {
+                    "action_arguments": {
+                        "newname": "Top BLAST hits or None"
+                    }, 
+                    "action_type": "RenameDatasetAction", 
+                    "output_name": "out_file1"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "join1", 
+            "tool_state": "{\"input2\": \"null\", \"__page__\": 0, \"field1\": \"{\\\"__class__\\\": \\\"UnvalidatedValue\\\", \\\"value\\\": \\\"1\\\"}\", \"partial\": \"\\\"\\\"\", \"field2\": \"{\\\"__class__\\\": \\\"UnvalidatedValue\\\", \\\"value\\\": \\\"1\\\"}\", \"__rerun_remap_job_id__\": null, \"fill_empty_columns\": \"{\\\"fill_empty_columns_switch\\\": \\\"fill_empty\\\", \\\"do_fill_empty_columns\\\": {\\\"column_fill_type\\\": \\\"single_fill_value\\\", \\\"fill_value\\\": \\\"None\\\", \\\"__current_case__\\\": 0}, \\\"fill_columns_by\\\": \\\"fill_unjoined_only\\\", \\\"__current_case__\\\": 1}\", \"unmatched\": \"\\\"-u\\\"\", \"input1\": \"null\", \"chromInfo\": \"\\\"/mnt/galaxy/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\"}", 
+            "tool_version": "2.0.2", 
+            "type": "tool", 
+            "user_outputs": [], 
+            "uuid": "4c280b0e-b4a6-4ae4-8a81-d6e93932ef71"
+        }, 
+        "6": {
+            "annotation": "Here we make a tally table of the BLAST species name column", 
+            "id": 6, 
+            "input_connections": {
+                "input": {
+                    "id": 5, 
+                    "output_name": "out_file1"
+                }
+            }, 
+            "inputs": [], 
+            "label": null, 
+            "name": "Count", 
+            "outputs": [
+                {
+                    "name": "out_file1", 
+                    "type": "tabular"
+                }
+            ], 
+            "position": {
+                "left": 952, 
+                "top": 398
+            }, 
+            "post_job_actions": {
+                "HideDatasetActionout_file1": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "out_file1"
+                }, 
+                "RenameDatasetActionout_file1": {
+                    "action_arguments": {
+                        "newname": "Top BLAST hit species counts (unsorted)"
+                    }, 
+                    "action_type": "RenameDatasetAction", 
+                    "output_name": "out_file1"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "Count1", 
+            "tool_state": "{\"__page__\": 0, \"column\": \"{\\\"__class__\\\": \\\"UnvalidatedValue\\\", \\\"value\\\": [\\\"19\\\"]}\", \"__rerun_remap_job_id__\": null, \"delim\": \"\\\"T\\\"\", \"input\": \"null\", \"chromInfo\": \"\\\"/mnt/galaxy/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\"}", 
+            "tool_version": "1.0.0", 
+            "type": "tool", 
+            "user_outputs": [], 
+            "uuid": "d3322137-1911-426d-87a7-c82b5fc16825"
+        }, 
+        "7": {
+            "annotation": "Sorting the counts makes the results easier to interpret directly.", 
+            "id": 7, 
+            "input_connections": {
+                "input": {
+                    "id": 6, 
+                    "output_name": "out_file1"
+                }
+            }, 
+            "inputs": [], 
+            "label": null, 
+            "name": "Sort", 
+            "outputs": [
+                {
+                    "name": "out_file1", 
+                    "type": "input"
+                }
+            ], 
+            "position": {
+                "left": 1056, 
+                "top": 506
+            }, 
+            "post_job_actions": {
+                "RenameDatasetActionout_file1": {
+                    "action_arguments": {
+                        "newname": "Top BLAST hit species counts"
+                    }, 
+                    "action_type": "RenameDatasetAction", 
+                    "output_name": "out_file1"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "sort1", 
+            "tool_state": "{\"__page__\": 0, \"style\": \"\\\"num\\\"\", \"column\": \"{\\\"__class__\\\": \\\"UnvalidatedValue\\\", \\\"value\\\": \\\"1\\\"}\", \"__rerun_remap_job_id__\": null, \"column_set\": \"[]\", \"input\": \"null\", \"chromInfo\": \"\\\"/mnt/galaxy/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"order\": \"\\\"DESC\\\"\"}", 
+            "tool_version": "1.0.3", 
+            "type": "tool", 
+            "user_outputs": [], 
+            "uuid": "c81cc61d-52a3-44ee-b646-b23e0e004c38"
+        }
+    }, 
+    "uuid": "9fe8754a-3a87-4f6a-89a2-141b02b4793e"
+}

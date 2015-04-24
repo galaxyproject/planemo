@@ -21,7 +21,7 @@ def mock_model(directory):
     return InMemoryShedDataModel(
         directory
     ).add_category(
-        "c1", "Text Utils"
+        "c1", "Text Manipulation"
     ).add_category(
         "c2", "Sequence Analysis"
     ).add_repository(
