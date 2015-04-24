@@ -125,7 +125,8 @@ def shed_init(ctx, path, **kwds):
         for (owner, name) in repo_pairs:
             contents += line_template % (owner, name)
         contents += "</repositories>"
-        open(repo_dependencies_path, "w").write(contents)
+        with open(repo_dependencies_path, "w") as f:
+            f.write(contents)
 
     return 0
 
@@ -391,7 +392,8 @@ def _create_shed_config(ctx, path, **kwds):
 
 
 def _parse_repos_from_workflow(path):
-    workflow_json = json.load(open(path, "r"))
+    with open(path, "r") as f:
+        workflow_json = json.load(f)
     steps = workflow_json["steps"]
     tool_ids = set()
     for value in steps.values():
