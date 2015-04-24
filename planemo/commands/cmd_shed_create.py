@@ -22,19 +22,30 @@ import json
 @options.shed_key_option()
 @options.shed_email_option()
 @options.shed_password_option()
+@options.recursive_shed_option()
 @pass_context
 def cli(ctx, path, **kwds):
     """Create a repository in the toolshed from a .shed.yml file
     """
     tsi = shed.tool_shed_client(ctx, **kwds)
-    repo_id = __find_repository(ctx, tsi, path, **kwds)
-    if repo_id is None:
-        if __create_repository(ctx, tsi, path, **kwds):
-            info("Repository created")
+
+    def create(path):
+        repo_id = __find_repository(ctx, tsi, path, **kwds)
+        if repo_id is None:
+            if __create_repository(ctx, tsi, path, **kwds):
+                info("Repository created")
+                return 0
+            else:
+                return 2
         else:
-            sys.exit(2)
+            return 1
+
+    if kwds['recursive']:
+        exit_code = shed.for_each_repository(create, path)
     else:
-        sys.exit(1)
+        exit_code = create(path)
+
+    sys.exit(exit_code)
 
 
 def __find_repository(ctx, tsi, path, **kwds):
