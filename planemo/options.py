@@ -278,6 +278,17 @@ def report_level_option():
     )
 
 
+def skip_option():
+    return click.option(
+        "-s",
+        "--skip",
+        default=None,
+        help=("Comma-separated list of lint tests to skip (e.g send ."
+              "--skip 'citations,xml_order' to skip linting of citations "
+              "and best-practice XML ordering.")
+    )
+
+
 def fail_level_option():
     return click.option(
         '--fail_level',

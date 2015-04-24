@@ -38,13 +38,21 @@ def yield_tool_xmls(ctx, path):
         yield (tool_path, tool_xml)
 
 
-def build_lint_args(**kwds):
+def build_lint_args(ctx, **kwds):
     report_level = kwds.get("report_level", "all")
     fail_level = kwds.get("fail_level", "warn")
+    skip = kwds.get("skip", None)
+    if skip is None:
+        skip = ctx.global_config.get("lint_skip", "")
+        if isinstance(skip, list):
+            skip = ",".join(skip)
+
+    skip_types = [s.strip() for s in skip.split(",")]
     lint_args = dict(
         level=report_level,
         fail_level=fail_level,
-        extra_modules=_lint_extra_modules(**kwds)
+        extra_modules=_lint_extra_modules(**kwds),
+        skip_types=skip_types,
     )
     return lint_args
 

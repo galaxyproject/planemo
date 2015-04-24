@@ -1,0 +1,26 @@
+<tool id="copy" name="Copy Dataset" version="1.0">
+    <description>copies a dataset</description>
+    <command>
+        cp $input $output
+    </command>
+    <inputs>
+        <param name="input1" type="data" format="txt" label="Concatenate Dataset"/>
+    </inputs>
+    <outputs>
+        <data name="output" format="txt"/>
+    </outputs>
+    <tests>
+        <test expect_failure="true" expect_exit_code="1">
+            <param name="input1" value="1.bed"/>
+            <assert_stdout>
+                <has_line line="Indexed 0 sequences" />
+            </assert_stdout>
+            <assert_stderr>
+                <has_line line="Identifier 'gi|16127999|ref|NP_414546.1|' not found in sequence file" />
+            </assert_stderr>
+      </test>
+    </tests>
+    <help>
+        Some Awesome Help!
+    </help>
+</tool>

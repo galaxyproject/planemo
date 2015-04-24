@@ -7,8 +7,8 @@ LEVEL_WARN = "warn"
 LEVEL_ERROR = "error"
 
 
-def lint_xml(tool_xml, level=LEVEL_ALL, fail_level=LEVEL_WARN, extra_modules=[]):
-    lint_context = LintContext(level=level)
+def lint_xml(tool_xml, level=LEVEL_ALL, fail_level=LEVEL_WARN, extra_modules=[], skip_types=[]):
+    lint_context = LintContext(level=level, skip_types=skip_types)
     lint_xml_with(lint_context, tool_xml, extra_modules)
     return not lint_context.failed(fail_level)
 
@@ -25,13 +25,16 @@ def lint_xml_with(lint_context, tool_xml, extra_modules=[]):
 
 class LintContext(object):
 
-    def __init__(self, level):
+    def __init__(self, level, skip_types=[]):
+        self.skip_types = skip_types
         self.level = level
         self.found_errors = False
         self.found_warns = False
 
     def lint(self, name, lint_func, lint_target):
-        name = name.replace("tsts", "tests")
+        name = name.replace("tsts", "tests")[len("lint_"):]
+        if name in self.skip_types:
+            return
         self.printed_linter_info = False
         self.valid_messages = []
         self.info_messages = []
@@ -42,7 +45,6 @@ class LintContext(object):
         if self.error_messages:
             status = "FAIL"
         elif self.warn_messages:
-
             status = "WARNING"
         else:
             status = "CHECK"

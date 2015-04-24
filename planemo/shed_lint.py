@@ -39,7 +39,7 @@ VALID_REPOSITORY_TYPES = [
 
 def lint_repository(ctx, path, **kwds):
     info("Linting repository %s" % path)
-    lint_args = build_lint_args(**kwds)
+    lint_args = build_lint_args(ctx, **kwds)
     lint_ctx = LintContext(lint_args["level"])
     lint_ctx.lint(
         "tool_dependencies",

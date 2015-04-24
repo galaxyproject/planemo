@@ -1,3 +1,4 @@
+import os
 import glob
 
 from .test_utils import CliTestCase
@@ -17,3 +18,15 @@ class LintTestCase(CliTestCase):
         for fail_tool in fail_tools:
             lint_cmd = ["lint", fail_tool]
             self._check_exit_code(lint_cmd, exit_code=1)
+
+    def test_skips(self):
+        fail_citation = os.path.join(TEST_TOOLS_DIR, "fail_citation.xml")
+        lint_cmd = ["lint", fail_citation]
+        self._check_exit_code(lint_cmd, exit_code=1)
+
+        lint_cmd = ["lint", "--skip", "citations", fail_citation]
+        self._check_exit_code(lint_cmd, exit_code=0)
+
+        # Check string splitting and stuff.
+        lint_cmd = ["lint", "--skip", "xml_order, citations", fail_citation]
+        self._check_exit_code(lint_cmd, exit_code=0)
