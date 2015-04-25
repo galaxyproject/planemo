@@ -19,7 +19,7 @@ class ShedUploadTestCase(CliShedTestCase):
 
     def test_shed_diff(self):
         if PRE_PYTHON_27:
-            raise skip("shed_diff doesn't seem to work on Python 2.6")
+            skip("shed_diff doesn't seem to work on Python 2.6")
 
         with self._isolate_repo("single_tool") as f:
             upload_command = ["shed_upload", "--force_repository_creation"]
