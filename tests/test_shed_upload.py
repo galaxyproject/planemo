@@ -131,6 +131,10 @@ class ShedUploadTestCase(CliShedTestCase):
         with self._isolate_repo("multi_repos_flat_configured") as f:
             self._verify_expansion(f)
 
+    def test_upload_expansion_flagged(self):
+        with self._isolate_repo("multi_repos_flat_flag") as f:
+            self._verify_expansion(f)
+
     def _verify_expansion(self, f):
         upload_command = ["shed_upload", "--tar_only"]
         upload_command.extend(self._shed_args())

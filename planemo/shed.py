@@ -23,6 +23,8 @@ from planemo.io import (
     untar_to,
     can_write_to_path,
 )
+from planemo.tools import load_tool_elements_from_path
+from planemo import templates
 
 SHED_CONFIG_NAME = '.shed.yml'
 REPO_DEPENDENCIES_CONFIG_NAME = "repository_dependencies.xml"
@@ -37,7 +39,10 @@ CONFLICTING_NAMES_MESSAGE = ("The supplied name argument --name conflicts "
                              "with value discovered in .shed.yml.")
 PARSING_PROBLEM = ("Problem parsing file .shed.yml in directory %s, skipping "
                    "repository. Message: [%s].")
-
+AUTO_REPO_CONFLICT_MESSAGE = ("Cannot specify both auto_tool_repositories and "
+                              "repositories in .shed.yml at this time.")
+AUTO_NAME_CONFLICT_MESSAGE = ("Cannot specify both auto_tool_repositories and "
+                              "in .shed.yml and --name on the command-line.")
 # Planemo generated or consumed files that do not need to be uploaded to the
 # tool shed.
 PLANEMO_FILES = [
@@ -208,23 +213,67 @@ def _find_repository_id(ctx, tsi, name, repo_config, **kwds):
 
 
 def _expand_raw_config(config, path, name=None):
+    name_input = name
     if "name" not in config:
         config["name"] = name
     if config["name"] is None:
         config["name"] = path_to_repo_name(path)
 
+    default_include = config.get("include", ["**"])
+    repos = config.get("repositories", None)
+    auto_tool_repos = config.get("auto_tool_repositories", False)
+    if repos and auto_tool_repos:
+        raise Exception(AUTO_REPO_CONFLICT_MESSAGE)
+    if auto_tool_repos and name_input:
+        raise Exception(AUTO_NAME_CONFLICT_MESSAGE)
+    if auto_tool_repos:
+        repos = _build_auto_tool_repos(path, config, auto_tool_repos)
     # If repositories aren't defined, just define a single
     # one based on calculated name and including everything
     # by default.
-    default_include = config.get("include", ["**"])
-    repositories = config.get("repositories", None)
-    if repositories is None:
-        repositories = {
+    if repos is None:
+        repos = {
             config["name"]: {
                 "include": default_include
             }
         }
-    config["repositories"] = repositories
+    config["repositories"] = repos
+
+
+def _build_auto_tool_repos(path, config, auto_tool_repos):
+    default_include = config.get("include", ["**"])
+    tool_els = list(load_tool_elements_from_path(path, recursive=True))
+    paths = list(map(lambda pair: pair[0], tool_els))
+    excludes = _shed_config_excludes(config)
+
+    def _build_repository(tool_path, tool_el):
+        tool_id = tool_el.getroot().get("id")
+        tool_name = tool_el.getroot().get("name")
+        template_vars = dict(
+            tool_id=tool_id,
+            tool_name=tool_name,
+        )
+        other_paths = paths[:]
+        other_paths.remove(tool_path)
+        tool_excludes = excludes + list(other_paths)
+        repo_dict = {
+            "include": default_include,
+            "exclude": tool_excludes,
+        }
+        for key in ["name", "description", "long_description"]:
+            template_key = "%s_template" % key
+            template = auto_tool_repos.get(template_key, None)
+            if template:
+                value = templates.render(template, **template_vars)
+                repo_dict[key] = value
+        return repo_dict
+
+    repos = {}
+    for tool_path, tool_el in tool_els:
+        repository_config = _build_repository(tool_path, tool_el)
+        repository_name = repository_config["name"]
+        repos[repository_name] = repository_config
+    return repos
 
 
 def find_repository(tsi, owner, name):
@@ -543,7 +592,7 @@ class RawRepositoryDirectory(object):
     def _realize_to(self, directory, name, multiple):
         ignore_list = []
         config = self._realize_config(name)
-        excludes = config.get('ignore', []) + config.get('exclude', [])
+        excludes = _shed_config_excludes(config)
         for exclude in excludes:
             ignore_list.extend(glob.glob(os.path.join(self.path, exclude)))
 
@@ -664,3 +713,7 @@ class RealizedRepositry(object):
             except Exception:
                 error(str(e))
             return None
+
+
+def _shed_config_excludes(config):
+    return config.get('ignore', []) + config.get('exclude', [])
