@@ -292,7 +292,7 @@ def build_tarball(realized_path, **kwds):
     # it address some bugs.
     fd, temp_path = mkstemp()
     try:
-        tar = tarfile.open(temp_path, "w:gz")
+        tar = tarfile.open(temp_path, "w:gz", dereference=True)
         try:
             tar.add(realized_path, arcname=".", recursive=True)
         finally:
