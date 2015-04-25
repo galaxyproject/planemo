@@ -96,12 +96,16 @@ class CliShedTestCase(CliTestCase):
         return args
 
     def _print_shed_info(self):
+        print(self._tsi.repositories.get_repositories())
+
+    @property
+    def _tsi(self):
         tsi = shed.tool_shed_client(
             None,
             shed_target=self.mock_shed.url,
             key="ignored",
         )
-        print(tsi.repositories.get_repositories())
+        return tsi
 
 
 @contextlib.contextmanager

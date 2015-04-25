@@ -127,6 +127,33 @@ class ShedUploadTestCase(CliShedTestCase):
             assert exists(join(target, "repository_dependencies.xml"))
             assert exists(join(target, "README.rst"))
 
+    def test_upload_expansion_configured(self):
+        with self._isolate_repo("multi_repos_flat_configured") as f:
+            self._verify_expansion(f)
+
+    def _verify_expansion(self, f):
+        upload_command = ["shed_upload", "--tar_only"]
+        upload_command.extend(self._shed_args())
+        self._check_exit_code(upload_command)
+        self._check_tar(
+            f, "shed_upload_cs_cat1.tar.gz",
+            contains=[
+                "cat1.xml",
+                "macros.xml",
+                "test-data/1.bed"
+            ],
+            not_contains=["cat2.xml"]
+        )
+        self._check_tar(
+            f, "shed_upload_cs_cat2.tar.gz",
+            contains=[
+                "cat2.xml",
+                "macros.xml",
+                "test-data/1.bed"
+            ],
+            not_contains=["cat1.xml"]
+        )
+
     def _verify_single_uploaded(self, f):
         self._verify_upload(f, ["cat.xml", "related_file", "test-data/1.bed"])
 
@@ -135,6 +162,15 @@ class ShedUploadTestCase(CliShedTestCase):
         for download_file in download_files:
             assert exists(join(target, download_file)), download_file
         return target
+
+    def _check_tar(self, f, tar_path, contains=[], not_contains=[]):
+        tar_path = join(f, tar_path)
+        assert exists(tar_path)
+        target = self._untar(f, tar_path)
+        for path in contains:
+            assert exists(join(target, path))
+        for path in not_contains:
+            assert not exists(join(target, path))
 
     def _download_repo(self, f, download_args=[]):
         download_command = ["shed_download"]
