@@ -63,11 +63,12 @@ def test_find_category_ids():
 def test_create_simple():
     with mock_shed_client() as tsi:
         path = os.path.join(TEST_REPOS_DIR, "single_tool")
-        create_response = shed.create_repository(
+        repo_config = shed.shed_repo_config(path)
+        create_response = shed.create_repository_for(
             None,
             tsi,
-            path=path,
-            shed_owner="iuc"
+            "single_tool",
+            repo_config,
         )
         assert "id" in create_response
         repo_id = shed.find_repository_id(

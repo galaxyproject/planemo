@@ -211,14 +211,6 @@ def _find_repository_id(ctx, tsi, name, repo_config, **kwds):
         return repo_id
 
 
-def create_repository(ctx, tsi, path, **kwds):
-    repo_config = shed_repo_config(path)
-    name = kwds.get("name", None) or repo_config.get("name", None)
-    if name is None:
-        name = path_to_repo_name(path)
-    return create_repository_for(ctx, tsi, name, repo_config)
-
-
 def create_repository_for(ctx, tsi, name, repo_config):
     description = repo_config.get("description", None)
     long_description = repo_config.get("long_description", None)
