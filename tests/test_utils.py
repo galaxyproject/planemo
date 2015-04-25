@@ -22,8 +22,10 @@ from .shed_app_test_utils import (
 
 if version_info < (2, 7):
     from unittest2 import TestCase, skip
+    PRE_PYTHON_27 = True
 else:
     from unittest import TestCase, skip
+    PRE_PYTHON_27 = False
 
 TEST_DIR = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
