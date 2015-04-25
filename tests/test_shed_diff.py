@@ -5,7 +5,6 @@ import os
 from .test_utils import (
     CliShedTestCase,
     PRE_PYTHON_27,
-    skip,
 )
 
 DIFF_LINES = [
@@ -19,7 +18,7 @@ class ShedUploadTestCase(CliShedTestCase):
 
     def test_shed_diff(self):
         if PRE_PYTHON_27:
-            skip("shed_diff doesn't seem to work on Python 2.6")
+            self.skipTest("shed_diff doesn't seem to work on Python 2.6")
 
         with self._isolate_repo("single_tool") as f:
             upload_command = ["shed_upload", "--force_repository_creation"]
