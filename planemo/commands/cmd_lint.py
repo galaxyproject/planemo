@@ -10,21 +10,21 @@ from planemo.tool_lint import lint_tools_on_path
 
 
 @click.command('lint')
-@options.optional_tools_arg()
+@options.optional_tools_arg(-1)
 @options.report_level_option()
 @options.fail_level_option()
 @options.skip_option()
 @options.lint_xsd_option()
 @options.recursive_option()
 @pass_context
-def cli(ctx, path, **kwds):
+def cli(ctx, paths, **kwds):
     """Check specified tool(s) for common errors and adherence to best
     practices.
     """
     lint_args = build_lint_args(ctx, **kwds)
     exit = lint_tools_on_path(
         ctx,
-        path,
+        paths,
         lint_args,
         recursive=kwds["recursive"]
     )

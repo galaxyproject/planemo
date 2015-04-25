@@ -13,18 +13,19 @@ LINTING_TOOL_MESSAGE = "Linting tool %s"
 SHED_FILES = ["tool_dependencies.xml", "repository_dependencies.xml"]
 
 
-def lint_tools_on_path(ctx, path, lint_args, **kwds):
+def lint_tools_on_path(ctx, paths, lint_args, **kwds):
     assert_tools = kwds.get("assert_tools", True)
     recursive = kwds.get("recursive", False)
     exit = 0
     valid_tools = 0
-    for (tool_path, tool_xml) in yield_tool_xmls(ctx, path, recursive):
-        info("Linting tool %s" % tool_path)
-        if not lint_xml(tool_xml, **lint_args):
-            error("Failed linting")
-            exit = 1
-        else:
-            valid_tools += 1
+    for path in paths:
+        for (tool_path, tool_xml) in yield_tool_xmls(ctx, path, recursive):
+            info("Linting tool %s" % tool_path)
+            if not lint_xml(tool_xml, **lint_args):
+                error("Failed linting")
+                exit = 1
+            else:
+                valid_tools += 1
     if exit == 0 and valid_tools == 0 and assert_tools:
         exit = 2
     return exit
