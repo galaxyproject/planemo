@@ -1,8 +1,11 @@
 import os
 import glob
 
-from .test_utils import CliTestCase
-from .test_utils import TEST_TOOLS_DIR
+from .test_utils import (
+    CliTestCase,
+    TEST_TOOLS_DIR,
+    TEST_REPOS_DIR,
+)
 
 
 class LintTestCase(CliTestCase):
@@ -29,4 +32,15 @@ class LintTestCase(CliTestCase):
 
         # Check string splitting and stuff.
         lint_cmd = ["lint", "--skip", "xml_order, citations", fail_citation]
+        self._check_exit_code(lint_cmd, exit_code=0)
+
+    def test_recursive(self):
+        nested_dir = os.path.join(TEST_REPOS_DIR, "multi_repos_nested")
+
+        # Fails to find any tools without -r.
+        lint_cmd = ["lint", "--skip", "citations", nested_dir]
+        self._check_exit_code(lint_cmd, exit_code=2)
+
+        # Works with -r.
+        lint_cmd = ["lint", "--skip", "citations", "-r", nested_dir]
         self._check_exit_code(lint_cmd, exit_code=0)

@@ -1,13 +1,11 @@
 import os
-import sys
-import traceback
 
 from planemo.io import info
 from planemo.io import error
 
 import planemo.linters.xsd
 
-from galaxy.tools.loader_directory import load_tool_elements_from_path
+from planemo.tools import load_tool_elements_from_path
 from galaxy.tools.lint import lint_xml
 
 SKIP_XML_MESSAGE = "Skipping XML file - does not appear to be a tool %s."
@@ -15,10 +13,12 @@ LINTING_TOOL_MESSAGE = "Linting tool %s"
 SHED_FILES = ["tool_dependencies.xml", "repository_dependencies.xml"]
 
 
-def lint_tools_on_path(ctx, path, lint_args, assert_tools=True):
+def lint_tools_on_path(ctx, path, lint_args, **kwds):
+    assert_tools = kwds.get("assert_tools", True)
+    recursive = kwds.get("recursive", False)
     exit = 0
     valid_tools = 0
-    for (tool_path, tool_xml) in yield_tool_xmls(ctx, path):
+    for (tool_path, tool_xml) in yield_tool_xmls(ctx, path, recursive):
         info("Linting tool %s" % tool_path)
         if not lint_xml(tool_xml, **lint_args):
             error("Failed linting")
@@ -30,8 +30,11 @@ def lint_tools_on_path(ctx, path, lint_args, assert_tools=True):
     return exit
 
 
-def yield_tool_xmls(ctx, path):
-    tools = load_tool_elements_from_path(path, load_exception_handler)
+def yield_tool_xmls(ctx, path, recursive=False):
+    tools = load_tool_elements_from_path(
+        path,
+        recursive,
+    )
     for (tool_path, tool_xml) in tools:
         if not _is_tool_xml(ctx, tool_path, tool_xml):
             continue
@@ -55,11 +58,6 @@ def build_lint_args(ctx, **kwds):
         skip_types=skip_types,
     )
     return lint_args
-
-
-def load_exception_handler(path, exc_info):
-    error("Error loading tool with path %s" % path)
-    traceback.print_exception(*exc_info, limit=1, file=sys.stderr)
 
 
 def _lint_extra_modules(**kwds):

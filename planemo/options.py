@@ -298,9 +298,15 @@ def fail_level_option():
 
 
 def recursive_shed_option():
+    return recursive_option(
+        "Recursively perform command for nested repository directories.",
+    )
+
+
+def recursive_option(help="Recursively perform command for subdirectories."):
     return click.option(
         '-r',
         '--recursive',
         is_flag=True,
-        help="Recursively perform command for nested repository directories.",
+        help=help,
     )

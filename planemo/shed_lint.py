@@ -62,7 +62,8 @@ def lint_repository(ctx, path, **kwds):
         path,
     )
     if kwds["tools"]:
-        for (tool_path, tool_xml) in yield_tool_xmls(ctx, path):
+        for (tool_path, tool_xml) in yield_tool_xmls(ctx, path,
+                                                     recursive=True):
             info("+Linting tool %s" % tool_path)
             lint_xml_with(
                 lint_ctx,

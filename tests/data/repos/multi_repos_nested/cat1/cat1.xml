@@ -13,7 +13,7 @@
         </repeat>
     </inputs>
     <outputs>
-        <data name="out_file1" format="input" metadata_source="input1"/>
+        <data name="out_file1" format_source="input1" metadata_source="input1"/>
     </outputs>
     <tests>
       <test>
@@ -22,5 +22,6 @@
       </test>
     </tests>
     <help>
+        Copy a dataset.
     </help>
 </tool>
