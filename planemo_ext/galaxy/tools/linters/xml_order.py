@@ -17,7 +17,7 @@ TAG_ORDER = [
 
 # Ensure the XML blocks appear in the correct order prescribed
 # by the tool author best practices.
-def lint_xml_ordering(tool_xml, lint_ctx):
+def lint_xml_order(tool_xml, lint_ctx):
     last_tag = None
     last_key = None
     for elem in list(tool_xml.getroot()):
