@@ -1,11 +1,7 @@
 import subprocess
-try:
-    from jinja2 import Template
-except ImportError:
-    Template = None
+from planemo import templates
 
-NO_JINJA2_MESSAGE = ("This functionality requires Jinja2 but this library is "
-                     "unavailable. Install with `pip install jinja2`.")
+
 TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
 {%- if description %}
     <description>{{ description }}</description>
@@ -122,8 +118,6 @@ MACROS_TEMPLATE = """<macros>
 
 
 def build(**kwds):
-    if Template is None:
-        raise Exception(NO_JINJA2_MESSAGE)
     # Test case to build up from supplied inputs and outputs, ultimately
     # ignored unless kwds["test_case"] is truthy.
     test_case = TestCase()
@@ -192,9 +186,7 @@ def _render(kwds, template_str=TOOL_TEMPLATE):
     """ Apply supplied template variables to TOOL_TEMPLATE to generate
     the final tool.
     """
-    template = Template(template_str)
-    contents = template.render(**kwds)
-    return contents
+    return templates.render(template_str, **kwds)
 
 
 def _replace_file_in_command(command, specified_file, name):
