@@ -18,6 +18,12 @@ from planemo import shed
 @options.shed_name_option()
 @options.shed_target_option()
 @click.option(
+    "-o", "--output",
+    type=click.Path(file_okay=True, resolve_path=True),
+    help="Send diff output to specified file.",
+    default=None,
+)
+@click.option(
     '--shed_target_source',
     help="Source Tool Shed to diff against (will ignore local project info"
          " specified). To compare the main Tool Shed against the test, set"
@@ -55,7 +61,10 @@ def diff_in(ctx, working, path, **kwds):
     shed_target_source = kwds.get("shed_target_source", None)
 
     label_a = "_%s_" % (shed_target_source if shed_target_source else "local")
-    label_b = "_%s_" % kwds.get("shed_target", "B")
+    shed_target = kwds.get("shed_target", "B")
+    if "/" in shed_target:
+        shed_target = "custom_shed"
+    label_b = "_%s_" % shed_target
 
     mine = os.path.join(working, label_a)
     other = os.path.join(working, label_b)
@@ -87,4 +96,7 @@ def diff_in(ctx, working, path, **kwds):
         cmd_template = 'mkdir "%s"; tar -xzf "%s" -C "%s"; rm -rf %s'
         shell(cmd_template % (mine, tar_path, mine, tar_path))
 
-    shell('cd "%s"; diff -r %s %s' % (working, label_a, label_b))
+    cmd = 'cd "%s"; diff -r %s %s' % (working, label_a, label_b)
+    if kwds["output"]:
+        cmd += "> '%s'" % kwds["output"]
+    shell(cmd)
