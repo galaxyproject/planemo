@@ -24,7 +24,8 @@ class ShedUploadTestCase(CliShedTestCase):
             diff_command = ["shed_diff", "-o", "diff"]
             diff_command.extend(self._shed_args(read_only=True))
             self._check_exit_code(diff_command)
-            with open("diff", "r") as f:
-                diff = f.read()
+            diff_path = os.path.join(f, "diff")
+            with open(diff_path, "r") as diff_f:
+                diff = diff_f.read()
             for diff_line in DIFF_LINES:
                 assert diff_line in diff
