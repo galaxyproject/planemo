@@ -123,13 +123,9 @@ def shed_init(ctx, path, **kwds):
             return 1
 
         repo_pairs = _parse_repos_from_workflow(from_workflow)
-        contents = '<repositories description="">'
-        line_template = '  <repository owner="%s" name="%s" />'
-        for (owner, name) in repo_pairs:
-            contents += line_template % (owner, name)
-        contents += "</repositories>"
-        with open(repo_dependencies_path, "w") as f:
-            f.write(contents)
+        repository_dependencies = RepositoryDependencies()
+        repository_dependencies.repo_pairs = repo_pairs
+        repository_dependencies.write_to_path(repo_dependencies_path)
 
     return 0
 
@@ -472,6 +468,27 @@ def _build_raw_repo_objects(raw_dirs, **kwds):
         raw_repo_object = RawRepositoryDirectory(raw_dir, config, multiple)
         raw_repo_objects.append(raw_repo_object)
     return raw_repo_objects
+
+
+class RepositoryDependencies(object):
+    """ Abstraction for shed repository_dependencies.xml files.
+    """
+
+    def __init__(self):
+        self.description = ""
+        self.repo_pairs = []
+
+    def __str__(self):
+        contents = '<repositories description="%s">' % self.description
+        line_template = '  <repository owner="%s" name="%s" />'
+        for (owner, name) in self.repo_pairs:
+            contents += line_template % (owner, name)
+        contents += "</repositories>"
+        return contents
+
+    def write_to_path(self, path):
+        with open(path, "w") as f:
+            f.write(str(self).encode("utf-8"))
 
 
 class RawRepositoryDirectory(object):
