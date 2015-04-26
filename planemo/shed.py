@@ -24,6 +24,9 @@ from planemo.io import (
 )
 
 SHED_CONFIG_NAME = '.shed.yml'
+REPO_DEPENDENCIES_CONFIG_NAME = "repository_dependencies.xml"
+TOOL_DEPENDENCIES_CONFIG_NAME = "tool_dependencies.xml"
+
 NO_REPOSITORIES_MESSAGE = ("Could not find any .shed.yml files or a --name to "
                            "describe the target repository.")
 NAME_INVALID_MESSAGE = ("Cannot use --name argument when multiple directories "
@@ -107,7 +110,7 @@ def shed_init(ctx, path, **kwds):
         return 1
 
     _create_shed_config(ctx, shed_config_path, **kwds)
-    repo_dependencies_path = os.path.join(path, "repository_dependencies.xml")
+    repo_dependencies_path = os.path.join(path, REPO_DEPENDENCIES_CONFIG_NAME)
     from_workflow = kwds.get("from_workflow", None)
 
     if from_workflow:
@@ -524,11 +527,11 @@ class RawRepositoryDirectory(object):
         # Filter out "unwanted files" :) like READMEs for special
         # repository types.
         if self.type == REPO_TYPE_TOOL_DEP:
-            if relative_path != "tool_dependencies.xml":
+            if relative_path != TOOL_DEPENDENCIES_CONFIG_NAME:
                 return True
 
         if self.type == REPO_TYPE_SUITE:
-            if relative_path != "repository_dependencies.xml":
+            if relative_path != REPO_DEPENDENCIES_CONFIG_NAME:
                 return True
 
         name = os.path.basename(relative_path)
