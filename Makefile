@@ -49,7 +49,7 @@ coverage:
 	coverage run --source planemo setup.py test
 	coverage report -m
 	coverage html
-	open htmlcov/index.html || xdg-open htmlcov/index.htm
+	open htmlcov/index.html || xdg-open htmlcov/index.html
 
 docs:
 	rm -f docs/planemo.rst
