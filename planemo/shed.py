@@ -11,6 +11,7 @@ from tempfile import (
 )
 import shutil
 
+from six import iteritems
 import yaml
 
 try:
@@ -222,6 +223,8 @@ def _expand_raw_config(config, path, name=None):
     default_include = config.get("include", ["**"])
     repos = config.get("repositories", None)
     auto_tool_repos = config.get("auto_tool_repositories", False)
+    suite_config = config.get("suite", False)
+
     if repos and auto_tool_repos:
         raise Exception(AUTO_REPO_CONFLICT_MESSAGE)
     if auto_tool_repos and name_input:
@@ -237,6 +240,8 @@ def _expand_raw_config(config, path, name=None):
                 "include": default_include
             }
         }
+    if suite_config:
+        _build_suite_repo(config, repos, suite_config)
     config["repositories"] = repos
 
 
@@ -274,6 +279,38 @@ def _build_auto_tool_repos(path, config, auto_tool_repos):
         repository_name = repository_config["name"]
         repos[repository_name] = repository_config
     return repos
+
+
+def _build_suite_repo(config, repos, suite_config):
+    if not isinstance(suite_config, dict):
+        suite_config = {}
+
+    name = suite_config.get("name", None)
+    if name is None:
+        raise Exception("suite_configitories required name key.")
+    description = suite_config.get("description", "")
+    long_description = suite_config.get("long_description", None)
+    owner = config["owner"]
+
+    repo_pairs = map(lambda name: (owner, name), repos.keys())
+    extra_repos = suite_config.get("include_repositories", {})
+    extra_pairs = map(lambda item: (item["owner"], item["name"]), extra_repos)
+
+    repository_dependencies = RepositoryDependencies()
+    repository_dependencies.description = description
+    repository_dependencies.repo_pairs = list(repo_pairs) + list(extra_pairs)
+
+    repo = {
+        "_files": {
+            REPO_DEPENDENCIES_CONFIG_NAME: str(repository_dependencies)
+        },
+        "include": [],
+        "name": name,
+        "description": description,
+    }
+    if long_description:
+        repo["long_description"] = long_description
+    repos[name] = repo
 
 
 def find_repository(tsi, owner, name):
@@ -604,6 +641,11 @@ class RawRepositoryDirectory(object):
                 continue
 
             self._realize_file(relative_path, directory)
+
+        for (name, contents) in iteritems(config.get("_files", {})):
+            path = os.path.join(directory, name)
+            with open(path, "w") as f:
+                f.write(contents)
 
         return RealizedRepositry(
             realized_path=directory,

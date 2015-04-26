@@ -1,0 +1,35 @@
+owner: devteam
+suite:
+  name: suite_1
+  description: "A suite of Galaxy tools designed to work with version 1.2 of the SAMtools package."
+  include_repositories:
+  - name: data_manager_sam_fasta_index_builder
+    owner: devteam
+  - name: bam_to_sam
+    owner: devteam
+  - name: sam_to_bam
+    owner: devteam
+  - name: samtools_bedcov
+    owner: devteam
+  - name: samtools_calmd
+    owner: devteam
+  - name: samtools_flagstat
+    owner: devteam
+  - name: samtools_idxstat
+    owner: devteam
+  - name: samtools_mpileup
+    owner: devteam
+  - name: samtools_phase
+    owner: devteam
+  - name: samtools_reheader
+    owner: devteam
+  - name: samtools_rmdup
+    owner: devteam
+  - name: samtools_slice_bam
+    owner: devteam
+  - name: samtools_sort
+    owner: devteam
+  - name: samtools_split
+    owner: devteam
+  - name: samtools_stats
+    owner: devteam

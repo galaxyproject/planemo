@@ -72,6 +72,15 @@ class ShedUploadTestCase(CliShedTestCase):
             # this got filtered
             assert not exists(join(target, "README.rst"))
 
+    def test_upload_suite_auto(self):
+        with self._isolate_repo("suite_auto") as f:
+            upload_command = ["shed_upload", "--tar_only"]
+            upload_command.extend(self._shed_args())
+            self._check_exit_code(upload_command)
+            target = self._untar(f, "shed_upload_suite_1.tar.gz")
+            # Only one file was in archive
+            assert exists(join(target, "repository_dependencies.xml"))
+
     def test_upload_filters_ignore(self):
         with self._isolate_repo("single_tool_exclude") as f:
             upload_command = ["shed_upload", "--force_repository_creation"]
@@ -135,6 +144,21 @@ class ShedUploadTestCase(CliShedTestCase):
         with self._isolate_repo("multi_repos_flat_flag") as f:
             self._verify_expansion(f)
 
+    def test_upload_expansion_suite(self):
+        with self._isolate_repo("multi_repos_flat_flag_suite") as f:
+            self._verify_expansion(f)
+            target = self._check_tar(
+                f, "shed_upload_suite_cat.tar.gz",
+                contains=[
+                    "repository_dependencies.xml",
+                ],
+                not_contains=["macros.xml"]
+            )
+            with open(join(target, "repository_dependencies.xml")) as f:
+                repo_xml = f.read()
+                assert 'owner="devteam" name="cat_legacy"' in repo_xml
+                assert 'owner="iuc" name="cs-cat2"' in repo_xml
+
     def _verify_expansion(self, f):
         upload_command = ["shed_upload", "--tar_only"]
         upload_command.extend(self._shed_args())
@@ -175,6 +199,7 @@ class ShedUploadTestCase(CliShedTestCase):
             assert exists(join(target, path))
         for path in not_contains:
             assert not exists(join(target, path))
+        return target
 
     def _download_repo(self, f, download_args=[]):
         download_command = ["shed_download"]

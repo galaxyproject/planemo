@@ -3,6 +3,8 @@ from planemo import shed
 
 CS1_DESCRIPTION = "The tool Cat 1 from the cat tool suite."
 CS2_DESCRIPTION = "The tool Cat 2 from the cat tool suite."
+SUITE_DESCRIPTION = "A suite of Cat tools."
+SUITE_DESCRIPTION_LONG = "A longer description of all the cat tools."
 
 
 class ShedCreateTestCase(CliShedTestCase):
@@ -26,6 +28,14 @@ class ShedCreateTestCase(CliShedTestCase):
     def test_create_expansion_flag(self):
         with self._isolate_repo("multi_repos_flat_flag"):
             self._multi_repo_create_and_verify()
+
+    def test_create_expansion_flag_suite(self):
+        with self._isolate_repo("multi_repos_flat_flag_suite"):
+            self._multi_repo_create_and_verify()
+            suite_repo = self._get_repo_info("suite_cat")
+            assert suite_repo["synopsis"] == SUITE_DESCRIPTION
+            assert suite_repo["description"] == SUITE_DESCRIPTION_LONG
+            assert suite_repo["type"] == "repository_suite_definition"
 
     def _multi_repo_create_and_verify(self):
         create_command = ["shed_create", "-r"]

@@ -1,0 +1,15 @@
+owner: "iuc"
+remote_repository_url: "https://github.com/galaxyproject/planemo/tree/master/tests/data/repos/multi_repos_flat_flag"
+homepage_url: "http://planemo.readthedocs.org/en/latest/"
+categories:
+  - "Text Manipulation"
+auto_tool_repositories:
+  name_template: "cs-{{ tool_id }}"
+  description_template: "The tool {{ tool_name }} from the cat tool suite."
+suite:
+  name: "suite_cat"
+  description: "A suite of Cat tools."
+  long_description: "A longer description of all the cat tools."
+  include_repositories:
+    - owner: "devteam"
+      name: "cat_legacy"
