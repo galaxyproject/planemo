@@ -10,8 +10,6 @@ from planemo import shed
 from planemo.io import info
 
 
-# TODO: Implement alternative tool per repo upload strategy.
-# TODO: Use git commit hash and origin to generated commit message.
 @click.command("shed_create")
 @options.optional_project_arg(exists=True)
 @options.shed_owner_option()

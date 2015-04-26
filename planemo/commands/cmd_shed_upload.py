@@ -21,7 +21,6 @@ tar_path = click.Path(
 )
 
 
-# TODO: Implement alternative tool per repo upload strategy.
 # TODO: Use git commit hash and origin to generated commit message.
 @click.command("shed_upload")
 @options.optional_project_arg(exists=True)
