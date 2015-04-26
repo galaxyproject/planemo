@@ -1,6 +1,6 @@
 import copy
 import fnmatch
-import glob
+from planemo import glob
 import hashlib
 import json
 import os
@@ -631,7 +631,7 @@ class RawRepositoryDirectory(object):
         config = self._realize_config(name)
         excludes = _shed_config_excludes(config)
         for exclude in excludes:
-            ignore_list.extend(glob.glob(os.path.join(self.path, exclude)))
+            ignore_list.extend(self._glob(exclude))
 
         for included_file in self._walk_files(name):
             relative_path = os.path.relpath(included_file, self.path)
@@ -666,7 +666,10 @@ class RawRepositoryDirectory(object):
             yield included_file
 
     def _glob(self, pattern):
-        return glob.glob("%s/%s" % (self.path, pattern))
+        pattern = os.path.join(self.path, pattern)
+        if os.path.isdir(pattern):
+            pattern = "%s/**" % pattern
+        return glob.glob(pattern)
 
     def _realize_file(self, relative_path, directory):
         source_path = os.path.join(self.path, relative_path)
@@ -676,7 +679,11 @@ class RawRepositoryDirectory(object):
         target_dir = os.path.dirname(target_path)
         if not os.path.exists(target_dir):
             os.makedirs(target_dir)
-        os.symlink(source_path, target_path)
+        if os.path.isdir(source_path):
+            os.makedirs(target_path)
+        else:
+            if not os.path.exists(target_path):
+                os.symlink(source_path, target_path)
 
     def _realize_config(self, name):
         config = copy.deepcopy(self.config)

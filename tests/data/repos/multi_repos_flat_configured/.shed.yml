@@ -15,4 +15,4 @@ repositories:
     include:
       - cat2.xml
       - macros.xml
-      - test-data
+      - test-data/**

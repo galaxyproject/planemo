@@ -4,3 +4,4 @@ pyyaml
 bioblend>=0.5.3
 docutils
 jinja2
+glob2

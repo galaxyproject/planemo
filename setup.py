@@ -22,6 +22,7 @@ requirements = [
     'docutils',
     'PyGithub',
     'bioblend',
+    'glob2',
 ]
 
 # Latest stable bioblend does not support Python 3, setup dev dependency.
