@@ -21,7 +21,7 @@ from planemo.io import info
 @options.recursive_shed_option()
 @pass_context
 def cli(ctx, path, **kwds):
-    """Create a repository in the toolshed from a .shed.yml file
+    """Create a repository in a Galaxy Tool Shed from a ``.shed.yml`` file.
     """
     tsi = shed.tool_shed_client(ctx, **kwds)
 

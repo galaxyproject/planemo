@@ -42,5 +42,11 @@ from planemo import shed
 @options.force_option()
 @pass_context
 def cli(ctx, path, **kwds):
+    """Bootstrap a new Tool Shed configuration (.shed.yml) file.
+
+    This file is used by other ``planemo`` commands such as ``shed_lint``,
+    ``shed_create``, ``shed_upload``, and ``shed_diff`` to manage repositories
+    in a Galaxy Tool Shed.
+    """
     exit_code = shed.shed_init(ctx, path, **kwds)
     sys.exit(exit_code)

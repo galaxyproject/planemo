@@ -7,7 +7,9 @@ Subpackages
 .. toctree::
 
     planemo.commands
+    planemo.linters
     planemo.reports
+    planemo.xml
 
 Submodules
 ----------
@@ -76,6 +78,14 @@ planemo.io module
     :undoc-members:
     :show-inheritance:
 
+planemo.lint module
+-------------------
+
+.. automodule:: planemo.lint
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.options module
 ----------------------
 
@@ -92,10 +102,42 @@ planemo.shed module
     :undoc-members:
     :show-inheritance:
 
+planemo.shed_lint module
+------------------------
+
+.. automodule:: planemo.shed_lint
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.templates module
+------------------------
+
+.. automodule:: planemo.templates
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.tool_builder module
 ---------------------------
 
 .. automodule:: planemo.tool_builder
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.tool_lint module
+------------------------
+
+.. automodule:: planemo.tool_lint
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.tools module
+--------------------
+
+.. automodule:: planemo.tools
     :members:
     :undoc-members:
     :show-inheritance:

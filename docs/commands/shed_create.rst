@@ -12,7 +12,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-Create a repository in the toolshed from a .shed.yml file
+Create a repository in a Galaxy Tool Shed from a ``.shed.yml`` file.
 
 **Options**::
 
@@ -29,5 +29,7 @@ Create a repository in the toolshed from a .shed.yml file
                             specified).
       --shed_password TEXT  Password for Tool Shed auth (required unless shed_key
                             is specified).
+      -r, --recursive       Recursively perform command for nested repository
+                            directories.
       --help                Show this message and exit.
     

@@ -20,6 +20,8 @@ documentation describes these commands.
 .. include:: commands/share_test.rst
 .. include:: commands/shed_create.rst
 .. include:: commands/shed_diff.rst
+.. include:: commands/shed_init.rst
+.. include:: commands/shed_lint.rst
 .. include:: commands/shed_upload.rst
 .. include:: commands/syntax.rst
 .. include:: commands/test.rst

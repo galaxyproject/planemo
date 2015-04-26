@@ -39,7 +39,7 @@ Handle possible recursion through paths for uploading files to a toolshed
                                    specified user/repo name pair, then
                                    automatically create the repository in the
                                    toolshed.
-      -r, --recursive              Recursively search for repositories to publish
-                                   to a tool shed
+      -r, --recursive              Recursively perform command for nested
+                                   repository directories.
       --help                       Show this message and exit.
     

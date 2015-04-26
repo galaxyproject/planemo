@@ -20,5 +20,14 @@ practices.
 
       --report_level [all|warn|error]
       --fail_level [warn|error]
+      -s, --skip TEXT                 Comma-separated list of lint tests to skip
+                                      (e.g send .--skip 'citations,xml_order' to
+                                      skip linting of citations and best-practice
+                                      XML ordering.
+      --xsd                           Include experimental tool XSD validation in
+                                      linting process (requires xmllint on PATH or
+                                      lxml installed).
+      -r, --recursive                 Recursively perform command for
+                                      subdirectories.
       --help                          Show this message and exit.
     

@@ -39,6 +39,7 @@ Here are some examples::
       --shed_target TEXT         Tool Shed to target (this can be 'toolshed',
                                  'testtoolshed', 'local' (alias for
                                  http://localhost:9009/) or an arbitraryurl).
+      -o, --output PATH          Send diff output to specified file.
       --shed_target_source TEXT  Source Tool Shed to diff against (will ignore
                                  local project info specified). To compare the
                                  main Tool Shed against the test, set this to

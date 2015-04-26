@@ -124,6 +124,22 @@ planemo.commands.cmd_shed_download module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd_shed_init module
+-------------------------------------
+
+.. automodule:: planemo.commands.cmd_shed_init
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_shed_lint module
+-------------------------------------
+
+.. automodule:: planemo.commands.cmd_shed_lint
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd_shed_upload module
 ---------------------------------------
 
