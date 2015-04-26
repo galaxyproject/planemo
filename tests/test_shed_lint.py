@@ -2,7 +2,7 @@
 from .test_utils import CliTestCase
 
 
-class ShedLineTestCase(CliTestCase):
+class ShedLintTestCase(CliTestCase):
 
     def test_valid_repos(self):
         with self._isolate_repo("single_tool"):
