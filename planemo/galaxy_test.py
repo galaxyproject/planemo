@@ -113,7 +113,7 @@ def case_id(testcase_el):
         raw_id = name_raw
     else:
         class_name = testcase_el.attrib["classname"]
-        raw_id = "{}.{}".format(class_name, name_raw)
+        raw_id = "{0}.{1}".format(class_name, name_raw)
 
     name = None
     num = None
@@ -146,7 +146,7 @@ TestId = namedtuple("TestId", ["name", "num", "id"])
 @property
 def _label(self):
     if self.num is not None:
-        return "{}[{}]".format(self.name, self.num)
+        return "{0}[{1}]".format(self.name, self.num)
     else:
         return self.id
 
