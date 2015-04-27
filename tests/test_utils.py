@@ -72,9 +72,12 @@ class CliTestCase(TestCase):
     @contextlib.contextmanager
     def _isolate_repo(self, name):
         with self._isolate() as f:
-            repo = os.path.join(TEST_REPOS_DIR, name)
-            io.shell("cp -r '%s'/. '%s'" % (repo, f))
+            self._copy_repo(name, f)
             yield f
+
+    def _copy_repo(self, name, dest):
+        repo = os.path.join(TEST_REPOS_DIR, name)
+        io.shell("cp -r '%s'/. '%s'" % (repo, dest))
 
 
 class CliShedTestCase(CliTestCase):

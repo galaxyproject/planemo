@@ -631,16 +631,15 @@ class RawRepositoryDirectory(object):
         config = self._realize_config(name)
         excludes = _shed_config_excludes(config)
         for exclude in excludes:
-            ignore_list.extend(self._glob(exclude))
+            ignore_list.extend(_glob(self.path, exclude))
 
-        for included_file in self._walk_files(name):
-            relative_path = os.path.relpath(included_file, self.path)
-            implicit_ignore = self._implicit_ignores(relative_path)
-            explicit_ignore = (included_file in ignore_list)
+        for realized_file in self._realized_files(name):
+            relative_dest = realized_file.relative_dest
+            implicit_ignore = self._implicit_ignores(relative_dest)
+            explicit_ignore = (realized_file.absolute_src in ignore_list)
             if implicit_ignore or explicit_ignore:
                 continue
-
-            self._realize_file(relative_path, directory)
+            realized_file.realize_to(directory)
 
         for (name, contents) in iteritems(config.get("_files", {})):
             path = os.path.join(directory, name)
@@ -657,33 +656,15 @@ class RawRepositoryDirectory(object):
     def _repo_names(self):
         return self.config.get("repositories").keys()
 
-    def _walk_files(self, name):
+    def _realized_files(self, name):
         config = self._realize_config(name)
-        files = []
+        realized_files = []
         for include in config["include"]:
-            files.extend(self._glob(include))
-        for included_file in files:
-            yield included_file
-
-    def _glob(self, pattern):
-        pattern = os.path.join(self.path, pattern)
-        if os.path.isdir(pattern):
-            pattern = "%s/**" % pattern
-        return glob.glob(pattern)
-
-    def _realize_file(self, relative_path, directory):
-        source_path = os.path.join(self.path, relative_path)
-        if os.path.islink(source_path):
-            source_path = os.path.realpath(source_path)
-        target_path = os.path.join(directory, relative_path)
-        target_dir = os.path.dirname(target_path)
-        if not os.path.exists(target_dir):
-            os.makedirs(target_dir)
-        if os.path.isdir(source_path):
-            os.makedirs(target_path)
-        else:
-            if not os.path.exists(target_path):
-                os.symlink(source_path, target_path)
+            realized_files.extend(
+                RealizedFile.realized_files_for(self.path, include)
+            )
+        for realized_file in realized_files:
+            yield realized_file
 
     def _realize_config(self, name):
         config = copy.deepcopy(self.config)
@@ -711,6 +692,75 @@ class RawRepositoryDirectory(object):
         elif name in PLANEMO_FILES:
             return True
         return False
+
+
+class RealizedFile(object):
+
+    def __init__(self, src_root, src, dest, dest_is_file, strip_components):
+        self.src_root = src_root
+        self.src = src
+        self.dest = dest
+        self.dest_is_file = dest_is_file
+        self.strip_components = strip_components
+
+    @property
+    def relative_dest(self):
+        if self.dest_is_file:
+            destination = self.dest
+        else:
+            destination = os.path.join(self.dest, self.stripped_source)
+        return os.path.relpath(destination)
+
+    @property
+    def stripped_source(self):
+        return "/".join(self.src.split("/")[self.strip_components:])
+
+    @property
+    def absolute_src(self):
+        return os.path.abspath(os.path.join(self.src_root, self.src))
+
+    def realize_to(self, directory):
+        source_path = self.absolute_src
+        if os.path.islink(source_path):
+            source_path = os.path.realpath(source_path)
+        relative_dest = self.relative_dest
+        target_path = os.path.join(directory, relative_dest)
+        target_exists = os.path.exists(target_path)
+        if not target_exists:
+            target_dir = os.path.dirname(target_path)
+            if not os.path.exists(target_dir):
+                os.makedirs(target_dir)
+            if os.path.isdir(source_path):
+                os.makedirs(target_path)
+            else:
+                os.symlink(source_path, target_path)
+
+    @staticmethod
+    def realized_files_for(path, include_info):
+        if not isinstance(include_info, dict):
+            include_info = {"source": include_info}
+        source = include_info.get("source")
+        destination = include_info.get("destination", None)
+        strip_components = include_info.get("strip_components", 0)
+        if destination is None:
+            destination = "./"
+            destination_specified = False
+        else:
+            destination_specified = True
+        abs_source = os.path.join(path, source)
+        dest_is_file = destination_specified and os.path.isfile(abs_source)
+        realized_files = []
+        for globbed_file in _glob(path, source):
+            src = os.path.relpath(globbed_file, path)
+            realized_files.append(
+                RealizedFile(path, src, destination, dest_is_file, strip_components)
+            )
+        return realized_files
+
+    def __str__(self):
+        return "RealizedFile[src={},dest={},dest_file={}]".format(
+            self.src, self.dest, self.dest_is_file
+        )
 
 
 class RealizedRepositry(object):
@@ -762,6 +812,13 @@ class RealizedRepositry(object):
             except Exception:
                 error(str(e))
             return None
+
+
+def _glob(path, pattern):
+    pattern = os.path.join(path, pattern)
+    if os.path.isdir(pattern):
+        pattern = "%s/**" % pattern
+    return glob.glob(pattern)
 
 
 def _shed_config_excludes(config):

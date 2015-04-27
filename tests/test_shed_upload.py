@@ -16,7 +16,7 @@ class ShedUploadTestCase(CliShedTestCase):
             upload_command = ["shed_upload", "--tar_only"]
             upload_command.extend(self._shed_args())
             self._check_exit_code(upload_command)
-            assert exists(join(f, "shed_upload.tar.gz"))
+            _assert_exists(join(f, "shed_upload.tar.gz"))
 
     def test_upload_not_exists(self):
         with self._isolate_repo("single_tool"):
@@ -68,7 +68,7 @@ class ShedUploadTestCase(CliShedTestCase):
             self._check_exit_code(upload_command)
             target = self._untar(f, "shed_upload.tar.gz")
             # Only one file was in archive
-            assert exists(join(target, "repository_dependencies.xml"))
+            _assert_exists(join(target, "repository_dependencies.xml"))
             # this got filtered
             assert not exists(join(target, "README.rst"))
 
@@ -79,7 +79,7 @@ class ShedUploadTestCase(CliShedTestCase):
             self._check_exit_code(upload_command)
             target = self._untar(f, "shed_upload_suite_1.tar.gz")
             # Only one file was in archive
-            assert exists(join(target, "repository_dependencies.xml"))
+            _assert_exists(join(target, "repository_dependencies.xml"))
 
     def test_upload_filters_ignore(self):
         with self._isolate_repo("single_tool_exclude") as f:
@@ -104,7 +104,7 @@ class ShedUploadTestCase(CliShedTestCase):
         with self._isolate_repo("single_tool") as f:
             mock_git_dir = join(f, ".git")
             os.makedirs(mock_git_dir)
-            index_path = os.path.join(mock_git_dir, "index_file")
+            index_path = join(mock_git_dir, "index_file")
             with open(index_path, "w") as index_f:
                 index_f.write("test")
             upload_command = ["shed_upload", "--force_repository_creation"]
@@ -120,7 +120,7 @@ class ShedUploadTestCase(CliShedTestCase):
             self._check_exit_code(upload_command)
             target = self._untar(f, "shed_upload.tar.gz")
             # Only one file was in archive
-            assert exists(join(target, "tool_dependencies.xml"))
+            _assert_exists(join(target, "tool_dependencies.xml"))
             # this got filtered
             assert not exists(join(target, "README.rst"))
             # .shed.yml always gets filtered
@@ -133,8 +133,8 @@ class ShedUploadTestCase(CliShedTestCase):
             self._check_exit_code(upload_command)
             target = self._untar(f, "shed_upload.tar.gz")
             # Only one file was in archive
-            assert exists(join(target, "repository_dependencies.xml"))
-            assert exists(join(target, "README.rst"))
+            _assert_exists(join(target, "repository_dependencies.xml"))
+            _assert_exists(join(target, "README.rst"))
 
     def test_upload_expansion_configured(self):
         with self._isolate_repo("multi_repos_flat_configured") as f:
@@ -143,6 +143,21 @@ class ShedUploadTestCase(CliShedTestCase):
     def test_upload_expansion_flagged(self):
         with self._isolate_repo("multi_repos_flat_flag") as f:
             self._verify_expansion(f)
+
+    def test_upload_expansion_configured_extras(self):
+        with self._isolate() as f:
+            repo = join(f, "repo")
+            self._copy_repo("multi_repos_flat_configured_complex", repo)
+            self._copy_repo("shared_files", join(f, "shared_files"))
+            self._verify_expansion(f, "repo")
+            for tool_id in ["cat1", "cat2"]:
+                self._check_tar(
+                    f, "shed_upload_cs_%s.tar.gz" % tool_id,
+                    contains=[
+                        "CITATION.txt",
+                        "test-data/extra_test_file.txt",
+                    ],
+                )
 
     def test_upload_expansion_suite(self):
         with self._isolate_repo("multi_repos_flat_flag_suite") as f:
@@ -159,9 +174,11 @@ class ShedUploadTestCase(CliShedTestCase):
                 assert 'owner="devteam" name="cat_legacy"' in repo_xml
                 assert 'owner="iuc" name="cs-cat2"' in repo_xml
 
-    def _verify_expansion(self, f):
+    def _verify_expansion(self, f, name=None):
         upload_command = ["shed_upload", "--tar_only"]
         upload_command.extend(self._shed_args())
+        if name is not None:
+            upload_command.append(join(f, name))
         self._check_exit_code(upload_command)
         self._check_tar(
             f, "shed_upload_cs_cat1.tar.gz",
@@ -188,15 +205,15 @@ class ShedUploadTestCase(CliShedTestCase):
     def _verify_upload(self, f, download_files=[], download_args=[]):
         target = self._download_repo(f, download_args)
         for download_file in download_files:
-            assert exists(join(target, download_file)), download_file
+            _assert_exists(join(target, download_file))
         return target
 
     def _check_tar(self, f, tar_path, contains=[], not_contains=[]):
         tar_path = join(f, tar_path)
-        assert exists(tar_path)
+        _assert_exists(tar_path)
         target = self._untar(f, tar_path)
         for path in contains:
-            assert exists(join(target, path))
+            _assert_exists(join(target, path))
         for path in not_contains:
             assert not exists(join(target, path))
         return target
@@ -207,7 +224,7 @@ class ShedUploadTestCase(CliShedTestCase):
         download_command.extend(self._shed_args(read_only=True))
         self._check_exit_code(download_command)
         download = join(f, "shed_download.tar.gz")
-        assert exists(download)
+        _assert_exists(download)
         return self._untar(f, "shed_download.tar.gz")
 
     def _untar(self, f, path):
@@ -219,3 +236,17 @@ class ShedUploadTestCase(CliShedTestCase):
         tar.extractall(path=target)
         tar.close()
         return target
+
+
+def _assert_exists(path):
+    dir_path = os.path.dirname(path)
+    msg = None
+    if not exists(dir_path):
+        template = "Expected path [%s] to exist, but parent absent."
+        msg = template % path
+    if not exists(path):
+        contents = os.listdir(dir_path)
+        template = "Expected path [%s] to exist. Directory contents %s."
+        msg = template % (path, contents)
+    if msg is not None:
+        raise AssertionError(msg)
