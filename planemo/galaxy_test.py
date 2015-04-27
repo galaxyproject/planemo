@@ -72,7 +72,7 @@ class GalaxyTestResults(object):
         self.num_problems = num_skips + num_errors + num_failures
 
         for testcase_el in self.xunit_testcase_elements:
-            test = test_id(testcase_el)
+            test = case_id(testcase_el)
             test_data = self.structured_data_by_id.get(test.id)
             if not test_data:
                 continue
@@ -95,7 +95,7 @@ class GalaxyTestResults(object):
 
     @property
     def xunit_testcase_elements(self):
-        for testcase_el in find_testcases(self._xunit_root):
+        for testcase_el in find_cases(self._xunit_root):
             yield testcase_el
 
 
@@ -103,11 +103,11 @@ def parse_xunit_report(xunit_report_path):
     return ET.parse(xunit_report_path)
 
 
-def find_testcases(xunit_root):
+def find_cases(xunit_root):
     return xunit_root.findall("testcase")
 
 
-def test_id(testcase_el):
+def case_id(testcase_el):
     name_raw = testcase_el.attrib["name"]
     if "TestForTool_" in name_raw:
         raw_id = name_raw

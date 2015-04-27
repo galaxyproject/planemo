@@ -256,7 +256,7 @@ def __summarize_tests_full(
 
 def __summarize_test_case(structured_data, testcase_el, **kwds):
     summary_style = kwds.get("summary")
-    test_id = galaxy_test.test_id(testcase_el)
+    test_id = galaxy_test.case_id(testcase_el)
     passed = len(list(testcase_el)) == 0
     if not passed:
         state = click.style("failed", bold=True, fg='red')

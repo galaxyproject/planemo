@@ -21,8 +21,8 @@ def get_test_id_old():
 def _get_test_id(path):
     xml_tree = galaxy_test.parse_xunit_report(path)
     root = xml_tree.getroot()
-    first_testcase = galaxy_test.find_testcases(root)[0]
-    test_id = galaxy_test.test_id(first_testcase)
+    first_testcase = galaxy_test.find_cases(root)[0]
+    test_id = galaxy_test.case_id(first_testcase)
     assert test_id.label == "cat[0]"
     expected_id = "functional.test_toolbox.TestForTool_cat.test_tool_000000"
     assert test_id.id == expected_id
