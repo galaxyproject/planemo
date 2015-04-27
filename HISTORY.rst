@@ -9,6 +9,48 @@ History
 0.8.0.dev0
 ---------------------
 
+* Implement the new ``shed_lint`` command that verifies various aspects of tool
+  shed repositories - including XSD_ validation of ``repository_dependencies.xml``
+  and ``tool_dependencies.xml`` files, best practices for README files, and the
+  contents of ``.shed.yml`` files. This requires the lxml_ library to be available
+  to Planemo or the application xmllint_ to be on its ``PATH``. `Pull Request 130`_
+  `Issue 89`_ `Issue 91`_ 912df02_ d26929e_ 36ac6d8_
+* Option to enable experimental XSD_ based validation of tools when ``lint``
+  is executed with the new ``--xsd`` flag. This validation occurs against the
+  unofficial `Galaxy Tool XSD project <https://github.com/JeanFred/Galaxy-XSD>`__
+  maintained by @JeanFred. This requires the lxml_ library to be
+  available to Planemo or the application xmllint_ to be on its ``PATH``.
+  `Pull Request 130`_ 912df02_
+* Allow skipping specific linters when using the ``lint`` command using the new
+  ``--skip`` option. 26e3cdb_
+* Make ``shed_upload`` more intelligent when building tar files so that package
+  and suite repositories may have README files in source control and they will
+  just be filtered out during upload. 53edd99_
+* Implement a new ``shed_init`` command that will help bootstrap ``.shed.yml``
+  files in the specified directory. cc1a447_
+* Extend ``shed_init`` to automatically build a ``repository_rependencies.xml``
+  file corresponding to a Galaxy workflow (``.ga`` file). `Issue 118`_ 988de1d_
+* In addition to a single file or directory, allow ``lint`` to be passed multiple
+  files. 343902d_ `Issue 139`_
+* Add ``-r/--recursive`` option to ``shed_create`` and ``lint`` commands. 63cd431_
+  01f2af9_
+* Improved output formatting and option to write diffs to a file for the
+  ``shed_diff`` command. 965511d_
+* Fix lint problem when using new Galaxy testing features such as expecting
+  job failures and verifing job output. `Issue 138`_
+* Fix typo in ``test`` help thanks to first time contributor @pvanheus.
+  `Pull Request 129`_ 1982076_
+* Fix NPE on empty ``help`` element when linting tools. `Issue 124`_
+* Fix ``lint`` warnings when ``configfiles`` are defined in a tool. 1a85493_
+* Fix for empty ``.shed.yml`` files. b7d9e96_
+* Fix the ``test`` command for newer versions of nose_. 33294d2_
+* Update help content and documentation to be clear ``normalize`` should not
+  be used to update the contents of tool files at this time. 08de8de_
+* Warn on unknown ``command`` attributes when linting tools (anything but
+  ``interpreter``). 4f61025_
+* Various design, documentaiton, and testing related improvements
+  (test coverage has risen from 65% to over 80% this release).
+
 
 ---------------------
 0.7.0 (2015-04-13)
@@ -168,6 +210,31 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Issue 139: https://github.com/galaxyproject/planemo/issues/139
+.. _Issue 89: https://github.com/galaxyproject/planemo/issues/#89
+.. _Issue 91: https://github.com/galaxyproject/planemo/issues/#91
+.. _d26929e: https://github.com/galaxyproject/planemo/commit/d26929e
+.. _36ac6d8: https://github.com/galaxyproject/planemo/commit/36ac6d8
+.. _08de8de: https://github.com/galaxyproject/planemo/commit/08de8de
+.. _4f61025: https://github.com/galaxyproject/planemo/commit/4f61025
+.. _1982076: https://github.com/galaxyproject/planemo/commit/1982076
+.. _Pull Request 129: https://github.com/galaxyproject/planemo/pull/129
+.. _912df02: https://github.com/galaxyproject/planemo/commit/912df02
+.. _Pull Request 130: https://github.com/galaxyproject/planemo/pull/130
+.. _1a85493: https://github.com/galaxyproject/planemo/commit/1a85493
+.. _53edd99: https://github.com/galaxyproject/planemo/commit/53edd99
+.. _988de1d: https://github.com/galaxyproject/planemo/commit/988de1d
+.. _Issue 118: https://github.com/galaxyproject/planemo/issues/118
+.. _cc1a447: https://github.com/galaxyproject/planemo/commit/cc1a447
+.. _b7d9e96: https://github.com/galaxyproject/planemo/commit/b7d9e96
+.. _Issue 138: https://github.com/galaxyproject/planemo/issues/#138
+.. _Issue 124: https://github.com/galaxyproject/planemo/issues/#124
+.. _26e3cdb: https://github.com/galaxyproject/planemo/commit/26e3cdb
+.. _63cd431: https://github.com/galaxyproject/planemo/commit/63cd431
+.. _965511d: https://github.com/galaxyproject/planemo/commit/965511d
+.. _01f2af9: https://github.com/galaxyproject/planemo/commit/01f2af9
+.. _343902d: https://github.com/galaxyproject/planemo/commit/343902d
+.. _33294d2: https://github.com/galaxyproject/planemo/commit/33294d2
 .. _4c71299: https://github.com/galaxyproject/planemo/commit/4c71299
 .. _Pull Request 111: https://github.com/galaxyproject/planemo/pull/111
 .. _Pull Request 99: https://github.com/galaxyproject/planemo/pull/99
@@ -233,3 +300,8 @@ History
 .. _b9232e55: https://github.com/galaxyproject/planemo/commit/b9232e55e713abbd1d9ce8b0b34cbec6c701dc17
 
 .. _bioblend: https://github.com/galaxyproject/bioblend/
+.. _XSD: http://www.w3schools.com/schema/
+.. _lxml: http://lxml.de/
+.. _xmllint: http://xmlsoft.org/xmllint.html
+.. _nose: https://nose.readthedocs.org/en/latest/
+.. _ https://github.com/JeanFred/Galaxy-XSD
