@@ -1,6 +1,8 @@
 """ Utilities for reasoning about Galaxy test results.
 """
 from __future__ import absolute_import
+
+from collections import namedtuple
 import json
 import xml.etree.ElementTree as ET
 
@@ -37,7 +39,7 @@ class GalaxyTestResults(object):
         self.structured_data_by_id = structured_data_by_id
 
         if output_xml_path:
-            self.xunit_tree = ET.parse(output_xml_path)
+            self.xunit_tree = parse_xunit_report(output_xml_path)
             self.__merge_xunit()
             self.has_details = True
         else:
@@ -70,8 +72,8 @@ class GalaxyTestResults(object):
         self.num_problems = num_skips + num_errors + num_failures
 
         for testcase_el in self.xunit_testcase_elements:
-            id = testcase_el.get("name")
-            test_data = self.structured_data_by_id.get(id)
+            test = test_id(testcase_el)
+            test_data = self.structured_data_by_id.get(test.id)
             if not test_data:
                 continue
             problem_el = None
@@ -93,5 +95,60 @@ class GalaxyTestResults(object):
 
     @property
     def xunit_testcase_elements(self):
-        for testcase_el in self._xunit_root.findall("testcase"):
+        for testcase_el in find_testcases(self._xunit_root):
             yield testcase_el
+
+
+def parse_xunit_report(xunit_report_path):
+    return ET.parse(xunit_report_path)
+
+
+def find_testcases(xunit_root):
+    return xunit_root.findall("testcase")
+
+
+def test_id(testcase_el):
+    name_raw = testcase_el.attrib["name"]
+    if "TestForTool_" in name_raw:
+        raw_id = name_raw
+    else:
+        class_name = testcase_el.attrib["classname"]
+        raw_id = "{}.{}".format(class_name, name_raw)
+
+    name = None
+    num = None
+    if "TestForTool_" in raw_id:
+        tool_and_num = raw_id.split("TestForTool_")[-1]
+        if ".test_tool_" in tool_and_num:
+            name, num_str = tool_and_num.split(".test_tool_", 1)
+            num = _parse_num(num_str)
+            # Tempted to but something human friendly in here like
+            # num + 1 - but then it doesn't match HTML report.
+        else:
+            name = tool_and_num
+    else:
+        name = raw_id
+
+    return TestId(name, num, raw_id)
+
+
+def _parse_num(num_str):
+    try:
+        num = int(num_str)
+    except ValueError:
+        num = None
+    return num
+
+
+TestId = namedtuple("TestId", ["name", "num", "id"])
+
+
+@property
+def _label(self):
+    if self.num is not None:
+        return "{}[{}]".format(self.name, self.num)
+    else:
+        return self.id
+
+
+TestId.label = _label

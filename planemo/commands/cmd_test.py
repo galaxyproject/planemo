@@ -256,32 +256,20 @@ def __summarize_tests_full(
 
 def __summarize_test_case(structured_data, testcase_el, **kwds):
     summary_style = kwds.get("summary")
-    name_raw = testcase_el.attrib["name"]
-    tool_and_num = name_raw.split("TestForTool_", 1)[-1]
-    if "test_tool_" in tool_and_num:
-        tool, num = tool_and_num.split(".test_tool_", 1)
-        try:
-            num = int(num)
-        except ValueError:
-            pass
-        # Tempted to but something human friendly in here like
-        # num + 1 - but then it doesn't match HTML report.
-        label = "%s[%s]" % (tool, num)
-    else:
-        label = tool_and_num
+    test_id = galaxy_test.test_id(testcase_el)
     passed = len(list(testcase_el)) == 0
     if not passed:
         state = click.style("failed", bold=True, fg='red')
     else:
         state = click.style("passed", bold=True, fg='green')
-    click.echo(label + ": " + state)
+    click.echo(test_id.label + ": " + state)
     if summary_style != "minimal":
-        __print_command_line(structured_data, name_raw)
+        __print_command_line(structured_data, test_id)
 
 
 def __print_command_line(structured_data, test_id):
     try:
-        test = [d for d in structured_data if d["id"] == test_id][0]["data"]
+        test = [d for d in structured_data if d["id"] == test_id.id][0]["data"]
     except (KeyError, IndexError):
         # Failed to find structured data for this test - likely targetting
         # and older Galaxy version.
