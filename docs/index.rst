@@ -16,6 +16,7 @@ Contents:
    configuration
    appliance
    writing
+   publishing
    commands
    conduct
    contributing
