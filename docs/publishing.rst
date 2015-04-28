@@ -36,7 +36,7 @@ to any number of Tool Shed repositories. Planemo maps files to Tool Shed
 repositories using a special file called ``.shed.yml``.
 
 From a directory containing tools, a `package definition`_. etc... the ``shed_init``
-``command <http://planemo.readthedocs.org/en/latest/commands.html#shed-init-command>`__
+`command <http://planemo.readthedocs.org/en/latest/commands.html#shed-init-command>`__
 can be used to bootstrap a new ``.shed.yml`` file.
 
 ::

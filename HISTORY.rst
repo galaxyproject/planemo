@@ -11,7 +11,7 @@ History
 
 
 ---------------------
-0.8.1
+0.8.1 (2015-04-28)
 ---------------------
 
 * Fixes for the source distribution to allow installation of 0.8.0 via Homebrew.
