@@ -6,9 +6,10 @@ History
 .. to_doc
 
 ---------------------
-0.9.0.dev0
+0.8.1
 ---------------------
 
+* Fixes for the source distribution to allow installation of 0.8.0 via Homebrew.
 
 ---------------------
 0.8.0 (2015-04-27)
