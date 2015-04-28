@@ -1,0 +1,26 @@
+<tool id="cat1" name="Cat 1" version="1.0">
+    <description>tail-to-head</description>
+    <macros>
+      <import>macros.xml</import>
+    </macros>
+    <command>
+        cat $input1 #for $q in $queries# ${q.input2} #end for# > $out_file1
+    </command>
+    <inputs>
+        <param name="input1" type="data" label="Concatenate Dataset"/>
+        <repeat name="queries" title="Dataset">
+            <param name="input2" type="data" label="Select" />
+        </repeat>
+    </inputs>
+    <outputs>
+        <data name="out_file1" format="input" metadata_source="input1"/>
+    </outputs>
+    <tests>
+      <test>
+        <param name="input1" value="1.bed"/>
+        <output name="out_file1" file="1.bed"/>
+      </test>
+    </tests>
+    <help>
+    </help>
+</tool>

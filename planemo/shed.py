@@ -1,5 +1,6 @@
+import copy
 import fnmatch
-import glob
+from planemo import glob
 import hashlib
 import json
 import os
@@ -10,6 +11,7 @@ from tempfile import (
 )
 import shutil
 
+from six import iteritems
 import yaml
 
 try:
@@ -22,6 +24,8 @@ from planemo.io import (
     untar_to,
     can_write_to_path,
 )
+from planemo.tools import load_tool_elements_from_path
+from planemo import templates
 
 SHED_CONFIG_NAME = '.shed.yml'
 REPO_DEPENDENCIES_CONFIG_NAME = "repository_dependencies.xml"
@@ -36,7 +40,10 @@ CONFLICTING_NAMES_MESSAGE = ("The supplied name argument --name conflicts "
                              "with value discovered in .shed.yml.")
 PARSING_PROBLEM = ("Problem parsing file .shed.yml in directory %s, skipping "
                    "repository. Message: [%s].")
-
+AUTO_REPO_CONFLICT_MESSAGE = ("Cannot specify both auto_tool_repositories and "
+                              "repositories in .shed.yml at this time.")
+AUTO_NAME_CONFLICT_MESSAGE = ("Cannot specify both auto_tool_repositories and "
+                              "in .shed.yml and --name on the command-line.")
 # Planemo generated or consumed files that do not need to be uploaded to the
 # tool shed.
 PLANEMO_FILES = [
@@ -130,7 +137,7 @@ def shed_init(ctx, path, **kwds):
     return 0
 
 
-def shed_repo_config(path):
+def shed_repo_config(path, name=None):
     shed_yaml_path = os.path.join(path, SHED_CONFIG_NAME)
     config = {}
     if os.path.exists(shed_yaml_path):
@@ -139,6 +146,7 @@ def shed_repo_config(path):
 
     if config is None:  # yaml may yield None
         config = {}
+    _expand_raw_config(config, path, name=name)
     return config
 
 
@@ -178,10 +186,9 @@ def tool_shed_client(ctx=None, **kwds):
 def find_repository_id(ctx, tsi, path, **kwds):
     repo_config = kwds.get("config", None)
     if repo_config is None:
-        repo_config = shed_repo_config(path)
-    name = kwds.get("name", None) or repo_config.get("name", None)
-    if name is None:
-        name = path_to_repo_name(path)
+        name = kwds.get("name", None)
+        repo_config = shed_repo_config(path, name=name)
+    name = repo_config["name"]
     find_kwds = kwds.copy()
     if "name" in find_kwds:
         del find_kwds["name"]
@@ -193,6 +200,120 @@ def _find_repository_id(ctx, tsi, name, repo_config, **kwds):
     owner = kwds.get("owner", None) or repo_config.get("owner", None)
     if owner is None:
         owner = global_config.get("shed_username", None)
+
+    matching_repository = find_repository(tsi, owner, name)
+    if matching_repository is None:
+        if not kwds.get("allow_none", False):
+            message = "Failed to find repository for owner/name %s/%s"
+            raise Exception(message % (owner, name))
+        else:
+            return None
+    else:
+        repo_id = matching_repository["id"]
+        return repo_id
+
+
+def _expand_raw_config(config, path, name=None):
+    name_input = name
+    if "name" not in config:
+        config["name"] = name
+    if config["name"] is None:
+        config["name"] = path_to_repo_name(path)
+
+    default_include = config.get("include", ["**"])
+    repos = config.get("repositories", None)
+    auto_tool_repos = config.get("auto_tool_repositories", False)
+    suite_config = config.get("suite", False)
+
+    if repos and auto_tool_repos:
+        raise Exception(AUTO_REPO_CONFLICT_MESSAGE)
+    if auto_tool_repos and name_input:
+        raise Exception(AUTO_NAME_CONFLICT_MESSAGE)
+    if auto_tool_repos:
+        repos = _build_auto_tool_repos(path, config, auto_tool_repos)
+    # If repositories aren't defined, just define a single
+    # one based on calculated name and including everything
+    # by default.
+    if repos is None:
+        repos = {
+            config["name"]: {
+                "include": default_include
+            }
+        }
+    if suite_config:
+        _build_suite_repo(config, repos, suite_config)
+    config["repositories"] = repos
+
+
+def _build_auto_tool_repos(path, config, auto_tool_repos):
+    default_include = config.get("include", ["**"])
+    tool_els = list(load_tool_elements_from_path(path, recursive=True))
+    paths = list(map(lambda pair: pair[0], tool_els))
+    excludes = _shed_config_excludes(config)
+
+    def _build_repository(tool_path, tool_el):
+        tool_id = tool_el.getroot().get("id")
+        tool_name = tool_el.getroot().get("name")
+        template_vars = dict(
+            tool_id=tool_id,
+            tool_name=tool_name,
+        )
+        other_paths = paths[:]
+        other_paths.remove(tool_path)
+        tool_excludes = excludes + list(other_paths)
+        repo_dict = {
+            "include": default_include,
+            "exclude": tool_excludes,
+        }
+        for key in ["name", "description", "long_description"]:
+            template_key = "%s_template" % key
+            template = auto_tool_repos.get(template_key, None)
+            if template:
+                value = templates.render(template, **template_vars)
+                repo_dict[key] = value
+        return repo_dict
+
+    repos = {}
+    for tool_path, tool_el in tool_els:
+        repository_config = _build_repository(tool_path, tool_el)
+        repository_name = repository_config["name"]
+        repos[repository_name] = repository_config
+    return repos
+
+
+def _build_suite_repo(config, repos, suite_config):
+    if not isinstance(suite_config, dict):
+        suite_config = {}
+
+    name = suite_config.get("name", None)
+    if name is None:
+        raise Exception("suite_configitories required name key.")
+    description = suite_config.get("description", "")
+    long_description = suite_config.get("long_description", None)
+    owner = config["owner"]
+
+    repo_pairs = map(lambda name: (owner, name), repos.keys())
+    extra_repos = suite_config.get("include_repositories", {})
+    extra_pairs = map(lambda item: (item["owner"], item["name"]), extra_repos)
+
+    repository_dependencies = RepositoryDependencies()
+    repository_dependencies.description = description
+    repository_dependencies.repo_pairs = list(repo_pairs) + list(extra_pairs)
+
+    repo = {
+        "_files": {
+            REPO_DEPENDENCIES_CONFIG_NAME: str(repository_dependencies)
+        },
+        "include": [],
+        "name": name,
+        "description": description,
+    }
+    if long_description:
+        repo["long_description"] = long_description
+    repos[name] = repo
+
+
+def find_repository(tsi, owner, name):
     repos = tsi.repositories.get_repositories()
 
     def matches(r):
@@ -200,14 +321,9 @@ def _find_repository_id(ctx, tsi, name, repo_config, **kwds):
 
     matching_repos = list(filter(matches, repos))
     if not matching_repos:
-        if not kwds.get("allow_none", False):
-            message = "Failed to find repository for owner/name %s/%s"
-            raise Exception(message % (owner, name))
-        else:
-            return None
+        return None
     else:
-        repo_id = matching_repos[0]["id"]
-        return repo_id
+        return matching_repos[0]
 
 
 def create_repository_for(ctx, tsi, name, repo_config):
@@ -355,7 +471,8 @@ def realize_effective_repositories(path, **kwds):
     temp_directory = mkdtemp()
     try:
         for raw_repo_object in raw_repo_objects:
-            yield raw_repo_object.realize_to(temp_directory)
+            for realized_repo in raw_repo_object.realizations(temp_directory):
+                yield realized_repo
     finally:
         shutil.rmtree(temp_directory)
 
@@ -426,11 +543,8 @@ def _find_raw_repositories(path, **kwds):
 
     config_name = None
     if len(shed_file_dirs) == 1:
-        config = shed_repo_config(shed_file_dirs[0])
+        config = shed_repo_config(shed_file_dirs[0], name=name)
         config_name = config.get("name", None)
-
-    if len(shed_file_dirs) < 2 and config_name is None and name is None:
-        name = path_to_repo_name(path)
 
     if len(shed_file_dirs) > 1 and name is not None:
         raise Exception(NAME_INVALID_MESSAGE)
@@ -456,15 +570,14 @@ def _build_raw_repo_objects(raw_dirs, **kwds):
     raw_repo_objects = []
     for raw_dir in raw_dirs:
         try:
-            config = shed_repo_config(raw_dir)
+            config = shed_repo_config(raw_dir, name=name)
         except Exception as e:
             if skip_errors:
                 error_message = PARSING_PROBLEM % (raw_dir, e)
                 error(error_message)
+                continue
             else:
                 raise
-        if name:
-            config["name"] = name
         raw_repo_object = RawRepositoryDirectory(raw_dir, config, multiple)
         raw_repo_objects.append(raw_repo_object)
     return raw_repo_objects
@@ -500,45 +613,67 @@ class RawRepositoryDirectory(object):
         self.type = shed_repo_type(config, self.name)
         self.multiple = multiple  # operation over many repos?
 
-    @property
-    def _hash(self):
-        return hashlib.md5(self.name.encode('utf-8')).hexdigest()
+    def _hash(self, name):
+        return hashlib.md5(name.encode('utf-8')).hexdigest()
 
-    def realize_to(self, parent_directory):
-        directory = os.path.join(parent_directory, self._hash, self.name)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
+    def realizations(self, parent_directory):
+        names = self._repo_names()
 
+        for name in names:
+            directory = os.path.join(parent_directory, self._hash(name), name)
+            multiple = self.multiple or len(names) > 1
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            yield self._realize_to(directory, name, multiple)
+
+    def _realize_to(self, directory, name, multiple):
         ignore_list = []
-        for shed_ignore in self.config.get('ignore', []):
-            ignore_list.extend(glob.glob(os.path.join(self.path, shed_ignore)))
+        config = self._realize_config(name)
+        excludes = _shed_config_excludes(config)
+        for exclude in excludes:
+            ignore_list.extend(_glob(self.path, exclude))
 
-        for root, _, files in os.walk(self.path, followlinks=True):
-            for name in files:
-                full_path = os.path.join(root, name)
-                relative_path = os.path.relpath(full_path, self.path)
-                implicit_ignore = self._implicit_ignores(relative_path)
-                explicit_ignore = (full_path in ignore_list)
-                if implicit_ignore or explicit_ignore:
-                    continue
+        for realized_file in self._realized_files(name):
+            relative_dest = realized_file.relative_dest
+            implicit_ignore = self._implicit_ignores(relative_dest)
+            explicit_ignore = (realized_file.absolute_src in ignore_list)
+            if implicit_ignore or explicit_ignore:
+                continue
+            realized_file.realize_to(directory)
 
-                self._realize_file(relative_path, directory)
+        for (name, contents) in iteritems(config.get("_files", {})):
+            path = os.path.join(directory, name)
+            with open(path, "w") as f:
+                f.write(contents)
+
         return RealizedRepositry(
             realized_path=directory,
             real_path=self.path,
-            config=self.config,
-            multiple=self.multiple
+            config=config,
+            multiple=multiple
         )
 
-    def _realize_file(self, relative_path, directory):
-        source_path = os.path.join(self.path, relative_path)
-        if os.path.islink(source_path):
-            source_path = os.path.realpath(source_path)
-        target_path = os.path.join(directory, relative_path)
-        target_dir = os.path.dirname(target_path)
-        if not os.path.exists(target_dir):
-            os.makedirs(target_dir)
-        os.symlink(source_path, target_path)
+    def _repo_names(self):
+        return self.config.get("repositories").keys()
+
+    def _realized_files(self, name):
+        config = self._realize_config(name)
+        realized_files = []
+        for include in config["include"]:
+            realized_files.extend(
+                RealizedFile.realized_files_for(self.path, include)
+            )
+        for realized_file in realized_files:
+            yield realized_file
+
+    def _realize_config(self, name):
+        config = copy.deepcopy(self.config)
+        config["name"] = name
+        repo_config = config.get("repositories", {}).get(name, {})
+        config.update(repo_config)
+        if "repositories" in config:
+            del config["repositories"]
+        return config
 
     def _implicit_ignores(self, relative_path):
         # Filter out "unwanted files" :) like READMEs for special
@@ -557,6 +692,75 @@ class RawRepositoryDirectory(object):
         elif name in PLANEMO_FILES:
             return True
         return False
+
+
+class RealizedFile(object):
+
+    def __init__(self, src_root, src, dest, dest_is_file, strip_components):
+        self.src_root = src_root
+        self.src = src
+        self.dest = dest
+        self.dest_is_file = dest_is_file
+        self.strip_components = strip_components
+
+    @property
+    def relative_dest(self):
+        if self.dest_is_file:
+            destination = self.dest
+        else:
+            destination = os.path.join(self.dest, self.stripped_source)
+        return os.path.relpath(destination)
+
+    @property
+    def stripped_source(self):
+        return "/".join(self.src.split("/")[self.strip_components:])
+
+    @property
+    def absolute_src(self):
+        return os.path.abspath(os.path.join(self.src_root, self.src))
+
+    def realize_to(self, directory):
+        source_path = self.absolute_src
+        if os.path.islink(source_path):
+            source_path = os.path.realpath(source_path)
+        relative_dest = self.relative_dest
+        target_path = os.path.join(directory, relative_dest)
+        target_exists = os.path.exists(target_path)
+        if not target_exists:
+            target_dir = os.path.dirname(target_path)
+            if not os.path.exists(target_dir):
+                os.makedirs(target_dir)
+            if os.path.isdir(source_path):
+                os.makedirs(target_path)
+            else:
+                os.symlink(source_path, target_path)
+
+    @staticmethod
+    def realized_files_for(path, include_info):
+        if not isinstance(include_info, dict):
+            include_info = {"source": include_info}
+        source = include_info.get("source")
+        destination = include_info.get("destination", None)
+        strip_components = include_info.get("strip_components", 0)
+        if destination is None:
+            destination = "./"
+            destination_specified = False
+        else:
+            destination_specified = True
+        abs_source = os.path.join(path, source)
+        dest_is_file = destination_specified and os.path.isfile(abs_source)
+        realized_files = []
+        for globbed_file in _glob(path, source):
+            src = os.path.relpath(globbed_file, path)
+            realized_files.append(
+                RealizedFile(path, src, destination, dest_is_file, strip_components)
+            )
+        return realized_files
+
+    def __str__(self):
+        return "RealizedFile[src={},dest={},dest_file={}]".format(
+            self.src, self.dest, self.dest_is_file
+        )
 
 
 class RealizedRepositry(object):
@@ -608,3 +812,14 @@ class RealizedRepositry(object):
             except Exception:
                 error(str(e))
             return None
+
+
+def _glob(path, pattern):
+    pattern = os.path.join(path, pattern)
+    if os.path.isdir(pattern):
+        pattern = "%s/**" % pattern
+    return glob.glob(pattern)
+
+
+def _shed_config_excludes(config):
+    return config.get('ignore', []) + config.get('exclude', [])

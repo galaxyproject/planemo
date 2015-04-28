@@ -1,0 +1,18 @@
+owner: "iuc"
+remote_repository_url: "https://github.com/galaxyproject/planemo/tree/master/tests/data/repos/multi_repos_flat_configured"
+homepage_url: "http://planemo.readthedocs.org/en/latest/"
+categories:
+  - "Text Manipulation"
+repositories:
+  cs-cat1:
+    description: "The tool Cat 1 from the cat tool suite."
+    include:
+      - cat1.xml
+      - macros.xml
+      - test-data
+  cs-cat2:
+    description: "The tool Cat 2 from the cat tool suite."
+    include:
+      - cat2.xml
+      - macros.xml
+      - test-data/**

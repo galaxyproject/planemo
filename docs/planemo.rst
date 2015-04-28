@@ -70,6 +70,14 @@ planemo.github_util module
     :undoc-members:
     :show-inheritance:
 
+planemo.glob module
+-------------------
+
+.. automodule:: planemo.glob
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.io module
 -----------------
 

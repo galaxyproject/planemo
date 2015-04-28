@@ -72,9 +72,12 @@ class CliTestCase(TestCase):
     @contextlib.contextmanager
     def _isolate_repo(self, name):
         with self._isolate() as f:
-            repo = os.path.join(TEST_REPOS_DIR, name)
-            io.shell("cp -r '%s'/. '%s'" % (repo, f))
+            self._copy_repo(name, f)
             yield f
+
+    def _copy_repo(self, name, dest):
+        repo = os.path.join(TEST_REPOS_DIR, name)
+        io.shell("cp -r '%s'/. '%s'" % (repo, dest))
 
 
 class CliShedTestCase(CliTestCase):
@@ -96,12 +99,16 @@ class CliShedTestCase(CliTestCase):
         return args
 
     def _print_shed_info(self):
+        print(self._tsi.repositories.get_repositories())
+
+    @property
+    def _tsi(self):
         tsi = shed.tool_shed_client(
             None,
             shed_target=self.mock_shed.url,
             key="ignored",
         )
-        print(tsi.repositories.get_repositories())
+        return tsi
 
 
 @contextlib.contextmanager
