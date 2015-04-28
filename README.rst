@@ -2,17 +2,17 @@
 Planemo
 ===============================
 
-.. image:: https://travis-ci.org/galaxyproject/planemo.png?branch=master
-    :target: https://travis-ci.org/galaxyproject/planemo
-
 .. image:: https://readthedocs.org/projects/pip/badge/?version=latest
-		:target: https://planemo.readthedocs.org.
+   :target: https://planemo.readthedocs.org
 
-.. image:: https://pypip.in/d/planemo/badge.png
-    :target: https://pypi.python.org/pypi/planemo/
+.. image:: https://badge.fury.io/py/planemo.svg
+   :target: https://pypi.python.org/pypi/planemo/
+
+.. image:: https://travis-ci.org/galaxyproject/planemo.png?branch=master
+   :target: https://travis-ci.org/galaxyproject/planemo
 
 .. image:: https://coveralls.io/repos/galaxyproject/planemo/badge.svg?branch=master
-    :target: https://coveralls.io/r/galaxyproject/planemo?branch=master
+   :target: https://coveralls.io/r/galaxyproject/planemo?branch=master
 
 
 Command-line utilities to assist in building tools for the Galaxy_ project.
