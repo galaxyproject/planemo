@@ -23,6 +23,10 @@ History
   `Pull Request 130`_ 912df02_
 * Allow skipping specific linters when using the ``lint`` command using the new
   ``--skip`` option. 26e3cdb_
+* Implement sophisticated options in ``.shed.yml`` to map a directory to many,
+  custom Tool Shed repositories during shed operaitons such ``shed_upload``
+  including automatically mapping tools to their own directories and automatically
+  building suites repositories. `Pull Request 143`_
 * Make ``shed_upload`` more intelligent when building tar files so that package
   and suite repositories may have README files in source control and they will
   just be filtered out during upload. 53edd99_
@@ -48,9 +52,10 @@ History
   be used to update the contents of tool files at this time. 08de8de_
 * Warn on unknown ``command`` attributes when linting tools (anything but
   ``interpreter``). 4f61025_
-* Various design, documentaiton, and testing related improvements
-  (test coverage has risen from 65% to over 80% this release).
-
+* Various design, documentation (including new documentation on Tool Shed
+  `publishing <http://planemo.readthedocs.org/en/latest/publishing.html>`__),
+  and testing related improvements (test coverage has risen from 65% to over
+  80% during this release cycle).
 
 ---------------------
 0.7.0 (2015-04-13)
@@ -210,6 +215,7 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 143: https://github.com/galaxyproject/planemo/pull/143
 .. _Issue 139: https://github.com/galaxyproject/planemo/issues/139
 .. _Issue 89: https://github.com/galaxyproject/planemo/issues/#89
 .. _Issue 91: https://github.com/galaxyproject/planemo/issues/#91
@@ -304,4 +310,3 @@ History
 .. _lxml: http://lxml.de/
 .. _xmllint: http://xmlsoft.org/xmllint.html
 .. _nose: https://nose.readthedocs.org/en/latest/
-.. _ https://github.com/JeanFred/Galaxy-XSD

@@ -107,16 +107,35 @@ Like ``test``, ``serve`` requires a Galaxy root and one can be
 explicitly specified with ``--galaxy_root`` or installed dynamically
 with ``--install_galaxy``.
 
-Finally, when tools are ready to be published to GitHub_, it may be valuable
-to setup contineous integration to test changes committed and new pull
-requests. `Travis CI <http://travis-ci.org/>`_ is a service providing free
-testing and deep integration with GitHub_.
+
+Experimental Features
+---------------------
+
+Planemo can also be used to explore some more experimental features related to
+Galaxy tooling - including support for `Travis CI`_, Docker_, Homebrew_.
+
+-----------
+Tool Shed
+-----------
+
+For information on using Planemo to publish artifacts to the Galaxy Tool Shed,
+check out the `Publishing to the Tool Shed`_ documentation on reathedocs.org.
+
+-----------
+TravisCI
+-----------
+
+When tools are ready to be published to GitHub_, it may be valuable to setup
+contineous integration to test changes committed and new pull requests.
+`Travis CI`_ is a service providing free testing and deep integration with
+GitHub_.
 
 The ``travis_init`` `command
-<http://planemo.readthedocs.org/en/latest/commands.html#travis_init-command>`__
-will bootstrap a project with files to ease  contineous inegration of tools
-using a Planemo driven approach inspired by this great `blog post
-<http://bit.ly/gxtravisci>`_ by `Peter Cock <https://github.com/peterjc>`_.
+<http://planemo.readthedocs.org/en/latest/commands.html#travis_init-
+command>`__ will bootstrap a project with files to ease contineous integration
+testing of tools using a Planemo driven approach inspired by this great `blog
+post <http://bit.ly/gxtravisci>`_ by `Peter Cock
+<https://github.com/peterjc>`_.
 
 ::
 
@@ -127,12 +146,15 @@ using a Planemo driven approach inspired by this great `blog post
     % git commit -m "Add Travis CI testing infrastructure for tools."
     % git push # and register repository @ http://travis-ci.org/
 
-Experimental Features
----------------------
+In this example the file ``.travis/setup_custom_dependencies.bash`` should
+install the dependencies required to test your files on to the Travis user's
+``PATH``.
 
-While Planemo is very experimental itself - it can also be used to explore
-some more experimental features related to Galaxy tooling - including support
-for Docker and Brew.
+This testing approach may only make sense for smaller repositories with a
+handful of tools. For larger repositories, such as `tools-devteam`_ or
+`tools-iuc`_ simply linting tool and tool shed artifacts may be more feasible.
+Check out the ``.travis.yml`` file used by the IUC as `example
+<https://github.com/galaxyproject/tools-iuc/blob/master/.travis.yml>`__.
 
 -----------
 Docker
@@ -200,3 +222,7 @@ and `brew_env
 .. _Homebrew: http://brew.sh/
 .. _linuxbrew: https://github.com/Homebrew/linuxbrew
 .. _Vagrant: https://www.vagrantup.com/
+.. _Travis CI: <http://travis-ci.org/>
+.. _`tools-devteam`: https://github.com/galaxyproject/tools-devteam
+.. _`tools-iuc`: https://github.com/galaxyproject/tools-iuc
+.. _Publishing to the Tool Shed: http://planemo.readthedocs.org/en/latest/publishing.html
