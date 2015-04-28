@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.8.0.dev0
+0.8.0 (2015-04-27)
 ---------------------
 
 * Implement the new ``shed_lint`` command that verifies various aspects of tool
