@@ -3,6 +3,7 @@ the ToolShed API... for now :).
 """
 import os
 import json
+import tarfile
 from uuid import uuid4
 
 from flask import (
@@ -35,7 +36,16 @@ def create_repository():
 @app.route('/api/repositories/<id>/changeset_revision', methods=['POST'])
 def update_repository_contents(id):
     updated_tar = request.files['file']
-    updated_tar.save(app.config["model"].repository_path(id))
+    repo_path = app.config["model"].repository_path(id)
+    repo_tar_path = repo_path + ".tar.gz"
+    if not os.path.exists(repo_path):
+        os.makedirs(repo_path)
+    updated_tar.save(repo_tar_path)
+    tar = tarfile.open(repo_tar_path, "r:gz")
+    try:
+        tar.extractall(repo_path)
+    finally:
+        tar.close()
     return json.dumps({"id": id})
 
 
@@ -48,8 +58,18 @@ def get_categories():
 @app.route("/repository/download")
 def repository_download():
     id = request.args.get("repository_id", None)
-    path = app.config["model"].repository_path(id)
-    return send_file(path)
+    repo_path = app.config["model"].repository_path(id)
+    repo_tar_download_path = repo_path + "downlaod.tar.gz"
+    tar = tarfile.open(repo_tar_download_path, "w:gz")
+    try:
+        tar.add(
+            os.path.join(repo_path),
+            arcname=os.path.basename(repo_path),
+            recursive=True,
+        )
+    finally:
+        tar.close()
+    return send_file(repo_tar_download_path)
 
 
 @app.route('/shutdown', methods=['POST'])
