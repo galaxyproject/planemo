@@ -5,7 +5,7 @@ DEFAULT_CONFIG = {
 }
 
 
-def global_config_path(config_path):
+def global_config_path(config_path=None):
     if not config_path:
         config_path = os.environ.get(
             "PLANEMO_GLOBAL_CONFIG_PATH",
