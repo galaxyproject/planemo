@@ -235,6 +235,12 @@ class ShedUploadTestCase(CliShedTestCase):
         tar = tarfile.open(path, "r:gz")
         tar.extractall(path=target)
         tar.close()
+        tar = tarfile.open(path, "r:gz")
+        for tar_info in tar.getmembers():
+            # These entries cause problems with TS.
+            assert tar_info.name != "."
+            assert tar_info.name != ""
+        tar.close()
         return target
 
 
