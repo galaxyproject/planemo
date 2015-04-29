@@ -225,9 +225,9 @@ class ShedUploadTestCase(CliShedTestCase):
         self._check_exit_code(download_command)
         download = join(f, "shed_download.tar.gz")
         _assert_exists(download)
-        return self._untar(f, "shed_download.tar.gz")
+        return self._untar(f, "shed_download.tar.gz", tarbomb=False)
 
-    def _untar(self, f, path):
+    def _untar(self, f, path, tarbomb=True):
         target = join(f, "download")
         if exists(target):
             shutil.rmtree(target)
@@ -241,7 +241,10 @@ class ShedUploadTestCase(CliShedTestCase):
             assert tar_info.name != "."
             assert tar_info.name != ""
         tar.close()
-        return target
+        if not tarbomb:
+            return os.path.join(target, os.listdir(target)[0])
+        else:
+            return target
 
 
 def _assert_exists(path):
