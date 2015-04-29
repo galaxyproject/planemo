@@ -10,6 +10,7 @@ from bioblend import toolshed
 from .test_utils import (
     skip_unless_environ,
     CliTestCase,
+    TEST_DIR
 )
 
 from planemo.shed import username
@@ -43,6 +44,15 @@ class ShedTestCase(CliTestCase):
             open(".shed.yml", "w").write(shed_yml_contents)
             init_cmd = [
                 "shed_create",
+                "--shed_key", shed_api_key,
+                "--shed_target", shed_url
+            ]
+            self._check_exit_code(init_cmd)
+            test_path = os.path.join(TEST_DIR, "tool_dependencies_good_1.xml")
+            contents = open(test_path).read()
+            open("tool_dependencies.xml", "w").write(contents)
+            init_cmd = [
+                "shed_upload",
                 "--shed_key", shed_api_key,
                 "--shed_target", shed_url
             ]
