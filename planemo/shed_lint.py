@@ -182,7 +182,7 @@ def _validate_repo_name(name):
         msg = "Repository names must be at least 2 characters in length."
     if len(name) > 80:
         msg = "Repository names cannot be more than 80 characters in length."
-    if not(VALID_REPOSITORYNAME_RE.match(name)):
+    if not VALID_REPOSITORYNAME_RE.match(name):
         msg = ("Repository names must contain only lower-case letters, "
                "numbers and underscore.")
     return msg
