@@ -1,6 +1,9 @@
+# https://github.com/galaxy-iuc/standards
+# https://github.com/galaxy-iuc/standards/pull/7/files
 TAG_ORDER = [
     'description',
     'macros',
+    'parallelism',
     'requirements',
     'code',
     'stdio',
