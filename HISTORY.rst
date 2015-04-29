@@ -6,9 +6,12 @@ History
 .. to_doc
 
 ---------------------
-0.9.0.dev0
+0.8.2 (2015-04-29)
 ---------------------
 
+* Fix bug with ``config_init`` command thanks to @bgruening. `Pull Request 151`_
+* Fix unnessecary ``lint`` warning about ``parallelism`` tag reported by
+  @peterjc. 9bf1eab_
 
 ---------------------
 0.8.1 (2015-04-28)
@@ -226,6 +229,8 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 151: https://github.com/galaxyproject/planemo/pull/151
+.. _9bf1eab: https://github.com/galaxyproject/planemo/commit/9bf1eab
 .. _Pull Request 143: https://github.com/galaxyproject/planemo/pull/143
 .. _Issue 139: https://github.com/galaxyproject/planemo/issues/139
 .. _Issue 89: https://github.com/galaxyproject/planemo/issues/#89
