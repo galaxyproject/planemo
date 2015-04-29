@@ -6,8 +6,13 @@ History
 .. to_doc
 
 ---------------------
-0.9.0
+0.8.3 (2015-04-29)
 ---------------------
+
+* Fix bug where ``shed_lint`` was not respecting the ``-r/--recursive`` flag.
+  9ff0d2d_
+* Fix bug where planemo was producing tar files incompatible with the Tool
+  Shed for package and suite repositories. a2ee135_
 
 ---------------------
 0.8.2 (2015-04-29)
@@ -233,6 +238,8 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _a2ee135: https://github.com/galaxyproject/planemo/commit/a2ee135
+.. _9ff0d2d: https://github.com/galaxyproject/planemo/commit/9ff0d2d
 .. _Pull Request 151: https://github.com/galaxyproject/planemo/pull/151
 .. _9bf1eab: https://github.com/galaxyproject/planemo/commit/9bf1eab
 .. _Pull Request 143: https://github.com/galaxyproject/planemo/pull/143
