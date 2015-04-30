@@ -397,18 +397,21 @@ def build_tarball(realized_path, **kwds):
     # It should be pushed up a level into the thing that is uploading tar
     # balls to iterate over them - but placing it here for now because
     # it address some bugs.
+
+    # Simplest solution to sorting the files is to use a list,
+    files = []
+    for dirpath, dirnames, filenames in os.walk(realized_path):
+        for f in filenames:
+            files.append(os.path.join(dirpath, f))
+    files.sort()
+
     fd, temp_path = mkstemp()
     try:
         tar = tarfile.open(temp_path, "w:gz", dereference=True)
         try:
-            # File system order essentially random, so at least sort
-            # top level entries by name:
-            for name in sorted(os.listdir(realized_path)):
-                tar.add(
-                    os.path.join(realized_path, name),
-                    arcname=name,
-                    recursive=True,
-                )
+            for raw in files:
+                name = os.path.relpath(raw, realized_path)
+                tar.add(os.path.join(realized_path, name), arcname=name)
         finally:
             tar.close()
     finally:
