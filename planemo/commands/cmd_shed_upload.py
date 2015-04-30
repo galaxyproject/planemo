@@ -96,16 +96,20 @@ def __handle_upload(ctx, realized_repository, **kwds):
     try:
         tsi.repositories.update_repository(repo_id, tar_path, **update_kwds)
     except Exception as e:
-        exception_content = e.read()
-        try:
-            # Galaxy passes nice JSON messages as their errors, which bioblend
-            # blindly returns. Attempt to parse those.
-            upstream_error = json.loads(exception_content)
-            error(upstream_error['err_msg'])
-        except Exception as e2:
+        if hasattr(e, "read"):
+            exception_content = e.read()
+            try:
+                # Galaxy passes nice JSON messages as their errors, which bioblend
+                # blindly returns. Attempt to parse those.
+                upstream_error = json.loads(exception_content)
+                error(upstream_error['err_msg'])
+            except Exception as e2:
+                error("Could not update %s" % realized_repository.name)
+                error(exception_content)
+                error(e2.read())
+        else:
             error("Could not update %s" % realized_repository.name)
-            error(exception_content)
-            error(e2.read())
+            error(str(e))
         return -1
     info("Repository %s updated successfully." % realized_repository.name)
     return 0
