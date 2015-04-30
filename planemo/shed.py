@@ -401,7 +401,9 @@ def build_tarball(realized_path, **kwds):
     try:
         tar = tarfile.open(temp_path, "w:gz", dereference=True)
         try:
-            for name in os.listdir(realized_path):
+            # File system order essentially random, so at least sort
+            # top level entries by name:
+            for name in sorted(os.listdir(realized_path)):
                 tar.add(
                     os.path.join(realized_path, name),
                     arcname=name,
