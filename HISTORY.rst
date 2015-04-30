@@ -6,9 +6,12 @@ History
 .. to_doc
 
 ---------------------
-0.9.0.dev0
+0.8.4 (2015-04-30)
 ---------------------
 
+* Fix for Travis CI testing picking up invalid tests (reported by @takadonet). `Issue 161`_
+* Fix tar ordering for consistency (always sort by name) - thanks to @peterjc.  `Pull Request 164`_, `Issue 159`_
+* Fix exception handling related to tool shed operations - thanks to @peterjc. `Pull Request 155`_, b86fe1f_
 
 ---------------------
 0.8.3 (2015-04-29)
@@ -243,6 +246,11 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _b86fe1f: https://github.com/galaxyproject/planemo/commit/b86fe1f
+.. _Pull Request 155: https://github.com/galaxyproject/planemo/pull/155
+.. _Pull Request 164: https://github.com/galaxyproject/planemo/pull/164
+.. _Issue 159: https://github.com/galaxyproject/planemo/issues/159
+.. _Issue 161: https://github.com/galaxyproject/planemo/issues/161
 .. _a2ee135: https://github.com/galaxyproject/planemo/commit/a2ee135
 .. _9ff0d2d: https://github.com/galaxyproject/planemo/commit/9ff0d2d
 .. _Pull Request 151: https://github.com/galaxyproject/planemo/pull/151
