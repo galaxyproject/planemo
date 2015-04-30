@@ -788,13 +788,9 @@ class RealizedRepositry(object):
             )
             return repo_id
         except Exception as e:
+            message = api_exception_to_message(e)
             error("Could not update %s" % self.name)
-            try:
-                error(e.read())
-            except AttributeError:
-                # I've seen a case where the error couldn't be read, so now
-                # wrapped in try/except
-                error("Could not query for repository in toolshed")
+            error(message)
         return None
 
     def create(self, ctx, tsi):
@@ -817,6 +813,20 @@ class RealizedRepositry(object):
             except Exception:
                 error(str(e))
             return None
+
+
+def api_exception_to_message(e):
+    message = str(e)
+    if hasattr(e, "read"):
+        message = e.read()
+        try:
+            # Galaxy passes nice JSON messages as their errors, which bioblend
+            # blindly returns. Attempt to parse those.
+            upstream_error = json.loads(message)
+            message = upstream_error['err_msg']
+        except Exception:
+            pass
+    return message
 
 
 def _glob(path, pattern):
