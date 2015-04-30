@@ -1,6 +1,7 @@
 """
 """
 import os
+import sys
 
 import click
 
@@ -53,7 +54,7 @@ def cli(ctx, path, template=None, **kwds):
     config_path = config.global_config_path()
     if os.path.exists(config_path):
         warn("File %s already exists, exiting." % config_path)
-        return -1
+        sys.exit(1)
     with open(config_path, "w") as f:
         f.write(CONFIG_TEMPLATE)
         info(SUCCESS_MESSAGE % config_path)

@@ -13,6 +13,7 @@ from click.testing import CliRunner
 from planemo import cli
 from planemo import shed
 from planemo import io
+from planemo.config import PLANEMO_CONFIG_ENV_PROP
 
 from galaxy.tools.deps.commands import which
 from .shed_app_test_utils import (
@@ -41,6 +42,20 @@ class CliTestCase(TestCase):
 
     def setUp(self):  # noqa
         self._runner = CliRunner()
+        self._home = mkdtemp()
+        self._old_config = os.environ.get(PLANEMO_CONFIG_ENV_PROP, None)
+        os.environ[PLANEMO_CONFIG_ENV_PROP] = self.planemo_yaml_path
+
+    def tearDown(self):  # noqa
+        if self._old_config:
+            os.environ[PLANEMO_CONFIG_ENV_PROP] = self._old_config
+        else:
+            del os.environ[PLANEMO_CONFIG_ENV_PROP]
+        shutil.rmtree(self._home)
+
+    @property
+    def planemo_yaml_path(self):
+        return os.path.join(self._home, ".planemo.yml")
 
     @property
     def _cli(self):

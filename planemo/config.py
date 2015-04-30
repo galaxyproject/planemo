@@ -1,6 +1,7 @@
 import os
 import yaml
 
+PLANEMO_CONFIG_ENV_PROP = "PLANEMO_GLOBAL_CONFIG_PATH"
 DEFAULT_CONFIG = {
 }
 
@@ -8,7 +9,7 @@ DEFAULT_CONFIG = {
 def global_config_path(config_path=None):
     if not config_path:
         config_path = os.environ.get(
-            "PLANEMO_GLOBAL_CONFIG_PATH",
+            PLANEMO_CONFIG_ENV_PROP,
             "~/.planemo.yml"
         )
         config_path = os.path.expanduser(config_path)
