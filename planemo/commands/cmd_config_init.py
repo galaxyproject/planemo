@@ -24,11 +24,11 @@ sheds:
     #key: "<TODO>"
     #email: "<TODO>"
     #password: "<TODO>"
-  testtoolshed
+  testtoolshed:
     #key: "<TODO>"
     #email: "<TODO>"
     #password: "<TODO>"
-  local
+  local:
     #key: "<TODO>"
     #email: "<TODO>"
     #password: "<TODO>"
