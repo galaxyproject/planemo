@@ -1,6 +1,7 @@
-===============================
-Planemo
-===============================
+.. figure:: https://raw.githubusercontent.com/jmchilton/planemo/master/docs/planemo_logo.png
+   :alt: Planemo Logo
+   :align: center
+   :figwidth: 100%
 
 .. image:: https://readthedocs.org/projects/pip/badge/?version=latest
    :target: https://planemo.readthedocs.org
@@ -15,7 +16,7 @@ Planemo
    :target: https://coveralls.io/r/galaxyproject/planemo?branch=master
 
 
-Command-line utilities to assist in building tools for the Galaxy_ project.
+Command-line utilities to assist in building and publishing Galaxy_ tools.
 
 * Free software: Academic Free License version 3.0
 * Documentation: https://planemo.readthedocs.org.
@@ -216,13 +217,13 @@ For more information see the documentation for the `brew
 and `brew_env
 <http://planemo.readthedocs.org/en/latest/commands.html#brew_env-command>`__ commands.
 
-.. _Galaxy: (http://galaxyproject.org/)
+.. _Galaxy: http://galaxyproject.org/
 .. _GitHub: https://github.com/
 .. _Docker: https://www.docker.com/
 .. _Homebrew: http://brew.sh/
 .. _linuxbrew: https://github.com/Homebrew/linuxbrew
 .. _Vagrant: https://www.vagrantup.com/
-.. _Travis CI: <http://travis-ci.org/>
+.. _Travis CI: http://travis-ci.org/
 .. _`tools-devteam`: https://github.com/galaxyproject/tools-devteam
 .. _`tools-iuc`: https://github.com/galaxyproject/tools-iuc
 .. _Publishing to the Tool Shed: http://planemo.readthedocs.org/en/latest/publishing.html
