@@ -13,3 +13,5 @@ for file in 'rgToolFactory2.xml' 'rgToolFactory2.py' 'getlocalrpackages.py' 'LIC
 do
     wget "https://raw.githubusercontent.com/galaxyproject/tools-iuc/master/tools/tool_factory_2/$file"  --output-document "$TOOL_FACTORY_PATH/$file"
 done
+# Make sure planemo doesn't pick up the tool factory tests. (see github #161)
+sed -i -e s/tests/tests_skip/ $TOOL_FACTORY_PATH/rgToolFactory2.xml

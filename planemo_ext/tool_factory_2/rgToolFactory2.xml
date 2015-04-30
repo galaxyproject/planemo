@@ -254,7 +254,7 @@ ${citation.citation_type.doi}
 #end if
 </configfile>
 </configfiles>
-<tests>
+<tests_skip>
 <test>
     <param name='input_tab' value='tf2_test_in.xls' ftype='tabular' />
     <param name='tool_name' value='tf2_test' />
@@ -274,7 +274,7 @@ ${citation.citation_type.doi}
     <output name='html_file' file="tf2_test.html" compare='diff' lines_diff = '10'/>
     <output name='new_tool' file="tf2_test.toolshed.gz" compare="sim_size" delta="600" />
 </test>
-</tests>
+</tests_skip>
 <help>
     
 .. class:: warningmark
