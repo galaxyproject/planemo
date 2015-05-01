@@ -49,6 +49,7 @@ tar_path = click.Path(
     default=False
 )
 @options.recursive_shed_option()
+@options.shed_fail_fast_option()
 @pass_context
 def cli(ctx, path, **kwds):
     """Handle possible recursion through paths for uploading files to a toolshed

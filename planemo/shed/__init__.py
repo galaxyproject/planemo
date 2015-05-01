@@ -53,6 +53,8 @@ AUTO_REPO_CONFLICT_MESSAGE = ("Cannot specify both auto_tool_repositories and "
                               "repositories in .shed.yml at this time.")
 AUTO_NAME_CONFLICT_MESSAGE = ("Cannot specify both auto_tool_repositories and "
                               "in .shed.yml and --name on the command-line.")
+REALIZAION_PROBLEMS_MESSAGE = ("Problem encountered executing action for one or more "
+                               "repositories.")
 # Planemo generated or consumed files that do not need to be uploaded to the
 # tool shed.
 PLANEMO_FILES = [
@@ -487,10 +489,15 @@ def build_tarball(realized_path, **kwds):
 def for_each_repository(function, path, **kwds):
     ret_codes = []
     effective_repositories = realize_effective_repositories(path, **kwds)
-    for realized_repository in effective_repositories:
-        ret_codes.append(
-            function(realized_repository)
-        )
+    try:
+        for realized_repository in effective_repositories:
+            ret_codes.append(
+                function(realized_repository)
+            )
+    except RealizationException:
+        error(REALIZAION_PROBLEMS_MESSAGE)
+        return 254
+
     # "Good" returns are Nones, everything else is a -1 and should be
     # passed upwards.
     return 0 if all((not x) for x in ret_codes) else -1
@@ -528,16 +535,29 @@ def realize_effective_repositories(path, **kwds):
     tool).
     """
     raw_repo_objects = _find_raw_repositories(path, **kwds)
+    failed = False
     temp_directory = mkdtemp()
     try:
         for raw_repo_object in raw_repo_objects:
-            for realized_repo in raw_repo_object.realizations(
+            if isinstance(raw_repo_object, Exception):
+                _handle_realization_error(raw_repo_object, **kwds)
+                failed = True
+                continue
+
+            realized_repos = raw_repo_object.realizations(
                 temp_directory,
                 kwds.get("fail_on_missing", True)
-            ):
+            )
+            for realized_repo in realized_repos:
+                if isinstance(realized_repo, Exception):
+                    _handle_realization_error(realized_repo, **kwds)
+                    failed = True
+                    continue
                 yield realized_repo
     finally:
         shutil.rmtree(temp_directory)
+    if failed:
+        raise RealizationException()
 
 
 def _create_shed_config(ctx, path, **kwds):
@@ -615,7 +635,12 @@ def _find_raw_repositories(path, **kwds):
 
     config_name = None
     if len(shed_file_dirs) == 1:
-        config = shed_repo_config(shed_file_dirs[0], name=name)
+        shed_file_dir = shed_file_dirs[0]
+        try:
+            config = shed_repo_config(shed_file_dir, name=name)
+        except Exception as e:
+            error_message = PARSING_PROBLEM % (shed_file_dir, e)
+            return [RuntimeError(error_message)]
         config_name = config.get("name", None)
 
     if len(shed_file_dirs) > 1 and name is not None:
@@ -637,19 +662,19 @@ def _build_raw_repo_objects(raw_dirs, **kwds):
     """
     multiple = len(raw_dirs) > 1
     name = kwds.get("name", None)
-    skip_errors = kwds.get("skip_errors", False)
 
+    # List of RawRepositoryDirectories or parsing failures if
+    # fail_fast is not enabled.
     raw_repo_objects = []
     for raw_dir in raw_dirs:
         try:
             config = shed_repo_config(raw_dir, name=name)
         except Exception as e:
-            if skip_errors:
-                error_message = PARSING_PROBLEM % (raw_dir, e)
-                error(error_message)
-                continue
-            else:
-                raise
+            error_message = PARSING_PROBLEM % (raw_dir, e)
+            exception = RuntimeError(error_message)
+            _handle_realization_error(exception, **kwds)
+            raw_repo_objects.append(exception)
+            continue
         raw_repo_object = RawRepositoryDirectory(raw_dir, config, multiple)
         raw_repo_objects.append(raw_repo_object)
     return raw_repo_objects
@@ -709,7 +734,7 @@ class RawRepositoryDirectory(object):
         missing = realized_files.include_failures
         if missing and fail_on_missing:
             msg = "Failed to include files for %s" % missing
-            raise Exception(msg)
+            return RuntimeError(msg)
 
         for realized_file in realized_files.files:
             relative_dest = realized_file.relative_dest
@@ -918,6 +943,14 @@ def _shed_config_excludes(config):
     return config.get('ignore', []) + config.get('exclude', [])
 
 
+def _handle_realization_error(exception, **kwds):
+    fail_fast = kwds.get("fail_fast", False)
+    if fail_fast:
+        raise exception
+    else:
+        error(str(exception))
+
+
 def validate_repo_name(name):
     def _build_error(descript):
         return "Repository name [%s] invalid. %s" % (name, descript)
@@ -955,6 +988,12 @@ def validate_repo_owner(owner):
         )
     return msg
 
+
+class RealizationException(Exception):
+    """ This exception indicates there was a problem while
+    realizing effective repositories for a shed command. As a
+    precondition - the user has already been informed with error().
+    """
 
 __all__ = [
     'for_each_repository',

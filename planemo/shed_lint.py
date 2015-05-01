@@ -152,6 +152,7 @@ def lint_shed_yaml(path, lint_ctx):
         shed_contents = yaml.load(open(shed_yaml, "r"))
     except Exception as e:
         lint_ctx.warn("Failed to parse .shed.yml file [%s]" % str(e))
+        return
     lint_ctx.info(".shed.yml found and appears to be valid YAML.")
     _lint_shed_contents(lint_ctx, path, shed_contents)
 

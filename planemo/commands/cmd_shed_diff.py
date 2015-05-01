@@ -16,6 +16,7 @@ from planemo import shed
 @options.shed_owner_option()
 @options.shed_name_option()
 @options.shed_target_option()
+@options.shed_fail_fast_option()
 @click.option(
     "-o", "--output",
     type=click.Path(file_okay=True, resolve_path=True),
