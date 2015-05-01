@@ -8,7 +8,7 @@ def diff(x1, x2, reporter=None):
 # with (PSF license)
 def xml_compare(x1, x2, reporter=None):
     if reporter is None:
-        def report(x):
+        def reporter(x):
             return None
 
     if x1.tag != x2.tag:
