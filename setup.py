@@ -54,6 +54,7 @@ setup(
         'planemo.commands',
         'planemo.linters',
         'planemo.reports',
+        'planemo.shed',
         'planemo.xml',
         'planemo_ext',
         'planemo_ext.galaxy',
