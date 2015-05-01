@@ -8,6 +8,7 @@ from planemo import options
 @click.command('serve')
 @options.optional_tools_arg()
 @options.galaxy_root_option()
+@options.galaxy_port_option()
 @options.install_galaxy_option()
 @options.no_cache_galaxy_option()
 @options.no_cleanup_option()

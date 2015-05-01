@@ -37,6 +37,15 @@ def galaxy_root_option():
     )
 
 
+def galaxy_port_option():
+    return click.option(
+        "--port",
+        type=int,
+        default="9090",
+        help='Port to serve Galaxy on (default is 9090).'
+    )
+
+
 def dependency_resolvers_option():
     return click.option(
         "--dependency_resolvers_config_file",
