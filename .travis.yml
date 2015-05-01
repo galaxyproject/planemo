@@ -8,6 +8,9 @@ env:
   - TOX_ENV=py27
 
 install:
+  # Setup git to allow git operations.
+  - git config --global user.name "Travis Test User"
+  - git config --global user.email "planemo_test@galaxyproject.org"
   - pip install tox coveralls
 
 script: tox -e $TOX_ENV
