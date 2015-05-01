@@ -62,10 +62,16 @@ def repository_download():
     repo_tar_download_path = repo_path + "downlaod.tar.gz"
     tar = tarfile.open(repo_tar_download_path, "w:gz")
     try:
+        base_name = os.path.basename(repo_path)
         tar.add(
             os.path.join(repo_path),
-            arcname=os.path.basename(repo_path),
+            arcname=base_name,
             recursive=True,
+        )
+        # Pretend to hg web.
+        tar.add(
+            os.path.abspath(__file__),
+            arcname=os.path.join(base_name, ".hg_archival.txt")
         )
     finally:
         tar.close()
