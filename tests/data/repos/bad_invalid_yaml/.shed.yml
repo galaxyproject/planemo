@@ -1,0 +1,8 @@
+name bad_missing_include
+owner: iuc
+description: A single tool with an ignore.
+include: 
+ - related_file
+ - cat.xml
+ - test-data/**
+

@@ -32,6 +32,7 @@ target_path = click.Path(
 @options.shed_name_option()
 @options.shed_target_option()
 @options.recursive_shed_option()
+@options.shed_fail_fast_option()
 @pass_context
 def cli(ctx, path, **kwds):
     """Download a tool repository as a tarball from the tool shed and extract

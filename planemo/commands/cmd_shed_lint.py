@@ -19,6 +19,7 @@ from planemo import shed_lint
 )
 @options.lint_xsd_option()
 @options.recursive_shed_option()
+@options.shed_fail_fast_option()
 @pass_context
 def cli(ctx, path, **kwds):
     """Check a Tool Shed repository for common problems.

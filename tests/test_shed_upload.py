@@ -52,7 +52,7 @@ class ShedUploadTestCase(CliShedTestCase):
         with self._isolate_repo("bad_missing_include"):
             upload_command = ["shed_upload", "--tar_only"]
             upload_command.extend(self._shed_args())
-            self._check_exit_code(upload_command, exit_code=-1)
+            self._check_exit_code(upload_command, exit_code=254)
 
     def test_upload_recusrive(self):
         with self._isolate_repo("multi_repos_nested") as f:

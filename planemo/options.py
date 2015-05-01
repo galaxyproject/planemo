@@ -272,6 +272,16 @@ def shed_password_option():
     )
 
 
+def shed_fail_fast_option():
+    return click.option(
+        '--fail_fast',
+        is_flag=True,
+        default=False,
+        help="If multiple repositories are specified and an error occurs "
+             "stop immediately instead of processing remaining repositories."
+    )
+
+
 def lint_xsd_option():
     return click.option(
         '--xsd',
