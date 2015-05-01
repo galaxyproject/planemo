@@ -77,7 +77,7 @@ class ShedUploadTestCase(CliShedTestCase):
             upload_command = ["shed_upload", "--tar_only"]
             upload_command.extend(self._shed_args())
             self._check_exit_code(upload_command)
-            target = self._untar(f, "shed_upload_suite_1.tar.gz")
+            target = self._untar(f, "shed_upload.tar.gz")
             # Only one file was in archive
             assert_exists(join(target, "repository_dependencies.xml"))
 

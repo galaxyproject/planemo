@@ -1,4 +1,4 @@
-owner: devteam
+owner: iuc
 suite:
   name: suite_1
   description: "A suite of Galaxy tools designed to work with version 1.2 of the SAMtools package."

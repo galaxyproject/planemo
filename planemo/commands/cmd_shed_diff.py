@@ -29,6 +29,12 @@ from planemo import shed
          " this to testtoolshed.",
     default=None,
 )
+@click.option(
+    "--raw",
+    is_flag=True,
+    help="Do not attempt smart diff of XML to filter out attributes "
+         "populated by the Tool Shed.",
+)
 @options.recursive_shed_option()
 @pass_context
 def cli(ctx, path, **kwds):
@@ -53,7 +59,7 @@ def cli(ctx, path, **kwds):
     def diff(realized_repository):
         working = tempfile.mkdtemp(prefix="tool_shed_diff_")
         try:
-            shed.diff_in(ctx, working, realized_repository, **kwds)
+            return shed.diff_in(ctx, working, realized_repository, **kwds)
         finally:
             shutil.rmtree(working)
 
