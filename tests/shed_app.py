@@ -6,6 +6,8 @@ import json
 import tarfile
 from uuid import uuid4
 
+from xml.etree import ElementTree
+
 from flask import (
     Flask,
     request,
@@ -46,6 +48,7 @@ def update_repository_contents(id):
         tar.extractall(repo_path)
     finally:
         tar.close()
+    _modify_repository(repo_path)
     return json.dumps({"id": id})
 
 
@@ -67,11 +70,6 @@ def repository_download():
             os.path.join(repo_path),
             arcname=base_name,
             recursive=True,
-        )
-        # Pretend to hg web.
-        tar.add(
-            os.path.abspath(__file__),
-            arcname=os.path.join(base_name, ".hg_archival.txt")
         )
     finally:
         tar.close()
@@ -113,6 +111,37 @@ class InMemoryShedDataModel(object):
 
     def repository_path(self, id):
         return os.path.join(self.directory, id)
+
+
+def _modify_repository(path):
+    arch = os.path.join(path, ".hg_archival.txt")
+    with open(arch, "w") as f:
+        f.write("Hello World!")
+    deps = os.path.join(path, "tool_dependencies.xml")
+    suite = os.path.join(path, "repository_dependencies.xml")
+    _modify_xml(deps)
+    _modify_xml(suite)
+
+
+def _modify_xml(path):
+    if not os.path.exists(path):
+        return
+    element = ElementTree.parse(path)
+    _modify_attributes(element.getroot())
+    as_str = ElementTree.tostring(element.getroot())
+    with open(path, "w") as f:
+        f.write(as_str)
+
+
+def _modify_attributes(xml_element):
+    if xml_element.tag == "repository":
+        xml_element.attrib["toolshed"] = "localhost:9012"
+        xml_element.attrib["changeset_revision"] = "12345"
+
+    children = xml_element.getchildren()
+    if len(children) > 0:
+        for child in children:
+            _modify_attributes(child)
 
 
 def _shutdown_server():

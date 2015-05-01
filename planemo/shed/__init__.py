@@ -4,12 +4,13 @@ import hashlib
 import json
 import os
 import re
+import shutil
+import sys
 import tarfile
 from tempfile import (
     mkstemp,
     mkdtemp,
 )
-import shutil
 
 from six import iteritems
 import yaml
@@ -32,6 +33,7 @@ from .interface import (
     find_category_ids,
     download_tar,
 )
+from .diff import diff_and_remove
 
 SHED_CONFIG_NAME = '.shed.yml'
 REPO_DEPENDENCIES_CONFIG_NAME = "repository_dependencies.xml"
@@ -217,10 +219,21 @@ def diff_in(ctx, working, realized_repository, **kwds):
         cmd_template = 'mkdir "%s"; tar -xzf "%s" -C "%s"; rm -rf %s'
         shell(cmd_template % (mine, tar_path, mine, tar_path))
 
+    output = kwds["output"]
+    raw = kwds.get("raw", False)
+    diff = 0
+    if not raw:
+        if output:
+            with open(output, "w") as f:
+                diff = diff_and_remove(working, label_a, label_b, f)
+        else:
+            diff = diff_and_remove(working, label_a, label_b, sys.stdout)
+
     cmd = 'cd "%s"; diff -r %s %s' % (working, label_a, label_b)
     if kwds["output"]:
-        cmd += "> '%s'" % kwds["output"]
-    shell(cmd)
+        cmd += ">> '%s'" % kwds["output"]
+    exit = shell(cmd) or diff
+    return exit
 
 
 def shed_repo_config(path, name=None):
@@ -311,6 +324,10 @@ def _expand_raw_config(config, path, name=None):
         raise Exception(AUTO_NAME_CONFLICT_MESSAGE)
     if auto_tool_repos:
         repos = _build_auto_tool_repos(path, config, auto_tool_repos)
+    if suite_config:
+        if repos is None:
+            repos = {}
+        _build_suite_repo(config, repos, suite_config)
     # If repositories aren't defined, just define a single
     # one based on calculated name and including everything
     # by default.
@@ -320,8 +337,6 @@ def _expand_raw_config(config, path, name=None):
                 "include": default_include
             }
         }
-    if suite_config:
-        _build_suite_repo(config, repos, suite_config)
     config["repositories"] = repos
 
 
@@ -421,6 +436,10 @@ def create_repository_for(ctx, tsi, name, repo_config):
 
 def download_tarball(ctx, tsi, realized_repository, **kwds):
     repo_id = realized_repository.find_repository_id(ctx, tsi)
+    if repo_id is None:
+        message = "Unable to find repository id, cannot download."
+        error(message)
+        raise Exception(message)
     destination_pattern = kwds.get('destination', 'shed_download.tar.gz')
     destination = realized_repository.pattern_to_file_name(destination_pattern)
     to_directory = not destination.endswith("gz")
@@ -642,7 +661,7 @@ class RepositoryDependencies(object):
 
     def __str__(self):
         contents = '<repositories description="%s">' % self.description
-        line_template = '  <repository owner="%s" name="%s" />'
+        line_template = '  <repository owner="%s" name="%s" />\n'
         for (owner, name) in self.repo_pairs:
             contents += line_template % (owner, name)
         contents += "</repositories>"

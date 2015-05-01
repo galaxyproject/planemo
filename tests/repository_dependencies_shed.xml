@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<repositories description="A suite of Galaxy tools designed to work with version 1.2 of the SAMtools package.">
+    <repository changeset_revision="cf875cbe2df4" name="data_manager_sam_fasta_index_builder" owner="devteam" toolshed="https://toolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="af7c50162f0b" name="bam_to_sam" owner="devteam" toolshed="https://toolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="d04d9f1c6791" name="sam_to_bam" owner="devteam" toolshed="https://toolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="8c3472790020" name="samtools_bedcov" owner="devteam" toolshed="https://toolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="1ebb4ecdc1ef" name="samtools_calmd" owner="devteam" toolshed="https://toolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="0072bf593791" name="samtools_flagstat" owner="devteam" toolshed="https://toolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="87398ae795c7" name="samtools_idxstats" owner="devteam" toolshed="https://toolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="c6fdfe3331d6" name="samtools_mpileup" owner="devteam" toolshed="https://toolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="020e144b5f78" name="samtools_reheader" owner="devteam" toolshed="https://toolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="3735f950b2f5" name="samtools_rmdup" owner="devteam" toolshed="https://toolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="2b474ebbfc7d" name="samtools_slice_bam" owner="devteam" toolshed="https://toolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="a430da4f04cd" name="samtools_sort" owner="devteam" toolshed="https://toolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="57f3e32f809d" name="samtools_split" owner="devteam" toolshed="https://toolshed.g2.bx.psu.edu" />
+    <repository changeset_revision="0d71d9467847" name="samtools_stats" owner="devteam" toolshed="https://toolshed.g2.bx.psu.edu" />
+</repositories>
