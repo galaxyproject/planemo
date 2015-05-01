@@ -16,6 +16,8 @@ import yaml
 
 from planemo.io import (
     error,
+    shell,
+    info,
     can_write_to_path,
 )
 from planemo import glob
@@ -137,6 +139,45 @@ def shed_init(ctx, path, **kwds):
         repository_dependencies.repo_pairs = repo_pairs
         repository_dependencies.write_to_path(repo_dependencies_path)
 
+    return 0
+
+
+def upload_repository(ctx, realized_repository, **kwds):
+    """Upload a tool directory as a tarball to a tool shed.
+    """
+    path = realized_repository.path
+    tar_path = kwds.get("tar", None)
+    if not tar_path:
+        tar_path = build_tarball(path, **kwds)
+    if kwds["tar_only"]:
+        suffix = ""
+        if realized_repository.multiple:
+            name = realized_repository.config["name"]
+            suffix = "_%s" % name.replace("-", "_")
+        shell("cp %s shed_upload%s.tar.gz" % (tar_path, suffix))
+        return 0
+    tsi = tool_shed_client(ctx, **kwds)
+    update_kwds = {}
+    message = kwds.get("message", None)
+    if message:
+        update_kwds["commit_message"] = message
+
+    # TODO: this needs to use realized repository
+    repo_id = realized_repository.find_repository_id(ctx, tsi)
+    if repo_id is None and kwds["force_repository_creation"]:
+        repo_id = realized_repository.create(ctx, tsi)
+    # failing to create the repo, give up
+    if repo_id is None:
+        return -1
+    # TODO: support updating repo information if it changes in the config file
+    try:
+        tsi.repositories.update_repository(repo_id, tar_path, **update_kwds)
+    except Exception as e:
+        message = api_exception_to_message(e)
+        error("Could not update %s" % realized_repository.name)
+        error(message)
+        return -1
+    info("Repository %s updated successfully." % realized_repository.name)
     return 0
 
 
