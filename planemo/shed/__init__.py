@@ -10,7 +10,6 @@ import sys
 import tarfile
 from tempfile import (
     mkstemp,
-    mkdtemp,
 )
 
 from six import iteritems
@@ -21,6 +20,7 @@ from planemo.io import (
     shell,
     info,
     can_write_to_path,
+    temp_directory,
 )
 from planemo import glob
 from planemo.tools import load_tool_elements_from_path
@@ -536,8 +536,7 @@ def realize_effective_repositories(path, **kwds):
     """
     raw_repo_objects = _find_raw_repositories(path, **kwds)
     failed = False
-    temp_directory = mkdtemp()
-    try:
+    with temp_directory() as base_dir:
         for raw_repo_object in raw_repo_objects:
             if isinstance(raw_repo_object, Exception):
                 _handle_realization_error(raw_repo_object, **kwds)
@@ -545,7 +544,7 @@ def realize_effective_repositories(path, **kwds):
                 continue
 
             realized_repos = raw_repo_object.realizations(
-                temp_directory,
+                base_dir,
                 kwds.get("fail_on_missing", True)
             )
             for realized_repo in realized_repos:
@@ -554,8 +553,6 @@ def realize_effective_repositories(path, **kwds):
                     failed = True
                     continue
                 yield realized_repo
-    finally:
-        shutil.rmtree(temp_directory)
     if failed:
         raise RealizationException()
 
