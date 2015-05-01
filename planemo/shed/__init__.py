@@ -1,4 +1,5 @@
 from collections import namedtuple
+import contextlib
 import copy
 import fnmatch
 import hashlib
@@ -10,7 +11,6 @@ import sys
 import tarfile
 from tempfile import (
     mkstemp,
-    mkdtemp,
 )
 
 from six import iteritems
@@ -21,7 +21,9 @@ from planemo.io import (
     shell,
     info,
     can_write_to_path,
+    temp_directory,
 )
+from planemo import git
 from planemo import glob
 from planemo.tools import load_tool_elements_from_path
 from planemo import templates
@@ -460,11 +462,6 @@ def build_tarball(realized_path, **kwds):
     responsible for deleting this file.
     """
 
-    # Not really how realize_effective_repositories was meant to be used.
-    # It should be pushed up a level into the thing that is uploading tar
-    # balls to iterate over them - but placing it here for now because
-    # it address some bugs.
-
     # Simplest solution to sorting the files is to use a list,
     files = []
     for dirpath, dirnames, filenames in os.walk(realized_path):
@@ -488,15 +485,17 @@ def build_tarball(realized_path, **kwds):
 
 def for_each_repository(function, path, **kwds):
     ret_codes = []
-    effective_repositories = realize_effective_repositories(path, **kwds)
-    try:
-        for realized_repository in effective_repositories:
-            ret_codes.append(
-                function(realized_repository)
-            )
-    except RealizationException:
-        error(REALIZAION_PROBLEMS_MESSAGE)
-        return 254
+    with _path_on_disk(path) as raw_path:
+        try:
+            for realized_repository in _realize_effective_repositories(
+                raw_path, **kwds
+            ):
+                ret_codes.append(
+                    function(realized_repository)
+                )
+        except RealizationException:
+            error(REALIZAION_PROBLEMS_MESSAGE)
+            return 254
 
     # "Good" returns are Nones, everything else is a -1 and should be
     # passed upwards.
@@ -525,7 +524,7 @@ def _tool_shed_url(kwds):
     return url
 
 
-def realize_effective_repositories(path, **kwds):
+def _realize_effective_repositories(path, **kwds):
     """ Expands folders in a source code repository into tool shed
     repositories.
 
@@ -536,8 +535,7 @@ def realize_effective_repositories(path, **kwds):
     """
     raw_repo_objects = _find_raw_repositories(path, **kwds)
     failed = False
-    temp_directory = mkdtemp()
-    try:
+    with temp_directory() as base_dir:
         for raw_repo_object in raw_repo_objects:
             if isinstance(raw_repo_object, Exception):
                 _handle_realization_error(raw_repo_object, **kwds)
@@ -545,7 +543,7 @@ def realize_effective_repositories(path, **kwds):
                 continue
 
             realized_repos = raw_repo_object.realizations(
-                temp_directory,
+                base_dir,
                 kwds.get("fail_on_missing", True)
             )
             for realized_repo in realized_repos:
@@ -554,8 +552,6 @@ def realize_effective_repositories(path, **kwds):
                     failed = True
                     continue
                 yield realized_repo
-    finally:
-        shutil.rmtree(temp_directory)
     if failed:
         raise RealizationException()
 
@@ -619,6 +615,22 @@ def _parse_repos_from_workflow(path):
         repo_pairs.add((owner, name))
 
     return repo_pairs
+
+
+@contextlib.contextmanager
+def _path_on_disk(path):
+    git_path = None
+    if path.startswith("git:"):
+        git_path = path
+    elif path.startswith("git+"):
+        git_path = path[len("git+"):]
+    if git_path is None:
+        yield path
+    else:
+        with temp_directory() as git_repo:
+            # TODO: pass ctx down through
+            git.clone(None, git_path, git_repo)
+            yield git_repo
 
 
 def _find_raw_repositories(path, **kwds):

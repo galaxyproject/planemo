@@ -8,7 +8,7 @@ from planemo import shed_lint
 
 
 @click.command('shed_lint')
-@options.optional_project_arg(exists=True)
+@options.shed_project_arg()
 @options.report_level_option()
 @options.fail_level_option()
 @options.click.option(

@@ -1,6 +1,9 @@
 from __future__ import print_function
+import contextlib
 import os
+import shutil
 import sys
+import tempfile
 
 import click
 from galaxy.tools.deps import commands
@@ -58,3 +61,12 @@ def untar_to(url, path, tar_args):
         shell("%s | %s" % (download_cmd, untar_cmd))
     else:
         shell("%s > '%s'" % (download_cmd, path))
+
+
+@contextlib.contextmanager
+def temp_directory():
+    temp_dir = tempfile.mkdtemp()
+    try:
+        yield temp_dir
+    finally:
+        shutil.rmtree(temp_dir)
