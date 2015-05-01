@@ -14,18 +14,21 @@ import shutil
 from six import iteritems
 import yaml
 
-try:
-    from bioblend import toolshed
-except ImportError:
-    toolshed = None
-
 from planemo.io import (
     error,
-    untar_to,
     can_write_to_path,
 )
 from planemo.tools import load_tool_elements_from_path
 from planemo import templates
+
+from .interface import (
+    username,
+    tool_shed_instance,
+    find_repository,
+    api_exception_to_message,
+    find_category_ids,
+    download_tar,
+)
 
 SHED_CONFIG_NAME = '.shed.yml'
 REPO_DEPENDENCIES_CONFIG_NAME = "repository_dependencies.xml"
@@ -59,14 +62,6 @@ SHED_SHORT_NAMES = {
     "testtoolshed": "https://testtoolshed.g2.bx.psu.edu/",
     "local": "http://localhost:9009/"
 }
-REPOSITORY_DOWNLOAD_TEMPLATE = (
-    "%srepository/download?repository_id=%s"
-    "&changeset_revision=default&file_type=gz"
-)
-BIOBLEND_UNAVAILABLE = ("This functionality requires the bioblend library "
-                        " which is unavailable, please install `pip install "
-                        "bioblend`")
-
 REPO_TYPE_UNRESTRICTED = "unrestricted"
 REPO_TYPE_TOOL_DEP = "tool_dependency_definition"
 REPO_TYPE_SUITE = "repository_suite_definition"
@@ -151,8 +146,6 @@ def shed_repo_config(path, name=None):
 
 
 def tool_shed_client(ctx=None, **kwds):
-    if toolshed is None:
-        raise Exception(BIOBLEND_UNAVAILABLE)
     read_only = kwds.get("read_only", False)
     shed_target = kwds.get("shed_target")
     global_config = getattr(ctx, "global_config", {})
@@ -174,13 +167,7 @@ def tool_shed_client(ctx=None, **kwds):
         key = prop("key")
         email = prop("email")
         password = prop("password")
-    tsi = toolshed.ToolShedInstance(
-        url=url,
-        key=key,
-        email=email,
-        password=password
-    )
-    return tsi
+    return tool_shed_instance(url, key, email, password)
 
 
 def find_repository_id(ctx, tsi, path, **kwds):
@@ -200,6 +187,8 @@ def _find_repository_id(ctx, tsi, name, repo_config, **kwds):
     owner = kwds.get("owner", None) or repo_config.get("owner", None)
     if owner is None:
         owner = global_config.get("shed_username", None)
+    if owner is None:
+        owner = username(tsi)
 
     matching_repository = find_repository(tsi, owner, name)
     if matching_repository is None:
@@ -313,19 +302,6 @@ def _build_suite_repo(config, repos, suite_config):
     repos[name] = repo
 
 
-def find_repository(tsi, owner, name):
-    repos = tsi.repositories.get_repositories()
-
-    def matches(r):
-        return r["owner"] == owner and r["name"] == name
-
-    matching_repos = list(filter(matches, repos))
-    if not matching_repos:
-        return None
-    else:
-        return matching_repos[0]
-
-
 def create_repository_for(ctx, tsi, name, repo_config):
     description = repo_config.get("description", None)
     long_description = repo_config.get("long_description", None)
@@ -352,34 +328,11 @@ def create_repository_for(ctx, tsi, name, repo_config):
     return repo
 
 
-def find_category_ids(tsi, categories):
-    """ Translate human readable category names into their associated IDs.
-    """
-    category_list = tsi.repositories.get_categories()
-
-    category_ids = []
-    for cat in categories:
-        matching_cats = [x for x in category_list if x['name'] == cat]
-        if not matching_cats:
-            message = "Failed to find category %s" % cat
-            raise Exception(message)
-        category_ids.append(matching_cats[0]['id'])
-    return category_ids
-
-
 def download_tarball(ctx, tsi, path, **kwds):
-    destination = kwds.get('destination', 'shed_download.tar.gz')
     repo_id = find_repository_id(ctx, tsi, path, **kwds)
-    base_url = tsi.base_url
-    if not base_url.endswith("/"):
-        base_url += "/"
-    download_url = REPOSITORY_DOWNLOAD_TEMPLATE % (base_url, repo_id)
+    destination = kwds.get('destination', 'shed_download.tar.gz')
     to_directory = not destination.endswith("gz")
-    if to_directory:
-        untar_args = "-xzf - -C %s --strip-components 1" % destination
-    else:
-        untar_args = None
-    untar_to(download_url, destination, untar_args)
+    download_tar(tsi, repo_id, destination, to_directory=to_directory)
     if to_directory:
         clean = kwds.get("clean", False)
         if clean:
@@ -429,21 +382,6 @@ def for_each_repository(function, path, **kwds):
     # "Good" returns are Nones, everything else is a -1 and should be
     # passed upwards.
     return 0 if all((not x) for x in ret_codes) else -1
-
-
-def username(tsi):
-    user = _user(tsi)
-    return user["username"]
-
-
-def _user(tsi):
-    """ Fetch user information from the ToolShed API for given
-    key.
-    """
-    # TODO: this should be done with an actual bioblend method,
-    # see https://github.com/galaxyproject/bioblend/issues/130.
-    response = tsi.make_get_request(tsi.url + "/users")
-    return response.json()[0]
 
 
 def path_to_repo_name(path):
@@ -818,20 +756,6 @@ class RealizedRepositry(object):
             except Exception:
                 error(str(e))
             return None
-
-
-def api_exception_to_message(e):
-    message = str(e)
-    if hasattr(e, "read"):
-        message = e.read()
-        try:
-            # Galaxy passes nice JSON messages as their errors, which bioblend
-            # blindly returns. Attempt to parse those.
-            upstream_error = json.loads(message)
-            message = upstream_error['err_msg']
-        except Exception:
-            pass
-    return message
 
 
 def _glob(path, pattern):
