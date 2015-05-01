@@ -459,12 +459,6 @@ def build_tarball(realized_path, **kwds):
     """Build a tool-shed tar ball for the specified path, caller is
     responsible for deleting this file.
     """
-
-    # Not really how realize_effective_repositories was meant to be used.
-    # It should be pushed up a level into the thing that is uploading tar
-    # balls to iterate over them - but placing it here for now because
-    # it address some bugs.
-
     # Simplest solution to sorting the files is to use a list,
     files = []
     for dirpath, dirnames, filenames in os.walk(realized_path):
