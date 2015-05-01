@@ -41,5 +41,8 @@ Handle possible recursion through paths for uploading files to a toolshed
                                    toolshed.
       -r, --recursive              Recursively perform command for nested
                                    repository directories.
+      --fail_fast                  If multiple repositories are specified and an
+                                   error occurs stop immediately instead of
+                                   processing remaining repositories.
       --help                       Show this message and exit.
     

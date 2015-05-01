@@ -1,21 +1,21 @@
-planemo.xml package
-===================
+planemo.shed package
+====================
 
 Submodules
 ----------
 
-planemo.xml.diff module
------------------------
+planemo.shed.diff module
+------------------------
 
-.. automodule:: planemo.xml.diff
+.. automodule:: planemo.shed.diff
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo.xml.validation module
+planemo.shed.interface module
 -----------------------------
 
-.. automodule:: planemo.xml.validation
+.. automodule:: planemo.shed.interface
     :members:
     :undoc-members:
     :show-inheritance:
@@ -24,7 +24,7 @@ planemo.xml.validation module
 Module contents
 ---------------
 
-.. automodule:: planemo.xml
+.. automodule:: planemo.shed
     :members:
     :undoc-members:
     :show-inheritance:

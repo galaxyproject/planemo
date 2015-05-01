@@ -9,6 +9,7 @@ Subpackages
     planemo.commands
     planemo.linters
     planemo.reports
+    planemo.shed
     planemo.xml
 
 Submodules
@@ -98,14 +99,6 @@ planemo.options module
 ----------------------
 
 .. automodule:: planemo.options
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-planemo.shed module
--------------------
-
-.. automodule:: planemo.shed
     :members:
     :undoc-members:
     :show-inheritance:

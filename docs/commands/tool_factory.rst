@@ -24,6 +24,7 @@ http://www.ncbi.nlm.nih.gov/pubmed/23024011.
 
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
+      --port INTEGER                  Port to serve Galaxy on (default is 9090).
       --install_galaxy                Download and configure a disposable copy of
                                       Galaxy from github.
       --no_cache_galaxy               Skip caching of downloaded Galaxy obtained

@@ -39,10 +39,17 @@ Here are some examples::
       --shed_target TEXT         Tool Shed to target (this can be 'toolshed',
                                  'testtoolshed', 'local' (alias for
                                  http://localhost:9009/) or an arbitraryurl).
+      --fail_fast                If multiple repositories are specified and an
+                                 error occurs stop immediately instead of
+                                 processing remaining repositories.
       -o, --output PATH          Send diff output to specified file.
       --shed_target_source TEXT  Source Tool Shed to diff against (will ignore
                                  local project info specified). To compare the
                                  main Tool Shed against the test, set this to
                                  testtoolshed.
+      --raw                      Do not attempt smart diff of XML to filter out
+                                 attributes populated by the Tool Shed.
+      -r, --recursive            Recursively perform command for nested repository
+                                 directories.
       --help                     Show this message and exit.
     
