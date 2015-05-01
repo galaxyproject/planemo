@@ -42,22 +42,22 @@ def lint_repository(ctx, path, **kwds):
     lint_args = build_lint_args(ctx, **kwds)
     lint_ctx = LintContext(lint_args["level"])
     lint_ctx.lint(
-        "tool_dependencies",
+        "lint_tool_dependencies",
         lint_tool_dependencies,
         path,
     )
     lint_ctx.lint(
-        "repository_dependencies",
+        "lint_repository_dependencies",
         lint_repository_dependencies,
         path,
     )
     lint_ctx.lint(
-        "shed_yaml",
+        "lint_shed_yaml",
         lint_shed_yaml,
         path,
     )
     lint_ctx.lint(
-        "readme",
+        "lint_readme",
         lint_readme,
         path,
     )
