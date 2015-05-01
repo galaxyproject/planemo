@@ -1,6 +1,5 @@
 import copy
 import fnmatch
-from planemo import glob
 import hashlib
 import json
 import os
@@ -18,6 +17,7 @@ from planemo.io import (
     error,
     can_write_to_path,
 )
+from planemo import glob
 from planemo.tools import load_tool_elements_from_path
 from planemo import templates
 
@@ -767,3 +767,17 @@ def _glob(path, pattern):
 
 def _shed_config_excludes(config):
     return config.get('ignore', []) + config.get('exclude', [])
+
+__all__ = [
+    'for_each_repository',
+    'api_exception_to_message',
+    'tool_shed_client',
+    'build_tarball',
+    'download_tarball',
+    'shed_init',
+    'CURRENT_CATEGORIES',
+    'path_to_repo_name',
+    'REPO_TYPE_UNRESTRICTED',
+    'REPO_TYPE_TOOL_DEP',
+    'REPO_TYPE_SUITE',
+]
