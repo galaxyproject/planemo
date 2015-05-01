@@ -178,6 +178,51 @@ def upload_repository(ctx, realized_repository, **kwds):
     return 0
 
 
+def diff_in(ctx, working, realized_repository, **kwds):
+    path = realized_repository.path
+    shed_target_source = kwds.get("shed_target_source", None)
+
+    label_a = "_%s_" % (shed_target_source if shed_target_source else "local")
+    shed_target = kwds.get("shed_target", "B")
+    if "/" in shed_target:
+        shed_target = "custom_shed"
+    label_b = "_%s_" % shed_target
+
+    mine = os.path.join(working, label_a)
+    other = os.path.join(working, label_b)
+
+    tsi = tool_shed_client(ctx, read_only=True, **kwds)
+    download_tarball(
+        ctx,
+        tsi,
+        realized_repository,
+        destination=other,
+        clean=True,
+        **kwds
+    )
+    if shed_target_source:
+        new_kwds = kwds.copy()
+        new_kwds["shed_target"] = shed_target_source
+        tsi = tool_shed_client(ctx, read_only=True, **new_kwds)
+        download_tarball(
+            ctx,
+            tsi,
+            realized_repository,
+            destination=mine,
+            clean=True,
+            **new_kwds
+        )
+    else:
+        tar_path = build_tarball(path)
+        cmd_template = 'mkdir "%s"; tar -xzf "%s" -C "%s"; rm -rf %s'
+        shell(cmd_template % (mine, tar_path, mine, tar_path))
+
+    cmd = 'cd "%s"; diff -r %s %s' % (working, label_a, label_b)
+    if kwds["output"]:
+        cmd += "> '%s'" % kwds["output"]
+    shell(cmd)
+
+
 def shed_repo_config(path, name=None):
     shed_yaml_path = os.path.join(path, SHED_CONFIG_NAME)
     config = {}
@@ -880,7 +925,7 @@ __all__ = [
     'for_each_repository',
     'api_exception_to_message',
     'tool_shed_client',
-    'build_tarball',
+    'diff_in',
     'download_tarball',
     'shed_init',
     'CURRENT_CATEGORIES',
