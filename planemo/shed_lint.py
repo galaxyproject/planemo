@@ -1,5 +1,4 @@
 import os
-import re
 import yaml
 from galaxy.tools.lint import LintContext
 from galaxy.tools.linters.help import rst_invalid
@@ -10,6 +9,8 @@ from planemo.shed import (
     REPO_TYPE_TOOL_DEP,
     REPO_TYPE_SUITE,
     CURRENT_CATEGORIES,
+    validate_repo_owner,
+    validate_repo_name,
 )
 from planemo.tool_lint import (
     build_lint_args,
@@ -26,9 +27,6 @@ from galaxy.tools.lint import lint_xml_with
 TOOL_DEPENDENCIES_XSD = os.path.join(XSDS_PATH, "tool_dependencies.xsd")
 REPO_DEPENDENCIES_XSD = os.path.join(XSDS_PATH, "repository_dependencies.xsd")
 
-# TODO: sync this with tool shed impl someday
-VALID_REPOSITORYNAME_RE = re.compile("^[a-z0-9\_]+$")
-VALID_PUBLICNAME_RE = re.compile("^[a-z0-9\-]+$")
 
 VALID_REPOSITORY_TYPES = [
     REPO_TYPE_UNRESTRICTED,
@@ -152,8 +150,8 @@ def _lint_shed_contents(lint_ctx, path, shed_contents):
             if msg:
                 lint_ctx.warn(msg)
 
-    _lint_if_present("owner", _validate_repo_owner)
-    _lint_if_present("name", _validate_repo_name)
+    _lint_if_present("owner", validate_repo_owner)
+    _lint_if_present("name", validate_repo_name)
     _lint_if_present("type", _validate_repo_type, effective_name)
     _lint_if_present("categories", _validate_categories)
 
@@ -174,29 +172,6 @@ def _validate_repo_type(repo_type, name):
         if repo_type == "unrestricted":
             return ("Repository name indicated specialized repository type "
                     "but repository is listed as unrestricted.")
-
-
-def _validate_repo_name(name):
-    msg = None
-    if len(name) < 2:
-        msg = "Repository names must be at least 2 characters in length."
-    if len(name) > 80:
-        msg = "Repository names cannot be more than 80 characters in length."
-    if not VALID_REPOSITORYNAME_RE.match(name):
-        msg = ("Repository names must contain only lower-case letters, "
-               "numbers and underscore.")
-    return msg
-
-
-def _validate_repo_owner(owner):
-    msg = None
-    if len(owner) < 3:
-        msg = "Owner must be at least 3 characters in length"
-    if len(owner) > 255:
-        msg = "Owner cannot be more than 255 characters in length"
-    if not(VALID_PUBLICNAME_RE.match(owner)):
-        msg = "Owner must contain only lower-case letters, numbers and '-'"
-    return msg
 
 
 def _validate_categories(categories):

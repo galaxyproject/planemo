@@ -3,6 +3,7 @@ import fnmatch
 import hashlib
 import json
 import os
+import re
 import tarfile
 from tempfile import (
     mkstemp,
@@ -66,6 +67,10 @@ REPO_TYPE_UNRESTRICTED = "unrestricted"
 REPO_TYPE_TOOL_DEP = "tool_dependency_definition"
 REPO_TYPE_SUITE = "repository_suite_definition"
 
+# TODO: sync this with tool shed impl someday
+VALID_REPOSITORYNAME_RE = re.compile("^[a-z0-9\_]+$")
+VALID_PUBLICNAME_RE = re.compile("^[a-z0-9\-]+$")
+
 # Generate with python scripts/categories.py
 CURRENT_CATEGORIES = [
     "Assembly",
@@ -111,7 +116,10 @@ def shed_init(ctx, path, **kwds):
         # .shed.yml exists and no --force sent.
         return 1
 
-    _create_shed_config(ctx, shed_config_path, **kwds)
+    create_failed = _create_shed_config(ctx, shed_config_path, **kwds)
+    if create_failed:
+        return 1
+
     repo_dependencies_path = os.path.join(path, REPO_DEPENDENCIES_CONFIG_NAME)
     from_workflow = kwds.get("from_workflow", None)
 
@@ -427,9 +435,18 @@ def realize_effective_repositories(path, **kwds):
 
 def _create_shed_config(ctx, path, **kwds):
     name = kwds.get("name", None) or path_to_repo_name(os.path.dirname(path))
+    name_invalid = validate_repo_name(name)
+    if name_invalid:
+        error(name_invalid)
+        return 1
+
     owner = kwds.get("owner", None)
     if owner is None:
         owner = ctx.global_config.get("shed_username", None)
+    owner_invalid = validate_repo_owner(owner)
+    if owner_invalid:
+        error(owner_invalid)
+        return 1
     description = kwds.get("description", None) or name
     long_description = kwds.get("long_description", None)
     remote_repository_url = kwds.get("remote_repository_url", None)
@@ -767,6 +784,45 @@ def _glob(path, pattern):
 
 def _shed_config_excludes(config):
     return config.get('ignore', []) + config.get('exclude', [])
+
+
+def validate_repo_name(name):
+    def _build_error(descript):
+        return "Repository name [%s] invalid. %s" % (name, descript)
+
+    msg = None
+    if len(name) < 2:
+        msg = _build_error(
+            "Repository names must be at least 2 characters in length."
+        )
+    if len(name) > 80:
+        msg = _build_error(
+            "Repository names cannot be more than 80 characters in length."
+        )
+    if not VALID_REPOSITORYNAME_RE.match(name):
+        msg = _build_error(
+            "Repository names must contain only lower-case letters, "
+            "numbers and underscore."
+        )
+    return msg
+
+
+def validate_repo_owner(owner):
+    def _build_error(descript):
+        return "Owner [%s] invalid. %s" % (owner, descript)
+    msg = None
+    if len(owner) < 3:
+        msg = _build_error("Owner must be at least 3 characters in length")
+    if len(owner) > 255:
+        msg = _build_error(
+            "Owner cannot be more than 255 characters in length"
+        )
+    if not(VALID_PUBLICNAME_RE.match(owner)):
+        msg = _build_error(
+            "Owner must contain only lower-case letters, numbers and '-'"
+        )
+    return msg
+
 
 __all__ = [
     'for_each_repository',

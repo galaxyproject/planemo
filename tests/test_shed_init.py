@@ -18,14 +18,15 @@ class ShedInitTestCase(CliShedTestCase):
 
     def test_minimal(self):
         with self._isolate() as f:
-            name = os.path.basename(os.path.abspath(f))
-            self._check_exit_code(["shed_init", "--owner", "iuc"])
+            self._check_exit_code([
+                "shed_init", "--owner", "iuc", "--name", "samtools_filter"
+            ])
             shed_config_path = os.path.join(f, ".shed.yml")
             assert os.path.exists(shed_config_path)
             shed_config = yaml.load(open(shed_config_path, "r"))
-            assert shed_config["name"] == name
+            assert shed_config["name"] == "samtools_filter"
             assert shed_config["owner"] == "iuc"
-            assert shed_config["description"] == name
+            assert shed_config["description"] == "samtools_filter"
             assert len(shed_config["categories"]) == 0
 
     def test_more_options(self):
@@ -34,7 +35,7 @@ class ShedInitTestCase(CliShedTestCase):
             init_command = [
                 "shed_init",
                 "--owner", "devteam",
-                "--name", "samtools-filter",
+                "--name", "samtools_filter",
                 "--description", "A samtools repo",
                 "--long_description", "A longer description.",
                 "--remote_repository_url",
@@ -48,7 +49,7 @@ class ShedInitTestCase(CliShedTestCase):
             shed_config_path = os.path.join(f, ".shed.yml")
             assert os.path.exists(shed_config_path)
             shed_config = yaml.load(open(shed_config_path, "r"))
-            assert shed_config["name"] == "samtools-filter"
+            assert shed_config["name"] == "samtools_filter"
             assert shed_config["owner"] == "devteam"
             assert shed_config["description"] == "A samtools repo"
             assert shed_config["long_description"] == "A longer description."
@@ -75,3 +76,16 @@ class ShedInitTestCase(CliShedTestCase):
 
             # lint repository as a way of verifying repository_dependencies
             self._check_exit_code(["shed_lint"])
+
+    def test_bad_name(self):
+        with self._isolate():
+            # has an invalid -
+            self._check_exit_code([
+                "shed_init", "--owner", "iuc", "--name", "samtools-filter"
+            ], exit_code=1)
+
+    def test_bad_owner(self):
+        with self._isolate():
+            self._check_exit_code([
+                "shed_init", "--owner", "IuC", "--name", "samtools_filter"
+            ], exit_code=1)
