@@ -150,11 +150,8 @@ def upload_repository(ctx, realized_repository, **kwds):
     if not tar_path:
         tar_path = build_tarball(path, **kwds)
     if kwds["tar_only"]:
-        suffix = ""
-        if realized_repository.multiple:
-            name = realized_repository.config["name"]
-            suffix = "_%s" % name.replace("-", "_")
-        shell("cp %s shed_upload%s.tar.gz" % (tar_path, suffix))
+        name = realized_repository.pattern_to_file_name("shed_upload.tar.gz")
+        shell("cp '%s' '%s'" % (tar_path, name))
         return 0
     tsi = tool_shed_client(ctx, **kwds)
     update_kwds = {}
@@ -377,9 +374,10 @@ def create_repository_for(ctx, tsi, name, repo_config):
     return repo
 
 
-def download_tarball(ctx, tsi, path, **kwds):
-    repo_id = find_repository_id(ctx, tsi, path, **kwds)
-    destination = kwds.get('destination', 'shed_download.tar.gz')
+def download_tarball(ctx, tsi, realized_repository, **kwds):
+    repo_id = realized_repository.find_repository_id(ctx, tsi)
+    destination_pattern = kwds.get('destination', 'shed_download.tar.gz')
+    destination = realized_repository.pattern_to_file_name(destination_pattern)
     to_directory = not destination.endswith("gz")
     download_tar(tsi, repo_id, destination, to_directory=to_directory)
     if to_directory:
@@ -777,6 +775,19 @@ class RealizedRepositry(object):
         self.config = config
         self.name = config["name"]
         self.multiple = multiple
+
+    def pattern_to_file_name(self, pattern):
+        if not self.multiple:
+            return pattern
+
+        name = self.config["name"]
+        suffix = "_%s" % name.replace("-", "_")
+
+        if "." not in pattern:
+            return pattern + suffix
+        else:
+            parts = pattern.split(".", 1)
+            return parts[0] + suffix + "." + parts[1]
 
     def find_repository_id(self, ctx, tsi):
         try:

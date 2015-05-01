@@ -16,7 +16,7 @@ class ShedUploadTestCase(CliShedTestCase):
             upload_command = ["shed_upload", "--tar_only"]
             upload_command.extend(self._shed_args())
             self._check_exit_code(upload_command)
-            _assert_exists(join(f, "shed_upload.tar.gz"))
+            assert_exists(join(f, "shed_upload.tar.gz"))
 
     def test_upload_not_exists(self):
         with self._isolate_repo("single_tool"):
@@ -68,7 +68,7 @@ class ShedUploadTestCase(CliShedTestCase):
             self._check_exit_code(upload_command)
             target = self._untar(f, "shed_upload.tar.gz")
             # Only one file was in archive
-            _assert_exists(join(target, "repository_dependencies.xml"))
+            assert_exists(join(target, "repository_dependencies.xml"))
             # this got filtered
             assert not exists(join(target, "README.rst"))
 
@@ -79,7 +79,7 @@ class ShedUploadTestCase(CliShedTestCase):
             self._check_exit_code(upload_command)
             target = self._untar(f, "shed_upload_suite_1.tar.gz")
             # Only one file was in archive
-            _assert_exists(join(target, "repository_dependencies.xml"))
+            assert_exists(join(target, "repository_dependencies.xml"))
 
     def test_upload_filters_ignore(self):
         with self._isolate_repo("single_tool_exclude") as f:
@@ -120,7 +120,7 @@ class ShedUploadTestCase(CliShedTestCase):
             self._check_exit_code(upload_command)
             target = self._untar(f, "shed_upload.tar.gz")
             # Only one file was in archive
-            _assert_exists(join(target, "tool_dependencies.xml"))
+            assert_exists(join(target, "tool_dependencies.xml"))
             # this got filtered
             assert not exists(join(target, "README.rst"))
             # .shed.yml always gets filtered
@@ -133,8 +133,8 @@ class ShedUploadTestCase(CliShedTestCase):
             self._check_exit_code(upload_command)
             target = self._untar(f, "shed_upload.tar.gz")
             # Only one file was in archive
-            _assert_exists(join(target, "repository_dependencies.xml"))
-            _assert_exists(join(target, "README.rst"))
+            assert_exists(join(target, "repository_dependencies.xml"))
+            assert_exists(join(target, "README.rst"))
 
     def test_upload_expansion_configured(self):
         with self._isolate_repo("multi_repos_flat_configured") as f:
@@ -205,15 +205,15 @@ class ShedUploadTestCase(CliShedTestCase):
     def _verify_upload(self, f, download_files=[], download_args=[]):
         target = self._download_repo(f, download_args)
         for download_file in download_files:
-            _assert_exists(join(target, download_file))
+            assert_exists(join(target, download_file))
         return target
 
     def _check_tar(self, f, tar_path, contains=[], not_contains=[]):
         tar_path = join(f, tar_path)
-        _assert_exists(tar_path)
+        assert_exists(tar_path)
         target = self._untar(f, tar_path)
         for path in contains:
-            _assert_exists(join(target, path))
+            assert_exists(join(target, path))
         for path in not_contains:
             assert not exists(join(target, path))
         return target
@@ -224,7 +224,7 @@ class ShedUploadTestCase(CliShedTestCase):
         download_command.extend(self._shed_args(read_only=True))
         self._check_exit_code(download_command)
         download = join(f, "shed_download.tar.gz")
-        _assert_exists(download)
+        assert_exists(download)
         return self._untar(f, "shed_download.tar.gz", tarbomb=False)
 
     def _untar(self, f, path, tarbomb=True):
@@ -247,7 +247,7 @@ class ShedUploadTestCase(CliShedTestCase):
             return target
 
 
-def _assert_exists(path):
+def assert_exists(path):
     dir_path = os.path.dirname(path)
     msg = None
     if not exists(dir_path):

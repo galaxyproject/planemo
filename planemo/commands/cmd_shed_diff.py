@@ -3,6 +3,7 @@
 import os
 import shutil
 import tempfile
+import sys
 
 import click
 
@@ -30,6 +31,7 @@ from planemo import shed
          " this to testtoolshed.",
     default=None,
 )
+@options.recursive_shed_option()
 @pass_context
 def cli(ctx, path, **kwds):
     """Produce diff between local repository and Tool Shed contents.
@@ -50,14 +52,19 @@ def cli(ctx, path, **kwds):
         % planemo shed_diff --owner peterjc --name blast_rbh
             --shed_target_source testtoolshed
     """
-    working = tempfile.mkdtemp(prefix="tool_shed_diff_")
-    try:
-        diff_in(ctx, working, path, **kwds)
-    finally:
-        shutil.rmtree(working)
+    def diff(realized_repository):
+        working = tempfile.mkdtemp(prefix="tool_shed_diff_")
+        try:
+            diff_in(ctx, working, realized_repository, **kwds)
+        finally:
+            shutil.rmtree(working)
+
+    exit_code = shed.for_each_repository(diff, path, **kwds)
+    sys.exit(exit_code)
 
 
-def diff_in(ctx, working, path, **kwds):
+def diff_in(ctx, working, realized_repository, **kwds):
+    path = realized_repository.path
     shed_target_source = kwds.get("shed_target_source", None)
 
     label_a = "_%s_" % (shed_target_source if shed_target_source else "local")
@@ -73,12 +80,11 @@ def diff_in(ctx, working, path, **kwds):
     shed.download_tarball(
         ctx,
         tsi,
-        path,
+        realized_repository,
         destination=other,
         clean=True,
         **kwds
     )
-
     if shed_target_source:
         new_kwds = kwds.copy()
         new_kwds["shed_target"] = shed_target_source
@@ -86,7 +92,7 @@ def diff_in(ctx, working, path, **kwds):
         shed.download_tarball(
             ctx,
             tsi,
-            path,
+            realized_repository,
             destination=mine,
             clean=True,
             **new_kwds
