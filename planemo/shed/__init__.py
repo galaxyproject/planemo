@@ -1,3 +1,4 @@
+from collections import namedtuple
 import copy
 import fnmatch
 import hashlib
@@ -530,7 +531,10 @@ def realize_effective_repositories(path, **kwds):
     temp_directory = mkdtemp()
     try:
         for raw_repo_object in raw_repo_objects:
-            for realized_repo in raw_repo_object.realizations(temp_directory):
+            for realized_repo in raw_repo_object.realizations(
+                temp_directory,
+                kwds.get("fail_on_missing", True)
+            ):
                 yield realized_repo
     finally:
         shutil.rmtree(temp_directory)
@@ -684,7 +688,7 @@ class RawRepositoryDirectory(object):
     def _hash(self, name):
         return hashlib.md5(name.encode('utf-8')).hexdigest()
 
-    def realizations(self, parent_directory):
+    def realizations(self, parent_directory, fail_on_missing=True):
         names = self._repo_names()
 
         for name in names:
@@ -692,16 +696,22 @@ class RawRepositoryDirectory(object):
             multiple = self.multiple or len(names) > 1
             if not os.path.exists(directory):
                 os.makedirs(directory)
-            yield self._realize_to(directory, name, multiple)
+            yield self._realize_to(directory, name, multiple, fail_on_missing)
 
-    def _realize_to(self, directory, name, multiple):
+    def _realize_to(self, directory, name, multiple, fail_on_missing):
         ignore_list = []
         config = self._realize_config(name)
         excludes = _shed_config_excludes(config)
         for exclude in excludes:
             ignore_list.extend(_glob(self.path, exclude))
 
-        for realized_file in self._realized_files(name):
+        realized_files = self._realized_files(name)
+        missing = realized_files.include_failures
+        if missing and fail_on_missing:
+            msg = "Failed to include files for %s" % missing
+            raise Exception(msg)
+
+        for realized_file in realized_files.files:
             relative_dest = realized_file.relative_dest
             implicit_ignore = self._implicit_ignores(relative_dest)
             explicit_ignore = (realized_file.absolute_src in ignore_list)
@@ -718,7 +728,8 @@ class RawRepositoryDirectory(object):
             realized_path=directory,
             real_path=self.path,
             config=config,
-            multiple=multiple
+            multiple=multiple,
+            missing=missing,
         )
 
     def _repo_names(self):
@@ -727,12 +738,14 @@ class RawRepositoryDirectory(object):
     def _realized_files(self, name):
         config = self._realize_config(name)
         realized_files = []
+        missing = []
         for include in config["include"]:
-            realized_files.extend(
-                RealizedFile.realized_files_for(self.path, include)
-            )
-        for realized_file in realized_files:
-            yield realized_file
+            included = RealizedFile.realized_files_for(self.path, include)
+            if not included:
+                missing.append(include)
+            else:
+                realized_files.extend(included)
+        return RealizedFiles(realized_files, missing)
 
     def _realize_config(self, name):
         config = copy.deepcopy(self.config)
@@ -760,6 +773,8 @@ class RawRepositoryDirectory(object):
         elif name in PLANEMO_FILES:
             return True
         return False
+
+RealizedFiles = namedtuple("RealizedFiles", ["files", "include_failures"])
 
 
 class RealizedFile(object):
@@ -833,12 +848,13 @@ class RealizedFile(object):
 
 class RealizedRepositry(object):
 
-    def __init__(self, realized_path, real_path, config, multiple):
+    def __init__(self, realized_path, real_path, config, multiple, missing):
         self.path = realized_path
         self.real_path = real_path
         self.config = config
         self.name = config["name"]
         self.multiple = multiple
+        self.missing = missing
 
     def pattern_to_file_name(self, pattern):
         if not self.multiple:

@@ -24,8 +24,8 @@ def cli(ctx, path, **kwds):
     """Check a Tool Shed repository for common problems.
     """
     def lint(realized_repository):
-        path = realized_repository.real_path
-        return shed_lint.lint_repository(ctx, path, **kwds)
+        return shed_lint.lint_repository(ctx, realized_repository, **kwds)
 
+    kwds["fail_on_missing"] = False
     exit_code = shed.for_each_repository(lint, path, **kwds)
     sys.exit(exit_code)

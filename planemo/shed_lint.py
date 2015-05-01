@@ -35,10 +35,18 @@ VALID_REPOSITORY_TYPES = [
 ]
 
 
-def lint_repository(ctx, path, **kwds):
+def lint_repository(ctx, realized_repository, **kwds):
+    # TODO: this really needs to start working with realized path.
+    path = realized_repository.real_path
     info("Linting repository %s" % path)
     lint_args = build_lint_args(ctx, **kwds)
     lint_ctx = LintContext(lint_args["level"])
+    lint_ctx.lint(
+        "lint_expansion",
+        lint_expansion,
+        realized_repository,
+    )
+
     lint_ctx.lint(
         "lint_tool_dependencies",
         lint_tool_dependencies,
@@ -72,6 +80,15 @@ def lint_repository(ctx, path, **kwds):
     if failed:
         error("Failed linting")
     return 1 if failed else 0
+
+
+def lint_expansion(realized_repository, lint_ctx):
+    missing = realized_repository.missing
+    if missing:
+        msg = "Failed to expand inclusions %s" % missing
+        lint_ctx.warn(msg)
+    else:
+        lint_ctx.info("Included files all found.")
 
 
 def lint_readme(path, lint_ctx):
