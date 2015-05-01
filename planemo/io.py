@@ -63,7 +63,7 @@ def untar_to(url, path, tar_args):
         shell("%s > '%s'" % (download_cmd, path))
 
 
-@contextlib.contextmanager()
+@contextlib.contextmanager
 def temp_directory():
     temp_dir = tempfile.mkdtemp()
     try:

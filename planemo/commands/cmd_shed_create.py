@@ -11,7 +11,7 @@ from planemo.io import info
 
 
 @click.command("shed_create")
-@options.optional_project_arg(exists=True)
+@options.shed_project_arg()
 @options.shed_owner_option()
 @options.shed_name_option()
 @options.shed_target_option()

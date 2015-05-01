@@ -16,7 +16,7 @@ target_path = click.Path(
 
 
 @click.command("shed_download")
-@options.optional_project_arg(exists=True)
+@options.shed_project_arg()
 @click.option(
     '--destination',
     default="shed_download.tar.gz",

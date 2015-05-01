@@ -7,6 +7,7 @@ import tarfile
 import shutil
 
 from .test_utils import CliShedTestCase
+from planemo.io import shell
 
 
 class ShedUploadTestCase(CliShedTestCase):
@@ -30,6 +31,24 @@ class ShedUploadTestCase(CliShedTestCase):
             upload_command.extend(self._shed_args())
             self._check_exit_code(upload_command)
             self._verify_single_uploaded(f)
+
+    def test_tar_from_git(self):
+        with self._isolate() as f:
+            dest = join(f, "single_tool")
+            self._copy_repo("single_tool", dest)
+            shell(" && ".join([
+                "cd single_tool",
+                "git init",
+                "git add .",
+                "git commit -m 'initial commit'"
+            ]))
+            upload_command = [
+                "shed_upload", "--force_repository_creation",
+                "git+single_tool/.git"
+            ]
+            upload_command.extend(self._shed_args())
+            self._check_exit_code(upload_command)
+            self._verify_single_uploaded(f, ["single_tool"])
 
     def test_create_and_upload(self):
         with self._isolate_repo("single_tool") as f:
@@ -205,8 +224,10 @@ class ShedUploadTestCase(CliShedTestCase):
             not_contains=["cat1.xml"]
         )
 
-    def _verify_single_uploaded(self, f):
-        self._verify_upload(f, ["cat.xml", "related_file", "test-data/1.bed"])
+    def _verify_single_uploaded(self, f, download_args=[]):
+        self._verify_upload(
+            f, ["cat.xml", "related_file", "test-data/1.bed"], download_args
+        )
 
     def _verify_upload(self, f, download_files=[], download_args=[]):
         target = self._download_repo(f, download_args)

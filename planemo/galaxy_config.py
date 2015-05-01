@@ -15,6 +15,7 @@ import click
 from planemo import galaxy_run
 from planemo.io import warn
 from planemo.io import shell
+from planemo import git
 
 NO_TEST_DATA_MESSAGE = (
     "planemo couldn't find a target test-data directory, you should likely "
@@ -331,7 +332,7 @@ def _install_galaxy_via_git(ctx, config_directory, kwds):
     _ensure_galaxy_repository_available(ctx)
     workspace = ctx.workspace
     gx_repo = os.path.join(workspace, "gx_repo")
-    command = "git clone %s galaxy-dev" % (gx_repo)
+    command = git.command_clone(ctx, gx_repo, "galaxy-dev")
     _install_with_command(config_directory, command)
 
 
@@ -354,7 +355,8 @@ def _ensure_galaxy_repository_available(ctx):
         shell("git --git-dir %s fetch >/dev/null 2>&1" % gx_repo)
     else:
         remote_repo = "https://github.com/galaxyproject/galaxy"
-        shell("git clone --bare %s %s" % (remote_repo, gx_repo))
+        command = git.command_clone(ctx, remote_repo, gx_repo, bare=True)
+        shell(command)
 
 
 def _build_env_for_galaxy(properties, template_args):
