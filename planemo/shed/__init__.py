@@ -482,7 +482,7 @@ def build_tarball(realized_path, **kwds):
 
 def for_each_repository(function, path, **kwds):
     ret_codes = []
-    effective_repositories = realize_effective_repositories(path, **kwds)
+    effective_repositories = _realize_effective_repositories(path, **kwds)
     try:
         for realized_repository in effective_repositories:
             ret_codes.append(
@@ -519,7 +519,7 @@ def _tool_shed_url(kwds):
     return url
 
 
-def realize_effective_repositories(path, **kwds):
+def _realize_effective_repositories(path, **kwds):
     """ Expands folders in a source code repository into tool shed
     repositories.
 
