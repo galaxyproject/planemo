@@ -9,8 +9,8 @@ def command_clone(ctx, src, dest, bare=False):
     """
     bare_arg = ""
     if bare:
-        bare_arg = "--bare "
-    return "git clone%s '%s' '%s'" % (bare_arg, src, dest)
+        bare_arg = "--bare"
+    return "git clone %s '%s' '%s'" % (bare_arg, src, dest)
 
 
 def clone(*args, **kwds):
