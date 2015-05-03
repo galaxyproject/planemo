@@ -63,6 +63,8 @@ def get_categories():
 def repository_download():
     id = request.args.get("repository_id", None)
     repo_path = app.config["model"].repository_path(id)
+    if not os.path.exists(repo_path):
+        os.makedirs(repo_path)
     repo_tar_download_path = repo_path + "downlaod.tar.gz"
     tar = tarfile.open(repo_tar_download_path, "w:gz")
     try:

@@ -170,6 +170,14 @@ def upload_repository(ctx, realized_repository, **kwds):
     # failing to create the repo, give up
     if repo_id is None:
         return -1
+
+    if kwds["check_diff"]:
+        is_diff = diff(ctx, realized_repository, **kwds)
+        if not is_diff:
+            name = realized_repository.name
+            info("Repositry [%s] not different, skipping upload." % name)
+            return 0
+
     # TODO: support updating repo information if it changes in the config file
     try:
         tsi.repositories.update_repository(repo_id, tar_path, **update_kwds)
@@ -239,7 +247,7 @@ def _diff_in(ctx, working, realized_repository, **kwds):
         cmd_template = 'mkdir "%s"; tar -xzf "%s" -C "%s"; rm -rf %s'
         shell(cmd_template % (mine, tar_path, mine, tar_path))
 
-    output = kwds["output"]
+    output = kwds.get("output", None)
     raw = kwds.get("raw", False)
     diff = 0
     if not raw:
@@ -250,8 +258,8 @@ def _diff_in(ctx, working, realized_repository, **kwds):
             diff = diff_and_remove(working, label_a, label_b, sys.stdout)
 
     cmd = 'cd "%s"; diff -r %s %s' % (working, label_a, label_b)
-    if kwds["output"]:
-        cmd += ">> '%s'" % kwds["output"]
+    if output:
+        cmd += ">> '%s'" % output
     exit = shell(cmd) or diff
     return exit
 

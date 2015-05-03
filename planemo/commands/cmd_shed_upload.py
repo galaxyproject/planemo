@@ -48,6 +48,13 @@ tar_path = click.Path(
     is_flag=True,
     default=False
 )
+@click.option(
+    "--check_diff",
+    is_flag=True,
+    help="Skip uploading if the shed_diff detects there would be no "
+         "'difference' (only attributes populated by the shed would would "
+         "be updated.)"
+)
 @options.recursive_shed_option()
 @options.shed_fail_fast_option()
 @pass_context
