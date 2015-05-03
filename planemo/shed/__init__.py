@@ -166,7 +166,6 @@ def upload_repository(ctx, realized_repository, **kwds):
     if message:
         update_kwds["commit_message"] = message
 
-    # TODO: this needs to use realized repository
     repo_id = realized_repository.find_repository_id(ctx, tsi)
     if repo_id is None and kwds["force_repository_creation"]:
         repo_id = realized_repository.create(ctx, tsi)
