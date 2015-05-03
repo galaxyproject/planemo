@@ -1,7 +1,5 @@
 """
 """
-import shutil
-import tempfile
 import sys
 
 import click
@@ -58,11 +56,7 @@ def cli(ctx, path, **kwds):
             --shed_target_source testtoolshed
     """
     def diff(realized_repository):
-        working = tempfile.mkdtemp(prefix="tool_shed_diff_")
-        try:
-            return shed.diff_in(ctx, working, realized_repository, **kwds)
-        finally:
-            shutil.rmtree(working)
+        return shed.diff(ctx, realized_repository, **kwds)
 
     exit_code = shed.for_each_repository(diff, path, **kwds)
     sys.exit(exit_code)

@@ -80,8 +80,8 @@ def untar_to(url, path, tar_args):
 
 
 @contextlib.contextmanager
-def temp_directory():
-    temp_dir = tempfile.mkdtemp()
+def temp_directory(prefix="planemo_tmp_"):
+    temp_dir = tempfile.mkdtemp(prefix=prefix)
     try:
         yield temp_dir
     finally:

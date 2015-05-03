@@ -195,7 +195,12 @@ def _update_commit_message(ctx, realized_repository, update_kwds, **kwds):
     update_kwds["commit_message"] = message
 
 
-def diff_in(ctx, working, realized_repository, **kwds):
+def diff(ctx, realized_repository, **kwds):
+    with temp_directory("tool_shed_diff_") as working:
+        return _diff_in(ctx, working, realized_repository, **kwds)
+
+
+def _diff_in(ctx, working, realized_repository, **kwds):
     path = realized_repository.path
     shed_target_source = kwds.get("shed_target_source", None)
 
@@ -1027,7 +1032,7 @@ __all__ = [
     'for_each_repository',
     'api_exception_to_message',
     'tool_shed_client',
-    'diff_in',
+    'diff',
     'download_tarball',
     'shed_init',
     'CURRENT_CATEGORIES',
