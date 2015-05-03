@@ -25,7 +25,7 @@ def get_repositories():
 
 @app.route('/api/repositories', methods=['POST'])
 def create_repository():
-    repo = json.loads(request.data.decode("utf-8"))
+    repo = _request_post_message()
     # TODO: rework things to not need to hardcode this
     # i.e. simulate key stuff also.
     repo["owner"] = "iuc"
@@ -38,7 +38,8 @@ def create_repository():
 @app.route('/api/repositories/<id>/changeset_revision', methods=['POST'])
 def update_repository_contents(id):
     updated_tar = request.files['file']
-    repo_path = app.config["model"].repository_path(id)
+    message = request.form["commit_message"]
+    repo_path = app.config["model"].repository_path_for_update(id, message)
     repo_tar_path = repo_path + ".tar.gz"
     if not os.path.exists(repo_path):
         os.makedirs(repo_path)
@@ -83,11 +84,16 @@ def shutdown():
     return ''
 
 
+def _request_post_message():
+    return json.loads(request.data.decode("utf-8"))
+
+
 class InMemoryShedDataModel(object):
 
     def __init__(self, directory):
         self.directory = directory
         self._repositories = {}
+        self._repositories_msg = {}
         self._categories = []
 
     def add_category(self, id, name):
@@ -111,6 +117,12 @@ class InMemoryShedDataModel(object):
 
     def repository_path(self, id):
         return os.path.join(self.directory, id)
+
+    def repository_path_for_update(self, id, message):
+        if id not in self._repositories_msg:
+            self._repositories_msg[id] = []
+        self._repositories_msg[id].append(message)
+        return self.repository_path(id)
 
 
 def _modify_repository(path):

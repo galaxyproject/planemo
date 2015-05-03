@@ -33,10 +33,11 @@ def mock_model(directory):
 def setup_mock_shed():
     port = network_util.get_free_port()
     directory = mkdtemp()
+    model = mock_model(directory)
 
     def run():
         app.debug = True
-        app.config["model"] = mock_model(directory)
+        app.config["model"] = model
         run_simple(
             'localhost',
             port,
@@ -48,7 +49,7 @@ def setup_mock_shed():
     t = threading.Thread(target=run)
     t.start()
     network_util.wait_net_service("localhost", port, DEFAULT_OP_TIMEOUT)
-    return MockShed("http://localhost:%d" % port, directory, t)
+    return MockShed("http://localhost:%d" % port, directory, t, model)
 
 
 @contextlib.contextmanager
@@ -67,7 +68,7 @@ def _shutdown(self):
     self.thread.join(DEFAULT_OP_TIMEOUT)
     shutil.rmtree(self.directory)
 
-MockShed = namedtuple("MockShed", ["url", "directory", "thread"])
+MockShed = namedtuple("MockShed", ["url", "directory", "thread", "model"])
 MockShed.shutdown = _shutdown
 
 __all__ = ["setup_mock_shed", "mock_shed"]

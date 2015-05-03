@@ -10,6 +10,17 @@ from galaxy.tools.deps import commands
 from galaxy.tools.deps.commands import which
 
 
+def communicate(cmds, **kwds):
+    info(cmds)
+    p = commands.shell_process(cmds, **kwds)
+    ret_val = p.communicate()
+    if p.returncode != 0:
+        template = "Problem executing commands {0} - ({1}, {2})"
+        msg = template.format(cmds, ret_val[0], ret_val[1])
+        raise RuntimeError(msg)
+    return ret_val
+
+
 def shell(cmds, **kwds):
     info(cmds)
     return commands.shell(cmds, **kwds)
@@ -45,6 +56,11 @@ def _echo(message, err=False):
         click.echo(message, err=err)
     else:
         print(message)
+
+
+def write_file(path, content):
+    with open(path, "w") as f:
+        f.write(content)
 
 
 def untar_to(url, path, tar_args):

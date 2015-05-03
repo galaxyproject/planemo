@@ -162,9 +162,7 @@ def upload_repository(ctx, realized_repository, **kwds):
         return 0
     tsi = tool_shed_client(ctx, **kwds)
     update_kwds = {}
-    message = kwds.get("message", None)
-    if message:
-        update_kwds["commit_message"] = message
+    _update_commit_message(ctx, realized_repository, update_kwds, **kwds)
 
     repo_id = realized_repository.find_repository_id(ctx, tsi)
     if repo_id is None and kwds["force_repository_creation"]:
@@ -182,6 +180,19 @@ def upload_repository(ctx, realized_repository, **kwds):
         return -1
     info("Repository %s updated successfully." % realized_repository.name)
     return 0
+
+
+def _update_commit_message(ctx, realized_repository, update_kwds, **kwds):
+    message = kwds.get("message", None)
+    git_rev = realized_repository.git_rev(ctx)
+    git_repo = realized_repository.git_repo(ctx)
+    if message is None:
+        message = "planemo upload"
+        if git_repo:
+            message += " for repository %s" % git_repo
+        if git_rev:
+            message += " commit %s" % git_rev
+    update_kwds["commit_message"] = message
 
 
 def diff_in(ctx, working, realized_repository, **kwds):
@@ -891,6 +902,12 @@ class RealizedRepositry(object):
         self.name = config["name"]
         self.multiple = multiple
         self.missing = missing
+
+    def git_rev(self, ctx):
+        return git.rev_if_git(ctx, self.real_path)
+
+    def git_repo(self, ctx):
+        return self.config.get("remote_repository_url", None)
 
     def pattern_to_file_name(self, pattern):
         if not self.multiple:

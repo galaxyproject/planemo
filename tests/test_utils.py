@@ -115,7 +115,7 @@ class CliShedTestCase(CliTestCase):
         return args
 
     def _print_shed_info(self):
-        print(self._tsi.repositories.get_repositories())
+        print(self._repositories)
 
     @property
     def _tsi(self):
@@ -125,6 +125,13 @@ class CliShedTestCase(CliTestCase):
             key="ignored",
         )
         return tsi
+
+    @property
+    def _repositories(self):
+        return self._tsi.repositories.get_repositories()
+
+    def repository_by_name(self, name):
+        return [r for r in self._repositories if r["name"] == name][0]
 
 
 @contextlib.contextmanager
