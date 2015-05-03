@@ -39,6 +39,9 @@ Handle possible recursion through paths for uploading files to a toolshed
                                    specified user/repo name pair, then
                                    automatically create the repository in the
                                    toolshed.
+      --check_diff                 Skip uploading if the shed_diff detects there
+                                   would be no 'difference' (only attributes
+                                   populated by the shed would would be updated.)
       -r, --recursive              Recursively perform command for nested
                                    repository directories.
       --fail_fast                  If multiple repositories are specified and an

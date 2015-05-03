@@ -63,6 +63,14 @@ planemo.galaxy_test module
     :undoc-members:
     :show-inheritance:
 
+planemo.git module
+------------------
+
+.. automodule:: planemo.git
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.github_util module
 --------------------------
 

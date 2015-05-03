@@ -31,5 +31,8 @@ Create a repository in a Galaxy Tool Shed from a ``.shed.yml`` file.
                             is specified).
       -r, --recursive       Recursively perform command for nested repository
                             directories.
+      --fail_fast           If multiple repositories are specified and an error
+                            occurs stop immediately instead of processing
+                            remaining repositories.
       --help                Show this message and exit.
     

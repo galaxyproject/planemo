@@ -9,6 +9,32 @@ History
 0.9.0.dev0
 ---------------------
 
+* Add new logo to the README thanks to @petrkadlec from `puradesign.cz
+  <http://puradesign.cz/en>`__ and @carlfeberhard from the Galaxy Project.
+  `Issue 108`_
+* Implement smarter ``shed_diff`` command - it now produces a meaningful
+  exit codes and doesn't report differences if these correspond to attributes
+  that will be automatically populated by the Tool Shed. `Issue 167`_
+* Use new smarter ``shed_diff`` code to implement a new ``--check_diff``
+  option for ``shed_upload`` - to check for meaningful differences before
+  updating repositories. `Issue 168`_
+* Record git commit hash during ``shed_upload`` if the ``.shed.yml`` is
+  located in a git repository. `Issue 170`_
+* Allow ``shed_`` operations to operate on git URLs directly. `Issue 169`_
+* Fail if missing file inclusion statements encountered during ``.shed.yml``
+  repository resolution - bug reported by @peterjc. `Issue 158`_
+* Improved exception handling for tool shed operations including new 
+  ``--fail_fast`` command-line option. * `Issue 114`_, `Pull Request 173`_
+* Implement more validation when using the ``shed_init`` command. 1cd0e2d_
+* Add ``-r/--recursive`` option to ``shed_download`` and ``shed_diff`` 
+  commands and allow these commands to work with ``.shed.yml`` files defining
+  multipe repositories. 40a1f57_
+* Add ``--port`` option to the ``serve`` and ``tool_factory`` commands.
+  15804be_
+* Fix problem introduced with ``setup.py`` during the 0.9.0 development cycle
+  - thanks to @peterjc. `Pull Request 171`_
+* Fix clone bug introduced during 0.9.0 development cycle - thanks to
+  @bgruening. `Pull Request 175`_
 
 ---------------------
 0.8.4 (2015-04-30)
@@ -251,6 +277,19 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Issue 114: https://github.com/galaxyproject/planemo/issues/114
+.. _Pull Request 173: https://github.com/galaxyproject/planemo/pull/173
+.. _Issue 108: https://github.com/galaxyproject/planemo/issues/108
+.. _15804be: https://github.com/galaxyproject/planemo/commit/15804be
+.. _Issue 158: https://github.com/galaxyproject/planemo/issues/158
+.. _Pull Request 171: https://github.com/galaxyproject/planemo/pull/171
+.. _1cd0e2d: https://github.com/galaxyproject/planemo/commit/1cd0e2d
+.. _40a1f57: https://github.com/galaxyproject/planemo/commit/40a1f57
+.. _Pull Request 175: https://github.com/galaxyproject/planemo/pull/175
+.. _Issue 167: https://github.com/galaxyproject/planemo/issues/167
+.. _Issue 170: https://github.com/galaxyproject/planemo/issues/170
+.. _Issue 169: https://github.com/galaxyproject/planemo/issues/169
+.. _Issue 168: https://github.com/galaxyproject/planemo/issues/168
 .. _b86fe1f: https://github.com/galaxyproject/planemo/commit/b86fe1f
 .. _Pull Request 155: https://github.com/galaxyproject/planemo/pull/155
 .. _Pull Request 164: https://github.com/galaxyproject/planemo/pull/164
