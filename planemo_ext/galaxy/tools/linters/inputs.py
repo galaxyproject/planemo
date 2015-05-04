@@ -19,7 +19,7 @@ def lint_inputs(tool_xml, lint_ctx):
 
         param_type = param_attrib["type"]
         param_name = param_attrib["name"]
-        if param_type == "data_input":
+        if param_type == "data":
             if "format" not in param_attrib:
                 lint_ctx.warn("Found param input %s contains no format specified - 'data' format will be assumed.", param_name)
         # TODO: Validate type, much more...
