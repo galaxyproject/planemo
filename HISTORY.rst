@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.9.0.dev0
+0.9.0 (2015-05-03)
 ---------------------
 
 * Add new logo to the README thanks to @petrkadlec from `puradesign.cz
