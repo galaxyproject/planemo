@@ -692,7 +692,7 @@ def _find_raw_repositories(path, **kwds):
 def _build_raw_repo_objects(raw_dirs, **kwds):
     """
     From specific directories with .shed.yml files or specified directly from
-    the comman-line build abstract description of directories that should be
+    the command-line build abstract description of directories that should be
     expanded out into shed repositories.
     """
     multiple = len(raw_dirs) > 1
