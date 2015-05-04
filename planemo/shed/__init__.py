@@ -172,7 +172,7 @@ def upload_repository(ctx, realized_repository, **kwds):
         return -1
 
     if kwds["check_diff"]:
-        is_diff = diff(ctx, realized_repository, **kwds)
+        is_diff = diff_repo(ctx, realized_repository, **kwds)
         if not is_diff:
             name = realized_repository.name
             info("Repositry [%s] not different, skipping upload." % name)
@@ -203,7 +203,7 @@ def _update_commit_message(ctx, realized_repository, update_kwds, **kwds):
     update_kwds["commit_message"] = message
 
 
-def diff(ctx, realized_repository, **kwds):
+def diff_repo(ctx, realized_repository, **kwds):
     with temp_directory("tool_shed_diff_") as working:
         return _diff_in(ctx, working, realized_repository, **kwds)
 
@@ -249,18 +249,18 @@ def _diff_in(ctx, working, realized_repository, **kwds):
 
     output = kwds.get("output", None)
     raw = kwds.get("raw", False)
-    diff = 0
+    is_diff = 0
     if not raw:
         if output:
             with open(output, "w") as f:
-                diff = diff_and_remove(working, label_a, label_b, f)
+                is_diff = diff_and_remove(working, label_a, label_b, f)
         else:
-            diff = diff_and_remove(working, label_a, label_b, sys.stdout)
+            is_diff = diff_and_remove(working, label_a, label_b, sys.stdout)
 
     cmd = 'cd "%s"; diff -r %s %s' % (working, label_a, label_b)
     if output:
         cmd += ">> '%s'" % output
-    exit = shell(cmd) or diff
+    exit = shell(cmd) or is_diff
     return exit
 
 

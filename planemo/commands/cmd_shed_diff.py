@@ -56,7 +56,7 @@ def cli(ctx, path, **kwds):
             --shed_target_source testtoolshed
     """
     def diff(realized_repository):
-        return shed.diff(ctx, realized_repository, **kwds)
+        return shed.diff_repo(ctx, realized_repository, **kwds)
 
     exit_code = shed.for_each_repository(diff, path, **kwds)
     sys.exit(exit_code)
