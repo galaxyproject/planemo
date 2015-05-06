@@ -802,12 +802,22 @@ class RawRepositoryDirectory(object):
         config = self._realize_config(name)
         realized_files = []
         missing = []
-        for include in config["include"]:
-            included = RealizedFile.realized_files_for(self.path, include)
-            if not included:
-                missing.append(include)
-            else:
-                realized_files.extend(included)
+        for include_info in config["include"]:
+            if not isinstance(include_info, dict):
+                include_info = {"source": include_info}
+            source_list = include_info.get("source")
+            if not isinstance(source_list, list):
+                source_list = [source_list]
+            # Preprocess any entries with a source list into copies
+            # with a single source entry:
+            for source in source_list:
+                include = include_info.copy()
+                include["source"] = source
+                included = RealizedFile.realized_files_for(self.path, include)
+                if not included:
+                    missing.append(include)
+                else:
+                    realized_files.extend(included)
         return RealizedFiles(realized_files, missing)
 
     def _realize_config(self, name):
@@ -872,6 +882,10 @@ class RealizedFile(object):
         if os.path.islink(source_path):
             source_path = os.path.realpath(source_path)
         relative_dest = self.relative_dest
+        if relative_dest == ".":
+            # The target folder likely exists,
+            # but would still want to make symlink...
+            relative_dest = os.path.split(source_path)[1]
         target_path = os.path.join(directory, relative_dest)
         target_exists = os.path.exists(target_path)
         if not target_exists:
