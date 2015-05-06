@@ -32,18 +32,15 @@ are fine.
 
 * Review ``git status`` for missing files.
 * Verify the latest Travis CI builds pass.
+* ``make open-docs`` and review changelog.
 * ``make clean && make lint && make test``
-* Update version info in ``planemo/__init__.py`` (drop ``.dev0`` suffix).
-* Update release date and description in ``HISTORY.rst``.
-* ``make docs`` and review changelog.
-* ``git add HISTORY.rst planemo/__init__.py; git commit -m "Version <version>"``
+* ``python scripts/commit_version.py <new_version>``
 * ``make release``
     * Review `Test PyPI site <https://testpypi.python.org/pypi/planemo>`_
       for errors.
     * Test intall ``pip install -i https://testpypi.python.org/pypi planemo``.
-* ``git tag <release>``
 * Update version info in ``planemo/__init__.py`` (n+1.dev0) and create new entry in HISTORY.rst.
 * ``git add HISTORY.rst planemo/__init__.py; git commit -m "Start work on new version"``
-* ``git push origin``
-* ``git push --tags origin``
+* ``git push galaxyproject master``
+* ``git push --tags galaxyproject``
 * Update planemo homebrew recipe to new version.
