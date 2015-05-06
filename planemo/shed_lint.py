@@ -4,7 +4,6 @@ from galaxy.tools.lint import LintContext
 from galaxy.tools.linters.help import rst_invalid
 from planemo.lint import lint_xsd
 from planemo.shed import (
-    path_to_repo_name,
     REPO_TYPE_UNRESTRICTED,
     REPO_TYPE_TOOL_DEP,
     REPO_TYPE_SUITE,
@@ -70,7 +69,7 @@ def lint_repository(ctx, realized_repository, **kwds):
     lint_ctx.lint(
         "lint_shed_yaml",
         lint_shed_yaml,
-        path,
+        realized_repository,
     )
     lint_ctx.lint(
         "lint_readme",
@@ -185,26 +184,26 @@ def lint_repository_dependencies(path, lint_ctx):
     lint_xsd(lint_ctx, REPO_DEPENDENCIES_XSD, repo_dependencies)
 
 
-def lint_shed_yaml(path, lint_ctx):
+def lint_shed_yaml(realized_repository, lint_ctx):
+    path = realized_repository.real_path
     shed_yaml = os.path.join(path, ".shed.yml")
     if not os.path.exists(shed_yaml):
         lint_ctx.info("No .shed.yml file found, skipping.")
         return
     try:
-        shed_contents = yaml.load(open(shed_yaml, "r"))
+        yaml.load(open(shed_yaml, "r"))
     except Exception as e:
         lint_ctx.warn("Failed to parse .shed.yml file [%s]" % str(e))
         return
     lint_ctx.info(".shed.yml found and appears to be valid YAML.")
-    _lint_shed_contents(lint_ctx, path, shed_contents)
+    _lint_shed_contents(lint_ctx, realized_repository)
 
 
-def _lint_shed_contents(lint_ctx, path, shed_contents):
-    name = shed_contents.get("name", None)
-    effective_name = name or path_to_repo_name(path)
+def _lint_shed_contents(lint_ctx, realized_repository):
+    config = realized_repository.config
 
     def _lint_if_present(key, func, *args):
-        value = shed_contents.get(key, None)
+        value = config.get(key, None)
         if value is not None:
             msg = func(value, *args)
             if msg:
@@ -212,8 +211,8 @@ def _lint_shed_contents(lint_ctx, path, shed_contents):
 
     _lint_if_present("owner", validate_repo_owner)
     _lint_if_present("name", validate_repo_name)
-    _lint_if_present("type", _validate_repo_type, effective_name)
-    _lint_if_present("categories", _validate_categories)
+    _lint_if_present("type", _validate_repo_type, config["name"])
+    _lint_if_present("categories", _validate_categories, realized_repository)
 
 
 def _validate_repo_type(repo_type, name):
@@ -234,7 +233,7 @@ def _validate_repo_type(repo_type, name):
                     "but repository is listed as unrestricted.")
 
 
-def _validate_categories(categories):
+def _validate_categories(categories, realized_repository):
     msg = None
     if len(categories) == 0:
         msg = "Repository should specify one or more categories."
@@ -245,5 +244,9 @@ def _validate_categories(categories):
                 unknown_categories.append(category)
             if unknown_categories:
                 msg = "Categories [%s] unknown." % unknown_categories
+        if realized_repository.is_package:
+            if "Tool Dependency Packages" not in categories:
+                msg = ("Packages should be placed and should only be placed "
+                       "in the category 'Tool Dependency Packages'.")
 
     return msg

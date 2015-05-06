@@ -30,6 +30,8 @@ class ShedLintTestCase(CliTestCase):
             self._check_exit_code(["shed_lint"], exit_code=-1)
         with self._isolate_repo("bad_missing_repo_deps"):
             self._check_exit_code(["shed_lint"], exit_code=-1)
+        with self._isolate_repo("bad_package_category"):
+            self._check_exit_code(["shed_lint"], exit_code=-1)
         with self._isolate_repo("bad_invalid_yaml"):
             self._check_exit_code(["shed_lint"], exit_code=254)
 
