@@ -9,6 +9,16 @@ History
 0.10.0.dev0
 ---------------------
 
+* Extend ``shed_lint`` to check for valid actions in tool_dependencies.xml
+  files. 8117e03_
+* Extend ``shed_lint`` to check for required files based on repository type.
+  `Issue 156`_
+* Ignore common editor backup files during ``shed_upload``. `Issue 179`_
+* Fix missing file when installing from source via PyPI. `Issue 181`_
+* Fix ``lint`` to verify ``data`` inputs specify a ``format`` attribute.
+  8117e03_
+* Docstring fix thanks to @peterjc. fe7ad46_
+
 
 ---------------------
 0.9.0 (2015-05-03)
@@ -282,6 +292,12 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _fe7ad46: https://github.com/galaxyproject/planemo/commit/fe7ad46
+.. _8117e03: https://github.com/galaxyproject/planemo/commit/8117e03
+.. _8117e03: https://github.com/galaxyproject/planemo/commit/8117e03
+.. _Issue 156: https://github.com/galaxyproject/planemo/issues/156
+.. _Issue 179: https://github.com/galaxyproject/planemo/issues/179
+.. _Issue 181: https://github.com/galaxyproject/planemo/issues/181
 .. _Issue 114: https://github.com/galaxyproject/planemo/issues/114
 .. _Pull Request 173: https://github.com/galaxyproject/planemo/pull/173
 .. _Issue 108: https://github.com/galaxyproject/planemo/issues/108

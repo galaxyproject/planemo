@@ -10,6 +10,7 @@ Subpackages
     planemo.linters
     planemo.reports
     planemo.shed
+    planemo.shed2tap
     planemo.xml
 
 Submodules
