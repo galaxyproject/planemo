@@ -921,6 +921,26 @@ class RealizedRepositry(object):
         self.multiple = multiple
         self.missing = missing
 
+    @property
+    def repository_type(self):
+        return shed_repo_type(self.config, self.name)
+
+    @property
+    def is_package(self):
+        return self.repository_type == REPO_TYPE_TOOL_DEP
+
+    @property
+    def is_suite(self):
+        return self.repository_type == REPO_TYPE_SUITE
+
+    @property
+    def repo_dependencies_path(self):
+        return os.path.join(self.path, REPO_DEPENDENCIES_CONFIG_NAME)
+
+    @property
+    def tool_dependencies_path(self):
+        return os.path.join(self.path, TOOL_DEPENDENCIES_CONFIG_NAME)
+
     def git_rev(self, ctx):
         return git.rev_if_git(ctx, self.real_path)
 

@@ -47,7 +47,11 @@ def lint_repository(ctx, realized_repository, **kwds):
         lint_expansion,
         realized_repository,
     )
-
+    lint_ctx.lint(
+        "lint_expected_files",
+        lint_expected_files,
+        realized_repository,
+    )
     lint_ctx.lint(
         "lint_tool_dependencies_xsd",
         lint_tool_dependencies_xsd,
@@ -159,6 +163,18 @@ def lint_tool_dependencies_actions(path, lint_ctx):
         msg = template % str(e)
         lint_ctx.warn(msg)
         return
+
+
+def lint_expected_files(realized_repository, lint_ctx):
+    if realized_repository.is_package:
+        if not os.path.exists(realized_repository.tool_dependencies_path):
+            lint_ctx.warn("Package repository does not contain a "
+                          "tool_dependencies.xml file.")
+
+    if realized_repository.is_suite:
+        if not os.path.exists(realized_repository.repo_dependencies_path):
+            lint_ctx.warn("Suite repository does not contain a "
+                          "repository_dependencies.xml file.")
 
 
 def lint_repository_dependencies(path, lint_ctx):
