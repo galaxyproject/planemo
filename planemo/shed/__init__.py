@@ -60,12 +60,15 @@ REALIZAION_PROBLEMS_MESSAGE = ("Problem encountered executing action for one or 
 # Planemo generated or consumed files that do not need to be uploaded to the
 # tool shed.
 PLANEMO_FILES = [
-    "shed_upload.tar.gz",
+    "shed_upload*.tar.gz",
+    "shed_download*.tar.gz",
     "tool_test_output.json",
     "tool_test_output.html",
     ".travis",
     ".travis.yml",
-    ".shed.yml"
+    ".shed.yml",
+    "*~",
+    "#*#",
 ]
 SHED_SHORT_NAMES = {
     "toolshed": "https://toolshed.g2.bx.psu.edu/",
@@ -830,8 +833,10 @@ class RawRepositoryDirectory(object):
         name = os.path.basename(relative_path)
         if relative_path.startswith(".git"):
             return True
-        elif name in PLANEMO_FILES:
-            return True
+
+        for pattern in PLANEMO_FILES:
+            if fnmatch.fnmatch(name, pattern):
+                return True
         return False
 
 RealizedFiles = namedtuple("RealizedFiles", ["files", "include_failures"])

@@ -179,11 +179,14 @@ class ShedUploadTestCase(CliShedTestCase):
             index_path = join(mock_git_dir, "index_file")
             with open(index_path, "w") as index_f:
                 index_f.write("test")
+            with open(join(f, "related_file~"), "w") as tilde_f:
+                tilde_f.write("backup!")
             upload_command = ["shed_upload", "--force_repository_creation"]
             upload_command.extend(self._shed_args())
             self._check_exit_code(upload_command)
             target = self._verify_upload(f)
             assert not exists(join(target, ".git"))
+            assert not exists(join(target, "related_file~"))
 
     def test_upload_filters_invalid_package(self):
         with self._isolate_repo("package_1") as f:
