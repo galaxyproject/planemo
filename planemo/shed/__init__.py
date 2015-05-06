@@ -803,6 +803,8 @@ class RawRepositoryDirectory(object):
         realized_files = []
         missing = []
         for include_info in config["include"]:
+            if not isinstance(include_info, dict):
+                include_info = {"source": include_info}
             source_list = include_info.get("source")
             if not isinstance(source_list, list):
                 source_list = [source_list]
