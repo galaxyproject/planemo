@@ -1045,7 +1045,7 @@ __all__ = [
     'for_each_repository',
     'api_exception_to_message',
     'tool_shed_client',
-    'diff',
+    'diff_repo',
     'download_tarball',
     'shed_init',
     'CURRENT_CATEGORIES',
