@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.10.0.dev0
+0.10.0 (2015-05-06)
 ---------------------
 
 * Extend ``shed_lint`` to check for valid actions in tool_dependencies.xml
