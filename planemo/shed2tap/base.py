@@ -3,6 +3,7 @@ from __future__ import print_function
 from xml.etree import ElementTree
 
 from six.moves.urllib.request import urlretrieve
+from six import string_types
 
 TOOLSHED_MAP = {
     "toolshed": "https://toolshed.g2.bx.psu.edu",
@@ -500,7 +501,7 @@ falsy = frozenset(['false', 'no', 'off', 'n', 'f', '0'])
 
 
 def asbool(obj):
-    if isinstance(obj, basestring):
+    if isinstance(obj, string_types):
         obj = obj.strip().lower()
         if obj in truthy:
             return True
