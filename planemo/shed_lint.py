@@ -16,6 +16,7 @@ from planemo.tool_lint import (
     build_lint_args,
     yield_tool_xmls,
 )
+from planemo.shed2tap import base
 from planemo.xml import XSDS_PATH
 
 
@@ -48,8 +49,13 @@ def lint_repository(ctx, realized_repository, **kwds):
     )
 
     lint_ctx.lint(
-        "lint_tool_dependencies",
-        lint_tool_dependencies,
+        "lint_tool_dependencies_xsd",
+        lint_tool_dependencies_xsd,
+        path,
+    )
+    lint_ctx.lint(
+        "lint_tool_dependencies_actions",
+        lint_tool_dependencies_actions,
         path,
     )
     lint_ctx.lint(
@@ -127,12 +133,32 @@ def lint_readme(path, lint_ctx):
         lint_ctx.info("README found containing plain text.")
 
 
-def lint_tool_dependencies(path, lint_ctx):
+def lint_tool_dependencies_xsd(path, lint_ctx):
     tool_dependencies = os.path.join(path, "tool_dependencies.xml")
     if not os.path.exists(tool_dependencies):
         lint_ctx.info("No tool_dependencies.xml, skipping.")
         return
     lint_xsd(lint_ctx, TOOL_DEPENDENCIES_XSD, tool_dependencies)
+
+
+def lint_tool_dependencies_actions(path, lint_ctx):
+    tool_dependencies = os.path.join(path, "tool_dependencies.xml")
+    if not os.path.exists(tool_dependencies):
+        lint_ctx.info("No tool_dependencies.xml, skipping.")
+        return
+    try:
+        base.Dependencies(tool_dependencies)
+        lint_ctx.info("Parsed tool dependencies.")
+    except Exception as e:
+        import sys
+        import traceback
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
+        traceback.print_exc()
+        template = "Problem parsing tool_dependenies.xml [%s]"
+        msg = template % str(e)
+        lint_ctx.warn(msg)
+        return
 
 
 def lint_repository_dependencies(path, lint_ctx):

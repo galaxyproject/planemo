@@ -55,6 +55,7 @@ setup(
         'planemo.linters',
         'planemo.reports',
         'planemo.shed',
+        'planemo.shed2tap',
         'planemo.xml',
         'planemo_ext',
         'planemo_ext.galaxy',
