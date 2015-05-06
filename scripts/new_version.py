@@ -29,7 +29,7 @@ def main(argv):
 
     planemo_mod_path = os.path.join(PROJECT_DIRECTORY, "planemo", "__init__.py")
     mod = open(planemo_mod_path, "r").read()
-    mod = re.sub("__version__ = '[\d\.]+",
+    mod = re.sub("__version__ = '[\d\.]+'",
                  "__version__ = '%s.dev0'" % version,
                  mod, 1)
     mod = open(planemo_mod_path, "w").write(mod)
