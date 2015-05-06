@@ -39,7 +39,7 @@ are fine.
     * Review `Test PyPI site <https://testpypi.python.org/pypi/planemo>`_
       for errors.
     * Test intall ``pip install -i https://testpypi.python.org/pypi planemo``.
-* ``python scripts/commit_version.py <new_version>``
+* ``python scripts/new_version.py <new_version>``
 * ``git push galaxyproject master``
 * ``git push --tags galaxyproject``
 * Update planemo homebrew recipe to new version.
