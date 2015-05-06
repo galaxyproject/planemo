@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from xml.etree import ElementTree
 
 from six.moves.urllib.request import urlretrieve
@@ -112,7 +114,7 @@ class Repo(object):
             path, headers = urlretrieve(url)
             return path
         except Exception as e:
-            print e
+            print(e)
             return None
 
     def __repr__(self):
