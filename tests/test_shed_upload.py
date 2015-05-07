@@ -309,7 +309,13 @@ class ShedUploadTestCase(CliShedTestCase):
         if exists(target):
             shutil.rmtree(target)
         os.makedirs(target)
-        tar = tarfile.open(path, "r:gz")
+        try:
+            tar = tarfile.open(path, "r:gz")
+        except tarfile.ReadError as e:
+            # Fixed in later version of Python, see
+            # http://bugs.python.org/issue6123
+            assert str(e) == "empty header", e
+            return target  # note contained no files!
         tar.extractall(path=target)
         tar.close()
         tar = tarfile.open(path, "r:gz")
