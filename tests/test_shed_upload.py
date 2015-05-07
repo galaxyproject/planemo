@@ -249,6 +249,22 @@ class ShedUploadTestCase(CliShedTestCase):
                 assert 'owner="devteam" name="cat_legacy"' in repo_xml
                 assert 'owner="iuc" name="cs-cat2"' in repo_xml
 
+    def test_upload_with_double_dot(self):
+        with self._isolate() as f:
+            self._copy_repo("up_root/", join(f, "up_root/"))
+            self._copy_repo("shared_files/", join(f, "shared_files/"))
+            upload_command = ["shed_upload", "--tar_only"]
+            upload_command.extend(self._shed_args())
+            self._check_exit_code(upload_command)
+            self._check_tar(
+                f, "shed_upload.tar.gz",
+                contains=[
+                    "up_root/README.rst",
+                    "up_root/cat.xml",
+                    "shared_files/extra_test_data/extra_test_file.txt",
+                ],
+                not_contains=[])
+
     def _verify_expansion(self, f, name=None):
         upload_command = ["shed_upload", "--tar_only"]
         upload_command.extend(self._shed_args())
