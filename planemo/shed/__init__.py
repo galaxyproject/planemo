@@ -902,6 +902,7 @@ class RealizedFile(object):
         if not isinstance(include_info, dict):
             include_info = {"source": include_info}
         source = include_info.get("source")
+        abs_source = os.path.join(path, source)
         destination = include_info.get("destination", None)
         strip_components = include_info.get("strip_components", 0)
         if destination is None:
@@ -909,7 +910,11 @@ class RealizedFile(object):
             destination_specified = False
         else:
             destination_specified = True
-        abs_source = os.path.join(path, source)
+        if not destination.endswith("/"):
+            # Check if source using wildcards (directory gets implicit wildcard)
+            # Should we use a regular exoression to catch [A-Z] style patterns?
+            if "*" in source or "?" in source or os.path.isdir(abs_source):
+                raise ValueError("destination must be a directory (with trailing slash) if source is a folder or uses wildcards")
         dest_is_file = destination_specified and os.path.isfile(abs_source)
         realized_files = []
         for globbed_file in _glob(path, source):

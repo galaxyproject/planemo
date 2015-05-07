@@ -14,7 +14,7 @@ repositories:
         destination: CITATION.txt
       - source: ../shared_files/extra_test_data/**
         strip_components: 3  # drop "..", "shared_files", "extra_test_data" from source
-        destination: test-data
+        destination: test-data/
   cs-cat2:
     description: "The tool Cat 2 from the cat tool suite."
     include:
