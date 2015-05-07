@@ -80,6 +80,7 @@ setup(
                               'xml/xsd/tool/galaxy.xsd',
                               'xml/xsd/tool/citation.xsd',
                               'xml/xsd/tool/citations.xsd',
+                              'reports/*',
                              ] 
                  },
     package_dir={'planemo': 'planemo',
