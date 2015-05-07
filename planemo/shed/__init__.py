@@ -780,7 +780,7 @@ class RawRepositoryDirectory(object):
             return RuntimeError(msg)
 
         for realized_file in realized_files.files:
-            relative_dest = realized_file.relative_dest
+            relative_dest = realized_file.dest
             implicit_ignore = self._implicit_ignores(relative_dest)
             explicit_ignore = (realized_file.absolute_src in ignore_list)
             if implicit_ignore or explicit_ignore:
@@ -859,24 +859,18 @@ RealizedFiles = namedtuple("RealizedFiles", ["files", "include_failures"])
 
 class RealizedFile(object):
 
-    def __init__(self, src_root, src, dest, dest_is_file, strip_components):
+    def __init__(self, src_root, src, dest):
+        """Create object mapping from file system to tar-ball.
+
+        * src_root - source root (i.e. folder with .shed.yml file)
+        * src - location of source file, relative to src_root
+        * dest - destination path, relative to root of tar-ball.
+        """
+        if dest == ".":
+            raise ValueError("Destination for %r should be a full filename!" % src)
         self.src_root = src_root
         self.src = src
         self.dest = dest
-        self.dest_is_file = dest_is_file
-        self.strip_components = strip_components
-
-    @property
-    def relative_dest(self):
-        if self.dest_is_file:
-            destination = self.dest
-        else:
-            destination = os.path.join(self.dest, self.stripped_source)
-        return os.path.relpath(destination)
-
-    @property
-    def stripped_source(self):
-        return "/".join(self.src.split("/")[self.strip_components:])
 
     @property
     def absolute_src(self):
@@ -886,13 +880,11 @@ class RealizedFile(object):
         source_path = self.absolute_src
         if os.path.islink(source_path):
             source_path = os.path.realpath(source_path)
-        relative_dest = self.relative_dest
-        if relative_dest == ".":
-            # The target folder likely exists,
-            # but would still want to make symlink...
-            relative_dest = os.path.split(source_path)[1]
+        relative_dest = self.dest
+        assert relative_dest != "."
         target_path = os.path.join(directory, relative_dest)
         target_exists = os.path.exists(target_path)
+        # info("realize_to %r --> %r" % (source_path, target_path))
         if not target_exists:
             target_dir = os.path.dirname(target_path)
             if not os.path.exists(target_dir):
@@ -912,26 +904,39 @@ class RealizedFile(object):
         strip_components = include_info.get("strip_components", 0)
         if destination is None:
             destination = "./"
-            destination_specified = False
-        else:
-            destination_specified = True
         if not destination.endswith("/"):
             # Check if source using wildcards (directory gets implicit wildcard)
             # Should we use a regular exoression to catch [A-Z] style patterns?
             if "*" in source or "?" in source or os.path.isdir(abs_source):
                 raise ValueError("destination must be a directory (with trailing slash) if source is a folder or uses wildcards")
-        dest_is_file = destination_specified and os.path.isfile(abs_source)
         realized_files = []
         for globbed_file in _glob(path, source):
             src = os.path.relpath(globbed_file, path)
+            if not destination.endswith("/"):
+                # Given a filename, just use it!
+                dest = destination
+                if strip_components:
+                    raise ValueError("strip_components should not be used if destination is a filename")
+            else:
+                # Destination is a directory...
+                if not strip_components:
+                    dest = src
+                elif "/../" in globbed_file:
+                    # Can't work from src=os.path.relpath(globbed_file, path) as lost any '..'
+                    assert globbed_file.startswith(path + "/")
+                    dest = "/".join(globbed_file[len(path) + 1:].split("/")[strip_components:])
+                else:
+                    dest = "/".join(src.split("/")[strip_components:])
+                # Now apply the specified output directory:
+                dest = os.path.join(destination, dest)
             realized_files.append(
-                RealizedFile(path, src, destination, dest_is_file, strip_components)
+                RealizedFile(path, src, os.path.normpath(dest))
             )
         return realized_files
 
     def __str__(self):
-        return "RealizedFile[src={},dest={},dest_file={}]".format(
-            self.src, self.dest, self.dest_is_file
+        return "RealizedFile[src={},dest={},src_root={}]".format(
+            self.src, self.dest, self.src_root
         )
 
 
