@@ -6,6 +6,7 @@ import sys
 
 
 PROJECT_DIRECTORY = os.path.join(os.path.dirname(__file__), "..")
+PROJECT_URL = "https://github.com/galaxyproject/planemo"
 
 
 def main(argv):
@@ -24,17 +25,17 @@ def main(argv):
 
     if ident.startswith("pr"):
         pull_request = ident[len("pr"):]
-        text = ".. _Pull Request {0}: https://github.com/galaxyproject/planemo/pull/{0}".format(pull_request)
+        text = ".. _Pull Request {0}: {1}/pull/{0}".format(pull_request, PROJECT_URL)
         history = extend(".. github_links", text)
         to_doc += "`Pull Request {0}`_".format(pull_request)
     elif ident.startswith("issue"):
         issue = ident[len("issue"):]
-        text = ".. _Issue {0}: https://github.com/galaxyproject/planemo/issues/{0}".format(issue)
+        text = ".. _Issue {0}: {1}/issues/{0}".format(issue, PROJECT_URL)
         history = extend(".. github_links", text)
         to_doc += "`Issue {0}`_".format(issue)
     else:
         short_rev = ident[:7]
-        text = ".. _{1}: https://github.com/galaxyproject/planemo/commit/{1}".format(ident, short_rev)
+        text = ".. _{0}: {1}/commit/{0}".format(short_rev, PROJECT_URL)
         history = extend(".. github_links", text)
         to_doc += "{0}_".format(short_rev)
 
