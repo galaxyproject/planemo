@@ -147,7 +147,7 @@ def build(**kwds):
 
     named_outputs = kwds.get("named_output", [])
     del kwds["named_output"]
-    for named_output in enumerate(named_outputs or []):
+    for named_output in (named_outputs or []):
         outputs.append(Output(name=named_output))
 
     # handle example outputs

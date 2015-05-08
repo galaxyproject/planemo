@@ -110,6 +110,7 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
 @click.option(
     "--output",
     type=click.STRING,
+    multiple=True,
     default=None,
     prompt=False,
     help=("An output location (e.g. output.bam), the Galaxy datatype is "
@@ -118,6 +119,7 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
 @click.option(
     "--named_output",
     type=click.STRING,
+    multiple=True,
     default=None,
     prompt=False,
     help=("Create a named output for use with command block for example "
@@ -198,7 +200,7 @@ def cli(ctx, **kwds):
     macros_file = "macros.xml"
     if macros and not os.path.exists(macros_file):
         open(macros_file, "w").write(tool_description.macro_contents)
-    else:
+    elif macros:
         io.info(REUSING_MACROS_MESSAGE)
     if tool_description.test_files:
         if not os.path.exists("test-data"):
