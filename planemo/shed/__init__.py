@@ -231,6 +231,7 @@ def _diff_in(ctx, working, realized_repository, **kwds):
         realized_repository,
         destination=other,
         clean=True,
+        destination_is_pattern=False,
         **kwds
     )
     if shed_target_source:
@@ -243,6 +244,7 @@ def _diff_in(ctx, working, realized_repository, **kwds):
             realized_repository,
             destination=mine,
             clean=True,
+            destination_is_pattern=False,
             **new_kwds
         )
     else:
@@ -472,7 +474,10 @@ def download_tarball(ctx, tsi, realized_repository, **kwds):
         error(message)
         raise Exception(message)
     destination_pattern = kwds.get('destination', 'shed_download.tar.gz')
-    destination = realized_repository.pattern_to_file_name(destination_pattern)
+    if kwds.get("destination_is_pattern", True):
+        destination = realized_repository.pattern_to_file_name(destination_pattern)
+    else:
+        destination = destination_pattern
     to_directory = not destination.endswith("gz")
     download_tar(tsi, repo_id, destination, to_directory=to_directory)
     if to_directory:
