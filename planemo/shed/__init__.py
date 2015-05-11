@@ -837,15 +837,15 @@ class RawRepositoryDirectory(object):
     def _implicit_ignores(self, relative_path):
         # Filter out "unwanted files" :) like READMEs for special
         # repository types.
+        name = os.path.basename(relative_path)
         if self.type == REPO_TYPE_TOOL_DEP:
-            if relative_path != TOOL_DEPENDENCIES_CONFIG_NAME:
+            if name != TOOL_DEPENDENCIES_CONFIG_NAME:
                 return True
 
         if self.type == REPO_TYPE_SUITE:
-            if relative_path != REPO_DEPENDENCIES_CONFIG_NAME:
+            if name != REPO_DEPENDENCIES_CONFIG_NAME:
                 return True
 
-        name = os.path.basename(relative_path)
         if relative_path.startswith(".git"):
             return True
 
