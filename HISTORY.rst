@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.11.1.dev0
+0.11.1 (2015-05-12)
 ---------------------
 
 * Fix default behavior for ``planemo lint`` to use current directory if
