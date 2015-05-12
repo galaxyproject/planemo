@@ -22,6 +22,12 @@ class LintTestCase(CliTestCase):
             lint_cmd = ["lint", fail_tool]
             self._check_exit_code(lint_cmd, exit_code=1)
 
+    def test_lint_default(self):
+        with self._isolate_repo("single_tool"):
+            self._check_exit_code(["lint", "--skip", "citations"])
+        with self._isolate_repo("single_tool"):
+            self._check_exit_code(["lint"], exit_code=1)
+
     def test_lint_multiple(self):
         names = ["fail_citation.xml", "fail_order.xml"]
         paths = list(map(lambda p: os.path.join(TEST_TOOLS_DIR, p), names))

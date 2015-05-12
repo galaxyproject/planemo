@@ -1,5 +1,8 @@
 """ Click definitions for various shared options and arguments.
 """
+
+import os
+
 import click
 from galaxy.tools.deps import docker_util
 
@@ -142,6 +145,13 @@ def required_tool_arg():
     return click.argument('path', metavar="TOOL_PATH", type=arg_type)
 
 
+def _optional_tools_default(ctx, param, value):
+    if param.name == "paths" and len(value) == 0:
+        return [os.path.abspath(os.getcwd())]
+    else:
+        return value
+
+
 def optional_tools_arg(multiple=False):
     """ Decorate click method as optionally taking in the path to a tool
     or directory of tools. If no such argument is given the current working
@@ -159,9 +169,9 @@ def optional_tools_arg(multiple=False):
     return click.argument(
         name,
         metavar="TOOL_PATH",
-        default=".",
         type=arg_type,
         nargs=nargs,
+        callback=_optional_tools_default,
     )
 
 
