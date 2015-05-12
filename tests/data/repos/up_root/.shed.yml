@@ -1,0 +1,18 @@
+name: up_root
+owner: iuc
+descrption: A dummy tool for Planemo include testing
+long_description: |
+  The purpose of this tool is to test advanced include settings
+  in the Planemo .shed.yml file which can be used to support a
+  development model where test files (etc) are kept in folders
+  above the tool folder itself.
+type: unrestricted
+remote_repository_url: "https://github.com/galaxyproject/planemo/tree/master/tests/data/repos/up_root"
+homepage_url: "http://planemo.readthedocs.org/en/latest/"
+include:
+- strip_components: 1
+  source:
+  - ../up_root/**
+  - ../up_root/cat.xml
+  - ../up_root/README.rst
+  - ../shared_files/extra_test_data/extra_test_file.txt
