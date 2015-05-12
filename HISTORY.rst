@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.11.0.dev0
+0.11.0 (2015-05-12)
 ---------------------
 
 * More compact syntax for defining multiple custom inclusions in ``.shed.yml``
