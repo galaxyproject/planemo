@@ -6,10 +6,11 @@ History
 .. to_doc
 
 ---------------------
-0.12.0.dev0
+0.11.1.dev0
 ---------------------
 
-    
+* Fix default behavior for ``planemo lint`` to use current directory if
+  explicit paths are not supplied. 1e3668a_
 
 ---------------------
 0.11.0 (2015-05-12)
@@ -316,6 +317,7 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _1e3668a: https://github.com/galaxyproject/planemo/commit/1e3668a
 .. _Issue 180: https://github.com/galaxyproject/planemo/issues/180
 .. _Pull Request 186: https://github.com/galaxyproject/planemo/pull/186
 .. _Pull Request 185: https://github.com/galaxyproject/planemo/pull/185
