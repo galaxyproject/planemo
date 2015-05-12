@@ -9,7 +9,19 @@ History
 0.11.0.dev0
 ---------------------
 
-    
+* More compact syntax for defining multiple custom inclusions in ``.shed.yml``
+  files - thanks to Peter Cock. `Issue 180`_, `Pull Request 185`_,
+  `Pull Request 196`_
+* Prevent ambigous destinations when defining custom inclusions in
+  ``.shed.yml``- thanks to Peter Cock. `Pull Request 186`_
+* ``lint`` now warns if tool ids contain whitespace. `Pull Request 190`_
+* Handle empty tar-balls gracefully on older Python versions - thanks
+  to Peter Cock. `Pull Request 187`_
+* Tweak quoting in ``cp`` command - thanks to Peter Cock. 6bcf699_
+* Fix regression causing testing to no longer produce "pretty" test
+  results under certain circumstances. `Issue 188`_
+* Fix for recursive ``shed_diff`` folder naming. `Issue 192`_
+* Fix output definitions to ``tool_init`` command. `Issue 189`_
 
 ---------------------
 0.10.0 (2015-05-06)
@@ -298,6 +310,17 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Issue 180: https://github.com/galaxyproject/planemo/issues/180
+.. _Pull Request 186: https://github.com/galaxyproject/planemo/pull/186
+.. _Pull Request 185: https://github.com/galaxyproject/planemo/pull/185
+.. _6bcf699: https://github.com/galaxyproject/planemo/commit/6bcf699
+.. _Issue 186: https://github.com/galaxyproject/planemo/issues/186
+.. _Issue 188: https://github.com/galaxyproject/planemo/issues/188
+.. _Pull Request 187: https://github.com/galaxyproject/planemo/pull/187
+.. _Issue 192: https://github.com/galaxyproject/planemo/issues/192
+.. _Issue 189: https://github.com/galaxyproject/planemo/issues/189
+.. _Pull Request 190: https://github.com/galaxyproject/planemo/pull/190
+.. _Pull Request 196: https://github.com/galaxyproject/planemo/pull/196
 .. _fe7ad46: https://github.com/galaxyproject/planemo/commit/fe7ad46
 .. _8117e03: https://github.com/galaxyproject/planemo/commit/8117e03
 .. _8117e03: https://github.com/galaxyproject/planemo/commit/8117e03
