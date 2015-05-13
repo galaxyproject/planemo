@@ -20,6 +20,7 @@ tar_path = click.Path(
 @click.command("shed_upload")
 @options.shed_project_arg()
 @click.option(
+    '-m',
     '--message',
     help="Commit message for tool shed upload."
 )
