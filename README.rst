@@ -2,6 +2,7 @@
    :alt: Planemo Logo
    :align: center
    :figwidth: 100%
+   :target: https://github.com/galaxyproject/planemo
 
 .. image:: https://readthedocs.org/projects/pip/badge/?version=latest
    :target: https://planemo.readthedocs.org
