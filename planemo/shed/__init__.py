@@ -172,6 +172,7 @@ def upload_repository(ctx, realized_repository, **kwds):
         repo_id = realized_repository.create(ctx, tsi)
     # failing to create the repo, give up
     if repo_id is None:
+        name = realized_repository.name
         error("Repository [%s] does not exist in the targeted Tool Shed." % name)
         return -1
 
