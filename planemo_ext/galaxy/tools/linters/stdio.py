@@ -3,7 +3,7 @@
 def lint_stdio(tool_xml, lint_ctx):
     stdios = tool_xml.findall("./stdio")
     if not stdios:
-        lint_ctx.info("No stdio definition found, tool will determines error from stderr.")
+        lint_ctx.info("No stdio definition found, tool will determine an error from stderr.")
         return
 
     if len(stdios) > 1:
