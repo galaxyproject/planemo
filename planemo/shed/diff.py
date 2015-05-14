@@ -21,11 +21,10 @@ def diff_and_remove(working, label_a, label_b, f):
 
     repos_diff = 0
     if os.path.exists(a_repos) and os.path.exists(b_repos):
-        repos_diff = _shed_diff(a_repos, b_repos, f)
+        repos_diff &= _shed_diff(a_repos, b_repos, f)
         os.remove(a_repos)
         os.remove(b_repos)
-
-    return deps_diff and repos_diff
+    return deps_diff
 
 
 def _shed_diff(file_a, file_b, f=sys.stdout):

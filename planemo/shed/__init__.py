@@ -226,6 +226,13 @@ def _diff_in(ctx, working, realized_repository, **kwds):
     other = os.path.join(working, label_b)
 
     tsi = tool_shed_client(ctx, read_only=True, **kwds)
+    # In order to download the tarball, require repository ID...
+    repo_id = realized_repository.find_repository_id(ctx, tsi)
+    if repo_id is None:
+        error("Repository [%s] does not exist in the targeted Tool Shed, can't do shed_diff"
+              % realized_repository.name)
+        # TODO - Should this return an error code which can be checked for in recursive mode?
+        return 0
     download_tarball(
         ctx,
         tsi,
