@@ -8,24 +8,20 @@ from planemo.xml import diff
 
 
 def diff_and_remove(working, label_a, label_b, f):
-    a_deps = os.path.join(working, label_a, "tool_dependencies.xml")
-    b_deps = os.path.join(working, label_b, "tool_dependencies.xml")
-    a_repos = os.path.join(working, label_a, "repository_dependencies.xml")
-    b_repos = os.path.join(working, label_b, "repository_dependencies.xml")
-
+    assert label_a != label_b
+    special = ["tool_dependencies.xml", "repository_dependencies.xml"]
     deps_diff = 0
-    if os.path.exists(a_deps) and os.path.exists(b_deps):
-        deps_diff = _shed_diff(a_deps, b_deps, f)
-        os.remove(a_deps)
-        os.remove(b_deps)
-
-    repos_diff = 0
-    if os.path.exists(a_repos) and os.path.exists(b_repos):
-        repos_diff = _shed_diff(a_repos, b_repos, f)
-        os.remove(a_repos)
-        os.remove(b_repos)
-
-    return deps_diff and repos_diff
+    # Could walk either A or B; will only compare if in same relative location
+    for dirpath, dirnames, filenames in os.walk(os.path.join(working, label_a)):
+        for filename in filenames:
+            if filename in special:
+                a = os.path.join(dirpath, filename)
+                b = os.path.join(working, label_b, os.path.relpath(a, os.path.join(working, label_a)))
+                if os.path.exists(a) and os.path.exists(b):
+                    deps_diff &= _shed_diff(a, b, f)
+                    os.remove(a)
+                    os.remove(b)
+    return deps_diff
 
 
 def _shed_diff(file_a, file_b, f=sys.stdout):
