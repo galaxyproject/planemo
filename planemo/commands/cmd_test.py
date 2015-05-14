@@ -145,15 +145,16 @@ def cli(ctx, path, **kwds):
         config.env["GALAXY_TEST_SAVE"] = job_output_files
 
         cd_to_galaxy_command = "cd %s" % config.galaxy_root
+        test_cmd = galaxy_test.GalaxyTestCommand(
+            html_report_file,
+            xunit_report_file,
+            structured_report_file,
+        ).build()
         cmd = "; ".join([
             cd_to_galaxy_command,
             galaxy_run.ACTIVATE_COMMAND,  # TODO: this should be moved to
                                           # run_tests.sh to match run.sh.
-            __run_tests_cmd(
-                html_report_file,
-                xunit_report_file,
-                structured_report_file,
-            ),
+            test_cmd,
         ])
         action = "Testing tools"
         return_code = galaxy_run.run_galaxy_command(
@@ -287,18 +288,6 @@ def __print_command_line(structured_data, test_id):
         return
 
     click.echo("| command: %s" % command)
-
-
-def __run_tests_cmd(html_report_file, xunit_report_file, sd_report_file):
-    if xunit_report_file:
-        xunit_arg = "--xunit_report_file %s" % xunit_report_file
-    else:
-        xunit_arg = ""
-    if sd_report_file:
-        sd_arg = "--structured_data_report_file %s" % sd_report_file
-    else:
-        sd_arg = ""
-    return RUN_TESTS_CMD % (html_report_file, xunit_arg, sd_arg)
 
 
 def __xunit_state(kwds, config):

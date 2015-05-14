@@ -6,6 +6,38 @@ from collections import namedtuple
 import json
 import xml.etree.ElementTree as ET
 
+RUN_TESTS_CMD = (
+    "sh run_tests.sh --report_file %s %s %s %s"
+)
+
+
+class GalaxyTestCommand(object):
+
+    def __init__(
+        self,
+        html_report_file,
+        xunit_report_file,
+        structured_report_file,
+    ):
+        self.html_report_file = html_report_file
+        self.xunit_report_file = xunit_report_file
+        self.structured_report_file = structured_report_file
+
+    def build(self):
+        xunit_report_file = self.xunit_report_file
+        sd_report_file = self.structured_report_file
+        html_report_file = self.html_report_file
+        if xunit_report_file:
+            xunit_arg = "--xunit_report_file %s" % xunit_report_file
+        else:
+            xunit_arg = ""
+        if sd_report_file:
+            sd_arg = "--structured_data_report_file %s" % sd_report_file
+        else:
+            sd_arg = ""
+        tests = "functional.test_toolbox"
+        return RUN_TESTS_CMD % (html_report_file, xunit_arg, sd_arg, tests)
+
 
 class GalaxyTestResults(object):
     """ Class that combine the test-centric xunit output
