@@ -1,11 +1,8 @@
-==========
-Developing
-==========
-
-This section contains documentation for the maintainers of planemo.
-
+==================
 Release Checklist
------------------
+==================
+
+This page describes the process of releasing new versions of Planemo.
 
 This release checklist is based on the `Pocoo Release Management Workflow
 <http://www.pocoo.org/internal/release-management/>`_.

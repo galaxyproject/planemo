@@ -1,3 +1,14 @@
+# Default tests run with make test and make quick-tests
+NOSE_TESTS=tests planemo
+# Default environment for make tox
+ENV?=py27
+# Extra arguments supplied to tox command
+ARGS?=
+# Location of virtualenv used for development.
+VENV=.venv
+# Source virtualenv to execute command (flake8, sphinx, twine, etc...)
+IN_VENV=if [ -f $(VENV)/bin/activate ]; then . $(VENV)/bin/activate; fi;
+
 .PHONY: clean-pyc clean-build docs clean
 
 help:
@@ -6,13 +17,19 @@ help:
 	@echo "clean-pyc - remove Python file artifacts"
 	@echo "clean-test - remove test and coverage artifacts"
 	@echo "setup-venv - setup a development virutalenv in current directory."
-	@echo "lint - check style with flake8"
+	@echo "lint - check style using tox and flake8 for Python 2 and Python 3"
 	@echo "lint-readme - check README formatting for PyPI"
-	@echo "test - run tests quickly with the default Python"
+	@echo "flake8 - check style using flake8 for current Python (faster than lint)"
+	@echo "test - run tests with the default Python (faster than tox)"
+	@echo "quick-test - run quickest tests with the default Python"
 	@echo "coverage - check code coverage quickly with the default Python"
 	@echo "docs - generate Sphinx HTML documentation, including API docs"
-	@echo "release - package and upload a release"
+	@echo "open-docs - generate Sphinx HTML documentation and open in browser"
+	@echo "open-rtd - open docs on readthedocs.org"
+	@echo "open-project - open project on github"
+	@echo "release - package, review, and upload a release"
 	@echo "dist - package"
+	@echo "update-extern - update external artifacts copied locally"
 
 clean: clean-build clean-pyc clean-test
 
@@ -33,17 +50,32 @@ clean-test:
 	rm -fr htmlcov/
 
 setup-venv:
-	if [ -f .venv ]; then virtualenv .venv; fi;
-	. .venv/bin/activate && pip install -r requirements.txt && pip install -r dev-requirements.txt
+	if [ -f $(VENV) ]; then virtualenv $(VENV); fi;
+	$(IN_VENV) pip install -r requirements.txt && pip install -r dev-requirements.txt
+
+setup-git-hook-lint:
+	cp scripts/pre-commit-lint .git/hooks/pre-commit
+
+setup-git-hook-lint-and-test:
+	cp scripts/pre-commit-lint-and-test .git/hooks/pre-commit
+
+flake8:
+	$(IN_VENV) flake8 --max-complexity 11 planemo tests
 
 lint:
-	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; flake8 --max-complexity 11 planemo tests
+	$(IN_VENV) tox -e py27-lint && tox -e py34-lint
 
 lint-readme:
-	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; python setup.py check -r -s
+	$(IN_VENV) python setup.py check -r -s
 
 test:
-	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; nosetests tests planemo
+	$(IN_VENV) nosetests $(NOSE_TESTS)
+
+quick-test:
+	$(IN_VENV) PLANEMO_SKIP_GALAXY_TESTS=1 nosetests $(NOSE_TESTS)
+
+tox:
+	$(IN_VENV) tox -e $(ENV) -- $(ARGS)
 
 coverage:
 	coverage run --source planemo setup.py test
@@ -55,14 +87,16 @@ docs:
 	rm -f docs/planemo.rst
 	rm -f docs/planemo_ext.rst
 	rm -f docs/modules.rst
-	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; sphinx-apidoc -f -o docs/ planemo_ext planemo_ext/galaxy/eggs
-	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; sphinx-apidoc -f -o docs/ planemo
-	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; python scripts/commands_to_rst.py
-	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; $(MAKE) -C docs clean
-	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; $(MAKE) -C docs html
+	$(IN_VENV) sphinx-apidoc -f -o docs/ planemo_ext planemo_ext/galaxy/eggs
+	$(IN_VENV) sphinx-apidoc -f -o docs/ planemo
+	$(IN_VENV) python scripts/commands_to_rst.py
+	$(IN_VENV) $(MAKE) -C docs clean
+	$(IN_VENV) $(MAKE) -C docs html
 
-open-docs: docs
+_open-docs:
 	open docs/_build/html/index.html || xdg-open docs/_build/html/index.html
+
+open-docs: docs _open-docs
 
 open-rtd: docs
 	open https://planemo.readthedocs.org || xdg-open https://planemo.readthedocs.org
@@ -71,11 +105,11 @@ open-project:
 	open https://github.com/galaxyproject/planemo || xdg-open https://github.com/galaxyproject/planemo
 
 dist: clean
-	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; python setup.py sdist bdist_egg bdist_wheel
+	$(IN_VENV) python setup.py sdist bdist_egg bdist_wheel
 	ls -l dist
 
 release-test: dist
-	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; twine upload -r test dist/*
+	$(IN_VENV) twine upload -r test dist/*
 	open https://testpypi.python.org/pypi/planemo || xdg-open https://testpypi.python.org/pypi/planemo
 
 release: release-test
@@ -84,7 +118,7 @@ release: release-test
 	done ; \
 	[ $$CONTINUE = "y" ] || [ $$CONTINUE = "Y" ] || (echo "Exiting."; exit 1;)
 	@echo "Releasing"
-	if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi; twine upload dist/*
+	$(IN_VENV) twine upload dist/*
 
 update-extern:
 	sh scripts/update_extern.sh

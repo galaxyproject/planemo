@@ -17,7 +17,7 @@ Handle possible recursion through paths for uploading files to a toolshed
 **Options**::
 
 
-      --message TEXT               Commit message for tool shed upload.
+      -m, --message TEXT           Commit message for tool shed upload.
       --owner TEXT                 Tool Shed repository owner (username).
       --name TEXT                  Tool Shed repository name (defaults to the
                                    inferred tool directory name).
