@@ -172,6 +172,7 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
             id_secret="${id_secret}",
             log_level="${log_level}",
             debug="${debug}",
+            watch_tools="auto",
             tool_data_table_config_path=tool_data_table,
             integrated_tool_panel_config=("${temp_directory}/"
                                           "integrated_tool_panel_conf.xml"),
