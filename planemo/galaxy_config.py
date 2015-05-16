@@ -15,6 +15,7 @@ import click
 from planemo import galaxy_run
 from planemo.io import warn
 from planemo.io import shell
+from planemo.io import write_file
 from planemo import git
 
 NO_TEST_DATA_MESSAGE = (
@@ -38,6 +39,12 @@ TOOL_CONF_TEMPLATE = """<toolbox>
   ${tool_definition}
 </toolbox>
 """
+
+SHED_TOOL_CONF_TEMPLATE = """<?xml version="1.0"?>
+<toolbox tool_path="${shed_tools_path}">
+</toolbox>
+"""
+
 
 EMPTY_JOB_METRICS_TEMPLATE = """<?xml version="1.0"?>
 <job_metrics>
@@ -114,8 +121,10 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
         _handle_job_metrics(config_directory, kwds)
         tool_definition = _tool_conf_entry_for(tool_path)
         empty_tool_conf = config_join("empty_tool_conf.xml")
+        shed_tool_conf = config_join("shed_tool_conf.xml")
         tool_conf = config_join("tool_conf.xml")
         database_location = config_join("galaxy.sqlite")
+        shed_tools_path = config_join("shed_tools")
         preseeded_database = True
 
         try:
@@ -129,10 +138,13 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
             # No network access - just roll forward from null.
             preseeded_database = False
 
+        os.makedirs(shed_tools_path)
+
         template_args = dict(
             port=kwds.get("port", 9090),
             host="127.0.0.1",
             temp_directory=config_directory,
+            shed_tools_path=shed_tools_path,
             database_location=database_location,
             tool_definition=tool_definition % tool_path,
             tool_conf=tool_conf,
@@ -141,10 +153,11 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
             id_secret=kwds.get("id_secret", "test_secret"),
             log_level=kwds.get("log_level", "DEBUG"),
         )
+        tool_config_file = "%s,%s" % (tool_conf, shed_tool_conf)
         properties = dict(
             file_path="${temp_directory}/files",
             new_file_path="${temp_directory}/tmp",
-            tool_config_file=tool_conf,
+            tool_config_file=tool_config_file,
             check_migrate_tools="False",
             manage_dependency_relationships="False",
             job_working_directory="${temp_directory}/job_working_directory",
@@ -195,10 +208,13 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
         env["GALAXY_TEST_UPLOAD_ASYNC"] = "false"
         env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
         web_config = _sub(WEB_SERVER_CONFIG_TEMPLATE, template_args)
-        open(config_join("galaxy.ini"), "w").write(web_config)
+        write_file(config_join("galaxy.ini"), web_config)
         tool_conf_contents = _sub(TOOL_CONF_TEMPLATE, template_args)
-        open(tool_conf, "w").write(tool_conf_contents)
-        open(empty_tool_conf, "w").write(EMPTY_TOOL_CONF_TEMPLATE)
+        write_file(tool_conf, tool_conf_contents)
+        write_file(empty_tool_conf, EMPTY_TOOL_CONF_TEMPLATE)
+
+        shed_tool_conf_contents = _sub(SHED_TOOL_CONF_TEMPLATE, template_args)
+        write_file(shed_tool_conf, shed_tool_conf_contents)
 
         yield GalaxyConfig(galaxy_root, config_directory, env, test_data_dir)
     finally:
