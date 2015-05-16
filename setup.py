@@ -81,7 +81,8 @@ setup(
                               'xml/xsd/tool/citation.xsd',
                               'xml/xsd/tool/citations.xsd',
                               'reports/*',
-                             ] 
+                              'scripts/*',
+                             ],
                  },
     package_dir={'planemo': 'planemo',
                  'planemo_ext': 'planemo_ext'},
