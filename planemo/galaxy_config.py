@@ -99,9 +99,9 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
         test_data_dir=test_data_dir,
         **kwds
     )
-    if kwds.get("install_galaxy", None):
-        galaxy_root = None
-    else:
+    install_galaxy = kwds.get("install_galaxy", None)
+    galaxy_root = None
+    if not install_galaxy:
         galaxy_root = _find_galaxy_root(ctx, **kwds)
 
     config_directory = kwds.get("config_directory", None)
@@ -205,6 +205,8 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
         # retry_job_output_collection = 0
 
         env = _build_env_for_galaxy(properties, template_args)
+        if install_galaxy:
+            _build_eggs_cache(ctx, env, kwds)
         _build_test_env(properties, env)
 
         # No need to download twice - would GALAXY_TEST_DATABASE_CONNECTION
@@ -403,6 +405,16 @@ def _install_galaxy_via_git(ctx, config_directory, kwds):
     gx_repo = os.path.join(workspace, "gx_repo")
     command = git.command_clone(ctx, gx_repo, "galaxy-dev")
     _install_with_command(config_directory, command)
+
+
+def _build_eggs_cache(ctx, env, kwds):
+    if kwds.get("no_cache_galaxy", False):
+        return None
+    workspace = ctx.workspace
+    eggs_path = os.path.join(workspace, "gx_eggs")
+    if not os.path.exists(eggs_path):
+        os.makedirs(eggs_path)
+    env["GALAXY_EGGS_PATH"] = eggs_path
 
 
 def _install_with_command(config_directory, command):

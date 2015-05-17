@@ -117,7 +117,7 @@ def no_cache_galaxy_option():
     return click.option(
         "--no_cache_galaxy",
         is_flag=True,
-        help=("Skip caching of downloaded Galaxy obtained with "
+        help=("Skip caching of Galaxy source and dependencies obtained with "
               "--install_galaxy. Not caching this results in faster "
               "downloads (no git) - so is better on throw away instances such "
               "with TravisCI. ")
