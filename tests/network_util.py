@@ -18,6 +18,9 @@ def wait_net_service(server, port, timeout=None):
                  throw unhandled network exception
     """
     s = socket.socket()
+    # Following line prevents this method from interfering with process
+    # it is waiting for on localhost.
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     if timeout:
         end = now() + timeout
 
