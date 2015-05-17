@@ -41,6 +41,23 @@ def find_repository(tsi, owner, name):
         return matching_repos[0]
 
 
+def latest_installable_revision(tsi, repository_id):
+    info = tsi.repositories.show_repository(repository_id)
+    owner = info["owner"]
+    name = info["name"]
+    revisions = tsi.repositories.get_ordered_installable_revisions(
+        name, owner
+    )
+    if len(revisions) == 0:
+        msg = "Failed to find installable revisions for [{0}, {1}].".format(
+            owner,
+            name,
+        )
+        raise Exception(msg)
+    else:
+        return revisions[-1]
+
+
 def username(tsi):
     """ Fetch current username from shed given API key/auth.
     """

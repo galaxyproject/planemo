@@ -1,7 +1,9 @@
+import contextlib
 import os
 
 from planemo import galaxy_config
 from planemo import galaxy_run
+from planemo import io
 
 
 def serve(ctx, paths, **kwds):
@@ -35,3 +37,24 @@ def serve(ctx, paths, **kwds):
             action,
         )
         return config
+
+
+@contextlib.contextmanager
+def shed_serve(ctx, install_args_list, **kwds):
+    config = serve(ctx, [], daemon=True, **kwds)
+    install_deps = not kwds.get("skip_dependencies", False)
+    try:
+        io.info("Installing repositories - this may take some time...")
+        for install_args in install_args_list:
+            install_args["install_tool_dependencies"] = install_deps
+            install_args["install_repository_dependencies"] = True
+            install_args["new_tool_panel_section_label"] = "Shed Installs"
+            config.install_repo(
+                **install_args
+            )
+        config.wait_for_all_installed()
+        yield config
+    finally:
+        config.kill()
+        if not kwds.get("no_cleanup", False):
+            config.cleanup()

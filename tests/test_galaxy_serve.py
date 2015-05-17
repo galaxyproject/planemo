@@ -7,6 +7,7 @@ from .test_utils import (
 )
 from . import network_util
 from planemo import galaxy_serve
+from planemo import shed
 
 
 class GalaxyServeTestCase(CliTestCase):
@@ -36,3 +37,24 @@ class GalaxyServeTestCase(CliTestCase):
             config.port,
             timeout=.1,
         )
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_shed_serve_daemon(self):
+        port = network_util.get_free_port()
+        fastqc_path = os.path.join(TEST_REPOS_DIR, "fastqc")
+        ctx = self.test_context
+        install_args_list = shed.install_arg_lists(
+            ctx, [fastqc_path],
+            shed_target="toolshed",
+        )
+        with galaxy_serve.shed_serve(
+            ctx, install_args_list,
+            port=port,
+            skip_dependencies=True,
+            install_galaxy=True,
+        ) as config:
+            assert network_util.wait_net_service(
+                "localhost",
+                config.port,
+                timeout=.1,
+            )

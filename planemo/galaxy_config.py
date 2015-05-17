@@ -5,6 +5,7 @@ import contextlib
 import os
 import random
 import shutil
+import time
 from six.moves.urllib.request import urlopen
 from six import iteritems
 from string import Template
@@ -129,6 +130,7 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
         shed_tools_path = config_join("shed_tools")
         preseeded_database = True
         master_api_key = kwds.get("master_api_key", "test_key")
+        dependency_dir = os.path.join("config_directory", "deps")
 
         try:
             _download_database_template(
@@ -160,6 +162,7 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
         )
         tool_config_file = "%s,%s" % (tool_conf, shed_tool_conf)
         properties = dict(
+            tool_dependency_dir=dependency_dir,
             file_path="${temp_directory}/files",
             new_file_path="${temp_directory}/tmp",
             tool_config_file=tool_config_file,
@@ -276,6 +279,50 @@ class GalaxyConfig(object):
             url="http://localhost:%d" % self.port,
             key=self.master_api_key
         )
+
+    def install_repo(self, *args, **kwds):
+        self.tool_shed_client.install_repository_revision(
+            *args, **kwds
+        )
+
+    @property
+    def tool_shed_client(self):
+        return self.gi.toolShed
+
+    def wait_for_all_installed(self):
+        def status_ready(repo):
+            status = repo["status"]
+            if status in ["Installing", "New"]:
+                return False
+            if status == "Installed":
+                return True
+            raise Exception("Error installing repo status is %s" % status)
+
+        def not_ready():
+            repos = self.tool_shed_client.get_repositories()
+            return not all(map(status_ready, repos))
+
+        self._wait_for(not_ready)
+
+    # Taken from Galaxy's twilltestcase.
+    def _wait_for(self, func, **kwd):
+        sleep_amount = 0.2
+        slept = 0
+        walltime_exceeded = 1086400
+        while slept <= walltime_exceeded:
+            result = func()
+            if result:
+                time.sleep(sleep_amount)
+                slept += sleep_amount
+                sleep_amount *= 1.25
+                if slept + sleep_amount > walltime_exceeded:
+                    sleep_amount = walltime_exceeded - slept
+            else:
+                break
+        assert slept < walltime_exceeded, "Action taking too long."
+
+    def cleanup(self):
+        shutil.rmtree(self.config_directory)
 
 
 def _download_database_template(galaxy_root, database_location, latest=False):
@@ -502,8 +549,6 @@ def _handle_dependency_resolution(config_directory, kwds):
             )
             conf_contents = STOCK_DEPENDENCY_RESOLUTION_STRATEGIES[key]
             open(resolvers_conf, "w").write(conf_contents)
-            dependency_dir = os.path.join("config_directory", "deps")
-            kwds["tool_dependency_dir"] = dependency_dir
             kwds["dependency_resolvers_config_file"] = resolvers_conf
 
 
