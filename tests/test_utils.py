@@ -1,3 +1,4 @@
+
 """ Provide abstractions over click testing of the
 app and unittest.
 """
@@ -94,6 +95,12 @@ class CliTestCase(TestCase):
     def _copy_repo(self, name, dest):
         repo = os.path.join(TEST_REPOS_DIR, name)
         io.shell("cp -r '%s/.' '%s'" % (repo, dest))
+
+    @property
+    def test_context(self):
+        context = cli.Context()
+        context.planemo_directory = "/tmp/planemo-test-workspace"
+        return context
 
 
 class CliShedTestCase(CliTestCase):

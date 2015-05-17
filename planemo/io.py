@@ -4,6 +4,7 @@ import os
 import shutil
 import sys
 import tempfile
+import time
 
 import click
 from galaxy.tools.deps import commands
@@ -86,3 +87,30 @@ def temp_directory(prefix="planemo_tmp_"):
         yield temp_dir
     finally:
         shutil.rmtree(temp_dir)
+
+
+def kill_pid_file(pid_file):
+    if not os.path.exists(pid_file):
+        return
+
+    pid = int(open(pid_file, "r").read())
+    kill_posix(pid)
+
+
+def kill_posix(pid):
+    def _check_pid():
+        try:
+            os.kill(pid, 0)
+            return True
+        except OSError:
+            return False
+
+    if _check_pid():
+        for sig in [15, 9]:
+            try:
+                os.kill(pid, sig)
+            except OSError:
+                return
+            time.sleep(1)
+            if not _check_pid():
+                return

@@ -2,25 +2,20 @@
 API via requests.
 """
 import json
-try:
-    from bioblend import toolshed
-except ImportError:
-    toolshed = None
 from planemo.io import untar_to
+from planemo.bioblend import (
+    toolshed,
+    ensure_module,
+)
 
 REPOSITORY_DOWNLOAD_TEMPLATE = (
     "%srepository/download?repository_id=%s"
     "&changeset_revision=default&file_type=gz"
 )
 
-BIOBLEND_UNAVAILABLE = ("This functionality requires the bioblend library "
-                        " which is unavailable, please install `pip install "
-                        "bioblend`")
-
 
 def tool_shed_instance(url, key, email, password):
-    if toolshed is None:
-        raise Exception(BIOBLEND_UNAVAILABLE)
+    ensure_module(toolshed)
     tsi = toolshed.ToolShedInstance(
         url=url,
         key=key,

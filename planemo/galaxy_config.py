@@ -1,8 +1,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
-from collections import namedtuple
+
 import contextlib
 import os
+import random
 import shutil
 from six.moves.urllib.request import urlopen
 from six import iteritems
@@ -16,7 +17,13 @@ from planemo import galaxy_run
 from planemo.io import warn
 from planemo.io import shell
 from planemo.io import write_file
+from planemo.io import kill_pid_file
 from planemo import git
+from planemo.bioblend import (
+    galaxy,
+    ensure_module,
+)
+
 
 NO_TEST_DATA_MESSAGE = (
     "planemo couldn't find a target test-data directory, you should likely "
@@ -24,7 +31,7 @@ NO_TEST_DATA_MESSAGE = (
 )
 
 WEB_SERVER_CONFIG_TEMPLATE = """
-[server:main]
+[server:${server_name}]
 use = egg:Paste#http
 port = ${port}
 host = ${host}
@@ -83,11 +90,6 @@ FAILED_TO_FIND_GALAXY_EXCEPTION = (
     "with --galaxy_root."
 )
 
-GalaxyConfig = namedtuple(
-    'GalaxyConfig',
-    ['galaxy_root', 'config_directory', 'env', 'test_data_dir']
-)
-
 
 @contextlib.contextmanager
 def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
@@ -126,6 +128,7 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
         database_location = config_join("galaxy.sqlite")
         shed_tools_path = config_join("shed_tools")
         preseeded_database = True
+        master_api_key = kwds.get("master_api_key", "test_key")
 
         try:
             _download_database_template(
@@ -139,17 +142,19 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
             preseeded_database = False
 
         os.makedirs(shed_tools_path)
-
+        server_name = "planemo%d" % random.randint(0, 100000)
+        port = kwds.get("port", 9090)
         template_args = dict(
-            port=kwds.get("port", 9090),
+            port=port,
             host="127.0.0.1",
+            server_name=server_name,
             temp_directory=config_directory,
             shed_tools_path=shed_tools_path,
             database_location=database_location,
             tool_definition=tool_definition % tool_path,
             tool_conf=tool_conf,
             debug=kwds.get("debug", "true"),
-            master_api_key=kwds.get("master_api_key", "test_key"),
+            master_api_key=master_api_key,
             id_secret=kwds.get("id_secret", "test_secret"),
             log_level=kwds.get("log_level", "DEBUG"),
         )
@@ -217,11 +222,58 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
         shed_tool_conf_contents = _sub(SHED_TOOL_CONF_TEMPLATE, template_args)
         write_file(shed_tool_conf, shed_tool_conf_contents)
 
-        yield GalaxyConfig(galaxy_root, config_directory, env, test_data_dir)
+        yield GalaxyConfig(
+            galaxy_root,
+            config_directory,
+            env,
+            test_data_dir,
+            port,
+            server_name,
+            master_api_key,
+        )
     finally:
         cleanup = not kwds.get("no_cleanup", False)
         if created_config_directory and cleanup:
             shutil.rmtree(config_directory)
+
+
+class GalaxyConfig(object):
+
+    def __init__(
+        self,
+        galaxy_root,
+        config_directory,
+        env,
+        test_data_dir,
+        port,
+        server_name,
+        master_api_key,
+    ):
+        self.galaxy_root = galaxy_root
+        self.config_directory = config_directory
+        self.env = env
+        self.test_data_dir = test_data_dir
+        # Runtime server configuration stuff not used if testing...
+        # better design might be GalaxyRootConfig and GalaxyServerConfig
+        # as two separate objects.
+        self.port = port
+        self.server_name = server_name
+        self.master_api_key = master_api_key
+
+    def kill(self):
+        kill_pid_file(self.pid_file)
+
+    @property
+    def pid_file(self):
+        return os.path.join(self.galaxy_root, "%s.pid" % self.server_name)
+
+    @property
+    def gi(self):
+        ensure_module(galaxy)
+        return galaxy.GalaxyInstance(
+            url="http://localhost:%d" % self.port,
+            key=self.master_api_key
+        )
 
 
 def _download_database_template(galaxy_root, database_location, latest=False):

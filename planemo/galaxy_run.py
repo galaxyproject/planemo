@@ -12,7 +12,7 @@ DOWNLOAD_GALAXY = (
 )
 
 
-def run_galaxy_command(ctx, command, env, action):
+def run_galaxy_command(ctx, command, env, action, daemon=False):
     message = "%s with command [%s]" % (action, command)
     info(message)
     ctx.vlog("With environment variables:")
