@@ -107,9 +107,11 @@ class PlanemoCLI(click.MultiCommand):
               help='Enables verbose mode.')
 @click.option('--config',
               default="~/.planemo.yml",
+              envvar="PLANEMO_GLOBAL_CONFIG_PATH",
               help="Planemo configuration YAML file.")
 @click.option('--directory',
               default="~/.planemo",
+              envvar="PLANEMO_GLOBAL_WORKSPACE",
               help="Workspace for planemo.")
 @pass_context
 def planemo(ctx, config, directory, verbose):
