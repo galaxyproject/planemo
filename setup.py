@@ -52,6 +52,7 @@ setup(
     packages=[
         'planemo',
         'planemo.commands',
+        'planemo.galaxy_test',
         'planemo.linters',
         'planemo.reports',
         'planemo.shed',
