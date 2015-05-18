@@ -43,5 +43,5 @@ def cli(ctx, path, **kwds):
     def download(realized_repository):
         return shed.download_tarball(ctx, tsi, realized_repository, **kwds)
 
-    exit_code = shed.for_each_repository(download, path, **kwds)
+    exit_code = shed.for_each_repository(ctx, download, path, **kwds)
     sys.exit(exit_code)

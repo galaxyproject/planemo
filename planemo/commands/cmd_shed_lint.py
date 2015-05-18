@@ -28,5 +28,5 @@ def cli(ctx, path, **kwds):
         return shed_lint.lint_repository(ctx, realized_repository, **kwds)
 
     kwds["fail_on_missing"] = False
-    exit_code = shed.for_each_repository(lint, path, **kwds)
+    exit_code = shed.for_each_repository(ctx, lint, path, **kwds)
     sys.exit(exit_code)

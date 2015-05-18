@@ -329,13 +329,7 @@ def find_repository_id(ctx, tsi, path, **kwds):
 
 
 def _find_repository_id(ctx, tsi, name, repo_config, **kwds):
-    global_config = getattr(ctx, "global_config", {})
-    owner = kwds.get("owner", None) or repo_config.get("owner", None)
-    if owner is None:
-        owner = global_config.get("shed_username", None)
-    if owner is None:
-        owner = username(tsi)
-
+    owner = _owner(ctx, repo_config, tsi, **kwds)
     matching_repository = find_repository(tsi, owner, name)
     if matching_repository is None:
         if not kwds.get("allow_none", False):
@@ -346,6 +340,19 @@ def _find_repository_id(ctx, tsi, name, repo_config, **kwds):
     else:
         repo_id = matching_repository["id"]
         return repo_id
+
+
+def _owner(ctx, repo_config, tsi=None, **kwds):
+    global_config = getattr(ctx, "global_config", {})
+    owner = kwds.get("owner", None) or repo_config.get("owner", None)
+    if owner is None:
+        owner = global_config.get("shed_username", None)
+    if owner is None:
+        if tsi is None and "shed_target" in kwds:
+            tsi = tool_shed_client(ctx, **kwds)
+        if tsi is not None:
+            owner = username(tsi)
+    return owner
 
 
 def _expand_raw_config(config, path, name=None):
@@ -523,12 +530,12 @@ def build_tarball(realized_path, **kwds):
     return temp_path
 
 
-def for_each_repository(function, path, **kwds):
+def for_each_repository(ctx, function, path, **kwds):
     ret_codes = []
     with _path_on_disk(path) as raw_path:
         try:
             for realized_repository in _realize_effective_repositories(
-                raw_path, **kwds
+                ctx, raw_path, **kwds
             ):
                 ret_codes.append(
                     function(realized_repository)
@@ -564,7 +571,7 @@ def _tool_shed_url(kwds):
     return url
 
 
-def _realize_effective_repositories(path, **kwds):
+def _realize_effective_repositories(ctx, path, **kwds):
     """ Expands folders in a source code repository into tool shed
     repositories.
 
@@ -583,8 +590,9 @@ def _realize_effective_repositories(path, **kwds):
                 continue
 
             realized_repos = raw_repo_object.realizations(
+                ctx,
                 base_dir,
-                kwds.get("fail_on_missing", True)
+                **kwds
             )
             for realized_repo in realized_repos:
                 if isinstance(realized_repo, Exception):
@@ -765,7 +773,7 @@ class RawRepositoryDirectory(object):
     def _hash(self, name):
         return hashlib.md5(name.encode('utf-8')).hexdigest()
 
-    def realizations(self, parent_directory, fail_on_missing=True):
+    def realizations(self, ctx, parent_directory, **kwds):
         names = self._repo_names()
 
         for name in names:
@@ -773,11 +781,17 @@ class RawRepositoryDirectory(object):
             multiple = self.multiple or len(names) > 1
             if not os.path.exists(directory):
                 os.makedirs(directory)
-            yield self._realize_to(directory, name, multiple, fail_on_missing)
+            r_kwds = kwds.copy()
+            if "name" in r_kwds:
+                del r_kwds["name"]
+            yield self._realize_to(ctx, directory, name, multiple, **r_kwds)
 
-    def _realize_to(self, directory, name, multiple, fail_on_missing):
+    def _realize_to(self, ctx, directory, name, multiple, **kwds):
+        fail_on_missing = kwds.get("fail_on_missing", True)
         ignore_list = []
         config = self._realize_config(name)
+        config["owner"] = _owner(ctx, config, **kwds)
+
         excludes = _shed_config_excludes(config)
         for exclude in excludes:
             ignore_list.extend(_glob(self.path, exclude))
@@ -958,6 +972,10 @@ class RealizedRepositry(object):
         self.name = config["name"]
         self.multiple = multiple
         self.missing = missing
+
+    @property
+    def owner(self):
+        return self.config["owner"]
 
     @property
     def repository_type(self):

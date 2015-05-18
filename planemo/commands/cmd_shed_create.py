@@ -37,5 +37,5 @@ def cli(ctx, path, **kwds):
         else:
             return 1
 
-    exit_code = shed.for_each_repository(create, path, **kwds)
+    exit_code = shed.for_each_repository(ctx, create, path, **kwds)
     sys.exit(exit_code)

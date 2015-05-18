@@ -65,5 +65,5 @@ def cli(ctx, path, **kwds):
     def upload(realized_repository):
         return shed.upload_repository(ctx, realized_repository, **kwds)
 
-    exit_code = shed.for_each_repository(upload, path, **kwds)
+    exit_code = shed.for_each_repository(ctx, upload, path, **kwds)
     sys.exit(exit_code)

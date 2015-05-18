@@ -59,6 +59,13 @@ def get_categories():
     return json.dumps(categories)
 
 
+@app.route("/api/users")
+def get_users():
+    return json.dumps([{
+        "username": "iuc"
+    }])
+
+
 @app.route("/repository/download")
 def repository_download():
     id = request.args.get("repository_id", None)
