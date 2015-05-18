@@ -27,11 +27,11 @@ http://www.ncbi.nlm.nih.gov/pubmed/23024011.
       --port INTEGER                  Port to serve Galaxy on (default is 9090).
       --install_galaxy                Download and configure a disposable copy of
                                       Galaxy from github.
-      --no_cache_galaxy               Skip caching of downloaded Galaxy obtained
-                                      with --install_galaxy. Not caching this
-                                      results in faster downloads (no git) - so is
-                                      better on throw away instances such with
-                                      TravisCI.
+      --no_cache_galaxy               Skip caching of Galaxy source and
+                                      dependencies obtained with --install_galaxy.
+                                      Not caching this results in faster downloads
+                                      (no git) - so is better on throw away
+                                      instances such with TravisCI.
       --no_cleanup                    Do not cleanup temp files created for and by
                                       Galaxy.
       --test_data DIRECTORY           test-data directory to for specified

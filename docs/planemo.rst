@@ -16,6 +16,14 @@ Subpackages
 Submodules
 ----------
 
+planemo.bioblend module
+-----------------------
+
+.. automodule:: planemo.bioblend
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.cli module
 ------------------
 
