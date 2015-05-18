@@ -7,16 +7,7 @@ from planemo import options
 
 @click.command('serve')
 @options.optional_tools_arg()
-@options.galaxy_root_option()
-@options.galaxy_port_option()
-@options.install_galaxy_option()
-@options.no_cache_galaxy_option()
-@options.no_cleanup_option()
-@options.test_data_option()
-@options.dependency_resolvers_option()
-@options.job_config_option()
-@options.tool_dependency_dir_option()
-@options.brew_dependency_resolution()
+@options.galaxy_serve_options()
 @pass_context
 def cli(ctx, path, **kwds):
     """Launch a Galaxy instance with the specified tool in the tool panel.

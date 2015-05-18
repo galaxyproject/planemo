@@ -18,18 +18,12 @@ tar_path = click.Path(
 
 
 @click.command("shed_upload")
-@options.shed_project_arg()
+@options.shed_publish_options()
 @click.option(
     '-m',
     '--message',
     help="Commit message for tool shed upload."
 )
-@options.shed_owner_option()
-@options.shed_name_option()
-@options.shed_target_option()
-@options.shed_key_option()
-@options.shed_email_option()
-@options.shed_password_option()
 @click.option(
     '--tar_only',
     is_flag=True,
@@ -56,8 +50,6 @@ tar_path = click.Path(
          "'difference' (only attributes populated by the shed would would "
          "be updated.)"
 )
-@options.recursive_shed_option()
-@options.shed_fail_fast_option()
 @pass_context
 def cli(ctx, path, **kwds):
     """Handle possible recursion through paths for uploading files to a toolshed

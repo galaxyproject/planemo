@@ -11,15 +11,7 @@ from planemo.io import info
 
 
 @click.command("shed_create")
-@options.shed_project_arg()
-@options.shed_owner_option()
-@options.shed_name_option()
-@options.shed_target_option()
-@options.shed_key_option()
-@options.shed_email_option()
-@options.shed_password_option()
-@options.recursive_shed_option()
-@options.shed_fail_fast_option()
+@options.shed_publish_options()
 @pass_context
 def cli(ctx, path, **kwds):
     """Create a repository in a Galaxy Tool Shed from a ``.shed.yml`` file.

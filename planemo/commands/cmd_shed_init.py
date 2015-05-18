@@ -37,8 +37,7 @@ from planemo import shed
     help='Specify repository category for .shed.yml (may specify multiple).',
     type=click.Choice(shed.CURRENT_CATEGORIES)
 )
-@options.shed_owner_option()
-@options.shed_name_option()
+@options.shed_repo_options()
 @options.force_option()
 @pass_context
 def cli(ctx, path, **kwds):

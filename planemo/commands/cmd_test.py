@@ -91,16 +91,8 @@ OUTPUT_DFEAULTS = {
          "previously.",
     default=False,
 )
-@options.galaxy_root_option()
-@options.install_galaxy_option()
-@options.no_cache_galaxy_option()
-@options.no_cleanup_option()
-@options.test_data_option()
-@options.tool_data_table_option()
-@options.dependency_resolvers_option()
-@options.job_config_option()
-@options.tool_dependency_dir_option()
-@options.brew_dependency_resolution()
+@options.galaxy_target_options()
+@options.galaxy_config_options()
 @options.shed_dependency_resolution()
 @pass_context
 def cli(ctx, path, **kwds):
