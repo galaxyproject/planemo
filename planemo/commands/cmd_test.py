@@ -1,4 +1,3 @@
-import os
 import sys
 
 import click
@@ -7,57 +6,14 @@ from planemo.cli import pass_context
 from planemo import options
 from planemo import galaxy_config
 
-from planemo.galaxy_test import run_in_config
-
-OUTPUT_DFEAULTS = {
-    "output": "tool_test_output.html",
-    "output_json": "tool_test_output.json",
-    "output_xunit": None,
-}
+from planemo.galaxy_test import (
+    run_in_config,
+    process_defaults,
+)
 
 
 @click.command('test')
 @options.optional_tools_arg(multiple=True)
-@click.option(
-    "--test_output",
-    type=click.Path(file_okay=True, resolve_path=True),
-    help=("Output test report (HTML - for humans) defaults to "
-          "tool_test_output.html."),
-    default=None,
-)
-@click.option(
-    "--test_output_xunit",
-    type=click.Path(file_okay=True, resolve_path=True),
-    help="Output test report (xUnit style - for computers).",
-    default=None,
-)
-@click.option(
-    "--test_output_json",
-    type=click.Path(file_okay=True, resolve_path=True),
-    help=("Output test report (planemo json) defaults to "
-          "tool_test_output.json."),
-    default=None,
-)
-@click.option(
-    "--job_output_files",
-    type=click.Path(file_okay=False, resolve_path=True),
-    help="Write job outputs to specified directory.",
-    default=None,
-)
-@click.option(
-    "--update_test_data",
-    is_flag=True,
-    help="Update test-data directory with job outputs (normally written to "
-         "directory --job_output_files if specified.)"
-)
-@click.option(
-    "--summary",
-    type=click.Choice(['none', 'minimal', 'compact']),
-    default="minimal",
-    help=("Summary style printed to planemo's standard output (see output "
-          "reports for more complete summary). Set to 'none' to disable "
-          "completely.")
-)
 @click.option(
     "--failed",
     is_flag=True,
@@ -69,7 +25,7 @@ OUTPUT_DFEAULTS = {
 )
 @options.galaxy_target_options()
 @options.galaxy_config_options()
-@options.shed_dependency_resolution()
+@options.test_options()
 @pass_context
 def cli(ctx, paths, **kwds):
     """Run the tests in the specified tool tests in a Galaxy instance.
@@ -99,27 +55,10 @@ def cli(ctx, paths, **kwds):
     against that same Galaxy root - but this may not be bullet proof yet so
     please careful and do not try this against production Galaxy instances.
     """
-    for name, default in OUTPUT_DFEAULTS.items():
-        _populate_default_output(ctx, name, kwds, default)
+    process_defaults(ctx, kwds)
 
     kwds["for_tests"] = True
     with galaxy_config.galaxy_config(ctx, paths, **kwds) as config:
         return_value = run_in_config(ctx, config, **kwds)
         if return_value:
             sys.exit(return_value)
-
-
-def _populate_default_output(ctx, type, kwds, default):
-    kwd_key = "test_%s" % type
-    kwd_value = kwds.get(kwd_key, None)
-    if kwd_value is None:
-        global_config = ctx.global_config
-        global_config_key = "default_test_%s" % type
-        if global_config_key in global_config:
-            default_value = global_config[global_config_key]
-        else:
-            default_value = default
-
-        if default_value:
-            default_value = os.path.abspath(default_value)
-        kwds[kwd_key] = default_value

@@ -461,6 +461,51 @@ def recursive_option(help="Recursively perform command for subdirectories."):
     )
 
 
+def test_options():
+    return _compose(
+        click.option(
+            "--update_test_data",
+            is_flag=True,
+            help="Update test-data directory with job outputs (normally"
+                 " written to directory --job_output_files if specified.)"
+        ),
+        click.option(
+            "--test_output",
+            type=click.Path(file_okay=True, resolve_path=True),
+            help=("Output test report (HTML - for humans) defaults to "
+                  "tool_test_output.html."),
+            default=None,
+        ),
+        click.option(
+            "--test_output_xunit",
+            type=click.Path(file_okay=True, resolve_path=True),
+            help="Output test report (xUnit style - for computers).",
+            default=None,
+        ),
+        click.option(
+            "--test_output_json",
+            type=click.Path(file_okay=True, resolve_path=True),
+            help=("Output test report (planemo json) defaults to "
+                  "tool_test_output.json."),
+            default=None,
+        ),
+        click.option(
+            "--job_output_files",
+            type=click.Path(file_okay=False, resolve_path=True),
+            help="Write job outputs to specified directory.",
+            default=None,
+        ),
+        click.option(
+            "--summary",
+            type=click.Choice(['none', 'minimal', 'compact']),
+            default="minimal",
+            help=("Summary style printed to planemo's standard output (see "
+                  "output reports for more complete summary). Set to 'none' "
+                  "to disable completely.")
+        )
+    )
+
+
 def _compose(*functions):
     def compose2(f, g):
         return lambda x: f(g(x))

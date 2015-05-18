@@ -20,11 +20,13 @@ class GalaxyTestCommand(object):
         xunit_report_file,
         structured_report_file,
         failed=False,
+        installed=False,
     ):
         self.html_report_file = html_report_file
         self.xunit_report_file = xunit_report_file
         self.structured_report_file = structured_report_file
         self.failed = failed
+        self.installed = installed
 
     def build(self):
         xunit_report_file = self.xunit_report_file
@@ -38,11 +40,14 @@ class GalaxyTestCommand(object):
             sd_arg = "--structured_data_report_file %s" % sd_report_file
         else:
             sd_arg = ""
-        tests = "functional.test_toolbox"
-        if self.failed:
-            sd = StructuredData(self.structured_report_file)
-            failed_ids = sd.failed_ids
-            tests = " ".join(failed_ids)
+        if self.installed:
+            tests = "-installed"
+        else:
+            tests = "functional.test_toolbox"
+            if self.failed:
+                sd = StructuredData(self.structured_report_file)
+                failed_ids = sd.failed_ids
+                tests = " ".join(failed_ids)
         return RUN_TESTS_CMD % (html_report_file, xunit_arg, sd_arg, tests)
 
 

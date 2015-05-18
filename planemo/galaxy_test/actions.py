@@ -48,7 +48,8 @@ def run_in_config(ctx, config, **kwds):
         html_report_file,
         xunit_report_file,
         structured_report_file,
-        failed=kwds["failed"],
+        failed=kwds.get("failed", False),
+        installed=kwds.get("installed", False),
     ).build()
     cmd = "; ".join([
         cd_to_galaxy_command,

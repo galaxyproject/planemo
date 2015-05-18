@@ -124,13 +124,13 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
         _handle_job_metrics(config_directory, kwds)
         tool_definition = _tool_conf_entry_for(tool_paths)
         empty_tool_conf = config_join("empty_tool_conf.xml")
-        shed_tool_conf = config_join("shed_tool_conf.xml")
+        shed_tool_conf = _shed_tool_conf(install_galaxy, config_directory)
         tool_conf = config_join("tool_conf.xml")
         database_location = config_join("galaxy.sqlite")
         shed_tools_path = config_join("shed_tools")
         preseeded_database = True
         master_api_key = kwds.get("master_api_key", "test_key")
-        dependency_dir = os.path.join("config_directory", "deps")
+        dependency_dir = os.path.join(config_directory, "deps")
 
         try:
             _download_database_template(
@@ -211,6 +211,7 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
         if install_galaxy:
             _build_eggs_cache(ctx, env, kwds)
         _build_test_env(properties, env)
+        env['GALAXY_TEST_SHED_TOOL_CONF'] = shed_tool_conf
 
         # No need to download twice - would GALAXY_TEST_DATABASE_CONNECTION
         # work?
@@ -440,6 +441,14 @@ def _tool_conf_entry_for(tool_paths):
     return tool_definitions
 
 
+def _shed_tool_conf(install_galaxy, config_directory):
+    if install_galaxy:
+        config_dir = os.path.join(config_directory, "galaxy-dev", "config")
+    else:
+        config_dir = config_directory
+    return os.path.join(config_dir, "shed_tool_conf.xml")
+
+
 def _install_galaxy_if_needed(ctx, config_directory, kwds):
     installed = False
     if kwds.get("install_galaxy", None):
@@ -512,7 +521,6 @@ def _build_test_env(properties, env):
     # https://bitbucket.org/galaxy/galaxy-central/commits/d7dd1f9
     test_property_variants = {
         'GALAXY_TEST_MIGRATED_TOOL_CONF': 'migrated_tools_config',
-        'GALAXY_TEST_SHED_TOOL_CONF': 'migrated_tools_config',  # Hack
         'GALAXY_TEST_TOOL_CONF': 'tool_config_file',
         'GALAXY_TEST_FILE_DIR': 'test_data_dir',
         'GALAXY_TOOL_DEPENDENCY_DIR': 'tool_dependency_dir',
