@@ -82,6 +82,15 @@ OUTPUT_DFEAULTS = {
           "reports for more complete summary). Set to 'none' to disable "
           "completely.")
 )
+@click.option(
+    "--failed",
+    is_flag=True,
+    help="Re-run only failed tests. This command will read "
+         "tool_test_output.json to determine which tests failed so this "
+         "file must have been produced with the same set of tool ids "
+         "previously.",
+    default=False,
+)
 @options.galaxy_root_option()
 @options.install_galaxy_option()
 @options.no_cache_galaxy_option()
@@ -149,6 +158,7 @@ def cli(ctx, path, **kwds):
             html_report_file,
             xunit_report_file,
             structured_report_file,
+            failed=kwds["failed"],
         ).build()
         cmd = "; ".join([
             cd_to_galaxy_command,
