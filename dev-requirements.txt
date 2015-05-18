@@ -2,6 +2,7 @@
 flask
 
 # For testing
+tox
 nose
 coverage
 
