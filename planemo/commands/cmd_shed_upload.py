@@ -51,11 +51,11 @@ tar_path = click.Path(
          "be updated.)"
 )
 @pass_context
-def cli(ctx, path, **kwds):
+def cli(ctx, paths, **kwds):
     """Handle possible recursion through paths for uploading files to a toolshed
     """
     def upload(realized_repository):
         return shed.upload_repository(ctx, realized_repository, **kwds)
 
-    exit_code = shed.for_each_repository(ctx, upload, path, **kwds)
+    exit_code = shed.for_each_repository(ctx, upload, paths, **kwds)
     sys.exit(exit_code)

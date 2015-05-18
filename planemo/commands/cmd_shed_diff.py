@@ -31,7 +31,7 @@ from planemo import shed
          "populated by the Tool Shed.",
 )
 @pass_context
-def cli(ctx, path, **kwds):
+def cli(ctx, paths, **kwds):
     """Produce diff between local repository and Tool Shed contents.
 
     By default, this will produce a diff between this repository and what
@@ -53,5 +53,5 @@ def cli(ctx, path, **kwds):
     def diff(realized_repository):
         return shed.diff_repo(ctx, realized_repository, **kwds)
 
-    exit_code = shed.for_each_repository(ctx, diff, path, **kwds)
+    exit_code = shed.for_each_repository(ctx, diff, paths, **kwds)
     sys.exit(exit_code)

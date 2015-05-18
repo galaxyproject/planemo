@@ -6,10 +6,10 @@ from planemo import options
 
 
 @click.command('serve')
-@options.optional_tools_arg()
+@options.optional_tools_arg(multiple=True)
 @options.galaxy_serve_options()
 @pass_context
-def cli(ctx, path, **kwds):
+def cli(ctx, paths, **kwds):
     """Launch a Galaxy instance with the specified tool in the tool panel.
 
     The Galaxy tool panel will include just the referenced tool or tools (by
@@ -27,4 +27,4 @@ def cli(ctx, path, **kwds):
     proof yet so please careful and do not try this against production Galaxy
     instances.
     """
-    galaxy_serve.serve(ctx, path, **kwds)
+    galaxy_serve.serve(ctx, paths, **kwds)

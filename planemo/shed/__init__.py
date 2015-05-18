@@ -530,19 +530,20 @@ def build_tarball(realized_path, **kwds):
     return temp_path
 
 
-def for_each_repository(ctx, function, path, **kwds):
+def for_each_repository(ctx, function, paths, **kwds):
     ret_codes = []
-    with _path_on_disk(path) as raw_path:
-        try:
-            for realized_repository in _realize_effective_repositories(
-                ctx, raw_path, **kwds
-            ):
-                ret_codes.append(
-                    function(realized_repository)
-                )
-        except RealizationException:
-            error(REALIZAION_PROBLEMS_MESSAGE)
-            return 254
+    for path in paths:
+        with _path_on_disk(path) as raw_path:
+            try:
+                for realized_repository in _realize_effective_repositories(
+                    ctx, raw_path, **kwds
+                ):
+                    ret_codes.append(
+                        function(realized_repository)
+                    )
+            except RealizationException:
+                error(REALIZAION_PROBLEMS_MESSAGE)
+                return 254
 
     # "Good" returns are Nones, everything else is a -1 and should be
     # passed upwards.

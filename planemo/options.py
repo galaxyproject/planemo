@@ -188,7 +188,7 @@ class ProjectOrRepositry(click.Path):
             return super(ProjectOrRepositry, self).convert(value, param, ctx)
 
 
-def shed_project_arg():
+def shed_project_arg(multiple=True):
     arg_type = ProjectOrRepositry(
         exists=True,
         file_okay=False,
@@ -196,11 +196,15 @@ def shed_project_arg():
         writable=True,
         resolve_path=True,
     )
+    name = 'paths' if multiple else 'path'
+    nargs = -1 if multiple else 1
     return click.argument(
-        'path',
+        name,
         metavar="PROJECT",
         default=".",
         type=arg_type,
+        nargs=nargs,
+        callback=_optional_tools_default,
     )
 
 
@@ -313,7 +317,7 @@ def shed_password_option():
 
 def shed_realization_options():
     return _compose(
-        shed_project_arg(),
+        shed_project_arg(multiple=True),
         recursive_shed_option(),
         shed_fail_fast_option(),
     )

@@ -10,7 +10,7 @@ from planemo.tool_lint import lint_tools_on_path
 
 
 @click.command('lint')
-@options.optional_tools_arg(-1)
+@options.optional_tools_arg(multiple=True)
 @options.report_level_option()
 @options.fail_level_option()
 @options.skip_option()

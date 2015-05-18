@@ -17,7 +17,7 @@ OUTPUT_DFEAULTS = {
 
 
 @click.command('test')
-@options.optional_tools_arg()
+@options.optional_tools_arg(multiple=True)
 @click.option(
     "--test_output",
     type=click.Path(file_okay=True, resolve_path=True),
@@ -71,7 +71,7 @@ OUTPUT_DFEAULTS = {
 @options.galaxy_config_options()
 @options.shed_dependency_resolution()
 @pass_context
-def cli(ctx, path, **kwds):
+def cli(ctx, paths, **kwds):
     """Run the tests in the specified tool tests in a Galaxy instance.
 
     All referenced tools (by default all the tools in the current working
@@ -103,7 +103,7 @@ def cli(ctx, path, **kwds):
         _populate_default_output(ctx, name, kwds, default)
 
     kwds["for_tests"] = True
-    with galaxy_config.galaxy_config(ctx, path, **kwds) as config:
+    with galaxy_config.galaxy_config(ctx, paths, **kwds) as config:
         return_value = run_in_config(ctx, config, **kwds)
         if return_value:
             sys.exit(return_value)

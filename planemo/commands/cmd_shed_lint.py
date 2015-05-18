@@ -19,12 +19,12 @@ from planemo import shed_lint
 )
 @options.lint_xsd_option()
 @pass_context
-def cli(ctx, path, **kwds):
+def cli(ctx, paths, **kwds):
     """Check a Tool Shed repository for common problems.
     """
     def lint(realized_repository):
         return shed_lint.lint_repository(ctx, realized_repository, **kwds)
 
     kwds["fail_on_missing"] = False
-    exit_code = shed.for_each_repository(ctx, lint, path, **kwds)
+    exit_code = shed.for_each_repository(ctx, lint, paths, **kwds)
     sys.exit(exit_code)

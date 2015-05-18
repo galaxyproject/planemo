@@ -29,7 +29,7 @@ target_path = click.Path(
          "simpler repositories will just be downloaded to the specified file."
 )
 @pass_context
-def cli(ctx, path, **kwds):
+def cli(ctx, paths, **kwds):
     """Download a tool repository as a tarball from the tool shed and extract
     to the specified directory.
     """
@@ -38,5 +38,5 @@ def cli(ctx, path, **kwds):
     def download(realized_repository):
         return shed.download_tarball(ctx, tsi, realized_repository, **kwds)
 
-    exit_code = shed.for_each_repository(ctx, download, path, **kwds)
+    exit_code = shed.for_each_repository(ctx, download, paths, **kwds)
     sys.exit(exit_code)

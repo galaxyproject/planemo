@@ -13,7 +13,7 @@ from planemo.io import info
 @click.command("shed_create")
 @options.shed_publish_options()
 @pass_context
-def cli(ctx, path, **kwds):
+def cli(ctx, paths, **kwds):
     """Create a repository in a Galaxy Tool Shed from a ``.shed.yml`` file.
     """
     tsi = shed.tool_shed_client(ctx, **kwds)
@@ -29,5 +29,5 @@ def cli(ctx, path, **kwds):
         else:
             return 1
 
-    exit_code = shed.for_each_repository(ctx, create, path, **kwds)
+    exit_code = shed.for_each_repository(ctx, create, paths, **kwds)
     sys.exit(exit_code)

@@ -92,10 +92,10 @@ FAILED_TO_FIND_GALAXY_EXCEPTION = (
 
 
 @contextlib.contextmanager
-def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
-    test_data_dir = _find_test_data(tool_path, **kwds)
+def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
+    test_data_dir = _find_test_data(tool_paths, **kwds)
     tool_data_table = _find_tool_data_table(
-        tool_path,
+        tool_paths,
         test_data_dir=test_data_dir,
         **kwds
     )
@@ -121,7 +121,7 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
 
         _handle_dependency_resolution(config_directory, kwds)
         _handle_job_metrics(config_directory, kwds)
-        tool_definition = _tool_conf_entry_for(tool_path)
+        tool_definition = _tool_conf_entry_for(tool_paths)
         empty_tool_conf = config_join("empty_tool_conf.xml")
         shed_tool_conf = config_join("shed_tool_conf.xml")
         tool_conf = config_join("tool_conf.xml")
@@ -151,7 +151,7 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
             temp_directory=config_directory,
             shed_tools_path=shed_tools_path,
             database_location=database_location,
-            tool_definition=tool_definition % tool_path,
+            tool_definition=tool_definition,
             tool_conf=tool_conf,
             debug=kwds.get("debug", "true"),
             master_api_key=master_api_key,
@@ -333,7 +333,11 @@ def _find_galaxy_root(ctx, **kwds):
     raise Exception(FAILED_TO_FIND_GALAXY_EXCEPTION)
 
 
-def _find_test_data(path, **kwds):
+def _find_test_data(tool_paths, **kwds):
+    path = "."
+    if len(tool_paths) > 0:
+        path = tool_paths[0]
+
     # Find test data directory associated with path.
     test_data = kwds.get("test_data", None)
     if test_data:
@@ -346,7 +350,11 @@ def _find_test_data(path, **kwds):
     return None
 
 
-def _find_tool_data_table(path, test_data_dir, **kwds):
+def _find_tool_data_table(tool_paths, test_data_dir, **kwds):
+    path = "."
+    if len(tool_paths) > 0:
+        path = tool_paths[0]
+
     tool_data_table = kwds.get("tool_data_table", None)
     if tool_data_table:
         return os.path.abspath(tool_data_table)
@@ -375,12 +383,14 @@ def _search_tool_path_for(path, target, extra_paths=[]):
     return None
 
 
-def _tool_conf_entry_for(tool_path):
-    if os.path.isdir(tool_path):
-        tool_definition = '''<tool_dir dir="%s" />'''
-    else:
-        tool_definition = '''<tool file="%s" />'''
-    return tool_definition
+def _tool_conf_entry_for(tool_paths):
+    tool_definitions = ""
+    for tool_path in tool_paths:
+        if os.path.isdir(tool_path):
+            tool_definitions += '''<tool_dir dir="%s" />''' % tool_path
+        else:
+            tool_definitions += '''<tool file="%s" />''' % tool_path
+    return tool_definitions
 
 
 def _install_galaxy_if_needed(ctx, config_directory, kwds):
