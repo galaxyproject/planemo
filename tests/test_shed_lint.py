@@ -55,3 +55,10 @@ class ShedLintTestCase(CliTestCase):
             r = self._check_exit_code(["shed_lint", "--fail_fast"],
                                       exit_code=-1)
             assert isinstance(r.exception, RuntimeError)
+
+    def test_ensure_metadata(self):
+        with self._isolate_repo("single_tool"):
+            self._check_exit_code(["shed_lint"])
+        with self._isolate_repo("single_tool_exclude"):
+            self._check_exit_code(["shed_lint", "--ensure_metadata"],
+                                  exit_code=-1)
