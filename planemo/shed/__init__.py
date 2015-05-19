@@ -177,7 +177,7 @@ def upload_repository(ctx, realized_repository, **kwds):
     tar_path = kwds.get("tar", None)
     if not tar_path:
         tar_path = build_tarball(path, **kwds)
-    if kwds["tar_only"]:
+    if kwds.get("tar_only", False):
         name = realized_repository.pattern_to_file_name("shed_upload.tar.gz")
         shell("cp '%s' '%s'" % (tar_path, name))
         return 0
@@ -194,7 +194,7 @@ def upload_repository(ctx, realized_repository, **kwds):
         error("Repository [%s] does not exist in the targeted Tool Shed." % name)
         return -1
 
-    if kwds["check_diff"]:
+    if kwds.get("check_diff", False):
         is_diff = diff_repo(ctx, realized_repository, **kwds)
         if not is_diff:
             name = realized_repository.name
@@ -475,6 +475,34 @@ def _build_suite_repo(config, repos, suite_config):
     repos[name] = repo
 
 
+def update_repository_for(ctx, tsi, id, repo_config):
+    # TODO: enforce no "type" change.
+    from bioblend.galaxy.client import Client
+    description = repo_config.get("description", None)
+    long_description = repo_config.get("long_description", None)
+    remote_repository_url = repo_config.get("remote_repository_url", None)
+    homepage_url = repo_config.get("homepage_url", None)
+    categories = repo_config.get("categories", [])
+    category_ids = find_category_ids(tsi, categories)
+
+    _ensure_shed_description(description)
+
+    kwds = dict(
+        name=repo_config["name"],
+        synopsis=description,
+    )
+    if long_description is not None:
+        kwds["description"] = long_description
+    if remote_repository_url is not None:
+        kwds["remote_repository_url"] = remote_repository_url
+    if homepage_url is not None:
+        kwds["homepage_url"] = homepage_url
+    if category_ids is not None:
+        kwds['category_ids[]'] = category_ids
+    repo = Client._put(tsi.repositories, id=id, payload=kwds)
+    return repo
+
+
 def create_repository_for(ctx, tsi, name, repo_config):
     description = repo_config.get("description", None)
     long_description = repo_config.get("long_description", None)
@@ -484,10 +512,7 @@ def create_repository_for(ctx, tsi, name, repo_config):
     categories = repo_config.get("categories", [])
     category_ids = find_category_ids(tsi, categories)
 
-    # description is required, as is name.
-    if description is None:
-        message = "description required for automatic creation of repositories"
-        raise Exception(message)
+    _ensure_shed_description(description)
 
     repo = tsi.repositories.create_repository(
         name=name,
@@ -1054,7 +1079,7 @@ class RealizedRepositry(object):
     def create(self, ctx, tsi):
         """Wrapper for creating the endpoint if it doesn't exist
         """
-        try:
+        def _create():
             repo = create_repository_for(
                 ctx,
                 tsi,
@@ -1062,7 +1087,27 @@ class RealizedRepositry(object):
                 self.config,
             )
             return repo['id']
-        # Have to catch missing snyopsis/bioblend exceptions
+
+        return self._with_ts_exception_handling(_create)
+
+    def update(self, ctx, tsi, id):
+        """Wrapper for update the repository metadata.
+        """
+
+        def _update():
+            repo = update_repository_for(
+                ctx,
+                tsi,
+                id,
+                self.config,
+            )
+            return repo.json()
+
+        return self._with_ts_exception_handling(_update)
+
+    def _with_ts_exception_handling(self, f):
+        try:
+            return f()
         except Exception as e:
             # TODO: galaxyproject/bioblend#126
             try:
@@ -1106,6 +1151,14 @@ def _handle_realization_error(exception, **kwds):
         raise exception
     else:
         error(str(exception))
+
+
+def _ensure_shed_description(description):
+    # description is required, as is name.
+    if description is None:
+        message = ("description required for automatic creation or update of "
+                   "shed metadata.")
+        raise ValueError(message)
 
 
 def validate_repo_name(name):

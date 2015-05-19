@@ -91,7 +91,6 @@ metadata in ``.shed.yml`` and the second uploads your actual artifacts to it.
 ::
 
     planemo shed_create --shed_target testtoolshed
-    planemo shed_upload --shed_target testtoolshed
 
 
 Updating a Repository
@@ -119,7 +118,10 @@ Modified artifacts can be uploaded using the following command.
 
 ::
 
-    planemo shed_upload --shed_target testtoolshed
+    planemo shed_update --check_diff --shed_target testtoolshed
+
+The ``--check_diff`` option here will ensure there are significant differnces
+before uploading new contents to the tool shed.
 
 Once your artifacts are ready for publication to the main Tool Shed, the
 following commands to create a repository there and populate it with your
@@ -127,8 +129,7 @@ repository contents.
 
 ::
 
-    planemo shed_create --shed_target toolshed
-    planemo shed_upload --shed_target toolshed
+    planemo shed_create
 
 Advanced Usage
 =============================

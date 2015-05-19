@@ -35,6 +35,15 @@ def create_repository():
     return json.dumps(model.get_repository(id))
 
 
+@app.route('/api/repositories/<id>', methods=['PUT'])
+def update_repository(id):
+    repo = _request_post_message()
+    repo["owner"] = "iuc"
+    model = app.config["model"]
+    model.update_repository(id, **repo)
+    return json.dumps(model.get_repository(id))
+
+
 @app.route('/api/repositories/<id>/changeset_revision', methods=['POST'])
 def update_repository_contents(id):
     updated_tar = request.files['file']
@@ -110,6 +119,12 @@ class InMemoryShedDataModel(object):
         return self
 
     def add_repository(self, id, **kwds):
+        repo_metadata = kwds.copy()
+        repo_metadata["id"] = id
+        self._repositories[id] = repo_metadata
+        return self
+
+    def update_repository(self, id, **kwds):
         repo_metadata = kwds.copy()
         repo_metadata["id"] = id
         self._repositories[id] = repo_metadata
