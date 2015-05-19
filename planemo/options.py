@@ -1,6 +1,7 @@
 """ Click definitions for various shared options and arguments.
 """
 
+import functools
 import os
 
 import click
@@ -187,7 +188,7 @@ class ProjectOrRepositry(click.Path):
             return super(ProjectOrRepositry, self).convert(value, param, ctx)
 
 
-def shed_project_arg():
+def shed_project_arg(multiple=True):
     arg_type = ProjectOrRepositry(
         exists=True,
         file_okay=False,
@@ -195,11 +196,15 @@ def shed_project_arg():
         writable=True,
         resolve_path=True,
     )
+    name = 'paths' if multiple else 'path'
+    nargs = -1 if multiple else 1
     return click.argument(
-        'path',
+        name,
         metavar="PROJECT",
         default=".",
         type=arg_type,
+        nargs=nargs,
+        callback=_optional_tools_default,
     )
 
 
@@ -310,6 +315,90 @@ def shed_password_option():
     )
 
 
+def shed_realization_options():
+    return _compose(
+        shed_project_arg(multiple=True),
+        recursive_shed_option(),
+        shed_fail_fast_option(),
+    )
+
+
+def shed_repo_options():
+    return _compose(
+        shed_owner_option(),
+        shed_name_option(),
+    )
+
+
+def shed_publish_options():
+    """ Common options for commands that require publishing to a
+    a shed.
+    """
+    return _compose(
+        shed_realization_options(),
+        shed_repo_options(),
+        shed_target_options(),
+    )
+
+
+def shed_read_options():
+    """ Common options that require read access to mapped repositories
+    in a shed.
+    """
+    return _compose(
+        shed_realization_options(),
+        shed_repo_options(),
+        shed_target_options(),
+    )
+
+
+def shed_target_options():
+    """ Common options for commands that require read-only
+    interactions with a shed.
+    """
+    return _compose(
+        shed_email_option(),
+        shed_key_option(),
+        shed_password_option(),
+        shed_target_option(),
+    )
+
+
+def galaxy_run_options():
+    return _compose(
+        galaxy_target_options(),
+        galaxy_port_option(),
+    )
+
+
+def galaxy_config_options():
+    return _compose(
+        test_data_option(),
+        tool_data_table_option(),
+        dependency_resolvers_option(),
+        tool_dependency_dir_option(),
+        brew_dependency_resolution(),
+        shed_dependency_resolution(),
+    )
+
+
+def galaxy_target_options():
+    return _compose(
+        galaxy_root_option(),
+        install_galaxy_option(),
+        no_cache_galaxy_option(),
+        no_cleanup_option(),
+        job_config_option(),
+    )
+
+
+def galaxy_serve_options():
+    return _compose(
+        galaxy_run_options(),
+        galaxy_config_options(),
+    )
+
+
 def shed_fail_fast_option():
     return click.option(
         '--fail_fast',
@@ -370,3 +459,54 @@ def recursive_option(help="Recursively perform command for subdirectories."):
         is_flag=True,
         help=help,
     )
+
+
+def test_options():
+    return _compose(
+        click.option(
+            "--update_test_data",
+            is_flag=True,
+            help="Update test-data directory with job outputs (normally"
+                 " written to directory --job_output_files if specified.)"
+        ),
+        click.option(
+            "--test_output",
+            type=click.Path(file_okay=True, resolve_path=True),
+            help=("Output test report (HTML - for humans) defaults to "
+                  "tool_test_output.html."),
+            default=None,
+        ),
+        click.option(
+            "--test_output_xunit",
+            type=click.Path(file_okay=True, resolve_path=True),
+            help="Output test report (xUnit style - for computers).",
+            default=None,
+        ),
+        click.option(
+            "--test_output_json",
+            type=click.Path(file_okay=True, resolve_path=True),
+            help=("Output test report (planemo json) defaults to "
+                  "tool_test_output.json."),
+            default=None,
+        ),
+        click.option(
+            "--job_output_files",
+            type=click.Path(file_okay=False, resolve_path=True),
+            help="Write job outputs to specified directory.",
+            default=None,
+        ),
+        click.option(
+            "--summary",
+            type=click.Choice(['none', 'minimal', 'compact']),
+            default="minimal",
+            help=("Summary style printed to planemo's standard output (see "
+                  "output reports for more complete summary). Set to 'none' "
+                  "to disable completely.")
+        )
+    )
+
+
+def _compose(*functions):
+    def compose2(f, g):
+        return lambda x: f(g(x))
+    return functools.reduce(compose2, functions)

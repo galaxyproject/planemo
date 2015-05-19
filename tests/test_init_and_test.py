@@ -13,7 +13,6 @@ class InitAndTestTestCase(CliTestCase):
             self._check_exit_code(init_cmd)
             test_cmd = [
                 "test",
-                "--no_cache_galaxy",
                 "--install_galaxy",
                 "basic/cat.xml"
             ]

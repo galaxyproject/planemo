@@ -5,6 +5,7 @@ import contextlib
 import os
 import random
 import shutil
+import time
 from six.moves.urllib.request import urlopen
 from six import iteritems
 from string import Template
@@ -92,10 +93,10 @@ FAILED_TO_FIND_GALAXY_EXCEPTION = (
 
 
 @contextlib.contextmanager
-def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
-    test_data_dir = _find_test_data(tool_path, **kwds)
+def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
+    test_data_dir = _find_test_data(tool_paths, **kwds)
     tool_data_table = _find_tool_data_table(
-        tool_path,
+        tool_paths,
         test_data_dir=test_data_dir,
         **kwds
     )
@@ -121,14 +122,15 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
 
         _handle_dependency_resolution(config_directory, kwds)
         _handle_job_metrics(config_directory, kwds)
-        tool_definition = _tool_conf_entry_for(tool_path)
+        tool_definition = _tool_conf_entry_for(tool_paths)
         empty_tool_conf = config_join("empty_tool_conf.xml")
-        shed_tool_conf = config_join("shed_tool_conf.xml")
+        shed_tool_conf = _shed_tool_conf(install_galaxy, config_directory)
         tool_conf = config_join("tool_conf.xml")
         database_location = config_join("galaxy.sqlite")
         shed_tools_path = config_join("shed_tools")
         preseeded_database = True
         master_api_key = kwds.get("master_api_key", "test_key")
+        dependency_dir = os.path.join(config_directory, "deps")
 
         try:
             _download_database_template(
@@ -151,7 +153,7 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
             temp_directory=config_directory,
             shed_tools_path=shed_tools_path,
             database_location=database_location,
-            tool_definition=tool_definition % tool_path,
+            tool_definition=tool_definition,
             tool_conf=tool_conf,
             debug=kwds.get("debug", "true"),
             master_api_key=master_api_key,
@@ -160,6 +162,7 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
         )
         tool_config_file = "%s,%s" % (tool_conf, shed_tool_conf)
         properties = dict(
+            tool_dependency_dir=dependency_dir,
             file_path="${temp_directory}/files",
             new_file_path="${temp_directory}/tmp",
             tool_config_file=tool_config_file,
@@ -208,6 +211,7 @@ def galaxy_config(ctx, tool_path, for_tests=False, **kwds):
         if install_galaxy:
             _build_eggs_cache(ctx, env, kwds)
         _build_test_env(properties, env)
+        env['GALAXY_TEST_SHED_TOOL_CONF'] = shed_tool_conf
 
         # No need to download twice - would GALAXY_TEST_DATABASE_CONNECTION
         # work?
@@ -277,6 +281,50 @@ class GalaxyConfig(object):
             key=self.master_api_key
         )
 
+    def install_repo(self, *args, **kwds):
+        self.tool_shed_client.install_repository_revision(
+            *args, **kwds
+        )
+
+    @property
+    def tool_shed_client(self):
+        return self.gi.toolShed
+
+    def wait_for_all_installed(self):
+        def status_ready(repo):
+            status = repo["status"]
+            if status in ["Installing", "New"]:
+                return False
+            if status == "Installed":
+                return True
+            raise Exception("Error installing repo status is %s" % status)
+
+        def not_ready():
+            repos = self.tool_shed_client.get_repositories()
+            return not all(map(status_ready, repos))
+
+        self._wait_for(not_ready)
+
+    # Taken from Galaxy's twilltestcase.
+    def _wait_for(self, func, **kwd):
+        sleep_amount = 0.2
+        slept = 0
+        walltime_exceeded = 1086400
+        while slept <= walltime_exceeded:
+            result = func()
+            if result:
+                time.sleep(sleep_amount)
+                slept += sleep_amount
+                sleep_amount *= 1.25
+                if slept + sleep_amount > walltime_exceeded:
+                    sleep_amount = walltime_exceeded - slept
+            else:
+                break
+        assert slept < walltime_exceeded, "Action taking too long."
+
+    def cleanup(self):
+        shutil.rmtree(self.config_directory)
+
 
 def _download_database_template(galaxy_root, database_location, latest=False):
     if latest:
@@ -333,7 +381,11 @@ def _find_galaxy_root(ctx, **kwds):
     raise Exception(FAILED_TO_FIND_GALAXY_EXCEPTION)
 
 
-def _find_test_data(path, **kwds):
+def _find_test_data(tool_paths, **kwds):
+    path = "."
+    if len(tool_paths) > 0:
+        path = tool_paths[0]
+
     # Find test data directory associated with path.
     test_data = kwds.get("test_data", None)
     if test_data:
@@ -346,7 +398,11 @@ def _find_test_data(path, **kwds):
     return None
 
 
-def _find_tool_data_table(path, test_data_dir, **kwds):
+def _find_tool_data_table(tool_paths, test_data_dir, **kwds):
+    path = "."
+    if len(tool_paths) > 0:
+        path = tool_paths[0]
+
     tool_data_table = kwds.get("tool_data_table", None)
     if tool_data_table:
         return os.path.abspath(tool_data_table)
@@ -375,12 +431,22 @@ def _search_tool_path_for(path, target, extra_paths=[]):
     return None
 
 
-def _tool_conf_entry_for(tool_path):
-    if os.path.isdir(tool_path):
-        tool_definition = '''<tool_dir dir="%s" />'''
+def _tool_conf_entry_for(tool_paths):
+    tool_definitions = ""
+    for tool_path in tool_paths:
+        if os.path.isdir(tool_path):
+            tool_definitions += '''<tool_dir dir="%s" />''' % tool_path
+        else:
+            tool_definitions += '''<tool file="%s" />''' % tool_path
+    return tool_definitions
+
+
+def _shed_tool_conf(install_galaxy, config_directory):
+    if install_galaxy:
+        config_dir = os.path.join(config_directory, "galaxy-dev", "config")
     else:
-        tool_definition = '''<tool file="%s" />'''
-    return tool_definition
+        config_dir = config_directory
+    return os.path.join(config_dir, "shed_tool_conf.xml")
 
 
 def _install_galaxy_if_needed(ctx, config_directory, kwds):
@@ -455,7 +521,6 @@ def _build_test_env(properties, env):
     # https://bitbucket.org/galaxy/galaxy-central/commits/d7dd1f9
     test_property_variants = {
         'GALAXY_TEST_MIGRATED_TOOL_CONF': 'migrated_tools_config',
-        'GALAXY_TEST_SHED_TOOL_CONF': 'migrated_tools_config',  # Hack
         'GALAXY_TEST_TOOL_CONF': 'tool_config_file',
         'GALAXY_TEST_FILE_DIR': 'test_data_dir',
         'GALAXY_TOOL_DEPENDENCY_DIR': 'tool_dependency_dir',
@@ -492,8 +557,6 @@ def _handle_dependency_resolution(config_directory, kwds):
             )
             conf_contents = STOCK_DEPENDENCY_RESOLUTION_STRATEGIES[key]
             open(resolvers_conf, "w").write(conf_contents)
-            dependency_dir = os.path.join("config_directory", "deps")
-            kwds["tool_dependency_dir"] = dependency_dir
             kwds["dependency_resolvers_config_file"] = resolvers_conf
 
 

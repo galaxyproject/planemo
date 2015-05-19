@@ -1,10 +1,12 @@
+import contextlib
 import os
 
 from planemo import galaxy_config
 from planemo import galaxy_run
+from planemo import io
 
 
-def serve(ctx, path, **kwds):
+def serve(ctx, paths, **kwds):
     # TODO: Preceate a user.
     # TODO: Setup an admin user.
     # TODO: Pass through more parameters.
@@ -13,7 +15,7 @@ def serve(ctx, path, **kwds):
     if daemon:
         kwds["no_cleanup"] = True
 
-    with galaxy_config.galaxy_config(ctx, path, **kwds) as config:
+    with galaxy_config.galaxy_config(ctx, paths, **kwds) as config:
         # TODO: Allow running dockerized Galaxy here instead.
         run_script = os.path.join(config.galaxy_root, "run.sh")
         if daemon:
@@ -35,3 +37,24 @@ def serve(ctx, path, **kwds):
             action,
         )
         return config
+
+
+@contextlib.contextmanager
+def shed_serve(ctx, install_args_list, **kwds):
+    config = serve(ctx, [], daemon=True, **kwds)
+    install_deps = not kwds.get("skip_dependencies", False)
+    try:
+        io.info("Installing repositories - this may take some time...")
+        for install_args in install_args_list:
+            install_args["install_tool_dependencies"] = install_deps
+            install_args["install_repository_dependencies"] = True
+            install_args["new_tool_panel_section_label"] = "Shed Installs"
+            config.install_repo(
+                **install_args
+            )
+        config.wait_for_all_installed()
+        yield config
+    finally:
+        config.kill()
+        if not kwds.get("no_cleanup", False):
+            config.cleanup()

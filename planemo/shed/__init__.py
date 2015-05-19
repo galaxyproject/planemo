@@ -35,6 +35,7 @@ from .interface import (
     api_exception_to_message,
     find_category_ids,
     download_tar,
+    latest_installable_revision,
 )
 from .diff import diff_and_remove
 
@@ -150,6 +151,23 @@ def shed_init(ctx, path, **kwds):
         repository_dependencies.write_to_path(repo_dependencies_path)
 
     return 0
+
+
+def install_arg_lists(ctx, paths, **kwds):
+    """ Build a list of install args for resolved repositories.
+    """
+    tsi = tool_shed_client(ctx, **kwds)
+    install_args_list = []
+
+    def process_repo(realized_repository):
+        install_args_list.append(realized_repository.install_args(ctx, tsi))
+        return 0
+
+    exit_code = for_each_repository(ctx, process_repo, paths, **kwds)
+    if exit_code:
+        raise RuntimeError("Problem processing repositories, exiting.")
+
+    return install_args_list
 
 
 def upload_repository(ctx, realized_repository, **kwds):
@@ -530,19 +548,20 @@ def build_tarball(realized_path, **kwds):
     return temp_path
 
 
-def for_each_repository(ctx, function, path, **kwds):
+def for_each_repository(ctx, function, paths, **kwds):
     ret_codes = []
-    with _path_on_disk(path) as raw_path:
-        try:
-            for realized_repository in _realize_effective_repositories(
-                ctx, raw_path, **kwds
-            ):
-                ret_codes.append(
-                    function(realized_repository)
-                )
-        except RealizationException:
-            error(REALIZAION_PROBLEMS_MESSAGE)
-            return 254
+    for path in paths:
+        with _path_on_disk(path) as raw_path:
+            try:
+                for realized_repository in _realize_effective_repositories(
+                    ctx, raw_path, **kwds
+                ):
+                    ret_codes.append(
+                        function(realized_repository)
+                    )
+            except RealizationException:
+                error(REALIZAION_PROBLEMS_MESSAGE)
+                return 254
 
     # "Good" returns are Nones, everything else is a -1 and should be
     # passed upwards.
@@ -1052,6 +1071,22 @@ class RealizedRepositry(object):
             except Exception:
                 error(str(e))
             return None
+
+    def latest_installable_revision(self, ctx, tsi):
+        repository_id = self.find_repository_id(ctx, tsi)
+        return latest_installable_revision(tsi, repository_id)
+
+    def install_args(self, ctx, tsi):
+        """ Arguments for bioblend's install_repository_revision
+        to install this repository against supplied tsi.
+        """
+        tool_shed_url = tsi.base_url
+        return dict(
+            tool_shed_url=tool_shed_url,
+            name=self.name,
+            owner=self.owner,
+            changeset_revision=self.latest_installable_revision(ctx, tsi),
+        )
 
 
 def _glob(path, pattern):

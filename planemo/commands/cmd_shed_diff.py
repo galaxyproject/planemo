@@ -10,11 +10,7 @@ from planemo import shed
 
 
 @click.command("shed_diff")
-@options.shed_project_arg()
-@options.shed_owner_option()
-@options.shed_name_option()
-@options.shed_target_option()
-@options.shed_fail_fast_option()
+@options.shed_read_options()
 @click.option(
     "-o", "--output",
     type=click.Path(file_okay=True, resolve_path=True),
@@ -34,9 +30,8 @@ from planemo import shed
     help="Do not attempt smart diff of XML to filter out attributes "
          "populated by the Tool Shed.",
 )
-@options.recursive_shed_option()
 @pass_context
-def cli(ctx, path, **kwds):
+def cli(ctx, paths, **kwds):
     """Produce diff between local repository and Tool Shed contents.
 
     By default, this will produce a diff between this repository and what
@@ -58,5 +53,5 @@ def cli(ctx, path, **kwds):
     def diff(realized_repository):
         return shed.diff_repo(ctx, realized_repository, **kwds)
 
-    exit_code = shed.for_each_repository(ctx, diff, path, **kwds)
+    exit_code = shed.for_each_repository(ctx, diff, paths, **kwds)
     sys.exit(exit_code)

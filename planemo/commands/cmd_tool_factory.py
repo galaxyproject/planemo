@@ -7,16 +7,7 @@ from planemo import galaxy_serve
 
 
 @click.command('tool_factory')
-@options.galaxy_root_option()
-@options.galaxy_port_option()
-@options.install_galaxy_option()
-@options.no_cache_galaxy_option()
-@options.no_cleanup_option()
-@options.test_data_option()
-@options.dependency_resolvers_option()
-@options.job_config_option()
-@options.tool_dependency_dir_option()
-@options.brew_dependency_resolution()
+@options.galaxy_serve_options()
 @pass_context
 def cli(ctx, **kwds):
     """(Experimental) Launch Galaxy with the Tool Factory 2 available.
@@ -26,7 +17,6 @@ def cli(ctx, **kwds):
     et. al. (10.1093/bioinformatics/bts573). Available at
     http://www.ncbi.nlm.nih.gov/pubmed/23024011.
     """
-    # TODO: de-duplicate option handling with cmd_serve.
     mod_dir = os.path.dirname(__file__)
     tf_dir = os.path.join(mod_dir, '..', '..', 'planemo_ext', 'tool_factory_2')
-    galaxy_serve.serve(ctx, os.path.abspath(tf_dir), **kwds)
+    galaxy_serve.serve(ctx, [os.path.abspath(tf_dir)], **kwds)

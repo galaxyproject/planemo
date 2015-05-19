@@ -8,7 +8,7 @@ from planemo import shed_lint
 
 
 @click.command('shed_lint')
-@options.shed_project_arg()
+@options.shed_realization_options()
 @options.report_level_option()
 @options.fail_level_option()
 @options.click.option(
@@ -18,15 +18,13 @@ from planemo import shed_lint
     help=("Lint tools discovered in the process of linting repositories.")
 )
 @options.lint_xsd_option()
-@options.recursive_shed_option()
-@options.shed_fail_fast_option()
 @pass_context
-def cli(ctx, path, **kwds):
+def cli(ctx, paths, **kwds):
     """Check a Tool Shed repository for common problems.
     """
     def lint(realized_repository):
         return shed_lint.lint_repository(ctx, realized_repository, **kwds)
 
     kwds["fail_on_missing"] = False
-    exit_code = shed.for_each_repository(ctx, lint, path, **kwds)
+    exit_code = shed.for_each_repository(ctx, lint, paths, **kwds)
     sys.exit(exit_code)

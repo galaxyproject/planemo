@@ -16,7 +16,7 @@ target_path = click.Path(
 
 
 @click.command("shed_download")
-@options.shed_project_arg()
+@options.shed_read_options()
 @click.option(
     '--destination',
     default="shed_download.tar.gz",
@@ -28,13 +28,8 @@ target_path = click.Path(
          "created as shed_download_<name>.tar.gz by default for instance, "
          "simpler repositories will just be downloaded to the specified file."
 )
-@options.shed_owner_option()
-@options.shed_name_option()
-@options.shed_target_option()
-@options.recursive_shed_option()
-@options.shed_fail_fast_option()
 @pass_context
-def cli(ctx, path, **kwds):
+def cli(ctx, paths, **kwds):
     """Download a tool repository as a tarball from the tool shed and extract
     to the specified directory.
     """
@@ -43,5 +38,5 @@ def cli(ctx, path, **kwds):
     def download(realized_repository):
         return shed.download_tarball(ctx, tsi, realized_repository, **kwds)
 
-    exit_code = shed.for_each_repository(ctx, download, path, **kwds)
+    exit_code = shed.for_each_repository(ctx, download, paths, **kwds)
     sys.exit(exit_code)
