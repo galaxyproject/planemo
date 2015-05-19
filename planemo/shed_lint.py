@@ -34,6 +34,14 @@ VALID_REPOSITORY_TYPES = [
     REPO_TYPE_SUITE,
 ]
 
+SHED_METADATA = [
+    "description",
+    "long_description",
+    "remote_repository_url",
+    "homepage_url",
+    "categories",
+]
+
 
 def lint_repository(ctx, realized_repository, **kwds):
     # TODO: this really needs to start working with realized path.
@@ -85,6 +93,12 @@ def lint_repository(ctx, realized_repository, **kwds):
                 tool_xml,
                 extra_modules=lint_args["extra_modules"]
             )
+    if kwds["ensure_metadata"]:
+        lint_ctx.lint(
+            "lint_shed_metadata",
+            lint_shed_metadata,
+            realized_repository,
+        )
     failed = lint_ctx.failed(lint_args["fail_level"])
     if failed:
         error("Failed linting")
@@ -98,6 +112,21 @@ def lint_expansion(realized_repository, lint_ctx):
         lint_ctx.warn(msg)
     else:
         lint_ctx.info("Included files all found.")
+
+
+def lint_shed_metadata(realized_repository, lint_ctx):
+    found_all = True
+    for key in SHED_METADATA:
+        if key not in realized_repository.config:
+            found_all = False
+            lint_ctx.warn(
+                "Missing shed metadata field [%s] for repository" % key
+            )
+    if found_all:
+        lint_ctx.info(
+            "Found all shed metadata fields required for automated repository "
+            "creation and/or updates."
+        )
 
 
 def lint_readme(path, lint_ctx):

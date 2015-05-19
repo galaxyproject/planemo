@@ -18,6 +18,13 @@ from planemo import shed_lint
     help=("Lint tools discovered in the process of linting repositories.")
 )
 @options.lint_xsd_option()
+@options.click.option(
+    '--ensure_metadata',
+    is_flag=True,
+    default=False,
+    help=("Ensure .shed.yml files contain enough metadata for each repository "
+          "to allow automated creation and/or updates.")
+)
 @pass_context
 def cli(ctx, paths, **kwds):
     """Check a Tool Shed repository for common problems.
