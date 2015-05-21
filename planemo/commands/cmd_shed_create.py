@@ -18,10 +18,10 @@ def cli(ctx, paths, **kwds):
     """
     tsi = shed.tool_shed_client(ctx, **kwds)
 
-    def create(realized_reposiotry):
-        repo_id = realized_reposiotry.find_repository_id(ctx, tsi)
+    def create(realized_repository):
+        repo_id = realized_repository.find_repository_id(ctx, tsi)
         if repo_id is None:
-            if realized_reposiotry.create(ctx, tsi):
+            if realized_repository.create(ctx, tsi):
                 info("Repository created")
                 return 0
             else:
