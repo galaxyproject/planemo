@@ -16,24 +16,24 @@ History
 * Implement ``shed_test`` and ``shed_serve`` commands to test and view
   published artifacts in the Tool Shed. `Pull Request 213`_, `Issue 176`_
 * Add shell tab-completion script. 37dcc07_
-* Many more commands should allow specifing multiple directories.
+* Many more commands allow specifing multiple tool and/or repository targets.
   `Issue 150`_
+* Add -m as alias for --message in planemo shed_upload (thanks to
+  Peter Cock). `Pull Request 200`_
+* Add ``--ensure_metadata`` option to ``shed_lint`` to ensure ``.shed.yml``
+  files contain many repository. `Pull Request 215`_
+* More developer documentation, additional ``make`` targets including ones
+  for setting up git pre-commit hooks. cc8abb6_, `Issue 209`_
 * Small README improvement (thanks to Martin Čech) b53006d_
 * Fixes for shed operation error handling (thanks to Martin Čech).
   `Pull Request 203`_,  `Pull Request 206`_
-* Add -m as alias for --message in planemo shed_upload (thanks to
-  Peter Cock). `Pull Request 200`_
 * Fix for "smart" ``shed_diff`` not in the repository root directory
   (thanks to Peter Cock). `Pull Request 207`_, `Issue 205`_
 * Recursive ``shed_diff`` with directories not yet in Tool Shed.
   `Pull Request 208`_
-* Add ``--ensure_metadata`` option to ``shed_lint`` to ensure ``.shed.yml``
-  files contain many repository. `Pull Request 215`_
 * Improve error handling and reporting for problematic ``--shed_target``
   values. `Issue 217`_
 * Fix typos in lint messages. `Issue 211`_
-* More developer documentation, additional ``make`` targets including ones
-  for setting up git pre-commit hooks. cc8abb6_, `Issue 209`_
 
 
 ---------------------
