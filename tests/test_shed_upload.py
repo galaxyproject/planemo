@@ -26,10 +26,16 @@ class ShedUploadTestCase(CliShedTestCase):
             upload_command.extend(self._shed_args())
             self._check_exit_code(upload_command, exit_code=-1)
 
+    def test_update_not_exists(self):
+        with self._isolate_repo("single_tool"):
+            upload_command = ["shed_update"]
+            upload_command.extend(self._shed_args())
+            self._check_exit_code(upload_command, exit_code=-1)
+
     def test_upload_with_check_diff(self):
         with self._isolate_repo("single_tool") as f:
             upload_command = [
-                "shed_upload", "--force_repository_creation", "--check_diff"
+                "shed_update", "--force_repository_creation", "--check_diff"
             ]
             upload_command.extend(self._shed_args())
             self._check_exit_code(upload_command)
@@ -49,7 +55,7 @@ class ShedUploadTestCase(CliShedTestCase):
 
     def test_upload_with_force_create(self):
         with self._isolate_repo("single_tool") as f:
-            upload_command = ["shed_upload", "--force_repository_creation"]
+            upload_command = ["shed_update", "--force_repository_creation"]
             upload_command.extend(self._shed_args())
             self._check_exit_code(upload_command)
             self._verify_single_uploaded(f)
@@ -65,7 +71,7 @@ class ShedUploadTestCase(CliShedTestCase):
                 "git commit -m 'initial commit'"
             ]))
             upload_command = [
-                "shed_upload", "--force_repository_creation",
+                "shed_update", "--force_repository_creation",
                 "git+single_tool/.git"
             ]
             upload_command.extend(self._shed_args())
@@ -84,7 +90,7 @@ class ShedUploadTestCase(CliShedTestCase):
             ]))
             rev = git.rev(None, "single_tool")
             upload_command = [
-                "shed_upload", "--force_repository_creation",
+                "shed_update", "--force_repository_creation",
                 "git+single_tool/.git"
             ]
             upload_command.extend(self._shed_args())
@@ -107,6 +113,13 @@ class ShedUploadTestCase(CliShedTestCase):
             self._check_exit_code(upload_command)
             self._verify_single_uploaded(f)
 
+    def test_create_with_upload(self):
+        with self._isolate_repo("single_tool") as f:
+            create_command = ["shed_create"]
+            create_command.extend(self._shed_args())
+            self._check_exit_code(create_command)
+            self._verify_single_uploaded(f)
+
     def test_cannont_recreate(self):
         with self._isolate_repo("single_tool"):
             create_command = ["shed_create"]
@@ -123,7 +136,7 @@ class ShedUploadTestCase(CliShedTestCase):
     def test_upload_recusrive(self):
         with self._isolate_repo("multi_repos_nested") as f:
             upload_command = [
-                "shed_upload", "-r", "--force_repository_creation"
+                "shed_update", "-r", "--force_repository_creation"
             ]
             upload_command.extend(self._shed_args())
             self._check_exit_code(upload_command)

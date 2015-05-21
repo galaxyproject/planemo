@@ -11,13 +11,13 @@ class ShedCreateTestCase(CliShedTestCase):
 
     def test_create_single(self):
         with self._isolate_repo("single_tool"):
-            create_command = ["shed_create"]
+            create_command = ["shed_create", "--skip_upload"]
             create_command.extend(self._shed_args())
             self._check_exit_code(create_command)
 
     def test_create_multiple(self):
         with self._isolate_repo("multi_repos_nested"):
-            create_command = ["shed_create", "-r"]
+            create_command = ["shed_create", "--skip_upload", "-r"]
             create_command.extend(self._shed_args())
             self._check_exit_code(create_command)
 
@@ -38,7 +38,7 @@ class ShedCreateTestCase(CliShedTestCase):
             assert suite_repo["type"] == "repository_suite_definition"
 
     def _multi_repo_create_and_verify(self):
-        create_command = ["shed_create", "-r"]
+        create_command = ["shed_create", "--skip_upload", "-r"]
         create_command.extend(self._shed_args())
         self._check_exit_code(create_command)
         cat1_repo = self._get_repo_info("cs-cat1")

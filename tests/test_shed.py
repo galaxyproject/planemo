@@ -5,6 +5,8 @@ import os
 import string
 import random
 
+import yaml
+
 from bioblend import toolshed
 
 from .test_utils import (
@@ -14,6 +16,7 @@ from .test_utils import (
 )
 
 from planemo.shed import username
+from planemo import io
 
 SHED_TEMPLATE = string.Template("""owner: ${owner}
 name: ${name}
@@ -41,16 +44,25 @@ class ShedTestCase(CliTestCase):
                 owner=owner,
                 name=name,
             )
-            open(".shed.yml", "w").write(shed_yml_contents)
+            io.write_file(".shed.yml", shed_yml_contents)
+            test_path = os.path.join(TEST_DIR, "tool_dependencies_good_1.xml")
+            contents = open(test_path).read()
+            io.write_file("tool_dependencies.xml", contents)
             init_cmd = [
                 "shed_create",
                 "--shed_key", shed_api_key,
                 "--shed_target", shed_url
             ]
             self._check_exit_code(init_cmd)
-            test_path = os.path.join(TEST_DIR, "tool_dependencies_good_1.xml")
-            contents = open(test_path).read()
-            open("tool_dependencies.xml", "w").write(contents)
+            contents_dict = yaml.load(open(".shed.yml", "r"))
+            contents_dict["description"] = "Update test repository."
+            io.write_file(".shed.yml", yaml.dump(contents_dict))
+            update_cmd = [
+                "shed_update",
+                "--shed_key", shed_api_key,
+                "--shed_target", shed_url
+            ]
+            self._check_exit_code(update_cmd)
             upload_cmd = [
                 "shed_upload",
                 "--shed_key", shed_api_key,

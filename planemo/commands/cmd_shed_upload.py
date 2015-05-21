@@ -19,11 +19,7 @@ tar_path = click.Path(
 
 @click.command("shed_upload")
 @options.shed_publish_options()
-@click.option(
-    '-m',
-    '--message',
-    help="Commit message for tool shed upload."
-)
+@options.shed_upload_options()
 @click.option(
     '--tar_only',
     is_flag=True,
@@ -36,23 +32,24 @@ tar_path = click.Path(
     type=tar_path,
     default=None,
 )
-@click.option(
-    '--force_repository_creation',
-    help="If a repository cannot be found for the specified user/repo name "
-         "pair, then automatically create the repository in the toolshed.",
-    is_flag=True,
-    default=False
-)
-@click.option(
-    "--check_diff",
-    is_flag=True,
-    help="Skip uploading if the shed_diff detects there would be no "
-         "'difference' (only attributes populated by the shed would would "
-         "be updated.)"
-)
 @pass_context
 def cli(ctx, paths, **kwds):
-    """Handle possible recursion through paths for uploading files to a toolshed
+    """Low-level command for uploading tar balls to a shed.
+
+    Generally, ``shed_update`` should be used instead since it also updates
+    both tool shed contents (via tar ball generation and upload) as well as
+    metadata (to handle metadata changes in ``.shed.yml`` files).
+
+    ::
+
+        % planemo shed_upload --tar_only  ~/
+        % tar -tzf shed_upload.tar.gz
+        test-data/blastdb.loc
+        ...
+        tools/ncbi_blast_plus/tool_dependencies.xml
+        % tar -tzf shed_upload.tar.gz | wc -l
+        117
+
     """
     def upload(realized_repository):
         return shed.upload_repository(ctx, realized_repository, **kwds)

@@ -315,6 +315,61 @@ def shed_password_option():
     )
 
 
+def shed_skip_upload():
+    return click.option(
+        "--skip_upload",
+        is_flag=True,
+        help=("Skip upload contents as part of operation, only update "
+              "metadata.")
+    )
+
+
+def shed_skip_metadata():
+    return click.option(
+        "--skip_metadata",
+        is_flag=True,
+        help=("Skip metadata update as part of operation, only upload "
+              "new contents.")
+    )
+
+
+def shed_message_option():
+    return click.option(
+        '-m',
+        '--message',
+        help="Commit message for tool shed upload."
+    )
+
+
+def shed_force_create_option():
+    return click.option(
+        '--force_repository_creation',
+        help=("If a repository cannot be found for the specified user/repo "
+              "name pair, then automatically create the repository in the "
+              "toolshed."),
+        is_flag=True,
+        default=False
+    )
+
+
+def shed_check_diff_option():
+    return click.option(
+        "--check_diff",
+        is_flag=True,
+        help=("Skip uploading if the shed_diff detects there would be no "
+              "'difference' (only attributes populated by the shed would "
+              "be updated.)")
+    )
+
+
+def shed_upload_options():
+    return _compose(
+        shed_message_option(),
+        shed_force_create_option(),
+        shed_check_diff_option(),
+    )
+
+
 def shed_realization_options():
     return _compose(
         shed_project_arg(multiple=True),
