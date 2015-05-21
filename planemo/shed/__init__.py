@@ -612,6 +612,14 @@ def _tool_shed_url(kwds):
     url = kwds.get("shed_target")
     if url in SHED_SHORT_NAMES:
         url = SHED_SHORT_NAMES[url]
+    if not url.startswith("http"):
+        message = (
+            "Invalid shed url specified [{0}]. Please specify a valid "
+            "HTTP address or one of {1}"
+        ).format(
+            url, SHED_SHORT_NAMES.keys()
+        )
+        raise ValueError(message)
     return url
 
 
