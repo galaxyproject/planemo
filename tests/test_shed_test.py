@@ -6,6 +6,8 @@ from .test_utils import (
     TEST_REPOS_DIR,
 )
 
+SHED_TARGET = "testtoolshed"
+
 
 class ShedTestTestCase(CliTestCase):
 
@@ -14,6 +16,7 @@ class ShedTestTestCase(CliTestCase):
         fastqc_path = os.path.join(TEST_REPOS_DIR, "fastqc")
         test_cmd = [
             "shed_test",
+            "--shed_target", SHED_TARGET,
             "--install_galaxy",
             fastqc_path,
         ]
