@@ -134,5 +134,8 @@ push-release:
 	git push $(UPSTREAM) master
 	git push --tags $(UPSTREAM)
 
+add-history:
+	$(IN_VENV) python scripts/bootstrap_history.py $(ITEM)
+
 update-extern:
 	sh scripts/update_extern.sh
