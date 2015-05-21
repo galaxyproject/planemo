@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
 
     planemo.commands
+    planemo.galaxy_test
     planemo.linters
     planemo.reports
     planemo.shed
@@ -60,14 +61,6 @@ planemo.galaxy_serve module
 ---------------------------
 
 .. automodule:: planemo.galaxy_serve
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-planemo.galaxy_test module
---------------------------
-
-.. automodule:: planemo.galaxy_test
     :members:
     :undoc-members:
     :show-inheritance:

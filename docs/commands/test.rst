@@ -42,21 +42,11 @@ please careful and do not try this against production Galaxy instances.
 **Options**::
 
 
-      --test_output PATH              Output test report (HTML - for humans)
-                                      defaults to tool_test_output.html.
-      --test_output_xunit PATH        Output test report (xUnit style - for
-                                      computers).
-      --test_output_json PATH         Output test report (planemo json) defaults
-                                      to tool_test_output.json.
-      --job_output_files DIRECTORY    Write job outputs to specified directory.
-      --update_test_data              Update test-data directory with job outputs
-                                      (normally written to directory
-                                      --job_output_files if specified.)
-      --summary [none|minimal|compact]
-                                      Summary style printed to planemo's standard
-                                      output (see output reports for more complete
-                                      summary). Set to 'none' to disable
-                                      completely.
+      --failed                        Re-run only failed tests. This command will
+                                      read tool_test_output.json to determine
+                                      which tests failed so this file must have
+                                      been produced with the same set of tool ids
+                                      previously.
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
       --install_galaxy                Download and configure a disposable copy of
@@ -68,6 +58,7 @@ please careful and do not try this against production Galaxy instances.
                                       instances such with TravisCI.
       --no_cleanup                    Do not cleanup temp files created for and by
                                       Galaxy.
+      --job_config_file PATH          Job configuration file for Galaxy to target.
       --test_data DIRECTORY           test-data directory to for specified
                                       tool(s).
       --tool_data_table PATH          tool_data_table_conf.xml file to for
@@ -75,12 +66,26 @@ please careful and do not try this against production Galaxy instances.
       --dependency_resolvers_config_file PATH
                                       Dependency resolver configuration for Galaxy
                                       to target.
-      --job_config_file PATH          Job configuration file for Galaxy to target.
       --tool_dependency_dir DIRECTORY
                                       Tool dependency dir for Galaxy to target.
       --brew_dependency_resolution    Configure Galaxy to use plain brew
                                       dependency resolution.
       --shed_dependency_resolution    Configure Galaxy to use brewed Tool Shed
                                       dependency resolution.
+      --update_test_data              Update test-data directory with job outputs
+                                      (normally written to directory
+                                      --job_output_files if specified.)
+      --test_output PATH              Output test report (HTML - for humans)
+                                      defaults to tool_test_output.html.
+      --test_output_xunit PATH        Output test report (xUnit style - for
+                                      computers).
+      --test_output_json PATH         Output test report (planemo json) defaults
+                                      to tool_test_output.json.
+      --job_output_files DIRECTORY    Write job outputs to specified directory.
+      --summary [none|minimal|compact]
+                                      Summary style printed to planemo's standard
+                                      output (see output reports for more complete
+                                      summary). Set to 'none' to disable
+                                      completely.
       --help                          Show this message and exit.
     

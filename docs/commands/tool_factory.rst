@@ -24,7 +24,6 @@ http://www.ncbi.nlm.nih.gov/pubmed/23024011.
 
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
-      --port INTEGER                  Port to serve Galaxy on (default is 9090).
       --install_galaxy                Download and configure a disposable copy of
                                       Galaxy from github.
       --no_cache_galaxy               Skip caching of Galaxy source and
@@ -34,15 +33,20 @@ http://www.ncbi.nlm.nih.gov/pubmed/23024011.
                                       instances such with TravisCI.
       --no_cleanup                    Do not cleanup temp files created for and by
                                       Galaxy.
+      --job_config_file PATH          Job configuration file for Galaxy to target.
+      --port INTEGER                  Port to serve Galaxy on (default is 9090).
       --test_data DIRECTORY           test-data directory to for specified
                                       tool(s).
+      --tool_data_table PATH          tool_data_table_conf.xml file to for
+                                      specified tool(s).
       --dependency_resolvers_config_file PATH
                                       Dependency resolver configuration for Galaxy
                                       to target.
-      --job_config_file PATH          Job configuration file for Galaxy to target.
       --tool_dependency_dir DIRECTORY
                                       Tool dependency dir for Galaxy to target.
       --brew_dependency_resolution    Configure Galaxy to use plain brew
+                                      dependency resolution.
+      --shed_dependency_resolution    Configure Galaxy to use brewed Tool Shed
                                       dependency resolution.
       --help                          Show this message and exit.
     

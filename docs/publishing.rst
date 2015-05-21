@@ -123,6 +123,12 @@ Modified artifacts can be uploaded using the following command.
 The ``--check_diff`` option here will ensure there are significant differnces
 before uploading new contents to the tool shed.
 
+Once tools and reqiured dependency files have been published to the tool shed,
+the actual shed dependencies can be automatically and installed and tool 
+tests ran using the command::
+
+    planemo shed_test --shed_target testtoolshed
+
 Once your artifacts are ready for publication to the main Tool Shed, the
 following commands to create a repository there and populate it with your
 repository contents.

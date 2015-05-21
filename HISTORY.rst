@@ -9,7 +9,32 @@ History
 0.12.0.dev0
 ---------------------
 
-    
+* Implement a ``--failed`` flag for the ``test`` command to rerun
+  previously faied tests. `Pull Request 210`_
+* Implement ``shed_update`` to upload contents and update repository
+  metadata. `Pull Request 216`_
+* Implement ``shed_test`` and ``shed_serve`` commands to test and view
+  published artifacts in the Tool Shed. `Pull Request 213`_, `Issue 176`_
+* Add shell tab-completion script. 37dcc07_
+* Many more commands should allow specifing multiple directories.
+  `Issue 150`_
+* Small README improvement (thanks to Martin Čech) b53006d_
+* Fixes for shed operation error handling (thanks to Martin Čech).
+  `Pull Request 203`_,  `Pull Request 206`_
+* Add -m as alias for --message in planemo shed_upload (thanks to
+  Peter Cock). `Pull Request 200`_
+* Fix for "smart" ``shed_diff`` not in the repository root directory
+  (thanks to Peter Cock). `Pull Request 207`_, `Issue 205`_
+* Recursive ``shed_diff`` with directories not yet in Tool Shed.
+  `Pull Request 208`_
+* Add ``--ensure_metadata`` option to ``shed_lint`` to ensure ``.shed.yml``
+  files contain many repository. `Pull Request 215`_
+* Improve error handling and reporting for problematic ``--shed_target``
+  values. `Issue 217`_
+* Fix typos in lint messages. `Issue 211`_
+* More developer documentation, additional ``make`` targets including ones
+  for setting up git pre-commit hooks. cc8abb6_, `Issue 209`_
+
 
 ---------------------
 0.11.1 (2015-05-12)
@@ -323,6 +348,28 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Issue 176: https://github.com/galaxyproject/planemo/issues/176
+.. _Pull Request 216: https://github.com/galaxyproject/planemo/pull/216
+.. _Pull Request 213: https://github.com/galaxyproject/planemo/pull/213
+.. _Issue 150: https://github.com/galaxyproject/planemo/issues/150
+.. _37dcc07: https://github.com/galaxyproject/planemo/commit/37dcc07
+.. _30a9c3f: https://github.com/galaxyproject/planemo/commit/30a9c3f
+.. _b53006d: https://github.com/galaxyproject/planemo/commit/b53006d
+.. _Pull Request 203: https://github.com/galaxyproject/planemo/pull/203
+.. _Pull Request 200: https://github.com/galaxyproject/planemo/pull/200
+.. _Pull Request 206: https://github.com/galaxyproject/planemo/pull/206
+.. _Pull Request 207: https://github.com/galaxyproject/planemo/pull/207
+.. _Pull Request 208: https://github.com/galaxyproject/planemo/pull/208
+.. _Pull Request 210: https://github.com/galaxyproject/planemo/pull/210
+.. _Pull Request 215: https://github.com/galaxyproject/planemo/pull/215
+.. _Pull Request 216: https://github.com/galaxyproject/planemo/pull/216
+.. _Issue 217: https://github.com/galaxyproject/planemo/issues/217
+.. _Issue 211: https://github.com/galaxyproject/planemo/issues/211
+.. _cc8abb6: https://github.com/galaxyproject/planemo/commit/cc8abb6
+.. _Issue 209: https://github.com/galaxyproject/planemo/issues/209
+.. _Issue 206: https://github.com/galaxyproject/planemo/issues/206
+.. _Issue 205: https://github.com/galaxyproject/planemo/issues/205
+.. _Pull Request 207: https://github.com/galaxyproject/planemo/pull/207
 .. _1e3668a: https://github.com/galaxyproject/planemo/commit/1e3668a
 .. _Issue 180: https://github.com/galaxyproject/planemo/issues/180
 .. _Pull Request 186: https://github.com/galaxyproject/planemo/pull/186

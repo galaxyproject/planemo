@@ -140,6 +140,30 @@ planemo.commands.cmd_shed_lint module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd_shed_serve module
+--------------------------------------
+
+.. automodule:: planemo.commands.cmd_shed_serve
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_shed_test module
+-------------------------------------
+
+.. automodule:: planemo.commands.cmd_shed_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_shed_update module
+---------------------------------------
+
+.. automodule:: planemo.commands.cmd_shed_update
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd_shed_upload module
 ---------------------------------------
 

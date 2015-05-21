@@ -17,6 +17,11 @@ Check a Tool Shed repository for common problems.
 **Options**::
 
 
+      -r, --recursive                 Recursively perform command for nested
+                                      repository directories.
+      --fail_fast                     If multiple repositories are specified and
+                                      an error occurs stop immediately instead of
+                                      processing remaining repositories.
       --report_level [all|warn|error]
       --fail_level [warn|error]
       --tools                         Lint tools discovered in the process of
@@ -24,10 +29,8 @@ Check a Tool Shed repository for common problems.
       --xsd                           Include experimental tool XSD validation in
                                       linting process (requires xmllint on PATH or
                                       lxml installed).
-      -r, --recursive                 Recursively perform command for nested
-                                      repository directories.
-      --fail_fast                     If multiple repositories are specified and
-                                      an error occurs stop immediately instead of
-                                      processing remaining repositories.
+      --ensure_metadata               Ensure .shed.yml files contain enough
+                                      metadata for each repository to allow
+                                      automated creation and/or updates.
       --help                          Show this message and exit.
     

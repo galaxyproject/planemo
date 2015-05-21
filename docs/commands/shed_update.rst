@@ -1,33 +1,48 @@
 
-``shed_upload`` command
+``shed_update`` command
 ======================================
 
 This section is auto-generated from the help text for the planemo command
-``shed_upload``. This help message can be generated with ``planemo shed_upload
+``shed_update``. This help message can be generated with ``planemo shed_update
 --help``.
 
 **Usage**::
 
-    planemo shed_upload [OPTIONS] PROJECT
+    planemo shed_update [OPTIONS] PROJECT
 
 **Help**
 
-Low-level command for uploading tar balls to a shed.
+Update repository in shed from a ``.shed.yml`` file.
 
-Generally, ``shed_update`` should be used instead since it also updates
-both tool shed contents (via tar ball generation and upload) as well as
-metadata (to handle metadata changes in ``.shed.yml`` files).
+By default this command will update both repository metadata
+from ``.shed.yml`` and upload new contents from the repository
+directory.
 
 ::
 
-    % planemo shed_upload --tar_only  ~/
-    % tar -tzf shed_upload.tar.gz
-    test-data/blastdb.loc
-    ...
-    tools/ncbi_blast_plus/tool_dependencies.xml
-    % tar -tzf shed_upload.tar.gz | wc -l
-    117
+    % planemo shed_update
 
+This will update the main tool shed with the repository defined
+by a ``.shed.yml`` file in the current working directory. Both
+the location of the ``.shed.yml`` and the tool shed to upload to
+can be easily configured. For instance, the following command can
+be used if ``.shed.yml`` if contained in ``path/to/repo`` and the
+desire is to update the test tool shed.
+
+::
+
+    % planemo shed_update --shed_target testtoolshed path/to/repo
+
+Another important option is ``--check_diff`` - this doesn't affect the
+updating of shed metadata but it will check for differences before
+uploading new contents to the tool shed. This may important because the
+tool shed will automatically populate certain attributes in tool shed
+artifact files (such as ``tool_dependencies.xml``) and this may
+cause unwanted installable revisions to be created when there are no
+important changes.
+
+The lower-level ``shed_upload`` command should be used instead if
+the repository doesn't define complete metadata in a ``.shed.yml``.
 
 **Options**::
 
@@ -57,10 +72,9 @@ metadata (to handle metadata changes in ``.shed.yml`` files).
       --check_diff                 Skip uploading if the shed_diff detects there
                                    would be no 'difference' (only attributes
                                    populated by the shed would be updated.)
-      --tar_only                   Produce tar file for upload but do not publish
-                                   to a tool shed.
-      --tar PATH                   Specify a pre-existing tar file instead of
-                                   automatically building one as part of this
-                                   command.
+      --skip_upload                Skip upload contents as part of operation, only
+                                   update metadata.
+      --skip_metadata              Skip metadata update as part of operation, only
+                                   upload new contents.
       --help                       Show this message and exit.
     

@@ -33,15 +33,23 @@ Here are some examples::
 **Options**::
 
 
-      --owner TEXT               Tool Shed repository owner (username).
-      --name TEXT                Tool Shed repository name (defaults to the
-                                 inferred tool directory name).
-      --shed_target TEXT         Tool Shed to target (this can be 'toolshed',
-                                 'testtoolshed', 'local' (alias for
-                                 http://localhost:9009/) or an arbitraryurl).
+      -r, --recursive            Recursively perform command for nested repository
+                                 directories.
       --fail_fast                If multiple repositories are specified and an
                                  error occurs stop immediately instead of
                                  processing remaining repositories.
+      --owner TEXT               Tool Shed repository owner (username).
+      --name TEXT                Tool Shed repository name (defaults to the
+                                 inferred tool directory name).
+      --shed_email TEXT          E-mail for Tool Shed auth (required unless
+                                 shed_key is specified).
+      --shed_key TEXT            API key for Tool Shed access (required unless
+                                 e-mail/pass specified).
+      --shed_password TEXT       Password for Tool Shed auth (required unless
+                                 shed_key is specified).
+      --shed_target TEXT         Tool Shed to target (this can be 'toolshed',
+                                 'testtoolshed', 'local' (alias for
+                                 http://localhost:9009/) or an arbitraryurl).
       -o, --output PATH          Send diff output to specified file.
       --shed_target_source TEXT  Source Tool Shed to diff against (will ignore
                                  local project info specified). To compare the
@@ -49,7 +57,5 @@ Here are some examples::
                                  testtoolshed.
       --raw                      Do not attempt smart diff of XML to filter out
                                  attributes populated by the Tool Shed.
-      -r, --recursive            Recursively perform command for nested repository
-                                 directories.
       --help                     Show this message and exit.
     
