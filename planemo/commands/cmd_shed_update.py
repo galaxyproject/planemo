@@ -38,12 +38,13 @@ def cli(ctx, paths, **kwds):
 
         % planemo shed_update --shed_target testtoolshed path/to/repo
 
-    Another important option is ``--check_diff`` - this will check for
-    differences before uploading new contents to the tool shed. This may
-    important because the tool shed will automatically populate certain
-    attributes in tool shed artifact files (such as ``tool_dependencies.xml``)
-    and this may cause unwanted installable revisions to be created when
-    there are no important changes.
+    Another important option is ``--check_diff`` - this doesn't affect the
+    updating of shed metadata but it will check for differences before
+    uploading new contents to the tool shed. This may important because the
+    tool shed will automatically populate certain attributes in tool shed
+    artifact files (such as ``tool_dependencies.xml``) and this may
+    cause unwanted installable revisions to be created when there are no
+    important changes.
 
     The lower-level ``shed_upload`` command should be used instead if
     the repository doesn't define complete metadata in a ``.shed.yml``.

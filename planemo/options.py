@@ -358,7 +358,7 @@ def shed_check_diff_option():
         is_flag=True,
         help=("Skip uploading if the shed_diff detects there would be no "
               "'difference' (only attributes populated by the shed would "
-              "would be updated.)")
+              "be updated.)")
     )
 
 
