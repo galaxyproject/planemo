@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.12.1.dev0
+0.12.1 (2015-05-21)
 ---------------------
 
 * Fix to ensure the tab completion script is in the Python source tarball
