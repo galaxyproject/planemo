@@ -31,12 +31,6 @@ are fine.
 * Verify the latest Travis CI builds pass.
 * ``make open-docs`` and review changelog.
 * ``make clean && make lint && make test``
-* ``python scripts/commit_version.py <new_version>``
-* ``make release``
-    * Review `Test PyPI site <https://testpypi.python.org/pypi/planemo>`_
-      for errors.
-    * Test intall ``pip install -i https://testpypi.python.org/pypi planemo``.
-* ``python scripts/new_version.py <new_version>``
-* ``git push galaxyproject master``
-* ``git push --tags galaxyproject``
+* ``make release VERSION=<old_version> NEW_VERSION=<new_version>``
+* ``make push-release``
 * Update planemo homebrew recipe to new version.

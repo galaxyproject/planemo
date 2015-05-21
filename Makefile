@@ -8,6 +8,8 @@ ARGS?=
 VENV=.venv
 # Source virtualenv to execute command (flake8, sphinx, twine, etc...)
 IN_VENV=if [ -f $(VENV)/bin/activate ]; then . $(VENV)/bin/activate; fi;
+# TODO: add this upstream as a remote if it doesn't already exist.
+UPSTREAM=galaxyproject
 
 .PHONY: clean-pyc clean-build docs clean
 
@@ -108,17 +110,29 @@ dist: clean
 	$(IN_VENV) python setup.py sdist bdist_egg bdist_wheel
 	ls -l dist
 
-release-test: dist
+release-test-artifacts: dist
 	$(IN_VENV) twine upload -r test dist/*
 	open https://testpypi.python.org/pypi/planemo || xdg-open https://testpypi.python.org/pypi/planemo
 
-release: release-test
+release-aritfacts: release-test-artifacts
 	@while [ -z "$$CONTINUE" ]; do \
 		read -r -p "Have you executed release-test and reviewed results? [y/N]: " CONTINUE; \
 	done ; \
 	[ $$CONTINUE = "y" ] || [ $$CONTINUE = "Y" ] || (echo "Exiting."; exit 1;)
 	@echo "Releasing"
 	$(IN_VENV) twine upload dist/*
+
+commit-version:
+	$(IN_VENV) python scripts/commit_version.py $(VERSION)
+
+new-version:
+	$(IN_VENV) python scripts/new_version.py $(NEW_VERSION)
+
+release: commit-version release-aritfacts new-version
+
+push-release:
+	git push $(UPSTREAM) master
+	git push --tags $(UPSTREAM)
 
 update-extern:
 	sh scripts/update_extern.sh
