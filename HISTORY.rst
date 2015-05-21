@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.12.0.dev0
+0.12.0 (2015-05-21)
 ---------------------
 
 * Implement a ``--failed`` flag for the ``test`` command to rerun
