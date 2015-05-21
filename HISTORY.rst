@@ -9,7 +9,8 @@ History
 0.12.1.dev0
 ---------------------
 
-    
+* Fix to ensure the tab completion script is in the Python source tarball
+  (required for setting up tab-completion for Homebrew). 6b4e7a6_
 
 ---------------------
 0.12.0 (2015-05-21)
@@ -354,6 +355,7 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _6b4e7a6: https://github.com/galaxyproject/planemo/commit/6b4e7a6
 .. _Issue 176: https://github.com/galaxyproject/planemo/issues/176
 .. _Pull Request 216: https://github.com/galaxyproject/planemo/pull/216
 .. _Pull Request 213: https://github.com/galaxyproject/planemo/pull/213
