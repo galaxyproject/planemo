@@ -322,7 +322,7 @@ def tool_shed_client(ctx=None, **kwds):
     def prop(key):
         return kwds.get("shed_%s" % key, None) or shed_config.get(key, None)
 
-    url = _tool_shed_url(kwds)
+    url = tool_shed_url(kwds)
     if read_only:
         key = None
         email = None
@@ -608,7 +608,7 @@ def shed_repo_type(config, name):
     return repo_type
 
 
-def _tool_shed_url(kwds):
+def tool_shed_url(kwds):
     url = kwds.get("shed_target")
     if url in SHED_SHORT_NAMES:
         url = SHED_SHORT_NAMES[url]
@@ -1217,6 +1217,7 @@ __all__ = [
     'for_each_repository',
     'api_exception_to_message',
     'tool_shed_client',
+    'tool_shed_url',
     'diff_repo',
     'download_tarball',
     'shed_init',

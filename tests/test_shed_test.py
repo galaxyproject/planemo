@@ -12,7 +12,7 @@ SHED_TARGET = "testtoolshed"
 class ShedTestTestCase(CliTestCase):
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-    def test_serve(self):
+    def test_shed_test(self):
         fastqc_path = os.path.join(TEST_REPOS_DIR, "fastqc")
         test_cmd = [
             "shed_test",

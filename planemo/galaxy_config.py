@@ -20,6 +20,7 @@ from planemo.io import shell
 from planemo.io import write_file
 from planemo.io import kill_pid_file
 from planemo import git
+from planemo.shed import tool_shed_url
 from planemo.bioblend import (
     galaxy,
     ensure_module,
@@ -71,6 +72,11 @@ BREW_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
 SHED_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
   <tool_shed_tap />
 </dependency_resolvers>
+"""
+
+TOOL_SHEDS_CONF = """<tool_sheds>
+  <tool_shed name="Target Shed" url="${shed_target_url}" />
+</tool_sheds>
 """
 
 # Provide some shortcuts for simple/common dependency resolutions strategies.
@@ -128,6 +134,9 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
         tool_conf = config_join("tool_conf.xml")
         database_location = config_join("galaxy.sqlite")
         shed_tools_path = config_join("shed_tools")
+        sheds_config_path = _configure_sheds_config_file(
+            config_directory, **kwds
+        )
         preseeded_database = True
         master_api_key = kwds.get("master_api_key", "test_key")
         dependency_dir = os.path.join(config_directory, "deps")
@@ -166,6 +175,7 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
             file_path="${temp_directory}/files",
             new_file_path="${temp_directory}/tmp",
             tool_config_file=tool_config_file,
+            tool_sheds_config_file=sheds_config_path,
             check_migrate_tools="False",
             manage_dependency_relationships="False",
             job_working_directory="${temp_directory}/job_working_directory",
@@ -429,6 +439,17 @@ def _search_tool_path_for(path, target, extra_paths=[]):
         if os.path.exists(possible_path):
             return os.path.abspath(possible_path)
     return None
+
+
+def _configure_sheds_config_file(config_directory, **kwds):
+    if "shed_target" not in kwds:
+        kwds = kwds.copy()
+        kwds["shed_target"] = "toolshed"
+    shed_target_url = tool_shed_url(kwds)
+    contents = _sub(TOOL_SHEDS_CONF, {"shed_target_url": shed_target_url})
+    tool_sheds_conf = os.path.join(config_directory, "tool_sheds_conf.xml")
+    write_file(tool_sheds_conf, contents)
+    return tool_sheds_conf
 
 
 def _tool_conf_entry_for(tool_paths):
