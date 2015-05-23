@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.12.2.dev0
+0.12.2 (2015-05-23)
 ---------------------
 
 * Fix ``shed_test`` and ``shed_serve`` for test and local tool sheds.
