@@ -9,7 +9,8 @@ History
 0.12.2.dev0
 ---------------------
 
-    
+* Fix ``shed_test`` and ``shed_serve`` for test and local tool sheds.
+  f3cafaa_
 
 ---------------------
 0.12.1 (2015-05-21)
@@ -361,6 +362,7 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _f3cafaa: https://github.com/galaxyproject/planemo/commit/f3cafaa
 .. _6b4e7a6: https://github.com/galaxyproject/planemo/commit/6b4e7a6
 .. _Issue 176: https://github.com/galaxyproject/planemo/issues/176
 .. _Pull Request 216: https://github.com/galaxyproject/planemo/pull/216
