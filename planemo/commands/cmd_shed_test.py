@@ -23,8 +23,14 @@ from planemo import galaxy_test
 )
 @pass_context
 def cli(ctx, paths, **kwds):
-    """ Serve a transient Galaxy instance after installing repositories
-    from a remote Tool Shed.
+    """ Run tests of published shed artifacts.
+
+    This command will start a Galaxy instance configured to target the
+    specified shed, find published artifacts (tools and dependencies)
+    corresponding to command-line arguments and ``.shed.yml`` file(s),
+    install these artifacts, and run the tool tests for these commands.
+
+    This command requires the target to be version 15.07 or newer.
     """
     galaxy_test.process_defaults(ctx, kwds)
     install_args_list = shed.install_arg_lists(ctx, paths, **kwds)
