@@ -26,7 +26,7 @@ def cli(ctx, paths, **kwds):
     specified shed, find published artifacts (tools and dependencies)
     corresponding to command-line arguments and ``.shed.yml`` file(s),
     install these artifacts, and serve a Galaxy instances that can be
-    logged into an explored interactively.
+    logged into and explored interactively.
     """
     install_args_list = shed.install_arg_lists(ctx, paths, **kwds)
     with galaxy_serve.shed_serve(ctx, install_args_list, **kwds) as config:
