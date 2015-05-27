@@ -156,7 +156,7 @@ def shed_init(ctx, path, **kwds):
 def install_arg_lists(ctx, paths, **kwds):
     """ Build a list of install args for resolved repositories.
     """
-    tsi = tool_shed_client(ctx, **kwds)
+    tsi = tool_shed_client(ctx, realized_repository=realized_repository, **kwds)
     install_args_list = []
 
     def process_repo(realized_repository):
@@ -181,7 +181,7 @@ def upload_repository(ctx, realized_repository, **kwds):
         name = realized_repository.pattern_to_file_name("shed_upload.tar.gz")
         shell("cp '%s' '%s'" % (tar_path, name))
         return 0
-    tsi = tool_shed_client(ctx, **kwds)
+    tsi = tool_shed_client(ctx, realized_repository=realized_repository, **kwds)
     update_kwds = {}
     _update_commit_message(ctx, realized_repository, update_kwds, **kwds)
 
@@ -244,7 +244,7 @@ def _diff_in(ctx, working, realized_repository, **kwds):
     mine = os.path.join(working, label_a)
     other = os.path.join(working, label_b)
 
-    tsi = tool_shed_client(ctx, read_only=True, **kwds)
+    tsi = tool_shed_client(ctx, realized_repository=realized_repository, read_only=True, **kwds)
     # In order to download the tarball, require repository ID...
     repo_id = realized_repository.find_repository_id(ctx, tsi)
     if repo_id is None:
@@ -264,7 +264,7 @@ def _diff_in(ctx, working, realized_repository, **kwds):
     if shed_target_source:
         new_kwds = kwds.copy()
         new_kwds["shed_target"] = shed_target_source
-        tsi = tool_shed_client(ctx, read_only=True, **new_kwds)
+        tsi = tool_shed_client(ctx, realized_repository=realized_repository, read_only=True, **new_kwds)
         download_tarball(
             ctx,
             tsi,
@@ -309,7 +309,11 @@ def shed_repo_config(path, name=None):
     return config
 
 
-def tool_shed_client(ctx=None, **kwds):
+def tool_shed_client(ctx=None, realized_repository=None, **kwds):
+    if realized_repository is not None:
+        shed_username = realized_repository.owner
+    else:
+        shed_username = None
     read_only = kwds.get("read_only", False)
     shed_target = kwds.get("shed_target")
     global_config = getattr(ctx, "global_config", {})
@@ -318,10 +322,11 @@ def tool_shed_client(ctx=None, **kwds):
         shed_config = sheds_config.get(shed_target, {})
     else:
         shed_config = {}
-
     def prop(key):
-        return kwds.get("shed_%s" % key, None) or shed_config.get(key, None)
-
+        if hasattr(shed_config, 'key') or hasattr(shed_config, 'email') or hasattr(shed_config, 'password'):
+            return kwds.get("shed_%s" % key, None) or shed_config.get(key, None)
+        else:
+            return kwds.get("shed_%s" % key, None) or shed_config[shed_username].get(key, None)
     url = tool_shed_url(kwds)
     if read_only:
         key = None
@@ -367,7 +372,7 @@ def _owner(ctx, repo_config, tsi=None, **kwds):
         owner = global_config.get("shed_username", None)
     if owner is None:
         if tsi is None and "shed_target" in kwds:
-            tsi = tool_shed_client(ctx, **kwds)
+            tsi = tool_shed_client(ctx, realized_repository=None, **kwds)
         if tsi is not None:
             owner = username(tsi)
     return owner

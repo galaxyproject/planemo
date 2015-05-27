@@ -128,6 +128,7 @@ class CliShedTestCase(CliTestCase):
     def _tsi(self):
         tsi = shed.tool_shed_client(
             None,
+            realized_repository=None,
             shed_target=self.mock_shed.url,
             key="ignored",
         )
