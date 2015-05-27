@@ -156,7 +156,7 @@ def shed_init(ctx, path, **kwds):
 def install_arg_lists(ctx, paths, **kwds):
     """ Build a list of install args for resolved repositories.
     """
-    tsi = tool_shed_client(ctx, realized_repository=realized_repository, **kwds)
+    tsi = tool_shed_client(ctx, realized_repository=None, **kwds)
     install_args_list = []
 
     def process_repo(realized_repository):
@@ -322,6 +322,7 @@ def tool_shed_client(ctx=None, realized_repository=None, **kwds):
         shed_config = sheds_config.get(shed_target, {})
     else:
         shed_config = {}
+
     def prop(key):
         if hasattr(shed_config, 'key') or hasattr(shed_config, 'email') or hasattr(shed_config, 'password'):
             return kwds.get("shed_%s" % key, None) or shed_config.get(key, None)
