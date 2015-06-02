@@ -12,8 +12,13 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
- Serve a transient Galaxy instance after installing repositories
-from a remote Tool Shed.
+Serve a transient Galaxy with published repositories installed.
+
+This command will start a Galaxy instance configured to target the
+specified shed, find published artifacts (tools and dependencies)
+corresponding to command-line arguments and ``.shed.yml`` file(s),
+install these artifacts, and serve a Galaxy instances that can be
+logged into and explored interactively.
 
 **Options**::
 
