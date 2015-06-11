@@ -80,6 +80,37 @@ Further reading:
   by Björn Grüning demonstrating advanced ``code`` file validation.
 
 -------------------------------------------------
+\.\.\. check input type in command blocks?
+-------------------------------------------------
+
+Input data parameters may specify multiple formats. For example::
+
+    <param name="input" type="data" format="fastq,fasta" label="Input" />
+
+If the command-line under construction doesn't require changes based
+on the input type - this may just be referenced as ``$input``. However, if the
+command-line under construction uses different argument names depending on
+type for instance - it becomes important to dispatch on the underlying type.
+
+In this example ``$input.ext`` - would return the short code for the actual
+datatype of the input supplied - for instance the string ``fasta`` or
+``fastqsanger`` would be valid responses for inputs to this parameter for the
+above definition.
+
+While ``.ext`` may sometimes be useful - there are many cases where it is 
+inappropriate because of subtypes - checking if ``.ext`` is equal to ``fastq``
+in the above example would not catch ``fastqsanger`` inputs for instance. To
+check if an input matches a type or any subtype thereof - the ``is_of_type``
+method can be used. For instance::
+
+    $input.is_of_type('fastq')
+
+would check if the input is of type ``fastq`` or any derivative types such as
+``fastqsanger``.
+
+- `Pull Request 457 <https://bitbucket.org/galaxy/galaxy-central/pull-request/457/allow-cheetah-tool-templates-to-reason/diff>`__
+
+-------------------------------------------------
 \.\.\. determine the user submitting a job?
 -------------------------------------------------
 
