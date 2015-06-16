@@ -51,16 +51,16 @@ def cli(ctx, paths, **kwds):
     """
     tsi = shed.tool_shed_client(ctx, **kwds)
 
-    def update(realized_reposiotry):
+    def update(realized_repository):
         upload_ok = True
         if not kwds["skip_upload"]:
             upload_ok = not shed.upload_repository(
-                ctx, realized_reposiotry, **kwds
+                ctx, realized_repository, **kwds
             )
-        repo_id = realized_reposiotry.find_repository_id(ctx, tsi)
+        repo_id = realized_repository.find_repository_id(ctx, tsi)
         metadata_ok = True
         if not kwds["skip_metadata"]:
-            metadata_ok = realized_reposiotry.update(ctx, tsi, repo_id)
+            metadata_ok = realized_repository.update(ctx, tsi, repo_id)
         if metadata_ok:
             info("Repository metadata updated.")
         else:
