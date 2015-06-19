@@ -106,11 +106,8 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
         test_data_dir=test_data_dir,
         **kwds
     )
-    install_galaxy = kwds.get("install_galaxy", None)
-    galaxy_root = None
-    if not install_galaxy:
-        galaxy_root = _find_galaxy_root(ctx, **kwds)
-
+    galaxy_root = _check_galaxy(ctx, **kwds)
+    install_galaxy = galaxy_root is None
     config_directory = kwds.get("config_directory", None)
 
     def config_join(*args):
@@ -371,6 +368,17 @@ def _file_name_to_migration_version(name):
         return -1
 
 
+def _check_galaxy(ctx, **kwds):
+    """ Find Galaxy root, return None to indicate it should be
+    installed automatically.
+    """
+    install_galaxy = kwds.get("install_galaxy", None)
+    galaxy_root = None
+    if not install_galaxy:
+        galaxy_root = _find_galaxy_root(ctx, **kwds)
+    return galaxy_root
+
+
 def _find_galaxy_root(ctx, **kwds):
     galaxy_root = kwds.get("galaxy_root", None)
     if galaxy_root:
@@ -388,7 +396,7 @@ def _find_galaxy_root(ctx, **kwds):
             if new_par_dir == par_dir:
                 break
             par_dir = new_par_dir
-    raise Exception(FAILED_TO_FIND_GALAXY_EXCEPTION)
+    return None
 
 
 def _find_test_data(tool_paths, **kwds):
