@@ -1,9 +1,12 @@
+from .command import get_command
 
 
 def lint_stdio(tool_xml, lint_ctx):
     stdios = tool_xml.findall("./stdio")
     if not stdios:
-        lint_ctx.info("No stdio definition found, tool will determine an error from stderr.")
+        command = get_command(tool_xml)
+        if command is None or not command.get("detect_errors"):
+            lint_ctx.info("No stdio definition found, tool will determine an error from stderr.")
         return
 
     if len(stdios) > 1:
