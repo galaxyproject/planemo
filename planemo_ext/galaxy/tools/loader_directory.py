@@ -41,13 +41,9 @@ def load_tool_elements_from_path(
 
 def __looks_like_a_tool(path):
     with open(path, "r") as f:
-        for i in range(10):
-            try:
-                line = next(f)
-            except StopIteration:
-                break
-            if "<tool" in line:
-                return True
+        start_contents = f.read(5 * 1024)
+        if "<tool" in start_contents:
+            return True
     return False
 
 
