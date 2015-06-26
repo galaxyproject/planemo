@@ -23,13 +23,15 @@ following command (which will pull the appliance down from `Docker Hub
 
 ::
 
-    docker run -d -p 8010:80 -v `pwd`:/opt/galaxy/tools -t planemo/box
+    docker run -p 8010:80 -v `pwd`:/opt/galaxy/tools -i -t planemo/box
 
-This assumes your tools are in your current working directory (just replace
-`\`pwd\`` with a path to your tools if this is not the case).
+This command will start Galaxy and various other services and then open a bash
+shell with planemo available. This assumes your tools are in your current
+working directory (just replace `\`pwd\`` with a path to your tools if this is
+not the case).
 
 The above command will print a container ID which you can later use to kill
-Docker
+Docker as follows
 
 ::
 
@@ -61,6 +63,25 @@ startup the appliance. This is as easy as
 
 	vagrant up
 
+
+Launching the Appliance (VirtualBox_ - OVA)
+===========================================
+
+The VirtualBox_ OVA variant of the planemo appliance comes preconfigured with
+a full windowed development environment (based on Xubuntu). While it doesn't
+make mounting files external to the appliance as easy as with the Docker or
+Vagrant approach - encompassing the complete environment means it is easier to
+setup and provides an identical experience for every developer using it.
+Together these make the OVA image ideal for learning such as for tutorials and
+workshops.
+
+The latest `VirtualBox`_ version of the planemo appliance can be found `here
+<https://images.galaxyproject.org/planemo/latest.ova>`_.
+
+If VirtualBox_ has been installed - the planemo machine can be imported by
+download the latest image and double clicking the resulting file. This should
+result in VirtualBox being opened to an import screen. Just follow the prompt
+and the machine should become available.
 
 Launching the Appliance (Google Compute Engine)
 ===============================================
@@ -135,3 +156,5 @@ environments such as Amazon Web Services and Google Compute Engine.
 .. _Codebox: https://www.codebox.io/
 .. _GCE: https://cloud.google.com/compute/
 .. _gcloud: https://cloud.google.com/sdk/gcloud/
+.. _Vagrant: https://www.vagrantup.com/
+.. _VirtualBox: https://www.virtualbox.org/wiki/Downloads
