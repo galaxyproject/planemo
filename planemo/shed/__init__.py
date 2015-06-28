@@ -315,7 +315,7 @@ def tool_shed_client(ctx=None, **kwds):
     global_config = getattr(ctx, "global_config", {})
     if global_config and "sheds" in global_config:
         sheds_config = global_config["sheds"]
-        shed_config = sheds_config.get(shed_target, {})
+        shed_config = sheds_config.get(shed_target, {}) or {}
     else:
         shed_config = {}
 
