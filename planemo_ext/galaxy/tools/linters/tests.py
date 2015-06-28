@@ -16,7 +16,7 @@ def lint_tsts(tool_xml, lint_ctx):
         if len(test.findall("assert_stdout")) > 0:
             has_test = True
 
-        outputs = test.findall("output")
+        outputs = test.findall("output") + test.findall("output_collection")
         if len(outputs) > 0:
             has_test = True
         if not has_test:
