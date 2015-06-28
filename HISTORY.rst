@@ -9,7 +9,20 @@ History
 0.13.0.dev0
 ---------------------
 
-    
+* If planemo cannot find a Galaxy root, it will now automatically fetch
+  one (specifing ``--galaxy_install`` will still force a fetch).
+  `Pull Request 235`_
+* `Docuementation <http://planemo.readthedocs.org/en/latest/appliance.html>`__
+  has been updated to reflect new and vastly improved Docker and Vagrant
+  virtual appliances are now available, as well as a new VirtualBox OVA
+  variant.
+* Update linting for new tool XML features (including ``detect_errors``
+  and output collections). `Issue 233`_, 334f2d4_
+* Fix ``shed_test`` help text. `Issue 223`_
+* Fix code typo (thanks to Nicola Soranzo). `Pull Request 230`_
+* Improvements to algorithm used to guess if an XML file is a tool XML file.
+  `Issue 231`_
+* Fix configuration file handling bug. `Issue 240`_
 
 ---------------------
 0.12.2 (2015-05-23)
@@ -368,6 +381,13 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _334f2d4: https://github.com/galaxyproject/planemo/commit/334f2d4
+.. _Pull Request 230: https://github.com/galaxyproject/planemo/pull/230
+.. _Pull Request 235: https://github.com/galaxyproject/planemo/pull/235
+.. _Issue 223: https://github.com/galaxyproject/planemo/issues/223
+.. _Issue 231: https://github.com/galaxyproject/planemo/issues/231
+.. _Issue 233: https://github.com/galaxyproject/planemo/issues/233
+.. _Issue 240: https://github.com/galaxyproject/planemo/issues/240
 .. _f3cafaa: https://github.com/galaxyproject/planemo/commit/f3cafaa
 .. _6b4e7a6: https://github.com/galaxyproject/planemo/commit/6b4e7a6
 .. _Issue 176: https://github.com/galaxyproject/planemo/issues/176
