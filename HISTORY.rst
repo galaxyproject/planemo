@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.13.0.dev0
+0.13.0 (2015-06-28)
 ---------------------
 
 * If planemo cannot find a Galaxy root, it will now automatically fetch
