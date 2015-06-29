@@ -57,25 +57,26 @@ Wait for Kitematic_ to load and search for `planemo/server`.
 .. image:: images/kitematic_startup.png
    :alt: Screenshot Kitematic Startup
 
+Once Kitematic_ has downloaded, you can use the search bar at the top to locate `planemo/server`
+
 .. image:: images/kitematic_search.png
    :alt: Screenshot Kitematic Search
 
-There may be several planemo containers discovered (the above image is a bit
-dated) - be sure to pick the `planemo/server` one for the experience optimized
-for Kitematic_. Choose to create this image and it will download and you
-see logs for the running container.
+There may be several planemo containers discovered  - be sure to pick the
+`planemo/server` one for the experience optimized for Kitematic_. Choose to
+create this image and it will download.
 
 .. image:: images/kitematic_downloading.png
    :alt: Screenshot Kitematic Downloading
 
-.. image:: images/kitematic_logs.png
+After a minute or so, you should see logs for the running
+container appear in the main window.
+
+.. image:: images/kitematic_exec.png
    :alt: Screenshot Kitematic Downloading
 
 Galaxy will now be available by clicking the link in the `Web Preview` section
 of the GUI.
-
-.. image:: images/kitematic_exec.png
-   :alt: Screenshot Kitematic Downloading
 
 Clicking the `Exec` button in the container's tool bar (at the
 top, middle of the screen) will launch a root command-prompt. Planemo is
