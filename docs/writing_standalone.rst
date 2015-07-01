@@ -12,8 +12,6 @@ if you have not already installed it.
 .. include:: _writing_parameters.rst
 .. include:: _writing_scripts.rst
 .. include:: _writing_suites.rst
-.. include:: _writing_collections.rst
-.. include:: _writing_how_do_i.rst
 .. include:: _writing_conclusion.rst
 
 .. _Galaxy: (http://galaxyproject.org/)

@@ -13,6 +13,13 @@ Docker_, Vagrant_, etc...).
 
    ...using Planemo <writing_standalone>
    ...using a Planemo Virtual Appliance <writing_appliance>
+   
+Additional tutorials include
+
+.. toctree::
+
+    Advanced Tool Development Topics <writing_advanced>
+    How do I... (Reference FAQ) <writing_how_do_i>
 
 .. _Galaxy: (http://galaxyproject.org/)
 .. _Docker: https://www.docker.com/
