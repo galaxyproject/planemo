@@ -88,5 +88,7 @@ Input/output options::
                      (4 sigma from the mean if absent) and min of the insert size distribution.
                      FR orientation only. [inferred]
     </help>
-
+    <citations>
+      <citation type="doi">10.1093/bioinformatics/btp698</citation>
+    </citations>
 </tool>
