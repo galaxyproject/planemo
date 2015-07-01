@@ -125,6 +125,7 @@ Once you get the new test case passing with the ``--failed`` parameter - try
 running all the tests again to ensure you didn't break the original test.
 
 ::
+
     % planemo t bwa-mem.xml
     ... < bunch of output >
     bwa_mem_test[0]: passed
@@ -133,8 +134,6 @@ running all the tests again to ensure you didn't break the original test.
 
 
 One possible implementation for tests is as follows (changes highlighted)
-
-::
 
 .. literalinclude:: writing/bwa-mem_3.xml
    :language: xml
