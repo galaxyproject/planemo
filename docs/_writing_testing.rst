@@ -135,7 +135,7 @@ running all the tests again to ensure you didn't break the original test.
 
 One possible implementation for tests is as follows (changes highlighted)
 
-.. literalinclude:: writing/bwa-mem_3.xml
+.. literalinclude:: writing/bwa-mem_v3.xml
    :language: xml
    :emphasize-lines: 20-25,32-43,58-68
 
