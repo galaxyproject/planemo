@@ -19,7 +19,7 @@ using Planemo's ``project_init`` command.::
 This will create a folder with a ``bwa-mem.xml`` as follows:
 
 .. literalinclude:: writing/bwa-mem_v1.xml
-   :language: python
+   :language: xml
    :emphasize-lines: 8,91-93
 
 .. note:: Highlighted are two relatively recently added enhancements to Galaxy's
@@ -73,15 +73,72 @@ specifies both fastq inputs as a collection and expects this new output.
             </collection>
         </param>
         <param name="ref_file" value="bwa-mem-mt-genome.fa" />
+        <param name="input_type" value="paired_collection" />
         <output name="bam_output" file="bwa-aln-test2.bam" ftype="bam" lines_diff="2" />
     </test>
 
-TODO: SHOW TEST FAILING
+We know that we will want to specify the input datasets a paired collection
+(see the collections documentation in this document for more information) and
+that we will need to have a way to allow the user to specify they are
+submitting a paired collection instead of a single input. This is where the
+``fastq_input`` and ``input_type`` variables above cam from.
 
-TODO: SHOW FIX
+Next run ``planemo lint bwa-mem.xml`` to verify the tool doesn't have any
+obvious defects. Once the XML is valid - use planemo ``test`` or just ``t``
+for short to verify this new test is failing.
 
-TODO: RERUN FAILED TEST
+::
+    % planemo t bwa-mem.xml
+    ... < bunch of output >
+    bwa_mem_test[0]: passed
+    bwa_mem_test[1]: failed
+    %
 
+Here you can see this second new test is failing - that is good!
+
+.. info: You can open the file ``tool_test_output.html`` in Firefox or your
+    favorite web browser to see full details for all tests executed.
+
+        % firefox tool_test_output.html
+
+The fix is to create a conditional allowing the user to specify an input type.
+When modifying the tool and retesting - try passing the ``--failed`` flag to
+``planemo test`` - it will speed things up by only rerunning tests have
+already failed.
+
+::
+
+    % planemo t --failed bwa-mem.xml
+
+If you are comfortable with Galaxy tool development - try modifying the tool.
+
+.. info: *Hints*
+    * You will need to use a relatively new ``data_collection`` ``param`` type.
+      It accepts many of the same attributes as ``data`` parameters (e.g. see
+      ``input_fastq1``) but you will need to specify a ``collection_type`` of 
+      ``paired``.
+    * To access the ``data_collection`` parameter parts in the ``command`` 
+      block - use ``$collection_param.forward`` and
+      ``$collection_param.reverse``.
+
+Once you get the new test case passing with the ``--failed`` parameter - try
+running all the tests again to ensure you didn't break the original test.
+
+::
+    % planemo t bwa-mem.xml
+    ... < bunch of output >
+    bwa_mem_test[0]: passed
+    bwa_mem_test[1]: passed
+    %
+
+
+One possible implementation for tests is as follows (changes highlighted)
+
+::
+
+.. literalinclude:: writing/bwa-mem_3.xml
+   :language: xml
+   :emphasize-lines: 20-25,32-43,58-68
 
 .. note:: *Exercise:* The devteam mappers allow users to specify both a paired
    collection or individual datasets (i.e. using two ``data`` parameters). Extend the above ``conditional`` to allow that. Remember to write your test
