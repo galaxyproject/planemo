@@ -121,6 +121,15 @@ CURRENT_CATEGORIES = [
 ]
 
 
+def construct_yaml_str(self, node):
+    # Override the default string handling function
+    # to always return unicode objects
+    return self.construct_scalar(node)
+
+yaml.Loader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
+yaml.SafeLoader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
+
+
 def shed_init(ctx, path, **kwds):
     if not os.path.exists(path):
         os.makedirs(path)
@@ -690,7 +699,7 @@ def _create_shed_config(ctx, path, **kwds):
             del config[k]
 
     with open(path, "w") as f:
-        yaml.dump(config, f)
+        yaml.safe_dump(config, f)
 
 
 def _parse_repos_from_workflow(path):
