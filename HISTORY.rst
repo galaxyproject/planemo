@@ -9,7 +9,13 @@ History
 0.13.1.dev0
 ---------------------
 
-    
+* Fix for ``shed_init`` producing non-standard type hints. `Issue 243`_,
+  f0610d7_
+* Fix tool linting for parameters that define an ``argument`` but not a
+  ``name``. `Issue 245`_, aad1eed_
+* Many doc updates including a tutorial for developing tools in a test-driven
+  fashion and instructions for using the planemo appliance through Kitematic
+  (with Kitematic screenshots from Eric Rasche).
 
 ---------------------
 0.13.0 (2015-06-28)
@@ -387,6 +393,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Issue 243: https://github.com/galaxyproject/planemo/issues/243
+.. _Issue 245: https://github.com/galaxyproject/planemo/issues/245
+.. _aad1eed: https://github.com/galaxyproject/planemo/commit/aad1eed
+.. _f0610d7: https://github.com/galaxyproject/planemo/commit/f0610d7
 .. _334f2d4: https://github.com/galaxyproject/planemo/commit/334f2d4
 .. _Pull Request 230: https://github.com/galaxyproject/planemo/pull/230
 .. _Pull Request 235: https://github.com/galaxyproject/planemo/pull/235
