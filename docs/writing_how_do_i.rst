@@ -225,6 +225,34 @@ These tests can then be run with the Planemo `test command
 
 .. warning:: This idiom does not work with the Tool Shed test automated framework at this time and so these tests will largely only pass with Planemo_.
 
+------------------------------------------
+\.\.\. test exit codes?
+------------------------------------------
+
+A ``test`` element can check the exit code of the underlying job using the
+``check_exit_code="n"`` attribute.
+
+- `job_properties.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/job_properties.xml>`__
+
+------------------------------------------
+\.\.\. test failure states?
+------------------------------------------
+
+Normally, all tool test cases described by a ``test`` element are expected to
+pass - but on can assert a job should fail by adding ``expect_failure="true"``
+to the ``test`` element.
+
+- `job_properties.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/job_properties.xml>`__
+
+------------------------------------------
+\.\.\. test metadata?
+------------------------------------------
+
+Output metadata can be checked using ``metadata`` elements in the XML 
+description of the ``output``.
+
+- `metadata.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/metadata.xml>`__
+
 .. _DOI: http://www.doi.org/
 .. _BibTeX: http://www.bibtex.org/
 .. _Dockerfile: https://docs.docker.com/reference/builder/
