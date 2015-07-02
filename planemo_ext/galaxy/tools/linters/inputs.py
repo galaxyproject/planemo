@@ -10,7 +10,7 @@ def lint_inputs(tool_xml, lint_ctx):
         if "type" not in param_attrib:
             lint_ctx.error("Found param input with no type specified.")
             has_errors = True
-        if "name" not in param_attrib:
+        if "name" not in param_attrib and "argument" not in param_attrib:
             lint_ctx.error("Found param input with no name specified.")
             has_errors = True
 
@@ -18,7 +18,7 @@ def lint_inputs(tool_xml, lint_ctx):
             continue
 
         param_type = param_attrib["type"]
-        param_name = param_attrib["name"]
+        param_name = param_attrib.get("name", param_attrib.get("argument"))
         if param_type == "data":
             if "format" not in param_attrib:
                 lint_ctx.warn("Param input [%s] with no format specified - 'data' format will be assumed.", param_name)
