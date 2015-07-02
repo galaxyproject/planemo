@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.13.1.dev0
+0.13.1 (2015-07-01)
 ---------------------
 
 * Fix for ``shed_init`` producing non-standard type hints. `Issue 243`_,
