@@ -8,16 +8,16 @@ follows.
 
 ::
 
-   brew tap galaxyproject/tap
-   brew install planemo
+    $ brew tap galaxyproject/tap
+    $ brew install planemo
 
 This will install the latest Planemo release. ``brew`` provide a very nice
 upgrade path as new versions of Planemo are released.
 
 ::
 
-   brew update
-   brew upgrade planemo
+    $ brew update
+    $ brew upgrade planemo
 
 To install or upgrade to the latest development branch of Planemo simply add
 the argument ``--HEAD`` to either ``install`` or ``upgrade``.
@@ -28,8 +28,8 @@ install with ``pip``.
 
 ::
 
-   % virtualenv .venv; . .venv/bin/activate
-   % pip install planemo
+    $ virtualenv .venv; . .venv/bin/activate
+    $ pip install planemo
 
 .. _Homebrew: http://brew.sh/
 .. _linuxbrew: https://github.com/Homebrew/linuxbrew

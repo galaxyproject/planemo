@@ -13,7 +13,7 @@ following variant of the previous ``tool_init`` command (the only difference is 
 
 ::
 
-    % planemo tool_init --force \
+    $ planemo tool_init --force \
                         --macros \
                         --id 'seqtk_seq' \
                         --name 'Convert to FASTA (seqtk)' \

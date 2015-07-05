@@ -14,15 +14,15 @@ obtain it should be fine.
 
 ::
 
-    % brew tap homebrew/science
-    % brew install seqtk
+    $ brew tap homebrew/science
+    $ brew install seqtk
     ==> Installing seqtk from homebrew/homebrew-science
     ==> Downloading https://github.com/lh3/seqtk/archive/73866e7.tar.gz
     ######################################################################## 100.0%
     ==> make
     /home/john/.linuxbrew/Cellar/seqtk/1.0-r68: 3 files, 208K, built in 2 seconds
-    % wget https://raw.githubusercontent.com/galaxyproject/galaxy-test-data/master/2.fastq
-    % seqtk seq
+    $ wget https://raw.githubusercontent.com/galaxyproject/galaxy-test-data/master/2.fastq
+    $ seqtk seq
 
         Usage:   seqtk seq [options] <in.fq>|<in.fa>
 
@@ -43,8 +43,8 @@ obtain it should be fine.
                  -1        output the 2n-1 reads only
                  -2        output the 2n reads only
                  -V        shift quality by '(-Q) - 33'
-    % seqtk seq -a 2.fastq > 2.fasta
-    % cat 2.fasta
+    $ seqtk seq -a 2.fastq > 2.fasta
+    $ cat 2.fasta
     >EAS54_6_R1_2_1_413_324
     CCCTTCTTGTCTTCAGCGTTTCTCC
     >EAS54_6_R1_2_1_540_792
@@ -59,7 +59,7 @@ start by doing that.
 
 ::
 
-    % planemo tool_init --id 'seqtk_seq' --name 'Convert to FASTA (seqtk)'
+    $ planemo tool_init --id 'seqtk_seq' --name 'Convert to FASTA (seqtk)'
 
 The ``tool_init`` command can take various complex arguments - but the two
 most basic ones are shown above ``--id`` and ``--name``. Every Galaxy tool
@@ -85,7 +85,7 @@ as follows.
 
 ::
 
-    % planemo tool_init --force \
+    $ planemo tool_init --force \
                         --id 'seqtk_seq' \
                         --name 'Convert to FASTA (seqtk)' \
                         --requirement seqtk@1.0-r68 \
@@ -108,7 +108,7 @@ away by the tool - but they can be a good place to start.
 
 ::
 
-    % planemo tool_init --force \
+    $ planemo tool_init --force \
                         --id 'seqtk_seq' \
                         --name 'Convert to FASTA (seqtk)' \
                         --requirement seqtk@1.0-r68 \
@@ -132,7 +132,7 @@ with best practices.
 
 ::
 
-    % planemo l
+    $ planemo l
     Linting tool /home/john/test/seqtk_seq.xml
     Applying linter lint_top_level... CHECK
     .. CHECK: Tool defines a version.
