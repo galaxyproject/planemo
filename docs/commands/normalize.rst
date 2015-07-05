@@ -8,7 +8,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Usage**::
 
-    planemo normalize [OPTIONS] TOOL_PATH
+    $ planemo normalize [OPTIONS] TOOL_PATH
 
 **Help**
 
@@ -24,13 +24,13 @@ the tool development best practices outlined on the Galaxy wiki.
 
 ::
 
-    % # Print normalized version of tool.
-    % planemo normalize tool.xml
+    $ # Print normalized version of tool.
+    $ planemo normalize tool.xml
     <tool>
     ...
-    % # Print a variant of tool with all macros expanded out, useful for
-    % # debugging complex macros.
-    % planemo normalize --expand_macros tool.xml
+    $ # Print a variant of tool with all macros expanded out, useful for
+    $ # debugging complex macros.
+    $ planemo normalize --expand_macros tool.xml
     <tool>
     ...
 

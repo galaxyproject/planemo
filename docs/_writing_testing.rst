@@ -11,14 +11,14 @@ An Example Tool - BWA
 
     ::
 
-        % brew install homebrew/science/bwa
+        $ brew install homebrew/science/bwa
 
 Lets start with a simple wrapper for the BWA_ application (``bwa mem`` in
 particular). You can create a new mini-project with a minimal bwa-mem tool
 using Planemo's ``project_init`` command.::
 
-    % planemo project_init --template bwa bwa
-    % cd bwa
+    $ planemo project_init --template bwa bwa
+    $ cd bwa
 
 This will create a folder with a ``bwa-mem.xml`` as follows:
 
@@ -56,9 +56,9 @@ result - all following the pattern from the command block in the tool.
 
 ::
 
-    % cd test-data
-    % bwa index -a is bwa-mem-mt-genome.fa
-    % bwa mem bwa-mem-mt-genome.fa bwa-mem-fastq1.fq bwa-mem-fastq2.fq | \
+    $ cd test-data
+    $ bwa index -a is bwa-mem-mt-genome.fa
+    $ bwa mem bwa-mem-mt-genome.fa bwa-mem-fastq1.fq bwa-mem-fastq2.fq | \
       samtools view -Sb - > temporary_bam_file.bam && \
       samtools sort -f temporary_bam_file.bam bwa-aln-test2.bam
 
@@ -97,18 +97,18 @@ for short to verify this new test is failing.
 
 ::
 
-    % planemo t bwa-mem.xml
+    $ planemo t bwa-mem.xml
     ... < bunch of output >
     bwa_mem_test[0]: passed
     bwa_mem_test[1]: failed
-    %
+    $
 
 Here you can see this second new test is failing - that is good!
 
 .. info: You can open the file ``tool_test_output.html`` in Firefox or your
     favorite web browser to see full details for all tests executed.
 
-        % firefox tool_test_output.html
+        $ firefox tool_test_output.html
 
 The fix is to create a conditional allowing the user to specify an input type.
 When modifying the tool and retesting - try passing the ``--failed`` flag to
@@ -117,7 +117,7 @@ already failed.
 
 ::
 
-    % planemo t --failed bwa-mem.xml
+    $ planemo t --failed bwa-mem.xml
 
 If you are comfortable with Galaxy tool development - try modifying the tool.
 
@@ -135,11 +135,11 @@ running all the tests again to ensure you didn't break the original test.
 
 ::
 
-    % planemo t bwa-mem.xml
+    $ planemo t bwa-mem.xml
     ... < bunch of output >
     bwa_mem_test[0]: passed
     bwa_mem_test[1]: passed
-    %
+    $
 
 
 One possible implementation for tests is as follows (changes highlighted)
@@ -187,12 +187,12 @@ the ``k`` parameter.
 
 ::
 
-    % planemo t bwa-mem.xml
+    $ planemo t bwa-mem.xml
     ... < bunch of output >
     bwa_mem_test[0]: passed
     bwa_mem_test[1]: passed
     bwa_mem_test[2]: failed
-    %
+    $
 
 Reviewing the output - indeed this new test failed as expected (``did not
 contain expected text '-k 20'``). Now let's implement the ``k`` parameter and

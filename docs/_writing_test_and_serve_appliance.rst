@@ -1,7 +1,7 @@
 
 ::
 
-    % planemo t
+    $ planemo t
     ...
     All 1 test(s) executed passed.
     seqtk_seq[0]: passed
