@@ -8,7 +8,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Usage**::
 
-    planemo shed_update [OPTIONS] PROJECT
+    $ planemo shed_update [OPTIONS] PROJECT
 
 **Help**
 
@@ -20,7 +20,7 @@ directory.
 
 ::
 
-    % planemo shed_update
+    $ planemo shed_update
 
 This will update the main tool shed with the repository defined
 by a ``.shed.yml`` file in the current working directory. Both
@@ -31,7 +31,7 @@ desire is to update the test tool shed.
 
 ::
 
-    % planemo shed_update --shed_target testtoolshed path/to/repo
+    $ planemo shed_update --shed_target testtoolshed path/to/repo
 
 Another important option is ``--check_diff`` - this doesn't affect the
 updating of shed metadata but it will check for differences before

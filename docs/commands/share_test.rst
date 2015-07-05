@@ -8,7 +8,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Usage**::
 
-    planemo share_test [OPTIONS] FILE_PATH
+    $ planemo share_test [OPTIONS] FILE_PATH
 
 **Help**
 

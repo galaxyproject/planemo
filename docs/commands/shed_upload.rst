@@ -8,7 +8,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Usage**::
 
-    planemo shed_upload [OPTIONS] PROJECT
+    $ planemo shed_upload [OPTIONS] PROJECT
 
 **Help**
 
@@ -20,12 +20,12 @@ metadata (to handle metadata changes in ``.shed.yml`` files).
 
 ::
 
-    % planemo shed_upload --tar_only  ~/
-    % tar -tzf shed_upload.tar.gz
+    $ planemo shed_upload --tar_only  ~/
+    $ tar -tzf shed_upload.tar.gz
     test-data/blastdb.loc
     ...
     tools/ncbi_blast_plus/tool_dependencies.xml
-    % tar -tzf shed_upload.tar.gz | wc -l
+    $ tar -tzf shed_upload.tar.gz | wc -l
     117
 
 
