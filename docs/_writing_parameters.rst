@@ -107,7 +107,7 @@ parameters.
 ::
 
     #if $sample
-    -f $sample.faction -s $sample.seed
+    -f $sample.fraction -s $sample.seed
     #end if
 
 Notice we must reference the parameters using the ``sample.`` prefix since
@@ -118,7 +118,7 @@ The newest version of this tool is now
 .. literalinclude:: writing/seqtk_seq_v5.xml
    :language: xml
    :emphasize-lines: 13-19,31-43
-
+fac
 For tools like this where there are many options but in most uses the defaults
 are preferred - a common idiom is to break the parameters into simple and
 advanced sections using a ``conditional``.
