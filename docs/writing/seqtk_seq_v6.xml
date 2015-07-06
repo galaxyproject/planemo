@@ -15,7 +15,7 @@
               -M $settings.mask_regions
               #end if
               #if $settings.sample
-              -f $settings.sample.faction
+              -f $settings.sample.fraction
               -s $settings.sample.seed
               #end if
               #end if
