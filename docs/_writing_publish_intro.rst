@@ -14,7 +14,7 @@ Configuring a Shed Account
 
 The `planemo <http://planemo.readthedocs.org/en/latest/appliance.html>`__
 appliance comes pre-configured with a local Tool Shed and planemo is
-configured to talk to it via ``~/.planemo.yml``. Check out the `publishing
+configured to talk to it via ``~/.planemo.yml``. Check out the `publishing docs
 <http://planemo.readthedocs.org/en/latest/publishing.html>`__ for information
 on setting up this ``~/.planemo.yml`` file on your development environment.
  
@@ -87,12 +87,11 @@ repository contents.
 
     planemo shed_create
 
-Advanced Usage
-=============================
-
-The above usage is relatively straight forward - it will map the current
-directory to a single repository in the Tool Shed.
-
+The planemo machine isn't preconfigured to allow publishing to the main tool
+shed so this command will not work. See the more complete `publishing docs
+<http://planemo.readthedocs.org/en/latest/publishing.html>`__ for full details
+about how to setup Planemo to publish to the main and test tool shed - the
+process is very similar.
 
 .. _Galaxy Tool Shed: https://toolshed.g2.bx.psu.edu/
 .. _Tool Shed Wiki: https://wiki.galaxyproject.org/ToolShed
