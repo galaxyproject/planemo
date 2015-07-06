@@ -42,6 +42,7 @@ def cli(ctx, path, template=None, **kwds):
         untar_args = UNTAR_ARGS % (tempdir)
         untar_to(DOWNLOAD_URL, tempdir, untar_args)
         shell("ls '%s'" % (tempdir))
-        shell("mv '%s/%s'/* '%s/%s'/.* '%s'" % (tempdir, template, path))
+        shell("mv '%s/%s'/* '%s'" % (tempdir, template, path))
+        shell("mv '%s/%s'/.* '%s'" % (tempdir, template, path))
     finally:
         shutil.rmtree(tempdir)

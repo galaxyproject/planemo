@@ -73,7 +73,7 @@ Updating a Repository
 
 ::
 
-    planemo shed_update --check_diff --shed_target local
+    planemo shed_update --shed_target local
 
 Once tools and reqiured dependency files have been published to the tool shed,
 the actual shed dependencies can be automatically and installed and tool 
