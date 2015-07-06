@@ -67,7 +67,7 @@ pairs of datasets can also process single datasets. The following
         <param name="fastq_input1" type="data" format="fastqsanger" label="Select fastq dataset" help="Specify dataset with single reads"/>
       </when>
       <when value="paired_collection">
-        <param name="fastq_input" format="fastqsanger" type="data_collection" collection_type="paired" label="Select a paired collection" />
+        <param name="fastq_input" format="fastqsanger" type="data_collection" collection_type="paired" label="Select a paired collection" label="Select dataset pair" help="Specify paired dataset collection containing paired reads"/>
       </when>
     </conditional>
 
