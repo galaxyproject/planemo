@@ -89,8 +89,8 @@ block.
 
 ::
 
-    <conditional>
-        <param name="sample" type="boolean" label="Sample fraction of sequences" />
+    <conditional name="sample">
+        <param name="sample_selector" type="boolean" label="Sample fraction of sequences" />
         <when value="true">
             <param name="fraction" label="Fraction" type="float" value="1.0"
                    help="(-f)" />
@@ -106,7 +106,7 @@ parameters.
 
 ::
 
-    #if $sample
+    #if $sample.sample_selector
     -f $sample.fraction -s $sample.seed
     #end if
 
