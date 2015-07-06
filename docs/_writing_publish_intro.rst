@@ -1,16 +1,16 @@
 .. _shed:
 
-=============================
 Publishing to the Tool Shed
-=============================
+====================================================
 
 Now that the tool is working and useful - it is time to publish it to the tool
 shed. The `Galaxy Tool Shed`_ (referred to colloquially in Planemo as the
 "shed") can store Galaxy tools, dependency definitions, and workflows among
 other Galaxy artifacts.
 
+-------------------------------------------------
 Configuring a Shed Account
-=============================
+-------------------------------------------------
 
 The `planemo <http://planemo.readthedocs.org/en/latest/appliance.html>`__
 appliance comes pre-configured with a local Tool Shed and planemo is
@@ -18,8 +18,9 @@ configured to talk to it via ``~/.planemo.yml``. Check out the `publishing docs
 <http://planemo.readthedocs.org/en/latest/publishing.html>`__ for information
 on setting up this ``~/.planemo.yml`` file on your development environment.
  
+-------------------------------------------------
 Creating a Repository
-=============================
+-------------------------------------------------
 
 Planemo can be used to used to publish "repositories" to the Tool Shed. A
 single GitHub repository or locally managed directory of tools may correspond
@@ -66,8 +67,9 @@ Now navigate to the local tool shed (likely at `http://localhost:9009/
 <http://localhost:9009/>`__). You can login with login ``planemo@test.com``
 and password ``planemo``.
 
+-------------------------------------------------
 Updating a Repository
-=============================
+-------------------------------------------------
 
 ::
 
