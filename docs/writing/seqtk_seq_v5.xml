@@ -14,7 +14,7 @@
               -M $mask_regions
               #end if
               #if $sample
-              -f $sample.faction
+              -f $sample.fraction
               -s $sample.seed
               #end if
               -a $input1 > $output1
