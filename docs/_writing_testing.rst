@@ -228,6 +228,3 @@ may be helpful for power users and external applications.
     See the example tool `job_properties.xml
     <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/job_properties.xml>`__
     for an example of this.
-
-TODO: DESCRIBE OTHER INEXACT TESTING OPTIONS
-  ``lines_diff``, ``md5sum``, the same size stuff.
