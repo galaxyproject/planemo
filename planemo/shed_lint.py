@@ -243,7 +243,6 @@ def lint_downloads(path, lint_ctx):
         lint_ctx.info("No tool_dependencies.xml, skipping.")
         return
 
-
     try:
         xml_data = etree.ElementTree.parse(tool_dependencies).getroot()
         for package in xml_data.findall(".//package"):
@@ -255,45 +254,7 @@ def lint_downloads(path, lint_ctx):
 
         for action in xml_data.findall(".//action[@type=\"download_by_url\"]"):
             if action.text is not None and '://' in action.text:
-                url = action.text.strip()
-                if url.startswith('http:') or url.startswith('ftp:'):
-                    lint_ctx.info(("action resource contains a URL over "
-                                   "insecure channels. You may wish to check for "
-                                   "a secured (https) download option"))
-
-                    insecure_hash_used = any([
-                        any([
-                            x in url
-                            for x in ('#md5=', '#md5#')
-                        ]),
-                        'md5' in action.attrib
-                    ])
-                    if insecure_hash_used:
-                        lint_ctx.info(("A hash was found, but using "
-                                       "a known broken algorithm. Please "
-                                       "validate the contents of the download, "
-                                       "and generate a sha256 hash"))
-
-                    if '#sha256#' in url:
-                        lint_ctx.info(("A secure hash was found in the URL, please "
-                                       "consider migrating this to using the <action /> "
-                                       "property key \"sha256\" to store your hashes "
-                                       "as this will not break HTTP spec."))
-
-                    if 'sha256' in action.attrib:
-                        lint_ctx.info("An sha256sum was found")
-                    else:
-                        lint_ctx.error(("No valid, secure checksum was found "
-                                        "for verifying the integrity of the "
-                                        "downloaded file. Without this you are "
-                                        "exposing your end users to significant "
-                                        "risk, if the downloaded file is MITM'd. "
-                                        "It is extremely bad practice to "
-                                        "download unverified binaries onto your "
-                                        "user's clusters. Please seriously "
-                                        "consider adding a secure (i.e. sha256) "
-                                        "checksum to your URL download "
-                                        "actions."))
+                _validate_action_url(lint_ctx, action)
 
         lint_ctx.info("Checked for hashes for downloaded files")
     except Exception as e:
@@ -359,3 +320,45 @@ def _validate_categories(categories, realized_repository):
                        "in the category 'Tool Dependency Packages'.")
 
     return msg
+
+
+def _validate_action_url(lint_ctx, action):
+    url = action.text.strip()
+    if url.startswith('http:') or url.startswith('ftp:'):
+        lint_ctx.info(("action resource contains a URL over "
+                       "insecure channels. You may wish to check for "
+                       "a secured (https) download option"))
+
+        insecure_hash_used = any([
+            any([
+                x in url
+                for x in ('#md5=', '#md5#')
+            ]),
+            'md5' in action.attrib
+        ])
+        if insecure_hash_used:
+            lint_ctx.info(("A hash was found, but using "
+                           "a known broken algorithm. Please "
+                           "validate the contents of the download, "
+                           "and generate a sha256 hash"))
+
+        if '#sha256#' in url:
+            lint_ctx.info(("A secure hash was found in the URL, please "
+                           "consider migrating this to using the <action /> "
+                           "property key \"sha256\" to store your hashes "
+                           "as this will not break HTTP spec."))
+
+        if 'sha256' in action.attrib:
+            lint_ctx.info("An sha256sum was found")
+        else:
+            lint_ctx.error(("No valid, secure checksum was found "
+                            "for verifying the integrity of the "
+                            "downloaded file. Without this you are "
+                            "exposing your end users to significant "
+                            "risk, if the downloaded file is MITM'd. "
+                            "It is extremely bad practice to "
+                            "download unverified binaries onto your "
+                            "user's clusters. Please seriously "
+                            "consider adding a secure (i.e. sha256) "
+                            "checksum to your URL download "
+                            "actions."))
