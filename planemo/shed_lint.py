@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import os
 import yaml
 from galaxy.tools.lint import LintContext
@@ -23,6 +24,9 @@ from planemo.io import info
 from planemo.io import error
 
 from galaxy.tools.lint import lint_xml_with
+
+from xml import etree
+
 
 TOOL_DEPENDENCIES_XSD = os.path.join(XSDS_PATH, "tool_dependencies.xsd")
 REPO_DEPENDENCIES_XSD = os.path.join(XSDS_PATH, "repository_dependencies.xsd")
@@ -82,6 +86,11 @@ def lint_repository(ctx, realized_repository, **kwds):
     lint_ctx.lint(
         "lint_readme",
         lint_readme,
+        path,
+    )
+    lint_ctx.lint(
+        "lint_downloads",
+        lint_downloads,
         path,
     )
     if kwds["tools"]:
@@ -226,6 +235,77 @@ def lint_shed_yaml(realized_repository, lint_ctx):
         return
     lint_ctx.info(".shed.yml found and appears to be valid YAML.")
     _lint_shed_contents(lint_ctx, realized_repository)
+
+
+def lint_downloads(path, lint_ctx):
+    tool_dependencies = os.path.join(path, "tool_dependencies.xml")
+    if not os.path.exists(tool_dependencies):
+        lint_ctx.info("No tool_dependencies.xml, skipping.")
+        return
+
+
+    try:
+        xml_data = etree.ElementTree.parse(tool_dependencies).getroot()
+        for package in xml_data.findall(".//package"):
+            if package.text is not None and '://' in package.text:
+                if package.text.startswith('http:') or package.text.startswith('ftp:'):
+                    lint_ctx.info(("Package resource contains a URL over "
+                                   "insecure channels. You may wish to check for "
+                                   "a secured (https) download option"))
+
+        for action in xml_data.findall(".//action[@type=\"download_by_url\"]"):
+            if action.text is not None and '://' in action.text:
+                url = action.text.strip()
+                if url.startswith('http:') or url.startswith('ftp:'):
+                    lint_ctx.info(("action resource contains a URL over "
+                                   "insecure channels. You may wish to check for "
+                                   "a secured (https) download option"))
+
+                    insecure_hash_used = any([
+                        any([
+                            x in url
+                            for x in ('#md5=', '#md5#')
+                        ]),
+                        'md5' in action.attrib
+                    ])
+                    if insecure_hash_used:
+                        lint_ctx.info(("A hash was found, but using "
+                                       "a known broken algorithm. Please "
+                                       "validate the contents of the download, "
+                                       "and generate a sha256 hash"))
+
+                    if '#sha256#' in url:
+                        lint_ctx.info(("A secure hash was found in the URL, please "
+                                       "consider migrating this to using the <action /> "
+                                       "property key \"sha256\" to store your hashes "
+                                       "as this will not break HTTP spec."))
+
+                    if 'sha256' in action.attrib:
+                        lint_ctx.info("An sha256sum was found")
+                    else:
+                        lint_ctx.error(("No valid, secure checksum was found "
+                                        "for verifying the integrity of the "
+                                        "downloaded file. Without this you are "
+                                        "exposing your end users to significant "
+                                        "risk, if the downloaded file is MITM'd. "
+                                        "It is extremely bad practice to "
+                                        "download unverified binaries onto your "
+                                        "user's clusters. Please seriously "
+                                        "consider adding a secure (i.e. sha256) "
+                                        "checksum to your URL download "
+                                        "actions."))
+
+        lint_ctx.info("Checked for hashes for downloaded files")
+    except Exception as e:
+        import sys
+        import traceback
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
+        traceback.print_exc()
+        template = "Problem parsing tool_dependenies.xml [%s]"
+        msg = template % str(e)
+        lint_ctx.warn(msg)
+        return
 
 
 def _lint_shed_contents(lint_ctx, realized_repository):
