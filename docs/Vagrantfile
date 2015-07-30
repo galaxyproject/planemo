@@ -11,7 +11,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Disable default mount and mount pwd to /opt/galaxy/tools instead.
   config.vm.synced_folder ".", "/vagrant", disabled: true
-  config.vm.synced_folder ".", "/opt/galaxy/tools", owner: "vagrant"
+  config.vm.synced_folder ".", "/opt/galaxy/tools", owner: "ubuntu"
 
   # config.vm.provider "virtualbox" do |vb|
   #   # Don't boot with headless mode
