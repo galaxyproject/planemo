@@ -55,7 +55,7 @@
         </conditional>
     </inputs>
     <outputs>
-        <data name="output1" format="fasta" from_work_dir="2.fasta" />
+        <data name="output1" format="fasta" />
     </outputs>
     <tests>
         <test>
