@@ -155,7 +155,10 @@ def build(**kwds):
     del kwds["example_output"]
     for i, output_file in enumerate(example_outputs or []):
         name = "output%d" % (i + 1)
-        output = Output(name=name, from_path=output_file)
+        if kwds["from_work_dir"]:
+            output = Output(name=name, from_path=output_file)
+        else:
+            output = Output(name=name)
         outputs.append(output)
         test_case.outputs.append((name, output_file))
         command = _replace_file_in_command(command, output_file, output.name)

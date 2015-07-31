@@ -84,6 +84,13 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
           "with a data input parameter)."),
 )
 @click.option(
+    "--from_work_dir",
+    is_flag=True,
+    default=None,
+    prompt=False,
+    help=("Hardcode the output name"),
+)
+@click.option(
     "--example_output",
     type=click.STRING,
     default=None,
