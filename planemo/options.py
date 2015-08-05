@@ -21,7 +21,7 @@ def test_data_option():
     return click.option(
         "--test_data",
         type=click.Path(exists=True, file_okay=False, resolve_path=True),
-        help='test-data directory to for specified tool(s).'
+        help="test-data directory to for specified tool(s).",
     )
 
 
@@ -29,7 +29,7 @@ def tool_data_table_option():
     return click.option(
         "--tool_data_table",
         type=click.Path(exists=True, file_okay=True, resolve_path=True),
-        help='tool_data_table_conf.xml file to for specified tool(s).'
+        help="tool_data_table_conf.xml file to for specified tool(s).",
     )
 
 
@@ -37,7 +37,7 @@ def galaxy_root_option():
     return click.option(
         "--galaxy_root",
         type=click.Path(exists=True, file_okay=False, resolve_path=True),
-        help='Root of development galaxy directory to execute command with.'
+        help="Root of development galaxy directory to execute command with.",
     )
 
 
@@ -46,7 +46,7 @@ def galaxy_port_option():
         "--port",
         type=int,
         default="9090",
-        help='Port to serve Galaxy on (default is 9090).'
+        help="Port to serve Galaxy on (default is 9090).",
     )
 
 
@@ -127,7 +127,7 @@ def no_cache_galaxy_option():
 
 def brew_option():
     return click.option(
-        '--brew',
+        "--brew",
         type=click.Path(exists=True, file_okay=True, dir_okay=False),
         help="Homebrew 'brew' executable to use."
     )
@@ -143,7 +143,7 @@ def required_tool_arg():
         readable=True,
         resolve_path=True,
     )
-    return click.argument('path', metavar="TOOL_PATH", type=arg_type)
+    return click.argument("path", metavar="TOOL_PATH", type=arg_type)
 
 
 def _optional_tools_default(ctx, param, value):
@@ -165,7 +165,7 @@ def optional_tools_arg(multiple=False):
         readable=True,
         resolve_path=True,
     )
-    name = 'paths' if multiple else 'path'
+    name = "paths" if multiple else "path"
     nargs = -1 if multiple else 1
     return click.argument(
         name,
@@ -196,7 +196,7 @@ def shed_project_arg(multiple=True):
         writable=True,
         resolve_path=True,
     )
-    name = 'paths' if multiple else 'path'
+    name = "paths" if multiple else "path"
     nargs = -1 if multiple else 1
     return click.argument(
         name,
@@ -217,7 +217,7 @@ def optional_project_arg(exists=True):
         resolve_path=True,
     )
     return click.argument(
-        'path',
+        "path",
         metavar="PROJECT",
         default=".",
         type=arg_type
@@ -234,7 +234,7 @@ def no_cleanup_option():
 
 def docker_cmd_option():
     return click.option(
-        '--docker_cmd',
+        "--docker_cmd",
         default=docker_util.DEFAULT_DOCKER_COMMAND,
         help="Command used to launch docker (defaults to docker)."
     )
@@ -242,7 +242,7 @@ def docker_cmd_option():
 
 def docker_sudo_option():
     return click.option(
-        '--docker_sudo',
+        "--docker_sudo",
         is_flag=True,
         help="Flag to use sudo when running docker."
     )
@@ -250,7 +250,7 @@ def docker_sudo_option():
 
 def docker_sudo_cmd_option():
     return click.option(
-        '--docker_sudo_cmd',
+        "--docker_sudo_cmd",
         default=docker_util.DEFAULT_SUDO_COMMAND,
         help="sudo command to use when --docker_sudo is enabled " +
              "(defaults to sudo)."
@@ -259,7 +259,7 @@ def docker_sudo_cmd_option():
 
 def docker_host_option():
     return click.option(
-        '--docker_host',
+        "--docker_host",
         default=docker_util.DEFAULT_HOST,
         help="Docker host to target when executing docker commands " +
              "(defaults to localhost)."
@@ -268,14 +268,14 @@ def docker_host_option():
 
 def shed_owner_option():
     return click.option(
-        '--owner',
+        "--owner",
         help="Tool Shed repository owner (username)."
     )
 
 
 def shed_name_option():
     return click.option(
-        '--name',
+        "--name",
         help="Tool Shed repository name (defaults to the inferred "
              "tool directory name)."
     )
@@ -283,7 +283,8 @@ def shed_name_option():
 
 def shed_target_option():
     return click.option(
-        '--shed_target',
+        "-t",
+        "--shed_target",
         help="Tool Shed to target (this can be 'toolshed', 'testtoolshed', "
              "'local' (alias for http://localhost:9009/) or an arbitrary"
              "url).",
@@ -293,7 +294,7 @@ def shed_target_option():
 
 def shed_key_option():
     return click.option(
-        '--shed_key',
+        "--shed_key",
         help="API key for Tool Shed access (required unless e-mail/pass "
              "specified)."
     )
@@ -301,7 +302,7 @@ def shed_key_option():
 
 def shed_email_option():
     return click.option(
-        '--shed_email',
+        "--shed_email",
         help="E-mail for Tool Shed auth (required unless shed_key is "
              "specified)."
     )
@@ -309,7 +310,7 @@ def shed_email_option():
 
 def shed_password_option():
     return click.option(
-        '--shed_password',
+        "--shed_password",
         help="Password for Tool Shed auth (required unless shed_key is "
              "specified)."
     )
@@ -335,15 +336,15 @@ def shed_skip_metadata():
 
 def shed_message_option():
     return click.option(
-        '-m',
-        '--message',
+        "-m",
+        "--message",
         help="Commit message for tool shed upload."
     )
 
 
 def shed_force_create_option():
     return click.option(
-        '--force_repository_creation',
+        "--force_repository_creation",
         help=("If a repository cannot be found for the specified user/repo "
               "name pair, then automatically create the repository in the "
               "toolshed."),
@@ -456,7 +457,7 @@ def galaxy_serve_options():
 
 def shed_fail_fast_option():
     return click.option(
-        '--fail_fast',
+        "--fail_fast",
         is_flag=True,
         default=False,
         help="If multiple repositories are specified and an error occurs "
@@ -466,7 +467,7 @@ def shed_fail_fast_option():
 
 def lint_xsd_option():
     return click.option(
-        '--xsd',
+        "--xsd",
         is_flag=True,
         default=False,
         help=("Include experimental tool XSD validation in linting "
@@ -476,8 +477,8 @@ def lint_xsd_option():
 
 def report_level_option():
     return click.option(
-        '--report_level',
-        type=click.Choice(['all', 'warn', 'error']),
+        "--report_level",
+        type=click.Choice(["all", "warn", "error"]),
         default="all",
     )
 
@@ -495,7 +496,7 @@ def skip_option():
 
 def fail_level_option():
     return click.option(
-        '--fail_level',
+        "--fail_level",
         type=click.Choice(['warn', 'error']),
         default="warn"
     )
@@ -509,8 +510,8 @@ def recursive_shed_option():
 
 def recursive_option(help="Recursively perform command for subdirectories."):
     return click.option(
-        '-r',
-        '--recursive',
+        "-r",
+        "--recursive",
         is_flag=True,
         help=help,
     )
@@ -552,7 +553,7 @@ def test_options():
         ),
         click.option(
             "--summary",
-            type=click.Choice(['none', 'minimal', 'compact']),
+            type=click.Choice(["none", "minimal", "compact"]),
             default="minimal",
             help=("Summary style printed to planemo's standard output (see "
                   "output reports for more complete summary). Set to 'none' "
