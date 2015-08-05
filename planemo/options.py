@@ -283,6 +283,7 @@ def shed_name_option():
 
 def shed_target_option():
     return click.option(
+        "-t",
         "--shed_target",
         help="Tool Shed to target (this can be 'toolshed', 'testtoolshed', "
              "'local' (alias for http://localhost:9009/) or an arbitrary"
