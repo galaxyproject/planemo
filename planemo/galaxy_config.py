@@ -119,7 +119,8 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
         config_directory = mkdtemp()
     try:
         latest_galaxy = False
-        if _install_galaxy_if_needed(ctx, config_directory, kwds):
+        if install_galaxy:
+            _install_galaxy(ctx, config_directory, kwds)
             latest_galaxy = True
             galaxy_root = config_join("galaxy-dev")
 
@@ -471,6 +472,8 @@ def _tool_conf_entry_for(tool_paths):
 
 
 def _shed_tool_conf(install_galaxy, config_directory):
+    # TODO: There is probably a reason this is split up like this but I have
+    # no clue why I did it and not documented on the commit message.
     if install_galaxy:
         config_dir = os.path.join(config_directory, "galaxy-dev", "config")
     else:
@@ -478,15 +481,11 @@ def _shed_tool_conf(install_galaxy, config_directory):
     return os.path.join(config_dir, "shed_tool_conf.xml")
 
 
-def _install_galaxy_if_needed(ctx, config_directory, kwds):
-    installed = False
-    if kwds.get("install_galaxy", None):
-        if not kwds.get("no_cache_galaxy", False):
-            _install_galaxy_via_git(ctx, config_directory, kwds)
-        else:
-            _install_galaxy_via_download(config_directory, kwds)
-        installed = True
-    return installed
+def _install_galaxy(ctx, config_directory, kwds):
+    if not kwds.get("no_cache_galaxy", False):
+        _install_galaxy_via_git(ctx, config_directory, kwds)
+    else:
+        _install_galaxy_via_download(config_directory, kwds)
 
 
 def _install_galaxy_via_download(config_directory, kwds):
