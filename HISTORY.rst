@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.14.0.dev0
+0.14.0 (2015-08-06)
 ---------------------
 
 * Allow ``-t`` as shorthand for ``--shed_target`` (thanks to Peter Cock).
