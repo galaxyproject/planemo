@@ -6,16 +6,24 @@ History
 .. to_doc
 
 ---------------------
-0.13.3.dev0
+0.14.0.dev0
 ---------------------
 
-    
+* Allow ``-t`` as shorthand for ``--shed_target`` (thanks to Peter Cock).
+  `Pull Request 278`_
+* Fix ``tool_init`` command to use ``from_work_dir`` only if file in command
+  (thanks to bug report and initial fix outline by Gildas Le Corguillé).
+  `Pull Request 277`_
+* Various documentation fixes (thanks in part to Peter Cock and Daniel
+  Blankenberg). `Pull Request 256`_, `Pull Request 253`_, `Pull Request 254`_, 
+  `Pull Request 255`_, `Pull Request 251`_, `Issue 272`_
 
 ---------------------
 0.13.2 (2015-07-06)
 ---------------------
 
-    
+* Fix project_init for missing files. cb5b906_
+* Various documentation improvements.    
 
 ---------------------
 0.13.1 (2015-07-01)
@@ -405,6 +413,15 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _cb5b906: https://github.com/galaxyproject/planemo/commit/cb5b906
+.. _Pull Request 251: https://github.com/galaxyproject/planemo/pull/251
+.. _Pull Request 255: https://github.com/galaxyproject/planemo/pull/255
+.. _Pull Request 254: https://github.com/galaxyproject/planemo/pull/254
+.. _Pull Request 253: https://github.com/galaxyproject/planemo/pull/253
+.. _Pull Request 256: https://github.com/galaxyproject/planemo/pull/256
+.. _Issue 272: https://github.com/galaxyproject/planemo/issues/272
+.. _Pull Request 277: https://github.com/galaxyproject/planemo/pull/277
+.. _Pull Request 278: https://github.com/galaxyproject/planemo/pull/278
 .. _Issue 243: https://github.com/galaxyproject/planemo/issues/243
 .. _Issue 245: https://github.com/galaxyproject/planemo/issues/245
 .. _aad1eed: https://github.com/galaxyproject/planemo/commit/aad1eed
