@@ -36,6 +36,7 @@ def load_tool_elements_from_path(
             except Exception:
                 exc_info = sys.exc_info()
                 load_exception_handler(file, exc_info)
+                tool_elements.append((file, "error"))
     return tool_elements
 
 

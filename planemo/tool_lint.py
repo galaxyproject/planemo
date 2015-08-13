@@ -20,6 +20,10 @@ def lint_tools_on_path(ctx, paths, lint_args, **kwds):
     valid_tools = 0
     for path in paths:
         for (tool_path, tool_xml) in yield_tool_xmls(ctx, path, recursive):
+            if tool_xml == "error":
+                exit = 1
+                info("Could not lint %s due to malformed xml." % tool_path)
+                continue
             info("Linting tool %s" % tool_path)
             if not lint_xml(tool_xml, **lint_args):
                 error("Failed linting")
@@ -37,6 +41,9 @@ def yield_tool_xmls(ctx, path, recursive=False):
         recursive,
     )
     for (tool_path, tool_xml) in tools:
+        if tool_xml == "error":
+            yield (tool_path, tool_xml)
+            continue
         if not _is_tool_xml(ctx, tool_path, tool_xml):
             continue
         yield (tool_path, tool_xml)
