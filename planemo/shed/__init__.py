@@ -261,6 +261,7 @@ def _diff_in(ctx, working, realized_repository, **kwds):
               % realized_repository.name)
         # TODO - Should this return an error code which can be checked for in recursive mode?
         return 0
+    info("Diffing repository %s " % realized_repository.name)
     download_tarball(
         ctx,
         tsi,
@@ -300,7 +301,7 @@ def _diff_in(ctx, working, realized_repository, **kwds):
 
     cmd = 'cd "%s"; diff -r %s %s' % (working, label_a, label_b)
     if output:
-        cmd += ">> '%s'" % output
+        cmd += " >> '%s'" % output
     exit = shell(cmd) or is_diff
     return exit
 
