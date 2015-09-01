@@ -103,6 +103,7 @@ CURRENT_CATEGORIES = [
     "Metagenomics",
     "Micro-array Analysis",
     "Next Gen Mappers",
+    "NLP",
     "Ontology Manipulation",
     "Phylogenetics",
     "Proteomics",
