@@ -35,6 +35,15 @@ class ShedLintTestCase(CliTestCase):
         with self._isolate_repo("bad_invalid_yaml"):
             self._check_exit_code(["shed_lint"], exit_code=254)
 
+    def test_tool_linting(self):
+        # Make sure bad_invalid_tool_xml only when used with --tools.
+        with self._isolate_repo("bad_invalid_tool_xml"):
+            self._check_exit_code(["shed_lint"], exit_code=0)
+        with self._isolate_repo("bad_invalid_tool_xml"):
+            self._check_exit_code(["shed_lint", "--tools"], exit_code=-1)
+        with self._isolate_repo("bad_tool_no_citations"):
+            self._check_exit_code(["shed_lint", "--tools"], exit_code=-1)
+
     def test_invalid_nested(self):
         # Created a nested repository with one good and one
         # invalid repository and make sure it runs and produces

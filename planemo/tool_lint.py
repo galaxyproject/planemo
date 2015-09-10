@@ -5,7 +5,7 @@ from planemo.io import error
 
 import planemo.linters.xsd
 
-from planemo.tools import load_tool_elements_from_path
+from planemo.tools import load_tool_elements_from_path, is_tool_load_error
 from galaxy.tools.lint import lint_xml
 
 SKIP_XML_MESSAGE = "Skipping XML file - does not appear to be a tool %s."
@@ -20,6 +20,9 @@ def lint_tools_on_path(ctx, paths, lint_args, **kwds):
     valid_tools = 0
     for path in paths:
         for (tool_path, tool_xml) in yield_tool_xmls(ctx, path, recursive):
+            if handle_tool_load_error(tool_path, tool_xml):
+                exit = 1
+                continue
             info("Linting tool %s" % tool_path)
             if not lint_xml(tool_xml, **lint_args):
                 error("Failed linting")
@@ -31,12 +34,27 @@ def lint_tools_on_path(ctx, paths, lint_args, **kwds):
     return exit
 
 
+def handle_tool_load_error(tool_path, tool_xml):
+    """ Return True if tool_xml is tool load error (invalid XML), and
+    print a helpful error message.
+    """
+    is_error = False
+    if is_tool_load_error(tool_xml):
+        info("Could not lint %s due to malformed xml." % tool_path)
+        is_error = True
+    return is_error
+
+
 def yield_tool_xmls(ctx, path, recursive=False):
     tools = load_tool_elements_from_path(
         path,
         recursive,
+        register_load_errors=True,
     )
     for (tool_path, tool_xml) in tools:
+        if is_tool_load_error(tool_xml):
+            yield (tool_path, tool_xml)
+            continue
         if not _is_tool_xml(ctx, tool_path, tool_xml):
             continue
         yield (tool_path, tool_xml)

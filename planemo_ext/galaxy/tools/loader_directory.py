@@ -11,6 +11,7 @@ log = logging.getLogger(__name__)
 PATH_DOES_NOT_EXIST_ERROR = "Could not load tools from path [%s] - this path does not exist."
 PATH_AND_RECURSIVE_ERROR = "Cannot specify a single file and recursive."
 LOAD_FAILURE_ERROR = "Failed to load tool with path %s."
+TOOL_LOAD_ERROR = object()
 
 
 def load_exception_handler(path, exc_info):
@@ -21,6 +22,7 @@ def load_tool_elements_from_path(
     path,
     load_exception_handler=load_exception_handler,
     recursive=False,
+    register_load_errors=False,
 ):
     tool_elements = []
     for file in __find_tool_files(path, recursive=recursive):
@@ -36,7 +38,13 @@ def load_tool_elements_from_path(
             except Exception:
                 exc_info = sys.exc_info()
                 load_exception_handler(file, exc_info)
+                if register_load_errors:
+                    tool_elements.append((file, TOOL_LOAD_ERROR))
     return tool_elements
+
+
+def is_tool_load_error(obj):
+    return obj is TOOL_LOAD_ERROR
 
 
 def __looks_like_a_tool(path):

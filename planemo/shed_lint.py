@@ -14,6 +14,7 @@ from planemo.shed import (
 from planemo.tool_lint import (
     build_lint_args,
     yield_tool_xmls,
+    handle_tool_load_error,
 )
 from planemo.shed2tap import base
 from planemo.xml import XSDS_PATH
@@ -45,6 +46,7 @@ SHED_METADATA = [
 
 def lint_repository(ctx, realized_repository, **kwds):
     # TODO: this really needs to start working with realized path.
+    failed = False
     path = realized_repository.real_path
     info("Linting repository %s" % path)
     lint_args = build_lint_args(ctx, **kwds)
@@ -88,6 +90,9 @@ def lint_repository(ctx, realized_repository, **kwds):
         for (tool_path, tool_xml) in yield_tool_xmls(ctx, path,
                                                      recursive=True):
             info("+Linting tool %s" % tool_path)
+            if handle_tool_load_error(tool_path, tool_xml):
+                failed = True
+                continue
             lint_xml_with(
                 lint_ctx,
                 tool_xml,
@@ -99,7 +104,8 @@ def lint_repository(ctx, realized_repository, **kwds):
             lint_shed_metadata,
             realized_repository,
         )
-    failed = lint_ctx.failed(lint_args["fail_level"])
+    if not failed:
+        failed = lint_ctx.failed(lint_args["fail_level"])
     if failed:
         error("Failed linting")
     return 1 if failed else 0
