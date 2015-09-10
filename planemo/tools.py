@@ -4,15 +4,21 @@ from planemo.io import error
 
 from galaxy.tools import loader_directory
 
+is_tool_load_error = loader_directory.is_tool_load_error
 
-def load_tool_elements_from_path(path, recursive):
+
+def load_tool_elements_from_path(path, recursive, register_load_errors=False):
     return loader_directory.load_tool_elements_from_path(
         path,
-        load_exception_handler,
-        recursive,
+        _load_exception_handler,
+        recursive=recursive,
+        register_load_errors=register_load_errors,
     )
 
 
-def load_exception_handler(path, exc_info):
+def _load_exception_handler(path, exc_info):
     error("Error loading tool with path %s" % path)
     traceback.print_exception(*exc_info, limit=1, file=sys.stderr)
+
+
+__all__ = ["load_tool_elements_from_path", "is_tool_load_error"]
