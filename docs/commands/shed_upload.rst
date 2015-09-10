@@ -8,7 +8,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Usage**::
 
-    $ planemo shed_upload [OPTIONS] PROJECT
+    planemo shed_upload [OPTIONS] PROJECT
 
 **Help**
 
@@ -20,12 +20,12 @@ metadata (to handle metadata changes in ``.shed.yml`` files).
 
 ::
 
-    $ planemo shed_upload --tar_only  ~/
-    $ tar -tzf shed_upload.tar.gz
+    % planemo shed_upload --tar_only  ~/
+    % tar -tzf shed_upload.tar.gz
     test-data/blastdb.loc
     ...
     tools/ncbi_blast_plus/tool_dependencies.xml
-    $ tar -tzf shed_upload.tar.gz | wc -l
+    % tar -tzf shed_upload.tar.gz | wc -l
     117
 
 
@@ -46,7 +46,7 @@ metadata (to handle metadata changes in ``.shed.yml`` files).
                                    e-mail/pass specified).
       --shed_password TEXT         Password for Tool Shed auth (required unless
                                    shed_key is specified).
-      --shed_target TEXT           Tool Shed to target (this can be 'toolshed',
+      -t, --shed_target TEXT       Tool Shed to target (this can be 'toolshed',
                                    'testtoolshed', 'local' (alias for
                                    http://localhost:9009/) or an arbitraryurl).
       -m, --message TEXT           Commit message for tool shed upload.

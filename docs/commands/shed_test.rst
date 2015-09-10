@@ -8,7 +8,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Usage**::
 
-    $ planemo shed_test [OPTIONS] PROJECT
+    planemo shed_test [OPTIONS] PROJECT
 
 **Help**
 
@@ -38,7 +38,7 @@ This command requires the target to be version 15.07 or newer.
                                       unless e-mail/pass specified).
       --shed_password TEXT            Password for Tool Shed auth (required unless
                                       shed_key is specified).
-      --shed_target TEXT              Tool Shed to target (this can be 'toolshed',
+      -t, --shed_target TEXT          Tool Shed to target (this can be 'toolshed',
                                       'testtoolshed', 'local' (alias for
                                       http://localhost:9009/) or an arbitraryurl).
       --galaxy_root DIRECTORY         Root of development galaxy directory to

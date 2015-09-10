@@ -8,7 +8,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Usage**::
 
-    $ planemo tool_factory [OPTIONS]
+    planemo tool_factory [OPTIONS]
 
 **Help**
 

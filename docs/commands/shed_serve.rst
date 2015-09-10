@@ -8,7 +8,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Usage**::
 
-    $ planemo shed_serve [OPTIONS] PROJECT
+    planemo shed_serve [OPTIONS] PROJECT
 
 **Help**
 
@@ -37,7 +37,7 @@ logged into and explored interactively.
                                e-mail/pass specified).
       --shed_password TEXT     Password for Tool Shed auth (required unless
                                shed_key is specified).
-      --shed_target TEXT       Tool Shed to target (this can be 'toolshed',
+      -t, --shed_target TEXT   Tool Shed to target (this can be 'toolshed',
                                'testtoolshed', 'local' (alias for
                                http://localhost:9009/) or an arbitraryurl).
       --galaxy_root DIRECTORY  Root of development galaxy directory to execute

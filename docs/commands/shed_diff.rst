@@ -8,7 +8,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Usage**::
 
-    $ planemo shed_diff [OPTIONS] PROJECT
+    planemo shed_diff [OPTIONS] PROJECT
 
 **Help**
 
@@ -19,15 +19,15 @@ would be uploaded to the Tool Shed with the `shed_upload` command - but
 this command can be made to compare other combinations of repositories.
 Here are some examples::
 
-    $ # diff for this repository and the main Tool Shed
-    $ planemo shed_diff
-    $ # diff for this repository and the test Tool Shed
-    $ planemo shed_diff --shed_target testtoolshed
-    $ # diff for the test Tool Shed and main Tool Shed
-    $ planemo shed_diff --shed_target_source testtoolshed
-    $ # diff for two an explicitly specified repositories (ignores
-    $ # current project's shed YAML file.)
-    $ planemo shed_diff --owner peterjc --name blast_rbh \
+    % # diff for this repository and the main Tool Shed
+    % planemo shed_diff
+    % # diff for this repository and the test Tool Shed
+    % planemo shed_diff --shed_target testtoolshed
+    % # diff for the test Tool Shed and main Tool Shed
+    % planemo shed_diff --shed_target_source testtoolshed
+    % # diff for two an explicitly specified repositories (ignores
+    % # current project's shed YAML file.)
+    % planemo shed_diff --owner peterjc --name blast_rbh
         --shed_target_source testtoolshed
 
 **Options**::
@@ -47,7 +47,7 @@ Here are some examples::
                                  e-mail/pass specified).
       --shed_password TEXT       Password for Tool Shed auth (required unless
                                  shed_key is specified).
-      --shed_target TEXT         Tool Shed to target (this can be 'toolshed',
+      -t, --shed_target TEXT     Tool Shed to target (this can be 'toolshed',
                                  'testtoolshed', 'local' (alias for
                                  http://localhost:9009/) or an arbitraryurl).
       -o, --output PATH          Send diff output to specified file.

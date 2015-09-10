@@ -8,7 +8,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Usage**::
 
-    $ planemo syntax [OPTIONS]
+    planemo syntax [OPTIONS]
 
 **Help**
 

@@ -8,7 +8,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Usage**::
 
-    $ planemo test [OPTIONS] TOOL_PATH
+    planemo test [OPTIONS] TOOL_PATH
 
 **Help**
 
