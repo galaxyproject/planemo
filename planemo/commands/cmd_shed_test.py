@@ -32,7 +32,6 @@ def cli(ctx, paths, **kwds):
 
     This command requires the target to be version 15.07 or newer.
     """
-    galaxy_test.process_defaults(ctx, kwds)
     install_args_list = shed.install_arg_lists(ctx, paths, **kwds)
     port = get_free_port()
     kwds["port"] = port
