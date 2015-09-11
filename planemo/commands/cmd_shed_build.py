@@ -8,7 +8,6 @@ import shutil
 from planemo.cli import pass_context
 from planemo import options
 from planemo import shed
-from planemo.io import info
 
 
 @click.command("shed_build")
