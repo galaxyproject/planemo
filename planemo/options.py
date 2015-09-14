@@ -266,18 +266,20 @@ def docker_sudo_option():
 def docker_sudo_cmd_option():
     return click.option(
         "--docker_sudo_cmd",
-        default=docker_util.DEFAULT_SUDO_COMMAND,
+        default=None,
         help="sudo command to use when --docker_sudo is enabled " +
-             "(defaults to sudo)."
+             "(defaults to sudo).",
+        callback=get_default_callback(docker_util.DEFAULT_SUDO_COMMAND),
     )
 
 
 def docker_host_option():
     return click.option(
         "--docker_host",
-        default=docker_util.DEFAULT_HOST,
+        default=None,
         help="Docker host to target when executing docker commands " +
-             "(defaults to localhost)."
+             "(defaults to localhost).",
+        callback=get_default_callback(docker_util.DEFAULT_HOST),
     )
 
 
@@ -296,6 +298,15 @@ def shed_name_option():
     )
 
 
+def validate_shed_target_callback(ctx, param, value):
+    target = get_default_callback("toolshed")(ctx, param, value)
+    print target
+    if target is None:
+        ctx.fail("default_shed_target set to None, must specify a value for "
+                 "--shed_target to run this command.")
+    return target
+
+
 def shed_target_option():
     return click.option(
         "-t",
@@ -303,7 +314,8 @@ def shed_target_option():
         help="Tool Shed to target (this can be 'toolshed', 'testtoolshed', "
              "'local' (alias for http://localhost:9009/) or an arbitrary"
              "url).",
-        default="toolshed",
+        default=None,
+        callback=validate_shed_target_callback,
     )
 
 
