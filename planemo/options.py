@@ -6,6 +6,7 @@ import os
 
 import click
 from galaxy.tools.deps import docker_util
+from .config import get_default_callback
 
 
 def force_option(what="files"):
@@ -45,8 +46,22 @@ def galaxy_port_option():
     return click.option(
         "--port",
         type=int,
-        default="9090",
+        default=None,
+        callback=get_default_callback("9090"),
         help="Port to serve Galaxy on (default is 9090).",
+    )
+
+
+def galaxy_host_option():
+    return click.option(
+        "--host",
+        type=str,
+        default=None,
+        callback=get_default_callback("127.0.0.1"),
+        help=("Host to bind Galaxy to. Default is 127.0.0.1 that is "
+              "restricted to localhost connections for security reasons "
+              "set to 0.0.0.0 to bind Galaxy to all ports including "
+              "potentially publicly accessible ones."),
     )
 
 
@@ -424,6 +439,7 @@ def galaxy_run_options():
     return _compose(
         galaxy_target_options(),
         galaxy_port_option(),
+        galaxy_host_option(),
     )
 
 
@@ -528,6 +544,7 @@ def test_options():
         click.option(
             "--test_output",
             type=click.Path(file_okay=True, resolve_path=True),
+            callback=get_default_callback("tool_test_output.html"),
             help=("Output test report (HTML - for humans) defaults to "
                   "tool_test_output.html."),
             default=None,
@@ -535,12 +552,14 @@ def test_options():
         click.option(
             "--test_output_xunit",
             type=click.Path(file_okay=True, resolve_path=True),
+            callback=get_default_callback(None),
             help="Output test report (xUnit style - for computers).",
             default=None,
         ),
         click.option(
             "--test_output_json",
             type=click.Path(file_okay=True, resolve_path=True),
+            callback=get_default_callback("tool_test_output.json"),
             help=("Output test report (planemo json) defaults to "
                   "tool_test_output.json."),
             default=None,

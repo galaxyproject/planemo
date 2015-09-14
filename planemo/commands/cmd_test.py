@@ -8,7 +8,6 @@ from planemo import galaxy_config
 
 from planemo.galaxy_test import (
     run_in_config,
-    process_defaults,
 )
 
 
@@ -55,8 +54,6 @@ def cli(ctx, paths, **kwds):
     against that same Galaxy root - but this may not be bullet proof yet so
     please careful and do not try this against production Galaxy instances.
     """
-    process_defaults(ctx, kwds)
-
     kwds["for_tests"] = True
     with galaxy_config.galaxy_config(ctx, paths, **kwds) as config:
         return_value = run_in_config(ctx, config, **kwds)
