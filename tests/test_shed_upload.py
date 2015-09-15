@@ -24,13 +24,13 @@ class ShedUploadTestCase(CliShedTestCase):
         with self._isolate_repo("single_tool"):
             upload_command = ["shed_upload"]
             upload_command.extend(self._shed_args())
-            self._check_exit_code(upload_command, exit_code=-1)
+            self._check_exit_code(upload_command, exit_code=2)
 
     def test_update_not_exists(self):
         with self._isolate_repo("single_tool"):
             upload_command = ["shed_update"]
             upload_command.extend(self._shed_args())
-            self._check_exit_code(upload_command, exit_code=-1)
+            self._check_exit_code(upload_command, exit_code=2)
 
     def test_upload_with_check_diff(self):
         with self._isolate_repo("single_tool") as f:
@@ -125,7 +125,7 @@ class ShedUploadTestCase(CliShedTestCase):
             create_command = ["shed_create"]
             create_command.extend(self._shed_args())
             self._check_exit_code(create_command)
-            self._check_exit_code(create_command, exit_code=-1)
+            self._check_exit_code(create_command, exit_code=1)
 
     def test_cannot_upload_missing_include(self):
         with self._isolate_repo("bad_missing_include"):

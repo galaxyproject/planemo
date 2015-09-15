@@ -52,11 +52,17 @@ def cli(ctx, paths, **kwds):
     tsi = shed.tool_shed_client(ctx, **kwds)
 
     def update(realized_repository):
+        upload_ret_code = 0
         upload_ok = True
         if not kwds["skip_upload"]:
-            upload_ok = not shed.upload_repository(
+            upload_ret_code = shed.upload_repository(
                 ctx, realized_repository, **kwds
             )
+            upload_ok = not upload_ret_code
+        if upload_ret_code == 2:
+            error("Failed to update repository it does not exist "
+                  "in target ToolShed.")
+            return upload_ret_code
         repo_id = realized_repository.find_repository_id(ctx, tsi)
         metadata_ok = True
         if not kwds["skip_metadata"]:

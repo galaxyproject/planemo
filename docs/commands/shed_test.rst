@@ -34,8 +34,12 @@ This command requires the target to be version 15.07 or newer.
                                       inferred tool directory name).
       --shed_email TEXT               E-mail for Tool Shed auth (required unless
                                       shed_key is specified).
-      --shed_key TEXT                 API key for Tool Shed access (required
-                                      unless e-mail/pass specified).
+      --shed_key TEXT                 API key for Tool Shed access. An API key is
+                                      required unless e-mail and password is
+                                      specified. This key can be specified with
+                                      either --shed_key or --shed_key_from_env.
+      --shed_key_from_env TEXT        Environment variable to read API key for
+                                      Tool Shed access from.
       --shed_password TEXT            Password for Tool Shed auth (required unless
                                       shed_key is specified).
       -t, --shed_target TEXT          Tool Shed to target (this can be 'toolshed',

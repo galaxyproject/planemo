@@ -45,6 +45,11 @@ instances.
                                       Galaxy.
       --job_config_file PATH          Job configuration file for Galaxy to target.
       --port INTEGER                  Port to serve Galaxy on (default is 9090).
+      --host TEXT                     Host to bind Galaxy to. Default is 127.0.0.1
+                                      that is restricted to localhost connections
+                                      for security reasons set to 0.0.0.0 to bind
+                                      Galaxy to all ports including potentially
+                                      publicly accessible ones.
       --test_data DIRECTORY           test-data directory to for specified
                                       tool(s).
       --tool_data_table PATH          tool_data_table_conf.xml file to for

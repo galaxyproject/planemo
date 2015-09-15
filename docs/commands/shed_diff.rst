@@ -30,6 +30,17 @@ Here are some examples::
     % planemo shed_diff --owner peterjc --name blast_rbh
         --shed_target_source testtoolshed
 
+This command will return an exit code of:
+
+- 0 if there are no detected differences.
+- 1 if there are differences.
+- 2 if the target repository doesn't exist.
+- >200 if there are errors attempting to perform a diff.
+
+**Warning:** ``shed_diff`` doesn't inspect repository metadata, this
+difference applies only to the file contents of files that would actually be
+uploaded to the repository.
+
 **Options**::
 
 
@@ -43,8 +54,12 @@ Here are some examples::
                                  inferred tool directory name).
       --shed_email TEXT          E-mail for Tool Shed auth (required unless
                                  shed_key is specified).
-      --shed_key TEXT            API key for Tool Shed access (required unless
-                                 e-mail/pass specified).
+      --shed_key TEXT            API key for Tool Shed access. An API key is
+                                 required unless e-mail and password is specified.
+                                 This key can be specified with either --shed_key
+                                 or --shed_key_from_env.
+      --shed_key_from_env TEXT   Environment variable to read API key for Tool
+                                 Shed access from.
       --shed_password TEXT       Password for Tool Shed auth (required unless
                                  shed_key is specified).
       -t, --shed_target TEXT     Tool Shed to target (this can be 'toolshed',

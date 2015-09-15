@@ -100,6 +100,14 @@ planemo.commands.cmd_share_test module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd_shed_build module
+--------------------------------------
+
+.. automodule:: planemo.commands.cmd_shed_build
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd_shed_create module
 ---------------------------------------
 

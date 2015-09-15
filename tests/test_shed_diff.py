@@ -28,6 +28,12 @@ class ShedDiffTestCase(CliShedTestCase):
             self._check_diff(f, True)
             self._check_diff(f, False)
 
+    def test_diff_doesnt_exist(self):
+        with self._isolate_repo("multi_repos_nested"):
+            diff_command = ["shed_diff"]
+            diff_command.extend(self._shed_args(read_only=True))
+            self._check_exit_code(diff_command, exit_code=2)
+
     def test_diff_recusrive(self):
         with self._isolate_repo("multi_repos_nested") as f:
             upload_command = [
@@ -44,7 +50,7 @@ class ShedDiffTestCase(CliShedTestCase):
                 join(f, "cat1", "related_file"),
                 "A related non-tool file (modified).\n",
             )
-            self._check_exit_code(diff_command, exit_code=-1)
+            self._check_exit_code(diff_command, exit_code=1)
 
     def test_shed_diff_raw(self):
         with self._isolate_repo("suite_auto"):
@@ -59,7 +65,7 @@ class ShedDiffTestCase(CliShedTestCase):
             ]
             diff_command.append("--raw")
             diff_command.extend(self._shed_args(read_only=True))
-            self._check_exit_code(diff_command, exit_code=-1)
+            self._check_exit_code(diff_command, exit_code=1)
 
             diff_command = [
                 "shed_diff", "-o", "diff"
@@ -72,7 +78,7 @@ class ShedDiffTestCase(CliShedTestCase):
         if raw:
             diff_command.append("--raw")
         diff_command.extend(self._shed_args(read_only=True))
-        self._check_exit_code(diff_command, exit_code=-1)
+        self._check_exit_code(diff_command, exit_code=1)
         diff_path = join(f, "diff")
         with open(diff_path, "r") as diff_f:
             diff = diff_f.read()

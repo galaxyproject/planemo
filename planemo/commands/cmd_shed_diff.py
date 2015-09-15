@@ -49,6 +49,17 @@ def cli(ctx, paths, **kwds):
         % # current project's shed YAML file.)
         % planemo shed_diff --owner peterjc --name blast_rbh
             --shed_target_source testtoolshed
+
+    This command will return an exit code of:
+
+    - 0 if there are no detected differences.
+    - 1 if there are differences.
+    - 2 if the target repository doesn't exist.
+    - >200 if there are errors attempting to perform a diff.
+
+    **Warning:** ``shed_diff`` doesn't inspect repository metadata, this
+    difference applies only to the file contents of files that would actually be
+    uploaded to the repository.
     """
     def diff(realized_repository):
         return shed.diff_repo(ctx, realized_repository, **kwds)

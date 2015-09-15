@@ -12,14 +12,6 @@ planemo.galaxy_test.actions module
     :undoc-members:
     :show-inheritance:
 
-planemo.galaxy_test.options module
-----------------------------------
-
-.. automodule:: planemo.galaxy_test.options
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 planemo.galaxy_test.structures module
 -------------------------------------
 

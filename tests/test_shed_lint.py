@@ -19,19 +19,19 @@ class ShedLintTestCase(CliTestCase):
     def test_invalid_repos(self):
         # And now
         with self._isolate_repo("bad_readme_rst"):
-            self._check_exit_code(["shed_lint"], exit_code=-1)
+            self._check_exit_code(["shed_lint"], exit_code=1)
         with self._isolate_repo("bad_readme_md"):
-            self._check_exit_code(["shed_lint"], exit_code=-1)
+            self._check_exit_code(["shed_lint"], exit_code=1)
         with self._isolate_repo("bad_repo_name"):
-            self._check_exit_code(["shed_lint"], exit_code=-1)
+            self._check_exit_code(["shed_lint"], exit_code=1)
         with self._isolate_repo("bad_missing_include"):
-            self._check_exit_code(["shed_lint"], exit_code=-1)
+            self._check_exit_code(["shed_lint"], exit_code=1)
         with self._isolate_repo("bad_missing_tool_deps"):
-            self._check_exit_code(["shed_lint"], exit_code=-1)
+            self._check_exit_code(["shed_lint"], exit_code=1)
         with self._isolate_repo("bad_missing_repo_deps"):
-            self._check_exit_code(["shed_lint"], exit_code=-1)
+            self._check_exit_code(["shed_lint"], exit_code=1)
         with self._isolate_repo("bad_package_category"):
-            self._check_exit_code(["shed_lint"], exit_code=-1)
+            self._check_exit_code(["shed_lint"], exit_code=1)
         with self._isolate_repo("bad_invalid_yaml"):
             self._check_exit_code(["shed_lint"], exit_code=254)
 
@@ -40,9 +40,9 @@ class ShedLintTestCase(CliTestCase):
         with self._isolate_repo("bad_invalid_tool_xml"):
             self._check_exit_code(["shed_lint"], exit_code=0)
         with self._isolate_repo("bad_invalid_tool_xml"):
-            self._check_exit_code(["shed_lint", "--tools"], exit_code=-1)
+            self._check_exit_code(["shed_lint", "--tools"], exit_code=1)
         with self._isolate_repo("bad_tool_no_citations"):
-            self._check_exit_code(["shed_lint", "--tools"], exit_code=-1)
+            self._check_exit_code(["shed_lint", "--tools"], exit_code=1)
 
     def test_invalid_nested(self):
         # Created a nested repository with one good and one
@@ -70,4 +70,4 @@ class ShedLintTestCase(CliTestCase):
             self._check_exit_code(["shed_lint"])
         with self._isolate_repo("single_tool_exclude"):
             self._check_exit_code(["shed_lint", "--ensure_metadata"],
-                                  exit_code=-1)
+                                  exit_code=1)
