@@ -300,7 +300,6 @@ def shed_name_option():
 
 def validate_shed_target_callback(ctx, param, value):
     target = get_default_callback("toolshed")(ctx, param, value)
-    print target
     if target is None:
         ctx.fail("default_shed_target set to None, must specify a value for "
                  "--shed_target to run this command.")
