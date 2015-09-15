@@ -47,7 +47,7 @@ NO_REPOSITORIES_MESSAGE = ("Could not find any .shed.yml files or a --name to "
                            "describe the target repository.")
 NAME_INVALID_MESSAGE = ("Cannot use --name argument when multiple directories "
                         "in target contain .shed.yml files.")
-NAME_REQUIRED_MESSAGE = ("No repository name discovered but oneis required.")
+NAME_REQUIRED_MESSAGE = ("No repository name discovered but one is required.")
 CONFLICTING_NAMES_MESSAGE = ("The supplied name argument --name conflicts "
                              "with value discovered in .shed.yml.")
 PARSING_PROBLEM = ("Problem parsing file .shed.yml in directory %s, skipping "
