@@ -339,10 +339,21 @@ def tool_shed_client(ctx=None, **kwds):
         email = None
         password = None
     else:
-        key = prop("key")
+        key = _find_shed_key(kwds, shed_config)
         email = prop("email")
         password = prop("password")
     return tool_shed_instance(url, key, email, password)
+
+
+def _find_shed_key(kwds, shed_config):
+    shed_key = kwds.get("shed_key", None)
+    if shed_key is None:
+        shed_key_from_env = kwds.get("shed_key_from_env", None)
+        if shed_key_from_env is not None:
+            shed_key = os.environ[shed_key_from_env]
+    if shed_key is None:
+        shed_key = shed_config.get("key", None)
+    return shed_key
 
 
 def find_repository_id(ctx, tsi, path, **kwds):
