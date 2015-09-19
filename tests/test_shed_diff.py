@@ -34,7 +34,7 @@ class ShedDiffTestCase(CliShedTestCase):
             diff_command.extend(self._shed_args(read_only=True))
             self._check_exit_code(diff_command, exit_code=2)
 
-    def test_diff_recusrive(self):
+    def test_diff_recursive(self):
         with self._isolate_repo("multi_repos_nested") as f:
             upload_command = [
                 "shed_upload", "-r", "--force_repository_creation"
