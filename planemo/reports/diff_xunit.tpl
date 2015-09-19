@@ -5,7 +5,7 @@
            failures="{{ results.failures }}"
            skip="{{ results.skips }}">
     {% for testcase in tests %}
-    <testcase classname="{{ testcase.classname }}" name="recursive_diff" time="{{ testcase.time }}"/>
+    <testcase classname="{{ testcase.classname }}" name="recursive_diff" time="{{ testcase.time }}">
         {% if testcase.result == 1 %}
             <error type="planemo.Different" message="Repository is different">
                 <!-- TODO: copy of diff output -->
@@ -21,5 +21,6 @@
                 <!-- TODO: copy of diff output -->
             </error>
         {% endif %}
+    </testcase>
     {% endfor %}
 </testsuite>
