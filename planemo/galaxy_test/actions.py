@@ -81,8 +81,16 @@ def run_in_config(ctx, config, **kwds):
 
     try:
         test_data = test_results.structured_data
-        new_report = build_report.build_report(test_data)
-        open(test_results.output_html_path, "w").write(new_report)
+
+        if 'test_output' in kwds:
+            with open(kwds['test_output'], 'w') as handle:
+                handle.write(build_report.build_report(test_data))
+
+        for kw_name in ('markdown', 'text'):
+            if 'test_output_%s' % kw_name in kwds:
+                with open(kwds['test_output_%s' % kw_name], 'w') as handle:
+                    handle.write(build_report.build_report(test_data, report_type=kw_name))
+
     except Exception:
         pass
 

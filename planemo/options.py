@@ -561,6 +561,21 @@ def test_options():
             default=None,
         ),
         click.option(
+            "--test_output_text",
+            type=click.Path(file_okay=True, resolve_path=True),
+            callback=get_default_callback(None),
+            help=("Output test report (Basic text - for display in CI)"),
+            default=None,
+        ),
+        click.option(
+            "--test_output_markdown",
+            type=click.Path(file_okay=True, resolve_path=True),
+            callback=get_default_callback(None),
+            help=("Output test report (Markdown style - for humans & "
+                  "computers)"),
+            default=None,
+        ),
+        click.option(
             "--test_output_xunit",
             type=click.Path(file_okay=True, resolve_path=True),
             callback=get_default_callback(None),

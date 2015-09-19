@@ -4,11 +4,11 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>${title}</title>
+    <title>{{ title }}</title>
 
     <!-- Bootstrap -->
-    ${bootstrap_style}
-    ${custom_style}
+    {{ bootstrap_style }}
+    {{ custom_style }}
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -30,11 +30,12 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">${title}</a>
+          <a class="navbar-brand" href="#">{{ title }}</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            ${links}
+            <li><a href="https://galaxyproject.org">Galaxy</a></li>
+            <li><a href="https://planemo.readthedocs.org">Planemo</a></li>
           </ul>
           <div class="navbar-form navbar-right">
           </div>
@@ -63,9 +64,9 @@
       </div>
     </div>
 
-    ${jquery_script}
-    ${bootstrap_script}
-    ${custom_script}
+    {{ jquery_script }}
+    {{ bootstrap_script }}
+    {{ custom_script }}
     <script>
       var testDataUrl = getUrlParameter("test_data_url");
       if(testDataUrl) {
@@ -77,7 +78,7 @@
         .success(function(content) { renderTestResults( $.parseJSON(content) ); })
         .failure(function() { alert("Failed to load test data.")} );
       } else {
-        var test_data = ${json_test_data};
+        var test_data = {{ json_test_data }};
         renderTestResults(test_data);
       }
     </script>
