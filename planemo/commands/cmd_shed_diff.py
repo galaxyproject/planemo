@@ -94,12 +94,11 @@ def cli(ctx, paths, **kwds):
             'classname': realized_repository.name,
             'result': result,
         })
-
         return result
 
     exit_code = shed.for_each_repository(ctx, diff, paths, **kwds)
 
-    if 'report_xunit' in kwds:
+    if kwds.get('report_xunit', False):
         with open(kwds['report_xunit'], 'w') as handle:
             handle.write(build_report.template_data(
                 collected_data, template_name='diff_xunit.tpl'))
