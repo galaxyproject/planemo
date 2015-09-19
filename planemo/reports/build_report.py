@@ -1,15 +1,13 @@
-import json
 from pkg_resources import resource_string
 from jinja2 import Environment, PackageLoader
 env = Environment(loader=PackageLoader('planemo', 'reports'))
-TITLE = "Tool Test Results (powered by Planemo)"
 
 
 def build_report(structured_data, report_type="html", **kwds):
-    """ Use report_template.html to build HTML page for report.
+    """ Use report_{report_type}.tpl to build page for report.
     """
     environment = dict(
-        title=TITLE,
+        title="Tool Test Results (powered by Planemo)",
         raw_data=structured_data,
     )
 
@@ -22,10 +20,15 @@ def build_report(structured_data, report_type="html", **kwds):
             'bootstrap_style': __style("bootstrap.min.css"),
             'jquery_script': __script("jquery.min"),
             'bootstrap_script': __script("bootstrap.min"),
-            'json_test_data': json.dumps(structured_data),
         })
 
-    template = env.get_template('report_%s.tpl' % report_type)
+    return template_data(environment, 'report_%s.tpl' % report_type)
+
+
+def template_data(environment, template_name="report_html.tpl", **kwds):
+    """Build an arbitrary templated page.
+    """
+    template = env.get_template(template_name)
     return template.render(**environment)
 
 
