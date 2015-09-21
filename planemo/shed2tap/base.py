@@ -499,11 +499,11 @@ class SetEnvironmentAction(BaseAction):
         answer = []
         for var in self.variables:
             if var.action == "set_to":
-                answer.append("export %s=%s" % (var.name, var.raw_value))
+                answer.append('echo "export %s=%s" >> $ENV_SH' % (var.name, var.raw_value))
             elif var.action == "prepend_to":
-                answer.append("export %s=%s:$%s" % (var.name, var.raw_value, var.name))
+                answer.append('echo "export %s=%s:\$%s" >> $ENV_SH' % (var.name, var.raw_value, var.name))
             elif var.action == "append_to":
-                answer.append("export %s=$%s:%s" % (var.name, var.name, var.raw_value))
+                answer.append('echo "export %s=\$%s:%s" >> $ENV_SH' % (var.name, var.name, var.raw_value))
             else:
                 answer.append('echo "ERROR Undefined environment variable action %r" && false' % var.action)
         return answer
