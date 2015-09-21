@@ -259,9 +259,37 @@ class Actions(object):
         return "Actions[%s%s]" % (platform, map(str, self.actions))
 
     def to_bash(self):
-        answer = []
-        for action in self.actions:
-            answer.extend(action.to_bash())
+        # Use self.os.title() to match "Linux" or "Darwin" in bash where case matters:
+        if self.os and self.architecture:
+            condition = '("%s" == `uname`) && ("%s" == `arch`)' % (self.os.title(), self.architecture)
+        elif self.os:
+            condition = '"%s" == `uname`' % self.os.title()
+        elif self.architecture:
+            condition = '"%s" == `arch`' % self.architecture
+        else:
+            condition = None
+        
+        if condition:
+            # Conditional actions block
+            answer = ['#' + '=' * 60,
+                      'if [[ %s ]]' % condition,
+                      'then',
+                      '    echo "Platform specific action for os=%s, arch=%s"' % (self.os, self.architecture)]
+            # TODO - Refactor block indentation?
+            for action in self.actions:
+                for line in action.to_bash():
+                    assert "\n" not in line
+                    answer.append("    " + line)
+            # If we run the action, do not want to run any later actions!
+            answer.extend(['    exit 0',
+                           'fi'])
+        else:
+            # Non-specific default action...
+            answer = ['#' + '=' * 60,
+                      'echo "Non-platform specific actions"']
+            for action in self.actions:
+                answer.extend(action.to_bash())
+            answer.append('#' + '=' * 60)
         return answer
 
 
