@@ -258,6 +258,12 @@ class Actions(object):
             platform = "os=%s,arch=%s," % (self.os, self.architecture)
         return "Actions[%s%s]" % (platform, map(str, self.actions))
 
+    def to_bash(self):
+        answer = []
+        for action in self.actions:
+            answer.extend(action.to_bash())
+        return answer
+
 
 class ActionPackage(object):
 
