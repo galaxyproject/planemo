@@ -301,6 +301,14 @@ class BaseAction(object):
         action_class = actions_by_type[type]
         return action_class(elem)
 
+    def to_bash(self):
+        """Return list of bash shell commands to execute this action.
+
+        This method is be implemented by each sub-class, and will
+        return a list of strings.
+        """
+        return ['echo "Not implemented %r" && false' % self]
+
 
 class DownloadByUrlAction(BaseAction):
     action_type = "download_by_url"
@@ -336,6 +344,9 @@ class ShellCommandAction(BaseAction):
 
     def __init__(self, elem):
         self.command = elem.text
+
+    def to_bash(self):
+        return [self.command]
 
 
 class TemplateShellCommandAction(BaseAction):
@@ -383,6 +394,19 @@ class SetEnvironmentAction(BaseAction):
         self.variables = variables
         assert self.variables
 
+    def to_bash(self):
+        answer = []
+        for var in self.variables:
+            if var.action == "set_to":
+                answer.append("export $%s=%s" % (var.name, var.raw_value))
+            elif var.action == "prepend_to":
+                answer.append("export $%s=%s:$%s" % (var.name, var.raw_value, var.name))
+            elif var.action == "append_to":
+                answer.append("export $%s=$%s:%s" % (var.name, var.name, var.raw_value))
+            else:
+                answer.append('echo "ERROR Undefined environment variable action %r" && false' % var.action)
+        return answer
+
 
 class ChmodAction(BaseAction):
     action_type = "chmod"
@@ -400,6 +424,9 @@ class ChmodAction(BaseAction):
         self.mods = mods
         assert self.mods
 
+    def to_bash(self):
+        return ["chmod %s %s" % (m["mode"], m["target"]) for m in self.mods]
+
 
 class MakeInstallAction(BaseAction):
     action_type = "make_install"
@@ -407,6 +434,9 @@ class MakeInstallAction(BaseAction):
 
     def __init__(self, elem):
         pass
+
+    def to_bash(self):
+        return ["make install"]
 
 
 class AutoconfAction(BaseAction):
@@ -425,6 +455,9 @@ class ChangeDirectoryAction(BaseAction):
         self.directory = elem.text
         assert self.directory
 
+    def to_bash(self):
+        return ["cd %s" % self.directory]
+
 
 class MakeDirectoryAction(BaseAction):
     action_type = "make_directory"
@@ -432,6 +465,9 @@ class MakeDirectoryAction(BaseAction):
 
     def __init__(self, elem):
         self.directory = elem.text
+
+    def to_bash(self):
+        return ["mkdir -p %s" % self.directory]
 
 
 class SetupPerlEnvironmentAction(BaseAction):
