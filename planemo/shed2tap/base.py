@@ -313,7 +313,7 @@ class BaseAction(object):
         This method is be implemented by each sub-class, and will
         return a list of strings.
         """
-        return ['echo "Not implemented %r" && false' % self]
+        return ['echo "TODO - Not implemented %r" && false' % self]
 
 
 class DownloadByUrlAction(BaseAction):
@@ -324,6 +324,9 @@ class DownloadByUrlAction(BaseAction):
         self.url = elem.text
         assert self.url
 
+    def to_bash(self):
+        return ["wget %s" % self.url]
+
 
 class DownloadFileAction(BaseAction):
     action_type = "download_file"
@@ -332,6 +335,12 @@ class DownloadFileAction(BaseAction):
     def __init__(self, elem):
         self.url = elem.text
         self.extract = asbool(elem.attrib.get("extract", False))
+
+    def to_bash(self):
+        answer = ["wget %s" % self.url]
+        if self.extract:
+            answer.append('echo "TODO - extract the compressed files..." && false')
+        return answer
 
 
 class DownloadBinary(BaseAction):
@@ -342,6 +351,9 @@ class DownloadBinary(BaseAction):
         self.url_template = elem.text
         assert self.url_template
         self.target_directory = elem.get('target_directory', None)
+
+    def to_bash(self):
+        return ['echo "TODO - download %r to %r" && false' % (self.url_template, self.target_directory)]
 
 
 class ShellCommandAction(BaseAction):
@@ -374,6 +386,9 @@ class MoveFileAction(BaseAction):
         self.source = elem.find("source").text
         self.destination = elem.find("destination").text
 
+    def to_bash(self):
+        return ["mv %s %s" % (self.source, self.destination)]
+
 
 class MoveDirectoryFilesAction(BaseAction):
     action_type = "move_directory_files"
@@ -384,6 +399,9 @@ class MoveDirectoryFilesAction(BaseAction):
         destination_directory = elem.find("destination_directory").text
         self.source_directory = source_directory
         self.destination_directory = destination_directory
+
+    def to_bash(self):
+        return ["mv %s/* %s/" % (self.source_directory, self.destination_directory)]
 
 
 class SetEnvironmentAction(BaseAction):
