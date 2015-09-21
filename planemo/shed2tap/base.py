@@ -241,14 +241,14 @@ class Actions(object):
 
     def first_download(self):
         for action in self.actions:
-            if action.type in ["download_by_url", "download_file"]:
+            if action.action_type in ["download_by_url", "download_file"]:
                 return action
         return None
 
     def downloads(self):
         actions = []
         for action in self.actions:
-            if action.type in ["download_by_url", "download_file"]:
+            if action.action_type in ["download_by_url", "download_file"]:
                 actions.append(action)
         return actions
 
@@ -276,7 +276,7 @@ class ActionPackage(object):
 class BaseAction(object):
 
     def __repr__(self):
-        return "Action[type=%s]" % self.type
+        return "Action[type=%s]" % self.action_type
 
     def same_as(self, other):
         if self._keys != other._keys:
