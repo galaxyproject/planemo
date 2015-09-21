@@ -5,6 +5,8 @@ from xml.etree import ElementTree
 from six.moves.urllib.request import urlretrieve
 from six import string_types
 
+import os
+
 TOOLSHED_MAP = {
     "toolshed": "https://toolshed.g2.bx.psu.edu",
     "testtoolshed": "https://testtoolshed.g2.bx.psu.edu",
@@ -344,6 +346,50 @@ class BaseAction(object):
         return ['echo "TODO - Not implemented %r" && false' % self]
 
 
+def _commands_to_download_and_extract(url):
+    # Do we need to worry about target_filename here?
+    # TODO - Include checksum validation here?
+    answer = ['wget %s' % url]
+    downloaded_filename = os.path.split( url )[ -1 ]
+    if "#" in downloaded_filename:
+        downloaded_filename = downloaded_filename[:downloaded_filename.index("#")]
+    answer.extend(['if [[ ! -f %s ]]' % downloaded_filename,
+                   'then',
+                   '    echo "ERROR could not download %s"' % downloaded_filename,
+                   '    exit 1',
+                   'fi'])
+    # TODO - These change directory commands won't always work! e.g.
+    #
+    # <action type="download_by_url">ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.2.30/ncbi-blast-2.2.30+-x64-linux.tar.gz</action>
+    #
+    # Should become:
+    #
+    # $ wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.2.30/ncbi-blast-2.2.30+-x64-linux.tar.gz
+    # $ tar -zxvf ncbi-blast-2.2.30+-x64-linux.tar.gz
+    # $ cd ncbi-blast-2.2.30+
+    #
+    # We cannot guess the folder structure until run time - which suggests
+    # we may need to call into (a copy of) the Galaxy code in 
+    # lib/tool_shed/galaxy_install/tool_dependencies/recipe/step_handler.py
+    if downloaded_filename.endswith(".tar.gz"):
+        answer.extend(['tar -zxvf %s' % downloaded_filename,
+                       'cd %s' % downloaded_filename[:-7]])
+    elif downloaded_filename.endswith(".tgz"):
+        answer.extend(['tar -zxvf %s' % downloaded_filename,
+                       'cd %s' % downloaded_filename[:-4]])
+    elif downloaded_filename.endswith(".tar.bz2"):
+        answer.extend(['tar -jxvf %s' % downloaded_filename,
+                       'cd %s' % downloaded_filename[:-8]])
+    elif downloaded_filename.endswith(".zip"):
+        answer.append("unzip %s" % downloaded_filename)
+    elif downloaded_filename.endswith(".jar"):
+        pass
+    else:
+        answer.extend(['echo "ERROR: How to extract %s"' % downloaded_filename,
+                       'exit'])
+    return answer
+
+
 class DownloadByUrlAction(BaseAction):
     action_type = "download_by_url"
     _keys = ["url"]
@@ -353,7 +399,10 @@ class DownloadByUrlAction(BaseAction):
         assert self.url
 
     def to_bash(self):
-        return ["wget %s" % self.url]
+        # See class DownloadByUrl in Galaxy,
+        # lib/tool_shed/galaxy_install/tool_dependencies/recipe/step_handler.py
+        # Do we need to worry about target_filename here?
+        return _commands_to_download_and_extract(self.url)
 
 
 class DownloadFileAction(BaseAction):
@@ -365,10 +414,10 @@ class DownloadFileAction(BaseAction):
         self.extract = asbool(elem.attrib.get("extract", False))
 
     def to_bash(self):
-        answer = ["wget %s" % self.url]
         if self.extract:
-            answer.append('echo "TODO - extract the compressed files..." && false')
-        return answer
+            return _commands_to_download_and_extract(self.url)
+        else:
+            return ['wget %s' % self.url]
 
 
 class DownloadBinary(BaseAction):
