@@ -321,8 +321,16 @@ def shed_target_option():
 def shed_key_option():
     return click.option(
         "--shed_key",
-        help="API key for Tool Shed access (required unless e-mail/pass "
-             "specified)."
+        help=("API key for Tool Shed access. An API key is required unless "
+              "e-mail and password is specified. This key can be specified "
+              "with either --shed_key or --shed_key_from_env.")
+    )
+
+
+def shed_key_from_env_option():
+    return click.option(
+        "--shed_key_from_env",
+        help="Environment variable to read API key for Tool Shed access from."
     )
 
 
@@ -441,6 +449,7 @@ def shed_target_options():
     return _compose(
         shed_email_option(),
         shed_key_option(),
+        shed_key_from_env_option(),
         shed_password_option(),
         shed_target_option(),
     )
