@@ -260,6 +260,10 @@ class Actions(object):
             platform = "os=%s,arch=%s," % (self.os, self.architecture)
         return "Actions[%s%s]" % (platform, map(str, self.actions))
 
+    def _indent_extend(self, target, new_entries, indent="    "):
+        for line in new_entries:
+            target.append(indent + line)
+
     def to_bash(self):
         # Use self.os.title() to match "Linux" or "Darwin" in bash where case matters:
         if self.os and self.architecture:
@@ -277,28 +281,32 @@ class Actions(object):
         if condition:
             # Conditional actions block
             install_cmds = [
-                '#' + '=' * 60,
+                '#' + '-' * 60,
                 'if [[ %s ]]' % condition,
                 'then',
                 '    echo "Platform specific action for os=%s, arch=%s"' % (self.os, self.architecture)]
+            env_cmds = install_cmds[:]
             # TODO - Refactor block indentation?
             for action in self.actions:
                 i_cmds, e_cmds = action.to_bash()
-                install_cmds.extend(i_cmds)
-                env_cmds.extend(e_cmds)  # Should these be conditional too?
+                self._indent_extend(install_cmds, i_cmds)
+                self._indent_extend(env_cmds, e_cmds)
             # If we run the action, do not want to run any later actions!
-            install_cmds.extend(['    exit 0',
-                                 'fi'])
+            # TODO: Don't want to exit the script if multiple tool_dependencies.xml in one bash script!
+            install_cmds.extend(['    exit 0', 'fi'])
+            env_cmds.append('fi')
         else:
             # Non-specific default action...
             install_cmds = [
-                '#' + '=' * 60,
+                '#' + '-' * 60,
                 'echo "Non-platform specific actions"']
+            env_cmds = install_cmds[:]
             for action in self.actions:
                 i_cmds, e_cmds = action.to_bash()
                 install_cmds.extend(i_cmds)
                 env_cmds.extend(e_cmds)
             install_cmds.append('#' + '=' * 60)
+            env_cmds.append('#' + '=' * 60)
         return install_cmds, env_cmds
 
 
