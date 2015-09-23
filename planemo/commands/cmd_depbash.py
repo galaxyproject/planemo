@@ -111,6 +111,10 @@ def cli(ctx, paths, recursive=False, fail_fast=True):
     failed = False
     with open("env.sh", "w") as env_sh_handle:
         with open("dep_install.sh", "w") as install_handle:
+            # We're using strict bash mode for dep_install.sh:
+            install_handle.write("#!/bin/bash\nset -euo pipefail\n")
+            # Expect user to "source env.sh" so don't set strict mode:
+            env_sh_handle.write("#!/bin/bash\n")
             for path in paths:
                 # ctx.log("Checking: %r" % path)
                 for tool_dep in find_tool_dependencis_xml(path, recursive):
