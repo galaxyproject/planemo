@@ -122,7 +122,7 @@ def cli(ctx, paths, recursive=False, fail_fast=True):
                     try:
                         install, env = convert_tool_dep(tool_dep)
                     except Exception as err:
-                        ctx.log('Error processing %s - %s',
+                        ctx.log('Error processing %s - %s' %
                                 (click.format_filename(tool_dep), err))
                         if fail_fast:
                             # Just stop now.
