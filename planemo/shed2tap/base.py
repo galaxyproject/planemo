@@ -362,18 +362,19 @@ class BaseAction(object):
         raise NotImplementedError("No to_bash defined for %r" % self)
 
 
-def _commands_to_download_and_extract(url):
-    # Do we need to worry about target_filename here?
+def _commands_to_download_and_extract(url, target_filename=None):
     # TODO - Include checksum validation here?
-    answer = ['wget %s' % url]
-    downloaded_filename = os.path.split(url)[-1]
-    if "#" in downloaded_filename:
-        downloaded_filename = downloaded_filename[:downloaded_filename.index("#")]
-    answer.extend(['if [[ ! -f %s ]]' % downloaded_filename,
-                   'then',
-                   '    echo "ERROR could not download %s"' % downloaded_filename,
-                   '    exit 1',
-                   'fi'])
+    if target_filename:
+        downloaded_filename = target_filename
+    else:
+        downloaded_filename = os.path.split(url)[-1]
+        if "?" in downloaded_filename:
+            downloaded_filename = downloaded_filename[:downloaded_filename.index("?")]
+        if "#" in downloaded_filename:
+            downloaded_filename = downloaded_filename[:downloaded_filename.index("#")]
+    # Curl is present on Mac OS X, can we assume it will be on Linux?
+    # Cannot assume that wget will be on Mac OS X.
+    answer = ['curl -o "%s" "%s"' % (downloaded_filename, url)]
     # TODO - These change directory commands won't always work! e.g.
     #
     # <action type="download_by_url">ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.2.30/ncbi-blast-2.2.30+-x64-linux.tar.gz</action>
@@ -401,8 +402,7 @@ def _commands_to_download_and_extract(url):
     elif downloaded_filename.endswith(".jar"):
         pass
     else:
-        answer.extend(['echo "ERROR: How to extract %s"' % downloaded_filename,
-                       'exit'])
+        raise NotImplementedError("How do we to extract %s?" % downloaded_filename)
     return answer, []
 
 
