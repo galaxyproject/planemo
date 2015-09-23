@@ -1,4 +1,5 @@
 import os
+import sys
 
 import click
 
@@ -8,12 +9,8 @@ from planemo.io import info, error
 from planemo.cli import pass_context
 from planemo import options
 
-from galaxy.tools.loader_directory import load_tool_elements_from_path
-
-from galaxy.tools.deps.requirements import parse_requirements_from_xml
-from galaxy.util import bunch
-
 from planemo.shed2tap.base import BasePackage, Dependency
+
 
 def find_tool_dependencis_xml(path, recursive):
     """Iterator function, quick & dirty tree walking."""
@@ -44,7 +41,7 @@ def convert_tool_dep(dependencies_file):
 
     root = ET.parse(dependencies_file).getroot()
     package_els = root.findall("package")
-    
+
     packages = []
     dependencies = []
     for package_el in package_els:
@@ -52,7 +49,7 @@ def convert_tool_dep(dependencies_file):
         assert len(install_els) in (0, 1)
         if len(install_els) == 0:
             repository_el = package_el.find("repository")
-            assert repository_el is not None, "no repository in package el for %s" % repo
+            assert repository_el is not None, "no repository in %s" % repository_el
             dependencies.append(Dependency(None, package_el, repository_el))
         else:
             install_el = install_els[0]
@@ -113,11 +110,11 @@ def cli(ctx, paths, recursive=False, fail_fast=True):
     integration testing setups like TravisCI to both verify the dependency
     installation receipe works, and to use this to run functional tests.
     """
-    error = False
+    failed = False
     with open("env.sh", "w") as env_sh_handle:
         with open("dep_install.sh", "w") as install_handle:
             for path in paths:
-                #ctx.log("Checking: %r" % path)
+                # ctx.log("Checking: %r" % path)
                 for tool_dep in find_tool_dependencis_xml(path, recursive):
                     assert os.path.basename(tool_dep) == "tool_dependencies.xml", tool_dep
                     ctx.log('Processing requirements from %s',
@@ -131,7 +128,7 @@ def cli(ctx, paths, recursive=False, fail_fast=True):
                                 (click.format_filename(tool_dep), err))
                         if fail_fast:
                             # Just stop now.
-                            error = True
+                            failed = True
                             break
                         else:
                             # Omit this tool_dependencies.xml but continue
@@ -145,5 +142,6 @@ def cli(ctx, paths, recursive=False, fail_fast=True):
                     for cmd in env:
                         env_sh_handle.write(cmd + "\n")
     ctx.log("The End")
-    if error:
+    if failed:
+        error('Error processing one or more tool_dependencies.xml files.')
         sys.exit(1)

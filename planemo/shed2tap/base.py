@@ -273,7 +273,7 @@ class Actions(object):
 
         install_cmds = []
         env_cmds = []
-        
+
         if condition:
             # Conditional actions block
             install_cmds = [
@@ -295,7 +295,7 @@ class Actions(object):
                 '#' + '=' * 60,
                 'echo "Non-platform specific actions"']
             for action in self.actions:
-                i_cmds,e_cmds = action.to_bash()
+                i_cmds, e_cmds = action.to_bash()
                 install_cmds.extend(i_cmds)
                 env_cmds.extend(e_cmds)
             install_cmds.append('#' + '=' * 60)
@@ -358,7 +358,7 @@ def _commands_to_download_and_extract(url):
     # Do we need to worry about target_filename here?
     # TODO - Include checksum validation here?
     answer = ['wget %s' % url]
-    downloaded_filename = os.path.split( url )[ -1 ]
+    downloaded_filename = os.path.split(url)[-1]
     if "#" in downloaded_filename:
         downloaded_filename = downloaded_filename[:downloaded_filename.index("#")]
     answer.extend(['if [[ ! -f %s ]]' % downloaded_filename,
@@ -377,7 +377,7 @@ def _commands_to_download_and_extract(url):
     # $ cd ncbi-blast-2.2.30+
     #
     # We cannot guess the folder structure until run time - which suggests
-    # we may need to call into (a copy of) the Galaxy code in 
+    # we may need to call into (a copy of) the Galaxy code in
     # lib/tool_shed/galaxy_install/tool_dependencies/recipe/step_handler.py
     if downloaded_filename.endswith(".tar.gz"):
         answer.extend(['tar -zxvf %s' % downloaded_filename,
@@ -436,9 +436,6 @@ class DownloadBinary(BaseAction):
         self.url_template = elem.text
         assert self.url_template
         self.target_directory = elem.get('target_directory', None)
-
-    #def to_bash(self):
-    #    return ['echo "TODO - download %r to %r" && false' % (self.url_template, self.target_directory)], []
 
 
 class ShellCommandAction(BaseAction):
