@@ -85,8 +85,6 @@ def convert_tool_dep(dependencies_file):
 
 
 @click.command('dep_install')
-##@options.optional_tools_arg(multiple=True)
-##@options.recursive_shed_option()
 @options.shed_realization_options()
 @pass_context
 def cli(ctx, paths, recursive=False, fail_fast=True):
