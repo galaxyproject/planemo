@@ -270,29 +270,36 @@ class Actions(object):
             condition = '"%s" == `arch`' % self.architecture
         else:
             condition = None
+
+        install_cmds = []
+        env_cmds = []
         
         if condition:
             # Conditional actions block
-            answer = ['#' + '=' * 60,
-                      'if [[ %s ]]' % condition,
-                      'then',
-                      '    echo "Platform specific action for os=%s, arch=%s"' % (self.os, self.architecture)]
+            install_cmds = [
+                '#' + '=' * 60,
+                'if [[ %s ]]' % condition,
+                'then',
+                '    echo "Platform specific action for os=%s, arch=%s"' % (self.os, self.architecture)]
             # TODO - Refactor block indentation?
             for action in self.actions:
-                for line in action.to_bash():
-                    assert "\n" not in line
-                    answer.append("    " + line)
+                i_cmds, e_cmds = action.to_bash()
+                install_cmds.extend(i_cmds)
+                env_cmds.extend(e_cmds)  # Should these be conditional too?
             # If we run the action, do not want to run any later actions!
-            answer.extend(['    exit 0',
-                           'fi'])
+            install_cmds.extend(['    exit 0',
+                                 'fi'])
         else:
             # Non-specific default action...
-            answer = ['#' + '=' * 60,
-                      'echo "Non-platform specific actions"']
+            install_cmds = [
+                '#' + '=' * 60,
+                'echo "Non-platform specific actions"']
             for action in self.actions:
-                answer.extend(action.to_bash())
-            answer.append('#' + '=' * 60)
-        return answer
+                i_cmds,e_cmds = action.to_bash()
+                install_cmds.extend(i_cmds)
+                env_cmds.extend(e_cmds)
+            install_cmds.append('#' + '=' * 60)
+        return install_cmds, env_cmds
 
 
 class ActionPackage(object):
@@ -338,12 +345,13 @@ class BaseAction(object):
         return action_class(elem)
 
     def to_bash(self):
-        """Return list of bash shell commands to execute this action.
+        """Return lists of bash shell commands to execute this action.
 
         This method is be implemented by each sub-class, and will
-        return a list of strings.
+        return two list of strings (for ``dep_install.sh`` and
+        ``env.sh`` respectively).
         """
-        return ['echo "TODO - Not implemented %r" && false' % self]
+        raise NotImplementedError("No to_bash defined for %r" % self)
 
 
 def _commands_to_download_and_extract(url):
@@ -387,7 +395,7 @@ def _commands_to_download_and_extract(url):
     else:
         answer.extend(['echo "ERROR: How to extract %s"' % downloaded_filename,
                        'exit'])
-    return answer
+    return answer, []
 
 
 class DownloadByUrlAction(BaseAction):
@@ -417,7 +425,7 @@ class DownloadFileAction(BaseAction):
         if self.extract:
             return _commands_to_download_and_extract(self.url)
         else:
-            return ['wget %s' % self.url]
+            return ['wget %s' % self.url], []
 
 
 class DownloadBinary(BaseAction):
@@ -429,8 +437,8 @@ class DownloadBinary(BaseAction):
         assert self.url_template
         self.target_directory = elem.get('target_directory', None)
 
-    def to_bash(self):
-        return ['echo "TODO - download %r to %r" && false' % (self.url_template, self.target_directory)]
+    #def to_bash(self):
+    #    return ['echo "TODO - download %r to %r" && false' % (self.url_template, self.target_directory)], []
 
 
 class ShellCommandAction(BaseAction):
@@ -441,7 +449,7 @@ class ShellCommandAction(BaseAction):
         self.command = elem.text
 
     def to_bash(self):
-        return [self.command]
+        return [self.command], []
 
 
 class TemplateShellCommandAction(BaseAction):
@@ -464,7 +472,7 @@ class MoveFileAction(BaseAction):
         self.destination = elem.find("destination").text
 
     def to_bash(self):
-        return ["mv %s %s" % (self.source, self.destination)]
+        return ["mv %s %s" % (self.source, self.destination)], []
 
 
 class MoveDirectoryFilesAction(BaseAction):
@@ -478,7 +486,7 @@ class MoveDirectoryFilesAction(BaseAction):
         self.destination_directory = destination_directory
 
     def to_bash(self):
-        return ["mv %s/* %s/" % (self.source_directory, self.destination_directory)]
+        return ["mv %s/* %s/" % (self.source_directory, self.destination_directory)], []
 
 
 class SetEnvironmentAction(BaseAction):
@@ -498,15 +506,16 @@ class SetEnvironmentAction(BaseAction):
     def to_bash(self):
         answer = []
         for var in self.variables:
+            # Expand $INSTALL_DIR here?
             if var.action == "set_to":
-                answer.append('echo "export %s=%s" >> $ENV_SH' % (var.name, var.raw_value))
+                answer.append('export %s=%s' % (var.name, var.raw_value))
             elif var.action == "prepend_to":
-                answer.append('echo "export %s=%s:\$%s" >> $ENV_SH' % (var.name, var.raw_value, var.name))
+                answer.append('export %s=%s:$%s' % (var.name, var.raw_value, var.name))
             elif var.action == "append_to":
-                answer.append('echo "export %s=\$%s:%s" >> $ENV_SH' % (var.name, var.name, var.raw_value))
+                answer.append('export %s=$%s:%s' % (var.name, var.name, var.raw_value))
             else:
-                answer.append('echo "ERROR Undefined environment variable action %r" && false' % var.action)
-        return answer
+                raise ValueError("Undefined environment variable action %r" % var.action)
+        return answer, answer  # Actions needed in env.sh here!
 
 
 class ChmodAction(BaseAction):
@@ -526,7 +535,7 @@ class ChmodAction(BaseAction):
         assert self.mods
 
     def to_bash(self):
-        return ["chmod %s %s" % (m["mode"], m["target"]) for m in self.mods]
+        return ["chmod %s %s" % (m["mode"], m["target"]) for m in self.mods], []
 
 
 class MakeInstallAction(BaseAction):
@@ -537,7 +546,7 @@ class MakeInstallAction(BaseAction):
         pass
 
     def to_bash(self):
-        return ["make install"]
+        return ["make install"], []
 
 
 class AutoconfAction(BaseAction):
@@ -557,7 +566,7 @@ class ChangeDirectoryAction(BaseAction):
         assert self.directory
 
     def to_bash(self):
-        return ["cd %s" % self.directory]
+        return ["cd %s" % self.directory], []
 
 
 class MakeDirectoryAction(BaseAction):
