@@ -33,8 +33,15 @@ def find_tool_dependencis_xml(path, recursive):
                         yield x
 
 
-def convert_tool_dep(dependencies_file, env_file_handle):
-    """Parse a tool_dependencies.xml into install.sh and env.sh commands."""
+def convert_tool_dep(dependencies_file):
+    """Parse a tool_dependencies.xml into install.sh and env.sh commands.
+
+    Returns two lists of strings, commands to add to install.sh and
+    env.sh respectively.
+    """
+    install_cmds = []
+    env_cmds = []
+
     root = ET.parse(dependencies_file).getroot()
     package_els = root.findall("package")
     
@@ -53,19 +60,31 @@ def convert_tool_dep(dependencies_file, env_file_handle):
 
     if not packages:
         info("No packages in %s" % dependencies_file)
-        return None
+        return [], []
 
     assert len(packages) == 1, packages
     package = packages[0]
     name = package_el.attrib["name"]
     version = package_el.attrib["version"]
 
-    info("Installing %s version %s" % (name, version))
-    os.environ["INSTALL_DIR"] = os.path.abspath(os.curdir)
+    # TODO - Set $INSTALL_DIR in the script
+    # os.environ["INSTALL_DIR"] = os.path.abspath(os.curdir)
     for action in package.all_actions:
-        for statement in action.to_bash():
-            info(statement)
-    info('Done')
+        inst, env = action.to_bash()
+        install_cmds.extend(inst)
+        env_cmds.extend(env)
+
+    if install_cmds:
+        install_cmds.insert(0, '#' + '=' * 60)
+        install_cmds.insert(0, 'echo "Installing %s version %s"' % (name, version))
+        install_cmds.insert(0, '#' + '=' * 60)
+    if env_cmds:
+        env_cmds.insert(0, '#' + '=' * 60)
+        env_cmds.insert(0, 'echo "Setting environment variables for %s version %s"' % (name, version))
+        env_cmds.insert(0, '#' + '=' * 60)
+        # TODO - define $INSTALL_DIR here?
+
+    return install_cmds, env_cmds
 
 
 @click.command('dep_install')
@@ -94,14 +113,37 @@ def cli(ctx, paths, recursive=False, fail_fast=True):
     integration testing setups like TravisCI to both verify the dependency
     installation receipe works, and to use this to run functional tests.
     """
+    error = False
     with open("env.sh", "w") as env_sh_handle:
-        for path in paths:
-            #ctx.log("Checking: %r" % path)
-            for tool_dep in find_tool_dependencis_xml(path, recursive):
-                assert os.path.basename(tool_dep) == "tool_dependencies.xml", tool_dep
-                ctx.log('Processing requirements from %s',
-                        click.format_filename(tool_dep))
-                # TODO: If --fail-fast, abort on error.
-                # Otherwise, skip on to next tool_dependencies.xml
-                convert_tool_dep(tool_dep, env_sh_handle)
+        with open("dep_install.sh", "w") as install_handle:
+            for path in paths:
+                #ctx.log("Checking: %r" % path)
+                for tool_dep in find_tool_dependencis_xml(path, recursive):
+                    assert os.path.basename(tool_dep) == "tool_dependencies.xml", tool_dep
+                    ctx.log('Processing requirements from %s',
+                            click.format_filename(tool_dep))
+                    # TODO: If --fail-fast, abort on error.
+                    # Otherwise, skip on to next tool_dependencies.xml file
+                    try:
+                        install, env = convert_tool_dep(tool_dep)
+                    except Exception as err:
+                        ctx.log('Error processing %s - %s',
+                                (click.format_filename(tool_dep), err))
+                        if fail_fast:
+                            # Just stop now.
+                            error = True
+                            break
+                        else:
+                            # Omit this tool_dependencies.xml but continue
+                            install = env = [
+                                '#' + '=' * 60,
+                                'echo "WARNING: Skipping %s"' % tool_dep,
+                                '#' + '=' * 60,
+                            ]
+                    for cmd in install:
+                        install_handle.write(cmd + "\n")
+                    for cmd in env:
+                        env_sh_handle.write(cmd + "\n")
     ctx.log("The End")
+    if error:
+        sys.exit(1)
