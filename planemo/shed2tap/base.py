@@ -362,32 +362,32 @@ class BaseAction(object):
         raise NotImplementedError("No to_bash defined for %r" % self)
 
 
-def _commands_to_download_and_extract(url, target_filename=None):
-    # TODO - Include checksum validation here?
-    if target_filename:
-        downloaded_filename = target_filename
-    else:
-        downloaded_filename = os.path.split(url)[-1]
-        if "?" in downloaded_filename:
-            downloaded_filename = downloaded_filename[:downloaded_filename.index("?")]
-        if "#" in downloaded_filename:
-            downloaded_filename = downloaded_filename[:downloaded_filename.index("#")]
-    # Curl is present on Mac OS X, can we assume it will be on Linux?
-    # Cannot assume that wget will be on Mac OS X.
-    answer = ['curl -o "%s" "%s"' % (downloaded_filename, url)]
-    # TODO - These change directory commands won't always work! e.g.
-    #
-    # <action type="download_by_url">ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.2.30/ncbi-blast-2.2.30+-x64-linux.tar.gz</action>
-    #
-    # Should become:
-    #
-    # $ wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.2.30/ncbi-blast-2.2.30+-x64-linux.tar.gz
-    # $ tar -zxvf ncbi-blast-2.2.30+-x64-linux.tar.gz
-    # $ cd ncbi-blast-2.2.30+
-    #
-    # We cannot guess the folder structure until run time - which suggests
-    # we may need to call into (a copy of) the Galaxy code in
+def _determine_compressed_file_folder(url, downloaded_filename):
+    """Determine how to decompress the file & its directory structure.
+
+    Returns a list of shell commands. Consider this example where the
+    folder to change to cannot be guessed from the tar-ball filename:
+
+        $ curl -o "ncbi-blast-2.2.30+-ia32-linux.tar.gz" "ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.2.30/ncbi-blast-2.2.30+-ia32-linux.tar.gz"
+        $ tar -zxvf ncbi-blast-2.2.30+-ia32-linux.tar.gz
+        $ cd ncbi-blast-2.2.30+-ia32-linux
+
+    Here it would return:
+
+        ['tar -zxvf ncbi-blast-2.2.30+-ia32-linux.tar.gz', 'cd ncbi-blast-2.2.30+-ia32-linux']
+
+    If not cached, this function will download the file to a temp
+    folder, and then open it / decompress it in order to find common
+    folder prefix used.  This will also verify how to decompress the
+    file.
+
+    The cache will recorded the url, compression type, and common folder
+    prefix keyed on the MD5 checksum of the URL.
+    """
+    # TODO - Implement this! For now, heuristics.
+    # We may need to call into (a copy of) the Galaxy code in
     # lib/tool_shed/galaxy_install/tool_dependencies/recipe/step_handler.py
+    answer = []
     if downloaded_filename.endswith(".tar.gz"):
         answer.extend(['tar -zxvf %s' % downloaded_filename,
                        'cd %s' % downloaded_filename[:-7]])
@@ -403,6 +403,23 @@ def _commands_to_download_and_extract(url, target_filename=None):
         pass
     else:
         raise NotImplementedError("How do we to extract %s?" % downloaded_filename)
+    return answer
+
+
+def _commands_to_download_and_extract(url, target_filename=None):
+    # TODO - Include checksum validation here?
+    if target_filename:
+        downloaded_filename = target_filename
+    else:
+        downloaded_filename = os.path.split(url)[-1]
+        if "?" in downloaded_filename:
+            downloaded_filename = downloaded_filename[:downloaded_filename.index("?")]
+        if "#" in downloaded_filename:
+            downloaded_filename = downloaded_filename[:downloaded_filename.index("#")]
+    # Curl is present on Mac OS X, can we assume it will be on Linux?
+    # Cannot assume that wget will be on Mac OS X.
+    answer = ['curl -o "%s" "%s"' % (downloaded_filename, url)]
+    answer.extend(_determine_compressed_file_folder(url, downloaded_filename))
     return answer, []
 
 
