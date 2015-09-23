@@ -416,9 +416,23 @@ def _commands_to_download_and_extract(url, target_filename=None):
             downloaded_filename = downloaded_filename[:downloaded_filename.index("?")]
         if "#" in downloaded_filename:
             downloaded_filename = downloaded_filename[:downloaded_filename.index("#")]
+
     # Curl is present on Mac OS X, can we assume it will be on Linux?
     # Cannot assume that wget will be on Mac OS X.
-    answer = ['curl -o "%s" "%s"' % (downloaded_filename, url)]
+    answer = [
+        'if [[ -f "%s" ]]' % downloaded_filename,
+        'then'
+        '    echo "Reusing existing %s"' % downloaded_filename,
+        'elif [[ -f "$DOWNLOAD_CACHE/%s" ]]' % downloaded_filename,
+        'then',
+        '    echo "Reusing cached %s"' % downloaded_filename,
+        '    ln -s "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, downloaded_filename),
+        'else',
+        '    echo "Downloading %s"' % downloaded_filename,
+        '    curl -o "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, url),
+        '    ln -s "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, downloaded_filename),
+        'fi',
+        ]
     answer.extend(_determine_compressed_file_folder(url, downloaded_filename))
     return answer, []
 

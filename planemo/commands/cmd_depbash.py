@@ -12,6 +12,20 @@ from planemo import options
 from planemo.shed2tap.base import BasePackage, Dependency
 
 
+# We're using strict bash mode for dep_install.sh:                                                                                                             
+preamble_dep_install = """#!/bin/bash
+set -euo pipefail
+export DOWNLOAD_CACHE=${DOWNLOAD_CACHE:-$PWD/download_cache/}
+if [[ ! -d $DOWNLOAD_CACHE ]]
+then
+    mkdir -p $DOWNLOAD_CACHE
+fi
+"""
+
+# Expect user to "source env.sh" so don't set strict mode:
+preamble_env_sh = """#!/bin/bash
+"""
+
 def find_tool_dependencis_xml(path, recursive):
     """Iterator function, quick & dirty tree walking."""
     if os.path.isfile(path):
@@ -111,10 +125,8 @@ def cli(ctx, paths, recursive=False, fail_fast=True):
     failed = False
     with open("env.sh", "w") as env_sh_handle:
         with open("dep_install.sh", "w") as install_handle:
-            # We're using strict bash mode for dep_install.sh:
-            install_handle.write("#!/bin/bash\nset -euo pipefail\n")
-            # Expect user to "source env.sh" so don't set strict mode:
-            env_sh_handle.write("#!/bin/bash\n")
+            install_handle.write(preamble_dep_install)
+            env_sh_handle.write(preamble_env_sh)
             for path in paths:
                 # ctx.log("Checking: %r" % path)
                 for tool_dep in find_tool_dependencis_xml(path, recursive):
