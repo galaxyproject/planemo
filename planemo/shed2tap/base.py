@@ -394,6 +394,31 @@ def _common_prefix(folders):
     return common_prefix
 
 
+def _cache_download(url, filename):
+    """Returns local path to cached copy of URL using given filename."""
+    try:
+        cache = os.environ["DOWNLOAD_CACHE"]
+    except KeyError:
+        # TODO - expose this as a command line option
+        raise ValueError("Dependencies cache location $DOWNLOAD_CACHE not set.")
+
+    local = os.path.join(cache, filename)
+
+    if not os.path.isfile(local):
+        # Must download it...
+        try:
+            import sys  # TODO - log this nicely...
+            sys.stderr.write("Downloading %s\n" % url)
+            urlretrieve(url, local)
+        except URLError:
+            # Most likely server is down, could be bad URL in XML action:
+            raise RuntimeError("Unable to download %s" % url)
+        except FTPErrors:
+            # Most likely server is down, could be bad URL in XML action:
+            raise RuntimeError("Unable to download %s" % url)
+
+    return local
+
 def _determine_compressed_file_folder(url, downloaded_filename):
     """Determine how to decompress the file & its directory structure.
 
@@ -415,26 +440,7 @@ def _determine_compressed_file_folder(url, downloaded_filename):
     how to decompress the file.
     """
     answer = []
-
-    try:
-        cache = os.environ["DOWNLOAD_CACHE"]
-    except KeyError:
-        # TODO - expose this as a command line option
-        raise ValueError("Dependencies cache location $DOWNLOAD_CACHE not set.")
-
-    local = os.path.join(cache, downloaded_filename)
-    if not os.path.isfile(local):
-        # Must download it...
-        try:
-            import sys  # TODO - log this nicely...
-            sys.stderr.write("Downloading %s\n" % url)
-            urlretrieve(url, local)
-        except URLError:
-            # Most likely server is down, could be bad URL in XML action:
-            raise RuntimeError("Unable to download %s" % url)
-        except FTPErrors:
-            # Most likely server is down, could be bad URL in XML action:
-            raise RuntimeError("Unable to download %s" % url)
+    local = _cache_download(url, downloaded_filename)
 
     if tarfile.is_tarfile(local):
         folders = _tar_folders(local)
