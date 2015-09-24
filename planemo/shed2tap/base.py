@@ -503,7 +503,7 @@ class DownloadByUrlAction(BaseAction):
     _keys = ["url"]
 
     def __init__(self, elem):
-        self.url = elem.text
+        self.url = elem.text.strip()
         assert self.url
 
     def to_bash(self):
@@ -518,7 +518,7 @@ class DownloadFileAction(BaseAction):
     _keys = ["url", "extract"]
 
     def __init__(self, elem):
-        self.url = elem.text
+        self.url = elem.text.strip()
         self.extract = asbool(elem.attrib.get("extract", False))
 
     def to_bash(self):
