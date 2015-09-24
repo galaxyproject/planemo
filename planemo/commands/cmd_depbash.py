@@ -12,7 +12,7 @@ from planemo import options
 from planemo.shed2tap.base import BasePackage, Dependency
 
 
-# We're using strict bash mode for dep_install.sh:                                                                                                             
+# We're using strict bash mode for dep_install.sh:
 preamble_dep_install = """#!/bin/bash
 set -euo pipefail
 export DOWNLOAD_CACHE=${DOWNLOAD_CACHE:-$PWD/download_cache/}
@@ -25,6 +25,7 @@ fi
 # Expect user to "source env.sh" so don't set strict mode:
 preamble_env_sh = """#!/bin/bash
 """
+
 
 def find_tool_dependencis_xml(path, recursive):
     """Iterator function, quick & dirty tree walking."""
