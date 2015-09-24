@@ -309,8 +309,6 @@ class Actions(object):
                 i_cmds, e_cmds = action.to_bash()
                 install_cmds.extend(i_cmds)
                 env_cmds.extend(e_cmds)
-            install_cmds.append('#' + '=' * 60)
-            env_cmds.append('#' + '=' * 60)
         return install_cmds, env_cmds
 
 
