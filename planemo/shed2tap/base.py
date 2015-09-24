@@ -730,6 +730,10 @@ class SetEnvironmentForInstallAction(BaseAction):
     def __init__(self, elem):
         pass
 
+    def to_bash(self):
+        # TODO - How could we resolve/check the dependencies?
+        return ['echo "WARNING: Assuming packages already installed!"'], []
+
 
 class SetVariable(object):
 
