@@ -14,8 +14,15 @@ from planemo.shed2tap.base import BasePackage, Dependency
 
 # We're using strict bash mode for dep_install.sh:
 preamble_dep_install = """#!/bin/bash
+#set -euo pipefail
+set -eo pipefail
+if [[ ! -d $INSTALL_DIR ]]
+then
+    echo "ERROR: Environment variable INSTALL_DIR not a directory!"
+    exit 1
+fi
+# Set full strict mode now, side stepping case $INSTALL_DIR not setup.
 set -euo pipefail
-export INSTALL_DIR=${INSTALL_DIR:-$PWD}
 export DOWNLOAD_CACHE=${DOWNLOAD_CACHE:-$PWD/download_cache/}
 if [[ ! -d $DOWNLOAD_CACHE ]]
 then
@@ -33,8 +40,14 @@ echo "Installation complete."
 echo "======================"
 """
 
-# Expect user to "source env.sh" so don't set strict mode:
+# Expect user to "source env.sh" so don't set strict mode,
+# and don't use the exit command!
 preamble_env_sh = """#!/bin/bash
+if [[ ! -d $INSTALL_DIR ]]
+then
+    echo "ERROR: Environment variable INSTALL_DIR not a directory!"
+fi
+export INSTALL_DIR=${INSTALL_DIR:-$PWD}
 """
 
 
