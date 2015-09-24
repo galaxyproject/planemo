@@ -658,7 +658,7 @@ class MakeDirectoryAction(BaseAction):
         self.directory = elem.text
 
     def to_bash(self):
-        return ["mkdir -p %s" % self.directory]
+        return ["mkdir -p %s" % self.directory], []
 
 
 class SetupPerlEnvironmentAction(BaseAction):
