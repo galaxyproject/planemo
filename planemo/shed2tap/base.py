@@ -372,14 +372,14 @@ def _tar_folders(filename):
     folders = set()
     for i in archive.getmembers():
         if i.isdir():
-            folders.add(i.name + "/")
+            folders.add(i.name.rstrip("/"))
         else:
-            folders.add(os.path.split(i.name)[0] + "/")
+            folders.add(os.path.split(i.name)[0])
     return folders
 
 def _zip_folders(filename):
     archive = zipfile.ZipFile(filename, "r")
-    return set(i.filename for i in archive.infolist() if i.filename.endswith("/"))
+    return set(i.filename.rstrip("/") for i in archive.infolist() if i.filename.endswith("/"))
 
 def _determine_compressed_file_folder(url, downloaded_filename):
     """Determine how to decompress the file & its directory structure.
@@ -446,7 +446,8 @@ def _determine_compressed_file_folder(url, downloaded_filename):
         common_prefix = list(folders)[0]
     else:
         common_prefix = os.path.commonprefix(folders)
-        assert common_prefix.endswith("/"), folders
+        assert not os.path.isabs(common_prefix), folders
+        assert not common_prefix.endswith("/"), folders
     if common_prefix:
         answer.append('cd "%s"' % common_prefix)
     return answer
