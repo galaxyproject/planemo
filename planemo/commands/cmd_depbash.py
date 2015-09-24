@@ -15,11 +15,15 @@ from planemo.shed2tap.base import BasePackage, Dependency
 # We're using strict bash mode for dep_install.sh:
 preamble_dep_install = """#!/bin/bash
 set -euo pipefail
+export INSTALL_DIR=${INSTALL_DIR:-$PWD}
 export DOWNLOAD_CACHE=${DOWNLOAD_CACHE:-$PWD/download_cache/}
 if [[ ! -d $DOWNLOAD_CACHE ]]
 then
     mkdir -p $DOWNLOAD_CACHE
 fi
+# Create a randomly named temp folder for working in
+dep_install_tmp=${TMPDIR-/tmp}/dep_install.$RANDOM.$RANDOM.$RANDOM.$$
+(umask 077 && mkdir $dep_install_tmp) || exit 1
 """
 
 # Expect user to "source env.sh" so don't set strict mode:
@@ -87,6 +91,7 @@ def convert_tool_dep(dependencies_file):
         env_cmds.extend(env)
 
     if install_cmds:
+        install_cmds.insert(0, 'cd $dep_install_tmp')
         install_cmds.insert(0, '#' + '=' * 60)
         install_cmds.insert(0, 'echo "Installing %s version %s"' % (name, version))
         install_cmds.insert(0, '#' + '=' * 60)
@@ -149,9 +154,9 @@ def cli(ctx, paths, recursive=False, fail_fast=True):
                         if not fail_fast:
                             # Omit this tool_dependencies.xml but continue
                             install = env = [
-                                '#' + '=' * 60,
+                                '#' + '*' * 60,
                                 'echo "WARNING: Skipping %s"' % tool_dep,
-                                '#' + '=' * 60,
+                                '#' + '*' * 60,
                             ]
                     if failed and fail_fast:
                         break
