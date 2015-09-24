@@ -26,6 +26,13 @@ dep_install_tmp=${TMPDIR-/tmp}/dep_install.$RANDOM.$RANDOM.$RANDOM.$$
 (umask 077 && mkdir $dep_install_tmp) || exit 1
 """
 
+final_dep_install = """echo "Cleaning up..."
+rm -rf $dep_install_tmp
+echo "======================"
+echo "Installation complete."
+echo "======================"
+"""
+
 # Expect user to "source env.sh" so don't set strict mode:
 preamble_env_sh = """#!/bin/bash
 """
@@ -91,12 +98,13 @@ def convert_tool_dep(dependencies_file):
         env_cmds.extend(env)
 
     if install_cmds:
-        install_cmds.insert(0, 'specifc_action_done=0')
         install_cmds.insert(0, 'cd $dep_install_tmp')
-        install_cmds.insert(0, '#' + '=' * 60)
+        install_cmds.insert(0, 'specifc_action_done=0')
+        install_cmds.insert(0, 'echo "%s"' % ('=' * 60))
         install_cmds.insert(0, 'echo "Installing %s version %s"' % (name, version))
-        install_cmds.insert(0, '#' + '=' * 60)
+        install_cmds.insert(0, 'echo "%s"' % ('=' * 60))
     if env_cmds:
+        env_cmds.insert(0, 'specifc_action_done=0')
         env_cmds.insert(0, '#' + '=' * 60)
         env_cmds.insert(0, 'echo "Setting environment variables for %s version %s"' % (name, version))
         env_cmds.insert(0, '#' + '=' * 60)
@@ -165,6 +173,7 @@ def cli(ctx, paths, recursive=False, fail_fast=True):
                         install_handle.write(cmd + "\n")
                     for cmd in env:
                         env_sh_handle.write(cmd + "\n")
+            install_handle.write(final_dep_install)
     ctx.log("The End")
     if failed:
         error('Error processing one or more tool_dependencies.xml files.')
