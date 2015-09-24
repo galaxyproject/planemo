@@ -3,9 +3,13 @@ from __future__ import print_function
 from xml.etree import ElementTree
 
 from six.moves.urllib.request import urlretrieve
+from six.moves.urllib.error import URLError
 from six import string_types
 
 import os
+import tarfile
+import zipfile
+from ftplib import all_errors as FTPErrors  # tuple of exceptions
 
 TOOLSHED_MAP = {
     "toolshed": "https://toolshed.g2.bx.psu.edu",
@@ -362,47 +366,88 @@ class BaseAction(object):
         raise NotImplementedError("No to_bash defined for %r" % self)
 
 
+def _tar_folders(filename):
+    archive = tarfile.open(filename, "r", errorlevel=0)
+    folders = set()
+    for i in archive.getmembers():
+        if i.isdir():
+            folders.add(i.name + "/")
+        else:
+            folders.add(os.path.split(i.name)[0] + "/")
+    return folders
+
+def _zip_folders(filename):
+    archive = zipfile.ZipFile(filename, "r")
+    return set(i.filename for i in archive.infolist() if i.filename.endswith("/"))
+
 def _determine_compressed_file_folder(url, downloaded_filename):
     """Determine how to decompress the file & its directory structure.
 
     Returns a list of shell commands. Consider this example where the
     folder to change to cannot be guessed from the tar-ball filename:
 
-        $ curl -o "ncbi-blast-2.2.30+-ia32-linux.tar.gz" "ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.2.30/ncbi-blast-2.2.30+-ia32-linux.tar.gz"
+        $ curl -o "ncbi-blast-2.2.30+-ia32-linux.tar.gz" \
+        "ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.2.30/ncbi-blast-2.2.30+-ia32-linux.tar.gz"
         $ tar -zxvf ncbi-blast-2.2.30+-ia32-linux.tar.gz
-        $ cd ncbi-blast-2.2.30+-ia32-linux
+        $ cd ncbi-blast-2.2.30+
 
     Here it would return:
 
-        ['tar -zxvf ncbi-blast-2.2.30+-ia32-linux.tar.gz', 'cd ncbi-blast-2.2.30+-ia32-linux']
+        ['tar -zxvf ncbi-blast-2.2.30+-ia32-linux.tar.gz', 'cd ncbi-blast-2.2.30+']
 
-    If not cached, this function will download the file to a temp
-    folder, and then open it / decompress it in order to find common
-    folder prefix used.  This will also verify how to decompress the
-    file.
-
-    The cache will recorded the url, compression type, and common folder
-    prefix keyed on the MD5 checksum of the URL.
+    If not cached, this function will download the file to the
+    $DOWNLOAD_CACHE folder, and then open it / decompress it in
+    order to find common folder prefix used.  This will also verify
+    how to decompress the file.
     """
-    # TODO - Implement this! For now, heuristics.
-    # We may need to call into (a copy of) the Galaxy code in
-    # lib/tool_shed/galaxy_install/tool_dependencies/recipe/step_handler.py
     answer = []
-    if downloaded_filename.endswith(".tar.gz"):
-        answer.extend(['tar -zxvf %s' % downloaded_filename,
-                       'cd %s' % downloaded_filename[:-7]])
-    elif downloaded_filename.endswith(".tgz"):
-        answer.extend(['tar -zxvf %s' % downloaded_filename,
-                       'cd %s' % downloaded_filename[:-4]])
-    elif downloaded_filename.endswith(".tar.bz2"):
-        answer.extend(['tar -jxvf %s' % downloaded_filename,
-                       'cd %s' % downloaded_filename[:-8]])
-    elif downloaded_filename.endswith(".zip"):
-        answer.append("unzip %s" % downloaded_filename)
-    elif downloaded_filename.endswith(".jar"):
-        pass
+
+    try:
+        cache = os.environ["DOWNLOAD_CACHE"]
+    except KeyError:
+        # TODO - expose this as a command line option
+        raise ValueError("Dependencies cache location $DOWNLOAD_CACHE not set.")
+
+    local = os.path.join(cache, downloaded_filename)
+    if not os.path.isfile(local):
+        # Must download it...
+        try:
+            import sys  # TODO - log this nicely...
+            sys.stderr.write("Downloading %s\n" % url)
+            urlretrieve(url, local)
+        except URLError as err:
+            # Most likely server is down, could be bad URL in XML action:
+            raise RuntimeError("Unable to download %s" % url)
+        except FTPErrors as err:
+            # Most likely server is down, could be bad URL in XML action:
+            raise RuntimeError("Unable to download %s" % url)
+
+    if tarfile.is_tarfile(local):
+        folders = _tar_folders(local)
+        if downloaded_filename.endswith(".tar.gz") \
+        or downloaded_filename.endswith(".tgz"):
+            answer.append('tar -zxvf %s' % downloaded_filename)
+        elif downloaded_filename.endswith(".tar.bz2"):
+            answer.append('tar -jxvf %s' % downloaded_filename)
+        elif downloaded_filename.endswith(".tar"):
+            answer.extend('tar -xvf %s' % downloaded_filename)
+        else:
+            raise NotImplementedError("How to decompress tar file %s?" % downloaded_filename)
+    elif zipfile.is_zipfile(local) and not local.endswith('.jar'):
+        folders = _zip_folders(local)
+        answer.append('unzip %s' % downloaded_filename)
     else:
-        raise NotImplementedError("How do we to extract %s?" % downloaded_filename)
+        # No compression? Leave as it is?
+        raise NotImplementedError("What kind of compression is %s using?" % local)
+
+    common_prefix = ""
+    if len(folders) == 1:
+        common_prefix = list(folders)[0]
+    else:
+        common_prefix = os.path.commonprefix(folders)
+        assert common_prefix.endswith("/"), folders
+    if common_prefix:
+        answer.append('cd "%s"' % common_prefix)
     return answer
 
 
