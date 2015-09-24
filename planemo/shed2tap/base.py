@@ -419,6 +419,7 @@ def _cache_download(url, filename):
 
     return local
 
+
 def _determine_compressed_file_folder(url, downloaded_filename):
     """Determine how to decompress the file & its directory structure.
 
