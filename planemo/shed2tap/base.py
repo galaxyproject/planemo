@@ -653,6 +653,11 @@ class AutoconfAction(BaseAction):
     def __init__(self, elem):
         self.options = elem.text
 
+    def to_bash(self):
+        if self.options:
+            raise NotImplementedError("Options with action autoconf not implemented yet.")
+        return ['./configure', 'make', 'make install'], []
+
 
 class ChangeDirectoryAction(BaseAction):
     action_type = "change_directory"
