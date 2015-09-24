@@ -126,7 +126,7 @@ def convert_tool_dep(dependencies_file):
     return install_cmds, env_cmds
 
 
-@click.command('dep_install')
+@click.command('depbash')
 @options.shed_realization_options()
 @pass_context
 def cli(ctx, paths, recursive=False, fail_fast=True):
@@ -137,19 +137,34 @@ def cli(ctx, paths, recursive=False, fail_fast=True):
     Integration testing setups like TravisCI.
 
     Parses the specified ``tool_dependencies.xml`` files, and converts them into
-    an installation bash script (default ``dep_install.sh``) and a shell script
-    (default ``env.sh``) defining any new/edited environment variables intended
-    to be used via ``source env.sh``  prior to running any of the dependencies.
+    an installation bash script (default ``dep_install.sh``), and a shell script
+    (default ``env.sh``) defining any new/edited environment variables.
+
+    These are intended to be used via ``bash dep_install.sh`` (once), and as
+    ``source env.sh`` prior to running any of the dependencies to set the
+    environment variable within the current shell session.
+
+    Both ``dep_install.sh`` and ``env.sh`` require ``$INSTALL_DIR`` be defined
+    before running them, set to an existing directory with write permissions.
+    Beware than if run on multiple tools, they can over-write each other (for
+    example if you have packages for different versions of the same tool). In
+    this case make separate calls to ``planemo depbash`` and call the scripts
+    with different installation directories.
 
     This command will download (and cache) any URLs specified via Galaxy
     download actions. This is in order to decompress them and determine the
     relevant sub-folder to change into as per the Tool Shed install mechanism,
     so that this can be recorded as a ``cd`` comand in the bash script.
 
+    The download cache used by ``planemo depbash`` and the resulting output
+    script ``dep_install.sh`` defaults to ``./download_cache`` (under the
+    current working directory), and can be set with ``$DOWNLOAD_CACHE``.
+
     This is experimental, and is initially intended for use within continuous
     integration testing setups like TravisCI to both verify the dependency
     installation receipe works, and to use this to run functional tests.
     """
+    # TODO: Command line API for bash output filanames & install dir, cache.
     failed = False
     with open("env.sh", "w") as env_sh_handle:
         with open("dep_install.sh", "w") as install_handle:
