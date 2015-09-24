@@ -130,6 +130,8 @@ def cli(ctx, paths, recursive=False, fail_fast=True):
             env_sh_handle.write(preamble_env_sh)
             for path in paths:
                 # ctx.log("Checking: %r" % path)
+                if failed and fail_fast:
+                    break
                 for tool_dep in find_tool_dependencis_xml(path, recursive):
                     assert os.path.basename(tool_dep) == "tool_dependencies.xml", tool_dep
                     ctx.log('Processing requirements from %s',
@@ -142,16 +144,15 @@ def cli(ctx, paths, recursive=False, fail_fast=True):
                         ctx.log('Error processing %s - %s' %
                                 (click.format_filename(tool_dep), err))
                         failed = True
-                        if fail_fast:
-                            # Just stop now.
-                            break
-                        else:
+                        if not fail_fast:
                             # Omit this tool_dependencies.xml but continue
                             install = env = [
                                 '#' + '=' * 60,
                                 'echo "WARNING: Skipping %s"' % tool_dep,
                                 '#' + '=' * 60,
                             ]
+                    if failed and fail_fast:
+                        break
                     for cmd in install:
                         install_handle.write(cmd + "\n")
                     for cmd in env:
