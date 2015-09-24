@@ -143,6 +143,8 @@ def cli(ctx, paths, recursive=False, fail_fast=True):
                     except Exception as err:
                         ctx.log('Error processing %s - %s' %
                                 (click.format_filename(tool_dep), err))
+                        import traceback
+                        ctx.log(traceback.format_exc() + "\n")
                         failed = True
                         if not fail_fast:
                             # Omit this tool_dependencies.xml but continue
