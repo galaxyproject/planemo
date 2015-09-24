@@ -377,9 +377,22 @@ def _tar_folders(filename):
             folders.add(os.path.split(i.name)[0])
     return folders
 
+
 def _zip_folders(filename):
     archive = zipfile.ZipFile(filename, "r")
     return set(i.filename.rstrip("/") for i in archive.infolist() if i.filename.endswith("/"))
+
+
+def _common_prefix(folders):
+    common_prefix = ""
+    if len(folders) == 1:
+        common_prefix = list(folders)[0]
+    else:
+        common_prefix = os.path.commonprefix(folders)
+        assert not os.path.isabs(common_prefix), folders
+        assert not common_prefix.endswith("/"), folders
+    return common_prefix
+
 
 def _determine_compressed_file_folder(url, downloaded_filename):
     """Determine how to decompress the file & its directory structure.
@@ -416,17 +429,16 @@ def _determine_compressed_file_folder(url, downloaded_filename):
             import sys  # TODO - log this nicely...
             sys.stderr.write("Downloading %s\n" % url)
             urlretrieve(url, local)
-        except URLError as err:
+        except URLError:
             # Most likely server is down, could be bad URL in XML action:
             raise RuntimeError("Unable to download %s" % url)
-        except FTPErrors as err:
+        except FTPErrors:
             # Most likely server is down, could be bad URL in XML action:
             raise RuntimeError("Unable to download %s" % url)
 
     if tarfile.is_tarfile(local):
         folders = _tar_folders(local)
-        if downloaded_filename.endswith(".tar.gz") \
-        or downloaded_filename.endswith(".tgz"):
+        if downloaded_filename.endswith(".tar.gz") or downloaded_filename.endswith(".tgz"):
             answer.append('tar -zxvf %s' % downloaded_filename)
         elif downloaded_filename.endswith(".tar.bz2"):
             answer.append('tar -jxvf %s' % downloaded_filename)
@@ -441,15 +453,10 @@ def _determine_compressed_file_folder(url, downloaded_filename):
         # No compression? Leave as it is?
         raise NotImplementedError("What kind of compression is %s using?" % local)
 
-    common_prefix = ""
-    if len(folders) == 1:
-        common_prefix = list(folders)[0]
-    else:
-        common_prefix = os.path.commonprefix(folders)
-        assert not os.path.isabs(common_prefix), folders
-        assert not common_prefix.endswith("/"), folders
+    common_prefix = _common_prefix(folders)
     if common_prefix:
         answer.append('cd "%s"' % common_prefix)
+
     return answer
 
 
