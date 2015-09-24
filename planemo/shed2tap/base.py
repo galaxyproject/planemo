@@ -286,9 +286,9 @@ class Actions(object):
             # Conditional actions block
             install_cmds = [
                 '#' + '-' * 60,
-                'if [[ %s ]]' % condition,
+                'if [[ $specifc_action_done == 0 && %s ]]' % condition,
                 'then',
-                '    echo "Platform specific action for os=%s, arch=%s"' % (self.os, self.architecture)]
+                '    echo "Platform-specific action for os=%s, arch=%s"' % (self.os, self.architecture)]
             env_cmds = install_cmds[:]
             # TODO - Refactor block indentation?
             for action in self.actions:
@@ -296,19 +296,22 @@ class Actions(object):
                 self._indent_extend(install_cmds, i_cmds)
                 self._indent_extend(env_cmds, e_cmds)
             # If we run the action, do not want to run any later actions!
-            # TODO: Don't want to exit the script if multiple tool_dependencies.xml in one bash script!
-            install_cmds.extend(['    exit 0', 'fi'])
-            env_cmds.append('fi')
+            install_cmds.extend(['    specifc_action_done=1', 'fi'])
+            env_cmds.extend(['    specifc_action_done=1', 'fi'])
         else:
             # Non-specific default action...
             install_cmds = [
                 '#' + '-' * 60,
-                'echo "Non-platform specific actions"']
+                'if [[ $specifc_action_done == 0 ]]',
+                'then',
+                '    echo "Non-platform-specific actions"']
             env_cmds = install_cmds[:]
             for action in self.actions:
                 i_cmds, e_cmds = action.to_bash()
-                install_cmds.extend(i_cmds)
-                env_cmds.extend(e_cmds)
+                self._indent_extend(install_cmds, i_cmds)
+                self._indent_extend(env_cmds, e_cmds)
+            install_cmds.append('fi')
+            env_cmds.append('fi')
         return install_cmds, env_cmds
 
 

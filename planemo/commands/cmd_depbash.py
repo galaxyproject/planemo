@@ -91,6 +91,7 @@ def convert_tool_dep(dependencies_file):
         env_cmds.extend(env)
 
     if install_cmds:
+        install_cmds.insert(0, 'specifc_action_done=0')
         install_cmds.insert(0, 'cd $dep_install_tmp')
         install_cmds.insert(0, '#' + '=' * 60)
         install_cmds.insert(0, 'echo "Installing %s version %s"' % (name, version))
