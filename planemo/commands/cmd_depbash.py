@@ -48,7 +48,7 @@ def find_tool_dependencis_xml(path, recursive):
         if os.path.isfile(p):
             yield p
         if recursive:
-            for f in os.listdir(path):
+            for f in sorted(os.listdir(path)):
                 p = os.path.join(path, f)
                 if os.path.isdir(p):
                     # TODO: yield from
