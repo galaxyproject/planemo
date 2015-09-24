@@ -421,7 +421,7 @@ def _commands_to_download_and_extract(url, target_filename=None):
     # Cannot assume that wget will be on Mac OS X.
     answer = [
         'if [[ -f "%s" ]]' % downloaded_filename,
-        'then'
+        'then',
         '    echo "Reusing existing %s"' % downloaded_filename,
         'elif [[ -f "$DOWNLOAD_CACHE/%s" ]]' % downloaded_filename,
         'then',
