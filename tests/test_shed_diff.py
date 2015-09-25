@@ -6,6 +6,12 @@ from .test_utils import (
     CliShedTestCase,
 )
 from planemo import io
+import tempfile
+import sys
+import os
+from xml.etree import ElementTree
+from planemo.xml.diff import diff
+from .test_utils import TEST_REPOS_DIR
 
 DIFF_LINES = [
     "diff -r _local_/related_file _custom_shed_/related_file",
@@ -34,7 +40,7 @@ class ShedDiffTestCase(CliShedTestCase):
             diff_command.extend(self._shed_args(read_only=True))
             self._check_exit_code(diff_command, exit_code=2)
 
-    def test_diff_recusrive(self):
+    def test_diff_recursive(self):
         with self._isolate_repo("multi_repos_nested") as f:
             upload_command = [
                 "shed_upload", "-r", "--force_repository_creation"
@@ -72,6 +78,55 @@ class ShedDiffTestCase(CliShedTestCase):
             ]
             diff_command.extend(self._shed_args(read_only=True))
             self._check_exit_code(diff_command, exit_code=0)
+
+    def test_diff_xunit(self):
+        with self._isolate_repo("multi_repos_nested") as f:
+            upload_command = [
+                "shed_upload", "-r", "--force_repository_creation"
+            ]
+            upload_command.extend(self._shed_args())
+            self._check_exit_code(upload_command)
+
+            xunit_report = tempfile.NamedTemporaryFile(delete=False)
+            xunit_report.flush()
+            xunit_report.close()
+            diff_command = ["shed_diff", "-r", "--report_xunit", xunit_report.name]
+            diff_command.extend(self._shed_args(read_only=True))
+            known_good_xunit_report = os.path.join(TEST_REPOS_DIR,
+                                                   'multi_repos_nested.xunit.xml')
+            known_bad_xunit_report = os.path.join(TEST_REPOS_DIR,
+                                                  'multi_repos_nested.xunit-bad.xml')
+            self._check_exit_code(diff_command, exit_code=0)
+
+            compare = open(xunit_report.name, 'r').read()
+            if not diff(
+                ElementTree.parse(known_good_xunit_report).getroot(),
+                ElementTree.fromstring(compare),
+                reporter=sys.stdout.write
+            ):
+                self.assertTrue(True)
+            else:
+                sys.stdout.write(compare)
+                self.assertTrue(False)
+
+            io.write_file(
+                join(f, "cat1", "related_file"),
+                "A related non-tool file (modified).\n",
+            )
+            self._check_exit_code(diff_command, exit_code=1)
+
+            compare = open(xunit_report.name, 'r').read()
+            if not diff(
+                ElementTree.parse(known_bad_xunit_report).getroot(),
+                ElementTree.fromstring(compare),
+                reporter=sys.stdout.write
+            ):
+                self.assertTrue(True)
+            else:
+                sys.stdout.write(compare)
+                self.assertTrue(False)
+
+            os.unlink(xunit_report.name)
 
     def _check_diff(self, f, raw):
         diff_command = ["shed_diff", "-o", "diff"]

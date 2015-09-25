@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="planemodiff"
+           tests="2"
+           errors="0"
+           failures="1"
+           skip="0">
+    <testcase classname="cat1" name="recursive_diff" time="">
+        <error type="planemo.Different" message="Repository is different">
+            <!-- TODO: copy of diff output -->
+        </error>
+    </testcase>
+    <testcase classname="cat2" name="recursive_diff" time="">
+    </testcase>
+</testsuite>
