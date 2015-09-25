@@ -22,63 +22,6 @@ DIFF_LINES = [
 
 class ShedDiffTestCase(CliShedTestCase):
 
-    # def test_shed_diff(self):
-        # with self._isolate_repo("single_tool") as f:
-            # upload_command = ["shed_upload", "--force_repository_creation"]
-            # upload_command.extend(self._shed_args())
-            # self._check_exit_code(upload_command)
-            # io.write_file(
-                # join(f, "related_file"),
-                # "A related non-tool file (modified).\n",
-            # )
-            # self._check_diff(f, True)
-            # self._check_diff(f, False)
-
-    # def test_diff_doesnt_exist(self):
-        # with self._isolate_repo("multi_repos_nested"):
-            # diff_command = ["shed_diff"]
-            # diff_command.extend(self._shed_args(read_only=True))
-            # self._check_exit_code(diff_command, exit_code=2)
-
-    # def test_diff_recursive(self):
-        # with self._isolate_repo("multi_repos_nested") as f:
-            # upload_command = [
-                # "shed_upload", "-r", "--force_repository_creation"
-            # ]
-            # upload_command.extend(self._shed_args())
-            # self._check_exit_code(upload_command)
-
-            # diff_command = ["shed_diff", "-r"]
-            # diff_command.extend(self._shed_args(read_only=True))
-            # self._check_exit_code(diff_command, exit_code=0)
-
-            # io.write_file(
-                # join(f, "cat1", "related_file"),
-                # "A related non-tool file (modified).\n",
-            # )
-            # self._check_exit_code(diff_command, exit_code=1)
-
-    # def test_shed_diff_raw(self):
-        # with self._isolate_repo("suite_auto"):
-            # upload_command = [
-                # "shed_upload", "--force_repository_creation",
-            # ]
-            # upload_command.extend(self._shed_args())
-            # self._check_exit_code(upload_command)
-
-            # diff_command = [
-                # "shed_diff", "-o", "diff"
-            # ]
-            # diff_command.append("--raw")
-            # diff_command.extend(self._shed_args(read_only=True))
-            # self._check_exit_code(diff_command, exit_code=1)
-
-            # diff_command = [
-                # "shed_diff", "-o", "diff"
-            # ]
-            # diff_command.extend(self._shed_args(read_only=True))
-            # self._check_exit_code(diff_command, exit_code=0)
-
     def test_shed_diff(self):
         with self._isolate_repo("single_tool") as f:
             upload_command = ["shed_upload", "--force_repository_creation"]
@@ -135,7 +78,6 @@ class ShedDiffTestCase(CliShedTestCase):
             ]
             diff_command.extend(self._shed_args(read_only=True))
             self._check_exit_code(diff_command, exit_code=0)
->>>>>>> 244acb0... Whoops, revert the commenting
 
     def test_diff_xunit(self):
         with self._isolate_repo("multi_repos_nested") as f:
