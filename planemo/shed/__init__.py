@@ -785,6 +785,7 @@ def _find_raw_repositories(path, **kwds):
     shed_file_dirs = []
     if recursive:
         for base_path, dirnames, filenames in os.walk(path):
+            dirnames.sort()
             for filename in fnmatch.filter(filenames, SHED_CONFIG_NAME):
                 shed_file_dirs.append(base_path)
     elif os.path.exists(os.path.join(path, SHED_CONFIG_NAME)):
