@@ -126,6 +126,27 @@ def convert_tool_dep(dependencies_file):
     return install_cmds, env_cmds
 
 
+def process_tool_dependencies_xml(tool_dep, install_handle, env_sh_handle):
+    """Writes to handles, returns success as a boolean."""
+    try:
+        install, env = convert_tool_dep(tool_dep)
+    except Exception as err:
+        # TODO - pass in ctx for logging?
+        error('Error processing %s - %s' %
+              (click.format_filename(tool_dep), err))
+        if not isinstance(err, (NotImplementedError, RuntimeError)):
+            # This is an unexpected error, traceback is useful
+            import traceback
+            error(traceback.format_exc() + "\n")
+        return False
+    # Worked...
+    for cmd in install:
+        install_handle.write(cmd + "\n")
+    for cmd in env:
+        env_sh_handle.write(cmd + "\n")
+    return True
+
+
 @click.command('depbash')
 @options.shed_realization_options()
 @pass_context
@@ -175,34 +196,16 @@ def cli(ctx, paths, recursive=False, fail_fast=True):
                 if failed and fail_fast:
                     break
                 for tool_dep in find_tool_dependencis_xml(path, recursive):
-                    assert os.path.basename(tool_dep) == "tool_dependencies.xml", tool_dep
-                    ctx.log('Processing requirements from %s',
-                            click.format_filename(tool_dep))
-                    # TODO: If --fail-fast, abort on error.
-                    # Otherwise, skip on to next tool_dependencies.xml file
-                    try:
-                        install, env = convert_tool_dep(tool_dep)
-                    except Exception as err:
-                        error('Error processing %s - %s' %
-                              (click.format_filename(tool_dep), err))
-                        if not isinstance(err, (NotImplementedError, RuntimeError)):
-                            # This is an unexpected error, traceback is useful
-                            import traceback
-                            ctx.log(traceback.format_exc() + "\n")
-                        failed = True
-                        if not fail_fast:
-                            # Omit this tool_dependencies.xml but continue
-                            install = env = [
-                                '#' + '*' * 60,
-                                'echo "WARNING: Skipping %s"' % tool_dep,
-                                '#' + '*' * 60,
-                            ]
+                    failed = not process_tool_dependencies_xml(tool_dep,
+                                                               install_handle,
+                                                               env_sh_handle)
                     if failed and fail_fast:
+                        for line in [
+                            '#' + '*' * 60,
+                            'echo "WARNING: Skipping %s"' % tool_dep,
+                            '#' + '*' * 60]:
+                            install_handle.write(cmd + "\n")
                         break
-                    for cmd in install:
-                        install_handle.write(cmd + "\n")
-                    for cmd in env:
-                        env_sh_handle.write(cmd + "\n")
             install_handle.write(final_dep_install)
     ctx.log("The End")
     if failed:
