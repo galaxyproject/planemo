@@ -147,7 +147,7 @@ def process_tool_dependencies_xml(tool_dep, install_handle, env_sh_handle):
     return True
 
 
-@click.command('depbash')
+@click.command('dependency_script')
 @options.shed_realization_options()
 @pass_context
 def cli(ctx, paths, recursive=False, fail_fast=True):
@@ -169,17 +169,17 @@ def cli(ctx, paths, recursive=False, fail_fast=True):
     before running them, set to an existing directory with write permissions.
     Beware than if run on multiple tools, they can over-write each other (for
     example if you have packages for different versions of the same tool). In
-    this case make separate calls to ``planemo depbash`` and call the scripts
-    with different installation directories.
+    this case make separate calls to ``planemo dependency_script`` and call
+    the scripts with different installation directories.
 
     This command will download (and cache) any URLs specified via Galaxy
     download actions. This is in order to decompress them and determine the
     relevant sub-folder to change into as per the Tool Shed install mechanism,
     so that this can be recorded as a ``cd`` comand in the bash script.
 
-    The download cache used by ``planemo depbash`` and the resulting output
-    script ``dep_install.sh`` defaults to ``./download_cache`` (under the
-    current working directory), and can be set with ``$DOWNLOAD_CACHE``.
+    The download cache used by ``planemo dependency_script`` and the resulting
+    output script ``dep_install.sh`` defaults to ``./download_cache`` (under
+    the current working directory), and can be set with ``$DOWNLOAD_CACHE``.
 
     This is experimental, and is initially intended for use within continuous
     integration testing setups like TravisCI to both verify the dependency
