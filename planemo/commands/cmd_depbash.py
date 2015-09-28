@@ -201,10 +201,10 @@ def cli(ctx, paths, recursive=False, fail_fast=True):
                                                                env_sh_handle)
                     if failed and fail_fast:
                         for line in [
-                            '#' + '*' * 60,
-                            'echo "WARNING: Skipping %s"' % tool_dep,
-                            '#' + '*' * 60]:
-                            install_handle.write(cmd + "\n")
+                                '#' + '*' * 60,
+                                'echo "WARNING: Skipping %s"' % tool_dep,
+                                '#' + '*' * 60]:
+                            install_handle.write(line + "\n")
                         break
             install_handle.write(final_dep_install)
     ctx.log("The End")
