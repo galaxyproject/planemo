@@ -450,8 +450,6 @@ def _determine_compressed_file_folder(url, downloaded_filename):
             answer.append('tar -jxvf %s' % downloaded_filename)
         elif downloaded_filename.endswith(".tar"):
             answer.extend('tar -xvf %s' % downloaded_filename)
-        elif downloaded_filename.endswith(".dmg"):
-            pass
         else:
             # Quite possibly this file doesn't need decompressing,
             # but until we've tested lots of real world tool_dependencies.xml
@@ -463,6 +461,9 @@ def _determine_compressed_file_folder(url, downloaded_filename):
             return answer
         folders = _zip_folders(local)
         answer.append('unzip %s' % downloaded_filename)
+    elif downloaded_filename.endswith(".dmg"):
+        # Do not decompress!
+        return answer
     else:
         # No compression? Leave as it is?
         raise NotImplementedError("What kind of compression is %s using?" % local)
