@@ -390,7 +390,6 @@ def _common_prefix(folders):
     else:
         common_prefix = os.path.commonprefix(folders)
         assert not os.path.isabs(common_prefix), folders
-        assert not common_prefix.endswith("/"), folders
     return common_prefix
 
 
