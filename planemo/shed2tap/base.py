@@ -458,7 +458,10 @@ def _determine_compressed_file_folder(url, downloaded_filename):
             # but until we've tested lots of real world tool_dependencies.xml
             # files I'd like to check these cases to confirm this.
             raise NotImplementedError("How to decompress tar file %s?" % downloaded_filename)
-    elif zipfile.is_zipfile(local) and not local.endswith('.jar'):
+    elif zipfile.is_zipfile(local):
+        if local.endswith('.jar'):
+            # Do not decompress!
+            return answer
         folders = _zip_folders(local)
         answer.append('unzip %s' % downloaded_filename)
     else:
