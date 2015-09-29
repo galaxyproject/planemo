@@ -495,7 +495,7 @@ def _commands_to_download_and_extract(url, target_filename=None):
         '    ln -s "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, downloaded_filename),
         'else',
         '    echo "Downloading %s"' % downloaded_filename,
-        '    curl -o "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, url),
+        '    curl -L -o "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, url),
         '    ln -s "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, downloaded_filename),
         'fi',
         ]
