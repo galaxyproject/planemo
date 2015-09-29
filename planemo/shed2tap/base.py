@@ -726,6 +726,9 @@ class SetupVirtualenvAction(BaseAction):
         self.python = elem.get('python', 'python')
         self.requirements = elem.text or 'requirements.txt'
 
+    def to_bash(self):
+        # TODO - How could we resolve/check the dependencies?
+        return ['echo "WARNING: Assuming virtual env packages already installed!"'], []
 
 class SetupREnvironmentAction(BaseAction):
     action_type = "setup_r_environment"
