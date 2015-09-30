@@ -22,14 +22,14 @@ class LintTestCase(CliTestCase):
 
     def test_cd_hit_auxtools(self):
         ds_cmd = ["dependency_script",
-                  os.path.join(TEST_REPOS_DIR, "bad_package_name")]
+                  os.path.join(TEST_REPOS_DIR, "bad_repo_name")]
         self._check_exit_code(ds_cmd, 0)
 
     def test_good_examples(self):
         ds_cmd = ["dependency_script",
                   os.path.join(TEST_REPOS_DIR, "package_1"),
                   os.path.join(TEST_REPOS_DIR, "bad_package_category/"),
-                  os.path.join(TEST_REPOS_DIR, "bad_package_name")]
+                  os.path.join(TEST_REPOS_DIR, "bad_repo_name")]
         self._check_exit_code(ds_cmd, 0)
 
     def test_repos_recurse(self):
