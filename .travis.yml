@@ -15,8 +15,8 @@ install:
 
 before_script:
   # Setup environment variables for planemo dependency_script.
-  - export INSTALL_DIR=$PWD/install_dir && mkdir $INSTALL_DIR
-  - export DOWNLOAD_CACHE=$PWD/download_cache && mkdir $DOWNLOAD_CACHE
+  - export INSTALL_DIR=${TRAVIS_BUILD_DIR}/install_dir && mkdir $INSTALL_DIR
+  - export DOWNLOAD_CACHE=${TRAVIS_BUILD_DIR}/download_cache && mkdir $DOWNLOAD_CACHE
 
 script: tox -e $TOX_ENV
 
