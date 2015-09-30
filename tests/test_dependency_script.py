@@ -44,10 +44,10 @@ class LintTestCase(CliTestCase):
 
     def test_repos_list(self):
         # At least one will fail
-        ds_cmd = ["dependency_script"]  + list(glob.glob("%s/*" % TEST_REPOS_DIR))
+        ds_cmd = ["dependency_script"] + list(glob.glob("%s/*" % TEST_REPOS_DIR))
         self._check_exit_code(ds_cmd, 1)
 
     def test_repos_list_fast(self):
         # At least one will fail
-        ds_cmd = ["dependency_script", "--fail_fast"]  + list(glob.glob("%s/*" % TEST_REPOS_DIR))
+        ds_cmd = ["dependency_script", "--fail_fast"] + list(glob.glob("%s/*" % TEST_REPOS_DIR))
         self._check_exit_code(ds_cmd, 1)
