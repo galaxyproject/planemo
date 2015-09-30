@@ -52,7 +52,7 @@ clean-test:
 	rm -fr htmlcov/
 
 setup-venv:
-	if [ -f $(VENV) ]; then virtualenv $(VENV); fi;
+	if [ ! -d $(VENV) ]; then virtualenv $(VENV); exit; fi;
 	$(IN_VENV) pip install -r requirements.txt && pip install -r dev-requirements.txt
 
 setup-git-hook-lint:
