@@ -153,8 +153,9 @@ def process_tool_dependencies_xml(tool_dep, install_handle, env_sh_handle):
 
 @click.command('dependency_script')
 @options.shed_realization_options()
+@options.dependencies_script_options()
 @pass_context
-def cli(ctx, paths, recursive=False, fail_fast=True):
+def cli(ctx, paths, recursive=False, fail_fast=True, download_cache=None):
     """Prepare a bash shell script to install tool requirements (**Experimental**)
 
     An experimental approach parsing tool_dependencies.xml files into
@@ -190,6 +191,12 @@ def cli(ctx, paths, recursive=False, fail_fast=True):
     installation receipe works, and to use this to run functional tests.
     """
     # TODO: Command line API for bash output filanames & install dir, cache.
+    if download_cache:
+        assert os.path.isdir(download_cache), download_cache
+        # Effectively using this as a global variable, refactor this
+        # once using a visitor pattern instead of action.to_bash()
+        os.environ["DOWNLOAD_CACHE"] = os.path.abspath(download_cache)
+    print("Using $DOWNLOAD_CACHE=%r" % os.environ["DOWNLOAD_CACHE"])
     failed = False
     with open("env.sh", "w") as env_sh_handle:
         with open("dep_install.sh", "w") as install_handle:
