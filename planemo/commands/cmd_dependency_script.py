@@ -23,11 +23,14 @@ then
 fi
 # Set full strict mode now, side stepping case $INSTALL_DIR not setup.
 set -euo pipefail
-export DOWNLOAD_CACHE=${DOWNLOAD_CACHE:-$PWD/download_cache/}
+export DOWNLOAD_CACHE=`(cd "$DOWNLOAD_CACHE"; pwd)`
 if [[ ! -d $DOWNLOAD_CACHE ]]
 then
     mkdir -p $DOWNLOAD_CACHE
 fi
+echo "Using $DOWNLOAD_CACHE for cached downloads."
+export INSTALL_DIR=`(cd "$INSTALL_DIR"; pwd)`
+echo "Using $INSTALL_DIR for the installed files."
 # Create a randomly named temp folder for working in
 dep_install_tmp=${TMPDIR-/tmp}/dep_install.$RANDOM.$RANDOM.$RANDOM.$$
 (umask 077 && mkdir $dep_install_tmp) || exit 1
@@ -48,6 +51,7 @@ then
     echo "ERROR: Environment variable INSTALL_DIR not a directory!"
 fi
 export INSTALL_DIR=${INSTALL_DIR:-$PWD}
+export INSTALL_DIR=`(cd "$INSTALL_DIR"; pwd)`
 """
 
 
