@@ -21,6 +21,11 @@ def cli(ctx, paths, **kwds):
     option or force planemo to download a disposable instance with the
     ``--install_galaxy`` flag.
 
+    ``planemo`` will run the Galaxy instance in an existing virtualenv if one
+    exists in a ``.venv`` directory in the specified ``--galaxy_root``.
+    Otherwise, the Galaxy instance will run in a clean virtualenv created in
+    ``/tmp``.
+
     ``planemo`` uses temporarily generated config files and environment
     variables to attempt to shield this execution of Galaxy from manually
     launched runs against that same Galaxy root - but this may not be bullet

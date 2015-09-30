@@ -26,14 +26,13 @@ option or force planemo to download a disposable instance with the
 ``planemo`` will run the Galaxy instance in an existing virtualenv if one
 exists in a ``.venv`` directory in the specified ``--galaxy_root``.
 Otherwise, the Galaxy instance will run in a clean virtualenv created in
-`\tmp`.
+``/tmp``.
 
 ``planemo`` uses temporarily generated config files and environment
 variables to attempt to shield this execution of Galaxy from manually
 launched runs against that same Galaxy root - but this may not be bullet
 proof yet so please careful and do not try this against production Galaxy
 instances.
-
 
 **Options**::
 

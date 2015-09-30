@@ -62,6 +62,10 @@ This command requires the target to be version 15.07 or newer.
                                       --job_output_files if specified.)
       --test_output PATH              Output test report (HTML - for humans)
                                       defaults to tool_test_output.html.
+      --test_output_text PATH         Output test report (Basic text - for display
+                                      in CI)
+      --test_output_markdown PATH     Output test report (Markdown style - for
+                                      humans & computers)
       --test_output_xunit PATH        Output test report (xUnit style - for
                                       computers).
       --test_output_json PATH         Output test report (planemo json) defaults

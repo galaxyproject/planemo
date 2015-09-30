@@ -72,5 +72,8 @@ uploaded to the repository.
                                  testtoolshed.
       --raw                      Do not attempt smart diff of XML to filter out
                                  attributes populated by the Tool Shed.
+      --report_xunit PATH        Output diff as a faked XUnit report, useful when
+                                 you want to automatically diff repositories and
+                                 be warned when out-of-date.
       --help                     Show this message and exit.
     
