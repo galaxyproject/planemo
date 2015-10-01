@@ -132,6 +132,12 @@ def convert_tool_dep(dependencies_file):
 
 def process_tool_dependencies_xml(tool_dep, install_handle, env_sh_handle):
     """Writes to handles, returns success as a boolean."""
+    if not os.path.isfile(tool_dep):
+        error('Missing file %s' % tool_dep)
+        return False
+    if not os.stat(tool_dep).st_size:
+        error('Empty file %s' % tool_dep)
+        return False
     try:
         install, env = convert_tool_dep(tool_dep)
     except Exception as err:
