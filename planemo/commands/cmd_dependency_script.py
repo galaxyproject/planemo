@@ -216,7 +216,9 @@ def cli(ctx, paths, recursive=False, fail_fast=True, download_cache=None):
                     passed = process_tool_dependencies_xml(tool_dep,
                                                            install_handle,
                                                            env_sh_handle)
-                    if not passed:
+                    if passed:
+                        info('Processed %s' % tool_dep)
+                    else:
                         failed = True
                         if fail_fast:
                             for line in [
@@ -225,7 +227,7 @@ def cli(ctx, paths, recursive=False, fail_fast=True, download_cache=None):
                                     '#' + '*' * 60]:
                                 install_handle.write(line + "\n")
                             break
-                        # ctx.log("%s failed" % tool_dep)
+                        # error("%s failed" % tool_dep)
             install_handle.write(final_dep_install)
     ctx.log("The End")
     if failed:
