@@ -8,7 +8,7 @@ History
 
 
 ---------------------
-0.15.0.dev0
+0.15.0 (2015-10-01)
 ---------------------
 
 * Template framework for reporting including new markdown and plain
