@@ -25,7 +25,7 @@ for env_var, default in [
 # TODO - Remove temp_dir
 
 
-class LintTestCase(CliTestCase):
+class DependencyScriptTestCase(CliTestCase):
 
     def test_empty_file(self):
         # Using empty file repos/fastqc/tool_dependencies.xml
