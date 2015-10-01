@@ -621,6 +621,7 @@ def _compose(*functions):
         return lambda x: f(g(x))
     return functools.reduce(compose2, functions)
 
+
 def dependencies_script_options():
     return _compose(
         click.option(
@@ -630,5 +631,4 @@ def dependencies_script_options():
             help=("Directory to cache downloaded files, default is $DOWNLOAD_CACHE"),
             default=None,
         ),
-   )
-
+    )
