@@ -207,16 +207,19 @@ def cli(ctx, paths, recursive=False, fail_fast=True, download_cache=None):
                 if failed and fail_fast:
                     break
                 for tool_dep in find_tool_dependencis_xml(path, recursive):
-                    failed = not process_tool_dependencies_xml(tool_dep,
-                                                               install_handle,
-                                                               env_sh_handle)
-                    if failed and fail_fast:
-                        for line in [
-                                '#' + '*' * 60,
-                                'echo "WARNING: Skipping %s"' % tool_dep,
-                                '#' + '*' * 60]:
-                            install_handle.write(line + "\n")
-                        break
+                    passed = process_tool_dependencies_xml(tool_dep,
+                                                           install_handle,
+                                                           env_sh_handle)
+                    if not passed:
+                        failed = True
+                        if fail_fast:
+                            for line in [
+                                    '#' + '*' * 60,
+                                    'echo "WARNING: Skipping %s"' % tool_dep,
+                                    '#' + '*' * 60]:
+                                install_handle.write(line + "\n")
+                            break
+                        # ctx.log("%s failed" % tool_dep)
             install_handle.write(final_dep_install)
     ctx.log("The End")
     if failed:
