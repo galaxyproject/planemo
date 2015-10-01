@@ -5,11 +5,38 @@ History
 
 .. to_doc
 
+
+
 ---------------------
-0.14.1.dev0
+0.15.0.dev0
 ---------------------
 
-    
+* Template framework for reporting including new markdown and plain
+  text reporting options for testing - thanks to @erasche.
+  `Pull Request 304`_
+* XUnit style reporting for ``shed_diff`` command - thanks to
+  @erasche. `Pull Request 305`_
+* Add new ``shed_build`` command for building repository tarballs -
+  thanks to @kellrott. `Pull Request 297`_
+* Fix exit code handling for ``lint`` commands - thanks to @mvdbeek.
+  `Pull Request 292`_    
+* Improved documentation for ``serve`` command - thanks to @lparsons.
+  `Pull Request 312`_
+* Tiny backward compatible Python 3 tweaks for tool factory - thanks
+  to @peterjc. dad2d9d_
+* Fixed detection of virtual environment in ``Makefile`` - thanks to
+  @lparsons. `Pull Request 311`_
+* Updates to Galaxy XSD - thanks to @mr-c. `Pull Request 309`_
+* Allow reading shed key option from an environment variable.
+  `Pull Request 307`_
+* Allow specifying host to serve Galaxy using ``-host`` - thanks in
+  part to @chambm. `Pull Request 301`_
+* Allow specifying defaults for ``-host`` and ``--port`` in
+  ``~/.planemo.yml``. `Pull Request 301`_
+* Improve ``~/.planemo.yml`` sample comments - thanks to @martenson.
+  `Pull Request 287`_
+* Update tool shed categories - thanks to @bgruening. `Pull Request 285`_
+* Improved output readibility for ``diff`` command - thanks to @martenson. `Pull Request 284`_
 
 ---------------------
 0.14.0 (2015-08-06)
@@ -419,6 +446,19 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _dad2d9d: https://github.com/galaxyproject/planemo/commit/dad2d9d
+.. _Pull Request 312: https://github.com/galaxyproject/planemo/pull/312
+.. _Pull Request 311: https://github.com/galaxyproject/planemo/pull/311
+.. _Pull Request 309: https://github.com/galaxyproject/planemo/pull/309
+.. _Pull Request 307: https://github.com/galaxyproject/planemo/pull/307
+.. _Pull Request 304: https://github.com/galaxyproject/planemo/pull/304
+.. _Pull Request 305: https://github.com/galaxyproject/planemo/pull/305
+.. _Pull Request 301: https://github.com/galaxyproject/planemo/pull/301
+.. _Pull Request 297: https://github.com/galaxyproject/planemo/pull/297
+.. _Pull Request 287: https://github.com/galaxyproject/planemo/pull/287
+.. _Pull Request 285: https://github.com/galaxyproject/planemo/pull/285
+.. _Pull Request 284: https://github.com/galaxyproject/planemo/pull/284
+.. _Pull Request 292: https://github.com/galaxyproject/planemo/pull/292
 .. _cb5b906: https://github.com/galaxyproject/planemo/commit/cb5b906
 .. _Pull Request 251: https://github.com/galaxyproject/planemo/pull/251
 .. _Pull Request 255: https://github.com/galaxyproject/planemo/pull/255
