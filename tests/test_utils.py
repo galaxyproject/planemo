@@ -142,9 +142,9 @@ class CliShedTestCase(CliTestCase):
 
 
 @contextlib.contextmanager
-def mock_shed_client():
+def mock_shed_context():
     with mock_shed() as mock_shed_obj:
-        yield shed.tool_shed_client(shed_target=mock_shed_obj.url)
+        yield shed.get_shed_context(shed_target=mock_shed_obj.url)
 
 
 class TempDirectoryTestCase(TestCase):

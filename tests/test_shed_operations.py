@@ -4,17 +4,17 @@ import os
 
 from .test_utils import (
     TEST_REPOS_DIR,
-    mock_shed_client,
+    mock_shed_context,
 )
 
 from planemo import shed
 
 
 def test_find_repository_id():
-    with mock_shed_client() as tsi:
+    with mock_shed_context() as shed_context:
         repo_id = shed.find_repository_id(
             ctx=None,
-            tsi=tsi,
+            shed_context=shed_context,
             path=".",
             name="test_repo_1",
             owner="iuc",
@@ -23,10 +23,10 @@ def test_find_repository_id():
 
 
 def test_find_repository_id_missing():
-    with mock_shed_client() as tsi:
+    with mock_shed_context() as shed_context:
         repo_id = shed.find_repository_id(
             ctx=None,
-            tsi=tsi,
+            shed_context=shed_context,
             path=".",
             name="test_repo_absent",
             owner="iuc",
@@ -36,12 +36,12 @@ def test_find_repository_id_missing():
 
 
 def test_find_repository_id_missing_exception():
-    with mock_shed_client() as tsi:
+    with mock_shed_context() as shed_context:
         exception = None
         try:
             shed.find_repository_id(
                 ctx=None,
-                tsi=tsi,
+                shed_context=shed_context,
                 path=".",
                 name="test_repo_absent",
                 owner="iuc"
@@ -52,28 +52,28 @@ def test_find_repository_id_missing_exception():
 
 
 def test_find_category_ids():
-    with mock_shed_client() as tsi:
+    with mock_shed_context() as shed_context:
         category_ids = shed.find_category_ids(
-            tsi,
+            shed_context.tsi,
             ["Text Manipulation"]
         )
         assert category_ids == ["c1"]
 
 
 def test_create_simple():
-    with mock_shed_client() as tsi:
+    with mock_shed_context() as shed_context:
         path = os.path.join(TEST_REPOS_DIR, "single_tool")
         repo_config = shed.shed_repo_config(path)
         create_response = shed.create_repository_for(
             None,
-            tsi,
+            shed_context.tsi,
             "single_tool",
             repo_config,
         )
         assert "id" in create_response
         repo_id = shed.find_repository_id(
             ctx=None,
-            tsi=tsi,
+            shed_context=shed_context,
             path=".",
             name="single_tool",
             owner="iuc"

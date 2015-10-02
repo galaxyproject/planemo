@@ -131,6 +131,18 @@ yaml.Loader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
 yaml.SafeLoader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
 
 
+ShedContext = namedtuple("ShedContext", ["tsi", "shed_config", "config_owner"])
+
+
+def _shed_context_owner(self):
+    owner = self.config_owner
+    if owner is None:
+        owner = username(self.tsi)
+    return owner
+
+ShedContext.owner = _shed_context_owner
+
+
 def shed_init(ctx, path, **kwds):
     if not os.path.exists(path):
         os.makedirs(path)
@@ -166,11 +178,11 @@ def shed_init(ctx, path, **kwds):
 def install_arg_lists(ctx, paths, **kwds):
     """ Build a list of install args for resolved repositories.
     """
-    tsi = tool_shed_client(ctx, **kwds)
+    shed_context = get_shed_context(ctx, **kwds)
     install_args_list = []
 
     def process_repo(realized_repository):
-        install_args_list.append(realized_repository.install_args(ctx, tsi))
+        install_args_list.append(realized_repository.install_args(ctx, shed_context))
         return 0
 
     exit_code = for_each_repository(ctx, process_repo, paths, **kwds)
@@ -191,13 +203,13 @@ def upload_repository(ctx, realized_repository, **kwds):
         name = realized_repository.pattern_to_file_name("shed_upload.tar.gz")
         shell("cp '%s' '%s'" % (tar_path, name))
         return 0
-    tsi = tool_shed_client(ctx, **kwds)
+    shed_context = get_shed_context(ctx, **kwds)
     update_kwds = {}
     _update_commit_message(ctx, realized_repository, update_kwds, **kwds)
 
-    repo_id = realized_repository.find_repository_id(ctx, tsi)
+    repo_id = realized_repository.find_repository_id(ctx, shed_context)
     if repo_id is None and kwds["force_repository_creation"]:
-        repo_id = realized_repository.create(ctx, tsi)
+        repo_id = realized_repository.create(ctx, shed_context)
     # failing to create the repo, give up
     if repo_id is None:
         name = realized_repository.name
@@ -213,7 +225,9 @@ def upload_repository(ctx, realized_repository, **kwds):
 
     # TODO: support updating repo information if it changes in the config file
     try:
-        tsi.repositories.update_repository(repo_id, tar_path, **update_kwds)
+        shed_context.tsi.repositories.update_repository(
+            repo_id, tar_path, **update_kwds
+        )
     except Exception as e:
         message = api_exception_to_message(e)
         error("Could not update %s" % realized_repository.name)
@@ -254,9 +268,9 @@ def _diff_in(ctx, working, realized_repository, **kwds):
     mine = os.path.join(working, label_a)
     other = os.path.join(working, label_b)
 
-    tsi = tool_shed_client(ctx, read_only=True, **kwds)
+    shed_context = get_shed_context(ctx, read_only=True, **kwds)
     # In order to download the tarball, require repository ID...
-    repo_id = realized_repository.find_repository_id(ctx, tsi)
+    repo_id = realized_repository.find_repository_id(ctx, shed_context)
     if repo_id is None:
         error("shed_diff: Repository [%s] does not exist in the targeted Tool Shed."
               % realized_repository.name)
@@ -266,7 +280,7 @@ def _diff_in(ctx, working, realized_repository, **kwds):
     info("Diffing repository %s " % realized_repository.name)
     download_tarball(
         ctx,
-        tsi,
+        shed_context,
         realized_repository,
         destination=other,
         clean=True,
@@ -276,10 +290,10 @@ def _diff_in(ctx, working, realized_repository, **kwds):
     if shed_target_source:
         new_kwds = kwds.copy()
         new_kwds["shed_target"] = shed_target_source
-        tsi = tool_shed_client(ctx, read_only=True, **new_kwds)
+        shed_context = get_shed_context(ctx, read_only=True, **new_kwds)
         download_tarball(
             ctx,
-            tsi,
+            shed_context,
             realized_repository,
             destination=mine,
             clean=True,
@@ -322,19 +336,17 @@ def shed_repo_config(path, name=None):
 
 
 def tool_shed_client(ctx=None, **kwds):
+    return get_shed_context(ctx, **kwds).tsi
+
+
+def get_shed_context(ctx=None, **kwds):
     read_only = kwds.get("read_only", False)
-    shed_target = kwds.get("shed_target")
-    global_config = getattr(ctx, "global_config", {})
-    if global_config and "sheds" in global_config:
-        sheds_config = global_config["sheds"]
-        shed_config = sheds_config.get(shed_target, {}) or {}
-    else:
-        shed_config = {}
+    shed_config, username = _shed_config_and_username(ctx, **kwds)
 
     def prop(key):
         return kwds.get("shed_%s" % key, None) or shed_config.get(key, None)
 
-    url = tool_shed_url(kwds)
+    url = _shed_config_to_url(shed_config)
     if read_only:
         key = None
         email = None
@@ -343,7 +355,36 @@ def tool_shed_client(ctx=None, **kwds):
         key = _find_shed_key(kwds, shed_config)
         email = prop("email")
         password = prop("password")
-    return tool_shed_instance(url, key, email, password)
+
+    tsi = tool_shed_instance(url, key, email, password)
+    owner = username
+    return ShedContext(tsi, shed_config, owner)
+
+
+def tool_shed_url(ctx, **kwds):
+    shed_config, _ = _shed_config_and_username(ctx, **kwds)
+    return _shed_config_to_url(shed_config)
+
+
+def _shed_config_and_username(ctx, **kwds):
+    shed_target = kwds.get("shed_target")
+    global_config = getattr(ctx, "global_config", {})
+    if global_config and "sheds" in global_config:
+        sheds_config = global_config["sheds"]
+        shed_config = sheds_config.get(shed_target, {}) or {}
+    else:
+        shed_config = {}
+
+    if "url" not in shed_config:
+        if shed_target and shed_target in SHED_SHORT_NAMES:
+            shed_config["url"] = SHED_SHORT_NAMES[shed_target]
+        else:
+            shed_config["url"] = shed_target
+
+    default_shed_username = global_config.get("shed_username", None)
+    username = shed_config.get("username", default_shed_username)
+
+    return shed_config, username
 
 
 def _find_shed_key(kwds, shed_config):
@@ -357,7 +398,7 @@ def _find_shed_key(kwds, shed_config):
     return shed_key
 
 
-def find_repository_id(ctx, tsi, path, **kwds):
+def find_repository_id(ctx, shed_context, path, **kwds):
     repo_config = kwds.get("config", None)
     if repo_config is None:
         name = kwds.get("name", None)
@@ -366,12 +407,13 @@ def find_repository_id(ctx, tsi, path, **kwds):
     find_kwds = kwds.copy()
     if "name" in find_kwds:
         del find_kwds["name"]
-    return _find_repository_id(ctx, tsi, name, repo_config, **find_kwds)
+    return _find_repository_id(ctx, shed_context, name, repo_config, **find_kwds)
 
 
-def _find_repository_id(ctx, tsi, name, repo_config, **kwds):
-    owner = _owner(ctx, repo_config, tsi, **kwds)
-    matching_repository = find_repository(tsi, owner, name)
+def _find_repository_id(ctx, shed_context, name, repo_config, **kwds):
+    # TODO: modify to consume shed_context
+    owner = _owner(ctx, repo_config, shed_context, **kwds)
+    matching_repository = find_repository(shed_context.tsi, owner, name)
     if matching_repository is None:
         if not kwds.get("allow_none", False):
             message = "Failed to find repository for owner/name %s/%s"
@@ -383,16 +425,13 @@ def _find_repository_id(ctx, tsi, name, repo_config, **kwds):
         return repo_id
 
 
-def _owner(ctx, repo_config, tsi=None, **kwds):
-    global_config = getattr(ctx, "global_config", {})
+def _owner(ctx, repo_config, shed_context=None, **kwds):
     owner = kwds.get("owner", None) or repo_config.get("owner", None)
     if owner is None:
-        owner = global_config.get("shed_username", None)
-    if owner is None:
-        if tsi is None and "shed_target" in kwds:
-            tsi = tool_shed_client(ctx, **kwds)
-        if tsi is not None:
-            owner = username(tsi)
+        if shed_context is None and "shed_target" in kwds:
+            shed_context = get_shed_context(ctx, **kwds)
+        if shed_context is not None:
+            owner = shed_context.owner()
     return owner
 
 
@@ -549,8 +588,8 @@ def create_repository_for(ctx, tsi, name, repo_config):
     return repo
 
 
-def download_tarball(ctx, tsi, realized_repository, **kwds):
-    repo_id = realized_repository.find_repository_id(ctx, tsi)
+def download_tarball(ctx, shed_context, realized_repository, **kwds):
+    repo_id = realized_repository.find_repository_id(ctx, shed_context)
     if repo_id is None:
         message = "Unable to find repository id, cannot download."
         error(message)
@@ -561,7 +600,7 @@ def download_tarball(ctx, tsi, realized_repository, **kwds):
     else:
         destination = destination_pattern
     to_directory = not destination.endswith("gz")
-    download_tar(tsi, repo_id, destination, to_directory=to_directory)
+    download_tar(shed_context.tsi, repo_id, destination, to_directory=to_directory)
     if to_directory:
         clean = kwds.get("clean", False)
         if clean:
@@ -664,10 +703,8 @@ def shed_repo_type(config, name):
     return repo_type
 
 
-def tool_shed_url(kwds):
-    url = kwds.get("shed_target")
-    if url in SHED_SHORT_NAMES:
-        url = SHED_SHORT_NAMES[url]
+def _shed_config_to_url(shed_config):
+    url = shed_config["url"]
     if not url.startswith("http"):
         message = (
             "Invalid shed url specified [{0}]. Please specify a valid "
@@ -1125,11 +1162,11 @@ class RealizedRepositry(object):
             parts = pattern.split(".", 1)
             return parts[0] + suffix + "." + parts[1]
 
-    def find_repository_id(self, ctx, tsi):
+    def find_repository_id(self, ctx, shed_context):
         try:
             repo_id = _find_repository_id(
                 ctx,
-                tsi,
+                shed_context,
                 name=self.name,
                 repo_config=self.config,
                 allow_none=True,
@@ -1141,13 +1178,13 @@ class RealizedRepositry(object):
             error(message)
         return None
 
-    def create(self, ctx, tsi):
+    def create(self, ctx, shed_context):
         """Wrapper for creating the endpoint if it doesn't exist
         """
         def _create():
             repo = create_repository_for(
                 ctx,
-                tsi,
+                shed_context.tsi,
                 self.name,
                 self.config,
             )
@@ -1155,14 +1192,14 @@ class RealizedRepositry(object):
 
         return self._with_ts_exception_handling(_create)
 
-    def update(self, ctx, tsi, id):
+    def update(self, ctx, shed_context, id):
         """Wrapper for update the repository metadata.
         """
 
         def _update():
             repo = update_repository_for(
                 ctx,
-                tsi,
+                shed_context.tsi,
                 id,
                 self.config,
             )
@@ -1182,20 +1219,22 @@ class RealizedRepositry(object):
                 error(str(e))
             return None
 
-    def latest_installable_revision(self, ctx, tsi):
-        repository_id = self.find_repository_id(ctx, tsi)
-        return latest_installable_revision(tsi, repository_id)
+    def latest_installable_revision(self, ctx, shed_context):
+        repository_id = self.find_repository_id(ctx, shed_context)
+        return latest_installable_revision(shed_context.tsi, repository_id)
 
-    def install_args(self, ctx, tsi):
+    def install_args(self, ctx, shed_context):
         """ Arguments for bioblend's install_repository_revision
         to install this repository against supplied tsi.
         """
-        tool_shed_url = tsi.base_url
+        tool_shed_url = shed_context.tsi.base_url
         return dict(
             tool_shed_url=tool_shed_url,
             name=self.name,
             owner=self.owner,
-            changeset_revision=self.latest_installable_revision(ctx, tsi),
+            changeset_revision=self.latest_installable_revision(
+                ctx, shed_context
+            ),
         )
 
 
@@ -1273,7 +1312,8 @@ class RealizationException(Exception):
 __all__ = [
     'for_each_repository',
     'api_exception_to_message',
-    'tool_shed_client',
+    'tool_shed_client',  # Deprecated...
+    'get_shed_context',
     'tool_shed_url',
     'diff_repo',
     'download_tarball',

@@ -49,7 +49,7 @@ def cli(ctx, paths, **kwds):
     The lower-level ``shed_upload`` command should be used instead if
     the repository doesn't define complete metadata in a ``.shed.yml``.
     """
-    tsi = shed.tool_shed_client(ctx, **kwds)
+    shed_context = shed.get_shed_context(ctx, **kwds)
 
     def update(realized_repository):
         upload_ret_code = 0
@@ -63,10 +63,10 @@ def cli(ctx, paths, **kwds):
             error("Failed to update repository it does not exist "
                   "in target ToolShed.")
             return upload_ret_code
-        repo_id = realized_repository.find_repository_id(ctx, tsi)
+        repo_id = realized_repository.find_repository_id(ctx, shed_context)
         metadata_ok = True
         if not kwds["skip_metadata"]:
-            metadata_ok = realized_repository.update(ctx, tsi, repo_id)
+            metadata_ok = realized_repository.update(ctx, shed_context, repo_id)
         if metadata_ok:
             info("Repository metadata updated.")
         else:

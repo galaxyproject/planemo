@@ -311,8 +311,8 @@ def shed_target_option():
         "-t",
         "--shed_target",
         help="Tool Shed to target (this can be 'toolshed', 'testtoolshed', "
-             "'local' (alias for http://localhost:9009/) or an arbitrary"
-             "url).",
+             "'local' (alias for http://localhost:9009/), an arbitrary url "
+             "or mappings defined ~/.planemo.yml.",
         default=None,
         callback=validate_shed_target_callback,
     )
