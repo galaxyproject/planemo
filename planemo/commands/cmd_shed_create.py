@@ -18,7 +18,7 @@ from planemo.io import info
 def cli(ctx, paths, **kwds):
     """Create a repository in a Galaxy Tool Shed from a ``.shed.yml`` file.
     """
-    tsi = shed.tool_shed_client(ctx, **kwds)
+    tsi = shed.tool_shed_client(ctx, realized_repository=None, **kwds)
 
     def create(realized_repository):
         repo_id = realized_repository.find_repository_id(ctx, tsi)

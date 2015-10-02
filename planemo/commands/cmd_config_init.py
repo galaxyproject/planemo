@@ -22,17 +22,33 @@ sheds:
   # For each tool shed you wish to target, uncomment key or both email and
   # password.
   toolshed:
-    #key: "<TODO>"
-    #email: "<TODO>"
-    #password: "<TODO>"
+    user_one:
+      #key: "<TODO>"
+      #email: "<TODO>"
+      #password: "<TODO>"
+    user_two:
+      #key: "<TODO>"
+      #email: "<TODO>"
+      #password: "<TODO>"
   testtoolshed:
-    #key: "<TODO>"
-    #email: "<TODO>"
-    #password: "<TODO>"
+    user_one:
+      #key: "<TODO>"
+      #email: "<TODO>"
+      #password: "<TODO>"
+    user_two:
+      #key: "<TODO>"
+      #email: "<TODO>"
+      #password: "<TODO>"
   local:
-    #key: "<TODO>"
-    #email: "<TODO>"
-    #password: "<TODO>"
+    user_one:
+      #key: "<TODO>"
+      #email: "<TODO>"
+      #password: "<TODO>"
+    user_two:
+      #key: "<TODO>"
+      #email: "<TODO>"
+      #password: "<TODO>"
+
 """
 SUCCESS_MESSAGE = (
     "Wrote configuration template to %s, "

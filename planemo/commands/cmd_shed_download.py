@@ -33,7 +33,7 @@ def cli(ctx, paths, **kwds):
     """Download a tool repository as a tarball from the tool shed and extract
     to the specified directory.
     """
-    tsi = shed.tool_shed_client(ctx, read_only=True, **kwds)
+    tsi = shed.tool_shed_client(ctx, realized_repository=None, read_only=True, **kwds)
 
     def download(realized_repository):
         return shed.download_tarball(ctx, tsi, realized_repository, **kwds)

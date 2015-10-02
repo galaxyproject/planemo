@@ -49,7 +49,7 @@ def cli(ctx, paths, **kwds):
     The lower-level ``shed_upload`` command should be used instead if
     the repository doesn't define complete metadata in a ``.shed.yml``.
     """
-    tsi = shed.tool_shed_client(ctx, **kwds)
+    tsi = shed.tool_shed_client(ctx, realized_reposiotry=None, **kwds)
 
     def update(realized_repository):
         upload_ret_code = 0
