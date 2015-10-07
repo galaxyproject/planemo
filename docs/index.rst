@@ -20,6 +20,7 @@ Contents:
    commands
    conduct
    contributing
+   organization
    developing
    history
 
