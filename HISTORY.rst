@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.16.0.dev0
+0.16.0 (2015-10-07)
 ---------------------
 
 * Adding new command ``dependency_script`` to convert Tool Shed dependencies
