@@ -3,7 +3,13 @@ from __future__ import print_function
 from xml.etree import ElementTree
 
 from six.moves.urllib.request import urlretrieve
+from six.moves.urllib.error import URLError
 from six import string_types
+
+import os
+import tarfile
+import zipfile
+from ftplib import all_errors as FTPErrors  # tuple of exceptions
 
 TOOLSHED_MAP = {
     "toolshed": "https://toolshed.g2.bx.psu.edu",
@@ -241,14 +247,14 @@ class Actions(object):
 
     def first_download(self):
         for action in self.actions:
-            if action.type in ["download_by_url", "download_file"]:
+            if action.action_type in ["download_by_url", "download_file"]:
                 return action
         return None
 
     def downloads(self):
         actions = []
         for action in self.actions:
-            if action.type in ["download_by_url", "download_file"]:
+            if action.action_type in ["download_by_url", "download_file"]:
                 actions.append(action)
         return actions
 
@@ -257,6 +263,56 @@ class Actions(object):
         if self.os or self.architecture:
             platform = "os=%s,arch=%s," % (self.os, self.architecture)
         return "Actions[%s%s]" % (platform, map(str, self.actions))
+
+    def _indent_extend(self, target, new_entries, indent="    "):
+        for line in new_entries:
+            target.append(indent + line)
+
+    def to_bash(self):
+        # Use self.os.title() to match "Linux" or "Darwin" in bash where case matters:
+        if self.os and self.architecture:
+            condition = '("%s" == `uname`) && ("%s" == `arch`)' % (self.os.title(), self.architecture)
+        elif self.os:
+            condition = '"%s" == `uname`' % self.os.title()
+        elif self.architecture:
+            condition = '"%s" == `arch`' % self.architecture
+        else:
+            condition = None
+
+        install_cmds = []
+        env_cmds = []
+
+        if condition:
+            # Conditional actions block
+            install_cmds = [
+                '#' + '-' * 60,
+                'if [[ $specifc_action_done == 0 && %s ]]' % condition,
+                'then',
+                '    echo "Platform-specific action for os=%s, arch=%s"' % (self.os, self.architecture)]
+            env_cmds = install_cmds[:]
+            # TODO - Refactor block indentation?
+            for action in self.actions:
+                i_cmds, e_cmds = action.to_bash()
+                self._indent_extend(install_cmds, i_cmds)
+                self._indent_extend(env_cmds, e_cmds)
+            # If we run the action, do not want to run any later actions!
+            install_cmds.extend(['    specifc_action_done=1', 'fi'])
+            env_cmds.extend(['    specifc_action_done=1', 'fi'])
+        else:
+            # Non-specific default action...
+            install_cmds = [
+                '#' + '-' * 60,
+                'if [[ $specifc_action_done == 0 ]]',
+                'then',
+                '    echo "Non-platform-specific actions"']
+            env_cmds = install_cmds[:]
+            for action in self.actions:
+                i_cmds, e_cmds = action.to_bash()
+                self._indent_extend(install_cmds, i_cmds)
+                self._indent_extend(env_cmds, e_cmds)
+            install_cmds.append('fi')
+            env_cmds.append('fi')
+        return install_cmds, env_cmds
 
 
 class ActionPackage(object):
@@ -270,7 +326,7 @@ class ActionPackage(object):
 class BaseAction(object):
 
     def __repr__(self):
-        return "Action[type=%s]" % self.type
+        return "Action[type=%s]" % self.action_type
 
     def same_as(self, other):
         if self._keys != other._keys:
@@ -301,14 +357,168 @@ class BaseAction(object):
         action_class = actions_by_type[type]
         return action_class(elem)
 
+    def to_bash(self):
+        """Return lists of bash shell commands to execute this action.
+
+        This method is be implemented by each sub-class, and will
+        return two list of strings (for ``dep_install.sh`` and
+        ``env.sh`` respectively).
+        """
+        raise NotImplementedError("No to_bash defined for %r" % self)
+
+
+def _tar_folders(filename):
+    archive = tarfile.open(filename, "r", errorlevel=0)
+    folders = set()
+    for i in archive.getmembers():
+        if i.isdir():
+            folders.add(i.name.rstrip("/"))
+        else:
+            folders.add(os.path.split(i.name)[0])
+    return folders
+
+
+def _zip_folders(filename):
+    archive = zipfile.ZipFile(filename, "r")
+    return set(i.filename.rstrip("/") for i in archive.infolist() if i.filename.endswith("/"))
+
+
+def _common_prefix(folders):
+    common_prefix = ""
+    if len(folders) == 1:
+        common_prefix = list(folders)[0]
+    else:
+        common_prefix = os.path.commonprefix(folders)
+        assert not os.path.isabs(common_prefix), folders
+    return common_prefix
+
+
+def _cache_download(url, filename):
+    """Returns local path to cached copy of URL using given filename."""
+    try:
+        cache = os.environ["DOWNLOAD_CACHE"]
+    except KeyError:
+        # TODO - expose this as a command line option
+        raise ValueError("Dependencies cache location $DOWNLOAD_CACHE not set.")
+
+    local = os.path.join(cache, filename)
+
+    if not os.path.isfile(local):
+        # Must download it...
+        try:
+            import sys  # TODO - log this nicely...
+            sys.stderr.write("Downloading %s\n" % url)
+            urlretrieve(url, local)
+        except URLError:
+            # Most likely server is down, could be bad URL in XML action:
+            raise RuntimeError("Unable to download %s" % url)
+        except FTPErrors:
+            # Most likely server is down, could be bad URL in XML action:
+            raise RuntimeError("Unable to download %s" % url)
+
+    return local
+
+
+def _determine_compressed_file_folder(url, downloaded_filename):
+    """Determine how to decompress the file & its directory structure.
+
+    Returns a list of shell commands. Consider this example where the
+    folder to change to cannot be guessed from the tar-ball filename:
+
+        $ curl -o "ncbi-blast-2.2.30+-ia32-linux.tar.gz" \
+        "ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.2.30/ncbi-blast-2.2.30+-ia32-linux.tar.gz"
+        $ tar -zxvf ncbi-blast-2.2.30+-ia32-linux.tar.gz
+        $ cd ncbi-blast-2.2.30+
+
+    Here it would return:
+
+        ['tar -zxvf ncbi-blast-2.2.30+-ia32-linux.tar.gz', 'cd ncbi-blast-2.2.30+']
+
+    If not cached, this function will download the file to the
+    $DOWNLOAD_CACHE folder, and then open it / decompress it in
+    order to find common folder prefix used.  This will also verify
+    how to decompress the file.
+    """
+    answer = []
+    local = _cache_download(url, downloaded_filename)
+
+    if tarfile.is_tarfile(local):
+        folders = _tar_folders(local)
+        if downloaded_filename.endswith(".tar.gz") or downloaded_filename.endswith(".tgz"):
+            answer.append('tar -zxvf %s' % downloaded_filename)
+        elif downloaded_filename.endswith(".tar.bz2"):
+            answer.append('tar -jxvf %s' % downloaded_filename)
+        elif downloaded_filename.endswith(".tar"):
+            answer.extend('tar -xvf %s' % downloaded_filename)
+        else:
+            # Quite possibly this file doesn't need decompressing,
+            # but until we've tested lots of real world tool_dependencies.xml
+            # files I'd like to check these cases to confirm this.
+            raise NotImplementedError("How to decompress tar file %s?" % downloaded_filename)
+    elif zipfile.is_zipfile(local):
+        if local.endswith('.jar'):
+            # Do not decompress!
+            return answer
+        folders = _zip_folders(local)
+        answer.append('unzip %s' % downloaded_filename)
+    elif downloaded_filename.endswith(".dmg"):
+        # Do not decompress!
+        return answer
+    else:
+        # No compression? Leave as it is?
+        raise NotImplementedError("What kind of compression is %s using?" % local)
+
+    common_prefix = _common_prefix(folders)
+    if common_prefix:
+        answer.append('cd "%s"' % common_prefix)
+
+    return answer
+
+
+def _commands_to_download_and_extract(url, target_filename=None):
+    # TODO - Include checksum validation here?
+    if target_filename:
+        downloaded_filename = target_filename
+    else:
+        downloaded_filename = os.path.split(url)[-1]
+        if "?" in downloaded_filename:
+            downloaded_filename = downloaded_filename[:downloaded_filename.index("?")]
+        if "#" in downloaded_filename:
+            downloaded_filename = downloaded_filename[:downloaded_filename.index("#")]
+
+    # Curl is present on Mac OS X, can we assume it will be on Linux?
+    # Cannot assume that wget will be on Mac OS X.
+    answer = [
+        'if [[ -f "%s" ]]' % downloaded_filename,
+        'then',
+        '    echo "Reusing existing %s"' % downloaded_filename,
+        'elif [[ -f "$DOWNLOAD_CACHE/%s" ]]' % downloaded_filename,
+        'then',
+        '    echo "Reusing cached %s"' % downloaded_filename,
+        '    ln -s "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, downloaded_filename),
+        'else',
+        '    echo "Downloading %s"' % downloaded_filename,
+        '    curl -L -o "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, url),
+        '    ln -s "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, downloaded_filename),
+        'fi',
+        ]
+    answer.extend(_determine_compressed_file_folder(url, downloaded_filename))
+    return answer, []
+
 
 class DownloadByUrlAction(BaseAction):
     action_type = "download_by_url"
     _keys = ["url"]
 
     def __init__(self, elem):
-        self.url = elem.text
+        self.url = elem.text.strip()
         assert self.url
+
+    def to_bash(self):
+        # See class DownloadByUrl in Galaxy,
+        # lib/tool_shed/galaxy_install/tool_dependencies/recipe/step_handler.py
+        # Do we need to worry about target_filename here?
+        return _commands_to_download_and_extract(self.url)
 
 
 class DownloadFileAction(BaseAction):
@@ -316,8 +526,14 @@ class DownloadFileAction(BaseAction):
     _keys = ["url", "extract"]
 
     def __init__(self, elem):
-        self.url = elem.text
+        self.url = elem.text.strip()
         self.extract = asbool(elem.attrib.get("extract", False))
+
+    def to_bash(self):
+        if self.extract:
+            return _commands_to_download_and_extract(self.url)
+        else:
+            return ['wget %s' % self.url], []
 
 
 class DownloadBinary(BaseAction):
@@ -336,6 +552,9 @@ class ShellCommandAction(BaseAction):
 
     def __init__(self, elem):
         self.command = elem.text
+
+    def to_bash(self):
+        return [self.command], []
 
 
 class TemplateShellCommandAction(BaseAction):
@@ -357,6 +576,9 @@ class MoveFileAction(BaseAction):
         self.source = elem.find("source").text
         self.destination = elem.find("destination").text
 
+    def to_bash(self):
+        return ["mv %s %s" % (self.source, self.destination)], []
+
 
 class MoveDirectoryFilesAction(BaseAction):
     action_type = "move_directory_files"
@@ -367,6 +589,9 @@ class MoveDirectoryFilesAction(BaseAction):
         destination_directory = elem.find("destination_directory").text
         self.source_directory = source_directory
         self.destination_directory = destination_directory
+
+    def to_bash(self):
+        return ["mv %s/* %s/" % (self.source_directory, self.destination_directory)], []
 
 
 class SetEnvironmentAction(BaseAction):
@@ -382,6 +607,20 @@ class SetEnvironmentAction(BaseAction):
             variables.append(var)
         self.variables = variables
         assert self.variables
+
+    def to_bash(self):
+        answer = []
+        for var in self.variables:
+            # Expand $INSTALL_DIR here?
+            if var.action == "set_to":
+                answer.append('export %s=%s' % (var.name, var.raw_value))
+            elif var.action == "prepend_to":
+                answer.append('export %s=%s:$%s' % (var.name, var.raw_value, var.name))
+            elif var.action == "append_to":
+                answer.append('export %s=$%s:%s' % (var.name, var.name, var.raw_value))
+            else:
+                raise ValueError("Undefined environment variable action %r" % var.action)
+        return answer, answer  # Actions needed in env.sh here!
 
 
 class ChmodAction(BaseAction):
@@ -400,6 +639,9 @@ class ChmodAction(BaseAction):
         self.mods = mods
         assert self.mods
 
+    def to_bash(self):
+        return ["chmod %s %s" % (m["mode"], m["target"]) for m in self.mods], []
+
 
 class MakeInstallAction(BaseAction):
     action_type = "make_install"
@@ -408,6 +650,9 @@ class MakeInstallAction(BaseAction):
     def __init__(self, elem):
         pass
 
+    def to_bash(self):
+        return ["make install"], []
+
 
 class AutoconfAction(BaseAction):
     action_type = "autoconf"
@@ -415,6 +660,11 @@ class AutoconfAction(BaseAction):
 
     def __init__(self, elem):
         self.options = elem.text
+
+    def to_bash(self):
+        if self.options:
+            raise NotImplementedError("Options with action autoconf not implemented yet.")
+        return ['./configure', 'make', 'make install'], []
 
 
 class ChangeDirectoryAction(BaseAction):
@@ -425,6 +675,9 @@ class ChangeDirectoryAction(BaseAction):
         self.directory = elem.text
         assert self.directory
 
+    def to_bash(self):
+        return ["cd %s" % self.directory], []
+
 
 class MakeDirectoryAction(BaseAction):
     action_type = "make_directory"
@@ -432,6 +685,9 @@ class MakeDirectoryAction(BaseAction):
 
     def __init__(self, elem):
         self.directory = elem.text
+
+    def to_bash(self):
+        return ["mkdir -p %s" % self.directory], []
 
 
 class SetupPerlEnvironmentAction(BaseAction):
@@ -486,6 +742,10 @@ class SetEnvironmentForInstallAction(BaseAction):
 
     def __init__(self, elem):
         pass
+
+    def to_bash(self):
+        # TODO - How could we resolve/check the dependencies?
+        return ['echo "WARNING: Assuming packages already installed!"'], []
 
 
 class SetVariable(object):
