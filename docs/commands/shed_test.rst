@@ -44,7 +44,8 @@ This command requires the target to be version 15.07 or newer.
                                       shed_key is specified).
       -t, --shed_target TEXT          Tool Shed to target (this can be 'toolshed',
                                       'testtoolshed', 'local' (alias for
-                                      http://localhost:9009/) or an arbitraryurl).
+                                      http://localhost:9009/), an arbitrary url or
+                                      mappings defined ~/.planemo.yml.
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
       --install_galaxy                Download and configure a disposable copy of

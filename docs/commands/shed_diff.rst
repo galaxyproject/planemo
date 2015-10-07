@@ -64,7 +64,8 @@ uploaded to the repository.
                                  shed_key is specified).
       -t, --shed_target TEXT     Tool Shed to target (this can be 'toolshed',
                                  'testtoolshed', 'local' (alias for
-                                 http://localhost:9009/) or an arbitraryurl).
+                                 http://localhost:9009/), an arbitrary url or
+                                 mappings defined ~/.planemo.yml.
       -o, --output PATH          Send diff output to specified file.
       --shed_target_source TEXT  Source Tool Shed to diff against (will ignore
                                  local project info specified). To compare the

@@ -67,7 +67,8 @@ the repository doesn't define complete metadata in a ``.shed.yml``.
                                    shed_key is specified).
       -t, --shed_target TEXT       Tool Shed to target (this can be 'toolshed',
                                    'testtoolshed', 'local' (alias for
-                                   http://localhost:9009/) or an arbitraryurl).
+                                   http://localhost:9009/), an arbitrary url or
+                                   mappings defined ~/.planemo.yml.
       -m, --message TEXT           Commit message for tool shed upload.
       --force_repository_creation  If a repository cannot be found for the
                                    specified user/repo name pair, then

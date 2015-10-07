@@ -11,6 +11,7 @@ documentation describes these commands.
 .. include:: commands/brew_env.rst
 .. include:: commands/brew_init.rst
 .. include:: commands/config_init.rst
+.. include:: commands/dependency_script.rst
 .. include:: commands/docker_build.rst
 .. include:: commands/docker_shell.rst
 .. include:: commands/lint.rst

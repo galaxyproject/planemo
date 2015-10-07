@@ -44,6 +44,14 @@ planemo.commands.cmd_create_gist module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd_dependency_script module
+---------------------------------------------
+
+.. automodule:: planemo.commands.cmd_dependency_script
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd_docker_build module
 ----------------------------------------
 

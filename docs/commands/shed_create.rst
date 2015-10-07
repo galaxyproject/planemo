@@ -37,7 +37,8 @@ Create a repository in a Galaxy Tool Shed from a ``.shed.yml`` file.
                                 shed_key is specified).
       -t, --shed_target TEXT    Tool Shed to target (this can be 'toolshed',
                                 'testtoolshed', 'local' (alias for
-                                http://localhost:9009/) or an arbitraryurl).
+                                http://localhost:9009/), an arbitrary url or
+                                mappings defined ~/.planemo.yml.
       -m, --message TEXT        Commit message for tool shed upload.
       --skip_upload             Skip upload contents as part of operation, only
                                 update metadata.
