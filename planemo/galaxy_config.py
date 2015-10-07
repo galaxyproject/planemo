@@ -133,7 +133,7 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
         database_location = config_join("galaxy.sqlite")
         shed_tools_path = config_join("shed_tools")
         sheds_config_path = _configure_sheds_config_file(
-            config_directory, **kwds
+            ctx, config_directory, **kwds
         )
         preseeded_database = True
         master_api_key = kwds.get("master_api_key", "test_key")
@@ -450,11 +450,11 @@ def _search_tool_path_for(path, target, extra_paths=[]):
     return None
 
 
-def _configure_sheds_config_file(config_directory, **kwds):
+def _configure_sheds_config_file(ctx, config_directory, **kwds):
     if "shed_target" not in kwds:
         kwds = kwds.copy()
         kwds["shed_target"] = "toolshed"
-    shed_target_url = tool_shed_url(kwds)
+    shed_target_url = tool_shed_url(ctx, **kwds)
     contents = _sub(TOOL_SHEDS_CONF, {"shed_target_url": shed_target_url})
     tool_sheds_conf = os.path.join(config_directory, "tool_sheds_conf.xml")
     write_file(tool_sheds_conf, contents)

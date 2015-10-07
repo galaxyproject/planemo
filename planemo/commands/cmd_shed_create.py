@@ -18,12 +18,12 @@ from planemo.io import info
 def cli(ctx, paths, **kwds):
     """Create a repository in a Galaxy Tool Shed from a ``.shed.yml`` file.
     """
-    tsi = shed.tool_shed_client(ctx, **kwds)
+    shed_context = shed.get_shed_context(ctx, **kwds)
 
     def create(realized_repository):
-        repo_id = realized_repository.find_repository_id(ctx, tsi)
+        repo_id = realized_repository.find_repository_id(ctx, shed_context)
         if repo_id is None:
-            if realized_repository.create(ctx, tsi):
+            if realized_repository.create(ctx, shed_context):
                 info("Repository created")
                 if not kwds["skip_upload"]:
                     return shed.upload_repository(
