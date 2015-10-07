@@ -22,10 +22,21 @@ for env_var, default in [
     value = os.environ[env_var]
     print("Using $%s=%s" % (env_var, value))
     assert os.path.isdir(value), value
-# TODO - Remove temp_dir
+# TODO - Once drop Python 2.6, create and remove temp_dir via
+#        setUpClass and tearDownClass methos
 
 
 class DependencyScriptTestCase(CliTestCase):
+
+    def setUp(self):
+        # Pass to base-class
+        CliTestCase.setUp(self)
+        # TODO: Switch this to setUpClass once drop Python 2.6
+        repo_list = []
+        for x in glob.glob("%s/*" % TEST_REPOS_DIR):
+            if os.path.isdir(x):
+                repo_list.append(x)
+        self.repo_list = repo_list
 
     def test_empty_file(self):
         # Using empty file repos/fastqc/tool_dependencies.xml
@@ -64,10 +75,10 @@ class DependencyScriptTestCase(CliTestCase):
 
     def test_repos_list(self):
         # At least one will fail
-        ds_cmd = ["dependency_script"] + list(glob.glob("%s/*" % TEST_REPOS_DIR))
+        ds_cmd = ["dependency_script"] + self.repo_list
         self._check_exit_code(ds_cmd, 1)
 
     def test_repos_list_fast(self):
         # At least one will fail
-        ds_cmd = ["dependency_script", "--fail_fast"] + list(glob.glob("%s/*" % TEST_REPOS_DIR))
+        ds_cmd = ["dependency_script", "--fail_fast"] + self.repo_list
         self._check_exit_code(ds_cmd, 1)
