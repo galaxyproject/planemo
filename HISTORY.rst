@@ -6,12 +6,14 @@ History
 .. to_doc
 
 ---------------------
-0.15.1.dev0
+0.16.0.dev0
 ---------------------
 
-    
-
-
+* Adding new command ``dependency_script`` to convert Tool Shed dependencies
+  into shell scripts - thanks to @peterjc.
+  `Pull Request 310`_, f798c7e_, `Issue 303`_
+* Implement profiles in sheds section of the ``~/.planemo.yml``.
+  `Pull Request 314`_
 
 ---------------------
 0.15.0 (2015-10-01)
@@ -452,6 +454,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _f798c7e: https://github.com/galaxyproject/planemo/commit/f798c7e
+.. _Issue 303: https://github.com/galaxyproject/planemo/issues/303
+.. _Pull Request 310: https://github.com/galaxyproject/planemo/pull/310
+.. _Pull Request 314: https://github.com/galaxyproject/planemo/pull/314
 .. _dad2d9d: https://github.com/galaxyproject/planemo/commit/dad2d9d
 .. _Pull Request 312: https://github.com/galaxyproject/planemo/pull/312
 .. _Pull Request 311: https://github.com/galaxyproject/planemo/pull/311
