@@ -83,12 +83,18 @@ def run_in_config(ctx, config, **kwds):
         test_data = test_results.structured_data
 
         if 'test_output' in kwds:
-            with open(kwds['test_output'], 'w') as handle:
-                handle.write(build_report.build_report(test_data))
+            output_path = kwds['test_output']
+            if output_path is not None:
+                with open(output_path, 'w') as handle:
+                    handle.write(build_report.build_report(test_data))
 
         for kw_name in ('markdown', 'text'):
             if 'test_output_%s' % kw_name in kwds:
-                with open(kwds['test_output_%s' % kw_name], 'w') as handle:
+                output_path = kwds['test_output_%s' % kw_name]
+                if output_path is None:
+                    continue
+
+                with open(output_path, 'w') as handle:
                     handle.write(build_report.build_report(test_data, report_type=kw_name))
 
     except Exception:

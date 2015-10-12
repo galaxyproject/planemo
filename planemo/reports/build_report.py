@@ -1,3 +1,4 @@
+import json
 from pkg_resources import resource_string
 from jinja2 import Environment, PackageLoader
 env = Environment(loader=PackageLoader('planemo', 'reports'))
@@ -20,6 +21,7 @@ def build_report(structured_data, report_type="html", **kwds):
             'bootstrap_style': __style("bootstrap.min.css"),
             'jquery_script': __script("jquery.min"),
             'bootstrap_script': __script("bootstrap.min"),
+            'json': json,
         })
 
     return template_data(environment, 'report_%s.tpl' % report_type)
