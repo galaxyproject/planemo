@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 
 import click
 
@@ -44,10 +45,12 @@ class Context(object):
             msg %= args
         click.echo(msg, file=sys.stderr)
 
-    def vlog(self, msg, *args):
+    def vlog(self, msg, *args, **kwds):
         """Logs a message to stderr only if verbose is enabled."""
         if self.verbose:
             self.log(msg, *args)
+            if kwds.get("exception", False):
+                traceback.print_exc(file=sys.stderr)
 
     @property
     def workspace(self):

@@ -92,7 +92,7 @@ def run_in_config(ctx, config, **kwds):
                     handle.write(build_report.build_report(test_data, report_type=kw_name))
 
     except Exception:
-        pass
+        ctx.vlog("Problem producing test output.", exception=True)
 
     __handle_summary(
         test_results,
