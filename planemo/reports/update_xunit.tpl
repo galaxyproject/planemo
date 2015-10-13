@@ -15,8 +15,8 @@
             </error>
         {% endif %}
         {% if testcase.result == 3 %}
-            <error type="planemo.FailedMetadata" message="Failed to update repo metadata">
-            </error>
+            <skipped type="planemo.FailedMetadata" message="Repo updated but metadata was not">
+            </skipped>
         {% endif %}
         {% if testcase.result > 3 %}
             <error type="planemo.UpdateError" message="Error executing update">
