@@ -71,7 +71,6 @@ def cli(ctx, paths, **kwds):
 
     shed_context = shed.get_shed_context(ctx, **kwds)
 
-
     def update(realized_repository):
         collected_data['results']['total'] += 1
         upload_ret_code = 0
@@ -122,7 +121,7 @@ def cli(ctx, paths, **kwds):
             return 1
 
     exit_code = shed.for_each_repository(ctx, update, paths, **kwds)
-    
+
     if kwds.get('report_xunit', False):
         with open(kwds['report_xunit'], 'w') as handle:
             handle.write(build_report.template_data(
