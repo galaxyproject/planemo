@@ -63,8 +63,7 @@ REALIZAION_PROBLEMS_MESSAGE = ("Problem encountered executing action for one or 
 PLANEMO_FILES = [
     "shed_upload*.tar.gz",
     "shed_download*.tar.gz",
-    "tool_test_output.json",
-    "tool_test_output.html",
+    "tool_test_output.*",
     ".travis",
     ".travis.yml",
     ".shed.yml",
