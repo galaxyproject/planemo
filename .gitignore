@@ -44,3 +44,5 @@ output/*/index.html
 docs/_build
 
 .venv
+
+tool_test_output.*
