@@ -1,6 +1,7 @@
 """
 """
 import sys
+import time
 
 import click
 
@@ -79,21 +80,53 @@ def cli(ctx, paths, **kwds):
             'failures': 0,
             'skips': 0,
         },
+        'suitename': 'shed_diff',
         'tests': [],
     }
 
     def diff(realized_repository):
+        time1 = time.time()
         result = shed.diff_repo(ctx, realized_repository, **kwds)
+        time2 = time.time()
         # Collect data about what happened
         collected_data['results']['total'] += 1
         if result >= 200:
             collected_data['results']['errors'] += 1
-        elif result > 0:
+            collected_data['tests'].append({
+                'classname': realized_repository.name,
+                'errorType': 'DiffError',
+                'errorMessage': 'Error diffing repositories',
+                'time': (time2 - time1),
+            })
+        elif result > 2:
             collected_data['results']['failures'] += 1
-        collected_data['tests'].append({
-            'classname': realized_repository.name,
-            'result': result,
-        })
+            collected_data['tests'].append({
+                'classname': realized_repository.name,
+                'errorType': 'PlanemoDiffError',
+                'errorMessage': 'Planemo error diffing repositories',
+                'time': (time2 - time1),
+            })
+        elif result == 2:
+            collected_data['results']['failures'] += 1
+            collected_data['tests'].append({
+                'classname': realized_repository.name,
+                'errorType': 'RepoDoesNotExist',
+                'errorMessage': 'Target Repository does not exist',
+                'time': (time2 - time1),
+            })
+        elif result == 1:
+            collected_data['results']['failures'] += 1
+            collected_data['tests'].append({
+                'classname': realized_repository.name,
+                'errorType': 'Different',
+                'errorMessage': 'Repository is different',
+                'time': (time2 - time1),
+            })
+        else:
+            collected_data['tests'].append({
+                'classname': realized_repository.name,
+                'time': (time2 - time1),
+            })
         return result
 
     exit_code = shed.for_each_repository(ctx, diff, paths, **kwds)
@@ -101,6 +134,6 @@ def cli(ctx, paths, **kwds):
     if kwds.get('report_xunit', False):
         with open(kwds['report_xunit'], 'w') as handle:
             handle.write(build_report.template_data(
-                collected_data, template_name='diff_xunit.tpl'))
+                collected_data, template_name='xunit.tpl'))
 
     sys.exit(exit_code)
