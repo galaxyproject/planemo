@@ -2,6 +2,9 @@
 """
 import sys
 import time
+import tempfile
+import shutil
+from xml.sax.saxutils import escape
 
 import click
 
@@ -85,9 +88,33 @@ def cli(ctx, paths, **kwds):
     }
 
     def diff(realized_repository):
+
+        # We create a temporary redirection from kwds's
+        # output to our tempfile. This lets us capture the
+        # diff and redirect it to their requested location as
+        # well as to the XUnit report.
+        diff_output = tempfile.NamedTemporaryFile(mode='rw+b')
+        user_requested_output = kwds.get('output', None)
+        # Replace their output handle with ours
+        kwds['output'] = diff_output.name
+
+        # Run the actual diff, timing and capturing output
         time1 = time.time()
         result = shed.diff_repo(ctx, realized_repository, **kwds)
         time2 = time.time()
+
+        # May be extraneous but just want to ensure entire file is written
+        # before a copy is made.
+        diff_output.flush()
+        # Redirect a copy to user_requested_output if they did:
+        if user_requested_output is not None:
+            shutil.copy(diff_output.name, user_requested_output)
+
+        # Rewind to the start of the file and read it in its entirety
+        diff_output.seek(0)
+        diff_output_contents = diff_output.read()
+        diff_output.close()
+
         # Collect data about what happened
         collected_data['results']['total'] += 1
         if result >= 200:
@@ -96,6 +123,7 @@ def cli(ctx, paths, **kwds):
                 'classname': realized_repository.name,
                 'errorType': 'DiffError',
                 'errorMessage': 'Error diffing repositories',
+                'errorContent': escape(diff_output_contents),
                 'time': (time2 - time1),
             })
         elif result > 2:
@@ -104,6 +132,7 @@ def cli(ctx, paths, **kwds):
                 'classname': realized_repository.name,
                 'errorType': 'PlanemoDiffError',
                 'errorMessage': 'Planemo error diffing repositories',
+                'errorContent': escape(diff_output_contents),
                 'time': (time2 - time1),
             })
         elif result == 2:
@@ -112,6 +141,7 @@ def cli(ctx, paths, **kwds):
                 'classname': realized_repository.name,
                 'errorType': 'RepoDoesNotExist',
                 'errorMessage': 'Target Repository does not exist',
+                'errorContent': escape(diff_output_contents),
                 'time': (time2 - time1),
             })
         elif result == 1:
@@ -120,6 +150,7 @@ def cli(ctx, paths, **kwds):
                 'classname': realized_repository.name,
                 'errorType': 'Different',
                 'errorMessage': 'Repository is different',
+                'errorContent': escape(diff_output_contents),
                 'time': (time2 - time1),
             })
         else:
