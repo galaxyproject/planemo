@@ -1,7 +1,7 @@
 import click
 
 import urllib
-from tempfile import mktemp
+from tempfile import mkstemp
 
 from planemo.cli import pass_context
 from galaxy.tools.deps import commands
@@ -22,6 +22,6 @@ def cli(ctx):
     Homebrew or linuxbrew are required in order to use the other commands
     ``brew`` and ``brew_shell``.
     """
-    fname = mktemp('install_brew')
+    fname = mkstemp('install_brew')
     urllib.urlretrieve(INSTALL_SCRIPT, fname)
     commands.execute(["ruby", fname])

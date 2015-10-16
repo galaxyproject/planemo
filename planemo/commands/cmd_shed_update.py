@@ -1,6 +1,7 @@
 """
 """
 import sys
+import time
 
 import click
 
@@ -66,6 +67,7 @@ def cli(ctx, paths, **kwds):
             'failures': 0,
             'skips': 0,
         },
+        'suitename': 'update',
         'tests': [],
     }
 
@@ -75,16 +77,24 @@ def cli(ctx, paths, **kwds):
         collected_data['results']['total'] += 1
         upload_ret_code = 0
         upload_ok = True
+
+        # Start the time
+        time1 = time.time()
         if not kwds["skip_upload"]:
             upload_ret_code = shed.upload_repository(
                 ctx, realized_repository, **kwds
             )
             upload_ok = not upload_ret_code
+        time2 = time.time()
+
+        # Now that we've uploaded (or skipped appropriately), collect results.
         if upload_ret_code == 2:
             collected_data['results']['failures'] += 1
             collected_data['tests'].append({
                 'classname': realized_repository.name,
-                'result': 2,
+                'errorType': 'FailedUpdate',
+                'errorMessage': 'Failed to update repository as it does not exist in target ToolShed',
+                'time': (time2 - time1),
             })
             error("Failed to update repository it does not exist "
                   "in target ToolShed.")
@@ -100,14 +110,16 @@ def cli(ctx, paths, **kwds):
         if metadata_ok and upload_ok:
             collected_data['tests'].append({
                 'classname': realized_repository.name,
-                'result': 0,
+                'time': (time2 - time1),
             })
             return 0
         elif upload_ok:
             collected_data['results']['skips'] += 1
             collected_data['tests'].append({
                 'classname': realized_repository.name,
-                'result': 3,
+                'errorType': 'FailedMetadata',
+                'errorMessage': 'Failed to update repository metadata',
+                'time': (time2 - time1),
             })
             error("Repo updated but metadata was not.")
             return 1
@@ -115,7 +127,9 @@ def cli(ctx, paths, **kwds):
             collected_data['results']['failures'] += 1
             collected_data['tests'].append({
                 'classname': realized_repository.name,
-                'result': 1,
+                'errorType': 'FailedUpdate',
+                'errorMessage': 'Failed to update repository',
+                'time': (time2 - time1),
             })
             error("Failed to update a repository.")
             return 1
@@ -125,6 +139,6 @@ def cli(ctx, paths, **kwds):
     if kwds.get('report_xunit', False):
         with open(kwds['report_xunit'], 'w') as handle:
             handle.write(build_report.template_data(
-                collected_data, template_name='update_xunit.tpl'))
+                collected_data, template_name='xunit.tpl'))
 
     sys.exit(exit_code)

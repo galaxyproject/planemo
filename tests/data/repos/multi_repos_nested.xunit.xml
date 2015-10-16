@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="planemodiff"
+<testsuite name="planemo-shed_diff"
            tests="2"
            errors="0"
            failures="0"
            skip="0">
-    <testcase classname="cat1" name="recursive_diff" time=""/>
-    <testcase classname="cat2" name="recursive_diff" time=""/>
+    <testcase classname="cat1" name="" time=""/>
+    <testcase classname="cat2" name="" time=""/>
 </testsuite>

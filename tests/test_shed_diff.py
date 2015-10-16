@@ -100,8 +100,8 @@ class ShedDiffTestCase(CliShedTestCase):
 
             compare = open(xunit_report.name, 'r').read()
             if not diff(
-                ElementTree.parse(known_good_xunit_report).getroot(),
-                ElementTree.fromstring(compare),
+                self._make_deterministic(ElementTree.parse(known_good_xunit_report).getroot()),
+                self._make_deterministic(ElementTree.fromstring(compare)),
                 reporter=sys.stdout.write
             ):
                 self.assertTrue(True)
@@ -117,8 +117,8 @@ class ShedDiffTestCase(CliShedTestCase):
 
             compare = open(xunit_report.name, 'r').read()
             if not diff(
-                ElementTree.parse(known_bad_xunit_report).getroot(),
-                ElementTree.fromstring(compare),
+                self._make_deterministic(ElementTree.parse(known_bad_xunit_report).getroot()),
+                self._make_deterministic(ElementTree.fromstring(compare)),
                 reporter=sys.stdout.write
             ):
                 self.assertTrue(True)
@@ -139,3 +139,10 @@ class ShedDiffTestCase(CliShedTestCase):
             diff = diff_f.read()
         for diff_line in DIFF_LINES:
             assert diff_line in diff
+
+    def _make_deterministic(self, node):
+        for x in node.findall('testcase'):
+            if 'time' in x.attrib:
+                del x.attrib['time']
+
+        return node
