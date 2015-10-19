@@ -14,6 +14,8 @@ History
 * Fix issues with producing test outputs. 572e754_
 * Xunit reporting improvements - refactoring, times, diff output (thanks to @erasche).
   `Pull Request 330`_
+* Implement project governance policy and update developer code of conduct to
+  match that of the Galaxy project. `Pull Request 316`_
 * Update filters for account for new ``.txt`` and ``.md`` test outputs
   (thanks to @erasche). `Pull Request 327`_
 * Add verbose logging to galaxy test output handling problems. 5d7db92_
@@ -471,6 +473,7 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 316: https://github.com/galaxyproject/planemo/pull/316
 .. _5d7db92: https://github.com/galaxyproject/planemo/commit/5d7db92
 .. _572e754: https://github.com/galaxyproject/planemo/commit/572e754
 .. _Pull Request 322: https://github.com/galaxyproject/planemo/pull/322
