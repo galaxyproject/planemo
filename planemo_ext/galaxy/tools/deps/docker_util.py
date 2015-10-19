@@ -109,6 +109,7 @@ def build_docker_run_command(
     container_command,
     image,
     interactive=False,
+    terminal=False,
     tag=None,
     volumes=[],
     volumes_from=DEFAULT_VOLUMES_FROM,
@@ -134,6 +135,8 @@ def build_docker_run_command(
     command_parts.append("run")
     if interactive:
         command_parts.append("-i")
+    if terminal:
+        command_parts.append("-t")
     for env_directive in env_directives:
         command_parts.extend(["-e", env_directive])
     for volume in volumes:

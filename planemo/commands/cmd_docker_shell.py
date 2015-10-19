@@ -10,7 +10,7 @@ such a tag from a Dockerfile located in the tool's directory.
 """
 from __future__ import print_function
 import click
-
+import os
 from planemo.cli import pass_context
 from planemo import options
 
@@ -59,10 +59,30 @@ def cli(ctx, path, **kwds):
     if kwds["from_tag"]:
         identifier = "-t %s" % identifier
 
+    tool_dir = os.path.dirname(os.path.abspath(path))
+    working_dir = os.path.abspath(os.getcwd())
+    if tool_dir.startswith(working_dir):
+        volumes = [
+            "%s:%s" % (working_dir, working_dir)
+        ]
+    elif working_dir.startswith(tool_dir):
+        volumes = [
+            "%s:%s" % (tool_dir, tool_dir)
+        ]
+    else:
+        volumes = [
+            "%s:%s" % (working_dir, working_dir),
+            "%s:%s" % (tool_dir, tool_dir)
+        ]
+    
+
     script = docker_util.build_docker_run_command(
         "/bin/bash",
         identifier,
         interactive=True,
+        terminal=True,
+        working_directory=working_dir,
+        volumes=volumes,
         **dockerfiles.docker_host_args(**kwds)
     )
     print(script)
