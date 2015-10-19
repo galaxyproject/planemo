@@ -47,6 +47,9 @@ the repository doesn't define complete metadata in a ``.shed.yml``.
 **Options**::
 
 
+      --report_xunit PATH          Output update as a faked XUnit report, useful
+                                   when you want to automatically update
+                                   repositories in bulk.
       -r, --recursive              Recursively perform command for nested
                                    repository directories.
       --fail_fast                  If multiple repositories are specified and an

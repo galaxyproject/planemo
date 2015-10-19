@@ -6,9 +6,20 @@ History
 .. to_doc
 
 ---------------------
-0.16.1.dev0
+0.17.0.dev0
 ---------------------
 
+* Implement basic XUnit report option for ``shed_update`` (thanks to @martenson).
+  `Pull Request 322`_
+* Fix issues with producing test outputs. 572e754_
+* Xunit reporting improvements - refactoring, times, diff output (thanks to @erasche).
+  `Pull Request 330`_
+* Update filters for account for new ``.txt`` and ``.md`` test outputs
+  (thanks to @erasche). `Pull Request 327`_
+* Add verbose logging to galaxy test output handling problems. 5d7db92_
+* Flake8 fixes (thanks to @martenson). 949a36d_
+* Remove uses of deprecated ``mktemp`` Python standard library function
+  (thanks to @erasche). `Pull Request 330`_
     
 
 ---------------------
@@ -460,6 +471,12 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _5d7db92: https://github.com/galaxyproject/planemo/commit/5d7db92
+.. _572e754: https://github.com/galaxyproject/planemo/commit/572e754
+.. _Pull Request 322: https://github.com/galaxyproject/planemo/pull/322
+.. _949a36d: https://github.com/galaxyproject/planemo/commit/949a36d
+.. _Pull Request 327: https://github.com/galaxyproject/planemo/pull/327
+.. _Pull Request 330: https://github.com/galaxyproject/planemo/pull/330
 .. _f798c7e: https://github.com/galaxyproject/planemo/commit/f798c7e
 .. _Issue 303: https://github.com/galaxyproject/planemo/issues/303
 .. _Pull Request 310: https://github.com/galaxyproject/planemo/pull/310
