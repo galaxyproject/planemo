@@ -33,4 +33,4 @@ are fine.
 * ``make clean && make lint && make test``
 * ``make release VERSION=<old_version> NEW_VERSION=<new_version>``
 * ``make push-release``
-* Update planemo homebrew recipe to new version.
+* ``make release-brew VERSION=<old_version>`` (Update planemo homebrew recipe to new version, this works if no new requirements have been added.)

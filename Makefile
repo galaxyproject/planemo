@@ -130,6 +130,9 @@ new-version:
 
 release: commit-version release-aritfacts new-version
 
+release-brew:
+	bash scripts/update_planemo_recipe.bash $(VERSION)
+
 push-release:
 	git push $(UPSTREAM) master
 	git push --tags $(UPSTREAM)

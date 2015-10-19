@@ -46,3 +46,6 @@ docs/_build
 .venv
 
 tool_test_output.*
+
+# Used by build process to push updated brew formula.
+homebrew-tap
