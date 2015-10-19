@@ -75,6 +75,13 @@ def build_save_image_command(
     build_command_parts.extend(["save", "-o", destination, image])
     return build_command_parts
 
+def build_pull_command(
+    tag,
+    **kwds
+):
+    build_command_parts = __docker_prefix(**kwds)
+    build_command_parts.extend(["pull", tag])
+    return build_command_parts
 
 def build_docker_cache_command(
     image,
