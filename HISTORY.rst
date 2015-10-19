@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.17.0.dev0
+0.17.0 (2015-10-19)
 ---------------------
 
 * Implement basic XUnit report option for ``shed_update`` (thanks to @martenson).
