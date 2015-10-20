@@ -8,6 +8,8 @@ from planemo import options
 @click.command('serve')
 @options.optional_tools_arg(multiple=True)
 @options.galaxy_serve_options()
+@options.enable_cwl_option()
+@options.galaxy_cwl_root_option()
 @pass_context
 def cli(ctx, paths, **kwds):
     """Launch a Galaxy instance with the specified tool in the tool panel.

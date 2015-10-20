@@ -218,6 +218,19 @@ For more information see the documentation for the `brew
 and `brew_env
 <http://planemo.readthedocs.org/en/latest/commands.html#brew_env-command>`__ commands.
 
+--------------------------
+Common Workflow Language
+--------------------------
+
+Planemo includes highly experimental support for running a subset of valid
+`Common Workflow Language`_ (CWL) tools using a fork of Galaxy enhanced to run
+CWL tools.
+
+::
+
+    % planemo project_init --template cwl_draft2_spec
+    % planemo serve --cwl cwl_draft2_spec/cat1-tool.cwl
+
 .. _Galaxy: http://galaxyproject.org/
 .. _GitHub: https://github.com/
 .. _Docker: https://www.docker.com/
@@ -228,3 +241,4 @@ and `brew_env
 .. _`tools-devteam`: https://github.com/galaxyproject/tools-devteam
 .. _`tools-iuc`: https://github.com/galaxyproject/tools-iuc
 .. _Publishing to the Tool Shed: http://planemo.readthedocs.org/en/latest/publishing.html
+.. _Common Workfow Language: http://common-workflow-language.github.io
