@@ -74,7 +74,6 @@ def cli(ctx, path, **kwds):
             "%s:%s" % (working_dir, working_dir),
             "%s:%s" % (tool_dir, tool_dir)
         ]
-    
 
     script = docker_util.build_docker_run_command(
         "/bin/bash",
