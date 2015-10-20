@@ -1,6 +1,7 @@
 import fnmatch
 import glob
 import os
+import re
 from ..tools import loader
 
 import sys
@@ -12,6 +13,7 @@ PATH_DOES_NOT_EXIST_ERROR = "Could not load tools from path [%s] - this path doe
 PATH_AND_RECURSIVE_ERROR = "Cannot specify a single file and recursive."
 LOAD_FAILURE_ERROR = "Failed to load tool with path %s."
 TOOL_LOAD_ERROR = object()
+TOOL_REGEX = re.compile(r"<tool\s")
 
 
 def load_exception_handler(path, exc_info):
@@ -50,7 +52,7 @@ def is_tool_load_error(obj):
 def __looks_like_a_tool(path):
     with open(path, "r") as f:
         start_contents = f.read(5 * 1024)
-        if "<tool" in start_contents:
+        if TOOL_REGEX.search(start_contents):
             return True
     return False
 
