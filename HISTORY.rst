@@ -6,10 +6,16 @@ History
 .. to_doc
 
 ---------------------
-0.17.1.dev0
+0.18.0.dev0
 ---------------------
 
-    
+* Improvements to ``docker_shell`` usability (thanks to @kellrott).
+  `Pull Request 334`_
+* Add docker pull attempt when missing Dockerfile (thanks to @kellrott).
+  `Pull Request 333`_
+* Fix bug inferring which files are tool files (thanks to @erasche).
+  `Pull Request 335`_, `Issue 313`_
+* Initial work toward automating brew recipe update. 4d6f7d9_, `Issue 329`_
 
 ---------------------
 0.17.0 (2015-10-19)
@@ -479,6 +485,13 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Issue 329: https://github.com/galaxyproject/planemo/issues/329
+.. _Issue 313: https://github.com/galaxyproject/planemo/issues/313
+.. _Issue 333: https://github.com/galaxyproject/planemo/issues/333
+.. _Pull Request 335: https://github.com/galaxyproject/planemo/pull/335
+.. _Pull Request 334: https://github.com/galaxyproject/planemo/pull/334
+.. _Pull Request 333: https://github.com/galaxyproject/planemo/pull/333
+.. _4d6f7d9: https://github.com/galaxyproject/planemo/commit/4d6f7d9
 .. _Pull Request 316: https://github.com/galaxyproject/planemo/pull/316
 .. _5d7db92: https://github.com/galaxyproject/planemo/commit/5d7db92
 .. _572e754: https://github.com/galaxyproject/planemo/commit/572e754
