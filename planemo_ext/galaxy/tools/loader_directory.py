@@ -50,7 +50,7 @@ def is_tool_load_error(obj):
 def __looks_like_a_tool(path):
     with open(path, "r") as f:
         start_contents = f.read(5 * 1024)
-        if "<tool" in start_contents:
+        if "<tool " in start_contents:
             return True
     return False
 
