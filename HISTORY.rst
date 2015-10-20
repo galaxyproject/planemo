@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.18.0.dev0
+0.18.0 (2015-10-20)
 ---------------------
 
 * Improvements to ``docker_shell`` usability (thanks to @kellrott).
