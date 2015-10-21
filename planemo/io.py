@@ -121,16 +121,22 @@ def kill_posix(pid):
 
 
 @contextlib.contextmanager
+def conditionally_captured_io(capture, tee=False):
+    captured_std = []
+    if capture:
+        with Capturing() as captured_std:
+            yield captured_std
+        if tee:
+            tee_captured_output(captured_std)
+    else:
+        yield
+
+
+@contextlib.contextmanager
 def captured_io_for_xunit(kwds, captured_io):
     captured_std = []
     with_xunit = kwds.get('report_xunit', False)
-    if with_xunit:
-        with Capturing() as captured_std:
-            time1 = time.time()
-            yield
-            time2 = time.time()
-        tee_captured_output(captured_std)
-    else:
+    with conditionally_captured_io(with_xunit, tee=True):
         time1 = time.time()
         yield
         time2 = time.time()
@@ -189,3 +195,20 @@ def tee_captured_output(output):
             sys.stdout.write(message['data'] + '\n')
         if message['logger'] == 'stderr':
             sys.stderr.write(message['data'] + '\n')
+
+
+# Taken from Galaxy's twilltestcase.
+def wait_on(function, desc, timeout=5):
+    delta = .25
+    iteration = 0
+    while True:
+        if (delta * iteration) > timeout:
+            message = "Timed out waiting on %s." % desc
+            raise Exception(message)
+
+        iteration += 1
+        value = function()
+        if value is not None:
+            return value
+
+        time.sleep( delta )

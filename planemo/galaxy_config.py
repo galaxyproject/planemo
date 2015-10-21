@@ -5,7 +5,6 @@ import contextlib
 import os
 import random
 import shutil
-import time
 from six.moves.urllib.request import urlopen
 from six import iteritems
 from string import Template
@@ -19,6 +18,7 @@ from planemo.io import warn
 from planemo.io import shell
 from planemo.io import write_file
 from planemo.io import kill_pid_file
+from planemo.io import wait_on
 from planemo import git
 from planemo.shed import tool_shed_url
 from planemo.bioblend import (
@@ -154,7 +154,7 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
 
         os.makedirs(shed_tools_path)
         server_name = "planemo%d" % random.randint(0, 100000)
-        port = kwds.get("port", 9090)
+        port = int(kwds.get("port", 9090))
         template_args = dict(
             port=port,
             host=kwds.get("host", "127.0.0.1"),
@@ -276,6 +276,7 @@ class GalaxyConfig(object):
         self.port = port
         self.server_name = server_name
         self.master_api_key = master_api_key
+        self._user_api_key = None
 
     def kill(self):
         kill_pid_file(self.pid_file)
@@ -288,8 +289,31 @@ class GalaxyConfig(object):
     def gi(self):
         ensure_module(galaxy)
         return galaxy.GalaxyInstance(
-            url="http://localhost:%d" % self.port,
+            url="http://localhost:%d" % int(self.port),
             key=self.master_api_key
+        )
+
+    @property
+    def user_gi(self):
+        # TODO: thread-safe
+        if self._user_api_key is None:
+            users = self.gi.users
+            # Allow override with --user_api_key.
+            user_response = users.create_local_user(
+                "planemo",
+                "planemo@galaxyproject.org",
+                "planemo",
+            )
+            user_id = user_response["id"]
+
+            self._user_api_key = users.create_user_apikey(user_id)
+        return self._gi_for_key(self._user_api_key)
+
+    def _gi_for_key(self, key):
+        ensure_module(galaxy)
+        return galaxy.GalaxyInstance(
+            url="http://localhost:%d" % self.port,
+            key=key
         )
 
     def install_repo(self, *args, **kwds):
@@ -305,33 +329,30 @@ class GalaxyConfig(object):
         def status_ready(repo):
             status = repo["status"]
             if status in ["Installing", "New"]:
-                return False
+                return None
             if status == "Installed":
                 return True
             raise Exception("Error installing repo status is %s" % status)
 
-        def not_ready():
+        def ready():
             repos = self.tool_shed_client.get_repositories()
-            return not all(map(status_ready, repos))
+            ready = all(map(status_ready, repos))
+            return ready or None
 
-        self._wait_for(not_ready)
+        wait_on(ready)
 
-    # Taken from Galaxy's twilltestcase.
-    def _wait_for(self, func, **kwd):
-        sleep_amount = 0.2
-        slept = 0
-        walltime_exceeded = 1086400
-        while slept <= walltime_exceeded:
-            result = func()
-            if result:
-                time.sleep(sleep_amount)
-                slept += sleep_amount
-                sleep_amount *= 1.25
-                if slept + sleep_amount > walltime_exceeded:
-                    sleep_amount = walltime_exceeded - slept
-            else:
-                break
-        assert slept < walltime_exceeded, "Action taking too long."
+    @property
+    def log_file(self):
+        """ Not actually used by this module, but galaxy_serve will
+        respect it.
+        """
+        file_name = "%s.log" % self.server_name
+        return os.path.join(self.galaxy_root, file_name)
+
+    @property
+    def log_contents(self):
+        with open(self.log_file, "r") as f:
+            return f.read()
 
     def cleanup(self):
         shutil.rmtree(self.config_directory)

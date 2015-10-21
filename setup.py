@@ -51,6 +51,7 @@ setup(
     url='https://github.com/galaxyproject/planemo',
     packages=[
         'planemo',
+        'planemo.cwl',
         'planemo.commands',
         'planemo.galaxy_test',
         'planemo.linters',
