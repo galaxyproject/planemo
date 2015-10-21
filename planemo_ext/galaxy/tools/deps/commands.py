@@ -2,8 +2,8 @@ import os
 import subprocess
 
 
-def shell(cmds, env=None):
-    p = shell_process(cmds, env)
+def shell(cmds, env=None, **kwds):
+    p = shell_process(cmds, env, **kwds)
     return p.wait()
 
 
