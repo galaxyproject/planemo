@@ -42,6 +42,17 @@ def galaxy_root_option():
     )
 
 
+def galaxy_cwl_root_option():
+    return click.option(
+        "--cwl_galaxy_root",
+        type=click.Path(exists=True, file_okay=False, resolve_path=True),
+        help=("Root of development galaxy directory to execute command with"
+              " (must be branch of Galaxy with CWL support, this option"
+              " is experimental and will be replaced with --galaxy_root when"
+              " and if CWL support is merged into Galaxy."),
+    )
+
+
 def galaxy_port_option():
     return click.option(
         "--port",
@@ -75,6 +86,16 @@ def dependency_resolvers_option():
             resolve_path=True
         ),
         help="Dependency resolver configuration for Galaxy to target.",
+    )
+
+
+def enable_cwl_option():
+    return click.option(
+        "--cwl",
+        is_flag=True,
+        help=("Configure Galaxy for use with CWL tool."
+              " (this option is experimental and will be replaced when"
+              " and if CWL support is merged into Galaxy."),
     )
 
 

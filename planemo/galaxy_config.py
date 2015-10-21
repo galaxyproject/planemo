@@ -92,6 +92,8 @@ DOWNLOADS_URL = ("https://raw.githubusercontent.com/"
 DOWNLOADABLE_MIGRATION_VERSIONS = [127, 120, 117]
 LATEST_URL = DOWNLOADS_URL + "latest.sqlite"
 
+PIP_INSTALL_CMD = "[ -d .venv ] && . .venv/bin/activate && pip install %s"
+
 FAILED_TO_FIND_GALAXY_EXCEPTION = (
     "Failed to find Galaxy root directory - please explicitly specify one "
     "with --galaxy_root."
@@ -185,6 +187,7 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
             database_auto_migrate="True",
             cleanup_job="never",
             master_api_key="${master_api_key}",
+            enable_beta_tool_formats="True",
             id_secret="${id_secret}",
             log_level="${log_level}",
             debug="${debug}",
@@ -381,11 +384,15 @@ def _check_galaxy(ctx, **kwds):
 
 
 def _find_galaxy_root(ctx, **kwds):
-    galaxy_root = kwds.get("galaxy_root", None)
+    root_prop = "galaxy_root"
+    cwl = kwds.get("cwl", False)
+    if cwl:
+        root_prop = "cwl_galaxy_root"
+    galaxy_root = kwds.get(root_prop, None)
     if galaxy_root:
         return galaxy_root
-    elif ctx.global_config.get("galaxy_root", None):
-        return ctx.global_config["galaxy_root"]
+    elif ctx.global_config.get(root_prop, None):
+        return ctx.global_config[root_prop]
     else:
         par_dir = os.getcwd()
         while True:
@@ -489,16 +496,17 @@ def _install_galaxy(ctx, config_directory, kwds):
 
 
 def _install_galaxy_via_download(config_directory, kwds):
-    command = galaxy_run.DOWNLOAD_GALAXY + "; tar -zxvf dev | tail"
-    _install_with_command(config_directory, command)
+    branch = _galaxy_branch(kwds)
+    tar_cmd = "tar -zxvf %s" % branch
+    command = galaxy_run.DOWNLOAD_GALAXY + "; %s | tail" % tar_cmd
+    _install_with_command(config_directory, command, kwds)
 
 
 def _install_galaxy_via_git(ctx, config_directory, kwds):
-    _ensure_galaxy_repository_available(ctx)
-    workspace = ctx.workspace
-    gx_repo = os.path.join(workspace, "gx_repo")
-    command = git.command_clone(ctx, gx_repo, "galaxy-dev")
-    _install_with_command(config_directory, command)
+    gx_repo = _ensure_galaxy_repository_available(ctx, kwds)
+    branch = _galaxy_branch(kwds)
+    command = git.command_clone(ctx, gx_repo, "galaxy-dev", branch=branch)
+    _install_with_command(config_directory, command, kwds)
 
 
 def _build_eggs_cache(ctx, env, kwds):
@@ -511,27 +519,50 @@ def _build_eggs_cache(ctx, env, kwds):
     env["GALAXY_EGGS_PATH"] = eggs_path
 
 
-def _install_with_command(config_directory, command):
+def _galaxy_branch(kwds):
+    # TODO: implement generic --branch argument
+    cwl = kwds.get("cwl", False)
+    branch = "cwl" if cwl else "dev"
+    return branch
+
+
+def _install_with_command(config_directory, command, kwds):
+    # TODO: --watchdog
+    pip_installs = []
+    if kwds.get("cwl", False):
+        pip_installs.append("cwltool")
+    if pip_installs:
+        pip_install_command = PIP_INSTALL_CMD % " ".join(pip_installs)
+    else:
+        pip_install_command = ""
     install_cmds = [
         "cd %s" % config_directory,
         command,
         "cd galaxy-dev",
         "type virtualenv >/dev/null 2>&1 && virtualenv .venv",
+        pip_install_command,
         galaxy_run.ACTIVATE_COMMAND,
     ]
-    shell(";".join(install_cmds))
+    shell(";".join([c for c in install_cmds if c]))
 
 
-def _ensure_galaxy_repository_available(ctx):
+def _ensure_galaxy_repository_available(ctx, kwds):
     workspace = ctx.workspace
+    cwl = kwds.get("cwl", False)
     gx_repo = os.path.join(workspace, "gx_repo")
+    if cwl:
+        gx_repo += "_cwl"
     if os.path.exists(gx_repo):
         # Attempt fetch - but don't fail if not interweb, etc...
         shell("git --git-dir %s fetch >/dev/null 2>&1" % gx_repo)
     else:
-        remote_repo = "https://github.com/galaxyproject/galaxy"
+        if cwl:
+            remote_repo = "https://github.com/common-workflow-language/galaxy"
+        else:
+            remote_repo = "https://github.com/galaxyproject/galaxy"
         command = git.command_clone(ctx, remote_repo, gx_repo, bare=True)
         shell(command)
+    return gx_repo
 
 
 def _build_env_for_galaxy(properties, template_args):

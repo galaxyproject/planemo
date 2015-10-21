@@ -4,13 +4,17 @@ import subprocess
 from planemo import io
 
 
-def command_clone(ctx, src, dest, bare=False):
+def command_clone(ctx, src, dest, bare=False, branch=None):
     """ Take in ctx to allow more configurability down the road.
     """
     bare_arg = ""
     if bare:
         bare_arg = "--bare"
-    return "git clone %s '%s' '%s'" % (bare_arg, src, dest)
+    branch_arg = ""
+    if branch is not None:
+        branch_arg = "--branch '%s'" % branch
+    cmd = "git clone %s %s '%s' '%s'" % (bare_arg, branch_arg, src, dest)
+    return cmd
 
 
 def clone(*args, **kwds):
