@@ -4,12 +4,12 @@
            errors="0"
            failures="1"
            skip="0">
-    <testcase classname="cat1" name="" time="">
+    <testcase classname="cat1" name="shed-diff" time="">
         <error type="planemo.Different" message="Repository is different">
         Only in _local_: related_file
 
         </error>
     </testcase>
-    <testcase classname="cat2" name="" time="">
+    <testcase classname="cat2" name="shed-diff" time="">
     </testcase>
 </testsuite>

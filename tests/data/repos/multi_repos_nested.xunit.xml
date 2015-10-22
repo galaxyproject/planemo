@@ -4,6 +4,6 @@
            errors="0"
            failures="0"
            skip="0">
-    <testcase classname="cat1" name="" time=""/>
-    <testcase classname="cat2" name="" time=""/>
+    <testcase classname="cat1" name="shed-diff" time=""/>
+    <testcase classname="cat2" name="shed-diff" time=""/>
 </testsuite>
