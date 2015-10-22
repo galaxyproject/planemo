@@ -585,7 +585,8 @@ def test_options():
         click.option(
             "--test_output",
             type=click.Path(file_okay=True, resolve_path=True),
-            callback=get_default_callback("tool_test_output.html"),
+            callback=get_default_callback("tool_test_output.html",
+                                          resolve_path=True),
             help=("Output test report (HTML - for humans) defaults to "
                   "tool_test_output.html."),
             default=None,
@@ -593,14 +594,14 @@ def test_options():
         click.option(
             "--test_output_text",
             type=click.Path(file_okay=True, resolve_path=True),
-            callback=get_default_callback(None),
+            callback=get_default_callback(None, resolve_path=True),
             help=("Output test report (Basic text - for display in CI)"),
             default=None,
         ),
         click.option(
             "--test_output_markdown",
             type=click.Path(file_okay=True, resolve_path=True),
-            callback=get_default_callback(None),
+            callback=get_default_callback(None, resolve_path=True),
             help=("Output test report (Markdown style - for humans & "
                   "computers)"),
             default=None,
@@ -608,14 +609,15 @@ def test_options():
         click.option(
             "--test_output_xunit",
             type=click.Path(file_okay=True, resolve_path=True),
-            callback=get_default_callback(None),
+            callback=get_default_callback(None, resolve_path=True),
             help="Output test report (xUnit style - for computers).",
             default=None,
         ),
         click.option(
             "--test_output_json",
             type=click.Path(file_okay=True, resolve_path=True),
-            callback=get_default_callback("tool_test_output.json"),
+            callback=get_default_callback("tool_test_output.json",
+                                          resolve_path=True),
             help=("Output test report (planemo json) defaults to "
                   "tool_test_output.json."),
             default=None,

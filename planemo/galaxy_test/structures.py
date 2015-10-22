@@ -7,6 +7,8 @@ from collections import namedtuple
 import json
 import xml.etree.ElementTree as ET
 
+from planemo.io import error
+
 RUN_TESTS_CMD = (
     "sh run_tests.sh --report_file %s %s %s %s"
 )
@@ -62,7 +64,7 @@ class StructuredData(object):
                 structured_data = json.load(output_json_f)
                 structured_data_tests = structured_data["tests"]
         except Exception:
-            print("Warning: Targetting older Galaxy which did not "
+            error("Warning: Targetting older Galaxy which did not "
                   "produce a structured test results files.")
             structured_data = {}
             structured_data_tests = {}

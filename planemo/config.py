@@ -6,7 +6,7 @@ DEFAULT_CONFIG = {
 }
 
 
-def get_default_callback(default, name=None):
+def get_default_callback(default, name=None, resolve_path=False):
 
     def callback(ctx, param, value):
         planemo_ctx = ctx.obj
@@ -14,7 +14,10 @@ def get_default_callback(default, name=None):
         if config_name is None:
             config_name = param.name
 
-        return _default_option(planemo_ctx, config_name, value, default)
+        result = _default_option(planemo_ctx, config_name, value, default)
+        if resolve_path and result:
+            result = os.path.abspath(result)
+        return result
 
     return callback
 
