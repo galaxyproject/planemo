@@ -5,6 +5,7 @@ import shutil
 import sys
 import tempfile
 import time
+from cStringIO import StringIO
 
 import click
 from galaxy.tools.deps import commands
@@ -114,3 +115,45 @@ def kill_posix(pid):
             time.sleep(1)
             if not _check_pid():
                 return
+
+
+class Capturing(list):
+    """Function context which captures stdout/stderr
+
+    This keeps planemo's codebase clean without requiring planemo to hold onto
+    messages, or pass user-facing messages back at all. This could probably be
+    solved by swapping planemo entirely to a logger and reading from/writing
+    to that, but this is easier.
+
+    This swaps sys.std{out,err} with StringIOs and then makes that output
+    available.
+    """
+    # http://stackoverflow.com/a/16571630
+
+    def __enter__(self):
+        self._stdout = sys.stdout
+        self._stderr = sys.stderr
+        sys.stdout = self._stringio_stdout = StringIO()
+        sys.stderr = self._stringio_stderr = StringIO()
+        return self
+
+    def __exit__(self, *args):
+        self.extend([{'logger': 'stdout', 'data': x} for x in
+                     self._stringio_stdout.getvalue().splitlines()])
+        self.extend([{'logger': 'stderr', 'data': x} for x in
+                     self._stringio_stderr.getvalue().splitlines()])
+
+        sys.stdout = self._stdout
+        sys.stderr = self._stderr
+
+
+def tee_captured_output(output):
+    """For messages captured with Capturing, send them to their correct
+    locations so as to not interfere with normal user experience.
+    """
+    for message in output:
+        # Append '\n' due to `splitlines()` above
+        if message['logger'] == 'stdout':
+            sys.stdout.write(message['data'] + '\n')
+        if message['logger'] == 'stderr':
+            sys.stderr.write(message['data'] + '\n')
