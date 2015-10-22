@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.18.1.dev0
+0.18.1 (2015-10-22)
 ---------------------
 
 * Fix issue with test reporting not being populated. 19900a6_
