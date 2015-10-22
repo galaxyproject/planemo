@@ -6,6 +6,7 @@ import sys
 import tempfile
 import time
 from cStringIO import StringIO
+from xml.sax.saxutils import escape
 
 import click
 from galaxy.tools.deps import commands
@@ -115,6 +116,31 @@ def kill_posix(pid):
             time.sleep(1)
             if not _check_pid():
                 return
+
+
+@contextlib.contextmanager
+def captured_io_for_xunit(kwds, captured_io):
+    captured_std = []
+    with_xunit = kwds.get('report_xunit', False)
+    if with_xunit:
+        with Capturing() as captured_std:
+            time1 = time.time()
+            yield
+            time2 = time.time()
+        tee_captured_output(captured_std)
+    else:
+        time1 = time.time()
+        yield
+        time2 = time.time()
+
+    if with_xunit:
+        stdout = [escape(m['data']) for m in captured_std
+                  if m['logger'] == 'stdout']
+        stderr = [escape(m['data']) for m in captured_std
+                  if m['logger'] == 'stderr']
+        captured_io["stdout"] = stdout
+        captured_io["stderr"] = stderr
+        captured_io["time"] = (time2 - time1)
 
 
 class Capturing(list):

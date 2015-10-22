@@ -1,8 +1,6 @@
 """
 """
 import sys
-import time
-from xml.sax.saxutils import escape
 
 import click
 
@@ -11,7 +9,7 @@ from planemo import options
 from planemo import shed
 from planemo.io import info, error
 from planemo.reports import build_report
-from planemo.io import Capturing, tee_captured_output
+from planemo.io import captured_io_for_xunit
 
 
 @click.command("shed_update")
@@ -80,32 +78,12 @@ def cli(ctx, paths, **kwds):
         upload_ret_code = 0
         upload_ok = True
 
-        # Are they using XUnit reports
-        with_xunit = kwds.get('report_xunit', False)
-        # Set up in case they're using XUnit reports and we've captured all
-        # stdout/err
-        captured_std = []
-
-        # Start the time
-        time1 = time.time()
-        if not kwds["skip_upload"]:
-            if with_xunit:
-                # If the user is requesting an XUnit report they can live with
-                # boring/non-pretty stdout/err
-                with Capturing() as captured_std:
-                    upload_ret_code = shed.upload_repository(
-                        ctx, realized_repository, **kwds
-                    )
-                    tee_captured_output(captured_std)
-            else:
-                upload_ret_code = shed.upload_repository(
-                    ctx, realized_repository, **kwds
-                )
+        captured_io = {}
+        with captured_io_for_xunit(kwds, captured_io):
+            upload_ret_code = shed.upload_repository(
+                ctx, realized_repository, **kwds
+            )
             upload_ok = not upload_ret_code
-        time2 = time.time()
-
-        stdout = [escape(m['data']) for m in captured_std if m['logger'] == 'stdout']
-        stderr = [escape(m['data']) for m in captured_std if m['logger'] == 'stderr']
 
         # Now that we've uploaded (or skipped appropriately), collect results.
         if upload_ret_code == 2:
@@ -114,10 +92,10 @@ def cli(ctx, paths, **kwds):
                 'classname': realized_repository.name,
                 'errorType': 'FailedUpdate',
                 'errorMessage': 'Failed to update repository as it does not exist in target ToolShed',
-                'time': (time2 - time1),
+                'time': captured_io["time"],
                 'name': 'shed-update',
-                'stdout': stdout,
-                'stderr': stderr,
+                'stdout': captured_io["stdout"],
+                'stderr': captured_io["stderr"],
             })
             error("Failed to update repository it does not exist "
                   "in target ToolShed.")
@@ -134,10 +112,10 @@ def cli(ctx, paths, **kwds):
         if metadata_ok and upload_ok:
             collected_data['tests'].append({
                 'classname': realized_repository.name,
-                'time': (time2 - time1),
+                'time': captured_io["time"],
                 'name': 'shed-update',
-                'stdout': stdout,
-                'stderr': stderr,
+                'stdout': captured_io["stdout"],
+                'stderr': captured_io["stderr"],
             })
             return 0
         elif upload_ok:
@@ -146,10 +124,10 @@ def cli(ctx, paths, **kwds):
                 'classname': realized_repository.name,
                 'errorType': 'FailedMetadata',
                 'errorMessage': 'Failed to update repository metadata',
-                'time': (time2 - time1),
+                'time': captured_io["time"],
                 'name': 'shed-update',
-                'stdout': stdout,
-                'stderr': stderr,
+                'stdout': captured_io["stdout"],
+                'stderr': captured_io["stderr"],
             })
             error("Repo updated but metadata was not.")
             return 1
@@ -159,10 +137,10 @@ def cli(ctx, paths, **kwds):
                 'classname': realized_repository.name,
                 'errorType': 'FailedUpdate',
                 'errorMessage': 'Failed to update repository',
-                'time': (time2 - time1),
+                'time': captured_io["time"],
                 'name': 'shed-update',
-                'stdout': stdout,
-                'stderr': stderr,
+                'stdout': captured_io["stdout"],
+                'stderr': captured_io["stderr"],
             })
             error("Failed to update a repository.")
             return 1
