@@ -9,7 +9,7 @@ History
 0.18.1.dev0
 ---------------------
 
-    
+* Fix issue with test reporting not being populated. 19900a6_
 
 ---------------------
 0.18.0 (2015-10-20)
@@ -491,6 +491,7 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _19900a6: https://github.com/galaxyproject/planemo/commit/19900a6
 .. _Issue 329: https://github.com/galaxyproject/planemo/issues/329
 .. _Issue 313: https://github.com/galaxyproject/planemo/issues/313
 .. _Issue 333: https://github.com/galaxyproject/planemo/issues/333
