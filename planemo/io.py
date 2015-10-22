@@ -143,6 +143,10 @@ def captured_io_for_xunit(kwds, captured_io):
         captured_io["stdout"] = stdout
         captured_io["stderr"] = stderr
         captured_io["time"] = (time2 - time1)
+    else:
+        captured_io["stdout"] = None
+        captured_io["stderr"] = None
+        captured_io["time"] = None
 
 
 class Capturing(list):
