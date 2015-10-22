@@ -32,5 +32,13 @@ are fine.
 * ``make open-docs`` and review changelog.
 * ``make clean && make lint && make test``
 * ``make release VERSION=<old_version> NEW_VERSION=<new_version>``
-* ``make push-release``
-* ``make release-brew VERSION=<old_version>`` (Update planemo homebrew recipe to new version, this works if no new requirements have been added.)
+
+  This process will push packages to test PyPI, allow review, publish
+  to production PyPI, tag the git repository, push the tag upstream,
+  and modify the Homebrew recipe. If changes are needed, such as manual
+  changes to the homebrew recipe, this can be broken down into steps 
+  such as:
+
+  * ``make release-local VERSION=<old_version> NEW_VERSION=<new_version>``
+  * ``make push-release``
+  * ``make release-brew``

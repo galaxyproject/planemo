@@ -128,7 +128,7 @@ commit-version:
 new-version:
 	$(IN_VENV) python scripts/new_version.py $(NEW_VERSION)
 
-release: commit-version release-aritfacts new-version
+release-local: commit-version release-aritfacts new-version
 
 release-brew:
 	bash scripts/update_planemo_recipe.bash $(VERSION)
@@ -136,6 +136,8 @@ release-brew:
 push-release:
 	git push $(UPSTREAM) master
 	git push --tags $(UPSTREAM)
+
+release: release-local push-release release-brew
 
 add-history:
 	$(IN_VENV) python scripts/bootstrap_history.py $(ITEM)

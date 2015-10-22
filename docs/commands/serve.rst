@@ -68,5 +68,15 @@ instances.
                                       dependency resolution.
       --shed_dependency_resolution    Configure Galaxy to use brewed Tool Shed
                                       dependency resolution.
+      --cwl                           Configure Galaxy for use with CWL tool.
+                                      (this option is experimental and will be
+                                      replaced when and if CWL support is merged
+                                      into Galaxy.
+      --cwl_galaxy_root DIRECTORY     Root of development galaxy directory to
+                                      execute command with (must be branch of
+                                      Galaxy with CWL support, this option is
+                                      experimental and will be replaced with
+                                      --galaxy_root when and if CWL support is
+                                      merged into Galaxy.
       --help                          Show this message and exit.
     
