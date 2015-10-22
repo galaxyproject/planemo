@@ -125,6 +125,7 @@ def cli(ctx, paths, **kwds):
                 'errorMessage': 'Error diffing repositories',
                 'errorContent': escape(diff_output_contents),
                 'time': (time2 - time1),
+                'name': 'shed-diff',
             })
         elif result > 2:
             collected_data['results']['failures'] += 1
@@ -134,6 +135,7 @@ def cli(ctx, paths, **kwds):
                 'errorMessage': 'Planemo error diffing repositories',
                 'errorContent': escape(diff_output_contents),
                 'time': (time2 - time1),
+                'name': 'shed-diff',
             })
         elif result == 2:
             collected_data['results']['failures'] += 1
@@ -143,6 +145,7 @@ def cli(ctx, paths, **kwds):
                 'errorMessage': 'Target Repository does not exist',
                 'errorContent': escape(diff_output_contents),
                 'time': (time2 - time1),
+                'name': 'shed-diff',
             })
         elif result == 1:
             collected_data['results']['failures'] += 1
@@ -152,11 +155,13 @@ def cli(ctx, paths, **kwds):
                 'errorMessage': 'Repository is different',
                 'errorContent': escape(diff_output_contents),
                 'time': (time2 - time1),
+                'name': 'shed-diff',
             })
         else:
             collected_data['tests'].append({
                 'classname': realized_repository.name,
                 'time': (time2 - time1),
+                'name': 'shed-diff',
             })
         return result
 

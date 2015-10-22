@@ -95,6 +95,7 @@ def cli(ctx, paths, **kwds):
                 'errorType': 'FailedUpdate',
                 'errorMessage': 'Failed to update repository as it does not exist in target ToolShed',
                 'time': (time2 - time1),
+                'name': 'shed-update',
             })
             error("Failed to update repository it does not exist "
                   "in target ToolShed.")
@@ -111,6 +112,7 @@ def cli(ctx, paths, **kwds):
             collected_data['tests'].append({
                 'classname': realized_repository.name,
                 'time': (time2 - time1),
+                'name': 'shed-update',
             })
             return 0
         elif upload_ok:
@@ -120,6 +122,7 @@ def cli(ctx, paths, **kwds):
                 'errorType': 'FailedMetadata',
                 'errorMessage': 'Failed to update repository metadata',
                 'time': (time2 - time1),
+                'name': 'shed-update',
             })
             error("Repo updated but metadata was not.")
             return 1
@@ -130,6 +133,7 @@ def cli(ctx, paths, **kwds):
                 'errorType': 'FailedUpdate',
                 'errorMessage': 'Failed to update repository',
                 'time': (time2 - time1),
+                'name': 'shed-update',
             })
             error("Failed to update a repository.")
             return 1
