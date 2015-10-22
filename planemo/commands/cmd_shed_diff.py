@@ -130,6 +130,7 @@ def cli(ctx, paths, **kwds):
         # Collect data about what happened
         collected_data['results']['total'] += 1
         xunit_case = {
+            'name': 'shed-diff',
             'classname': realized_repository.name,
             'time': (time2 - time1),
             'stdout': [escape(m['data']) for m in captured_std if m['logger'] == 'stdout'],
@@ -142,7 +143,6 @@ def cli(ctx, paths, **kwds):
                 'errorMessage': 'Error diffing repositories',
                 'errorContent': escape(diff_output_contents),
                 'time': (time2 - time1),
-                'name': 'shed-diff',
             })
         elif result > 2:
             collected_data['results']['failures'] += 1
