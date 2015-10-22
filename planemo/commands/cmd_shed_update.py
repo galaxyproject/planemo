@@ -79,11 +79,12 @@ def cli(ctx, paths, **kwds):
         upload_ok = True
 
         captured_io = {}
-        with captured_io_for_xunit(kwds, captured_io):
-            upload_ret_code = shed.upload_repository(
-                ctx, realized_repository, **kwds
-            )
-            upload_ok = not upload_ret_code
+        if not kwds["skip_upload"]:
+            with captured_io_for_xunit(kwds, captured_io):
+                upload_ret_code = shed.upload_repository(
+                    ctx, realized_repository, **kwds
+                )
+                upload_ok = not upload_ret_code
 
         # Now that we've uploaded (or skipped appropriately), collect results.
         if upload_ret_code == 2:
