@@ -4,6 +4,26 @@
            errors="0"
            failures="0"
            skip="0">
-    <testcase classname="cat1" name="shed-diff" time=""/>
-    <testcase classname="cat2" name="shed-diff" time=""/>
+    <testcase classname="cat1" name="shed-diff" time="">
+        <system-out>
+        <!-- This will be stripped for reproducible tests -->
+            Diffing repository cat1
+            wget -q --recursive -O - 'http://localhost:57094/repository/download?repository_id=a7e8db1b-3713-419e-a848-366418a3a092&amp;changeset_revision=default&amp;file_type=gz' | tar -xzf - -C /tmp/tool_shed_diff_aB6CUR/_custom_shed_ --strip-components 1
+            mkdir "/tmp/tool_shed_diff_aB6CUR/_local_"; tar -xzf "/tmp/tmpIoaK5w" -C "/tmp/tool_shed_diff_aB6CUR/_local_"; rm -rf /tmp/tmpIoaK5w
+            cd "/tmp/tool_shed_diff_aB6CUR"; diff -r _local_ _custom_shed_ &gt;&gt; '/tmp/tmp0LSO1f'
+        </system-out>
+        <system-err>
+        </system-err>
+    </testcase>
+    <testcase classname="cat2" name="shed-diff" time="">
+        <system-out>
+        <!-- This will be stripped for reproducible tests -->
+            Diffing repository cat2
+            wget -q --recursive -O - 'http://localhost:59544/repository/download?repository_id=13be3240-154f-4b3d-bc18-55d7f9f04348&amp;changeset_revision=default&amp;file_type=gz' | tar -xzf - -C /tmp/tool_shed_diff_8uFMKd/_custom_shed_ --strip-components 1
+            mkdir "/tmp/tool_shed_diff_8uFMKd/_local_"; tar -xzf "/tmp/tmpr0_p32" -C "/tmp/tool_shed_diff_8uFMKd/_local_"; rm -rf /tmp/tmpr0_p32
+            cd "/tmp/tool_shed_diff_8uFMKd"; diff -r _local_ _custom_shed_ &gt;&gt; '/tmp/tmpHR6AlP'
+        </system-out>
+        <system-err>
+        </system-err>
+    </testcase>
 </testsuite>

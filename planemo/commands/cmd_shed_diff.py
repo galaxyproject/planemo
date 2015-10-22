@@ -132,8 +132,8 @@ def cli(ctx, paths, **kwds):
         xunit_case = {
             'classname': realized_repository.name,
             'time': (time2 - time1),
-            'stdout': [m['data'] for m in captured_std if m['logger'] == 'stdout'],
-            'stderr': [m['data'] for m in captured_std if m['logger'] == 'stderr'],
+            'stdout': [escape(m['data']) for m in captured_std if m['logger'] == 'stdout'],
+            'stderr': [escape(m['data']) for m in captured_std if m['logger'] == 'stderr'],
         }
         if result >= 200:
             collected_data['results']['errors'] += 1

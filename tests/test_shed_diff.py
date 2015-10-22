@@ -145,4 +145,10 @@ class ShedDiffTestCase(CliShedTestCase):
             if 'time' in x.attrib:
                 del x.attrib['time']
 
+            # Remove contents of stdout/stderr blocks
+            for y in x.findall('system-out'):
+                y.text = ""
+            for y in x.findall('system-err'):
+                y.text = ""
+
         return node

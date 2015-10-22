@@ -2,6 +2,7 @@
 """
 import sys
 import time
+from xml.sax.saxutils import escape
 
 import click
 
@@ -103,8 +104,8 @@ def cli(ctx, paths, **kwds):
             upload_ok = not upload_ret_code
         time2 = time.time()
 
-        stdout = [m['data'] for m in captured_std if m['logger'] == 'stdout']
-        stderr = [m['data'] for m in captured_std if m['logger'] == 'stderr']
+        stdout = [escape(m['data']) for m in captured_std if m['logger'] == 'stdout']
+        stderr = [escape(m['data']) for m in captured_std if m['logger'] == 'stderr']
 
         # Now that we've uploaded (or skipped appropriately), collect results.
         if upload_ret_code == 2:
