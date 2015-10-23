@@ -1,7 +1,6 @@
 """
 """
 import sys
-import time
 import tempfile
 import shutil
 from xml.sax.saxutils import escape
@@ -12,6 +11,7 @@ from planemo.cli import pass_context
 from planemo import options
 from planemo import shed
 from planemo.reports import build_report
+from planemo.io import captured_io_for_xunit
 
 
 @click.command("shed_diff")
@@ -98,10 +98,9 @@ def cli(ctx, paths, **kwds):
         # Replace their output handle with ours
         kwds['output'] = diff_output.name
 
-        # Run the actual diff, timing and capturing output
-        time1 = time.time()
-        result = shed.diff_repo(ctx, realized_repository, **kwds)
-        time2 = time.time()
+        captured_io = {}
+        with captured_io_for_xunit(kwds, captured_io):
+            result = shed.diff_repo(ctx, realized_repository, **kwds)
 
         # May be extraneous but just want to ensure entire file is written
         # before a copy is made.
@@ -117,52 +116,46 @@ def cli(ctx, paths, **kwds):
 
         # Collect data about what happened
         collected_data['results']['total'] += 1
+        xunit_case = {
+            'name': 'shed-diff',
+            'classname': realized_repository.name,
+            'time': captured_io["time"],
+            'stdout': captured_io["stdout"],
+            'stderr': captured_io["stderr"],
+        }
         if result >= 200:
             collected_data['results']['errors'] += 1
-            collected_data['tests'].append({
-                'classname': realized_repository.name,
+            xunit_case.update({
                 'errorType': 'DiffError',
                 'errorMessage': 'Error diffing repositories',
                 'errorContent': escape(diff_output_contents),
-                'time': (time2 - time1),
-                'name': 'shed-diff',
+                'time': captured_io["time"],
             })
         elif result > 2:
             collected_data['results']['failures'] += 1
-            collected_data['tests'].append({
-                'classname': realized_repository.name,
+            xunit_case.update({
                 'errorType': 'PlanemoDiffError',
                 'errorMessage': 'Planemo error diffing repositories',
                 'errorContent': escape(diff_output_contents),
-                'time': (time2 - time1),
-                'name': 'shed-diff',
             })
         elif result == 2:
             collected_data['results']['failures'] += 1
-            collected_data['tests'].append({
-                'classname': realized_repository.name,
+            xunit_case.update({
                 'errorType': 'RepoDoesNotExist',
                 'errorMessage': 'Target Repository does not exist',
                 'errorContent': escape(diff_output_contents),
-                'time': (time2 - time1),
-                'name': 'shed-diff',
             })
         elif result == 1:
             collected_data['results']['failures'] += 1
-            collected_data['tests'].append({
-                'classname': realized_repository.name,
+            xunit_case.update({
                 'errorType': 'Different',
                 'errorMessage': 'Repository is different',
                 'errorContent': escape(diff_output_contents),
-                'time': (time2 - time1),
-                'name': 'shed-diff',
             })
-        else:
-            collected_data['tests'].append({
-                'classname': realized_repository.name,
-                'time': (time2 - time1),
-                'name': 'shed-diff',
-            })
+
+        # Append our xunit test case
+        collected_data['tests'].append(xunit_case)
+
         return result
 
     exit_code = shed.for_each_repository(ctx, diff, paths, **kwds)

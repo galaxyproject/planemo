@@ -9,7 +9,11 @@
         Only in _local_: related_file
 
         </error>
+        <system-out />
+        <system-err />
     </testcase>
     <testcase classname="cat2" name="shed-diff" time="">
+        <system-out />
+        <system-err />
     </testcase>
 </testsuite>

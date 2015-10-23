@@ -1,7 +1,6 @@
 """
 """
 import sys
-import time
 
 import click
 
@@ -10,6 +9,7 @@ from planemo import options
 from planemo import shed
 from planemo.io import info, error
 from planemo.reports import build_report
+from planemo.io import captured_io_for_xunit
 
 
 @click.command("shed_update")
@@ -78,14 +78,13 @@ def cli(ctx, paths, **kwds):
         upload_ret_code = 0
         upload_ok = True
 
-        # Start the time
-        time1 = time.time()
+        captured_io = {}
         if not kwds["skip_upload"]:
-            upload_ret_code = shed.upload_repository(
-                ctx, realized_repository, **kwds
-            )
-            upload_ok = not upload_ret_code
-        time2 = time.time()
+            with captured_io_for_xunit(kwds, captured_io):
+                upload_ret_code = shed.upload_repository(
+                    ctx, realized_repository, **kwds
+                )
+                upload_ok = not upload_ret_code
 
         # Now that we've uploaded (or skipped appropriately), collect results.
         if upload_ret_code == 2:
@@ -94,8 +93,10 @@ def cli(ctx, paths, **kwds):
                 'classname': realized_repository.name,
                 'errorType': 'FailedUpdate',
                 'errorMessage': 'Failed to update repository as it does not exist in target ToolShed',
-                'time': (time2 - time1),
+                'time': captured_io["time"],
                 'name': 'shed-update',
+                'stdout': captured_io["stdout"],
+                'stderr': captured_io["stderr"],
             })
             error("Failed to update repository it does not exist "
                   "in target ToolShed.")
@@ -108,11 +109,14 @@ def cli(ctx, paths, **kwds):
             info("Repository metadata updated.")
         else:
             error("Failed to update repository metadata.")
+
         if metadata_ok and upload_ok:
             collected_data['tests'].append({
                 'classname': realized_repository.name,
-                'time': (time2 - time1),
+                'time': captured_io["time"],
                 'name': 'shed-update',
+                'stdout': captured_io["stdout"],
+                'stderr': captured_io["stderr"],
             })
             return 0
         elif upload_ok:
@@ -121,8 +125,10 @@ def cli(ctx, paths, **kwds):
                 'classname': realized_repository.name,
                 'errorType': 'FailedMetadata',
                 'errorMessage': 'Failed to update repository metadata',
-                'time': (time2 - time1),
+                'time': captured_io["time"],
                 'name': 'shed-update',
+                'stdout': captured_io["stdout"],
+                'stderr': captured_io["stderr"],
             })
             error("Repo updated but metadata was not.")
             return 1
@@ -132,8 +138,10 @@ def cli(ctx, paths, **kwds):
                 'classname': realized_repository.name,
                 'errorType': 'FailedUpdate',
                 'errorMessage': 'Failed to update repository',
-                'time': (time2 - time1),
+                'time': captured_io["time"],
                 'name': 'shed-update',
+                'stdout': captured_io["stdout"],
+                'stderr': captured_io["stderr"],
             })
             error("Failed to update a repository.")
             return 1
