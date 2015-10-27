@@ -26,6 +26,27 @@ def lint_inputs(tool_xml, lint_ctx):
                 lint_ctx.warn("Param input [%s] with no format specified - 'data' format will be assumed.", param_name)
         # TODO: Validate type, much more...
 
+    conditional_selects = tool_xml.findall("./inputs//conditional")
+    for conditional in conditional_selects:
+        select = conditional.find('./param[@type="select"]')
+        # Should conditionals ever not have a select?
+        if not len(select):
+            lint_ctx.info("Conditional without <param type=\"select\" />")
+            continue
+
+        select_options = select.findall('./option[@value]')
+        select_option_ids = [option.attrib['value'] for option in select_options]
+        whens = conditional.findall('./when')
+        when_ids = [when.attrib['value'] for when in whens]
+
+        for select_id in select_option_ids:
+            if select_id not in when_ids:
+                lint_ctx.warn("No <when /> block found for select option '%s'" % select_id)
+
+        for when_id in when_ids:
+            if when_id not in select_option_ids:
+                lint_ctx.warn("No <option /> block found for when block '%s'" % when_id)
+
     if datasource:
         for datasource_tag in ('display', 'uihints'):
             if not any([param.tag == datasource_tag for param in inputs]):
