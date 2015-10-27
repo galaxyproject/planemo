@@ -1,4 +1,6 @@
 import sys
+import re
+from xml.sax.saxutils import escape
 
 import click
 
@@ -18,6 +20,12 @@ from planemo.io import captured_io_for_xunit
          "automatically diff repositories and be warned when out-of-date.",
     default=None,
 )
+# @click.option(
+    # "--verify",
+    # type=bool,
+    # help="If an sha256sum is available, download the entire file AND validate it.",
+    # default=False,
+# )
 @pass_context
 def cli(ctx, paths, **kwds):
     """Check URLs listed in package files for download.
@@ -55,26 +63,29 @@ def cli(ctx, paths, **kwds):
 
         # Collect data about what happened
         collected_data['results']['total'] += 1
-        xunit_case = {
-            'name': 'check-urls',
-            'classname': realized_repository.name,
-            'time': captured_io["time"],
-            'stdout': captured_io["stdout"],
-            'stderr': captured_io["stderr"],
-        }
-        ret = 0
-        if sum([r[0] for r in results]) > 0:
-            inaccessible = [r for r in results if r[0] > 0]
 
-            xunit_case.update({
-                'errorType': 'InaccessibleUrls',
-                'errorMessage': '%s/%s URLs inaccessible' % (len(inaccessible), len(results)),
-                'errorContent': '\n'.join([r[1] for r in inaccessible]),
-            })
-            ret = 1
+        for res in results:
+            safe_test_name = res[1]
+            if '/' in safe_test_name:
+                safe_test_name = safe_test_name[safe_test_name.rindex('/'):]
+            safe_test_name = re.sub(r'[^A-Za-z0-9_.-]', '', safe_test_name)
 
-        # Append our xunit test case
-        collected_data['tests'].append(xunit_case)
+            xunit_case = {
+                'name': safe_test_name,
+                'classname': realized_repository.name,
+                'time': captured_io["time"],
+                'stdout': captured_io["stdout"],
+                'stderr': captured_io["stderr"],
+            }
+
+            if res[0] > 0:
+                xunit_case.update({
+                    'errorType': 'InaccessibleUrl',
+                    'errorMessage': '%s inaccessible' % escape(res[1]),
+                })
+                ret = 1
+            collected_data['tests'].append(xunit_case)
+
         return ret
 
     exit_code = shed.for_each_repository(ctx, diff, paths, **kwds)
