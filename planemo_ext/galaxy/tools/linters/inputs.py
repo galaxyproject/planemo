@@ -47,7 +47,6 @@ def lint_inputs(tool_xml, lint_ctx):
                 boolean.attrib.get('falsevalue', 'False')
             ]
 
-
         whens = conditional.findall('./when')
         if any(['value' not in when.attrib for when in whens]):
             lint_ctx.error("When without value")
