@@ -26,7 +26,7 @@ def lint_inputs(tool_xml, lint_ctx):
     if num_inputs:
         lint_ctx.info("Found %d input parameters.", num_inputs)
     else:
-        lint_ctx.warn("Found not input parameters.")
+        lint_ctx.warn("Found no input parameters.")
 
 
 def lint_repeats(tool_xml, lint_ctx):
