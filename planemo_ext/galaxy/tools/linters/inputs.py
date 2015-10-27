@@ -28,8 +28,8 @@ def lint_inputs(tool_xml, lint_ctx):
 
     conditional_selects = tool_xml.findall("./inputs//conditional")
     for conditional in conditional_selects:
-        select = conditional.find('./param[@type="select"]')
-        boolean = conditional.find('./param[@type="boolean"]')
+        select = conditional.find('./param[@type="select"]') or []
+        boolean = conditional.find('./param[@type="boolean"]') or []
         # Should conditionals ever not have a select?
         if not len(select) and not len(boolean):
             lint_ctx.warn("Conditional without <param type=\"select\" /> or <param type=\"boolean\" />")
