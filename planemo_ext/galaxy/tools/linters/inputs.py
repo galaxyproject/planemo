@@ -2,6 +2,7 @@ from ..lint_util import is_datasource
 
 
 def lint_inputs(tool_xml, lint_ctx):
+    datasource = is_datasource(tool_xml)
     inputs = tool_xml.findall("./inputs//param")
     num_inputs = 0
     for param in inputs:
@@ -24,10 +25,16 @@ def lint_inputs(tool_xml, lint_ctx):
             if "format" not in param_attrib:
                 lint_ctx.warn("Param input [%s] with no format specified - 'data' format will be assumed.", param_name)
         # TODO: Validate type, much more...
+
+    if datasource:
+        for datasource_tag in ('display', 'uihints'):
+            if not any([param.tag == datasource_tag for param in inputs]):
+                lint_ctx.info("%s tag usually present in data sources" % datasource_tag)
+
     if num_inputs:
         lint_ctx.info("Found %d input parameters.", num_inputs)
     else:
-        if is_datasource(tool_xml):
+        if datasource:
             lint_ctx.info("No input parameters, OK for data sources")
         else:
             lint_ctx.warn("Found no input parameters.")
