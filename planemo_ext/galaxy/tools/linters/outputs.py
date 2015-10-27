@@ -8,6 +8,10 @@ def lint_output(tool_xml, lint_ctx):
         lint_ctx.warn("Tool contains multiple output sections, behavior undefined.")
 
     num_outputs = 0
+    if len(outputs) == 0:
+        lint_ctx.warn("No outputs found")
+        return
+
     for output in list(outputs[0]):
         if output.tag not in ["data", "collection"]:
             lint_ctx.warn("Unknown element found in outputs [%s]" % output.tag)

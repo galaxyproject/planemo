@@ -1,6 +1,8 @@
+from ..lint_util import is_datasource
 
 
 def lint_inputs(tool_xml, lint_ctx):
+    datasource = is_datasource(tool_xml)
     inputs = tool_xml.findall("./inputs//param")
     num_inputs = 0
     for param in inputs:
@@ -23,10 +25,55 @@ def lint_inputs(tool_xml, lint_ctx):
             if "format" not in param_attrib:
                 lint_ctx.warn("Param input [%s] with no format specified - 'data' format will be assumed.", param_name)
         # TODO: Validate type, much more...
+
+    conditional_selects = tool_xml.findall("./inputs//conditional")
+    for conditional in conditional_selects:
+        select = conditional.find('./param[@type="select"]')
+        boolean = conditional.find('./param[@type="boolean"]')
+        # Should conditionals ever not have a select?
+        if not len(select) and not len(boolean):
+            lint_ctx.warn("Conditional without <param type=\"select\" /> or <param type=\"boolean\" />")
+            continue
+
+        if len(select):
+            select_options = select.findall('./option[@value]')
+            if any(['value' not in option.attrib for option in select_options]):
+                lint_ctx.error("Option without value")
+
+            select_option_ids = [option.attrib.get('value', None) for option in select_options]
+        else:
+            select_option_ids = [
+                boolean.attrib.get('truevalue', 'True'),
+                boolean.attrib.get('falsevalue', 'False')
+            ]
+
+
+        whens = conditional.findall('./when')
+        if any(['value' not in when.attrib for when in whens]):
+            lint_ctx.error("When without value")
+
+        when_ids = [when.attrib.get('value', None) for when in whens]
+
+        for select_id in select_option_ids:
+            if select_id not in when_ids:
+                lint_ctx.warn("No <when /> block found for select option '%s'" % select_id)
+
+        for when_id in when_ids:
+            if when_id not in select_option_ids:
+                lint_ctx.warn("No <option /> block found for when block '%s'" % when_id)
+
+    if datasource:
+        for datasource_tag in ('display', 'uihints'):
+            if not any([param.tag == datasource_tag for param in inputs]):
+                lint_ctx.info("%s tag usually present in data sources" % datasource_tag)
+
     if num_inputs:
         lint_ctx.info("Found %d input parameters.", num_inputs)
     else:
-        lint_ctx.warn("Found not input parameters.")
+        if datasource:
+            lint_ctx.info("No input parameters, OK for data sources")
+        else:
+            lint_ctx.warn("Found no input parameters.")
 
 
 def lint_repeats(tool_xml, lint_ctx):
