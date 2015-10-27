@@ -90,6 +90,7 @@ CURRENT_CATEGORIES = [
     "Combinatorial Selections",
     "Computational chemistry",
     "Convert Formats",
+    "Epigenetics",
     "Data Managers",
     "Data Source",
     "Fasta Manipulation",
