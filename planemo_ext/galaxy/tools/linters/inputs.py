@@ -29,15 +29,30 @@ def lint_inputs(tool_xml, lint_ctx):
     conditional_selects = tool_xml.findall("./inputs//conditional")
     for conditional in conditional_selects:
         select = conditional.find('./param[@type="select"]')
+        boolean = conditional.find('./param[@type="boolean"]')
         # Should conditionals ever not have a select?
-        if not len(select):
-            lint_ctx.info("Conditional without <param type=\"select\" />")
+        if not len(select) and not len(boolean):
+            lint_ctx.warn("Conditional without <param type=\"select\" /> or <param type=\"boolean\" />")
             continue
 
-        select_options = select.findall('./option[@value]')
-        select_option_ids = [option.attrib['value'] for option in select_options]
+        if len(select):
+            select_options = select.findall('./option[@value]')
+            if any(['value' not in option.attrib for option in select_options]):
+                lint_ctx.error("Option without value")
+
+            select_option_ids = [option.attrib.get('value', None) for option in select_options]
+        else:
+            select_option_ids = [
+                boolean.attrib.get('truevalue', 'True'),
+                boolean.attrib.get('falsevalue', 'False')
+            ]
+
+
         whens = conditional.findall('./when')
-        when_ids = [when.attrib['value'] for when in whens]
+        if any(['value' not in when.attrib for when in whens]):
+            lint_ctx.error("When without value")
+
+        when_ids = [when.attrib.get('value', None) for when in whens]
 
         for select_id in select_option_ids:
             if select_id not in when_ids:
