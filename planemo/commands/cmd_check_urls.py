@@ -28,7 +28,10 @@ from planemo.io import captured_io_for_xunit
 # )
 @pass_context
 def cli(ctx, paths, **kwds):
-    """Check URLs listed in package files for download.
+    """Check URLs listed in package tool_dependencies.xml files for accessibility.
+
+    This command searches for <package>$URL</package> and download actions
+    which specify URLs. Each of those are accessed individually.
 
     By default, this tool requests the first hundred or so bytes of each listed
     URL and validates that a 200OK was received.
