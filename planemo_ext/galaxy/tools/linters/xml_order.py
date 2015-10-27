@@ -19,7 +19,9 @@ TAG_ORDER = [
 
 DATASOURCE_TAG_ORDER = [
     'description',
+    'macros',
     'command',
+    'configfiles',
     'inputs',
     'request_param_translation',
     'uihints',
