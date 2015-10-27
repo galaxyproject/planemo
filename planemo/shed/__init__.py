@@ -15,6 +15,9 @@ from tempfile import (
 
 from six import iteritems
 import yaml
+from xml.etree import ElementTree as ET
+from planemo.shed2tap.base import BasePackage
+import urllib2
 
 from planemo.io import (
     error,
@@ -189,6 +192,64 @@ def install_arg_lists(ctx, paths, **kwds):
         raise RuntimeError("Problem processing repositories, exiting.")
 
     return install_args_list
+
+
+def check_urls(ctx, realized_repository, **kwds):
+    urls = find_urls_for_repo(ctx, realized_repository, **kwds)
+    retcodes = []
+    for url in urls:
+        retcodes.append(_validate_url(url))
+
+    if all([ret == 0 for ret in retcodes]):
+        info("All URLs ok for %s" % realized_repository.name)
+        return zip(retcodes, urls)
+    else:
+        error("%s out of %s URLs were inaccessible" %
+              (sum(retcodes), len(retcodes)))
+        return zip(retcodes, urls)
+
+
+def _validate_url(url):
+    try:
+        handle = urllib2.urlopen(url)
+        head = handle.read(100)
+        info("URL OK %s" % url)
+        return 0
+    except urllib2.HTTPError, e:
+        error("HTTP Error %s accessing %s" % (e.code, url))
+        return 1
+    except urllib2.URLError, e:
+        error("URL Error %s accessing %s" % (e.code, url))
+        return 1
+
+
+def find_urls_for_repo(ctx, realized_repository, **kwds):
+    """Check urls in a repo
+    """
+    if not realized_repository.is_package:
+        info("%s is not a package, no URLs to check" % realized_repository.name)
+        return []
+
+    dependencies_file = os.path.join(realized_repository.path, 'tool_dependencies.xml')
+    root = ET.parse(dependencies_file).getroot()
+
+    urls = []
+    for packages in root.findall("package"):
+        install_els = packages.findall("install")
+        assert len(install_els) in (0, 1)
+
+        if len(install_els) == 0:
+            continue
+
+        install_el = install_els[0]
+        package = BasePackage(None, packages, install_el, readme=None)
+        for action in package.get_all_actions():
+            urls.extend([dl.url for dl in action.downloads()])
+
+            for subaction in action.actions:
+                if hasattr(subaction, 'packages'):
+                    urls.extend(subaction.packages)
+    return urls
 
 
 def upload_repository(ctx, realized_repository, **kwds):
