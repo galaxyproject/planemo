@@ -1,3 +1,4 @@
+from ..lint_util import is_datasource
 
 
 def lint_inputs(tool_xml, lint_ctx):
@@ -26,7 +27,10 @@ def lint_inputs(tool_xml, lint_ctx):
     if num_inputs:
         lint_ctx.info("Found %d input parameters.", num_inputs)
     else:
-        lint_ctx.warn("Found no input parameters.")
+        if is_datasource(tool_xml):
+            lint_ctx.info("No input parameters, OK for data sources")
+        else:
+            lint_ctx.warn("Found no input parameters.")
 
 
 def lint_repeats(tool_xml, lint_ctx):

@@ -1,14 +1,13 @@
-
+from ..lint_util import is_datasource
 
 # Misspelled so as not be picked up by nosetests.
 def lint_tsts(tool_xml, lint_ctx):
     tests = tool_xml.findall("./tests/test")
+    datasource = is_datasource(tool_xml)
 
-    is_datasource = tool_xml.getroot().attrib.get('tool_type', '') == 'data_source'
-
-    if not tests and not is_datasource:
+    if not tests and not datasource:
         lint_ctx.warn("No tests found, most tools should define test cases.")
-    elif is_datasource:
+    elif datasource:
         lint_ctx.info("No tests found, that should be OK for data_sources.")
 
     num_valid_tests = 0
@@ -29,7 +28,7 @@ def lint_tsts(tool_xml, lint_ctx):
         else:
             num_valid_tests += 1
 
-    if num_valid_tests or is_datasource:
+    if num_valid_tests or datasource:
         lint_ctx.valid("%d test(s) found.", num_valid_tests)
     else:
         lint_ctx.warn("No valid test(s) found.")
