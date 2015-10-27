@@ -163,6 +163,7 @@ def cli(ctx, paths, **kwds):
     if kwds.get('report_xunit', False):
         with open(kwds['report_xunit'], 'w') as handle:
             handle.write(build_report.template_data(
-                collected_data, template_name='xunit.tpl'))
+                collected_data, template_name='xunit.tpl')
+                .encode('ascii', 'xmlcharrefreplace'))
 
     sys.exit(exit_code)
