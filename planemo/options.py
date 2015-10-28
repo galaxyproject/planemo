@@ -99,6 +99,16 @@ def enable_cwl_option():
     )
 
 
+def cwl_conformance_test():
+    return click.option(
+        "--conformance-test",
+        is_flag=True,
+        help=("Generate CWL conformance test object describing job. "
+              "Required by CWL conformance test suite and implemented "
+              "by cwltool reference implementation."),
+    )
+
+
 def brew_dependency_resolution():
     return click.option(
         "--brew_dependency_resolution",
@@ -180,6 +190,19 @@ def required_tool_arg():
         resolve_path=True,
     )
     return click.argument("path", metavar="TOOL_PATH", type=arg_type)
+
+
+def required_job_arg():
+    """ Decorate click method as requiring the path to a single tool.
+    """
+    arg_type = click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    )
+    return click.argument("job_path", metavar="JOB_PATH", type=arg_type)
 
 
 def _optional_tools_default(ctx, param, value):

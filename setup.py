@@ -23,6 +23,7 @@ requirements = [
     'PyGithub',
     'bioblend',
     'glob2',
+    'cwltool',
 ]
 
 # Latest stable bioblend does not support Python 3, setup dev dependency.
@@ -59,6 +60,7 @@ setup(
         'planemo.shed2tap',
         'planemo.xml',
         'planemo_ext',
+        'planemo_ext.cwl2script',
         'planemo_ext.galaxy',
         'planemo_ext.galaxy.eggs',
         'planemo_ext.galaxy.tools',
