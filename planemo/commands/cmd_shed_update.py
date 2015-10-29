@@ -13,13 +13,7 @@ from planemo.io import captured_io_for_xunit
 
 
 @click.command("shed_update")
-@click.option(
-    "--report_xunit",
-    type=click.Path(file_okay=True, resolve_path=True),
-    help="Output update as a faked XUnit report, useful when you want to "
-         "automatically update repositories in bulk.",
-    default=None,
-)
+@options.report_xunit()
 @options.shed_publish_options()
 @options.shed_upload_options()
 @options.shed_skip_upload()

@@ -4,6 +4,7 @@ from planemo.io import info
 from planemo.io import error
 
 import planemo.linters.xsd
+import planemo.linters.urls
 
 from planemo.tools import load_tool_elements_from_path, is_tool_load_error
 from galaxy.tools.lint import lint_xml
@@ -80,11 +81,14 @@ def build_lint_args(ctx, **kwds):
 
 
 def _lint_extra_modules(**kwds):
-    xsd = kwds.get("xsd", False)
-    if xsd:
-        return [planemo.linters.xsd]
-    else:
-        return []
+    linters = []
+    if kwds.get("xsd", False):
+        linters.append(planemo.linters.xsd)
+
+    if kwds.get("urls", False):
+        linters.append(planemo.linters.urls)
+
+    return linters
 
 
 def _is_tool_xml(ctx, tool_path, tool_xml):

@@ -17,7 +17,6 @@ from six import iteritems
 import yaml
 from xml.etree import ElementTree as ET
 from planemo.shed2tap.base import BasePackage
-import urllib2
 
 from planemo.io import (
     error,
@@ -209,30 +208,7 @@ def check_urls(ctx, realized_repository, **kwds):
         return zip(retcodes, urls)
 
 
-def _validate_url(url):
-    try:
-        handle = urllib2.urlopen(url)
-        head = handle.read(100)
-        info("URL OK %s" % url)
-        return 0
-    except urllib2.HTTPError, e:
-        error("HTTP Error %s accessing %s" % (e.code, url))
-        return 1
-    except urllib2.URLError, e:
-        error("URL Error %s accessing %s" % (e.code, url))
-        return 1
-
-
-def find_urls_for_repo(ctx, realized_repository, **kwds):
-    """Check urls in a repo
-    """
-    if not realized_repository.is_package:
-        info("%s is not a package, no URLs to check" % realized_repository.name)
-        return []
-
-    dependencies_file = os.path.join(realized_repository.path, 'tool_dependencies.xml')
-    root = ET.parse(dependencies_file).getroot()
-
+def find_urls_for_xml(root):
     urls = []
     for packages in root.findall("package"):
         install_els = packages.findall("install")
@@ -249,6 +225,14 @@ def find_urls_for_repo(ctx, realized_repository, **kwds):
             for subaction in action.actions:
                 if hasattr(subaction, 'packages'):
                     urls.extend(subaction.packages)
+
+    # http://stackoverflow.com/questions/7676255/find-and-replace-urls-in-a-block-of-te
+    url_regex = re.compile(r"""(?i)\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>\[\]]+|\(([^\s()<>\[\]]+|(\([^\s()<>\[\]]+\)))*\))+(?:\(([^\s()<>\[\]]+|(\([^\s()<>\[\]]+\)))*\)|[^\s`!(){};:'".,<>?\[\]]))""")
+
+    for help_text in root.findall("help"):
+        for url in url_regex.findall(help_text.text):
+            urls.append(url[0])
+
     return urls
 
 
