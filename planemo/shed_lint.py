@@ -86,6 +86,12 @@ def lint_repository(ctx, realized_repository, **kwds):
         lint_readme,
         path,
     )
+    if kwds["urls"]:
+        lint_ctx.lint(
+            "lint_urls",
+            lint_urls,
+            path,
+        )
     if kwds["tools"]:
         for (tool_path, tool_xml) in yield_tool_xmls(ctx, path,
                                                      recursive=True):
