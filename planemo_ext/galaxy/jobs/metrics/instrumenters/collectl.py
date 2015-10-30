@@ -13,10 +13,12 @@ from galaxy.util import directory_hash
 import logging
 log = logging.getLogger( __name__ )
 
-DEFAULT_PROCFILT_ON = "username"  # By default, only grab statistics for user
-                                  # processes (as identifiers by username).
+# By default, only grab statistics for user processes (as identified by
+# username).
+DEFAULT_PROCFILT_ON = "username"
 DEFAULT_SUBSYSTEMS = "process"
-DEFAULT_FLUSH_INTERVAL = "0"  # Set to zero to flush every collection.
+# Set to zero to flush every collection.
+DEFAULT_FLUSH_INTERVAL = "0"
 
 FORMATTED_RESOURCE_TITLES = {
     "PCT": "Percent CPU Usage",
@@ -58,8 +60,9 @@ class CollectlPlugin( InstrumentPlugin ):
     def __init__( self, **kwargs ):
         self.__configure_paths( kwargs )
         self.__configure_subsystems( kwargs )
-        saved_logs_path = kwargs.get( "saved_logs_path", None )
+        saved_logs_path = kwargs.get( "saved_logs_path", "" )
         if "app" in kwargs:
+            log.debug("Found path for saved logs: %s" % saved_logs_path)
             saved_logs_path = kwargs[ "app" ].config.resolve_path( saved_logs_path )
         self.saved_logs_path = saved_logs_path
         self.__configure_collectl_recorder_args( kwargs )
