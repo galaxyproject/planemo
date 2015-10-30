@@ -34,11 +34,12 @@ def cli(ctx, paths, **kwds):
     """Check specified tool(s) for common errors and adherence to best
     practices.
 
-    With the --urls flag, this command searches for <package>$URL</package>
-    and download actions which specify URLs. Each of those are accessed
-    individually. By default, this tool requests the first hundred or so bytes of each listed
-    URL and validates that a 200 OK was received. In tool XML files, the --urls
-    option checks through the help text for mentioned URLs and checks those.
+    With the ``--urls`` flag, this command searches for
+    ``<package>$URL</package>`` and download actions which specify URLs. Each
+    of those are accessed individually. By default, this tool requests the
+    first hundred or so bytes of each listed URL and validates that a 200 OK
+    was received. In tool XML files, the ``--urls`` option checks through the
+    help text for mentioned URLs and checks those.
     """
     lint_args = build_lint_args(ctx, **kwds)
     exit = lint_tools_on_path(
