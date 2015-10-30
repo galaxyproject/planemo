@@ -15,6 +15,7 @@ from tempfile import (
 
 from six import iteritems
 import yaml
+from planemo.shed2tap.base import BasePackage
 
 from planemo.io import (
     error,
@@ -120,6 +121,10 @@ CURRENT_CATEGORIES = [
     "Visualization",
     "Web Services",
 ]
+# http://stackoverflow.com/questions/7676255/find-and-replace-urls-in-a-block-of-te
+HTTP_REGEX_PATTERN = re.compile(
+    r"""(?i)\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>\[\]]+|\(([^\s()<>\[\]]+|(\([^\s()<>\[\]]+\)))*\))+(?:\(([^\s()<>\[\]]+|(\([^\s()<>\[\]]+\)))*\)|[^\s`!(){};:'".,<>?\[\]]))"""  # noqa
+)
 
 
 def construct_yaml_str(self, node):
@@ -190,6 +195,31 @@ def install_arg_lists(ctx, paths, **kwds):
         raise RuntimeError("Problem processing repositories, exiting.")
 
     return install_args_list
+
+
+def find_urls_for_xml(root):
+    urls = []
+    for packages in root.findall("package"):
+        install_els = packages.findall("install")
+        assert len(install_els) in (0, 1)
+
+        if len(install_els) == 0:
+            continue
+
+        install_el = install_els[0]
+        package = BasePackage(None, packages, install_el, readme=None)
+        for action in package.get_all_actions():
+            urls.extend([dl.url for dl in action.downloads()])
+
+            for subaction in action.actions:
+                if hasattr(subaction, 'packages'):
+                    urls.extend(subaction.packages)
+
+    for help_text in root.findall("help"):
+        for url in HTTP_REGEX_PATTERN.findall(help_text.text):
+            urls.append(url[0])
+
+    return urls
 
 
 def upload_repository(ctx, realized_repository, **kwds):

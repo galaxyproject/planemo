@@ -35,13 +35,7 @@ from planemo.io import captured_io_for_xunit
     help="Do not attempt smart diff of XML to filter out attributes "
          "populated by the Tool Shed.",
 )
-@click.option(
-    "--report_xunit",
-    type=click.Path(file_okay=True, resolve_path=True),
-    help="Output diff as a faked XUnit report, useful when you want to "
-         "automatically diff repositories and be warned when out-of-date.",
-    default=None,
-)
+@options.report_xunit()
 @pass_context
 def cli(ctx, paths, **kwds):
     """Produce diff between local repository and Tool Shed contents.

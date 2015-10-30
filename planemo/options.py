@@ -540,6 +540,15 @@ def report_level_option():
     )
 
 
+def report_xunit():
+    return click.option(
+        "--report_xunit",
+        type=click.Path(file_okay=True, resolve_path=True),
+        help="Output an XUnit report, useful for CI testing",
+        default=None,
+    )
+
+
 def skip_option():
     return click.option(
         "-s",

@@ -1,6 +1,8 @@
 import os
 
+import urllib2
 from planemo.xml import validation
+from planemo.shed import find_urls_for_xml
 
 
 def lint_xsd(lint_ctx, schema_path, path):
@@ -13,3 +15,20 @@ def lint_xsd(lint_ctx, schema_path, path):
         lint_ctx.error(msg)
     else:
         lint_ctx.info("%s found and appears to be valid XML" % name)
+
+
+def lint_urls(root, lint_ctx):
+    urls = find_urls_for_xml(root)
+
+    def validate_url(url, lint_ctx):
+        try:
+            handle = urllib2.urlopen(url)
+            handle.read(100)
+            lint_ctx.info("URL OK %s" % url)
+        except urllib2.HTTPError as e:
+            lint_ctx.error("HTTP Error %s accessing %s" % (e.code, url))
+        except urllib2.URLError as e:
+            lint_ctx.error("URL Error %s accessing %s" % (str(e), url))
+
+    for url in urls:
+        validate_url(url, lint_ctx)
