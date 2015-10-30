@@ -50,10 +50,9 @@ def cli(ctx, paths, **kwds):
 
     # TODO: rearchitect XUnit.
     # if kwds['urls']:
-    # collected_data, url_exit_code = check_urls(ctx, paths, **kwds)
-    # if kwds.get('report_xunit', False):
-    # with open(kwds['report_xunit'], 'w') as handle:
-    # handle.write(build_report.template_data(
-    # collected_data, template_name='xunit.tpl'))
-
+    #         collected_data, url_exit_code = check_urls(ctx, paths, **kwds)
+    #         if kwds.get('report_xunit', False):
+    #             with open(kwds['report_xunit'], 'w') as handle:
+    #                 handle.write(build_report.template_data(
+    #                     collected_data, template_name='xunit.tpl'))
     sys.exit(exit)
