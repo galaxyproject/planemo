@@ -1,8 +1,5 @@
 """ Tool linting module that lints Galaxy tools for their URLs
 """
-import copy
-import os
-import tempfile
 
 import planemo.lint
 

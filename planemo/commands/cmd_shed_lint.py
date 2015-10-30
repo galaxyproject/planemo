@@ -32,14 +32,25 @@ from planemo import shed_lint
     help="Check validity of URLs in XML files",
 )
 # @click.option(
-    # "--verify",
-    # is_flag=True,
-    # help="If an sha256sum is available, download the entire file AND validate it.",
-    # default=False,
+#     "--verify",
+#     is_flag=True,
+#     help="If an sha256sum is available, download the entire file AND validate it.",
+#     default=False,
 # )
 @pass_context
 def cli(ctx, paths, **kwds):
     """Check a Tool Shed repository for common problems.
+
+
+    With the ``--tools`` flag, this command lints actual Galaxy tools
+    in addition to tool shed artifacts.
+
+    With the ``--urls`` flag, this command searches for
+    ``<package>$URL</package>`` and download actions which specify URLs. Each
+    of those are accessed individually. By default, this tool requests the
+    first hundred or so bytes of each listed URL and validates that a 200 OK
+    was received. In tool XML files, the ``--urls`` option checks through the
+    help text for mentioned URLs and checks those.
     """
     def lint(realized_repository):
         return shed_lint.lint_repository(ctx, realized_repository, **kwds)

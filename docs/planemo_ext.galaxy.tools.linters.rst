@@ -76,22 +76,6 @@ planemo_ext.galaxy.tools.linters.xml_order module
     :undoc-members:
     :show-inheritance:
 
-planemo_ext.galaxy.tools.linters.xsd module
--------------------------------------------
-
-.. automodule:: planemo_ext.galaxy.tools.linters.xsd
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-planemo_ext.galaxy.tools.linters.xsd_util module
-------------------------------------------------
-
-.. automodule:: planemo_ext.galaxy.tools.linters.xsd_util
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 
 Module contents
 ---------------

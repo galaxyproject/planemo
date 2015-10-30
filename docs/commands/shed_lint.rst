@@ -14,6 +14,17 @@ This section is auto-generated from the help text for the planemo command
 
 Check a Tool Shed repository for common problems.
 
+
+With the ``--tools`` flag, this command lints actual Galaxy tools
+in addition to tool shed artifacts.
+
+With the ``--urls`` flag, this command searches for
+``<package>$URL</package>`` and download actions which specify URLs. Each
+of those are accessed individually. By default, this tool requests the
+first hundred or so bytes of each listed URL and validates that a 200 OK
+was received. In tool XML files, the ``--urls`` option checks through the
+help text for mentioned URLs and checks those.
+
 **Options**::
 
 
@@ -32,5 +43,6 @@ Check a Tool Shed repository for common problems.
       --ensure_metadata               Ensure .shed.yml files contain enough
                                       metadata for each repository to allow
                                       automated creation and/or updates.
+      --urls                          Check validity of URLs in XML files
       --help                          Show this message and exit.
     

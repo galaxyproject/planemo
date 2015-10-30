@@ -20,6 +20,14 @@ planemo_ext.galaxy.tools.lint module
     :undoc-members:
     :show-inheritance:
 
+planemo_ext.galaxy.tools.lint_util module
+-----------------------------------------
+
+.. automodule:: planemo_ext.galaxy.tools.lint_util
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo_ext.galaxy.tools.loader module
 --------------------------------------
 

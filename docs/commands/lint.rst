@@ -19,6 +19,8 @@ practices.
 
 
       --report_level [all|warn|error]
+      --report_xunit PATH             Output an XUnit report, useful for CI
+                                      testing
       --fail_level [warn|error]
       -s, --skip TEXT                 Comma-separated list of lint tests to skip
                                       (e.g send .--skip 'citations,xml_order' to
@@ -29,5 +31,6 @@ practices.
                                       lxml installed).
       -r, --recursive                 Recursively perform command for
                                       subdirectories.
+      --urls                          Check validity of URLs in XML files
       --help                          Show this message and exit.
     

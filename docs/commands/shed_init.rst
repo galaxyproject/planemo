@@ -31,7 +31,7 @@ in a Galaxy Tool Shed.
                                       .shed.yml.
       --homepage_url TEXT             Specify repository homepage_url for
                                       .shed.yml.
-      --category [Assembly|ChIP-seq|Combinatorial Selections|Computational chemistry|Convert Formats|Data Managers|Data Source|Fasta Manipulation|Fastq Manipulation|Genome-Wide Association Study|Genomic Interval Operations|Graphics|Imaging|Metabolomics|Metagenomics|Micro-array Analysis|Next Gen Mappers|NLP|Ontology Manipulation|Phylogenetics|Proteomics|RNA|SAM|Sequence Analysis|Statistics|Systems Biology|Text Manipulation|Tool Dependency Packages|Tool Generators|Transcriptomics|Variant Analysis|Visualization|Web Services]
+      --category [Assembly|ChIP-seq|Combinatorial Selections|Computational chemistry|Convert Formats|Epigenetics|Data Managers|Data Source|Fasta Manipulation|Fastq Manipulation|Genome-Wide Association Study|Genomic Interval Operations|Graphics|Imaging|Metabolomics|Metagenomics|Micro-array Analysis|Next Gen Mappers|NLP|Ontology Manipulation|Phylogenetics|Proteomics|RNA|SAM|Sequence Analysis|Statistics|Systems Biology|Text Manipulation|Tool Dependency Packages|Tool Generators|Transcriptomics|Variant Analysis|Visualization|Web Services]
                                       Specify repository category for .shed.yml
                                       (may specify multiple).
       --owner TEXT                    Tool Shed repository owner (username).

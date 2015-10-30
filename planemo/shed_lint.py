@@ -16,6 +16,7 @@ from planemo.tool_lint import (
     yield_tool_xmls,
     handle_tool_load_error,
 )
+from planemo.lint import lint_urls
 from planemo.shed2tap import base
 from planemo.xml import XSDS_PATH
 

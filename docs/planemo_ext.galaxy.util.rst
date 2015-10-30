@@ -52,6 +52,14 @@ planemo_ext.galaxy.util.submodules module
     :undoc-members:
     :show-inheritance:
 
+planemo_ext.galaxy.util.xml_macros module
+-----------------------------------------
+
+.. automodule:: planemo_ext.galaxy.util.xml_macros
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

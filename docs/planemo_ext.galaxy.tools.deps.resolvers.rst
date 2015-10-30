@@ -52,6 +52,14 @@ planemo_ext.galaxy.tools.deps.resolvers.tool_shed_packages module
     :undoc-members:
     :show-inheritance:
 
+planemo_ext.galaxy.tools.deps.resolvers.unlinked_tool_shed_packages module
+--------------------------------------------------------------------------
+
+.. automodule:: planemo_ext.galaxy.tools.deps.resolvers.unlinked_tool_shed_packages
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
