@@ -25,6 +25,18 @@ from planemo import shed_lint
     help=("Ensure .shed.yml files contain enough metadata for each repository "
           "to allow automated creation and/or updates.")
 )
+@click.option(
+    "--urls",
+    is_flag=True,
+    default=False,
+    help="Check validity of URLs in XML files",
+)
+# @click.option(
+    # "--verify",
+    # is_flag=True,
+    # help="If an sha256sum is available, download the entire file AND validate it.",
+    # default=False,
+# )
 @pass_context
 def cli(ctx, paths, **kwds):
     """Check a Tool Shed repository for common problems.
