@@ -15,7 +15,6 @@ from tempfile import (
 
 from six import iteritems
 import yaml
-from xml.etree import ElementTree as ET
 from planemo.shed2tap.base import BasePackage
 
 from planemo.io import (
@@ -121,6 +120,10 @@ CURRENT_CATEGORIES = [
     "Visualization",
     "Web Services",
 ]
+# http://stackoverflow.com/questions/7676255/find-and-replace-urls-in-a-block-of-te
+HTTP_REGEX_PATTERN = re.compile(
+    r"""(?i)\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>\[\]]+|\(([^\s()<>\[\]]+|(\([^\s()<>\[\]]+\)))*\))+(?:\(([^\s()<>\[\]]+|(\([^\s()<>\[\]]+\)))*\)|[^\s`!(){};:'".,<>?\[\]]))"""  # noqa
+)
 
 
 def construct_yaml_str(self, node):
@@ -193,21 +196,6 @@ def install_arg_lists(ctx, paths, **kwds):
     return install_args_list
 
 
-def check_urls(ctx, realized_repository, **kwds):
-    urls = find_urls_for_repo(ctx, realized_repository, **kwds)
-    retcodes = []
-    for url in urls:
-        retcodes.append(_validate_url(url))
-
-    if all([ret == 0 for ret in retcodes]):
-        info("All URLs ok for %s" % realized_repository.name)
-        return zip(retcodes, urls)
-    else:
-        error("%s out of %s URLs were inaccessible" %
-              (sum(retcodes), len(retcodes)))
-        return zip(retcodes, urls)
-
-
 def find_urls_for_xml(root):
     urls = []
     for packages in root.findall("package"):
@@ -226,11 +214,8 @@ def find_urls_for_xml(root):
                 if hasattr(subaction, 'packages'):
                     urls.extend(subaction.packages)
 
-    # http://stackoverflow.com/questions/7676255/find-and-replace-urls-in-a-block-of-te
-    url_regex = re.compile(r"""(?i)\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>\[\]]+|\(([^\s()<>\[\]]+|(\([^\s()<>\[\]]+\)))*\))+(?:\(([^\s()<>\[\]]+|(\([^\s()<>\[\]]+\)))*\)|[^\s`!(){};:'".,<>?\[\]]))""")
-
     for help_text in root.findall("help"):
-        for url in url_regex.findall(help_text.text):
+        for url in HTTP_REGEX_PATTERN.findall(help_text.text):
             urls.append(url[0])
 
     return urls

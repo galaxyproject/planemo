@@ -24,10 +24,10 @@ from planemo.tool_lint import lint_tools_on_path
     help="Check validity of URLs in XML files",
 )
 # @click.option(
-    # "--verify",
-    # is_flag=True,
-    # help="If an sha256sum is available, download the entire file AND validate it.",
-    # default=False,
+# "--verify",
+# is_flag=True,
+# help="If an sha256sum is available, download the entire file AND validate it.",
+# default=False,
 # )
 @pass_context
 def cli(ctx, paths, **kwds):
@@ -50,11 +50,10 @@ def cli(ctx, paths, **kwds):
 
     # TODO: rearchitect XUnit.
     # if kwds['urls']:
-        # collected_data, url_exit_code = check_urls(ctx, paths, **kwds)
-        # if kwds.get('report_xunit', False):
-            # with open(kwds['report_xunit'], 'w') as handle:
-                # handle.write(build_report.template_data(
-                    # collected_data, template_name='xunit.tpl'))
-
+    # collected_data, url_exit_code = check_urls(ctx, paths, **kwds)
+    # if kwds.get('report_xunit', False):
+    # with open(kwds['report_xunit'], 'w') as handle:
+    # handle.write(build_report.template_data(
+    # collected_data, template_name='xunit.tpl'))
 
     sys.exit(exit)

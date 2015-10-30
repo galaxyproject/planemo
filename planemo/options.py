@@ -549,7 +549,6 @@ def report_xunit():
     )
 
 
-
 def skip_option():
     return click.option(
         "-s",
