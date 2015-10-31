@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import os
 import yaml
 from galaxy.tools.lint import LintContext
@@ -19,6 +20,7 @@ from planemo.tool_lint import (
 from planemo.lint import lint_urls
 from planemo.shed2tap import base
 from planemo.xml import XSDS_PATH
+import xml.etree.ElementTree as ET
 
 
 from planemo.io import info
@@ -90,7 +92,7 @@ def lint_repository(ctx, realized_repository, **kwds):
     if kwds["urls"]:
         lint_ctx.lint(
             "lint_urls",
-            lint_urls,
+            lint_tool_dependencies_urls,
             path,
         )
     if kwds["tools"]:
@@ -176,6 +178,16 @@ def lint_readme(path, lint_ctx):
         lint_ctx.info("README found containing valid reStructuredText.")
     else:
         lint_ctx.info("README found containing plain text.")
+
+
+def lint_tool_dependencies_urls(path, lint_ctx):
+    tool_dependencies = os.path.join(path, "tool_dependencies.xml")
+    if not os.path.exists(tool_dependencies):
+        lint_ctx.info("No tool_dependencies.xml, skipping.")
+        return
+
+    root = ET.parse(tool_dependencies).getroot()
+    lint_urls(root, lint_ctx)
 
 
 def lint_tool_dependencies_xsd(path, lint_ctx):
