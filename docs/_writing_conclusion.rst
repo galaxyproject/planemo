@@ -1,5 +1,5 @@
 
-More information
+More Information
 ======================
 
  * `Galaxy's Tool XML Syntax <https://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax>`_
