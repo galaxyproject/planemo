@@ -13,7 +13,7 @@
               #if $mask_regions
               -M $mask_regions
               #end if
-              #if $sample
+              #if $sample.sample
               -f $sample.fraction
               -s $sample.seed
               #end if
@@ -30,7 +30,7 @@
                value="255" min="0" max="255" help="(-X)" />
         <param name="mask_regions" type="data" label="Mask regions in BED" 
                format="bed" help="(-M)" optional="true" />
-        <conditional>
+        <conditional name="sample">
             <param name="sample" type="boolean" label="Sample fraction of sequences" />
             <when value="true">
                 <param name="fraction" label="Fraction" type="float" value="1.0"

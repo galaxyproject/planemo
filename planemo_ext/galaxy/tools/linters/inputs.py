@@ -26,32 +26,41 @@ def lint_inputs(tool_xml, lint_ctx):
                 lint_ctx.warn("Param input [%s] with no format specified - 'data' format will be assumed.", param_name)
         # TODO: Validate type, much more...
 
+    def find_list(elem, expression):
+        matching = elem.findall(expression)
+        if matching is None:
+            return []
+        else:
+            return matching
+
     conditional_selects = tool_xml.findall("./inputs//conditional")
     for conditional in conditional_selects:
-        select = conditional.find('./param[@type="select"]') or []
-        boolean = conditional.find('./param[@type="boolean"]') or []
+        booleans = find_list(conditional, "./param[@type='boolean']")
+        selects = find_list(conditional, "./param[@type='select']")
         # Should conditionals ever not have a select?
-        if not len(select) and not len(boolean):
+        if not len(selects) and not len(booleans):
             lint_ctx.warn("Conditional without <param type=\"select\" /> or <param type=\"boolean\" />")
             continue
 
-        if len(select):
+        for select in selects:
             select_options = select.findall('./option[@value]')
             if any(['value' not in option.attrib for option in select_options]):
                 lint_ctx.error("Option without value")
 
             select_option_ids = [option.attrib.get('value', None) for option in select_options]
-        else:
+
+        for boolean in booleans:
             select_option_ids = [
-                boolean.attrib.get('truevalue', 'True'),
-                boolean.attrib.get('falsevalue', 'False')
+                boolean.attrib.get('truevalue', 'true'),
+                boolean.attrib.get('falsevalue', 'false')
             ]
 
         whens = conditional.findall('./when')
         if any(['value' not in when.attrib for when in whens]):
             lint_ctx.error("When without value")
 
-        when_ids = [when.attrib.get('value', None) for when in whens]
+        when_ids = [w.attrib.get('value', None) for w in whens]
+        when_ids = [i.lower() if i in ["True", "False"] else i for i in when_ids]
 
         for select_id in select_option_ids:
             if select_id not in when_ids:
