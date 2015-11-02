@@ -72,10 +72,13 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
 {%- if macros %}
     <expand macro="citations" />
 {%- else %}
-{%- if doi %}
+{%- if doi or bibtex_citations %}
     <citations>
 {%- for single_doi in doi %}
         <citation type="doi">{{ single_doi }}</citation>
+{%- endfor %}
+{%- for bibtex_citation in bibtex_citations %}
+        <citation type="bibtex">{{ bibtex_citation }}</citation>
 {%- endfor %}
     </citations>
 {%- endif %}
