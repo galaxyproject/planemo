@@ -140,12 +140,13 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
         preseeded_database = True
         master_api_key = kwds.get("master_api_key", "test_key")
         dependency_dir = os.path.join(config_directory, "deps")
-
+        galaxy_sqlite_database = kwds.get("galaxy_sqlite_database", None)
         try:
             _download_database_template(
                 galaxy_root,
                 database_location,
-                latest=latest_galaxy
+                latest=latest_galaxy,
+                galaxy_sqlite_database=galaxy_sqlite_database,
             )
         except Exception as e:
             print(e)
@@ -358,7 +359,16 @@ class GalaxyConfig(object):
         shutil.rmtree(self.config_directory)
 
 
-def _download_database_template(galaxy_root, database_location, latest=False):
+def _download_database_template(
+    galaxy_root,
+    database_location,
+    latest=False,
+    galaxy_sqlite_database=None
+):
+    if galaxy_sqlite_database is not None:
+        shutil.copyfile(galaxy_sqlite_database, database_location)
+        return True
+
     if latest:
         template_url = DOWNLOADS_URL + urlopen(LATEST_URL).read()
         urlretrieve(template_url, database_location)
