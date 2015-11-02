@@ -52,6 +52,8 @@ def _init_command(test_case=True, help_text=True, doi=True, macros=False):
         command.extend(["--help_text", "The help text."])
     if doi:
         command.extend(["--doi", "10.1101/014043"])
+        command.extend(["--cite_url", "https://github.com/ekg/vcflib"])
+        command.extend(["--cite_url", "http://wiki.hpc.ufl.edu/doc/Seqtk"])
     if macros:
         command.append("--macros")
     return command

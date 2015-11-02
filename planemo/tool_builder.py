@@ -105,6 +105,9 @@ MACROS_TEMPLATE = """<macros>
 {%- for single_doi in doi %}
             <citation type="doi">{{ single_doi }}</citation>
 {%- endfor %}
+{%- for bibtex_citation in bibtex_citations %}
+            <citation type="bibtex">{{ bibtex_citation }}</citation>
+{%- endfor %}
             <yield />
         </citations>
     </xml>
@@ -125,6 +128,12 @@ def build(**kwds):
     command = _find_command(kwds)
 
     _handle_help(kwds)
+
+    # process raw cite urls
+    cite_urls = kwds.get("cite_url", [])
+    del kwds["cite_url"]
+    citations = map(UrlCitation, cite_urls)
+    kwds["bibtex_citations"] = citations
 
     # process raw inputs
     inputs = kwds.get("input", [])
@@ -272,6 +281,41 @@ def _find_command(kwds):
         if command:
             del kwds["example_command"]
     return command
+
+
+class UrlCitation(object):
+
+    def __init__(self, url):
+        self.url = url
+
+    def __str__(self):
+        if "github.com" in self.url:
+            return self._github_str()
+        else:
+            return self._url_str()
+
+    def _github_str(self):
+        url = self.url
+        title = url.split("/")[-1]
+        return '''
+@misc{github%s,
+  author = {LastTODO, FirstTODO},
+  year = {TODO},
+  title = {%s},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  url = {%s},
+}''' % (title, title, url)
+
+    def _url_str(self):
+        url = self.url
+        return '''
+@misc{renameTODO,
+  author = {LastTODO, FirstTODO},
+  year = {TODO},
+  title = {TODO},
+  url = {%s},
+}''' % (url)
 
 
 class ToolDescription(object):

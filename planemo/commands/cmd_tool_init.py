@@ -166,6 +166,14 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
           "for Galxy users (e.g. 10.1101/014043).")
 )
 @click.option(
+    "--cite_url",
+    type=click.STRING,
+    default=None,
+    multiple=True,
+    prompt=False,
+    help=("Supply a URL for citation.")
+)
+@click.option(
     "--test_case",
     is_flag=True,
     default=None,
