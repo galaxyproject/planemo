@@ -168,11 +168,13 @@ def build(**kwds):
     for i, output_file in enumerate(example_outputs or []):
         name = "output%d" % (i + 1)
         from_path = output_file
+        use_from_path = True
         if output_file in command:
             # Actually found the file in the command, assume it can
             # be specified directly and skip from_work_dir.
-            from_path = None
-        output = Output(name=name, from_path=from_path)
+            use_from_path = False
+        output = Output(name=name, from_path=from_path,
+                        use_from_path=use_from_path)
         outputs.append(output)
         test_case.outputs.append((name, output_file))
         command = _replace_file_in_command(command, output_file, output.name)
@@ -349,7 +351,7 @@ class Input(object):
 
 class Output(object):
 
-    def __init__(self, from_path=None, name=None):
+    def __init__(self, from_path=None, name=None, use_from_path=False):
         if from_path:
             parts = from_path.split(".")
             name = name or parts[0]
@@ -363,7 +365,10 @@ class Output(object):
 
         self.name = name
         self.datatype = datatype
-        self.from_path = from_path
+        if use_from_path:
+            self.from_path = from_path
+        else:
+            self.from_path = None
 
     def __str__(self):
         if self.from_path:
