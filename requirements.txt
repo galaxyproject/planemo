@@ -1,7 +1,8 @@
 Click
 six
 pyyaml
-bioblend>=0.5.3
+bioblend
 docutils
 jinja2
 glob2
+cwltool
