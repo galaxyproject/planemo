@@ -44,7 +44,7 @@
                     <param name="sample" type="boolean" label="Sample fraction of sequences" />
                     <when value="true">
                         <param name="fraction" label="Fraction" type="float" value="1.0"
-                               help="(-f)"
+                               help="(-f)" />
                         <param name="seed" label="Random seed" type="integer" value="11"
                                help="(-s)" />
                     </when>
