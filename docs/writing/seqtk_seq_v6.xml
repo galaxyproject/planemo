@@ -1,10 +1,10 @@
 <tool id="seqtk_seq" name="Convert to FASTA (seqtk)" version="0.1.0">
-    <stdio>
-        <exit_code range="1:" />
-    </stdio>
     <requirements>
         <requirement type="package" version="1.0-r68">seqtk</requirement>
     </requirements>
+    <stdio>
+        <exit_code range="1:" />
+    </stdio>
     <command><![CDATA[
         seqtk seq
               $shift_quality
@@ -19,7 +19,7 @@
               -s $settings.sample.seed
               #end if
               #end if
-              -a $input1 > $output1
+              -a "$input1" > "$output1"
     ]]></command>
     <inputs>
         <param type="data" name="input1" format="fastq" />
@@ -84,7 +84,19 @@ Options: -q INT    mask bases with quality lower than INT [0]
          -1        output the 2n-1 reads only
          -2        output the 2n reads only
          -V        shift quality by '(-Q) - 33'
+         -U        convert all bases to uppercases
 
 
     ]]></help>
+    <citations>
+        <citation type="bibtex">
+@misc{githubseqtk,
+  author = {LastTODO, FirstTODO},
+  year = {TODO},
+  title = {seqtk},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  url = {https://github.com/lh3/seqtk},
+}</citation>
+    </citations>
 </tool>

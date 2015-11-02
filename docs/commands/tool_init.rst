@@ -20,6 +20,7 @@ Generate a tool outline from supplied arguments.
       --macros                  Generate a macros.xml for reuse across many tools.
       --test_case               For use with --example_commmand, generate a tool
                                 test case from the supplied example.
+      --cite_url TEXT           Supply a URL for citation.
       --doi TEXT                Supply a DOI (http://www.doi.org/) easing citation
                                 of the tool for Galxy users (e.g. 10.1101/014043).
       --container TEXT          Add a Docker image identifier for this tool.

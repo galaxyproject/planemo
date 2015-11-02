@@ -6,6 +6,7 @@ Subpackages
 
 .. toctree::
 
+    planemo_ext.cwl2script
     planemo_ext.galaxy
 
 Module contents

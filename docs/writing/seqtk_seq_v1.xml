@@ -1,9 +1,9 @@
 <tool id="seqtk_seq" name="Convert to FASTA (seqtk)" version="0.1.0">
+    <requirements>
+    </requirements>
     <stdio>
         <exit_code range="1:" />
     </stdio>
-    <requirements>
-    </requirements>
     <command><![CDATA[
         TODO: Fill in command template.
     ]]></command>

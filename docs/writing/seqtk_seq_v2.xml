@@ -1,12 +1,12 @@
 <tool id="seqtk_seq" name="Convert to FASTA (seqtk)" version="0.1.0">
-    <stdio>
-        <exit_code range="1:" />
-    </stdio>
     <requirements>
         <requirement type="package" version="1.0-r68">seqtk</requirement>
     </requirements>
+    <stdio>
+        <exit_code range="1:" />
+    </stdio>
     <command><![CDATA[
-        seqtk seq -a $input1 > $output1
+        seqtk seq -a "$input1" > "$output1"
     ]]></command>
     <inputs>
         <param type="data" name="input1" format="fastq" />

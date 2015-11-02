@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
 
     planemo.commands
+    planemo.cwl
     planemo.galaxy_test
     planemo.linters
     planemo.reports

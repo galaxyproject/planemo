@@ -98,6 +98,7 @@ definitions for the input and output as well as an actual command template.
 
 .. literalinclude:: writing/seqtk_seq_v2.xml
    :language: xml
+   :emphasize-lines: 8-16
 
 As shown above the command ``seqtk seq`` generates a help message for the
 ``seq`` command. ``tool_init`` can take that help message and stick it right
@@ -116,10 +117,12 @@ away by the tool - but they can be a good place to start.
                         --example_input 2.fastq \
                         --example_output 2.fasta \
                         --test_case \
+                        --cite_url 'https://github.com/lh3/seqtk' \
                         --help_from_command 'seqtk seq'
 
 .. literalinclude:: writing/seqtk_seq_v3.xml
    :language: xml
+   :emphasize-lines: 17-58
 
 At this point we have a fairly a functional tool with test and help. This was
 a pretty simple example - usually you will need to put more work into the tool
@@ -133,30 +136,28 @@ with best practices.
 ::
 
     $ planemo l
-    Linting tool /home/john/test/seqtk_seq.xml
-    Applying linter lint_top_level... CHECK
+    Linting tool /home/john/workspace/planemo/docs/notebooks/seqtk_seq.xml
+    Applying linter top_level... CHECK
     .. CHECK: Tool defines a version.
     .. CHECK: Tool defines a name.
     .. CHECK: Tool defines an id name.
-    Applying linter lint_tests... CHECK
+    Applying linter tests... CHECK
     .. CHECK: 1 test(s) found.
-    Applying linter lint_output... CHECK
-    .. INFO: 1 output datasets found.
-    Applying linter lint_inputs... CHECK
+    Applying linter output... CHECK
+    .. INFO: 1 outputs found.
+    Applying linter inputs... CHECK
     .. INFO: Found 1 input parameters.
-    Applying linter lint_help... CHECK
+    Applying linter help... CHECK
     .. CHECK: Tool contains help section.
     .. CHECK: Help contains valid reStructuredText.
-    Applying linter lint_command... CHECK
+    Applying linter command... CHECK
     .. INFO: Tool contains a command.
-    Applying linter lint_citations... WARNING
-    .. WARNING: No citations found, consider adding citations to your tool.
+    Applying linter citations... CHECK
+    .. CHECK: Found 1 likely valid citations.
 
 By default ``lint`` will find all the tools in your current working directory,
 but we could have specified a particular tool with ``planemo lint
-seqtk_seq.xml``. The only warning we received here is telling us that the tool
-lacks citation. Seqtk_ is unpublished, but if there was a paper to cite we
-could have done so by passing in the DOI_ (e.g. ``--doi '10.1101/010538'``).
+seqtk_seq.xml``.
 
 Next we can run our tool's functional test with the ``test`` (or just ``t``)
 command. This will print a lot of output but should ultimately reveal our one

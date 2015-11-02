@@ -48,6 +48,8 @@ This command requires the target to be version 15.07 or newer.
                                       mappings defined ~/.planemo.yml.
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
+      --galaxy_sqlite_database DIRECTORY
+                                      Preseeded Galaxy sqlite database to target.
       --install_galaxy                Download and configure a disposable copy of
                                       Galaxy from github.
       --no_cache_galaxy               Skip caching of Galaxy source and

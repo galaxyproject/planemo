@@ -5,7 +5,7 @@ from planemo import templates
 TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
 {%- if description %}
     <description>{{ description }}</description>
-{% endif %}
+{%- endif %}
 {%- if macros %}
     <macros>
         <import>macros.xml</import>
@@ -14,7 +14,7 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
     <expand macro="stdio" />
 {%- if version_command %}
     <expand macro="version_command" />
-{% endif %}
+{%- endif %}
 {%- else %}
     <requirements>
 {%- for requirement in requirements %}
@@ -30,7 +30,7 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
 {%- if version_command %}
     <version_command>{{ version_command }}</version_command>
 {%- endif %}
-{% endif %}
+{%- endif %}
     <command><![CDATA[
 {%- if command %}
         {{ command }}

@@ -1,38 +1,22 @@
 
-``serve`` command
+``cwl_run`` command
 ======================================
 
 This section is auto-generated from the help text for the planemo command
-``serve``. This help message can be generated with ``planemo serve
+``cwl_run``. This help message can be generated with ``planemo cwl_run
 --help``.
 
 **Usage**::
 
-    planemo serve [OPTIONS] TOOL_PATH
+    planemo cwl_run [OPTIONS] TOOL_PATH JOB_PATH
 
 **Help**
 
-Launch a Galaxy instance with the specified tool in the tool panel.
+Planemo command for running CWL tools and jobs.
 
-The Galaxy tool panel will include just the referenced tool or tools (by
-default all the tools in the current working directory) and the upload
-tool.
+::
 
-planemo will search parent directories to see if any is a Galaxy instance
-- but one can pick the Galaxy instance to use with the ``--galaxy_root``
-option or force planemo to download a disposable instance with the
-``--install_galaxy`` flag.
-
-``planemo`` will run the Galaxy instance in an existing virtualenv if one
-exists in a ``.venv`` directory in the specified ``--galaxy_root``.
-Otherwise, the Galaxy instance will run in a clean virtualenv created in
-``/tmp``.
-
-``planemo`` uses temporarily generated config files and environment
-variables to attempt to shield this execution of Galaxy from manually
-launched runs against that same Galaxy root - but this may not be bullet
-proof yet so please careful and do not try this against production Galaxy
-instances.
+    % planemo cwl_run cat1-tool.cwl cat-job.json
 
 **Options**::
 
@@ -70,15 +54,15 @@ instances.
                                       dependency resolution.
       --shed_dependency_resolution    Configure Galaxy to use brewed Tool Shed
                                       dependency resolution.
-      --cwl                           Configure Galaxy for use with CWL tool.
-                                      (this option is experimental and will be
-                                      replaced when and if CWL support is merged
-                                      into Galaxy.
       --cwl_galaxy_root DIRECTORY     Root of development galaxy directory to
                                       execute command with (must be branch of
                                       Galaxy with CWL support, this option is
                                       experimental and will be replaced with
                                       --galaxy_root when and if CWL support is
                                       merged into Galaxy.
+      --conformance-test              Generate CWL conformance test object
+                                      describing job. Required by CWL conformance
+                                      test suite and implemented by cwltool
+                                      reference implementation.
       --help                          Show this message and exit.
     
