@@ -26,10 +26,9 @@ requirements = [
     'cwltool',
 ]
 
-# Latest stable bioblend does not support Python 3, setup dev dependency.
-dependency_links = []
-if sys.version_info[0] != 2:
-    dependency_links = ['git://github.com/galaxyproject/bioblend#egg=bioblend']
+# Only import cwltool for Python 2.
+if sys.version_info[0] == 2:
+    requirements.append("cwltool")
 
 
 test_requirements = [
@@ -91,7 +90,6 @@ setup(
                  'planemo_ext': 'planemo_ext'},
     include_package_data=True,
     install_requires=requirements,
-    dependency_links=dependency_links,
     license="AFL",
     zip_safe=False,
     keywords='planemo',
