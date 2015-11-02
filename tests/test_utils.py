@@ -33,6 +33,7 @@ TEST_DIR = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
 TEST_REPOS_DIR = os.path.join(TEST_DATA_DIR, "repos")
 TEST_TOOLS_DIR = os.path.join(TEST_DATA_DIR, "tools")
+PROJECT_TEMPLATES_DIR = os.path.join(TEST_DIR, os.path.pardir, "project_templates")
 EXIT_CODE_MESSAGE = ("Planemo command [%s] resulted in unexpected exit code "
                      "[%s], expected exit code [%s]]. Command output [%s]")
 
