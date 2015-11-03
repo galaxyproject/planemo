@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.19.0.dev0
+0.19.0 (2015-11-03)
 ---------------------
 
 * Initial implementation of ``cwl_run`` command that runs a
