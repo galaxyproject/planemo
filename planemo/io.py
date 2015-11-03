@@ -211,4 +211,4 @@ def wait_on(function, desc, timeout=5):
         if value is not None:
             return value
 
-        time.sleep( delta )
+        time.sleep(delta)

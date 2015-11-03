@@ -69,11 +69,11 @@ def _tool_id(tool_path):
 
 def _galactic_job_json(job_path, gi, history_id):
     with open(job_path, "r") as f:
-        job_as_dict = json.load( f )
+        job_as_dict = json.load(f)
 
     replace_keys = {}
     for key, value in job_as_dict.iteritems():
-        if isinstance( value, dict ):
+        if isinstance(value, dict):
             type_class = value.get("class", None)
             if type_class != "File":
                 continue
@@ -109,8 +109,8 @@ def _wait_on_state(state_func):
 
     def get_state():
         response = state_func()
-        state = response[ "state" ]
-        if str(state) not in [ "running", "queued", "new", "ready" ]:
+        state = response["state"]
+        if str(state) not in ["running", "queued", "new", "ready"]:
             return state
         else:
             return None
