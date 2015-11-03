@@ -6,10 +6,31 @@ History
 .. to_doc
 
 ---------------------
-0.18.2.dev0
+0.19.0.dev0
 ---------------------
 
-    
+* Initial implementation of ``cwl_run`` command that runs a
+  CWL tool and job file through Galaxy. 49c5c1e_
+* Add ``--cwl`` flag to ``serve`` to experimentally serve CWL tools
+  in Galaxy.
+  `Pull Request 339`_
+* Implement highly experimental ``cwl_script`` command to convert
+  a CWL job to a bash script. 508dce7_
+* Add name to all XUnit reports (thanks to @erasche).
+  `Pull Request 343`_
+* Capture stdout and stderr for ``shed_diff`` and ``shed_update`` 
+  XUnit reports. `Pull Request 344`_
+* More tool linting (conditionals) thanks to @erasche.
+  `Pull Request 350`_
+* UTF-8 fixes when handling XUnit reports. `Pull Request 345`_
+* Add `Epigenetics` as Tool Shed category. `Pull Request 351`_
+* Merge changes to common modules shared between Galaxy, Planemo, and Pulsar (thanks to @natefoo).
+  `Pull Request 356`_
+* Add ``--cite_url`` to ``tool_init``. fdb1b51_
+* ``tool_init`` bug fix. f854138_
+* Fix ``setup.py`` for cwltool and bioblend changes. 1a157d4_
+* Add option to specify template sqlite database locally. c23569f_
+* Add example IPython notebooks to docs. c8640b6_
 
 ---------------------
 0.18.1 (2015-10-22)
@@ -497,6 +518,20 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 339: https://github.com/galaxyproject/planemo/pull/339
+.. _Pull Request 343: https://github.com/galaxyproject/planemo/pull/343
+.. _Pull Request 344: https://github.com/galaxyproject/planemo/pull/344
+.. _Pull Request 350: https://github.com/galaxyproject/planemo/pull/350
+.. _Pull Request 345: https://github.com/galaxyproject/planemo/pull/345
+.. _Pull Request 351: https://github.com/galaxyproject/planemo/pull/351
+.. _Pull Request 356: https://github.com/galaxyproject/planemo/pull/356
+.. _fdb1b51: https://github.com/galaxyproject/planemo/commit/fdb1b51
+.. _f854138: https://github.com/galaxyproject/planemo/commit/f854138
+.. _508dce7: https://github.com/galaxyproject/planemo/commit/508dce7
+.. _1a157d4: https://github.com/galaxyproject/planemo/commit/1a157d4
+.. _49c5c1e: https://github.com/galaxyproject/planemo/commit/49c5c1e
+.. _c23569f: https://github.com/galaxyproject/planemo/commit/c23569f
+.. _c8640b6: https://github.com/galaxyproject/planemo/commit/c8640b6
 .. _19900a6: https://github.com/galaxyproject/planemo/commit/19900a6
 .. _Issue 329: https://github.com/galaxyproject/planemo/issues/329
 .. _Issue 313: https://github.com/galaxyproject/planemo/issues/313
