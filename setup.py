@@ -26,8 +26,8 @@ requirements = [
     'cwltool',
 ]
 
-# Only import cwltool for Python 2.
-if sys.version_info[0] == 2:
+# Only import cwltool for Python 2.7.
+if sys.version_info[0] == 2 and sys.version_info[1] >= 7:
     requirements.append("cwltool")
 
 
