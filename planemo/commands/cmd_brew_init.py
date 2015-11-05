@@ -4,7 +4,7 @@ import urllib
 from tempfile import mkstemp
 
 from planemo.cli import pass_context
-from galaxy.tools.deps import commands
+from planemo.io import shell
 
 
 INSTALL_SCRIPT = "https://raw.github.com/Homebrew/linuxbrew/go/install"
@@ -24,4 +24,4 @@ def cli(ctx):
     """
     fname = mkstemp('install_brew')
     urllib.urlretrieve(INSTALL_SCRIPT, fname)
-    commands.execute(["ruby", fname])
+    shell(["ruby", fname])

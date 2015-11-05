@@ -18,12 +18,16 @@ from galaxy.tools.deps.commands import which
 def communicate(cmds, **kwds):
     info(cmds)
     p = commands.shell_process(cmds, **kwds)
-    ret_val = p.communicate()
+    if kwds.get("stdout", None) is None and commands.redirecting_io(sys=sys):
+        output = commands.redirect_aware_commmunicate(p)
+    else:
+        output = p.communicate()
+
     if p.returncode != 0:
         template = "Problem executing commands {0} - ({1}, {2})"
-        msg = template.format(cmds, ret_val[0], ret_val[1])
+        msg = template.format(cmds, output[0], output[1])
         raise RuntimeError(msg)
-    return ret_val
+    return output
 
 
 def shell(cmds, **kwds):
