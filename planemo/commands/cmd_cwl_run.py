@@ -26,4 +26,8 @@ def cli(ctx, path, job_path, **kwds):
 
         % planemo cwl_run cat1-tool.cwl cat-job.json
     """
-    return cwl.run_galaxy(ctx, path, job_path, **kwds)
+    engine = kwds.get("cwl_engine", "galaxy")
+    if engine == "galaxy":
+        return cwl.run_galaxy(ctx, path, job_path, **kwds)
+    else:
+        return cwl.run_cwltool(ctx, path, job_path, **kwds)

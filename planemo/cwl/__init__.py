@@ -1,5 +1,6 @@
-from .client import run_cwl_tool
+from .run import run_galaxy, run_cwltool
 
 __all__ = [
-    'run_cwl_tool',
+    'run_galaxy',
+    'run_cwltool',
 ]
