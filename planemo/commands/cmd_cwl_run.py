@@ -1,10 +1,7 @@
 import click
 from planemo.cli import pass_context
-from planemo.io import conditionally_captured_io
 from planemo import options
-from planemo import galaxy_serve
 from planemo import cwl
-from planemo import io
 
 
 @click.command('cwl_run')
@@ -13,6 +10,14 @@ from planemo import io
 @options.galaxy_serve_options()
 @options.galaxy_cwl_root_option()
 @options.cwl_conformance_test()
+@click.option(
+    "--cwl_engine",
+    type=click.Choice(["galaxy", "cwltool"]),
+    default="galaxy",
+    help=("Select an engine to run CWL job using, defaults to Galaxy "
+          "but the CWL reference implementation cwltool and be selected "
+          "also.")
+)
 @pass_context
 def cli(ctx, path, job_path, **kwds):
     """Planemo command for running CWL tools and jobs.
@@ -21,18 +26,4 @@ def cli(ctx, path, job_path, **kwds):
 
         % planemo cwl_run cat1-tool.cwl cat-job.json
     """
-    # TODO: serve options aren't exactly right - don't care about
-    # port for instance.
-    kwds["cwl"] = True
-    conformance_test = kwds.get("conformance_test", False)
-    with conditionally_captured_io(conformance_test):
-        with galaxy_serve.serve_daemon(ctx, [path], **kwds) as config:
-            try:
-                cwl_run = cwl.run_cwl_tool(path, job_path, config, **kwds)
-            except Exception:
-                io.warn("Problem running cwl tool...")
-                print(config.log_contents)
-                raise
-
-    print(cwl_run.cwl_command_state)
-    return 0
+    return cwl.run_galaxy(ctx, path, job_path, **kwds)
