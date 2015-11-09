@@ -26,24 +26,17 @@ def lint_inputs(tool_xml, lint_ctx):
                 lint_ctx.warn("Param input [%s] with no format specified - 'data' format will be assumed.", param_name)
         # TODO: Validate type, much more...
 
-    def find_list(elem, expression):
-        matching = elem.findall(expression)
-        if matching is None:
-            return []
-        else:
-            return matching
-
     conditional_selects = tool_xml.findall("./inputs//conditional")
     for conditional in conditional_selects:
-        booleans = find_list(conditional, "./param[@type='boolean']")
-        selects = find_list(conditional, "./param[@type='select']")
+        booleans = _find_with_attribute(conditional, "param", "type", "boolean")
+        selects = _find_with_attribute(conditional, "param", "type", "select")
         # Should conditionals ever not have a select?
         if not len(selects) and not len(booleans):
             lint_ctx.warn("Conditional without <param type=\"select\" /> or <param type=\"boolean\" />")
             continue
 
         for select in selects:
-            select_options = select.findall('./option[@value]')
+            select_options = select.findall(select, 'option', 'value')
             if any(['value' not in option.attrib for option in select_options]):
                 lint_ctx.error("Option without value")
 
@@ -91,3 +84,17 @@ def lint_repeats(tool_xml, lint_ctx):
             lint_ctx.error("Repeat does not specify name attribute.")
         if "title" not in repeat.attrib:
             lint_ctx.error("Repeat does not specify title attribute.")
+
+
+def _find_with_attribute(element, tag, attribute, test_value=None):
+    rval = []
+    for el in (element.findall('./%s' % tag) or []):
+        if attribute not in el.attribute:
+            continue
+        value = el.attribute[attribute]
+        if test_value is not None:
+            if value == test_value:
+                rval.append(el)
+        else:
+            rval.append(el)
+    return rval
