@@ -1,0 +1,30 @@
+<tool id="ok_select_param" name="ok_select_param" version="1.0">
+    <description>select param</description>
+    <command>
+        echo "$select_opt" > $output
+    </command>
+    <inputs>
+        <param name="select_opt" type="select" label="Option">
+            <option value="moo">Cow</option>
+        </param>
+    </inputs>
+    <outputs>
+        <data name="output" format="txt"/>
+    </outputs>
+    <tests>
+        <test>
+            <param name="select_opt" value="Hello World!" />
+            <output name="output">
+                <assert_contents>
+                    <has_line line="Hello World!" />
+                </assert_contents>
+            </output>
+        </test>
+    </tests>
+    <help>
+        Some Awesome Help!
+    </help>
+    <citations>
+        <citation type="doi">10.1101/014043</citation>
+    </citations>
+</tool>
