@@ -53,7 +53,7 @@ def lint_inputs(tool_xml, lint_ctx):
             continue
 
         for select in selects:
-            select_options = select.findall(select, 'option', 'value')
+            select_options = _find_with_attribute(select, 'option', 'value')
             select_option_ids = [option.attrib.get('value', None) for option in select_options]
 
         for boolean in booleans:
