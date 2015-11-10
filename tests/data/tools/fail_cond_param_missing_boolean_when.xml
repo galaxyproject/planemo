@@ -1,0 +1,31 @@
+<tool id="fail_cond_param_missing_boolean_when" name="fail_cond_param_missing_boolean_when" version="1.0">
+    <description>select param</description>
+    <command>
+        echo "$select_opt" > $output
+    </command>
+    <inputs>
+        <conditional name="cond1">
+            <param name="boolean_opt" type="boolean" label="Option" />
+            <when value="true" />
+        </conditional>
+    </inputs>
+    <outputs>
+        <data name="output" format="txt"/>
+    </outputs>
+    <tests>
+        <test>
+            <param name="select_opt" value="Hello World!" />
+            <output name="output">
+                <assert_contents>
+                    <has_line line="Hello World!" />
+                </assert_contents>
+            </output>
+        </test>
+    </tests>
+    <help>
+        Some Awesome Help!
+    </help>
+    <citations>
+        <citation type="doi">10.1101/014043</citation>
+    </citations>
+</tool>
