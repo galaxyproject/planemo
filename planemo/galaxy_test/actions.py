@@ -139,7 +139,8 @@ def __summarize_tests_full(
         warn(NO_TESTS_MESSAGE)
         return
 
-    if num_problems == 0:
+    passed = num_problems == 0
+    if passed:
         info(ALL_TESTS_PASSED_MESSAGE % num_tests)
 
     if num_problems:
@@ -150,13 +151,14 @@ def __summarize_tests_full(
 
     for testcase_el in test_results.xunit_testcase_elements:
         structured_data_tests = test_results.structured_data_tests
-        __summarize_test_case(structured_data_tests, testcase_el, **kwds)
+        __summarize_test_case(
+            structured_data_tests, passed, testcase_el, **kwds
+        )
 
 
-def __summarize_test_case(structured_data, testcase_el, **kwds):
+def __summarize_test_case(structured_data, passed, testcase_el, **kwds):
     summary_style = kwds.get("summary")
     test_id = test_structures.case_id(testcase_el)
-    passed = len(list(testcase_el)) == 0
     if not passed:
         state = click.style("failed", bold=True, fg='red')
     else:
