@@ -340,7 +340,7 @@ class GalaxyConfig(object):
             ready = all(map(status_ready, repos))
             return ready or None
 
-        wait_on(ready)
+        wait_on(ready, "galaxy tool installation")
 
     @property
     def log_file(self):
