@@ -104,7 +104,7 @@ def enable_cwl_option():
         is_flag=True,
         help=("Configure Galaxy for use with CWL tool."
               " (this option is experimental and will be replaced when"
-              " and if CWL support is merged into Galaxy."),
+              " and if CWL support is merged into Galaxy)."),
     )
 
 
