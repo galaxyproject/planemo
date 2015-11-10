@@ -12,6 +12,7 @@ import tarfile
 from tempfile import (
     mkstemp,
 )
+from galaxy.util import odict
 
 from six import iteritems
 import yaml
@@ -485,7 +486,7 @@ def _expand_raw_config(config, path, name=None):
         repos = _build_auto_tool_repos(path, config, auto_tool_repos)
     if suite_config:
         if repos is None:
-            repos = {}
+            repos = odict.odict()
         _build_suite_repo(config, repos, suite_config)
     # If repositories aren't defined, just define a single
     # one based on calculated name and including everything
@@ -527,7 +528,7 @@ def _build_auto_tool_repos(path, config, auto_tool_repos):
                 repo_dict[key] = value
         return repo_dict
 
-    repos = {}
+    repos = odict.odict()
     for tool_path, tool_el in tool_els:
         repository_config = _build_repository(tool_path, tool_el)
         repository_name = repository_config["name"]
