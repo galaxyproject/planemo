@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 from planemo.io import error
 
 RUN_TESTS_CMD = (
-    "sh run_tests.sh --report_file %s %s %s %s"
+    "sh run_tests.sh $COMMON_STARTUP_ARGS --report_file %s %s %s %s"
 )
 
 

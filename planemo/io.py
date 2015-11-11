@@ -67,6 +67,10 @@ def _echo(message, err=False):
         print(message)
 
 
+def shell_join(*args):
+    return "; ".join([c for c in args if c])
+
+
 def write_file(path, content):
     with open(path, "w") as f:
         f.write(content)
