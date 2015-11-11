@@ -14,6 +14,8 @@ def _cwl_file(name):
     return os.path.normpath(os.path.join(CWL_DRAFT2_DIR, name))
 
 
+# TODO: Improve these tests so they actually check something instead
+# of just arbitrarily exercising the code.
 class CwlRunTestCase(CliTestCase):
 
     @skip_unless_python_2_7()
@@ -42,4 +44,3 @@ class CwlRunTestCase(CliTestCase):
                 job_path,
             ]
             self._check_exit_code(test_cmd)
-            assert False
