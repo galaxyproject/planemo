@@ -3,7 +3,10 @@ from planemo import galaxy_serve
 from .client import run_cwl_tool
 from planemo import io
 
-from cwltool.main import main
+try:
+    from cwltool.main import main
+except ImportError:
+    main = None
 
 
 def run_galaxy(ctx, path, job_path, **kwds):
@@ -23,6 +26,9 @@ def run_galaxy(ctx, path, job_path, **kwds):
 
 
 def run_cwltool(ctx, path, job_path, **kwds):
+    if main is None:
+        raise Exception("cwltool dependency not found.")
+
     args = []
     if kwds.get("conformance_test", False):
         args.append("--conformance-test")
