@@ -4,6 +4,7 @@ from .test_utils import (
     CliTestCase,
     skip_if_environ,
     PROJECT_TEMPLATES_DIR,
+    skip_unless_python_2_7,
 )
 
 CWL_DRAFT2_DIR = os.path.join(PROJECT_TEMPLATES_DIR, "cwl_draft2_spec")
@@ -15,6 +16,7 @@ def _cwl_file(name):
 
 class CwlRunTestCase(CliTestCase):
 
+    @skip_unless_python_2_7()
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_run_cat(self):
         with self._isolate():
@@ -27,6 +29,7 @@ class CwlRunTestCase(CliTestCase):
             ]
             self._check_exit_code(test_cmd)
 
+    @skip_unless_python_2_7()
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_run_cat_conformance(self):
         with self._isolate():

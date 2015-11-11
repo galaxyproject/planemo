@@ -28,6 +28,8 @@ if version_info < (2, 7):
 else:
     from unittest import TestCase, skip
     PRE_PYTHON_27 = False
+if version_info == (2, 7):
+    PYTHON_27 = True
 
 TEST_DIR = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
@@ -187,6 +189,12 @@ def skip_unless_executable(executable):
     if which(executable):
         return lambda func: func
     return skip("PATH doesn't contain executable %s" % executable)
+
+
+def skip_unless_python_2_7():
+    if PYTHON_27:
+        return lambda func: func
+    return skip("Python 2.7 required for test.")
 
 
 __all__ = [
