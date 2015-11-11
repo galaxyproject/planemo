@@ -7,7 +7,7 @@ History
 
 
 ---------------------
-0.20.0.dev0
+0.20.0 (2015-11-11)
 ---------------------
 
 * More complete I/O capturing for XUnit. 6409449_
