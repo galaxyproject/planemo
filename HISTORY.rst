@@ -5,10 +5,20 @@ History
 
 .. to_doc
 
+
 ---------------------
-0.19.1.dev0
+0.20.0.dev0
 ---------------------
 
+* More complete I/O capturing for XUnit. 6409449_
+* Check for select parameter without options when linting tools.
+  `Issue 373`_
+* Add ``--cwl_engine`` argument to ``cwl_run`` command. dd94ddc_
+* Fixes for select parameter linting. 8b31850_
+* Fix to demultiplexing repositories after tool uploads. `Issue 361`_
+* Fix to update planemo for Galaxy wheels. 25ef0d5_
+* Various fixes for Python 2.6 and Python 3.
+  c1713d2_, 916f610_, c444855_
     
 
 ---------------------
@@ -524,6 +534,15 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _c444855: https://github.com/galaxyproject/planemo/commit/c444855
+.. _dd94ddc: https://github.com/galaxyproject/planemo/commit/dd94ddc
+.. _6409449: https://github.com/galaxyproject/planemo/commit/6409449
+.. _Issue 373: https://github.com/galaxyproject/planemo/issues/373
+.. _8b31850: https://github.com/galaxyproject/planemo/commit/8b31850
+.. _Issue 361: https://github.com/galaxyproject/planemo/issues/361
+.. _25ef0d5: https://github.com/galaxyproject/planemo/commit/25ef0d5
+.. _c1713d2: https://github.com/galaxyproject/planemo/commit/c1713d2
+.. _916f610: https://github.com/galaxyproject/planemo/commit/916f610
 .. _Pull Request 339: https://github.com/galaxyproject/planemo/pull/339
 .. _Pull Request 343: https://github.com/galaxyproject/planemo/pull/343
 .. _Pull Request 344: https://github.com/galaxyproject/planemo/pull/344
