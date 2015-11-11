@@ -3,7 +3,7 @@ import os
 import click
 
 from . import structures as test_structures
-from planemo.io import info, warn
+from planemo.io import info, warn, shell_join
 from planemo import galaxy_run
 from planemo.reports import build_report
 
@@ -51,12 +51,16 @@ def run_in_config(ctx, config, **kwds):
         failed=kwds.get("failed", False),
         installed=kwds.get("installed", False),
     ).build()
-    cmd = "; ".join([
+    setup_common_startup_args = galaxy_run.set_variable_if_wheels(
+        "COMMON_STARTUP_ARGS", "--skip-venv --skip-common-startup"
+    )
+    setup_venv_command = galaxy_run.setup_venv(ctx, kwds)
+    cmd = shell_join(
         cd_to_galaxy_command,
-        galaxy_run.ACTIVATE_COMMAND,  # TODO: this should be moved to
-                                      # run_tests.sh to match run.sh.
+        setup_common_startup_args,
+        setup_venv_command,
         test_cmd,
-    ])
+    )
     action = "Testing tools"
     return_code = galaxy_run.run_galaxy_command(
         ctx,

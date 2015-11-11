@@ -16,6 +16,7 @@ import click
 from planemo import galaxy_run
 from planemo.io import warn
 from planemo.io import shell
+from planemo.io import shell_join
 from planemo.io import write_file
 from planemo.io import kill_pid_file
 from planemo.io import wait_on
@@ -92,7 +93,9 @@ DOWNLOADS_URL = ("https://raw.githubusercontent.com/"
 DOWNLOADABLE_MIGRATION_VERSIONS = [127, 120, 117]
 LATEST_URL = DOWNLOADS_URL + "latest.sqlite"
 
-PIP_INSTALL_CMD = "[ -d .venv ] && . .venv/bin/activate && pip install %s"
+PIP_INSTALL_CMD = "pip install %s"
+
+COMMAND_STARTUP_COMMAND = "./scripts/common_startup.sh ${COMMON_STARTUP_ARGS}"
 
 FAILED_TO_FIND_GALAXY_EXCEPTION = (
     "Failed to find Galaxy root directory - please explicitly specify one "
@@ -523,21 +526,21 @@ def _install_galaxy(ctx, config_directory, kwds):
     if not kwds.get("no_cache_galaxy", False):
         _install_galaxy_via_git(ctx, config_directory, kwds)
     else:
-        _install_galaxy_via_download(config_directory, kwds)
+        _install_galaxy_via_download(ctx, config_directory, kwds)
 
 
-def _install_galaxy_via_download(config_directory, kwds):
+def _install_galaxy_via_download(ctx, config_directory, kwds):
     branch = _galaxy_branch(kwds)
     tar_cmd = "tar -zxvf %s" % branch
     command = galaxy_run.DOWNLOAD_GALAXY + "; %s | tail" % tar_cmd
-    _install_with_command(config_directory, command, kwds)
+    _install_with_command(ctx, config_directory, command, kwds)
 
 
 def _install_galaxy_via_git(ctx, config_directory, kwds):
     gx_repo = _ensure_galaxy_repository_available(ctx, kwds)
     branch = _galaxy_branch(kwds)
     command = git.command_clone(ctx, gx_repo, "galaxy-dev", branch=branch)
-    _install_with_command(config_directory, command, kwds)
+    _install_with_command(ctx, config_directory, command, kwds)
 
 
 def _build_eggs_cache(ctx, env, kwds):
@@ -557,7 +560,7 @@ def _galaxy_branch(kwds):
     return branch
 
 
-def _install_with_command(config_directory, command, kwds):
+def _install_with_command(ctx, config_directory, command, kwds):
     # TODO: --watchdog
     pip_installs = []
     if kwds.get("cwl", False):
@@ -566,15 +569,17 @@ def _install_with_command(config_directory, command, kwds):
         pip_install_command = PIP_INSTALL_CMD % " ".join(pip_installs)
     else:
         pip_install_command = ""
-    install_cmds = [
+    setup_venv_command = galaxy_run.setup_venv(ctx, kwds)
+    install_cmd = shell_join(
         "cd %s" % config_directory,
         command,
         "cd galaxy-dev",
-        "type virtualenv >/dev/null 2>&1 && virtualenv .venv",
+        setup_venv_command,
         pip_install_command,
-        galaxy_run.ACTIVATE_COMMAND,
-    ]
-    shell(";".join([c for c in install_cmds if c]))
+        galaxy_run.setup_common_startup_args(),
+        COMMAND_STARTUP_COMMAND,
+    )
+    shell(install_cmd)
 
 
 def _ensure_galaxy_repository_available(ctx, kwds):

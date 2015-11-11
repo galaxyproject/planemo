@@ -1,15 +1,87 @@
-from planemo.io import info
+import os
+import string
+
+from planemo.io import info, shell_join
 from galaxy.tools.deps.commands import shell
 
 
 # Activate galaxy's virtualenv if present (needed for tests say but not for
 # server because run.sh does this).
-ACTIVATE_COMMAND = "[ -e .venv ] && . .venv/bin/activate"
+ACTIVATE_COMMAND = "[ -e $GALAXY_VIRTUAL_ENV ] && . $GALAXY_VIRTUAL_ENV/bin/activate"
+CREATE_COMMAND = shell_join(
+    'if [ ! -e $GALAXY_VIRTUAL_ENV ]',
+    ' then type virtualenv >/dev/null 2>&1 && virtualenv $GALAXY_VIRTUAL_ENV',
+    ' else echo "Reusing existing virtualenv $GALAXY_VIRTUAL_ENV"',
+    ' fi',
+)
+PRINT_VENV_COMMAND = shell_join(
+    'echo "Set \$GALAXY_VIRTUAL_ENV to $GALAXY_VIRTUAL_ENV"',
+    'if [ -e $GALAXY_VIRTUAL_ENV ]',
+    'then echo "Virtual environment directory exists."',
+    'else echo "Virtual environment directory does not exist."',
+    'fi',
+)
+
 
 # TODO: Mac-y curl variant of this.
 DOWNLOAD_GALAXY = (
     "wget https://codeload.github.com/galaxyproject/galaxy/tar.gz/dev"
 )
+
+CACHED_VIRTUAL_ENV_COMMAND = ("if [ -d .venv ] || [ -f dist-eggs.ini ];"
+                              " then GALAXY_VIRTUAL_ENV=.venv; "
+                              " else GALAXY_VIRTUAL_ENV=%s; fi")
+UNCACHED_VIRTUAL_ENV_COMMAND = "GALAXY_VIRTUAL_ENV=.venv"
+
+
+def setup_venv(ctx, kwds):
+    return shell_join(
+        locate_galaxy_virtualenv(ctx, kwds),
+        PRINT_VENV_COMMAND if ctx.verbose else None,
+        CREATE_COMMAND,
+        PRINT_VENV_COMMAND if ctx.verbose else None,
+        ACTIVATE_COMMAND,
+    )
+
+
+def locate_galaxy_virtualenv(ctx, kwds):
+    if not kwds.get("no_cache_galaxy", False):
+        workspace = ctx.workspace
+        shared_venv_path = os.path.join(workspace, "gx_venv")
+        venv_command = CACHED_VIRTUAL_ENV_COMMAND % shared_venv_path
+    else:
+        venv_command = UNCACHED_VIRTUAL_ENV_COMMAND
+    return shell_join(
+        venv_command,
+        "export GALAXY_VIRTUAL_ENV",
+    )
+
+
+def shell_if_wheels(command):
+    """ Take a shell command and convert it to shell command that runs
+    only if Galaxy is new enough to use wheels.
+    """
+    return "$(grep -q 'skip-venv' run_tests.sh) && %s" % command
+
+
+def setup_common_startup_args():
+    return set_variable_if_wheels(
+        "COMMON_STARTUP_ARGS", "--skip-venv --dev-wheels"
+    )
+
+
+def set_variable_if_wheels(var, if_wheels_val, else_val=""):
+    var_command = '${var}=${else_val}; '
+    var_command += shell_if_wheels(
+        '${var}="${if_wheels_val}"; '
+    )
+    var_command += "export ${var}"
+    var_command += '; echo "Set ${var} to ${${var}}"'
+    return string.Template(var_command).safe_substitute(
+        var=var,
+        if_wheels_val=if_wheels_val,
+        else_val=else_val,
+    )
 
 
 def run_galaxy_command(ctx, command, env, action, daemon=False):
