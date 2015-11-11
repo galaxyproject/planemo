@@ -28,8 +28,10 @@ if version_info < (2, 7):
 else:
     from unittest import TestCase, skip
     PRE_PYTHON_27 = False
-if version_info == (2, 7):
+if version_info[0] == 2 and version_info[1] >= 7:
     PYTHON_27 = True
+else:
+    PYTHON_27 = False
 
 TEST_DIR = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
