@@ -1,21 +1,39 @@
 import copy
 import os
 
-import schema_salad
-import cwltool
-from cwltool.main import load_tool
-from cwltool.process import (
-    checkRequirements,
-    shortname,
-)
-from cwl2script.cwl2script import (
-    supportedProcessRequirements,
-    generateScriptForWorkflow,
-    generateScriptForTool,
-)
+try:
+    import schema_salad
+except ImportError:
+    schema_salad = None
+
+try:
+    import cwltool
+except ImportError:
+    cwltool = None
+
+try:
+    from cwltool.main import load_tool
+except ImportError:
+    load_tool = None
+
+try:
+    from cwltool import process
+except ImportError:
+    process = None
+
+try:
+    from cwl2script import cwl2script
+except ImportError:
+    cwl2script = None
 
 
 def to_script(ctx, path, job_path, **kwds):
+    if schema_salad is None:
+        raise Exception("This functionality requires schema_salad and Python 2.7.")
+
+    if cwltool is None:
+        raise Exception("This functionality requires cwltool and Python 2.7.")
+
     uri = "file://" + os.path.abspath(job_path)
 
     loader = schema_salad.ref_resolver.Loader({
@@ -32,17 +50,17 @@ def to_script(ctx, path, job_path, **kwds):
     if type(t) == int:
         return t
 
-    checkRequirements(t.tool, supportedProcessRequirements)
+    process.checkRequirements(t.tool, cwl2script.supportedProcessRequirements)
 
     for inp in t.tool["inputs"]:
-        if shortname(inp["id"]) in job:
+        if process.shortname(inp["id"]) in job:
             pass
-        elif shortname(inp["id"]) not in job and "default" in inp:
-            job[shortname(inp["id"])] = copy.copy(inp["default"])
-        elif shortname(inp["id"]) not in job and inp["type"][0] == "null":
+        elif process.shortname(inp["id"]) not in job and "default" in inp:
+            job[process.shortname(inp["id"])] = copy.copy(inp["default"])
+        elif process.shortname(inp["id"]) not in job and inp["type"][0] == "null":
             pass
         else:
-            raise Exception("Missing inputs `%s`" % shortname(inp["id"]))
+            raise Exception("Missing inputs `%s`" % process.shortname(inp["id"]))
 
     if not kwds.get("basedir", None):
         kwds["basedir"] = os.path.dirname(os.path.abspath(job_path))
@@ -50,8 +68,8 @@ def to_script(ctx, path, job_path, **kwds):
     outdir = kwds.get("outdir")
 
     if t.tool["class"] == "Workflow":
-        print(generateScriptForWorkflow(t, job, outdir))
+        print(cwl2script.generateScriptForWorkflow(t, job, outdir))
     elif t.tool["class"] == "CommandLineTool":
-        print(generateScriptForTool(t, job, outdir))
+        print(cwl2script.generateScriptForTool(t, job, outdir))
 
     return 0
