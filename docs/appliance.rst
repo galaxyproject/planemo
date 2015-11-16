@@ -14,7 +14,7 @@ Galaxy is configured to use a `PostgreSQL
 <http://www.postgresql.org/>`_ database back end and execute jobs via `SLURM
 <https://computing.llnl.gov/linux/slurm/>`_ for robustness. If something goes
 and Galaxy needs to be restarted manually - simply run ``restart_galaxy`` from
-the command-line.
+the command-lincoe.
 
 The virtual appliance is available in two flavors via Docker, Vagrant,
 VirtualBox OVA, and as a Google Compute Engine cloud image.
@@ -255,7 +255,7 @@ These applicances are built using the `planemo-machine
 build customized recipes of this nature or even appliance for cloud
 environments such as Amazon Web Services and Google Compute Engine.
 
-.. _Galaxy: (http://galaxyproject.org/)
+.. _Galaxy: http://galaxyproject.org/
 .. _Docker: https://www.docker.com/
 .. _linuxbrew: https://github.com/Homebrew/linuxbrew
 .. _Vagrant: https://www.vagrantup.com/
