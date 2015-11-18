@@ -59,3 +59,8 @@ class LintTestCase(CliTestCase):
         # Works with -r.
         lint_cmd = ["lint", "--skip", "citations", "-r", nested_dir]
         self._check_exit_code(lint_cmd, exit_code=0)
+
+    def test_empty_cdata(self):
+        empty_cdata = os.path.join(TEST_TOOLS_DIR, "empty_cdata.xml")
+        lint_cmd = ["lint", "--skip", "citations,help", empty_cdata]
+        self._check_exit_code(lint_cmd, exit_code=0)
