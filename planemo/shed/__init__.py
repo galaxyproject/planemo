@@ -338,18 +338,19 @@ def _diff_in(ctx, working, realized_repository, **kwds):
 
     output = kwds.get("output", None)
     raw = kwds.get("raw", False)
-    is_diff = 0
+    xml_diff = 0
     if not raw:
         if output:
             with open(output, "w") as f:
-                is_diff = diff_and_remove(working, label_a, label_b, f)
+                xml_diff = diff_and_remove(working, label_a, label_b, f)
         else:
-            is_diff = diff_and_remove(working, label_a, label_b, sys.stdout)
+            xml_diff = diff_and_remove(working, label_a, label_b, sys.stdout)
 
     cmd = 'cd "%s"; diff -r %s %s' % (working, label_a, label_b)
     if output:
         cmd += " >> '%s'" % output
-    exit = shell(cmd) or is_diff
+    raw_diff = shell(cmd)
+    exit = raw_diff or xml_diff
     return exit
 
 

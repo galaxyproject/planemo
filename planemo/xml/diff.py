@@ -1,6 +1,7 @@
 
 def diff(x1, x2, reporter=None):
-    return_val = 0 if xml_compare(x1, x2, reporter) else 1
+    compare = xml_compare(x1, x2, reporter)
+    return_val = 0 if compare else 1
     return return_val
 
 

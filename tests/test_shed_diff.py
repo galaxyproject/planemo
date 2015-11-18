@@ -80,7 +80,18 @@ class ShedDiffTestCase(CliShedTestCase):
             diff_command.extend(self._shed_args(read_only=True))
             self._check_exit_code(diff_command, exit_code=0)
 
-    def test_shed_diff_xml(self):
+    def test_shed_diff_xml_no_diff(self):
+        with self._isolate_repo("package_1"):
+            upload_command = [
+                "shed_upload", "--force_repository_creation",
+            ]
+            upload_command.extend(self._shed_args())
+            self._check_exit_code(upload_command)
+            diff_command = ["shed_diff"]
+            diff_command.extend(self._shed_args(read_only=True))
+            self._check_exit_code(diff_command, exit_code=0)
+
+    def test_shed_diff_xml_diff(self):
         with self._isolate_repo("package_1") as f:
             upload_command = [
                 "shed_upload", "--force_repository_creation",

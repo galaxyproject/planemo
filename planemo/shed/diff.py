@@ -17,8 +17,9 @@ def diff_and_remove(working, label_a, label_b, f):
             if filename in special:
                 a = os.path.join(dirpath, filename)
                 b = os.path.join(working, label_b, os.path.relpath(a, os.path.join(working, label_a)))
-                if os.path.exists(a) and os.path.exists(b):
-                    deps_diff &= _shed_diff(a, b, f)
+                files_exist = os.path.exists(a) and os.path.exists(b)
+                if files_exist:
+                    deps_diff |= _shed_diff(a, b, f)
                     os.remove(a)
                     os.remove(b)
     return deps_diff
