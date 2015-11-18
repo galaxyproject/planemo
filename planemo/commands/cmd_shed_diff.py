@@ -102,7 +102,9 @@ def cli(ctx, paths, **kwds):
         # Redirect a copy to user_requested_output if they did:
         if user_requested_output is not None:
             shutil.copy(diff_output.name, user_requested_output)
-
+        else:
+            with open(diff_output.name, "r") as f:
+                sys.stdout.write(f.read())
         # Rewind to the start of the file and read it in its entirety
         diff_output.seek(0)
         diff_output_contents = diff_output.read()
