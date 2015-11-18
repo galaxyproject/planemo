@@ -351,6 +351,13 @@ def _diff_in(ctx, working, realized_repository, **kwds):
         cmd += " >> '%s'" % output
     raw_diff = shell(cmd)
     exit = raw_diff or xml_diff
+    if not raw:
+        if xml_diff:
+            ctx.vlog("One or more shed XML file(s) different!")
+        if raw_diff:
+            ctx.vlog("One or more non-shed XML file(s) different.")
+        if not xml_diff and not raw_diff:
+            ctx.vlog("No differences.")
     return exit
 
 
