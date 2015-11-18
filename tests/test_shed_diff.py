@@ -14,7 +14,7 @@ from planemo.xml.diff import diff
 from .test_utils import TEST_REPOS_DIR
 
 DIFF_LINES = [
-    "diff -r _local_/related_file _custom_shed_/related_file",
+    "diff -r _workingdir_/related_file _custom_shed_/related_file",
     "< A related non-tool file (modified).",
     "> A related non-tool file.",
 ]

@@ -6,7 +6,7 @@
            skip="0">
     <testcase classname="cat1" name="shed-diff" time="">
         <error type="planemo.Different" message="Repository is different">
-        Only in _local_: related_file
+        Only in _workingdir_: related_file
 
         </error>
         <system-out />
