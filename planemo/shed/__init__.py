@@ -290,7 +290,7 @@ def _diff_in(ctx, working, realized_repository, **kwds):
     path = realized_repository.path
     shed_target_source = kwds.get("shed_target_source", None)
 
-    label_a = "_%s_" % (shed_target_source if shed_target_source else "local")
+    label_a = "_%s_" % (shed_target_source if shed_target_source else "workingdir")
     shed_target = kwds.get("shed_target", "B")
     if "/" in shed_target:
         shed_target = "custom_shed"
