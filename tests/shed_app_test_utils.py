@@ -23,6 +23,8 @@ def mock_model(directory):
         "c1", "Text Manipulation"
     ).add_category(
         "c2", "Sequence Analysis"
+    ).add_category(
+        "c3", "Tool Dependency Packages"
     ).add_repository(
         "r1",
         name="test_repo_1",

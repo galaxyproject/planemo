@@ -7,6 +7,7 @@ from .test_utils import (
 )
 from planemo import io
 import tempfile
+import shutil
 import sys
 import os
 from xml.etree import ElementTree
@@ -79,6 +80,21 @@ class ShedDiffTestCase(CliShedTestCase):
             diff_command.extend(self._shed_args(read_only=True))
             self._check_exit_code(diff_command, exit_code=0)
 
+    def test_shed_diff_xml(self):
+        with self._isolate_repo("package_1") as f:
+            upload_command = [
+                "shed_upload", "--force_repository_creation",
+            ]
+            upload_command.extend(self._shed_args())
+            self._check_exit_code(upload_command)
+            changed_xml = os.path.join(TEST_REPOS_DIR,
+                                       "package_1_changed",
+                                       "tool_dependencies.xml")
+            shutil.copyfile(changed_xml, join(f, "tool_dependencies.xml"))
+            diff_command = ["shed_diff"]
+            diff_command.extend(self._shed_args(read_only=True))
+            self._check_exit_code(diff_command, exit_code=1)
+
     def test_diff_xunit(self):
         with self._isolate_repo("multi_repos_nested") as f:
             upload_command = [
@@ -99,15 +115,13 @@ class ShedDiffTestCase(CliShedTestCase):
             self._check_exit_code(diff_command, exit_code=0)
 
             compare = open(xunit_report.name, 'r').read()
-            if not diff(
+            if diff(
                 self._make_deterministic(ElementTree.parse(known_good_xunit_report).getroot()),
                 self._make_deterministic(ElementTree.fromstring(compare)),
                 reporter=sys.stdout.write
             ):
-                self.assertTrue(True)
-            else:
                 sys.stdout.write(compare)
-                self.assertTrue(False)
+                assert False, "XUnit report different from multi_repos_nested.xunit.xml."
 
             io.write_file(
                 join(f, "cat1", "related_file"),
@@ -116,15 +130,13 @@ class ShedDiffTestCase(CliShedTestCase):
             self._check_exit_code(diff_command, exit_code=1)
 
             compare = open(xunit_report.name, 'r').read()
-            if not diff(
+            if diff(
                 self._make_deterministic(ElementTree.parse(known_bad_xunit_report).getroot()),
                 self._make_deterministic(ElementTree.fromstring(compare)),
                 reporter=sys.stdout.write
             ):
-                self.assertTrue(True)
-            else:
                 sys.stdout.write(compare)
-                self.assertTrue(False)
+                assert False, "XUnit report different from multi_repos_nested.xunit-bad.xml."
 
             os.unlink(xunit_report.name)
 
