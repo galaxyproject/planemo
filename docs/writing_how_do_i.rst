@@ -254,10 +254,10 @@ description of the ``output``.
 - `metadata.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/metadata.xml>`__
 
 ------------------------------------------------------
-\.\.\. test installed in an existing Galaxy instance?
+\.\.\. test tools installed in an existing Galaxy instance?
 ------------------------------------------------------
 
-Do not use planemo, Galaxy is should be used to test  these tools directly.
+Do not use planemo, Galaxy should be used to test its tools directly.
 The following two commands can be used to test Galaxy tools in an existing
 instance.
 
@@ -267,7 +267,7 @@ instance.
     GALAXY_TEST_TOOL_CONF=config/tool_conf.xml sh run_tests.sh --report_file tool_tests_tool_conf.html functional.test_toolbox
 
 The first command specifies the ``--installed`` flag when calling
-``run_tests.sh``, this tells the test framework to test tool shed installed
+``run_tests.sh``, this tells the test framework to test Tool Shed installed
 tools and only those tools.
 
 The second command sets ``GALAXY_TEST_TOOL_CONF`` environment variable, which
