@@ -1,5 +1,5 @@
 Click
-six
+six>=1.7.0
 pyyaml
 bioblend
 docutils

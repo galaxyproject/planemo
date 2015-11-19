@@ -16,7 +16,7 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 requirements = [
     'Click',
-    'six',
+    'six>=1.7.0',
     'pyyaml',
     'jinja2',
     'docutils',
