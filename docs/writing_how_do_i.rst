@@ -253,6 +253,39 @@ description of the ``output``.
 
 - `metadata.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/metadata.xml>`__
 
+------------------------------------------------------
+\.\.\. test installed in an existing Galaxy instance?
+------------------------------------------------------
+
+Do not use planemo, Galaxy is should be used to test  these tools directly.
+The following two commands can be used to test Galaxy tools in an existing
+instance.
+
+::
+
+    sh run_tests.sh --report_file tool_tests_shed.html --installed
+    GALAXY_TEST_TOOL_CONF=config/tool_conf.xml sh run_tests.sh --report_file tool_tests_tool_conf.html functional.test_toolbox
+
+The first command specifies the ``--installed`` flag when calling
+``run_tests.sh``, this tells the test framework to test tool shed installed
+tools and only those tools.
+
+The second command sets ``GALAXY_TEST_TOOL_CONF`` environment variable, which
+will restrict the testing framework to considering a single tool conf file
+(such as the default tools that ship with Galaxy
+``config/tool_conf.xml.sample`` and which must have their dependencies setup
+manually). The last argument to ``run_tests.sh``, ``functional.test_toolbox``
+tells the test framework to run all the tool tests in the configured tool conf
+file.
+
+.. note:: *Tip:* To speed up tests you can use a pre-migrated database file the way planemo
+    does by setting the following environment variable before running
+    ``run_tests.sh``.
+
+    ::
+
+         export GALAXY_TEST_DB_TEMPLATE="https://github.com/jmchilton/galaxy-downloads/raw/master/db_gx_rev_0127.sqlite"
+
 .. _DOI: http://www.doi.org/
 .. _BibTeX: http://www.bibtex.org/
 .. _Dockerfile: https://docs.docker.com/reference/builder/
