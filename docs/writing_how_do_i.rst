@@ -264,12 +264,16 @@ instance.
 ::
 
     sh run_tests.sh --report_file tool_tests_shed.html --installed
-    GALAXY_TEST_TOOL_CONF=config/tool_conf.xml sh run_tests.sh --report_file tool_tests_tool_conf.html functional.test_toolbox
 
-The first command specifies the ``--installed`` flag when calling
+
+This above command specifies the ``--installed`` flag when calling
 ``run_tests.sh``, this tells the test framework to test Tool Shed installed
 tools and only those tools.
 
+::
+
+    GALAXY_TEST_TOOL_CONF=config/tool_conf.xml sh run_tests.sh --report_file tool_tests_tool_conf.html functional.test_toolbox
+    
 The second command sets ``GALAXY_TEST_TOOL_CONF`` environment variable, which
 will restrict the testing framework to considering a single tool conf file
 (such as the default tools that ship with Galaxy
