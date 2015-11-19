@@ -12,6 +12,22 @@ planemo.cwl.client module
     :undoc-members:
     :show-inheritance:
 
+planemo.cwl.run module
+----------------------
+
+.. automodule:: planemo.cwl.run
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.cwl.script module
+-------------------------
+
+.. automodule:: planemo.cwl.script
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

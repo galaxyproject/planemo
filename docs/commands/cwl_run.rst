@@ -64,5 +64,8 @@ Planemo command for running CWL tools and jobs.
                                       describing job. Required by CWL conformance
                                       test suite and implemented by cwltool
                                       reference implementation.
+      --cwl_engine [galaxy|cwltool]   Select an engine to run CWL job using,
+                                      defaults to Galaxy but the CWL reference
+                                      implementation cwltool and be selected also.
       --help                          Show this message and exit.
     

@@ -73,7 +73,7 @@ instances.
       --cwl                           Configure Galaxy for use with CWL tool.
                                       (this option is experimental and will be
                                       replaced when and if CWL support is merged
-                                      into Galaxy.
+                                      into Galaxy).
       --cwl_galaxy_root DIRECTORY     Root of development galaxy directory to
                                       execute command with (must be branch of
                                       Galaxy with CWL support, this option is
