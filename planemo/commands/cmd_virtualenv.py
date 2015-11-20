@@ -11,14 +11,16 @@ VIRTUALENV_PATH_TYPE = click.Path(
 
 
 @click.command("virtualenv")
+@click.option("-p", "--python",
+              metavar="PYTHON_EXE")
 @click.argument("virtualenv_path",
                 metavar="VIRTUALENV_PATH",
                 type=VIRTUALENV_PATH_TYPE)
 @pass_context
-def cli(ctx, virtualenv_path):
+def cli(ctx, virtualenv_path, **kwds):
     """Create a virtualenv.
 
     Use virtualenv as library to create a virtualenv for Galaxy if virtualenv
     is not available on the PATH.
     """
-    virtualenv.create_and_exit(virtualenv_path)
+    virtualenv.create_and_exit(virtualenv_path, **kwds)
