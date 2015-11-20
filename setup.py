@@ -23,6 +23,7 @@ requirements = [
     'PyGithub',
     'bioblend',
     'glob2',
+    'virtualenv',
 ]
 
 # Only import cwltool for Python 2.7.

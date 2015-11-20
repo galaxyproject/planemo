@@ -2,17 +2,15 @@ import os
 import string
 
 from planemo.io import info, shell_join
+from planemo.virtualenv import create_command
 from galaxy.tools.deps.commands import shell
 
 
 # Activate galaxy's virtualenv if present (needed for tests say but not for
 # server because run.sh does this).
 ACTIVATE_COMMAND = "[ -e $GALAXY_VIRTUAL_ENV ] && . $GALAXY_VIRTUAL_ENV/bin/activate"
-CREATE_COMMAND = shell_join(
-    'if [ ! -e $GALAXY_VIRTUAL_ENV ]',
-    ' then type virtualenv >/dev/null 2>&1 && virtualenv $GALAXY_VIRTUAL_ENV',
-    ' else echo "Reusing existing virtualenv $GALAXY_VIRTUAL_ENV"',
-    ' fi',
+CREATE_COMMAND_TEMPLATE = string.Template(
+    'if [ ! -e $GALAXY_VIRTUAL_ENV ]; then $create_virtualenv; fi',
 )
 PRINT_VENV_COMMAND = shell_join(
     'echo "Set \$GALAXY_VIRTUAL_ENV to $GALAXY_VIRTUAL_ENV"',
@@ -35,10 +33,13 @@ UNCACHED_VIRTUAL_ENV_COMMAND = "GALAXY_VIRTUAL_ENV=.venv"
 
 
 def setup_venv(ctx, kwds):
+    create_template_params = {
+        'create_virtualenv': create_command("$GALAXY_VIRTUAL_ENV")
+    }
     return shell_join(
         locate_galaxy_virtualenv(ctx, kwds),
         PRINT_VENV_COMMAND if ctx.verbose else None,
-        CREATE_COMMAND,
+        CREATE_COMMAND_TEMPLATE.safe_substitute(create_template_params),
         PRINT_VENV_COMMAND if ctx.verbose else None,
         ACTIVATE_COMMAND,
     )

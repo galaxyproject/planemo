@@ -6,3 +6,4 @@ docutils
 jinja2
 glob2
 cwltool
+virtualenv
