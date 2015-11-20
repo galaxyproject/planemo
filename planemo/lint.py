@@ -1,6 +1,12 @@
 import os
 
-import urllib2
+from six.moves.urllib.request import (
+    urlopen,
+)
+from six.moves.urllib.error import (
+    HTTPError,
+    URLError,
+)
 from planemo.xml import validation
 from planemo.shed import find_urls_for_xml
 
@@ -22,12 +28,12 @@ def lint_urls(root, lint_ctx):
 
     def validate_url(url, lint_ctx):
         try:
-            handle = urllib2.urlopen(url)
+            handle = urlopen(url)
             handle.read(100)
             lint_ctx.info("URL OK %s" % url)
-        except urllib2.HTTPError as e:
+        except HTTPError as e:
             lint_ctx.error("HTTP Error %s accessing %s" % (e.code, url))
-        except urllib2.URLError as e:
+        except URLError as e:
             lint_ctx.error("URL Error %s accessing %s" % (str(e), url))
 
     for url in urls:
