@@ -7,7 +7,7 @@ import shutil
 import sys
 import tempfile
 import time
-from cStringIO import StringIO
+from six import StringIO
 from xml.sax.saxutils import escape
 
 import click
