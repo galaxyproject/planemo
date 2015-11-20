@@ -2,6 +2,7 @@ from __future__ import print_function
 
 from xml.etree import ElementTree
 
+from six.moves import map as imap
 from six.moves.urllib.request import urlretrieve
 from six.moves.urllib.error import URLError
 from six import string_types
@@ -204,7 +205,7 @@ class BasePackage(object):
         architecture = actions.get("architecture", None)
         action_els = actions.findall("action")
         assert action_els is not None
-        parsed_actions = map(self.parse_action, action_els)
+        parsed_actions = list(imap(self.parse_action, action_els))
         action_packages = []
         for package in actions.findall("package"):
             action_packages.append(self.parse_action_package(package))
