@@ -3,6 +3,7 @@
 import click
 
 from planemo.cli import pass_context
+from planemo import options
 from planemo.io import info
 from planemo import github_util
 
@@ -11,20 +12,9 @@ PLANEMO_TEST_VIEWER_URL_TEMPLATE = (
     "?test_data_url=%s"
 )
 
-target_path = click.Path(
-    file_okay=True,
-    dir_okay=False,
-    resolve_path=True,
-)
-
 
 @click.command("share_test")
-@click.argument(
-    'path',
-    metavar="FILE_PATH",
-    type=target_path,
-    default="tool_test_output.json",
-)
+@options.tool_test_json()
 @pass_context
 def cli(ctx, path, **kwds):
     """Publish JSON test results to Github Gist and produce sharable URL.

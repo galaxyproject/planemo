@@ -76,11 +76,14 @@ class StructuredData(object):
         self.structured_data_by_id = structured_data_by_id
         self.has_details = "summary" in structured_data
         if self.has_details:
-            self._read_summary()
+            self.read_summary()
 
     def update(self):
         with open(self.json_path, "w") as out_f:
             json.dump(self.structured_data, out_f)
+
+    def set_exit_code(self, exit_code):
+        self.structured_data["exit_code"] = exit_code
 
     def merge_xunit(self, xunit_root):
         self.has_details = True
@@ -97,8 +100,6 @@ class StructuredData(object):
         )
 
         self.structured_data["summary"] = summary
-        self.num_tests = num_tests
-        self.num_problems = num_skips + num_errors + num_failures
 
         for testcase_el in xunit_t_elements_from_root(xunit_root):
             test = case_id(testcase_el)
@@ -118,9 +119,17 @@ class StructuredData(object):
                 status = "success"
             test_data["status"] = status
 
-    def _read_summary(self):
-        # TODO: read relevant data out of summary object.
-        pass
+    def read_summary(self):
+        summary = self.structured_data["summary"]
+        num_tests = summary["num_tests"]
+        num_failures = summary["num_failures"]
+        num_skips = summary["num_skips"]
+        num_errors = summary["num_errors"]
+
+        self.num_tests = num_tests
+        self.num_problems = num_skips + num_errors + num_failures
+
+        self.exit_code = summary["exit_code"]
 
     @property
     def failed_ids(self):
@@ -159,7 +168,13 @@ class GalaxyTestResults(object):
             sd.merge_xunit(self._xunit_root)
         else:
             self.xunit_tree = ET.fromstring("<testsuite />")
+        self.sd.set_exit_code(exit_code)
+        self.sd.read_summary()
         self.sd.update()
+
+    @property
+    def exit_code(self):
+        return self.sd.exit_code
 
     @property
     def has_details(self):

@@ -1,0 +1,206 @@
+{
+   "exit_code": 1,
+   "summary" : {
+      "num_errors" : 1,
+      "num_skips" : 0,
+      "num_tests" : 4,
+      "num_failures" : 2
+   },
+   "version" : "0.1",
+   "tests" : [
+      {
+         "id" : "functional.test_toolbox.TestForTool_bcftools_concat.test_tool_000000",
+         "has_data" : true,
+         "data" : {
+            "status" : "success",
+            "inputs" : {
+               "input_file2" : {
+                  "id" : "5729865256bc2525",
+                  "src" : "hda"
+               },
+               "input_file1" : {
+                  "id" : "2891970512fa2d5a",
+                  "src" : "hda"
+               }
+            },
+            "job" : {
+               "outputs" : {
+                  "output_file" : {
+                     "id" : "54f2a3a23292eb07",
+                     "uuid" : "b02f5eb2-eece-440e-a8bb-9a08a8e8f22d",
+                     "src" : "hda"
+                  }
+               },
+               "state" : "ok",
+               "model_class" : "Job",
+               "id" : "54f2a3a23292eb07",
+               "user_email" : "test@bx.psu.edu",
+               "tool_id" : "bcftools_concat",
+               "stdout" : "",
+               "params" : {
+                  "sec_default" : "{\"allow_overlaps\": \"False\", \"remove_duplicates\": \"False\", \"ligate\": \"False\", \"min_PQ\": \"\", \"select_output_type\": \"v\", \"regions_file\": null, \"invert_regions_file\": \"False\"}",
+                  "dbkey" : "\"hg17\"",
+                  "chromInfo" : "\"/tmp/tmp5pjfin/galaxy-dev/tool-data/shared/ucsc/chrom/hg17.len\""
+               },
+               "stderr" : "",
+               "job_metrics" : [],
+               "update_time" : "2015-11-22T18:43:36.655580",
+               "create_time" : "2015-11-22T18:43:33.244091",
+               "exit_code" : 0,
+               "command_line" : "bcftools concat      --output-type \"v\"     /tmp/tmp5pjfin/files/000/dataset_1.dat  /tmp/tmp5pjfin/files/000/dataset_2.dat  > /tmp/tmp5pjfin/files/000/dataset_3.dat",
+               "external_id" : "11230",
+               "inputs" : {
+                  "input_file2" : {
+                     "id" : "5729865256bc2525",
+                     "src" : "hda",
+                     "uuid" : "e6aa6d21-f8b3-4b4a-a698-5b8a673cdf73"
+                  },
+                  "input_file1" : {
+                     "id" : "2891970512fa2d5a",
+                     "src" : "hda",
+                     "uuid" : "3ad7718d-1e9c-4ec0-8efd-494acbaa3fd5"
+                  }
+               }
+            }
+         }
+      },
+      {
+         "id" : "functional.test_toolbox.TestForTool_bcftools_concat.test_tool_000001",
+         "has_data" : true,
+         "data" : {
+            "problem_type" : "functional.test_toolbox.JobOutputsError",
+            "status" : "failure",
+            "inputs" : {
+               "input_file1" : {
+                  "src" : "hda",
+                  "id" : "8155e4b4bf1581ff"
+               },
+               "input_file2" : {
+                  "src" : "hda",
+                  "id" : "7b55dbb89df8f4e5"
+               },
+               "sec_default|allow_overlaps" : true
+            },
+            "problem_log" : "  File \"/usr/lib/python2.7/unittest/case.py\", line 329, in run\n    testMethod()\n  File \"/tmp/tmp5pjfin/galaxy-dev/test/functional/test_toolbox.py\", line 270, in test_tool\n    self.do_it( td )\n  File \"/tmp/tmp5pjfin/galaxy-dev/test/functional/test_toolbox.py\", line 67, in do_it\n    raise e\n'Job in error state.\\nJob in error state.\\n-------------------- >> begin captured stdout << ---------------------\\nHistory with id 5729865256bc2525 in error - summary of datasets in error below.\\n--------------------------------------\\n| 3 - bcftools concat on data 2 and data 1 (HID - NAME) \\n| Dataset Blurb:\\n|  error\\n| Dataset Info:\\n|  Fatal error: Exit code 255 ()\\n|  Failed to open /tmp/tmp5pjfin/files/000/dataset_4.dat: could not load index\\n| Dataset Job Standard Output:\\n|  *Standard output was empty.*\\n| Dataset Job Standard Error:\\n|  Fatal error: Exit code 255 ()\\n|  Failed to open /tmp/tmp5pjfin/files/000/dataset_4.dat: could not load index\\n|\\n--------------------------------------\\nHistory with id 5729865256bc2525 in error - summary of datasets in error below.\\n--------------------------------------\\n| 3 - bcftools concat on data 2 and data 1 (HID - NAME) \\n| Dataset Blurb:\\n|  error\\n| Dataset Info:\\n|  Fatal error: Exit code 255 ()\\n|  Failed to open /tmp/tmp5pjfin/files/000/dataset_4.dat: could not load index\\n| Dataset Job Standard Output:\\n|  *Standard output was empty.*\\n| Dataset Job Standard Error:\\n|  Fatal error: Exit code 255 ()\\n|  Failed to open /tmp/tmp5pjfin/files/000/dataset_4.dat: could not load index\\n|\\n--------------------------------------\\n\\n--------------------- >> end captured stdout << ----------------------\\n-------------------- >> begin captured logging << --------------------\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.web.framework.webapp: INFO: Session authenticated using Galaxy master api key\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/users?key=test_key HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.web.framework.webapp: INFO: Session authenticated using Galaxy master api key\\nrequests.packages.urllib3.connectionpool: DEBUG: \"POST /api/users/2891970512fa2d5a/api_key HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"POST /api/histories HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.tools.actions.upload_common: INFO: tool upload1 created job id 4\\ngalaxy.tools.execute: DEBUG: Tool [upload1] created job [4] (602.265 ms)\\nrequests.packages.urllib3.connectionpool: DEBUG: \"POST /api/tools HTTP/1.1\" 200 None\\ngalaxy.jobs: DEBUG: (4) Working directory for job is: /tmp/tmp5pjfin/job_working_directory/000/4\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs.handler: DEBUG: (4) Dispatching to local runner\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/5729865256bc2525?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs: DEBUG: (4) Persisting job destination (destination id: local:///)\\ngalaxy.jobs.runners: DEBUG: Job [4] queued (1379.148 ms)\\ngalaxy.jobs.handler: INFO: (4) Job dispatched\\ngalaxy.tools.deps: DEBUG: Building dependency shell command for dependency \\'samtools\\'\\ngalaxy.tools.deps: WARNING: Failed to resolve dependency on \\'samtools\\', ignoring\\ngalaxy.jobs.runners: DEBUG: (4) command is: python /tmp/tmp5pjfin/galaxy-dev/tools/data_source/upload.py /tmp/tmp5pjfin/galaxy-dev /tmp/tmp5pjfin/tmp/tmpuZo40k /tmp/tmp5pjfin/tmp/tmp8VZxv8 4:/tmp/tmp5pjfin/job_working_directory/000/4/dataset_4_files:/tmp/tmp5pjfin/files/000/dataset_4.dat; return_code=$?; python /tmp/tmp5pjfin/
+job_working_directory/000/4/set_metadata_mXQVti.py /tmp/tmp5pjfin/tmp/tmpuZo40k /tmp/tmp5pjfin/job_working_directory/000/4/galaxy.json /tmp/tmp5pjfin/job_working_directory/000/4/metadata_in_HistoryDatasetAssociation_4_T4oyhJ,/tmp/tmp5pjfin/job_working_directory/000/4/metadata_kwds_HistoryDatasetAssociation_4_k7QHE8,/tmp/tmp5pjfin/job_working_directory/000/4/metadata_out_HistoryDatasetAssociation_4_yXfnjX,/tmp/tmp5pjfin/job_working_directory/000/4/metadata_results_HistoryDatasetAssociation_4_Tz23sN,/tmp/tmp5pjfin/files/000/dataset_4.dat,/tmp/tmp5pjfin/job_working_directory/000/4/metadata_override_HistoryDatasetAssociation_4_7J3ovc 0; sh -c \"exit $return_code\"\\ngalaxy.jobs.runners.local: DEBUG: (4) executing job script: /tmp/tmp5pjfin/job_working_directory/000/4/galaxy_4.sh\\ngalaxy.jobs: DEBUG: (4) Persisting job destination (destination id: local:///)\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/5729865256bc2525?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs.runners.local: DEBUG: execution finished: /tmp/tmp5pjfin/job_working_directory/000/4/galaxy_4.sh\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/5729865256bc2525?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.datatypes.metadata: DEBUG: loading metadata from file for: HistoryDatasetAssociation 4\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/5729865256bc2525?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs: DEBUG: job 4 ended (finish() executed in (1699.326 ms))\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/5729865256bc2525?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.tools.actions.upload_common: INFO: tool upload1 created job id 5\\ngalaxy.tools.execute: DEBUG: Tool [upload1] created job [5] (743.937 ms)\\ngalaxy.jobs: DEBUG: (5) Working directory for job is: /tmp/tmp5pjfin/job_working_directory/000/5\\nrequests.packages.urllib3.connectionpool: DEBUG: \"POST /api/tools HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs.handler: DEBUG: (5) Dispatching to local runner\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/5729865256bc2525?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/5729865256bc2525?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs: DEBUG: (5) Persisting job destination (destination id: local:///)\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/5729865256bc2525?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs.runners: DEBUG: Job [5] queued (534.749 ms)\\ngalaxy.jobs.handler: INFO: (5) Job dispatched\\ngalaxy.tools.deps: DEBUG: Building dependency shell command for dependency \\'samtools\\'\\ngalaxy.tools.deps: WARNING: Failed to resolve dependency on \\'samtools\\', ignoring\\ngalaxy.jobs.runners: DEBUG: (5) command is: python /tmp/tmp5pjfin/galaxy-dev/tools/data_source/upload.py /tmp/tmp5pjfin/galaxy-dev /tmp/tmp5pjfin/tmp/tmpuZo40k /tmp/tmp5pjfin/tmp/tmpEfL2nl 5:/tmp/tmp5pjfin/job_working_directory/000/5/dataset_5_files:/tmp/tmp5pjfin/files/000/dataset_5.dat; return_code=$?; python /tmp/tmp5pjfin/job_working_directory/000/5/set_metadata_BHJ9hq.py /tmp/tmp5pjfin/tmp/tmpuZo40k /
+tmp/tmp5pjfin/job_working_directory/000/5/galaxy.json /tmp/tmp5pjfin/job_working_directory/000/5/metadata_in_HistoryDatasetAssociation_5_GEeQN7,/tmp/tmp5pjfin/job_working_directory/000/5/metadata_kwds_HistoryDatasetAssociation_5_YRQXRe,/tmp/tmp5pjfin/job_working_directory/000/5/metadata_out_HistoryDatasetAssociation_5_PqtV_Q,/tmp/tmp5pjfin/job_working_directory/000/5/metadata_results_HistoryDatasetAssociation_5_737sSK,/tmp/tmp5pjfin/files/000/dataset_5.dat,/tmp/tmp5pjfin/job_working_directory/000/5/metadata_override_HistoryDatasetAssociation_5_l0EuS5 0; sh -c \"exit $return_code\"\\ngalaxy.jobs.runners.local: DEBUG: (5) executing job script: /tmp/tmp5pjfin/job_working_directory/000/5/galaxy_5.sh\\ngalaxy.jobs: DEBUG: (5) Persisting job destination (destination id: local:///)\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/5729865256bc2525?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs.runners.local: DEBUG: execution finished: /tmp/tmp5pjfin/job_working_directory/000/5/galaxy_5.sh\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/5729865256bc2525?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.datatypes.metadata: DEBUG: loading metadata from file for: HistoryDatasetAssociation 5\\ngalaxy.jobs: DEBUG: job 5 ended (finish() executed in (754.248 ms))\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/5729865256bc2525?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/5729865256bc2525?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.tools.actions: INFO: Handled output (318.018 ms)\\ngalaxy.tools.actions: INFO: Verified access to datasets (22.165 ms)\\ngalaxy.tools.execute: DEBUG: Tool [bcftools_concat] created job [6] (775.622 ms)\\nrequests.packages.urllib3.connectionpool: DEBUG: \"POST /api/tools HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs: DEBUG: (6) Working directory for job is: /tmp/tmp5pjfin/job_working_directory/000/6\\ngalaxy.jobs.handler: DEBUG: (6) Dispatching to local runner\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/jobs/fa6d20d0fb68383f?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\ngalaxy.jobs: DEBUG: (6) Persisting job destination (destination id: local:///)\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs.runners: DEBUG: Job [6] queued (407.617 ms)\\ngalaxy.jobs.handler: INFO: (6) Job dispatched\\ngalaxy.tools.deps: DEBUG: Building dependency shell command for dependency \\'bcftools\\'\\ngalaxy.tools.deps: WARNING: Failed to resolve dependency on \\'bcftools\\', ignoring\\ngalaxy.jobs.runners: DEBUG: (6) command is: bcftools 2>&1 | grep \\'Version:\\' > /tmp/tmp5pjfin/tmp/GALAXY_VERSION_STRING_6 2>&1; bcftools concat  --allow-overlaps    --output-type \"v\"     /tmp/tmp5pjfin/files/000/dataset_4.dat  /tmp/tmp5pjfin/files/000/dataset_5.dat  > /tmp/tmp5pjfin/files/000/dataset_6.dat; return_code=$?; python /tmp/tmp5pjfin/job_working_directory/000/6/set_metadata_FTDkBM.py /tmp/tmp5pjfin/tmp/tmpuZo40k /tmp/tmp5pjfin/job_working_directory/000/6/galaxy.json /tmp/tmp5pjfin/job_working_directory/000/6/metadata_in_HistoryDatasetAssociation_6_ZoV8cB,/tmp/tmp5pjfin/job_working_directory/000/6/metadata_kwds_HistoryDatasetAssociation_6_bAOa5r,/tmp/tmp5pjfin/job_working_directory/000/6/metadata_out_HistoryDatasetAssociation_6_puYIxT,/tmp/tmp5pjfin/job_working_directory/000/6/metadata_results_HistoryDatasetAssociation_6_gRWWAL,/tmp/tmp5pjfin/files/000/dataset_6.dat,/tmp/tmp5pjfin/job_
+working_directory/000/6/metadata_override_HistoryDatasetAssociation_6_1JAURb 0; sh -c \"exit $return_code\"\\ngalaxy.jobs.runners.local: DEBUG: (6) executing job script: /tmp/tmp5pjfin/job_working_directory/000/6/galaxy_6.sh\\ngalaxy.jobs: DEBUG: (6) Persisting job destination (destination id: local:///)\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/jobs/fa6d20d0fb68383f?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\ngalaxy.jobs.runners.local: DEBUG: execution finished: /tmp/tmp5pjfin/job_working_directory/000/6/galaxy_6.sh\\ngalaxy.jobs.output_checker: INFO: Job 6: Fatal error: Exit code 255 ()\\ngalaxy.jobs: DEBUG: setting dataset state to ERROR\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs: DEBUG: job 6 ended (finish() executed in (485.123 ms))\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/jobs/fa6d20d0fb68383f?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/jobs/fa6d20d0fb68383f?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/5729865256bc2525/contents?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/5729865256bc2525/contents/fa6d20d0fb68383f?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/5729865256bc2525/contents/fa6d20d0fb68383f/provenance?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/jobs/fa6d20d0fb68383f?full=true&key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/jobs/fa6d20d0fb68383f?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/5729865256bc2525/contents?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/5729865256bc2525/contents/fa6d20d0fb68383f?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/5729865256bc2525/contents/fa6d20d0fb68383f/provenance?key=d78ddba8840f79ec159f689fdef9d658 HTTP/1.1\" 200 None\\n--------------------- >> end captured logging << ---------------------'",
+            "job" : {
+               "inputs" : {
+                  "input_file1" : {
+                     "src" : "hda",
+                     "uuid" : "4d470ffd-c230-40d6-a5cc-10fa4d8004a7",
+                     "id" : "8155e4b4bf1581ff"
+                  },
+                  "input_file2" : {
+                     "src" : "hda",
+                     "uuid" : "e5c2df91-ec50-484a-ab8d-ad4e6417f516",
+                     "id" : "7b55dbb89df8f4e5"
+                  }
+               },
+               "external_id" : "11276",
+               "exit_code" : 255,
+               "command_line" : "bcftools concat  --allow-overlaps    --output-type \"v\"     /tmp/tmp5pjfin/files/000/dataset_4.dat  /tmp/tmp5pjfin/files/000/dataset_5.dat  > /tmp/tmp5pjfin/files/000/dataset_6.dat",
+               "create_time" : "2015-11-22T18:43:52.782033",
+               "update_time" : "2015-11-22T18:43:57.189984",
+               "job_metrics" : [],
+               "stderr" : "Fatal error: Exit code 255 ()\nFailed to open /tmp/tmp5pjfin/files/000/dataset_4.dat: could not load index\n",
+               "params" : {
+                  "sec_default" : "{\"allow_overlaps\": \"True\", \"remove_duplicates\": \"False\", \"ligate\": \"False\", \"min_PQ\": \"\", \"select_output_type\": \"v\", \"regions_file\": null, \"invert_regions_file\": \"False\"}",
+                  "dbkey" : "\"hg17\"",
+                  "chromInfo" : "\"/tmp/tmp5pjfin/galaxy-dev/tool-data/shared/ucsc/chrom/hg17.len\""
+               },
+               "stdout" : "",
+               "user_email" : "test@bx.psu.edu",
+               "tool_id" : "bcftools_concat",
+               "id" : "fa6d20d0fb68383f",
+               "state" : "error",
+               "model_class" : "Job",
+               "outputs" : {
+                  "output_file" : {
+                     "id" : "fa6d20d0fb68383f",
+                     "uuid" : "48bf13ab-fe70-479e-955a-6ba20a9be374",
+                     "src" : "hda"
+                  }
+               }
+            },
+            "output_problems" : [
+               "Job in error state.",
+               "Job in error state."
+            ]
+         }
+      },
+      {
+         "id" : "functional.test_toolbox.TestForTool_bcftools_concat.test_tool_000002",
+         "has_data" : false,
+         "data" : null
+      },
+      {
+         "data" : {
+            "inputs" : {
+               "input_file2" : {
+                  "src" : "hda",
+                  "id" : "b842d972534ccb3e"
+               },
+               "sec_default|allow_overlaps" : true,
+               "input_file1" : {
+                  "id" : "a90a30fafe298e1e",
+                  "src" : "hda"
+               },
+               "sec_default|remove_duplicates" : true
+            },
+            "problem_log" : "  File \"/usr/lib/python2.7/unittest/case.py\", line 329, in run\n    testMethod()\n  File \"/tmp/tmp5pjfin/galaxy-dev/test/functional/test_toolbox.py\", line 270, in test_tool\n    self.do_it( td )\n  File \"/tmp/tmp5pjfin/galaxy-dev/test/functional/test_toolbox.py\", line 67, in do_it\n    raise e\n'Job in error state.\\nJob in error state.\\n-------------------- >> begin captured stdout << ---------------------\\nHistory with id 8155e4b4bf1581ff in error - summary of datasets in error below.\\n--------------------------------------\\n| 3 - bcftools concat on data 2 and data 1 (HID - NAME) \\n| Dataset Blurb:\\n|  error\\n| Dataset Info:\\n|  Fatal error: Exit code 255 ()\\n|  Failed to open /tmp/tmp5pjfin/files/000/dataset_8.dat: could not load index\\n| Dataset Job Standard Output:\\n|  *Standard output was empty.*\\n| Dataset Job Standard Error:\\n|  Fatal error: Exit code 255 ()\\n|  Failed to open /tmp/tmp5pjfin/files/000/dataset_8.dat: could not load index\\n|\\n--------------------------------------\\nHistory with id 8155e4b4bf1581ff in error - summary of datasets in error below.\\n--------------------------------------\\n| 3 - bcftools concat on data 2 and data 1 (HID - NAME) \\n| Dataset Blurb:\\n|  error\\n| Dataset Info:\\n|  Fatal error: Exit code 255 ()\\n|  Failed to open /tmp/tmp5pjfin/files/000/dataset_8.dat: could not load index\\n| Dataset Job Standard Output:\\n|  *Standard output was empty.*\\n| Dataset Job Standard Error:\\n|  Fatal error: Exit code 255 ()\\n|  Failed to open /tmp/tmp5pjfin/files/000/dataset_8.dat: could not load index\\n|\\n--------------------------------------\\n\\n--------------------- >> end captured stdout << ----------------------\\n-------------------- >> begin captured logging << --------------------\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.web.framework.webapp: INFO: Session authenticated using Galaxy master api key\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/users?key=test_key HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.web.framework.webapp: INFO: Session authenticated using Galaxy master api key\\nrequests.packages.urllib3.connectionpool: DEBUG: \"POST /api/users/2891970512fa2d5a/api_key HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"POST /api/histories HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.tools.actions.upload_common: INFO: tool upload1 created job id 8\\ngalaxy.tools.execute: DEBUG: Tool [upload1] created job [8] (756.588 ms)\\nrequests.packages.urllib3.connectionpool: DEBUG: \"POST /api/tools HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs: DEBUG: (8) Working directory for job is: /tmp/tmp5pjfin/job_working_directory/000/8\\ngalaxy.jobs.handler: DEBUG: (8) Dispatching to local runner\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/8155e4b4bf1581ff?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/8155e4b4bf1581ff?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs: DEBUG: (8) Persisting job destination (destination id: local:///)\\ngalaxy.jobs.runners: DEBUG: Job [8] queued (1371.102 ms)\\ngalaxy.jobs.handler: INFO: (8) Job dispatched\\ngalaxy.tools.deps: DEBUG: Building dependency shell command for dependency \\'samtools\\'\\ngalaxy.tools.deps: WARNING: Failed to resolve dependency on \\'samtools\\', ignoring\\ngalaxy.jobs.runners: DEBUG: (8) command is: python /tmp/tmp5pjfin/galaxy-dev/tools/data_
+source/upload.py /tmp/tmp5pjfin/galaxy-dev /tmp/tmp5pjfin/tmp/tmpuZo40k /tmp/tmp5pjfin/tmp/tmpdGsL1g 8:/tmp/tmp5pjfin/job_working_directory/000/8/dataset_8_files:/tmp/tmp5pjfin/files/000/dataset_8.dat; return_code=$?; python /tmp/tmp5pjfin/job_working_directory/000/8/set_metadata_CcIolG.py /tmp/tmp5pjfin/tmp/tmpuZo40k /tmp/tmp5pjfin/job_working_directory/000/8/galaxy.json /tmp/tmp5pjfin/job_working_directory/000/8/metadata_in_HistoryDatasetAssociation_8_7NWAAc,/tmp/tmp5pjfin/job_working_directory/000/8/metadata_kwds_HistoryDatasetAssociation_8_DLEMeH,/tmp/tmp5pjfin/job_working_directory/000/8/metadata_out_HistoryDatasetAssociation_8_dumYsb,/tmp/tmp5pjfin/job_working_directory/000/8/metadata_results_HistoryDatasetAssociation_8_z6aYlu,/tmp/tmp5pjfin/files/000/dataset_8.dat,/tmp/tmp5pjfin/job_working_directory/000/8/metadata_override_HistoryDatasetAssociation_8_eLojbK 0; sh -c \"exit $return_code\"\\ngalaxy.jobs.runners.local: DEBUG: (8) executing job script: /tmp/tmp5pjfin/job_working_directory/000/8/galaxy_8.sh\\ngalaxy.jobs: DEBUG: (8) Persisting job destination (destination id: local:///)\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/8155e4b4bf1581ff?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs.runners.local: DEBUG: execution finished: /tmp/tmp5pjfin/job_working_directory/000/8/galaxy_8.sh\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/8155e4b4bf1581ff?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.datatypes.metadata: DEBUG: loading metadata from file for: HistoryDatasetAssociation 8\\ngalaxy.jobs: DEBUG: job 8 ended (finish() executed in (1791.218 ms))\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/8155e4b4bf1581ff?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/8155e4b4bf1581ff?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.tools.actions.upload_common: INFO: tool upload1 created job id 9\\ngalaxy.tools.execute: DEBUG: Tool [upload1] created job [9] (704.111 ms)\\ngalaxy.jobs: DEBUG: (9) Working directory for job is: /tmp/tmp5pjfin/job_working_directory/000/9\\nrequests.packages.urllib3.connectionpool: DEBUG: \"POST /api/tools HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs.handler: DEBUG: (9) Dispatching to local runner\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/8155e4b4bf1581ff?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/8155e4b4bf1581ff?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs: DEBUG: (9) Persisting job destination (destination id: local:///)\\ngalaxy.jobs.runners: DEBUG: Job [9] queued (368.196 ms)\\ngalaxy.jobs.handler: INFO: (9) Job dispatched\\ngalaxy.tools.deps: DEBUG: Building dependency shell command for dependency \\'samtools\\'\\ngalaxy.tools.deps: WARNING: Failed to resolve dependency on \\'samtools\\', ignoring\\ngalaxy.jobs.runners: DEBUG: (9) command is: python /tmp/tmp5pjfin/galaxy-dev/tools/data_source/upload.py /tmp/tmp5pjfin/galaxy-dev /tmp/tmp5pjfin/tmp/tmpuZo40k /tmp/tmp5pjfin/tmp/tmpZxbdHX 9:/tmp/tmp5pjfin/job_working_directory/000/9/dataset_9_files:/tmp/tmp5pjfin/files/000/dataset_9.dat; return_code=$?; python /tmp/tmp5pjfin/job_working_directory/000/9/set_metadata_XWt2fn.py /tmp/tmp5pjfin/tmp/tmpuZo40k /
+tmp/tmp5pjfin/job_working_directory/000/9/galaxy.json /tmp/tmp5pjfin/job_working_directory/000/9/metadata_in_HistoryDatasetAssociation_9_tsabzV,/tmp/tmp5pjfin/job_working_directory/000/9/metadata_kwds_HistoryDatasetAssociation_9_UQgw2n,/tmp/tmp5pjfin/job_working_directory/000/9/metadata_out_HistoryDatasetAssociation_9_VDinI8,/tmp/tmp5pjfin/job_working_directory/000/9/metadata_results_HistoryDatasetAssociation_9_LFlQZF,/tmp/tmp5pjfin/files/000/dataset_9.dat,/tmp/tmp5pjfin/job_working_directory/000/9/metadata_override_HistoryDatasetAssociation_9_qYzOEG 0; sh -c \"exit $return_code\"\\ngalaxy.jobs.runners.local: DEBUG: (9) executing job script: /tmp/tmp5pjfin/job_working_directory/000/9/galaxy_9.sh\\ngalaxy.jobs: DEBUG: (9) Persisting job destination (destination id: local:///)\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/8155e4b4bf1581ff?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs.runners.local: DEBUG: execution finished: /tmp/tmp5pjfin/job_working_directory/000/9/galaxy_9.sh\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/8155e4b4bf1581ff?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.datatypes.metadata: DEBUG: loading metadata from file for: HistoryDatasetAssociation 9\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/8155e4b4bf1581ff?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs: DEBUG: job 9 ended (finish() executed in (756.948 ms))\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/8155e4b4bf1581ff?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.tools.actions: INFO: Handled output (474.659 ms)\\ngalaxy.tools.actions: INFO: Verified access to datasets (19.515 ms)\\ngalaxy.tools.execute: DEBUG: Tool [bcftools_concat] created job [10] (888.455 ms)\\ngalaxy.jobs: DEBUG: (10) Working directory for job is: /tmp/tmp5pjfin/job_working_directory/000/10\\nrequests.packages.urllib3.connectionpool: DEBUG: \"POST /api/tools HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs.handler: DEBUG: (10) Dispatching to local runner\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/jobs/5449172d6ff5669b?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\ngalaxy.jobs: DEBUG: (10) Persisting job destination (destination id: local:///)\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs.runners: DEBUG: Job [10] queued (377.760 ms)\\ngalaxy.jobs.handler: INFO: (10) Job dispatched\\ngalaxy.tools.deps: DEBUG: Building dependency shell command for dependency \\'bcftools\\'\\ngalaxy.tools.deps: WARNING: Failed to resolve dependency on \\'bcftools\\', ignoring\\ngalaxy.jobs.runners: DEBUG: (10) command is: bcftools 2>&1 | grep \\'Version:\\' > /tmp/tmp5pjfin/tmp/GALAXY_VERSION_STRING_10 2>&1; bcftools concat  --allow-overlaps --remove-duplicates   --output-type \"v\"     /tmp/tmp5pjfin/files/000/dataset_8.dat  /tmp/tmp5pjfin/files/000/dataset_9.dat  > /tmp/tmp5pjfin/files/000/dataset_10.dat; return_code=$?; python /tmp/tmp5pjfin/job_working_directory/000/10/set_metadata_JflQbE.py /tmp/tmp5pjfin/tmp/tmpuZo40k /tmp/tmp5pjfin/job_working_directory/000/10/galaxy.json /tmp/tmp5pjfin/job_working_directory/000/10/metadata_in_HistoryDatasetAssociation_10_ANj2bu,/tmp/tmp5pjfin/job_working_directory/000/10/metadata_kwds_HistoryDatasetAssociation_10_TDlpDa,/tmp/tmp5pjfin/job_working_directory/000/10/metadata_out_HistoryDatasetAssociation_10_muyCeq,/tmp/tmp5pjfin/job_working_directory/000/10/metadata_results_HistoryDatasetAssociation_10_lY5jdH,/tmp/tmp5pjfin/files/
+000/dataset_10.dat,/tmp/tmp5pjfin/job_working_directory/000/10/metadata_override_HistoryDatasetAssociation_10_iIZp4h 0; sh -c \"exit $return_code\"\\ngalaxy.jobs.runners.local: DEBUG: (10) executing job script: /tmp/tmp5pjfin/job_working_directory/000/10/galaxy_10.sh\\ngalaxy.jobs: DEBUG: (10) Persisting job destination (destination id: local:///)\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/jobs/5449172d6ff5669b?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\ngalaxy.jobs.runners.local: DEBUG: execution finished: /tmp/tmp5pjfin/job_working_directory/000/10/galaxy_10.sh\\ngalaxy.jobs.output_checker: INFO: Job 10: Fatal error: Exit code 255 ()\\ngalaxy.jobs: DEBUG: setting dataset state to ERROR\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\ngalaxy.jobs: DEBUG: job 10 ended (finish() executed in (572.413 ms))\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/jobs/5449172d6ff5669b?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/8155e4b4bf1581ff/contents?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/8155e4b4bf1581ff/contents/5449172d6ff5669b?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/8155e4b4bf1581ff/contents/5449172d6ff5669b/provenance?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/jobs/5449172d6ff5669b?full=true&key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/jobs/5449172d6ff5669b?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/8155e4b4bf1581ff/contents?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/8155e4b4bf1581ff/contents/5449172d6ff5669b?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\nrequests.packages.urllib3.connectionpool: INFO: Starting new HTTP connection (1): localhost\\nrequests.packages.urllib3.connectionpool: DEBUG: \"GET /api/histories/8155e4b4bf1581ff/contents/5449172d6ff5669b/provenance?key=a13df6814f42fd8f95e5af2e48632070 HTTP/1.1\" 200 None\\n--------------------- >> end captured logging << ---------------------'",
+            "job" : {
+               "update_time" : "2015-11-22T18:44:24.816000",
+               "job_metrics" : [],
+               "external_id" : "11336",
+               "inputs" : {
+                  "input_file2" : {
+                     "id" : "b842d972534ccb3e",
+                     "uuid" : "bbd523b2-0a90-40e4-8302-e931f46cccfb",
+                     "src" : "hda"
+                  },
+                  "input_file1" : {
+                     "id" : "a90a30fafe298e1e",
+                     "uuid" : "7852e0a8-8b4d-405b-9398-be468f9910e5",
+                     "src" : "hda"
+                  }
+               },
+               "create_time" : "2015-11-22T18:44:21.622867",
+               "exit_code" : 255,
+               "command_line" : "bcftools concat  --allow-overlaps --remove-duplicates   --output-type \"v\"     /tmp/tmp5pjfin/files/000/dataset_8.dat  /tmp/tmp5pjfin/files/000/dataset_9.dat  > /tmp/tmp5pjfin/files/000/dataset_10.dat",
+               "id" : "5449172d6ff5669b",
+               "user_email" : "test@bx.psu.edu",
+               "tool_id" : "bcftools_concat",
+               "stdout" : "",
+               "model_class" : "Job",
+               "state" : "error",
+               "outputs" : {
+                  "output_file" : {
+                     "uuid" : "a11eb35e-e64e-4c32-9571-08ed6fc014ec",
+                     "src" : "hda",
+                     "id" : "5449172d6ff5669b"
+                  }
+               },
+               "stderr" : "Fatal error: Exit code 255 ()\nFailed to open /tmp/tmp5pjfin/files/000/dataset_8.dat: could not load index\n",
+               "params" : {
+                  "chromInfo" : "\"/tmp/tmp5pjfin/galaxy-dev/tool-data/shared/ucsc/chrom/hg17.len\"",
+                  "dbkey" : "\"hg17\"",
+                  "sec_default" : "{\"allow_overlaps\": \"True\", \"remove_duplicates\": \"True\", \"ligate\": \"False\", \"min_PQ\": \"\", \"select_output_type\": \"v\", \"regions_file\": null, \"invert_regions_file\": \"False\"}"
+               }
+            },
+            "output_problems" : [
+               "Job in error state.",
+               "Job in error state."
+            ],
+            "problem_type" : "functional.test_toolbox.JobOutputsError",
+            "status" : "failure"
+         },
+         "has_data" : true,
+         "id" : "functional.test_toolbox.TestForTool_bcftools_concat.test_tool_000003"
+      }
+   ]
+}

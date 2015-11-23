@@ -616,14 +616,22 @@ def recursive_option(help="Recursively perform command for subdirectories."):
     )
 
 
-def test_options():
+def tool_test_json():
+    target_path = click.Path(
+        file_okay=True,
+        dir_okay=False,
+        resolve_path=True,
+    )
+    return click.argument(
+        'path',
+        metavar="FILE_PATH",
+        type=target_path,
+        default="tool_test_output.json",
+    )
+
+
+def test_report_options():
     return _compose(
-        click.option(
-            "--update_test_data",
-            is_flag=True,
-            help="Update test-data directory with job outputs (normally"
-                 " written to directory --job_output_files if specified.)"
-        ),
         click.option(
             "--test_output",
             type=click.Path(file_okay=True, resolve_path=True),
@@ -648,6 +656,18 @@ def test_options():
                   "computers)"),
             default=None,
         ),
+    )
+
+
+def test_options():
+    return _compose(
+        click.option(
+            "--update_test_data",
+            is_flag=True,
+            help="Update test-data directory with job outputs (normally"
+                 " written to directory --job_output_files if specified.)"
+        ),
+        test_report_options(),
         click.option(
             "--test_output_xunit",
             type=click.Path(file_okay=True, resolve_path=True),

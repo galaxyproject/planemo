@@ -83,33 +83,62 @@ def run_in_config(ctx, config, **kwds):
         return_code,
     )
 
-    try:
-        test_data = test_results.structured_data
-
-        if 'test_output' in kwds:
-            output_path = kwds['test_output']
-            if output_path is not None:
-                with open(output_path, 'w') as handle:
-                    handle.write(build_report.build_report(test_data))
-
-        for kw_name in ('markdown', 'text'):
-            if 'test_output_%s' % kw_name in kwds:
-                output_path = kwds['test_output_%s' % kw_name]
-                if output_path is None:
-                    continue
-
-                with open(output_path, 'w') as handle:
-                    handle.write(build_report.build_report(test_data, report_type=kw_name))
-
-    except Exception:
-        ctx.vlog("Problem producing test output.", exception=True)
-
+    test_data = test_results.structured_data
+    handle_test_reports(ctx, test_data, **kwds)
     __handle_summary(
         test_results,
         **kwds
     )
 
     return return_code
+
+
+def handle_test_reports(ctx, test_data, **kwds):
+    exceptions = []
+    for report_type in ["html", "markdown", "text"]:
+        try:
+            _handle_test_output_file(
+                ctx, report_type, test_data, **kwds
+            )
+        except Exception as e:
+            exceptions.append(e)
+            continue
+
+    if len(exceptions) > 0:
+        raise exceptions[0]
+
+
+def _handle_test_output_file(ctx, report_type, test_data, **kwds):
+    kwd_name = "test_output"
+    if report_type != "html":
+        kwd_name = "test_output_%s" % report_type
+
+    path = kwds.get(kwd_name, None)
+    if path is None:
+        message = "No file specified for %s, skipping test output." % kwd_name
+        ctx.vlog(message)
+        return
+
+    try:
+        contents = build_report.build_report(
+            report_type, report_type=report_type
+        )
+    except Exception:
+        message = "Problem producing report file %s for %s" % (
+            path, kwd_name
+        )
+        ctx.vlog(message, exception=True)
+        raise
+
+    try:
+        with open(path, 'w') as handle:
+            handle.write(contents)
+    except Exception:
+        message = "Problem writing output file %s for %s" % (
+            kwd_name, path
+        )
+        ctx.vlog(message, exception=True)
+        raise
 
 
 def __handle_summary(
