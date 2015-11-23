@@ -84,7 +84,7 @@ def run_in_config(ctx, config, **kwds):
     )
 
     test_data = test_results.structured_data
-    handle_test_reports(ctx, test_data, kwds)
+    handle_reports(ctx, test_data, kwds)
     __handle_summary(
         test_results,
         **kwds
