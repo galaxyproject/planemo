@@ -93,7 +93,7 @@ def run_in_config(ctx, config, **kwds):
     return return_code
 
 
-def handle_test_reports(ctx, test_data, kwds):
+def handle_reports(ctx, test_data, kwds):
     exceptions = []
     for report_type in ["html", "markdown", "text"]:
         try:

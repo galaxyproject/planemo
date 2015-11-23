@@ -5,7 +5,7 @@ import click
 from planemo.cli import pass_context
 from planemo import io
 from planemo import options
-from planemo.galaxy_test import StructuredData, handle_test_reports
+from planemo.galaxy_test import StructuredData, handle_reports
 
 
 @click.command('test_reports')
@@ -21,4 +21,4 @@ def cli(ctx, path, **kwds):
         return 1
 
     test_data = StructuredData(path)
-    handle_test_reports(ctx, test_data, kwds)
+    handle_reports(ctx, test_data, kwds)
