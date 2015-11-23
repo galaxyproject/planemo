@@ -84,7 +84,7 @@ def run_in_config(ctx, config, **kwds):
     )
 
     test_data = test_results.structured_data
-    handle_test_reports(ctx, test_data, **kwds)
+    handle_test_reports(ctx, test_data, kwds)
     __handle_summary(
         test_results,
         **kwds
@@ -93,12 +93,12 @@ def run_in_config(ctx, config, **kwds):
     return return_code
 
 
-def handle_test_reports(ctx, test_data, **kwds):
+def handle_test_reports(ctx, test_data, kwds):
     exceptions = []
     for report_type in ["html", "markdown", "text"]:
         try:
             _handle_test_output_file(
-                ctx, report_type, test_data, **kwds
+                ctx, report_type, test_data, kwds
             )
         except Exception as e:
             exceptions.append(e)
@@ -108,7 +108,7 @@ def handle_test_reports(ctx, test_data, **kwds):
         raise exceptions[0]
 
 
-def _handle_test_output_file(ctx, report_type, test_data, **kwds):
+def _handle_test_output_file(ctx, report_type, test_data, kwds):
     kwd_name = "test_output"
     if report_type != "html":
         kwd_name = "test_output_%s" % report_type

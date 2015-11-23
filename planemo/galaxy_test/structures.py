@@ -136,7 +136,7 @@ class StructuredData(object):
         self.num_tests = num_tests
         self.num_problems = num_skips + num_errors + num_failures
 
-        self.exit_code = summary["exit_code"]
+        self.exit_code = self.structured_data["exit_code"]
 
     @property
     def failed_ids(self):
