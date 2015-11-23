@@ -180,6 +180,25 @@ def no_cache_galaxy_option():
     )
 
 
+def galaxy_branch_option():
+    return click.option(
+        "--galaxy_branch",
+        callback=get_default_callback(None),
+        help=("Branch of Galaxy to target (defaults to master) if a Galaxy "
+              "root isn't specified.")
+    )
+
+
+def galaxy_source_option():
+    return click.option(
+        "--galaxy_source",
+        callback=get_default_callback(None),
+        help=("Git source of Galaxy to target (defaults to the official "
+              "galaxyproject github source if a Galaxy root isn't "
+              "specified.")
+    )
+
+
 def brew_option():
     return click.option(
         "--brew",
@@ -532,6 +551,8 @@ def galaxy_target_options():
         galaxy_root_option(),
         galaxy_sqlite_database_option(),
         install_galaxy_option(),
+        galaxy_branch_option(),
+        galaxy_source_option(),
         no_cache_galaxy_option(),
         no_cleanup_option(),
         job_config_option(),
