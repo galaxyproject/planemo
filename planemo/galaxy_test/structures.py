@@ -3,6 +3,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+import os
 from collections import namedtuple
 import json
 import xml.etree.ElementTree as ET
@@ -59,15 +60,21 @@ class StructuredData(object):
 
     def __init__(self, json_path):
         self.json_path = json_path
-        try:
-            with open(json_path, "r") as output_json_f:
-                structured_data = json.load(output_json_f)
-                structured_data_tests = structured_data["tests"]
-        except Exception:
-            error("Warning: Targetting older Galaxy which did not "
-                  "produce a structured test results files.")
-            structured_data = {}
-            structured_data_tests = {}
+        if not os.path.exists(json_path):
+            error("Warning: Problem with target Galaxy, it did not "
+                  "produce a structured test results files - summary "
+                  "information and planemo reports will be incorrect."
+                  )
+        else:
+            try:
+                with open(json_path, "r") as output_json_f:
+                    structured_data = json.load(output_json_f)
+                    structured_data_tests = structured_data["tests"]
+            except Exception:
+                error("Galaxy produced invalid JSON for structured data - summary "
+                      "information and planemo reports will be incorrect.")
+                structured_data = {}
+                structured_data_tests = {}
         self.structured_data = structured_data
         self.structured_data_tests = structured_data_tests
         structured_data_by_id = {}
