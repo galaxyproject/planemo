@@ -163,7 +163,6 @@ class GalaxyTestResults(object):
         exit_code,
     ):
         self.output_html_path = output_html_path
-        self.exit_code = exit_code
         sd = StructuredData(output_json_path)
         self.sd = sd
         self.structured_data = sd.structured_data
