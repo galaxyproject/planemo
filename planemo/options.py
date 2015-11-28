@@ -269,7 +269,6 @@ def shed_project_arg(multiple=True):
     return click.argument(
         name,
         metavar="PROJECT",
-        default=".",
         type=arg_type,
         nargs=nargs,
         callback=_optional_tools_default,
