@@ -6,9 +6,36 @@ History
 .. to_doc
 
 ---------------------
-0.20.1.dev0
+0.21.0.dev0
 ---------------------
 
+* If ``virtualenv`` not on ``PATH``, have Planemo create one for Galaxy.
+  5b97f2e_
+* Add documentation section on testing tools installed in an existing
+  Galaxy instance. 1927168_
+* When creating a virtualenv for Galaxy, prefer Python 2.7.
+  e0577e7_
+* Documentation fixes and improvements thanks to @martenson.
+  0f8cb10_, 01584c5_, b757791_
+* Specify a minimum ``six`` version requirement. 1c7ee5b_
+* Add script to test a planemo as a wheel. 6514ff5_, `Issue 184`_
+* Fix empty macro loading. `Issue 362`_
+* Fix an issue when you run ``shed_diff --shed_target local`` thanks
+  to Gwendoline Andres and Gildas Le Corguillé at ABiMS Roscoff.
+  `Pull Request 375`_
+* Fix ``shed_diff`` printing to stdout if ``-o`` isn't specified.
+  f3394e7_
+* Small ``shed_diff`` improvements to XML diffing and XUnit reporting.
+  af7448c_, 83e227a_
+* More logging of ``shed_diff`` results if ``--verbose`` flagged.
+  9427b47_
+* Add ``test_report`` command for rebuilding reports from structured JSON.
+  99ee51a_
+* Fix option bug with Click 6.0 thanks to @bgruening. 2a7c792_
+* Improved error messages for test commands. fdce74c_
+* Various fixes for Python 3. 2f66fc3_, 7572e99_, 8eda729_, 764ce01_
+* Use newer travis container infrastructure for testing. 6d81a94_
+* Test case fixes. 98fdc8c_, 0e4f70a_
     
 
 
@@ -540,6 +567,32 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _2a7c792: https://github.com/galaxyproject/planemo/commit/2a7c792
+.. _99ee51a: https://github.com/galaxyproject/planemo/commit/99ee51a
+.. _fdce74c: https://github.com/galaxyproject/planemo/commit/fdce74c
+.. _7572e99: https://github.com/galaxyproject/planemo/commit/7572e99
+.. _8eda729: https://github.com/galaxyproject/planemo/commit/8eda729
+.. _764ce01: https://github.com/galaxyproject/planemo/commit/764ce01
+.. _2f66fc3: https://github.com/galaxyproject/planemo/commit/2f66fc3
+.. _e0577e7: https://github.com/galaxyproject/planemo/commit/e0577e7
+.. _5b97f2e: https://github.com/galaxyproject/planemo/commit/5b97f2e
+.. _01584c5: https://github.com/galaxyproject/planemo/commit/01584c5
+.. _b757791: https://github.com/galaxyproject/planemo/commit/b757791
+.. _1c7ee5b: https://github.com/galaxyproject/planemo/commit/1c7ee5b
+.. _1927168: https://github.com/galaxyproject/planemo/commit/1927168
+.. _9427b47: https://github.com/galaxyproject/planemo/commit/9427b47
+.. _9427b47: https://github.com/galaxyproject/planemo/commit/9427b47
+.. _83e227a: https://github.com/galaxyproject/planemo/commit/83e227a
+.. _f3394e7: https://github.com/galaxyproject/planemo/commit/f3394e7
+.. _af7448c: https://github.com/galaxyproject/planemo/commit/af7448c
+.. _6d81a94: https://github.com/galaxyproject/planemo/commit/6d81a94
+.. _0e4f70a: https://github.com/galaxyproject/planemo/commit/0e4f70a
+.. _Issue 362: https://github.com/galaxyproject/planemo/issues/362
+.. _Pull Request 375: https://github.com/galaxyproject/planemo/pull/375
+.. _Issue 184: https://github.com/galaxyproject/planemo/issues/184
+.. _6514ff5: https://github.com/galaxyproject/planemo/commit/6514ff5
+.. _98fdc8c: https://github.com/galaxyproject/planemo/commit/98fdc8c
+.. _0f8cb10: https://github.com/galaxyproject/planemo/commit/0f8cb10
 .. _c444855: https://github.com/galaxyproject/planemo/commit/c444855
 .. _dd94ddc: https://github.com/galaxyproject/planemo/commit/dd94ddc
 .. _6409449: https://github.com/galaxyproject/planemo/commit/6409449
