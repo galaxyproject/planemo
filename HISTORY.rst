@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.21.0.dev0
+0.21.0 (2015-11-29)
 ---------------------
 
 * If ``virtualenv`` not on ``PATH``, have Planemo create one for Galaxy.
