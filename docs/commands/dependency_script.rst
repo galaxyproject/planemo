@@ -49,8 +49,8 @@ installation receipe works, and to use this to run functional tests.
 **Options**::
 
 
-      -r, --recursive             Recursively perform command for nested
-                                  repository directories.
+      -r, --recursive             Recursively perform command for nested repository
+                                  directories.
       --fail_fast                 If multiple repositories are specified and an
                                   error occurs stop immediately instead of
                                   processing remaining repositories.

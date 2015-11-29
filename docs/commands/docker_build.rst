@@ -32,8 +32,7 @@ image.::
 
       --dockerfile TEXT
       --docker_image_cache TEXT
-      --docker_cmd TEXT          Command used to launch docker (defaults to
-                                 docker).
+      --docker_cmd TEXT          Command used to launch docker (defaults to docker).
       --docker_sudo              Flag to use sudo when running docker.
       --docker_sudo_cmd TEXT     sudo command to use when --docker_sudo is enabled
                                  (defaults to sudo).

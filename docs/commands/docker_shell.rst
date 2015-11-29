@@ -26,8 +26,7 @@ generates - so be sure to wrap this in $(...) to launch the subshell.::
 
       --from_tag              Treat the tool's Docker container identifier as a
                               locally cached tag.
-      --shell TEXT            Shell to launch in container (defaults to
-                              /bin/bash).
+      --shell TEXT            Shell to launch in container (defaults to /bin/bash).
       --docker_cmd TEXT       Command used to launch docker (defaults to docker).
       --docker_sudo           Flag to use sudo when running docker.
       --docker_sudo_cmd TEXT  sudo command to use when --docker_sudo is enabled

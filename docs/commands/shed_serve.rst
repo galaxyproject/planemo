@@ -25,8 +25,8 @@ logged into and explored interactively.
 
       -r, --recursive                 Recursively perform command for nested
                                       repository directories.
-      --fail_fast                     If multiple repositories are specified and
-                                      an error occurs stop immediately instead of
+      --fail_fast                     If multiple repositories are specified and an
+                                      error occurs stop immediately instead of
                                       processing remaining repositories.
       --owner TEXT                    Tool Shed repository owner (username).
       --name TEXT                     Tool Shed repository name (defaults to the
@@ -37,8 +37,8 @@ logged into and explored interactively.
                                       required unless e-mail and password is
                                       specified. This key can be specified with
                                       either --shed_key or --shed_key_from_env.
-      --shed_key_from_env TEXT        Environment variable to read API key for
-                                      Tool Shed access from.
+      --shed_key_from_env TEXT        Environment variable to read API key for Tool
+                                      Shed access from.
       --shed_password TEXT            Password for Tool Shed auth (required unless
                                       shed_key is specified).
       -t, --shed_target TEXT          Tool Shed to target (this can be 'toolshed',
@@ -51,11 +51,11 @@ logged into and explored interactively.
                                       Preseeded Galaxy sqlite database to target.
       --install_galaxy                Download and configure a disposable copy of
                                       Galaxy from github.
-      --no_cache_galaxy               Skip caching of Galaxy source and
-                                      dependencies obtained with --install_galaxy.
-                                      Not caching this results in faster downloads
-                                      (no git) - so is better on throw away
-                                      instances such with TravisCI.
+      --no_cache_galaxy               Skip caching of Galaxy source and dependencies
+                                      obtained with --install_galaxy. Not caching
+                                      this results in faster downloads (no git) - so
+                                      is better on throw away instances such with
+                                      TravisCI.
       --no_cleanup                    Do not cleanup temp files created for and by
                                       Galaxy.
       --job_config_file PATH          Job configuration file for Galaxy to target.

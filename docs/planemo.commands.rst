@@ -220,6 +220,14 @@ planemo.commands.cmd_test module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd_test_reports module
+----------------------------------------
+
+.. automodule:: planemo.commands.cmd_test_reports
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd_tool_factory module
 ----------------------------------------
 
@@ -248,6 +256,14 @@ planemo.commands.cmd_travis_init module
 ---------------------------------------
 
 .. automodule:: planemo.commands.cmd_travis_init
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_virtualenv module
+--------------------------------------
+
+.. automodule:: planemo.commands.cmd_virtualenv
     :members:
     :undoc-members:
     :show-inheritance:

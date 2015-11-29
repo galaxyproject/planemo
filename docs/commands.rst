@@ -32,6 +32,8 @@ documentation describes these commands.
 .. include:: commands/shed_upload.rst
 .. include:: commands/syntax.rst
 .. include:: commands/test.rst
+.. include:: commands/test_reports.rst
 .. include:: commands/tool_factory.rst
 .. include:: commands/tool_init.rst
 .. include:: commands/travis_init.rst
+.. include:: commands/virtualenv.rst

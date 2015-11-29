@@ -154,6 +154,14 @@ planemo.tools module
     :undoc-members:
     :show-inheritance:
 
+planemo.virtualenv module
+-------------------------
+
+.. automodule:: planemo.virtualenv
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

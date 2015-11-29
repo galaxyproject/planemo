@@ -28,9 +28,9 @@ Generate a tool outline from supplied arguments.
                                 'seqtk@1.68').
       --help_from_command TEXT  Auto populate help from supplied command.
       --help_text TEXT          Help text (reStructuredText)
-      --named_output TEXT       Create a named output for use with command block
-                                for example specify --named_output=output1.bam and
-                                then use '-o $ouput1' in your command block.
+      --named_output TEXT       Create a named output for use with command block for
+                                example specify --named_output=output1.bam and then
+                                use '-o $ouput1' in your command block.
       --output TEXT             An output location (e.g. output.bam), the Galaxy
                                 datatype is inferred from the extension.
       --input TEXT              An input description (e.g. input.fasta)
@@ -42,8 +42,7 @@ Generate a tool outline from supplied arguments.
       --example_command TEXT    Example to command with paths to build Cheetah
                                 template from (e.g. 'seqtk seq -a 2.fastq >
                                 2.fasta'). Option cannot be used with --command,
-                                should be used --example_input and
-                                --example_output.
+                                should be used --example_input and --example_output.
       -c, --command TEXT        Command potentially including cheetah variables
                                 ()(e.g. 'seqtk seq -a $input > $output')
       -d, --description TEXT    Short description for new tool (user facing)

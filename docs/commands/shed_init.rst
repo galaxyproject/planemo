@@ -23,17 +23,15 @@ in a Galaxy Tool Shed.
 
       --from_workflow PATH            Attempt to generate repository dependencies
                                       from specified workflow.
-      --description TEXT              Specify repository description for
-                                      .shed.yml.
+      --description TEXT              Specify repository description for .shed.yml.
       --long_description TEXT         Specify repository long_description for
                                       .shed.yml.
       --remote_repository_url TEXT    Specify repository remote_repository_url for
                                       .shed.yml.
-      --homepage_url TEXT             Specify repository homepage_url for
-                                      .shed.yml.
+      --homepage_url TEXT             Specify repository homepage_url for .shed.yml.
       --category [Assembly|ChIP-seq|Combinatorial Selections|Computational chemistry|Convert Formats|Epigenetics|Data Managers|Data Source|Fasta Manipulation|Fastq Manipulation|Genome-Wide Association Study|Genomic Interval Operations|Graphics|Imaging|Metabolomics|Metagenomics|Micro-array Analysis|Next Gen Mappers|NLP|Ontology Manipulation|Phylogenetics|Proteomics|RNA|SAM|Sequence Analysis|Statistics|Systems Biology|Text Manipulation|Tool Dependency Packages|Tool Generators|Transcriptomics|Variant Analysis|Visualization|Web Services]
-                                      Specify repository category for .shed.yml
-                                      (may specify multiple).
+                                      Specify repository category for .shed.yml (may
+                                      specify multiple).
       --owner TEXT                    Tool Shed repository owner (username).
       --name TEXT                     Tool Shed repository name (defaults to the
                                       inferred tool directory name).
