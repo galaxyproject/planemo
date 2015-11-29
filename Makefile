@@ -10,6 +10,7 @@ VENV=.venv
 IN_VENV=if [ -f $(VENV)/bin/activate ]; then . $(VENV)/bin/activate; fi;
 # TODO: add this upstream as a remote if it doesn't already exist.
 UPSTREAM=galaxyproject
+VERSION=$(shell python scripts/print_version_for_release.py)
 
 .PHONY: clean-pyc clean-build docs clean
 
