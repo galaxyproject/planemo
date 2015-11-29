@@ -1,16 +1,16 @@
 # Default tests run with make test and make quick-tests
-NOSE_TESTS=tests planemo
+NOSE_TESTS?=tests planemo
 # Default environment for make tox
 ENV?=py27
 # Extra arguments supplied to tox command
 ARGS?=
 # Location of virtualenv used for development.
-VENV=.venv
+VENV?=.venv
 # Source virtualenv to execute command (flake8, sphinx, twine, etc...)
 IN_VENV=if [ -f $(VENV)/bin/activate ]; then . $(VENV)/bin/activate; fi;
 # TODO: add this upstream as a remote if it doesn't already exist.
-UPSTREAM=galaxyproject
-VERSION=$(shell python scripts/print_version_for_release.py)
+UPSTREAM?=galaxyproject
+VERSION?=$(shell python scripts/print_version_for_release.py)
 
 .PHONY: clean-pyc clean-build docs clean
 
