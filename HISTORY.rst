@@ -10,6 +10,7 @@ History
 ---------------------
 
 * Fix serious regression to ``test`` command. 94097c7_
+* Small fixes to release process. 4e1377c_, 94645ed_
 
 ---------------------
 0.21.0 (2015-11-29)
@@ -573,6 +574,8 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _94645ed: https://github.com/galaxyproject/planemo/commit/94645ed
+.. _4e1377c: https://github.com/galaxyproject/planemo/commit/4e1377c
 .. _94097c7: https://github.com/galaxyproject/planemo/commit/94097c7
 .. _2a7c792: https://github.com/galaxyproject/planemo/commit/2a7c792
 .. _99ee51a: https://github.com/galaxyproject/planemo/commit/99ee51a
