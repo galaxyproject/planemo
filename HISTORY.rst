@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.21.1.dev0
+0.21.1 (2015-11-29)
 ---------------------
 
 * Fix serious regression to ``test`` command. 94097c7_
