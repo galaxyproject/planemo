@@ -13,7 +13,7 @@ PROJECT_DIRECTORY = os.path.join(os.path.dirname(__file__), "..")
 def main(argv):
     old_version = StrictVersion(argv[1])
     old_version_tuple = old_version.version
-    new_version_tuple = old_version_tuple
+    new_version_tuple = list(old_version_tuple)
     new_version_tuple[1] = old_version_tuple[1] + 1
     new_version = ".".join(map(str, new_version_tuple))
 
