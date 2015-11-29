@@ -121,7 +121,7 @@ def _handle_test_output_file(ctx, report_type, test_data, kwds):
 
     try:
         contents = build_report.build_report(
-            report_type, report_type=report_type
+            test_data, report_type=report_type
         )
     except Exception:
         message = "Problem producing report file %s for %s" % (
