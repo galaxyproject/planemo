@@ -126,7 +126,7 @@ commit-version:
 	$(IN_VENV) python scripts/commit_version.py $(VERSION)
 
 new-version:
-	$(IN_VENV) python scripts/new_version.py $(NEW_VERSION)
+	$(IN_VENV) python scripts/new_version.py $(VERSION)
 
 release-local: commit-version release-aritfacts new-version
 
