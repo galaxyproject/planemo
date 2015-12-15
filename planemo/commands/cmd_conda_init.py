@@ -19,4 +19,4 @@ def cli(ctx, conda_prefix=None):
     license a 3-clause BSD 3 license. Please review full license at
     http://docs.continuum.io/anaconda/eula.
     """
-    conda_util.install_conda(conda_prefix, shell_exec=shell)
+    conda_util(conda_prefix, shell_exec=shell)
