@@ -25,7 +25,7 @@ def find_conda_prefix(conda_prefix=None):
     return conda_prefix
 
 
-def install_conda_command(prefix, shell_exec=None):
+def install_conda(prefix, shell_exec=None):
     if shell_exec is None:
         shell_exec = commands.shell
     download_cmd = " ".join(commands.download_command(conda_link(), quote=True))
