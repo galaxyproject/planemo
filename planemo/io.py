@@ -12,7 +12,7 @@ from xml.sax.saxutils import escape
 
 import click
 from galaxy.tools.deps import commands
-from galaxy.tools.deps.commands import which
+from galaxy.tools.deps.commands import download_command
 
 
 def communicate(cmds, **kwds):
@@ -77,11 +77,7 @@ def write_file(path, content):
 
 
 def untar_to(url, path, tar_args):
-    if which("wget"):
-        download_cmd = "wget -q --recursive -O - '%s'"
-    else:
-        download_cmd = "curl '%s'"
-    download_cmd = download_cmd % url
+    download_cmd = " ".join(download_command(url, quote=True))
     if tar_args:
         if not os.path.exists(path):
             os.makedirs(path)
