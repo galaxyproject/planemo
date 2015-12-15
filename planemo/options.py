@@ -188,14 +188,6 @@ def brew_option():
     )
 
 
-def conda_prefix_option():
-    return click.option(
-        "--conda_prefix",
-        type=click.Path(file_okay=False, dir_okay=True),
-        help="Conda prefix to use for conda dependency commands."
-    )
-
-
 def required_tool_arg():
     """ Decorate click method as requiring the path to a single tool.
     """
