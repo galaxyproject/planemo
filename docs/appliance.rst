@@ -13,17 +13,17 @@ as an admin (no need to worry about user management or configuration), and
 Galaxy is configured to use a `PostgreSQL
 <http://www.postgresql.org/>`_ database back end and execute jobs via `SLURM
 <https://computing.llnl.gov/linux/slurm/>`_ for robustness. If something goes
-and Galaxy needs to be restarted manually - simply run ``restart_galaxy`` from
-the command-lincoe.
+wrong and Galaxy needs to be restarted manually - simply run ``restart_galaxy`` 
+from the command-line.
 
 The virtual appliance is available in two flavors via Docker, Vagrant,
 VirtualBox OVA, and as a Google Compute Engine cloud image.
 
 The Docker and Vagrant versions make it trivial to mount an external directory
-in the appliance so that one can use there own development tools (such as
+in the appliance so that one can use their own development tools (such as
 editors). The VirtualBox OVA file is a stable way to boot a Planemo virtual
 machine on any platform and comes with a pre-configured Xubuntu-based windowed
-operate system with graphical editing tools including Atom_.
+operating system with graphical editing tools including Atom_.
 
 Docker and Vagrant are tools that can be worked in a traditional development
 environment and existing tools and will probably be the preference or power
@@ -45,7 +45,7 @@ X and Windows when using boot2docker_.
 Kitematic (Server) Edition
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To get started Kitematic, please `download it
+To get started with Kitematic, please `download it
 <https://kitematic.com/download>`__ if it hasn't been previously installed or
 launch it using the application shortcut.
 
@@ -161,7 +161,7 @@ The latest `VirtualBox`_ version of the planemo appliance can be found `here
 <https://images.galaxyproject.org/planemo/latest.ova>`_.
 
 If VirtualBox_ has been installed - the planemo machine can be imported by
-download the latest image and double clicking the resulting file. This should
+downloading the latest image and double clicking the resulting file. This should
 result in VirtualBox being opened to an import screen. Just follow the prompt
 and the machine should become available.
 
