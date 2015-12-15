@@ -216,3 +216,38 @@ def wait_on(function, desc, timeout=5):
             return value
 
         time.sleep(delta)
+
+
+def coalesce_return_codes(ret_codes):
+    # Return 0 if everything is fine, otherwise pick the least
+    # specific non-0 return code - preferring to report errors
+    # to other non-0 exit codes.
+    coalesced_return_code = 0
+    for ret_code in ret_codes:
+        # None is equivalent to 0 in these methods.
+        ret_code = 0 if ret_code is None else ret_code
+        if ret_code == 0:
+            # Everything is fine, keep moving...
+            pass
+        elif coalesced_return_code == 0:
+            coalesced_return_code = ret_code
+        # At this point in logic both ret_code and coalesced_return_code are
+        # are non-zero
+        elif ret_code < 0:
+            # Error state, this should override eveything else.
+            coalesced_return_code = ret_code
+        elif ret_code > 0 and coalesced_return_code < 0:
+            # Keep error state recorded.
+            pass
+        elif ret_code > 0:
+            # Lets somewhat arbitrarily call the smaller exit code
+            # the less specific.
+            coalesced_return_code = min(ret_code, coalesced_return_code)
+
+    if coalesced_return_code < 0:
+        # Map -1 => 254, -2 => 253, etc...
+        # Not sure it is helpful to have negative error codes
+        # this was a design and API mistake in planemo.
+        coalesced_return_code = 255 + coalesced_return_code
+
+    return coalesced_return_code
