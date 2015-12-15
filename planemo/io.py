@@ -101,6 +101,16 @@ def temp_directory(prefix="planemo_tmp_"):
         shutil.rmtree(temp_dir)
 
 
+def ps1_for_path(path, base="PS1"):
+    """ Used by environment commands to build a PS1 shell
+    variables for tool or directory of tools.
+    """
+    file_name = os.path.basename(path)
+    base_name = os.path.splitext(file_name)[0]
+    ps1 = "(%s)${%s}" % (base_name, base)
+    return ps1
+
+
 def kill_pid_file(pid_file):
     if not os.path.exists(pid_file):
         return

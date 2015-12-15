@@ -126,6 +126,14 @@ def brew_dependency_resolution():
     )
 
 
+def conda_dependency_resolution():
+    return click.option(
+        "--conda_dependency_resolution",
+        is_flag=True,
+        help="Configure Galaxy to use only conda for dependency resolution.",
+    )
+
+
 def shed_dependency_resolution():
     return click.option(
         "--shed_dependency_resolution",
@@ -199,11 +207,80 @@ def galaxy_source_option():
     )
 
 
+def skip_install_option():
+    return click.option(
+        "--skip_install",
+        is_flag=True,
+        help="Skip installation - only source requirements already available."
+    )
+
+
 def brew_option():
     return click.option(
         "--brew",
         type=click.Path(exists=True, file_okay=True, dir_okay=False),
         help="Homebrew 'brew' executable to use."
+    )
+
+
+def conda_prefix_option():
+    return click.option(
+        "--conda_prefix",
+        type=click.Path(file_okay=False, dir_okay=True),
+        help="Conda prefix to use for conda dependency commands."
+    )
+
+
+def conda_exec_option():
+    return click.option(
+        "--conda_exec",
+        type=click.Path(exists=True, file_okay=True, dir_okay=False),
+        help="Location of conda executable."
+    )
+
+
+def conda_debug_option():
+    return click.option(
+        "--conda_debug",
+        is_flag=True,
+        help="Enable more verbose conda logging."
+    )
+
+
+def conda_ensure_channels_option():
+    return click.option(
+        "--conda_ensure_channels",
+        type=str,
+        help=("Ensure conda is configured with specified comma separated "
+              "list of channels."),
+        default="r,bioconda"
+    )
+
+
+def conda_copy_dependencies_option():
+    return click.option(
+        "--conda_copy_dependencies",
+        is_flag=True,
+        help=("Conda dependency resolution for Galaxy will copy dependencies "
+              "instead of attempting to link them.")
+    )
+
+
+def conda_auto_install_option():
+    return click.option(
+        "--conda_auto_install",
+        is_flag=True,
+        help=("Conda dependency resolution for Galaxy will auto install "
+              "will attempt to install requested but missing packages.")
+    )
+
+
+def conda_auto_init_option():
+    return click.option(
+        "--conda_auto_init",
+        is_flag=True,
+        help=("Conda dependency resolution for Galaxy will auto install "
+              "conda itself using miniconda if not availabe on conda_prefix.")
     )
 
 
@@ -526,6 +603,15 @@ def shed_target_options():
     )
 
 
+def conda_target_options():
+    return _compose(
+        conda_prefix_option(),
+        conda_exec_option(),
+        conda_debug_option(),
+        conda_ensure_channels_option(),
+    )
+
+
 def galaxy_run_options():
     return _compose(
         galaxy_target_options(),
@@ -542,6 +628,11 @@ def galaxy_config_options():
         tool_dependency_dir_option(),
         brew_dependency_resolution(),
         shed_dependency_resolution(),
+        conda_target_options(),
+        conda_dependency_resolution(),
+        conda_copy_dependencies_option(),
+        conda_auto_install_option(),
+        conda_auto_init_option(),
     )
 
 
