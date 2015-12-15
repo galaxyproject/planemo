@@ -13,6 +13,10 @@ from xml.sax.saxutils import escape
 import click
 from galaxy.tools.deps import commands
 from galaxy.tools.deps.commands import download_command
+from .exit_codes import (
+    EXIT_CODE_OK,
+    EXIT_CODE_NO_SUCH_TARGET,
+)
 
 
 def communicate(cmds, **kwds):
@@ -218,11 +222,14 @@ def wait_on(function, desc, timeout=5):
         time.sleep(delta)
 
 
-def coalesce_return_codes(ret_codes):
+def coalesce_return_codes(ret_codes, assert_at_least_one=False):
     # Return 0 if everything is fine, otherwise pick the least
     # specific non-0 return code - preferring to report errors
     # to other non-0 exit codes.
-    coalesced_return_code = 0
+    if assert_at_least_one and len(ret_codes) == 0:
+        return EXIT_CODE_NO_SUCH_TARGET
+
+    coalesced_return_code = EXIT_CODE_OK
     for ret_code in ret_codes:
         # None is equivalent to 0 in these methods.
         ret_code = 0 if ret_code is None else ret_code
