@@ -77,7 +77,7 @@ def write_file(path, content):
 
 
 def untar_to(url, path, tar_args):
-    download_cmd = " ".join(download_command(url, quote=True))
+    download_cmd = " ".join(download_command(url, quote_url=True))
     if tar_args:
         if not os.path.exists(path):
             os.makedirs(path)
