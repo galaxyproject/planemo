@@ -21,4 +21,4 @@ def cli(ctx, path, **kwds):
         return 1
 
     test_data = StructuredData(path)
-    handle_reports(ctx, test_data, kwds)
+    handle_reports(ctx, test_data.structured_data, kwds)

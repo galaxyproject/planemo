@@ -4,6 +4,7 @@ from planemo.io import info
 from planemo.io import error
 from planemo.io import coalesce_return_codes
 from planemo.exit_codes import (
+    EXIT_CODE_OK,
     EXIT_CODE_GENERIC_FAILURE,
 )
 
@@ -34,6 +35,7 @@ def lint_tools_on_path(ctx, paths, lint_args, **kwds):
                 exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
             else:
                 valid_tools += 1
+                exit_codes.append(EXIT_CODE_OK)
     return coalesce_return_codes(exit_codes, assert_at_least_one=assert_tools)
 
 
