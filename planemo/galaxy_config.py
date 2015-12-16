@@ -88,6 +88,10 @@ STOCK_DEPENDENCY_RESOLUTION_STRATEGIES = {
 
 EMPTY_TOOL_CONF_TEMPLATE = """<toolbox></toolbox>"""
 
+DEFAULT_GALAXY_BRANCH = "master"
+DEFAULT_GALAXY_SOURCE = "https://github.com/galaxyproject/galaxy"
+CWL_GALAXY_SOURCE = "https://github.com/common-workflow-language/galaxy"
+
 DOWNLOADS_URL = ("https://raw.githubusercontent.com/"
                  "jmchilton/galaxy-downloads/master/")
 DOWNLOADABLE_MIGRATION_VERSIONS = [127, 120, 117]
@@ -554,10 +558,25 @@ def _build_eggs_cache(ctx, env, kwds):
 
 
 def _galaxy_branch(kwds):
-    # TODO: implement generic --branch argument
-    cwl = kwds.get("cwl", False)
-    branch = "cwl" if cwl else "dev"
+    branch = kwds.get("galaxy_branch", None)
+    if branch is None:
+        cwl = kwds.get("cwl", False)
+        branch = "cwl" if cwl else None
+    if branch is None:
+        branch = DEFAULT_GALAXY_BRANCH
+
     return branch
+
+
+def _galaxy_source(kwds):
+    source = kwds.get("galaxy_source", None)
+    if source is None:
+        cwl = kwds.get("cwl", False)
+        source = CWL_GALAXY_SOURCE if cwl else None
+    if source is None:
+        source = DEFAULT_GALAXY_SOURCE
+
+    return source
 
 
 def _install_with_command(ctx, config_directory, command, kwds):
@@ -592,10 +611,7 @@ def _ensure_galaxy_repository_available(ctx, kwds):
         # Attempt fetch - but don't fail if not interweb, etc...
         shell("git --git-dir %s fetch >/dev/null 2>&1" % gx_repo)
     else:
-        if cwl:
-            remote_repo = "https://github.com/common-workflow-language/galaxy"
-        else:
-            remote_repo = "https://github.com/galaxyproject/galaxy"
+        remote_repo = _galaxy_source(kwds)
         command = git.command_clone(ctx, remote_repo, gx_repo, bare=True)
         shell(command)
     return gx_repo
