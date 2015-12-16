@@ -1020,7 +1020,11 @@ class RawRepositoryDirectory(object):
                 return True
 
         name = os.path.basename(relative_path)
-        if relative_path.startswith(".git"):
+        for dvcs_prefix in [".git", ".hg"]:
+            if relative_path.startswith(dvcs_prefix):
+                return True
+
+        if name.startswith(".svn"):
             return True
 
         for pattern in PLANEMO_FILES:
