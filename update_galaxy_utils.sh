@@ -34,48 +34,40 @@ shift "$((OPTIND-1))" # Shift off the options and optional --.
 
 PLANEMO_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 GALAXY_DIRECTORY=$1
-GALAXY_LIB_DIR=$GALAXY_DIRECTORY/lib/galaxy
+GALAXY_LIB_DIR=$GALAXY_DIRECTORY/lib
+
+UTIL_FILES=(__init__.py aliaspickler.py bunch.py dictobj.py directory_hash.py docutils_template.txt expressions.py heartbeat.py heartbeat.py inflection.py json.py jstree.py lazy_process.py odict.py object_wrapper.py plugin_config.py properties.py simplegraph.py sleeper.py sockets.py specs.py sqlite.py submodules.py topsort.py topsort.py xml_macros.py)
+
+# Set of files in Galaxy (along with UTIL_FILES above that have minimal dependencies,
+# and are Python 2/3 compat.)
+GALAXY_LIB=(galaxy/objectstore galaxy/tools/deps galaxy/tools/parser galaxy/jobs/metrics galaxy/tools/linters galaxy/tools/loader_directory.py galaxy/tools/loader.py galaxy/tools/lint.py galaxy/tools/lint_util.py galaxy/tools/deps galaxy/tools/toolbox)
 
 if [ "$invert" -ne "1" ];
 then
 
-    rm -rf $GALAXY_LIB_DIR/objectstore 
-    cp -r $PLANEMO_DIRECTORY/planemo_ext/galaxy/objectstore $GALAXY_LIB_DIR
+    for f in "${UTIL_FILES[@]}"
+    do
+        cp $PLANEMO_DIRECTORY/planemo_ext/galaxy/util/$f $GALAXY_LIB_DIR/galaxy/util
+    done
 
-    rm -rf $GALAXY_LIB_DIR/tools/deps
-    cp -r $PLANEMO_DIRECTORY/planemo_ext/galaxy/tools/deps $GALAXY_LIB_DIR/tools
-
-    rm -rf $GALAXY_LIB_DIR/jobs/metrics
-    cp -r $PLANEMO_DIRECTORY/planemo_ext/galaxy/jobs/metrics $GALAXY_LIB_DIR/jobs
-
-    rm -rf $GALAXY_LIB_DIR/tools/linters
-    cp -r $PLANEMO_DIRECTORY/planemo_ext/galaxy/tools/linters $GALAXY_LIB_DIR/tools
-
-    cp $PLANEMO_DIRECTORY/planemo_ext/galaxy/tools/lint.py $GALAXY_LIB_DIR/tools/lint.py
-    cp $PLANEMO_DIRECTORY/planemo_ext/galaxy/tools/loader.py $GALAXY_LIB_DIR/tools/loader.py
-    cp $PLANEMO_DIRECTORY/planemo_ext/galaxy/tools/loader_directory.py $GALAXY_LIB_DIR/tools/loader_directory.py
-
-    cp $PLANEMO_DIRECTORY/planemo_ext/galaxy/util/plugin_config.py $GALAXY_LIB_DIR/util
-    cp $PLANEMO_DIRECTORY/planemo_ext/galaxy/util/xml_macros.py $GALAXY_LIB_DIR/util
+    for f in "${GALAXY_LIB[@]}"
+    do
+        rm -rf $GALAXY_LIB_DIR/$f
+        cp -r $PLANEMO_DIRECTORY/planemo_ext/$f $GALAXY_LIB_DIR/$f
+    done
 
 else
 
-    rm -rf $PLANEMO_DIRECTORY/planemo_ext/galaxy/objectstore
-    cp -r $GALAXY_LIB_DIR/objectstore $PLANEMO_DIRECTORY/planemo_ext/galaxy
+    rm -rf $PLANEMO_DIRECTORY/planemo_ext/galaxy/util/*
+    for f in "${UTIL_FILES[@]}"
+    do
+        cp -r $GALAXY_LIB_DIR/galaxy/util/$f $PLANEMO_DIRECTORY/planemo_ext/galaxy/util
+    done
 
-    rm -rf $PLANEMO_DIRECTORY/planemo_ext/galaxy/tools/deps
-    cp -r $GALAXY_LIB_DIR/tools/deps $PLANEMO_DIRECTORY/planemo_ext/galaxy/tools
-
-    rm -rf $PLANEMO_DIRECTORY/planemo_ext/galaxy/jobs/metrics
-    cp -r $GALAXY_LIB_DIR/jobs/metrics $PLANEMO_DIRECTORY/planemo_ext/galaxy/jobs
-
-    rm -rf $PLANEMO_DIRECTORY/planemo_ext/galaxy/tools/linters
-    cp -r $GALAXY_LIB_DIR/tools/linters $PLANEMO_DIRECTORY/planemo_ext/galaxy/tools
-
-    cp $GALAXY_LIB_DIR/tools/lint.py $PLANEMO_DIRECTORY/planemo_ext/galaxy/tools
-    cp $GALAXY_LIB_DIR/tools/loader.py $PLANEMO_DIRECTORY/planemo_ext/galaxy/tools
-    cp $GALAXY_LIB_DIR/tools/loader_directory.py $PLANEMO_DIRECTORY/planemo_ext/galaxy/tools
-    cp $GALAXY_LIB_DIR/util/plugin_config.py $PLANEMO_DIRECTORY/planemo_ext/galaxy/util/
-    cp $GALAXY_LIB_DIR/util/xml_macros.py $PLANEMO_DIRECTORY/planemo_ext/galaxy/util/
+    for f in "${GALAXY_LIB[@]}"
+    do
+        rm -rf $PLANEMO_DIRECTORY/planemo_ext/$f
+        cp -r $GALAXY_LIB_DIR/$f $PLANEMO_DIRECTORY/planemo_ext/$f
+    done
 
 fi
