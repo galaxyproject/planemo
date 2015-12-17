@@ -36,7 +36,7 @@ PLANEMO_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 GALAXY_DIRECTORY=$1
 GALAXY_LIB_DIR=$GALAXY_DIRECTORY/lib
 
-UTIL_FILES=(__init__.py aliaspickler.py bunch.py directory_hash.py docutils_template.txt expressions.py heartbeat.py heartbeat.py inflection.py json.py jstree.py lazy_process.py odict.py object_wrapper.py plugin_config.py properties.py simplegraph.py sleeper.py sockets.py specs.py sqlite.py submodules.py topsort.py topsort.py xml_macros.py)
+UTIL_FILES=(__init__.py aliaspickler.py bunch.py dictobj.py directory_hash.py docutils_template.txt expressions.py heartbeat.py heartbeat.py inflection.py json.py jstree.py lazy_process.py odict.py object_wrapper.py plugin_config.py properties.py simplegraph.py sleeper.py sockets.py specs.py sqlite.py submodules.py topsort.py topsort.py xml_macros.py)
 
 # Set of files in Galaxy (along with UTIL_FILES above that have minimal dependencies,
 # and are Python 2/3 compat.)
