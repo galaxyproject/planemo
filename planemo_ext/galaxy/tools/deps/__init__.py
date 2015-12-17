@@ -10,7 +10,20 @@ log = logging.getLogger( __name__ )
 from .resolvers import INDETERMINATE_DEPENDENCY
 from .resolvers.galaxy_packages import GalaxyPackageDependencyResolver
 from .resolvers.tool_shed_packages import ToolShedPackageDependencyResolver
+from .resolvers.conda import CondaDependencyResolver
 from galaxy.util import plugin_config
+
+# TODO: Load these from the plugins. Would require a two step initialization of
+# DependencyManager - where the plugins are loaded first and then the config
+# is parsed and sent through.
+EXTRA_CONFIG_KWDS = {
+    'conda_prefix': None,
+    'conda_exec': None,
+    'conda_debug': None,
+    'conda_channels': 'r,bioconda',
+    'conda_auto_install': False,
+    'conda_auto_init': False,
+}
 
 
 def build_dependency_manager( config ):
@@ -19,6 +32,8 @@ def build_dependency_manager( config ):
             'default_base_path': config.tool_dependency_dir,
             'conf_file': config.dependency_resolvers_config_file,
         }
+        for key, default_value in EXTRA_CONFIG_KWDS.iteritems():
+            dependency_manager_kwds[key] = getattr(config, key, default_value)
         dependency_manager = DependencyManager( **dependency_manager_kwds )
     else:
         dependency_manager = NullDependencyManager()
@@ -49,7 +64,7 @@ class DependencyManager( object ):
     and should each contain a file 'env.sh' which can be sourced to make the
     dependency available in the current shell environment.
     """
-    def __init__( self, default_base_path, conf_file=None ):
+    def __init__( self, default_base_path, conf_file=None, **extra_config ):
         """
         Create a new dependency manager looking for packages under the paths listed
         in `base_paths`.  The default base path is app.config.tool_dependency_dir.
@@ -58,6 +73,7 @@ class DependencyManager( object ):
             log.warn( "Path '%s' does not exist, ignoring", default_base_path )
         if not os.path.isdir( default_base_path ):
             log.warn( "Path '%s' is not directory, ignoring", default_base_path )
+        self.extra_config = extra_config
         self.default_base_path = os.path.abspath( default_base_path )
         self.resolver_classes = self.__resolvers_dict()
         self.dependency_resolvers = self.__build_dependency_resolvers( conf_file )
@@ -106,6 +122,8 @@ class DependencyManager( object ):
             ToolShedPackageDependencyResolver(self),
             GalaxyPackageDependencyResolver(self),
             GalaxyPackageDependencyResolver(self, versionless=True),
+            CondaDependencyResolver(self),
+            CondaDependencyResolver(self, versionless=True),
         ]
 
     def __parse_resolver_conf_xml(self, plugin_source):

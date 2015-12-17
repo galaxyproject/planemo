@@ -61,6 +61,13 @@ EMPTY_JOB_METRICS_TEMPLATE = """<?xml version="1.0"?>
 </job_metrics>
 """
 
+# TODO: fill in properties to match CLI args.
+CONDA_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
+  <conda ${attributes} />
+  <conda versionless="true" ${attributes} />
+</dependency_resolvers>
+"""
+
 
 BREW_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
   <homebrew />
@@ -84,6 +91,7 @@ TOOL_SHEDS_CONF = """<tool_sheds>
 STOCK_DEPENDENCY_RESOLUTION_STRATEGIES = {
     "brew_dependency_resolution": BREW_DEPENDENCY_RESOLUTION_CONF,
     "shed_dependency_resolution": SHED_DEPENDENCY_RESOLUTION_CONF,
+    "conda_dependency_resolution": CONDA_DEPENDENCY_RESOLUTION_CONF,
 }
 
 EMPTY_TOOL_CONF_TEMPLATE = """<toolbox></toolbox>"""
@@ -649,6 +657,7 @@ def _handle_dependency_resolution(config_directory, kwds):
         "brew_dependency_resolution",
         "dependency_resolvers_config_file",
         "shed_dependency_resolution",
+        "conda_dependency_resolution",
     ]
 
     selected_strategies = 0
@@ -660,13 +669,36 @@ def _handle_dependency_resolution(config_directory, kwds):
         message = "At most one option from [%s] may be specified"
         raise click.UsageError(message % resolutions_strategies)
 
+    dependency_attribute_kwds = {
+        'conda_prefix': None,
+        'conda_exec': None,
+        'conda_debug': False,
+        'conda_copy_dependencies': False,
+        'conda_auto_init': False,
+        'conda_auto_install': False,
+        'conda_ensure_channels': '',
+    }
+
+    attributes = []
+    for key, default_value in dependency_attribute_kwds.iteritems():
+        value = kwds.get(key, default_value)
+        if value != default_value:
+            # Strip leading prefix (conda_) off attributes
+            attribute_key = "_".join(key.split("_")[1:])
+            attributes.append('%s="%s"' % (attribute_key, value))
+
+    attribute_str = " ".join(attributes)
+
     for key in STOCK_DEPENDENCY_RESOLUTION_STRATEGIES:
         if kwds.get(key):
             resolvers_conf = os.path.join(
                 config_directory,
                 "resolvers_conf.xml"
             )
-            conf_contents = STOCK_DEPENDENCY_RESOLUTION_STRATEGIES[key]
+            template_str = STOCK_DEPENDENCY_RESOLUTION_STRATEGIES[key]
+            conf_contents = Template(template_str).safe_substitute({
+                'attributes': attribute_str
+            })
             open(resolvers_conf, "w").write(conf_contents)
             kwds["dependency_resolvers_config_file"] = resolvers_conf
 

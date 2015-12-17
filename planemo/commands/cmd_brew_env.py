@@ -4,6 +4,7 @@ import os
 
 from planemo.cli import pass_context
 from planemo import options
+from planemo.io import ps1_for_path
 
 from galaxy.tools.loader import load_tool
 from galaxy.tools.deps.requirements import parse_requirements_from_xml
@@ -15,11 +16,7 @@ from galaxy.util import bunch
 @click.command('brew_env')
 @options.optional_tools_arg()
 @options.brew_option()
-@click.option(
-    "--skip_install",
-    is_flag=True,
-    help="Skip installation - only source requirements already available."
-)
+@options.skip_install_option()
 @click.option(
     "--shell",
     is_flag=True
@@ -67,10 +64,9 @@ def cli(ctx, path, brew=None, skip_install=False, shell=None):
         # TODO: Would be cool if this wasn't a bunch of random hackery.
         launch_shell = os.environ.get("SHELL")
         if "bash" in launch_shell:
-            file_name = os.path.basename(path)
-            base_name = os.path.splitext(file_name)[0]
+            ps1 = ps1_for_path(path)
             launch_shell = '(source ~/.bashrc; env PS1="%s" %s --norc)' % (
-                "(%s)${PS1}" % base_name,
+                ps1,
                 launch_shell,
             )
         lines.extend([launch_shell])

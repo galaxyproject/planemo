@@ -80,7 +80,7 @@ def download_command(url, quote_url=False):
     if which("wget"):
         download_cmd = ["wget", "-q", "--recursive", "-O" "-", url]
     else:
-        download_cmd = ["curl", url]
+        download_cmd = ["curl", "-L", url]
     return download_cmd
 
 

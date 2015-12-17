@@ -1,0 +1,36 @@
+<tool id="bwa_and_samtools" name="BWA and samtools" version="0.1.0">
+    <requirements>
+        <requirement type="package" version="0.7.12">bwa</requirement>
+        <requirement type="package" version="1.2">samtools</requirement>
+    </requirements>
+    <stdio>
+        <exit_code range="2:" />
+    </stdio>
+    <command><![CDATA[
+        bwa > $output_1 2>&1 ;
+        samtools > $output_2 2>&1
+    ]]></command>
+    <inputs>
+    </inputs>
+    <outputs>
+      <data name="output_1" />
+      <data name="output_2" />
+    </outputs>
+    <help><![CDATA[
+        TODO: Fill in help.
+    ]]></help>
+    <tests>
+      <test>
+        <output name="output_1">
+          <assert_contents>
+            <has_text text="Version: 0.7.12-r1039" />
+          </assert_contents>
+        </output>
+        <output name="output_2">
+          <assert_contents>
+            <has_text text="Version: 1.2" />
+          </assert_contents>
+        </output>
+      </test>
+    </tests>
+</tool>
