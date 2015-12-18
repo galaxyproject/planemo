@@ -11,6 +11,12 @@ IN_VENV=if [ -f $(VENV)/bin/activate ]; then . $(VENV)/bin/activate; fi;
 # TODO: add this upstream as a remote if it doesn't already exist.
 UPSTREAM?=galaxyproject
 VERSION?=$(shell python scripts/print_version_for_release.py)
+DOC_URL?=https://planemo.readthedocs.org
+PROJECT_URL?=https://github.com/galaxyproject/planemo
+PROJECT_NAME?=planemo
+TEST_DIR?=tests
+SOURCE_DIR=?=planemo
+
 
 .PHONY: clean-pyc clean-build docs clean
 
@@ -63,7 +69,7 @@ setup-git-hook-lint-and-test:
 	cp scripts/pre-commit-lint-and-test .git/hooks/pre-commit
 
 flake8:
-	$(IN_VENV) flake8 --max-complexity 11 planemo tests
+	$(IN_VENV) flake8 --max-complexity 11 $(SOURCE_DIR)  $(TEST_DIR)
 
 lint:
 	$(IN_VENV) tox -e py27-lint && tox -e py34-lint
@@ -102,10 +108,10 @@ _open-docs:
 open-docs: docs _open-docs
 
 open-rtd: docs
-	open https://planemo.readthedocs.org || xdg-open https://planemo.readthedocs.org
+	open $(DOC_URL) || xdg-open $(PROJECT_URL)
 
 open-project:
-	open https://github.com/galaxyproject/planemo || xdg-open https://github.com/galaxyproject/planemo
+	open $(PROJECT_URL) || xdg-open $(PROJECT_URL)
 
 dist: clean
 	$(IN_VENV) python setup.py sdist bdist_egg bdist_wheel
@@ -113,7 +119,7 @@ dist: clean
 
 release-test-artifacts: dist
 	$(IN_VENV) twine upload -r test dist/*
-	open https://testpypi.python.org/pypi/planemo || xdg-open https://testpypi.python.org/pypi/planemo
+	open https://testpypi.python.org/pypi/$(PROJECT_NAME) || xdg-open https://testpypi.python.org/pypi/$(PROJECT_NAME)
 
 release-aritfacts: release-test-artifacts
 	@while [ -z "$$CONTINUE" ]; do \
