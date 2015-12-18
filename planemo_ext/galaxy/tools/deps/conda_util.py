@@ -1,5 +1,6 @@
 import functools
 import hashlib
+import json
 import os.path
 import re
 import shutil
@@ -9,7 +10,7 @@ import tempfile
 import six
 import yaml
 
-from ..deps import commands
+from ..deps import commands, which
 
 # Not sure there are security concerns, lets just fail fast if we are going
 # break shell commands we are building.
@@ -42,14 +43,23 @@ class CondaContext(object):
 
     def __init__(self, conda_prefix=None, conda_exec=None,
                  shell_exec=None, debug=False, ensure_channels=''):
-        if conda_prefix is None:
-            conda_prefix = find_conda_prefix(conda_prefix)
-        self.conda_prefix = conda_prefix
-        if conda_exec is None:
-            conda_exec = self._bin("conda")
+        conda_exec = conda_exec or which("conda")
+        if self.conda_exec:
+            conda_exec = os.path.normpath(conda_exec)
         self.conda_exec = conda_exec
         self.debug = debug
         self.shell_exec = shell_exec or commands.shell
+
+        if conda_prefix is None:
+            info = self.conda_info()
+            if info and "default_prefix" in info:
+                conda_prefix = info["default_prefix"]
+        if conda_prefix is None:
+            conda_prefix = find_conda_prefix(conda_prefix)
+
+        self.conda_prefix = conda_prefix
+        if conda_exec is None:
+            self.conda_exec = self._bin("conda")
         if ensure_channels:
             if not isinstance(ensure_channels, list):
                 ensure_channels = [c for c in ensure_channels.split(",") if c]
@@ -66,6 +76,14 @@ class CondaContext(object):
 
             if changed:
                 self.save_condarc(conda_conf)
+
+    def conda_info(self):
+        if self.conda_exec is not None:
+            info_out = commands.execute([self.conda_exec, "info", "--json"])
+            info = json.loads(info_out)
+            return info
+        else:
+            return None
 
     def load_condarc(self):
         condarc = self.condarc
