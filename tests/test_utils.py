@@ -161,6 +161,17 @@ class TempDirectoryTestCase(TestCase):
         shutil.rmtree(self.temp_directory)
 
 
+class TempDirectoryContext(object):
+    def __init__(self):
+        self.temp_directory = mkdtemp()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, tb):
+        shutil.rmtree(self.temp_directory)
+
+
 def skip_unless_environ(var):
     if var in os.environ:
         return lambda func: func
