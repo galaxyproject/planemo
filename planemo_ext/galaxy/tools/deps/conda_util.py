@@ -10,7 +10,7 @@ import tempfile
 import six
 import yaml
 
-from ..deps import commands, which
+from ..deps import commands
 
 # Not sure there are security concerns, lets just fail fast if we are going
 # break shell commands we are building.
@@ -43,7 +43,7 @@ class CondaContext(object):
 
     def __init__(self, conda_prefix=None, conda_exec=None,
                  shell_exec=None, debug=False, ensure_channels=''):
-        conda_exec = conda_exec or which("conda")
+        conda_exec = conda_exec or commands.which("conda")
         if self.conda_exec:
             conda_exec = os.path.normpath(conda_exec)
         self.conda_exec = conda_exec
