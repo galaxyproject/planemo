@@ -130,10 +130,10 @@ release-aritfacts: release-test-artifacts
 	$(IN_VENV) twine upload dist/*
 
 commit-version:
-	$(IN_VENV) python scripts/commit_version.py $(VERSION)
+	$(IN_VENV) python scripts/commit_version.py $(SOURCE_DIR) $(VERSION)
 
 new-version:
-	$(IN_VENV) python scripts/new_version.py $(VERSION)
+	$(IN_VENV) python scripts/new_version.py $(SOURCE_DIR) $(VERSION)
 
 release-local: commit-version release-aritfacts new-version
 

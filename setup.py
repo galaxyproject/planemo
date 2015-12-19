@@ -10,13 +10,27 @@ try:
 except ImportError:
     from distutils.core import setup
 
-PROJECT_NAME = "planemo"
 SOURCE_DIR = "planemo"
+
+_version_re = re.compile(r'__version__\s+=\s+(.*)')
+
+
+with open('%s/__init__.py' % SOURCE_DIR, 'rb') as f:
+    init_contents = f.read().decode('utf-8')
+
+    def get_var(var_name):
+        pattern = re.compile(r'%s\s+=\s+(.*)' % var_name)
+        match = pattern.search(init_contents).group(1)
+        return str(ast.literal_eval(match))
+
+    version = get_var("__version__")
+    PROJECT_NAME = get_var("PROJECT_NAME")
+    PROJECT_URL = get_var("PROJECT_URL")
+    PROJECT_AUTHOR = get_var("PROJECT_AUTHOR")
+    PROJECT_EMAIL = get_var("PROJECT_EMAIL")
+
 TEST_DIR = 'tests'
 PROJECT_DESCRIPTION = 'Command-line utilities to assist in building tools for the Galaxy project (http://galaxyproject.org/).'
-PROJECT_AUTHOR = 'Galaxy Project and Community'
-PROJECT_EMAIL = 'jmchilton@gmail.com'
-PROJECT_URL = 'https://github.com/galaxyproject/planemo'
 PACKAGES = [
     'planemo',
     'planemo.cwl',
@@ -81,11 +95,6 @@ test_requirements = [
     # TODO: put package test requirements here
 ]
 
-_version_re = re.compile(r'__version__\s+=\s+(.*)')
-
-with open('%s/__init__.py' % SOURCE_DIR, 'rb') as f:
-    version = str(ast.literal_eval(_version_re.search(
-        f.read().decode('utf-8')).group(1)))
 
 setup(
     name=PROJECT_NAME,

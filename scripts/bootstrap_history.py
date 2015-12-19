@@ -10,10 +10,11 @@ except ImportError:
 import urlparse
 import textwrap
 
+import planemo as project
 
 PROJECT_DIRECTORY = os.path.join(os.path.dirname(__file__), "..")
-PROJECT_OWNER = "galaxyproject"
-PROJECT_NAME = "planemo"
+PROJECT_OWNER = project.PROJECT_OWNER
+PROJECT_NAME = project.PROJECT_NAME
 PROJECT_URL = "https://github.com/%s/%s" % (PROJECT_OWNER, PROJECT_NAME)
 PROJECT_API = "https://api.github.com/repos/%s/%s/" % (PROJECT_OWNER, PROJECT_NAME)
 

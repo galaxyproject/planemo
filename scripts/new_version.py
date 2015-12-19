@@ -11,7 +11,8 @@ PROJECT_DIRECTORY = os.path.join(os.path.dirname(__file__), "..")
 
 
 def main(argv):
-    old_version = StrictVersion(argv[1])
+    source_dir = argv[1]
+    old_version = StrictVersion(argv[2])
     old_version_tuple = old_version.version
     new_version_tuple = list(old_version_tuple)
     new_version_tuple[1] = old_version_tuple[1] + 1
@@ -33,14 +34,14 @@ def main(argv):
     """ % new_version)
     open(history_path, "w").write(history)
 
-    planemo_mod_path = os.path.join(PROJECT_DIRECTORY, "planemo", "__init__.py")
+    planemo_mod_path = os.path.join(PROJECT_DIRECTORY, source_dir, "__init__.py")
     mod = open(planemo_mod_path, "r").read()
     mod = re.sub("__version__ = '[\d\.]+'",
                  "__version__ = '%s.dev0'" % new_version,
                  mod, 1)
     mod = open(planemo_mod_path, "w").write(mod)
     shell(["git", "commit", "-m", "Starting work on %s" % new_version,
-           "HISTORY.rst", "planemo/__init__.py"])
+           "HISTORY.rst", "%s/__init__.py" % source_dir])
 
 
 def shell(cmds, **kwds):
