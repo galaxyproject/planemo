@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 import ast
+import os
 import re
 import sys
 try:
@@ -66,7 +66,11 @@ PACKAGE_DIR = {
 readme = open('README.rst').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
-requirements = open("requirements.txt").read().split("\n")
+if os.path.exists("requirements.txt"):
+    requirements = open("requirements.txt").read().split("\n")
+else:
+    # In tox, it will cover them anyway.
+    requirements = []
 
 # Only import cwltool for Python 2.7.
 if sys.version_info[0] == 2 and sys.version_info[1] >= 7:
