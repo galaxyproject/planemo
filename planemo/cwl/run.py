@@ -5,7 +5,9 @@ from planemo import io
 
 try:
     from cwltool.main import main
-except ImportError:
+except (ImportError, SyntaxError):
+    # TODO: Add Python 2.6 and 3.X support to cwltool so this SyntaxError
+    # check isn't needed.
     main = None
 
 
