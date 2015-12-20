@@ -14,7 +14,7 @@ from tempfile import (
 )
 from galaxy.util import odict
 
-from six import iteritems
+import six
 import yaml
 from planemo.shed2tap.base import BasePackage
 
@@ -891,6 +891,7 @@ def _build_raw_repo_objects(raw_dirs, **kwds):
     return raw_repo_objects
 
 
+@six.python_2_unicode_compatible
 class RepositoryDependencies(object):
     """ Abstraction for shed repository_dependencies.xml files.
     """
@@ -909,7 +910,7 @@ class RepositoryDependencies(object):
 
     def write_to_path(self, path):
         with open(path, "w") as f:
-            f.write(str(self).encode("utf-8"))
+            f.write(six.text_type(self))
 
 
 class RawRepositoryDirectory(object):
@@ -961,7 +962,7 @@ class RawRepositoryDirectory(object):
                 continue
             realized_file.realize_to(directory)
 
-        for (name, contents) in iteritems(config.get("_files", {})):
+        for (name, contents) in six.iteritems(config.get("_files", {})):
             path = os.path.join(directory, name)
             with open(path, "w") as f:
                 f.write(contents)

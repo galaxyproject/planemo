@@ -8,6 +8,7 @@ import os
 from tempfile import mkdtemp
 import shutil
 from sys import version_info
+import traceback
 
 from click.testing import CliRunner
 
@@ -87,7 +88,11 @@ class CliTestCase(TestCase):
                 result.output,
             )
             if result.exception:
-                message += " Exception [%s]." % str(result.exception)
+                message += " Exception [%s], " % str(result.exception)
+                exc_type, exc_value, exc_traceback = result.exc_info
+                tb = traceback.format_exception(exc_type, exc_value,
+                                                exc_traceback)
+                message += "Traceback [%s]" % tb
             raise AssertionError(message)
         return result
 

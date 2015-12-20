@@ -6,6 +6,7 @@ from six.moves import map as imap
 from six.moves.urllib.request import urlretrieve
 from six.moves.urllib.error import URLError
 from six import string_types
+from six import iteritems
 
 import os
 import tarfile
@@ -74,7 +75,7 @@ class Dependencies(object):
 class Repo(object):
 
     def __init__(self, **kwds):
-        for key, value in kwds.iteritems():
+        for key, value in iteritems(kwds):
             setattr(self, key, value)
 
     def recipe_base_name(self):

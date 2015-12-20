@@ -65,7 +65,7 @@ class ShedUploadTestCase(CliShedTestCase):
             dest = join(f, "single_tool")
             self._copy_repo("single_tool", dest)
             shell(" && ".join([
-                "cd single_tool",
+                "cd %s" % dest,
                 "git init",
                 "git add .",
                 "git commit -m 'initial commit'"
@@ -83,12 +83,12 @@ class ShedUploadTestCase(CliShedTestCase):
             dest = join(f, "single_tool")
             self._copy_repo("single_tool", dest)
             shell(" && ".join([
-                "cd single_tool",
+                "cd %s" % dest,
                 "git init",
                 "git add .",
                 "git commit -m 'initial commit'"
             ]))
-            rev = git.rev(None, "single_tool")
+            rev = git.rev(None, "single_tool").decode("UTF-8")
             upload_command = [
                 "shed_update", "--force_repository_creation",
                 "git+single_tool/.git"

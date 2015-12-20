@@ -34,6 +34,7 @@ PROJECT_DESCRIPTION = 'Command-line utilities to assist in building tools for th
 PACKAGES = [
     'planemo',
     'planemo.cwl',
+    'planemo.cwl.cwl2script',
     'planemo.commands',
     'planemo.galaxy_test',
     'planemo.linters',
@@ -41,15 +42,6 @@ PACKAGES = [
     'planemo.shed',
     'planemo.shed2tap',
     'planemo.xml',
-    'planemo_ext',
-    'planemo_ext.cwl2script',
-    'planemo_ext.galaxy',
-    'planemo_ext.galaxy.eggs',
-    'planemo_ext.galaxy.tools',
-    'planemo_ext.galaxy.tools.linters',
-    'planemo_ext.galaxy.tools.deps',
-    'planemo_ext.galaxy.tools.deps.resolvers',
-    'planemo_ext.galaxy.util',
 ]
 ENTRY_POINTS = '''
     [console_scripts]
@@ -57,7 +49,6 @@ ENTRY_POINTS = '''
 '''
 PACKAGE_DATA = {
     'planemo_ext': [
-        'galaxy/util/docutils_template.txt',
         'tool_factory_2/rgToolFactory2.xml',
         'tool_factory_2/rgToolFactory2.py',
         'tool_factory_2/getlocalrpackages.py',
