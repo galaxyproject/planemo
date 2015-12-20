@@ -3,22 +3,23 @@ import os
 
 try:
     import schema_salad
-except ImportError:
+except (ImportError, SyntaxError):
+    # TODO: implement support for Python 2.6 and 3.X
     schema_salad = None
 
 try:
     import cwltool
-except ImportError:
+except (ImportError, SyntaxError):
     cwltool = None
 
 try:
     from cwltool.main import load_tool
-except ImportError:
+except (ImportError, SyntaxError):
     load_tool = None
 
 try:
     from cwltool import process
-except ImportError:
+except (ImportError, SyntaxError):
     process = None
 
 try:
