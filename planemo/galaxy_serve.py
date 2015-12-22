@@ -65,10 +65,12 @@ def shed_serve(ctx, install_args_list, **kwds):
 
 @contextlib.contextmanager
 def serve_daemon(ctx, paths=[], **kwds):
+    config = None
     try:
         config = serve(ctx, paths, daemon=True, **kwds)
         yield config
     finally:
-        config.kill()
-        if not kwds.get("no_cleanup", False):
-            config.cleanup()
+        if config:
+            config.kill()
+            if not kwds.get("no_cleanup", False):
+                config.cleanup()
