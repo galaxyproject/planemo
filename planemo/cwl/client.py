@@ -6,6 +6,8 @@ from __future__ import print_function
 import json
 import os
 
+from six import iteritems
+
 from planemo.io import wait_on
 
 
@@ -72,7 +74,7 @@ def _galactic_job_json(job_path, gi, history_id):
         job_as_dict = json.load(f)
 
     replace_keys = {}
-    for key, value in job_as_dict.iteritems():
+    for key, value in iteritems(job_as_dict):
         if isinstance(value, dict):
             type_class = value.get("class", None)
             if type_class != "File":

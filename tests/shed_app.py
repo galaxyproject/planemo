@@ -164,7 +164,7 @@ def _modify_xml(path):
         return
     element = ElementTree.parse(path)
     _modify_attributes(element.getroot())
-    as_str = ElementTree.tostring(element.getroot())
+    as_str = ElementTree.tostring(element.getroot()).decode("UTF-8")
     with open(path, "w") as f:
         f.write(as_str)
 

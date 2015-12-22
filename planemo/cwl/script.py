@@ -23,8 +23,8 @@ except (ImportError, SyntaxError):
     process = None
 
 try:
-    from cwl2script import cwl2script
-except ImportError:
+    from .cwl2script import cwl2script
+except (ImportError, SyntaxError):
     cwl2script = None
 
 
