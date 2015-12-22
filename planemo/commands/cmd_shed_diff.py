@@ -87,7 +87,7 @@ def cli(ctx, paths, **kwds):
         # output to our tempfile. This lets us capture the
         # diff and redirect it to their requested location as
         # well as to the XUnit report.
-        diff_output = tempfile.NamedTemporaryFile(mode='rw+b')
+        diff_output = tempfile.NamedTemporaryFile(mode='r')
         user_requested_output = kwds.get('output', None)
         # Replace their output handle with ours
         kwds['output'] = diff_output.name
@@ -157,9 +157,11 @@ def cli(ctx, paths, **kwds):
     exit_code = shed.for_each_repository(ctx, diff, paths, **kwds)
 
     if kwds.get('report_xunit', False):
-        with open(kwds['report_xunit'], 'w') as handle:
-            handle.write(build_report.template_data(
-                collected_data, template_name='xunit.tpl')
-                .encode('ascii', 'xmlcharrefreplace'))
+        with open(kwds['report_xunit'], 'wb') as handle:
+            template_data = build_report.template_data(
+                collected_data,
+                template_name='xunit.tpl'
+            )
+            handle.write(template_data.encode('ascii', 'xmlcharrefreplace'))
 
     sys.exit(exit_code)
