@@ -11,7 +11,7 @@ IN_VENV=if [ -f $(VENV)/bin/activate ]; then . $(VENV)/bin/activate; fi;
 # TODO: add this upstream as a remote if it doesn't already exist.
 UPSTREAM?=galaxyproject
 SOURCE_DIR?=planemo
-BUILD_SCRIPTS_DIR=tools
+BUILD_SCRIPTS_DIR=scripts
 VERSION?=$(shell python $(BUILD_SCRIPTS_DIR)/print_version_for_release.py $(SOURCE_DIR))
 DOC_URL?=https://planemo.readthedocs.org
 PROJECT_URL?=https://github.com/galaxyproject/planemo
