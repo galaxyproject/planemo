@@ -11,13 +11,12 @@ IN_VENV=if [ -f $(VENV)/bin/activate ]; then . $(VENV)/bin/activate; fi;
 # TODO: add this upstream as a remote if it doesn't already exist.
 UPSTREAM?=galaxyproject
 SOURCE_DIR?=planemo
-VERSION?=$(shell python scripts/print_version_for_release.py $(SOURCE_DIR))
+BUILD_SCRIPTS_DIR=tools
+VERSION?=$(shell python $(BUILD_SCRIPTS_DIR)/print_version_for_release.py $(SOURCE_DIR))
 DOC_URL?=https://planemo.readthedocs.org
 PROJECT_URL?=https://github.com/galaxyproject/planemo
 PROJECT_NAME?=planemo
 TEST_DIR?=tests
-
-
 
 .PHONY: clean-pyc clean-build docs clean
 
@@ -39,6 +38,8 @@ help:
 	@echo "open-project - open project on github"
 	@echo "release - package, review, and upload a release"
 	@echo "dist - package"
+	@echo "setup-git-hook-lint - setup precommit hook for linting project"
+	@echo "setup-git-hook-lint-and-test - setup precommit hook for linting and testing project"
 	@echo "update-extern - update external artifacts copied locally"
 
 clean: clean-build clean-pyc clean-test
@@ -64,10 +65,10 @@ setup-venv:
 	$(IN_VENV) pip install -r requirements.txt && pip install -r dev-requirements.txt
 
 setup-git-hook-lint:
-	cp scripts/pre-commit-lint .git/hooks/pre-commit
+	cp $(BUILD_SCRIPTS_DIR)/pre-commit-lint .git/hooks/pre-commit
 
 setup-git-hook-lint-and-test:
-	cp scripts/pre-commit-lint-and-test .git/hooks/pre-commit
+	cp $(BUILD_SCRIPTS_DIR)/pre-commit-lint-and-test .git/hooks/pre-commit
 
 flake8:
 	$(IN_VENV) flake8 --max-complexity 11 $(SOURCE_DIR)  $(TEST_DIR)
@@ -88,18 +89,19 @@ tox:
 	$(IN_VENV) tox -e $(ENV) -- $(ARGS)
 
 coverage:
-	coverage run --source planemo setup.py test
+	coverage run --source $(SOURCE_DIR) setup.py $(TEST_DIR)
 	coverage report -m
 	coverage html
 	open htmlcov/index.html || xdg-open htmlcov/index.html
 
-docs:
-	rm -f docs/planemo.rst
+ready-docs:
+	rm -f docs/$(SOURCE_DIR).rst
 	rm -f docs/planemo_ext.rst
 	rm -f docs/modules.rst
 	$(IN_VENV) sphinx-apidoc -f -o docs/ planemo_ext planemo_ext/galaxy/eggs
-	$(IN_VENV) sphinx-apidoc -f -o docs/ planemo
-	$(IN_VENV) python scripts/commands_to_rst.py
+	$(IN_VENV) sphinx-apidoc -f -o docs/ $(SOURCE_DIR)
+
+docs: ready-docs
 	$(IN_VENV) $(MAKE) -C docs clean
 	$(IN_VENV) $(MAKE) -C docs html
 
@@ -131,15 +133,15 @@ release-aritfacts: release-test-artifacts
 	$(IN_VENV) twine upload dist/*
 
 commit-version:
-	$(IN_VENV) python scripts/commit_version.py $(SOURCE_DIR) $(VERSION)
+	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/commit_version.py $(SOURCE_DIR) $(VERSION)
 
 new-version:
-	$(IN_VENV) python scripts/new_version.py $(SOURCE_DIR) $(VERSION)
+	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/new_version.py $(SOURCE_DIR) $(VERSION)
 
 release-local: commit-version release-aritfacts new-version
 
 release-brew:
-	bash scripts/update_planemo_recipe.bash $(VERSION)
+	bash $(BUILD_SCRIPTS_DIR)/update_planemo_recipe.bash $(VERSION)
 
 push-release:
 	git push $(UPSTREAM) master
@@ -148,7 +150,7 @@ push-release:
 release: release-local push-release release-brew
 
 add-history:
-	$(IN_VENV) python scripts/bootstrap_history.py $(ITEM)
+	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/bootstrap_history.py $(ITEM)
 
 update-extern:
 	sh scripts/update_extern.sh
