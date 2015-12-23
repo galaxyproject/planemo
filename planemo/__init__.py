@@ -5,9 +5,10 @@ __version__ = '0.22.0.dev0'
 
 PROJECT_NAME = "planemo"
 PROJECT_OWNER = PROJECT_USERAME = "galaxyproject"
-PROJECT_URL = "https://github.com/galaxyproject/planemo"
 PROJECT_AUTHOR = 'Galaxy Project and Community'
 PROJECT_EMAIL = 'jmchilton@gmail.com'
+
+PROJECT_URL = "https://github.com/%s/%s" % (PROJECT_OWNER, PROJECT_NAME)
 RAW_CONTENT_URL = "https://raw.github.com/%s/%s/master/" % (
     PROJECT_USERAME, PROJECT_NAME
 )

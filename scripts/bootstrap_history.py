@@ -10,9 +10,13 @@ except ImportError:
 import urlparse
 import textwrap
 
+PROJECT_DIRECTORY = os.path.join(os.path.dirname(__file__), "..")
+new_path = [PROJECT_DIRECTORY]
+new_path.extend( sys.path[1:] )  # remove scripts/ from the path
+sys.path = new_path
+
 import planemo as project
 
-PROJECT_DIRECTORY = os.path.join(os.path.dirname(__file__), "..")
 PROJECT_OWNER = project.PROJECT_OWNER
 PROJECT_NAME = project.PROJECT_NAME
 PROJECT_URL = "https://github.com/%s/%s" % (PROJECT_OWNER, PROJECT_NAME)
