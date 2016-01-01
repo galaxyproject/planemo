@@ -258,7 +258,7 @@ def upload_repository(ctx, realized_repository, **kwds):
     # TODO: support updating repo information if it changes in the config file
     try:
         shed_context.tsi.repositories.update_repository(
-            repo_id, tar_path, **update_kwds
+            str(repo_id), tar_path, **update_kwds
         )
     except Exception as e:
         message = api_exception_to_message(e)
