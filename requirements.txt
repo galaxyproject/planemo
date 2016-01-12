@@ -6,4 +6,4 @@ docutils
 jinja2
 glob2
 virtualenv
-galaxy-lib
+galaxy-lib>=16.1.8
