@@ -681,7 +681,7 @@ def _handle_dependency_resolution(config_directory, kwds):
     }
 
     attributes = []
-    for key, default_value in dependency_attribute_kwds.iteritems():
+    for key, default_value in iteritems(dependency_attribute_kwds):
         value = kwds.get(key, default_value)
         if value != default_value:
             # Strip leading prefix (conda_) off attributes
