@@ -9,7 +9,22 @@ History
 0.22.0.dev0
 ---------------------
 
-    
+* Add ``--skip_venv`` to support running Galaxy 16.01 inside of
+  conda environments. 9f3957d_
+* Implement conda support. f99f6c1_, ad3b2f0_, 5e0b6d1_
+* Update LICENSE for Planemo to match Galaxy. 15d33c7_
+* Depend on new galaxy-lib on PyPI instead of previous hacks....
+  `Pull Request 394`_
+* Fix egg caching against master/15.10. 6d0f502_
+* Fix bug causing shed publishing of ``.svn`` directories.
+  `Issue 391`_
+* Bug fixes for conda support thanks to @bgruening. 63e456c_
+* Fix document issues thanks to @einon.
+  `Pull Request 390`_
+* Improve client for shed publishing to support newer shed backend
+  being developed by @erasche. `Pull Request 394`_
+* Various other small changes to testing, project structure, and
+  Python 3 support.
 
 ---------------------
 0.21.1 (2015-11-29)
@@ -580,6 +595,17 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _9f3957d: https://github.com/galaxyproject/planemo/commit/9f3957d
+.. _5e0b6d1: https://github.com/galaxyproject/planemo/commit/5e0b6d1
+.. _6d0f502: https://github.com/galaxyproject/planemo/commit/6d0f502
+.. _63e456c: https://github.com/galaxyproject/planemo/commit/63e456c
+.. _Pull Request 398: https://github.com/galaxyproject/planemo/pull/398
+.. _Pull Request 394: https://github.com/galaxyproject/planemo/pull/394
+.. _15d33c7: https://github.com/galaxyproject/planemo/commit/15d33c7
+.. _f99f6c1: https://github.com/galaxyproject/planemo/commit/f99f6c1
+.. _Issue 391: https://github.com/galaxyproject/planemo/issues/391
+.. _ad3b2f0: https://github.com/galaxyproject/planemo/commit/ad3b2f0
+.. _Pull Request 390: https://github.com/galaxyproject/planemo/pull/390
 .. _94645ed: https://github.com/galaxyproject/planemo/commit/94645ed
 .. _4e1377c: https://github.com/galaxyproject/planemo/commit/4e1377c
 .. _94097c7: https://github.com/galaxyproject/planemo/commit/94097c7
