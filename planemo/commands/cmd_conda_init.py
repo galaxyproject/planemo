@@ -22,5 +22,4 @@ def cli(ctx, **kwds):
     http://docs.continuum.io/anaconda/eula.
     """
     conda_context = build_conda_context(**kwds)
-    return conda_util.install_conda(conda_context=conda_context,
-                                    shell_exec=shell)
+    return conda_util.install_conda(conda_context=conda_contex)
