@@ -98,12 +98,16 @@ def _galactic_job_json(job_path, gi, history_id):
 
 
 def _wait_for_history(gi, history_id):
-    state_func = lambda: gi.histories.show_history(history_id)
+    def state_func():
+        return gi.histories.show_history(history_id)
+
     return _wait_on_state(state_func)
 
 
 def _wait_for_job(gi, job_id):
-    state_func = lambda: gi.jobs.show_job(job_id)
+    def state_func():
+        return gi.jobs.show_job(job_id)
+
     return _wait_on_state(state_func)
 
 
