@@ -17,9 +17,6 @@ def serve(ctx, paths, **kwds):
 
     with galaxy_config.galaxy_config(ctx, paths, **kwds) as config:
         # TODO: Allow running dockerized Galaxy here instead.
-        setup_common_startup_args = galaxy_run.set_variable_if_wheels(
-            "COMMON_STARTUP_ARGS", "--skip-venv"
-        )
         setup_venv_command = galaxy_run.setup_venv(ctx, kwds)
         run_script = os.path.join(config.galaxy_root, "run.sh")
         run_script += " $COMMON_STARTUP_ARGS"
@@ -33,7 +30,6 @@ def serve(ctx, paths, **kwds):
         cd_to_galaxy_command = "cd %s" % config.galaxy_root
         cmd = io.shell_join(
             cd_to_galaxy_command,
-            setup_common_startup_args,
             setup_venv_command,
             run_script,
         )

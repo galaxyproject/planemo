@@ -33,6 +33,9 @@ UNCACHED_VIRTUAL_ENV_COMMAND = "GALAXY_VIRTUAL_ENV=.venv"
 
 
 def setup_venv(ctx, kwds):
+    if kwds.get("skip_venv", False):
+        return ""
+
     create_template_params = {
         'create_virtualenv': create_command("$GALAXY_VIRTUAL_ENV")
     }
@@ -67,7 +70,7 @@ def shell_if_wheels(command):
 
 def setup_common_startup_args():
     return set_variable_if_wheels(
-        "COMMON_STARTUP_ARGS", "--skip-venv --dev-wheels"
+        "COMMON_STARTUP_ARGS", "--dev-wheels"
     )
 
 

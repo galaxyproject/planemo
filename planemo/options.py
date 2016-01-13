@@ -18,6 +18,16 @@ def force_option(what="files"):
     )
 
 
+def skip_venv_option():
+    return click.option(
+        "--skip_venv",
+        is_flag=True,
+        help=("Do not create or source a virtualenv environment for Galaxy, "
+              "this should be used or instance to preserve an externally "
+              "configured virtual environment or conda environment.")
+    )
+
+
 def test_data_option():
     return click.option(
         "--test_data",
@@ -643,6 +653,7 @@ def galaxy_target_options():
         install_galaxy_option(),
         galaxy_branch_option(),
         galaxy_source_option(),
+        skip_venv_option(),
         no_cache_galaxy_option(),
         no_cleanup_option(),
         job_config_option(),
