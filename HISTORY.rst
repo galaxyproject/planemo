@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.22.0.dev0
+0.22.0 (2016-01-13)
 ---------------------
 
 * Add ``--skip_venv`` to support running Galaxy 16.01 inside of
