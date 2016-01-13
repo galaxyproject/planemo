@@ -136,8 +136,10 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
         config_directory = mkdtemp()
     try:
         latest_galaxy = False
+        install_env = {}
         if install_galaxy:
-            _install_galaxy(ctx, config_directory, kwds)
+            _build_eggs_cache(ctx, install_env, kwds)
+            _install_galaxy(ctx, config_directory, install_env, kwds)
             latest_galaxy = True
             galaxy_root = config_join("galaxy-dev")
 
@@ -235,8 +237,7 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
         # retry_job_output_collection = 0
 
         env = _build_env_for_galaxy(properties, template_args)
-        if install_galaxy:
-            _build_eggs_cache(ctx, env, kwds)
+        env.update(install_env)
         _build_test_env(properties, env)
         env['GALAXY_TEST_SHED_TOOL_CONF'] = shed_tool_conf
 
@@ -534,25 +535,25 @@ def _shed_tool_conf(install_galaxy, config_directory):
     return os.path.join(config_dir, "shed_tool_conf.xml")
 
 
-def _install_galaxy(ctx, config_directory, kwds):
+def _install_galaxy(ctx, config_directory, env, kwds):
     if not kwds.get("no_cache_galaxy", False):
-        _install_galaxy_via_git(ctx, config_directory, kwds)
+        _install_galaxy_via_git(ctx, config_directory, env, kwds)
     else:
-        _install_galaxy_via_download(ctx, config_directory, kwds)
+        _install_galaxy_via_download(ctx, config_directory, env, kwds)
 
 
-def _install_galaxy_via_download(ctx, config_directory, kwds):
+def _install_galaxy_via_download(ctx, config_directory, env, kwds):
     branch = _galaxy_branch(kwds)
     tar_cmd = "tar -zxvf %s" % branch
     command = galaxy_run.DOWNLOAD_GALAXY + "; %s | tail" % tar_cmd
-    _install_with_command(ctx, config_directory, command, kwds)
+    _install_with_command(ctx, config_directory, command, env, kwds)
 
 
-def _install_galaxy_via_git(ctx, config_directory, kwds):
+def _install_galaxy_via_git(ctx, config_directory, env, kwds):
     gx_repo = _ensure_galaxy_repository_available(ctx, kwds)
     branch = _galaxy_branch(kwds)
     command = git.command_clone(ctx, gx_repo, "galaxy-dev", branch=branch)
-    _install_with_command(ctx, config_directory, command, kwds)
+    _install_with_command(ctx, config_directory, command, env, kwds)
 
 
 def _build_eggs_cache(ctx, env, kwds):
@@ -587,7 +588,7 @@ def _galaxy_source(kwds):
     return source
 
 
-def _install_with_command(ctx, config_directory, command, kwds):
+def _install_with_command(ctx, config_directory, command, env, kwds):
     # TODO: --watchdog
     pip_installs = []
     if kwds.get("cwl", False):
@@ -606,7 +607,7 @@ def _install_with_command(ctx, config_directory, command, kwds):
         galaxy_run.setup_common_startup_args(),
         COMMAND_STARTUP_COMMAND,
     )
-    shell(install_cmd)
+    shell(install_cmd, env=env)
 
 
 def _ensure_galaxy_repository_available(ctx, kwds):
