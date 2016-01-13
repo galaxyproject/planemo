@@ -14,6 +14,7 @@ from six.moves.urllib.request import urlretrieve
 import click
 
 from planemo import galaxy_run
+from planemo.conda import build_conda_context
 from planemo.io import warn
 from planemo.io import shell
 from planemo.io import shell_join
@@ -210,6 +211,7 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
             log_level="${log_level}",
             debug="${debug}",
             watch_tools="auto",
+            default_job_shell="/bin/bash",  # For conda dependency resolution
             tool_data_table_config_path=tool_data_table,
             integrated_tool_panel_config=("${temp_directory}/"
                                           "integrated_tool_panel_conf.xml"),
@@ -679,14 +681,21 @@ def _handle_dependency_resolution(config_directory, kwds):
         'conda_auto_install': False,
         'conda_ensure_channels': '',
     }
-
     attributes = []
+
+    def add_attribute(key, value):
+        attributes.append('%s="%s"' % (key, value))
+
     for key, default_value in iteritems(dependency_attribute_kwds):
         value = kwds.get(key, default_value)
         if value != default_value:
             # Strip leading prefix (conda_) off attributes
             attribute_key = "_".join(key.split("_")[1:])
-            attributes.append('%s="%s"' % (attribute_key, value))
+            add_attribute(attribute_key, value)
+
+    if "prefix" not in attributes:
+        conda_context = build_conda_context(**kwds)
+        add_attribute("prefix", conda_context.conda_prefix)
 
     attribute_str = " ".join(attributes)
 
