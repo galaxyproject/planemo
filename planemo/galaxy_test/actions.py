@@ -51,9 +51,13 @@ def run_in_config(ctx, config, **kwds):
         failed=kwds.get("failed", False),
         installed=kwds.get("installed", False),
     ).build()
-    setup_common_startup_args = galaxy_run.set_variable_if_wheels(
-        "COMMON_STARTUP_ARGS", "--skip-venv --skip-common-startup"
-    )
+    setup_common_startup_args = ""
+    if kwds.get("skip_venv", False):
+        setup_common_startup_args = (
+            'COMMON_STARTUP_ARGS=--skip-venv; '
+            'export COMMON_STARTUP_ARGS; '
+            'echo "Set COMMON_STARTUP_ARGS to ${COMMON_STARTUP_ARGS}"'
+        )
     setup_venv_command = galaxy_run.setup_venv(ctx, kwds)
     cmd = shell_join(
         cd_to_galaxy_command,

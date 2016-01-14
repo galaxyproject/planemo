@@ -6,10 +6,10 @@ History
 .. to_doc
 
 ---------------------
-0.23.0.dev0
+0.22.2.dev0
 ---------------------
 
-    
+* Fixed bug targetting forthcoming release of Galaxy 16.01.
 
 ---------------------
 0.22.1 (2016-01-14)
