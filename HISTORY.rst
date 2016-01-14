@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.22.1.dev0
+0.22.1 (2016-01-14)
 ---------------------
 
 * Fixed problem with PyPI build artifacts due to submodule's not
