@@ -187,16 +187,77 @@ and `docker_shell
 commands.
 
 -----------
+Conda
+-----------
+
+Conda_ is package manager that among many other things can be used 
+to manage Python packages.
+
+* Planemo cannot be installed via conda and then run Galaxy inside
+  the same conda environment currently.
+
+    galaxy-lib is a dependency of planemo and having this on the Python
+    path prevents correct operation of Galaxy.
+
+* Conda dependency resolution can be used for Galaxy tools,
+
+    This allows Galaxy to map conda recipes to ``requirement`` tags on tools
+
+    Just install planemo normally via pip into a virtual environment or via brew and 
+    use the appropriate commands and options:
+
+    ::
+
+        $ planemo conda_init
+        $ planemo conda_install . 
+        $ planemo test --galaxy_branch release_16.01 --conda_dependency_resolution .
+        $ planemo serve --galaxy_branch release_16.01 --conda_dependency_resolution .
+    
+    The test and serve commands above require the target Galaxy to be 16.01 or higher. 
+
+* Galaxy can also simply run inside an existing conda environment and
+  rather than using dependency resolution conda packages can just be picked
+  up from the ``PATH``.
+
+    Note: This isn't a well supported approach yet, and when possible planemo should
+    and Galaxy should not be installed inside of conda and the conda dependency
+    resolution (as described above) should be used to allow tools to find conda
+    packages.
+
+    To run Galaxy within a conda environment, planemo must be installed outside the
+    conda environment - via pip into a virtual environment or via homebrew. In the 
+    former case, don't place the virtualenv's ``bin`` directory on your PATH - it 
+    will conflict with conda. Just reference planemo directly
+    ``/path/to/planemo_venv/bin/planemo test``.
+
+    To run Galaxy from within the environment you will need to install Galaxy 
+    dependencies into the conda environment. Target the development branch of Galaxy
+    for this since it has "unpinned" dependencies that are easier to fullfill for
+    conda.
+
+    ::
+
+        (conda-env-test) $ conda install numpy bx-python pysam # install the hard ones using conda
+        (conda-env-test) $ cd $GALAXY_ROOT
+        (conda-env-test) $ ./scripts/common_startup.sh --skip-venv --dev-wheels # install remaining ones using pip via Galaxy
+        (conda-env-test) $ cd /path/to/my/tools
+        (conda-env-test) $ /path/to/planemo_venv/bin/planemo test --skip_venv  .
+        (conda-env-test) $ /path/to/planemo_venv/bin/planemo serve --skip_venv  .
+
+    A small `test script <https://github.com/galaxyproject/planemo/blob/master/tests/scripts/conda_test.sh>`__ in the planemo source tree demonstrates this.
+
+-----------
 Brew
 -----------
 
-The Galaxy development team is exploring different options for integrating
-Homebrew_ and linuxbrew_ with Galaxy. One angle is resolving the tool requirements
-using ``brew``. An experimental approach for versioning of brew recipes will be
-used. See full discussion on the homebrew-science issues page here -
-https://github.com/Homebrew/homebrew-science/issues/1191. Information on the
-implementation can be found https://github.com/jmchilton/platform-brew until a
-more permanent project home is setup.
+The Galaxy development team was exploring (the effort has shifted toward
+Conda_) different options for integrating Homebrew_ and linuxbrew_ with Galaxy.
+One angle is resolving the tool requirements using ``brew``. An experimental
+approach for versioning of brew recipes will be used. See full discussion on
+the homebrew-science issues page here - https://github.com/Homebrew/homebrew-
+science/issues/1191. Information on the implementation can be found
+https://github.com/jmchilton/platform-brew until a more permanent project home
+is setup.
 
 ::
 
@@ -233,6 +294,7 @@ CWL tools.
 
 .. _Galaxy: http://galaxyproject.org/
 .. _GitHub: https://github.com/
+.. _Conda: http://conda.pydata.org/
 .. _Docker: https://www.docker.com/
 .. _Homebrew: http://brew.sh/
 .. _linuxbrew: https://github.com/Homebrew/linuxbrew
