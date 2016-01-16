@@ -693,7 +693,7 @@ def _handle_dependency_resolution(config_directory, kwds):
             attribute_key = "_".join(key.split("_")[1:])
             add_attribute(attribute_key, value)
 
-    if "prefix" not in attributes:
+    if not [attribute for attribute in attributes if "prefix" in attribute]:
         conda_context = build_conda_context(**kwds)
         add_attribute("prefix", conda_context.conda_prefix)
 
