@@ -4,7 +4,6 @@
 import ast
 import os
 import re
-import sys
 try:
     from setuptools import setup
 except ImportError:
@@ -72,15 +71,10 @@ readme = open('README.rst').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 if os.path.exists("requirements.txt"):
-    requirements = open("requirements.txt").read().split("\n")
+    requirements = [ r for r in open("requirements.txt").read().split("\n") if ";" not in r ]
 else:
     # In tox, it will cover them anyway.
     requirements = []
-
-# Only import cwltool for Python 2.7.
-if sys.version_info[0] == 2 and sys.version_info[1] >= 7:
-    requirements.append("cwltool")
-
 
 test_requirements = [
     # TODO: put package test requirements here
@@ -101,6 +95,11 @@ setup(
     package_dir=PACKAGE_DIR,
     include_package_data=True,
     install_requires=requirements,
+    extras_requires={
+        ':python_version == "2.7"': [
+            'cwltool',
+        ],
+    },
     license="AFL",
     zip_safe=False,
     keywords='planemo',
