@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.23.0.dev0
+0.23.0 (2016-02-15)
 ---------------------
 
 * Fix duplicated attributes with conda resolver (thanks
