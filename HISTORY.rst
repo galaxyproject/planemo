@@ -9,7 +9,10 @@ History
 0.23.0.dev0
 ---------------------
 
-    
+* Fix duplicated attributes with conda resolver (thanks
+  to Björn Grüning). `Pull Request 403`_
+* Upgrade to latest version of galaxy-lib for more linting.
+* Attempt to better handle conditional dependency on cwltool.
 
 ---------------------
 0.22.2 (2016-01-14)
@@ -614,6 +617,7 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 403: https://github.com/galaxyproject/planemo/pull/403
 .. _9f3957d: https://github.com/galaxyproject/planemo/commit/9f3957d
 .. _5e0b6d1: https://github.com/galaxyproject/planemo/commit/5e0b6d1
 .. _6d0f502: https://github.com/galaxyproject/planemo/commit/6d0f502
