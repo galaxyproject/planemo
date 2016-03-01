@@ -21,74 +21,55 @@ TEST_DIR?=tests
 .PHONY: clean-pyc clean-build docs clean
 
 help:
-	@echo "clean - remove all build, test, coverage and Python artifacts"
-	@echo "clean-build - remove build artifacts"
-	@echo "clean-pyc - remove Python file artifacts"
-	@echo "clean-test - remove test and coverage artifacts"
-	@echo "setup-venv - setup a development virutalenv in current directory."
-	@echo "lint - check style using tox and flake8 for Python 2 and Python 3"
-	@echo "lint-readme - check README formatting for PyPI"
-	@echo "flake8 - check style using flake8 for current Python (faster than lint)"
-	@echo "test - run tests with the default Python (faster than tox)"
-	@echo "quick-test - run quickest tests with the default Python"
-	@echo "coverage - check code coverage quickly with the default Python"
-	@echo "docs - generate Sphinx HTML documentation, including API docs"
-	@echo "open-docs - generate Sphinx HTML documentation and open in browser"
-	@echo "open-rtd - open docs on readthedocs.org"
-	@echo "open-project - open project on github"
-	@echo "release - package, review, and upload a release"
-	@echo "dist - package"
-	@echo "setup-git-hook-lint - setup precommit hook for linting project"
-	@echo "setup-git-hook-lint-and-test - setup precommit hook for linting and testing project"
-	@echo "update-extern - update external artifacts copied locally"
+	@grep -P '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-clean: clean-build clean-pyc clean-test
+clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
 
-clean-build:
+clean-build: ## remove build artifacts
 	rm -fr build/
 	rm -fr dist/
 	rm -fr *.egg-info
 
-clean-pyc:
+clean-pyc: ## remove Python file artifacts
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -fr {} +
 
-clean-test:
+clean-test: ## remove test and coverage artifacts
 	rm -fr .tox/
 	rm -f .coverage
 	rm -fr htmlcov/
 
-setup-venv:
+setup-venv: ## setup a development virutalenv in current directory
 	if [ ! -d $(VENV) ]; then virtualenv $(VENV); exit; fi;
 	$(IN_VENV) pip install -r requirements.txt && pip install -r dev-requirements.txt
 
-setup-git-hook-lint:
+setup-git-hook-lint: ## setup precommit hook for linting project
 	cp $(BUILD_SCRIPTS_DIR)/pre-commit-lint .git/hooks/pre-commit
 
-setup-git-hook-lint-and-test:
+setup-git-hook-lint-and-test: ## setup precommit hook for linting and testing project
 	cp $(BUILD_SCRIPTS_DIR)/pre-commit-lint-and-test .git/hooks/pre-commit
 
-flake8:
+flake8: ## check style using flake8 for current Python (faster than lint)
 	$(IN_VENV) flake8 --max-complexity 11 $(SOURCE_DIR)  $(TEST_DIR)
 
-lint:
+lint: ## check style using tox and flake8 for Python 2 and Python 3
 	$(IN_VENV) tox -e py27-lint && tox -e py34-lint
 
-lint-readme:
+lint-readme: ## check README formatting for PyPI
 	$(IN_VENV) python setup.py check -r -s
 
-test:
+test: ## run tests with the default Python (faster than tox)
 	$(IN_VENV) nosetests $(NOSE_TESTS)
 
-quick-test:
+quick-test: ## run quickest tests with the default Python
 	$(IN_VENV) PLANEMO_SKIP_GALAXY_TESTS=1 nosetests $(NOSE_TESTS)
 
 tox:
 	$(IN_VENV) tox -e $(ENV) -- $(ARGS)
 
-coverage:
+coverage: ## check code coverage quickly with the default Python
 	coverage run --source $(SOURCE_DIR) setup.py $(TEST_DIR)
 	coverage report -m
 	coverage html
@@ -101,22 +82,22 @@ ready-docs:
 	$(IN_VENV) sphinx-apidoc -f -o docs/ planemo_ext planemo_ext/galaxy/eggs
 	$(IN_VENV) sphinx-apidoc -f -o docs/ $(SOURCE_DIR)
 
-docs: ready-docs
+docs: ready-docs ## generate Sphinx HTML documentation, including API docs
 	$(IN_VENV) $(MAKE) -C docs clean
 	$(IN_VENV) $(MAKE) -C docs html
 
 _open-docs:
 	open docs/_build/html/index.html || xdg-open docs/_build/html/index.html
 
-open-docs: docs _open-docs
+open-docs: docs _open-docs ## generate Sphinx HTML documentation and open in browser
 
-open-rtd: docs
+open-rtd: docs ## open docs on readthedocs.org
 	open $(DOC_URL) || xdg-open $(PROJECT_URL)
 
-open-project:
+open-project: ## open project on github
 	open $(PROJECT_URL) || xdg-open $(PROJECT_URL)
 
-dist: clean
+dist: clean ## package
 	$(IN_VENV) python setup.py sdist bdist_egg bdist_wheel
 	ls -l dist
 
@@ -147,10 +128,10 @@ push-release:
 	git push $(UPSTREAM) master
 	git push --tags $(UPSTREAM)
 
-release: release-local push-release release-brew
+release: release-local push-release release-brew ## package, review, and upload a release
 
 add-history:
 	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/bootstrap_history.py $(ITEM)
 
-update-extern:
+update-extern: ## update external artifacts copied locally
 	sh scripts/update_extern.sh
