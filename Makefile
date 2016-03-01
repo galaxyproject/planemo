@@ -66,7 +66,7 @@ test: ## run tests with the default Python (faster than tox)
 quick-test: ## run quickest tests with the default Python
 	$(IN_VENV) PLANEMO_SKIP_GALAXY_TESTS=1 nosetests $(NOSE_TESTS)
 
-tox:
+tox: ## run tests with tox in the specified ENV, defaults to py27
 	$(IN_VENV) tox -e $(ENV) -- $(ARGS)
 
 coverage: ## check code coverage quickly with the default Python
@@ -105,7 +105,7 @@ release-test-artifacts: dist
 	$(IN_VENV) twine upload -r test dist/*
 	open https://testpypi.python.org/pypi/$(PROJECT_NAME) || xdg-open https://testpypi.python.org/pypi/$(PROJECT_NAME)
 
-release-aritfacts: release-test-artifacts
+release-aritfacts: release-test-artifacts ## Package and Upload to PyPi
 	@while [ -z "$$CONTINUE" ]; do \
 		read -r -p "Have you executed release-test and reviewed results? [y/N]: " CONTINUE; \
 	done ; \
@@ -113,24 +113,24 @@ release-aritfacts: release-test-artifacts
 	@echo "Releasing"
 	$(IN_VENV) twine upload dist/*
 
-commit-version:
+commit-version: ## Update version and history, commit.
 	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/commit_version.py $(SOURCE_DIR) $(VERSION)
 
-new-version:
+new-version: ## Mint a new version
 	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/new_version.py $(SOURCE_DIR) $(VERSION)
 
 release-local: commit-version release-aritfacts new-version
 
-release-brew:
+release-brew: ## Mint a new homebrew release
 	bash $(BUILD_SCRIPTS_DIR)/update_planemo_recipe.bash $(VERSION)
 
-push-release:
+push-release: ## Push a tagged release to github
 	git push $(UPSTREAM) master
 	git push --tags $(UPSTREAM)
 
 release: release-local push-release release-brew ## package, review, and upload a release
 
-add-history:
+add-history: ## Reformat HISTORY.rst with data from Github's API
 	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/bootstrap_history.py $(ITEM)
 
 update-extern: ## update external artifacts copied locally
