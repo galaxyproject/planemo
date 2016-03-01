@@ -21,7 +21,7 @@ TEST_DIR?=tests
 .PHONY: clean-pyc clean-build docs clean
 
 help:
-	@grep -P '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+	@egrep '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
 
