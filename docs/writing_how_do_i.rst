@@ -201,6 +201,7 @@ specify tests for the individual output files using the ``extra_files`` element
 demonstrated by the following tool.
 
 - `composite_output.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/composite_output.xml>`__
+- `macs_wrapper.xml <https://github.com/galaxyproject/tools-devteam/blob/master/tools/macs/macs_wrapper.xml>`__
 
 ------------------------------------------
 \.\.\. test index (\.loc) data?
