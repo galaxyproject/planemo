@@ -6,7 +6,7 @@ Publishing to the Tool Shed
 The `Galaxy Tool Shed`_ (referred to colloquially in Planemo as the "shed")
 can store Galaxy tools, dependency definitions, and workflows among other
 Galaxy artifacts. This guide will assume some basic familiarity with the shed
-- please review the `Tool Shed Wiki`_ for and introduction.
+- please review the `Tool Shed Wiki`_ for an introduction.
 
 Configuring a Shed Account
 =============================
@@ -123,7 +123,7 @@ Modified artifacts can be uploaded using the following command.
 The ``--check_diff`` option here will ensure there are significant differnces
 before uploading new contents to the tool shed.
 
-Once tools and reqiured dependency files have been published to the tool shed,
+Once tools and required dependency files have been published to the tool shed,
 the actual shed dependencies can be automatically and installed and tool 
 tests ran using the command::
 
