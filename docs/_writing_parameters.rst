@@ -127,4 +127,4 @@ Updating this tool to use that idiom might look as follows.
 
 .. literalinclude:: writing/seqtk_seq_v6.xml
    :language: xml
-   :emphasize-lines: 11-21,26-33,54-55
+   :emphasize-lines: 10-21,26-33,54-55

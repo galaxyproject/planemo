@@ -7,8 +7,8 @@
     </stdio>
     <command><![CDATA[
         seqtk seq
-              $shift_quality
               #if $settings.advanced == "advanced"
+              $settings.shift_quality
               -q $settings.quality_min
               -X $settings.quality_max
               #if $settings.mask_regions
