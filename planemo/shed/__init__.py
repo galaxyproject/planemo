@@ -240,7 +240,7 @@ def upload_repository(ctx, realized_repository, **kwds):
     _update_commit_message(ctx, realized_repository, update_kwds, **kwds)
 
     repo_id = realized_repository.find_repository_id(ctx, shed_context)
-    if repo_id is None and kwds["force_repository_creation"]:
+    if repo_id is None and kwds.get("force_repository_creation", None):
         repo_id = realized_repository.create(ctx, shed_context)
     # failing to create the repo, give up
     if repo_id is None:
