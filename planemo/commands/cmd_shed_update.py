@@ -69,11 +69,13 @@ def cli(ctx, paths, **kwds):
 
     def update(realized_repository):
         collected_data['results']['total'] += 1
+        skip_upload = kwds["skip_upload"]
+        skip_metadata = kwds["skip_metadata"]
         upload_ret_code = 0
         upload_ok = True
 
         captured_io = {}
-        if not kwds["skip_upload"]:
+        if not skip_upload:
             with captured_io_for_xunit(kwds, captured_io):
                 upload_ret_code = shed.upload_repository(
                     ctx, realized_repository, **kwds
@@ -100,16 +102,22 @@ def cli(ctx, paths, **kwds):
                   "in target ToolShed.")
             return upload_ret_code
 
-        repo_id = realized_repository.find_repository_id(ctx, shed_context)
+        exit = 0
         metadata_ok = True
-        if not kwds["skip_metadata"]:
-            metadata_ok = realized_repository.update(ctx, shed_context, repo_id)
-        if metadata_ok:
-            info("Repository metadata updated.")
+        if not skip_metadata:
+            repo_id = shed.handle_force_create(realized_repository, ctx, shed_context, **kwds)
+            # failing to create the repo, give up
+            if repo_id is None:
+                exit = shed.report_non_existent_repository(realized_repository)
+                metadata_ok = False
+            else:
+                metadata_ok = realized_repository.update(ctx, shed_context, repo_id)
         else:
+            info("Skipping repository metadata update.")
+
+        if not metadata_ok:
             error("Failed to update repository metadata.")
 
-        exit = 0
         if metadata_ok and upload_ok:
             pass
         elif upload_ok:
@@ -118,8 +126,9 @@ def cli(ctx, paths, **kwds):
                 'errorType': 'FailedMetadata',
                 'errorMessage': 'Failed to update repository metadata',
             })
-            error("Repo updated but metadata was not.")
-            exit = 1
+            if not skip_upload:
+                error("Repo updated but metadata was not.")
+            exit = exit or 1
         else:
             collected_data['results']['failures'] += 1
             repo_result.update({
@@ -127,7 +136,7 @@ def cli(ctx, paths, **kwds):
                 'errorMessage': 'Failed to update repository',
             })
             error("Failed to update a repository.")
-            exit = 1
+            exit = exit or 1
         collected_data['tests'].append(repo_result)
         return exit
 

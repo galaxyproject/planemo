@@ -32,7 +32,13 @@ class ShedUploadTestCase(CliShedTestCase):
             upload_command.extend(self._shed_args())
             self._check_exit_code(upload_command, exit_code=2)
 
-    def test_upload_with_check_diff(self):
+    def test_update_not_exists_update_only(self):
+        with self._isolate_repo("single_tool"):
+            upload_command = ["shed_update", "--skip_upload"]
+            upload_command.extend(self._shed_args())
+            self._check_exit_code(upload_command, exit_code=2)
+
+    def test_update_with_check_diff(self):
         with self._isolate_repo("single_tool") as f:
             upload_command = [
                 "shed_update", "--force_repository_creation", "--check_diff"
@@ -53,7 +59,13 @@ class ShedUploadTestCase(CliShedTestCase):
             r = self._check_exit_code(upload_command)
             assert "not different, skipping upload." not in r.output
 
-    def test_upload_with_force_create(self):
+    def test_update_metadata_only(self):
+        with self._isolate_repo("single_tool"):
+            upload_command = ["shed_update", "--force_repository_creation", "--skip_upload"]
+            upload_command.extend(self._shed_args())
+            self._check_exit_code(upload_command)
+
+    def test_update_with_force_create(self):
         with self._isolate_repo("single_tool") as f:
             upload_command = ["shed_update", "--force_repository_creation"]
             upload_command.extend(self._shed_args())
