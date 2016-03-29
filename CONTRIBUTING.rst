@@ -106,7 +106,7 @@ Before you submit a pull request, check that it meets these guidelines:
 
 1. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring.
-2. The pull request should work for Python 2.6 and 2.7. Check
+2. The pull request should work for Python 2.7 and 3.4. Check
    https://travis-ci.org/galaxyproject/planemo/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
@@ -118,7 +118,7 @@ To run a subset of tests::
     % make tox ENV=py27 ARGS='--tests tests/test_shed_upload.py'
 
 This will use Tox_ to run the specified tests using Python 2.7. ``ENV`` here
-can be used to specify different Python version (e.g. ``py26``, ``py27``,
+can be used to specify different Python version (e.g. ``py27`` and
 ``py34``). Python 3.4 is a work in progress. 
 
 Even more granularity is also possible by specifying specific test methods.::
@@ -156,9 +156,6 @@ testing environment. Planemo defines the following environments:
 
 ``py27-lint-readme``
     Lint the README reStructuredText.
-
-``py26``
-    Run planemo tests in Python 2.6.
 
 ``py27``
     Run planemo tests in Python 2.7.

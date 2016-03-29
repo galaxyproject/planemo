@@ -4,10 +4,15 @@
 import ast
 import os
 import re
+import sys
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
+
+if sys.version_info < (2, 7):
+    sys.stderr.write("ERROR: planemo requires at least Python Version 2.7\n")
+    sys.exit(1)
 
 SOURCE_DIR = "planemo"
 
@@ -114,7 +119,6 @@ setup(
         'Topic :: Software Development :: Testing',
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
     ],
     test_suite=TEST_DIR,
