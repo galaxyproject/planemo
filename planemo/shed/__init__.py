@@ -61,6 +61,8 @@ AUTO_NAME_CONFLICT_MESSAGE = ("Cannot specify both auto_tool_repositories and "
                               "in .shed.yml and --name on the command-line.")
 REALIZAION_PROBLEMS_MESSAGE = ("Problem encountered executing action for one or more "
                                "repositories.")
+INCORRECT_OWNER_MESSAGE = ("Attempting to create a repository with configured "
+                           "owner [%s] that does not matche API user [%s].")
 # Planemo generated or consumed files that do not need to be uploaded to the
 # tool shed.
 PLANEMO_FILES = [
@@ -1191,6 +1193,12 @@ class RealizedRepositry(object):
     def create(self, ctx, shed_context):
         """Wrapper for creating the endpoint if it doesn't exist
         """
+        context_owner = shed_context.owner()
+        config_owner = self.config.get("owner", None)
+        if context_owner and config_owner and context_owner != config_owner:
+            message = INCORRECT_OWNER_MESSAGE % (config_owner, context_owner)
+            raise Exception(message)
+
         def _create():
             repo = create_repository_for(
                 ctx,
