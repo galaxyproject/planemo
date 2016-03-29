@@ -604,7 +604,10 @@ def update_repository_for(ctx, tsi, id, repo_config):
     if category_ids is not None:
         kwds['category_ids[]'] = category_ids
     repo = Client._put(tsi.repositories, id=id, payload=kwds)
-    return repo
+    if repo.status_code in [200, 201]:
+        return repo.json()
+    else:
+        raise Exception("Failed to update repository.")
 
 
 def create_repository_for(ctx, tsi, name, repo_config):
@@ -1221,7 +1224,7 @@ class RealizedRepositry(object):
                 id,
                 self.config,
             )
-            return repo.json()
+            return repo
 
         return self._with_ts_exception_handling(_update)
 
