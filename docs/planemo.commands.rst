@@ -28,6 +28,30 @@ planemo.commands.cmd_brew_init module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd_conda_env module
+-------------------------------------
+
+.. automodule:: planemo.commands.cmd_conda_env
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_conda_init module
+--------------------------------------
+
+.. automodule:: planemo.commands.cmd_conda_init
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_conda_install module
+-----------------------------------------
+
+.. automodule:: planemo.commands.cmd_conda_install
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd_config_init module
 ---------------------------------------
 

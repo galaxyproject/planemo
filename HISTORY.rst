@@ -8,8 +8,16 @@ History
 ---------------------
 0.24.0.dev0
 ---------------------
-
     
+* Drop support for Python 2.6. 93b7bda_
+* A variety of fixes for ``shed_update``.
+  `Pull Request 428`_, `Issue 416`_
+* Fix reporting of metadata updates for invalid shed updates.
+  `Pull Request 426`_, `Issue 420`_
+* Check ``.shed.yml`` owner against credentials during shed creation.
+  `Pull Request 425`_, `Issue 246`_
+* Fix logic error if there is a problem with ``shed_create``. 358a42c_
+* Tool documentation improvements. 0298510_, a58a3b8_
 
 ---------------------
 0.23.0 (2016-02-15)
@@ -623,6 +631,16 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Issue 416: https://github.com/galaxyproject/planemo/issues/416
+.. _Pull Request 428: https://github.com/galaxyproject/planemo/pull/428
+.. _93b7bda: https://github.com/galaxyproject/planemo/commit/93b7bda
+.. _Pull Request 426: https://github.com/galaxyproject/planemo/pull/426
+.. _Issue 420: https://github.com/galaxyproject/planemo/issues/420
+.. _Issue 246: https://github.com/galaxyproject/planemo/issues/246
+.. _Pull Request 425: https://github.com/galaxyproject/planemo/pull/425
+.. _358a42c: https://github.com/galaxyproject/planemo/commit/358a42c
+.. _0298510: https://github.com/galaxyproject/planemo/commit/0298510
+.. _a58a3b8: https://github.com/galaxyproject/planemo/commit/a58a3b8
 .. _Pull Request 403: https://github.com/galaxyproject/planemo/pull/403
 .. _9f3957d: https://github.com/galaxyproject/planemo/commit/9f3957d
 .. _5e0b6d1: https://github.com/galaxyproject/planemo/commit/5e0b6d1

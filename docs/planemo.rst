@@ -34,10 +34,26 @@ planemo.cli module
     :undoc-members:
     :show-inheritance:
 
+planemo.conda module
+--------------------
+
+.. automodule:: planemo.conda
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.config module
 ---------------------
 
 .. automodule:: planemo.config
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.exit_codes module
+-------------------------
+
+.. automodule:: planemo.exit_codes
     :members:
     :undoc-members:
     :show-inheritance:
