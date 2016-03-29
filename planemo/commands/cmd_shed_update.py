@@ -69,76 +69,76 @@ def cli(ctx, paths, **kwds):
 
     def update(realized_repository):
         collected_data['results']['total'] += 1
+        skip_upload = kwds["skip_upload"]
+        skip_metadata = kwds["skip_metadata"]
         upload_ret_code = 0
         upload_ok = True
 
         captured_io = {}
-        if not kwds["skip_upload"]:
+        if not skip_upload:
             with captured_io_for_xunit(kwds, captured_io):
                 upload_ret_code = shed.upload_repository(
                     ctx, realized_repository, **kwds
                 )
                 upload_ok = not upload_ret_code
 
+        repo_result = {
+            'classname': realized_repository.name,
+            'time': captured_io.get("time", None),
+            'name': 'shed-update',
+            'stdout': captured_io.get("stdout", None),
+            'stderr': captured_io.get("stderr", None),
+        }
+
         # Now that we've uploaded (or skipped appropriately), collect results.
         if upload_ret_code == 2:
             collected_data['results']['failures'] += 1
-            collected_data['tests'].append({
-                'classname': realized_repository.name,
+            repo_result.update({
                 'errorType': 'FailedUpdate',
                 'errorMessage': 'Failed to update repository as it does not exist in target ToolShed',
-                'time': captured_io["time"],
-                'name': 'shed-update',
-                'stdout': captured_io["stdout"],
-                'stderr': captured_io["stderr"],
             })
+            collected_data['tests'].append(repo_result)
             error("Failed to update repository it does not exist "
                   "in target ToolShed.")
             return upload_ret_code
-        repo_id = realized_repository.find_repository_id(ctx, shed_context)
+
+        exit = 0
         metadata_ok = True
-        if not kwds["skip_metadata"]:
-            metadata_ok = realized_repository.update(ctx, shed_context, repo_id)
-        if metadata_ok:
-            info("Repository metadata updated.")
+        if not skip_metadata:
+            repo_id = shed.handle_force_create(realized_repository, ctx, shed_context, **kwds)
+            # failing to create the repo, give up
+            if repo_id is None:
+                exit = shed.report_non_existent_repository(realized_repository)
+                metadata_ok = False
+            else:
+                metadata_ok = realized_repository.update(ctx, shed_context, repo_id)
         else:
+            info("Skipping repository metadata update.")
+
+        if not metadata_ok:
             error("Failed to update repository metadata.")
 
         if metadata_ok and upload_ok:
-            collected_data['tests'].append({
-                'classname': realized_repository.name,
-                'time': captured_io["time"],
-                'name': 'shed-update',
-                'stdout': captured_io["stdout"],
-                'stderr': captured_io["stderr"],
-            })
-            return 0
+            pass
         elif upload_ok:
             collected_data['results']['skips'] += 1
-            collected_data['tests'].append({
-                'classname': realized_repository.name,
+            repo_result.update({
                 'errorType': 'FailedMetadata',
                 'errorMessage': 'Failed to update repository metadata',
-                'time': captured_io["time"],
-                'name': 'shed-update',
-                'stdout': captured_io["stdout"],
-                'stderr': captured_io["stderr"],
             })
-            error("Repo updated but metadata was not.")
-            return 1
+            if not skip_upload:
+                error("Repo updated but metadata was not.")
+            exit = exit or 1
         else:
             collected_data['results']['failures'] += 1
-            collected_data['tests'].append({
-                'classname': realized_repository.name,
+            repo_result.update({
                 'errorType': 'FailedUpdate',
                 'errorMessage': 'Failed to update repository',
-                'time': captured_io["time"],
-                'name': 'shed-update',
-                'stdout': captured_io["stdout"],
-                'stderr': captured_io["stderr"],
             })
             error("Failed to update a repository.")
-            return 1
+            exit = exit or 1
+        collected_data['tests'].append(repo_result)
+        return exit
 
     exit_code = shed.for_each_repository(ctx, update, paths, **kwds)
 

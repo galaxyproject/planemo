@@ -226,6 +226,20 @@ def find_urls_for_xml(root):
     return urls
 
 
+def handle_force_create(realized_repository, ctx, shed_context, **kwds):
+    repo_id = realized_repository.find_repository_id(ctx, shed_context)
+    if repo_id is None and kwds.get("force_repository_creation", None):
+        repo_id = realized_repository.create(ctx, shed_context)
+    # failing to create the repo, give up
+    return repo_id
+
+
+def report_non_existent_repository(realized_repository):
+    name = realized_repository.name
+    error("Repository [%s] does not exist in the targeted Tool Shed." % name)
+    return 2
+
+
 def upload_repository(ctx, realized_repository, **kwds):
     """Upload a tool directory as a tarball to a tool shed.
     """
@@ -241,14 +255,10 @@ def upload_repository(ctx, realized_repository, **kwds):
     update_kwds = {}
     _update_commit_message(ctx, realized_repository, update_kwds, **kwds)
 
-    repo_id = realized_repository.find_repository_id(ctx, shed_context)
-    if repo_id is None and kwds.get("force_repository_creation", None):
-        repo_id = realized_repository.create(ctx, shed_context)
+    repo_id = handle_force_create(realized_repository, ctx, shed_context, **kwds)
     # failing to create the repo, give up
     if repo_id is None:
-        name = realized_repository.name
-        error("Repository [%s] does not exist in the targeted Tool Shed." % name)
-        return 2
+        return report_non_existent_repository(realized_repository)
 
     if kwds.get("check_diff", False):
         is_diff = diff_repo(ctx, realized_repository, **kwds)
