@@ -1,3 +1,4 @@
+"""Abstractions for shed related interactions used by the rest of planemo."""
 from collections import namedtuple
 import contextlib
 import copy
@@ -63,6 +64,8 @@ REALIZAION_PROBLEMS_MESSAGE = ("Problem encountered executing action for one or 
                                "repositories.")
 INCORRECT_OWNER_MESSAGE = ("Attempting to create a repository with configured "
                            "owner [%s] that does not matche API user [%s].")
+PROBLEM_PROCESSING_REPOSITORY_MESSAGE = "Problem processing repositories, exiting."
+
 # Planemo generated or consumed files that do not need to be uploaded to the
 # tool shed.
 PLANEMO_FILES = [
@@ -153,6 +156,7 @@ ShedContext.owner = _shed_context_owner
 
 
 def shed_init(ctx, path, **kwds):
+    """Intialize a new shed repository."""
     if not os.path.exists(path):
         os.makedirs(path)
     shed_config_path = os.path.join(path, SHED_CONFIG_NAME)
@@ -185,8 +189,7 @@ def shed_init(ctx, path, **kwds):
 
 
 def install_arg_lists(ctx, paths, **kwds):
-    """ Build a list of install args for resolved repositories.
-    """
+    """Build a list of install args for resolved repositories."""
     shed_context = get_shed_context(ctx, **kwds)
     install_args_list = []
 
@@ -196,7 +199,7 @@ def install_arg_lists(ctx, paths, **kwds):
 
     exit_code = for_each_repository(ctx, process_repo, paths, **kwds)
     if exit_code:
-        raise RuntimeError("Problem processing repositories, exiting.")
+        raise RuntimeError(PROBLEM_PROCESSING_REPOSITORY_MESSAGE)
 
     return install_args_list
 
@@ -241,8 +244,7 @@ def report_non_existent_repository(realized_repository):
 
 
 def upload_repository(ctx, realized_repository, **kwds):
-    """Upload a tool directory as a tarball to a tool shed.
-    """
+    """Upload a tool directory as a tarball to a tool shed."""
     path = realized_repository.path
     tar_path = kwds.get("tar", None)
     if not tar_path:
@@ -261,7 +263,7 @@ def upload_repository(ctx, realized_repository, **kwds):
         return report_non_existent_repository(realized_repository)
 
     if kwds.get("check_diff", False):
-        is_diff = diff_repo(ctx, realized_repository, **kwds)
+        is_diff = diff_repo(ctx, realized_repository, **kwds) != 0
         if not is_diff:
             name = realized_repository.name
             info("Repository [%s] not different, skipping upload." % name)
@@ -295,6 +297,11 @@ def _update_commit_message(ctx, realized_repository, update_kwds, **kwds):
 
 
 def diff_repo(ctx, realized_repository, **kwds):
+    """Compare two repositories (local or remote) and check for differences.
+
+    Returns 0 if and only the repositories are effectively the same
+    given supplied kwds for comparison description.
+    """
     with temp_directory("tool_shed_diff_") as working:
         return _diff_in(ctx, working, realized_repository, **kwds)
 
@@ -321,7 +328,7 @@ def _diff_in(ctx, working, realized_repository, **kwds):
         # $ diff README.rst not_a_file 2&>1 /dev/null; echo $?
         # 2
         return 2
-    info("Diffing repository %s " % realized_repository.name)
+    info("Diffing repository [%s]" % realized_repository.name)
     download_tarball(
         ctx,
         shed_context,

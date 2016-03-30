@@ -123,6 +123,13 @@ class CliShedTestCase(CliTestCase):
         super(CliShedTestCase, self).tearDown()
         self.mock_shed.shutdown()
 
+    def _shed_create(self, recursive=False):
+        create_command = ["shed_create"]
+        if recursive:
+            create_command.append("-r")
+        create_command.extend(self._shed_args())
+        self._check_exit_code(create_command)
+
     def _shed_args(self, read_only=False):
         args = [
             "--shed_target", self.mock_shed.url,

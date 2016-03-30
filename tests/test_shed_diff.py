@@ -4,15 +4,16 @@
 from os.path import join
 from .test_utils import (
     CliShedTestCase,
+    TEST_REPOS_DIR,
 )
 from planemo import io
 import tempfile
-import shutil
 import sys
 import os
 from xml.etree import ElementTree
 from planemo.xml.diff import diff
-from .test_utils import TEST_REPOS_DIR
+
+from .test_shed_upload import update_package_1
 
 DIFF_LINES = [
     "diff -r _workingdir_/related_file _custom_shed_/related_file",
@@ -43,11 +44,7 @@ class ShedDiffTestCase(CliShedTestCase):
 
     def test_diff_recursive(self):
         with self._isolate_repo("multi_repos_nested") as f:
-            upload_command = [
-                "shed_upload", "-r", "--force_repository_creation"
-            ]
-            upload_command.extend(self._shed_args())
-            self._check_exit_code(upload_command)
+            self._shed_create(recursive=True)
 
             diff_command = ["shed_diff", "-r"]
             diff_command.extend(self._shed_args(read_only=True))
@@ -61,11 +58,7 @@ class ShedDiffTestCase(CliShedTestCase):
 
     def test_shed_diff_raw(self):
         with self._isolate_repo("suite_auto"):
-            upload_command = [
-                "shed_upload", "--force_repository_creation",
-            ]
-            upload_command.extend(self._shed_args())
-            self._check_exit_code(upload_command)
+            self._shed_create()
 
             diff_command = [
                 "shed_diff", "-o", "diff"
@@ -82,37 +75,25 @@ class ShedDiffTestCase(CliShedTestCase):
 
     def test_shed_diff_xml_no_diff(self):
         with self._isolate_repo("package_1"):
-            upload_command = [
-                "shed_upload", "--force_repository_creation",
-            ]
-            upload_command.extend(self._shed_args())
-            self._check_exit_code(upload_command)
+            self._shed_create()
+
             diff_command = ["shed_diff"]
             diff_command.extend(self._shed_args(read_only=True))
             self._check_exit_code(diff_command, exit_code=0)
 
     def test_shed_diff_xml_diff(self):
         with self._isolate_repo("package_1") as f:
-            upload_command = [
-                "shed_upload", "--force_repository_creation",
-            ]
-            upload_command.extend(self._shed_args())
-            self._check_exit_code(upload_command)
-            changed_xml = os.path.join(TEST_REPOS_DIR,
-                                       "package_1_changed",
-                                       "tool_dependencies.xml")
-            shutil.copyfile(changed_xml, join(f, "tool_dependencies.xml"))
+            self._shed_create()
+
+            update_package_1(f)
+
             diff_command = ["shed_diff"]
             diff_command.extend(self._shed_args(read_only=True))
             self._check_exit_code(diff_command, exit_code=1)
 
     def test_diff_xunit(self):
         with self._isolate_repo("multi_repos_nested") as f:
-            upload_command = [
-                "shed_upload", "-r", "--force_repository_creation"
-            ]
-            upload_command.extend(self._shed_args())
-            self._check_exit_code(upload_command)
+            self._shed_create(recursive=True)
 
             xunit_report = tempfile.NamedTemporaryFile(delete=False)
             xunit_report.flush()

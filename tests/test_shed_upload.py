@@ -1,4 +1,6 @@
-""" Integration tests for shed_upload, shed_download, and shed_create
+"""Integration tests for shed contents commands.
+
+Specifically, tests for shed_upload, shed_download, and shed_create.
 commands.
 """
 from os.path import exists, join
@@ -6,7 +8,10 @@ import os
 import tarfile
 import shutil
 
-from .test_utils import CliShedTestCase
+from .test_utils import (
+    CliShedTestCase,
+    TEST_REPOS_DIR,
+)
 from planemo.io import shell
 from planemo import git
 
@@ -40,12 +45,15 @@ class ShedUploadTestCase(CliShedTestCase):
 
     def test_update_with_check_diff(self):
         with self._isolate_repo("single_tool") as f:
+            self._shed_create()
+
+            self._assert_shed_diff(diff=0)
+
             upload_command = [
                 "shed_update", "--force_repository_creation", "--check_diff"
             ]
             upload_command.extend(self._shed_args())
             self._check_exit_code(upload_command)
-            upload_command.append("--check_diff")
 
             # First time no difference.
             r = self._check_exit_code(upload_command)
@@ -55,15 +63,44 @@ class ShedUploadTestCase(CliShedTestCase):
             with open(join(f, "related_file"), "w") as rf:
                 rf.write("new_contents")
 
+            self._assert_shed_diff(diff=1)
+
             # No assert there is no difference again.
             r = self._check_exit_code(upload_command)
             assert "not different, skipping upload." not in r.output
 
-    def test_update_metadata_only(self):
-        with self._isolate_repo("single_tool"):
+            self._assert_shed_diff(diff=0)
+
+    def test_update_with_check_diff_package(self):
+        with self._isolate_repo("package_1") as f:
+            self._shed_create()
+
+            self._assert_shed_diff(diff=0)
+            upload_command = [
+                "shed_update", "--force_repository_creation", "--check_diff"
+            ]
+            upload_command.extend(self._shed_args())
+            self._check_exit_code(upload_command)
+
+            # First time no difference.
+            r = self._check_exit_code(upload_command)
+            assert "not different, skipping upload." in r.output
+
+            update_package_1(f)
+            self._assert_shed_diff(diff=1)
+
+            # No assert there is no difference again.
+            r = self._check_exit_code(upload_command)
+            assert "not different, skipping upload." not in r.output
+
+            self._assert_shed_diff(diff=0)
+
+    def test_update_with_force_create_metadata_only(self):
+        with self._isolate_repo("single_tool") as f:
             upload_command = ["shed_update", "--force_repository_creation", "--skip_upload"]
             upload_command.extend(self._shed_args())
             self._check_exit_code(upload_command)
+            self._verify_empty_repository(f)
 
     def test_update_with_force_create(self):
         with self._isolate_repo("single_tool") as f:
@@ -290,6 +327,11 @@ class ShedUploadTestCase(CliShedTestCase):
                 ],
                 not_contains=[])
 
+    def _assert_shed_diff(self, diff=1):
+        shed_diff_command = ["shed_diff"]
+        shed_diff_command.extend(self._shed_args())
+        self._check_exit_code(shed_diff_command, exit_code=diff)
+
     def _verify_expansion(self, f, name=None):
         upload_command = ["shed_upload", "--tar_only"]
         upload_command.extend(self._shed_args())
@@ -319,6 +361,10 @@ class ShedUploadTestCase(CliShedTestCase):
         self._verify_upload(
             f, ["cat.xml", "related_file", "test-data/1.bed"], download_args
         )
+
+    def _verify_empty_repository(self, f, download_args=[]):
+        target = self._download_repo(f, download_args)
+        assert len(os.listdir(target)) == 0
 
     def _verify_upload(self, f, download_files=[], download_args=[]):
         target = self._download_repo(f, download_args)
@@ -371,7 +417,21 @@ class ShedUploadTestCase(CliShedTestCase):
             return target
 
 
+def update_package_1(f):
+    """Update tool dependencies file for package_1."""
+    changed_xml = join(
+        TEST_REPOS_DIR,
+        "package_1_changed",
+        "tool_dependencies.xml"
+    )
+    shutil.copyfile(changed_xml, join(f, "tool_dependencies.xml"))
+
+
 def assert_exists(path):
+    """Assert supplied ``path`` exists.
+
+    Produces an informative AssertionError if it is does not.
+    """
     dir_path = os.path.dirname(path)
     msg = None
     if not exists(dir_path):
