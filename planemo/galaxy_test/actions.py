@@ -190,11 +190,18 @@ def __summarize_tests_full(
         __summarize_test_case(structured_data_tests, testcase_el, **kwds)
 
 
+def passed(xunit_testcase_el):
+    did_pass = True
+    for child_el in list(xunit_testcase_el):
+        if child_el.tag in ["failure", "error"]:
+            did_pass = False
+    return did_pass
+
+
 def __summarize_test_case(structured_data, testcase_el, **kwds):
     summary_style = kwds.get("summary")
     test_id = test_structures.case_id(testcase_el)
-    passed = len(list(testcase_el)) == 0
-    if not passed:
+    if not passed(testcase_el):
         state = click.style("failed", bold=True, fg='red')
     else:
         state = click.style("passed", bold=True, fg='green')

@@ -5,9 +5,12 @@ import os
 from .test_utils import TEST_DATA_DIR
 
 from planemo.galaxy_test import structures
+from planemo.galaxy_test.actions import passed
 
 nose_1_3_report = os.path.join(TEST_DATA_DIR, "xunit_nose_1_3.xml")
 nose_0_11_report = os.path.join(TEST_DATA_DIR, "xunit_nose_0_11.xml")
+
+xunit_report_with_failure = os.path.join(TEST_DATA_DIR, "xunit_failure.xml")
 
 
 def get_test_id_new():
@@ -27,3 +30,13 @@ def _get_test_id(path):
     expected_id = "functional.test_toolbox.TestForTool_cat.test_tool_000000"
     assert test_id.id == expected_id
     assert test_id.num == 0
+
+
+def test_passed():
+    xml_tree = structures.parse_xunit_report(xunit_report_with_failure)
+    root = xml_tree.getroot()
+    good_testcase_el = structures.find_cases(root)[0]
+    assert passed(good_testcase_el)
+
+    bad_testcase_el = structures.find_cases(root)[1]
+    assert not passed(bad_testcase_el)
