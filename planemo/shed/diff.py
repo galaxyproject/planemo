@@ -1,3 +1,8 @@
+"""Utilities for calculating effective repository diffs.
+
+Some intelligence is required because the tool shed updates attributes that it
+is beneficial to ignore.
+"""
 from __future__ import print_function
 
 import os
@@ -8,6 +13,11 @@ from planemo.xml import diff
 
 
 def diff_and_remove(working, label_a, label_b, f):
+    """Remove tool shed XML files and use a smart XML diff on them.
+
+    Return 0 if and only if the XML content is the sam after stripping
+    attirbutes the tool shed updates.
+    """
     assert label_a != label_b
     special = ["tool_dependencies.xml", "repository_dependencies.xml"]
     deps_diff = 0
@@ -26,6 +36,11 @@ def diff_and_remove(working, label_a, label_b, f):
 
 
 def _shed_diff(file_a, file_b, f=sys.stdout):
+    """Strip attributes the tool shed writes and do smart XML diff.
+
+    Returns 0 if and only if the XML content is the same after stripping
+    ``tool_shed`` and ``changeset_revision`` attributes.
+    """
     xml_a = ElementTree.parse(file_a).getroot()
     xml_b = ElementTree.parse(file_b).getroot()
     _strip_shed_attributes(xml_a)
@@ -46,3 +61,6 @@ def _remove_attribs(xml_element):
     for attrib in ["changeset_revision", "toolshed"]:
         if attrib in xml_element.attrib:
             del xml_element.attrib[attrib]
+
+
+__all__ = ["diff_and_remove"]

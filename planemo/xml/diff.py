@@ -1,5 +1,6 @@
 
 def diff(x1, x2, reporter=None):
+    """Return 0 if and only if the XML has the same content."""
     compare = xml_compare(x1, x2, reporter)
     return_val = 0 if compare else 1
     return return_val
