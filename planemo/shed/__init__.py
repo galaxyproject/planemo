@@ -261,7 +261,7 @@ def upload_repository(ctx, realized_repository, **kwds):
         return report_non_existent_repository(realized_repository)
 
     if kwds.get("check_diff", False):
-        is_diff = diff_repo(ctx, realized_repository, **kwds)
+        is_diff = diff_repo(ctx, realized_repository, **kwds) != 0
         if not is_diff:
             name = realized_repository.name
             info("Repository [%s] not different, skipping upload." % name)
@@ -295,6 +295,11 @@ def _update_commit_message(ctx, realized_repository, update_kwds, **kwds):
 
 
 def diff_repo(ctx, realized_repository, **kwds):
+    """Compare two repositories (local or remote) and check for differences.
+
+    Returns 0 if and only the repositories are effectively the same
+    given supplid kwds for comparison description.
+    """
     with temp_directory("tool_shed_diff_") as working:
         return _diff_in(ctx, working, realized_repository, **kwds)
 
