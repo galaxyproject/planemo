@@ -6,10 +6,15 @@ History
 .. to_doc
 
 ---------------------
-0.25.0.dev0
+0.24.1.dev0
 ---------------------
 
-    
+* Fix test summary report. `Pull Request 429`_
+* Improve error reporting when running ``shed_test``. ce8e1be_
+* Improved code comments and tests for shed related functionality.
+  89674cb_
+* Rev galaxy-lib dependency to 16.4.1 to fix wget usage in
+  newer versions of wget. d76b489_
 
 ---------------------
 0.24.0 (2016-03-29)
@@ -637,6 +642,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _89674cb: https://github.com/galaxyproject/planemo/commit/89674cb
+.. _Pull Request 429: https://github.com/galaxyproject/planemo/pull/429
+.. _ce8e1be: https://github.com/galaxyproject/planemo/commit/ce8e1be
+.. _d76b489: https://github.com/galaxyproject/planemo/commit/d76b489
 .. _Issue 416: https://github.com/galaxyproject/planemo/issues/416
 .. _Pull Request 428: https://github.com/galaxyproject/planemo/pull/428
 .. _93b7bda: https://github.com/galaxyproject/planemo/commit/93b7bda
