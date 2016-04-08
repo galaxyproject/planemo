@@ -63,7 +63,7 @@ AUTO_NAME_CONFLICT_MESSAGE = ("Cannot specify both auto_tool_repositories and "
 REALIZAION_PROBLEMS_MESSAGE = ("Problem encountered executing action for one or more "
                                "repositories.")
 INCORRECT_OWNER_MESSAGE = ("Attempting to create a repository with configured "
-                           "owner [%s] that does not matche API user [%s].")
+                           "owner [%s] that does not match API user [%s].")
 PROBLEM_PROCESSING_REPOSITORY_MESSAGE = "Problem processing repositories, exiting."
 
 # Planemo generated or consumed files that do not need to be uploaded to the
