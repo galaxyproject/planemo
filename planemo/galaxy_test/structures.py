@@ -14,6 +14,12 @@ RUN_TESTS_CMD = (
     "sh run_tests.sh $COMMON_STARTUP_ARGS --report_file %s %s %s %s"
 )
 
+NO_STRUCTURED_FILE = (
+    "Warning: Problem with target Galaxy, it did not "
+    "produce a structured test results file [%s] - summary "
+    "information and planemo reports will be incorrect."
+)
+
 
 class GalaxyTestCommand(object):
 
@@ -60,11 +66,8 @@ class StructuredData(object):
 
     def __init__(self, json_path):
         self.json_path = json_path
-        if not os.path.exists(json_path):
-            error("Warning: Problem with target Galaxy, it did not "
-                  "produce a structured test results files - summary "
-                  "information and planemo reports will be incorrect."
-                  )
+        if not json_path or not os.path.exists(json_path):
+            error(NO_STRUCTURED_FILE % json_path)
         else:
             try:
                 with open(json_path, "r") as output_json_f:
