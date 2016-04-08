@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.24.1.dev0
+0.24.1 (2016-04-08)
 ---------------------
 
 * Fix test summary report. `Pull Request 429`_
