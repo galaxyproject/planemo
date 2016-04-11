@@ -1,6 +1,7 @@
 """ Planemo specific utilities for dealing with conda, extending Galaxy's
 features with planemo specific idioms.
 """
+from __future__ import absolute_import
 
 from galaxy.tools.deps import conda_util
 from planemo.io import shell

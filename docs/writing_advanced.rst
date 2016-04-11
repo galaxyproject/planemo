@@ -9,8 +9,9 @@ installed - check out <writing> if you have never developed a Galaxy tool.
 
 .. include:: _writing_testing.rst
 .. include:: _writing_collections.rst
+.. include:: _writing_clusters.rst
 
-.. _Galaxy: (http://galaxyproject.org/)
+.. _Galaxy: http://galaxyproject.org/
 .. _Docker: https://www.docker.com/
 .. _Vagrant: https://www.vagrantup.com/
 .. _BWA: http://bio-bwa.sourceforge.net/

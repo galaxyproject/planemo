@@ -4,7 +4,10 @@ import click
 
 from . import structures as test_structures
 from planemo.io import info, warn, shell_join
-from planemo import galaxy_run
+from planemo.galaxy.run import (
+    run_galaxy_command,
+    setup_venv,
+)
 from planemo.reports import build_report
 
 
@@ -58,7 +61,7 @@ def run_in_config(ctx, config, **kwds):
             'export COMMON_STARTUP_ARGS; '
             'echo "Set COMMON_STARTUP_ARGS to ${COMMON_STARTUP_ARGS}"'
         )
-    setup_venv_command = galaxy_run.setup_venv(ctx, kwds)
+    setup_venv_command = setup_venv(ctx, kwds)
     cmd = shell_join(
         cd_to_galaxy_command,
         setup_common_startup_args,
@@ -66,7 +69,7 @@ def run_in_config(ctx, config, **kwds):
         test_cmd,
     )
     action = "Testing tools"
-    return_code = galaxy_run.run_galaxy_command(
+    return_code = run_galaxy_command(
         ctx,
         cmd,
         config.env,

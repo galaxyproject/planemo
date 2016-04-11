@@ -1,5 +1,5 @@
 from planemo.io import conditionally_captured_io
-from planemo import galaxy_serve
+from planemo.galaxy.serve import serve_daemon
 from .client import run_cwl_tool
 from planemo import io
 
@@ -15,7 +15,7 @@ def run_galaxy(ctx, path, job_path, **kwds):
     kwds["cwl"] = True
     conformance_test = kwds.get("conformance_test", False)
     with conditionally_captured_io(conformance_test):
-        with galaxy_serve.serve_daemon(ctx, [path], **kwds) as config:
+        with serve_daemon(ctx, [path], **kwds) as config:
             try:
                 cwl_run = run_cwl_tool(path, job_path, config, **kwds)
             except Exception:

@@ -1,21 +1,21 @@
-planemo.galaxy_test package
+planemo.galaxy.test package
 ===========================
 
 Submodules
 ----------
 
-planemo.galaxy_test.actions module
+planemo.galaxy.test.actions module
 ----------------------------------
 
-.. automodule:: planemo.galaxy_test.actions
+.. automodule:: planemo.galaxy.test.actions
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo.galaxy_test.structures module
+planemo.galaxy.test.structures module
 -------------------------------------
 
-.. automodule:: planemo.galaxy_test.structures
+.. automodule:: planemo.galaxy.test.structures
     :members:
     :undoc-members:
     :show-inheritance:
@@ -24,7 +24,7 @@ planemo.galaxy_test.structures module
 Module contents
 ---------------
 
-.. automodule:: planemo.galaxy_test
+.. automodule:: planemo.galaxy.test
     :members:
     :undoc-members:
     :show-inheritance:

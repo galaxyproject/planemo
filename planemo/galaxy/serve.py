@@ -1,8 +1,11 @@
 import contextlib
 import os
 
-from planemo import galaxy_config
-from planemo import galaxy_run
+from .config import galaxy_config
+from .run import (
+    setup_venv,
+    run_galaxy_command,
+)
 from planemo import io
 
 
@@ -15,9 +18,9 @@ def serve(ctx, paths, **kwds):
     if daemon:
         kwds["no_cleanup"] = True
 
-    with galaxy_config.galaxy_config(ctx, paths, **kwds) as config:
+    with galaxy_config(ctx, paths, **kwds) as config:
         # TODO: Allow running dockerized Galaxy here instead.
-        setup_venv_command = galaxy_run.setup_venv(ctx, kwds)
+        setup_venv_command = setup_venv(ctx, kwds)
         run_script = os.path.join(config.galaxy_root, "run.sh")
         run_script += " $COMMON_STARTUP_ARGS"
         if daemon:
@@ -34,7 +37,7 @@ def serve(ctx, paths, **kwds):
             run_script,
         )
         action = "Starting galaxy"
-        galaxy_run.run_galaxy_command(
+        run_galaxy_command(
             ctx,
             cmd,
             config.env,

@@ -4,9 +4,9 @@ import click
 
 from planemo.cli import pass_context
 from planemo import options
-from planemo import galaxy_config
+from planemo.galaxy import galaxy_config
 
-from planemo.galaxy_test import (
+from planemo.galaxy.test import (
     run_in_config,
 )
 
@@ -55,7 +55,7 @@ def cli(ctx, paths, **kwds):
     please careful and do not try this against production Galaxy instances.
     """
     kwds["for_tests"] = True
-    with galaxy_config.galaxy_config(ctx, paths, **kwds) as config:
+    with galaxy_config(ctx, paths, **kwds) as config:
         return_value = run_in_config(ctx, config, **kwds)
         if return_value:
             sys.exit(return_value)

@@ -6,7 +6,7 @@ from .test_utils import (
     TEST_REPOS_DIR,
 )
 from . import network_util
-from planemo import galaxy_serve
+from planemo.galaxy import galaxy_serve, shed_serve
 from planemo import shed
 
 
@@ -16,7 +16,7 @@ class GalaxyServeTestCase(CliTestCase):
     def test_serve_daemon(self):
         port = network_util.get_free_port()
         cat_path = os.path.join(TEST_REPOS_DIR, "single_tool", "cat.xml")
-        config = galaxy_serve.serve(
+        config = galaxy_serve(
             self.test_context,
             cat_path,
             install_galaxy=True,
@@ -47,7 +47,7 @@ class GalaxyServeTestCase(CliTestCase):
             ctx, [fastqc_path],
             shed_target="toolshed",
         )
-        with galaxy_serve.shed_serve(
+        with shed_serve(
             ctx, install_args_list,
             port=port,
             skip_dependencies=True,

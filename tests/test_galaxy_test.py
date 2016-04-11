@@ -4,8 +4,8 @@ import os
 
 from .test_utils import TEST_DATA_DIR
 
-from planemo.galaxy_test import structures
-from planemo.galaxy_test.actions import passed
+from planemo.galaxy.test import structures
+from planemo.galaxy.test.actions import passed
 
 nose_1_3_report = os.path.join(TEST_DATA_DIR, "xunit_nose_1_3.xml")
 nose_0_11_report = os.path.join(TEST_DATA_DIR, "xunit_nose_0_11.xml")

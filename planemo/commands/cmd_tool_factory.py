@@ -3,7 +3,7 @@ import os
 import click
 from planemo.cli import pass_context
 from planemo import options
-from planemo import galaxy_serve
+from planemo.galaxy import serve
 
 
 @click.command('tool_factory')
@@ -19,4 +19,4 @@ def cli(ctx, **kwds):
     """
     mod_dir = os.path.dirname(__file__)
     tf_dir = os.path.join(mod_dir, '..', '..', 'planemo_ext', 'tool_factory_2')
-    galaxy_serve.serve(ctx, [os.path.abspath(tf_dir)], **kwds)
+    serve(ctx, [os.path.abspath(tf_dir)], **kwds)

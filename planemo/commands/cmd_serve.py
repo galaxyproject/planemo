@@ -1,7 +1,7 @@
 import click
 
 from planemo.cli import pass_context
-from planemo import galaxy_serve
+from planemo.galaxy import galaxy_serve
 from planemo import options
 
 
@@ -34,4 +34,4 @@ def cli(ctx, paths, **kwds):
     proof yet so please careful and do not try this against production Galaxy
     instances.
     """
-    galaxy_serve.serve(ctx, paths, **kwds)
+    galaxy_serve(ctx, paths, **kwds)

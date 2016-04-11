@@ -5,7 +5,7 @@ import click
 
 from planemo.cli import pass_context
 from planemo import options
-from planemo import galaxy_serve
+from planemo.galaxy import shed_serve
 from planemo import shed
 from planemo import io
 
@@ -29,7 +29,7 @@ def cli(ctx, paths, **kwds):
     logged into and explored interactively.
     """
     install_args_list = shed.install_arg_lists(ctx, paths, **kwds)
-    with galaxy_serve.shed_serve(ctx, install_args_list, **kwds) as config:
+    with shed_serve(ctx, install_args_list, **kwds) as config:
         gx_url = "http://localhost:%d/" % config.port
         io.info("Galaxy running with tools installed at %s" % gx_url)
         time.sleep(1000000)

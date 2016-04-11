@@ -1,6 +1,8 @@
 """ Click definitions for various shared options and arguments.
 """
 
+from __future__ import absolute_import
+
 import functools
 import os
 
