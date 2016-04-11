@@ -8,7 +8,7 @@ Subpackages
 
     planemo.commands
     planemo.cwl
-    planemo.galaxy_test
+    planemo.galaxy
     planemo.linters
     planemo.reports
     planemo.shed
@@ -54,30 +54,6 @@ planemo.exit_codes module
 -------------------------
 
 .. automodule:: planemo.exit_codes
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-planemo.galaxy_config module
-----------------------------
-
-.. automodule:: planemo.galaxy_config
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-planemo.galaxy_run module
--------------------------
-
-.. automodule:: planemo.galaxy_run
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-planemo.galaxy_serve module
----------------------------
-
-.. automodule:: planemo.galaxy_serve
     :members:
     :undoc-members:
     :show-inheritance:

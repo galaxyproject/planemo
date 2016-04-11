@@ -13,7 +13,11 @@ from six.moves.urllib.request import urlretrieve
 
 import click
 
-from planemo import galaxy_run
+from .run import (
+    setup_common_startup_args,
+    setup_venv,
+    DOWNLOAD_GALAXY,
+)
 from planemo.conda import build_conda_context
 from planemo.io import warn
 from planemo.io import shell
@@ -547,7 +551,7 @@ def _install_galaxy(ctx, config_directory, env, kwds):
 def _install_galaxy_via_download(ctx, config_directory, env, kwds):
     branch = _galaxy_branch(kwds)
     tar_cmd = "tar -zxvf %s" % branch
-    command = galaxy_run.DOWNLOAD_GALAXY + "; %s | tail" % tar_cmd
+    command = DOWNLOAD_GALAXY + "; %s | tail" % tar_cmd
     _install_with_command(ctx, config_directory, command, env, kwds)
 
 
@@ -599,14 +603,14 @@ def _install_with_command(ctx, config_directory, command, env, kwds):
         pip_install_command = PIP_INSTALL_CMD % " ".join(pip_installs)
     else:
         pip_install_command = ""
-    setup_venv_command = galaxy_run.setup_venv(ctx, kwds)
+    setup_venv_command = setup_venv(ctx, kwds)
     install_cmd = shell_join(
         "cd %s" % config_directory,
         command,
         "cd galaxy-dev",
         setup_venv_command,
         pip_install_command,
-        galaxy_run.setup_common_startup_args(),
+        setup_common_startup_args(),
         COMMAND_STARTUP_COMMAND,
     )
     shell(install_cmd, env=env)

@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import sys
 import traceback
 from planemo.io import error

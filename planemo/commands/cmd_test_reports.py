@@ -5,7 +5,7 @@ import click
 from planemo.cli import pass_context
 from planemo import io
 from planemo import options
-from planemo.galaxy_test import StructuredData, handle_reports
+from planemo.galaxy.test import StructuredData, handle_reports
 
 
 @click.command('test_reports')

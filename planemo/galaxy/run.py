@@ -97,3 +97,10 @@ def run_galaxy_command(ctx, command, env, action, daemon=False):
         ctx.vlog('%s="%s"' % (key, value))
     ctx.vlog("============================")
     return shell(command, env=env)
+
+__all__ = [
+    "setup_venv",
+    "run_galaxy_command",
+    "DOWNLOAD_GALAXY",
+    "setup_common_startup_args",
+]

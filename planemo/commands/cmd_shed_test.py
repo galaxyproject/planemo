@@ -7,9 +7,9 @@ import click
 
 from planemo.cli import pass_context
 from planemo import options
-from planemo import galaxy_serve
+from planemo.galaxy.serve import shed_serve
 from planemo import shed
-from planemo import galaxy_test
+from planemo.galaxy.test import run_in_config
 
 
 @click.command("shed_test")
@@ -36,9 +36,9 @@ def cli(ctx, paths, **kwds):
     port = get_free_port()
     kwds["port"] = port
     return_code = 1
-    with galaxy_serve.shed_serve(ctx, install_args_list, **kwds) as config:
+    with shed_serve(ctx, install_args_list, **kwds) as config:
         config.kill()
-        return_code = galaxy_test.run_in_config(
+        return_code = run_in_config(
             ctx,
             config,
             installed=True,
