@@ -1,9 +1,9 @@
 Cluster Usage
 ==============================
 
-------------------------------
-``GALAXY_SLOTS``
-------------------------------
+--------------------------------------------
+Developing for Clusters - ``GALAXY_SLOTS``
+--------------------------------------------
 
 ``GALAXY_SLOTS`` is a special environment variable that is set in a Galaxy
 tool's runtime environment. If the tool you are working on allows configuring
@@ -28,4 +28,36 @@ For information on how server administrators can configure this value for
 a particular tool, check out `the Galaxy wiki
 <https://wiki.galaxyproject.org/Admin/Config/GALAXY_SLOTS>`__.
 
-.. _stringtie: https://ccb.jhu.edu/software/stringtie/
+-----------------------------------------------
+Test Against Clusters - ``--job_config_file``
+-----------------------------------------------
+
+The various commands that start Galaxy servers (``serve``,
+``test``, ``shed_serve``, ``shed_test``, etc...) allow specification of
+a Galaxy job configuration XML file (e.g. ``job_conf.xml``).
+
+For instance, Slurm_ is a popular distributed reource manager (DRM) in the
+Galaxy community. The following ``job_conf.xml`` tells Galaxy to run all jobs
+using Slurm_ and allocate ``2`` cores for each job.
+
+.. literalinclude:: writing/job_conf_slurm.xml
+   :language: xml
+
+If this file is named ``planemo_job_conf.xml`` and resides in one's home
+directory (``~``), Planemo can ``test`` or ``serve`` using this configuration
+with the following commands.
+
+::
+
+    planemo test --job_config_file ~/planemo_job_conf.xml .
+    planemo serve --job_config_file ~/planemo_job_conf.xml .
+
+For general information on configuring Galaxy to communicate with clusters
+check out `this page
+<https://wiki.galaxyproject.org/Admin/Config/Performance/Cluster>`__ on the
+Galaxy wiki and for information regarding configuring job configuration XML
+files in particular check out `the example
+<https://github.com/galaxyproject/galaxy/blob/dev/config/job_conf.xml.sample_advanced>`__
+distributed with Galaxy.
+
+.. _Slurm: http://slurm.schedmd.com/

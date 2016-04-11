@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<job_conf>
+    <plugins>
+        <plugin id="drmaa" type="runner" load="galaxy.jobs.runners.drmaa:DRMAAJobRunner" />
+    </plugins>
+    <handlers>
+        <handler id="main"/>
+    </handlers>
+    <destinations default="drmaa">
+        <destination id="drmaa" runner="drmaa">
+          <param id="nativeSpecification">--time=00:05:00 --nodes=1 --ntasks=2</param>
+        </destination>
+    </destinations>
+</job_conf>
