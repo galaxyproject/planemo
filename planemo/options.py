@@ -165,6 +165,7 @@ def job_config_option():
             resolve_path=True
         ),
         help="Job configuration file for Galaxy to target.",
+        callback=get_default_callback(None),
     )
 
 
