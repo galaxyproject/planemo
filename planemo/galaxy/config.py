@@ -57,7 +57,7 @@ TOOL_CONF_TEMPLATE = """<toolbox>
 """
 
 SHED_TOOL_CONF_TEMPLATE = """<?xml version="1.0"?>
-<toolbox tool_path="${shed_tools_path}">
+<toolbox tool_path="${shed_tool_path}">
 </toolbox>
 """
 
@@ -111,6 +111,8 @@ DOWNLOADS_URL = ("https://raw.githubusercontent.com/"
 DOWNLOADABLE_MIGRATION_VERSIONS = [127, 120, 117]
 LATEST_URL = DOWNLOADS_URL + "latest.sqlite"
 
+DATABASE_LOCATION_TEMPLATE = "sqlite:///%s?isolation_level=IMMEDIATE"
+
 PIP_INSTALL_CMD = "pip install %s"
 
 COMMAND_STARTUP_COMMAND = "./scripts/common_startup.sh ${COMMON_STARTUP_ARGS}"
@@ -123,6 +125,7 @@ FAILED_TO_FIND_GALAXY_EXCEPTION = (
 
 @contextlib.contextmanager
 def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
+    """Set up a ``GalaxyConfig`` in an auto-cleaned context."""
     test_data_dir = _find_test_data(tool_paths, **kwds)
     tool_data_table = _find_tool_data_table(
         tool_paths,
@@ -151,12 +154,14 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
 
         _handle_dependency_resolution(config_directory, kwds)
         _handle_job_metrics(config_directory, kwds)
+        file_path = kwds.get("file_path") or config_join("files")
+        shed_tool_conf = kwds.get("shed_tool_conf") or config_join("shed_tools_conf.xml")
         tool_definition = _tool_conf_entry_for(tool_paths)
         empty_tool_conf = config_join("empty_tool_conf.xml")
-        shed_tool_conf = _shed_tool_conf(install_galaxy, config_directory)
+
         tool_conf = config_join("tool_conf.xml")
         database_location = config_join("galaxy.sqlite")
-        shed_tools_path = config_join("shed_tools")
+        shed_tool_path = kwds.get("shed_tool_path") or config_join("shed_tools")
         sheds_config_path = _configure_sheds_config_file(
             ctx, config_directory, **kwds
         )
@@ -168,7 +173,7 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
             latest_galaxy=latest_galaxy,
             **kwds
         )
-        os.makedirs(shed_tools_path)
+        os.makedirs(shed_tool_path)
         server_name = "planemo%d" % random.randint(0, 100000)
         port = int(kwds.get("port", 9090))
         template_args = dict(
@@ -176,7 +181,7 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
             host=kwds.get("host", "127.0.0.1"),
             server_name=server_name,
             temp_directory=config_directory,
-            shed_tools_path=shed_tools_path,
+            shed_tool_path=shed_tool_path,
             database_location=database_location,
             tool_definition=tool_definition,
             tool_conf=tool_conf,
@@ -188,7 +193,7 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
         tool_config_file = "%s,%s" % (tool_conf, shed_tool_conf)
         properties = dict(
             tool_dependency_dir=dependency_dir,
-            file_path="${temp_directory}/files",
+            file_path=file_path,
             new_file_path="${temp_directory}/tmp",
             tool_config_file=tool_config_file,
             tool_sheds_config_file=sheds_config_path,
@@ -219,8 +224,7 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
             test_data_dir=test_data_dir,  # TODO: make gx respect this
         )
         if not for_tests:
-            properties["database_connection"] = \
-                "sqlite:///${database_location}?isolation_level=IMMEDIATE"
+            properties["database_connection"] = _database_connection(database_location, **kwds)
 
         _handle_kwd_overrides(properties, kwds)
 
@@ -363,9 +367,24 @@ class GalaxyConfig(object):
         shutil.rmtree(self.config_directory)
 
 
+def _database_connection(database_location, **kwds):
+    default_connection = DATABASE_LOCATION_TEMPLATE % database_location
+    database_connection = kwds.get("database_connection") or default_connection
+    return database_connection
+
+
 def attempt_database_preseed(
     effective_galaxy_root, database_location, latest_galaxy=False, **kwds
 ):
+    """If database location is unset, attempt to seed the database."""
+    if os.path.exists(database_location):
+        # Can't seed an existing database.
+        return False
+
+    if not _database_connection(database_location, **kwds).startswith("sqlite"):
+        # Not going to use an sqlite database, don't preseed.
+        return False
+
     preseeded_database = True
     galaxy_sqlite_database = kwds.get("galaxy_database_seed", None)
     try:
@@ -742,4 +761,7 @@ def _sub(template, args):
         return ''
     return Template(template).safe_substitute(args)
 
-__all__ = ["galaxy_config"]
+__all__ = [
+    "attempt_database_preseed",
+    "galaxy_config",
+]
