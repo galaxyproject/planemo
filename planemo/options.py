@@ -59,7 +59,7 @@ def galaxy_sqlite_database_option():
         "--galaxy_sqlite_database",
         default=None,
         use_global_config=True,
-        type=click.Path(exists=True, file_okay=False, resolve_path=True),
+        type=click.Path(exists=True, file_okay=True, resolve_path=True),
         help="Preseeded Galaxy sqlite database to target.",
     )
 
