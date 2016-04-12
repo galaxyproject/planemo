@@ -54,9 +54,9 @@ def galaxy_root_option():
     )
 
 
-def galaxy_sqlite_database_option():
+def galaxy_database_seed_option():
     return planemo_option(
-        "--galaxy_sqlite_database",
+        "--galaxy_database_seed",
         default=None,
         use_global_config=True,
         type=click.Path(exists=True, file_okay=True, resolve_path=True),
@@ -663,7 +663,7 @@ def galaxy_config_options():
 def galaxy_target_options():
     return _compose(
         galaxy_root_option(),
-        galaxy_sqlite_database_option(),
+        galaxy_database_seed_option(),
         install_galaxy_option(),
         galaxy_branch_option(),
         galaxy_source_option(),

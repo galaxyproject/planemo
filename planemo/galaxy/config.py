@@ -159,22 +159,14 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
         sheds_config_path = _configure_sheds_config_file(
             ctx, config_directory, **kwds
         )
-        preseeded_database = True
         master_api_key = kwds.get("master_api_key", "test_key")
         dependency_dir = os.path.join(config_directory, "deps")
-        galaxy_sqlite_database = kwds.get("galaxy_sqlite_database", None)
-        try:
-            _download_database_template(
-                galaxy_root,
-                database_location,
-                latest=latest_galaxy,
-                galaxy_sqlite_database=galaxy_sqlite_database,
-            )
-        except Exception as e:
-            print(e)
-            # No network access - just roll forward from null.
-            preseeded_database = False
-
+        preseeded_database = attempt_database_preseed(
+            galaxy_root,
+            database_location,
+            latest_galaxy=latest_galaxy,
+            **kwds
+        )
         os.makedirs(shed_tools_path)
         server_name = "planemo%d" % random.randint(0, 100000)
         port = int(kwds.get("port", 9090))
@@ -379,6 +371,25 @@ class GalaxyConfig(object):
 
     def cleanup(self):
         shutil.rmtree(self.config_directory)
+
+
+def attempt_database_preseed(
+    galaxy_root, database_location, latest_galaxy=False, **kwds
+):
+    preseeded_database = True
+    galaxy_sqlite_database = kwds.get("galaxy_database_seed", None)
+    try:
+        _download_database_template(
+            galaxy_root,
+            database_location,
+            latest=latest_galaxy,
+            galaxy_sqlite_database=galaxy_sqlite_database,
+        )
+    except Exception as e:
+        print(e)
+        # No network access - just roll forward from null.
+        preseeded_database = False
+    return preseeded_database
 
 
 def _download_database_template(
