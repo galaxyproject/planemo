@@ -1,3 +1,4 @@
+"""Module describing the planemo ``conda_init`` command."""
 import click
 
 from planemo.cli import pass_context

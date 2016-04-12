@@ -1,3 +1,4 @@
+"""Module describing the planemo ``cwl_run`` command."""
 import click
 from planemo.cli import pass_context
 from planemo import options

@@ -1,3 +1,4 @@
+"""Module describing the planemo ``lint`` command."""
 import sys
 
 import click

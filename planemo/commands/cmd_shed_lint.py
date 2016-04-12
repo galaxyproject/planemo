@@ -1,3 +1,4 @@
+"""Module describing the planemo ``shed_lint`` command."""
 import click
 import sys
 

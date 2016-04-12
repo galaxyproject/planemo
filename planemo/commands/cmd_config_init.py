@@ -1,5 +1,4 @@
-"""
-"""
+"""Module describing the planemo ``config_init`` command."""
 import os
 import sys
 

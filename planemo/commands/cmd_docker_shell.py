@@ -1,4 +1,6 @@
-"""The docker_shell command takes the path to a single tool file and returns
+"""Module describing the planemo ``docker_shell`` command.
+
+The docker_shell command takes the path to a single tool file and returns
 a new command to launch a new shell into the corresponding Docker container
 for that tool.
 

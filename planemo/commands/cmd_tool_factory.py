@@ -1,3 +1,4 @@
+"""Module describing the planemo ``tool_factory`` command."""
 import os
 
 import click

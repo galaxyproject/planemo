@@ -1,5 +1,4 @@
-"""
-"""
+"""Module describing the planemo ``project_init`` command."""
 import os
 import tempfile
 import shutil

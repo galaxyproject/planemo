@@ -1,5 +1,4 @@
-"""
-"""
+"""Module describing the planemo ``create_gist`` command."""
 import click
 
 from planemo.cli import pass_context

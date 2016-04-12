@@ -1,3 +1,4 @@
+"""Module describing the planemo ``travis_init`` command."""
 import os
 
 import click

@@ -1,3 +1,4 @@
+"""Module describing the planemo ``travis_before_install`` command."""
 import os
 import string
 

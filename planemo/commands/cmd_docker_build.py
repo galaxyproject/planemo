@@ -1,3 +1,4 @@
+"""Module describing the planemo ``docker_build`` command."""
 import click
 from planemo.cli import pass_context
 from planemo import options

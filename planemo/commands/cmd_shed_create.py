@@ -1,5 +1,4 @@
-"""
-"""
+"""Module describing the planemo ``shed_create`` command."""
 import sys
 
 import click

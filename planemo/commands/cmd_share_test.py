@@ -1,5 +1,4 @@
-"""
-"""
+"""Module describing the planemo ``share_test`` command."""
 import click
 
 from planemo.cli import pass_context

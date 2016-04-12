@@ -1,3 +1,4 @@
+"""Module describing the planemo ``dependency_script`` command."""
 import os
 import sys
 

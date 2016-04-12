@@ -1,3 +1,4 @@
+"""Module describing the planemo ``test`` command."""
 import sys
 
 import click

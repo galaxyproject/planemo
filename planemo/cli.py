@@ -117,8 +117,17 @@ class PlanemoCLI(click.MultiCommand):
               envvar="PLANEMO_GLOBAL_WORKSPACE",
               help="Workspace for planemo.")
 @pass_context
-def planemo(ctx, config, directory, verbose):
-    """Utilities to assist with the development of Galaxy tools."""
+def planemo(ctx, config, directory, verbose):  # noqa
+    """A command-line toolkit for building tools and workflows for Galaxy.
+
+    Check out the full documentation for Planemo online
+    http://planemo.readthedocs.org or open with ``planemo docs``.
+    """
     ctx.verbose = verbose
     ctx.planemo_config = os.path.expanduser(config)
     ctx.planemo_directory = os.path.expanduser(directory)
+
+
+__all__ = [
+    "planemo",
+]

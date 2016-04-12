@@ -108,6 +108,14 @@ planemo.commands.cmd_docker_shell module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd_docs module
+--------------------------------
+
+.. automodule:: planemo.commands.cmd_docs
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd_lint module
 --------------------------------
 

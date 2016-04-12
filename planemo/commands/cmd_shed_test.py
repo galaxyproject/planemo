@@ -1,5 +1,4 @@
-"""
-"""
+"""Module describing the planemo ``shed_test`` command."""
 import socket
 import sys
 

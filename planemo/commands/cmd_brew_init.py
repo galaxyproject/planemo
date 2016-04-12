@@ -1,3 +1,4 @@
+"""Module describing the planemo ``brew_init`` command."""
 import click
 
 import urllib

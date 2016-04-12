@@ -1,3 +1,4 @@
+"""Module describing the planemo ``brew_env`` command."""
 from __future__ import print_function
 import click
 import os

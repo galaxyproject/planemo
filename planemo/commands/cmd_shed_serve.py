@@ -1,5 +1,4 @@
-"""
-"""
+"""Module describing the planemo ``shed_serve`` command."""
 import time
 import click
 

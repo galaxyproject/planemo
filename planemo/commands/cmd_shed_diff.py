@@ -1,5 +1,4 @@
-"""
-"""
+"""Module describing the planemo ``shed_diff`` command."""
 import sys
 import tempfile
 import shutil

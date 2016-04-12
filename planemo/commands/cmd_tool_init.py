@@ -1,3 +1,4 @@
+"""Module describing the planemo ``tool_init`` command."""
 import os
 import sys
 
