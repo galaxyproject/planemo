@@ -4,7 +4,7 @@ import sys
 
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 from planemo import io
 from planemo import tool_builder
@@ -190,7 +190,7 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
     help="Generate a macros.xml for reuse across many tools.",
 )
 @click.command("tool_init")
-@pass_context
+@command_function
 def cli(ctx, **kwds):
     """Generate a tool outline from supplied arguments.
     """

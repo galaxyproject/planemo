@@ -3,7 +3,7 @@ import os
 
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo.io import warn, info
 from planemo import options
 from planemo import RAW_CONTENT_URL
@@ -39,7 +39,7 @@ script:
 
 @click.command('travis_init')
 @options.optional_project_arg()
-@pass_context
+@command_function
 def cli(ctx, path):
     """Setup files in a github tool repository to enable continuous
     integration testing.::

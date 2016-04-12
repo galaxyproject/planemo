@@ -2,7 +2,7 @@
 from __future__ import print_function
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 
 from planemo.io import ps1_for_path
@@ -34,7 +34,7 @@ alias conda_env_deactivate="source %s; %s"
 @options.optional_tools_arg()
 @options.conda_target_options()
 # @options.skip_install_option()  # TODO
-@pass_context
+@command_function
 def cli(ctx, path, **kwds):
     """Source output to activate a conda environment for this tool.
 

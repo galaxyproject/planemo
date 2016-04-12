@@ -13,7 +13,7 @@ such a tag from a Dockerfile located in the tool's directory.
 from __future__ import print_function
 import click
 import os
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 
 from galaxy.tools.loader import load_tool
@@ -40,7 +40,7 @@ from galaxy.tools.deps.requirements import parse_requirements_from_xml
 @options.docker_sudo_option()
 @options.docker_sudo_cmd_option()
 @options.docker_host_option()
-@pass_context
+@command_function
 def cli(ctx, path, **kwds):
     """Launch a shell in the Docker container referenced by the specified
     tool. Prints a command to do this the way Galaxy would in job files it

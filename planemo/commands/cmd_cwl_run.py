@@ -1,6 +1,6 @@
 """Module describing the planemo ``cwl_run`` command."""
 import click
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 from planemo import cwl
 
@@ -19,7 +19,7 @@ from planemo import cwl
           "but the CWL reference implementation cwltool and be selected "
           "also.")
 )
-@pass_context
+@command_function
 def cli(ctx, path, job_path, **kwds):
     """Planemo command for running CWL tools and jobs.
 

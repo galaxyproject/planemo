@@ -1,7 +1,7 @@
 """Module describing the planemo ``share_test`` command."""
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 from planemo.io import info
 from planemo import github_util
@@ -14,7 +14,7 @@ PLANEMO_TEST_VIEWER_URL_TEMPLATE = (
 
 @click.command("share_test")
 @options.tool_test_json()
-@pass_context
+@command_function
 def cli(ctx, path, **kwds):
     """Publish JSON test results to Github Gist and produce sharable URL.
 

@@ -3,7 +3,7 @@ import sys
 
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 from planemo import shed
 from planemo.io import info, error
@@ -17,7 +17,7 @@ from planemo.io import captured_io_for_xunit
 @options.shed_upload_options()
 @options.shed_skip_upload()
 @options.shed_skip_metadata()
-@pass_context
+@command_function
 def cli(ctx, paths, **kwds):
     """Update repository in shed from a ``.shed.yml`` file.
 

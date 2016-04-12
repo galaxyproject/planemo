@@ -1,6 +1,6 @@
 """Module describing the planemo ``docker_build`` command."""
 import click
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 from planemo.io import error
 
@@ -15,9 +15,9 @@ from galaxy.tools.deps import dockerfiles
 @options.docker_sudo_option()
 @options.docker_sudo_cmd_option()
 @options.docker_host_option()
-@pass_context
+@command_function
 def cli(ctx, path=".", dockerfile=None, **kwds):
-    """Builds (and optionally caches Docker images) for tool Dockerfiles.
+    """Build (and optionally cache Docker images) for tool Dockerfiles.
 
     Loads the tool or tools referenced by ``TOOL_PATH`` (by default all tools
     in current directory), and ensures they all reference the same Docker image

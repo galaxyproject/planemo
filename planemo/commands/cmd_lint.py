@@ -3,7 +3,7 @@ import sys
 
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 
 from planemo.tool_lint import build_lint_args
@@ -30,7 +30,7 @@ from planemo.tool_lint import lint_tools_on_path
 # help="If an sha256sum is available, download the entire file AND validate it.",
 # default=False,
 # )
-@pass_context
+@command_function
 def cli(ctx, paths, **kwds):
     """Check specified tool(s) for common errors and adherence to best
     practices.

@@ -1,3 +1,4 @@
+"""The module describes a CLI framework extending ``click``."""
 import os
 import sys
 import traceback
@@ -21,29 +22,51 @@ COMMAND_ALIASES = {
 
 
 class Context(object):
+    """Describe context of Planemo computation.
+
+    Handles cross cutting concerns for Planemo such as verbose log
+    tracking, the definition of the Planemo workspace (``~/.planemo``),
+    and the global configuraton defined in ``~/.planemo.yml``.
+    """
 
     def __init__(self):
+        """Construct a Context object using execution environment."""
         self.home = os.getcwd()
         self._global_config = None
         # Will be set by planemo CLI driver
         self.verbose = False
         self.planemo_config = None
         self.planemo_directory = None
+        self.option_source = {}
+
+    def set_option_source(self, param_name, option_source):
+        """Specify how an option was set."""
+        assert param_name not in self.option_source
+        self.option_source[param_name] = option_source
+
+    def get_option_source(self, param_name):
+        """Return OptionSource value indicating how the option was set."""
+        assert param_name not in self.option_source
+        return self.option_source[param_name]
 
     @property
     def global_config(self):
+        """Read Planemo's global configuration.
+
+        As defined most simply by ~/.planemo.yml.
+        """
         if self._global_config is None:
             self._global_config = read_global_config(self.planemo_config)
         return self._global_config
 
     def log(self, msg, *args):
-        """Logs a message to stderr."""
+        """Log a message to stderr."""
         if args:
             msg %= args
         click.echo(msg, file=sys.stderr)
 
     def vlog(self, msg, *args, **kwds):
-        """Logs a message to stderr only if verbose is enabled."""
+        """Log a message to stderr only if verbose is enabled."""
         if self.verbose:
             self.log(msg, *args)
             if kwds.get("exception", False):
@@ -51,6 +74,10 @@ class Context(object):
 
     @property
     def workspace(self):
+        """Create and return Planemo's workspace.
+
+        By default this will be ``~/.planemo``.
+        """
         if not self.planemo_directory:
             raise Exception("No planemo workspace defined.")
         workspace = self.planemo_directory
@@ -69,6 +96,7 @@ cmd_folder = os.path.abspath(os.path.join(os.path.dirname(__file__),
 
 
 def list_cmds():
+    """List planemo commands from commands folder."""
     rv = []
     for filename in os.listdir(cmd_folder):
         if filename.endswith('.py') and \
@@ -81,7 +109,7 @@ def list_cmds():
     return rv
 
 
-def name_to_command(name):
+def _name_to_command(name):
     try:
         if sys.version_info[0] == 2:
             name = name.encode('ascii', 'replace')
@@ -101,7 +129,16 @@ class PlanemoCLI(click.MultiCommand):
     def get_command(self, ctx, name):
         if name in COMMAND_ALIASES:
             name = COMMAND_ALIASES[name]
-        return name_to_command(name)
+        return _name_to_command(name)
+
+
+def command_function(f):
+    """Extension point for processing kwds after click callbacks."""
+    def outer(*args, **kwargs):
+        # arg_spec = inspect.getargspec(f)
+        return f(*args, **kwargs)
+    outer.__doc__ = f.__doc__
+    return pass_context(outer)
 
 
 @click.command(cls=PlanemoCLI, context_settings=CONTEXT_SETTINGS)
@@ -117,7 +154,7 @@ class PlanemoCLI(click.MultiCommand):
               envvar="PLANEMO_GLOBAL_WORKSPACE",
               help="Workspace for planemo.")
 @pass_context
-def planemo(ctx, config, directory, verbose):  # noqa
+def planemo(ctx, config, directory, verbose):
     """A command-line toolkit for building tools and workflows for Galaxy.
 
     Check out the full documentation for Planemo online
@@ -129,5 +166,8 @@ def planemo(ctx, config, directory, verbose):  # noqa
 
 
 __all__ = [
+    "Context",
+    "list_cmds",
+    "pass_context",
     "planemo",
 ]

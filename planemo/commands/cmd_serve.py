@@ -1,7 +1,7 @@
 """Module describing the planemo ``serve`` command."""
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo.galaxy import galaxy_serve
 from planemo import options
 
@@ -11,7 +11,7 @@ from planemo import options
 @options.galaxy_serve_options()
 @options.enable_cwl_option()
 @options.galaxy_cwl_root_option()
-@pass_context
+@command_function
 def cli(ctx, paths, **kwds):
     """Launch a Galaxy instance with the specified tool in the tool panel.
 

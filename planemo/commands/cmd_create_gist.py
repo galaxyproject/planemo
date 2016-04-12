@@ -1,7 +1,7 @@
 """Module describing the planemo ``create_gist`` command."""
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo.io import info
 from planemo import github_util
 
@@ -24,7 +24,7 @@ target_path = click.Path(
     default="raw",
     help=("Link type to generate for the file.")
 )
-@pass_context
+@command_function
 def cli(ctx, path, **kwds):
     """Download a tool repository as a tarball from the tool shed and extract
     to the specified directory.

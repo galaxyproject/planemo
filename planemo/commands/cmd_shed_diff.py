@@ -6,7 +6,7 @@ from xml.sax.saxutils import escape
 
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 from planemo import shed
 from planemo.reports import build_report
@@ -35,7 +35,7 @@ from planemo.io import captured_io_for_xunit
          "populated by the Tool Shed.",
 )
 @options.report_xunit()
-@pass_context
+@command_function
 def cli(ctx, paths, **kwds):
     """Produce diff between local repository and Tool Shed contents.
 

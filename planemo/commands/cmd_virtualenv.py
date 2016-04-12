@@ -1,7 +1,7 @@
 """Module describing the planemo ``virtualenv`` command."""
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import virtualenv
 
 VIRTUALENV_PATH_TYPE = click.Path(
@@ -17,7 +17,7 @@ VIRTUALENV_PATH_TYPE = click.Path(
 @click.argument("virtualenv_path",
                 metavar="VIRTUALENV_PATH",
                 type=VIRTUALENV_PATH_TYPE)
-@pass_context
+@command_function
 def cli(ctx, virtualenv_path, **kwds):
     """Create a virtualenv.
 

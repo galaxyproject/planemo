@@ -3,7 +3,7 @@ from __future__ import print_function
 import click
 import os
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 from planemo.io import ps1_for_path
 
@@ -22,7 +22,7 @@ from galaxy.util import bunch
     "--shell",
     is_flag=True
 )
-@pass_context
+@command_function
 def cli(ctx, path, brew=None, skip_install=False, shell=None):
     """Display commands used to modify environment to inject tool's brew
     dependencies.::

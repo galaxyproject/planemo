@@ -2,7 +2,7 @@
 import time
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 from planemo.galaxy import shed_serve
 from planemo import shed
@@ -17,7 +17,7 @@ from planemo import io
     is_flag=True,
     help="Do not install shed dependencies as part of repository installation."
 )
-@pass_context
+@command_function
 def cli(ctx, paths, **kwds):
     """ Serve a transient Galaxy with published repositories installed.
 

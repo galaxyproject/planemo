@@ -4,7 +4,7 @@ import sys
 
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 from planemo.galaxy.serve import shed_serve
 from planemo import shed
@@ -20,7 +20,7 @@ from planemo.galaxy.test import run_in_config
     is_flag=True,
     help="Do not install shed dependencies as part of repository installation."
 )
-@pass_context
+@command_function
 def cli(ctx, paths, **kwds):
     """ Run tests of published shed artifacts.
 

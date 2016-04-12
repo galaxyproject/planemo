@@ -3,7 +3,7 @@ import sys
 
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 from planemo.galaxy import galaxy_config
 
@@ -26,7 +26,7 @@ from planemo.galaxy.test import (
 @options.galaxy_target_options()
 @options.galaxy_config_options()
 @options.test_options()
-@pass_context
+@command_function
 def cli(ctx, paths, **kwds):
     """Run the tests in the specified tool tests in a Galaxy instance.
 
