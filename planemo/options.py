@@ -54,12 +54,12 @@ def galaxy_root_option():
     )
 
 
-def galaxy_sqlite_database_option():
+def galaxy_database_seed_option():
     return planemo_option(
-        "--galaxy_sqlite_database",
+        "--galaxy_database_seed",
         default=None,
         use_global_config=True,
-        type=click.Path(exists=True, file_okay=False, resolve_path=True),
+        type=click.Path(exists=True, file_okay=True, resolve_path=True),
         help="Preseeded Galaxy sqlite database to target.",
     )
 
@@ -158,16 +158,45 @@ def shed_dependency_resolution():
     )
 
 
-def job_config_option():
+def file_path_option():
     return planemo_option(
-        "--job_config_file",
+        "--file_path",
         type=click.Path(
-            exists=True,
-            file_okay=True,
-            dir_okay=False,
+            file_okay=False,
+            dir_okay=True,
             resolve_path=True
         ),
-        help="Job configuration file for Galaxy to target.",
+        help="Location for files created by Galaxy (e.g. database/files).",
+        default=None,
+        use_global_config=True,
+    )
+
+
+def database_connection_option():
+    return planemo_option(
+        "--database_connection",
+        type=str,
+        help="Database connection string to use for Galaxy.",
+        default=None,
+        use_global_config=True,
+    )
+
+
+def shed_tools_conf_option():
+    return planemo_option(
+        "--shed_tool_conf",
+        type=str,
+        help="Location of shed tools conf file for Galaxy.",
+        default=None,
+        use_global_config=True,
+    )
+
+
+def shed_tools_directory_option():
+    return planemo_option(
+        "--shed_tool_path",
+        type=str,
+        help="Location of shed tools directory for Galaxy.",
         default=None,
         use_global_config=True,
     )
@@ -184,6 +213,21 @@ def tool_dependency_dir_option():
         ),
         use_global_config=True,
         help="Tool dependency dir for Galaxy to target.",
+    )
+
+
+def job_config_option():
+    return planemo_option(
+        "--job_config_file",
+        type=click.Path(
+            exists=True,
+            file_okay=True,
+            dir_okay=False,
+            resolve_path=True
+        ),
+        help="Job configuration file for Galaxy to target.",
+        default=None,
+        use_global_config=True,
     )
 
 
@@ -649,7 +693,6 @@ def galaxy_config_options():
         test_data_option(),
         tool_data_table_option(),
         dependency_resolvers_option(),
-        tool_dependency_dir_option(),
         brew_dependency_resolution(),
         shed_dependency_resolution(),
         conda_target_options(),
@@ -657,20 +700,27 @@ def galaxy_config_options():
         conda_copy_dependencies_option(),
         conda_auto_install_option(),
         conda_auto_init_option(),
+        # Profile options...
+        file_path_option(),
+        database_connection_option(),
+        shed_tools_conf_option(),
+        shed_tools_directory_option(),
     )
 
 
 def galaxy_target_options():
     return _compose(
         galaxy_root_option(),
-        galaxy_sqlite_database_option(),
+        galaxy_database_seed_option(),
         install_galaxy_option(),
         galaxy_branch_option(),
         galaxy_source_option(),
         skip_venv_option(),
         no_cache_galaxy_option(),
         no_cleanup_option(),
+        # Profile options...
         job_config_option(),
+        tool_dependency_dir_option(),
     )
 
 
