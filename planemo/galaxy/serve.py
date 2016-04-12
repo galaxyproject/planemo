@@ -19,12 +19,13 @@ def serve(ctx, paths, **kwds):
         kwds["no_cleanup"] = True
 
     with galaxy_config(ctx, paths, **kwds) as config:
+        pid_file = config.pid_file
         # TODO: Allow running dockerized Galaxy here instead.
         setup_venv_command = setup_venv(ctx, kwds)
         run_script = os.path.join(config.galaxy_root, "run.sh")
         run_script += " $COMMON_STARTUP_ARGS"
         if daemon:
-            run_script += " --daemon --wait"
+            run_script += " --pid-file '%s' --daemon" % pid_file
             config.env["GALAXY_RUN_ALL"] = "1"
         else:
             run_script += " --server-name '%s' --reload" % config.server_name

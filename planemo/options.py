@@ -674,10 +674,28 @@ def galaxy_target_options():
     )
 
 
+def pid_file_option():
+    return planemo_option(
+        "--pid_file",
+        default=None,
+        help="Location of pid file is executed with --daemon."
+    )
+
+
+def daemon_option():
+    return planemo_option(
+        "--daemon",
+        is_flag=True,
+        help="Serve Galaxy process as a daemon."
+    )
+
+
 def galaxy_serve_options():
     return _compose(
         galaxy_run_options(),
         galaxy_config_options(),
+        daemon_option(),
+        pid_file_option(),
     )
 
 

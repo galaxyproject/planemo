@@ -18,6 +18,11 @@ from .run import (
     setup_venv,
     DOWNLOAD_GALAXY,
 )
+from .api import (
+    DEFAULT_MASTER_API_KEY,
+    gi,
+    user_api_key,
+)
 from planemo.conda import build_conda_context
 from planemo.io import warn
 from planemo.io import shell
@@ -27,10 +32,6 @@ from planemo.io import kill_pid_file
 from planemo.io import wait_on
 from planemo import git
 from planemo.shed import tool_shed_url
-from planemo.bioblend import (
-    galaxy,
-    ensure_module,
-)
 
 
 NO_TEST_DATA_MESSAGE = (
@@ -159,7 +160,7 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
         sheds_config_path = _configure_sheds_config_file(
             ctx, config_directory, **kwds
         )
-        master_api_key = kwds.get("master_api_key", "test_key")
+        master_api_key = kwds.get("master_api_key", DEFAULT_MASTER_API_KEY)
         dependency_dir = os.path.join(config_directory, "deps")
         preseeded_database = attempt_database_preseed(
             galaxy_root,
@@ -254,8 +255,11 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
         shed_tool_conf_contents = _sub(SHED_TOOL_CONF_TEMPLATE, template_args)
         write_file(shed_tool_conf, shed_tool_conf_contents)
 
+        pid_file = kwds.get("pid_file") or config_join("galaxy.pid")
+
         yield GalaxyConfig(
             galaxy_root,
+            pid_file,
             config_directory,
             env,
             test_data_dir,
@@ -274,6 +278,7 @@ class GalaxyConfig(object):
     def __init__(
         self,
         galaxy_root,
+        pid_file,
         config_directory,
         env,
         test_data_dir,
@@ -282,6 +287,7 @@ class GalaxyConfig(object):
         master_api_key,
     ):
         self.galaxy_root = galaxy_root
+        self._pid_file = pid_file
         self.config_directory = config_directory
         self.env = env
         self.test_data_dir = test_data_dir
@@ -298,38 +304,22 @@ class GalaxyConfig(object):
 
     @property
     def pid_file(self):
-        return os.path.join(self.galaxy_root, "%s.pid" % self.server_name)
+        return self._pid_file
 
     @property
     def gi(self):
-        ensure_module(galaxy)
-        return galaxy.GalaxyInstance(
-            url="http://localhost:%d" % int(self.port),
-            key=self.master_api_key
-        )
+        return gi(self.port, self.master_api_key)
 
     @property
     def user_gi(self):
         # TODO: thread-safe
         if self._user_api_key is None:
-            users = self.gi.users
-            # Allow override with --user_api_key.
-            user_response = users.create_local_user(
-                "planemo",
-                "planemo@galaxyproject.org",
-                "planemo",
-            )
-            user_id = user_response["id"]
+            self._user_api_key = user_api_key(self.gi)
 
-            self._user_api_key = users.create_user_apikey(user_id)
         return self._gi_for_key(self._user_api_key)
 
     def _gi_for_key(self, key):
-        ensure_module(galaxy)
-        return galaxy.GalaxyInstance(
-            url="http://localhost:%d" % self.port,
-            key=key
-        )
+        return gi(self.port, key)
 
     def install_repo(self, *args, **kwds):
         self.tool_shed_client.install_repository_revision(
