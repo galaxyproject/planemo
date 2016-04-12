@@ -2,14 +2,14 @@
 import os
 
 import click
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 from planemo.galaxy import serve
 
 
 @click.command('tool_factory')
 @options.galaxy_serve_options()
-@pass_context
+@command_function
 def cli(ctx, **kwds):
     """(Experimental) Launch Galaxy with the Tool Factory 2 available.
 

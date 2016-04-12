@@ -4,14 +4,14 @@ import sys
 import click
 import shutil
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 from planemo import shed
 
 
 @click.command("shed_build")
 @options.optional_tools_arg(multiple=False)
-@pass_context
+@command_function
 def cli(ctx, path, **kwds):
     """Create a Galaxy tool tarball from a ``.shed.yml`` file.
     """

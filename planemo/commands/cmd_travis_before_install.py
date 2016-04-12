@@ -4,7 +4,7 @@ import string
 
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo.io import shell
 
 SETUP_FILE_NAME = "setup_custom_dependencies.bash"
@@ -26,7 +26,7 @@ export PATH=$PATH:${BUILD_BIN_DIR}
 
 
 @click.command('travis_before_install')
-@pass_context
+@command_function
 def cli(ctx):
     """This command is used internally by planemo to assist in contineous testing
     of tools with Travis CI (https://travis-ci.org/).

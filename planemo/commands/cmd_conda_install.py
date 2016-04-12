@@ -1,7 +1,7 @@
 """Module describing the planemo ``conda_install`` command."""
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo.io import coalesce_return_codes
 from planemo import options
 
@@ -13,10 +13,9 @@ from galaxy.tools.deps import conda_util
 @click.command('conda_install')
 @options.optional_tools_arg()
 @options.conda_target_options()
-@pass_context
+@command_function
 def cli(ctx, path, **kwds):
-    """Install conda packages for tool requirements.
-    """
+    """Install conda packages for tool requirements."""
     conda_context = build_conda_context(**kwds)
     return_codes = []
     for conda_target in collect_conda_targets(path):

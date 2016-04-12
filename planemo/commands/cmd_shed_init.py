@@ -2,7 +2,7 @@
 import click
 import sys
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 
 from planemo import options
 from planemo import shed
@@ -40,7 +40,7 @@ from planemo import shed
 )
 @options.shed_repo_options()
 @options.force_option()
-@pass_context
+@command_function
 def cli(ctx, path, **kwds):
     """Bootstrap a new Tool Shed configuration (.shed.yml) file.
 

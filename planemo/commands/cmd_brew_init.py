@@ -4,7 +4,7 @@ import click
 import urllib
 from tempfile import mkstemp
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo.io import shell
 
 
@@ -12,7 +12,7 @@ INSTALL_SCRIPT = "https://raw.github.com/Homebrew/linuxbrew/go/install"
 
 
 @click.command('brew_init')
-@pass_context
+@command_function
 def cli(ctx):
     """Download linuxbrew install and run it with ruby. Linuxbrew is a fork
     of Homebrew (http://brew.sh/linuxbrew/).

@@ -3,7 +3,7 @@ import sys
 
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 from planemo import shed
 
@@ -31,7 +31,7 @@ tar_path = click.Path(
     type=tar_path,
     default=None,
 )
-@pass_context
+@command_function
 def cli(ctx, paths, **kwds):
     """Low-level command for uploading tar balls to a shed.
 

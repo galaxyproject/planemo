@@ -8,11 +8,11 @@ import os
 
 import click
 from galaxy.tools.deps import docker_util
-from .config import get_default_callback
+from .config import planemo_option
 
 
 def force_option(what="files"):
-    return click.option(
+    return planemo_option(
         "-f",
         "--force",
         is_flag=True,
@@ -21,7 +21,7 @@ def force_option(what="files"):
 
 
 def skip_venv_option():
-    return click.option(
+    return planemo_option(
         "--skip_venv",
         is_flag=True,
         help=("Do not create or source a virtualenv environment for Galaxy, "
@@ -31,7 +31,7 @@ def skip_venv_option():
 
 
 def test_data_option():
-    return click.option(
+    return planemo_option(
         "--test_data",
         type=click.Path(exists=True, file_okay=False, resolve_path=True),
         help="test-data directory to for specified tool(s).",
@@ -39,7 +39,7 @@ def test_data_option():
 
 
 def tool_data_table_option():
-    return click.option(
+    return planemo_option(
         "--tool_data_table",
         type=click.Path(exists=True, file_okay=True, resolve_path=True),
         help="tool_data_table_conf.xml file to for specified tool(s).",
@@ -47,7 +47,7 @@ def tool_data_table_option():
 
 
 def galaxy_root_option():
-    return click.option(
+    return planemo_option(
         "--galaxy_root",
         type=click.Path(exists=True, file_okay=False, resolve_path=True),
         help="Root of development galaxy directory to execute command with.",
@@ -55,17 +55,19 @@ def galaxy_root_option():
 
 
 def galaxy_sqlite_database_option():
-    return click.option(
+    return planemo_option(
         "--galaxy_sqlite_database",
-        callback=get_default_callback(None, resolve_path=True),
+        default=None,
+        use_global_config=True,
         type=click.Path(exists=True, file_okay=False, resolve_path=True),
         help="Preseeded Galaxy sqlite database to target.",
     )
 
 
 def galaxy_cwl_root_option():
-    return click.option(
+    return planemo_option(
         "--cwl_galaxy_root",
+        use_global_config=True,
         type=click.Path(exists=True, file_okay=False, resolve_path=True),
         help=("Root of development galaxy directory to execute command with"
               " (must be branch of Galaxy with CWL support, this option"
@@ -75,21 +77,21 @@ def galaxy_cwl_root_option():
 
 
 def galaxy_port_option():
-    return click.option(
+    return planemo_option(
         "--port",
         type=int,
-        default=None,
-        callback=get_default_callback("9090"),
+        default="9090",
+        use_global_config=True,
         help="Port to serve Galaxy on (default is 9090).",
     )
 
 
 def galaxy_host_option():
-    return click.option(
+    return planemo_option(
         "--host",
         type=str,
-        default=None,
-        callback=get_default_callback("127.0.0.1"),
+        default="127.0.0.1",
+        use_global_config=True,
         help=("Host to bind Galaxy to. Default is 127.0.0.1 that is "
               "restricted to localhost connections for security reasons "
               "set to 0.0.0.0 to bind Galaxy to all ports including "
@@ -98,7 +100,7 @@ def galaxy_host_option():
 
 
 def dependency_resolvers_option():
-    return click.option(
+    return planemo_option(
         "--dependency_resolvers_config_file",
         type=click.Path(
             exists=True,
@@ -106,12 +108,13 @@ def dependency_resolvers_option():
             dir_okay=False,
             resolve_path=True
         ),
+        use_global_config=True,
         help="Dependency resolver configuration for Galaxy to target.",
     )
 
 
 def enable_cwl_option():
-    return click.option(
+    return planemo_option(
         "--cwl",
         is_flag=True,
         help=("Configure Galaxy for use with CWL tool."
@@ -121,7 +124,7 @@ def enable_cwl_option():
 
 
 def cwl_conformance_test():
-    return click.option(
+    return planemo_option(
         "--conformance-test",
         is_flag=True,
         help=("Generate CWL conformance test object describing job. "
@@ -131,7 +134,7 @@ def cwl_conformance_test():
 
 
 def brew_dependency_resolution():
-    return click.option(
+    return planemo_option(
         "--brew_dependency_resolution",
         is_flag=True,
         help="Configure Galaxy to use plain brew dependency resolution.",
@@ -139,7 +142,7 @@ def brew_dependency_resolution():
 
 
 def conda_dependency_resolution():
-    return click.option(
+    return planemo_option(
         "--conda_dependency_resolution",
         is_flag=True,
         help="Configure Galaxy to use only conda for dependency resolution.",
@@ -147,7 +150,7 @@ def conda_dependency_resolution():
 
 
 def shed_dependency_resolution():
-    return click.option(
+    return planemo_option(
         "--shed_dependency_resolution",
         is_flag=True,
         help=("Configure Galaxy to use brewed Tool Shed dependency"
@@ -156,7 +159,7 @@ def shed_dependency_resolution():
 
 
 def job_config_option():
-    return click.option(
+    return planemo_option(
         "--job_config_file",
         type=click.Path(
             exists=True,
@@ -165,12 +168,13 @@ def job_config_option():
             resolve_path=True
         ),
         help="Job configuration file for Galaxy to target.",
-        callback=get_default_callback(None),
+        default=None,
+        use_global_config=True,
     )
 
 
 def tool_dependency_dir_option():
-    return click.option(
+    return planemo_option(
         "--tool_dependency_dir",
         type=click.Path(
             exists=True,
@@ -178,12 +182,13 @@ def tool_dependency_dir_option():
             dir_okay=True,
             resolve_path=True
         ),
+        use_global_config=True,
         help="Tool dependency dir for Galaxy to target.",
     )
 
 
 def install_galaxy_option():
-    return click.option(
+    return planemo_option(
         "--install_galaxy",
         is_flag=True,
         help="Download and configure a disposable copy of Galaxy from github."
@@ -191,7 +196,7 @@ def install_galaxy_option():
 
 
 def no_cache_galaxy_option():
-    return click.option(
+    return planemo_option(
         "--no_cache_galaxy",
         is_flag=True,
         help=("Skip caching of Galaxy source and dependencies obtained with "
@@ -202,18 +207,20 @@ def no_cache_galaxy_option():
 
 
 def galaxy_branch_option():
-    return click.option(
+    return planemo_option(
         "--galaxy_branch",
-        callback=get_default_callback(None),
+        default=None,
+        use_global_config=True,
         help=("Branch of Galaxy to target (defaults to master) if a Galaxy "
               "root isn't specified.")
     )
 
 
 def galaxy_source_option():
-    return click.option(
+    return planemo_option(
         "--galaxy_source",
-        callback=get_default_callback(None),
+        default=None,
+        use_global_config=True,
         help=("Git source of Galaxy to target (defaults to the official "
               "galaxyproject github source if a Galaxy root isn't "
               "specified.")
@@ -221,7 +228,7 @@ def galaxy_source_option():
 
 
 def skip_install_option():
-    return click.option(
+    return planemo_option(
         "--skip_install",
         is_flag=True,
         help="Skip installation - only source requirements already available."
@@ -229,31 +236,34 @@ def skip_install_option():
 
 
 def brew_option():
-    return click.option(
+    return planemo_option(
         "--brew",
+        use_global_config=True,
         type=click.Path(exists=True, file_okay=True, dir_okay=False),
         help="Homebrew 'brew' executable to use."
     )
 
 
 def conda_prefix_option():
-    return click.option(
+    return planemo_option(
         "--conda_prefix",
+        use_global_config=True,
         type=click.Path(file_okay=False, dir_okay=True),
         help="Conda prefix to use for conda dependency commands."
     )
 
 
 def conda_exec_option():
-    return click.option(
+    return planemo_option(
         "--conda_exec",
+        use_global_config=True,
         type=click.Path(exists=True, file_okay=True, dir_okay=False),
         help="Location of conda executable."
     )
 
 
 def conda_debug_option():
-    return click.option(
+    return planemo_option(
         "--conda_debug",
         is_flag=True,
         help="Enable more verbose conda logging."
@@ -261,9 +271,10 @@ def conda_debug_option():
 
 
 def conda_ensure_channels_option():
-    return click.option(
+    return planemo_option(
         "--conda_ensure_channels",
         type=str,
+        use_global_config=True,
         help=("Ensure conda is configured with specified comma separated "
               "list of channels."),
         default="r,bioconda"
@@ -271,7 +282,7 @@ def conda_ensure_channels_option():
 
 
 def conda_copy_dependencies_option():
-    return click.option(
+    return planemo_option(
         "--conda_copy_dependencies",
         is_flag=True,
         help=("Conda dependency resolution for Galaxy will copy dependencies "
@@ -280,7 +291,7 @@ def conda_copy_dependencies_option():
 
 
 def conda_auto_install_option():
-    return click.option(
+    return planemo_option(
         "--conda_auto_install",
         is_flag=True,
         help=("Conda dependency resolution for Galaxy will auto install "
@@ -289,7 +300,7 @@ def conda_auto_install_option():
 
 
 def conda_auto_init_option():
-    return click.option(
+    return planemo_option(
         "--conda_auto_init",
         is_flag=True,
         help=("Conda dependency resolution for Galaxy will auto install "
@@ -401,7 +412,7 @@ def optional_project_arg(exists=True):
 
 
 def no_cleanup_option():
-    return click.option(
+    return planemo_option(
         "--no_cleanup",
         is_flag=True,
         help=("Do not cleanup temp files created for and by Galaxy.")
@@ -409,7 +420,7 @@ def no_cleanup_option():
 
 
 def docker_cmd_option():
-    return click.option(
+    return planemo_option(
         "--docker_cmd",
         default=docker_util.DEFAULT_DOCKER_COMMAND,
         help="Command used to launch docker (defaults to docker)."
@@ -417,7 +428,7 @@ def docker_cmd_option():
 
 
 def docker_sudo_option():
-    return click.option(
+    return planemo_option(
         "--docker_sudo",
         is_flag=True,
         help="Flag to use sudo when running docker."
@@ -425,34 +436,34 @@ def docker_sudo_option():
 
 
 def docker_sudo_cmd_option():
-    return click.option(
+    return planemo_option(
         "--docker_sudo_cmd",
-        default=None,
         help="sudo command to use when --docker_sudo is enabled " +
              "(defaults to sudo).",
-        callback=get_default_callback(docker_util.DEFAULT_SUDO_COMMAND),
+        default=docker_util.DEFAULT_SUDO_COMMAND,
+        use_global_config=True,
     )
 
 
 def docker_host_option():
-    return click.option(
+    return planemo_option(
         "--docker_host",
-        default=None,
         help="Docker host to target when executing docker commands " +
              "(defaults to localhost).",
-        callback=get_default_callback(docker_util.DEFAULT_HOST),
+        use_global_config=True,
+        default=docker_util.DEFAULT_HOST,
     )
 
 
 def shed_owner_option():
-    return click.option(
+    return planemo_option(
         "--owner",
         help="Tool Shed repository owner (username)."
     )
 
 
 def shed_name_option():
-    return click.option(
+    return planemo_option(
         "--name",
         help="Tool Shed repository name (defaults to the inferred "
              "tool directory name)."
@@ -460,27 +471,27 @@ def shed_name_option():
 
 
 def validate_shed_target_callback(ctx, param, value):
-    target = get_default_callback("toolshed")(ctx, param, value)
-    if target is None:
+    if value is None:
         ctx.fail("default_shed_target set to None, must specify a value for "
                  "--shed_target to run this command.")
-    return target
+    return value
 
 
 def shed_target_option():
-    return click.option(
+    return planemo_option(
         "-t",
         "--shed_target",
         help="Tool Shed to target (this can be 'toolshed', 'testtoolshed', "
              "'local' (alias for http://localhost:9009/), an arbitrary url "
              "or mappings defined ~/.planemo.yml.",
         default=None,
+        use_global_config=True,
         callback=validate_shed_target_callback,
     )
 
 
 def shed_key_option():
-    return click.option(
+    return planemo_option(
         "--shed_key",
         help=("API key for Tool Shed access. An API key is required unless "
               "e-mail and password is specified. This key can be specified "
@@ -489,14 +500,14 @@ def shed_key_option():
 
 
 def shed_key_from_env_option():
-    return click.option(
+    return planemo_option(
         "--shed_key_from_env",
         help="Environment variable to read API key for Tool Shed access from."
     )
 
 
 def shed_email_option():
-    return click.option(
+    return planemo_option(
         "--shed_email",
         help="E-mail for Tool Shed auth (required unless shed_key is "
              "specified)."
@@ -504,7 +515,7 @@ def shed_email_option():
 
 
 def shed_password_option():
-    return click.option(
+    return planemo_option(
         "--shed_password",
         help="Password for Tool Shed auth (required unless shed_key is "
              "specified)."
@@ -512,7 +523,7 @@ def shed_password_option():
 
 
 def shed_skip_upload():
-    return click.option(
+    return planemo_option(
         "--skip_upload",
         is_flag=True,
         help=("Skip upload contents as part of operation, only update "
@@ -521,7 +532,7 @@ def shed_skip_upload():
 
 
 def shed_skip_metadata():
-    return click.option(
+    return planemo_option(
         "--skip_metadata",
         is_flag=True,
         help=("Skip metadata update as part of operation, only upload "
@@ -530,7 +541,7 @@ def shed_skip_metadata():
 
 
 def shed_message_option():
-    return click.option(
+    return planemo_option(
         "-m",
         "--message",
         help="Commit message for tool shed upload."
@@ -538,7 +549,7 @@ def shed_message_option():
 
 
 def shed_force_create_option():
-    return click.option(
+    return planemo_option(
         "--force_repository_creation",
         help=("If a repository cannot be found for the specified user/repo "
               "name pair, then automatically create the repository in the "
@@ -549,7 +560,7 @@ def shed_force_create_option():
 
 
 def shed_check_diff_option():
-    return click.option(
+    return planemo_option(
         "--check_diff",
         is_flag=True,
         help=("Skip uploading if the shed_diff detects there would be no "
@@ -671,7 +682,7 @@ def galaxy_serve_options():
 
 
 def shed_fail_fast_option():
-    return click.option(
+    return planemo_option(
         "--fail_fast",
         is_flag=True,
         default=False,
@@ -681,7 +692,7 @@ def shed_fail_fast_option():
 
 
 def lint_xsd_option():
-    return click.option(
+    return planemo_option(
         "--xsd",
         is_flag=True,
         default=False,
@@ -691,7 +702,7 @@ def lint_xsd_option():
 
 
 def report_level_option():
-    return click.option(
+    return planemo_option(
         "--report_level",
         type=click.Choice(["all", "warn", "error"]),
         default="all",
@@ -699,7 +710,7 @@ def report_level_option():
 
 
 def report_xunit():
-    return click.option(
+    return planemo_option(
         "--report_xunit",
         type=click.Path(file_okay=True, resolve_path=True),
         help="Output an XUnit report, useful for CI testing",
@@ -708,7 +719,7 @@ def report_xunit():
 
 
 def skip_option():
-    return click.option(
+    return planemo_option(
         "-s",
         "--skip",
         default=None,
@@ -719,7 +730,7 @@ def skip_option():
 
 
 def fail_level_option():
-    return click.option(
+    return planemo_option(
         "--fail_level",
         type=click.Choice(['warn', 'error']),
         default="warn"
@@ -733,7 +744,7 @@ def recursive_shed_option():
 
 
 def recursive_option(help="Recursively perform command for subdirectories."):
-    return click.option(
+    return planemo_option(
         "-r",
         "--recursive",
         is_flag=True,
@@ -757,26 +768,25 @@ def tool_test_json():
 
 def test_report_options():
     return _compose(
-        click.option(
+        planemo_option(
             "--test_output",
             type=click.Path(file_okay=True, resolve_path=True),
-            callback=get_default_callback("tool_test_output.html",
-                                          resolve_path=True),
+            use_global_config=True,
+            default="tool_test_output.html",
             help=("Output test report (HTML - for humans) defaults to "
                   "tool_test_output.html."),
-            default=None,
         ),
-        click.option(
+        planemo_option(
             "--test_output_text",
             type=click.Path(file_okay=True, resolve_path=True),
-            callback=get_default_callback(None, resolve_path=True),
+            use_global_config=True,
             help=("Output test report (Basic text - for display in CI)"),
             default=None,
         ),
-        click.option(
+        planemo_option(
             "--test_output_markdown",
             type=click.Path(file_okay=True, resolve_path=True),
-            callback=get_default_callback(None, resolve_path=True),
+            use_global_config=True,
             help=("Output test report (Markdown style - for humans & "
                   "computers)"),
             default=None,
@@ -786,36 +796,34 @@ def test_report_options():
 
 def test_options():
     return _compose(
-        click.option(
+        planemo_option(
             "--update_test_data",
             is_flag=True,
             help="Update test-data directory with job outputs (normally"
                  " written to directory --job_output_files if specified.)"
         ),
         test_report_options(),
-        click.option(
+        planemo_option(
             "--test_output_xunit",
             type=click.Path(file_okay=True, resolve_path=True),
-            callback=get_default_callback(None, resolve_path=True),
+            use_global_config=True,
             help="Output test report (xUnit style - for computers).",
-            default=None,
         ),
-        click.option(
+        planemo_option(
             "--test_output_json",
             type=click.Path(file_okay=True, resolve_path=True),
-            callback=get_default_callback("tool_test_output.json",
-                                          resolve_path=True),
+            use_global_config=True,
             help=("Output test report (planemo json) defaults to "
                   "tool_test_output.json."),
-            default=None,
+            default="tool_test_output.json",
         ),
-        click.option(
+        planemo_option(
             "--job_output_files",
             type=click.Path(file_okay=False, resolve_path=True),
             help="Write job outputs to specified directory.",
             default=None,
         ),
-        click.option(
+        planemo_option(
             "--summary",
             type=click.Choice(["none", "minimal", "compact"]),
             default="minimal",
@@ -834,10 +842,10 @@ def _compose(*functions):
 
 def dependencies_script_options():
     return _compose(
-        click.option(
+        planemo_option(
             "--download_cache",
             type=click.Path(file_okay=False, resolve_path=True),
-            callback=get_default_callback(None),
+            use_global_config=True,
             help=("Directory to cache downloaded files, default is $DOWNLOAD_CACHE"),
             default=None,
         ),

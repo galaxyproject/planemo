@@ -2,7 +2,7 @@
 import click
 import sys
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 from planemo import shed
 from planemo import shed_lint
@@ -38,7 +38,7 @@ from planemo import shed_lint
 #     help="If an sha256sum is available, download the entire file AND validate it.",
 #     default=False,
 # )
-@pass_context
+@command_function
 def cli(ctx, paths, **kwds):
     """Check a Tool Shed repository for common problems.
 

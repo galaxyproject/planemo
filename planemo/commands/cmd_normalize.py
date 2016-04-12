@@ -3,7 +3,7 @@ from xml.etree import ElementTree
 
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 
 from galaxy.tools.loader import (
@@ -35,7 +35,7 @@ from galaxy.tools.linters.xml_order import TAG_ORDER
           "best practices as part of this command, this flag will disable "
           "that behavior.")
 )
-@pass_context
+@command_function
 def cli(ctx, path, expand_macros=False, **kwds):
     """Generate normalized tool XML from input (breaks formatting).
 

@@ -1,7 +1,7 @@
 """Module describing the planemo ``brew`` command."""
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 
 from galaxy.tools.loader_directory import load_tool_elements_from_path
@@ -15,7 +15,7 @@ from galaxy.util import bunch
 @click.command('brew')
 @options.optional_tools_arg()
 @options.brew_option()
-@pass_context
+@command_function
 def cli(ctx, path, brew=None):
     """Install tool requirements using brew. (**Experimental**)
 

@@ -7,7 +7,7 @@ import click
 from xml.etree import ElementTree as ET
 
 from planemo.io import info, error
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 
 from planemo.shed2tap.base import BasePackage, Dependency
@@ -161,7 +161,7 @@ def process_tool_dependencies_xml(tool_dep, install_handle, env_sh_handle):
 @click.command('dependency_script')
 @options.shed_realization_options()
 @options.dependencies_script_options()
-@pass_context
+@command_function
 def cli(ctx, paths, recursive=False, fail_fast=True, download_cache=None):
     """Prepare a bash shell script to install tool requirements (**Experimental**)
 

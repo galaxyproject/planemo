@@ -1,7 +1,7 @@
 """Module describing the planemo ``conda_init`` command."""
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 from planemo.conda import build_conda_context
 
@@ -10,7 +10,7 @@ from galaxy.tools.deps import conda_util
 
 @click.command('conda_init')
 @options.conda_target_options()
-@pass_context
+@command_function
 def cli(ctx, **kwds):
     """Download and install conda.
 

@@ -3,7 +3,7 @@ import sys
 
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 from planemo import shed
 
@@ -27,7 +27,7 @@ target_path = click.Path(
          "created as shed_download_<name>.tar.gz by default for instance, "
          "simpler repositories will just be downloaded to the specified file."
 )
-@pass_context
+@command_function
 def cli(ctx, paths, **kwds):
     """Download a tool repository as a tarball from the tool shed and extract
     to the specified directory.

@@ -3,7 +3,7 @@ import sys
 
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 from planemo import shed
 from planemo.io import info
@@ -13,7 +13,7 @@ from planemo.io import info
 @options.shed_publish_options()
 @options.shed_message_option()
 @options.shed_skip_upload()
-@pass_context
+@command_function
 def cli(ctx, paths, **kwds):
     """Create a repository in a Galaxy Tool Shed from a ``.shed.yml`` file.
     """

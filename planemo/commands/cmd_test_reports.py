@@ -3,7 +3,7 @@ import os
 
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import io
 from planemo import options
 from planemo.galaxy.test import StructuredData, handle_reports
@@ -12,7 +12,7 @@ from planemo.galaxy.test import StructuredData, handle_reports
 @click.command('test_reports')
 @options.tool_test_json()
 @options.test_report_options()
-@pass_context
+@command_function
 def cli(ctx, path, **kwds):
     """Generate various tool test reports (HTML, text, markdown) from
     structure output from tests (tool_test_output.json).
