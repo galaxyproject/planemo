@@ -7,6 +7,8 @@ env:
   - TOX_ENV=py27-lint-readme
   - TOX_ENV=py27
   - TOX_ENV=py34
+  - TOX_ENV=py27-lint-imports
+  - TOX_ENV=py27-lint-docstrings
 
 install:
   # Setup git to allow git operations.
@@ -17,6 +19,8 @@ install:
 matrix:
   allow_failures:
     - env: TOX_ENV=py34
+    - env: TOX_ENV=py27-lint-imports
+    - env: TOX_ENV=py27-lint-docstrings
 
 script: tox -e $TOX_ENV
 
