@@ -6,7 +6,11 @@ import traceback
 import click
 
 from .io import error
-from .config import read_global_config
+from .config import (
+    read_global_config,
+    OptionSource,
+)
+from planemo.galaxy import profiles
 from planemo import __version__
 
 PYTHON_2_7_COMMANDS = ["cwl_run", "cwl_script"]
@@ -39,14 +43,15 @@ class Context(object):
         self.planemo_directory = None
         self.option_source = {}
 
-    def set_option_source(self, param_name, option_source):
+    def set_option_source(self, param_name, option_source, force=False):
         """Specify how an option was set."""
-        assert param_name not in self.option_source
+        if not force:
+            assert param_name not in self.option_source
         self.option_source[param_name] = option_source
 
     def get_option_source(self, param_name):
         """Return OptionSource value indicating how the option was set."""
-        assert param_name not in self.option_source
+        assert param_name in self.option_source
         return self.option_source[param_name]
 
     @property
@@ -143,11 +148,18 @@ class PlanemoCLI(click.MultiCommand):
 
 def command_function(f):
     """Extension point for processing kwds after click callbacks."""
-    def outer(*args, **kwargs):
-        # arg_spec = inspect.getargspec(f)
-        return f(*args, **kwargs)
-    outer.__doc__ = f.__doc__
-    return pass_context(outer)
+    def handle_profile_options(*args, **kwds):
+        profile = kwds.get("profile", None)
+        if profile:
+            ctx = args[0]
+            profile_defaults = profiles.ensure_profile(ctx, profile, **kwds)
+            for key, value in profile_defaults.items():
+                if ctx.get_option_source(key) != OptionSource.cli:
+                    kwds[key] = value
+                    ctx.set_option_source(key, OptionSource.profile, force=True)
+        return f(*args, **kwds)
+    handle_profile_options.__doc__ = f.__doc__
+    return pass_context(handle_profile_options)
 
 
 @click.command(cls=PlanemoCLI, context_settings=CONTEXT_SETTINGS)

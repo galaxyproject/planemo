@@ -211,6 +211,7 @@ def tool_dependency_dir_option():
             dir_okay=True,
             resolve_path=True
         ),
+        default=None,
         use_global_config=True,
         help="Tool dependency dir for Galaxy to target.",
     )
@@ -701,6 +702,7 @@ def galaxy_config_options():
         conda_auto_install_option(),
         conda_auto_init_option(),
         # Profile options...
+        profile_option(),
         file_path_option(),
         database_connection_option(),
         shed_tools_conf_option(),
@@ -737,6 +739,15 @@ def daemon_option():
         "--daemon",
         is_flag=True,
         help="Serve Galaxy process as a daemon."
+    )
+
+
+def profile_option():
+    return planemo_option(
+        "--profile",
+        type=str,
+        default=None,
+        help="Location of pid file is executed with --daemon."
     )
 
 

@@ -75,7 +75,10 @@ def shell_join(*args):
     return "; ".join([c for c in args if c])
 
 
-def write_file(path, content):
+def write_file(path, content, force=True):
+    if os.path.exists(path) and not force:
+        return
+
     with open(path, "w") as f:
         f.write(content)
 

@@ -155,13 +155,21 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
         _handle_dependency_resolution(config_directory, kwds)
         _handle_job_metrics(config_directory, kwds)
         file_path = kwds.get("file_path") or config_join("files")
+        _ensure_directory(file_path)
+
+        tool_dependency_dir = kwds.get("tool_dependency_dir") or config_join("deps")
+        _ensure_directory(tool_dependency_dir)
+
         shed_tool_conf = kwds.get("shed_tool_conf") or config_join("shed_tools_conf.xml")
         tool_definition = _tool_conf_entry_for(tool_paths)
         empty_tool_conf = config_join("empty_tool_conf.xml")
 
         tool_conf = config_join("tool_conf.xml")
         database_location = config_join("galaxy.sqlite")
+
         shed_tool_path = kwds.get("shed_tool_path") or config_join("shed_tools")
+        _ensure_directory(shed_tool_path)
+
         sheds_config_path = _configure_sheds_config_file(
             ctx, config_directory, **kwds
         )
@@ -173,7 +181,7 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
             latest_galaxy=latest_galaxy,
             **kwds
         )
-        os.makedirs(shed_tool_path)
+        _ensure_directory(shed_tool_path)
         server_name = "planemo%d" % random.randint(0, 100000)
         port = int(kwds.get("port", 9090))
         template_args = dict(
@@ -257,7 +265,8 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
         write_file(empty_tool_conf, EMPTY_TOOL_CONF_TEMPLATE)
 
         shed_tool_conf_contents = _sub(SHED_TOOL_CONF_TEMPLATE, template_args)
-        write_file(shed_tool_conf, shed_tool_conf_contents)
+        # Write a new shed_tool_conf.xml if needed.
+        write_file(shed_tool_conf, shed_tool_conf_contents, force=False)
 
         pid_file = kwds.get("pid_file") or config_join("galaxy.pid")
 
@@ -411,7 +420,7 @@ def _download_database_template(
         shutil.copyfile(galaxy_sqlite_database, database_location)
         return True
 
-    if latest:
+    if latest or not galaxy_root:
         template_url = DOWNLOADS_URL + urlopen(LATEST_URL).read()
         urlretrieve(template_url, database_location)
         return True
@@ -748,7 +757,6 @@ def _handle_kwd_overrides(properties, kwds):
         'job_config_file',
         'job_metrics_config_file',
         'dependency_resolvers_config_file',
-        'tool_dependency_dir',
     ]
     for prop in kwds_gx_properties:
         val = kwds.get(prop, None)
@@ -761,7 +769,14 @@ def _sub(template, args):
         return ''
     return Template(template).safe_substitute(args)
 
+
+def _ensure_directory(path):
+    if path is not None and not os.path.exists(path):
+        os.makedirs(path)
+
+
 __all__ = [
     "attempt_database_preseed",
+    "DATABASE_LOCATION_TEMPLATE",
     "galaxy_config",
 ]
