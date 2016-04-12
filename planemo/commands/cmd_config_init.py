@@ -4,7 +4,7 @@ import sys
 
 import click
 
-from planemo.cli import pass_context
+from planemo.cli import command_function
 from planemo import options
 from planemo import config
 from planemo.io import warn, info
@@ -45,7 +45,7 @@ SUCCESS_MESSAGE = (
     '--template',
     default=None
 )
-@pass_context
+@command_function
 def cli(ctx, path, template=None, **kwds):
     """Help initialize global configuration (in home directory) for Planemo.
     """

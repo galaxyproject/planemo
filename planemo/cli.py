@@ -168,6 +168,6 @@ def planemo(ctx, config, directory, verbose):
 __all__ = [
     "Context",
     "list_cmds",
-    "pass_context",
+    "command_function",
     "planemo",
 ]
