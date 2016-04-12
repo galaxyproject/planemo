@@ -81,13 +81,22 @@ class Context(object):
         if not self.planemo_directory:
             raise Exception("No planemo workspace defined.")
         workspace = self.planemo_directory
-        if not os.path.exists(workspace):
-            os.makedirs(workspace)
-        if not os.path.isdir(workspace):
-            template = "Planemo workspace directory [%s] unavailable."
-            message = template % workspace
+        return self._ensure_directory(workspace, "workspace")
+
+    @property
+    def galaxy_profiles_directory(self):
+        """Create a return a directory for storing Galaxy profiles."""
+        path = os.path.join(self.workspace, "profiles")
+        return self._ensure_directory(path, "Galaxy profiles")
+
+    def _ensure_directory(self, path, name):
+        if not os.path.exists(path):
+            os.makedirs(path)
+        if not os.path.isdir(path):
+            template = "Planemo %s directory [%s] unavailable."
+            message = template % (name, path)
             raise Exception(message)
-        return workspace
+        return path
 
 
 pass_context = click.make_pass_decorator(Context, ensure=True)
