@@ -8,7 +8,7 @@ from .test_utils import (
     skip_if_environ,
     TEST_REPOS_DIR,
 )
-from . import network_util
+from planemo import network_util
 
 
 class ShedServeTestCase(CliTestCase):
@@ -28,6 +28,7 @@ class ShedServeTestCase(CliTestCase):
         test_cmd = [
             "shed_serve",
             "--install_galaxy",
+            "--shed_target", "toolshed",
             "--port",
             str(port),
             fastqc_path,

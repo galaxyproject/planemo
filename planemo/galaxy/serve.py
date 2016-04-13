@@ -1,5 +1,6 @@
 import contextlib
 import os
+import time
 
 from .config import galaxy_config
 from .run import (
@@ -7,6 +8,7 @@ from .run import (
     run_galaxy_command,
 )
 from planemo import io
+from planemo import network_util
 
 
 def serve(ctx, paths, **kwds):
@@ -44,6 +46,11 @@ def serve(ctx, paths, **kwds):
             config.env,
             action,
         )
+        host = kwds.get("host", "127.0.0.1")
+        port = kwds.get("port")
+        assert network_util.wait_net_service(host, port)
+        time.sleep(.1)
+        assert network_util.wait_net_service(host, port)
         return config
 
 
@@ -67,7 +74,8 @@ def shed_serve(ctx, install_args_list, **kwds):
 def serve_daemon(ctx, paths=[], **kwds):
     config = None
     try:
-        config = serve(ctx, paths, daemon=True, **kwds)
+        kwds["daemon"] = True
+        config = serve(ctx, paths, **kwds)
         yield config
     finally:
         if config:

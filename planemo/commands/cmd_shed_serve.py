@@ -12,6 +12,8 @@ from planemo import io
 @click.command("shed_serve")
 @options.shed_read_options()
 @options.galaxy_run_options()
+@options.galaxy_config_options()
+@options.pid_file_option()
 @click.option(
     "--skip_dependencies",
     is_flag=True,

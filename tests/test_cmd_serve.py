@@ -4,13 +4,13 @@ import time
 import threading
 
 from planemo.galaxy import api
+from planemo import network_util
 
 from .test_utils import (
     CliTestCase,
     skip_if_environ,
     TEST_REPOS_DIR,
 )
-from . import network_util
 
 TEST_HISTORY_NAME = "Cool History 42"
 

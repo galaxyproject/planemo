@@ -11,7 +11,7 @@ from .shed_app import (
     app,
     InMemoryShedDataModel,
 )
-from . import network_util
+from planemo import network_util
 
 DEFAULT_OP_TIMEOUT = 2
 

@@ -5,8 +5,8 @@ from .test_utils import (
     skip_if_environ,
     TEST_REPOS_DIR,
 )
-from . import network_util
 from planemo.galaxy import galaxy_serve, shed_serve
+from planemo import network_util
 from planemo import shed
 
 
