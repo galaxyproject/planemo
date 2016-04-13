@@ -12,6 +12,6 @@ BIOBLEND_UNAVAILABLE = ("This functionality requires the bioblend library "
                         "bioblend`")
 
 
-def ensure_module(mod):
+def ensure_module():
     if toolshed is None:
         raise Exception(BIOBLEND_UNAVAILABLE)

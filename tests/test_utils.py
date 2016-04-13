@@ -108,9 +108,7 @@ class CliTestCase(TestCase):
 
     @property
     def test_context(self):
-        context = cli.Context()
-        context.planemo_directory = "/tmp/planemo-test-workspace"
-        return context
+        return test_context()
 
 
 class CliShedTestCase(CliTestCase):
@@ -220,6 +218,12 @@ def skip_unless_python_2_7():
     if PYTHON_27:
         return lambda func: func
     return skip("Python 2.7 required for test.")
+
+
+def test_context():
+    context = cli.Context()
+    context.planemo_directory = "/tmp/planemo-test-workspace"
+    return context
 
 
 __all__ = [

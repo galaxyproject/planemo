@@ -13,7 +13,7 @@ VALUE_UNSET = object()
 
 
 OptionSource = aenum.Enum(
-    "OptionSource", 'cli global_config default'
+    "OptionSource", 'cli profile global_config default'
 )
 
 

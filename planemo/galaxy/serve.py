@@ -1,5 +1,6 @@
 import contextlib
 import os
+import time
 
 from .config import galaxy_config
 from .run import (
@@ -7,6 +8,7 @@ from .run import (
     run_galaxy_command,
 )
 from planemo import io
+from planemo import network_util
 
 
 def serve(ctx, paths, **kwds):
@@ -19,12 +21,13 @@ def serve(ctx, paths, **kwds):
         kwds["no_cleanup"] = True
 
     with galaxy_config(ctx, paths, **kwds) as config:
+        pid_file = config.pid_file
         # TODO: Allow running dockerized Galaxy here instead.
         setup_venv_command = setup_venv(ctx, kwds)
         run_script = os.path.join(config.galaxy_root, "run.sh")
         run_script += " $COMMON_STARTUP_ARGS"
         if daemon:
-            run_script += " --daemon --wait"
+            run_script += " --pid-file '%s' --daemon" % pid_file
             config.env["GALAXY_RUN_ALL"] = "1"
         else:
             run_script += " --server-name '%s' --reload" % config.server_name
@@ -43,6 +46,11 @@ def serve(ctx, paths, **kwds):
             config.env,
             action,
         )
+        host = kwds.get("host", "127.0.0.1")
+        port = kwds.get("port")
+        assert network_util.wait_net_service(host, port)
+        time.sleep(.1)
+        assert network_util.wait_net_service(host, port)
         return config
 
 
@@ -66,7 +74,8 @@ def shed_serve(ctx, install_args_list, **kwds):
 def serve_daemon(ctx, paths=[], **kwds):
     config = None
     try:
-        config = serve(ctx, paths, daemon=True, **kwds)
+        kwds["daemon"] = True
+        config = serve(ctx, paths, **kwds)
         yield config
     finally:
         if config:
