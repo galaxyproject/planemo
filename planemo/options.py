@@ -46,6 +46,16 @@ def tool_data_table_option():
     )
 
 
+def galaxy_email_option():
+    return planemo_option(
+        "--galaxy_email",
+        type=str,
+        default="planemo@galaxyproject.org",
+        use_global_config=True,
+        help="E-mail address to use when launching single-user Galaxy server.",
+    )
+
+
 def galaxy_root_option():
     return planemo_option(
         "--galaxy_root",
@@ -720,6 +730,7 @@ def galaxy_target_options():
         skip_venv_option(),
         no_cache_galaxy_option(),
         no_cleanup_option(),
+        galaxy_email_option(),
         # Profile options...
         job_config_option(),
         tool_dependency_dir_option(),
