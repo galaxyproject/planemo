@@ -98,6 +98,14 @@ planemo.lint module
     :undoc-members:
     :show-inheritance:
 
+planemo.network_util module
+---------------------------
+
+.. automodule:: planemo.network_util
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.options module
 ----------------------
 

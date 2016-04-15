@@ -11,6 +11,14 @@ Subpackages
 Submodules
 ----------
 
+planemo.galaxy.api module
+-------------------------
+
+.. automodule:: planemo.galaxy.api
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.galaxy.config module
 ----------------------------
 
