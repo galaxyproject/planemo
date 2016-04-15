@@ -1,0 +1,4 @@
+- doc: Simple test
+  job: int_tool_job.json
+  outputs:
+    output: 4

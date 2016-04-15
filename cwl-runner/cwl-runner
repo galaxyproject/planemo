@@ -1,3 +1,42 @@
-#!/bin/sh
+#!/bin/bash
 
-planemo cwl_run "$@"
+PLANEMO_BIN="${PLANEMO_BIN:-planemo}"
+PLANEMO_ARGS="${PLANEMO_ARGS:-}"
+
+VERBOSE_ARG="--verbose"
+USE_CONTAINER=0
+
+# Pop args meant for common_startup.sh                                                     
+while :
+do
+    case "$1" in
+        --version|--help)
+             $PLANEMO_BIN "$1"
+             exit $?
+             ;;
+        --no-container)
+             USE_CONTAINER=1
+             shift
+             ;;
+        --quiet)
+             VERBOSE_ARG=""
+             shift
+             ;; 
+        --basedir*)
+             BASEDIR=`echo $1 | sed -e 's/^[^=]*=//g'`
+             #echo `pwd`
+             #cd "$BASEDIR"
+             shift
+             ;;
+        "")
+            break
+            ;;
+        *)
+            PLANEMO_ARGS="$PLANEMO_ARGS $1"
+            shift
+            ;;
+    esac
+done
+
+# TODO: Do something with USE_CONTAINER
+$PLANEMO_BIN $VERBOSE_ARG run $PLANEMO_ARGS

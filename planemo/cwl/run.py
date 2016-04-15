@@ -1,42 +1,104 @@
-from planemo.io import conditionally_captured_io
-from planemo.galaxy.serve import serve_daemon
-from .client import run_cwl_tool
-from planemo import io
+"""Module defines a planemo abstraction around running cwltool.
 
-try:
-    from cwltool.main import main
-except (ImportError, SyntaxError):
-    # TODO: Add Python 2.6 and 3.X support to cwltool so this SyntaxError
-    # check isn't needed.
-    main = None
+cwltool is an executable Python script and library mostly maintained by
+Peter Amstutz and serves the reference implementation for the CWL.
+It can be found at https://github.com/common-workflow-language/cwltool,
+"""
+import json
+import tempfile
+
+from galaxy.tools.cwl.cwltool_deps import (
+    main,
+    ensure_cwltool_available,
+)
+
+from planemo.runnable import (
+    SuccessfulRunResponse,
+    ErrorRunResponse,
+)
+from planemo.io import real_io
 
 
-def run_galaxy(ctx, path, job_path, **kwds):
-    kwds["cwl"] = True
-    conformance_test = kwds.get("conformance_test", False)
-    with conditionally_captured_io(conformance_test):
-        with serve_daemon(ctx, [path], **kwds) as config:
-            try:
-                cwl_run = run_cwl_tool(path, job_path, config, **kwds)
-            except Exception:
-                io.warn("Problem running cwl tool...")
-                print(config.log_contents)
-                raise
+class CwlToolRunResponse(SuccessfulRunResponse):
+    """Describe the resut of a cwltool invocation."""
 
-    print(cwl_run.cwl_command_state)
-    return 0
+    def __init__(self, log, cwl_command_state=None, outputs=None):
+        self._log = log
+        self._cwl_command_state = cwl_command_state
+        self._outputs = outputs
+
+    @property
+    def log(self):
+        return self._log
+
+    @property
+    def job_info(self):
+        return None
+
+    @property
+    def cwl_command_state(self):
+        if self._cwl_command_state is None:
+            message = "Can only call cwl_command_state if running conformance_test."
+            raise NotImplementedError(message)
+
+        return self._cwl_command_state
+
+    @property
+    def outputs_dict(self):
+        if self._outputs is None:
+            message = "Can not call outputs if running conformance_test."
+            raise NotImplementedError(message)
+        return self._outputs
 
 
 def run_cwltool(ctx, path, job_path, **kwds):
-    if main is None:
-        raise Exception("cwltool dependency not found.")
+    """Translate planemo kwds to cwltool kwds and run cwltool main function."""
+    ensure_cwltool_available()
 
     args = []
-    if kwds.get("conformance_test", False):
+    conformance_test = kwds.get("conformance_test", False)
+    if conformance_test:
         args.append("--conformance-test")
     if ctx.verbose:
         args.append("--verbose")
+    output_directory = kwds.get("output_directory", None)
+    if output_directory:
+        args.append("--outdir")
+        args.append(output_directory)
 
     args.extend([path, job_path])
     ctx.vlog("Calling cwltool with arguments %s" % args)
-    return main(args)
+    with tempfile.NamedTemporaryFile() as tmp_stdout, \
+            tempfile.NamedTemporaryFile() as tmp_stderr:
+        # cwltool passes sys.stderr to subprocess.Popen - ensure it has
+        # and actual fileno.
+        with real_io():
+            ret_code = main.main(
+                args,
+                stdout=tmp_stdout,
+                stderr=tmp_stderr
+            )
+        tmp_stdout.flush()
+        tmp_stderr.flush()
+        with open(tmp_stdout.name, "r") as stdout_f:
+            result = json.load(stdout_f)
+        with open(tmp_stderr.name, "r") as stderr_f:
+            log = stderr_f.read()
+        if ret_code != 0:
+            return ErrorRunResponse("Error running cwltool", log=log)
+        if conformance_test:
+            cwl_command_state = result
+            outputs = None
+        else:
+            cwl_command_state = None
+            outputs = result
+    return CwlToolRunResponse(
+        log,
+        cwl_command_state=cwl_command_state,
+        outputs=outputs,
+    )
+
+
+__all__ = [
+    "run_cwltool",
+]

@@ -11,9 +11,10 @@ from .config import (
     OptionSource,
 )
 from planemo.galaxy import profiles
+from planemo.exit_codes import ExitCodeException
 from planemo import __version__
 
-PYTHON_2_7_COMMANDS = ["cwl_run", "cwl_script"]
+PYTHON_2_7_COMMANDS = ["run", "cwl_script"]
 IS_PYTHON_2_7 = sys.version_info[0] == 2 and sys.version_info[1] >= 7
 
 
@@ -23,12 +24,6 @@ COMMAND_ALIASES = {
     "t": "test",
     "s": "serve",
 }
-
-
-class ExitCodeException(Exception):
-
-    def __init__(self, exit_code):
-        self.exit_code = exit_code
 
 
 class Context(object):

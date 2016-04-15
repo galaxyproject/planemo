@@ -12,6 +12,12 @@ from tempfile import mkdtemp
 from six.moves.urllib.request import urlretrieve
 
 import click
+try:
+    from gxformat2.converter import python_to_workflow
+    from gxformat2.interface import BioBlendImporterGalaxyInterface
+except ImportError:
+    python_to_workflow = None
+    BioBlendImporterGalaxyInterface = None
 
 from .run import (
     setup_common_startup_args,
@@ -22,6 +28,9 @@ from .api import (
     DEFAULT_MASTER_API_KEY,
     gi,
     user_api_key,
+)
+from .workflows import (
+    import_workflow,
 )
 from planemo.conda import build_conda_context
 from planemo.io import warn
@@ -121,11 +130,13 @@ FAILED_TO_FIND_GALAXY_EXCEPTION = (
     "Failed to find Galaxy root directory - please explicitly specify one "
     "with --galaxy_root."
 )
+CLEANUP_IGNORE_ERRORS = True
 
 
 @contextlib.contextmanager
-def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
+def galaxy_config(ctx, runnables, for_tests=False, **kwds):
     """Set up a ``GalaxyConfig`` in an auto-cleaned context."""
+    tool_paths = [r.path for r in runnables if r.has_tools]
     test_data_dir = _find_test_data(tool_paths, **kwds)
     tool_data_table = _find_tool_data_table(
         tool_paths,
@@ -300,6 +311,7 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
             port,
             server_name,
             master_api_key,
+            runnables,
         )
     finally:
         cleanup = not kwds.get("no_cleanup", False)
@@ -319,6 +331,7 @@ class GalaxyConfig(object):
         port,
         server_name,
         master_api_key,
+        runnables,
     ):
         self.galaxy_root = galaxy_root
         self._pid_file = pid_file
@@ -331,7 +344,9 @@ class GalaxyConfig(object):
         self.port = port
         self.server_name = server_name
         self.master_api_key = master_api_key
+        self.runnables = runnables
         self._user_api_key = None
+        self._workflow_ids = {}
 
     def kill(self):
         kill_pid_file(self.pid_file)
@@ -382,9 +397,7 @@ class GalaxyConfig(object):
 
     @property
     def log_file(self):
-        """ Not actually used by this module, but galaxy_serve will
-        respect it.
-        """
+        """Log file used when planemo serves this Galaxy instance."""
         file_name = "%s.log" % self.server_name
         return os.path.join(self.galaxy_root, file_name)
 
@@ -393,8 +406,20 @@ class GalaxyConfig(object):
         with open(self.log_file, "r") as f:
             return f.read()
 
+    def install_workflows(self):
+        for runnable in self.runnables:
+            if runnable.type.name == "galaxy_workflow":
+                self._install_workflow(runnable.path)
+
+    def _install_workflow(self, path):
+        workflow = import_workflow(path, admin_gi=self.gi, user_gi=self.user_gi)
+        self._workflow_ids[path] = workflow["id"]
+
+    def workflow_id(self, path):
+        return self._workflow_ids[path]
+
     def cleanup(self):
-        shutil.rmtree(self.config_directory)
+        shutil.rmtree(self.config_directory, CLEANUP_IGNORE_ERRORS)
 
 
 def _database_connection(database_location, **kwds):

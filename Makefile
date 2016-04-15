@@ -42,6 +42,9 @@ clean-test: ## remove test and coverage artifacts
 	rm -f .coverage
 	rm -fr htmlcov/
 
+install:
+	python setup.py install && cd cwl-runner && python setup.py install
+
 setup-venv: ## setup a development virutalenv in current directory
 	if [ ! -d $(VENV) ]; then virtualenv $(VENV); exit; fi;
 	$(IN_VENV) pip install -r requirements.txt && pip install -r dev-requirements.txt

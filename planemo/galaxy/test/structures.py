@@ -1,14 +1,13 @@
-""" Utilities for reasoning about Galaxy test results.
-"""
+"""Utilities for reasoning about Galaxy test results."""
 from __future__ import print_function
 from __future__ import absolute_import
 
 import os
 from collections import namedtuple
-import json
 import xml.etree.ElementTree as ET
 
 from planemo.io import error
+from planemo.test.results import StructuredData as BaseStructuredData
 
 RUN_TESTS_CMD = (
     "sh run_tests.sh $COMMON_STARTUP_ARGS --report_file %s %s %s %s"
@@ -22,6 +21,7 @@ NO_STRUCTURED_FILE = (
 
 
 class GalaxyTestCommand(object):
+    """Abstraction around building a ``run_tests.sh`` command for Galaxy tests."""
 
     def __init__(
         self,
@@ -60,40 +60,14 @@ class GalaxyTestCommand(object):
         return RUN_TESTS_CMD % (html_report_file, xunit_arg, sd_arg, tests)
 
 
-class StructuredData(object):
+class StructuredData(BaseStructuredData):
     """ Abstraction around Galaxy's structured test data output.
     """
 
     def __init__(self, json_path):
-        self.json_path = json_path
         if not json_path or not os.path.exists(json_path):
             error(NO_STRUCTURED_FILE % json_path)
-        else:
-            try:
-                with open(json_path, "r") as output_json_f:
-                    structured_data = json.load(output_json_f)
-                    structured_data_tests = structured_data["tests"]
-            except Exception:
-                error("Galaxy produced invalid JSON for structured data - summary "
-                      "information and planemo reports will be incorrect.")
-                structured_data = {}
-                structured_data_tests = {}
-        self.structured_data = structured_data
-        self.structured_data_tests = structured_data_tests
-        structured_data_by_id = {}
-        for test in self.structured_data_tests:
-            structured_data_by_id[test["id"]] = test["data"]
-        self.structured_data_by_id = structured_data_by_id
-        self.has_details = "summary" in structured_data
-        if self.has_details:
-            self.read_summary()
-
-    def update(self):
-        with open(self.json_path, "w") as out_f:
-            json.dump(self.structured_data, out_f)
-
-    def set_exit_code(self, exit_code):
-        self.structured_data["exit_code"] = exit_code
+        super(StructuredData, self).__init__(json_path)
 
     def merge_xunit(self, xunit_root):
         self.has_details = True
@@ -128,28 +102,6 @@ class StructuredData(object):
             else:
                 status = "success"
             test_data["status"] = status
-
-    def read_summary(self):
-        summary = self.structured_data["summary"]
-        num_tests = summary["num_tests"]
-        num_failures = summary["num_failures"]
-        num_skips = summary["num_skips"]
-        num_errors = summary["num_errors"]
-
-        self.num_tests = num_tests
-        self.num_problems = num_skips + num_errors + num_failures
-
-        self.exit_code = self.structured_data["exit_code"]
-
-    @property
-    def failed_ids(self):
-        ids = set([])
-        for test_data in self.structured_data_tests:
-            if test_data["data"]["status"] == "success":
-                continue
-            test_case = test_data["id"].replace(".test_toolbox.", ".test_toolbox:")
-            ids.add(test_case)
-        return ids
 
 
 class GalaxyTestResults(object):

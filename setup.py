@@ -40,6 +40,7 @@ PACKAGES = [
     'planemo.cwl',
     'planemo.cwl.cwl2script',
     'planemo.commands',
+    'planemo.engine',
     'planemo.galaxy',
     'planemo.galaxy.test',
     'planemo.linters',

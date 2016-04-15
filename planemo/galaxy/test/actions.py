@@ -1,9 +1,11 @@
 """Actions related to running and reporting on Galaxy-specific testing."""
+import json
 import os
 
 import click
 
 from . import structures as test_structures
+from planemo.test.results import get_dict_value
 from planemo.io import error, info, warn, shell_join
 from planemo.exit_codes import (
     EXIT_CODE_OK,
@@ -145,7 +147,6 @@ def handle_reports(ctx, structured_data, kwds):
             )
         except Exception as e:
             exceptions.append(e)
-            continue
 
     if len(exceptions) > 0:
         raise exceptions[0]
@@ -188,10 +189,10 @@ def _handle_summary(
     structured_data,
     **kwds
 ):
-    summary_dict = _get_dict_value("summary", structured_data)
-    num_tests = _get_dict_value("num_tests", summary_dict)
-    num_failures = _get_dict_value("num_failures", summary_dict)
-    num_errors = _get_dict_value("num_errors", summary_dict)
+    summary_dict = get_dict_value("summary", structured_data)
+    num_tests = get_dict_value("num_tests", summary_dict)
+    num_failures = get_dict_value("num_failures", summary_dict)
+    num_errors = get_dict_value("num_errors", summary_dict)
     num_problems = num_failures + num_errors
 
     summary_exit_code = EXIT_CODE_OK
@@ -224,7 +225,7 @@ def _summarize_tests_full(
     structured_data,
     **kwds
 ):
-    tests = _get_dict_value("tests", structured_data)
+    tests = get_dict_value("tests", structured_data)
     for test_case_data in tests:
         _summarize_test_case(test_case_data, **kwds)
 
@@ -240,11 +241,11 @@ def passed(xunit_testcase_el):
 def _summarize_test_case(structured_data, **kwds):
     summary_style = kwds.get("summary")
     test_id = test_structures.case_id(
-        raw_id=_get_dict_value("id", structured_data)
+        raw_id=get_dict_value("id", structured_data)
     )
-    status = _get_dict_value(
+    status = get_dict_value(
         "status",
-        _get_dict_value("data", structured_data)
+        get_dict_value("data", structured_data)
     )
     if status != "success":
         state = click.style("failed", bold=True, fg='red')
@@ -268,13 +269,6 @@ def _print_command_line(test, test_id):
         return
 
     click.echo("| command: %s" % command)
-
-
-def _get_dict_value(key, data):
-    try:
-        return data[key]
-    except (KeyError, TypeError):
-        raise KeyError("No key [%s] in [%s]" % (key, data))
 
 
 def _check_test_outputs(

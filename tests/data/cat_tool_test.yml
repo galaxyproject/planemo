@@ -1,0 +1,6 @@
+- doc: Simple test
+  job: cat_tool_job.json
+  outputs:
+    output_file:
+      checksum: sha1$2ef7bde608ce5404e97d5f042f95f89f1c232871
+

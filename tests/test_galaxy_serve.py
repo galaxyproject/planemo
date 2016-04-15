@@ -1,24 +1,34 @@
+"""Tests for the ``planemo.galaxy.serve`` module.
+
+This tests this as a library functionality - additional integration
+style tests are available in ``test_cmd_serve.py``.
+"""
 import os
 
 from .test_utils import (
     CliTestCase,
     skip_if_environ,
     TEST_REPOS_DIR,
+    TEST_DATA_DIR,
+    PROJECT_TEMPLATES_DIR,
 )
+from planemo.runnable import for_path
 from planemo.galaxy import galaxy_serve, shed_serve
 from planemo import network_util
 from planemo import shed
 
 
 class GalaxyServeTestCase(CliTestCase):
+    """Tests for planemo.galaxy.serve."""
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_serve_daemon(self):
+        """Test serving a galaxy tool via a daemon Galaxy process."""
         port = network_util.get_free_port()
         cat_path = os.path.join(TEST_REPOS_DIR, "single_tool", "cat.xml")
         config = galaxy_serve(
             self.test_context,
-            cat_path,
+            [for_path(cat_path)],
             install_galaxy=True,
             port=port,
             daemon=True,
@@ -39,7 +49,29 @@ class GalaxyServeTestCase(CliTestCase):
         )
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_serve_workflow(self):
+        """Test serving a galaxy workflow via a daemon Galaxy process."""
+        port = network_util.get_free_port()
+        random_lines = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "randomlines.xml")
+        cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
+        worklfow = os.path.join(TEST_DATA_DIR, "wf1.gxwf.yml")
+        extra_tools = [random_lines, cat]
+        config = galaxy_serve(
+            self.test_context,
+            [for_path(worklfow)],
+            install_galaxy=True,
+            port=port,
+            daemon=True,
+            extra_tools=extra_tools,
+        )
+        user_gi = config.user_gi
+        assert user_gi.tools.get_tools(tool_id="random_lines1")
+        assert len(user_gi.workflows.get_workflows()) == 1
+        config.kill()
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_shed_serve_daemon(self):
+        """Test serving FASTQC from the tool shed via a daemon Galaxy process."""
         port = network_util.get_free_port()
         fastqc_path = os.path.join(TEST_REPOS_DIR, "fastqc")
         ctx = self.test_context
