@@ -199,7 +199,14 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
             log_level=kwds.get("log_level", "DEBUG"),
         )
         tool_config_file = "%s,%s" % (tool_conf, shed_tool_conf)
+        user_email = kwds.get("galaxy_email")
         properties = dict(
+            single_user=user_email,
+            admin_users=user_email,
+            ftp_upload_dir_template="${ftp_upload_dir}",
+            ftp_upload_purge="False",
+            ftp_upload_dir=test_data_dir or os.path.abspath('.'),
+            ftp_upload_site="Test Data",
             tool_dependency_dir=dependency_dir,
             file_path=file_path,
             new_file_path="${temp_directory}/tmp",
