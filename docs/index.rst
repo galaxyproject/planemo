@@ -18,6 +18,7 @@ Contents:
    writing
    publishing
    commands
+   galaxy_changelog
    conduct
    contributing
    organization
