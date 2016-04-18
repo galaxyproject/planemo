@@ -587,7 +587,9 @@ def _install_galaxy(ctx, config_directory, env, kwds):
 def _install_galaxy_via_download(ctx, config_directory, env, kwds):
     branch = _galaxy_branch(kwds)
     tar_cmd = "tar -zxvf %s" % branch
-    command = DOWNLOAD_GALAXY + "; %s | tail" % tar_cmd
+    command = DOWNLOAD_GALAXY + "%s; %s | tail" % (branch, tar_cmd)
+    if branch != "dev":
+        command = command + "; ln -s galaxy-%s galaxy-dev" % (branch)
     _install_with_command(ctx, config_directory, command, env, kwds)
 
 
