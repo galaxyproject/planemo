@@ -8,11 +8,11 @@ from .test_utils import (
     skip,
 )
 
-CWL_DRAFT2_DIR = os.path.join(PROJECT_TEMPLATES_DIR, "cwl_draft2_spec")
+CWL_DRAFT3_DIR = os.path.join(PROJECT_TEMPLATES_DIR, "cwl_draft3_spec")
 
 
 def _cwl_file(name):
-    return os.path.normpath(os.path.join(CWL_DRAFT2_DIR, name))
+    return os.path.normpath(os.path.join(CWL_DRAFT3_DIR, name))
 
 
 # TODO: Improve these tests so they actually check something instead
