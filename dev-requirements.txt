@@ -6,8 +6,9 @@ tox
 nose
 coverage
 
-# For dev
+#Building Docs
 sphinx
+recommonmark
 
 # Used to check readme.
 readme
