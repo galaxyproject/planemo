@@ -62,7 +62,7 @@ pairs of datasets can also process single datasets. The following
       <when value="paired">
         <param name="fastq_input1" type="data" format="fastqsanger" label="Select first set of reads" help="Specify dataset with forward reads"/>
         <param name="fastq_input2" type="data" format="fastqsanger" label="Select second set of reads" help="Specify dataset with reverse reads"/>
-      </when>     
+      </when>
       <when value="single">
         <param name="fastq_input1" type="data" format="fastqsanger" label="Select fastq dataset" help="Specify dataset with single reads"/>
       </when>
@@ -113,7 +113,7 @@ For instance:
 
 ::
 
-    #for $input in $inputs 
+    #for $input in $inputs
     --input "$input"
     #end for
 
@@ -151,7 +151,7 @@ derived from using a little ficitious program called ``merge_rows``.
 ::
 
     #import re
-    #for $input in $inputs 
+    #for $input in $inputs
     merge_rows --name "${re.sub('[^\w\-_]', '_', $input.element_identifier)}" --file "$input" --to $output;
     #end for
 
@@ -215,6 +215,63 @@ collection or just a dataset.
 Some example tools which consume collections include:
 
  - `collection_nested_test <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/collection_nested_test.xml>`_ (small test tool demonstrating consumption of nested collections)
+
+
+-------------------------------
+Collection as an Output
+-------------------------------
+
+Whenever possible simpler operations that produce datasets should be implicitly "mapped over" to produce collections - but there are a variety of situations for which this idiom is insufficient.
+
+Progressively more complex syntax elements exist for the increasingly complex scenarios. Broadly speaking - the three scenarios covered are the tool produces...
+
+ - a collection with a static number of elements (mostly for paired, but if a tool does say fixed binning it might make sense to create a list this way as well)
+ - a list with the same number of elements as an input (common pattern for normalization applications for instance).
+ - a list where the number of elements is not knowable until the job is complete.
+
+For the first case - the tool can simply declare standard data elements below an output collection element in the outputs tag of the tool definition.
+
+::
+
+    <collection name="paired_output" type="paired" label="Split Pair">
+        <data name="forward" format="txt" />
+        <data name="reverse" format_source="input1" from_work_dir="reverse.txt" />
+    </collection>
+
+
+Templates (e.g. the ``command`` tag) can then reference ``$forward`` and ``$reverse`` or whatever ``name`` the corresponding ``data`` elements are given - as demonstrated in ``test/functional/tools/collection_creates_pair.xml``.
+
+The tool should describe the collection type via the type attribute on the collection element. Data elements can define ``format``, ``format_source``, ``metadata_source``, ``from_work_dir``, and ``name``.
+
+The above syntax would also work for the corner case of static lists. For paired collections specifically however, the type plugin system now knows how to prototype a pair so the following even easier (though less configurable) syntax works.
+
+::
+
+    <collection name="paired_output" type="paired" label="Split Pair" format_source="input1">
+    </collection>
+
+In this case the command template could then just reference ``${paried_output.forward}`` and ``${paired_output.reverse}`` as demonstrated in ``test/functional/tools/collection_creates_pair_from_type.xml``.
+
+For the second case - where the structure of the output is based on the structure of an input - a structured_like attribute can be defined on the collection tag.
+
+::
+
+    <collection name="list_output" type="list" label="Duplicate List" structured_like="input1" inherit_format="true">
+
+Templates can then loop over ``input1`` or ``list_output`` when buliding up command-line expressions. See ``test/functional/tools/collection_creates_list.xml`` for an example.
+
+``format``, ``format_source``, and ``metadata_source`` can be defined for such collections if the format and metadata are fixed or based on a single input dataset. If instead the format or metadata depends on the formats of the collection it is structured like - ``inherit_format="true"`` and/or ``inherit_metadata="true"`` should be used instead - which will handle corner cases where there are for instance subtle format or metadata differences between the elements of the incoming list.
+
+The third and most general case is when the number of elements in a list cannot be determined until runtime. For instance, when splitting up files by various dynamic criteria.
+
+In this case a collection may define one of more discover_dataset elements. As an example of one such tool that splits a tabular file out into multiple tabular files based on the first column see ``test/functional/tools/collection_split_on_column.xml`` - which includes the following output definition:
+
+::
+
+    <collection name="split_output" type="list" label="Table split on first column">
+        <discover_datasets pattern="__name_and_ext__" directory="outputs" />
+    </collection>
+
 
 ----------------------
 Further Reading
