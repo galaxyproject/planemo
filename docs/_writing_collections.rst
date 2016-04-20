@@ -24,6 +24,10 @@ Composite types include for instance the ``list:paired`` collection type -
 which represents a list of dataset pairs. In this case, instead of each
 dataset having a list idenifier, each pair of datasets does.
 
+-------------------------------
+Consuming Collctions
+-------------------------------
+
 Many Galaxy tools can in conjuction with collections used without
 modification. Galaxy users can take a collection and `map over` any tool that
 consumes individual datasets. For instance, early in typical bioinformatics
@@ -44,11 +48,14 @@ consuming lists, and consuming arbitrary collections.
     are likely doing something wrong. Just process and pair or a single dataset
     and allow the user to map over the collection.
 
-Dataset collections are in their infancy - so for tools which process datasets
-the recommended best practice is to allow users to either supply paired
-collections or two individual datasets. Furthermore, many tools which process
-pairs of datasets can also process single datasets. The following
-``conditional`` captures this idiom.
+Processing Pairs
+-------------------------------
+
+Dataset collections are not extensively used by typical Galaxy users yet - so
+for tools which process paired datasets the recommended best practice is to
+allow users to either supply paired collections or two individual datasets.
+Furthermore, many tools which process pairs of datasets can also process
+single datasets. The following ``conditional`` captures this idiom.
 
 ::
 
@@ -90,7 +97,6 @@ Some example tools which consume paired datasets include:
  - `BWA MEM <https://github.com/galaxyproject/tools-devteam/blob/master/tools/bwa/bwa-mem.xml>`__
  - `Tophat <https://github.com/galaxyproject/tools-devteam/blob/master/tools/tophat2/tophat2_wrapper.xml>`__
 
--------------------------------
 Processing Lists (Reductions)
 -------------------------------
 
@@ -133,10 +139,19 @@ the idiom:
     --input "${",".join(map(str, $inputs))}"
 
 
-Identifiers
--------------------------------
+Some example tools which consume multiple datasets (including lists) include:
 
-As mentioned previously sample identifiers are preserved through mapping
+ - `multi_data_param <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/multi_data_param.xml>`__ (small test tool in Galaxy test suite)
+ - `cuffmerge <https://github.com/galaxyproject/tools-devteam/blob/master/tool_collections/cufflinks/cuffmerge/cuffmerge_wrapper.xml>`__
+ - `unionBedGraphs <https://github.com/galaxyproject/tools-iuc/blob/master/tools/bedtools/unionBedGraphs.xml>`__
+
+Also see the tools-devteam repository `Pull Request #20 <https://github.com/galaxyproject/tools-devteam/pull/20>`__ modifying the cufflinks suite of tools for collection compatible reductions.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Identifiers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As mentioned previously, sample identifiers are preserved through mapping
 steps, during reduction steps one may likely want to use these - for
 reporting, comparisons, etc.... When using these multiple ``data`` parameters
 the dataset objects expose a field called ``element_identifier``. When these
@@ -155,22 +170,21 @@ derived from using a little ficitious program called ``merge_rows``.
     merge_rows --name "${re.sub('[^\w\-_]', '_', $input.element_identifier)}" --file "$input" --to $output;
     #end for
 
+Some example tools which utilize ``element_identifier`` include:
+
+ - `identifier_multiple <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/identifier_multiple.xml>`_
+ - `identifier_single <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/identifier_single.xml>`_
+ - `vcftools_merge <https://github.com/galaxyproject/tools-devteam/blob/master/tool_collections/vcftools/vcftools_merge/vcftools_merge.xml>`_
+ - `jbrowse <https://github.com/galaxyproject/tools-iuc/blob/master/tools/jbrowse/jbrowse.xml>`_
+
+.. TODO: https://github.com/galaxyproject/tools-devteam/pull/363/files
 
 .. note:: Here we are rewriting the element identifiers to assure everything is safe to
     put on the command-line. In the future collections will not be able to contain
     keys are potentially harmful and this won't be nessecary.
 
-Some example tools which consume collections include:
-
- - `multi_data_param <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/multi_data_param.xml>`__ (small test tool in Galaxy test suite)
- - `cuffmerge <https://github.com/galaxyproject/tools-devteam/blob/master/tool_collections/cufflinks/cuffmerge/cuffmerge_wrapper.xml>`__
- - `unionBedGraphs <https://github.com/galaxyproject/tools-iuc/blob/master/tools/bedtools/unionBedGraphs.xml>`__
-
-Also see the tools-devteam repository `Pull Request #20 <https://github.com/galaxyproject/tools-devteam/pull/20>`__ modifying the cufflinks suite of tools for collection compatible reductions.
-
--------------------------------
-Processing Collections
--------------------------------
+More on ``data_collection`` parameters
+----------------------------------------------
 
 The above three cases (users mapping over single tools, consuming pairs, and
 consuming lists using `multiple` ``data`` parameters) are hopefully the most
@@ -218,18 +232,30 @@ Some example tools which consume collections include:
 
 
 -------------------------------
-Collection as an Output
+Creating Collections
 -------------------------------
 
-Whenever possible simpler operations that produce datasets should be implicitly "mapped over" to produce collections - but there are a variety of situations for which this idiom is insufficient.
+Whenever possible simpler operations that produce datasets should be
+implicitly "mapped over" to produce collections as described above - but there
+are a variety of situations for which this idiom is insufficient.
 
-Progressively more complex syntax elements exist for the increasingly complex scenarios. Broadly speaking - the three scenarios covered are the tool produces...
+Progressively more complex syntax elements exist for the increasingly complex
+scenarios. Broadly speaking - the three scenarios covered are the tool
+produces...
 
- - a collection with a static number of elements (mostly for paired, but if a tool does say fixed binning it might make sense to create a list this way as well)
- - a list with the same number of elements as an input (common pattern for normalization applications for instance).
- - a list where the number of elements is not knowable until the job is complete.
+1. a collection with a static number of elements (mostly for ``paired``
+   collections, but if a tool does say fixed binning it might make sense to create a list this way as well)
+2. a ``list`` with the same number of elements as an input list
+   (this would be a common pattern for normalization applications for 
+   instance).
+3. a ``list`` where the number of elements is not knowable until the job is
+   complete.
 
-For the first case - the tool can simply declare standard data elements below an output collection element in the outputs tag of the tool definition.
+1. Static Element Count
+-----------------------------------------------
+
+For this first case - the tool can simply declare standard data elements 
+below an output collection element in the outputs tag of the tool definition.
 
 ::
 
@@ -239,7 +265,8 @@ For the first case - the tool can simply declare standard data elements below an
     </collection>
 
 
-Templates (e.g. the ``command`` tag) can then reference ``$forward`` and ``$reverse`` or whatever ``name`` the corresponding ``data`` elements are given - as demonstrated in ``test/functional/tools/collection_creates_pair.xml``.
+Templates (e.g. the ``command`` tag) can then reference ``$forward`` and ``$reverse`` or whatever ``name`` the corresponding ``data`` elements are given.
+- as demonstrated in ``test/functional/tools/collection_creates_pair.xml``.
 
 The tool should describe the collection type via the type attribute on the collection element. Data elements can define ``format``, ``format_source``, ``metadata_source``, ``from_work_dir``, and ``name``.
 
@@ -252,6 +279,9 @@ The above syntax would also work for the corner case of static lists. For paired
 
 In this case the command template could then just reference ``${paried_output.forward}`` and ``${paired_output.reverse}`` as demonstrated in ``test/functional/tools/collection_creates_pair_from_type.xml``.
 
+2. Computable Element Count
+-----------------------------------------------
+
 For the second case - where the structure of the output is based on the structure of an input - a structured_like attribute can be defined on the collection tag.
 
 ::
@@ -261,6 +291,9 @@ For the second case - where the structure of the output is based on the structur
 Templates can then loop over ``input1`` or ``list_output`` when buliding up command-line expressions. See ``test/functional/tools/collection_creates_list.xml`` for an example.
 
 ``format``, ``format_source``, and ``metadata_source`` can be defined for such collections if the format and metadata are fixed or based on a single input dataset. If instead the format or metadata depends on the formats of the collection it is structured like - ``inherit_format="true"`` and/or ``inherit_metadata="true"`` should be used instead - which will handle corner cases where there are for instance subtle format or metadata differences between the elements of the incoming list.
+
+3. Dynamic Element Count
+-----------------------------------------------
 
 The third and most general case is when the number of elements in a list cannot be determined until runtime. For instance, when splitting up files by various dynamic criteria.
 
@@ -272,6 +305,12 @@ In this case a collection may define one of more discover_dataset elements. As a
         <discover_datasets pattern="__name_and_ext__" directory="outputs" />
     </collection>
 
+Nested Collections
+-----------------------------------------------
+
+Galaxy `Pull Request #538 <https://github.com/galaxyproject/galaxy/pull/538>`__
+implemented the ability to define nested output collections. See the pull 
+request and included example tools for more details.
 
 ----------------------
 Further Reading
