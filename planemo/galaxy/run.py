@@ -23,7 +23,7 @@ PRINT_VENV_COMMAND = shell_join(
 
 # TODO: Mac-y curl variant of this.
 DOWNLOAD_GALAXY = (
-    "wget https://codeload.github.com/galaxyproject/galaxy/tar.gz/dev"
+    "wget https://codeload.github.com/galaxyproject/galaxy/tar.gz/"
 )
 
 CACHED_VIRTUAL_ENV_COMMAND = ("if [ -d .venv ] || [ -f dist-eggs.ini ];"
