@@ -11,6 +11,7 @@ IN_VENV=if [ -f $(VENV)/bin/activate ]; then . $(VENV)/bin/activate; fi;
 # TODO: add this upstream as a remote if it doesn't already exist.
 UPSTREAM?=galaxyproject
 SOURCE_DIR?=planemo
+SOURCE_DOC_EXCLUDE=$(SOURCE_DIR)/cwl/cwl2script
 BUILD_SCRIPTS_DIR=scripts
 VERSION?=$(shell python $(BUILD_SCRIPTS_DIR)/print_version_for_release.py $(SOURCE_DIR))
 DOC_URL?=https://planemo.readthedocs.org
@@ -79,12 +80,16 @@ ready-docs:
 	rm -f docs/$(SOURCE_DIR).rst
 	rm -f docs/planemo_ext.rst
 	rm -f docs/modules.rst
-	$(IN_VENV) sphinx-apidoc -f -o docs/ planemo_ext planemo_ext/galaxy/eggs
-	$(IN_VENV) sphinx-apidoc -f -o docs/ $(SOURCE_DIR)
+	$(IN_VENV) sphinx-apidoc -f -o docs/ planemo_ext
+	$(IN_VENV) sphinx-apidoc -f -o docs/ $(SOURCE_DIR) $(SOURCE_DOC_EXCLUDE)
 
 docs: ready-docs ## generate Sphinx HTML documentation, including API docs
 	$(IN_VENV) $(MAKE) -C docs clean
 	$(IN_VENV) $(MAKE) -C docs html
+
+lint-docs: ready-docs
+	$(IN_VENV) $(MAKE) -C docs clean
+	$(IN_VENV) $(MAKE) -C docs html 2>&1 | python $(BUILD_SCRIPTS_DIR)/lint_sphinx_output.py
 
 _open-docs:
 	open docs/_build/html/index.html || xdg-open docs/_build/html/index.html

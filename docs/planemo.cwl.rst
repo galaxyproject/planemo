@@ -1,13 +1,6 @@
 planemo.cwl package
 ===================
 
-Subpackages
------------
-
-.. toctree::
-
-    planemo.cwl.cwl2script
-
 Submodules
 ----------
 

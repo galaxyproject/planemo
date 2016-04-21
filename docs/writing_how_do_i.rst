@@ -254,9 +254,9 @@ description of the ``output``.
 
 - `metadata.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/metadata.xml>`__
 
-------------------------------------------------------
+--------------------------------------------------------------------
 \.\.\. test tools installed in an existing Galaxy instance?
-------------------------------------------------------
+--------------------------------------------------------------------
 
 Do not use planemo, Galaxy should be used to test its tools directly.
 The following two commands can be used to test Galaxy tools in an existing

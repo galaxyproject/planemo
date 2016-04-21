@@ -7,7 +7,9 @@ nose
 coverage
 
 #Building Docs
-sphinx
+sphinx==1.3.6
+# Sphinx bug with latest typing https://github.com/sphinx-doc/sphinx/issues/2470
+sphinx_rtd_theme
 recommonmark
 
 # Used to check readme.
