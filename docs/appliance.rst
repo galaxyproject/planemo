@@ -126,7 +126,7 @@ Launching the Appliance (Vagrant)
 ==================================
 
 The latest `Vagrant`_ version of the planemo appliance can be found
-`here <https://images.galaxyproject.org/planemo/latest.box>`_. Once you have
+`here <https://images.galaxyproject.org/planemo/latest.box>`__. Once you have
 installed `Vagrant`_ (`download now <http://www.vagrantup.com/downloads>`_),
 the appliance can be enabled by first creating a ``Vagrantfile`` in your tool
 directory - the following demonstrates an example of such file.
@@ -158,7 +158,7 @@ Together these make the OVA image ideal for learning such as for tutorials and
 workshops.
 
 The latest `VirtualBox`_ version of the planemo appliance can be found `here
-<https://images.galaxyproject.org/planemo/latest.ova>`_.
+<https://images.galaxyproject.org/planemo/latest.ova>`__.
 
 If VirtualBox_ has been installed - the planemo machine can be imported by
 downloading the latest image and double clicking the resulting file. This should
