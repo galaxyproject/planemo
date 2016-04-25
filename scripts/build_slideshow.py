@@ -13,7 +13,10 @@ def main(argv=None):
         argv = sys.argv
     title = argv[1]
     markdown_source = argv[2]
-    output = os.path.splitext(markdown_source)[0] + '.html'
+    if len(argv) >= 4:
+        output = argv[3]
+    else:
+        output = os.path.splitext(markdown_source)[0] + '.html'
     with open(markdown_source, "r") as s:
         content = s.read()
     html = TEMPLATE.safe_substitute(**{
