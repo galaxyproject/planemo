@@ -1,4 +1,5 @@
 from .test_utils import CliShedTestCase
+from .test_utils import skip
 from planemo import shed
 
 CS1_DESCRIPTION = "The tool Cat 1 from the cat tool suite."
@@ -15,6 +16,7 @@ class ShedCreateTestCase(CliShedTestCase):
             create_command.extend(self._shed_args())
             self._check_exit_code(create_command)
 
+    @skip
     def test_create_wrong_owner(self):
         with self._isolate_repo("single_tool_other_owner"):
             create_command = ["shed_create", "--skip_upload"]
