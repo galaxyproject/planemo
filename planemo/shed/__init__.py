@@ -1216,8 +1216,10 @@ class RealizedRepositry(object):
         context_owner = shed_context.owner()
         config_owner = self.config.get("owner", None)
         if context_owner and config_owner and context_owner != config_owner:
-            message = INCORRECT_OWNER_MESSAGE % (config_owner, context_owner)
-            raise Exception(message)
+            # This is broken because context_owner is incorrect if using an API key.
+            # message = INCORRECT_OWNER_MESSAGE % (config_owner, context_owner)
+            # raise Exception(message)
+            pass
 
         def _create():
             repo = create_repository_for(

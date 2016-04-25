@@ -6,6 +6,14 @@ History
 .. to_doc
 
 ---------------------
+0.24.2 (2016-04-25)
+---------------------
+
+* Revert "check ``.shed.yml`` owner against credentials during shed
+  creation", test was incorrect and preventing uploads.
+  `Pull Request 425`_, `Issue 246`_
+
+---------------------
 0.24.1 (2016-04-08)
 ---------------------
 
