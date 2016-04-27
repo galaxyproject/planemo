@@ -38,6 +38,20 @@ def test_data_option():
     )
 
 
+def extra_tools_option():
+    return planemo_option(
+        "--extra_tools",
+        type=click.Path(exists=True,
+                        file_okay=True,
+                        dir_okay=True,
+                        resolve_path=True),
+        multiple=True,
+        help=("Extra tool sources to include in Galaxy's tool panel (file or "
+              "directory). These will not be linted/tested/etc... but they "
+              "will be available to workflows and for interactive use.")
+    )
+
+
 def tool_data_table_option():
     return planemo_option(
         "--tool_data_table",
@@ -766,6 +780,7 @@ def galaxy_serve_options():
     return _compose(
         galaxy_run_options(),
         galaxy_config_options(),
+        extra_tools_option(),
         daemon_option(),
         pid_file_option(),
     )
