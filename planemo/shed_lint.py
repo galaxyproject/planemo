@@ -14,7 +14,7 @@ from planemo.shed import (
 )
 from planemo.tool_lint import (
     build_lint_args,
-    yield_tool_xmls,
+    yield_tool_sources,
     handle_tool_load_error,
 )
 from planemo.lint import lint_urls
@@ -26,7 +26,7 @@ import xml.etree.ElementTree as ET
 from planemo.io import info
 from planemo.io import error
 
-from galaxy.tools.lint import lint_xml_with
+from galaxy.tools.lint import lint_tool_source_with
 
 TOOL_DEPENDENCIES_XSD = os.path.join(XSDS_PATH, "tool_dependencies.xsd")
 REPO_DEPENDENCIES_XSD = os.path.join(XSDS_PATH, "repository_dependencies.xsd")
@@ -96,15 +96,15 @@ def lint_repository(ctx, realized_repository, **kwds):
             path,
         )
     if kwds["tools"]:
-        for (tool_path, tool_xml) in yield_tool_xmls(ctx, path,
-                                                     recursive=True):
+        for (tool_path, tool_source) in yield_tool_sources(ctx, path,
+                                                           recursive=True):
             info("+Linting tool %s" % tool_path)
-            if handle_tool_load_error(tool_path, tool_xml):
+            if handle_tool_load_error(tool_path, tool_source):
                 failed = True
                 continue
-            lint_xml_with(
+            lint_tool_source_with(
                 lint_ctx,
-                tool_xml,
+                tool_source,
                 extra_modules=lint_args["extra_modules"]
             )
     if kwds["ensure_metadata"]:

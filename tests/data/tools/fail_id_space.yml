@@ -1,0 +1,4 @@
+class: GalaxyTool
+id: "My Tool"
+name: "My Tool"
+version: "7.5"
