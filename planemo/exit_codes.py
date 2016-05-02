@@ -1,3 +1,4 @@
+"""Numeric constants for planemo exit codes."""
 
 # Operation succeeded.
 EXIT_CODE_OK = 0
