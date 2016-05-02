@@ -18,6 +18,7 @@ Contents:
    writing
    publishing
    commands
+   standards/docs/best_practices
    galaxy_changelog
    conduct
    contributing
