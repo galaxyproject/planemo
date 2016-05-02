@@ -25,6 +25,12 @@ COMMAND_ALIASES = {
 }
 
 
+class ExitCodeException(Exception):
+
+    def __init__(self, exit_code):
+        self.exit_code = exit_code
+
+
 class Context(object):
     """Describe context of Planemo computation.
 
@@ -103,6 +109,11 @@ class Context(object):
             raise Exception(message)
         return path
 
+    def exit(self, exit_code):
+        """Exit planemo with the supplied exit code."""
+        self.vlog("Exiting planemo with exit code [%d]" % exit_code)
+        raise ExitCodeException(exit_code)
+
 
 pass_context = click.make_pass_decorator(Context, ensure=True)
 cmd_folder = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -157,7 +168,11 @@ def command_function(f):
                 if ctx.get_option_source(key) != OptionSource.cli:
                     kwds[key] = value
                     ctx.set_option_source(key, OptionSource.profile, force=True)
-        return f(*args, **kwds)
+        try:
+            return f(*args, **kwds)
+        except ExitCodeException as e:
+            sys.exit(e.exit_code)
+
     handle_profile_options.__doc__ = f.__doc__
     return pass_context(handle_profile_options)
 
