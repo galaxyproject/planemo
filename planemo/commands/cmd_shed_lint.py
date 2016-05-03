@@ -1,6 +1,5 @@
 """Module describing the planemo ``shed_lint`` command."""
 import click
-import sys
 
 from planemo.cli import command_function
 from planemo import options
@@ -42,7 +41,6 @@ from planemo import shed_lint
 def cli(ctx, paths, **kwds):
     """Check a Tool Shed repository for common problems.
 
-
     With the ``--tools`` flag, this command lints actual Galaxy tools
     in addition to tool shed artifacts.
 
@@ -58,4 +56,4 @@ def cli(ctx, paths, **kwds):
 
     kwds["fail_on_missing"] = False
     exit_code = shed.for_each_repository(ctx, lint, paths, **kwds)
-    sys.exit(exit_code)
+    ctx.exit(exit_code)

@@ -1,6 +1,4 @@
 """Module describing the planemo ``lint`` command."""
-import sys
-
 import click
 
 from planemo.cli import command_function
@@ -32,11 +30,9 @@ from planemo.tool_lint import lint_tools_on_path
 # )
 @command_function
 def cli(ctx, paths, **kwds):
-    """Check specified tool(s) for common errors and adherence to best
-    practices.
-    """
+    """Check tools for common errors and adherence to best practices."""
     lint_args = build_lint_args(ctx, **kwds)
-    exit = lint_tools_on_path(
+    exit_code = lint_tools_on_path(
         ctx,
         paths,
         lint_args,
@@ -50,4 +46,4 @@ def cli(ctx, paths, **kwds):
     #             with open(kwds['report_xunit'], 'w') as handle:
     #                 handle.write(build_report.template_data(
     #                     collected_data, template_name='xunit.tpl'))
-    sys.exit(exit)
+    ctx.exit(exit_code)

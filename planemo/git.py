@@ -1,6 +1,9 @@
 """ Utilities for interacting with git using planemo abstractions.
 """
 import subprocess
+
+from six import text_type
+
 from planemo import io
 
 
@@ -23,7 +26,7 @@ def clone(*args, **kwds):
 
 
 def rev(ctx, directory):
-    """ Raw revision for git directory specified.
+    """Raw revision for git directory specified.
 
     Throws ``RuntimeError`` if not a git directory.
     """
@@ -32,7 +35,7 @@ def rev(ctx, directory):
     stdout, _ = io.communicate(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
-    return stdout.strip()
+    return text_type(stdout).strip()
 
 
 def is_rev_dirty(ctx, directory):

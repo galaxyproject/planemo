@@ -11,6 +11,7 @@ from .test_utils import (
     CliTestCase,
     skip_if_environ,
     TEST_REPOS_DIR,
+    PROJECT_TEMPLATES_DIR,
 )
 
 TEST_HISTORY_NAME = "Cool History 42"
@@ -36,6 +37,16 @@ class ServeTestCase(CliTestCase):
         user_gi = api.gi(port, user_api_key)
         assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0
         user_gi.histories.create_history(TEST_HISTORY_NAME)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_serve_extra_tools(self):
+        random_lines = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "randomlines.xml")
+        extra_args = ["--daemon", "--pid_file", self._pid_file, "--extra_tools", random_lines]
+        self._launch_thread_and_wait(self._run, extra_args)
+        user_gi = self._user_gi
+        assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0
+        user_gi.histories.create_history(TEST_HISTORY_NAME)
+        assert user_gi.tools.get_tools(tool_id="random_lines1")
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_serve_profile(self):

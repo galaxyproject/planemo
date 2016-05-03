@@ -171,7 +171,8 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
         _ensure_directory(tool_dependency_dir)
 
         shed_tool_conf = kwds.get("shed_tool_conf") or config_join("shed_tools_conf.xml")
-        tool_definition = _tool_conf_entry_for(tool_paths)
+        all_tool_paths = list(tool_paths) + list(kwds.get("extra_tools", []))
+        tool_definition = _tool_conf_entry_for(all_tool_paths)
         empty_tool_conf = config_join("empty_tool_conf.xml")
 
         tool_conf = config_join("tool_conf.xml")

@@ -289,8 +289,8 @@ CWL tools.
 
 ::
 
-    % planemo project_init --template cwl_draft2_spec
-    % planemo serve --cwl cwl_draft2_spec/cat1-tool.cwl
+    % planemo project_init --template cwl_draft3_spec
+    % planemo serve --cwl cwl_draft3_spec/cat1-tool.cwl
 
 .. _Galaxy: http://galaxyproject.org/
 .. _GitHub: https://github.com/
