@@ -1,13 +1,16 @@
 """Module describing the planemo ``bioc_tool_init`` command."""
 import os
 import sys
+# import logging
 
 import click
 
 from planemo.cli import command_function
 from planemo import options
 from planemo import io
-from planemo import tool_builder
+from planemo import bioc_tool_builder
+from planemo import bioconductor_skeleton
+
 
 REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
                           " it has relevant planemo-generated definitions.")
@@ -73,6 +76,13 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
           "(e.g. 'seqtk seq -a $input > $output')"),
 )
 @click.option(
+    "--help_from_command",
+    type=click.STRING,
+    default=None,
+    prompt=False,
+    help="Auto populate help from supplied command.",
+)
+@click.option(
     "--example_command",
     type=click.STRING,
     default=None,
@@ -134,6 +144,16 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
           "for Galxy users (e.g. 10.1101/014043).")
 )
 @click.option(
+    "--named_output",
+    type=click.STRING,
+    multiple=True,
+    default=None,
+    prompt=False,
+    help=("Create a named output for use with command block for example "
+          "specify --named_output=output1.bam and then use '-o $ouput1' "
+          "in your command block."),
+)
+@click.option(
     "--cite_url",
     type=click.STRING,
     default=None,
@@ -146,8 +166,16 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
 def cli(ctx, **kwds):
     """Generate a bioconductor tool outline from supplied arguments.
     """
-    print kwds
+    for count, thing in enumerate(kwds):
+        print "Valid arguments: \n"
+        print '{0}. {1}'.format(count, thing)
+
     invalid = _validate_kwds(kwds)
+
+    for count, thing in enumerate(kwds):
+        print "invalid arguments: \n"
+        print '{0}. {1}'.format(count, thing)
+
     if invalid:
         return invalid
     output = kwds.get("tool")
@@ -155,7 +183,8 @@ def cli(ctx, **kwds):
         output = "%s.xml" % kwds.get("id")
     if not io.can_write_to_path(output, **kwds):
         sys.exit(1)
-    tool_description = tool_builder.build(**kwds)
+    print("Tool building starts here")
+    tool_description = bioc_tool_builder.build(**kwds)
     open(output, "w").write(tool_description.contents)
     io.info("Tool written to %s" % output)
     macros = kwds["macros"]
@@ -197,3 +226,14 @@ def _validate_kwds(kwds):
     if not_specifing_dependent_option("test_case", "example_command"):
         return 1
     return 0
+
+
+def _make_bioconda_recipe(kwds):
+    """Generate a bioconda recipe for the name of the
+    bioconductor package given
+    """
+    bioc_package_name = kwds.get("name")
+    # Write new bioconda-recipes in a temp directory
+    recipe_dir = os.mkdir("temp")
+    bioconductor_skeleton.write_recipe(bioc_package_name, recipe_dir)
+    return

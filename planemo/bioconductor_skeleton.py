@@ -16,10 +16,11 @@ import hashlib
 import os
 import re
 import bs4
-import urllib
-from urllib import request
-from urllib import parse
-from urllib import error
+# import urllib
+# from urllib import request
+# from urllib import parse
+# from urllib import error
+import urlparse
 from collections import OrderedDict
 import logging
 import requests
@@ -131,7 +132,7 @@ class BioCProjectPage(object):
         # build the actual URL based on the identified package name and the
         # relative URL from the source. Here we're just hard-coding
         # '../src/contrib' based on the structure of the bioconductor site.
-        return os.path.join(parse.urljoin(self.url, '../src/contrib'), s[0])
+        return os.path.join(urlparse.urljoin(self.url, '../src/contrib'), s[0])
 
     @property
     def tarball_url(self):
