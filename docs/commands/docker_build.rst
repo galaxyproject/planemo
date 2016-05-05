@@ -12,7 +12,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-Builds (and optionally caches Docker images) for tool Dockerfiles.
+Build (and optionally cache Docker images) for tool Dockerfiles.
 
 Loads the tool or tools referenced by ``TOOL_PATH`` (by default all tools
 in current directory), and ensures they all reference the same Docker image

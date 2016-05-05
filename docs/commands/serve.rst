@@ -39,10 +39,18 @@ instances.
 
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
-      --galaxy_sqlite_database DIRECTORY
-                                      Preseeded Galaxy sqlite database to target.
+      --galaxy_database_seed PATH     Preseeded Galaxy sqlite database to target.
       --install_galaxy                Download and configure a disposable copy of
                                       Galaxy from github.
+      --galaxy_branch TEXT            Branch of Galaxy to target (defaults to
+                                      master) if a Galaxy root isn't specified.
+      --galaxy_source TEXT            Git source of Galaxy to target (defaults to
+                                      the official galaxyproject github source if a
+                                      Galaxy root isn't specified.
+      --skip_venv                     Do not create or source a virtualenv
+                                      environment for Galaxy, this should be used or
+                                      instance to preserve an externally configured
+                                      virtual environment or conda environment.
       --no_cache_galaxy               Skip caching of Galaxy source and dependencies
                                       obtained with --install_galaxy. Not caching
                                       this results in faster downloads (no git) - so
@@ -50,7 +58,11 @@ instances.
                                       TravisCI.
       --no_cleanup                    Do not cleanup temp files created for and by
                                       Galaxy.
+      --galaxy_email TEXT             E-mail address to use when launching single-
+                                      user Galaxy server.
       --job_config_file PATH          Job configuration file for Galaxy to target.
+      --tool_dependency_dir DIRECTORY
+                                      Tool dependency dir for Galaxy to target.
       --port INTEGER                  Port to serve Galaxy on (default is 9090).
       --host TEXT                     Host to bind Galaxy to. Default is 127.0.0.1
                                       that is restricted to localhost connections
@@ -63,12 +75,42 @@ instances.
       --dependency_resolvers_config_file PATH
                                       Dependency resolver configuration for Galaxy
                                       to target.
-      --tool_dependency_dir DIRECTORY
-                                      Tool dependency dir for Galaxy to target.
       --brew_dependency_resolution    Configure Galaxy to use plain brew dependency
                                       resolution.
       --shed_dependency_resolution    Configure Galaxy to use brewed Tool Shed
                                       dependency resolution.
+      --conda_prefix DIRECTORY        Conda prefix to use for conda dependency
+                                      commands.
+      --conda_exec PATH               Location of conda executable.
+      --conda_debug                   Enable more verbose conda logging.
+      --conda_ensure_channels TEXT    Ensure conda is configured with specified
+                                      comma separated list of channels.
+      --conda_dependency_resolution   Configure Galaxy to use only conda for
+                                      dependency resolution.
+      --conda_copy_dependencies       Conda dependency resolution for Galaxy will
+                                      copy dependencies instead of attempting to
+                                      link them.
+      --conda_auto_install            Conda dependency resolution for Galaxy will
+                                      auto install will attempt to install requested
+                                      but missing packages.
+      --conda_auto_init               Conda dependency resolution for Galaxy will
+                                      auto install conda itself using miniconda if
+                                      not availabe on conda_prefix.
+      --profile TEXT                  Location of pid file is executed with
+                                      --daemon.
+      --file_path DIRECTORY           Location for files created by Galaxy (e.g.
+                                      database/files).
+      --database_connection TEXT      Database connection string to use for Galaxy.
+      --shed_tool_conf TEXT           Location of shed tools conf file for Galaxy.
+      --shed_tool_path TEXT           Location of shed tools directory for Galaxy.
+      --extra_tools PATH              Extra tool sources to include in Galaxy's tool
+                                      panel (file or directory). These will not be
+                                      linted/tested/etc... but they will be
+                                      available to workflows and for interactive
+                                      use.
+      --daemon                        Serve Galaxy process as a daemon.
+      --pid_file TEXT                 Location of pid file is executed with
+                                      --daemon.
       --cwl                           Configure Galaxy for use with CWL tool. (this
                                       option is experimental and will be replaced
                                       when and if CWL support is merged into

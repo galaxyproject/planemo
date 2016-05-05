@@ -1,18 +1,18 @@
 
-``syntax`` command
+``docs`` command
 ======================================
 
 This section is auto-generated from the help text for the planemo command
-``syntax``. This help message can be generated with ``planemo syntax
+``docs``. This help message can be generated with ``planemo docs
 --help``.
 
 **Usage**::
 
-    planemo syntax [OPTIONS]
+    planemo docs [OPTIONS]
 
 **Help**
 
-Open tool config syntax wiki page in a web browser.
+Open the Planemo documentation in a web browser.
 **Options**::
 
 

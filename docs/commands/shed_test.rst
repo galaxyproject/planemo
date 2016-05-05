@@ -48,10 +48,18 @@ This command requires the target to be version 15.07 or newer.
                                       mappings defined ~/.planemo.yml.
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
-      --galaxy_sqlite_database DIRECTORY
-                                      Preseeded Galaxy sqlite database to target.
+      --galaxy_database_seed PATH     Preseeded Galaxy sqlite database to target.
       --install_galaxy                Download and configure a disposable copy of
                                       Galaxy from github.
+      --galaxy_branch TEXT            Branch of Galaxy to target (defaults to
+                                      master) if a Galaxy root isn't specified.
+      --galaxy_source TEXT            Git source of Galaxy to target (defaults to
+                                      the official galaxyproject github source if a
+                                      Galaxy root isn't specified.
+      --skip_venv                     Do not create or source a virtualenv
+                                      environment for Galaxy, this should be used or
+                                      instance to preserve an externally configured
+                                      virtual environment or conda environment.
       --no_cache_galaxy               Skip caching of Galaxy source and dependencies
                                       obtained with --install_galaxy. Not caching
                                       this results in faster downloads (no git) - so
@@ -59,7 +67,11 @@ This command requires the target to be version 15.07 or newer.
                                       TravisCI.
       --no_cleanup                    Do not cleanup temp files created for and by
                                       Galaxy.
+      --galaxy_email TEXT             E-mail address to use when launching single-
+                                      user Galaxy server.
       --job_config_file PATH          Job configuration file for Galaxy to target.
+      --tool_dependency_dir DIRECTORY
+                                      Tool dependency dir for Galaxy to target.
       --update_test_data              Update test-data directory with job outputs
                                       (normally written to directory
                                       --job_output_files if specified.)
