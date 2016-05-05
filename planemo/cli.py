@@ -134,7 +134,12 @@ def list_cmds():
     return rv
 
 
-def _name_to_command(name):
+def name_to_command(name):
+    """Convert a subcommand name to the cli function for that command.
+
+    Command <X> is defined by the method 'planemo.commands.cmd_<x>:cli',
+    this method uses `__import__` to load and return that method.
+    """
     try:
         if sys.version_info[0] == 2:
             name = name.encode('ascii', 'replace')
@@ -154,7 +159,7 @@ class PlanemoCLI(click.MultiCommand):
     def get_command(self, ctx, name):
         if name in COMMAND_ALIASES:
             name = COMMAND_ALIASES[name]
-        return _name_to_command(name)
+        return name_to_command(name)
 
 
 def command_function(f):
@@ -202,8 +207,9 @@ def planemo(ctx, config, directory, verbose):
 
 
 __all__ = [
+    "command_function",
     "Context",
     "list_cmds",
-    "command_function",
+    "name_to_command",
     "planemo",
 ]
