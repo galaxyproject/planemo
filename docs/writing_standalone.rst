@@ -14,7 +14,7 @@ if you have not already installed it.
 .. include:: _writing_suites.rst
 .. include:: _writing_conclusion.rst
 
-.. _Galaxy: (http://galaxyproject.org/)
+.. _Galaxy: http://galaxyproject.org/
 .. _GitHub: https://github.com/
 .. _Docker: https://www.docker.com/
 .. _Homebrew: http://brew.sh/
