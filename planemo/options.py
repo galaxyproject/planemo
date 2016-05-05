@@ -147,6 +147,14 @@ def enable_cwl_option():
     )
 
 
+def build_cwl_option():
+    return planemo_option(
+        "--cwl",
+        is_flag=True,
+        help="Build a CWL tool instead of a Galaxy tool.",
+    )
+
+
 def cwl_conformance_test():
     return planemo_option(
         "--conformance-test",
