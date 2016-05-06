@@ -1,56 +1,11 @@
 The Basics
 ====================================================
 
-This guide is going to demonstrate building up Galaxy tools wrappers for
-commands from Heng Li's Seqtk_ package - a package for processing sequence
-data in FASTA and FASTQ files. For fully worked through Seqtk wrappers -
-checkout Eric Rasche's `wrappers <https://github.com/galaxyproject/tools-
-iuc/tree/master/tools/seqtk>`_ on Github.
+.. include:: _writing_using_seqtk.rst
 
-To get started let's install Seqtk, download an example FASTQ file, and test
-out the a simple Seqtk command - ``seq`` which converts FASTQ files into
-FASTA. Here we are going to use ``brew`` to install seqtk - but however you
-obtain it should be fine.
-
-::
-
-    $ brew tap homebrew/science
-    $ brew install seqtk
-    ==> Installing seqtk from homebrew/homebrew-science
-    ==> Downloading https://github.com/lh3/seqtk/archive/73866e7.tar.gz
-    ######################################################################## 100.0%
-    ==> make
-    /home/john/.linuxbrew/Cellar/seqtk/1.0-r68: 3 files, 208K, built in 2 seconds
-    $ wget https://raw.githubusercontent.com/galaxyproject/galaxy-test-data/master/2.fastq
-    $ seqtk seq
-
-        Usage:   seqtk seq [options] <in.fq>|<in.fa>
-
-        Options: -q INT    mask bases with quality lower than INT [0]
-                 -X INT    mask bases with quality higher than INT [255]
-                 -n CHAR   masked bases converted to CHAR; 0 for lowercase [0]
-                 -l INT    number of residues per line; 0 for 2^32-1 [0]
-                 -Q INT    quality shift: ASCII-INT gives base quality [33]
-                 -s INT    random seed (effective with -f) [11]
-                 -f FLOAT  sample FLOAT fraction of sequences [1]
-                 -M FILE   mask regions in BED or name list FILE [null]
-                 -L INT    drop sequences with length shorter than INT [0]
-                 -c        mask complement region (effective with -M)
-                 -r        reverse complement
-                 -A        force FASTA output (discard quality)
-                 -C        drop comments at the header lines
-                 -N        drop sequences containing ambiguous bases
-                 -1        output the 2n-1 reads only
-                 -2        output the 2n reads only
-                 -V        shift quality by '(-Q) - 33'
-    $ seqtk seq -a 2.fastq > 2.fasta
-    $ cat 2.fasta
-    >EAS54_6_R1_2_1_413_324
-    CCCTTCTTGTCTTCAGCGTTTCTCC
-    >EAS54_6_R1_2_1_540_792
-    TTGGCAGGCCAAGGCCGATGGATCA
-    >EAS54_6_R1_2_1_443_348
-    GTTGCTTCTGGCGTGGGTGGGGGGG
+For fully worked through Seqtk wrappers - checkout Eric Rasche's
+`wrappers <https://github.com/galaxyproject/tools-iuc/tree/master/tools/seqtk>`__
+on Github.
 
 Galaxy tool files are just simple XML files, so at this point one could just
 open a text editor and start implementing the tool. Planemo has a command
@@ -74,7 +29,7 @@ like this.
 .. literalinclude:: writing/seqtk_seq_v1.xml
    :language: xml
 
-This tool file has the common sections required for Galaxy tool but you will
+This tool file has the common sections required for a Galaxy tool but you will
 still need to open up the editor and fill out the command template, describe
 input parameters, tool outputs, writeup a help section, etc....
 
@@ -100,12 +55,7 @@ definitions for the input and output as well as an actual command template.
    :language: xml
    :emphasize-lines: 8-16
 
-As shown above the command ``seqtk seq`` generates a help message for the
-``seq`` command. ``tool_init`` can take that help message and stick it right
-in the generated tool file using the ``help_from_command`` option. Generally
-command help messages aren't exactly appropriate for Galaxy tool wrappers
-since they mention argument names and simillar details that are abstracted
-away by the tool - but they can be a good place to start.
+.. include:: _writing_from_help_command.rst
 
 ::
 
@@ -120,18 +70,15 @@ away by the tool - but they can be a good place to start.
                         --cite_url 'https://github.com/lh3/seqtk' \
                         --help_from_command 'seqtk seq'
 
+In addition to demonstrating ``--help_from_command``, this demonstrates generating
+a test case from our example with ``--test_case`` and additing a citation for the
+underlying tool. The resulting tool XML file is:
+
 .. literalinclude:: writing/seqtk_seq_v3.xml
    :language: xml
    :emphasize-lines: 17-58
 
-At this point we have a fairly a functional tool with test and help. This was
-a pretty simple example - usually you will need to put more work into the tool
-XML to get to this point - ``tool_init`` is really just designed to get you
-started.
-
-Now lets lint and test the tool we have developed. The planemo ``lint`` (or
-just ``l``) command will reviews tools for obvious mistakes and compliance
-with best practices.
+.. include:: _writing_lint_intro.rst
 
 ::
 
@@ -164,4 +111,3 @@ command. This will print a lot of output but should ultimately reveal our one
 test passed.
 
 .. _DOI: http://www.doi.org/
-.. _Seqtk: https://github.com/lh3/seqtk
