@@ -62,7 +62,8 @@ tool is generated.
                         --name 'Convert to FASTA (seqtk)' \
                         --example_command 'seqtk seq -a 2.fastq > 2.fasta' \
                         --example_input 2.fastq \
-                        --example_output 2.fasta
+                        --example_output 2.fasta \
+                        --container 'dukegcb/seqtk' \
                         --help_from_command 'seqtk seq'
 
 This command generates the following CWL YAML file.
@@ -82,16 +83,14 @@ This command generates the following CWL YAML file.
     .. CHECK: Tool defines an id [seqtk_seq_v3].
     Applying linter cwl_validation... CHECK
     .. INFO: CWL appears to be valid.
-    Applying linter docker_image... WARNING
-    .. WARNING: Tool does not specify a DockerPull source.
+    Applying linter docker_image... CHECK
+    .. INFO: Tool will run in Docker image [dukegcb/seqtk].
     Applying linter new_draft... CHECK
     .. INFO: Modern CWL version [cwl:draft-3]
-    Failed linting
 
-Here the linting failed because we have not yet defined a Docker image for the
-the tool. A later revision of this document will cover specifying a Docker image
-for this tool with the ``--container`` argument and discuss defining more
-parameters for this tool.
+A later revision of this document ill discuss defining more
+parameters for this tool and include information on generating and
+running tests with planemo for CWL tools.
 
 For more information on the Common Workflow Language check out the Draft 3
 `User Guide`_ and Specification_.
