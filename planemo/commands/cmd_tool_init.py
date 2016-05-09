@@ -124,7 +124,7 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
     default=None,
     prompt=False,
     help=("Create a named output for use with command block for example "
-          "specify --named_output=output1.bam and then use '-o $ouput1' "
+          "specify --named_output=output1.bam and then use '-o $output1' "
           "in your command block."),
 )
 @click.option(
@@ -164,7 +164,7 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
     multiple=True,
     prompt=False,
     help=("Supply a DOI (http://www.doi.org/) easing citation of the tool "
-          "for Galxy users (e.g. 10.1101/014043).")
+          "for Galaxy users (e.g. 10.1101/014043).")
 )
 @click.option(
     "--cite_url",
