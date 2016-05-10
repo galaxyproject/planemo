@@ -7,5 +7,5 @@ docutils
 jinja2
 glob2
 virtualenv
-galaxy-lib>=16.7.2
-cwltool==1.0.20160507101510 ; python_version == '2.7'
+galaxy-lib>=16.7.5
+cwltool>=1.0.20160511162129 ; python_version == '2.7'
