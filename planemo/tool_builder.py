@@ -4,6 +4,7 @@ This class is used by the `tool_init` command and can be used to build
 Galaxy and CWL tool descriptions.
 """
 from collections import namedtuple
+import re
 import shlex
 import subprocess
 
@@ -148,7 +149,7 @@ requirements:
 inputs:
 {%- for input in inputs %}
   - id: {{ input.id }}
-    type: File
+    type: {{ input.type }}
     description: |
       TODO
     inputBinding:
@@ -388,6 +389,11 @@ class CommandIO(object):
                 output_count += 1
                 output = CwlOutput("output%d" % output_count, position, prefix)
                 parse_list.append(output)
+            elif prefix:
+                param_id = prefix.prefix.lower().rstrip("=")
+                type_ = param_type(value)
+                input = CwlInput(param_id, position, prefix, type_=type_)
+                parse_list.append(input)
             else:
                 part = CwlCommandPart(value, position, prefix)
                 parse_list.append(part)
@@ -489,10 +495,11 @@ class CwlCommandPart(object):
 
 class CwlInput(object):
 
-    def __init__(self, id, position, prefix):
+    def __init__(self, id, position, prefix, type_="File"):
         self.id = id
         self.position = position
         self.prefix = prefix
+        self.type = type_
 
     def is_token(self, value):
         return False
@@ -724,6 +731,15 @@ class Requirement(object):
         else:
             attrs = ''
         return base.format(attrs, self.name)
+
+
+def param_type(value):
+    if re.match("^\d+$", value):
+        return "int"
+    elif re.match("^\d+?\.\d+?$", value):
+        return "float"
+    else:
+        return "string"
 
 
 class Container(object):
