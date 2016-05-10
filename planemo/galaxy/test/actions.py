@@ -1,3 +1,4 @@
+"""Actions related to running and reporting on Galaxy-specific testing."""
 import os
 
 import click
@@ -29,6 +30,11 @@ GENERIC_TESTS_PASSED_MESSAGE = "No failing tests encountered."
 
 
 def run_in_config(ctx, config, **kwds):
+    """Run Galaxy tests with the run_tests.sh command.
+
+    The specified `config` object describes the context for tool
+    execution.
+    """
     config_directory = config.config_directory
     html_report_file = kwds["test_output"]
 
@@ -36,8 +42,8 @@ def run_in_config(ctx, config, **kwds):
     if job_output_files is None:
         job_output_files = os.path.join(config_directory, "jobfiles")
 
-    xunit_supported, xunit_report_file = __xunit_state(kwds, config)
-    structured_report_file = __structured_report_file(kwds, config)
+    xunit_supported, xunit_report_file = _xunit_state(kwds, config)
+    structured_report_file = _structured_report_file(kwds, config)
 
     info("Testing using galaxy_root %s", config.galaxy_root)
     # TODO: Allow running dockerized Galaxy here instead.
@@ -92,7 +98,7 @@ def run_in_config(ctx, config, **kwds):
 
     test_data = test_results.structured_data
     handle_reports(ctx, test_data, kwds)
-    __handle_summary(
+    _handle_summary(
         test_results,
         **kwds
     )
@@ -101,6 +107,7 @@ def run_in_config(ctx, config, **kwds):
 
 
 def handle_reports(ctx, test_data, kwds):
+    """Write reports based on user specified kwds."""
     exceptions = []
     for report_type in ["html", "markdown", "text"]:
         try:
@@ -148,7 +155,7 @@ def _handle_test_output_file(ctx, report_type, test_data, kwds):
         raise
 
 
-def __handle_summary(
+def _handle_summary(
     test_results,
     **kwds
 ):
@@ -157,7 +164,7 @@ def __handle_summary(
         return
 
     if test_results.has_details:
-        __summarize_tests_full(
+        _summarize_tests_full(
             test_results,
             **kwds
         )
@@ -168,7 +175,7 @@ def __handle_summary(
             info(GENERIC_TESTS_PASSED_MESSAGE)
 
 
-def __summarize_tests_full(
+def _summarize_tests_full(
     test_results,
     **kwds
 ):
@@ -190,7 +197,7 @@ def __summarize_tests_full(
 
     for testcase_el in test_results.xunit_testcase_elements:
         structured_data_tests = test_results.structured_data_tests
-        __summarize_test_case(structured_data_tests, testcase_el, **kwds)
+        _summarize_test_case(structured_data_tests, testcase_el, **kwds)
 
 
 def passed(xunit_testcase_el):
@@ -201,7 +208,7 @@ def passed(xunit_testcase_el):
     return did_pass
 
 
-def __summarize_test_case(structured_data, testcase_el, **kwds):
+def _summarize_test_case(structured_data, testcase_el, **kwds):
     summary_style = kwds.get("summary")
     test_id = test_structures.case_id(testcase_el)
     if not passed(testcase_el):
@@ -210,10 +217,10 @@ def __summarize_test_case(structured_data, testcase_el, **kwds):
         state = click.style("passed", bold=True, fg='green')
     click.echo(test_id.label + ": " + state)
     if summary_style != "minimal":
-        __print_command_line(structured_data, test_id)
+        _print_command_line(structured_data, test_id)
 
 
-def __print_command_line(structured_data, test_id):
+def _print_command_line(structured_data, test_id):
     try:
         test = [d for d in structured_data if d["id"] == test_id.id][0]["data"]
     except (KeyError, IndexError):
@@ -235,7 +242,7 @@ def __print_command_line(structured_data, test_id):
     click.echo("| command: %s" % command)
 
 
-def __xunit_state(kwds, config):
+def _xunit_state(kwds, config):
     xunit_supported = True
     if shell("grep -q xunit '%s'/run_tests.sh" % config.galaxy_root):
         xunit_supported = False
@@ -250,7 +257,7 @@ def __xunit_state(kwds, config):
     return xunit_supported, xunit_report_file
 
 
-def __structured_report_file(kwds, config):
+def _structured_report_file(kwds, config):
     structured_data_supported = True
     if shell("grep -q structured_data '%s'/run_tests.sh" % config.galaxy_root):
         structured_data_supported = False
@@ -265,3 +272,9 @@ def __structured_report_file(kwds, config):
         structured_report_file = None
 
     return structured_report_file
+
+
+__all__ = [
+    "run_in_config",
+    "handle_reports",
+]
