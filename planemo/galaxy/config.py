@@ -211,9 +211,12 @@ def galaxy_config(ctx, tool_paths, for_tests=False, **kwds):
         )
         tool_config_file = "%s,%s" % (tool_conf, shed_tool_conf)
         user_email = kwds.get("galaxy_email")
+        # Setup both galaxy_email and older test user test@bx.psu.edu
+        # as admins for command_line, etc...
         properties = dict(
             single_user=user_email,
-            admin_users=user_email,
+            admin_users="%s,test@bx.psu.edu" % user_email,
+            expose_dataset_path="True",
             ftp_upload_dir_template="${ftp_upload_dir}",
             ftp_upload_purge="False",
             ftp_upload_dir=test_data_dir or os.path.abspath('.'),
