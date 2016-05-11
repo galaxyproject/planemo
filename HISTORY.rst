@@ -9,7 +9,52 @@ History
 0.25.0.dev0
 ---------------------
 
-    
+* Implement Galaxy "profiles" - the ability to configure 
+  perisistent, named environments for ``serve`` and ``test``.
+  5d08b67_
+* Greatly improved ``serve`` command - make ``test-data``
+  available as an FTP folder, (on 16.07) automatically log
+  in an admin user, and many more options (such as those 
+  required for "profiles" and a ``--daemon`` mode).
+* Two fixes to ensure more consistent, dependable ``test`` output.
+  `Pull Request 472`_, f3c6917_
+* Add code and documentation for linting (``lint``) and
+  building (``tool_init``) CWL_ tools. a4e6958_, b0b867e_,
+  4cd571c_
+* If needed for conda workaround, shorten ``config_directory`` 
+  path (thanks to Marius van den Beek). efc5f30_
+* Fix ``--no_cache_galaxy`` option (thanks to Gildas Le 
+  Corguillé). d8f2038_
+* Target draft 3 of CWL_ instead of draft 2. 775bf49_
+* Fix ``cwltool`` dependency version - upstream changes broke
+  compatibility. `65b999d`_
+* Add documentation section and slides about recent Galaxy
+  tool framework changes (with fix from @remimarenco). 069e7ba_
+* Add IUC standards to Planemo docs. 2ae2b49_
+* Improve collection-related contents in documentation
+  (thanks in part to @martenson).
+  fea51fc_, 13a5ae7_
+* Add documentation on ``GALAXY_SLOTS`` and running planemo
+  on a cluster. 45135ff_, e0acf91_
+* Revise command-line handling framework for consistency and
+  extension - allow extra options to be configured as 
+  defaults ``~/.planemo.yml`` including ``--job_config_file``
+  and conda configuration options. e769118_, 26e378e_
+* Fix ``tool_init`` commans options typos (thanks to
+  Nitesh Turaga). 826d371_
+* Refactor galaxy-related modules into submodules of a new
+  ``planemo.galaxy`` package. 8e96864_
+* Fix error message typo (thanks to @blankenberg). b1c8f1d_
+* Update documentation for recent command additions. 3f4ab44_
+* Rename option ``--galaxy_sqlite_database`` option to
+  ``--galaxy_database_seed`` and fix it so it actually works. 
+  f7554d1_
+* Add ``--extra_tools`` option to ``serve`` command. 02a08a0_
+* Update project testing to include linting documentation
+  (``docs/``), Python import order, and docstrings.
+  a13a120_, 6e1e726_, 95d5cba_
+
+
 ---------------------
 0.24.2 (2016-04-25)
 ---------------------
@@ -655,6 +700,38 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _f3c6917: https://github.com/galaxyproject/planemo/commit/f3c6917
+.. _Pull Request 472: https://github.com/galaxyproject/planemo/pull/472
+.. _552059f: https://github.com/galaxyproject/planemo/commit/552059f
+.. _5d08b67: https://github.com/galaxyproject/planemo/commit/5d08b67
+.. _2052db0: https://github.com/galaxyproject/planemo/commit/2052db0
+.. _776773c: https://github.com/galaxyproject/planemo/commit/776773c
+.. _f7554d1: https://github.com/galaxyproject/planemo/commit/f7554d1
+.. _e769118: https://github.com/galaxyproject/planemo/commit/e769118
+.. _95d5cba: https://github.com/galaxyproject/planemo/commit/95d5cba
+.. _6e1e726: https://github.com/galaxyproject/planemo/commit/6e1e726
+.. _26e378e: https://github.com/galaxyproject/planemo/commit/26e378e
+.. _e0acf91: https://github.com/galaxyproject/planemo/commit/e0acf91
+.. _45135ff: https://github.com/galaxyproject/planemo/commit/45135ff
+.. _8e96864: https://github.com/galaxyproject/planemo/commit/8e96864
+.. _b1c8f1d: https://github.com/galaxyproject/planemo/commit/b1c8f1d
+.. _d8f2038: https://github.com/galaxyproject/planemo/commit/d8f2038
+.. _13a5ae7: https://github.com/galaxyproject/planemo/commit/13a5ae7
+.. _fea51fc: https://github.com/galaxyproject/planemo/commit/fea51fc
+.. _069e7ba: https://github.com/galaxyproject/planemo/commit/069e7ba
+.. _efc5f30: https://github.com/galaxyproject/planemo/commit/efc5f30
+.. _a13a120: https://github.com/galaxyproject/planemo/commit/a13a120
+.. _2ae2b49: https://github.com/galaxyproject/planemo/commit/2ae2b49
+.. _775bf49: https://github.com/galaxyproject/planemo/commit/775bf49
+.. _02a08a0: https://github.com/galaxyproject/planemo/commit/02a08a0
+.. _02a08a0: https://github.com/galaxyproject/planemo/commit/02a08a0
+.. _3f4ab44: https://github.com/galaxyproject/planemo/commit/3f4ab44
+.. _b0b867e: https://github.com/galaxyproject/planemo/commit/b0b867e
+.. _4cd571c: https://github.com/galaxyproject/planemo/commit/4cd571c
+.. _a4e6958: https://github.com/galaxyproject/planemo/commit/a4e6958
+.. _826d371: https://github.com/galaxyproject/planemo/commit/826d371
+.. _f3c6917: https://github.com/galaxyproject/planemo/commit/f3c6917
+.. _65b999d: https://github.com/galaxyproject/planemo/commit/65b999d21bacc133a80ecf5f61e0728afec66ccc
 .. _89674cb: https://github.com/galaxyproject/planemo/commit/89674cb
 .. _Pull Request 429: https://github.com/galaxyproject/planemo/pull/429
 .. _ce8e1be: https://github.com/galaxyproject/planemo/commit/ce8e1be
@@ -944,3 +1021,4 @@ History
 .. _lxml: http://lxml.de/
 .. _xmllint: http://xmlsoft.org/xmllint.html
 .. _nose: https://nose.readthedocs.org/en/latest/
+.. _CWL: http://www.commonwl.org/
