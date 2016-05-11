@@ -20,6 +20,9 @@ NO_XUNIT_REPORT_MESSAGE = ("Cannot locate xUnit report [%s] for tests - "
 NO_JSON_REPORT_MESSAGE = ("Cannot locate JSON report [%s] for tests - "
                           "required to build planemo report and summarize "
                           "tests.")
+REPORT_NOT_CHANGED = ("Galaxy failed to update test report [%s] for tests - "
+                      "required to build planemo report and summarize "
+                      "tests.")
 NO_TESTS_MESSAGE = "No tests were executed - see Galaxy output for details."
 ALL_TESTS_PASSED_MESSAGE = "All %d test(s) executed passed."
 PROBLEM_COUNT_MESSAGE = ("There were problems with %d test(s) - out of %d "
@@ -43,7 +46,9 @@ def run_in_config(ctx, config, run=run_galaxy_command, **kwds):
         job_output_files = os.path.join(config_directory, "jobfiles")
 
     xunit_report_file = _xunit_state(kwds, config)
+    xunit_report_file_tracker = _FileChangeTracker(xunit_report_file)
     structured_report_file = _structured_report_file(kwds, config)
+    structured_report_file_tracker = _FileChangeTracker(structured_report_file)
 
     info("Testing using galaxy_root %s", config.galaxy_root)
     # TODO: Allow running dockerized Galaxy here instead.
@@ -85,15 +90,7 @@ def run_in_config(ctx, config, run=run_galaxy_command, **kwds):
         update_cp_args = (job_output_files, config.test_data_dir)
         shell('cp -r "%s"/* "%s"' % update_cp_args)
 
-    if not os.path.exists(xunit_report_file):
-        message = NO_XUNIT_REPORT_MESSAGE % xunit_report_file
-        error(message)
-        raise Exception(message)
-
-    if not os.path.exists(structured_report_file):
-        message = NO_JSON_REPORT_MESSAGE % structured_report_file
-        error(message)
-        raise Exception(message)
+    _check_test_outputs(xunit_report_file_tracker, structured_report_file_tracker)
 
     test_results = test_structures.GalaxyTestResults(
         structured_report_file,
@@ -248,6 +245,31 @@ def _print_command_line(structured_data, test_id):
     click.echo("| command: %s" % command)
 
 
+def _check_test_outputs(
+    xunit_report_file_tracker,
+    structured_report_file_tracker
+):
+    if not os.path.exists(xunit_report_file_tracker.path):
+        message = NO_XUNIT_REPORT_MESSAGE % xunit_report_file_tracker.path
+        error(message)
+        raise Exception(message)
+
+    if not os.path.exists(structured_report_file_tracker.path):
+        message = NO_JSON_REPORT_MESSAGE % structured_report_file_tracker.path
+        error(message)
+        raise Exception(message)
+
+    if not xunit_report_file_tracker.changed():
+        message = REPORT_NOT_CHANGED % xunit_report_file_tracker.path
+        error(message)
+        raise Exception(message)
+
+    if not structured_report_file_tracker.changed():
+        message = REPORT_NOT_CHANGED % structured_report_file_tracker.path
+        error(message)
+        raise Exception(message)
+
+
 def _xunit_state(kwds, config):
     # This has been supported in Galaxy for well over a year, just going to assume
     # it from here on out.
@@ -276,6 +298,24 @@ def _structured_report_file(kwds, config):
         structured_report_file = os.path.join(conf_dir, "structured_data.json")
 
     return structured_report_file
+
+
+class _FileChangeTracker(object):
+
+    def __init__(self, path):
+        modification_time = None
+        if os.path.exists(path):
+            modification_time = os.path.getmtime(path)
+
+        self.path = path
+        self.modification_time = modification_time
+
+    def changed(self):
+        if self.modification_time:
+            new_modification_time = os.path.getmtime(self.path)
+            return self.modification_time != new_modification_time
+        else:
+            return os.path.exists(self.path)
 
 
 __all__ = [

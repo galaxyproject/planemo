@@ -63,6 +63,28 @@ class RunInConfigTestCase(TempDirectoryTestCase):
         with self.assertRaises(Exception):
             self._do_run(mock_galaxy_run)
 
+    def test_failed_to_update_xml(self):
+        """Test an exception is thrown if XUnit report isn't updated."""
+        self._copy_good_artifacts(["xml", "html", "json"])
+
+        def mock_galaxy_run(ctx_, command, env, action):
+            self._copy_good_artifacts(["json", "html"])
+            return 0
+
+        with self.assertRaises(Exception):
+            self._do_run(mock_galaxy_run)
+
+    def test_failed_to_update_json(self):
+        """Test an exception is thrown if XUnit report isn't updated."""
+        self._copy_good_artifacts(["xml", "html", "json"])
+
+        def mock_galaxy_run(ctx_, command, env, action):
+            self._copy_good_artifacts(["xml", "html"])
+            return 0
+
+        with self.assertRaises(Exception):
+            self._do_run(mock_galaxy_run)
+
     def _copy_good_artifacts(self, extensions):
         for extension in extensions:
             source = os.path.join(TEST_DATA_DIR, "tt_success.%s" % extension)
