@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.25.0.dev0
+0.25.0 (2016-05-11)
 ---------------------
 
 * Implement Galaxy "profiles" - the ability to configure 
