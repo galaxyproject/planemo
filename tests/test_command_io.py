@@ -64,7 +64,11 @@ def test_example_cwl_simple_redirect():
 
 
 def test_prefixes_separated():
-    command_io = _example("seqtk convert -i '1.bed' --output '1.bam'", example_outputs=["1.bam"], example_inputs=["1.bed"])
+    command_io = _example(
+        "seqtk convert -i '1.bed' --output '1.bam'",
+        example_outputs=["1.bam"],
+        example_inputs=["1.bed"]
+    )
     cwl_properties = command_io.cwl_properties()
     _assert_eq(cwl_properties["base_command"], ["seqtk", "convert"])
     _assert_eq(cwl_properties["inputs"][0].position, 1)
@@ -78,7 +82,11 @@ def test_prefixes_separated():
 
 
 def test_prefixes_joined():
-    command_io = _example("seqtk convert INPUT=1.bed OUTPUT=1.bam", example_outputs=["1.bam"], example_inputs=["1.bed"])
+    command_io = _example(
+        "seqtk convert INPUT=1.bed OUTPUT=1.bam",
+        example_outputs=["1.bam"],
+        example_inputs=["1.bed"]
+    )
     cwl_properties = command_io.cwl_properties()
     _assert_eq(cwl_properties["base_command"], ["seqtk", "convert"])
     _assert_eq(cwl_properties["inputs"][0].position, 1)
@@ -89,6 +97,35 @@ def test_prefixes_joined():
     _assert_eq(cwl_properties["outputs"][0].prefix.prefix, "OUTPUT=")
     _assert_eq(cwl_properties["outputs"][0].prefix.separated, False)
     _assert_eq(cwl_properties["stdout"], None)
+
+
+def test_integer_parameters():
+    command_io = _example(
+        "seqtk convert --size 100 -i '1.bed' --threshold 2.0 --output_type bam > '1.bam'",
+        example_outputs=["1.bam"],
+        example_inputs=["1.bed"]
+    )
+    cwl_properties = command_io.cwl_properties()
+    _assert_eq(cwl_properties["base_command"], ["seqtk", "convert"])
+    _assert_eq(len(cwl_properties["inputs"]), 4)
+    _assert_eq(cwl_properties["inputs"][0].position, 1)
+    _assert_eq(cwl_properties["inputs"][0].type, "int")
+    _assert_eq(cwl_properties["inputs"][0].prefix.prefix, "--size")
+
+    _assert_eq(cwl_properties["inputs"][1].position, 2)
+    _assert_eq(cwl_properties["inputs"][1].type, "File")
+    _assert_eq(cwl_properties["inputs"][1].prefix.prefix, "-i")
+
+    _assert_eq(cwl_properties["inputs"][2].position, 3)
+    _assert_eq(cwl_properties["inputs"][2].type, "float")
+    _assert_eq(cwl_properties["inputs"][2].prefix.prefix, "--threshold")
+
+    _assert_eq(cwl_properties["inputs"][3].position, 4)
+    _assert_eq(cwl_properties["inputs"][3].type, "string")
+    _assert_eq(cwl_properties["inputs"][3].prefix.prefix, "--output_type")
+
+    _assert_eq(cwl_properties["outputs"][0].glob, "out")
+    _assert_eq(cwl_properties["stdout"], "out")
 
 
 def _example(example_command, example_outputs=[], example_inputs=[]):

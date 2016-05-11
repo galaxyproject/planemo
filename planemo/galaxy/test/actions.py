@@ -1,9 +1,10 @@
+"""Actions related to running and reporting on Galaxy-specific testing."""
 import os
 
 import click
 
 from . import structures as test_structures
-from planemo.io import info, warn, shell_join
+from planemo.io import error, info, warn, shell_join
 from planemo.galaxy.run import (
     run_galaxy_command,
     setup_venv,
@@ -13,12 +14,12 @@ from planemo.reports import build_report
 
 from galaxy.tools.deps.commands import shell
 
-XUNIT_UPGRADE_MESSAGE = ("This version of Galaxy does not support xUnit - "
-                         "please update to newest development brach.")
-NO_XUNIT_MESSAGE = ("Cannot locate xUnit report option for tests - update "
-                    "Galaxy for more detailed breakdown.")
-NO_JSON_MESSAGE = ("Cannot locate json report option for tests - update "
-                   "Galaxy for more detailed breakdown.")
+NO_XUNIT_REPORT_MESSAGE = ("Cannot locate xUnit report [%s] for tests - "
+                           "required to build planemo report and summarize "
+                           "tests.")
+NO_JSON_REPORT_MESSAGE = ("Cannot locate JSON report [%s] for tests - "
+                          "required to build planemo report and summarize "
+                          "tests.")
 NO_TESTS_MESSAGE = "No tests were executed - see Galaxy output for details."
 ALL_TESTS_PASSED_MESSAGE = "All %d test(s) executed passed."
 PROBLEM_COUNT_MESSAGE = ("There were problems with %d test(s) - out of %d "
@@ -28,7 +29,12 @@ GENERIC_PROBLEMS_MESSAGE = ("One or more tests failed. See %s for detailed "
 GENERIC_TESTS_PASSED_MESSAGE = "No failing tests encountered."
 
 
-def run_in_config(ctx, config, **kwds):
+def run_in_config(ctx, config, run=run_galaxy_command, **kwds):
+    """Run Galaxy tests with the run_tests.sh command.
+
+    The specified `config` object describes the context for tool
+    execution.
+    """
     config_directory = config.config_directory
     html_report_file = kwds["test_output"]
 
@@ -36,8 +42,8 @@ def run_in_config(ctx, config, **kwds):
     if job_output_files is None:
         job_output_files = os.path.join(config_directory, "jobfiles")
 
-    xunit_supported, xunit_report_file = __xunit_state(kwds, config)
-    structured_report_file = __structured_report_file(kwds, config)
+    xunit_report_file = _xunit_state(kwds, config)
+    structured_report_file = _structured_report_file(kwds, config)
 
     info("Testing using galaxy_root %s", config.galaxy_root)
     # TODO: Allow running dockerized Galaxy here instead.
@@ -69,7 +75,7 @@ def run_in_config(ctx, config, **kwds):
         test_cmd,
     )
     action = "Testing tools"
-    return_code = run_galaxy_command(
+    return_code = run(
         ctx,
         cmd,
         config.env,
@@ -79,9 +85,15 @@ def run_in_config(ctx, config, **kwds):
         update_cp_args = (job_output_files, config.test_data_dir)
         shell('cp -r "%s"/* "%s"' % update_cp_args)
 
-    if xunit_report_file and (not os.path.exists(xunit_report_file)):
-        warn(NO_XUNIT_MESSAGE)
-        xunit_report_file = None
+    if not os.path.exists(xunit_report_file):
+        message = NO_XUNIT_REPORT_MESSAGE % xunit_report_file
+        error(message)
+        raise Exception(message)
+
+    if not os.path.exists(structured_report_file):
+        message = NO_JSON_REPORT_MESSAGE % structured_report_file
+        error(message)
+        raise Exception(message)
 
     test_results = test_structures.GalaxyTestResults(
         structured_report_file,
@@ -92,7 +104,7 @@ def run_in_config(ctx, config, **kwds):
 
     test_data = test_results.structured_data
     handle_reports(ctx, test_data, kwds)
-    __handle_summary(
+    _handle_summary(
         test_results,
         **kwds
     )
@@ -101,6 +113,7 @@ def run_in_config(ctx, config, **kwds):
 
 
 def handle_reports(ctx, test_data, kwds):
+    """Write reports based on user specified kwds."""
     exceptions = []
     for report_type in ["html", "markdown", "text"]:
         try:
@@ -148,7 +161,7 @@ def _handle_test_output_file(ctx, report_type, test_data, kwds):
         raise
 
 
-def __handle_summary(
+def _handle_summary(
     test_results,
     **kwds
 ):
@@ -157,7 +170,7 @@ def __handle_summary(
         return
 
     if test_results.has_details:
-        __summarize_tests_full(
+        _summarize_tests_full(
             test_results,
             **kwds
         )
@@ -168,7 +181,7 @@ def __handle_summary(
             info(GENERIC_TESTS_PASSED_MESSAGE)
 
 
-def __summarize_tests_full(
+def _summarize_tests_full(
     test_results,
     **kwds
 ):
@@ -190,7 +203,7 @@ def __summarize_tests_full(
 
     for testcase_el in test_results.xunit_testcase_elements:
         structured_data_tests = test_results.structured_data_tests
-        __summarize_test_case(structured_data_tests, testcase_el, **kwds)
+        _summarize_test_case(structured_data_tests, testcase_el, **kwds)
 
 
 def passed(xunit_testcase_el):
@@ -201,7 +214,7 @@ def passed(xunit_testcase_el):
     return did_pass
 
 
-def __summarize_test_case(structured_data, testcase_el, **kwds):
+def _summarize_test_case(structured_data, testcase_el, **kwds):
     summary_style = kwds.get("summary")
     test_id = test_structures.case_id(testcase_el)
     if not passed(testcase_el):
@@ -210,10 +223,10 @@ def __summarize_test_case(structured_data, testcase_el, **kwds):
         state = click.style("passed", bold=True, fg='green')
     click.echo(test_id.label + ": " + state)
     if summary_style != "minimal":
-        __print_command_line(structured_data, test_id)
+        _print_command_line(structured_data, test_id)
 
 
-def __print_command_line(structured_data, test_id):
+def _print_command_line(structured_data, test_id):
     try:
         test = [d for d in structured_data if d["id"] == test_id.id][0]["data"]
     except (KeyError, IndexError):
@@ -235,33 +248,37 @@ def __print_command_line(structured_data, test_id):
     click.echo("| command: %s" % command)
 
 
-def __xunit_state(kwds, config):
-    xunit_supported = True
-    if shell("grep -q xunit '%s'/run_tests.sh" % config.galaxy_root):
-        xunit_supported = False
+def _xunit_state(kwds, config):
+    # This has been supported in Galaxy for well over a year, just going to assume
+    # it from here on out.
+    # xunit_supported = True
+    # if shell("grep -q xunit '%s'/run_tests.sh" % config.galaxy_root):
+    #    xunit_supported = False
 
     xunit_report_file = kwds.get("test_output_xunit", None)
-    if xunit_report_file is None and xunit_supported:
+    if xunit_report_file is None:
         xunit_report_file = os.path.join(config.config_directory, "xunit.xml")
-    elif xunit_report_file is not None and not xunit_supported:
-        warn(XUNIT_UPGRADE_MESSAGE)
-        xunit_report_file = None
 
-    return xunit_supported, xunit_report_file
+    return xunit_report_file
 
 
-def __structured_report_file(kwds, config):
-    structured_data_supported = True
-    if shell("grep -q structured_data '%s'/run_tests.sh" % config.galaxy_root):
-        structured_data_supported = False
+def _structured_report_file(kwds, config):
+    # This has been supported in Galaxy for well over a year, just going to assume
+    # it from here on out.
+    # structured_data_supported = True
+    # if shell("grep -q structured_data '%s'/run_tests.sh" % config.galaxy_root):
+    #    structured_data_supported = False
 
     structured_report_file = None
     structured_report_file = kwds.get("test_output_json", None)
-    if structured_report_file is None and structured_data_supported:
+    if structured_report_file is None:
         conf_dir = config.config_directory
         structured_report_file = os.path.join(conf_dir, "structured_data.json")
-    elif structured_report_file is not None and not structured_data_supported:
-        warn(NO_JSON_MESSAGE)
-        structured_report_file = None
 
     return structured_report_file
+
+
+__all__ = [
+    "run_in_config",
+    "handle_reports",
+]
