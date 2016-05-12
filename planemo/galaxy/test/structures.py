@@ -172,11 +172,9 @@ class GalaxyTestResults(object):
         self.structured_data_tests = sd.structured_data_tests
         self.structured_data_by_id = sd.structured_data_by_id
 
-        if output_xml_path:
-            self.xunit_tree = parse_xunit_report(output_xml_path)
-            sd.merge_xunit(self._xunit_root)
-        else:
-            self.xunit_tree = ET.fromstring("<testsuite />")
+        self.xunit_tree = parse_xunit_report(output_xml_path)
+        sd.merge_xunit(self._xunit_root)
+
         self.sd.set_exit_code(exit_code)
         self.sd.read_summary()
         self.sd.update()
@@ -223,13 +221,15 @@ def find_cases(xunit_root):
     return xunit_root.findall("testcase")
 
 
-def case_id(testcase_el):
-    name_raw = testcase_el.attrib["name"]
-    if "TestForTool_" in name_raw:
-        raw_id = name_raw
-    else:
-        class_name = testcase_el.attrib["classname"]
-        raw_id = "{0}.{1}".format(class_name, name_raw)
+def case_id(testcase_el=None, raw_id=None):
+    if raw_id is None:
+        assert testcase_el is not None
+        name_raw = testcase_el.attrib["name"]
+        if "TestForTool_" in name_raw:
+            raw_id = name_raw
+        else:
+            class_name = testcase_el.attrib["classname"]
+            raw_id = "{0}.{1}".format(class_name, name_raw)
 
     name = None
     num = None

@@ -72,6 +72,7 @@ def _echo(message, err=False):
 
 
 def shell_join(*args):
+    """Join potentially empty commands together with ;."""
     return "; ".join([c for c in args if c])
 
 

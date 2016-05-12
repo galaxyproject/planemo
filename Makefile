@@ -70,13 +70,17 @@ quick-test: ## run quickest tests with the default Python
 tox: ## run tests with tox in the specified ENV, defaults to py27
 	$(IN_VENV) tox -e $(ENV) -- $(ARGS)
 
-coverage: ## check code coverage quickly with the default Python
+_coverage-report: ## build coverage report with the default Python
 	coverage run --source $(SOURCE_DIR) setup.py $(TEST_DIR)
 	coverage report -m
 	coverage html
+
+_open-coverage: ## open coverage report using open
 	open htmlcov/index.html || xdg-open htmlcov/index.html
 
-ready-docs:
+coverage: _coverage-report open-coverage ## check code coverage quickly with the default Python
+
+ready-docs:  ## rebuild docs folder ahead of running docs or lint-docs
 	rm -f docs/$(SOURCE_DIR).rst
 	rm -f docs/planemo_ext.rst
 	rm -f docs/modules.rst

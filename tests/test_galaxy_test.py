@@ -33,7 +33,26 @@ class RunInConfigTestCase(TempDirectoryTestCase):
             "test_output": os.path.join(td, "tests.html"),
             "test_output_json": os.path.join(td, "tests.json"),
             "test_output_xunit": os.path.join(td, "tests.xml"),
+            "summary": "full",
         }
+
+    def test_failed_execution(self):
+        """Test run_in_config with a failed test."""
+        def mock_galaxy_run(ctx_, command, env, action):
+            self._copy_failing_artifacts(["xml", "html", "json"])
+            return 1
+
+        assert self._do_run(mock_galaxy_run) == 1
+
+    def test_failed_execution_minimal(self):
+        """Test run_in_config with a failed test."""
+        self.kwds["summary"] = "minimal"
+        self.test_failed_execution()
+
+    def test_failed_execution_no_summary(self):
+        """Test run_in_config with a failed test."""
+        self.kwds["summary"] = "none"
+        self.test_failed_execution()
 
     def test_normal_execution(self):
         """Test normal operation of run_in_config."""
@@ -44,6 +63,16 @@ class RunInConfigTestCase(TempDirectoryTestCase):
             return 0
 
         assert self._do_run(mock_galaxy_run) == 0
+
+    def test_normal_execution_summary_minimal(self):
+        """Test normal operation with minimal summary printed."""
+        self.kwds["summary"] = "minimal"
+        self.test_normal_execution()
+
+    def test_normal_execution_summary_none(self):
+        """Test normal operation with no summary printed."""
+        self.kwds["summary"] = "none"
+        self.test_normal_execution()
 
     def test_failed_to_produce_xunit(self):
         """Test an exception is thrown if not XUnit report is produced."""
@@ -85,11 +114,17 @@ class RunInConfigTestCase(TempDirectoryTestCase):
         with self.assertRaises(Exception):
             self._do_run(mock_galaxy_run)
 
-    def _copy_good_artifacts(self, extensions):
+    def _copy_artifacts(self, suffix, extensions):
         for extension in extensions:
-            source = os.path.join(TEST_DATA_DIR, "tt_success.%s" % extension)
+            source = os.path.join(TEST_DATA_DIR, "tt_%s.%s" % (suffix, extension))
             destination = os.path.join(self.temp_directory, "tests.%s" % extension)
             shutil.copy(source, destination)
+
+    def _copy_good_artifacts(self, extensions):
+        self._copy_artifacts("success", extensions)
+
+    def _copy_failing_artifacts(self, extensions):
+        self._copy_artifacts("fail", extensions)
 
     def _do_run(self, mock_run_function):
         return run_in_config(self.ctx, self.config, run=mock_run_function, **self.kwds)
