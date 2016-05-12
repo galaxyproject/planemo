@@ -6,6 +6,8 @@ ENV?=py27
 ARGS?=
 # Location of virtualenv used for development.
 VENV?=.venv
+# Open resource on Mac OS X or Linux
+OPEN_RESOURCE=bash -c 'open $$0 || xdg-open $$0'
 # Source virtualenv to execute command (flake8, sphinx, twine, etc...)
 IN_VENV=if [ -f $(VENV)/bin/activate ]; then . $(VENV)/bin/activate; fi;
 # TODO: add this upstream as a remote if it doesn't already exist.
@@ -87,6 +89,8 @@ ready-docs:  ## rebuild docs folder ahead of running docs or lint-docs
 	rm -f docs/$(SOURCE_DIR).rst
 	rm -f docs/planemo_ext.rst
 	rm -f docs/modules.rst
+	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/build_slideshow.py 'Galaxy Tool Framework Changes' docs/galaxy_changelog.md
+	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/build_slideshow.py 'Planemo: A Scientific Workflow SDK' docs/presentations/2016_workflows.md
 	$(IN_VENV) sphinx-apidoc -f -o docs/ planemo_ext
 	$(IN_VENV) sphinx-apidoc -f -o docs/ $(SOURCE_DIR) $(SOURCE_DOC_EXCLUDE)
 
@@ -100,6 +104,12 @@ lint-docs: ready-docs
 
 _open-docs:
 	open docs/_build/html/index.html || xdg-open docs/_build/html/index.html
+
+open-slides-galaxy-changelog: ready-docs
+	$(OPEN_RESOURCE) docs/galaxy_changelog.html
+
+open-slides-workflows: ready-docs
+	$(OPEN_RESOURCE) docs/presentations/2016_workflows.html
 
 open-docs: docs _open-docs ## generate Sphinx HTML documentation and open in browser
 
