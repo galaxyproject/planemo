@@ -102,8 +102,8 @@ setup(
     include_package_data=True,
     install_requires=requirements,
     extras_requires={
-        ':python_version == "2.7"': [
-            'cwltool>=1.0.20160511162129',
+        ':python_version=="2.7"': [
+            'cwltool',
         ],
     },
     license="AFL",
