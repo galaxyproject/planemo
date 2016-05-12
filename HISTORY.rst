@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.25.1.dev0
+0.25.1 (2016-05-11)
 ---------------------
 
 * Tweak dependencies to try to fix cwltool related issues - such
