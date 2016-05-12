@@ -6,10 +6,11 @@ History
 .. to_doc
 
 ---------------------
-0.26.0.dev0
+0.25.1.dev0
 ---------------------
 
-    
+* Tweak dependencies to try to fix cwltool related issues - such
+  as `Issue 475`_.
 
 ---------------------
 0.25.0 (2016-05-11)
@@ -706,6 +707,7 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Issue 475: https://github.com/galaxyproject/planemo/issues/475
 .. _f3c6917: https://github.com/galaxyproject/planemo/commit/f3c6917
 .. _Pull Request 472: https://github.com/galaxyproject/planemo/pull/472
 .. _552059f: https://github.com/galaxyproject/planemo/commit/552059f
