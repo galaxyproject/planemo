@@ -25,7 +25,7 @@ from collections import OrderedDict
 import logging
 import requests
 
-logging.basicConfig(level=logging.INFO, format='[%(asctime)s]: %(message)s')
+logging.basicConfig(level=logging.INFO, format='[bioconductor_skeleton.py %(asctime)s]: %(message)s')
 logger = logging.getLogger()
 logging.getLogger("requests").setLevel(logging.WARNING)
 
@@ -54,7 +54,6 @@ class PageNotFoundError(Exception):
 
 
 class BioCProjectPage(object):
-
     def __init__(self, package):
         """
         Represents a single Bioconductor package page and provides access to
@@ -63,6 +62,7 @@ class BioCProjectPage(object):
         >>> x.tarball_url
         'http://bioconductor.org/packages/release/bioc/src/contrib/DESeq2_1.8.2.tar.gz'
         """
+
         self.base_url = base_url
         self.package = package
         self._md5 = None
@@ -77,6 +77,7 @@ class BioCProjectPage(object):
         # requests allows us to keep track of the final destination URL, which
         # we need for reconstructing the tarball URL.
         self.url = self.request.url
+
 
         # The table at the bottom of the page has the info we want. An earlier
         # draft of this script parsed the dependencies from the details table.
@@ -112,6 +113,7 @@ class BioCProjectPage(object):
             return
         else:
             raise PageNotFoundError("Unexpected error: {0.status_code} ({0.reason})".format(response))
+
 
     @property
     def bioconductor_tarball_url(self):
@@ -197,8 +199,8 @@ class BioCProjectPage(object):
 
         return dict(e)
 
-    # @property
-    # def version(self):
+    #@property
+    #def version(self):
     #    return self.description['version']
 
     @property
@@ -275,6 +277,7 @@ class BioCProjectPage(object):
                     versions[name] = version
             else:
                 versions[name] = version
+
 
         for name, version in sorted(versions.items()):
             # DESCRIPTION notes base R packages, but we don't need to specify
@@ -421,8 +424,11 @@ def write_recipe(package, recipe_dir, force=False):
         ):
             proj.build_number = int(current_build_number) + 1
 
+
     with open(os.path.join(recipe_dir, 'meta.yaml'), 'w') as fout:
         fout.write(proj.meta_yaml)
+
+
 
     with open(os.path.join(recipe_dir, 'build.sh'), 'w') as fout:
         fout.write(dedent(
