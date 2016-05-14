@@ -34,7 +34,7 @@ from planemo.galaxy.test import (
 @options.galaxy_target_options()
 @options.galaxy_config_options()
 @options.test_options()
-@options.engine_option()
+@options.engine_options()
 @command_function
 def cli(ctx, paths, **kwds):
     """Run the tests in the specified tool tests in a Galaxy instance.

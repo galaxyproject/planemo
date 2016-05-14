@@ -42,6 +42,17 @@ def engine_option():
     )
 
 
+def cwltool_no_container_option():
+    return planemo_option(
+        "--no-container",
+        "--no_container",
+        is_flag=True,
+        default=False,
+        use_global_config=True,
+        help=("If cwltool engine is used, disable Docker container usage.")
+    )
+
+
 def test_data_option():
     return planemo_option(
         "--test_data",
@@ -919,6 +930,13 @@ def tool_test_json():
         metavar="FILE_PATH",
         type=target_path,
         default="tool_test_output.json",
+    )
+
+
+def engine_options():
+    return _compose(
+        engine_option(),
+        cwltool_no_container_option(),
     )
 
 

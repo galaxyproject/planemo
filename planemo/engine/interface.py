@@ -92,9 +92,17 @@ class BaseEngine(Engine):
     def _collect_test_results(self, test_cases):
         test_results = []
         for test_case in test_cases:
+            self._ctx.vlog(
+                "Running tests %s" % test_case
+            )
             runnable = test_case.runnable
             job_path = test_case.job_path
             run_response = self._run(runnable, job_path)
+            self._ctx.vlog(
+                "Test case [%s] resulted in run response [%s]",
+                test_case,
+                run_response,
+            )
             test_results.append((test_case, run_response))
         return test_results
 

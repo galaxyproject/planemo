@@ -16,7 +16,10 @@ from planemo.runnable import (
     SuccessfulRunResponse,
     ErrorRunResponse,
 )
-from planemo.io import real_io
+from planemo.io import real_io, error
+
+JSON_PARSE_ERROR_MESSAGE = ("Failed to parse JSON from cwltool output [%s] "
+                            "in file [%s]. cwltool logs [%s].")
 
 
 class CwlToolRunResponse(SuccessfulRunResponse):
@@ -65,6 +68,8 @@ def run_cwltool(ctx, path, job_path, **kwds):
     if output_directory:
         args.append("--outdir")
         args.append(output_directory)
+    if kwds.get("no_container", False):
+        args.append("--no-container")
 
     args.extend([path, job_path])
     ctx.vlog("Calling cwltool with arguments %s" % args)
@@ -80,10 +85,21 @@ def run_cwltool(ctx, path, job_path, **kwds):
             )
         tmp_stdout.flush()
         tmp_stderr.flush()
-        with open(tmp_stdout.name, "r") as stdout_f:
-            result = json.load(stdout_f)
         with open(tmp_stderr.name, "r") as stderr_f:
             log = stderr_f.read()
+            ctx.vlog("cwltool log output [%s]" % log)
+        with open(tmp_stdout.name, "r") as stdout_f:
+            try:
+                result = json.load(stdout_f)
+            except ValueError:
+                message = JSON_PARSE_ERROR_MESSAGE % (
+                    open(tmp_stdout.name, "r").read(),
+                    tmp_stdout.name,
+                    log
+                )
+                error(message)
+                raise Exception(message)
+
         if ret_code != 0:
             return ErrorRunResponse("Error running cwltool", log=log)
         if conformance_test:

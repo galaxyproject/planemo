@@ -27,6 +27,7 @@ class RunTestCase(CliTestCase):
             test_cmd = [
                 "run",
                 "--engine", "cwltool",
+                "--no_container",
                 tool_path,
                 job_path,
             ]
@@ -41,6 +42,7 @@ class RunTestCase(CliTestCase):
                 "--verbose",
                 "run",
                 "--engine", "cwltool",
+                "--no_container",
                 "--conformance-test",
                 tool_path,
                 job_path,

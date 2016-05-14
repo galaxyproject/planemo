@@ -19,7 +19,7 @@ from planemo.io import conditionally_captured_io, warn
 @options.cwl_conformance_test()
 @options.run_output_directory_option()
 @options.run_output_json_option()
-@options.engine_option()
+@options.engine_options()
 @command_function
 def cli(ctx, path, job_path, **kwds):
     """Planemo command for running tools and jobs.

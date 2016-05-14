@@ -14,6 +14,14 @@ from planemo import network_util
 
 def serve(ctx, runnables=[], **kwds):
     """Serve a Galaxy instance with artifacts defined by paths."""
+    try:
+        return _serve(ctx, runnables, **kwds)
+    except Exception as e:
+        ctx.vlog("Problem serving Galaxy", exception=e)
+        raise
+
+
+def _serve(ctx, runnables, **kwds):
     daemon = kwds.get("daemon", False)
     if daemon:
         kwds["no_cleanup"] = True
@@ -38,20 +46,28 @@ def serve(ctx, runnables=[], **kwds):
             run_script,
         )
         action = "Starting galaxy"
-        run_galaxy_command(
+        exit_code = run_galaxy_command(
             ctx,
             cmd,
             config.env,
             action,
         )
+        if exit_code:
+            message = "Problem running Galaxy command [%s]." % config.log_contents
+            io.warn(message)
+            raise Exception(message)
         host = kwds.get("host", "127.0.0.1")
         port = kwds.get("port", None)
         if port is None:
             port = network_util.get_free_port()
+
+        ctx.vlog("Waiting for service on (%s, %s)" % (host, port))
         assert network_util.wait_net_service(host, port)
         time.sleep(.1)
+        ctx.vlog("Waiting for service on (%s, %s)" % (host, port))
         assert network_util.wait_net_service(host, port)
-        time.sleep(1)
+        time.sleep(5)
+        ctx.vlog("Waiting for service on (%s, %s)" % (host, port))
         assert network_util.wait_net_service(host, port)
         config.install_workflows()
         return config

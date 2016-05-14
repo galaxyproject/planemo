@@ -6,7 +6,6 @@ from planemo.runnable import RunnableType
 
 from planemo.galaxy.serve import serve_daemon
 from planemo.galaxy.activity import execute
-from planemo.io import warn
 
 
 class GalaxyEngine(BaseEngine):
@@ -23,13 +22,10 @@ class GalaxyEngine(BaseEngine):
 
     def _run(self, runnable, job_path):
         """Run CWL job in Galaxy."""
+        self._ctx.vlog("Serving artifact [%s] with Galaxy." % (runnable,))
         with self._serve([runnable]) as config:
-            try:
-                run_response = execute(config, runnable, job_path, **self._kwds)
-            except Exception:
-                warn("Problem running activity...")
-                print(config.log_contents)
-                raise
+            self._ctx.vlog("Running job path [%s]" % job_path)
+            run_response = execute(config, runnable, job_path, **self._kwds)
 
         return run_response
 

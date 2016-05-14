@@ -22,6 +22,7 @@ class CmdTestTestCase(CliTestCase):
             cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
             test_artifact = os.path.join(TEST_DATA_DIR, "wf1.gxwf.yml")
             test_command = [
+                "--verbose",
                 "test",
                 "--extra_tools", random_lines,
                 "--extra_tools", cat,
