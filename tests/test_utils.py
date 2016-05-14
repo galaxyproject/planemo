@@ -224,6 +224,11 @@ def test_context():
     return context
 
 
+def assert_equal(a, b):
+    """Assert two things are equal."""
+    assert a == b, "%s != %s" % (a, b)
+
+
 def assert_exists(path):
     """Assert supplied ``path`` exists.
 

@@ -950,6 +950,36 @@ def test_report_options():
     )
 
 
+def database_source_options():
+    """Database connection options for commands that utilize a database."""
+    return _compose(
+        planemo_option(
+            "--postgres_psql_path",
+            default="psql",
+            use_global_config=True,
+            help=("Name or or path to postgres client binary (psql)."),
+        ),
+        planemo_option(
+            "--postgres_database_user",
+            default="postgres",
+            use_global_config=True,
+            help=("Postgres username for managed development databases."),
+        ),
+        planemo_option(
+            "--postgres_database_host",
+            default=None,
+            use_global_config=True,
+            help=("Postgres host name for managed development databases."),
+        ),
+        planemo_option(
+            "--postgres_database_port",
+            default=None,
+            use_global_config=True,
+            help=("Postgres port for managed development databases."),
+        ),
+    )
+
+
 def test_options():
     return _compose(
         planemo_option(

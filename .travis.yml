@@ -23,7 +23,10 @@ matrix:
     - env: TOX_ENV=py27-lint-imports
     - env: TOX_ENV=py27-lint-docstrings
 
-script: tox -e $TOX_ENV
+script: PLANEMO_ENABLE_POSTGRES_TESTS=1 tox -e $TOX_ENV
 
 after_success:
   - coveralls
+
+services:
+  - postgresql
