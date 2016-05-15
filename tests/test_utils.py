@@ -1,7 +1,4 @@
-
-""" Provide abstractions over click testing of the
-app and unittest.
-"""
+"""Provide abstractions over click testing of the app and unittest."""
 from __future__ import print_function
 import contextlib
 import os
@@ -41,6 +38,7 @@ TEST_TOOLS_DIR = os.path.join(TEST_DATA_DIR, "tools")
 PROJECT_TEMPLATES_DIR = os.path.join(TEST_DIR, os.path.pardir, "project_templates")
 EXIT_CODE_MESSAGE = ("Planemo command [%s] resulted in unexpected exit code "
                      "[%s], expected exit code [%s]]. Command output [%s]")
+CWL_DRAFT3_DIR = os.path.join(PROJECT_TEMPLATES_DIR, "cwl_draft3_spec")
 
 
 # More information on testing click applications at following link.
@@ -226,7 +224,32 @@ def test_context():
     return context
 
 
+def assert_equal(a, b):
+    """Assert two things are equal."""
+    assert a == b, "%s != %s" % (a, b)
+
+
+def assert_exists(path):
+    """Assert supplied ``path`` exists.
+
+    Produces an informative :class:`AssertionError` if it is does not.
+    """
+    dir_path = os.path.dirname(path)
+    msg = None
+    if not os.path.exists(dir_path):
+        template = "Expected path [%s] to exist, but parent absent."
+        msg = template % path
+    if not os.path.exists(path):
+        contents = os.listdir(dir_path)
+        template = "Expected path [%s] to exist. Directory contents %s."
+        msg = template % (path, contents)
+    if msg is not None:
+        raise AssertionError(msg)
+
+
+# TODO: everything should be considered "exported".
 __all__ = [
+    "assert_exists",
     "TestCase",
     "CliTestCase",
 ]

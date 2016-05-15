@@ -20,6 +20,8 @@ from .exit_codes import (
 
 
 def communicate(cmds, **kwds):
+    if isinstance(cmds, list):
+        cmds = " ".join(cmds)
     info(cmds)
     p = commands.shell_process(cmds, **kwds)
     if kwds.get("stdout", None) is None and commands.redirecting_io(sys=sys):
@@ -72,6 +74,7 @@ def _echo(message, err=False):
 
 
 def shell_join(*args):
+    """Join potentially empty commands together with ;."""
     return "; ".join([c for c in args if c])
 
 
@@ -93,6 +96,27 @@ def untar_to(url, path, tar_args):
         shell("%s | %s" % (download_cmd, untar_cmd))
     else:
         shell("%s > '%s'" % (download_cmd, path))
+
+
+@contextlib.contextmanager
+def real_io():
+    """Ensure stdout and stderr have ``fileno`` attributes.
+
+    nosetests replaces these streams with :class:`StringIO` objects
+    that may not work the same in every situtation - :func:`subprocess.Popen`
+    calls in particular.
+    """
+    original_stdout = sys.stdout
+    original_stderr = sys.stderr
+    try:
+        if not hasattr(sys.stdout, "fileno"):
+            sys.stdout = sys.__stdout__
+        if not hasattr(sys.stderr, "fileno"):
+            sys.stderr = sys.__stderr__
+        yield
+    finally:
+        sys.stdout = original_stdout
+        sys.stderr = original_stderr
 
 
 @contextlib.contextmanager

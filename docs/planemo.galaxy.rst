@@ -11,6 +11,14 @@ Subpackages
 Submodules
 ----------
 
+planemo.galaxy.activity module
+------------------------------
+
+.. automodule:: planemo.galaxy.activity
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.galaxy.api module
 -------------------------
 
@@ -47,6 +55,14 @@ planemo.galaxy.serve module
 ---------------------------
 
 .. automodule:: planemo.galaxy.serve
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.galaxy.workflows module
+-------------------------------
+
+.. automodule:: planemo.galaxy.workflows
     :members:
     :undoc-members:
     :show-inheritance:

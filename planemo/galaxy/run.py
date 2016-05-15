@@ -1,3 +1,4 @@
+"""Utilities for calling Galaxy scripts."""
 import os
 import string
 
@@ -69,12 +70,12 @@ def shell_if_wheels(command):
 
 
 def setup_common_startup_args():
-    return set_variable_if_wheels(
+    return _set_variable_if_wheels(
         "COMMON_STARTUP_ARGS", "--dev-wheels"
     )
 
 
-def set_variable_if_wheels(var, if_wheels_val, else_val=""):
+def _set_variable_if_wheels(var, if_wheels_val, else_val=""):
     var_command = '${var}=${else_val}; '
     var_command += shell_if_wheels(
         '${var}="${if_wheels_val}"; '
@@ -88,7 +89,8 @@ def set_variable_if_wheels(var, if_wheels_val, else_val=""):
     )
 
 
-def run_galaxy_command(ctx, command, env, action, daemon=False):
+def run_galaxy_command(ctx, command, env, action):
+    """Run Galaxy command with informative verbose logging."""
     message = "%s with command [%s]" % (action, command)
     info(message)
     ctx.vlog("With environment variables:")
@@ -96,7 +98,9 @@ def run_galaxy_command(ctx, command, env, action, daemon=False):
     for key, value in env.items():
         ctx.vlog('%s="%s"' % (key, value))
     ctx.vlog("============================")
-    return shell(command, env=env)
+    exit_code = shell(command, env=env)
+    ctx.vlog("run command exited with return code %s" % exit_code)
+    return exit_code
 
 __all__ = [
     "setup_venv",

@@ -3,6 +3,7 @@ import os
 
 import click
 from planemo.cli import command_function
+from planemo.runnable import for_paths
 from planemo import options
 from planemo.galaxy import serve
 
@@ -20,4 +21,5 @@ def cli(ctx, **kwds):
     """
     mod_dir = os.path.dirname(__file__)
     tf_dir = os.path.join(mod_dir, '..', '..', 'planemo_ext', 'tool_factory_2')
-    serve(ctx, [os.path.abspath(tf_dir)], **kwds)
+    runnables = for_paths([tf_dir])
+    serve(ctx, runnables, **kwds)

@@ -1,13 +1,21 @@
 """Module describing the planemo ``test`` command."""
-import sys
-
 import click
 
 from planemo.cli import command_function
+from planemo.engine import (
+    engine_context,
+    is_galaxy_engine,
+)
 from planemo import options
+from planemo.runnable import (
+    for_paths,
+    RunnableType,
+)
 from planemo.galaxy import galaxy_config
+from planemo.io import info
 
 from planemo.galaxy.test import (
+    handle_reports_and_summary,
     run_in_config,
 )
 
@@ -26,6 +34,7 @@ from planemo.galaxy.test import (
 @options.galaxy_target_options()
 @options.galaxy_config_options()
 @options.test_options()
+@options.engine_options()
 @command_function
 def cli(ctx, paths, **kwds):
     """Run the tests in the specified tool tests in a Galaxy instance.
@@ -56,7 +65,16 @@ def cli(ctx, paths, **kwds):
     please careful and do not try this against production Galaxy instances.
     """
     kwds["for_tests"] = True
-    with galaxy_config(ctx, paths, **kwds) as config:
-        return_value = run_in_config(ctx, config, **kwds)
-        if return_value:
-            sys.exit(return_value)
+    runnables = for_paths(paths)
+    enable_beta_test = any([r.type not in [RunnableType.galaxy_tool, RunnableType.directory] for r in runnables])
+    enable_beta_test = enable_beta_test or not is_galaxy_engine(**kwds)
+    if enable_beta_test:
+        info("Enable beta testing mode to test artifact that isn't a Galaxy tool.")
+        with engine_context(ctx, **kwds) as engine:
+            test_data = engine.test(runnables)
+            return_value = handle_reports_and_summary(ctx, test_data.structured_data, kwds=kwds)
+    else:
+        with galaxy_config(ctx, runnables, **kwds) as config:
+            return_value = run_in_config(ctx, config, **kwds)
+
+    ctx.exit(return_value)

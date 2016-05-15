@@ -68,14 +68,6 @@ planemo.commands.cmd_create_gist module
     :undoc-members:
     :show-inheritance:
 
-planemo.commands.cmd_cwl_run module
------------------------------------
-
-.. automodule:: planemo.commands.cmd_cwl_run
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 planemo.commands.cmd_cwl_script module
 --------------------------------------
 
@@ -136,6 +128,14 @@ planemo.commands.cmd_project_init module
 ----------------------------------------
 
 .. automodule:: planemo.commands.cmd_project_init
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_run module
+-------------------------------
+
+.. automodule:: planemo.commands.cmd_run
     :members:
     :undoc-members:
     :show-inheritance:

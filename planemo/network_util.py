@@ -17,6 +17,11 @@ def wait_net_service(server, port, timeout=None):
         @return: True of False, if timeout is None may return only True or
                  throw unhandled network exception
     """
+    if port is None:
+        raise TypeError("wait_net_service passed NoneType port value.")
+
+    port = int(port)
+
     s = socket.socket()
     # Following line prevents this method from interfering with process
     # it is waiting for on localhost.

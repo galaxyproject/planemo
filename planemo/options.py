@@ -30,6 +30,29 @@ def skip_venv_option():
     )
 
 
+def engine_option():
+    return planemo_option(
+        "--engine",
+        type=click.Choice(["galaxy", "cwltool"]),
+        default="galaxy",
+        use_global_config=True,
+        help=("Select an engine to run tools and workflows using, defaults "
+              "to Galaxy, but the CWL reference implementation 'cwltool' and "
+              "be selected.")
+    )
+
+
+def cwltool_no_container_option():
+    return planemo_option(
+        "--no-container",
+        "--no_container",
+        is_flag=True,
+        default=False,
+        use_global_config=True,
+        help=("If cwltool engine is used, disable Docker container usage.")
+    )
+
+
 def test_data_option():
     return planemo_option(
         "--test_data",
@@ -155,8 +178,39 @@ def build_cwl_option():
     )
 
 
+def run_output_directory_option():
+    return planemo_option(
+        "output_directory",
+        "--output_directory",
+        "--outdir",
+        type=click.Path(
+            file_okay=False,
+            dir_okay=True,
+            resolve_path=True,
+        ),
+        default=None,
+        help=("Where to store outputs of a 'run' task."),
+    )
+
+
+def run_output_json_option():
+    return planemo_option(
+        "output_json",
+        "--output_json",
+        type=click.Path(
+            file_okay=True,
+            dir_okay=False,
+            resolve_path=True,
+        ),
+        default=None,
+        help=("Where to store JSON dictionary describing outputs of "
+              "a 'run' task."),
+    )
+
+
 def cwl_conformance_test():
     return planemo_option(
+        "--conformance_test",
         "--conformance-test",
         is_flag=True,
         help=("Generate CWL conformance test object describing job. "
@@ -406,7 +460,7 @@ def required_job_arg():
         file_okay=True,
         dir_okay=False,
         readable=True,
-        resolve_path=True,
+        resolve_path=False,
     )
     return click.argument("job_path", metavar="JOB_PATH", type=arg_type)
 
@@ -746,6 +800,7 @@ def galaxy_target_options():
     return _compose(
         galaxy_root_option(),
         galaxy_database_seed_option(),
+        extra_tools_option(),
         install_galaxy_option(),
         galaxy_branch_option(),
         galaxy_source_option(),
@@ -788,7 +843,6 @@ def galaxy_serve_options():
     return _compose(
         galaxy_run_options(),
         galaxy_config_options(),
-        extra_tools_option(),
         daemon_option(),
         pid_file_option(),
     )
@@ -879,6 +933,13 @@ def tool_test_json():
     )
 
 
+def engine_options():
+    return _compose(
+        engine_option(),
+        cwltool_no_container_option(),
+    )
+
+
 def test_report_options():
     return _compose(
         planemo_option(
@@ -903,6 +964,36 @@ def test_report_options():
             help=("Output test report (Markdown style - for humans & "
                   "computers)"),
             default=None,
+        ),
+    )
+
+
+def database_source_options():
+    """Database connection options for commands that utilize a database."""
+    return _compose(
+        planemo_option(
+            "--postgres_psql_path",
+            default="psql",
+            use_global_config=True,
+            help=("Name or or path to postgres client binary (psql)."),
+        ),
+        planemo_option(
+            "--postgres_database_user",
+            default="postgres",
+            use_global_config=True,
+            help=("Postgres username for managed development databases."),
+        ),
+        planemo_option(
+            "--postgres_database_host",
+            default=None,
+            use_global_config=True,
+            help=("Postgres host name for managed development databases."),
+        ),
+        planemo_option(
+            "--postgres_database_port",
+            default=None,
+            use_global_config=True,
+            help=("Postgres port for managed development databases."),
         ),
     )
 

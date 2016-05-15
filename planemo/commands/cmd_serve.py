@@ -2,6 +2,7 @@
 import click
 
 from planemo.cli import command_function
+from planemo.runnable import for_paths
 from planemo.galaxy import galaxy_serve
 from planemo import options
 
@@ -35,4 +36,5 @@ def cli(ctx, paths, **kwds):
     proof yet so please careful and do not try this against production Galaxy
     instances.
     """
-    galaxy_serve(ctx, paths, **kwds)
+    runnables = for_paths(paths)
+    galaxy_serve(ctx, runnables, **kwds)
