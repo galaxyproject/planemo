@@ -1,0 +1,32 @@
+"""Module describes an sqlite implementation of the :class:`DatabaseSource` interface."""
+import os
+
+from .interface import DatabaseSource
+
+from .config import (
+    DATABASE_LOCATION_TEMPLATE,
+    attempt_database_preseed,
+)
+
+
+class SqliteDatabaseSource(DatabaseSource):
+    """:class:`DatabaseSource` implementation for creating sqlite databases."""
+
+    def __init__(self, **kwds):
+        """Construct a sqlite database source from planemo configuration."""
+        self.sqlite_path = kwds.get("sqlite_path", None) or 'psql'
+        self._kwds = kwds
+
+    def list_databases(self):
+        """List sqlite databases on a path."""
+        return os.path.basename(self.sqlite_path)
+
+    def create_database(self, identifier):
+        """Create pre-populated Galxay sqlite database with specified path."""
+        return os.path.basename(self.sqlite_path)
+
+    def delete_database(self, identifier):
+        """Use `psql -c "drop database"` to delete a database."""
+
+    def sqlalchemy_url(self, identifier):
+        """Return URL or form postgresql://username:password@localhost/mydatabase."""

@@ -11,6 +11,7 @@ from planemo.io import kill_pid_file
 from .test_utils import (
     CliTestCase,
     skip_if_environ,
+    skip_unless_environ,
     TEST_REPOS_DIR,
     PROJECT_TEMPLATES_DIR,
     TEST_DATA_DIR,
@@ -54,10 +55,21 @@ class ServeTestCase(CliTestCase):
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_serve_profile(self):
+        self._test_serve_profile()
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_unless_environ("PLANEMO_ENABLE_POSTGRES_TESTS")
+    def test_serve_postgres_profile(self):
+        self._test_serve_profile("--database_type", "postgres")
+
+    def _test_serve_profile(self, *db_options):
         new_profile = "planemo_test_profile_%s" % uuid.uuid4()
         extra_args = [
-            "--daemon", "--pid_file", self._pid_file, "--profile", new_profile,
+            "--daemon",
+            "--pid_file", self._pid_file,
+            "--profile", new_profile,
         ]
+        extra_args.extend(db_options)
         self._launch_thread_and_wait(self._run, extra_args)
         user_gi = self._user_gi
         assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0

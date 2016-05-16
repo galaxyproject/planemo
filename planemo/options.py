@@ -789,6 +789,7 @@ def galaxy_config_options():
         conda_auto_init_option(),
         # Profile options...
         profile_option(),
+        profile_database_options(),
         file_path_option(),
         database_connection_option(),
         shed_tools_conf_option(),
@@ -968,6 +969,45 @@ def test_report_options():
     )
 
 
+def profile_name_argument():
+    return click.argument(
+        'profile_name',
+        metavar="PROFILE_NAME",
+        type=str,
+    )
+
+
+def database_identifier_argument():
+    return click.argument(
+        'identifier',
+        metavar="IDENTIFIER",
+        type=str,
+    )
+
+
+def postgres_datatype_type_option():
+    return planemo_option(
+        "--postgres",
+        "database_type",
+        flag_value="postgres",
+        help=("Use postgres database type."),
+    )
+
+
+def database_type_option():
+    return planemo_option(
+        "--database_type",
+        default="postgres",
+        type=click.Choice([
+            "postgres",
+            "sqlite",
+        ]),
+        use_global_config=True,
+        help=("Type of database to use for profile - "
+              "currently only 'postgres' is available."),
+    )
+
+
 def database_source_options():
     """Database connection options for commands that utilize a database."""
     return _compose(
@@ -995,6 +1035,14 @@ def database_source_options():
             use_global_config=True,
             help=("Postgres port for managed development databases."),
         ),
+    )
+
+
+def profile_database_options():
+    return _compose(
+        postgres_datatype_type_option(),
+        database_type_option(),
+        database_source_options(),
     )
 
 

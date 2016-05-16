@@ -11,7 +11,7 @@ class LocalPostgresDatabaseSource(DatabaseSource):
     """Local postgres database source managed through psql application."""
 
     def __init__(self, **kwds):
-        """Construct a postgres datasource from planemo configuration."""
+        """Construct a postgres database source from planemo configuration."""
         self.psql_path = kwds.get("postgres_psql_path", None) or 'psql'
         self.database_user = kwds.get("postgres_database_user", None)
         self.database_host = kwds.get("postgres_database_host", None)
