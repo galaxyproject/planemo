@@ -1,11 +1,9 @@
 """Abstractions for serving out development Galaxy servers."""
 import contextlib
-import os
 import time
 
 from .config import galaxy_config
 from .run import (
-    setup_venv,
     run_galaxy_command,
 )
 from planemo import io
@@ -27,24 +25,7 @@ def _serve(ctx, runnables, **kwds):
         kwds["no_cleanup"] = True
 
     with galaxy_config(ctx, runnables, **kwds) as config:
-        pid_file = config.pid_file
-        # TODO: Allow running dockerized Galaxy here instead.
-        setup_venv_command = setup_venv(ctx, kwds)
-        run_script = os.path.join(config.galaxy_root, "run.sh")
-        run_script += " $COMMON_STARTUP_ARGS"
-        if daemon:
-            run_script += " --pid-file '%s' --daemon" % pid_file
-            config.env["GALAXY_RUN_ALL"] = "1"
-        else:
-            run_script += " --server-name '%s' --reload" % config.server_name
-        server_ini = os.path.join(config.config_directory, "galaxy.ini")
-        config.env["GALAXY_CONFIG_FILE"] = server_ini
-        cd_to_galaxy_command = "cd %s" % config.galaxy_root
-        cmd = io.shell_join(
-            cd_to_galaxy_command,
-            setup_venv_command,
-            run_script,
-        )
+        cmd = config.startup_command(ctx, **kwds)
         action = "Starting galaxy"
         exit_code = run_galaxy_command(
             ctx,

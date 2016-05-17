@@ -1,6 +1,8 @@
+"""Abstractions for setting up a Galaxy instance."""
 from __future__ import absolute_import
 from __future__ import print_function
 
+import abc
 import contextlib
 import os
 import random
@@ -12,12 +14,6 @@ from tempfile import mkdtemp
 from six.moves.urllib.request import urlretrieve
 
 import click
-try:
-    from gxformat2.converter import python_to_workflow
-    from gxformat2.interface import BioBlendImporterGalaxyInterface
-except ImportError:
-    python_to_workflow = None
-    BioBlendImporterGalaxyInterface = None
 
 from .run import (
     setup_common_startup_args,
@@ -33,13 +29,15 @@ from .workflows import (
     import_workflow,
 )
 from planemo.conda import build_conda_context
-from planemo.io import warn
-from planemo.io import shell
-from planemo.io import shell_join
-from planemo.io import write_file
-from planemo.io import kill_pid_file
-from planemo.io import wait_on
 from planemo import git
+from planemo.io import (
+    kill_pid_file,
+    shell,
+    shell_join,
+    wait_on,
+    warn,
+    write_file,
+)
 from planemo.shed import tool_shed_url
 
 
@@ -133,6 +131,33 @@ FAILED_TO_FIND_GALAXY_EXCEPTION = (
 CLEANUP_IGNORE_ERRORS = True
 
 
+# @contextlib.contextmanager
+# def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
+#     """Set up a ``GalaxyConfig`` for Docker container."""
+#     with _config_directory(ctx, **kwds) as config_directory:
+#         def config_join(*args):
+#             return os.path.join(config_directory, *args)
+
+#         _handle_dependency_resolution(config_directory, kwds)
+#         _handle_job_metrics(config_directory, kwds)
+
+#         port = _get_port(kwds)
+#         docker_run_extras = "-P %s:80" % port
+#         properties = _shared_galaxy_properties(kwds)
+
+#         yield GalaxyConfig(
+#             galaxy_root,
+#             pid_file,
+#             config_directory,
+#             env,
+#             test_data_dir,
+#             port,
+#             server_name,
+#             master_api_key,
+#             runnables,
+#         )
+
+
 @contextlib.contextmanager
 def galaxy_config(ctx, runnables, for_tests=False, **kwds):
     """Set up a ``GalaxyConfig`` in an auto-cleaned context."""
@@ -145,26 +170,10 @@ def galaxy_config(ctx, runnables, for_tests=False, **kwds):
     )
     galaxy_root = _check_galaxy(ctx, **kwds)
     install_galaxy = galaxy_root is None
-    config_directory = kwds.get("config_directory", None)
+    with _config_directory(ctx, **kwds) as config_directory:
+        def config_join(*args):
+            return os.path.join(config_directory, *args)
 
-    def config_join(*args):
-        return os.path.join(config_directory, *args)
-
-    created_config_directory = False
-    if not config_directory:
-        created_config_directory = True
-        config_directory = mkdtemp()
-        # the following makes sure the transient config_dir path is short
-        # enough for conda linking (https://github.com/conda/conda-build/pull/877)
-        if len(config_directory) > 20:
-            try:
-                short_config_directory = mkdtemp(dir="/tmp")
-                os.rmdir(config_directory)
-                config_directory = short_config_directory
-            except OSError:
-                # path doesn't exist or permission denied, keep the long config_dir
-                pass
-    try:
         latest_galaxy = False
         install_env = {}
         if install_galaxy:
@@ -205,7 +214,7 @@ def galaxy_config(ctx, runnables, for_tests=False, **kwds):
         )
         _ensure_directory(shed_tool_path)
         server_name = "planemo%d" % random.randint(0, 100000)
-        port = int(kwds.get("port", 9090))
+        port = _get_port(kwds)
         template_args = dict(
             port=port,
             host=kwds.get("host", "127.0.0.1"),
@@ -221,13 +230,10 @@ def galaxy_config(ctx, runnables, for_tests=False, **kwds):
             log_level=kwds.get("log_level", "DEBUG"),
         )
         tool_config_file = "%s,%s" % (tool_conf, shed_tool_conf)
-        user_email = kwds.get("galaxy_email")
         # Setup both galaxy_email and older test user test@bx.psu.edu
         # as admins for command_line, etc...
-        properties = dict(
-            single_user=user_email,
-            admin_users="%s,test@bx.psu.edu" % user_email,
-            expose_dataset_path="True",
+        properties = _shared_galaxy_properties(kwds)
+        properties.update(dict(
             ftp_upload_dir_template="${ftp_upload_dir}",
             ftp_upload_purge="False",
             ftp_upload_dir=test_data_dir or os.path.abspath('.'),
@@ -244,10 +250,7 @@ def galaxy_config(ctx, runnables, for_tests=False, **kwds):
             citation_cache_type="file",
             citation_cache_data_dir="${temp_directory}/citations/data",
             citation_cache_lock_dir="${temp_directory}/citations/lock",
-            collect_outputs_from="job_working_directory",
             database_auto_migrate="True",
-            cleanup_job="never",
-            master_api_key="${master_api_key}",
             enable_beta_tool_formats="True",
             id_secret="${id_secret}",
             log_level="${log_level}",
@@ -262,7 +265,7 @@ def galaxy_config(ctx, runnables, for_tests=False, **kwds):
             amqp_internal_connection="sqlalchemy+sqlite://",
             migrated_tools_config=empty_tool_conf,
             test_data_dir=test_data_dir,  # TODO: make gx respect this
-        )
+        ))
         if not for_tests:
             properties["database_connection"] = _database_connection(database_location, **kwds)
 
@@ -302,7 +305,7 @@ def galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
         pid_file = kwds.get("pid_file") or config_join("galaxy.pid")
 
-        yield GalaxyConfig(
+        yield LocalGalaxyConfig(
             galaxy_root,
             pid_file,
             config_directory,
@@ -313,6 +316,58 @@ def galaxy_config(ctx, runnables, for_tests=False, **kwds):
             master_api_key,
             runnables,
         )
+
+
+def _shared_galaxy_properties(kwds):
+    """Setup properties useful for local and Docker Galaxy instances.
+
+    Most things related to paths, etc... are very different between Galaxy
+    modalities and many taken care of internally to the container in that mode.
+    But this method sets up API stuff, tool, and job stuff that can be shared.
+    """
+    master_api_key = kwds.get("master_api_key", DEFAULT_MASTER_API_KEY)
+    user_email = _user_email(kwds)
+    properties = {
+        'master_api_key': master_api_key,
+        'single_user': user_email,
+        'admin_users': "%s,test@bx.psu.edu" % user_email,
+        'expose_dataset_path': "True",
+        'cleanup_job': 'never',
+        'collect_outputs_from': "job_working_directory",
+    }
+    return properties
+
+
+def _get_port(kwds):
+    port = int(kwds.get("port", 9090))
+    return port
+
+
+def _user_email(kwds):
+    user_email = kwds.get("galaxy_email")
+    return user_email
+
+
+@contextlib.contextmanager
+def _config_directory(ctx, **kwds):
+    config_directory = kwds.get("config_directory", None)
+    ctx.vlog("Created directory for Galaxy configuration [%s]" % config_directory)
+    created_config_directory = False
+    if not config_directory:
+        created_config_directory = True
+        config_directory = mkdtemp()
+        # the following makes sure the transient config_dir path is short
+        # enough for conda linking (https://github.com/conda/conda-build/pull/877)
+        if len(config_directory) > 20:
+            try:
+                short_config_directory = mkdtemp(dir="/tmp")
+                os.rmdir(config_directory)
+                config_directory = short_config_directory
+            except OSError:
+                # path doesn't exist or permission denied, keep the long config_dir
+                pass
+    try:
+        yield config_directory
     finally:
         cleanup = not kwds.get("no_cleanup", False)
         if created_config_directory and cleanup:
@@ -320,40 +375,64 @@ def galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
 
 class GalaxyConfig(object):
+    """Abstraction around a Galaxy instance.
 
-    def __init__(
-        self,
-        galaxy_root,
-        pid_file,
-        config_directory,
-        env,
-        test_data_dir,
-        port,
-        server_name,
-        master_api_key,
-        runnables,
-    ):
-        self.galaxy_root = galaxy_root
-        self._pid_file = pid_file
-        self.config_directory = config_directory
-        self.env = env
-        self.test_data_dir = test_data_dir
-        # Runtime server configuration stuff not used if testing...
-        # better design might be GalaxyRootConfig and GalaxyServerConfig
-        # as two separate objects.
-        self.port = port
-        self.server_name = server_name
-        self.master_api_key = master_api_key
-        self.runnables = runnables
-        self._user_api_key = None
-        self._workflow_ids = {}
+    This requires more than just an API connection and assumes access to files
+    etc....
+    """
 
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractproperty
     def kill(self):
-        kill_pid_file(self.pid_file)
+        """Stop the running instance."""
 
-    @property
-    def pid_file(self):
-        return self._pid_file
+    @abc.abstractmethod
+    def startup_command(self, ctx, **kwds):
+        """Return a shell command used to startup this instance.
+
+        Among other common planmo kwds, this should respect the
+        ``daemon`` keyword.
+        """
+
+    @abc.abstractproperty
+    def log_contents(self):
+        """Retrieve text of log for running Galaxy instance."""
+
+    @abc.abstractproperty
+    def gi(self):
+        """Return an admin bioblend Galaxy instance for API interactions."""
+
+    @abc.abstractproperty
+    def user_gi(self):
+        """Return a user-backed bioblend Galaxy instance for API interactions."""
+
+    @abc.abstractmethod
+    def install_repo(self, *args, **kwds):
+        """Install specified tool shed repository."""
+
+    @abc.abstractproperty
+    def tool_shed_client(self):
+        """Return a admin bioblend tool shed client."""
+
+    @abc.abstractmethod
+    def wait_for_all_installed(self):
+        """Wait for all queued up repositories installs to complete."""
+
+    @abc.abstractmethod
+    def install_workflows(self):
+        """Install all workflows configured with these planemo arguments."""
+
+    @abc.abstractmethod
+    def workflow_id(self, path):
+        """Get installed workflow API ID for input path."""
+
+    @abc.abstractmethod
+    def cleanup(self):
+        """Cleanup allocated resources to run this instance."""
+
+
+class BaseGalaxyConfig(GalaxyConfig):
 
     @property
     def gi(self):
@@ -395,17 +474,6 @@ class GalaxyConfig(object):
 
         wait_on(ready, "galaxy tool installation", timeout=60 * 60 * 1)
 
-    @property
-    def log_file(self):
-        """Log file used when planemo serves this Galaxy instance."""
-        file_name = "%s.log" % self.server_name
-        return os.path.join(self.galaxy_root, file_name)
-
-    @property
-    def log_contents(self):
-        with open(self.log_file, "r") as f:
-            return f.read()
-
     def install_workflows(self):
         for runnable in self.runnables:
             if runnable.type.name == "galaxy_workflow":
@@ -417,6 +485,77 @@ class GalaxyConfig(object):
 
     def workflow_id(self, path):
         return self._workflow_ids[path]
+
+
+class LocalGalaxyConfig(BaseGalaxyConfig):
+    """A local, non-containerized implementation of :class:`GalaxyConfig`."""
+
+    def __init__(
+        self,
+        galaxy_root,
+        pid_file,
+        config_directory,
+        env,
+        test_data_dir,
+        port,
+        server_name,
+        master_api_key,
+        runnables,
+    ):
+        self.galaxy_root = galaxy_root
+        self._pid_file = pid_file
+        self.config_directory = config_directory
+        self.env = env
+        self.test_data_dir = test_data_dir
+        # Runtime server configuration stuff not used if testing...
+        # better design might be GalaxyRootConfig and GalaxyServerConfig
+        # as two separate objects.
+        self.port = port
+        self.server_name = server_name
+        self.master_api_key = master_api_key
+        self.runnables = runnables
+        self._user_api_key = None
+        self._workflow_ids = {}
+
+    def kill(self):
+        kill_pid_file(self._pid_file)
+
+    def startup_command(self, ctx, **kwds):
+        """Return a shell command used to startup this instance.
+
+        Among other common planmo kwds, this should respect the
+        ``daemon`` keyword.
+        """
+        daemon = kwds.get("daemon", False)
+        pid_file = self._pid_file
+        # TODO: Allow running dockerized Galaxy here instead.
+        setup_venv_command = setup_venv(ctx, kwds)
+        run_script = os.path.join(self.galaxy_root, "run.sh")
+        run_script += " $COMMON_STARTUP_ARGS"
+        if daemon:
+            run_script += " --pid-file '%s' --daemon" % pid_file
+            self.env["GALAXY_RUN_ALL"] = "1"
+        else:
+            run_script += " --server-name '%s' --reload" % self.server_name
+        server_ini = os.path.join(self.config_directory, "galaxy.ini")
+        self.env["GALAXY_CONFIG_FILE"] = server_ini
+        cd_to_galaxy_command = "cd %s" % self.galaxy_root
+        return shell_join(
+            cd_to_galaxy_command,
+            setup_venv_command,
+            run_script,
+        )
+
+    @property
+    def log_file(self):
+        """Log file used when planemo serves this Galaxy instance."""
+        file_name = "%s.log" % self.server_name
+        return os.path.join(self.galaxy_root, file_name)
+
+    @property
+    def log_contents(self):
+        with open(self.log_file, "r") as f:
+            return f.read()
 
     def cleanup(self):
         shutil.rmtree(self.config_directory, CLEANUP_IGNORE_ERRORS)
@@ -501,8 +640,10 @@ def _file_name_to_migration_version(name):
 
 
 def _check_galaxy(ctx, **kwds):
-    """ Find Galaxy root, return None to indicate it should be
-    installed automatically.
+    """Find specified Galaxy root or ``None``.
+
+    Return value of ``None`` indicates it should be installed automatically
+    by planemo.
     """
     install_galaxy = kwds.get("install_galaxy", None)
     galaxy_root = None
