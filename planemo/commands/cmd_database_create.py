@@ -9,11 +9,7 @@ from planemo.database import create_database_source
 
 
 @click.command('database_create')
-@click.argument(
-    'identifier',
-    metavar="IDENTIFIER",
-    type=str,
-)
+@options.database_identifier_argument()
 @options.database_source_options()
 @command_function
 def cli(ctx, identifier, **kwds):
