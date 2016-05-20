@@ -41,6 +41,10 @@ def is_doi(publication_id, lint_ctx):
             lint_ctx.error("%s is valid, but galaxy expects DOI without 'doi:' prefix" % publication_id)
         else:
             lint_ctx.info("%s is a valid DOI" % publication_id)
+    elif r.status_code == 404:
+        lint_ctx.error("%s is not a valid DOI" % publication_id)
+    else:
+        lint_ctx.info("dx.doi returned unexpected status code %d" % r.status_code)
 
 
 def lint_xsd(lint_ctx, schema_path, path):
