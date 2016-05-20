@@ -64,3 +64,8 @@ class LintTestCase(CliTestCase):
         empty_cdata = os.path.join(TEST_TOOLS_DIR, "empty_cdata.xml")
         lint_cmd = ["lint", "--skip", "citations,help", empty_cdata]
         self._check_exit_code(lint_cmd, exit_code=0)
+
+    def test_lint_doi(self):
+        fail_doi = os.path.join(TEST_TOOLS_DIR, "fail_doi.xml")
+        lint_cmd = ["lint", "--doi", fail_doi]
+        self._check_exit_code(lint_cmd, exit_code=1)

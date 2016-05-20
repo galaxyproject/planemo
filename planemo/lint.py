@@ -1,4 +1,5 @@
 import os
+import requests
 
 from six.moves.urllib.request import (
     urlopen,
@@ -7,8 +8,39 @@ from six.moves.urllib.error import (
     HTTPError,
     URLError,
 )
-from planemo.xml import validation
 from planemo.shed import find_urls_for_xml
+from planemo.xml import validation
+
+
+def lint_dois(root, lint_ctx):
+    dois = find_dois_for_xml(root)
+    for publication in dois:
+        is_doi(publication, lint_ctx)
+
+
+def find_dois_for_xml(root):
+    dois = []
+    for element in root.root.findall("citations"):
+        for citation in list(element):
+            if "type" in citation.attrib:
+                if citation.attrib["type"] == "doi":
+                    dois.append(citation.text)
+    return dois
+
+
+def is_doi(publication_id, lint_ctx):
+    """
+    Check if dx.doi knows about the publication_id
+    """
+    base_url = "http://dx.doi.org"
+    doiless_publication_id = publication_id.split("doi:", 1)[-1]
+    url = "%s/%s" % (base_url, doiless_publication_id)
+    r = requests.get(url)
+    if r.status_code == 200:
+        if publication_id != doiless_publication_id:
+            lint_ctx.error("%s is valid, but galaxy expects DOI without 'doi:' prefix" % publication_id)
+        else:
+            lint_ctx.info("%s is a valid DOI" % publication_id)
 
 
 def lint_xsd(lint_ctx, schema_path, path):
