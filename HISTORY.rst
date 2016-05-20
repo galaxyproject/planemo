@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.26.0.dev0
+0.26.0 (2016-05-20)
 ---------------------
 
 * Implement ``Engine`` and ``Runnable`` abstractions - Planemo now has
