@@ -550,6 +550,14 @@ def no_cleanup_option():
     )
 
 
+def docker_enable_option():
+    return planemo_option(
+        "--docker/--no_docker",
+        default=False,
+        help=("Run Galaxy tools in Docker if enabled.")
+    )
+
+
 def docker_cmd_option():
     return planemo_option(
         "--docker_cmd",
@@ -583,6 +591,22 @@ def docker_host_option():
              "(defaults to localhost).",
         use_global_config=True,
         default=docker_util.DEFAULT_HOST,
+    )
+
+
+def docker_config_options():
+    return _compose(
+        docker_cmd_option(),
+        docker_sudo_option(),
+        docker_host_option(),
+        docker_sudo_cmd_option(),
+    )
+
+
+def galaxy_docker_options():
+    return _compose(
+        docker_enable_option(),
+        docker_config_options(),
     )
 
 
@@ -809,6 +833,7 @@ def galaxy_target_options():
         no_cache_galaxy_option(),
         no_cleanup_option(),
         galaxy_email_option(),
+        galaxy_docker_options(),
         # Profile options...
         job_config_option(),
         tool_dependency_dir_option(),
