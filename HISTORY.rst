@@ -9,7 +9,21 @@ History
 0.26.0.dev0
 ---------------------
 
-    
+* Implement ``Engine`` and ``Runnable`` abstractions - Planemo now has
+  beta support for testing Galaxy workflows and CWL_ tools with Galaxy and
+  any CWL artifact with cwltool_.
+  `Pull Request 454`_, 7be1bf5_
+* Fix missing command_line in test output json. e38c436_
+* More explicit Galaxy ``job_conf.xml`` handling, fixes bugs caused by
+  ``galaxy_root`` having existing and incompatible ``job_conf.xml`` files
+  and makes it possible to specify defaults with fixed server name. c4dfd55_
+* Introduce profile commands (``profile_create``, ``profile_delete``, and
+  ``profile_list``) and profile improvements (automatic postgres database
+  creation support). `Pull Request 480`_, a87899b_
+* Rework Galaxy test reporting to use structured data instead of XUnit
+  data. 4d29bf1_
+* Refactor Galaxy configuration toward support for running Galaxy in
+  docker-galaxy-stable. `Pull Request 479`_    
 
 ---------------------
 0.25.1 (2016-05-11)
@@ -713,6 +727,14 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _7be1bf5: https://github.com/galaxyproject/planemo/commit/7be1bf5
+.. _e38c436: https://github.com/galaxyproject/planemo/commit/e38c436
+.. _4d29bf1: https://github.com/galaxyproject/planemo/commit/4d29bf1
+.. _Pull Request 454: https://github.com/galaxyproject/planemo/pull/454
+.. _a87899b: https://github.com/galaxyproject/planemo/commit/a87899b
+.. _Pull Request 480: https://github.com/galaxyproject/planemo/pull/480
+.. _c4dfd55: https://github.com/galaxyproject/planemo/commit/c4dfd55
+.. _Pull Request 479: https://github.com/galaxyproject/planemo/pull/479
 .. _Issue 475: https://github.com/galaxyproject/planemo/issues/475
 .. _f3c6917: https://github.com/galaxyproject/planemo/commit/f3c6917
 .. _Pull Request 472: https://github.com/galaxyproject/planemo/pull/472
@@ -1036,3 +1058,4 @@ History
 .. _xmllint: http://xmlsoft.org/xmllint.html
 .. _nose: https://nose.readthedocs.org/en/latest/
 .. _CWL: http://www.commonwl.org/
+.. _cwltool: https://github.com/common-workflow-language/cwltool/

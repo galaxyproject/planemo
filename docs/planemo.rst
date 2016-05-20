@@ -8,6 +8,7 @@ Subpackages
 
     planemo.commands
     planemo.cwl
+    planemo.database
     planemo.engine
     planemo.galaxy
     planemo.linters

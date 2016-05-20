@@ -76,6 +76,30 @@ planemo.commands.cmd_cwl_script module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd_database_create module
+-------------------------------------------
+
+.. automodule:: planemo.commands.cmd_database_create
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_database_delete module
+-------------------------------------------
+
+.. automodule:: planemo.commands.cmd_database_delete
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_database_list module
+-----------------------------------------
+
+.. automodule:: planemo.commands.cmd_database_list
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd_dependency_script module
 ---------------------------------------------
 
@@ -120,6 +144,30 @@ planemo.commands.cmd_normalize module
 -------------------------------------
 
 .. automodule:: planemo.commands.cmd_normalize
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_profile_create module
+------------------------------------------
+
+.. automodule:: planemo.commands.cmd_profile_create
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_profile_delete module
+------------------------------------------
+
+.. automodule:: planemo.commands.cmd_profile_delete
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_profile_list module
+----------------------------------------
+
+.. automodule:: planemo.commands.cmd_profile_list
     :members:
     :undoc-members:
     :show-inheritance:

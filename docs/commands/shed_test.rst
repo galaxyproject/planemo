@@ -49,6 +49,11 @@ This command requires the target to be version 15.07 or newer.
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
       --galaxy_database_seed PATH     Preseeded Galaxy sqlite database to target.
+      --extra_tools PATH              Extra tool sources to include in Galaxy's tool
+                                      panel (file or directory). These will not be
+                                      linted/tested/etc... but they will be
+                                      available to workflows and for interactive
+                                      use.
       --install_galaxy                Download and configure a disposable copy of
                                       Galaxy from github.
       --galaxy_branch TEXT            Branch of Galaxy to target (defaults to
@@ -69,6 +74,14 @@ This command requires the target to be version 15.07 or newer.
                                       Galaxy.
       --galaxy_email TEXT             E-mail address to use when launching single-
                                       user Galaxy server.
+      --docker / --no_docker          Run Galaxy tools in Docker if enabled.
+      --docker_cmd TEXT               Command used to launch docker (defaults to
+                                      docker).
+      --docker_sudo                   Flag to use sudo when running docker.
+      --docker_host TEXT              Docker host to target when executing docker
+                                      commands (defaults to localhost).
+      --docker_sudo_cmd TEXT          sudo command to use when --docker_sudo is
+                                      enabled (defaults to sudo).
       --job_config_file PATH          Job configuration file for Galaxy to target.
       --tool_dependency_dir DIRECTORY
                                       Tool dependency dir for Galaxy to target.
