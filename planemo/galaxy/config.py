@@ -14,6 +14,7 @@ from tempfile import mkdtemp
 from six.moves.urllib.request import urlretrieve
 
 import click
+from galaxy.tools.deps import docker_util
 
 from .run import (
     setup_common_startup_args,
@@ -100,6 +101,26 @@ TOOL_SHEDS_CONF = """<tool_sheds>
 </tool_sheds>
 """
 
+JOB_CONFIG_LOCAL = """<job_conf>
+    <plugins>
+        <plugin id="planemo_runner" type="runner" load="galaxy.jobs.runners.local:LocalJobRunner" workers="4"/>
+    </plugins>
+    <handlers>
+        <handler id="main"/>
+    </handlers>
+    <destinations default="planemo_dest">
+        <destination id="planemo_dest" runner="planemo_runner">
+            <param id="docker_enable">${docker_enable}</param>
+            <param id="docker_sudo">${docker_sudo}</param>
+            <param id="docker_sudo_cmd">${docker_sudo_cmd}</param>
+            <param id="docker_cmd">${docker_cmd}</param>
+            <param id="docker_host">${docker_host}</param>
+        </destination>
+    </destinations>
+</job_conf>
+"""
+
+
 # Provide some shortcuts for simple/common dependency resolutions strategies.
 STOCK_DEPENDENCY_RESOLUTION_STRATEGIES = {
     "brew_dependency_resolution": BREW_DEPENDENCY_RESOLUTION_CONF,
@@ -182,7 +203,9 @@ def galaxy_config(ctx, runnables, for_tests=False, **kwds):
             latest_galaxy = True
             galaxy_root = config_join("galaxy-dev")
 
+        server_name = "planemo%d" % random.randint(0, 100000)
         _handle_dependency_resolution(config_directory, kwds)
+        _handle_job_config_file(config_directory, server_name, kwds)
         _handle_job_metrics(config_directory, kwds)
         file_path = kwds.get("file_path") or config_join("files")
         _ensure_directory(file_path)
@@ -213,7 +236,6 @@ def galaxy_config(ctx, runnables, for_tests=False, **kwds):
             **kwds
         )
         _ensure_directory(shed_tool_path)
-        server_name = "planemo%d" % random.randint(0, 100000)
         port = _get_port(kwds)
         template_args = dict(
             port=port,
@@ -234,6 +256,7 @@ def galaxy_config(ctx, runnables, for_tests=False, **kwds):
         # as admins for command_line, etc...
         properties = _shared_galaxy_properties(kwds)
         properties.update(dict(
+            server_name="main",
             ftp_upload_dir_template="${ftp_upload_dir}",
             ftp_upload_purge="False",
             ftp_upload_dir=test_data_dir or os.path.abspath('.'),
@@ -864,6 +887,7 @@ def _build_test_env(properties, env):
     # many are probably not needed as of the following commit.
     # https://bitbucket.org/galaxy/galaxy-central/commits/d7dd1f9
     test_property_variants = {
+        'GALAXY_TEST_JOB_CONFIG_FILE': 'job_config_file',
         'GALAXY_TEST_MIGRATED_TOOL_CONF': 'migrated_tools_config',
         'GALAXY_TEST_TOOL_CONF': 'tool_config_file',
         'GALAXY_TEST_FILE_DIR': 'test_data_dir',
@@ -875,6 +899,26 @@ def _build_test_env(properties, env):
         value = properties.get(gx_key, None)
         if value is not None:
             env[test_key] = value
+
+
+def _handle_job_config_file(config_directory, server_name, kwds):
+    job_config_file = kwds.get("job_config_file", None)
+    if not job_config_file:
+        template_str = JOB_CONFIG_LOCAL
+        job_config_file = os.path.join(
+            config_directory,
+            "job_conf.xml",
+        )
+        conf_contents = Template(template_str).safe_substitute({
+            "server_name": server_name,
+            "docker_enable": str(kwds.get("docker", False)),
+            "docker_sudo": str(kwds.get("docker_sudo", False)),
+            "docker_sudo_cmd": str(kwds.get("docker_sudo_cmd", docker_util.DEFAULT_SUDO_COMMAND)),
+            "docker_cmd": str(kwds.get("docker_cmd", docker_util.DEFAULT_DOCKER_COMMAND)),
+            "docker_host": str(kwds.get("docker_host", docker_util.DEFAULT_HOST)),
+        })
+        write_file(job_config_file, conf_contents)
+    kwds["job_config_file"] = job_config_file
 
 
 def _handle_dependency_resolution(config_directory, kwds):
