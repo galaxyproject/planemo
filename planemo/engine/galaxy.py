@@ -31,8 +31,23 @@ class GalaxyEngine(BaseEngine):
 
     @contextlib.contextmanager
     def _serve(self, runnables):
-        with serve_daemon(self._ctx, runnables, **self._kwds) as config:
+        with serve_daemon(self._ctx, runnables, **self._serve_kwds()) as config:
             yield config
 
+    def _serve_kwds(self):
+        return self._kwds.copy()
 
-__all__ = ["GalaxyEngine"]
+
+class DockerizedGalaxyEngine(GalaxyEngine):
+    """An :class:`Engine` implementation backed by Galaxy running in Docker.
+
+    More information on Galaxy can be found at http://galaxyproject.org/.
+    """
+
+    def _serve_kwds(self):
+        serve_kwds = self._kwds.copy()
+        serve_kwds["dockerize"] = True
+        return serve_kwds
+
+
+__all__ = ["GalaxyEngine", "DockerizedGalaxyEngine"]

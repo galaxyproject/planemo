@@ -30,15 +30,28 @@ def skip_venv_option():
     )
 
 
-def engine_option():
+def run_engine_option():
     return planemo_option(
         "--engine",
-        type=click.Choice(["galaxy", "cwltool"]),
+        type=click.Choice(["galaxy", "docker_galaxy", "cwltool"]),
         default="galaxy",
         use_global_config=True,
-        help=("Select an engine to run tools and workflows using, defaults "
-              "to Galaxy, but the CWL reference implementation 'cwltool' and "
+        help=("Select an engine to run or test aritfacts such as tools "
+              "and workflows. Defaults to a local Galaxy, but running Galaxy within "
+              "a Docker container or the CWL reference implementation 'cwltool' and "
               "be selected.")
+    )
+
+
+def serve_engine_option():
+    return planemo_option(
+        "--engine",
+        type=click.Choice(["galaxy", "docker_galaxy"]),
+        default="galaxy",
+        use_global_config=True,
+        help=("Select an engine to serve aritfacts such as tools "
+              "and workflows. Defaults to a local Galaxy, but running Galaxy within "
+              "a Docker container.")
     )
 
 
@@ -326,6 +339,17 @@ def install_galaxy_option():
     )
 
 
+def docker_galaxy_image_option():
+    return planemo_option(
+        "--docker_galaxy_image",
+        default="bgruening/galaxy-stable",
+        use_global_config=True,
+        help=("Docker image identifier for docker-galaxy-flavor used if "
+              "engine type is specified as ``docker-galaxy``. Defaults to "
+              "to bgruening/galaxy-stable.")
+    )
+
+
 def no_cache_galaxy_option():
     return planemo_option(
         "--no_cache_galaxy",
@@ -568,7 +592,7 @@ def docker_cmd_option():
 
 def docker_sudo_option():
     return planemo_option(
-        "--docker_sudo",
+        "--docker_sudo/--no_docker_sudo",
         is_flag=True,
         help="Flag to use sudo when running docker."
     )
@@ -868,6 +892,8 @@ def profile_option():
 def galaxy_serve_options():
     return _compose(
         galaxy_run_options(),
+        serve_engine_option(),
+        docker_galaxy_image_option(),
         galaxy_config_options(),
         daemon_option(),
         pid_file_option(),
@@ -961,8 +987,9 @@ def tool_test_json():
 
 def engine_options():
     return _compose(
-        engine_option(),
+        run_engine_option(),
         cwltool_no_container_option(),
+        docker_galaxy_image_option(),
     )
 
 

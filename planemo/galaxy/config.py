@@ -30,8 +30,10 @@ from .workflows import (
     import_workflow,
 )
 from planemo.conda import build_conda_context
+from planemo.docker import docker_host_args
 from planemo import git
 from planemo.io import (
+    communicate,
     kill_pid_file,
     shell,
     shell_join,
@@ -152,35 +154,113 @@ FAILED_TO_FIND_GALAXY_EXCEPTION = (
 CLEANUP_IGNORE_ERRORS = True
 
 
-# @contextlib.contextmanager
-# def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
-#     """Set up a ``GalaxyConfig`` for Docker container."""
-#     with _config_directory(ctx, **kwds) as config_directory:
-#         def config_join(*args):
-#             return os.path.join(config_directory, *args)
-
-#         _handle_dependency_resolution(config_directory, kwds)
-#         _handle_job_metrics(config_directory, kwds)
-
-#         port = _get_port(kwds)
-#         docker_run_extras = "-P %s:80" % port
-#         properties = _shared_galaxy_properties(kwds)
-
-#         yield GalaxyConfig(
-#             galaxy_root,
-#             pid_file,
-#             config_directory,
-#             env,
-#             test_data_dir,
-#             port,
-#             server_name,
-#             master_api_key,
-#             runnables,
-#         )
+@contextlib.contextmanager
+def galaxy_config(ctx, runnables, **kwds):
+    """Set up a ``GalaxyConfig`` in an auto-cleaned context."""
+    dockerize = kwds.get("dockerize", False)
+    print(kwds)
+    c = docker_galaxy_config if dockerize else local_galaxy_config
+    print(c)
+    with c(ctx, runnables, **kwds) as config:
+        yield config
 
 
 @contextlib.contextmanager
-def galaxy_config(ctx, runnables, for_tests=False, **kwds):
+def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
+    """Set up a ``GalaxyConfig`` for Docker container."""
+    tool_paths = [r.path for r in runnables if r.has_tools]
+    test_data_dir = _find_test_data(tool_paths, **kwds)
+
+    with _config_directory(ctx, **kwds) as config_directory:
+        def config_join(*args):
+            return os.path.join(config_directory, *args)
+
+        _handle_dependency_resolution(config_directory, kwds)
+        _handle_job_metrics(config_directory, kwds)
+
+        shed_tool_conf = kwds.get("shed_tool_conf") or config_join("shed_tools_conf.xml")
+        all_tool_paths = list(tool_paths) + list(kwds.get("extra_tools", []))
+
+        tool_directories = set([])  # Things to mount...
+        for tool_path in all_tool_paths:
+            directory = os.path.dirname(os.path.normpath(tool_path))
+            tool_directories.add(directory)
+
+        # TODO: remap these.
+        tool_volumes = []
+        for tool_directory in tool_directories:
+            volume = docker_util.DockerVolume(tool_directory)
+            tool_volumes.append(volume)
+
+        tool_definition = _tool_conf_entry_for(all_tool_paths)
+        empty_tool_conf = config_join("empty_tool_conf.xml")
+
+        tool_conf = config_join("tool_conf.xml")
+
+        tool_conf = config_join("tool_conf.xml")
+        shed_tool_path = kwds.get("shed_tool_path") or config_join("shed_tools")
+        _ensure_directory(shed_tool_path)
+
+        sheds_config_path = _configure_sheds_config_file(
+            ctx, config_directory, **kwds
+        )
+        port = _get_port(kwds)
+        properties = _shared_galaxy_properties(kwds)
+        master_api_key = _get_master_api_key(kwds)
+
+        template_args = dict(
+            shed_tool_path=shed_tool_path,
+            tool_definition=tool_definition,
+            tool_conf=tool_conf,
+        )
+        tool_config_file = "%s,%s" % (tool_conf, shed_tool_conf)
+
+        tool_conf_contents = _sub(TOOL_CONF_TEMPLATE, template_args)
+        write_file(tool_conf, tool_conf_contents)
+        write_file(empty_tool_conf, EMPTY_TOOL_CONF_TEMPLATE)
+
+        shed_tool_conf_contents = _sub(SHED_TOOL_CONF_TEMPLATE, template_args)
+        # Write a new shed_tool_conf.xml if needed.
+        write_file(shed_tool_conf, shed_tool_conf_contents, force=False)
+
+        properties.update(dict(
+            tool_config_file=tool_config_file,
+            tool_sheds_config_file=sheds_config_path,
+            amqp_internal_connection="sqlalchemy+sqlite://",
+            migrated_tools_config=empty_tool_conf,
+        ))
+
+        server_name = "planemo%d" % random.randint(0, 100000)
+
+        # Value substitutions in Galaxy properties - for consistency with
+        # non-Dockerized version.
+        template_args = dict(
+        )
+        env = _build_env_for_galaxy(properties, template_args)
+        env["NONUSE"] = "nodejs,proftp,reports"
+        if ctx.verbose:
+            env["GALAXY_LOGGING"] = "full"
+
+        # TODO: setup FTP upload dir and disable FTP server in container.
+        _build_test_env(properties, env)
+
+        docker_target_kwds = docker_host_args(**kwds)
+        volumes = tool_volumes + [docker_util.DockerVolume(config_directory)]
+        yield DockerGalaxyConfig(
+            config_directory,
+            env,
+            test_data_dir,
+            port,
+            server_name,
+            master_api_key,
+            runnables,
+            docker_target_kwds=docker_target_kwds,
+            volumes=volumes,
+        )
+
+
+@contextlib.contextmanager
+def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
     """Set up a ``GalaxyConfig`` in an auto-cleaned context."""
     tool_paths = [r.path for r in runnables if r.has_tools]
     test_data_dir = _find_test_data(tool_paths, **kwds)
@@ -219,15 +299,17 @@ def galaxy_config(ctx, runnables, for_tests=False, **kwds):
         empty_tool_conf = config_join("empty_tool_conf.xml")
 
         tool_conf = config_join("tool_conf.xml")
-        database_location = config_join("galaxy.sqlite")
 
+        tool_conf = config_join("tool_conf.xml")
         shed_tool_path = kwds.get("shed_tool_path") or config_join("shed_tools")
         _ensure_directory(shed_tool_path)
 
         sheds_config_path = _configure_sheds_config_file(
             ctx, config_directory, **kwds
         )
-        master_api_key = kwds.get("master_api_key", DEFAULT_MASTER_API_KEY)
+
+        database_location = config_join("galaxy.sqlite")
+        master_api_key = _get_master_api_key(kwds)
         dependency_dir = os.path.join(config_directory, "deps")
         preseeded_database = attempt_database_preseed(
             galaxy_root,
@@ -247,7 +329,6 @@ def galaxy_config(ctx, runnables, for_tests=False, **kwds):
             tool_definition=tool_definition,
             tool_conf=tool_conf,
             debug=kwds.get("debug", "true"),
-            master_api_key=master_api_key,
             id_secret=kwds.get("id_secret", "test_secret"),
             log_level=kwds.get("log_level", "DEBUG"),
         )
@@ -266,7 +347,6 @@ def galaxy_config(ctx, runnables, for_tests=False, **kwds):
             new_file_path="${temp_directory}/tmp",
             tool_config_file=tool_config_file,
             tool_sheds_config_file=sheds_config_path,
-            check_migrate_tools="False",
             manage_dependency_relationships="False",
             job_working_directory="${temp_directory}/job_working_directory",
             template_cache_path="${temp_directory}/compiled_templates",
@@ -329,8 +409,6 @@ def galaxy_config(ctx, runnables, for_tests=False, **kwds):
         pid_file = kwds.get("pid_file") or config_join("galaxy.pid")
 
         yield LocalGalaxyConfig(
-            galaxy_root,
-            pid_file,
             config_directory,
             env,
             test_data_dir,
@@ -338,6 +416,8 @@ def galaxy_config(ctx, runnables, for_tests=False, **kwds):
             server_name,
             master_api_key,
             runnables,
+            galaxy_root,
+            pid_file,
         )
 
 
@@ -348,7 +428,7 @@ def _shared_galaxy_properties(kwds):
     modalities and many taken care of internally to the container in that mode.
     But this method sets up API stuff, tool, and job stuff that can be shared.
     """
-    master_api_key = kwds.get("master_api_key", DEFAULT_MASTER_API_KEY)
+    master_api_key = _get_master_api_key(kwds)
     user_email = _user_email(kwds)
     properties = {
         'master_api_key': master_api_key,
@@ -357,8 +437,15 @@ def _shared_galaxy_properties(kwds):
         'expose_dataset_path': "True",
         'cleanup_job': 'never',
         'collect_outputs_from': "job_working_directory",
+        'check_migrate_tools': "False",
+        'brand': 'Configured by Planemo',
     }
     return properties
+
+
+def _get_master_api_key(kwds):
+    master_api_key = kwds.get("master_api_key", DEFAULT_MASTER_API_KEY)
+    return master_api_key
 
 
 def _get_port(kwds):
@@ -457,6 +544,26 @@ class GalaxyConfig(object):
 
 class BaseGalaxyConfig(GalaxyConfig):
 
+    def __init__(
+        self,
+        config_directory,
+        env,
+        test_data_dir,
+        port,
+        server_name,
+        master_api_key,
+        runnables,
+    ):
+        self.config_directory = config_directory
+        self.env = env
+        self.test_data_dir = test_data_dir
+        self.port = port
+        self.server_name = server_name
+        self.master_api_key = master_api_key
+        self.runnables = runnables
+        self._user_api_key = None
+        self._workflow_ids = {}
+
     @property
     def gi(self):
         return gi(self.port, self.master_api_key)
@@ -510,13 +617,11 @@ class BaseGalaxyConfig(GalaxyConfig):
         return self._workflow_ids[path]
 
 
-class LocalGalaxyConfig(BaseGalaxyConfig):
-    """A local, non-containerized implementation of :class:`GalaxyConfig`."""
+class DockerGalaxyConfig(BaseGalaxyConfig):
+    """A :class:`GalaxyConfig` description of a Dockerized Galaxy instance."""
 
     def __init__(
         self,
-        galaxy_root,
-        pid_file,
         config_directory,
         env,
         test_data_dir,
@@ -524,21 +629,95 @@ class LocalGalaxyConfig(BaseGalaxyConfig):
         server_name,
         master_api_key,
         runnables,
+        docker_target_kwds,
+        volumes,
     ):
+        super(DockerGalaxyConfig, self).__init__(
+            config_directory,
+            env,
+            test_data_dir,
+            port,
+            server_name,
+            master_api_key,
+            runnables,
+        )
+        self.docker_target_kwds = docker_target_kwds
+        self.volumes = volumes
+
+    def kill(self):
+        """Kill planemo container..."""
+        kill_command = docker_util.kill_command(
+            **self.docker_target_kwds
+        )
+        return shell(kill_command)
+
+    def startup_command(self, ctx, **kwds):
+        """Return a shell command used to startup this instance.
+
+        Among other common planmo kwds, this should respect the
+        ``daemon`` keyword.
+        """
+        daemon = kwds.get("daemon", False)
+        daemon_str = "" if not daemon else " -d"
+        docker_run_extras = "-p %s:80%s" % (self.port, daemon_str)
+        env_directives = ["%s=%s" % item for item in self.env.items()]
+        image = kwds.get("docker_galaxy_image", "bgruening/galaxy-stable")
+        run_command = docker_util.build_docker_run_command(
+            "", image,
+            interactive=False,
+            env_directives=env_directives,
+            working_directory=None,
+            name=self.server_name,
+            run_extra_arguments=docker_run_extras,
+            set_user=False,
+            volumes=self.volumes,
+            **self.docker_target_kwds
+        )
+        return shell_join(
+            "chmod --recursive o+rwx '%s'" % self.config_directory,
+            run_command,
+        )
+
+    @property
+    def log_contents(self):
+        logs_command = docker_util.logs_command(
+            **self.docker_target_kwds
+        )
+        output, _ = communicate(
+            logs_command
+        )
+        return output
+
+    def cleanup(self):
+        shutil.rmtree(self.config_directory, CLEANUP_IGNORE_ERRORS)
+
+
+class LocalGalaxyConfig(BaseGalaxyConfig):
+    """A local, non-containerized implementation of :class:`GalaxyConfig`."""
+
+    def __init__(
+        self,
+        config_directory,
+        env,
+        test_data_dir,
+        port,
+        server_name,
+        master_api_key,
+        runnables,
+        galaxy_root,
+        pid_file,
+    ):
+        super(LocalGalaxyConfig, self).__init__(
+            config_directory,
+            env,
+            test_data_dir,
+            port,
+            server_name,
+            master_api_key,
+            runnables,
+        )
         self.galaxy_root = galaxy_root
         self._pid_file = pid_file
-        self.config_directory = config_directory
-        self.env = env
-        self.test_data_dir = test_data_dir
-        # Runtime server configuration stuff not used if testing...
-        # better design might be GalaxyRootConfig and GalaxyServerConfig
-        # as two separate objects.
-        self.port = port
-        self.server_name = server_name
-        self.master_api_key = master_api_key
-        self.runnables = runnables
-        self._user_api_key = None
-        self._workflow_ids = {}
 
     def kill(self):
         kill_pid_file(self._pid_file)

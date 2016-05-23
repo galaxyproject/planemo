@@ -20,6 +20,10 @@ def serve(ctx, runnables=[], **kwds):
 
 
 def _serve(ctx, runnables, **kwds):
+    engine = kwds.get("engine", "galaxy")
+    if engine == "docker_galaxy":
+        kwds["dockerize"] = True
+
     daemon = kwds.get("daemon", False)
     if daemon:
         kwds["no_cleanup"] = True
