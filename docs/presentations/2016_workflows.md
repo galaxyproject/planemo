@@ -4,9 +4,9 @@
 
 ### A Galaxy Philosophy
 
-* #### The most important Galaxy user is the biologist using the GUI, they come first!
+* The most important Galaxy user is the biologist using the GUI, they come first!
   * No one wants to inconvenience a bioinformatician or developer, but we will if absolutely required for the biologist.
-* #### Galaxy workflows will never require an SDK.
+* Galaxy workflows will never require an SDK.
   * Planemo, workflow formats, etc... are conveniences for people who prefer developer processes.
 
 ???
