@@ -22,9 +22,8 @@ def find_dois_for_xml(root):
     dois = []
     for element in root.root.findall("citations"):
         for citation in list(element):
-            if "type" in citation.attrib:
-                if citation.attrib["type"] == "doi":
-                    dois.append(citation.text)
+            if citation.tag == 'citation' and citation.attrib.get('type', '') == 'doi':
+                dois.append(citation.text)
     return dois
 
 
@@ -38,13 +37,13 @@ def is_doi(publication_id, lint_ctx):
     r = requests.get(url)
     if r.status_code == 200:
         if publication_id != doiless_publication_id:
-            lint_ctx.error("%s is valid, but galaxy expects DOI without 'doi:' prefix" % publication_id)
+            lint_ctx.error("%s is valid, but Galaxy expects DOI without 'doi:' prefix" % publication_id)
         else:
             lint_ctx.info("%s is a valid DOI" % publication_id)
     elif r.status_code == 404:
         lint_ctx.error("%s is not a valid DOI" % publication_id)
     else:
-        lint_ctx.info("dx.doi returned unexpected status code %d" % r.status_code)
+        lint_ctx.warn("dx.doi returned unexpected status code %d" % r.status_code)
 
 
 def lint_xsd(lint_ctx, schema_path, path):
