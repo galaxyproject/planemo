@@ -22,6 +22,12 @@ from planemo.tool_lint import lint_tools_on_path
     default=False,
     help="Check validity of URLs in XML files",
 )
+@click.option(
+    "--doi",
+    is_flag=True,
+    default=False,
+    help="Check validity of DOIs in XML files",
+)
 # @click.option(
 # "--verify",
 # is_flag=True,

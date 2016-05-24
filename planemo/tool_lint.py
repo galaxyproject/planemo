@@ -10,8 +10,10 @@ from planemo.exit_codes import (
     EXIT_CODE_GENERIC_FAILURE,
 )
 
-import planemo.linters.xsd
+import planemo.linters.doi
 import planemo.linters.urls
+import planemo.linters.xsd
+
 
 from planemo.tools import (
     load_tool_sources_from_path,
@@ -93,6 +95,9 @@ def _lint_extra_modules(**kwds):
     linters = []
     if kwds.get("xsd", False):
         linters.append(planemo.linters.xsd)
+
+    if kwds.get("doi", False):
+        linters.append(planemo.linters.doi)
 
     if kwds.get("urls", False):
         linters.append(planemo.linters.urls)
