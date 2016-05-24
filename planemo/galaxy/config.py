@@ -15,6 +15,7 @@ from six.moves.urllib.request import urlretrieve
 
 import click
 from galaxy.tools.deps import docker_util
+from galaxy.tools.deps.commands import argv_to_str
 
 from .run import (
     setup_common_startup_args,
@@ -152,15 +153,14 @@ FAILED_TO_FIND_GALAXY_EXCEPTION = (
     "with --galaxy_root."
 )
 CLEANUP_IGNORE_ERRORS = True
+DEFAULT_GALAXY_BRAND = 'Configured by Planemo'
 
 
 @contextlib.contextmanager
 def galaxy_config(ctx, runnables, **kwds):
     """Set up a ``GalaxyConfig`` in an auto-cleaned context."""
     dockerize = kwds.get("dockerize", False)
-    print(kwds)
     c = docker_galaxy_config if dockerize else local_galaxy_config
-    print(c)
     with c(ctx, runnables, **kwds) as config:
         yield config
 
@@ -178,7 +178,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         _handle_dependency_resolution(config_directory, kwds)
         _handle_job_metrics(config_directory, kwds)
 
-        shed_tool_conf = kwds.get("shed_tool_conf") or config_join("shed_tools_conf.xml")
+        shed_tool_conf = "config/shed_tool_conf.xml"
         all_tool_paths = list(tool_paths) + list(kwds.get("extra_tools", []))
 
         tool_directories = set([])  # Things to mount...
@@ -219,10 +219,6 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         write_file(tool_conf, tool_conf_contents)
         write_file(empty_tool_conf, EMPTY_TOOL_CONF_TEMPLATE)
 
-        shed_tool_conf_contents = _sub(SHED_TOOL_CONF_TEMPLATE, template_args)
-        # Write a new shed_tool_conf.xml if needed.
-        write_file(shed_tool_conf, shed_tool_conf_contents, force=False)
-
         properties.update(dict(
             tool_config_file=tool_config_file,
             tool_sheds_config_file=sheds_config_path,
@@ -246,6 +242,9 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
         docker_target_kwds = docker_host_args(**kwds)
         volumes = tool_volumes + [docker_util.DockerVolume(config_directory)]
+        export_directory = kwds.get("export_directory", None)
+        if export_directory is not None:
+            volumes.append(docker_util.DockerVolume(export_directory, "/export"))
         yield DockerGalaxyConfig(
             config_directory,
             env,
@@ -256,6 +255,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             runnables,
             docker_target_kwds=docker_target_kwds,
             volumes=volumes,
+            export_directory=export_directory,
         )
 
 
@@ -438,7 +438,7 @@ def _shared_galaxy_properties(kwds):
         'cleanup_job': 'never',
         'collect_outputs_from': "job_working_directory",
         'check_migrate_tools': "False",
-        'brand': 'Configured by Planemo',
+        'brand': kwds.get("galaxy_brand", DEFAULT_GALAXY_BRAND),
     }
     return properties
 
@@ -631,6 +631,7 @@ class DockerGalaxyConfig(BaseGalaxyConfig):
         runnables,
         docker_target_kwds,
         volumes,
+        export_directory,
     ):
         super(DockerGalaxyConfig, self).__init__(
             config_directory,
@@ -643,6 +644,7 @@ class DockerGalaxyConfig(BaseGalaxyConfig):
         )
         self.docker_target_kwds = docker_target_kwds
         self.volumes = volumes
+        self.export_directory = export_directory
 
     def kill(self):
         """Kill planemo container..."""
@@ -673,8 +675,17 @@ class DockerGalaxyConfig(BaseGalaxyConfig):
             volumes=self.volumes,
             **self.docker_target_kwds
         )
+        chmod_command = [
+            "chmod",
+            "--recursive",
+            "o+rwx",
+            self.config_directory,
+        ]
+        if self.export_directory:
+            chmod_command.append(self.export_directory)
+
         return shell_join(
-            "chmod --recursive o+rwx '%s'" % self.config_directory,
+            argv_to_str(chmod_command),
             run_command,
         )
 

@@ -1,4 +1,5 @@
 """The module describes a CLI framework extending ``click``."""
+import functools
 import os
 import sys
 import traceback
@@ -47,7 +48,7 @@ class Context(object):
     def set_option_source(self, param_name, option_source, force=False):
         """Specify how an option was set."""
         if not force:
-            assert param_name not in self.option_source
+            assert param_name not in self.option_source, "No option source for [%s]" % param_name
         self.option_source[param_name] = option_source
 
     def get_option_source(self, param_name):
@@ -159,22 +160,34 @@ class PlanemoCLI(click.MultiCommand):
 
 def command_function(f):
     """Extension point for processing kwds after click callbacks."""
+    @functools.wraps(f)
     def handle_profile_options(*args, **kwds):
         profile = kwds.get("profile", None)
         if profile:
             ctx = args[0]
-            profile_defaults = profiles.ensure_profile(ctx, profile, **kwds)
-            for key, value in profile_defaults.items():
-                if ctx.get_option_source(key) != OptionSource.cli:
-                    kwds[key] = value
-                    ctx.set_option_source(key, OptionSource.profile, force=True)
+            profile_defaults = profiles.ensure_profile(
+                ctx, profile, **kwds
+            )
+            _setup_profile_options(ctx, profile_defaults, kwds)
+
         try:
             return f(*args, **kwds)
         except ExitCodeException as e:
             sys.exit(e.exit_code)
 
-    handle_profile_options.__doc__ = f.__doc__
     return pass_context(handle_profile_options)
+
+
+def _setup_profile_options(ctx, profile_defaults, kwds):
+    for key, value in profile_defaults.items():
+        option_present = key in kwds
+        option_cli_specified = option_present and (ctx.get_option_source(key) == OptionSource.cli)
+        use_profile_option = not option_present or not option_cli_specified
+        if use_profile_option:
+            kwds[key] = value
+            ctx.set_option_source(
+                key, OptionSource.profile, force=True
+            )
 
 
 @click.command(cls=PlanemoCLI, context_settings=CONTEXT_SETTINGS)
