@@ -104,7 +104,7 @@ setup(
     package_dir=PACKAGE_DIR,
     include_package_data=True,
     install_requires=requirements,
-    extras_requires={
+    extras_require={
         ':python_version=="2.7"': [
             'cwltool',
         ],

@@ -52,7 +52,7 @@ class LocalPostgresDatabaseSource(DatabaseSource):
     def _run_sql_command(self, sql):
         # communicate is just joining commands so we need to modify the
         # sql as an argument - it shouldn't do this.
-        sql_arg = '"%s"' % sql
+        sql_arg = '%s' % sql
         command_builder = self._psql_command_builder("--command", sql_arg)
         self._communicate(command_builder)
 
