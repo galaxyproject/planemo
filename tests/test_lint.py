@@ -66,6 +66,6 @@ class LintTestCase(CliTestCase):
         self._check_exit_code(lint_cmd, exit_code=0)
 
     def test_lint_doi(self):
-        fail_doi = os.path.join(TEST_TOOLS_DIR, "invalid.xml_doi.xml")
+        fail_doi = os.path.join(TEST_TOOLS_DIR, "invalid_doi.xml")
         lint_cmd = ["lint", "--doi", fail_doi]
         self._check_exit_code(lint_cmd, exit_code=1)
