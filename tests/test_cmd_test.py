@@ -1,4 +1,5 @@
 """Module contains :class:`CmdTestTestCase` - integration tests for the ``test`` command."""
+import json
 import os
 
 from .test_utils import (
@@ -42,3 +43,40 @@ class CmdTestTestCase(CliTestCase):
             ]
             self._check_exit_code(test_command, exit_code=0)
             assert_exists(os.path.join(f, "tool_test_output.json"))
+
+    @skip_unless_python_2_7()
+    def test_output_checks(self):
+        """Test testing a CWL tool with cwltool."""
+        with self._isolate() as f:
+            test_artifact = os.path.join(TEST_DATA_DIR, "output_tests_tool.cwl")
+            test_command = [
+                "test",
+                "--no-container",
+                "--engine", "cwltool",
+                test_artifact,
+            ]
+            self._check_exit_code(test_command, exit_code=1)
+            output_json_path = os.path.join(f, "tool_test_output.json")
+            with open(output_json_path, "r") as f:
+                output = json.load(f)
+            assert "tests" in output
+            tests = output["tests"]
+            # check out tests/data/output_tests_tool_test.yml
+            expected_statuses = [
+                "success",
+                "failure",
+                "success",
+                "success",
+                "failure",
+                "success",
+                "failure",
+                "success",
+                "failure",
+                "success",
+                "failure",
+            ]
+            for i in range(len(expected_statuses)):
+                test_i = tests[i]
+                data = test_i["data"]
+                expected_status = expected_statuses[i]
+                assert data["status"] == expected_status

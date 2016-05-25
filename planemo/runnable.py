@@ -21,6 +21,7 @@ from galaxy.tools.parser import get_tool_source
 from planemo.galaxy.workflows import describe_outputs
 from planemo.exit_codes import EXIT_CODE_UNKNOWN_FILE_TYPE, ExitCodeException
 from planemo.io import error
+from planemo.test import check_output
 
 TEST_SUFFIXES = [
     "-tests", "_tests", "-test", "_test"
@@ -230,12 +231,14 @@ class TestCase(object):
                 output_problems.append("No path specified for expected output file [%s]" % output_id)
                 return
 
-            properties = output_properties(output_value["path"])
-            if "checksum" in output_test:
-                expected_checksum = output_test["checksum"]
-                actual_checksum = properties["checksum"]
-                if expected_checksum != actual_checksum:
-                    output_problems.append("Expected checksum [%s] does not equal computed checksum [%s]." % (expected_checksum, actual_checksum))
+            output_problems.extend(
+                check_output(
+                    self.runnable,
+                    output_value,
+                    output_test,
+                    # TODO: needs kwds in here...
+                )
+            )
 
         return output_problems
 
