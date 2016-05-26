@@ -103,9 +103,16 @@ var renderTestResults = function(testData) {
 var TestResult = function(data) {
 	this.rawId = data["id"];
 
-	var testMethod = this.rawId.split("TestForTool_")[1];
-	var toolName = testMethod.split(".test_tool_")[0];
-	var testIndex = testMethod.split(".test_tool_")[1];
+	var idParts = this.rawId.split("TestForTool_");
+	var testMethod = idParts[idParts.length-1];
+	var splitParts;
+	if(testMethod.indexOf(".test_tool_") > -1) {
+		splitParts = testMethod.split(".test_tool_");
+	} else {
+		splitParts = rSplit(testMethod, "_", 1);
+	}
+	var toolName = splitParts[0];
+	var testIndex = splitParts[1];
 	this.toolName = toolName;
 	this.testIndex = parseInt(testIndex);
 	console.log(data);
@@ -129,6 +136,12 @@ var TestResult = function(data) {
 	}
 	this.problemLog = data["data"]["problem_log"];
 	this.passed = (this.status == "success");
+}
+
+// http://stackoverflow.com/questions/5202085/javascript-equivalent-of-pythons-rsplit
+function rSplit(str, sep, maxsplit) {
+    var split = str.split(sep);
+    return maxsplit ? [ split.slice(0, -maxsplit).join(sep) ].concat(split.slice(-maxsplit)) : split;
 }
 
 
