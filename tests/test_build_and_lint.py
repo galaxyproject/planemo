@@ -39,8 +39,8 @@ class BuildAndLintTestCase(CliTestCase):
             self._check_exit_code(_cwl_init_command())
             self._check_lint(filename="seqtk_seq.cwl", exit_code=0)
 
-            with open(os.path.join(f, "seqtk_seq.cwl")) as f:
-                process_dict = yaml.load(f)
+            with open(os.path.join(f, "seqtk_seq.cwl")) as stream:
+                process_dict = yaml.load(stream)
             assert process_dict["id"] == "seqtk_seq"
             assert process_dict["label"] == "Convert to FASTA (seqtk)"
             assert process_dict["baseCommand"] == ["seqtk", "seq"]
@@ -52,6 +52,10 @@ class BuildAndLintTestCase(CliTestCase):
             assert output["type"] == "File"
             assert output["outputBinding"]["glob"] == "out"
             assert process_dict["stdout"] == "out"
+
+            with open(os.path.join(f, "seqtk_seq_tests.yml")) as stream:
+                test_dict = yaml.load(stream)
+                assert test_dict
 
     def test_cwl_fail_on_empty_help(self):
         with self._isolate():
@@ -68,7 +72,7 @@ class BuildAndLintTestCase(CliTestCase):
         self._check_exit_code(lint_cmd, exit_code=exit_code)
 
 
-def _cwl_init_command(help_text=True, container=True):
+def _cwl_init_command(help_text=True, container=True, test_case=True):
     command = [
         "tool_init", "--force", "--cwl",
         "--id", "seqtk_seq",
@@ -83,6 +87,8 @@ def _cwl_init_command(help_text=True, container=True):
         command.extend(["--container", "jmchilton/seqtk:v1"])
     if help_text:
         command.extend(["--help_text", "The help text."])
+    if test_case:
+        command.append("--test_case")
 
     return command
 

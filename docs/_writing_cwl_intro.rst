@@ -64,6 +64,7 @@ tool is generated.
                         --example_input 2.fastq \
                         --example_output 2.fasta \
                         --container 'dukegcb/seqtk' \
+                        --test_case \
                         --help_from_command 'seqtk seq'
 
 This command generates the following CWL YAML file.
@@ -88,9 +89,49 @@ This command generates the following CWL YAML file.
     Applying linter new_draft... CHECK
     .. INFO: Modern CWL version [cwl:draft-3]
 
-A later revision of this document ill discuss defining more
-parameters for this tool and include information on generating and
-running tests with planemo for CWL tools.
+In addition to the file actual tool file, a test file will be generated
+using the example command and provided test data. The file contents are as
+follows:
+
+.. literalinclude:: writing/seqtk_seq_tests_v3.yml
+   :language: yaml
+
+This file is a planemo-specific artifact. This file may contain 1 or more
+tests - each test is an element of the top-level list. ``tool_init`` will use
+the example command to build just one test.
+
+Each test consists of a few parts:
+
+- ``doc`` - this attribute provides a short description for the test.
+- ``job`` - this can be the path to a CWL job description or a job 
+  description embedded right in the test (``tool_init`` builds the latter). 
+- ``outputs`` - this section describes the expected output for a test. Each
+  output ID of the tool or workflow under test can appear as a key. The
+  example above just describes expected specific output file contents exactly
+  but many more expectations can be described.
+
+The tests described in this file can be run using the planemo ``test`` (or
+simply ``t``) command on the original file. By default, planemo will run tool
+tests with Galaxy but we can also specify the use of ``cwltool`` (the 
+reference implementation of CWL) which will be quicker and more robust until
+while Galaxy support for the CWL is still in development.
+
+    $ planemo test --no-container --engine cwltool seqtk_seq.cwl
+    Enable beta testing mode to test artifact that isn't a Galaxy tool.
+    All 1 test(s) executed passed.
+    seqtk_seq_0: passed
+
+We can also open up the Galaxy web inteface with this tool loaded
+using the ``serve`` (or just ``s``) command.
+
+::
+
+    $ planemo s --cwl seqtk_seq.cwl
+    ...
+    serving on http://127.0.0.1:9090
+
+Open up http://127.0.0.1:9090 in a web browser to view your new 
+tool.
 
 For more information on the Common Workflow Language check out the Draft 3
 `User Guide`_ and Specification_.

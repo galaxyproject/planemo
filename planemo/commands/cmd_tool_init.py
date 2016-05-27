@@ -194,23 +194,31 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
 def cli(ctx, **kwds):
     """Generate a tool outline from supplied arguments."""
     invalid = _validate_kwds(kwds)
+    tool_id = kwds.get("id")
     if invalid:
         ctx.exit(invalid)
     output = kwds.get("tool")
     if not output:
         extension = "cwl" if kwds.get("cwl") else "xml"
-        output = "%s.%s" % (kwds.get("id"), extension)
+        output = "%s.%s" % (tool_id, extension)
     if not io.can_write_to_path(output, **kwds):
         ctx.exit(1)
     tool_description = tool_builder.build(**kwds)
-    with open(output, "w") as f:
-        f.write(tool_description.contents)
+    io.write_file(output, tool_description.contents)
     io.info("Tool written to %s" % output)
+    test_contents = tool_description.test_contents
+    if test_contents:
+        sep = "-" if "-" in tool_id else "_"
+        tests_path = "%s%stests.yml" % (kwds.get("id"), sep)
+        if not io.can_write_to_path(tests_path, **kwds):
+            ctx.exit(1)
+        io.write_file(tests_path, test_contents)
+        io.info("Tool tests written to %s" % tests_path)
+
     macros = kwds["macros"]
     macros_file = "macros.xml"
     if macros and not os.path.exists(macros_file):
-        with open(macros_file, "w") as f:
-            f.write(tool_description.macro_contents)
+        io.write_file(macros_file, tool_description.macro_contents)
     elif macros:
         io.info(REUSING_MACROS_MESSAGE)
     if tool_description.test_files:

@@ -132,14 +132,13 @@ MACROS_TEMPLATE = """<macros>
 </macros>
 """
 
-
 CWL_TEMPLATE = """#!/usr/bin/env cwl-runner
 cwlVersion: '{{cwl_version}}'
 class: CommandLineTool
 id: "{{id}}"
 label: "{{label}}"
 {%- if containers %}
-requirements:
+hints:
 {%- for container in containers %}
   - class: DockerRequirement
     dockerPull: {{ container.image_id }}
@@ -225,6 +224,33 @@ description: |
 {%- endif %}
 """
 
+CWL_TEST_TEMPLATE = """
+- doc: test generated from example command
+{%- if inputs %}
+  job:
+{%- for input in inputs %}
+{%- if input.type == "File" %}
+    {{ input.id }}:
+      class: File
+      path: test-data/{{ input.example_value }}
+{%- else %}
+    {{ input.id }}: {{ input.example_value }}
+{%- endif %}
+{%- endfor %}
+{%- else %}
+  job: TODO
+{%- endif %}
+{%- if outputs %}
+  outputs:
+{%- for output in outputs %}
+    {{ output.id }}:
+      path: test-data/{{ output.example_value }}
+{%- endfor %}
+{%- else %}
+  outputs: TODO
+{%- endif %}
+"""
+
 
 def build(**kwds):
     """Build up a :func:`ToolDescription` from supplid arguments."""
@@ -250,12 +276,22 @@ def _build_cwl(**kwds):
     render_kwds.update(command_io.cwl_properties())
 
     contents = _render(render_kwds, template_str=CWL_TEMPLATE)
-    macro_contents = None
+    test_contents = None
     test_files = []
+    if kwds["test_case"]:
+        test_contents = _render(render_kwds, template_str=CWL_TEST_TEMPLATE)
+        for cwl_input in render_kwds["inputs"] or []:
+            if cwl_input.type == "File" and cwl_input.example_value:
+                test_files.append(cwl_input.example_value)
+
+        for cwl_output in render_kwds["outputs"] or []:
+            if cwl_output.example_value:
+                test_files.append(cwl_output.example_value)
+
     return ToolDescription(
         contents,
-        macro_contents,
-        test_files
+        test_contents=test_contents,
+        test_files=test_files
     )
 
 
@@ -292,7 +328,11 @@ def _build_galaxy(**kwds):
     if kwds["macros"]:
         macro_contents = _render(kwds, MACROS_TEMPLATE)
 
-    return ToolDescription(contents, macro_contents, test_files)
+    return ToolDescription(
+        contents,
+        macro_contents,
+        test_files=test_files
+    )
 
 
 class CommandIO(object):
@@ -383,16 +423,32 @@ class CommandIO(object):
         for position, (prefix, value) in enumerate(prefixed_parts):
             if value in self.example_input_names():
                 input_count += 1
-                input = CwlInput("input%d" % input_count, position, prefix)
+                input = CwlInput(
+                    "input%d" % input_count,
+                    position,
+                    prefix,
+                    value,
+                )
                 parse_list.append(input)
             elif value in self.example_output_names():
                 output_count += 1
-                output = CwlOutput("output%d" % output_count, position, prefix)
+                output = CwlOutput(
+                    "output%d" % output_count,
+                    position,
+                    prefix,
+                    value,
+                )
                 parse_list.append(output)
             elif prefix:
                 param_id = prefix.prefix.lower().rstrip("=")
                 type_ = param_type(value)
-                input = CwlInput(param_id, position, prefix, type_=type_)
+                input = CwlInput(
+                    param_id,
+                    position,
+                    prefix,
+                    value,
+                    type_=type_,
+                )
                 parse_list.append(input)
             else:
                 part = CwlCommandPart(value, position, prefix)
@@ -495,10 +551,11 @@ class CwlCommandPart(object):
 
 class CwlInput(object):
 
-    def __init__(self, id, position, prefix, type_="File"):
+    def __init__(self, id, position, prefix, example_value, type_="File"):
         self.id = id
         self.position = position
         self.prefix = prefix
+        self.example_value = example_value
         self.type = type_
 
     def is_token(self, value):
@@ -507,11 +564,12 @@ class CwlInput(object):
 
 class CwlOutput(object):
 
-    def __init__(self, id, position, prefix):
+    def __init__(self, id, position, prefix, example_value):
         self.id = id
         self.position = position
         self.prefix = prefix
         self.glob = None
+        self.example_value = example_value
         self.require_filename = True
 
     def is_token(self, value):
@@ -646,8 +704,9 @@ class UrlCitation(object):
 class ToolDescription(object):
     """An description of the tool and related files to create."""
 
-    def __init__(self, contents, macro_contents=None, test_files=[]):
+    def __init__(self, contents, macro_contents=None, test_contents=None, test_files=[]):
         self.contents = contents
+        self.test_contents = test_contents
         self.macro_contents = macro_contents
         self.test_files = test_files
 

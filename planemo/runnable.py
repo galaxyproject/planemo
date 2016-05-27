@@ -123,7 +123,14 @@ def cases(runnable):
                 i + 1, tests_path, "job"
             )
             raise Exception(message)
-        job_path = normalize_to_tests_path(test_def["job"])
+        job_def = test_def["job"]
+        if isinstance(job_def, dict):
+            job_path = None
+            job = job_def
+        else:
+            job_path = normalize_to_tests_path(job_def)
+            job = None
+
         doc = test_def.get("doc", None)
         output_expectations = test_def.get("outputs", {})
         case = TestCase(
@@ -132,6 +139,7 @@ def cases(runnable):
             output_expectations=output_expectations,
             index=i,
             job_path=job_path,
+            job=job,
             doc=doc,
         )
         cases.append(case)
@@ -142,10 +150,11 @@ def cases(runnable):
 class TestCase(object):
     """Describe an abstract test case for a specified runnable."""
 
-    def __init__(self, runnable, tests_directory, output_expectations, job_path, index, doc):
+    def __init__(self, runnable, tests_directory, output_expectations, job_path, job, index, doc):
         """Construct TestCase object from required attributes."""
         self.runnable = runnable
         self.job_path = job_path
+        self.job = job
         self.output_expectations = output_expectations
         self.tests_directory = tests_directory
         self.index = index
@@ -208,13 +217,20 @@ class TestCase(object):
         job_info = run_response.job_info
         if job_info is not None:
             data_dict["job"] = job_info
-        with open(self.job_path, "r") as f:
-            data_dict["inputs"] = f.read()
+        data_dict["inputs"] = self._job
         return dict(
             id=("%s_%s" % (self._test_id, self.index)),
             has_data=True,
             data=data_dict,
         )
+
+    @property
+    def _job(self):
+        if self.job_path is not None:
+            with open(self.job_path, "r") as f:
+                return f.read()
+        else:
+            return self.job
 
     def _check_output(self, output_id, output_value, output_test):
         output_problems = []

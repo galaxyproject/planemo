@@ -1,6 +1,10 @@
 """Module contianing the :class:`Engine` abstraction."""
 
 import abc
+import json
+import os
+import tempfile
+
 from planemo.runnable import (
     for_path,
     cases,
@@ -97,7 +101,24 @@ class BaseEngine(Engine):
             )
             runnable = test_case.runnable
             job_path = test_case.job_path
-            run_response = self._run(runnable, job_path)
+            tmp_path = None
+            if job_path is None:
+                job = test_case.job
+                f = tempfile.NamedTemporaryFile(
+                    dir=test_case.tests_directory,
+                    suffix=".json",
+                    prefix="plnmotmptestjob",
+                    delete=False,
+                )
+                tmp_path = f.name
+                job_path = tmp_path
+                json.dump(job, f)
+                f.close()
+            try:
+                run_response = self._run(runnable, job_path)
+            finally:
+                if tmp_path:
+                    os.remove(tmp_path)
             self._ctx.vlog(
                 "Test case [%s] resulted in run response [%s]",
                 test_case,
