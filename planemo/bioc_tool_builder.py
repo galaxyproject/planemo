@@ -1,6 +1,6 @@
 import subprocess
 from planemo import templates
-
+from planemo.io import info
 
 TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
 {%- if description %}
@@ -128,8 +128,11 @@ def build(**kwds):
     # ignored unless kwds["test_case"] is truthy.
     test_case = TestCase()
 
-    command = _find_command(kwds)
+    for count, thing in enumerate(kwds):
+        print '{0}. {1}'.format(count, thing)
 
+    command = _find_command(kwds)
+    print("command: ", command)
     _handle_help(kwds)
 
     # process raw cite urls
@@ -182,6 +185,11 @@ def build(**kwds):
     kwds["inputs"] = inputs
     kwds["outputs"] = outputs
 
+    info("Print inputs")
+    print("Type of inputs: ", type(inputs))
+    print("Type of kwds input: ", type(kwds["inputs"]))
+    # for item in inputs:
+    #     print type(item)
     # handle requirements and containers
     _handle_requirements(kwds)
 
@@ -212,7 +220,7 @@ def _replace_file_in_command(command, specified_file, name):
     """ Replace example file with cheetah variable name in supplied command
     or command template. Be sure to quote the name.
     """
-    # TODO: check if the supplied variant was single quoted already.
+    # TODO: check if the supplied variant was single quoted already.kk
     if '"%s"' % specified_file in command:
         # Sample command already wrapped filename in double quotes
         command = command.replace(specified_file, '$%s' % name)
@@ -264,20 +272,22 @@ def _handle_requirements(kwds):
     into abstract format for consumption by the template.
     """
     requirements = kwds["requirement"]
+    bioconda_path = kwds["bioconda_path"]
+    print("Requirenemnts:", kwds["requirement"])
     del kwds["requirement"]
-    requirements = map(Requirement, requirements or [])
-
-    container = kwds["container"]
-    del kwds["container"]
-    containers = map(Container, container or [])
+    requirements = [Requirement(bioconda_path=bioconda_path) for req in requirements ]
+    # requirements = map(Requirement, requirements or [])
+    # container = kwds["container"]
+    # del kwds["container"]
+    # containers = map(Container, container or [])
 
     kwds["requirements"] = requirements
-    kwds["containers"] = containers
+    # kwds["containers"] = containers
 
 
 def _find_command(kwds):
     """ Find base command from supplied arguments or just return None if no
-    such command was supplied (template will just replace this with TODO
+    such k was supplied (template will just replace this with TODO
     item).
     """
     command = kwds.get("command")
@@ -387,13 +397,19 @@ class Output(object):
 
 class Requirement(object):
 
-    def __init__(self, requirement):
+    def __init__(self, requirement, bioconda_path):
         parts = requirement.split("@", 1)
-        if len(parts) > 1:
-            name = parts[0]
-            version = "@".join(parts[1:])
+        print("parts: ", parts)
+        if not os.path.exists(bioconda_path):
+            clone_bioconda_repo(bioconda_path)
+            if len(parts) > 1:
+                name = parts[0]
+                print("name: ", name)
+                write_bioconda_recipe(name,False,True,bioconda_path)
+                version = "@".join(parts[1:])
         else:
             name = parts[0]
+            print("name2: ", name)
             version = None
         self.name = name
         self.version = version

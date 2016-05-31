@@ -41,7 +41,8 @@ from planemo.conda import clone_bioconda_repo, write_bioconda_recipe
 def cli(ctx, **kwds):
     """Make a conda recipe, given a package name.
 
-    package_name: motifbreakR
+    package_name = motifbreakR
+
     bioconda_dir = '/Users/nturaga/Documents/workspace'.
     """
     package_name = kwds.get("package_name")

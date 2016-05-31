@@ -1,15 +1,15 @@
 """Module describing the planemo ``bioc_tool_init`` command."""
 import os
 import sys
-# import logging
 
 import click
 
-from planemo.cli import command_function
-from planemo import options
-from planemo import io
 from planemo import bioc_tool_builder
 from planemo import bioconductor_skeleton
+from planemo import io
+from planemo import options
+from planemo.cli import command_function
+from planemo.io import info
 
 
 REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
@@ -144,6 +144,15 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
           "for Galxy users (e.g. 10.1101/014043).")
 )
 @click.option(
+    "--requirement",
+    type=click.STRING,
+    default=None,
+    multiple=True,
+    prompt=True,
+    help=("Give the name of the bioconductor package,"
+          "requirements will be set using bioconda. eg: 'motifbreakR' ")
+)
+@click.option(
     "--named_output",
     type=click.STRING,
     multiple=True,
@@ -154,6 +163,21 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
           "in your command block."),
 )
 @click.option(
+    "--test_case",
+    is_flag=True,
+    default=None,
+    prompt=False,
+    help=("For use with --example_commmand, generate a tool test case from "
+          "the supplied example."),
+)
+@click.option(
+    "--macros",
+    is_flag=True,
+    default=None,
+    prompt=False,
+    help="Generate a macros.xml for reuse across many tools.",
+)
+@click.option(
     "--cite_url",
     type=click.STRING,
     default=None,
@@ -161,20 +185,26 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
     prompt=False,
     help=("Supply a URL for citation.")
 )
+@click.option(
+    "--bioconda_path",
+    type=click.STRING,
+    default=None,
+    prompt=True,
+    help=("Give path to bioconda repository,"
+          " if left empty, path will be made in home directory")
+)
 @click.command("bioc_tool_init")
 @command_function
 def cli(ctx, **kwds):
     """Generate a bioconductor tool outline from supplied arguments.
     """
+    info("arguments: \n")
     for count, thing in enumerate(kwds):
-        print "Valid arguments: \n"
-        print '{0}. {1}'.format(count, thing)
+        info("{0}.{1}".format(count, thing))
 
     invalid = _validate_kwds(kwds)
 
-    for count, thing in enumerate(kwds):
-        print "invalid arguments: \n"
-        print '{0}. {1}'.format(count, thing)
+    # info("invalid arguments: \n", invalid)
 
     if invalid:
         return invalid
@@ -183,8 +213,10 @@ def cli(ctx, **kwds):
         output = "%s.xml" % kwds.get("id")
     if not io.can_write_to_path(output, **kwds):
         sys.exit(1)
-    print("Tool building starts here")
+    info("Tool building starts here")
     tool_description = bioc_tool_builder.build(**kwds)
+    info("Tool definition file: \n")
+    info(tool_description)
     open(output, "w").write(tool_description.contents)
     io.info("Tool written to %s" % output)
     macros = kwds["macros"]
@@ -226,14 +258,3 @@ def _validate_kwds(kwds):
     if not_specifing_dependent_option("test_case", "example_command"):
         return 1
     return 0
-
-
-def _make_bioconda_recipe(kwds):
-    """Generate a bioconda recipe for the name of the
-    bioconductor package given
-    """
-    bioc_package_name = kwds.get("name")
-    # Write new bioconda-recipes in a temp directory
-    recipe_dir = os.mkdir("temp")
-    bioconductor_skeleton.write_recipe(bioc_package_name, recipe_dir)
-    return
