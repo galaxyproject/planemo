@@ -424,7 +424,7 @@ class Requirement(object):
                 with open(recipe_path, 'r') as f:
                     doc = yaml.load(f)
                     version = doc["package"]["version"]
-            except IOError:
+            except IOError: 
                 version = None
         self.name = name
         self.version = version
