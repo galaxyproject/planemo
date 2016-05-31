@@ -1,9 +1,10 @@
 
 import subprocess
+import yaml
 import os
 from planemo import templates
 from planemo.io import info
-from planemo.conda import clone_bioconda_repo, write_bioconda_recipe
+from planemo.conda import write_bioconda_recipe
 
 TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
 {%- if description %}
@@ -404,17 +405,27 @@ class Requirement(object):
     def __init__(self, requirement, bioconda_path):
         parts = requirement.split("@", 1)
         print("parts: ", parts)
-        # Get version from parts
-        # if len(parts) >= 1:
-
         if len(parts) > 1:
             name = parts[0]
             print("name: ", name)
             write_bioconda_recipe(name, True, True, bioconda_path)
             version = "@".join(parts[1:])
         else:
+            # Get version from parts, if version not given
             name = parts[0]
-            version = None
+            write_bioconda_recipe(name, True, True, bioconda_path)
+            recipe_path = os.path.join(bioconda_path,
+                                       "bioconda-recipes",
+                                       "recipes",
+                                       "bioconductor-" + name.lower(),
+                                       "meta.yaml")
+            print("recipe_path", recipe_path)
+            try:
+                with open(recipe_path, 'r') as f:
+                    doc = yaml.load(f)
+                    version = doc["package"]["version"]
+            except IOError:
+                version = None
         self.name = name
         self.version = version
 
