@@ -1,6 +1,9 @@
+
 import subprocess
+import os
 from planemo import templates
 from planemo.io import info
+from planemo.conda import clone_bioconda_repo, write_bioconda_recipe
 
 TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
 {%- if description %}
@@ -273,9 +276,10 @@ def _handle_requirements(kwds):
     """
     requirements = kwds["requirement"]
     bioconda_path = kwds["bioconda_path"]
-    print("Requirenemnts:", kwds["requirement"])
+    print("Requirenments:", kwds["requirement"])
     del kwds["requirement"]
-    requirements = [Requirement(bioconda_path=bioconda_path) for req in requirements ]
+    requirements = requirements or []
+    requirements = [Requirement(req, bioconda_path=bioconda_path) for req in requirements]
     # requirements = map(Requirement, requirements or [])
     # container = kwds["container"]
     # del kwds["container"]
@@ -400,16 +404,16 @@ class Requirement(object):
     def __init__(self, requirement, bioconda_path):
         parts = requirement.split("@", 1)
         print("parts: ", parts)
-        if not os.path.exists(bioconda_path):
-            clone_bioconda_repo(bioconda_path)
-            if len(parts) > 1:
-                name = parts[0]
-                print("name: ", name)
-                write_bioconda_recipe(name,False,True,bioconda_path)
-                version = "@".join(parts[1:])
+        # Get version from parts
+        # if len(parts) >= 1:
+
+        if len(parts) > 1:
+            name = parts[0]
+            print("name: ", name)
+            write_bioconda_recipe(name, True, True, bioconda_path)
+            version = "@".join(parts[1:])
         else:
             name = parts[0]
-            print("name2: ", name)
             version = None
         self.name = name
         self.version = version

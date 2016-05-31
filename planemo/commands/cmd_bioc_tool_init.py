@@ -216,7 +216,7 @@ def cli(ctx, **kwds):
     info("Tool building starts here")
     tool_description = bioc_tool_builder.build(**kwds)
     info("Tool definition file: \n")
-    info(tool_description)
+    print(type(tool_description))
     open(output, "w").write(tool_description.contents)
     io.info("Tool written to %s" % output)
     macros = kwds["macros"]
