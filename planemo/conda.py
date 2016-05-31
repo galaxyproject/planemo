@@ -51,7 +51,7 @@ def clone_bioconda_repo(path):
 
 def write_bioconda_recipe(package_name, clone, update, bioconda_dir_path):
     """Make a bioconda recipe given the package name."""
-    bioconda_recipe_path = os.path.join(bioconda_dir_path, "biconda-recipes")
+    bioconda_recipe_path = os.path.join(bioconda_dir_path, "bioconda-recipes")
     if clone and (not os.path.exists(bioconda_recipe_path)):
         clone_bioconda_repo(bioconda_recipe_path)
         info("bioconda-recipes cloned and writing to %s" % bioconda_dir_path)
