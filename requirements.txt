@@ -1,7 +1,11 @@
 aenum
+BeautifulSoup4
 Click
+configparser
 six>=1.7.0
 pyyaml
+# TODO: remove pyaml used by bioconductor_skeleton
+pyaml
 bioblend
 docutils
 jinja2
