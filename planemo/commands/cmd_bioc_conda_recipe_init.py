@@ -1,4 +1,4 @@
-"""Module describing the planemo ``bioconductor_conda_recipe_init`` command."""
+"""Module describing the planemo ``bioc_conda_recipe_init`` command."""
 import click
 import os
 
@@ -14,7 +14,7 @@ from planemo.conda import write_bioconda_recipe
     type=click.STRING,
     prompt=True,
     help=("Give the name of a Bioconductor package "
-          "to create a new conda recipe")
+          "to create a new bioconda recipe")
 )
 @click.option(
     '-c',
@@ -36,7 +36,7 @@ from planemo.conda import write_bioconda_recipe
     default=False,
     help=("Update an existing bioconda recipe")
 )
-@click.command('bioconductor_conda_recipe_init')
+@click.command('bioc_conda_recipe_init')
 @command_function
 def cli(ctx, **kwds):
     """Make a bioconda recipe, given a bioconductor package name.
