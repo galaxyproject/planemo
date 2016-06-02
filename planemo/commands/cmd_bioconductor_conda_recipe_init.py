@@ -1,11 +1,11 @@
-"""Module describing the planemo ``conda_recipe_init`` command."""
+"""Module describing the planemo ``bioconductor_conda_recipe_init`` command."""
 import click
 import os
 
 from planemo.cli import command_function
 from planemo import options
 
-from planemo.conda import clone_bioconda_repo, write_bioconda_recipe
+from planemo.conda import write_bioconda_recipe
 
 
 @click.option(
@@ -36,10 +36,10 @@ from planemo.conda import clone_bioconda_repo, write_bioconda_recipe
     default=False,
     help=("Update an existing bioconda recipe")
 )
-@click.command('conda_recipe_init')
+@click.command('bioconductor_conda_recipe_init')
 @command_function
 def cli(ctx, **kwds):
-    """Make a conda recipe, given a package name.
+    """Make a bioconda recipe, given a bioconductor package name.
 
     package_name = motifbreakR
 
