@@ -89,7 +89,7 @@ This command generates the following CWL YAML file.
     Applying linter new_draft... CHECK
     .. INFO: Modern CWL version [cwl:draft-3]
 
-In addition to the file actual tool file, a test file will be generated
+In addition to the actual tool file, a test file will be generated
 using the example command and provided test data. The file contents are as
 follows:
 
