@@ -133,14 +133,12 @@ def build(**kwds):
     test_case = TestCase()
 
     command = _find_command(kwds)
-    _handle_help(kwds)
 
     # process raw cite urls
     cite_urls = kwds.get("cite_url", [])
     del kwds["cite_url"]
     citations = map(UrlCitation, cite_urls)
     kwds["bibtex_citations"] = citations
-
 
     # process raw inputs
     inputs = kwds.get("input", [])
@@ -188,8 +186,11 @@ def build(**kwds):
 
     # handle requirements and containers
     _handle_requirements(kwds)
-    import ipdb
-    ipdb.set_trace()
+    req = kwds['requirements'][0]
+    command_help = req.package_help + "\n" + req.package_url
+    kwds['help_text'] = command_help
+    _handle_help(kwds)
+    # ipdb.set_trace()
     # print(kwds.get('requirements')['version'])
     kwds["command"] = command
 
