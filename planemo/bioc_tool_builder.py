@@ -132,11 +132,7 @@ def build(**kwds):
     # ignored unless kwds["test_case"] is truthy.
     test_case = TestCase()
 
-    for count, thing in enumerate(kwds):
-        print '{0}. {1}'.format(count, thing)
-
     command = _find_command(kwds)
-    print("command: ", command)
     _handle_help(kwds)
 
     # process raw cite urls
@@ -144,6 +140,7 @@ def build(**kwds):
     del kwds["cite_url"]
     citations = map(UrlCitation, cite_urls)
     kwds["bibtex_citations"] = citations
+
 
     # process raw inputs
     inputs = kwds.get("input", [])
@@ -189,14 +186,11 @@ def build(**kwds):
     kwds["inputs"] = inputs
     kwds["outputs"] = outputs
 
-    info("Print inputs")
-    print("Type of inputs: ", type(inputs))
-    print("Type of kwds input: ", type(kwds["inputs"]))
-    # for item in inputs:
-    #     print type(item)
     # handle requirements and containers
     _handle_requirements(kwds)
-
+    import ipdb
+    ipdb.set_trace()
+    # print(kwds.get('requirements')['version'])
     kwds["command"] = command
 
     # finally wrap up tests
@@ -205,7 +199,6 @@ def build(**kwds):
 
     # Render tool content from template.
     contents = _render(kwds)
-
     macro_contents = None
     if kwds["macros"]:
         macro_contents = _render(kwds, MACROS_TEMPLATE)
@@ -277,11 +270,10 @@ def _handle_requirements(kwds):
     """
     requirements = kwds["requirement"]
     bioconda_path = kwds["bioconda_path"]
-    print("Requirenments:", kwds["requirement"])
     del kwds["requirement"]
     requirements = requirements or []
     requirements = [Requirement(req, bioconda_path=bioconda_path) for req in requirements]
-    # requirements = map(Requirement, requirements or [])
+
     # container = kwds["container"]
     # del kwds["container"]
     # containers = map(Container, container or [])
@@ -404,30 +396,30 @@ class Requirement(object):
 
     def __init__(self, requirement, bioconda_path):
         parts = requirement.split("@", 1)
-        print("parts: ", parts)
+        # Get version from requirements, if version not given
         if len(parts) > 1:
             name = parts[0]
-            print("name: ", name)
-            write_bioconda_recipe(name, True, True, bioconda_path)
             version = "@".join(parts[1:])
         else:
-            # Get version from parts, if version not given
             name = parts[0]
-            write_bioconda_recipe(name, True, True, bioconda_path)
-            recipe_path = os.path.join(bioconda_path,
-                                       "bioconda-recipes",
-                                       "recipes",
-                                       "bioconductor-" + name.lower(),
-                                       "meta.yaml")
-            print("recipe_path", recipe_path)
-            try:
-                with open(recipe_path, 'r') as f:
-                    doc = yaml.load(f)
-                    version = doc["package"]["version"]
-            except IOError: 
-                version = None
+            version = None
+        # Write biconda recipe with give requirement
+        write_bioconda_recipe(name, True, True, bioconda_path)
+        recipe_path = os.path.join(bioconda_path,
+                                   "bioconda-recipes",
+                                   "recipes",
+                                   "bioconductor-" + name.lower(),
+                                   "meta.yaml")
+        with open(recipe_path, 'r') as f:
+            doc = yaml.load(f)
+            if not version:
+                version = doc["package"]["version"]
+            package_url = doc["about"]["home"]
+            package_help = doc["about"]["summary"]
         self.name = name
         self.version = version
+        self.package_url = package_url
+        self.package_help = package_help
 
     def __str__(self):
         base = '<requirement type="package"{0}>{1}</requirement>'

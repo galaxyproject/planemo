@@ -52,13 +52,6 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
     help="Tool XML version.",
 )
 @click.option(
-    "--bioconductor_link",
-    default=None,
-    prompt=False,
-    help=("Link to bioconductor package on bioconductor.org."
-          "(eg: http://bioconductor.org/packages/3.2/bioc/html/DESeq2.html)"),
-)
-@click.option(
     "-d",
     "--description",
     type=click.STRING,
@@ -198,9 +191,9 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
 def cli(ctx, **kwds):
     """Generate a bioconductor tool outline from supplied arguments.
     """
-    info("arguments: \n")
-    for count, thing in enumerate(kwds):
-        info("{0}.{1}".format(count, thing))
+    # info("arguments: \n")
+    # for count, thing in enumerate(kwds):
+    #     info("{0}.{1}".format(count, thing))
 
     invalid = _validate_kwds(kwds)
 
@@ -220,7 +213,7 @@ def cli(ctx, **kwds):
     open(output, "w").write(tool_description.contents)
     io.info("Tool written to %s" % output)
     macros = kwds["macros"]
-    macros_file = "macros.xml"
+    macros_file = "macros.xmll"
     if macros and not os.path.exists(macros_file):
         open(macros_file, "w").write(tool_description.macro_contents)
     elif macros:
