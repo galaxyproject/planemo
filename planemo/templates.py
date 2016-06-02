@@ -10,8 +10,6 @@ NO_JINJA2_MESSAGE = ("This functionality requires Jinja2 but this library is "
 def render(template_str, **kwds):
     """ Use jinja2 to render a template
     """
-    for count, thing in enumerate(kwds):
-        print '{0}. {1}'.format(count, thing)
     if Template is None:
         raise Exception(NO_JINJA2_MESSAGE)
     template = Template(template_str)

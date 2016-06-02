@@ -3,7 +3,6 @@ import subprocess
 import yaml
 import os
 from planemo import templates
-from planemo.io import info
 from planemo.conda import write_bioconda_recipe
 
 TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
@@ -186,12 +185,15 @@ def build(**kwds):
 
     # handle requirements and containers
     _handle_requirements(kwds)
+
+    # Add help from requirements 
     req = kwds['requirements'][0]
-    command_help = req.package_help + "\n" + req.package_url
+    command_help = req.package_help + "\n \n" + req.package_url
     kwds['help_text'] = command_help
+
+    # Handle help
     _handle_help(kwds)
-    # ipdb.set_trace()
-    # print(kwds.get('requirements')['version'])
+
     kwds["command"] = command
 
     # finally wrap up tests

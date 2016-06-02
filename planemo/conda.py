@@ -56,14 +56,13 @@ def write_bioconda_recipe(package_name, clone, update, bioconda_dir_path):
         clone_bioconda_repo(bioconda_recipe_path)
         info("bioconda-recipes cloned and writing to %s" % bioconda_dir_path)
     else:
-        info("bioconda repository not cloned or already exists")
+        info("Bioconda repository not cloned or already exists")
     # Check if package_name is in recipes
     presence = any(package_name in r for r, d, f in os.walk(bioconda_recipe_path))
-    print("Is the package present? :", presence)
     if presence:
-        # click.echo("Package already exisits in bioconda")
+        info("Package already exisits in bioconda")
         if update:
-            # click.echo("Package was updated in bioconda-repo")
+            info("Package will be updated")
             recipe_dir = os.path.join(bioconda_recipe_path, "recipes")
             write_recipe(package_name, recipe_dir, True)
     elif not presence:

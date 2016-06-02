@@ -191,13 +191,7 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
 def cli(ctx, **kwds):
     """Generate a bioconductor tool outline from supplied arguments.
     """
-    # info("arguments: \n")
-    # for count, thing in enumerate(kwds):
-    #     info("{0}.{1}".format(count, thing))
-
     invalid = _validate_kwds(kwds)
-
-    # info("invalid arguments: \n", invalid)
 
     if invalid:
         return invalid
@@ -208,8 +202,7 @@ def cli(ctx, **kwds):
         sys.exit(1)
     info("Tool building starts here")
     tool_description = bioc_tool_builder.build(**kwds)
-    info("Tool definition file: \n")
-    print(type(tool_description))
+
     open(output, "w").write(tool_description.contents)
     io.info("Tool written to %s" % output)
     macros = kwds["macros"]
