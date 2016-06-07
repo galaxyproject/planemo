@@ -27,7 +27,7 @@ from planemo.conda import write_bioconda_recipe
     '-b',
     '--bioconda_dir_path',
     type=click.STRING,
-    prompt=True,
+    prompt=False,
     help=("Give the path to folder containing bioconda repository")
 )
 @click.option(

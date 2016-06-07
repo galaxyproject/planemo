@@ -182,9 +182,18 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
     "--bioconda_path",
     type=click.STRING,
     default=None,
-    prompt=True,
+    prompt=False,
     help=("Give path to bioconda repository,"
           " if left empty, path will be made in home directory")
+)
+@click.option(
+    "--rscript",
+    type=click.STRING,
+    default=None,
+    prompt=False,
+    help=("Give an R Script, designed as per Galaxy R tool"
+          "best practices, and create a tool definition file."
+          "eg: planemo bioc_tool_init --rscript 'file.R' ")
 )
 @click.command("bioc_tool_init")
 @command_function
@@ -192,7 +201,10 @@ def cli(ctx, **kwds):
     """Generate a bioconductor tool outline from supplied arguments.
     """
     invalid = _validate_kwds(kwds)
-
+    # if not kwds.get("rscript"):
+    #     info("No Rscript found")
+    # else:
+    #     info('Rscript option has been passed.')
     if invalid:
         return invalid
     output = kwds.get("tool")

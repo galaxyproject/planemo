@@ -49,14 +49,29 @@ def clone_bioconda_repo(path):
     return "git clone of bioconda repo worked"
 
 
-def write_bioconda_recipe(package_name, clone, update, bioconda_dir_path):
-    """Make a bioconda recipe given the package name."""
-    bioconda_recipe_path = os.path.join(bioconda_dir_path, "bioconda-recipes")
+def write_bioconda_recipe(package_name, clone, update, bioconda_dir_path=None):
+    """Make a bioconda recipe given the package name.
+
+    clone: y/N , clone the whole bioconda repository and create recipe inside
+    repository.
+
+    update: The update feature differs from the one in bioconda, as it
+    updates the specific package, as opposed to the every package in the
+    biocoda repository.
+    """
+    # set bioconda path
+    if bioconda_dir_path is None:
+        bioconda_recipe_path = os.path.join(os.path.expanduser("~"), "bioconda-recipes")
+    else:
+        bioconda_recipe_path = os.path.join(bioconda_dir_path, "bioconda-recipes")
+
+    # Clone
     if clone and (not os.path.exists(bioconda_recipe_path)):
         clone_bioconda_repo(bioconda_recipe_path)
         info("bioconda-recipes cloned and writing to %s" % bioconda_dir_path)
     else:
         info("Bioconda repository not cloned or already exists")
+
     # Check if package_name is in recipes
     presence = any(package_name in r for r, d, f in os.walk(bioconda_recipe_path))
     if presence:

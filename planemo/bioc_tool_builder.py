@@ -397,7 +397,7 @@ class Output(object):
 
 class Requirement(object):
 
-    def __init__(self, requirement, bioconda_path):
+    def __init__(self, requirement, bioconda_path=None):
         parts = requirement.split("@", 1)
         # Get version from requirements, if version not given
         if len(parts) > 1:
@@ -407,6 +407,8 @@ class Requirement(object):
             name = parts[0]
             version = None
         # Write biconda recipe with give requirement
+        if bioconda_path is None:
+            bioconda_path = os.path.expanduser("~")
         write_bioconda_recipe(name, True, True, bioconda_path)
         recipe_path = os.path.join(bioconda_path,
                                    "bioconda-recipes",
