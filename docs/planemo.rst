@@ -53,6 +53,14 @@ planemo.config module
     :undoc-members:
     :show-inheritance:
 
+planemo.docker module
+---------------------
+
+.. automodule:: planemo.docker
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.exit_codes module
 -------------------------
 
