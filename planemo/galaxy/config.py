@@ -29,6 +29,7 @@ from .api import (
 )
 from .workflows import (
     import_workflow,
+    install_shed_repos,
 )
 from planemo.conda import build_conda_context
 from planemo.docker import docker_host_args
@@ -610,6 +611,7 @@ class BaseGalaxyConfig(GalaxyConfig):
                 self._install_workflow(runnable.path)
 
     def _install_workflow(self, path):
+        install_shed_repos(path, self.gi)
         workflow = import_workflow(path, admin_gi=self.gi, user_gi=self.user_gi)
         self._workflow_ids[path] = workflow["id"]
 

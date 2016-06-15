@@ -81,6 +81,7 @@ def _execute(config, runnable, job_path, **kwds):
             history_id=history_id,
             inputs=job_dict,
             inputs_by="name",
+            allow_tool_state_corrections=True,
         )
         invocations_url = "%s/%s/invocations" % (
             user_gi._make_url(user_gi.workflows),

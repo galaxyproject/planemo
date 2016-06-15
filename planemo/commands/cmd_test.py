@@ -64,7 +64,6 @@ def cli(ctx, paths, **kwds):
     against that same Galaxy root - but this may not be bullet proof yet so
     please careful and do not try this against production Galaxy instances.
     """
-    kwds["for_tests"] = True
     runnables = for_paths(paths)
     enable_beta_test = any([r.type not in [RunnableType.galaxy_tool, RunnableType.directory] for r in runnables])
     enable_beta_test = enable_beta_test or not is_galaxy_engine(**kwds)
@@ -74,6 +73,7 @@ def cli(ctx, paths, **kwds):
             test_data = engine.test(runnables)
             return_value = handle_reports_and_summary(ctx, test_data.structured_data, kwds=kwds)
     else:
+        kwds["for_tests"] = True
         with galaxy_config(ctx, runnables, **kwds) as config:
             return_value = run_in_config(ctx, config, **kwds)
 

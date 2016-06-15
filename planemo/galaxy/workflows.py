@@ -12,7 +12,30 @@ except ImportError:
     BioBlendImporterGalaxyInterface = None
     ImporterGalaxyInterface = object
 
+try:
+    from ephemeris import shed_install
+except ImportError:
+    shed_install = None
+
 import yaml
+
+
+def load_shed_repos(path):
+    # TODO: This is crap - doesn't have nested repositories at all.
+    if path.endswith(".ga"):
+        with open(path, "r") as f:
+            workflow = json.load(f)
+    else:
+        with open(path, "r") as f:
+            workflow = yaml.load(f)
+
+    return workflow.get("tools", [])
+
+
+def install_shed_repos(path, admin_gi):
+    tools_info = load_shed_repos(path)
+    if tools_info:
+        shed_install.install_tools(tools_info, admin_gi, path, default_install_tool_dependencies=False)
 
 
 def import_workflow(path, admin_gi, user_gi):

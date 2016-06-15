@@ -1,0 +1,17 @@
+class: GalaxyWorkflow
+name: "Test Workflow Shed Stuffs"
+tools:
+  - name: text_processing
+    owner: bgruening
+inputs:
+  - id: input1
+outputs:
+  - id: wf_output_1
+    source: sed#output
+steps:
+  - tool_id: tp_sed_tool
+    label: sed
+    state:
+      infile:
+        $link: input1
+    code: "s/ World//g"
