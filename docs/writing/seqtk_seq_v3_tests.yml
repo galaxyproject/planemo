@@ -1,0 +1,9 @@
+#!planemo test
+- doc: test generated from example command
+  job:
+    input1:
+      class: File
+      value: test-data/2.fastq
+  outputs:
+    output1:
+      path: test-data/2.fasta

@@ -1,0 +1,79 @@
+- doc: test_sha1_pass
+  job: cat_tool_job.json
+  outputs:
+    output_file:
+      checksum: sha1$2ef7bde608ce5404e97d5f042f95f89f1c232871
+- doc: test_sha1_fail
+  job: cat_tool_job.json
+  outputs:
+    output_file:
+      checksum: sha1$2ef7bde608ce5404e97d5f042f95f89f1c232872
+- doc: test_compare_direct_pass
+  job: cat_tool_job.json
+  outputs:
+    output_file:
+      file: hello.txt
+- doc: test_compare_sim_size_pass
+  job: cat_tool_job.json
+  outputs:
+    output_file:
+      file: not_hello.txt
+      compare: sim_size
+      delta: 5
+- doc: test_compare_sim_size_fail
+  job: cat_tool_job.json
+  outputs:
+    output_file:
+      file: not_hello.txt
+      compare: sim_size
+      delta: 3
+- doc: test_compare_re_match_pass
+  job: cat_tool_job.json
+  outputs:
+    output_file:
+      file: hello_regex.txt
+      compare: re_match
+- doc: test_compare_re_match_fail
+  job: cat_tool_job.json
+  outputs:
+    output_file:
+      file: not_hello_regex.txt
+      compare: re_match
+- doc: test_compare_re_match_pass
+  job: cat_tool_job.json
+  outputs:
+    output_file:
+      file: hello_regex.txt
+      compare: re_match_multiline
+- doc: test_compare_re_match_fail
+  job: cat_tool_job.json
+  outputs:
+    output_file:
+      file: not_hello_regex.txt
+      compare: re_match_multiline
+- doc: test_contains_pass
+  job: cat_tool_job.json
+  outputs:
+    output_file:
+      file: hello_truncated.txt
+      compare: contains
+- doc: test_contains_fail
+  job: cat_tool_job.json
+  outputs:
+    output_file:
+      file: not_hello.txt
+      compare: contains
+- doc: test_diff_pass
+  job: cat_tool_job.json
+  outputs:
+    output_file:
+      file: not_hello.txt
+      compare: diff
+      lines_diff: 2
+- doc: test_diff_fail
+  job: cat_tool_job.json
+  outputs:
+    output_file:
+      file: not_hello.txt
+      compare: diff
+      lines_diff: 1

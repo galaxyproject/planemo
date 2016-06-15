@@ -136,7 +136,7 @@ def handle_reports(ctx, structured_data, kwds):
     if structured_report_file and not os.path.exists(structured_report_file):
         try:
             with open(structured_report_file, "w") as f:
-                json.dump(structured_report_file, f)
+                json.dump(structured_data, f)
         except Exception as e:
             exceptions.append(e)
 

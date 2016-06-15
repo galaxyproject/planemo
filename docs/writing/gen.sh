@@ -42,6 +42,8 @@ planemo tool_init --force \
                   --example_command 'seqtk seq -a 2.fastq > 2.fasta' \
                   --example_input 2.fastq \
                   --example_output 2.fasta \
+                  --test_case \
                   --container 'dukegcb/seqtk' \
                   --help_from_command 'seqtk seq'                  
 mv seqtk_seq.cwl seqtk_seq_v3.cwl
+mv seqtk_seq_tests.yml seqtk_seq_tests_v3.yml
