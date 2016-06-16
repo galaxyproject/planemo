@@ -3,6 +3,8 @@
   <head>
     <title>Planemo: A Scientific Workflow SDK</title>
     <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css"
+      href="https://fonts.googleapis.com/css?family=Oxygen">
     <link rel="stylesheet" type="text/css" href="style.css">
   </head>
   <body>
@@ -14,18 +16,20 @@ layout: true
 class: inverse, middle
 
 ---
-class: special
-# Planemo: A Scientific Workflow SDK
+class: title
+# Planemo
+## A Scientific Workflow SDK
 John Chilton, Aysam Guerler, and the Galaxy Team
 
 ---
+class: large
 
 ### A Galaxy Philosophy
 
-* The most important Galaxy user is the biologist using the GUI, they come first!
-  * No one wants to inconvenience a bioinformatician or developer, but we will if absolutely required for the biologist.
-* Galaxy workflows will never require an SDK.
-  * Planemo, workflow formats, etc... are conveniences for people who prefer developer processes.
+* The most important Galaxy user is the *bench scientist* using the GUI, they come first!
+  * .smaller[No one wants to inconvenience a bioinformatician or developer, but we will if absolutely required for the biologist.]
+* Galaxy workflows will *never require an SDK*.
+  * .smaller[Planemo, workflow formats, etc... are conveniences for people who prefer developer processes.]
 
 ???
 
@@ -104,15 +108,16 @@ Galaxy and it now supports this.
 Enough screenshots right - when I present people expect to see long command-lines!
 
 ---
+class: large
 
 ### Planemo's Success
 
 It is *the way* to develop Galaxy tools in 2016! Why?
 
 - Artifact-centric - not Galaxy-centric or registry-centric.
-- Fits into existing developer workflows - CLI, Git(hub), CI (Travis).
-- Flexible
-- Well documented w/focus on usage examples.
+- Works with existing developer tools - CLI, Git(hub), CI (Travis).
+- Very flexible, easily configurable.
+- Well documented with focus on *usage examples*.
 
 It is about **developer workflow**.
 
@@ -131,23 +136,26 @@ tests." Planemo is tool centric - lint the tool, test the tool, serve the tool.
 
 class: bottom
 background-image: url(images/organic_mower_wat.jpg)
-background-position: center;
-background-repeat: no-repeat;
-background-size: contain;
+background: #FFFFFF
+background-repeat: no-repeat !important
 
 ### So Planemo?
 
-Photo Credit: Peter Smith (@skwiot)
+.photo-credit[Photo Credit:
+
+*Peter Smith (@skwiot)*]
 
 ---
+
+class: large
 
 ### Workflows are Programs
 
 When I write programs...
 
-* ... I write tests (and write them first)!
-* ... I store them on Github!
-* ... use a text editor - my text editor!
+* ... I write *tests* (and write them first)!
+* ... I commit them to *Github*!
+* ... use a text editor - *my* text editor!
 
 ???
 
@@ -156,6 +164,125 @@ lang rewrite of a node rewrite of an Erlang editor from 1987 - it is super hot r
 now but I'm sure you've never heard of.
 
 ---
+class: large
+
+### Workflow Operations with Planemo
+
+
+Serve them:
+
+```
+$ planemo serve <workflow.ga>
+```
+
+Brings up Galaxy interface with the workflow loaded, install shed 
+tools as needed.
+
+???
+
+TODO: Install tool shed tools in .ga files, works for format 2 workflows.
+
+---
+class: large
+
+### Load up local tools!
+
+Serve them with tools...
+
+```
+$ planemo s --extra_tools <tool_dir>
+            <workflow.ga>
+```
+
+Supply as many tools as you want.
+
+---
+class: large
+
+### Workflows are harder to serve than tools
+
+* Longer to setup input data
+* Takes time to install shed tools
+* `sqlite` database locks
+* Cluster access is more important
+
+---
+class: large
+
+### Planemo Profiles
+
+Profile - a *persistent*, named Galaxy configuration available for serving, running
+and testing across workflow invocations.
+
+```
+$ planemo profile_create <name>
+$ planemo serve --profile <name> <workflow.ga>
+```
+
+---
+class: large
+
+### Planemo Profiles and Postgres
+
+```
+$ planemo profile_create --postgres <name>
+$ planemo serve --profile <name> <workflow.ga>
+```
+
+Automatically *provision a postgres database* and configure this profile to use it. All
+future `serve`, `run`, and `test` invocations using this profile will use this 
+database.
+
+???
+
+Makes some reasonable guesses, but Postgres connection settings can be configured with
+additional CLI options or in `~/.planemo.yml`.
+
+---
+class: large
+
+### Planemo Profiles and Clusters
+
+```
+$ planemo profile_create --job_conf <job_conf.xml>
+                         <name>
+```
+
+Setup a job configuration object for this profile and use it with all future
+`serve`, `run`, and `test` invocations using this profile.
+
+???
+
+TODO: Implement slurm.
+
+---
+class: large
+
+### Planemo Docker Profiles
+
+Or just...
+
+.slightly-smaller[```
+$ planemo profile_create --engine_type docker_galaxy
+                         <name>
+```]
+
+Leverage the `docker-galaxy-stable` project spearheaded by the 
+Björn Grüning to `serve` and `run` using Galaxy in a Docker container.
+
+This container comes pre-configured with slurm and Postgres as available locally -
+but offers lots of additionals goodies such as Condor, ProFTP, supervisor, and uwsgi.
+
+https://github.com/bgruening/docker-galaxy-stable
+
+???
+
+Leverage the omnipresent `docker-galaxy-stable` community project spearheaded by the 
+omnipresent Björn Grüning to `serve` and `run` using Galaxy in a Docker container.
+
+
+---
+class: large
 
 ### Galaxy Workflow Format
 
@@ -173,18 +300,113 @@ Doesn't Galaxy have a JSON workflow format?
     let alone write a program in it.
 
 ---
+class: smaller
 
 ### Format 2 Workflows - Example
 
-TODO: SHOW EXAMPLE
+```yaml
+class: GalaxyWorkflow
+name: "Test Workflow"
+tools:
+  - name: text_processing
+    owner: bgruening
+inputs:
+  - id: input1
+outputs:
+  - id: wf_output_1
+    source: sort#outfile
+steps:
+  - id: sed
+    tool_id: tp_sed_tool
+    state:
+      infile:
+        $link: input1
+    code: "s/ World//g"
+  - id: sort
+    tool_id: tp_sort_header_tool
+    state:
+      infile: sed#output
+      style: h  #Human readable
+```
 
 ---
 
-### Format 2 Workflows
+### Another Aside - gxformat2
+
+```
+pip install gxformat2
+```
+
+`gxformat2` is a Python library for the conversion of "Format 2" workflows.
 
 - Started as a way to build test workflows for Galaxy testing framework.
 - All steps can be labeled, connections described by ID.
-- 
+  - Pypi @ https://pypi.python.org/pypi/gxformat2/
+  - Github @ https://github.com/jmchilton/gxformat2
+
+---
+
+### Another Aside - Ephemeris
+
+```
+pip install emphemeris
+```
+
+`emphemeris` is an opinionated Python library and scripts for bootstrapping Galaxy tools, index data, and worklows.
+
+- Scripts from `ansible-galaxy-tools` by Marius van den Beek, Enis Afgane, Björn Grüning, and others.
+- Pypi @ https://pypi.python.org/pypi/emphemeris/
+- Github @ https://github.com/galaxyproject/emphemeris
+
+---
+
+### Format 2 Workflows - Composition Example
+
+TODO: Show a subworkflow example.
+
+---
+
+### Format 2 Workflows - Implicit Connections Example
+
+TODO: Show a data manager example.
+
+---
+
+### Testing Workflows
+
+```
+$ planemo test [--profile <name>] <workflow>
+```
+
+* Same great HTML and other formatting options as tools.
+* Produce sharable test result link with `planemo share_test`.
+* Test either Galaxy native or Format 2 workflows.
+
+---
+
+### Generalized Test Format
+
+Test any aritfact (Galaxy Tool, Galaxy Workflow, CWL Tool, CWL 
+Workflow) - using the same YAML-based scheme and format.
+
+If workflow is `my_workflow.ga`, place an aritfact named
+`my_workflow-test.yml` in the same directory.
+
+```
+planemo test my_workflow.ga
+```
+
+Will detect this aritfact and run the tests in this YAML file.
+
+---
+
+### Run Workflows
+
+---
+
+### Common Workflow Language
+
+
 
     </textarea>
     <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
