@@ -18,8 +18,14 @@ class: inverse, middle
 ---
 class: title
 # Planemo
+## ~~A Galaxy Tool SDK~~
 ## A Scientific Workflow SDK
 John Chilton, Aysam Guerler, and the Galaxy Team
+
+???
+
+Oh look, I get to follow Björn again. That guy ruins the curve - when
+it comes to pretty much any attempt to contribute to Galaxy.
 
 ---
 class: large
@@ -108,9 +114,10 @@ Galaxy and it now supports this.
 Enough screenshots right - when I present people expect to see long command-lines!
 
 ---
-class: large
 
 ### Planemo's Success
+
+.pull-left[
 
 It is *the way* to develop Galaxy tools in 2016! Why?
 
@@ -120,6 +127,13 @@ It is *the way* to develop Galaxy tools in 2016! Why?
 - Well documented with focus on *usage examples*.
 
 It is about **developer workflow**.
+]
+
+.pull-right[
+
+![Nemo](images/nemo.gif)
+
+]
 
 ???
 
@@ -137,7 +151,7 @@ tests." Planemo is tool centric - lint the tool, test the tool, serve the tool.
 class: bottom
 background-image: url(images/organic_mower_wat.jpg)
 background: #FFFFFF
-background-repeat: no-repeat !important
+background-repeat: no-repeat
 
 ### So Planemo?
 
@@ -330,6 +344,7 @@ steps:
 ```
 
 ---
+class: large
 
 ### Another Aside - gxformat2
 
@@ -345,6 +360,7 @@ pip install gxformat2
   - Github @ https://github.com/jmchilton/gxformat2
 
 ---
+class: large
 
 ### Another Aside - Ephemeris
 
@@ -359,6 +375,7 @@ pip install emphemeris
 - Github @ https://github.com/galaxyproject/emphemeris
 
 ---
+class: large
 
 ### Format 2 Workflows - Composition Example
 
@@ -404,7 +421,52 @@ Will detect this aritfact and run the tests in this YAML file.
 
 ---
 
+class: large, bottom
+layout: false
+background-image: url(images/CWL-Logo-HD.png)
+background-repeat: no-repeat
+background-size: contain
+
+### Cool Logo
+
+---
+
+layout: true
+class: inverse, middle
+
+---
+class: large
+
 ### Common Workflow Language
+
+* http://www.commonwl.org/
+* Group of (and specifications by) engineers
+  * Formed at 2014 BOSC Codefest.
+  * After 4 draft iterations, 1.0 will be released next week.
+* Like Galaxy, the rare open infrastructure that crosses the Atlantic.
+  * Adopted by various Elixer efforts, Seven Bridge Genomics,
+    and will be implemented in Taverna.
+  * Will be supported on all NIH Cancer Cloud Pilots and endorsed by the 
+    GA4GH. Reference implementation `cwltool` developed at Curoverse.
+* Poster P06 at 3:15 by Michael Crusoe
+
+---
+
+class: large
+
+### Common Workflow Language & Galaxy
+
+Try *experimental* tool support today using planemo.
+
+```
+$ planemo serve --cwl <tool.cwl>
+```
+
+When `serve`, `test`, `run` encounter CWL tools they will a different Galaxy source.
+
+Work in progress at https://github.com/common-workflow-language/galaxy.
+
+---
 
 
 
