@@ -374,6 +374,7 @@ TODO: Show a subworkflow example.
 TODO: Show a data manager example.
 
 ---
+class: large
 
 ### Testing Workflows
 
@@ -386,7 +387,8 @@ $ planemo test [--profile <name>] <workflow>
 * Test either Galaxy native or Format 2 workflows.
 
 ---
-
+class: large
+  
 ### Generalized Test Format
 
 Test any aritfact (Galaxy Tool, Galaxy Workflow, CWL Tool, CWL 
@@ -413,7 +415,7 @@ background-image: url(images/CWL-Logo-HD.png)
 background-repeat: no-repeat
 background-size: contain
 
-### Cool Logo
+### .
 
 ---
 
@@ -437,20 +439,121 @@ class: large
 * Poster P06 at 3:15 by Michael Crusoe
 
 ---
-
 class: large
 
-### Common Workflow Language & Galaxy
+### CWL & Galaxy
 
-Try *experimental* tool support today using planemo.
+*Experimental* tool support today using planemo.
 
 ```
 $ planemo serve --cwl <tool.cwl>
 ```
 
-When `serve`, `test`, `run` encounter CWL tools they will a different Galaxy source.
+When `serve`, `test`, `run` encounter CWL tools they will use a Galaxy fork.
 
 Work in progress at https://github.com/common-workflow-language/galaxy.
 
 ---
 
+class: large
+
+### Planemo Engine Type `cwltool`
+
+With `--engine_type=cwltool` (set default in `~/.planemo.yml`), one can
+`run` and `test` both CWL tools and workflows.
+
+---
+
+### CWL and `tool_init` (1 / 2)
+
+```shell
+$ planemo tool_init --cwl \
+                    --id 'seqtk_seq' \
+                    --name 'Convert to FASTA (seqtk)' \
+                    --example_command \
+                        'seqtk seq -a 2.fastq > 2.fasta' \
+                    --example_input 2.fastq \
+                    --example_output 2.fasta \
+                    --container 'dukegcb/seqtk' \
+                    --test_case \
+                    --help_from_command 'seqtk seq'
+```
+
+---
+
+class: smaller
+
+### CWL and `tool_init`  (2 / 2)
+
+.pull-left[
+```yaml
+#!/usr/bin/env cwl-runner
+cwlVersion: 'cwl:draft-3'
+class: CommandLineTool
+id: "seqtk_seq"
+label: "Convert to FASTA (seqtk)"
+requirements:
+  - class: DockerRequirement
+    dockerPull: dukegcb/seqtk
+inputs:
+  - id: input1
+    type: File
+    description: TODO
+    inputBinding:
+      position: 1
+      prefix: "-a"
+outputs:
+  - id: output1
+    type: File
+    outputBinding:
+      glob: out
+baseCommand: ["seqtk", "seq"]
+arguments: []
+stdout: out
+description: |
+  
+  Usage:   seqtk seq [options] <in.fq>|<in.fa>
+  ...
+```
+]
+
+.large[.pull-right[
+Generates:
+- `seqtk_seq.cwl`
+- `seqtk_seq-tests.yml`
+- `test-data/2.fasta`
+- `test-data/2.fastq`
+]]
+
+---
+class: large
+
+
+### CWL and `lint`
+
+```
+$ planemo l seqtk_seq.cwl
+Linting tool /opt/tools/seqtk_seq.cwl
+Applying linter general... CHECK
+.. CHECK: Tool defines a version [0.0.1].
+.. CHECK: Tool defines a name [Convert to FASTA (seqtk)].
+.. CHECK: Tool defines an id [seqtk_seq_v3].
+Applying linter cwl_validation... CHECK
+.. INFO: CWL appears to be valid.
+Applying linter docker_image... CHECK
+.. INFO: Tool will run in Docker image [dukegcb/seqtk].
+Applying linter new_draft... CHECK
+.. INFO: Modern CWL version [cwl:draft-3]
+```
+
+---
+class: large
+
+### CWL and `test`
+
+```
+$ planemo t --engine_type=cwltool \
+            seqtk_seq.cwl
+```
+
+Tool test output HTML is produced in the file `tool_test_output.html`.
