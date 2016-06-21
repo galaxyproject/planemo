@@ -519,7 +519,7 @@ class CommandIO(object):
 
         for output in self.outputs:
             if output.example:
-                test_case.outputs.append((output.name, output.from_path))
+                test_case.outputs.append((output.name, output.example_path))
 
         return test_case
 
