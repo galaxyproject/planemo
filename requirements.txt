@@ -10,4 +10,4 @@ virtualenv
 gxformat2
 ephemeris
 galaxy-lib>=16.7.9
-cwltool>=1.0.20160511162129 ; python_version == '2.7'
+cwltool>=1.0.20160616182520 ; python_version == '2.7'
