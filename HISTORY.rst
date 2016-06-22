@@ -9,7 +9,14 @@ History
 0.27.0.dev0
 ---------------------
 
-    
+* Use ephemeris to handle syncing shed tools for workflow actions.
+  1c6cfbb_
+* More planemo testing enhancements for testing artifacts that aren't
+  Galaxy tools. `Pull Request 491`_
+* Implement ``docker_galaxy`` engine type. eb039c0_, `Issue 15`_
+* Enhance profiles to be Dockerized Galaxy-aware. `Pull Request 488`_
+* Add linter for DOI type citation - thanks to @mvdbeek.
+  `Pull Request 484`_
 
 ---------------------
 0.26.0 (2016-05-20)
@@ -733,6 +740,12 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _1c6cfbb: https://github.com/galaxyproject/planemo/commit/1c6cfbb
+.. _Pull Request 491: https://github.com/galaxyproject/planemo/pull/491
+.. _Pull Request 488: https://github.com/galaxyproject/planemo/pull/488
+.. _Issue 15: https://github.com/galaxyproject/planemo/issues/15
+.. _eb039c0: https://github.com/galaxyproject/planemo/commit/eb039c0
+.. _Pull Request 484: https://github.com/galaxyproject/planemo/pull/484
 .. _7be1bf5: https://github.com/galaxyproject/planemo/commit/7be1bf5
 .. _e38c436: https://github.com/galaxyproject/planemo/commit/e38c436
 .. _4d29bf1: https://github.com/galaxyproject/planemo/commit/4d29bf1
