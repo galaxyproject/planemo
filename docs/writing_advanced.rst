@@ -3,9 +3,9 @@ Advanced Tool Development Topics
 =================================
 
 This tutorial covers some more advanced tool development topics - such as
-testing and collections. This tutorial doesn't assume some basic knowledge
-about wrapping Galaxy tools and that you have an environment with planemo
-installed - check out <writing> if you have never developed a Galaxy tool.
+testing and collections. This tutorial does assume some basic knowledge
+about wrapping Galaxy tools and that you have an environment with Planemo
+installed - check out tutorial_ if you have never developed a Galaxy tool.
 
 .. include:: _writing_testing.rst
 .. include:: _writing_collections.rst
@@ -15,3 +15,4 @@ installed - check out <writing> if you have never developed a Galaxy tool.
 .. _Docker: https://www.docker.com/
 .. _Vagrant: https://www.vagrantup.com/
 .. _BWA: http://bio-bwa.sourceforge.net/
+.. _tutorial: http://planemo.readthedocs.io/en/latest/writing.html
