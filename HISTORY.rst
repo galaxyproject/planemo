@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.27.0.dev0
+0.27.0 (2016-06-22)
 ---------------------
 
 * Use ephemeris to handle syncing shed tools for workflow actions.
