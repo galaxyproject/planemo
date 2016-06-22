@@ -157,6 +157,97 @@ now but I'm sure you've never heard of.
 
 ---
 
+### Workflow Operations with Planemo
+
+Serve them:
+
+```
+$ planemo serve <workflow.ga>
+```
+
+Brings up Galaxy interface with the workflow loaded.
+
+---
+
+### Load up local tools!
+
+Serve them with tools...
+
+```
+$ planemo serve --extra_tools <tool_dir> <workflow.ga>
+```
+
+Supply as many tools as you want.
+
+---
+
+### Workflows are harder to serve than tools
+
+- Longer to setup input data
+- Takes time to install shed tools
+- ``sqlite`` database locks
+- Lack of cluster access is more likely to be a problem.
+
+---
+
+### Enter Planemo Profiles
+
+Profile - a persistent, named Galaxy configuration available for serving and testing
+across invocations.
+
+```
+$ planemo profile_create <name>
+$ planemo serve --profile <name> <workflow.ga>
+```
+
+---
+
+### Planemo Profiles and Postgres
+
+```
+$ planemo profile_create --postgres <name>
+$ planemo serve --profile <name> <workflow.ga>
+```
+
+Automatically provision a postgres database and configure this profile to use it. All
+future ``serve``, ``run``, and ``test`` invocations using this profile will use this 
+database.
+
+Makes some reasonable guesses, but Postgres connection settings can be configured with
+additional CLI options or in ``~/.planemo.yml``.
+
+---
+
+### Planemo Profiles and Clusters
+
+```
+$ planemo profile_create --job_conf <job_conf.xml> <name>
+$ planemo serve --profile <name> <workflow.ga>
+```
+
+Setup a job configuration object for this profile and use it with all future
+``serve``, ``run``, and ``test`` invocations using this profile.
+
+---
+
+### Planemo Docker Profiles
+
+Or just...
+
+```
+$ planemo profile_create --engine_type docker_galaxy <name>
+$ planemo serve --profile <name> <workflow.ga>
+```
+
+Leverage the omnipresent ``docker-galaxy-stable`` community project spearheaded by the 
+omnipresent Björn Grüning to ``serve`` and ``run`` using Galaxy in a Docker container.
+This container comes pre-configured with slurm and Postgres as available locally -
+but offers lots of additionals goodies such as Condor, ProFTP, supervisor, and uwsgi.
+
+https://github.com/bgruening/docker-galaxy-stable
+
+---
+
 ### Galaxy Workflow Format
 
 Doesn't Galaxy have a JSON workflow format?
@@ -184,7 +275,13 @@ TODO: SHOW EXAMPLE
 
 - Started as a way to build test workflows for Galaxy testing framework.
 - All steps can be labeled, connections described by ID.
-- 
+- ``gxformat2`` Python library for conversion and loading into Galaxy.
+  - Pypi @ https://pypi.python.org/pypi/gxformat2/
+  - Github @ https://github.com/jmchilton/gxformat2
+
+
+
+
 
     </textarea>
     <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">

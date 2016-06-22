@@ -3,9 +3,9 @@ Advanced Tool Development Topics
 =================================
 
 This tutorial covers some more advanced tool development topics - such as
-testing and collections. This tutorial does assume some basic knowledge
+testing and collections. It assumes some basic knowledge
 about wrapping Galaxy tools and that you have an environment with Planemo
-installed - check out tutorial_ if you have never developed a Galaxy tool.
+available - check out tutorial_ if you have never developed a Galaxy tool.
 
 .. include:: _writing_testing.rst
 .. include:: _writing_collections.rst

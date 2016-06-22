@@ -7,11 +7,11 @@ Planemo virtual appliance  (available as OVA_, Docker_ and Vagrant_). Check out
 `these instructions <https://planemo.readthedocs.org/en/latest/appliance.html>`__
 for obtaining the virtual appliance if you have not done so already.
 
-**Use the Clipboard sharing.** Please note that you can leverage the clipboard for sharing text between the
-virtual image environment and your host system. To copy in the VM **terminal** use
-``ctrl`` + ``shift`` + ``C`` and to paste use ``ctrl`` + ``shift`` + ``V``. To copy
-in the VM **Firefox browser** use ``ctrl`` + ``C``.
-Use the corresponding commands on your host system (e.g. ``Command`` + ``C`` on MacOS).
+.. note:: Please note that you can leverage the clipboard for sharing text between the
+  virtual image environment and your host system. To copy in the VM **terminal** use
+  ``ctrl`` + ``shift`` + ``C`` and to paste use ``ctrl`` + ``shift`` + ``V``. To copy
+  in the VM **Firefox browser** use ``ctrl`` + ``C``.
+  Use the corresponding commands on your host system (e.g. ``Command`` + ``C`` on MacOS).
 
 .. include:: _writing_intro.rst
 .. include:: _writing_test_and_serve_appliance.rst

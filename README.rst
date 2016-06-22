@@ -121,8 +121,8 @@ testing. Pass ``--install_galaxy`` instead of ``--galaxy_root``.
 	$ planemo t --install_galaxy
 
 Planemo will create a HTML output report in the current directory named
-``tool_test_output.html`` (override with ``--test_output``). `Here <http://galaxyproject.github.io/planemo/tool_test_viewer.html?test_data_url=https://gist.githubusercontent.com/jmchilton/9d4351c9545d34209904/raw/9ed285d3cf98e435fc4a743320363275949ad63c/index>`_ is an
-example of such a report for Tophat.
+``tool_test_output.html`` (override with ``--test_output``). See an `example <http://galaxyproject.github.io/planemo/tool_test_viewer.html?test_data_url=https://gist.githubusercontent.com/jmchilton/9d4351c9545d34209904/raw/9ed285d3cf98e435fc4a743320363275949ad63c/index>`_
+of such a report for Tophat.
 
 Once tools have been linted and tested - the tools can be viewed in a
 Galaxy interface using the ``serve`` (``s``) `command

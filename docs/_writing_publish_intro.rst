@@ -35,7 +35,7 @@ can be used to bootstrap a new ``.shed.yml`` file.
                         --long_description="Tool that converts FASTQ to FASTA files using seqtk" \
                         --category="Fastq Manipulation"
 
-The resulting ``.shed.yml`` file will look like this:
+The resulting ``.shed.yml`` file will look something like this:
 
 .. code-block:: yaml
 
@@ -87,7 +87,7 @@ Serving a Tool from Shed
 ------------------------
 
 Once tools (and possible required dependency files) have been published,
-the whole thing can be automatically installed and tool served in local
+the whole thing can be automatically installed and the tool served in local
 Galaxy using this command.
 
 ::
@@ -97,12 +97,13 @@ Galaxy using this command.
 .. image:: images/seqtk_in_galaxy.png
    :alt: seqtk tool loaded in Galaxy
 
-Please note that during this tutorial we did not "teach" Galaxy how to obtain
-the seqtk software so our tool (and thus Galaxy) just expects the command
-``seqtk`` to be available. The seqtk software here is a ```dependency`` of
-our tool and in order for our tool to be fully installable we need to
-create a "recipe" for Galaxy so it knows how to obtain it. This is covered
-in other sections of this documentation
+.. note:: During this tutorial we did not "teach" Galaxy how to obtain
+  the seqtk software so our tool (and thus Galaxy) just expects the command
+  ``seqtk`` to be available. The seqtk software here is a so called ``dependency``
+  of our tool and in order for our tool to be fully installable we need to
+  create a "recipe" for Galaxy so it knows how to obtain it. This is covered
+  in other sections of this documentation as well as on the
+  `wiki <https://wiki.galaxyproject.org/ToolShedToolFeatures>`__.
 
 Main Tool Shed
 --------------

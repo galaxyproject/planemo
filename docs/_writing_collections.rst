@@ -1,51 +1,55 @@
 Collections
 ==============================
 
-Galaxy has the concept of dataset collections to group together and operate
-over them as single units with tools and in workflows.
+Galaxy has a concept of dataset collections to group together datasets and operate
+over them as a single unit.
 
-Galaxy collections are hierarchical and composed from two simple collection
+Galaxy collections are hierarchical and composed from two collection
 types - ``list`` and ``paired``.
 
-A ``list`` is a simple a collection of datasets (or other collections) where
-each element has an ``identifier``. Unlike Galaxy dataset names which are
-transformed throughout complex analyses - the ``identifier`` is generally
-perserved and can be used for concepts such ``sample`` name that one wants to
-perserve the sample name in earlier mapping steps of a workflow and use it
-during reduction steps and reporting later in workflows.
+* A **list** is a collection of datasets (or other collections) where
+  each element has an ``identifier``. Unlike Galaxy dataset names which are
+  transformed throughout complex analyses - the ``identifier`` is generally
+  perserved and can be used for concepts such as ``sample`` name that one wants to
+  perserve in the earlier mapping steps of a workflow and use it
+  during reduction steps and reporting later.
 
-The ``paired`` collection type is much simpler and more specific to sequencing
-applications. Each ``paired`` collection consists of a ``forward`` and
-``reverse`` dataset.
+* The **paired** collection type is much simpler and more specific to sequencing
+  applications. Each ``paired`` collection consists of a ``forward`` and
+  ``reverse`` dataset.
 
-.. note:: Read more about creating and managing collections on the `Galaxy Wiki <https://wiki.galaxyproject.org/Histories#Dataset_Collections>`__.
+.. note:: Read more about creating and managing collections on the
+  `Galaxy Wiki <https://wiki.galaxyproject.org/Histories#Dataset_Collections>`__.
 
 Composite types include for instance the ``list:paired`` collection type -
 which represents a list of dataset pairs. In this case, instead of each
 dataset having a list idenifier, each pair of datasets does.
 
 -------------------------------
-Consuming Collctions
+Consuming Collections
 -------------------------------
 
-Many Galaxy tools can in conjuction with collections used without
-modification. Galaxy users can take a collection and `map over` any tool that
+Many Galaxy tools can be used without modification in conjuction with collections.
+Galaxy users can take a collection and ``map over`` any tool that
 consumes individual datasets. For instance, early in typical bioinformatics
 workflows you may have steps that filter raw data, convert to standard
 formats, perform QC on individual files - users can take lists, pairs, or
 lists of paired datasets and map over such tools that consume individual
 files. Galaxy will then run the tool once for each dataset in the collection
 and for each output of that tool Galaxy will rebuild a new collection with the
-same `identifier` structure (so sample name or forward/reverse structure is
+same ``identifier`` structure (so sample name or forward/reverse structure is
 perserved).
 
 Tools can also consume collections if they must or should process multiple
-files at once. We will discuss three cases - consuming pairs of datasets,
-consuming lists, and consuming arbitrary collections.
+files at once. We will discuss three cases:
 
-.. warning:: If you find yourself consuming a collection of files and calling
-    the underlying application multiple times within the tool command block,  you
-    are likely doing something wrong. Just process and pair or a single dataset
+ * consuming pairs of datasets
+ * consuming lists
+ * consuming arbitrary collections.
+
+.. note:: If you find yourself consuming a collection of files and calling
+    the underlying application multiple times within the tool command block, you
+    are likely doing something wrong. Just process a pair or a single dataset
     and allow the user to map over the collection.
 
 Processing Pairs
@@ -57,7 +61,7 @@ allow users to either supply paired collections or two individual datasets.
 Furthermore, many tools which process pairs of datasets can also process
 single datasets. The following ``conditional`` captures this idiom.
 
-::
+.. code-block:: xml
 
     <conditional name="fastq_input">
       <param name="fastq_input_selector" type="select" label="Single or Paired-end reads" help="Select between paired and single end data">
@@ -79,10 +83,10 @@ single datasets. The following ``conditional`` captures this idiom.
     </conditional>
 
 This introduces a new ``param`` type - ``data_collection``. The optional
-attribute ``collection_type`` can be specified to specify which kinds of
+attribute ``collection_type`` can specify which kinds of
 collections are appropriate for this input. Additional ``data`` attributes
-such as ``format`` can be specified to further restrict valid collections.
-Here we specified that both items of the paired collection must be of datatype
+such as ``format`` can further restrict valid collections.
+Here we defined that both items of the paired collection must be of datatype
 ``fastqsanger``.
 
 In Galaxy's ``command`` block, the individual datasets can be accessed using
@@ -105,11 +109,11 @@ The ``data_collection`` parameter type can specify a ``collection_type`` or
 consume lists as a tool author. Parameters of type ``data`` can include a
 ``multiple="True"`` attribute to allow many datasets to be selected
 simultaneously. While the default UI will then have Galaxy users pick
-individual datsets, they can easily substitute a collections the tool can
-process both as individual datasets. This has the benefit of allowing tools to
+individual datsets, they can choose a collections as the tool can
+process both. This has the benefit of allowing tools to
 process either individual datasets or collections.
 
-::
+.. code-block:: xml
 
     <param type="data" name="inputs" label="Input BAM(s)" format="bam" multiple="true" />
 
@@ -147,21 +151,20 @@ Some example tools which consume multiple datasets (including lists) include:
 
 Also see the tools-devteam repository `Pull Request #20 <https://github.com/galaxyproject/tools-devteam/pull/20>`__ modifying the cufflinks suite of tools for collection compatible reductions.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Identifiers
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Processing Identifiers
+-------------------------------
 
 As mentioned previously, sample identifiers are preserved through mapping
 steps, during reduction steps one may likely want to use these - for
-reporting, comparisons, etc.... When using these multiple ``data`` parameters
+reporting, comparisons, etc. When using these multiple ``data`` parameters
 the dataset objects expose a field called ``element_identifier``. When these
 parameters are used with individual datasets - this will just default to being
 the dataset's name, but when used with collections this parameter will be the
-element_identifier (i.e. the preserved sample name).
+``element_identifier`` (i.e. the preserved sample name).
 
 For instance, imagine merging a collection of tabular datasets into a single
 table with a new column indicating the sample name the corresponding rows were
-derived from using a little ficitious program called ``merge_rows``.
+derived from using a little fictitious program called ``merge_rows``.
 
 ::
 
@@ -181,14 +184,14 @@ Some example tools which utilize ``element_identifier`` include:
 
 .. note:: Here we are rewriting the element identifiers to assure everything is safe to
     put on the command-line. In the future collections will not be able to contain
-    keys are potentially harmful and this won't be nessecary.
+    keys that are potentially harmful and this won't be nessecary.
 
 More on ``data_collection`` parameters
 ----------------------------------------------
 
 The above three cases (users mapping over single tools, consuming pairs, and
 consuming lists using `multiple` ``data`` parameters) are hopefully the most
-common ways to consume collections as a tool author - but the
+common ways to consume collections for a tool author - but the
 ``data_collection`` parameter type allows one to handle more cases than just
 these.
 
@@ -240,13 +243,13 @@ implicitly "mapped over" to produce collections as described above - but there
 are a variety of situations for which this idiom is insufficient.
 
 Progressively more complex syntax elements exist for the increasingly complex
-scenarios. Broadly speaking - the three scenarios covered are the tool
+scenarios. Broadly speaking - the three scenarios covered are when the tool
 produces...
 
 1. a collection with a static number of elements (mostly for ``paired``
-   collections, but if a tool does say fixed binning it might make sense to create a list this way as well)
+   collections, but if a tool has fixed binding it might make sense to create a list this way as well)
 2. a ``list`` with the same number of elements as an input list
-   (this would be a common pattern for normalization applications for 
+   (this would be a common pattern for normalization applications for
    instance).
 3. a ``list`` where the number of elements is not knowable until the job is
    complete.
@@ -254,10 +257,10 @@ produces...
 1. Static Element Count
 -----------------------------------------------
 
-For this first case - the tool can simply declare standard data elements 
+For this first case - the tool can simply declare standard data elements
 below an output collection element in the outputs tag of the tool definition.
 
-::
+.. code-block:: xml
 
     <collection name="paired_output" type="paired" label="Split Pair">
         <data name="forward" format="txt" />
@@ -265,41 +268,55 @@ below an output collection element in the outputs tag of the tool definition.
     </collection>
 
 
-Templates (e.g. the ``command`` tag) can then reference ``$forward`` and ``$reverse`` or whatever ``name`` the corresponding ``data`` elements are given.
-- as demonstrated in ``test/functional/tools/collection_creates_pair.xml``.
+Templates (e.g. the ``command`` tag) can then reference ``$forward`` and ``$reverse`` or whatever
+``name`` the corresponding ``data`` elements are given as demonstrated
+in ``test/functional/tools/collection_creates_pair.xml``.
 
-The tool should describe the collection type via the type attribute on the collection element. Data elements can define ``format``, ``format_source``, ``metadata_source``, ``from_work_dir``, and ``name``.
+The tool should describe the collection type via the type attribute on the collection element.
+Data elements can define ``format``, ``format_source``, ``metadata_source``, ``from_work_dir``, and ``name``.
 
-The above syntax would also work for the corner case of static lists. For paired collections specifically however, the type plugin system now knows how to prototype a pair so the following even easier (though less configurable) syntax works.
+The above syntax would also work for the corner case of static lists.
+For paired collections specifically however, the type plugin system now
+knows how to prototype a pair so the following even easier (though less configurable) syntax works.
 
-::
+.. code-block:: xml
 
     <collection name="paired_output" type="paired" label="Split Pair" format_source="input1">
     </collection>
 
-In this case the command template could then just reference ``${paried_output.forward}`` and ``${paired_output.reverse}`` as demonstrated in ``test/functional/tools/collection_creates_pair_from_type.xml``.
+In this case the command template could then just reference ``${paried_output.forward}``
+and ``${paired_output.reverse}`` as demonstrated in ``test/functional/tools/collection_creates_pair_from_type.xml``.
 
 2. Computable Element Count
 -----------------------------------------------
 
-For the second case - where the structure of the output is based on the structure of an input - a structured_like attribute can be defined on the collection tag.
+For the second case - where the structure of the output is based on the structure of an
+input - a structured_like attribute can be defined on the collection tag.
 
-::
+.. code-block:: xml
 
     <collection name="list_output" type="list" label="Duplicate List" structured_like="input1" inherit_format="true">
 
-Templates can then loop over ``input1`` or ``list_output`` when buliding up command-line expressions. See ``test/functional/tools/collection_creates_list.xml`` for an example.
+Templates can then loop over ``input1`` or ``list_output`` when buliding up command-line
+expressions. See ``test/functional/tools/collection_creates_list.xml`` for an example.
 
-``format``, ``format_source``, and ``metadata_source`` can be defined for such collections if the format and metadata are fixed or based on a single input dataset. If instead the format or metadata depends on the formats of the collection it is structured like - ``inherit_format="true"`` and/or ``inherit_metadata="true"`` should be used instead - which will handle corner cases where there are for instance subtle format or metadata differences between the elements of the incoming list.
+``format``, ``format_source``, and ``metadata_source`` can be defined for such collections if the
+format and metadata are fixed or based on a single input dataset. If instead the format or metadata
+depends on the formats of the collection it is structured like - ``inherit_format="true"`` and/or
+``inherit_metadata="true"`` should be used instead - which will handle corner cases where there are
+for instance subtle format or metadata differences between the elements of the incoming list.
 
 3. Dynamic Element Count
 -----------------------------------------------
 
-The third and most general case is when the number of elements in a list cannot be determined until runtime. For instance, when splitting up files by various dynamic criteria.
+The third and most general case is when the number of elements in a list cannot be determined
+until runtime. For instance, when splitting up files by various dynamic criteria.
 
-In this case a collection may define one of more discover_dataset elements. As an example of one such tool that splits a tabular file out into multiple tabular files based on the first column see ``test/functional/tools/collection_split_on_column.xml`` - which includes the following output definition:
+In this case a collection may define one of more discover_dataset elements. As an example of
+one such tool that splits a tabular file out into multiple tabular files based on the first
+column see ``test/functional/tools/collection_split_on_column.xml`` - which includes the following output definition:
 
-::
+.. code-block:: xml
 
     <collection name="split_output" type="list" label="Table split on first column">
         <discover_datasets pattern="__name_and_ext__" directory="outputs" />
@@ -309,7 +326,7 @@ Nested Collections
 -----------------------------------------------
 
 Galaxy `Pull Request #538 <https://github.com/galaxyproject/galaxy/pull/538>`__
-implemented the ability to define nested output collections. See the pull 
+implemented the ability to define nested output collections. See the pull
 request and included example tools for more details.
 
 ----------------------

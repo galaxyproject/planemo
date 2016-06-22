@@ -7,11 +7,11 @@ appliance pre-configured with Planemo, Galaxy_, Docker_, a local Tool Shed,
 linuxbrew_, and Atom_ IDE.
 
 
-Quick Start
+Quick Links
 -----------
 If you already know what to do. Otherwise please read on.
 
-* `Planemo OVA image <https://images.galaxyproject.org/planemo/latest.ova>`__ (https://images.galaxyproject.org/planemo/latest.ova)
+* Planemo OVA image: https://images.galaxyproject.org/planemo/latest.ova
 * ``docker run -p 8010:80 -p 9009:9009 -v `pwd`:/opt/galaxy/tools -i -t planemo/interactive``
   This assumes your tools are in your current working directory
   (replace `\`pwd\`` with a path to your tools if this is not the case).
