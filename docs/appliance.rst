@@ -4,7 +4,7 @@ Virtual Appliance
 
 You can use Planemo as part of a Galaxy tool development virtual
 appliance pre-configured with Planemo, Galaxy_, Docker_, a local Tool Shed,
-linuxbrew_, and Atom_ IDE.
+linuxbrew_, and Komodo_ editor.
 
 
 Quick Links
@@ -34,7 +34,7 @@ format (OVA_, .ova), Docker, Vagrant, and as a Google Compute Engine cloud image
 
 The OVA image is a stable way to boot a Planemo virtual
 machine on any platform and comes with a pre-configured Xubuntu-based windowed
-operating system with graphical editing tools including Atom_.
+operating system with graphical editing tools including Komodo_ editor.
 This approach can be thought of more as a complete
 environment and may be better for tutorials and workshops where consistent user
 experience is more important.
@@ -78,7 +78,7 @@ and the machine should become available.
 .. image:: images/ova_importing.png
    :alt: Screenshot OVA Import
 
-The Firefox browser, Atom_ editor, Galaxy, Planemo and everything else is
+The Firefox browser, Komodo_ editor, Galaxy, Planemo and everything else is
 available right away on the desktop along with useful links.
 
 .. image:: images/ova_desktop.png
@@ -260,7 +260,7 @@ environments such as Amazon Web Services and Google Compute Engine.
 .. _gcloud: https://cloud.google.com/sdk/gcloud/
 .. _Vagrant: https://www.vagrantup.com/
 .. _VirtualBox: https://www.virtualbox.org/wiki/Downloads
-.. _Atom: https://atom.io/
+.. _Komodo: http://komodoide.com/komodo-edit/
 .. _Kitematic: https://kitematic.com/
 .. _boot2docker: http://boot2docker.io/
 .. _OVA: https://en.wikipedia.org/wiki/Open_Virtualization_Format
