@@ -1,0 +1,8 @@
+- doc: Simple test replacing some text.
+  job:
+    input1:
+      class: File
+      path: hello.txt
+  outputs:
+    wf_output_1:
+      checksum: "sha1$a8d191538209e335154750d2df575b9ddfb16fc7"
