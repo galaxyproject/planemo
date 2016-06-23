@@ -257,7 +257,7 @@ produces...
 1. Static Element Count
 -----------------------------------------------
 
-For this first case - the tool can simply declare standard data elements
+For this first case - the tool can declare standard data elements
 below an output collection element in the outputs tag of the tool definition.
 
 .. code-block:: xml

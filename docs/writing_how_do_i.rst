@@ -213,7 +213,7 @@ demonstrated by the following tool.
 
 There is an idiom to supply test data for index during tests using Planemo_.
 
-To create this kind of test, one simply needs to provide a
+To create this kind of test, one needs to provide a
 ``tool_data_table_conf.xml.test`` beside your tool's
 ``tool_data_table_conf.xml.sample`` file that specifies paths to test ``.loc``
 files which in turn define paths to the test index data. Both the ``.loc``

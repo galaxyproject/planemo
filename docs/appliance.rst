@@ -51,7 +51,7 @@ Launching the Appliance
 -----------------------
 The following sections will desribe how to launch the appliance using various platforms.
 
-Launching the Appliance (with VirtualBox - OVA)
+Launching the Appliance (VirtualBox - OVA)
 ================================================
 
 The VirtualBox OVA variant of the planemo appliance comes preconfigured with
