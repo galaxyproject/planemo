@@ -4,6 +4,7 @@ import yaml
 import os
 from planemo import templates
 from planemo.conda import write_bioconda_recipe
+from planemo import rscript_parse
 
 TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
 {%- if description %}
@@ -184,9 +185,14 @@ def build(**kwds):
     kwds["outputs"] = outputs
 
     # handle requirements and containers
+
+    print("before: ", kwds['requirements'])
+
     _handle_requirements(kwds)
 
-    # Add help from requirements 
+    # Add help from requirements
+
+    print("after", kwds['requirements'])
     req = kwds['requirements'][0]
     command_help = req.package_help + "\n \n" + req.package_url
     kwds['help_text'] = command_help
@@ -271,9 +277,9 @@ def _handle_requirements(kwds):
     """ Convert requirements and containers specified from the command-line
     into abstract format for consumption by the template.
     """
-    requirements = kwds["requirement"]
+    requirements = kwds["requirements"]
     bioconda_path = kwds["bioconda_path"]
-    del kwds["requirement"]
+    del kwds["requirements"]
     requirements = requirements or []
     requirements = [Requirement(req, bioconda_path=bioconda_path) for req in requirements]
 
@@ -397,7 +403,7 @@ class Output(object):
 
 class Requirement(object):
 
-    def __init__(self, requirement, bioconda_path=None):
+    def __init__(self, requirement, bioconda_path=None, update=False):
         parts = requirement.split("@", 1)
         # Get version from requirements, if version not given
         if len(parts) > 1:
@@ -409,7 +415,7 @@ class Requirement(object):
         # Write biconda recipe with give requirement
         if bioconda_path is None:
             bioconda_path = os.path.expanduser("~")
-        write_bioconda_recipe(name, True, True, bioconda_path)
+        write_bioconda_recipe(name, True, update, bioconda_path)
         recipe_path = os.path.join(bioconda_path,
                                    "bioconda-recipes",
                                    "recipes",

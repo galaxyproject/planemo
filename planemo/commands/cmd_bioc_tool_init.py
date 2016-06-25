@@ -5,11 +5,12 @@ import sys
 import click
 
 from planemo import bioc_tool_builder
-from planemo import bioconductor_skeleton
+# from planemo import bioconductor_skeleton
 from planemo import io
 from planemo import options
 from planemo.cli import command_function
 from planemo.io import info
+from planemo import rscript_parse
 
 
 REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
@@ -23,7 +24,8 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
     "-i",
     "--id",
     type=click.STRING,
-    prompt=True,
+    # TODO: Conditional prompt for Rscript
+    prompt=False,
     help="Short identifier for new tool (no whitespace)",
 )
 @options.force_option(what="tool")
@@ -42,7 +44,8 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
     "-n",
     "--name",
     type=click.STRING,
-    prompt=True,
+    # TODO: Conditional prompt for Rscript
+    prompt=False,
     help="Name for new Bioconductor tool (user facing)",
 )
 @click.option(
@@ -75,15 +78,16 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
     prompt=False,
     help="Auto populate help from supplied command.",
 )
+# TODO: Change this
 @click.option(
     "--example_command",
     type=click.STRING,
     default=None,
     prompt=False,
     help=("Example to command with paths to build Cheetah template from "
-          "(e.g. 'seqtk seq -a 2.fastq > 2.fasta'). Option cannot be used "
-          "with --command, should be used --example_input and "
-          "--example_output."),
+          "(e.g. 'Rscript my_r_tool.R --input input.csv --output output.csv')"
+          ". Option cannot be used with --command,"
+          "should be used --example_input and --example_output."),
 )
 @click.option(
     "--example_input",
@@ -141,7 +145,7 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
     type=click.STRING,
     default=None,
     multiple=True,
-    prompt=True,
+    prompt=False,
     help=("Give the name of the bioconductor package,"
           "requirements will be set using bioconda. eg: 'motifbreakR' ")
 )
@@ -188,7 +192,7 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
 )
 @click.option(
     "--rscript",
-    type=click.STRING,
+    type=click.Path(exists=True),
     default=None,
     prompt=False,
     help=("Give an R Script, designed as per Galaxy R tool"
@@ -198,21 +202,31 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
 @click.command("bioc_tool_init")
 @command_function
 def cli(ctx, **kwds):
-    """Generate a bioconductor tool outline from supplied arguments.
-    """
+    """Generate a bioconductor tool outline from supplied arguments."""
     invalid = _validate_kwds(kwds)
-    # if not kwds.get("rscript"):
-    #     info("No Rscript found")
-    # else:
-    #     info('Rscript option has been passed.')
+    if kwds.get("rscript") and kwds.get("example_command"):
+        rscript = kwds["rscript"]
+        example_command = kwds["example_command"]
+        rscript_data = rscript_parse.parse_rscript(rscript, example_command)
+
+    else:  # if no rscript
+        info("No Rscript found, must provide correct planemo arguments.")
+
+    print("\n === \n")
+    print("Print parsed data from Rscript: ", rscript_data)
+
     if invalid:
         return invalid
     output = kwds.get("tool")
     if not output:
         output = "%s.xml" % kwds.get("id")
+
     if not io.can_write_to_path(output, **kwds):
         sys.exit(1)
+
     info("Tool building starts here")
+    kwds['requirements'] = rscript_data.get('library')[0]
+
     tool_description = bioc_tool_builder.build(**kwds)
 
     open(output, "w").write(tool_description.contents)
@@ -249,10 +263,14 @@ def _validate_kwds(kwds):
         return 1
     if not_exclusive("command", "example_command"):
         return 1
+    if not_exclusive("rscript", "requirement"):
+        return 1
     if not_specifing_dependent_option("example_input", "example_command"):
         return 1
     if not_specifing_dependent_option("example_output", "example_command"):
         return 1
     if not_specifing_dependent_option("test_case", "example_command"):
+        return 1
+    if not_specifing_dependent_option("rscript", "example_command"):
         return 1
     return 0
