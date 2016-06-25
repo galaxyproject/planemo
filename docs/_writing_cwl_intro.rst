@@ -14,7 +14,7 @@ start by doing that.
 
 The ``tool_init`` command can take various complex arguments - but three two
 most basic ones are shown above ``--cwl``, ``--id`` and ``--name``. The ``--cwl``
-flag simply tells Planemo to generate a Common Workflow Language tool. ``--id`` is
+flag tells Planemo to generate a Common Workflow Language tool. ``--id`` is
 a short identifier for this tool and it should be unique across all tools.
 ``--name`` is a short, human-readable name for the the tool - it corresponds
 to the ``label`` attribute in the CWL tool document.
@@ -93,7 +93,7 @@ In addition to the actual tool file, a test file will be generated
 using the example command and provided test data. The file contents are as
 follows:
 
-.. literalinclude:: writing/seqtk_seq_tests_v3.yml
+.. literalinclude:: writing/seqtk_seq_v3_tests.yml
    :language: yaml
 
 This file is a planemo-specific artifact. This file may contain 1 or more
@@ -103,16 +103,16 @@ the example command to build just one test.
 Each test consists of a few parts:
 
 - ``doc`` - this attribute provides a short description for the test.
-- ``job`` - this can be the path to a CWL job description or a job 
-  description embedded right in the test (``tool_init`` builds the latter). 
+- ``job`` - this can be the path to a CWL job description or a job
+  description embedded right in the test (``tool_init`` builds the latter).
 - ``outputs`` - this section describes the expected output for a test. Each
   output ID of the tool or workflow under test can appear as a key. The
   example above just describes expected specific output file contents exactly
   but many more expectations can be described.
 
-The tests described in this file can be run using the planemo ``test`` (or
-simply ``t``) command on the original file. By default, planemo will run tool
-tests with Galaxy but we can also specify the use of ``cwltool`` (the 
+The tests described in this file can be run using the ``planemo t`` command
+on the original file. By default, planemo will run tool
+tests with Galaxy but we can also specify the use of ``cwltool`` (the
 reference implementation of CWL) which will be quicker and more robust until
 while Galaxy support for the CWL is still in development.
 
@@ -130,7 +130,7 @@ using the ``serve`` (or just ``s``) command.
     ...
     serving on http://127.0.0.1:9090
 
-Open up http://127.0.0.1:9090 in a web browser to view your new 
+Open up http://127.0.0.1:9090 in a web browser to view your new
 tool.
 
 For more information on the Common Workflow Language check out the Draft 3

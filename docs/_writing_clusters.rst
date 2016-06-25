@@ -13,7 +13,9 @@ should be used.
 For example, the StringTie (tool available `here
 <https://github.com/galaxyproject/tools-iuc/blob/master/tools/stringtie/stringtie.xml>`__)
 binary ``stringtie`` can take an argument ``-p`` that allows specification
-of the number of threads to be used. The Galaxy tool sets this up as follows::
+of the number of threads to be used. The Galaxy tool sets this up as follows
+
+::
 
     stringtie "$input_bam" -o "$output_gtf" -p "\${GALAXY_SLOTS:-1}" ...
 
@@ -21,7 +23,7 @@ Here we use ``\${GALAXY_SLOTS:-Z}`` instead of a fixed value (Z being an
 integer representing a default value in non-Galaxy contexts). The
 backslash here is because this value is interpreted at runtime as
 environment variable - not during command building time as a templated
-value. Now server administrators can configure how many processes the 
+value. Now server administrators can configure how many processes the
 tool should be allowed to use.
 
 For information on how server administrators can configure this value for
@@ -49,8 +51,8 @@ with the following commands.
 
 ::
 
-    planemo test --job_config_file ~/planemo_job_conf.xml .
-    planemo serve --job_config_file ~/planemo_job_conf.xml .
+    $ planemo test --job_config_file ~/planemo_job_conf.xml .
+    $ planemo serve --job_config_file ~/planemo_job_conf.xml .
 
 For general information on configuring Galaxy to communicate with clusters
 check out `this page
