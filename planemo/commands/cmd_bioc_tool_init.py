@@ -208,15 +208,20 @@ def cli(ctx, **kwds):
         rscript = kwds["rscript"]
         example_command = kwds["example_command"]
         rscript_data = rscript_parse.parse_rscript(rscript, example_command)
-
+        # print(rscript_data)
+        # Get name replace .R, or .r
+        kwds['name'] = rscript.split("/")[-1].replace(".R", "")
+        kwds['id'] = kwds.get("name")
+        kwds['rscript_data'] = rscript_data
     else:  # if no rscript
         info("No Rscript found, must provide correct planemo arguments.")
 
-    print("\n === \n")
-    print("Print parsed data from Rscript: ", rscript_data)
+    # print("\n === \n")
+    # print("Print parsed data from Rscript: ", rscript_data)
 
     if invalid:
         return invalid
+
     output = kwds.get("tool")
     if not output:
         output = "%s.xml" % kwds.get("id")
@@ -224,9 +229,7 @@ def cli(ctx, **kwds):
     if not io.can_write_to_path(output, **kwds):
         sys.exit(1)
 
-    info("Tool building starts here")
-    kwds['requirements'] = rscript_data.get('library')[0]
-
+    # info("Tool building starts here")
     tool_description = bioc_tool_builder.build(**kwds)
 
     open(output, "w").write(tool_description.contents)

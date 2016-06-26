@@ -76,8 +76,8 @@ class Library(object):
             if (self.searchtext in line) and (not line.startswith("#")):
                 # print i, line
                 lib_value = self._prune_library(line)
-                if lib_value != "getopt": #getopt already exists
-                    lib.append(lib_value)
+                # if lib_value != "getopt":  # getopt already exists
+                lib.append(lib_value)
         return lib
 
 
@@ -134,8 +134,8 @@ class Output(object):
                         outputs[key] = value
                     else:
                         continue
-        if not bool(outputs):  # if outputs are empty
-            print("No explicit outputs found, please specify outputs.")
+        # if not bool(outputs):  # if outputs are empty
+        #     print("No explicit outputs found, please specify outputs.")
         return outputs
 
 
