@@ -33,10 +33,17 @@ develop Galaxy tools.
 Obtaining Planemo
 -----------------
 
-Planemo can be installed via Conda, Homebrew, or
-as a more traditional Python project.
+The recommended approach for installing Planemo is to use Homebrew_ or
+linuxbrew_. To install Planemo this way use the ``brew`` command as
+follows.
 
-To install using Conda_:
+::
+
+   $ brew tap galaxyproject/tap
+   $ brew install planemo
+
+
+Planemo can alternatively be installed via Conda_:
 
 ::
 
@@ -44,16 +51,9 @@ To install using Conda_:
     $ conda config --add channels bioconda
     $ conda install planemo
 
-To install using Homebrew_ or linuxbrew_:
-
-::
-
-   $ brew tap galaxyproject/tap
-   $ brew install planemo
-
-For a more traditional Python installation set up a virtualenv
-for ``planemo`` (this example creates a new one in ``.venv/``) and then
-install with ``pip``.
+For third option and a more traditional Python installation set up a virtualenv
+for Planemo (this example creates a new one in ``.venv/``) and then
+install it with ``pip``.
 
 ::
 
@@ -69,8 +69,8 @@ You can choose from open virtualization format (OVA_, .ova), Docker, or Vagrant 
 Planemo Basics
 --------------
 
-This quick start will assume you will have a directory with one or more
-tool XML files. If none is available, one can be quickly create for
+This quick start will assume you have a directory with one or more
+tool XML files. If none is available, one can be quickly created for
 demonstrating ``planemo`` as follows ``mkdir mytools; cd mytools; planemo
 project_init --template=demo``.
 
@@ -81,7 +81,6 @@ practices using the ``lint`` `command <http://planemo.readthedocs.org/en/latest/
 ::
 
     $ planemo lint
-    ...
 
 Like many ``planemo`` commands - by default this will search the
 current directory and use all tool files it finds. It can be explicitly
@@ -92,14 +91,14 @@ passed a path to tool files or a directory of tool files.
     $ planemo l randomlines.xml
 
 The ``lint`` command takes in additional options related to
-reporting levels, exit code, etc. These options are described here
-or (like all available commands) can be accessed by passing ``--help`` to it.
+reporting levels, exit code, etc. These options are described
+in the `docs <http://planemo.readthedocs.org/en/latest/commands.html#lint-command>`_
+or (like with all commands) can be accessed by passing ``--help`` to it.
 
 ::
 
     $ planemo l --help
     Usage: planemo lint [OPTIONS] TOOL_PATH
-    ...
 
 Once tools are syntactically correct - it is time to test. The ``test``
 `command <http://planemo.readthedocs.org/en/latest/commands.html#test-command>`__
@@ -121,7 +120,8 @@ testing. Pass ``--install_galaxy`` instead of ``--galaxy_root``.
 	$ planemo t --install_galaxy
 
 Planemo will create a HTML output report in the current directory named
-``tool_test_output.html`` (override with ``--test_output``). See an `example <http://galaxyproject.github.io/planemo/tool_test_viewer.html?test_data_url=https://gist.githubusercontent.com/jmchilton/9d4351c9545d34209904/raw/9ed285d3cf98e435fc4a743320363275949ad63c/index>`_
+``tool_test_output.html`` (override with ``--test_output``). See an
+`example <http://galaxyproject.github.io/planemo/tool_test_viewer.html?test_data_url=https://gist.githubusercontent.com/jmchilton/9d4351c9545d34209904/raw/9ed285d3cf98e435fc4a743320363275949ad63c/index>`_
 of such a report for Tophat.
 
 Once tools have been linted and tested - the tools can be viewed in a
