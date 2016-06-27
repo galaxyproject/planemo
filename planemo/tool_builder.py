@@ -1,5 +1,15 @@
+"""This module contains :func:`build` to build tool descriptions.
+
+This class is used by the `tool_init` command and can be used to build
+Galaxy and CWL tool descriptions.
+"""
+from collections import namedtuple
+import re
+import shlex
 import subprocess
+
 from planemo import templates
+from planemo import io
 
 
 TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
@@ -122,13 +132,172 @@ MACROS_TEMPLATE = """<macros>
 </macros>
 """
 
+CWL_TEMPLATE = """#!/usr/bin/env cwl-runner
+cwlVersion: '{{cwl_version}}'
+class: CommandLineTool
+id: "{{id}}"
+label: "{{label}}"
+{%- if containers %}
+hints:
+{%- for container in containers %}
+  - class: DockerRequirement
+    dockerPull: {{ container.image_id }}
+{%- endfor %}
+{%- endif %}
+{%- if inputs or outputs %}
+inputs:
+{%- for input in inputs %}
+  - id: {{ input.id }}
+    type: {{ input.type }}
+    description: |
+      TODO
+    inputBinding:
+      position: {{ input.position }}
+{%- if input.prefix %}
+      prefix: "{{input.prefix.prefix}}"
+{%- if not input.prefix.separated %}
+      separate: false
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- for output in outputs %}
+{%- if output.require_filename %}
+  - id: {{ output.id }}
+    type: string
+    description: |
+      Filename for output {{ output.id }}
+    inputBinding:
+      position: {{ output.position }}
+{%- if output.prefix %}
+      prefix: "{{output.prefix.prefix}}"
+{%- if not output.prefix.separated %}
+      separate: false
+{%- endif %}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- else %}
+inputs: [] # TODO
+{%- endif %}
+{%- if outputs %}
+outputs:
+{%- for output in outputs %}
+  - id: {{ output.id }}
+    type: File
+    outputBinding:
+      glob: {{ output.glob }}
+{%- endfor %}
+{%- else %}
+outputs: [] # TODO
+{%- endif %}
+{%- if base_command %}
+baseCommand:
+{%- for base_command_part in base_command %}
+  - "{{ base_command_part}}"
+{%- endfor %}
+{%- else %}
+baseCommand: []
+{%- endif %}
+{%- if arguments %}
+arguments:
+{%- for argument in arguments %}
+  - valueFrom: "{{ argument.value }}"
+    position: {{ argument.position }}
+{%- if argument.prefix %}
+      prefix: "{{argument.prefix.prefix}}"
+{%- if not argument.prefix.separated %}
+      separate: false
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- else %}
+arguments: []
+{%- endif %}
+{%- if stdout %}
+stdout: {{ stdout }}
+{%- endif %}
+description: |
+{%- if help %}
+  {{ help|indent(2) }}
+{%- else %}
+   TODO: Fill in description.
+{%- endif %}
+"""
+
+CWL_TEST_TEMPLATE = """
+- doc: test generated from example command
+{%- if inputs %}
+  job:
+{%- for input in inputs %}
+{%- if input.type == "File" %}
+    {{ input.id }}:
+      class: File
+      path: test-data/{{ input.example_value }}
+{%- else %}
+    {{ input.id }}: {{ input.example_value }}
+{%- endif %}
+{%- endfor %}
+{%- else %}
+  job: TODO
+{%- endif %}
+{%- if outputs %}
+  outputs:
+{%- for output in outputs %}
+    {{ output.id }}:
+      path: test-data/{{ output.example_value }}
+{%- endfor %}
+{%- else %}
+  outputs: TODO
+{%- endif %}
+"""
+
 
 def build(**kwds):
+    """Build up a :func:`ToolDescription` from supplid arguments."""
+    if kwds.get("cwl"):
+        builder = _build_cwl
+    else:
+        builder = _build_galaxy
+    return builder(**kwds)
+
+
+def _build_cwl(**kwds):
+    _handle_help(kwds)
+    _handle_requirements(kwds)
+
+    command_io = CommandIO(**kwds)
+    render_kwds = {
+        "cwl_version": "cwl:draft-3",
+        "help": kwds.get("help", ""),
+        "containers": kwds.get("containers", []),
+        "id": kwds.get("id"),
+        "label": kwds.get("name"),
+    }
+    render_kwds.update(command_io.cwl_properties())
+
+    contents = _render(render_kwds, template_str=CWL_TEMPLATE)
+    test_contents = None
+    test_files = []
+    if kwds["test_case"]:
+        test_contents = _render(render_kwds, template_str=CWL_TEST_TEMPLATE)
+        for cwl_input in render_kwds["inputs"] or []:
+            if cwl_input.type == "File" and cwl_input.example_value:
+                test_files.append(cwl_input.example_value)
+
+        for cwl_output in render_kwds["outputs"] or []:
+            if cwl_output.example_value:
+                test_files.append(cwl_output.example_value)
+
+    return ToolDescription(
+        contents,
+        test_contents=test_contents,
+        test_files=test_files
+    )
+
+
+def _build_galaxy(**kwds):
     # Test case to build up from supplied inputs and outputs, ultimately
     # ignored unless kwds["test_case"] is truthy.
-    test_case = TestCase()
-
-    command = _find_command(kwds)
 
     _handle_help(kwds)
 
@@ -138,54 +307,15 @@ def build(**kwds):
     citations = map(UrlCitation, cite_urls)
     kwds["bibtex_citations"] = citations
 
-    # process raw inputs
-    inputs = kwds.get("input", [])
-    del kwds["input"]
-    inputs = list(map(Input, inputs or []))
-
-    # alternatively process example inputs
-    example_inputs = kwds["example_input"]
-    del kwds["example_input"]
-    for i, input_file in enumerate(example_inputs or []):
-        name = "input%d" % (i + 1)
-        inputs.append(Input(input_file, name=name))
-        test_case.params.append((name, input_file))
-        command = _replace_file_in_command(command, input_file, name)
-
-    # handle raw outputs (from_work_dir ones) as well as named_outputs
-    outputs = kwds.get("output", [])
-    del kwds["output"]
-    outputs = list(map(Output, outputs or []))
-
-    named_outputs = kwds.get("named_output", [])
-    del kwds["named_output"]
-    for named_output in (named_outputs or []):
-        outputs.append(Output(name=named_output))
-
-    # handle example outputs
-    example_outputs = kwds["example_output"]
-    del kwds["example_output"]
-    for i, output_file in enumerate(example_outputs or []):
-        name = "output%d" % (i + 1)
-        from_path = output_file
-        use_from_path = True
-        if output_file in command:
-            # Actually found the file in the command, assume it can
-            # be specified directly and skip from_work_dir.
-            use_from_path = False
-        output = Output(name=name, from_path=from_path,
-                        use_from_path=use_from_path)
-        outputs.append(output)
-        test_case.outputs.append((name, output_file))
-        command = _replace_file_in_command(command, output_file, output.name)
-
-    kwds["inputs"] = inputs
-    kwds["outputs"] = outputs
-
     # handle requirements and containers
     _handle_requirements(kwds)
 
-    kwds["command"] = command
+    command_io = CommandIO(**kwds)
+    kwds["inputs"] = command_io.inputs
+    kwds["outputs"] = command_io.outputs
+    kwds["command"] = command_io.cheetah_template
+
+    test_case = command_io.test_case()
 
     # finally wrap up tests
     tests, test_files = _handle_tests(kwds, test_case)
@@ -198,7 +328,252 @@ def build(**kwds):
     if kwds["macros"]:
         macro_contents = _render(kwds, MACROS_TEMPLATE)
 
-    return ToolDescription(contents, macro_contents, test_files)
+    return ToolDescription(
+        contents,
+        macro_contents,
+        test_files=test_files
+    )
+
+
+class CommandIO(object):
+
+    def __init__(self, **kwds):
+        command = _find_command(kwds)
+        cheetah_template = command
+
+        # process raw inputs
+        inputs = kwds.pop("input", [])
+        inputs = list(map(Input, inputs or []))
+
+        # alternatively process example inputs
+        example_inputs = kwds.pop("example_input", [])
+        for i, input_file in enumerate(example_inputs or []):
+            name = "input%d" % (i + 1)
+            inputs.append(Input(input_file, name=name, example=True))
+            cheetah_template = _replace_file_in_command(cheetah_template, input_file, name)
+
+        # handle raw outputs (from_work_dir ones) as well as named_outputs
+        outputs = kwds.pop("output", [])
+        outputs = list(map(Output, outputs or []))
+
+        named_outputs = kwds.pop("named_output", [])
+        for named_output in (named_outputs or []):
+            outputs.append(Output(name=named_output, example=False))
+
+        # handle example outputs
+        example_outputs = kwds.pop("example_output", [])
+        for i, output_file in enumerate(example_outputs or []):
+            name = "output%d" % (i + 1)
+            from_path = output_file
+            use_from_path = True
+            if output_file in cheetah_template:
+                # Actually found the file in the command, assume it can
+                # be specified directly and skip from_work_dir.
+                use_from_path = False
+            output = Output(name=name, from_path=from_path,
+                            use_from_path=use_from_path, example=True)
+            outputs.append(output)
+            cheetah_template = _replace_file_in_command(cheetah_template, output_file, output.name)
+
+        self.inputs = inputs
+        self.outputs = outputs
+        self.command = command
+        self.cheetah_template = cheetah_template
+
+    def example_input_names(self):
+        for input in self.inputs:
+            if input.example:
+                yield input.input_description
+
+    def example_output_names(self):
+        for output in self.outputs:
+            if output.example:
+                yield output.example_path
+
+    def cwl_lex_list(self):
+        if not self.command:
+            return []
+
+        command_parts = shlex.split(self.command)
+        parse_list = []
+
+        input_count = 0
+        output_count = 0
+
+        index = 0
+
+        prefixed_parts = []
+        while index < len(command_parts):
+            value = command_parts[index]
+            eq_split = value.split("=")
+
+            prefix = None
+            if not _looks_like_start_of_prefix(index, command_parts):
+                index += 1
+            elif len(eq_split) == 2:
+                prefix = Prefix(eq_split[0] + "=", False)
+                value = eq_split[1]
+                index += 1
+            else:
+                prefix = Prefix(value, True)
+                value = command_parts[index + 1]
+                index += 2
+            prefixed_parts.append((prefix, value))
+
+        for position, (prefix, value) in enumerate(prefixed_parts):
+            if value in self.example_input_names():
+                input_count += 1
+                input = CwlInput(
+                    "input%d" % input_count,
+                    position,
+                    prefix,
+                    value,
+                )
+                parse_list.append(input)
+            elif value in self.example_output_names():
+                output_count += 1
+                output = CwlOutput(
+                    "output%d" % output_count,
+                    position,
+                    prefix,
+                    value,
+                )
+                parse_list.append(output)
+            elif prefix:
+                param_id = prefix.prefix.lower().rstrip("=")
+                type_ = param_type(value)
+                input = CwlInput(
+                    param_id,
+                    position,
+                    prefix,
+                    value,
+                    type_=type_,
+                )
+                parse_list.append(input)
+            else:
+                part = CwlCommandPart(value, position, prefix)
+                parse_list.append(part)
+        return parse_list
+
+    def cwl_properties(self):
+        base_command = []
+        arguments = []
+        inputs = []
+        outputs = []
+
+        lex_list = self.cwl_lex_list()
+
+        index = 0
+        while index < len(lex_list):
+            token = lex_list[index]
+            if isinstance(token, CwlCommandPart):
+                base_command.append(token.value)
+            else:
+                break
+            index += 1
+
+        while index < len(lex_list):
+            token = lex_list[index]
+            if token.is_token(">"):
+                break
+            token.position = index - len(base_command) + 1
+            if isinstance(token, CwlCommandPart):
+                arguments.append(token)
+            elif isinstance(token, CwlInput):
+                inputs.append(token)
+            elif isinstance(token, CwlOutput):
+                token.glob = "$(inputs.%s)" % token.id
+                outputs.append(token)
+
+            index += 1
+
+        stdout = None
+        if index < len(lex_list):
+            token = lex_list[index]
+            if token.is_token(">") and (index + 1) < len(lex_list):
+                output_token = lex_list[index + 1]
+                if not isinstance(output_token, CwlOutput):
+                    output_token = CwlOutput("std_out", None)
+
+                output_token.glob = "out"
+                output_token.require_filename = False
+                outputs.append(output_token)
+                stdout = "out"
+                index += 2
+            else:
+                io.warn("Example command too complex, you will need to build it up manually.")
+
+        return {
+            "inputs": inputs,
+            "outputs": outputs,
+            "arguments": arguments,
+            "base_command": base_command,
+            "stdout": stdout,
+        }
+
+    def test_case(self):
+        test_case = TestCase()
+        for input in self.inputs:
+            if input.example:
+                test_case.params.append((input.name, input.input_description))
+
+        for output in self.outputs:
+            if output.example:
+                test_case.outputs.append((output.name, output.example_path))
+
+        return test_case
+
+
+def _looks_like_start_of_prefix(index, parts):
+    value = parts[index]
+    if len(value.split("=")) == 2:
+        return True
+    if index + 1 == len(parts):
+        return False
+    next_value = parts[index + 1]
+    next_value_is_not_start = (len(value.split("=")) != 2) and next_value[0] not in ["-", ">", "<", "|"]
+    return value.startswith("-") and next_value_is_not_start
+
+
+Prefix = namedtuple("Prefix", ["prefix", "separated"])
+
+
+class CwlCommandPart(object):
+
+    def __init__(self, value, position, prefix):
+        self.value = value
+        self.position = position
+        self.prefix = prefix
+
+    def is_token(self, value):
+        return self.value == value
+
+
+class CwlInput(object):
+
+    def __init__(self, id, position, prefix, example_value, type_="File"):
+        self.id = id
+        self.position = position
+        self.prefix = prefix
+        self.example_value = example_value
+        self.type = type_
+
+    def is_token(self, value):
+        return False
+
+
+class CwlOutput(object):
+
+    def __init__(self, id, position, prefix, example_value):
+        self.id = id
+        self.position = position
+        self.prefix = prefix
+        self.glob = None
+        self.example_value = example_value
+        self.require_filename = True
+
+    def is_token(self, value):
+        return False
 
 
 def _render(kwds, template_str=TOOL_TEMPLATE):
@@ -216,9 +591,11 @@ def _replace_file_in_command(command, specified_file, name):
     if '"%s"' % specified_file in command:
         # Sample command already wrapped filename in double quotes
         command = command.replace(specified_file, '$%s' % name)
-    else:
+    elif (" %s " % specified_file) in (" " + command + " "):
         # In case of spaces, best to wrap filename in double quotes
         command = command.replace(specified_file, '"$%s"' % name)
+    else:
+        command = command.replace(specified_file, '$%s' % name)
     return command
 
 
@@ -276,9 +653,10 @@ def _handle_requirements(kwds):
 
 
 def _find_command(kwds):
-    """ Find base command from supplied arguments or just return None if no
-    such command was supplied (template will just replace this with TODO
-    item).
+    """Find base command from supplied arguments or just return None.
+
+    If no such command was supplied (template will just replace this
+    with a TODO item).
     """
     command = kwds.get("command")
     if not command:
@@ -324,16 +702,18 @@ class UrlCitation(object):
 
 
 class ToolDescription(object):
+    """An description of the tool and related files to create."""
 
-    def __init__(self, contents, macro_contents, test_files):
+    def __init__(self, contents, macro_contents=None, test_contents=None, test_files=[]):
         self.contents = contents
+        self.test_contents = test_contents
         self.macro_contents = macro_contents
         self.test_files = test_files
 
 
 class Input(object):
 
-    def __init__(self, input_description, name=None):
+    def __init__(self, input_description, name=None, example=False):
         parts = input_description.split(".")
         name = name or parts[0]
         if len(parts) > 0:
@@ -341,6 +721,8 @@ class Input(object):
         else:
             datatype = "data"
 
+        self.input_description = input_description
+        self.example = example
         self.name = name
         self.datatype = datatype
 
@@ -351,7 +733,7 @@ class Input(object):
 
 class Output(object):
 
-    def __init__(self, from_path=None, name=None, use_from_path=False):
+    def __init__(self, from_path=None, name=None, use_from_path=False, example=False):
         if from_path:
             parts = from_path.split(".")
             name = name or parts[0]
@@ -369,6 +751,9 @@ class Output(object):
             self.from_path = from_path
         else:
             self.from_path = None
+        self.example = example
+        if example:
+            self.example_path = from_path
 
     def __str__(self):
         if self.from_path:
@@ -407,6 +792,15 @@ class Requirement(object):
         return base.format(attrs, self.name)
 
 
+def param_type(value):
+    if re.match("^\d+$", value):
+        return "int"
+    elif re.match("^\d+?\.\d+?$", value):
+        return "float"
+    else:
+        return "string"
+
+
 class Container(object):
 
     def __init__(self, image_id):
@@ -423,3 +817,9 @@ class TestCase(object):
     def __init__(self):
         self.params = []
         self.outputs = []
+
+
+__all__ = [
+    "build",
+    "ToolDescription"
+]

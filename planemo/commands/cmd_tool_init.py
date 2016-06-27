@@ -1,6 +1,5 @@
 """Module describing the planemo ``tool_init`` command."""
 import os
-import sys
 
 import click
 
@@ -16,6 +15,7 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
 # --input_format
 # --output_format
 # --advanced_options
+@click.command("tool_init")
 @click.option(
     "-i",
     "--id",
@@ -124,7 +124,7 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
     default=None,
     prompt=False,
     help=("Create a named output for use with command block for example "
-          "specify --named_output=output1.bam and then use '-o $ouput1' "
+          "specify --named_output=output1.bam and then use '-o $output1' "
           "in your command block."),
 )
 @click.option(
@@ -164,7 +164,7 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
     multiple=True,
     prompt=False,
     help=("Supply a DOI (http://www.doi.org/) easing citation of the tool "
-          "for Galxy users (e.g. 10.1101/014043).")
+          "for Galaxy users (e.g. 10.1101/014043).")
 )
 @click.option(
     "--cite_url",
@@ -189,26 +189,36 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
     prompt=False,
     help="Generate a macros.xml for reuse across many tools.",
 )
-@click.command("tool_init")
+@options.build_cwl_option()
 @command_function
 def cli(ctx, **kwds):
-    """Generate a tool outline from supplied arguments.
-    """
+    """Generate a tool outline from supplied arguments."""
     invalid = _validate_kwds(kwds)
+    tool_id = kwds.get("id")
     if invalid:
-        return invalid
+        ctx.exit(invalid)
     output = kwds.get("tool")
     if not output:
-        output = "%s.xml" % kwds.get("id")
+        extension = "cwl" if kwds.get("cwl") else "xml"
+        output = "%s.%s" % (tool_id, extension)
     if not io.can_write_to_path(output, **kwds):
-        sys.exit(1)
+        ctx.exit(1)
     tool_description = tool_builder.build(**kwds)
-    open(output, "w").write(tool_description.contents)
+    io.write_file(output, tool_description.contents)
     io.info("Tool written to %s" % output)
+    test_contents = tool_description.test_contents
+    if test_contents:
+        sep = "-" if "-" in tool_id else "_"
+        tests_path = "%s%stests.yml" % (kwds.get("id"), sep)
+        if not io.can_write_to_path(tests_path, **kwds):
+            ctx.exit(1)
+        io.write_file(tests_path, test_contents)
+        io.info("Tool tests written to %s" % tests_path)
+
     macros = kwds["macros"]
     macros_file = "macros.xml"
     if macros and not os.path.exists(macros_file):
-        open(macros_file, "w").write(tool_description.macro_contents)
+        io.write_file(macros_file, tool_description.macro_contents)
     elif macros:
         io.info(REUSING_MACROS_MESSAGE)
     if tool_description.test_files:

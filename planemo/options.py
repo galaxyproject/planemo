@@ -30,11 +30,61 @@ def skip_venv_option():
     )
 
 
+def run_engine_option():
+    return planemo_option(
+        "--engine",
+        type=click.Choice(["galaxy", "docker_galaxy", "cwltool"]),
+        default="galaxy",
+        use_global_config=True,
+        help=("Select an engine to run or test aritfacts such as tools "
+              "and workflows. Defaults to a local Galaxy, but running Galaxy within "
+              "a Docker container or the CWL reference implementation 'cwltool' and "
+              "be selected.")
+    )
+
+
+def serve_engine_option():
+    return planemo_option(
+        "--engine",
+        type=click.Choice(["galaxy", "docker_galaxy"]),
+        default="galaxy",
+        use_global_config=True,
+        help=("Select an engine to serve aritfacts such as tools "
+              "and workflows. Defaults to a local Galaxy, but running Galaxy within "
+              "a Docker container.")
+    )
+
+
+def cwltool_no_container_option():
+    return planemo_option(
+        "--no-container",
+        "--no_container",
+        is_flag=True,
+        default=False,
+        use_global_config=True,
+        help=("If cwltool engine is used, disable Docker container usage.")
+    )
+
+
 def test_data_option():
     return planemo_option(
         "--test_data",
         type=click.Path(exists=True, file_okay=False, resolve_path=True),
         help="test-data directory to for specified tool(s).",
+    )
+
+
+def extra_tools_option():
+    return planemo_option(
+        "--extra_tools",
+        type=click.Path(exists=True,
+                        file_okay=True,
+                        dir_okay=True,
+                        resolve_path=True),
+        multiple=True,
+        help=("Extra tool sources to include in Galaxy's tool panel (file or "
+              "directory). These will not be linted/tested/etc... but they "
+              "will be available to workflows and for interactive use.")
     )
 
 
@@ -133,8 +183,47 @@ def enable_cwl_option():
     )
 
 
+def build_cwl_option():
+    return planemo_option(
+        "--cwl",
+        is_flag=True,
+        help="Build a CWL tool instead of a Galaxy tool.",
+    )
+
+
+def run_output_directory_option():
+    return planemo_option(
+        "output_directory",
+        "--output_directory",
+        "--outdir",
+        type=click.Path(
+            file_okay=False,
+            dir_okay=True,
+            resolve_path=True,
+        ),
+        default=None,
+        help=("Where to store outputs of a 'run' task."),
+    )
+
+
+def run_output_json_option():
+    return planemo_option(
+        "output_json",
+        "--output_json",
+        type=click.Path(
+            file_okay=True,
+            dir_okay=False,
+            resolve_path=True,
+        ),
+        default=None,
+        help=("Where to store JSON dictionary describing outputs of "
+              "a 'run' task."),
+    )
+
+
 def cwl_conformance_test():
     return planemo_option(
+        "--conformance_test",
         "--conformance-test",
         is_flag=True,
         help=("Generate CWL conformance test object describing job. "
@@ -247,6 +336,17 @@ def install_galaxy_option():
         "--install_galaxy",
         is_flag=True,
         help="Download and configure a disposable copy of Galaxy from github."
+    )
+
+
+def docker_galaxy_image_option():
+    return planemo_option(
+        "--docker_galaxy_image",
+        default="bgruening/galaxy-stable",
+        use_global_config=True,
+        help=("Docker image identifier for docker-galaxy-flavor used if "
+              "engine type is specified as ``docker-galaxy``. Defaults to "
+              "to bgruening/galaxy-stable.")
     )
 
 
@@ -384,7 +484,7 @@ def required_job_arg():
         file_okay=True,
         dir_okay=False,
         readable=True,
-        resolve_path=True,
+        resolve_path=False,
     )
     return click.argument("job_path", metavar="JOB_PATH", type=arg_type)
 
@@ -474,6 +574,14 @@ def no_cleanup_option():
     )
 
 
+def docker_enable_option():
+    return planemo_option(
+        "--docker/--no_docker",
+        default=False,
+        help=("Run Galaxy tools in Docker if enabled.")
+    )
+
+
 def docker_cmd_option():
     return planemo_option(
         "--docker_cmd",
@@ -484,7 +592,7 @@ def docker_cmd_option():
 
 def docker_sudo_option():
     return planemo_option(
-        "--docker_sudo",
+        "--docker_sudo/--no_docker_sudo",
         is_flag=True,
         help="Flag to use sudo when running docker."
     )
@@ -507,6 +615,22 @@ def docker_host_option():
              "(defaults to localhost).",
         use_global_config=True,
         default=docker_util.DEFAULT_HOST,
+    )
+
+
+def docker_config_options():
+    return _compose(
+        docker_cmd_option(),
+        docker_sudo_option(),
+        docker_host_option(),
+        docker_sudo_cmd_option(),
+    )
+
+
+def galaxy_docker_options():
+    return _compose(
+        docker_enable_option(),
+        docker_config_options(),
     )
 
 
@@ -713,6 +837,7 @@ def galaxy_config_options():
         conda_auto_init_option(),
         # Profile options...
         profile_option(),
+        profile_database_options(),
         file_path_option(),
         database_connection_option(),
         shed_tools_conf_option(),
@@ -724,6 +849,7 @@ def galaxy_target_options():
     return _compose(
         galaxy_root_option(),
         galaxy_database_seed_option(),
+        extra_tools_option(),
         install_galaxy_option(),
         galaxy_branch_option(),
         galaxy_source_option(),
@@ -731,6 +857,7 @@ def galaxy_target_options():
         no_cache_galaxy_option(),
         no_cleanup_option(),
         galaxy_email_option(),
+        galaxy_docker_options(),
         # Profile options...
         job_config_option(),
         tool_dependency_dir_option(),
@@ -765,6 +892,8 @@ def profile_option():
 def galaxy_serve_options():
     return _compose(
         galaxy_run_options(),
+        serve_engine_option(),
+        docker_galaxy_image_option(),
         galaxy_config_options(),
         daemon_option(),
         pid_file_option(),
@@ -856,6 +985,14 @@ def tool_test_json():
     )
 
 
+def engine_options():
+    return _compose(
+        run_engine_option(),
+        cwltool_no_container_option(),
+        docker_galaxy_image_option(),
+    )
+
+
 def test_report_options():
     return _compose(
         planemo_option(
@@ -881,6 +1018,83 @@ def test_report_options():
                   "computers)"),
             default=None,
         ),
+    )
+
+
+def profile_name_argument():
+    return click.argument(
+        'profile_name',
+        metavar="PROFILE_NAME",
+        type=str,
+    )
+
+
+def database_identifier_argument():
+    return click.argument(
+        'identifier',
+        metavar="IDENTIFIER",
+        type=str,
+    )
+
+
+def postgres_datatype_type_option():
+    return planemo_option(
+        "--postgres",
+        "database_type",
+        flag_value="postgres",
+        help=("Use postgres database type."),
+    )
+
+
+def database_type_option():
+    return planemo_option(
+        "--database_type",
+        default="postgres",
+        type=click.Choice([
+            "postgres",
+            "sqlite",
+        ]),
+        use_global_config=True,
+        help=("Type of database to use for profile - "
+              "currently only 'postgres' is available."),
+    )
+
+
+def database_source_options():
+    """Database connection options for commands that utilize a database."""
+    return _compose(
+        planemo_option(
+            "--postgres_psql_path",
+            default="psql",
+            use_global_config=True,
+            help=("Name or or path to postgres client binary (psql)."),
+        ),
+        planemo_option(
+            "--postgres_database_user",
+            default="postgres",
+            use_global_config=True,
+            help=("Postgres username for managed development databases."),
+        ),
+        planemo_option(
+            "--postgres_database_host",
+            default=None,
+            use_global_config=True,
+            help=("Postgres host name for managed development databases."),
+        ),
+        planemo_option(
+            "--postgres_database_port",
+            default=None,
+            use_global_config=True,
+            help=("Postgres port for managed development databases."),
+        ),
+    )
+
+
+def profile_database_options():
+    return _compose(
+        postgres_datatype_type_option(),
+        database_type_option(),
+        database_source_options(),
     )
 
 

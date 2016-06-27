@@ -1,61 +1,66 @@
+"""Abstractions for serving out development Galaxy servers."""
 import contextlib
-import os
 import time
 
 from .config import galaxy_config
 from .run import (
-    setup_venv,
     run_galaxy_command,
 )
 from planemo import io
 from planemo import network_util
 
 
-def serve(ctx, paths, **kwds):
-    # TODO: Preceate a user.
-    # TODO: Setup an admin user.
-    # TODO: Pass through more parameters.
-    # TODO: Populate test-data directory as FTP directory.
+def serve(ctx, runnables=[], **kwds):
+    """Serve a Galaxy instance with artifacts defined by paths."""
+    try:
+        return _serve(ctx, runnables, **kwds)
+    except Exception as e:
+        ctx.vlog("Problem serving Galaxy", exception=e)
+        raise
+
+
+def _serve(ctx, runnables, **kwds):
+    engine = kwds.get("engine", "galaxy")
+    if engine == "docker_galaxy":
+        kwds["dockerize"] = True
+
     daemon = kwds.get("daemon", False)
     if daemon:
         kwds["no_cleanup"] = True
 
-    with galaxy_config(ctx, paths, **kwds) as config:
-        pid_file = config.pid_file
-        # TODO: Allow running dockerized Galaxy here instead.
-        setup_venv_command = setup_venv(ctx, kwds)
-        run_script = os.path.join(config.galaxy_root, "run.sh")
-        run_script += " $COMMON_STARTUP_ARGS"
-        if daemon:
-            run_script += " --pid-file '%s' --daemon" % pid_file
-            config.env["GALAXY_RUN_ALL"] = "1"
-        else:
-            run_script += " --server-name '%s' --reload" % config.server_name
-        server_ini = os.path.join(config.config_directory, "galaxy.ini")
-        config.env["GALAXY_CONFIG_FILE"] = server_ini
-        cd_to_galaxy_command = "cd %s" % config.galaxy_root
-        cmd = io.shell_join(
-            cd_to_galaxy_command,
-            setup_venv_command,
-            run_script,
-        )
+    with galaxy_config(ctx, runnables, **kwds) as config:
+        cmd = config.startup_command(ctx, **kwds)
         action = "Starting galaxy"
-        run_galaxy_command(
+        exit_code = run_galaxy_command(
             ctx,
             cmd,
             config.env,
             action,
         )
+        if exit_code:
+            message = "Problem running Galaxy command [%s]." % config.log_contents
+            io.warn(message)
+            raise Exception(message)
         host = kwds.get("host", "127.0.0.1")
-        port = kwds.get("port")
+        port = kwds.get("port", None)
+        if port is None:
+            port = network_util.get_free_port()
+
+        ctx.vlog("Waiting for service on (%s, %s)" % (host, port))
         assert network_util.wait_net_service(host, port)
         time.sleep(.1)
+        ctx.vlog("Waiting for service on (%s, %s)" % (host, port))
         assert network_util.wait_net_service(host, port)
+        time.sleep(5)
+        ctx.vlog("Waiting for service on (%s, %s)" % (host, port))
+        assert network_util.wait_net_service(host, port)
+        config.install_workflows()
         return config
 
 
 @contextlib.contextmanager
 def shed_serve(ctx, install_args_list, **kwds):
+    """Serve a daemon instance of Galaxy with specified repositories installed."""
     with serve_daemon(ctx, **kwds) as config:
         install_deps = not kwds.get("skip_dependencies", False)
         io.info("Installing repositories - this may take some time...")
@@ -71,14 +76,17 @@ def shed_serve(ctx, install_args_list, **kwds):
 
 
 @contextlib.contextmanager
-def serve_daemon(ctx, paths=[], **kwds):
+def serve_daemon(ctx, runnables=[], **kwds):
+    """Serve a daemonized Galaxy instance with artifacts defined by paths."""
     config = None
     try:
         kwds["daemon"] = True
-        config = serve(ctx, paths, **kwds)
+        config = serve(ctx, runnables, **kwds)
         yield config
     finally:
         if config:
             config.kill()
             if not kwds.get("no_cleanup", False):
                 config.cleanup()
+
+__all__ = ["serve", "serve_daemon", "shed_serve"]

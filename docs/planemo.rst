@@ -8,11 +8,14 @@ Subpackages
 
     planemo.commands
     planemo.cwl
+    planemo.database
+    planemo.engine
     planemo.galaxy
     planemo.linters
     planemo.reports
     planemo.shed
     planemo.shed2tap
+    planemo.test
     planemo.xml
 
 Submodules
@@ -46,6 +49,14 @@ planemo.config module
 ---------------------
 
 .. automodule:: planemo.config
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.docker module
+---------------------
+
+.. automodule:: planemo.docker
     :members:
     :undoc-members:
     :show-inheritance:
@@ -110,6 +121,14 @@ planemo.options module
 ----------------------
 
 .. automodule:: planemo.options
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.runnable module
+-----------------------
+
+.. automodule:: planemo.runnable
     :members:
     :undoc-members:
     :show-inheritance:

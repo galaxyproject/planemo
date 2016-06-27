@@ -21,14 +21,29 @@ def user_api_key(admin_gi):
     ensure_module()
     # TODO: thread-safe
     users = admin_gi.users
-    # Allow override with --user_api_key.
-    user_response = users.create_local_user(
-        "planemo",
-        "planemo@galaxyproject.org",
-        "planemo",
-    )
-    user_id = user_response["id"]
+    all_users = users.get_users()
 
+    user_id = None
+    for user in all_users:
+        if user["email"] == "planemo@galaxyproject.org":
+            user_id = user["id"]
+
+    if user_id is None:
+        # TODO: Allow override with --user_api_key.
+        galaxy_config = admin_gi.config.get_config()
+        use_remote_user = bool(galaxy_config["use_remote_user"])
+        if not use_remote_user:
+            user_response = users.create_local_user(
+                "planemo",
+                "planemo@galaxyproject.org",
+                "planemo",
+            )
+            user_id = user_response["id"]
+        else:
+            user_response = users.create_remote_user(
+                "planemo@galaxyproject.org",
+            )
+            user_id = user_response["id"]
     return users.create_user_apikey(user_id)
 
 

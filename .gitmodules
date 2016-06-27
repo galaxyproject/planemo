@@ -4,3 +4,6 @@
 [submodule "planemo/cwl/cwl2script"]
 	path = planemo/cwl/cwl2script
 	url = https://github.com/common-workflow-language/cwl2script.git
+[submodule "docs/standards"]
+	path = docs/standards
+	url = https://github.com/galaxy-iuc/standards.git

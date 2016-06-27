@@ -84,7 +84,9 @@ Further reading:
 \.\.\. check input type in command blocks?
 -------------------------------------------------
 
-Input data parameters may specify multiple formats. For example::
+Input data parameters may specify multiple formats. For example
+
+.. code-block:: xml
 
     <param name="input" type="data" format="fastq,fasta" label="Input" />
 
@@ -98,11 +100,13 @@ datatype of the input supplied - for instance the string ``fasta`` or
 ``fastqsanger`` would be valid responses for inputs to this parameter for the
 above definition.
 
-While ``.ext`` may sometimes be useful - there are many cases where it is 
+While ``.ext`` may sometimes be useful - there are many cases where it is
 inappropriate because of subtypes - checking if ``.ext`` is equal to ``fastq``
 in the above example would not catch ``fastqsanger`` inputs for instance. To
 check if an input matches a type or any subtype thereof - the ``is_of_type``
-method can be used. For instance::
+method can be used. For instance
+
+::
 
     $input.is_of_type('fastq')
 
@@ -163,7 +167,7 @@ the older default pattern approach (e.g. finding files with names like
 elements beneath the corresponding ``output`` element with the ``designation``
 corresponding to the file to test.
 
-::
+.. code-block:: xml
 
     <test>
       <param name="input" value="7" />
@@ -209,7 +213,7 @@ demonstrated by the following tool.
 
 There is an idiom to supply test data for index during tests using Planemo_.
 
-To create this kind of test, one simply needs to provide a
+To create this kind of test, one needs to provide a
 ``tool_data_table_conf.xml.test`` beside your tool's
 ``tool_data_table_conf.xml.sample`` file that specifies paths to test ``.loc``
 files which in turn define paths to the test index data. Both the ``.loc``
@@ -249,7 +253,7 @@ to the ``test`` element.
 \.\.\. test metadata?
 ------------------------------------------
 
-Output metadata can be checked using ``metadata`` elements in the XML 
+Output metadata can be checked using ``metadata`` elements in the XML
 description of the ``output``.
 
 - `metadata.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/metadata.xml>`__
@@ -264,7 +268,7 @@ instance.
 
 ::
 
-    sh run_tests.sh --report_file tool_tests_shed.html --installed
+    $ sh run_tests.sh --report_file tool_tests_shed.html --installed
 
 
 This above command specifies the ``--installed`` flag when calling
@@ -273,8 +277,8 @@ tools and only those tools.
 
 ::
 
-    GALAXY_TEST_TOOL_CONF=config/tool_conf.xml sh run_tests.sh --report_file tool_tests_tool_conf.html functional.test_toolbox
-    
+    $ GALAXY_TEST_TOOL_CONF=config/tool_conf.xml sh run_tests.sh --report_file tool_tests_tool_conf.html functional.test_toolbox
+
 The second command sets ``GALAXY_TEST_TOOL_CONF`` environment variable, which
 will restrict the testing framework to considering a single tool conf file
 (such as the default tools that ship with Galaxy
@@ -283,13 +287,13 @@ manually). The last argument to ``run_tests.sh``, ``functional.test_toolbox``
 tells the test framework to run all the tool tests in the configured tool conf
 file.
 
-.. note:: *Tip:* To speed up tests you can use a pre-migrated database file the way planemo
+.. note:: *Tip:* To speed up tests you can use a pre-migrated database file the way Planemo
     does by setting the following environment variable before running
     ``run_tests.sh``.
 
     ::
 
-         export GALAXY_TEST_DB_TEMPLATE="https://github.com/jmchilton/galaxy-downloads/raw/master/db_gx_rev_0127.sqlite"
+         $ export GALAXY_TEST_DB_TEMPLATE="https://github.com/jmchilton/galaxy-downloads/raw/master/db_gx_rev_0127.sqlite"
 
 .. _DOI: http://www.doi.org/
 .. _BibTeX: http://www.bibtex.org/

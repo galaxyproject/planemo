@@ -40,12 +40,15 @@ PACKAGES = [
     'planemo.cwl',
     'planemo.cwl.cwl2script',
     'planemo.commands',
+    'planemo.database',
+    'planemo.engine',
     'planemo.galaxy',
     'planemo.galaxy.test',
     'planemo.linters',
     'planemo.reports',
     'planemo.shed',
     'planemo.shed2tap',
+    'planemo.test',
     'planemo.xml',
 ]
 ENTRY_POINTS = '''
@@ -101,8 +104,8 @@ setup(
     package_dir=PACKAGE_DIR,
     include_package_data=True,
     install_requires=requirements,
-    extras_requires={
-        ':python_version == "2.7"': [
+    extras_require={
+        ':python_version=="2.7"': [
             'cwltool',
         ],
     },

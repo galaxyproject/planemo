@@ -1,4 +1,5 @@
 """The module describes a CLI framework extending ``click``."""
+import functools
 import os
 import sys
 import traceback
@@ -11,9 +12,10 @@ from .config import (
     OptionSource,
 )
 from planemo.galaxy import profiles
+from planemo.exit_codes import ExitCodeException
 from planemo import __version__
 
-PYTHON_2_7_COMMANDS = ["cwl_run", "cwl_script"]
+PYTHON_2_7_COMMANDS = ["run", "cwl_script"]
 IS_PYTHON_2_7 = sys.version_info[0] == 2 and sys.version_info[1] >= 7
 
 
@@ -46,7 +48,7 @@ class Context(object):
     def set_option_source(self, param_name, option_source, force=False):
         """Specify how an option was set."""
         if not force:
-            assert param_name not in self.option_source
+            assert param_name not in self.option_source, "No option source for [%s]" % param_name
         self.option_source[param_name] = option_source
 
     def get_option_source(self, param_name):
@@ -103,6 +105,11 @@ class Context(object):
             raise Exception(message)
         return path
 
+    def exit(self, exit_code):
+        """Exit planemo with the supplied exit code."""
+        self.vlog("Exiting planemo with exit code [%d]" % exit_code)
+        raise ExitCodeException(exit_code)
+
 
 pass_context = click.make_pass_decorator(Context, ensure=True)
 cmd_folder = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -123,7 +130,12 @@ def list_cmds():
     return rv
 
 
-def _name_to_command(name):
+def name_to_command(name):
+    """Convert a subcommand name to the cli function for that command.
+
+    Command <X> is defined by the method 'planemo.commands.cmd_<x>:cli',
+    this method uses `__import__` to load and return that method.
+    """
     try:
         if sys.version_info[0] == 2:
             name = name.encode('ascii', 'replace')
@@ -143,23 +155,39 @@ class PlanemoCLI(click.MultiCommand):
     def get_command(self, ctx, name):
         if name in COMMAND_ALIASES:
             name = COMMAND_ALIASES[name]
-        return _name_to_command(name)
+        return name_to_command(name)
 
 
 def command_function(f):
     """Extension point for processing kwds after click callbacks."""
+    @functools.wraps(f)
     def handle_profile_options(*args, **kwds):
         profile = kwds.get("profile", None)
         if profile:
             ctx = args[0]
-            profile_defaults = profiles.ensure_profile(ctx, profile, **kwds)
-            for key, value in profile_defaults.items():
-                if ctx.get_option_source(key) != OptionSource.cli:
-                    kwds[key] = value
-                    ctx.set_option_source(key, OptionSource.profile, force=True)
-        return f(*args, **kwds)
-    handle_profile_options.__doc__ = f.__doc__
+            profile_defaults = profiles.ensure_profile(
+                ctx, profile, **kwds
+            )
+            _setup_profile_options(ctx, profile_defaults, kwds)
+
+        try:
+            return f(*args, **kwds)
+        except ExitCodeException as e:
+            sys.exit(e.exit_code)
+
     return pass_context(handle_profile_options)
+
+
+def _setup_profile_options(ctx, profile_defaults, kwds):
+    for key, value in profile_defaults.items():
+        option_present = key in kwds
+        option_cli_specified = option_present and (ctx.get_option_source(key) == OptionSource.cli)
+        use_profile_option = not option_present or not option_cli_specified
+        if use_profile_option:
+            kwds[key] = value
+            ctx.set_option_source(
+                key, OptionSource.profile, force=True
+            )
 
 
 @click.command(cls=PlanemoCLI, context_settings=CONTEXT_SETTINGS)
@@ -187,8 +215,9 @@ def planemo(ctx, config, directory, verbose):
 
 
 __all__ = [
+    "command_function",
     "Context",
     "list_cmds",
-    "command_function",
+    "name_to_command",
     "planemo",
 ]

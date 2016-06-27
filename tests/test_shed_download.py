@@ -1,7 +1,6 @@
 from os.path import join
 
-from .test_utils import CliShedTestCase
-from .test_shed_upload import assert_exists
+from .test_utils import assert_exists, CliShedTestCase
 
 
 class ShedUploadTestCase(CliShedTestCase):

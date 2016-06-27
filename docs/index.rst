@@ -16,8 +16,10 @@ Contents:
    configuration
    appliance
    writing
+   writing_cwl
    publishing
    commands
+   standards/docs/best_practices
    galaxy_changelog
    conduct
    contributing

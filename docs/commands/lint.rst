@@ -12,9 +12,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-Check specified tool(s) for common errors and adherence to best
-practices.
-
+Check tools for common errors and adherence to best practices.
 **Options**::
 
 

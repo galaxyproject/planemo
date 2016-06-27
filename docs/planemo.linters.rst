@@ -4,6 +4,14 @@ planemo.linters package
 Submodules
 ----------
 
+planemo.linters.doi module
+--------------------------
+
+.. automodule:: planemo.linters.doi
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.linters.urls module
 ---------------------------
 

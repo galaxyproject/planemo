@@ -11,6 +11,7 @@ import shutil
 from .test_utils import (
     CliShedTestCase,
     TEST_REPOS_DIR,
+    assert_exists,
 )
 from planemo.io import shell
 from planemo import git
@@ -425,21 +426,3 @@ def update_package_1(f):
         "tool_dependencies.xml"
     )
     shutil.copyfile(changed_xml, join(f, "tool_dependencies.xml"))
-
-
-def assert_exists(path):
-    """Assert supplied ``path`` exists.
-
-    Produces an informative AssertionError if it is does not.
-    """
-    dir_path = os.path.dirname(path)
-    msg = None
-    if not exists(dir_path):
-        template = "Expected path [%s] to exist, but parent absent."
-        msg = template % path
-    if not exists(path):
-        contents = os.listdir(dir_path)
-        template = "Expected path [%s] to exist. Directory contents %s."
-        msg = template % (path, contents)
-    if msg is not None:
-        raise AssertionError(msg)

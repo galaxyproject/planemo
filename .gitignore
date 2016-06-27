@@ -19,8 +19,11 @@ develop-eggs
 lib
 lib64
 
+# For building cwl-runner package.
 cwl-runner/dist
 cwl-runner/build
+# For running CWL conformance tests.
+common-workflow-language
 
 # Installer logs
 pip-log.txt

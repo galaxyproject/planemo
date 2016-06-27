@@ -10,11 +10,16 @@ from planemo.exit_codes import (
     EXIT_CODE_GENERIC_FAILURE,
 )
 
-import planemo.linters.xsd
+import planemo.linters.doi
 import planemo.linters.urls
+import planemo.linters.xsd
 
-from planemo.tools import load_tool_elements_from_path, is_tool_load_error
-from galaxy.tools.lint import lint_xml
+
+from planemo.tools import (
+    load_tool_sources_from_path,
+    is_tool_load_error,
+)
+from galaxy.tools.lint import lint_tool_source
 
 SKIP_XML_MESSAGE = "Skipping XML file - does not appear to be a tool %s."
 LINTING_TOOL_MESSAGE = "Linting tool %s"
@@ -27,12 +32,12 @@ def lint_tools_on_path(ctx, paths, lint_args, **kwds):
     valid_tools = 0
     exit_codes = []
     for path in paths:
-        for (tool_path, tool_xml) in yield_tool_xmls(ctx, path, recursive):
+        for (tool_path, tool_xml) in yield_tool_sources(ctx, path, recursive):
             if handle_tool_load_error(tool_path, tool_xml):
                 exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
                 continue
             info("Linting tool %s" % tool_path)
-            if not lint_xml(tool_xml, **lint_args):
+            if not lint_tool_source(tool_xml, **lint_args):
                 error("Failed linting")
                 exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
             else:
@@ -52,19 +57,19 @@ def handle_tool_load_error(tool_path, tool_xml):
     return is_error
 
 
-def yield_tool_xmls(ctx, path, recursive=False):
-    tools = load_tool_elements_from_path(
+def yield_tool_sources(ctx, path, recursive=False):
+    tools = load_tool_sources_from_path(
         path,
         recursive,
         register_load_errors=True,
     )
-    for (tool_path, tool_xml) in tools:
-        if is_tool_load_error(tool_xml):
-            yield (tool_path, tool_xml)
+    for (tool_path, tool_source) in tools:
+        if is_tool_load_error(tool_source):
+            yield (tool_path, tool_source)
             continue
-        if not _is_tool_xml(ctx, tool_path, tool_xml):
+        if not _is_tool_source(ctx, tool_path, tool_source):
             continue
-        yield (tool_path, tool_xml)
+        yield (tool_path, tool_source)
 
 
 def build_lint_args(ctx, **kwds):
@@ -91,17 +96,22 @@ def _lint_extra_modules(**kwds):
     if kwds.get("xsd", False):
         linters.append(planemo.linters.xsd)
 
+    if kwds.get("doi", False):
+        linters.append(planemo.linters.doi)
+
     if kwds.get("urls", False):
         linters.append(planemo.linters.urls)
 
     return linters
 
 
-def _is_tool_xml(ctx, tool_path, tool_xml):
+def _is_tool_source(ctx, tool_path, tool_source):
     if os.path.basename(tool_path) in SHED_FILES:
         return False
-    if tool_xml.getroot().tag != "tool":
-        if ctx.verbose:
-            info(SKIP_XML_MESSAGE % tool_path)
-        return False
+    root = getattr(tool_source, "root", None)
+    if root is not None:
+        if root.tag != "tool":
+            if ctx.verbose:
+                info(SKIP_XML_MESSAGE % tool_path)
+            return False
     return True

@@ -1,4 +1,7 @@
 import os
+
+import yaml
+
 from .test_utils import CliTestCase
 
 
@@ -31,9 +34,63 @@ class BuildAndLintTestCase(CliTestCase):
             self._check_exit_code(_init_command(doi=False))
             self._check_lint(exit_code=1)
 
-    def _check_lint(self, exit_code=0):
-        lint_cmd = ["lint", "--fail_level", "warn", "seqtk_seq.xml"]
+    def test_cwl(self):
+        with self._isolate() as f:
+            self._check_exit_code(_cwl_init_command())
+            self._check_lint(filename="seqtk_seq.cwl", exit_code=0)
+
+            with open(os.path.join(f, "seqtk_seq.cwl")) as stream:
+                process_dict = yaml.load(stream)
+            assert process_dict["id"] == "seqtk_seq"
+            assert process_dict["label"] == "Convert to FASTA (seqtk)"
+            assert process_dict["baseCommand"] == ["seqtk", "seq"]
+            input0 = process_dict["inputs"][0]
+            assert input0["inputBinding"]["position"] == 1
+            assert input0["inputBinding"]["prefix"] == "-a"
+            assert input0["type"] == "File"
+            output = process_dict["outputs"][0]
+            assert output["type"] == "File"
+            assert output["outputBinding"]["glob"] == "out"
+            assert process_dict["stdout"] == "out"
+
+            with open(os.path.join(f, "seqtk_seq_tests.yml")) as stream:
+                test_dict = yaml.load(stream)
+                assert test_dict
+
+    def test_cwl_fail_on_empty_help(self):
+        with self._isolate():
+            self._check_exit_code(_cwl_init_command(help_text=False))
+            self._check_lint(filename="seqtk_seq.cwl", exit_code=1)
+
+    def test_cwl_fail_on_no_docker(self):
+        with self._isolate():
+            self._check_exit_code(_cwl_init_command(help_text=False))
+            self._check_lint(filename="seqtk_seq.cwl", exit_code=1)
+
+    def _check_lint(self, filename="seqtk_seq.xml", exit_code=0):
+        lint_cmd = ["lint", "--fail_level", "warn", filename]
         self._check_exit_code(lint_cmd, exit_code=exit_code)
+
+
+def _cwl_init_command(help_text=True, container=True, test_case=True):
+    command = [
+        "tool_init", "--force", "--cwl",
+        "--id", "seqtk_seq",
+        "--name", "Convert to FASTA (seqtk)",
+        "--container", "jmchilton/seqtk:v1",
+        "--name", "Convert to FASTA (seqtk)",
+        "--example_command", "seqtk seq -a 2.fastq > 2.fasta",
+        "--example_input", "2.fastq",
+        "--example_output", "2.fasta"
+    ]
+    if container:
+        command.extend(["--container", "jmchilton/seqtk:v1"])
+    if help_text:
+        command.extend(["--help_text", "The help text."])
+    if test_case:
+        command.append("--test_case")
+
+    return command
 
 
 def _init_command(test_case=True, help_text=True, doi=True, macros=False):

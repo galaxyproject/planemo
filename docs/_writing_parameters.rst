@@ -4,18 +4,21 @@ Simple Parameters
 We have built a tool wrapper for the ``seqtk seq`` command - but this tool
 actually has additional options that we may wish to expose the Galaxy user.
 
-Lets take a few of the parameters from the help command and build Galaxy ``param`` blocks to stick in the tool's ``inputs`` block.
+Lets take a few of the parameters from the help command and build Galaxy
+``param`` blocks to stick in the tool's ``inputs`` block.
 
 ::
 
     -V        shift quality by '(-Q) - 33'
 
 In the previous section we saw ``param`` block of type ``data`` for input
-files, but there are many different kinds of parameters one can use. Flag parameters such as the above ``-V`` parameter are frequently represented by ``boolean`` parameters in Galaxy tool XML.
+files, but there are many different kinds of parameters one can use.
+Flag parameters such as the above ``-V`` parameter are frequently
+represented by ``boolean`` parameters in Galaxy tool XML.
 
-::
+.. code-block:: xml
 
-    <param name="shift_quality" type="boolean" label="Shift quality" 
+    <param name="shift_quality" type="boolean" label="Shift quality"
            truevalue="-V" falsevalue=""
            help="shift quality by '(-Q) - 33' (-V)" />
 
@@ -34,11 +37,11 @@ Now consider the following ``seqtk seq`` parameters:
 
 These can be translated into Galaxy parameters as:
 
-::
+.. code-block:: xml
 
-    <param name="quality_min" type="integer" label="Mask bases with quality lower than" 
+    <param name="quality_min" type="integer" label="Mask bases with quality lower than"
            value="0" min="0" max="255" help="(-q)" />
-    <param name="quality_max" type="integer" label="Mask bases with quality higher than" 
+    <param name="quality_max" type="integer" label="Mask bases with quality higher than"
            value="255" min="0" max="255" help="(-X)" />
 
 These can be add to the command tag as ``-q $quality_min -X $quality_max``.
@@ -62,13 +65,14 @@ The previous parameters were simple because they always appeared, now consider.
 We can mark this ``data`` type ``param`` as optional by adding the attribute
 ``optional="true"``.
 
-::
+.. code-block:: xml
 
-    <param name="mask_regions" type="data" label="Mask regions in BED" 
+    <param name="mask_regions" type="data" label="Mask regions in BED"
            format="bed" help="(-M)" optional="true" />
 
 Then instead of just using ``$mask_regions`` directly in the ``command``
-block, one can wrap it in an ``if`` `statement <http://www.cheetahtemplate.org/docs/users_guide_html/users_guide.html#SECTION0001040000000000000000>`_.
+block, one can wrap it in an ``if`` statement (because tool XML files
+support `Cheetah <http://www.cheetahtemplate.org/docs/users_guide_html/users_guide.html#SECTION0001040000000000000000>`_).
 
 ::
 
@@ -87,7 +91,7 @@ In this case, the ``-s`` random seed parameter should only be seen or used if
 the sample parameter is set. We can express this using a ``conditional``
 block.
 
-::
+.. code-block:: xml
 
     <conditional name="sample">
         <param name="sample_selector" type="boolean" label="Sample fraction of sequences" />
@@ -119,7 +123,7 @@ The newest version of this tool is now
    :language: xml
    :emphasize-lines: 13-19,31-43
 
-For tools like this where there are many options but in most uses the defaults
+For tools like this where there are many options but in the most uses the defaults
 are preferred - a common idiom is to break the parameters into simple and
 advanced sections using a ``conditional``.
 

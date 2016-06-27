@@ -68,18 +68,34 @@ planemo.commands.cmd_create_gist module
     :undoc-members:
     :show-inheritance:
 
-planemo.commands.cmd_cwl_run module
------------------------------------
-
-.. automodule:: planemo.commands.cmd_cwl_run
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 planemo.commands.cmd_cwl_script module
 --------------------------------------
 
 .. automodule:: planemo.commands.cmd_cwl_script
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_database_create module
+-------------------------------------------
+
+.. automodule:: planemo.commands.cmd_database_create
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_database_delete module
+-------------------------------------------
+
+.. automodule:: planemo.commands.cmd_database_delete
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_database_list module
+-----------------------------------------
+
+.. automodule:: planemo.commands.cmd_database_list
     :members:
     :undoc-members:
     :show-inheritance:
@@ -132,10 +148,42 @@ planemo.commands.cmd_normalize module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd_profile_create module
+------------------------------------------
+
+.. automodule:: planemo.commands.cmd_profile_create
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_profile_delete module
+------------------------------------------
+
+.. automodule:: planemo.commands.cmd_profile_delete
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_profile_list module
+----------------------------------------
+
+.. automodule:: planemo.commands.cmd_profile_list
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd_project_init module
 ----------------------------------------
 
 .. automodule:: planemo.commands.cmd_project_init
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_run module
+-------------------------------
+
+.. automodule:: planemo.commands.cmd_run
     :members:
     :undoc-members:
     :show-inheritance:

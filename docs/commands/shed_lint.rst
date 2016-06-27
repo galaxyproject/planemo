@@ -14,7 +14,6 @@ This section is auto-generated from the help text for the planemo command
 
 Check a Tool Shed repository for common problems.
 
-
 With the ``--tools`` flag, this command lints actual Galaxy tools
 in addition to tool shed artifacts.
 

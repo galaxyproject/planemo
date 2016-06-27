@@ -1,0 +1,1 @@
+../../../project_templates/cwl_draft3_spec/cat1-tool.cwl
