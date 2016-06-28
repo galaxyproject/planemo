@@ -64,9 +64,7 @@ new tool form presented last year.
 
 ### GUI Enhancements - Workflow Run Form
 
-TODO: UPDATE IMAGE
-
-![Workflow Run Form](images/gx_new_workflow_run.png)
+![Workflow Run Form](images/gx_new_run_workflow.png)
 
 ???
 
@@ -77,18 +75,16 @@ should allow more dynamic option control when running workflows.
 
 ### GUI Enhancements - Labels
 
-TODO: UPDATE IMAGE
-
-![Workflow Run Form](images/gx_new_workflow_run.png)
+![Workflow Output Labels](images/gx_workflow_output_labels.png)
 
 ???
 
-When reasoning about workflows and connections between steps, persistent and unique
-labels for steps and outputs are important. These are useful in the API and too a
+When reasoning about workflows and connections between steps, persistent and unique 
+labels for steps and outputs are important. These are useful in the API and too a 
 lesser extent in the GUI today.
 
 A major theme of this presentation is going to be that workflows are programs, they
-are a coding artifact. I'm not sure anyone would disagree with me on that - but I
+are a coding artifact. I'm not sure anyone would disagree with me on that - but I 
 think the implications may be counter-intuitive at times.
 
 ---
@@ -102,7 +98,7 @@ TODO: UPDATE IMAGE
 ???
 
 Workflows are programs, languages describing programs should provide abstractions for
-composition. Nesting workflows was one of the most requested feature requests of
+composition. Nesting workflows was one of the most requested feature requests of 
 Galaxy and it now supports this.
 
 ---
@@ -137,13 +133,13 @@ It is about **developer workflow**.
 
 ???
 
-In 2014, Greg von Kuster presented a tool development workflow that involved
+In 2014, Greg von Kuster presented a tool development workflow that involved 
 publishing things to a local tool shed and running tests from there and viewing
 the results through the web interface. I call this registry or shed centric tool
-development (development activities "boot strap the tool shed, upload to the tool
+development (development activities "boot strap the tool shed, upload to the tool 
 shed, run tests against the tool shed, view results in the tool shed, export capsule
-from the tool shed". Prior to that tool development was Galaxy-centric - "download
-Galaxy, update the Galaxy tool conf, update the Galaxy test data, run the Galaxy
+from the tool shed". Prior to that tool development was Galaxy-centric - "download 
+Galaxy, update the Galaxy tool conf, update the Galaxy test data, run the Galaxy 
 tests." Planemo is tool centric - lint the tool, test the tool, serve the tool.
 
 ---
@@ -173,7 +169,7 @@ When I write programs...
 
 ???
 
-The hippest, artisinal, free range text editor of my choice. It is a go
+The hippest, artisinal, free range text editor of my choice. It is a go 
 lang rewrite of a node rewrite of an Erlang editor from 1987 - it is super hot right
 now but I'm sure you've never heard of.
 
@@ -189,7 +185,7 @@ Serve them:
 $ planemo serve <workflow.ga>
 ```
 
-Brings up Galaxy interface with the workflow loaded, install shed
+Brings up Galaxy interface with the workflow loaded, install shed 
 tools as needed.
 
 ???
@@ -244,7 +240,7 @@ $ planemo serve --profile <name> <workflow.ga>
 ```
 
 Automatically *provision a postgres database* and configure this profile to use it. All
-future `serve`, `run`, and `test` invocations using this profile will use this
+future `serve`, `run`, and `test` invocations using this profile will use this 
 database.
 
 ???
@@ -281,7 +277,7 @@ $ planemo profile_create --engine_type docker_galaxy
                          <name>
 ```]
 
-Leverage the `docker-galaxy-stable` project spearheaded by the
+Leverage the `docker-galaxy-stable` project spearheaded by the 
 Björn Grüning to `serve` and `run` using Galaxy in a Docker container.
 
 This container comes pre-configured with slurm and Postgres as available locally -
@@ -291,103 +287,12 @@ https://github.com/bgruening/docker-galaxy-stable
 
 ???
 
-Leverage the omnipresent `docker-galaxy-stable` community project spearheaded by the
+Leverage the omnipresent `docker-galaxy-stable` community project spearheaded by the 
 omnipresent Björn Grüning to `serve` and `run` using Galaxy in a Docker container.
 
 
 ---
 class: large
-
-### Workflow Operations with Planemo
-
-Serve them:
-
-```
-$ planemo serve <workflow.ga>
-```
-
-Brings up Galaxy interface with the workflow loaded.
-
----
-
-### Load up local tools!
-
-Serve them with tools...
-
-```
-$ planemo serve --extra_tools <tool_dir> <workflow.ga>
-```
-
-Supply as many tools as you want.
-
----
-
-### Workflows are harder to serve than tools
-
-- Longer to setup input data
-- Takes time to install shed tools
-- ``sqlite`` database locks
-- Lack of cluster access is more likely to be a problem.
-
----
-
-### Enter Planemo Profiles
-
-Profile - a persistent, named Galaxy configuration available for serving and testing
-across invocations.
-
-```
-$ planemo profile_create <name>
-$ planemo serve --profile <name> <workflow.ga>
-```
-
----
-
-### Planemo Profiles and Postgres
-
-```
-$ planemo profile_create --postgres <name>
-$ planemo serve --profile <name> <workflow.ga>
-```
-
-Automatically provision a postgres database and configure this profile to use it. All
-future ``serve``, ``run``, and ``test`` invocations using this profile will use this
-database.
-
-Makes some reasonable guesses, but Postgres connection settings can be configured with
-additional CLI options or in ``~/.planemo.yml``.
-
----
-
-### Planemo Profiles and Clusters
-
-```
-$ planemo profile_create --job_conf <job_conf.xml> <name>
-$ planemo serve --profile <name> <workflow.ga>
-```
-
-Setup a job configuration object for this profile and use it with all future
-``serve``, ``run``, and ``test`` invocations using this profile.
-
----
-
-### Planemo Docker Profiles
-
-Or just...
-
-```
-$ planemo profile_create --engine_type docker_galaxy <name>
-$ planemo serve --profile <name> <workflow.ga>
-```
-
-Leverage the omnipresent ``docker-galaxy-stable`` community project spearheaded by the
-omnipresent Björn Grüning to ``serve`` and ``run`` using Galaxy in a Docker container.
-This container comes pre-configured with slurm and Postgres as available locally -
-but offers lots of additionals goodies such as Condor, ProFTP, supervisor, and uwsgi.
-
-https://github.com/bgruening/docker-galaxy-stable
-
----
 
 ### Galaxy Workflow Format
 
@@ -447,7 +352,6 @@ pip install gxformat2
 
 - Started as a way to build test workflows for Galaxy testing framework.
 - All steps can be labeled, connections described by ID.
-
   - Pypi @ https://pypi.python.org/pypi/gxformat2/
   - Github @ https://github.com/jmchilton/gxformat2
 
@@ -494,10 +398,10 @@ $ planemo test [--profile <name>] <workflow>
 
 ---
 class: large
-
+  
 ### Generalized Test Format
 
-Test any aritfact (Galaxy Tool, Galaxy Workflow, CWL Tool, CWL
+Test any aritfact (Galaxy Tool, Galaxy Workflow, CWL Tool, CWL 
 Workflow) - using the same YAML-based scheme and format.
 
 If workflow is `my_workflow.ga`, place an aritfact named
@@ -540,7 +444,7 @@ class: large
 * Like Galaxy, the rare open infrastructure that crosses the Atlantic.
   * Adopted by various Elixer efforts, Seven Bridge Genomics,
     and will be implemented in Taverna.
-  * Will be supported on all NIH Cancer Cloud Pilots and endorsed by the
+  * Will be supported on all NIH Cancer Cloud Pilots and endorsed by the 
     GA4GH. Reference implementation `cwltool` developed at Curoverse.
 * Poster P06 at 3:15 by Michael Crusoe
 
@@ -617,7 +521,7 @@ baseCommand: ["seqtk", "seq"]
 arguments: []
 stdout: out
 description: |
-
+  
   Usage:   seqtk seq [options] <in.fq>|<in.fa>
   ...
 ```

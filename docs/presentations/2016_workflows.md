@@ -50,9 +50,7 @@ new tool form presented last year.
 
 ### GUI Enhancements - Workflow Run Form
 
-TODO: UPDATE IMAGE
-
-![Workflow Run Form](images/gx_new_workflow_run.png)
+![Workflow Run Form](images/gx_new_run_workflow.png)
 
 ???
 
@@ -63,9 +61,7 @@ should allow more dynamic option control when running workflows.
 
 ### GUI Enhancements - Labels
 
-TODO: UPDATE IMAGE
-
-![Workflow Run Form](images/gx_new_workflow_run.png)
+![Workflow Output Labels](images/gx_workflow_output_labels.png)
 
 ???
 
