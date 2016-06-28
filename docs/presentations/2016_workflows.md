@@ -51,10 +51,12 @@ new tool form presented last year.
 ---
 
 class: center
+background-image: url(images/gx_new_run_workflow.png)
+background-repeat: no-repeat
+background-size: contain
+background-position: center
 
 ### GUI Enhancements - Workflow Run Form
-
-![Workflow Run Form](images/gx_new_run_workflow.png)
 
 ???
 
@@ -201,7 +203,7 @@ $ planemo s --extra_tools <tool_dir>
 Supply as many tools as you want.
 
 ---
-class: large
+class: larger
 
 ### Workflows are harder to serve than tools
 
@@ -292,11 +294,11 @@ class: large
 
 Doesn't Galaxy have a JSON workflow format?
 
-```json
+.code[```json
 "tool_state": "{\"__page__\": 0, \"__rerun_remap_job_id__\": null,
 \"input1\": \"null\", \"chromInfo\": \"\\\"/home/john/workspace/galaxy-central/tool-data/shared/ucsc/chrom/?.len\\\"\",
 \"queries\": \"[{\\\"input2\\\": null, \\\"__index__\\\": 0}]\"}",
-```
+```]
 
 - Neither human writable, nor human readable.
 - JSON doesn't allow comments.
@@ -365,17 +367,67 @@ pip install emphemeris
 - Github @ https://github.com/galaxyproject/emphemeris
 
 ---
-class: large
+class: smaller
 
 ### Format 2 Workflows - Composition Example
 
-TODO: Show a subworkflow example.
+```yaml
+class: GalaxyWorkflow
+inputs:
+  - id: outer_input
+steps:
+  - tool_id: cat1
+    label: first_cat
+    state:
+      input1: {$link: outer_input}
+  - run:
+      class: GalaxyWorkflow
+      inputs:
+        - id: inner_input
+      outputs:
+        - id: workflow_output
+          source: random_lines#out_file1
+      steps:
+        - tool_id: random_lines1
+          label: random_lines
+          state:
+            num_lines: 1
+            input: {$link: inner_input}
+            seed_source:
+              seed_source_selector: set_seed
+              seed: asdf
+    label: nested_workflow
+    connect:
+      inner_input: first_cat#out_file1
+  ...
+```
 
 ---
 
+class: smaller
+
 ### Format 2 Workflows - Implicit Connections Example
 
-TODO: Show a data manager example.
+```yaml
+class: GalaxyWorkflow
+name: "Indexing Workflow"
+inputs:
+  - id: fasta
+  - id: reads
+steps:
+  - label: create_index
+    tool_id: example_data_manager
+    state:
+      sequences:
+        $link: fasta
+  - label: run_mapper
+    tool_id: example_mapper
+    connect:
+      $step: create_index
+    state:
+      input1:
+        $link: reads
+```
 
 ---
 class: large
@@ -411,15 +463,16 @@ Will detect this aritfact and run the tests in this YAML file.
 
 ### Run Workflows
 
+```
+$ planemo run <workflow> <job.json>
+```
+
 ---
 
-class: large, bottom
-layout: false
+class: large, bottom, white
 background-image: url(images/CWL-Logo-HD.png)
 background-repeat: no-repeat
 background-size: contain
-
-### .
 
 ---
 
