@@ -91,6 +91,12 @@ a, a > code {
     color: #ffffff;
 }
 
+.white {
+    background: #fff;
+    background-repeat: no-repeat;
+    color: #000;
+}
+
 .inverse strong {
     color: #ff8800;
 }
