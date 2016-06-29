@@ -10,11 +10,13 @@ John Chilton, Aysam Guerler, and the Galaxy Team
 
 ???
 
-Oh look, I get to follow Björn again. That guy ruins the curve - when
-it comes to pretty much any attempt to contribute to Galaxy.
+Oh look, I get to follow Björn again - that doesn't seem fair to me.
+
+Compounding that problem - my slides are just the same as last years 
+Galaxy Tool SDK find and replace Galaxy tool with scientific workflow.
 
 ---
-class: large
+class: larger
 
 ### A Galaxy Philosophy
 
@@ -476,6 +478,8 @@ Will detect this artifact and run the tests in this YAML file.
 ```
 
 ---
+
+class: larger
 
 ### Run Workflows
 
