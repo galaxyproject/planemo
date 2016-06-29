@@ -99,6 +99,10 @@ a, a > code {
     color: #ffffff;
 }
 
+hr {
+    display: none;
+}
+
 .white {
     background-color: #fff;
     background-repeat: no-repeat;

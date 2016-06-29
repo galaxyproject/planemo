@@ -159,15 +159,13 @@ background-image: url(images/organic_mower_wat.jpg)
 background: #FFFFFF
 background-repeat: no-repeat
 
-### So Planemo?
-
 .photo-credit[Photo Credit:
 
 *Peter Smith (@skwiot)*]
 
 ---
 
-class: large
+class: larger
 
 ### Workflows are Programs
 
@@ -341,11 +339,12 @@ steps:
     state:
       infile:
         $link: input1
-    code: "s/ World//g"
+      code: "s/ World//g"
   - id: sort
     tool_id: tp_sort_header_tool
     state:
-      infile: sed#output
+      infile:
+        $link: sed#output
       style: h  #Human readable
 ```
 
@@ -461,17 +460,34 @@ class: large
   
 ### Generalized Test Format
 
-Test any aritfact (Galaxy Tool, Galaxy Workflow, CWL Tool, CWL 
+Test any artifact (Galaxy Tool, Galaxy Workflow, CWL Tool, CWL 
 Workflow) - using the same YAML-based scheme and format.
 
-If workflow is `my_workflow.ga`, place an aritfact named
+If workflow is `my_workflow.ga`, place an artifact named
 `my_workflow-test.yml` in the same directory.
 
 ```
 planemo test my_workflow.ga
 ```
 
-Will detect this aritfact and run the tests in this YAML file.
+Will detect this artifact and run the tests in this YAML file.
+
+---
+
+```yaml
+- doc: Simple test over text tools.
+  job:
+    input1:
+      class: File
+      path: hello.txt
+  outputs:
+    wf_output_1:
+      checksum: sha1$2ef7bde608ce5404e97d5f042f95f89f1c232871
+    wf_output_2:
+      file: output1.txt
+      compare: diff
+      lines_diff: 2
+```
 
 ---
 
@@ -518,6 +534,8 @@ class: large
 
 ```
 $ planemo serve --cwl <tool.cwl>
+$ planemo test <tool.cwl>
+$ planemo run <tool.cwl> <job.json>
 ```
 
 When `serve`, `test`, `run` encounter CWL tools they will use a Galaxy fork.
@@ -597,8 +615,6 @@ Generates:
 ]]
 
 ---
-class: large
-
 
 ### CWL and `lint`
 
@@ -629,6 +645,43 @@ $ planemo t --engine_type=cwltool \
 
 Tool test output HTML is produced in the file `tool_test_output.html`.
 
+---
+
+class: inverse
+background-color: black
+
+### Thanks
+
+.pull-left[
+- *Planemo contributors*
+- Galaxy team & IUC
+- Common Workflow Language group
+- Everyone that has ever built something cool with Planemo or Galaxy workflows
+]
+.smaller.pull-right[- *Eric Rasche*
+- *Martin Cech*
+- *Peter Cock*
+- *Daniel Blankenberg*
+- *Björn Grüning*
+- *Dave Bouvier*
+- *Kyle Ellrott*
+- *Nate Coraor*
+- *Dannon Baker*
+- *Marius van den Beek*
+- *Lance Parsons*
+- *Nicola Soranzo*
+- *Dannon Baker*
+- *James Taylor*
+- *Mark Einon*
+- *Michael R. Crusoe*
+- *Peter van Heusden*
+- *Rémi Marenco*
+- *Matt Chambers*
+- *Gildas Le Corguillé*
+- *Nitesh Turaga*
+]
+
+--- **
 
     </textarea>
     <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
