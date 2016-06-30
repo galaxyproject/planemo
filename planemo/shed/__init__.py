@@ -103,6 +103,7 @@ CURRENT_CATEGORIES = [
     "Data Source",
     "Fasta Manipulation",
     "Fastq Manipulation",
+    "Flow Cytometry Analysis",
     "Genome-Wide Association Study",
     "Genomic Interval Operations",
     "Graphics",
