@@ -37,7 +37,7 @@ from planemo.galaxy.test import (
 @options.engine_options()
 @command_function
 def cli(ctx, paths, **kwds):
-    """Run the tests in the specified tool tests in a Galaxy instance.
+    """Run specified tool's tests within Galaxy.
 
     All referenced tools (by default all the tools in the current working
     directory) will be tested and the results quickly summarized.

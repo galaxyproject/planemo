@@ -29,7 +29,9 @@ target_path = click.Path(
 )
 @command_function
 def cli(ctx, paths, **kwds):
-    """Download a tool repository as a tarball from the tool shed and extract
+    """Download tool from Tool Shed into directory.
+
+    Download a tool repository as a tarball from the tool shed and extract
     to the specified directory.
     """
     shed_context = shed.get_shed_context(ctx, read_only=True, **kwds)

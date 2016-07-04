@@ -192,7 +192,7 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
 @options.build_cwl_option()
 @command_function
 def cli(ctx, **kwds):
-    """Generate a tool outline from supplied arguments."""
+    """Generate tool outline from given arguments."""
     invalid = _validate_kwds(kwds)
     tool_id = kwds.get("id")
     if invalid:

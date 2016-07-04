@@ -36,7 +36,7 @@ from planemo.tool_lint import lint_tools_on_path
 # )
 @command_function
 def cli(ctx, paths, **kwds):
-    """Check tools for common errors and adherence to best practices."""
+    """Check for common errors and best practices."""
     lint_args = build_lint_args(ctx, **kwds)
     exit_code = lint_tools_on_path(
         ctx,

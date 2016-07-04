@@ -39,7 +39,7 @@ from planemo import shed_lint
 # )
 @command_function
 def cli(ctx, paths, **kwds):
-    """Check a Tool Shed repository for common problems.
+    """Check Tool Shed repository for common issues.
 
     With the ``--tools`` flag, this command lints actual Galaxy tools
     in addition to tool shed artifacts.

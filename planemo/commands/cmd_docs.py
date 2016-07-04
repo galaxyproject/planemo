@@ -9,5 +9,5 @@ SYNTAX_URL = "http://planemo.readthedocs.org/en/latest/"
 @click.command("syntax")
 @command_function
 def cli(ctx, **kwds):
-    """Open the Planemo documentation in a web browser."""
+    """Open Planemo documentation in web browser."""
     click.launch(SYNTAX_URL)

@@ -26,9 +26,7 @@ target_path = click.Path(
 )
 @command_function
 def cli(ctx, path, **kwds):
-    """Download a tool repository as a tarball from the tool shed and extract
-    to the specified directory.
-    """
+    """Upload file to GitHub as a sharable gist."""
     file_url = github_util.publish_as_gist_file(ctx, path)
     if kwds.get("link_type") == "raw":
         share_url = file_url

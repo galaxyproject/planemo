@@ -12,7 +12,7 @@ from planemo.galaxy import serve
 @options.galaxy_serve_options()
 @command_function
 def cli(ctx, **kwds):
-    """(Experimental) Launch Galaxy with the Tool Factory 2 available.
+    """(Experimental) Launch Galaxy with Tool Factory 2.
 
     For more information about the Galaxy Tool Factory see the publication
     Creating reusable tools from scripts: the Galaxy Tool Factory by Lazarus

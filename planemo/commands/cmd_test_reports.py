@@ -14,8 +14,10 @@ from planemo.galaxy.test import StructuredData, handle_reports
 @options.test_report_options()
 @command_function
 def cli(ctx, path, **kwds):
-    """Generate various tool test reports (HTML, text, markdown) from
-    structure output from tests (tool_test_output.json).
+    """Generate human readable tool test reports.
+
+    Creates reports in various formats  (HTML, text, markdown)
+    from the structured test output (tool_test_output.json).
     """
     if not os.path.exists(path):
         io.error("Failed to tool test json file at %s" % path)

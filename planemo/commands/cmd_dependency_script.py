@@ -163,7 +163,7 @@ def process_tool_dependencies_xml(tool_dep, install_handle, env_sh_handle):
 @options.dependencies_script_options()
 @command_function
 def cli(ctx, paths, recursive=False, fail_fast=True, download_cache=None):
-    """Prepare a bash shell script to install tool requirements (**Experimental**)
+    """Compile tool_dependencies.xml to bash script.
 
     An experimental approach parsing tool_dependencies.xml files into
     bash shell scripts, intended initially for use within Continuous

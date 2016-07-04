@@ -47,7 +47,9 @@ SUCCESS_MESSAGE = (
 )
 @command_function
 def cli(ctx, path, template=None, **kwds):
-    """Help initialize global configuration (in home directory) for Planemo.
+    """Initialise global configuration for Planemo.
+
+    Helps initialize global configuration (in home directory) for Planemo.
     """
     # TODO: prompt for values someday.
     config_path = config.global_config_path()

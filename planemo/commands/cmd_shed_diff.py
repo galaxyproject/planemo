@@ -37,7 +37,7 @@ from planemo.io import captured_io_for_xunit
 @options.report_xunit()
 @command_function
 def cli(ctx, paths, **kwds):
-    """Produce diff between local repository and Tool Shed contents.
+    """diff between local repository and Tool Shed.
 
     By default, this will produce a diff between this repository and what
     would be uploaded to the Tool Shed with the `shed_upload` command - but

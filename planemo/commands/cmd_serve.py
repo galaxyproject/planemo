@@ -14,7 +14,7 @@ from planemo import options
 @options.galaxy_cwl_root_option()
 @command_function
 def cli(ctx, paths, **kwds):
-    """Launch a Galaxy instance with the specified tool in the tool panel.
+    """Launch Galaxy instance with specified tools.
 
     The Galaxy tool panel will include just the referenced tool or tools (by
     default all the tools in the current working directory) and the upload

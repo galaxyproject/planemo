@@ -17,7 +17,7 @@ from galaxy.tools.deps import dockerfiles
 @options.docker_host_option()
 @command_function
 def cli(ctx, path=".", dockerfile=None, **kwds):
-    """Build (and optionally cache Docker images) for tool Dockerfiles.
+    """Build (and optionally cache) Docker images.
 
     Loads the tool or tools referenced by ``TOOL_PATH`` (by default all tools
     in current directory), and ensures they all reference the same Docker image
@@ -31,6 +31,8 @@ def cli(ctx, path=".", dockerfile=None, **kwds):
 
         % planemo docker_build bowtie2.xml # asssumes Dockerfile in same dir
         % planemo docker_shell --from_tag bowtie2.xml
+
+    This can optionally also cache the images.
     """
     dockerfiles.dockerfile_build(
         path=path,

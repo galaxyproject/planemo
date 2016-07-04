@@ -15,7 +15,9 @@ from planemo.io import info
 @options.shed_skip_upload()
 @command_function
 def cli(ctx, paths, **kwds):
-    """Create a repository in a Galaxy Tool Shed from a ``.shed.yml`` file.
+    """Create a repository in a Galaxy Tool Shed.
+
+    This will read the settings from the ``.shed.yml`` file.
     """
     shed_context = shed.get_shed_context(ctx, **kwds)
 

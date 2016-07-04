@@ -37,7 +37,7 @@ from galaxy.tools.linters.xml_order import TAG_ORDER
 )
 @command_function
 def cli(ctx, path, expand_macros=False, **kwds):
-    """Generate normalized tool XML from input (breaks formatting).
+    """Generate normalized tool XML from input.
 
     This will break the formatting of your tool and is currently only intended
     for viewing macro expansions for for use with XSD validation (see

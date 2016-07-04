@@ -13,7 +13,10 @@ from planemo import shed
 @options.optional_tools_arg(multiple=False)
 @command_function
 def cli(ctx, path, **kwds):
-    """Create a Galaxy tool tarball from a ``.shed.yml`` file.
+    """Create a Galaxy tool tarball.
+
+    This will use the .shed.yml file to prepare a tarball
+    (which you could upload to the Tool Shed manually).
     """
 
     def build(realized_repository):

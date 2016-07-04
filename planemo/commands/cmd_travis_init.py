@@ -41,7 +41,9 @@ script:
 @options.optional_project_arg()
 @command_function
 def cli(ctx, path):
-    """Setup files in a github tool repository to enable continuous
+    """Create files to use GitHub/TravisCI testing.
+
+    Setup files in a github tool repository to enable continuous
     integration testing.::
 
         % planemo travis_init .
