@@ -77,4 +77,6 @@ def cli(ctx, path):
         warn(".travis.yml file already exists, not overwriting.")
     if not os.path.exists(setup_sh):
         open(setup_sh, "w").write(TRAVIS_SETUP)
+    else:
+        warning(".travis/setup_custom_dependencies.bash already exists, not overwriting.")
     info(PREPARE_MESSAGE)
