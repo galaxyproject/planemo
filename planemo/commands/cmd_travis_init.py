@@ -11,7 +11,7 @@ from galaxy.tools.deps.commands import shell
 
 PREPARE_MESSAGE = (
     "Place commands to prepare an Ubuntu VM for use with your tool(s) "
-    "in the .travis/setup_custom_dependencies.bash shell script. Be sure to"
+    "in the .travis/setup_custom_dependencies.bash shell script. Be sure to "
     "add these new files to your git repository with 'git add .travis "
     ".travis.yml' and then commit. You will also need to register your github "
     "tool project with Travi CI by visiting https://travis-ci.org/."
