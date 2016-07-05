@@ -33,7 +33,7 @@ tar_path = click.Path(
 )
 @command_function
 def cli(ctx, paths, **kwds):
-    """Low-level command for uploading tar balls to a shed.
+    """Low-level command to upload tarballs.
 
     Generally, ``shed_update`` should be used instead since it also updates
     both tool shed contents (via tar ball generation and upload) as well as

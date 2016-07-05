@@ -42,7 +42,9 @@ from galaxy.tools.deps.requirements import parse_requirements_from_xml
 @options.docker_host_option()
 @command_function
 def cli(ctx, path, **kwds):
-    """Launch a shell in the Docker container referenced by the specified
+    """Launch shell in Docker container for a tool.
+
+    Will launch a shell in the Docker container referenced by the specified
     tool. Prints a command to do this the way Galaxy would in job files it
     generates - so be sure to wrap this in $(...) to launch the subshell.::
 

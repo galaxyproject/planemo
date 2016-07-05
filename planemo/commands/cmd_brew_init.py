@@ -14,8 +14,9 @@ INSTALL_SCRIPT = "https://raw.github.com/Homebrew/linuxbrew/go/install"
 @click.command('brew_init')
 @command_function
 def cli(ctx):
-    """Download linuxbrew install and run it with ruby. Linuxbrew is a fork
-    of Homebrew (http://brew.sh/linuxbrew/).
+    """Download linuxbrew install & run it in ruby.
+
+    Linuxbrew is a fork of Homebrew (http://brew.sh/linuxbrew/).
 
     For more information on installing linuxbrew and pre-requisites see
     https://github.com/Homebrew/linuxbrew#installation.

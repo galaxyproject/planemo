@@ -19,7 +19,7 @@ from planemo.io import captured_io_for_xunit
 @options.shed_skip_metadata()
 @command_function
 def cli(ctx, paths, **kwds):
-    """Update repository in shed from a ``.shed.yml`` file.
+    """Update Tool Shed repository.
 
     By default this command will update both repository metadata
     from ``.shed.yml`` and upload new contents from the repository

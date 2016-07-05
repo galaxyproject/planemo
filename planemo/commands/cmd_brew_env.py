@@ -24,7 +24,9 @@ from galaxy.util import bunch
 )
 @command_function
 def cli(ctx, path, brew=None, skip_install=False, shell=None):
-    """Display commands used to modify environment to inject tool's brew
+    """List commands to inject brew dependencies.
+
+    Display commands used to modify environment to inject tool's brew
     dependencies.::
 
         % . <(planemo brew_env bowtie2.xml)

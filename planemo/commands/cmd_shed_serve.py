@@ -21,7 +21,7 @@ from planemo import io
 )
 @command_function
 def cli(ctx, paths, **kwds):
-    """ Serve a transient Galaxy with published repositories installed.
+    """Launch Galaxy with Tool Shed dependencies.
 
     This command will start a Galaxy instance configured to target the
     specified shed, find published artifacts (tools and dependencies)

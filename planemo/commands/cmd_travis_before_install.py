@@ -28,7 +28,9 @@ export PATH=$PATH:${BUILD_BIN_DIR}
 @click.command('travis_before_install')
 @command_function
 def cli(ctx):
-    """This command is used internally by planemo to assist in contineous testing
+    """Internal command for GitHub/TravisCI testing.
+
+    This command is used internally by planemo to assist in contineous testing
     of tools with Travis CI (https://travis-ci.org/).
     """
     build_dir = os.environ.get("TRAVIS_BUILD_DIR", None)

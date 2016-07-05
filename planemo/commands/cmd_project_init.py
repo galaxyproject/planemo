@@ -27,7 +27,9 @@ UNTAR_ARGS = " -C %s -zxf - " + UNTAR_FILTER
 )
 @command_function
 def cli(ctx, path, template=None, **kwds):
-    """Initialize a new tool project (demo only right now).
+    """(Experimental) Initialize a new tool project.
+
+    This is only a proof-of-concept demo right now.
     """
     if template is None:
         warn("Creating empty project, this function doesn't do much yet.")
