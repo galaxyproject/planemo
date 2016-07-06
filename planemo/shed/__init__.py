@@ -97,6 +97,7 @@ CURRENT_CATEGORIES = [
     "ChIP-seq",
     "Combinatorial Selections",
     "Computational chemistry",
+    "Constructive Solid Geometry",
     "Convert Formats",
     "Epigenetics",
     "Data Managers",
