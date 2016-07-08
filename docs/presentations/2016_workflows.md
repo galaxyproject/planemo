@@ -4,7 +4,6 @@ class: inverse, middle
 ---
 class: title
 # Planemo
-## ~~A Galaxy Tool SDK~~
 ## A Scientific Workflow SDK
 John Chilton, Aysam Guerler, and the Galaxy Team
 
@@ -120,7 +119,7 @@ It is *the way* to develop Galaxy tools in 2016! Why?
 - Very flexible, easily configurable.
 - Well documented with focus on *usage examples*.
 
-It is about **developer workflow**.
+It is about **developer processes**.
 ]
 
 .pull-right[
@@ -306,6 +305,7 @@ Doesn't Galaxy have a JSON workflow format?
     let alone write a program in it.
 
 ---
+
 class: smaller
 
 ### Format 2 Workflows - Example
@@ -336,36 +336,8 @@ steps:
       style: h  #Human readable
 ```
 
----
-class: large
-
-### Aside - gxformat2
-
-```
-pip install gxformat2
-```
-
-`gxformat2` is a Python library for the conversion of "Format 2" workflows.
-
-- Started as a way to build test workflows for Galaxy testing framework.
-- All steps can be labeled, connections described by ID.
-  - Pypi @ https://pypi.python.org/pypi/gxformat2/
-  - Github @ https://github.com/jmchilton/gxformat2
-
----
-class: large
-
-### Another Aside - Ephemeris
-
-```
-pip install emphemeris
-```
-
-`emphemeris` is an opinionated Python library and scripts for bootstrapping Galaxy tools, index data, and worklows.
-
-- Scripts from `ansible-galaxy-tools` by Marius van den Beek, Enis Afgane, Björn Grüning, and others.
-- Pypi @ https://pypi.python.org/pypi/emphemeris/
-- Github @ https://github.com/galaxyproject/emphemeris
+Inspired by CWL, Michael Crusoe assures me we can use actual CWL workflow definitions 
+with Galaxy tool definitions.
 
 ---
 class: smaller
@@ -439,7 +411,7 @@ class: large
 $ planemo test [--profile <name>] <workflow>
 ```
 
-* Same great HTML and other formatting options as tools.
+* Same HTML output and other formatting options as tools.
 * Produce sharable test result link with `planemo share_test`.
 * Test either Galaxy native or Format 2 workflows.
 
@@ -449,16 +421,23 @@ class: large
 ### Generalized Test Format
 
 Test any artifact (Galaxy Tool, Galaxy Workflow, CWL Tool, CWL 
-Workflow) - using the same YAML-based scheme and format.
+Workflow) - using the same YAML-based format.
 
-If workflow is `my_workflow.ga`, place an artifact named
+If workflow is in file `my_workflow.ga`, place test file named
 `my_workflow-test.yml` in the same directory.
 
 ```
 planemo test my_workflow.ga
 ```
 
-Will detect this artifact and run the tests in this YAML file.
+Will detect this artifact and run the tests.
+
+---
+
+class: large, bottom, white
+background-image: url(images/tool_test.png)
+background-repeat: no-repeat
+background-size: contain
 
 ---
 
@@ -498,22 +477,6 @@ background-size: contain
 
 layout: true
 class: inverse, middle
-
----
-class: large
-
-### Common Workflow Language
-
-* http://www.commonwl.org/
-* Group of (and specifications by) engineers
-  * Formed at 2014 BOSC Codefest.
-  * After 4 draft iterations, 1.0 will be released next week.
-* Like Galaxy, the rare open infrastructure that crosses the Atlantic.
-  * Adopted by various Elixer efforts, Seven Bridge Genomics,
-    and will be implemented in Taverna.
-  * Will be supported on all NIH Cancer Cloud Pilots and endorsed by the 
-    GA4GH. Reference implementation `cwltool` developed at Curoverse.
-* Poster P06 at 3:15 by Michael Crusoe
 
 ---
 class: large
@@ -637,6 +600,24 @@ Tool test output HTML is produced in the file `tool_test_output.html`.
 
 ---
 
+class: large
+
+### Deployment Matters
+
+- `SoftwareRequirement`s were added to CWL 1.0. [PR #240](https://github.com/common-workflow-language/common-workflow-language/pull/240)
+- Can be resolved using Galaxy's dependency resolution framework - [cwltool#93](https://github.com/common-workflow-language/cwltool/pull/93)
+  - Conda, homebrew, environment modules, "galaxy packages", etc....
+
+
+---
+
+class: large, bottom, white
+background-image: url(images/mulledflow.png)
+background-repeat: no-repeat
+background-size: contain
+
+---
+
 class: inverse
 background-color: black
 
@@ -645,7 +626,7 @@ background-color: black
 .pull-left[
 - *Planemo contributors*
 - Galaxy team & IUC
-- Common Workflow Language group
+- Common Workflow Language group - with special thanks to *Michael Crusoe* and *Peter Amstutz* for working through detailed compromises
 - Everyone that has ever built something cool with Planemo or Galaxy workflows
 ]
 .smaller.pull-right[- *Eric Rasche*
@@ -671,4 +652,49 @@ background-color: black
 - *Nitesh Turaga*
 ]
 
---- **
+---
+
+class: large
+
+### Aside - gxformat2
+
+```
+pip install gxformat2
+```
+
+`gxformat2` is a Python library for the conversion of "Format 2" workflows.
+
+- Started as a way to build test workflows for Galaxy testing framework.
+- All steps can be labeled, connections described by ID.
+  - Pypi @ https://pypi.python.org/pypi/gxformat2/
+  - Github @ https://github.com/jmchilton/gxformat2
+
+---
+class: large
+
+### Another Aside - Ephemeris
+
+```
+pip install emphemeris
+```
+
+`emphemeris` is an opinionated Python library and scripts for bootstrapping Galaxy tools, index data, and worklows.
+
+- Scripts from `ansible-galaxy-tools` by Marius van den Beek, Enis Afgane, Björn Grüning, and others.
+- Pypi @ https://pypi.python.org/pypi/emphemeris/
+- Github @ https://github.com/galaxyproject/emphemeris
+
+---
+class: large
+
+### Common Workflow Language
+
+* http://www.commonwl.org/
+* Group of (and specifications by) engineers
+  * Formed at 2014 BOSC Codefest.
+  * After 4 draft iterations, 1.0 will be released next week.
+* Like Galaxy, the rare open infrastructure that crosses the Atlantic.
+  * Adopted by various Elixer efforts, Seven Bridge Genomics,
+    and will be implemented in Taverna.
+  * Will be supported on all NIH Cancer Cloud Pilots and endorsed by the 
+    GA4GH. Reference implementation `cwltool` developed at Curoverse.
