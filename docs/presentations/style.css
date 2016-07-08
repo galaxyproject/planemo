@@ -1,0 +1,165 @@
+@import url(https://fonts.googleapis.com/css?family=Oxygen);
+@import url(https://fonts.googleapis.com/css?family=Consolas);
+@import url(https://fonts.googleapis.com/css?family=Droid+Serif);
+@import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+@import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+body {
+    font-family: 'Oxygen', 'PT Sans', Serif;
+}
+h1, h2, h3 {
+    font-weight: bold;
+}
+h1 {
+    font-size: 3em;
+    color: #ff9300;
+}
+h2 { font-size: 2em; }
+
+.title h1, h2 {
+    margin-bottom: 0px;
+    margin-top: 0px;
+    text-align: center;
+}
+
+.title p {
+    margin-top: 50px;
+    text-align: center;
+}
+
+h3 {
+    font-size: 1.8em;
+    position: absolute;
+    top: .5em;
+}
+
+.footnote {
+    position: absolute;
+    bottom: 3em;
+}
+
+i, em {
+    color: #ff9300;
+}
+
+.large {
+    font-size: 1.6em;
+}
+
+.larger {
+    font-size: 1.8em;    
+}
+
+.photo-credit {
+    font-weight: bolder;
+    font-size: 2.2em;
+    line-height: 1em;
+    text-shadow: 0 0 65px #333;
+}
+
+.smaller {
+    font-size: .8em;
+}
+
+.code > pre, .code > code {
+    white-space: pre-wrap;
+}
+
+a, a > code {
+    color: #ff9300;
+    text-decoration: none;
+}
+.remark-code, .remark-inline-code {
+    font-family: 'Consolas';
+    color: #ff9300;
+    font-size: 1.1em;
+}
+.slightly-smaller {
+    font-size: .9em;
+}
+
+.pull-left {
+    float: left;
+    width: 47%;
+}
+.pull-right {
+    float: right;
+    width: 47%;
+}
+.pull-right ~ p {
+    clear: both;
+}
+#slideshow .slide .content code {
+}
+#slideshow .slide .content pre code {
+}
+.inverse {
+    background-color: #000;
+    background-repeat: no-repeat;
+    color: #ffffff;
+}
+
+hr {
+    display: none;
+}
+
+.white {
+    background-color: #fff;
+    background-repeat: no-repeat;
+    color: #000;
+}
+
+.inverse strong {
+    color: #ff8800;
+}
+
+/* Slide-specific styling */
+#slide-inverse .footnote {
+    bottom: 12px;
+    left: 20px;
+}
+#slide-how .slides {
+    font-size: 0.9em;
+    position: absolute;
+    top:  151px;
+    right: 140px;
+}
+#slide-how .slides h3 {
+    margin-top: 0.2em;
+}
+#slide-how .slides .first, #slide-how .slides .second {
+    padding: 1px 20px;
+    height: 90px;
+    width: 120px;
+    -moz-box-shadow: 0 0 10px #777;
+    -webkit-box-shadow: 0 0 10px #777;
+    box-shadow: 0 0 10px #777;
+}
+#slide-how .slides .first {
+    background-color: #fff;
+    position: absolute;
+    top: 20%;
+    left: 20%;
+    z-index: 1;
+}
+#slide-how .slides .second {
+    position: relative;
+    background-color: #fff;
+    z-index: 0;
+}
+
+/* Two-column layout */
+.left-column {
+    color: #777;
+    width: 20%;
+    height: 92%;
+    float: left;
+}
+.left-column h2:last-of-type, .left-column h3:last-child {
+    color: #000;
+}
+.right-column {
+    width: 75%;
+    float: right;
+    padding-top: 1em;
+}
