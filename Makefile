@@ -20,6 +20,9 @@ DOC_URL?=https://planemo.readthedocs.org
 PROJECT_URL?=https://github.com/galaxyproject/planemo
 PROJECT_NAME?=planemo
 TEST_DIR?=tests
+DOCS_DIR?=docs
+BUILD_SLIDESHOW?=$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/build_slideshow.py
+SLIDESHOW_TO_PDF?=bash -c 'docker run --rm -v `pwd`:/cwd astefanutti/decktape /cwd/$$0 /cwd/`dirname $$0`/`basename -s .html $$0`.pdf'
 
 .PHONY: clean-pyc clean-build docs clean
 
@@ -86,38 +89,41 @@ _open-coverage: ## open coverage report using open
 coverage: _coverage-report open-coverage ## check code coverage quickly with the default Python
 
 ready-docs:  ## rebuild docs folder ahead of running docs or lint-docs
-	rm -f docs/$(SOURCE_DIR).rst
-	rm -f docs/planemo_ext.rst
-	rm -f docs/modules.rst
-	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/build_slideshow.py 'Galaxy Tool Framework Changes' docs/galaxy_changelog.md
-	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/build_slideshow.py 'Planemo: A Scientific Workflow SDK' docs/presentations/2016_workflows.md
-	$(IN_VENV) sphinx-apidoc -f -o docs/ planemo_ext
-	$(IN_VENV) sphinx-apidoc -f -o docs/ $(SOURCE_DIR) $(SOURCE_DOC_EXCLUDE)
+	rm -f $(DOCS_DIR)/$(SOURCE_DIR).rst
+	rm -f $(DOCS_DIR)/planemo_ext.rst
+	rm -f $(DOCS_DIR)/modules.rst
+	$(BUILD_SLIDESHOW) 'Galaxy Tool Framework Changes' $(DOCS_DIR)/galaxy_changelog.md
+	$(BUILD_SLIDESHOW) 'Planemo: A Scientific Workflow SDK' $(DOCS_DIR)/presentations/2016_workflows.md
+	$(IN_VENV) sphinx-apidoc -f -o $(DOCS_DIR)/ planemo_ext
+	$(IN_VENV) sphinx-apidoc -f -o $(DOCS_DIR)/ $(SOURCE_DIR) $(SOURCE_DOC_EXCLUDE)
 
 docs: ready-docs ## generate Sphinx HTML documentation, including API docs
-	$(IN_VENV) $(MAKE) -C docs clean
-	$(IN_VENV) $(MAKE) -C docs html
+	$(IN_VENV) $(MAKE) -C $(DOCS_DIR) clean
+	$(IN_VENV) $(MAKE) -C $(DOCS_DIR) html
 
 lint-docs: ready-docs
-	$(IN_VENV) $(MAKE) -C docs clean
-	$(IN_VENV) $(MAKE) -C docs html 2>&1 | python $(BUILD_SCRIPTS_DIR)/lint_sphinx_output.py
+	$(IN_VENV) $(MAKE) -C $(DOCS_DIR) clean
+	$(IN_VENV) $(MAKE) -C $(DOCS_DIR) html 2>&1 | python $(BUILD_SCRIPTS_DIR)/lint_sphinx_output.py
 
 _open-docs:
-	open docs/_build/html/index.html || xdg-open docs/_build/html/index.html
+	$(OPEN_RESOURCE) $(DOCS_DIR)/_build/html/index.html
 
 open-slides-galaxy-changelog: ready-docs
-	$(OPEN_RESOURCE) docs/galaxy_changelog.html
+	$(OPEN_RESOURCE) $(DOCS_DIR)/galaxy_changelog.html
 
 open-slides-workflows: ready-docs
-	$(OPEN_RESOURCE) docs/presentations/2016_workflows.html
+	$(OPEN_RESOURCE) $(DOCS_DIR)/presentations/2016_workflows.html
+
+export-slides-workflows: ready-docs
+	$(SLIDESHOW_TO_PDF) $(DOCS_DIR)/presentations/2016_workflows.html
 
 open-docs: docs _open-docs ## generate Sphinx HTML documentation and open in browser
 
 open-rtd: docs ## open docs on readthedocs.org
-	open $(DOC_URL) || xdg-open $(PROJECT_URL)
+	$(OPEN_RESOURCE) $(PROJECT_URL)
 
 open-project: ## open project on github
-	open $(PROJECT_URL) || xdg-open $(PROJECT_URL)
+	$(OPEN_RESOURCE) $(PROJECT_URL)
 
 dist: clean ## package
 	$(IN_VENV) python setup.py sdist bdist_egg bdist_wheel
