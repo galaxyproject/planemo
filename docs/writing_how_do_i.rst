@@ -250,6 +250,18 @@ to the ``test`` element.
 - `job_properties.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/job_properties.xml>`__
 
 ------------------------------------------
+\.\.\. test output filters work?
+------------------------------------------
+
+If your tool contains ``filter`` elements, you can't verify properties of outputs
+that are filtered out and do not exist. The ``test`` element may contain an
+``expect_num_outputs`` attribute to specify the expected number of outputs, this
+can be used to verify that outputs not listed are expected to be filtered out during
+tool execution.
+
+- `output_filter.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/output_filter.xml>`__
+
+------------------------------------------
 \.\.\. test metadata?
 ------------------------------------------
 
