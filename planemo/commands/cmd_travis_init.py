@@ -11,10 +11,14 @@ from galaxy.tools.deps.commands import shell
 
 PREPARE_MESSAGE = (
     "Place commands to prepare an Ubuntu VM for use with your tool(s) "
-    "in the .travis/setup_custom_dependencies.bash shell script. Be sure to "
-    "add these new files to your git repository with 'git add .travis "
-    ".travis.yml' and then commit. You will also need to register your github "
-    "tool project with Travi CI by visiting https://travis-ci.org/."
+    "in the .travis/setup_custom_dependencies.bash shell script, which "
+    "will be executed on Travis CI via 'planemo travis_before_install'.\n"
+    "\n"
+    "Be sure to add these new files to your git repository with "
+    "'git add .travis .travis.yml' and then commit.\n"
+    "\n"
+    "You will also need to register your github tool project with "
+    "Travis CI by visiting https://travis-ci.org/."
 )
 
 TRAVIS_TEST_SCRIPT_URL = RAW_CONTENT_URL + "scripts/travis_test.sh"
@@ -36,6 +40,11 @@ script:
  - wget -O- %s | /bin/bash -x
 """ % TRAVIS_TEST_SCRIPT_URL
 
+TRAVIS_SETUP = """#!/bin/bash
+# This will be run on TravisCI via 'planemo travis_before_install' in .travis.yml
+#
+# TODO: Add your instructions here:
+"""
 
 @click.command('travis_init')
 @options.optional_project_arg()
@@ -67,5 +76,7 @@ def cli(ctx, path):
     else:
         warn(".travis.yml file already exists, not overwriting.")
     if not os.path.exists(setup_sh):
-        open(setup_sh, "w").write("#!/bin/bash\n")
+        open(setup_sh, "w").write(TRAVIS_SETUP)
+    else:
+        warning(".travis/setup_custom_dependencies.bash already exists, not overwriting.")
     info(PREPARE_MESSAGE)
