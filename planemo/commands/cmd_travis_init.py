@@ -46,6 +46,7 @@ TRAVIS_SETUP = """#!/bin/bash
 # TODO: Add your instructions here:
 """
 
+
 @click.command('travis_init')
 @options.optional_project_arg()
 @command_function
@@ -78,5 +79,5 @@ def cli(ctx, path):
     if not os.path.exists(setup_sh):
         open(setup_sh, "w").write(TRAVIS_SETUP)
     else:
-        warning(".travis/setup_custom_dependencies.bash already exists, not overwriting.")
+        warn(".travis/setup_custom_dependencies.bash already exists, not overwriting.")
     info(PREPARE_MESSAGE)
