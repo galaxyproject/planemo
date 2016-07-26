@@ -1042,6 +1042,7 @@ History
 .. _cc8abb6: https://github.com/galaxyproject/planemo/commit/cc8abb6
 .. _ce8e1be: https://github.com/galaxyproject/planemo/commit/ce8e1be
 .. _cwltool: https://github.com/common-workflow-language/cwltool/.. _d26929e: https://github.com/galaxyproject/planemo/commit/d26929e
+.. _d26929e: https://github.com/galaxyproject/planemo/commit/d26929e
 .. _d755fe7: https://github.com/galaxyproject/planemo/commit/d755fe7
 .. _d76b489: https://github.com/galaxyproject/planemo/commit/d76b489
 .. _d8f2038: https://github.com/galaxyproject/planemo/commit/d8f2038
