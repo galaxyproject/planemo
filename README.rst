@@ -217,7 +217,7 @@ TravisCI
 -----------
 
 When tools are ready to be published to GitHub_, it may be valuable to setup
-contineous integration to test changes committed and new pull requests.
+continuous integration to test changes committed and new pull requests.
 `Travis CI`_ is a service providing free testing and deep integration with
 GitHub_.
 
