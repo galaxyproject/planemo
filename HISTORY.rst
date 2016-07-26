@@ -735,7 +735,7 @@ History
   can be smaller. 20a8680_
 * Documentation fixes for Travis CI (thanks to Peter Cock). `Pull Request 22`_,
   `Pull Request 23`_
-* Various documentation fixes (thanks to Martin Čech). 36f7cb11_, b9232e55_
+* Various documentation fixes (thanks to Martin Čech). 36f7cb1_, b9232e5_
 * Various smaller fixes for Docker support, tool linting, and documentation.
 
 ---------------------
@@ -1074,8 +1074,8 @@ History
 .. _32c6e7f: https://github.com/galaxyproject/planemo/commit/32c6e7f78bb8f04d27615cfd8948b0b89f27b4e6
 .. _7d07782: https://github.com/galaxyproject/planemo/commit/7d077828559c9c9c352ac814f9e3b86b1b3a2a9f
 .. _a2c13e4: https://github.com/galaxyproject/planemo/commit/a2c13e46259e3be35de1ecaae858ba818bb94734
-.. _36f7cb11: https://github.com/galaxyproject/planemo/commit/36f7cb114f77731f90860d513a930e10ce5c1ba5
-.. _b9232e55: https://github.com/galaxyproject/planemo/commit/b9232e55e713abbd1d9ce8b0b34cbec6c701dc17
+.. _36f7cb1: https://github.com/galaxyproject/planemo/commit/36f7cb114f77731f90860d513a930e10ce5c1ba5
+.. _b9232e5: https://github.com/galaxyproject/planemo/commit/b9232e55e713abbd1d9ce8b0b34cbec6c701dc17
 
 .. _bioblend: https://github.com/galaxyproject/bioblend/
 .. _XSD: http://www.w3schools.com/schema/
