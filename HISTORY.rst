@@ -174,6 +174,7 @@ History
   `Pull Request 390`_
 * Improve client for shed publishing to support newer shed backend
   being developed by @erasche. `Pull Request 394`_
+* Tool Shed ``repo_id`` change, @erasche. `Pull Request 398`_
 * Various other small changes to testing, project structure, and
   Python 3 support.
 
