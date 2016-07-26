@@ -152,9 +152,9 @@ Planemo can also be used to explore some more experimental features related to
 Galaxy tooling - including support for Conda_, `Travis CI`_, Docker_,
 `Common Workfow Language`_ (CWL), and Homebrew_.
 
------------
-Conda
------------
+---------------------
+Conda Package Manager
+---------------------
 
 Conda_ is package manager that among many other things can be used
 to manage Python packages. Please read a few notes regarding the setup:
@@ -249,9 +249,9 @@ handful of tools. For larger repositories, such as `tools-devteam`_ or
 Check out the ``.travis.yml`` file used by the IUC as `example
 <https://github.com/galaxyproject/tools-iuc/blob/master/.travis.yml>`__.
 
------------
-Docker
------------
+-----------------
+Docker Containers
+-----------------
 
 Galaxy has `experimental support
 <https://wiki.galaxyproject.org/Admin/Tools/Docker>`_ for running jobs in
