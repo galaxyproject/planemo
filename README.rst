@@ -148,7 +148,8 @@ Experimental Features
 ---------------------
 
 Planemo can also be used to explore some more experimental features related to
-Galaxy tooling - including support for Conda_, `Travis CI`_, Docker_, CWL_, and Homebrew_.
+Galaxy tooling - including support for Conda_, `Travis CI`_, Docker_,
+`Common Workfow Language`_ (CWL), and Homebrew_.
 
 -----------
 Conda
@@ -338,5 +339,4 @@ and `brew_env
 .. _`tools-iuc`: https://github.com/galaxyproject/tools-iuc
 .. _Publishing to the Tool Shed: http://planemo.readthedocs.org/en/latest/publishing.html
 .. _Common Workfow Language: http://common-workflow-language.github.io
-.. _CWL: http://common-workflow-language.github.io
 .. _OVA: https://en.wikipedia.org/wiki/Open_Virtualization_Format
