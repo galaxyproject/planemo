@@ -63,7 +63,8 @@ install it with ``pip``.
 Planemo is also available as a `virtual appliance
 <https://planemo.readthedocs.org/en/latest/appliance.html>`_ bundled
 with a preconfigured Galaxy server and set up for Galaxy tool development.
-You can choose from open virtualization format (OVA_, .ova), Docker, or Vagrant appliances.
+You can choose from open virtualization format (OVA_, .ova), Docker_,
+or Vagrant_ appliances.
 
 --------------
 Planemo Basics
