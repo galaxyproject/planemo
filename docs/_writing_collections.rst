@@ -200,7 +200,7 @@ derived from using a little fictitious program called ``merge_rows``.
 
 .. note:: Here we are rewriting the element identifiers to assure everything is safe to
     put on the command-line. In the future, collections will not be able to contain
-    keys that are potentially harmful and this won't be nessecary.
+    keys that are potentially harmful and this won't be necessary.
 
 Some example tools which utilize ``element_identifier`` include:
 
