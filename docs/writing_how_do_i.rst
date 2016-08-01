@@ -116,6 +116,21 @@ would check if the input is of type ``fastq`` or any derivative types such as
 - `Pull Request 457 <https://bitbucket.org/galaxy/galaxy-central/pull-request/457/allow-cheetah-tool-templates-to-reason/diff>`__
 
 -------------------------------------------------
+\.\.\. handle arbitrary output data formats?
+-------------------------------------------------
+
+If the output format of a tool's output cannot isn't known ahead of time,
+Galaxy can be instructed to "sniff" the output and determine the data type
+using the same method used for uploads. Adding the ``auto_format="true"`
+attribute to a tool's output enables this.
+
+.. code-block:: xml
+
+    <output name="out1" auto_format="true" label="Auto Output" />
+
+- `output_auto_format.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/output_auto_format.xml>`__
+
+-------------------------------------------------
 \.\.\. determine the user submitting a job?
 -------------------------------------------------
 
