@@ -12,6 +12,14 @@ planemo.test.check_output module
     :undoc-members:
     :show-inheritance:
 
+planemo.test.data module
+------------------------
+
+.. automodule:: planemo.test.data
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.test.results module
 ---------------------------
 
