@@ -174,6 +174,7 @@ History
   `Pull Request 390`_
 * Improve client for shed publishing to support newer shed backend
   being developed by @erasche. `Pull Request 394`_
+* Tool Shed ``repo_id`` change, @erasche. `Pull Request 398`_
 * Various other small changes to testing, project structure, and
   Python 3 support.
 
@@ -735,7 +736,7 @@ History
   can be smaller. 20a8680_
 * Documentation fixes for Travis CI (thanks to Peter Cock). `Pull Request 22`_,
   `Pull Request 23`_
-* Various documentation fixes (thanks to Martin Čech). 36f7cb11_, b9232e55_
+* Various documentation fixes (thanks to Martin Čech). 36f7cb1_, b9232e5_
 * Various smaller fixes for Docker support, tool linting, and documentation.
 
 ---------------------
@@ -746,341 +747,330 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
-.. _1c6cfbb: https://github.com/galaxyproject/planemo/commit/1c6cfbb
-.. _Pull Request 491: https://github.com/galaxyproject/planemo/pull/491
-.. _Pull Request 488: https://github.com/galaxyproject/planemo/pull/488
-.. _Issue 15: https://github.com/galaxyproject/planemo/issues/15
-.. _eb039c0: https://github.com/galaxyproject/planemo/commit/eb039c0
-.. _Pull Request 484: https://github.com/galaxyproject/planemo/pull/484
-.. _7be1bf5: https://github.com/galaxyproject/planemo/commit/7be1bf5
-.. _e38c436: https://github.com/galaxyproject/planemo/commit/e38c436
-.. _4d29bf1: https://github.com/galaxyproject/planemo/commit/4d29bf1
-.. _Pull Request 454: https://github.com/galaxyproject/planemo/pull/454
-.. _a87899b: https://github.com/galaxyproject/planemo/commit/a87899b
-.. _Pull Request 480: https://github.com/galaxyproject/planemo/pull/480
-.. _c4dfd55: https://github.com/galaxyproject/planemo/commit/c4dfd55
-.. _Pull Request 479: https://github.com/galaxyproject/planemo/pull/479
-.. _Issue 475: https://github.com/galaxyproject/planemo/issues/475
-.. _f3c6917: https://github.com/galaxyproject/planemo/commit/f3c6917
-.. _Pull Request 472: https://github.com/galaxyproject/planemo/pull/472
-.. _552059f: https://github.com/galaxyproject/planemo/commit/552059f
-.. _5d08b67: https://github.com/galaxyproject/planemo/commit/5d08b67
-.. _2052db0: https://github.com/galaxyproject/planemo/commit/2052db0
-.. _776773c: https://github.com/galaxyproject/planemo/commit/776773c
-.. _f7554d1: https://github.com/galaxyproject/planemo/commit/f7554d1
-.. _e769118: https://github.com/galaxyproject/planemo/commit/e769118
-.. _95d5cba: https://github.com/galaxyproject/planemo/commit/95d5cba
-.. _6e1e726: https://github.com/galaxyproject/planemo/commit/6e1e726
-.. _26e378e: https://github.com/galaxyproject/planemo/commit/26e378e
-.. _e0acf91: https://github.com/galaxyproject/planemo/commit/e0acf91
-.. _45135ff: https://github.com/galaxyproject/planemo/commit/45135ff
-.. _8e96864: https://github.com/galaxyproject/planemo/commit/8e96864
-.. _b1c8f1d: https://github.com/galaxyproject/planemo/commit/b1c8f1d
-.. _d8f2038: https://github.com/galaxyproject/planemo/commit/d8f2038
-.. _13a5ae7: https://github.com/galaxyproject/planemo/commit/13a5ae7
-.. _fea51fc: https://github.com/galaxyproject/planemo/commit/fea51fc
-.. _069e7ba: https://github.com/galaxyproject/planemo/commit/069e7ba
-.. _efc5f30: https://github.com/galaxyproject/planemo/commit/efc5f30
-.. _a13a120: https://github.com/galaxyproject/planemo/commit/a13a120
-.. _2ae2b49: https://github.com/galaxyproject/planemo/commit/2ae2b49
-.. _775bf49: https://github.com/galaxyproject/planemo/commit/775bf49
-.. _02a08a0: https://github.com/galaxyproject/planemo/commit/02a08a0
-.. _02a08a0: https://github.com/galaxyproject/planemo/commit/02a08a0
-.. _3f4ab44: https://github.com/galaxyproject/planemo/commit/3f4ab44
-.. _b0b867e: https://github.com/galaxyproject/planemo/commit/b0b867e
-.. _4cd571c: https://github.com/galaxyproject/planemo/commit/4cd571c
-.. _a4e6958: https://github.com/galaxyproject/planemo/commit/a4e6958
-.. _826d371: https://github.com/galaxyproject/planemo/commit/826d371
-.. _f3c6917: https://github.com/galaxyproject/planemo/commit/f3c6917
-.. _65b999d: https://github.com/galaxyproject/planemo/commit/65b999d21bacc133a80ecf5f61e0728afec66ccc
-.. _89674cb: https://github.com/galaxyproject/planemo/commit/89674cb
-.. _Pull Request 429: https://github.com/galaxyproject/planemo/pull/429
-.. _ce8e1be: https://github.com/galaxyproject/planemo/commit/ce8e1be
-.. _d76b489: https://github.com/galaxyproject/planemo/commit/d76b489
-.. _Issue 416: https://github.com/galaxyproject/planemo/issues/416
-.. _Pull Request 428: https://github.com/galaxyproject/planemo/pull/428
-.. _93b7bda: https://github.com/galaxyproject/planemo/commit/93b7bda
-.. _Pull Request 426: https://github.com/galaxyproject/planemo/pull/426
-.. _Issue 420: https://github.com/galaxyproject/planemo/issues/420
-.. _Issue 246: https://github.com/galaxyproject/planemo/issues/246
-.. _Pull Request 425: https://github.com/galaxyproject/planemo/pull/425
-.. _358a42c: https://github.com/galaxyproject/planemo/commit/358a42c
-.. _0298510: https://github.com/galaxyproject/planemo/commit/0298510
-.. _a58a3b8: https://github.com/galaxyproject/planemo/commit/a58a3b8
-.. _Pull Request 403: https://github.com/galaxyproject/planemo/pull/403
-.. _9f3957d: https://github.com/galaxyproject/planemo/commit/9f3957d
-.. _5e0b6d1: https://github.com/galaxyproject/planemo/commit/5e0b6d1
-.. _6d0f502: https://github.com/galaxyproject/planemo/commit/6d0f502
-.. _63e456c: https://github.com/galaxyproject/planemo/commit/63e456c
-.. _Pull Request 398: https://github.com/galaxyproject/planemo/pull/398
-.. _Pull Request 394: https://github.com/galaxyproject/planemo/pull/394
-.. _15d33c7: https://github.com/galaxyproject/planemo/commit/15d33c7
-.. _f99f6c1: https://github.com/galaxyproject/planemo/commit/f99f6c1
-.. _Issue 391: https://github.com/galaxyproject/planemo/issues/391
-.. _ad3b2f0: https://github.com/galaxyproject/planemo/commit/ad3b2f0
-.. _Pull Request 390: https://github.com/galaxyproject/planemo/pull/390
-.. _94645ed: https://github.com/galaxyproject/planemo/commit/94645ed
-.. _4e1377c: https://github.com/galaxyproject/planemo/commit/4e1377c
-.. _94097c7: https://github.com/galaxyproject/planemo/commit/94097c7
-.. _2a7c792: https://github.com/galaxyproject/planemo/commit/2a7c792
-.. _99ee51a: https://github.com/galaxyproject/planemo/commit/99ee51a
-.. _fdce74c: https://github.com/galaxyproject/planemo/commit/fdce74c
-.. _7572e99: https://github.com/galaxyproject/planemo/commit/7572e99
-.. _8eda729: https://github.com/galaxyproject/planemo/commit/8eda729
-.. _764ce01: https://github.com/galaxyproject/planemo/commit/764ce01
-.. _2f66fc3: https://github.com/galaxyproject/planemo/commit/2f66fc3
-.. _e0577e7: https://github.com/galaxyproject/planemo/commit/e0577e7
-.. _5b97f2e: https://github.com/galaxyproject/planemo/commit/5b97f2e
 .. _01584c5: https://github.com/galaxyproject/planemo/commit/01584c5
-.. _b757791: https://github.com/galaxyproject/planemo/commit/b757791
-.. _1c7ee5b: https://github.com/galaxyproject/planemo/commit/1c7ee5b
-.. _1927168: https://github.com/galaxyproject/planemo/commit/1927168
-.. _9427b47: https://github.com/galaxyproject/planemo/commit/9427b47
-.. _9427b47: https://github.com/galaxyproject/planemo/commit/9427b47
-.. _83e227a: https://github.com/galaxyproject/planemo/commit/83e227a
-.. _f3394e7: https://github.com/galaxyproject/planemo/commit/f3394e7
-.. _af7448c: https://github.com/galaxyproject/planemo/commit/af7448c
-.. _6d81a94: https://github.com/galaxyproject/planemo/commit/6d81a94
+.. _01f2af9: https://github.com/galaxyproject/planemo/commit/01f2af9
+.. _0298510: https://github.com/galaxyproject/planemo/commit/0298510
+.. _02a08a0: https://github.com/galaxyproject/planemo/commit/02a08a0
+.. _05cc9f4: https://github.com/galaxyproject/planemo/commit/05cc9f485ee87bc344e3f43bb1cfd025a16a6247
+.. _069e7ba: https://github.com/galaxyproject/planemo/commit/069e7ba
+.. _08de8de: https://github.com/galaxyproject/planemo/commit/08de8de
+.. _0bd4ff0: https://github.com/galaxyproject/planemo/commit/0bd4ff0
 .. _0e4f70a: https://github.com/galaxyproject/planemo/commit/0e4f70a
-.. _Issue 362: https://github.com/galaxyproject/planemo/issues/362
-.. _Pull Request 375: https://github.com/galaxyproject/planemo/pull/375
-.. _Issue 184: https://github.com/galaxyproject/planemo/issues/184
-.. _6514ff5: https://github.com/galaxyproject/planemo/commit/6514ff5
-.. _98fdc8c: https://github.com/galaxyproject/planemo/commit/98fdc8c
 .. _0f8cb10: https://github.com/galaxyproject/planemo/commit/0f8cb10
-.. _c444855: https://github.com/galaxyproject/planemo/commit/c444855
-.. _dd94ddc: https://github.com/galaxyproject/planemo/commit/dd94ddc
-.. _6409449: https://github.com/galaxyproject/planemo/commit/6409449
-.. _Issue 373: https://github.com/galaxyproject/planemo/issues/373
-.. _8b31850: https://github.com/galaxyproject/planemo/commit/8b31850
-.. _Issue 361: https://github.com/galaxyproject/planemo/issues/361
-.. _25ef0d5: https://github.com/galaxyproject/planemo/commit/25ef0d5
-.. _c1713d2: https://github.com/galaxyproject/planemo/commit/c1713d2
-.. _916f610: https://github.com/galaxyproject/planemo/commit/916f610
-.. _Pull Request 339: https://github.com/galaxyproject/planemo/pull/339
-.. _Pull Request 343: https://github.com/galaxyproject/planemo/pull/343
-.. _Pull Request 344: https://github.com/galaxyproject/planemo/pull/344
-.. _Pull Request 350: https://github.com/galaxyproject/planemo/pull/350
-.. _Pull Request 345: https://github.com/galaxyproject/planemo/pull/345
-.. _Pull Request 351: https://github.com/galaxyproject/planemo/pull/351
-.. _Pull Request 356: https://github.com/galaxyproject/planemo/pull/356
-.. _fdb1b51: https://github.com/galaxyproject/planemo/commit/fdb1b51
-.. _f854138: https://github.com/galaxyproject/planemo/commit/f854138
-.. _508dce7: https://github.com/galaxyproject/planemo/commit/508dce7
-.. _1a157d4: https://github.com/galaxyproject/planemo/commit/1a157d4
-.. _49c5c1e: https://github.com/galaxyproject/planemo/commit/49c5c1e
-.. _c23569f: https://github.com/galaxyproject/planemo/commit/c23569f
-.. _c8640b6: https://github.com/galaxyproject/planemo/commit/c8640b6
+.. _13a5ae7: https://github.com/galaxyproject/planemo/commit/13a5ae7
+.. _15804be: https://github.com/galaxyproject/planemo/commit/15804be
+.. _15d33c7: https://github.com/galaxyproject/planemo/commit/15d33c7
+.. _182fe57: https://github.com/galaxyproject/planemo/commit/182fe57
+.. _1927168: https://github.com/galaxyproject/planemo/commit/1927168
+.. _1982076: https://github.com/galaxyproject/planemo/commit/1982076
 .. _19900a6: https://github.com/galaxyproject/planemo/commit/19900a6
-.. _Issue 329: https://github.com/galaxyproject/planemo/issues/329
-.. _Issue 313: https://github.com/galaxyproject/planemo/issues/313
-.. _Issue 333: https://github.com/galaxyproject/planemo/issues/333
-.. _Pull Request 335: https://github.com/galaxyproject/planemo/pull/335
-.. _Pull Request 334: https://github.com/galaxyproject/planemo/pull/334
-.. _Pull Request 333: https://github.com/galaxyproject/planemo/pull/333
-.. _4d6f7d9: https://github.com/galaxyproject/planemo/commit/4d6f7d9
-.. _Pull Request 316: https://github.com/galaxyproject/planemo/pull/316
-.. _5d7db92: https://github.com/galaxyproject/planemo/commit/5d7db92
-.. _572e754: https://github.com/galaxyproject/planemo/commit/572e754
-.. _Pull Request 322: https://github.com/galaxyproject/planemo/pull/322
-.. _949a36d: https://github.com/galaxyproject/planemo/commit/949a36d
-.. _Pull Request 327: https://github.com/galaxyproject/planemo/pull/327
-.. _Pull Request 330: https://github.com/galaxyproject/planemo/pull/330
-.. _f798c7e: https://github.com/galaxyproject/planemo/commit/f798c7e
-.. _Issue 303: https://github.com/galaxyproject/planemo/issues/303
-.. _Pull Request 310: https://github.com/galaxyproject/planemo/pull/310
-.. _Pull Request 314: https://github.com/galaxyproject/planemo/pull/314
-.. _dad2d9d: https://github.com/galaxyproject/planemo/commit/dad2d9d
-.. _Pull Request 312: https://github.com/galaxyproject/planemo/pull/312
-.. _Pull Request 311: https://github.com/galaxyproject/planemo/pull/311
-.. _Pull Request 309: https://github.com/galaxyproject/planemo/pull/309
-.. _Pull Request 307: https://github.com/galaxyproject/planemo/pull/307
-.. _Pull Request 304: https://github.com/galaxyproject/planemo/pull/304
-.. _Pull Request 305: https://github.com/galaxyproject/planemo/pull/305
-.. _Pull Request 301: https://github.com/galaxyproject/planemo/pull/301
-.. _Pull Request 297: https://github.com/galaxyproject/planemo/pull/297
-.. _Pull Request 287: https://github.com/galaxyproject/planemo/pull/287
-.. _Pull Request 285: https://github.com/galaxyproject/planemo/pull/285
-.. _Pull Request 284: https://github.com/galaxyproject/planemo/pull/284
-.. _Pull Request 292: https://github.com/galaxyproject/planemo/pull/292
-.. _cb5b906: https://github.com/galaxyproject/planemo/commit/cb5b906
-.. _Pull Request 251: https://github.com/galaxyproject/planemo/pull/251
-.. _Pull Request 255: https://github.com/galaxyproject/planemo/pull/255
-.. _Pull Request 254: https://github.com/galaxyproject/planemo/pull/254
-.. _Pull Request 253: https://github.com/galaxyproject/planemo/pull/253
-.. _Pull Request 256: https://github.com/galaxyproject/planemo/pull/256
-.. _Issue 272: https://github.com/galaxyproject/planemo/issues/272
-.. _Pull Request 277: https://github.com/galaxyproject/planemo/pull/277
-.. _Pull Request 278: https://github.com/galaxyproject/planemo/pull/278
-.. _Issue 243: https://github.com/galaxyproject/planemo/issues/243
-.. _Issue 245: https://github.com/galaxyproject/planemo/issues/245
-.. _aad1eed: https://github.com/galaxyproject/planemo/commit/aad1eed
-.. _f0610d7: https://github.com/galaxyproject/planemo/commit/f0610d7
+.. _1a157d4: https://github.com/galaxyproject/planemo/commit/1a157d4
+.. _1a85493: https://github.com/galaxyproject/planemo/commit/1a85493
+.. _1c6cfbb: https://github.com/galaxyproject/planemo/commit/1c6cfbb
+.. _1c7ee5b: https://github.com/galaxyproject/planemo/commit/1c7ee5b
+.. _1cd0e2d: https://github.com/galaxyproject/planemo/commit/1cd0e2d
+.. _1e3668a: https://github.com/galaxyproject/planemo/commit/1e3668a
+.. _2052db0: https://github.com/galaxyproject/planemo/commit/2052db0
+.. _20a8680: https://github.com/galaxyproject/planemo/commit/20a86807cb7ea87db2dbc0197ae08a40df3ab2bc
+.. _21bb463: https://github.com/galaxyproject/planemo/commit/21bb463ad6c321bcb669603049a5e89a69766ad9
+.. _25ef0d5: https://github.com/galaxyproject/planemo/commit/25ef0d5
+.. _26e378e: https://github.com/galaxyproject/planemo/commit/26e378e
+.. _26e3cdb: https://github.com/galaxyproject/planemo/commit/26e3cdb
+.. _2a7c792: https://github.com/galaxyproject/planemo/commit/2a7c792
+.. _2ae2b49: https://github.com/galaxyproject/planemo/commit/2ae2b49
+.. _2e41e0a: https://github.com/galaxyproject/planemo/commit/2e41e0a
+.. _2f66fc3: https://github.com/galaxyproject/planemo/commit/2f66fc3
+.. _30a9c3f: https://github.com/galaxyproject/planemo/commit/30a9c3f
+.. _32c6e7f: https://github.com/galaxyproject/planemo/commit/32c6e7f78bb8f04d27615cfd8948b0b89f27b4e6
+.. _33294d2: https://github.com/galaxyproject/planemo/commit/33294d2
 .. _334f2d4: https://github.com/galaxyproject/planemo/commit/334f2d4
-.. _Pull Request 230: https://github.com/galaxyproject/planemo/pull/230
-.. _Pull Request 235: https://github.com/galaxyproject/planemo/pull/235
+.. _343902d: https://github.com/galaxyproject/planemo/commit/343902d
+.. _3499ca0: https://github.com/galaxyproject/planemo/commit/3499ca0a15affcaf8ac9efc55880da40b0626679
+.. _358a42c: https://github.com/galaxyproject/planemo/commit/358a42c
+.. _36ac6d8: https://github.com/galaxyproject/planemo/commit/36ac6d8
+.. _36f7cb1: https://github.com/galaxyproject/planemo/commit/36f7cb114f77731f90860d513a930e10ce5c1ba5
+.. _37dcc07: https://github.com/galaxyproject/planemo/commit/37dcc07
+.. _39fedd2: https://github.com/galaxyproject/planemo/commit/39fedd2
+.. _3f4ab44: https://github.com/galaxyproject/planemo/commit/3f4ab44
+.. _40a1f57: https://github.com/galaxyproject/planemo/commit/40a1f57
+.. _411a8da: https://github.com/galaxyproject/planemo/commit/411a8da21c92ba37c7ad95bfce9928d9b8fd998e
+.. _44de95c: https://github.com/galaxyproject/planemo/commit/44de95c0d7087a5822941959f9a062f6382e329b
+.. _45135ff: https://github.com/galaxyproject/planemo/commit/45135ff
+.. _4823c5e: https://github.com/galaxyproject/planemo/commit/4823c5e
+.. _49c5c1e: https://github.com/galaxyproject/planemo/commit/49c5c1e
+.. _4c71299: https://github.com/galaxyproject/planemo/commit/4c71299
+.. _4cd571c: https://github.com/galaxyproject/planemo/commit/4cd571c
+.. _4d29bf1: https://github.com/galaxyproject/planemo/commit/4d29bf1
+.. _4d6f7d9: https://github.com/galaxyproject/planemo/commit/4d6f7d9
+.. _4e1377c: https://github.com/galaxyproject/planemo/commit/4e1377c
+.. _4f61025: https://github.com/galaxyproject/planemo/commit/4f61025
+.. _508dce7: https://github.com/galaxyproject/planemo/commit/508dce7
+.. _53a6766: https://github.com/galaxyproject/planemo/commit/53a6766cdebdddc976189f6dc6a264bb4105c4bf
+.. _53edd99: https://github.com/galaxyproject/planemo/commit/53edd99
+.. _552059f: https://github.com/galaxyproject/planemo/commit/552059f
+.. _572e754: https://github.com/galaxyproject/planemo/commit/572e754
+.. _5b97f2e: https://github.com/galaxyproject/planemo/commit/5b97f2e
+.. _5d08b67: https://github.com/galaxyproject/planemo/commit/5d08b67
+.. _5d7db92: https://github.com/galaxyproject/planemo/commit/5d7db92
+.. _5e0b6d1: https://github.com/galaxyproject/planemo/commit/5e0b6d1
+.. _63cd431: https://github.com/galaxyproject/planemo/commit/63cd431
+.. _63e456c: https://github.com/galaxyproject/planemo/commit/63e456c
+.. _6409449: https://github.com/galaxyproject/planemo/commit/6409449
+.. _6514ff5: https://github.com/galaxyproject/planemo/commit/6514ff5
+.. _65b999d: https://github.com/galaxyproject/planemo/commit/65b999d21bacc133a80ecf5f61e0728afec66ccc
+.. _6b4e7a6: https://github.com/galaxyproject/planemo/commit/6b4e7a6
+.. _6bcf699: https://github.com/galaxyproject/planemo/commit/6bcf699
+.. _6d0f502: https://github.com/galaxyproject/planemo/commit/6d0f502
+.. _6d81a94: https://github.com/galaxyproject/planemo/commit/6d81a94
+.. _6e1e726: https://github.com/galaxyproject/planemo/commit/6e1e726
+.. _7572e99: https://github.com/galaxyproject/planemo/commit/7572e99
+.. _764ce01: https://github.com/galaxyproject/planemo/commit/764ce01
+.. _775bf49: https://github.com/galaxyproject/planemo/commit/775bf49
+.. _776773c: https://github.com/galaxyproject/planemo/commit/776773c
+.. _78f8274: https://github.com/galaxyproject/planemo/commit/78f82747996e4a28f96c85ad72efe5e54c8c74bd
+.. _7be1bf5: https://github.com/galaxyproject/planemo/commit/7be1bf5
+.. _7c69bf6: https://github.com/galaxyproject/planemo/commit/7c69bf6
+.. _7d07782: https://github.com/galaxyproject/planemo/commit/7d077828559c9c9c352ac814f9e3b86b1b3a2a9f
+.. _8117e03: https://github.com/galaxyproject/planemo/commit/8117e03
+.. _8207026: https://github.com/galaxyproject/planemo/commit/8207026
+.. _826d371: https://github.com/galaxyproject/planemo/commit/826d371
+.. _82e8b1f: https://github.com/galaxyproject/planemo/commit/82e8b1f17eae526aeb341cb4fffb8d09d73bb419
+.. _834bfb2: https://github.com/galaxyproject/planemo/commit/834bfb2929d367892a3abe9c0b88d5a0277d7905
+.. _83e227a: https://github.com/galaxyproject/planemo/commit/83e227a
+.. _85b9614: https://github.com/galaxyproject/planemo/commit/85b961465f46351507f80ddc3758349535060502
+.. _89674cb: https://github.com/galaxyproject/planemo/commit/89674cb
+.. _8b31850: https://github.com/galaxyproject/planemo/commit/8b31850
+.. _8e96864: https://github.com/galaxyproject/planemo/commit/8e96864
+.. _8eda729: https://github.com/galaxyproject/planemo/commit/8eda729
+.. _912df02: https://github.com/galaxyproject/planemo/commit/912df02
+.. _916f610: https://github.com/galaxyproject/planemo/commit/916f610
+.. _93b7bda: https://github.com/galaxyproject/planemo/commit/93b7bda
+.. _94097c7: https://github.com/galaxyproject/planemo/commit/94097c7
+.. _9427b47: https://github.com/galaxyproject/planemo/commit/9427b47
+.. _94645ed: https://github.com/galaxyproject/planemo/commit/94645ed
+.. _949a36d: https://github.com/galaxyproject/planemo/commit/949a36d
+.. _95d5cba: https://github.com/galaxyproject/planemo/commit/95d5cba
+.. _965511d: https://github.com/galaxyproject/planemo/commit/965511d
+.. _988de1d: https://github.com/galaxyproject/planemo/commit/988de1d
+.. _98fdc8c: https://github.com/galaxyproject/planemo/commit/98fdc8c
+.. _99ee51a: https://github.com/galaxyproject/planemo/commit/99ee51a
+.. _9bf1eab: https://github.com/galaxyproject/planemo/commit/9bf1eab
+.. _9e746b4: https://github.com/galaxyproject/planemo/commit/9e746b455e3b15219878cddcdeda722979639401
+.. _9f3957d: https://github.com/galaxyproject/planemo/commit/9f3957d
+.. _9ff0d2d: https://github.com/galaxyproject/planemo/commit/9ff0d2d
+.. _CWL: http://www.commonwl.org/
+.. _Issue 108: https://github.com/galaxyproject/planemo/issues/108
+.. _Issue 114: https://github.com/galaxyproject/planemo/issues/114
+.. _Issue 118: https://github.com/galaxyproject/planemo/issues/118
+.. _Issue 124: https://github.com/galaxyproject/planemo/issues/#124
+.. _Issue 138: https://github.com/galaxyproject/planemo/issues/#138
+.. _Issue 139: https://github.com/galaxyproject/planemo/issues/139
+.. _Issue 150: https://github.com/galaxyproject/planemo/issues/150
+.. _Issue 156: https://github.com/galaxyproject/planemo/issues/156
+.. _Issue 158: https://github.com/galaxyproject/planemo/issues/158
+.. _Issue 159: https://github.com/galaxyproject/planemo/issues/159
+.. _Issue 15: https://github.com/galaxyproject/planemo/issues/15
+.. _Issue 161: https://github.com/galaxyproject/planemo/issues/161
+.. _Issue 167: https://github.com/galaxyproject/planemo/issues/167
+.. _Issue 168: https://github.com/galaxyproject/planemo/issues/168
+.. _Issue 169: https://github.com/galaxyproject/planemo/issues/169
+.. _Issue 170: https://github.com/galaxyproject/planemo/issues/170
+.. _Issue 176: https://github.com/galaxyproject/planemo/issues/176
+.. _Issue 179: https://github.com/galaxyproject/planemo/issues/179
+.. _Issue 180: https://github.com/galaxyproject/planemo/issues/180
+.. _Issue 181: https://github.com/galaxyproject/planemo/issues/181
+.. _Issue 184: https://github.com/galaxyproject/planemo/issues/184
+.. _Issue 186: https://github.com/galaxyproject/planemo/issues/186
+.. _Issue 188: https://github.com/galaxyproject/planemo/issues/188
+.. _Issue 189: https://github.com/galaxyproject/planemo/issues/189
+.. _Issue 192: https://github.com/galaxyproject/planemo/issues/192
+.. _Issue 205: https://github.com/galaxyproject/planemo/issues/205
+.. _Issue 206: https://github.com/galaxyproject/planemo/issues/206
+.. _Issue 209: https://github.com/galaxyproject/planemo/issues/209
+.. _Issue 211: https://github.com/galaxyproject/planemo/issues/211
+.. _Issue 217: https://github.com/galaxyproject/planemo/issues/217
 .. _Issue 223: https://github.com/galaxyproject/planemo/issues/223
 .. _Issue 231: https://github.com/galaxyproject/planemo/issues/231
 .. _Issue 233: https://github.com/galaxyproject/planemo/issues/233
 .. _Issue 240: https://github.com/galaxyproject/planemo/issues/240
-.. _f3cafaa: https://github.com/galaxyproject/planemo/commit/f3cafaa
-.. _6b4e7a6: https://github.com/galaxyproject/planemo/commit/6b4e7a6
-.. _Issue 176: https://github.com/galaxyproject/planemo/issues/176
-.. _Pull Request 216: https://github.com/galaxyproject/planemo/pull/216
-.. _Pull Request 213: https://github.com/galaxyproject/planemo/pull/213
-.. _Issue 150: https://github.com/galaxyproject/planemo/issues/150
-.. _37dcc07: https://github.com/galaxyproject/planemo/commit/37dcc07
-.. _30a9c3f: https://github.com/galaxyproject/planemo/commit/30a9c3f
-.. _b53006d: https://github.com/galaxyproject/planemo/commit/b53006d
-.. _Pull Request 203: https://github.com/galaxyproject/planemo/pull/203
+.. _Issue 243: https://github.com/galaxyproject/planemo/issues/243
+.. _Issue 245: https://github.com/galaxyproject/planemo/issues/245
+.. _Issue 246: https://github.com/galaxyproject/planemo/issues/246
+.. _Issue 272: https://github.com/galaxyproject/planemo/issues/272
+.. _Issue 303: https://github.com/galaxyproject/planemo/issues/303
+.. _Issue 313: https://github.com/galaxyproject/planemo/issues/313
+.. _Issue 329: https://github.com/galaxyproject/planemo/issues/329
+.. _Issue 333: https://github.com/galaxyproject/planemo/issues/333
+.. _Issue 361: https://github.com/galaxyproject/planemo/issues/361
+.. _Issue 362: https://github.com/galaxyproject/planemo/issues/362
+.. _Issue 373: https://github.com/galaxyproject/planemo/issues/373
+.. _Issue 391: https://github.com/galaxyproject/planemo/issues/391
+.. _Issue 416: https://github.com/galaxyproject/planemo/issues/416
+.. _Issue 420: https://github.com/galaxyproject/planemo/issues/420
+.. _Issue 475: https://github.com/galaxyproject/planemo/issues/475
+.. _Issue 61: https://github.com/galaxyproject/planemo/issues/61
+.. _Issue 70: https://github.com/galaxyproject/planemo/issues/70
+.. _Issue 78: https://github.com/galaxyproject/planemo/issues/78
+.. _Issue 80: https://github.com/galaxyproject/planemo/issues/80
+.. _Issue 83: https://github.com/galaxyproject/planemo/issues/83
+.. _Issue 88: https://github.com/galaxyproject/planemo/issues/88
+.. _Issue 89: https://github.com/galaxyproject/planemo/issues/#89
+.. _Issue 91: https://github.com/galaxyproject/planemo/issues/#91
+.. _Pull Request 101: https://github.com/galaxyproject/planemo/pull/101
+.. _Pull Request 102: https://github.com/galaxyproject/planemo/pull/102
+.. _Pull Request 104: https://github.com/galaxyproject/planemo/pull/104
+.. _Pull Request 111: https://github.com/galaxyproject/planemo/pull/111
+.. _Pull Request 113: https://github.com/galaxyproject/planemo/pull/113
+.. _Pull Request 129: https://github.com/galaxyproject/planemo/pull/129
+.. _Pull Request 130: https://github.com/galaxyproject/planemo/pull/130
+.. _Pull Request 143: https://github.com/galaxyproject/planemo/pull/143
+.. _Pull Request 151: https://github.com/galaxyproject/planemo/pull/151
+.. _Pull Request 155: https://github.com/galaxyproject/planemo/pull/155
+.. _Pull Request 164: https://github.com/galaxyproject/planemo/pull/164
+.. _Pull Request 171: https://github.com/galaxyproject/planemo/pull/171
+.. _Pull Request 173: https://github.com/galaxyproject/planemo/pull/173
+.. _Pull Request 175: https://github.com/galaxyproject/planemo/pull/175
+.. _Pull Request 185: https://github.com/galaxyproject/planemo/pull/185
+.. _Pull Request 186: https://github.com/galaxyproject/planemo/pull/186
+.. _Pull Request 187: https://github.com/galaxyproject/planemo/pull/187
+.. _Pull Request 190: https://github.com/galaxyproject/planemo/pull/190
+.. _Pull Request 196: https://github.com/galaxyproject/planemo/pull/196
+.. _Pull Request 1: https://github.com/galaxyproject/planemo/pull/1
 .. _Pull Request 200: https://github.com/galaxyproject/planemo/pull/200
+.. _Pull Request 203: https://github.com/galaxyproject/planemo/pull/203
 .. _Pull Request 206: https://github.com/galaxyproject/planemo/pull/206
 .. _Pull Request 207: https://github.com/galaxyproject/planemo/pull/207
 .. _Pull Request 208: https://github.com/galaxyproject/planemo/pull/208
 .. _Pull Request 210: https://github.com/galaxyproject/planemo/pull/210
+.. _Pull Request 213: https://github.com/galaxyproject/planemo/pull/213
 .. _Pull Request 215: https://github.com/galaxyproject/planemo/pull/215
 .. _Pull Request 216: https://github.com/galaxyproject/planemo/pull/216
-.. _Issue 217: https://github.com/galaxyproject/planemo/issues/217
-.. _Issue 211: https://github.com/galaxyproject/planemo/issues/211
-.. _cc8abb6: https://github.com/galaxyproject/planemo/commit/cc8abb6
-.. _Issue 209: https://github.com/galaxyproject/planemo/issues/209
-.. _Issue 206: https://github.com/galaxyproject/planemo/issues/206
-.. _Issue 205: https://github.com/galaxyproject/planemo/issues/205
-.. _Pull Request 207: https://github.com/galaxyproject/planemo/pull/207
-.. _1e3668a: https://github.com/galaxyproject/planemo/commit/1e3668a
-.. _Issue 180: https://github.com/galaxyproject/planemo/issues/180
-.. _Pull Request 186: https://github.com/galaxyproject/planemo/pull/186
-.. _Pull Request 185: https://github.com/galaxyproject/planemo/pull/185
-.. _6bcf699: https://github.com/galaxyproject/planemo/commit/6bcf699
-.. _Issue 186: https://github.com/galaxyproject/planemo/issues/186
-.. _Issue 188: https://github.com/galaxyproject/planemo/issues/188
-.. _Pull Request 187: https://github.com/galaxyproject/planemo/pull/187
-.. _Issue 192: https://github.com/galaxyproject/planemo/issues/192
-.. _Issue 189: https://github.com/galaxyproject/planemo/issues/189
-.. _Pull Request 190: https://github.com/galaxyproject/planemo/pull/190
-.. _Pull Request 196: https://github.com/galaxyproject/planemo/pull/196
-.. _fe7ad46: https://github.com/galaxyproject/planemo/commit/fe7ad46
-.. _8117e03: https://github.com/galaxyproject/planemo/commit/8117e03
-.. _8117e03: https://github.com/galaxyproject/planemo/commit/8117e03
-.. _Issue 156: https://github.com/galaxyproject/planemo/issues/156
-.. _Issue 179: https://github.com/galaxyproject/planemo/issues/179
-.. _Issue 181: https://github.com/galaxyproject/planemo/issues/181
-.. _Issue 114: https://github.com/galaxyproject/planemo/issues/114
-.. _Pull Request 173: https://github.com/galaxyproject/planemo/pull/173
-.. _Issue 108: https://github.com/galaxyproject/planemo/issues/108
-.. _15804be: https://github.com/galaxyproject/planemo/commit/15804be
-.. _Issue 158: https://github.com/galaxyproject/planemo/issues/158
-.. _Pull Request 171: https://github.com/galaxyproject/planemo/pull/171
-.. _1cd0e2d: https://github.com/galaxyproject/planemo/commit/1cd0e2d
-.. _40a1f57: https://github.com/galaxyproject/planemo/commit/40a1f57
-.. _Pull Request 175: https://github.com/galaxyproject/planemo/pull/175
-.. _Issue 167: https://github.com/galaxyproject/planemo/issues/167
-.. _Issue 170: https://github.com/galaxyproject/planemo/issues/170
-.. _Issue 169: https://github.com/galaxyproject/planemo/issues/169
-.. _Issue 168: https://github.com/galaxyproject/planemo/issues/168
-.. _b86fe1f: https://github.com/galaxyproject/planemo/commit/b86fe1f
-.. _Pull Request 155: https://github.com/galaxyproject/planemo/pull/155
-.. _Pull Request 164: https://github.com/galaxyproject/planemo/pull/164
-.. _Issue 159: https://github.com/galaxyproject/planemo/issues/159
-.. _Issue 161: https://github.com/galaxyproject/planemo/issues/161
-.. _a2ee135: https://github.com/galaxyproject/planemo/commit/a2ee135
-.. _9ff0d2d: https://github.com/galaxyproject/planemo/commit/9ff0d2d
-.. _Pull Request 151: https://github.com/galaxyproject/planemo/pull/151
-.. _9bf1eab: https://github.com/galaxyproject/planemo/commit/9bf1eab
-.. _Pull Request 143: https://github.com/galaxyproject/planemo/pull/143
-.. _Issue 139: https://github.com/galaxyproject/planemo/issues/139
-.. _Issue 89: https://github.com/galaxyproject/planemo/issues/#89
-.. _Issue 91: https://github.com/galaxyproject/planemo/issues/#91
-.. _d26929e: https://github.com/galaxyproject/planemo/commit/d26929e
-.. _36ac6d8: https://github.com/galaxyproject/planemo/commit/36ac6d8
-.. _08de8de: https://github.com/galaxyproject/planemo/commit/08de8de
-.. _4f61025: https://github.com/galaxyproject/planemo/commit/4f61025
-.. _1982076: https://github.com/galaxyproject/planemo/commit/1982076
-.. _Pull Request 129: https://github.com/galaxyproject/planemo/pull/129
-.. _912df02: https://github.com/galaxyproject/planemo/commit/912df02
-.. _Pull Request 130: https://github.com/galaxyproject/planemo/pull/130
-.. _1a85493: https://github.com/galaxyproject/planemo/commit/1a85493
-.. _53edd99: https://github.com/galaxyproject/planemo/commit/53edd99
-.. _988de1d: https://github.com/galaxyproject/planemo/commit/988de1d
-.. _Issue 118: https://github.com/galaxyproject/planemo/issues/118
-.. _cc1a447: https://github.com/galaxyproject/planemo/commit/cc1a447
-.. _b7d9e96: https://github.com/galaxyproject/planemo/commit/b7d9e96
-.. _Issue 138: https://github.com/galaxyproject/planemo/issues/#138
-.. _Issue 124: https://github.com/galaxyproject/planemo/issues/#124
-.. _26e3cdb: https://github.com/galaxyproject/planemo/commit/26e3cdb
-.. _63cd431: https://github.com/galaxyproject/planemo/commit/63cd431
-.. _965511d: https://github.com/galaxyproject/planemo/commit/965511d
-.. _01f2af9: https://github.com/galaxyproject/planemo/commit/01f2af9
-.. _343902d: https://github.com/galaxyproject/planemo/commit/343902d
-.. _33294d2: https://github.com/galaxyproject/planemo/commit/33294d2
-.. _4c71299: https://github.com/galaxyproject/planemo/commit/4c71299
-.. _Pull Request 111: https://github.com/galaxyproject/planemo/pull/111
-.. _Pull Request 99: https://github.com/galaxyproject/planemo/pull/99
-.. _Pull Request 101: https://github.com/galaxyproject/planemo/pull/101
-.. _Pull Request 102: https://github.com/galaxyproject/planemo/pull/102
-.. _Issue 88: https://github.com/galaxyproject/planemo/issues/88
-.. _182fe57: https://github.com/galaxyproject/planemo/commit/182fe57
-.. _Pull Request 104: https://github.com/galaxyproject/planemo/pull/104
-.. _7c69bf6: https://github.com/galaxyproject/planemo/commit/7c69bf6
-.. _39fedd2: https://github.com/galaxyproject/planemo/commit/39fedd2
-.. _d755fe7: https://github.com/galaxyproject/planemo/commit/d755fe7
-.. _Pull Request 113: https://github.com/galaxyproject/planemo/pull/113
-.. _Pull Request 98: https://github.com/galaxyproject/planemo/pull/98
-.. _0bd4ff0: https://github.com/galaxyproject/planemo/commit/0bd4ff0
-.. _Pull Request 99: https://github.com/galaxyproject/planemo/pull/99
-.. _ec6e30f: https://github.com/galaxyproject/planemo/commit/ec6e30f
-.. _8207026: https://github.com/galaxyproject/planemo/commit/8207026
-.. _4823c5e: https://github.com/galaxyproject/planemo/commit/4823c5e
-.. _2e41e0a: https://github.com/galaxyproject/planemo/commit/2e41e0a
-.. _fba3874: https://github.com/galaxyproject/planemo/commit/fba3874
-.. _Issue 78: https://github.com/galaxyproject/planemo/issues/78
-.. _Issue 80: https://github.com/galaxyproject/planemo/issues/80
-
-
-.. _Issue 83: https://github.com/galaxyproject/planemo/issues/83
-.. _Issue 70: https://github.com/galaxyproject/planemo/issues/70
-.. _Pull Request 68: https://github.com/galaxyproject/planemo/pull/68
-.. _Issue 61: https://github.com/galaxyproject/planemo/issues/61
-.. _Pull Request 63: https://github.com/galaxyproject/planemo/pull/63
-.. _Pull Request 56: https://github.com/galaxyproject/planemo/pull/56
-.. _Pull Request 51: https://github.com/galaxyproject/planemo/pull/51
-.. _Pull Request 40: https://github.com/galaxyproject/planemo/pull/40
-.. _Pull Request 29: https://github.com/galaxyproject/planemo/pull/29
 .. _Pull Request 22: https://github.com/galaxyproject/planemo/pull/22
+.. _Pull Request 230: https://github.com/galaxyproject/planemo/pull/230
+.. _Pull Request 235: https://github.com/galaxyproject/planemo/pull/235
 .. _Pull Request 23: https://github.com/galaxyproject/planemo/pull/23
+.. _Pull Request 251: https://github.com/galaxyproject/planemo/pull/251
+.. _Pull Request 253: https://github.com/galaxyproject/planemo/pull/253
+.. _Pull Request 254: https://github.com/galaxyproject/planemo/pull/254
+.. _Pull Request 255: https://github.com/galaxyproject/planemo/pull/255
+.. _Pull Request 256: https://github.com/galaxyproject/planemo/pull/256
+.. _Pull Request 277: https://github.com/galaxyproject/planemo/pull/277
+.. _Pull Request 278: https://github.com/galaxyproject/planemo/pull/278
+.. _Pull Request 284: https://github.com/galaxyproject/planemo/pull/284
+.. _Pull Request 285: https://github.com/galaxyproject/planemo/pull/285
+.. _Pull Request 287: https://github.com/galaxyproject/planemo/pull/287
+.. _Pull Request 292: https://github.com/galaxyproject/planemo/pull/292
+.. _Pull Request 297: https://github.com/galaxyproject/planemo/pull/297
+.. _Pull Request 29: https://github.com/galaxyproject/planemo/pull/29
+.. _Pull Request 301: https://github.com/galaxyproject/planemo/pull/301
+.. _Pull Request 304: https://github.com/galaxyproject/planemo/pull/304
+.. _Pull Request 305: https://github.com/galaxyproject/planemo/pull/305
+.. _Pull Request 307: https://github.com/galaxyproject/planemo/pull/307
+.. _Pull Request 309: https://github.com/galaxyproject/planemo/pull/309
+.. _Pull Request 310: https://github.com/galaxyproject/planemo/pull/310
+.. _Pull Request 311: https://github.com/galaxyproject/planemo/pull/311
+.. _Pull Request 312: https://github.com/galaxyproject/planemo/pull/312
+.. _Pull Request 314: https://github.com/galaxyproject/planemo/pull/314
+.. _Pull Request 316: https://github.com/galaxyproject/planemo/pull/316
+.. _Pull Request 322: https://github.com/galaxyproject/planemo/pull/322
+.. _Pull Request 327: https://github.com/galaxyproject/planemo/pull/327
+.. _Pull Request 330: https://github.com/galaxyproject/planemo/pull/330
+.. _Pull Request 333: https://github.com/galaxyproject/planemo/pull/333
+.. _Pull Request 334: https://github.com/galaxyproject/planemo/pull/334
+.. _Pull Request 335: https://github.com/galaxyproject/planemo/pull/335
+.. _Pull Request 339: https://github.com/galaxyproject/planemo/pull/339
 .. _Pull Request 33: https://github.com/galaxyproject/planemo/pull/33
+.. _Pull Request 343: https://github.com/galaxyproject/planemo/pull/343
+.. _Pull Request 344: https://github.com/galaxyproject/planemo/pull/344
+.. _Pull Request 345: https://github.com/galaxyproject/planemo/pull/345
+.. _Pull Request 350: https://github.com/galaxyproject/planemo/pull/350
+.. _Pull Request 351: https://github.com/galaxyproject/planemo/pull/351
+.. _Pull Request 356: https://github.com/galaxyproject/planemo/pull/356
+.. _Pull Request 375: https://github.com/galaxyproject/planemo/pull/375
+.. _Pull Request 390: https://github.com/galaxyproject/planemo/pull/390
+.. _Pull Request 394: https://github.com/galaxyproject/planemo/pull/394
+.. _Pull Request 398: https://github.com/galaxyproject/planemo/pull/398
+.. _Pull Request 403: https://github.com/galaxyproject/planemo/pull/403
+.. _Pull Request 40: https://github.com/galaxyproject/planemo/pull/40
+.. _Pull Request 425: https://github.com/galaxyproject/planemo/pull/425
+.. _Pull Request 426: https://github.com/galaxyproject/planemo/pull/426
+.. _Pull Request 428: https://github.com/galaxyproject/planemo/pull/428
+.. _Pull Request 429: https://github.com/galaxyproject/planemo/pull/429
+.. _Pull Request 454: https://github.com/galaxyproject/planemo/pull/454
+.. _Pull Request 472: https://github.com/galaxyproject/planemo/pull/472
+.. _Pull Request 479: https://github.com/galaxyproject/planemo/pull/479
+.. _Pull Request 480: https://github.com/galaxyproject/planemo/pull/480
+.. _Pull Request 484: https://github.com/galaxyproject/planemo/pull/484
+.. _Pull Request 488: https://github.com/galaxyproject/planemo/pull/488
+.. _Pull Request 491: https://github.com/galaxyproject/planemo/pull/491
+.. _Pull Request 51: https://github.com/galaxyproject/planemo/pull/51
+.. _Pull Request 56: https://github.com/galaxyproject/planemo/pull/56
+.. _Pull Request 63: https://github.com/galaxyproject/planemo/pull/63
+.. _Pull Request 68: https://github.com/galaxyproject/planemo/pull/68
 .. _Pull Request 6: https://github.com/galaxyproject/planemo/pull/6
-.. _Pull Request 1: https://github.com/galaxyproject/planemo/pull/1
-
-.. _3499ca0: https://github.com/galaxyproject/planemo/commit/3499ca0a15affcaf8ac9efc55880da40b0626679
-.. _85b9614: https://github.com/galaxyproject/planemo/commit/85b961465f46351507f80ddc3758349535060502
-.. _53a6766: https://github.com/galaxyproject/planemo/commit/53a6766cdebdddc976189f6dc6a264bb4105c4bf
-.. _badc25f: https://github.com/galaxyproject/planemo/commit/badc25fca495b61457ffb2e027f3fe9cf17c798f
-.. _411a8da: https://github.com/galaxyproject/planemo/commit/411a8da21c92ba37c7ad95bfce9928d9b8fd998e
-.. _b8d90ab: https://github.com/galaxyproject/planemo/commit/b8d90abab8bf53ae2e7cca4317223c01af9ab68c
-.. _e8c1d45: https://github.com/galaxyproject/planemo/commit/e8c1d45f0c9a11bcf69ec2967836c3b8f432dd97
-.. _78f8274: https://github.com/galaxyproject/planemo/commit/78f82747996e4a28f96c85ad72efe5e54c8c74bd
-.. _9e746b4: https://github.com/galaxyproject/planemo/commit/9e746b455e3b15219878cddcdeda722979639401
-.. _ac4f828: https://github.com/galaxyproject/planemo/commit/ac4f82898f7006799142503a33c3978428660ce7
-.. _834bfb2: https://github.com/galaxyproject/planemo/commit/834bfb2929d367892a3abe9c0b88d5a0277d7905
-.. _dff4f33: https://github.com/galaxyproject/planemo/commit/dff4f33c750a8dbe651c38e149a26dd42e706a82
-.. _a4110a8: https://github.com/galaxyproject/planemo/commit/a4110a85a770988e5cd3c31ccc9475717897d59c
-.. _21bb463: https://github.com/galaxyproject/planemo/commit/21bb463ad6c321bcb669603049a5e89a69766ad9
-.. _af39061: https://github.com/galaxyproject/planemo/commit/af390612004dab636d8696839bb723d39f97c85d
-.. _20a8680: https://github.com/galaxyproject/planemo/commit/20a86807cb7ea87db2dbc0197ae08a40df3ab2bc
-.. _44de95c: https://github.com/galaxyproject/planemo/commit/44de95c0d7087a5822941959f9a062f6382e329b
-.. _82e8b1f: https://github.com/galaxyproject/planemo/commit/82e8b1f17eae526aeb341cb4fffb8d09d73bb419
-.. _05cc9f4: https://github.com/galaxyproject/planemo/commit/05cc9f485ee87bc344e3f43bb1cfd025a16a6247
-.. _32c6e7f: https://github.com/galaxyproject/planemo/commit/32c6e7f78bb8f04d27615cfd8948b0b89f27b4e6
-.. _7d07782: https://github.com/galaxyproject/planemo/commit/7d077828559c9c9c352ac814f9e3b86b1b3a2a9f
-.. _a2c13e4: https://github.com/galaxyproject/planemo/commit/a2c13e46259e3be35de1ecaae858ba818bb94734
-.. _36f7cb11: https://github.com/galaxyproject/planemo/commit/36f7cb114f77731f90860d513a930e10ce5c1ba5
-.. _b9232e55: https://github.com/galaxyproject/planemo/commit/b9232e55e713abbd1d9ce8b0b34cbec6c701dc17
-
-.. _bioblend: https://github.com/galaxyproject/bioblend/
+.. _Pull Request 98: https://github.com/galaxyproject/planemo/pull/98
+.. _Pull Request 99: https://github.com/galaxyproject/planemo/pull/99
 .. _XSD: http://www.w3schools.com/schema/
+.. _a13a120: https://github.com/galaxyproject/planemo/commit/a13a120
+.. _a2c13e4: https://github.com/galaxyproject/planemo/commit/a2c13e46259e3be35de1ecaae858ba818bb94734
+.. _a2ee135: https://github.com/galaxyproject/planemo/commit/a2ee135
+.. _a4110a8: https://github.com/galaxyproject/planemo/commit/a4110a85a770988e5cd3c31ccc9475717897d59c
+.. _a4e6958: https://github.com/galaxyproject/planemo/commit/a4e6958
+.. _a58a3b8: https://github.com/galaxyproject/planemo/commit/a58a3b8
+.. _a87899b: https://github.com/galaxyproject/planemo/commit/a87899b
+.. _aad1eed: https://github.com/galaxyproject/planemo/commit/aad1eed
+.. _ac4f828: https://github.com/galaxyproject/planemo/commit/ac4f82898f7006799142503a33c3978428660ce7
+.. _ad3b2f0: https://github.com/galaxyproject/planemo/commit/ad3b2f0
+.. _af39061: https://github.com/galaxyproject/planemo/commit/af390612004dab636d8696839bb723d39f97c85d
+.. _af7448c: https://github.com/galaxyproject/planemo/commit/af7448c
+.. _b0b867e: https://github.com/galaxyproject/planemo/commit/b0b867e
+.. _b1c8f1d: https://github.com/galaxyproject/planemo/commit/b1c8f1d
+.. _b53006d: https://github.com/galaxyproject/planemo/commit/b53006d
+.. _b757791: https://github.com/galaxyproject/planemo/commit/b757791
+.. _b7d9e96: https://github.com/galaxyproject/planemo/commit/b7d9e96
+.. _b86fe1f: https://github.com/galaxyproject/planemo/commit/b86fe1f
+.. _b8d90ab: https://github.com/galaxyproject/planemo/commit/b8d90abab8bf53ae2e7cca4317223c01af9ab68c
+.. _b9232e5: https://github.com/galaxyproject/planemo/commit/b9232e55e713abbd1d9ce8b0b34cbec6c701dc17
+.. _badc25f: https://github.com/galaxyproject/planemo/commit/badc25fca495b61457ffb2e027f3fe9cf17c798f
+.. _bioblend: https://github.com/galaxyproject/bioblend/
+.. _c1713d2: https://github.com/galaxyproject/planemo/commit/c1713d2
+.. _c23569f: https://github.com/galaxyproject/planemo/commit/c23569f
+.. _c444855: https://github.com/galaxyproject/planemo/commit/c444855
+.. _c4dfd55: https://github.com/galaxyproject/planemo/commit/c4dfd55
+.. _c8640b6: https://github.com/galaxyproject/planemo/commit/c8640b6
+.. _cb5b906: https://github.com/galaxyproject/planemo/commit/cb5b906
+.. _cc1a447: https://github.com/galaxyproject/planemo/commit/cc1a447
+.. _cc8abb6: https://github.com/galaxyproject/planemo/commit/cc8abb6
+.. _ce8e1be: https://github.com/galaxyproject/planemo/commit/ce8e1be
+.. _cwltool: https://github.com/common-workflow-language/cwltool/.. _d26929e: https://github.com/galaxyproject/planemo/commit/d26929e
+.. _d26929e: https://github.com/galaxyproject/planemo/commit/d26929e
+.. _d755fe7: https://github.com/galaxyproject/planemo/commit/d755fe7
+.. _d76b489: https://github.com/galaxyproject/planemo/commit/d76b489
+.. _d8f2038: https://github.com/galaxyproject/planemo/commit/d8f2038
+.. _dad2d9d: https://github.com/galaxyproject/planemo/commit/dad2d9d
+.. _dd94ddc: https://github.com/galaxyproject/planemo/commit/dd94ddc
+.. _dff4f33: https://github.com/galaxyproject/planemo/commit/dff4f33c750a8dbe651c38e149a26dd42e706a82
+.. _e0577e7: https://github.com/galaxyproject/planemo/commit/e0577e7
+.. _e0acf91: https://github.com/galaxyproject/planemo/commit/e0acf91
+.. _e38c436: https://github.com/galaxyproject/planemo/commit/e38c436
+.. _e769118: https://github.com/galaxyproject/planemo/commit/e769118
+.. _e8c1d45: https://github.com/galaxyproject/planemo/commit/e8c1d45f0c9a11bcf69ec2967836c3b8f432dd97
+.. _eb039c0: https://github.com/galaxyproject/planemo/commit/eb039c0
+.. _ec6e30f: https://github.com/galaxyproject/planemo/commit/ec6e30f
+.. _efc5f30: https://github.com/galaxyproject/planemo/commit/efc5f30
+.. _f0610d7: https://github.com/galaxyproject/planemo/commit/f0610d7
+.. _f3394e7: https://github.com/galaxyproject/planemo/commit/f3394e7
+.. _f3c6917: https://github.com/galaxyproject/planemo/commit/f3c6917
+.. _f3cafaa: https://github.com/galaxyproject/planemo/commit/f3cafaa
+.. _f7554d1: https://github.com/galaxyproject/planemo/commit/f7554d1
+.. _f798c7e: https://github.com/galaxyproject/planemo/commit/f798c7e
+.. _f854138: https://github.com/galaxyproject/planemo/commit/f854138
+.. _f99f6c1: https://github.com/galaxyproject/planemo/commit/f99f6c1
+.. _fba3874: https://github.com/galaxyproject/planemo/commit/fba3874
+.. _fdb1b51: https://github.com/galaxyproject/planemo/commit/fdb1b51
+.. _fdce74c: https://github.com/galaxyproject/planemo/commit/fdce74c
+.. _fe7ad46: https://github.com/galaxyproject/planemo/commit/fe7ad46
+.. _fea51fc: https://github.com/galaxyproject/planemo/commit/fea51fc
 .. _lxml: http://lxml.de/
-.. _xmllint: http://xmlsoft.org/xmllint.html
 .. _nose: https://nose.readthedocs.org/en/latest/
-.. _CWL: http://www.commonwl.org/
-.. _cwltool: https://github.com/common-workflow-language/cwltool/
+.. _xmllint: http://xmlsoft.org/xmllint.html

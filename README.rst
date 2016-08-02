@@ -63,7 +63,8 @@ install it with ``pip``.
 Planemo is also available as a `virtual appliance
 <https://planemo.readthedocs.org/en/latest/appliance.html>`_ bundled
 with a preconfigured Galaxy server and set up for Galaxy tool development.
-You can choose from open virtualization format (OVA_, .ova), Docker, or Vagrant appliances.
+You can choose from open virtualization format (OVA_, .ova), Docker_,
+or Vagrant_ appliances.
 
 --------------
 Planemo Basics
@@ -148,11 +149,12 @@ Experimental Features
 ---------------------
 
 Planemo can also be used to explore some more experimental features related to
-Galaxy tooling - including support for Conda_, `Travis CI`_, Docker_, CWL_, and Homebrew_.
+Galaxy tooling - including support for Conda_, `Travis CI`_, Docker_,
+`Common Workfow Language`_ (CWL), and Homebrew_.
 
------------
-Conda
------------
+---------------------
+Conda Package Manager
+---------------------
 
 Conda_ is package manager that among many other things can be used
 to manage Python packages. Please read a few notes regarding the setup:
@@ -217,7 +219,7 @@ TravisCI
 -----------
 
 When tools are ready to be published to GitHub_, it may be valuable to setup
-contineous integration to test changes committed and new pull requests.
+continuous integration to test changes committed and new pull requests.
 `Travis CI`_ is a service providing free testing and deep integration with
 GitHub_.
 
@@ -247,9 +249,9 @@ handful of tools. For larger repositories, such as `tools-devteam`_ or
 Check out the ``.travis.yml`` file used by the IUC as `example
 <https://github.com/galaxyproject/tools-iuc/blob/master/.travis.yml>`__.
 
------------
-Docker
------------
+-----------------
+Docker Containers
+-----------------
 
 Galaxy has `experimental support
 <https://wiki.galaxyproject.org/Admin/Tools/Docker>`_ for running jobs in
@@ -338,5 +340,4 @@ and `brew_env
 .. _`tools-iuc`: https://github.com/galaxyproject/tools-iuc
 .. _Publishing to the Tool Shed: http://planemo.readthedocs.org/en/latest/publishing.html
 .. _Common Workfow Language: http://common-workflow-language.github.io
-.. _CWL: http://common-workflow-language.github.io
 .. _OVA: https://en.wikipedia.org/wiki/Open_Virtualization_Format
