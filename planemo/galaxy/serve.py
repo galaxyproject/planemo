@@ -1,4 +1,6 @@
 """Abstractions for serving out development Galaxy servers."""
+from __future__ import print_function
+
 import contextlib
 import time
 
@@ -85,6 +87,9 @@ def serve_daemon(ctx, runnables=[], **kwds):
         yield config
     finally:
         if config:
+            if ctx.verbose:
+                print("Galaxy Log:")
+                print(config.log_contents)
             config.kill()
             if not kwds.get("no_cleanup", False):
                 config.cleanup()
