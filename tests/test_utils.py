@@ -76,7 +76,7 @@ class CliTestCase(TestCase):
     def _check_exit_code(self, command_list, exit_code=0):
         expected_exit_code = exit_code
         result = self._invoke(command_list)
-        print(result.output)
+        print("Command list output is [%s]" % result.output)
         result_exit_code = result.exit_code
         if result_exit_code != expected_exit_code:
             message = EXIT_CODE_MESSAGE % (
