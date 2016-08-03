@@ -73,7 +73,7 @@ test: ## run tests with the default Python (faster than tox)
 	$(IN_VENV) nosetests $(NOSE_TESTS)
 
 quick-test: ## run quickest tests with the default Python
-	$(IN_VENV) PLANEMO_SKIP_GALAXY_TESTS=1 nosetests $(NOSE_TESTS)
+	$(IN_VENV) PLANEMO_SKIP_SLOW_TESTS=1 PLANEMO_SKIP_GALAXY_TESTS=1 nosetests $(NOSE_TESTS)
 
 tox: ## run tests with tox in the specified ENV, defaults to py27
 	$(IN_VENV) tox -e $(ENV) -- $(ARGS)

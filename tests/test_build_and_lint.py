@@ -2,7 +2,7 @@ import os
 
 import yaml
 
-from .test_utils import CliTestCase
+from .test_utils import CliTestCase, skip_if_environ
 
 
 class BuildAndLintTestCase(CliTestCase):
@@ -34,6 +34,7 @@ class BuildAndLintTestCase(CliTestCase):
             self._check_exit_code(_init_command(doi=False))
             self._check_lint(exit_code=1)
 
+    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_cwl(self):
         with self._isolate() as f:
             self._check_exit_code(_cwl_init_command())
@@ -62,6 +63,7 @@ class BuildAndLintTestCase(CliTestCase):
             self._check_exit_code(_cwl_init_command(help_text=False))
             self._check_lint(filename="seqtk_seq.cwl", exit_code=1)
 
+    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_cwl_fail_on_no_docker(self):
         with self._isolate():
             self._check_exit_code(_cwl_init_command(help_text=False))
@@ -69,7 +71,12 @@ class BuildAndLintTestCase(CliTestCase):
 
     def _check_lint(self, filename="seqtk_seq.xml", exit_code=0):
         lint_cmd = ["lint", "--fail_level", "warn", filename]
-        self._check_exit_code(lint_cmd, exit_code=exit_code)
+        try:
+            self._check_exit_code(lint_cmd, exit_code=exit_code)
+        except Exception:
+            with open(filename, "r") as f:
+                print("Failing file contents are [%s]." % f.read())
+            raise
 
 
 def _cwl_init_command(help_text=True, container=True, test_case=True):
