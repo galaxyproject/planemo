@@ -2,12 +2,12 @@ Tool Provided Metadata
 ==============================
 
 This stub of a section provides some initial documentation on tool provided
-metadata. Galaxy allows any of datasets to be discovered after a tool has been
-executed and allows tool's to specify metadata for these datasets. Whenever
+metadata. Galaxy allows datasets to be discovered after a tool has been
+executed and allows tools to specify metadata for these datasets. Whenever
 possible, Galaxy's datatypes and more structured outputs should
 be used to collect metadata.
 
-If arbitrary an number of outputs is needed but no special metadata must be set,
+If an arbitrary number of outputs is needed but no special metadata must be set,
 file name patterns can be used to allow Galaxy to discover these datasets.
 More information on this can be found on the `Galaxy wiki <https://wiki.galaxyproject.org/Admin/Tools/Multiple%20Output%20Files#Number_of_Output_datasets_cannot_be_determined_until_tool_run>`__.
 
@@ -18,7 +18,7 @@ supplied or when implementing a custom tool wrapper anyway - it may be beneficia
 to build a manifest file.
 
 A tool may also produce a file called ``galaxy.json`` during execution. If 
-upon a job's completion this file is populated Galaxy will expect to find metadata
+upon a job's completion this file is populated, Galaxy will expect to find metadata
 about outputs in it.
 
 The format of this file is a bit quirky - each line of this file should be a JSON
@@ -43,7 +43,7 @@ Examples of tools using ``new_primary_dataset`` entries:
 The ``type`` of an entry may also be ``dataset``. In this case the metadata 
 descriptions describe an explicit output (one with its own corresponding ``output``
 element definition). In this case, an entry called ``dataset`` should appear in
-the dictionary (in lieu of ``filename`` above) and should be the databaes id of the 
+the dictionary (in lieu of ``filename`` above) and should be the database id of the 
 output dataset. Such entries may contain all of the other fields described above except
 ``metadata``.
 

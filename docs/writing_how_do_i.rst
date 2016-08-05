@@ -119,9 +119,9 @@ would check if the input is of type ``fastq`` or any derivative types such as
 \.\.\. handle arbitrary output data formats?
 -------------------------------------------------
 
-If the output format of a tool's output cannot isn't known ahead of time,
+If the output format of a tool's output cannot be known ahead of time,
 Galaxy can be instructed to "sniff" the output and determine the data type
-using the same method used for uploads. Adding the ``auto_format="true"`
+using the same method used for uploads. Adding the ``auto_format="true"``
 attribute to a tool's output enables this.
 
 .. code-block:: xml
