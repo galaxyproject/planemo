@@ -9,5 +9,5 @@ glob2
 virtualenv
 gxformat2
 ephemeris
-galaxy-lib>=16.7.9
-cwltool>=1.0.20160616182520 ; python_version == '2.7'
+galaxy-lib>=16.7.10
+cwltool==1.0.20160726135535 ; python_version == '2.7'

@@ -6,6 +6,7 @@ env:
   - TOX_ENV=py34-lint
   - TOX_ENV=py27-lint-readme
   - TOX_ENV=py27-lint-docs
+  - TOX_ENV=py27-quick
   - TOX_ENV=py27
   - TOX_ENV=py34
   - TOX_ENV=py27-lint-imports
@@ -23,7 +24,7 @@ matrix:
     - env: TOX_ENV=py27-lint-imports
     - env: TOX_ENV=py27-lint-docstrings
 
-script: PLANEMO_ENABLE_POSTGRES_TESTS=1 tox -e $TOX_ENV
+script: PLANEMO_ENABLE_POSTGRES_TESTS=1 PLANEMO_SKIP_CWLTOOL_TESTS=1 tox -e $TOX_ENV
 
 after_success:
   - coveralls
