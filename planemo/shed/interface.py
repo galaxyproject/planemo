@@ -85,7 +85,7 @@ def api_exception_to_message(e):
 def find_category_ids(tsi, categories):
     """ Translate human readable category names into their associated IDs.
     """
-    category_list = tsi.repositories.get_categories()
+    category_list = tsi.categories.get_categories()
 
     category_ids = []
     for cat in categories:

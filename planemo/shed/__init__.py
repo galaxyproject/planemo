@@ -100,6 +100,7 @@ CURRENT_CATEGORIES = [
     "Constructive Solid Geometry",
     "Convert Formats",
     "Epigenetics",
+    "Data Export",
     "Data Managers",
     "Data Source",
     "Fasta Manipulation",
@@ -572,10 +573,11 @@ def _build_suite_repo(config, repos, suite_config):
 
     name = suite_config.get("name", None)
     if name is None:
-        raise Exception("suite_configitories required name key.")
+        raise Exception("suite_config requires name key.")
     description = suite_config.get("description", "")
     long_description = suite_config.get("long_description", None)
     owner = config["owner"]
+    repo_type = suite_config.get('type', REPO_TYPE_SUITE)
 
     repo_pairs = map(lambda name: (owner, name), repos.keys())
     extra_repos = suite_config.get("include_repositories", {})
@@ -592,6 +594,7 @@ def _build_suite_repo(config, repos, suite_config):
         "include": [],
         "name": name,
         "description": description,
+        "type": repo_type,
     }
     if long_description:
         repo["long_description"] = long_description
@@ -599,10 +602,11 @@ def _build_suite_repo(config, repos, suite_config):
 
 
 def update_repository_for(ctx, tsi, id, repo_config):
-    # TODO: enforce no "type" change.
     from bioblend.galaxy.client import Client
+    name = repo_config["name"]
     description = repo_config.get("description", None)
     long_description = repo_config.get("long_description", None)
+    repo_type = shed_repo_type(repo_config, name)
     remote_repository_url = repo_config.get("remote_repository_url", None)
     homepage_url = repo_config.get("homepage_url", None)
     categories = repo_config.get("categories", [])
@@ -611,8 +615,9 @@ def update_repository_for(ctx, tsi, id, repo_config):
     _ensure_shed_description(description)
 
     kwds = dict(
-        name=repo_config["name"],
+        name=name,
         synopsis=description,
+        type=repo_type,
     )
     if long_description is not None:
         kwds["description"] = long_description
@@ -622,11 +627,7 @@ def update_repository_for(ctx, tsi, id, repo_config):
         kwds["homepage_url"] = homepage_url
     if category_ids is not None:
         kwds['category_ids[]'] = category_ids
-    repo = Client._put(tsi.repositories, id=id, payload=kwds)
-    if repo.status_code in [200, 201]:
-        return repo.json()
-    else:
-        raise Exception("Failed to update repository.")
+    return Client._put(tsi.repositories, id=id, payload=kwds)
 
 
 def create_repository_for(ctx, tsi, name, repo_config):
@@ -723,12 +724,13 @@ def path_to_repo_name(path):
 
 def shed_repo_type(config, name):
     repo_type = config.get("type", None)
-    if repo_type is None and name.startswith("package_"):
-        repo_type = REPO_TYPE_TOOL_DEP
-    elif repo_type is None and name.startswith("suite_"):
-        repo_type = REPO_TYPE_SUITE
-    elif repo_type is None:
-        repo_type = REPO_TYPE_UNRESTRICTED
+    if repo_type is None:
+        if name.startswith("package_"):
+            repo_type = REPO_TYPE_TOOL_DEP
+        elif name.startswith("suite_"):
+            repo_type = REPO_TYPE_SUITE
+        else:
+            repo_type = REPO_TYPE_UNRESTRICTED
     return repo_type
 
 

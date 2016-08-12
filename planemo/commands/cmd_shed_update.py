@@ -109,13 +109,12 @@ def cli(ctx, paths, **kwds):
             if repo_id is None:
                 exit = shed.report_non_existent_repository(realized_repository)
                 metadata_ok = False
+                error("Failed to update metadata for repository %s." % realized_repository.name)
             else:
                 metadata_ok = realized_repository.update(ctx, shed_context, repo_id)
+                info("Repository metadata updated successfully for repository %s." % realized_repository.name)
         else:
-            info("Skipping repository metadata update.")
-
-        if not metadata_ok:
-            error("Failed to update repository metadata.")
+            info("Skipping metadata update for repository %s." % realized_repository.name)
 
         if metadata_ok and upload_ok:
             pass

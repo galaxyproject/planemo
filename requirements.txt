@@ -2,7 +2,7 @@ aenum
 Click
 six>=1.7.0
 pyyaml
-bioblend>=0.7.0
+bioblend>=0.8.0
 docutils
 jinja2
 glob2
