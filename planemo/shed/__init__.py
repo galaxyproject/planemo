@@ -100,6 +100,7 @@ CURRENT_CATEGORIES = [
     "Constructive Solid Geometry",
     "Convert Formats",
     "Epigenetics",
+    "Data Export",
     "Data Managers",
     "Data Source",
     "Fasta Manipulation",
