@@ -33,8 +33,8 @@ def cli(ctx, paths, **kwds):
     ``planemo`` uses temporarily generated config files and environment
     variables to attempt to shield this execution of Galaxy from manually
     launched runs against that same Galaxy root - but this may not be bullet
-    proof yet so please careful and do not try this against production Galaxy
-    instances.
+    proof yet, so please be careful and do not try this against a production
+    Galaxy instance.
     """
     runnables = for_paths(paths)
     galaxy_serve(ctx, runnables, **kwds)
