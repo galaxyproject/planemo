@@ -573,10 +573,11 @@ def _build_suite_repo(config, repos, suite_config):
 
     name = suite_config.get("name", None)
     if name is None:
-        raise Exception("suite_configitories required name key.")
+        raise Exception("suite_config requires name key.")
     description = suite_config.get("description", "")
     long_description = suite_config.get("long_description", None)
     owner = config["owner"]
+    repo_type = suite_config.get('type', REPO_TYPE_SUITE)
 
     repo_pairs = map(lambda name: (owner, name), repos.keys())
     extra_repos = suite_config.get("include_repositories", {})
@@ -593,6 +594,7 @@ def _build_suite_repo(config, repos, suite_config):
         "include": [],
         "name": name,
         "description": description,
+        "type": repo_type,
     }
     if long_description:
         repo["long_description"] = long_description
