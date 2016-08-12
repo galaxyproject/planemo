@@ -623,11 +623,7 @@ def update_repository_for(ctx, tsi, id, repo_config):
         kwds["homepage_url"] = homepage_url
     if category_ids is not None:
         kwds['category_ids[]'] = category_ids
-    repo = Client._put(tsi.repositories, id=id, payload=kwds)
-    if repo.status_code in [200, 201]:
-        return repo.json()
-    else:
-        raise Exception("Failed to update repository.")
+    return Client._put(tsi.repositories, id=id, payload=kwds)
 
 
 def create_repository_for(ctx, tsi, name, repo_config):
