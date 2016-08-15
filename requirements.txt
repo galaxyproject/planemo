@@ -7,7 +7,7 @@ docutils
 jinja2
 glob2
 virtualenv
-gxformat2
+gxformat2>=0.1.1
 ephemeris>=0.2.0
 galaxy-lib>=16.7.10
 html5lib>=0.9999999,!=0.99999999,!=0.99999999 ; python_version == '2.7'
