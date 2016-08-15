@@ -8,6 +8,6 @@ jinja2
 glob2
 virtualenv
 gxformat2
-ephemeris
+ephemeris>=0.2.0
 galaxy-lib>=16.7.10
 cwltool==1.0.20160726135535 ; python_version == '2.7'
