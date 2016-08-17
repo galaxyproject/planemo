@@ -9,6 +9,8 @@ from six import string_types
 from six import iteritems
 
 import os
+import sys
+import subprocess
 import tarfile
 import zipfile
 from ftplib import all_errors as FTPErrors  # tuple of exceptions
@@ -411,8 +413,8 @@ def _cache_download(url, filename, sha256sum=None):
     if not os.path.isfile(local):
         # Must download it...
         try:
-            import sys  # TODO - log this nicely...
-            sys.stderr.write("Downloading %s\n" % url)
+            # TODO - log this nicely...
+            sys.stderr.write("Downloading %s to %r\n" % (url, local))
             urlretrieve(url, local)
         except URLError:
             # Most likely server is down, could be bad URL in XML action:
@@ -422,8 +424,11 @@ def _cache_download(url, filename, sha256sum=None):
             raise RuntimeError("Unable to download %s" % url)
 
     if sha256sum:
-        # TODO - check local copy
-        pass
+        # TODO - log this nicely...
+        sys.stderr.write("Verifying checksum for %s\n" % filename)
+        filehash = subprocess.check_output(['shasum', '-a', '256', local])[0:64].strip()
+        if filehash != sha256sum:
+            raise RuntimeError("Checksum failure for %s, got %r but wanted %r" % (local, filehash, sha256sum))
 
     return local
 
