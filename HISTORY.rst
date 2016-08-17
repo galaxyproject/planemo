@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.28.0.dev0
+0.28.0 (2016-08-17)
 ---------------------
 
 * Fixes for BioBlend v0.8.0 (thanks to @nsoranzo). 9fdf490_ 
