@@ -403,6 +403,9 @@ def _cache_download(url, filename, sha256sum=None):
         # TODO - expose this as a command line option
         raise ValueError("Dependencies cache location $DOWNLOAD_CACHE not set.")
 
+    if not os.path.isdir(cache):
+        os.mkdir(cache)
+
     local = os.path.join(cache, filename)
 
     if not os.path.isfile(local):
