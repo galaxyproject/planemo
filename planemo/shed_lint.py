@@ -70,6 +70,11 @@ def lint_repository(ctx, realized_repository, **kwds):
         path,
     )
     lint_ctx.lint(
+        "lint_tool_dependencies_sha256sum",
+        lint_tool_dependencies_sha256sum,
+        path,
+    )
+    lint_ctx.lint(
         "lint_tool_dependencies_actions",
         lint_tool_dependencies_actions,
         path,
@@ -188,6 +193,33 @@ def lint_tool_dependencies_urls(path, lint_ctx):
 
     root = ET.parse(tool_dependencies).getroot()
     lint_urls(root, lint_ctx)
+
+
+def lint_tool_dependencies_sha256sum(path, lint_ctx):
+    tool_dependencies = os.path.join(path, "tool_dependencies.xml")
+    if not os.path.exists(tool_dependencies):
+        lint_ctx.info("No tool_dependencies.xml, skipping.")
+        return
+
+    root = ET.parse(tool_dependencies).getroot()
+
+    count = 0
+    for action in root.findall(".//action"):
+        assert action.tag == "action"
+        if action.attrib.get('type', '') not in ['download_by_url', 'download_file']:
+            continue
+        url = action.text.strip()
+        checksum = action.attrib.get('sha256sum', '')
+        if not checksum:
+            lint_ctx.warn("Missing checksum for %s" % url)
+        elif len(checksum) != 64 or not set("0123456789abcdef").issuperset(checksum.lower()):
+            lint_ctx.error("Invalid checksum %r for %s" % (checksum, url))
+        else:
+            # TODO - See planned --verify option to check it matches
+            # lint_ctx.info("SHA256 checkum listed for %s" % url)
+            count += 1
+    if count:
+        lint_ctx.info("Found %i download action(s) with SHA256 checksums" % count)
 
 
 def lint_tool_dependencies_xsd(path, lint_ctx):
