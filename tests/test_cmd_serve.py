@@ -100,7 +100,9 @@ class ServeTestCase(CliTestCase):
         t.start()
         time.sleep(10)
         assert network_util.wait_net_service("127.0.0.1", port)
-        time.sleep(.1)
+        time.sleep(1)
+        assert network_util.wait_net_service("127.0.0.1", port)
+        time.sleep(1)
         assert network_util.wait_net_service("127.0.0.1", port)
 
     def _run(self, serve_args=[]):
