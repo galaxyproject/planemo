@@ -423,12 +423,14 @@ def _cache_download(url, filename, sha256sum=None):
             # Most likely server is down, could be bad URL in XML action:
             raise RuntimeError("Unable to download %s" % url)
 
-    if sha256sum:
-        # TODO - log this nicely...
-        sys.stderr.write("Verifying checksum for %s\n" % filename)
-        filehash = subprocess.check_output(['shasum', '-a', '256', local])[0:64].strip()
-        if filehash != sha256sum:
-            raise RuntimeError("Checksum failure for %s, got %r but wanted %r" % (local, filehash, sha256sum))
+        # Verifying the checksum is slow, only do this on a fresh
+        # download. Assume locally cached files are already OK.
+        if sha256sum:
+            # TODO - log this nicely...
+            sys.stderr.write("Verifying checksum for %s\n" % filename)
+            filehash = subprocess.check_output(['shasum', '-a', '256', local])[0:64].strip()
+            if filehash != sha256sum:
+                raise RuntimeError("Checksum failure for %s, got %r but wanted %r" % (local, filehash, sha256sum))
 
     return local
 
