@@ -9,6 +9,8 @@ from six import string_types
 from six import iteritems
 
 import os
+import sys
+import subprocess
 import tarfile
 import zipfile
 from ftplib import all_errors as FTPErrors  # tuple of exceptions
@@ -395,7 +397,7 @@ def _common_prefix(folders):
     return common_prefix
 
 
-def _cache_download(url, filename):
+def _cache_download(url, filename, sha256sum=None):
     """Returns local path to cached copy of URL using given filename."""
     try:
         cache = os.environ["DOWNLOAD_CACHE"]
@@ -403,13 +405,16 @@ def _cache_download(url, filename):
         # TODO - expose this as a command line option
         raise ValueError("Dependencies cache location $DOWNLOAD_CACHE not set.")
 
+    if not os.path.isdir(cache):
+        os.mkdir(cache)
+
     local = os.path.join(cache, filename)
 
     if not os.path.isfile(local):
         # Must download it...
         try:
-            import sys  # TODO - log this nicely...
-            sys.stderr.write("Downloading %s\n" % url)
+            # TODO - log this nicely...
+            sys.stderr.write("Downloading %s to %r\n" % (url, local))
             urlretrieve(url, local)
         except URLError:
             # Most likely server is down, could be bad URL in XML action:
@@ -418,10 +423,17 @@ def _cache_download(url, filename):
             # Most likely server is down, could be bad URL in XML action:
             raise RuntimeError("Unable to download %s" % url)
 
+    if sha256sum:
+        # TODO - log this nicely...
+        sys.stderr.write("Verifying checksum for %s\n" % filename)
+        filehash = subprocess.check_output(['shasum', '-a', '256', local])[0:64].strip()
+        if filehash != sha256sum:
+            raise RuntimeError("Checksum failure for %s, got %r but wanted %r" % (local, filehash, sha256sum))
+
     return local
 
 
-def _determine_compressed_file_folder(url, downloaded_filename):
+def _determine_compressed_file_folder(url, downloaded_filename, sha256sum=None):
     """Determine how to decompress the file & its directory structure.
 
     Returns a list of shell commands. Consider this example where the
@@ -442,7 +454,8 @@ def _determine_compressed_file_folder(url, downloaded_filename):
     how to decompress the file.
     """
     answer = []
-    local = _cache_download(url, downloaded_filename)
+
+    local = _cache_download(url, downloaded_filename, sha256sum)
 
     if tarfile.is_tarfile(local):
         folders = _tar_folders(local)
@@ -477,7 +490,7 @@ def _determine_compressed_file_folder(url, downloaded_filename):
     return answer
 
 
-def _commands_to_download_and_extract(url, target_filename=None):
+def _commands_to_download_and_extract(url, target_filename=None, sha256sum=None):
     # TODO - Include checksum validation here?
     if target_filename:
         downloaded_filename = target_filename
@@ -504,7 +517,13 @@ def _commands_to_download_and_extract(url, target_filename=None):
         '    ln -s "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, downloaded_filename),
         'fi',
         ]
-    answer.extend(_determine_compressed_file_folder(url, downloaded_filename))
+
+    if sha256sum:
+        # Note double space between checksum and filename
+        answer.append('echo "%s  %s" | shasum -a 256 -c -' % (sha256sum, downloaded_filename))
+
+    # Now should we unpack the tar-ball etc?
+    answer.extend(_determine_compressed_file_folder(url, downloaded_filename, sha256sum))
     return answer, []
 
 
@@ -515,12 +534,13 @@ class DownloadByUrlAction(BaseAction):
     def __init__(self, elem):
         self.url = elem.text.strip()
         assert self.url
+        self.sha256sum = elem.attrib.get("sha256sum", None)
 
     def to_bash(self):
         # See class DownloadByUrl in Galaxy,
         # lib/tool_shed/galaxy_install/tool_dependencies/recipe/step_handler.py
         # Do we need to worry about target_filename here?
-        return _commands_to_download_and_extract(self.url)
+        return _commands_to_download_and_extract(self.url, sha256sum=self.sha256sum)
 
 
 class DownloadFileAction(BaseAction):
@@ -530,10 +550,11 @@ class DownloadFileAction(BaseAction):
     def __init__(self, elem):
         self.url = elem.text.strip()
         self.extract = asbool(elem.attrib.get("extract", False))
+        self.sha256sum = elem.attrib.get("sha256sum", None)
 
     def to_bash(self):
         if self.extract:
-            return _commands_to_download_and_extract(self.url)
+            return _commands_to_download_and_extract(self.url, sha256sum=self.sha256sum)
         else:
             return ['wget %s' % self.url], []
 
