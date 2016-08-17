@@ -556,7 +556,10 @@ class ShellCommandAction(BaseAction):
         self.command = elem.text
 
     def to_bash(self):
-        return [self.command], []
+        # Galaxy would run each action from the same temp
+        # working directory - possible that tool_dependencies.xml
+        # shell_command could change $PWD so reset this:
+        return ["pushd .", self.command, "popd"], []
 
 
 class TemplateShellCommandAction(BaseAction):
