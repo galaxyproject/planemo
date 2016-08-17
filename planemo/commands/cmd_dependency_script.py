@@ -24,11 +24,13 @@ then
 fi
 # Set full strict mode now, side stepping case $INSTALL_DIR not setup.
 set -euo pipefail
-export DOWNLOAD_CACHE=`(cd "$DOWNLOAD_CACHE"; pwd)`
+export DOWNLOAD_CACHE="${DOWNLOAD_CACHE:-./download_cache}"
 if [[ ! -d $DOWNLOAD_CACHE ]]
 then
     mkdir -p $DOWNLOAD_CACHE
 fi
+# Make this into an absolute path
+export DOWNLOAD_CACHE=`(cd "$DOWNLOAD_CACHE"; pwd)`
 echo "Using $DOWNLOAD_CACHE for cached downloads."
 export INSTALL_DIR=`(cd "$INSTALL_DIR"; pwd)`
 echo "Using $INSTALL_DIR for the installed files."
@@ -203,7 +205,7 @@ def cli(ctx, paths, recursive=False, fail_fast=True, download_cache=None):
         # Effectively using this as a global variable, refactor this
         # once using a visitor pattern instead of action.to_bash()
         os.environ["DOWNLOAD_CACHE"] = os.path.abspath(download_cache)
-    print("Using $DOWNLOAD_CACHE=%r" % os.environ["DOWNLOAD_CACHE"])
+        print("Using $DOWNLOAD_CACHE=%r" % os.environ["DOWNLOAD_CACHE"])
     failed = False
     with open("env.sh", "w") as env_sh_handle:
         with open("dep_install.sh", "w") as install_handle:
