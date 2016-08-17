@@ -517,12 +517,12 @@ def _commands_to_download_and_extract(url, target_filename=None, sha256sum=None)
         '    echo "Downloading %s"' % downloaded_filename,
         '    curl -L -o "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, url),
         '    ln -s "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, downloaded_filename),
-        'fi',
         ]
-
     if sha256sum:
-        # Note double space between checksum and filename
-        answer.append('echo "%s  %s" | shasum -a 256 -c -' % (sha256sum, downloaded_filename))
+        # This is inserted into the if-else for a fresh download only.
+        # Note double space between checksum and filename:
+        answer.append('    echo "%s  %s" | shasum -a 256 -c -' % (sha256sum, downloaded_filename))
+    answer.append('fi')
 
     # Now should we unpack the tar-ball etc?
     answer.extend(_determine_compressed_file_folder(url, downloaded_filename, sha256sum))
