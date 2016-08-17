@@ -9,7 +9,38 @@ History
 0.28.0.dev0
 ---------------------
 
-    
+* Fixes for BioBlend v0.8.0 (thanks to @nsoranzo). 9fdf490_ 
+* Enable shed repo type update (thanks to @nsoranzo). 3ceaa40_
+* Create suite repositories with repository_suite_definition type by default
+  (thanks to @nsoranzo).
+  057f4f0_
+* Include ``shed_lint`` in script run by ``travis_init`` (thanks to @peterjc).
+  `Pull Request 528`_
+* Minor polish to the ``travis_init`` command (thanks to @peterjc).
+  `Pull Request 512`_
+* Update pip and setuptools on TravisCI; fix travis_init (thanks to @peterjc).
+  `Pull Request 521`_
+* Shorten command one line descriptions for main help (thanks to @peterjc).
+  `Pull Request 510`_
+* Use ``planemo test --no_cache_galaxy`` under TravisCI (thanks to @peterjc).
+  `Pull Request 513`_
+* Improve and fix docs ahead of GCC 2016 (thanks to @martenson).
+  `Pull Request 498`_, 725b232_
+* Add description of ``expect_num_outputs`` to planemo FAQ. a066afb_
+* Revise planemo tools docs to be more explicit about collection identifiers.
+  a811e65_
+* Add more docs on existing dynamic tool output features. `Pull Request 526`_
+* Fix serve command doc (thanks to @nsoranzo). 8c088c6_
+* Fix `make lint-readme` (RST link errors) (thanks to @peterjc).
+  `Pull Request 525`_
+* Add union bedgraph example to project templates (for GCC demo example). 
+  d53bcd6_
+* Add Flow Cytometry Analysis, Data Export, and Constructive Solid Geometry as
+  shed categories (thanks to @bgruening, @gregvonkuster, and @nsoranzo).
+  e890ab5_, 08bb354_, e2398fb_
+* Remove duplicated attribute in docs/writing/bwa-mem_v5.xml (thanks to
+  Paul Stewart @pstew).
+  `Pull Request 507`_
 
 ---------------------
 0.27.0 (2016-06-22)
@@ -747,6 +778,26 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _3ceaa40: https://github.com/galaxyproject/planemo/commit/3ceaa40
+.. _057f4f0: https://github.com/galaxyproject/planemo/commit/057f4f0
+.. _9fdf490: https://github.com/galaxyproject/planemo/commit/9fdf490
+.. _8c088c6: https://github.com/galaxyproject/planemo/commit/8c088c6
+.. _e2398fb: https://github.com/galaxyproject/planemo/commit/e2398fb
+.. _Pull Request 526: https://github.com/galaxyproject/planemo/pull/526
+.. _Pull Request 528: https://github.com/galaxyproject/planemo/pull/528
+.. _Pull Request 525: https://github.com/galaxyproject/planemo/pull/525
+.. _a811e65: https://github.com/galaxyproject/planemo/commit/a811e65
+.. _Pull Request 521: https://github.com/galaxyproject/planemo/pull/521
+.. _a066afb: https://github.com/galaxyproject/planemo/commit/a066afb
+.. _Pull Request 512: https://github.com/galaxyproject/planemo/pull/512
+.. _08bb354: https://github.com/galaxyproject/planemo/commit/08bb354
+.. _Pull Request 513: https://github.com/galaxyproject/planemo/pull/513
+.. _Pull Request 510: https://github.com/galaxyproject/planemo/pull/510
+.. _e890ab5: https://github.com/galaxyproject/planemo/commit/e890ab5
+.. _Pull Request 507: https://github.com/galaxyproject/planemo/pull/507
+.. _d53bcd6: https://github.com/galaxyproject/planemo/commit/d53bcd6
+.. _725b232: https://github.com/galaxyproject/planemo/commit/725b232
+.. _Pull Request 498: https://github.com/galaxyproject/planemo/pull/498
 .. _01584c5: https://github.com/galaxyproject/planemo/commit/01584c5
 .. _01f2af9: https://github.com/galaxyproject/planemo/commit/01f2af9
 .. _0298510: https://github.com/galaxyproject/planemo/commit/0298510
