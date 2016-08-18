@@ -20,7 +20,7 @@ def cli(ctx, path, **kwds):
     """
 
     def build(realized_repository):
-        tarpath = shed.build_tarball(realized_repository.real_path)
+        tarpath = shed.build_tarball(realized_repository.path)
         outpath = realized_repository.real_path + ".tar.gz"
         shutil.move(tarpath, outpath)
         print("Created: %s" % (outpath))
