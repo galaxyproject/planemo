@@ -49,5 +49,6 @@ Committers
 - Peter Cock (@peterjc)
 - Björn Grüning (@bgruening)
 - Eric Rasche (@erasche)
+- Nicola Soranzo (@nsoranzo)
 - James Taylor (@jxtx)
 - Marius van den Beek (@mvdbeek)
