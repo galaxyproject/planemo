@@ -423,12 +423,14 @@ def _cache_download(url, filename, sha256sum=None):
             # Most likely server is down, could be bad URL in XML action:
             raise RuntimeError("Unable to download %s" % url)
 
-    if sha256sum:
-        # TODO - log this nicely...
-        sys.stderr.write("Verifying checksum for %s\n" % filename)
-        filehash = subprocess.check_output(['shasum', '-a', '256', local])[0:64].strip()
-        if filehash != sha256sum:
-            raise RuntimeError("Checksum failure for %s, got %r but wanted %r" % (local, filehash, sha256sum))
+        # Verifying the checksum is slow, only do this on a fresh
+        # download. Assume locally cached files are already OK.
+        if sha256sum:
+            # TODO - log this nicely...
+            sys.stderr.write("Verifying checksum for %s\n" % filename)
+            filehash = subprocess.check_output(['shasum', '-a', '256', local])[0:64].strip()
+            if filehash != sha256sum:
+                raise RuntimeError("Checksum failure for %s, got %r but wanted %r" % (local, filehash, sha256sum))
 
     return local
 
@@ -515,12 +517,12 @@ def _commands_to_download_and_extract(url, target_filename=None, sha256sum=None)
         '    echo "Downloading %s"' % downloaded_filename,
         '    curl -L -o "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, url),
         '    ln -s "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, downloaded_filename),
-        'fi',
         ]
-
     if sha256sum:
-        # Note double space between checksum and filename
-        answer.append('echo "%s  %s" | shasum -a 256 -c -' % (sha256sum, downloaded_filename))
+        # This is inserted into the if-else for a fresh download only.
+        # Note double space between checksum and filename:
+        answer.append('    echo "%s  %s" | shasum -a 256 -c -' % (sha256sum, downloaded_filename))
+    answer.append('fi')
 
     # Now should we unpack the tar-ball etc?
     answer.extend(_determine_compressed_file_folder(url, downloaded_filename, sha256sum))
