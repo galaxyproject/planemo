@@ -9,7 +9,13 @@ History
 0.29.0.dev0
 ---------------------
 
-    
+* Look for sha256sum checksums during shed_lint (thanks to @peterjc).
+  `Pull Request 539`_
+* An assortment fixes and enhancements to the ``dependency_script`` command
+  (thanks to @peterjc). `Pull Request 541`_, `Pull Request 545`_
+* Fix shed_build to respect exclude: in .shed.yml (thanks to @nsoranzo).
+  `Pull Request 540`_
+* Fix linting of tool URLs (thanks to @nsoranzo). `Pull Request 546`_ 
 
 ---------------------
 0.28.0 (2016-08-17)
@@ -784,6 +790,11 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 539: https://github.com/galaxyproject/planemo/pull/539
+.. _Pull Request 541: https://github.com/galaxyproject/planemo/pull/541
+.. _Pull Request 540: https://github.com/galaxyproject/planemo/pull/540
+.. _Pull Request 545: https://github.com/galaxyproject/planemo/pull/545
+.. _Pull Request 546: https://github.com/galaxyproject/planemo/pull/546
 .. _3ceaa40: https://github.com/galaxyproject/planemo/commit/3ceaa40
 .. _057f4f0: https://github.com/galaxyproject/planemo/commit/057f4f0
 .. _9fdf490: https://github.com/galaxyproject/planemo/commit/9fdf490
