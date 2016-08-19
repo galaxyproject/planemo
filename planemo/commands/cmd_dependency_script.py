@@ -171,9 +171,10 @@ def cli(ctx, paths, recursive=False, fail_fast=True, download_cache=None):
     bash shell scripts, intended initially for use within Continuous
     Integration testing setups like TravisCI.
 
-    Parses the specified ``tool_dependencies.xml`` files, and converts them into
-    an installation bash script (default ``dep_install.sh``), and a shell script
-    (default ``env.sh``) defining any new/edited environment variables.
+    Parses the ``tool_dependencies.xml`` files from the specified projects,
+    and converts them into an installation bash script (``dep_install.sh``),
+    and a shell script (``env.sh``) defining any new/edited environment
+    variables.
 
     These are intended to be used via ``bash dep_install.sh`` (once), and as
     ``source env.sh`` prior to running any of the dependencies to set the
@@ -194,6 +195,10 @@ def cli(ctx, paths, recursive=False, fail_fast=True, download_cache=None):
     The download cache used by ``planemo dependency_script`` and the resulting
     output script ``dep_install.sh`` defaults to ``./download_cache`` (under
     the current working directory), and can be set with ``$DOWNLOAD_CACHE``.
+
+    If the ``tool_dependencies.xml`` file includes SHA256 checksums for
+    downloads, these will be verified after downloading to the cache (by
+    either ``planemo dependency_script`` or ``bash dep_install.sh``).
 
     This is experimental, and is initially intended for use within continuous
     integration testing setups like TravisCI to both verify the dependency
