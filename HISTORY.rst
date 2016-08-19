@@ -6,10 +6,10 @@ History
 .. to_doc
 
 ---------------------
-0.30.0.dev0
+0.29.1.dev0
 ---------------------
 
-    
+* Improved handling of Python 2.7 specific dependencies.
 
 ---------------------
 0.29.0 (2016-08-19)
