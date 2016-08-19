@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.29.0.dev0
+0.29.0 (2016-08-19)
 ---------------------
 
 * Look for sha256sum checksums during shed_lint (thanks to @peterjc).
