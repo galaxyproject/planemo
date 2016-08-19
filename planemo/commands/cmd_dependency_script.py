@@ -171,9 +171,10 @@ def cli(ctx, paths, recursive=False, fail_fast=True, download_cache=None):
     bash shell scripts, intended initially for use within Continuous
     Integration testing setups like TravisCI.
 
-    Parses the specified ``tool_dependencies.xml`` files, and converts them into
-    an installation bash script (default ``dep_install.sh``), and a shell script
-    (default ``env.sh``) defining any new/edited environment variables.
+    Parses the ``tool_dependencies.xml`` files from the specified projects,
+    and converts them into an installation bash script (``dep_install.sh``),
+    and a shell script (``env.sh``) defining any new/edited environment
+    variables.
 
     These are intended to be used via ``bash dep_install.sh`` (once), and as
     ``source env.sh`` prior to running any of the dependencies to set the
