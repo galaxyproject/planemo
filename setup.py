@@ -81,9 +81,11 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 if os.path.exists("requirements.txt"):
     requirements = [ r for r in open("requirements.txt").read().split("\n") if ";" not in r ]
+    py27_requirements = [ r.split(";", 1)[0].strip() for r in open("requirements.txt").read().split("\n") if ";" in r ]
 else:
     # In tox, it will cover them anyway.
     requirements = []
+    py27_requirements = []
 
 test_requirements = [
     # TODO: put package test requirements here
@@ -105,10 +107,7 @@ setup(
     include_package_data=True,
     install_requires=requirements,
     extras_require={
-        ':python_version=="2.7"': [
-            'cwltool==1.0.20160726135535',
-            'html5lib>=0.9999999,!=0.99999999,!=0.999999999'
-        ],
+        ':python_version=="2.7"': py27_requirements,
     },
     license="AFL",
     zip_safe=False,
