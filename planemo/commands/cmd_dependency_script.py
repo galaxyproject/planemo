@@ -195,6 +195,10 @@ def cli(ctx, paths, recursive=False, fail_fast=True, download_cache=None):
     output script ``dep_install.sh`` defaults to ``./download_cache`` (under
     the current working directory), and can be set with ``$DOWNLOAD_CACHE``.
 
+    If the ``tool_dependencies.xml`` file includes SHA256 checksums for
+    downloads, these will be verified after downloading to the cache (by
+    either ``planemo dependency_script`` or ``bash dep_install.sh``).
+
     This is experimental, and is initially intended for use within continuous
     integration testing setups like TravisCI to both verify the dependency
     installation receipe works, and to use this to run functional tests.
