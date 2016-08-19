@@ -399,11 +399,8 @@ def _common_prefix(folders):
 
 def _cache_download(url, filename, sha256sum=None):
     """Returns local path to cached copy of URL using given filename."""
-    try:
-        cache = os.environ["DOWNLOAD_CACHE"]
-    except KeyError:
-        # TODO - expose this as a command line option
-        raise ValueError("Dependencies cache location $DOWNLOAD_CACHE not set.")
+    cache = os.environ.get("DOWNLOAD_CACHE", "./download_cache/")
+    # TODO - expose this as a command line option
 
     if not os.path.isdir(cache):
         os.mkdir(cache)
