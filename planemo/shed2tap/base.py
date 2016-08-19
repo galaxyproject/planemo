@@ -596,7 +596,7 @@ class ShellCommandAction(BaseAction):
         # Galaxy would run each action from the same temp
         # working directory - possible that tool_dependencies.xml
         # shell_command could change $PWD so reset this:
-        return ["pushd .", self.command, "popd"], []
+        return ["pushd . > /dev/null", self.command, "popd > /dev/null"], []
 
 
 class TemplateShellCommandAction(BaseAction):
