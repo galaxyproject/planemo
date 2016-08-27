@@ -1,22 +1,21 @@
 """Module describing the planemo ``test`` command."""
 import click
 
+from planemo import options
 from planemo.cli import command_function
 from planemo.engine import (
     engine_context,
     is_galaxy_engine,
 )
-from planemo import options
-from planemo.runnable import (
-    for_paths,
-    RunnableType,
-)
 from planemo.galaxy import galaxy_config
-from planemo.io import info
-
 from planemo.galaxy.test import (
     handle_reports_and_summary,
     run_in_config,
+)
+from planemo.io import info
+from planemo.runnable import (
+    for_paths,
+    RunnableType,
 )
 
 

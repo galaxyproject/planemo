@@ -1,12 +1,12 @@
-""" Interface over bioblend and direct access to ToolShed
-API via requests.
-"""
+"""Interface over bioblend and direct access to ToolShed API via requests."""
+
 import json
-from planemo.io import untar_to
+
 from planemo.bioblend import (
-    toolshed,
     ensure_module,
+    toolshed,
 )
+from planemo.io import untar_to
 
 REPOSITORY_DOWNLOAD_TEMPLATE = (
     "%srepository/download?repository_id=%s"

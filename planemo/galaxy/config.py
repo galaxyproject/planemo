@@ -7,33 +7,22 @@ import contextlib
 import os
 import random
 import shutil
-from six.moves.urllib.request import urlopen
-from six import iteritems
+
 from string import Template
 from tempfile import mkdtemp
-from six.moves.urllib.request import urlretrieve
 
 import click
+
 from galaxy.tools.deps import docker_util
 from galaxy.tools.deps.commands import argv_to_str
 
-from .run import (
-    setup_common_startup_args,
-    setup_venv,
-    DOWNLOAD_GALAXY,
-)
-from .api import (
-    DEFAULT_MASTER_API_KEY,
-    gi,
-    user_api_key,
-)
-from .workflows import (
-    import_workflow,
-    install_shed_repos,
-)
+from six import iteritems
+from six.moves.urllib.request import urlopen
+from six.moves.urllib.request import urlretrieve
+
+from planemo import git
 from planemo.conda import build_conda_context
 from planemo.docker import docker_host_args
-from planemo import git
 from planemo.io import (
     communicate,
     kill_pid_file,
@@ -44,6 +33,21 @@ from planemo.io import (
     write_file,
 )
 from planemo.shed import tool_shed_url
+
+from .api import (
+    DEFAULT_MASTER_API_KEY,
+    gi,
+    user_api_key,
+)
+from .run import (
+    DOWNLOAD_GALAXY,
+    setup_common_startup_args,
+    setup_venv,
+)
+from .workflows import (
+    import_workflow,
+    install_shed_repos,
+)
 
 
 NO_TEST_DATA_MESSAGE = (

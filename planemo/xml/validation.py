@@ -1,9 +1,9 @@
 import abc
-from collections import namedtuple
 import subprocess
 
-from galaxy.tools.deps.commands import which
+from collections import namedtuple
 
+from galaxy.tools.deps.commands import which
 try:
     from lxml import etree
 except ImportError:

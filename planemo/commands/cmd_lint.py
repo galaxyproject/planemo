@@ -1,9 +1,8 @@
 """Module describing the planemo ``lint`` command."""
 import click
 
-from planemo.cli import command_function
 from planemo import options
-
+from planemo.cli import command_function
 from planemo.tool_lint import build_lint_args
 from planemo.tool_lint import lint_tools_on_path
 

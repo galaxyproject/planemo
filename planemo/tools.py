@@ -3,9 +3,10 @@ from __future__ import absolute_import
 
 import sys
 import traceback
-from planemo.io import error
 
 from galaxy.tools import loader_directory
+
+from planemo.io import error
 
 is_tool_load_error = loader_directory.is_tool_load_error
 

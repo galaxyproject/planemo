@@ -11,15 +11,17 @@ the identifier as a locally cached tag. (Tip: Use the docker_build to populate
 such a tag from a Dockerfile located in the tool's directory.
 """
 from __future__ import print_function
-import click
 import os
-from planemo.cli import command_function
-from planemo import options
 
-from galaxy.tools.loader import load_tool
+import click
+
 from galaxy.tools.deps import docker_util
 from galaxy.tools.deps import dockerfiles
 from galaxy.tools.deps.requirements import parse_requirements_from_xml
+from galaxy.tools.loader import load_tool
+
+from planemo import options
+from planemo.cli import command_function
 
 
 @click.command('docker_shell')

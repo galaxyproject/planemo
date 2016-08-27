@@ -2,9 +2,10 @@
 import os
 import string
 
+from galaxy.tools.deps.commands import shell
+
 from planemo.io import info, shell_join
 from planemo.virtualenv import create_command
-from galaxy.tools.deps.commands import shell
 
 
 # Activate galaxy's virtualenv if present (needed for tests say but not for

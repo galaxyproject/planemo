@@ -1,16 +1,15 @@
 """Module describing the planemo ``conda_env`` command."""
 from __future__ import print_function
+
 import click
 
-from planemo.cli import command_function
-from planemo import options
-
-from planemo.io import ps1_for_path
-from planemo.io import error
-
-from planemo.conda import build_conda_context, collect_conda_targets
-
 from galaxy.tools.deps import conda_util
+
+from planemo import options
+from planemo.cli import command_function
+from planemo.conda import build_conda_context, collect_conda_targets
+from planemo.io import error
+from planemo.io import ps1_for_path
 
 
 SOURCE_COMMAND = """

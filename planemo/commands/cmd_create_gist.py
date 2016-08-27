@@ -1,9 +1,9 @@
 """Module describing the planemo ``create_gist`` command."""
 import click
 
+from planemo import github_util
 from planemo.cli import command_function
 from planemo.io import info
-from planemo import github_util
 
 target_path = click.Path(
     file_okay=True,

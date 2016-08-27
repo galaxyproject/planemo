@@ -1,15 +1,14 @@
 """Module describing the planemo ``brew`` command."""
 import click
 
-from planemo.cli import command_function
-from planemo import options
-
-from galaxy.tools.loader_directory import load_tool_elements_from_path
-
-from galaxy.tools.deps.requirements import parse_requirements_from_xml
 from galaxy.tools.deps import brew_exts
 from galaxy.tools.deps import brew_util
+from galaxy.tools.deps.requirements import parse_requirements_from_xml
+from galaxy.tools.loader_directory import load_tool_elements_from_path
 from galaxy.util import bunch
+
+from planemo import options
+from planemo.cli import command_function
 
 
 @click.command('brew')

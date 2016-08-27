@@ -3,12 +3,15 @@ import sys
 
 import click
 
-from planemo.cli import command_function
 from planemo import options
 from planemo import shed
-from planemo.io import info, error
+from planemo.cli import command_function
+from planemo.io import (
+    captured_io_for_xunit,
+    error,
+    info,
+)
 from planemo.reports import build_report
-from planemo.io import captured_io_for_xunit
 
 
 @click.command("shed_update")

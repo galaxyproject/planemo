@@ -1,19 +1,20 @@
 from __future__ import print_function
 
-from xml.etree import ElementTree
-
-from six.moves import map as imap
-from six.moves.urllib.request import urlretrieve
-from six.moves.urllib.error import URLError
-from six import string_types
-from six import iteritems
-
 import os
-import sys
 import subprocess
+import sys
 import tarfile
 import zipfile
+
 from ftplib import all_errors as FTPErrors  # tuple of exceptions
+from xml.etree import ElementTree
+
+from six import string_types
+from six import iteritems
+from six.moves import map as imap
+from six.moves.urllib.error import URLError
+from six.moves.urllib.request import urlretrieve
+
 
 TOOLSHED_MAP = {
     "toolshed": "https://toolshed.g2.bx.psu.edu",

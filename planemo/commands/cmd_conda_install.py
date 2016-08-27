@@ -1,13 +1,12 @@
 """Module describing the planemo ``conda_install`` command."""
 import click
 
-from planemo.cli import command_function
-from planemo.io import coalesce_return_codes
-from planemo import options
-
-from planemo.conda import build_conda_context, collect_conda_targets
-
 from galaxy.tools.deps import conda_util
+
+from planemo import options
+from planemo.cli import command_function
+from planemo.conda import build_conda_context, collect_conda_targets
+from planemo.io import coalesce_return_codes
 
 
 @click.command('conda_install')

@@ -1,25 +1,27 @@
 """Actions related to running and reporting on Galaxy-specific testing."""
+
 import json
 import os
 
 import click
 
-from . import structures as test_structures
-from planemo.test.results import get_dict_value
-from planemo.io import error, info, warn, shell_join
+from galaxy.tools.deps.commands import shell
+
 from planemo.exit_codes import (
-    EXIT_CODE_OK,
     EXIT_CODE_GENERIC_FAILURE,
     EXIT_CODE_NO_SUCH_TARGET,
+    EXIT_CODE_OK,
 )
 from planemo.galaxy.run import (
     run_galaxy_command,
     setup_venv,
 )
+from planemo.io import error, info, shell_join, warn
 from planemo.reports import build_report
+from planemo.test.results import get_dict_value
 
+from . import structures as test_structures
 
-from galaxy.tools.deps.commands import shell
 
 NO_XUNIT_REPORT_MESSAGE = ("Cannot locate xUnit report [%s] for tests - "
                            "required to build planemo report and summarize "

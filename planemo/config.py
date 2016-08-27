@@ -1,9 +1,10 @@
 """Module defines abstractions for configuring Planemo."""
+
 import os
-import yaml
 
 import aenum
 import click
+import yaml
 
 PLANEMO_CONFIG_ENV_PROP = "PLANEMO_GLOBAL_CONFIG_PATH"
 DEFAULT_CONFIG = {

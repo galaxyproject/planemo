@@ -2,10 +2,11 @@
 import os
 
 import click
-from planemo.cli import command_function
-from planemo.runnable import for_paths
+
 from planemo import options
+from planemo.cli import command_function
 from planemo.galaxy import serve
+from planemo.runnable import for_paths
 
 
 @click.command('tool_factory')

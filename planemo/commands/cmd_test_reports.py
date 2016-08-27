@@ -3,10 +3,10 @@ import os
 
 import click
 
-from planemo.cli import command_function
 from planemo import io
 from planemo import options
-from planemo.galaxy.test import StructuredData, handle_reports
+from planemo.cli import command_function
+from planemo.galaxy.test import handle_reports, StructuredData
 
 
 @click.command('test_reports')

@@ -3,13 +3,15 @@
 This class is used by the `tool_init` command and can be used to build
 Galaxy and CWL tool descriptions.
 """
-from collections import namedtuple
+
 import re
 import shlex
 import subprocess
 
-from planemo import templates
+from collections import namedtuple
+
 from planemo import io
+from planemo import templates
 
 
 TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">

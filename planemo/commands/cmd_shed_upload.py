@@ -3,9 +3,9 @@ import sys
 
 import click
 
-from planemo.cli import command_function
 from planemo import options
 from planemo import shed
+from planemo.cli import command_function
 
 
 tar_path = click.Path(

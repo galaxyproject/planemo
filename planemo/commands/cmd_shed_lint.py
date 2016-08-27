@@ -1,10 +1,10 @@
 """Module describing the planemo ``shed_lint`` command."""
 import click
 
-from planemo.cli import command_function
 from planemo import options
 from planemo import shed
 from planemo import shed_lint
+from planemo.cli import command_function
 
 
 @click.command('shed_lint')

@@ -4,10 +4,10 @@ features with planemo specific idioms.
 from __future__ import absolute_import
 
 from galaxy.tools.deps import conda_util
-from planemo.io import shell
-
 from galaxy.tools.deps.requirements import parse_requirements_from_xml
 from galaxy.tools.loader_directory import load_tool_elements_from_path
+
+from planemo.io import shell
 
 
 def build_conda_context(**kwds):

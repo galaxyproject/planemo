@@ -1,13 +1,15 @@
 import os
+
 import requests
 
-from six.moves.urllib.request import (
-    urlopen,
-)
 from six.moves.urllib.error import (
     HTTPError,
     URLError,
 )
+from six.moves.urllib.request import (
+    urlopen,
+)
+
 from planemo.shed import find_urls_for_xml
 from planemo.xml import validation
 

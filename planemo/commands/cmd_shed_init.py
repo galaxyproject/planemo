@@ -1,11 +1,11 @@
 """Module describing the planemo ``shed_init`` command."""
-import click
 import sys
 
-from planemo.cli import command_function
+import click
 
 from planemo import options
 from planemo import shed
+from planemo.cli import command_function
 
 
 @click.command("shed_init")

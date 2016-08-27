@@ -1,6 +1,8 @@
 import json
-from pkg_resources import resource_string
+
 from jinja2 import Environment, PackageLoader
+from pkg_resources import resource_string
+
 env = Environment(loader=PackageLoader('planemo', 'reports'))
 
 

@@ -1,7 +1,8 @@
 """Check an output file from a generalize artifact test."""
-from galaxy.tools.verify import verify
 
 import os
+
+from galaxy.tools.verify import verify
 
 
 def check_output(runnable, output_properties, test_properties, **kwds):
