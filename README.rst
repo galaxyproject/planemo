@@ -33,35 +33,32 @@ develop Galaxy tools.
 Obtaining Planemo
 -----------------
 
-The recommended approach for installing Planemo is to use Homebrew_ or
+For a traditional Python installation of Planemo, first set up a virtualenv
+for ``planemo`` (this example creates a new one in ``.venv``) and then
+install with ``pip``. Planemo requires pip 7.0 or newer.
+
+::
+
+    $ virtualenv .venv; . .venv/bin/activate
+    $ pip install "pip>=7" # Upgrade pip if needed.
+    $ pip install planemo
+
+Another approach for installing Planemo is to use Homebrew_ or
 linuxbrew_. To install Planemo this way use the ``brew`` command as
 follows.
 
 ::
 
-   $ brew tap galaxyproject/tap
-   $ brew install planemo
+    $ brew tap galaxyproject/tap
+    $ brew install planemo
 
-
-Planemo can alternatively be installed via Conda_:
-
-::
-
-    $ conda config --add channels r
-    $ conda config --add channels bioconda
-    $ conda install planemo
-
-For third option and a more traditional Python installation set up a virtualenv
-for Planemo (this example creates a new one in ``.venv/``) and then
-install it with ``pip``.
-
-::
-
-   $ virtualenv .venv; . .venv/bin/activate
-   $ pip install planemo
+For information on updating Planemo, installing the latest development release,
+or installing planemo via bioconda - checkout the `installation
+<http://planemo.readthedocs.io/en/latest/installation.html>`__ 
+documentation.
 
 Planemo is also available as a `virtual appliance
-<https://planemo.readthedocs.org/en/latest/appliance.html>`_ bundled
+<https://planemo.readthedocs.io/en/latest/appliance.html>`_ bundled
 with a preconfigured Galaxy server and set up for Galaxy tool development.
 You can choose from open virtualization format (OVA_, .ova), Docker_,
 or Vagrant_ appliances.

@@ -5,7 +5,7 @@ Installation
 pip_
 ============
 
-For a more traditional Python installation of Planemo set up a virtualenv
+For a traditional Python installation of Planemo, first set up a virtualenv
 for ``planemo`` (this example creates a new one in ``.venv``) and then
 install with ``pip``. Planemo requires pip 7.0 or newer.
 
