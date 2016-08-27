@@ -174,8 +174,8 @@ to manage Python packages. Please read a few notes regarding the setup:
 
         $ planemo conda_init
         $ planemo conda_install .
-        $ planemo test --galaxy_branch release_16.01 --conda_dependency_resolution .
-        $ planemo serve --galaxy_branch release_16.01 --conda_dependency_resolution .
+        $ planemo test --galaxy_branch release_16.04 --conda_dependency_resolution .
+        $ planemo serve --galaxy_branch release_16.04 --conda_dependency_resolution .
 
     The test and serve commands above require the target Galaxy to be 16.01 or higher.
 
