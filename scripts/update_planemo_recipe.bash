@@ -15,18 +15,10 @@ cd homebrew-tap
 
 brew uninstall planemo || true
 echo $URL
-sed -E -i "s/^  url.*$/  url \"$URL\"/" planemo.rb
+sed -E -i "s/^  url.*$/  url $URL/" planemo.rb
 echo $SHA256
 sed -i "s/^  sha256.*$/  sha256 \"$SHA256\"/" planemo.rb
 brew install planemo.rb > output
-#For your reference the SHA256 is: efc829aa1c579c5d8cace3a3da46284aa1a78fbec80f3a5a31a73e08f5d2bc6e
-sha_line=`awk '/For your reference the SHA256 is:/' output`
-rm output
-echo "sha_line is $sha_line"
-IFS=" " read -a sha_line_array <<< "$sha_line"
-sha=${sha_line_array[6]}
-echo "Updating SHA256 to $sha"
-sed -i "s/^  sha256.*$/  sha256 \"$sha\"/" planemo.rb
 
 git add planemo.rb
 git commit -m "Rev planemo to version $VERSION"
