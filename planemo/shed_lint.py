@@ -9,6 +9,7 @@ from planemo.shed import (
     REPO_TYPE_TOOL_DEP,
     REPO_TYPE_SUITE,
     CURRENT_CATEGORIES,
+    fail_fast,
     validate_repo_owner,
     validate_repo_name,
 )
@@ -121,7 +122,10 @@ def lint_repository(ctx, realized_repository, **kwds):
     if not failed:
         failed = lint_ctx.failed(lint_args["fail_level"])
     if failed:
-        error("Failed linting")
+        if fail_fast(**kwds):
+            raise Exception("Failed to lint repository.")
+        else:
+            error("Failed linting")
     return 1 if failed else 0
 
 

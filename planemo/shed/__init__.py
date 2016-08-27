@@ -1293,9 +1293,14 @@ def _shed_config_excludes(config):
     return config.get('ignore', []) + config.get('exclude', [])
 
 
+def fail_fast(**kwds):
+    """Should shed operation problems halt future ops."""
+    fail_fast_val = kwds.get("fail_fast", False)
+    return fail_fast_val
+
+
 def _handle_realization_error(exception, **kwds):
-    fail_fast = kwds.get("fail_fast", False)
-    if fail_fast:
+    if fail_fast(kwds):
         raise exception
     else:
         error(str(exception))
@@ -1354,8 +1359,9 @@ class RealizationException(Exception):
     """
 
 __all__ = [
-    'for_each_repository',
     'api_exception_to_message',
+    'fail_fast',
+    'for_each_repository',
     'tool_shed_client',  # Deprecated...
     'get_shed_context',
     'tool_shed_url',
