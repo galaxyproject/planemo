@@ -1,11 +1,11 @@
 """Module describing the planemo ``conda_init`` command."""
 import click
 
-from planemo.cli import command_function
-from planemo import options
-from planemo.conda import build_conda_context
-
 from galaxy.tools.deps import conda_util
+
+from planemo import options
+from planemo.cli import command_function
+from planemo.conda import build_conda_context
 
 
 @click.command('conda_init')

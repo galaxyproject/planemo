@@ -1,8 +1,8 @@
 """Module describing the planemo ``brew_init`` command."""
-import click
-
 import urllib
 from tempfile import mkstemp
+
+import click
 
 from planemo.cli import command_function
 from planemo.io import shell

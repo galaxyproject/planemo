@@ -5,13 +5,12 @@ import json
 import os
 import tempfile
 
-from planemo.runnable import (
-    for_path,
-    cases,
-)
-
 from planemo.exit_codes import EXIT_CODE_UNSUPPORTED_FILE_TYPE
 from planemo.io import error
+from planemo.runnable import (
+    cases,
+    for_path,
+)
 from planemo.test.results import StructuredData
 
 

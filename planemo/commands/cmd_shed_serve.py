@@ -2,11 +2,11 @@
 import time
 import click
 
-from planemo.cli import command_function
-from planemo import options
-from planemo.galaxy import shed_serve
-from planemo import shed
 from planemo import io
+from planemo import options
+from planemo import shed
+from planemo.cli import command_function
+from planemo.galaxy import shed_serve
 
 
 @click.command("shed_serve")

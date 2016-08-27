@@ -2,9 +2,9 @@
 
 import contextlib
 
-from .galaxy import GalaxyEngine
-from .galaxy import DockerizedGalaxyEngine
 from .cwltool import CwlToolEngine
+from .galaxy import DockerizedGalaxyEngine
+from .galaxy import GalaxyEngine
 
 UNKNOWN_ENGINE_TYPE_MESSAGE = "Unknown engine type specified [%s]."
 

@@ -2,14 +2,13 @@
 import os
 import sys
 
-import click
-
 from xml.etree import ElementTree as ET
 
-from planemo.io import info, error
-from planemo.cli import command_function
-from planemo import options
+import click
 
+from planemo import options
+from planemo.cli import command_function
+from planemo.io import error, info
 from planemo.shed2tap.base import BasePackage, Dependency
 
 

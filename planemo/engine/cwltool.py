@@ -1,8 +1,9 @@
 """Module contianing the :class:`CwlToolEngine` implementation of :class:`Engine`."""
-from .interface import BaseEngine
-from planemo.runnable import RunnableType
 
 from planemo import cwl
+from planemo.runnable import RunnableType
+
+from .interface import BaseEngine
 
 
 class CwlToolEngine(BaseEngine):

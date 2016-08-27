@@ -2,24 +2,25 @@ from __future__ import absolute_import
 
 import os
 
-from planemo.io import info
-from planemo.io import error
-from planemo.io import coalesce_return_codes
-from planemo.exit_codes import (
-    EXIT_CODE_OK,
-    EXIT_CODE_GENERIC_FAILURE,
-)
+from galaxy.tools.lint import lint_tool_source
 
 import planemo.linters.doi
 import planemo.linters.urls
 import planemo.linters.xsd
 
-
-from planemo.tools import (
-    load_tool_sources_from_path,
-    is_tool_load_error,
+from planemo.exit_codes import (
+    EXIT_CODE_GENERIC_FAILURE,
+    EXIT_CODE_OK,
 )
-from galaxy.tools.lint import lint_tool_source
+from planemo.io import (
+    coalesce_return_codes,
+    error,
+    info,
+)
+from planemo.tools import (
+    is_tool_load_error,
+    load_tool_sources_from_path,
+)
 
 SKIP_XML_MESSAGE = "Skipping XML file - does not appear to be a tool %s."
 LINTING_TOOL_MESSAGE = "Linting tool %s"

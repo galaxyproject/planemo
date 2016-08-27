@@ -4,10 +4,10 @@ import sys
 
 import click
 
-from planemo.cli import command_function
-from planemo import options
 from planemo import config
-from planemo.io import warn, info
+from planemo import options
+from planemo.cli import command_function
+from planemo.io import info, warn
 
 CONFIG_TEMPLATE = """## Planemo Global Configuration File.
 ## Everything in this file is completely optional - these values can all be

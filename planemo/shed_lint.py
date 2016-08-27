@@ -1,32 +1,35 @@
 from __future__ import absolute_import
+
 import os
-import yaml
-from galaxy.tools.lint import LintContext
-from galaxy.tools.linters.help import rst_invalid
-from planemo.lint import lint_xsd
-from planemo.shed import (
-    REPO_TYPE_UNRESTRICTED,
-    REPO_TYPE_TOOL_DEP,
-    REPO_TYPE_SUITE,
-    CURRENT_CATEGORIES,
-    validate_repo_owner,
-    validate_repo_name,
-)
-from planemo.tool_lint import (
-    build_lint_args,
-    yield_tool_sources,
-    handle_tool_load_error,
-)
-from planemo.lint import lint_urls
-from planemo.shed2tap import base
-from planemo.xml import XSDS_PATH
+
 import xml.etree.ElementTree as ET
 
+import yaml
 
-from planemo.io import info
-from planemo.io import error
-
+from galaxy.tools.lint import LintContext
 from galaxy.tools.lint import lint_tool_source_with
+from galaxy.tools.linters.help import rst_invalid
+
+from planemo.io import error
+from planemo.io import info
+from planemo.lint import lint_urls
+from planemo.lint import lint_xsd
+from planemo.shed import (
+    CURRENT_CATEGORIES,
+    REPO_TYPE_SUITE,
+    REPO_TYPE_TOOL_DEP,
+    REPO_TYPE_UNRESTRICTED,
+    validate_repo_name,
+    validate_repo_owner,
+)
+from planemo.shed2tap import base
+from planemo.tool_lint import (
+    build_lint_args,
+    handle_tool_load_error,
+    yield_tool_sources,
+)
+from planemo.xml import XSDS_PATH
+
 
 TOOL_DEPENDENCIES_XSD = os.path.join(XSDS_PATH, "tool_dependencies.xsd")
 REPO_DEPENDENCIES_XSD = os.path.join(XSDS_PATH, "repository_dependencies.xsd")

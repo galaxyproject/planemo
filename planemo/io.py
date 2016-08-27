@@ -7,15 +7,17 @@ import shutil
 import sys
 import tempfile
 import time
-from six import StringIO
 from xml.sax.saxutils import escape
 
 import click
+
 from galaxy.tools.deps import commands
 from galaxy.tools.deps.commands import download_command
+from six import StringIO
+
 from .exit_codes import (
-    EXIT_CODE_OK,
     EXIT_CODE_NO_SUCH_TARGET,
+    EXIT_CODE_OK,
 )
 
 

@@ -1,5 +1,4 @@
 """Abstractions for shed related interactions used by the rest of planemo."""
-from collections import namedtuple
 import contextlib
 import copy
 import fnmatch
@@ -10,38 +9,41 @@ import re
 import shutil
 import sys
 import tarfile
+
+from collections import namedtuple
 from tempfile import (
     mkstemp,
 )
-from galaxy.util import odict
 
 import six
 import yaml
-from planemo.shed2tap.base import BasePackage
 
-from planemo.io import (
-    error,
-    shell,
-    info,
-    can_write_to_path,
-    temp_directory,
-    coalesce_return_codes,
-)
+from galaxy.util import odict
+
 from planemo import git
 from planemo import glob
-from planemo.tools import load_tool_elements_from_path
 from planemo import templates
-
-from .interface import (
-    username,
-    tool_shed_instance,
-    find_repository,
-    api_exception_to_message,
-    find_category_ids,
-    download_tar,
-    latest_installable_revision,
+from planemo.io import (
+    can_write_to_path,
+    coalesce_return_codes,
+    error,
+    info,
+    shell,
+    temp_directory,
 )
+from planemo.shed2tap.base import BasePackage
+from planemo.tools import load_tool_elements_from_path
+
 from .diff import diff_and_remove
+from .interface import (
+    api_exception_to_message,
+    download_tar,
+    find_category_ids,
+    find_repository,
+    latest_installable_revision,
+    tool_shed_instance,
+    username,
+)
 
 SHED_CONFIG_NAME = '.shed.yml'
 REPO_DEPENDENCIES_CONFIG_NAME = "repository_dependencies.xml"

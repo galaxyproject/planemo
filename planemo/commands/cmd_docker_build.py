@@ -1,10 +1,12 @@
 """Module describing the planemo ``docker_build`` command."""
+
 import click
-from planemo.cli import command_function
-from planemo import options
-from planemo.io import error
 
 from galaxy.tools.deps import dockerfiles
+
+from planemo import options
+from planemo.cli import command_function
+from planemo.io import error
 
 
 @click.command('docker_build')

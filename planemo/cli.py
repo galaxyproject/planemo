@@ -6,14 +6,15 @@ import traceback
 
 import click
 
-from .io import error
-from .config import (
-    read_global_config,
-    OptionSource,
-)
-from planemo.galaxy import profiles
-from planemo.exit_codes import ExitCodeException
 from planemo import __version__
+from planemo.exit_codes import ExitCodeException
+from planemo.galaxy import profiles
+
+from .config import (
+    OptionSource,
+    read_global_config,
+)
+from .io import error
 
 PYTHON_2_7_COMMANDS = ["run", "cwl_script"]
 IS_PYTHON_2_7 = sys.version_info[0] == 2 and sys.version_info[1] >= 7

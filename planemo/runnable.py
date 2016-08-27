@@ -18,8 +18,9 @@ from galaxy.tools.loader_directory import (
     looks_like_a_tool_xml,
 )
 from galaxy.tools.parser import get_tool_source
-from planemo.galaxy.workflows import describe_outputs
+
 from planemo.exit_codes import EXIT_CODE_UNKNOWN_FILE_TYPE, ExitCodeException
+from planemo.galaxy.workflows import describe_outputs
 from planemo.io import error
 from planemo.test import check_output
 

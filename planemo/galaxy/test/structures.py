@@ -3,8 +3,9 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import os
-from collections import namedtuple
 import xml.etree.ElementTree as ET
+
+from collections import namedtuple
 
 from planemo.io import error
 from planemo.test.results import StructuredData as BaseStructuredData

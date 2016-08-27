@@ -1,7 +1,15 @@
 """Utilities for Galaxy workflows."""
-from collections import namedtuple
 import json
 import os
+
+from collections import namedtuple
+
+import yaml
+
+try:
+    from ephemeris import shed_install
+except ImportError:
+    shed_install = None
 
 try:
     from gxformat2.converter import python_to_workflow
@@ -11,13 +19,6 @@ except ImportError:
     python_to_workflow = None
     BioBlendImporterGalaxyInterface = None
     ImporterGalaxyInterface = object
-
-try:
-    from ephemeris import shed_install
-except ImportError:
-    shed_install = None
-
-import yaml
 
 
 def load_shed_repos(path):

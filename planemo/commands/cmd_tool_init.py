@@ -3,10 +3,10 @@ import os
 
 import click
 
-from planemo.cli import command_function
-from planemo import options
 from planemo import io
+from planemo import options
 from planemo import tool_builder
+from planemo.cli import command_function
 
 REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
                           " it has relevant planemo-generated definitions.")

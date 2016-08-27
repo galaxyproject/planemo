@@ -1,17 +1,18 @@
 """Module describing the planemo ``brew_env`` command."""
 from __future__ import print_function
-import click
 import os
 
-from planemo.cli import command_function
-from planemo import options
-from planemo.io import ps1_for_path
+import click
 
-from galaxy.tools.loader import load_tool
-from galaxy.tools.deps.requirements import parse_requirements_from_xml
 from galaxy.tools.deps import brew_exts
 from galaxy.tools.deps import brew_util
+from galaxy.tools.deps.requirements import parse_requirements_from_xml
+from galaxy.tools.loader import load_tool
 from galaxy.util import bunch
+
+from planemo import options
+from planemo.cli import command_function
+from planemo.io import ps1_for_path
 
 
 @click.command('brew_env')
