@@ -432,7 +432,7 @@ def conda_ensure_channels_option():
         use_global_config=True,
         help=("Ensure conda is configured with specified comma separated "
               "list of channels."),
-        default="r,bioconda"
+        default="r,bioconda,iuc",
     )
 
 

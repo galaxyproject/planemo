@@ -15,7 +15,7 @@ from planemo.io import coalesce_return_codes
 @command_function
 def cli(ctx, path, **kwds):
     """Install conda packages for tool requirements."""
-    conda_context = build_conda_context(**kwds)
+    conda_context = build_conda_context(ctx, **kwds)
     return_codes = []
     for conda_target in collect_conda_targets(path):
         ctx.log("Install conda target %s" % conda_target)

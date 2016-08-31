@@ -43,7 +43,7 @@ def cli(ctx, path, **kwds):
         % which bowtie2
         TODO_PLACE_PATH_HERE
     """
-    conda_context = build_conda_context(use_planemo_shell_exec=False, **kwds)
+    conda_context = build_conda_context(ctx, use_planemo_shell_exec=False, **kwds)
     conda_targets = collect_conda_targets(
         path, conda_context=conda_context
     )
