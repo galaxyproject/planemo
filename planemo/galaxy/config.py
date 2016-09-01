@@ -180,7 +180,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         def config_join(*args):
             return os.path.join(config_directory, *args)
 
-        _handle_dependency_resolution(config_directory, kwds)
+        _handle_dependency_resolution(ctx, config_directory, kwds)
         _handle_job_metrics(config_directory, kwds)
 
         shed_tool_conf = "config/shed_tool_conf.xml"
@@ -289,7 +289,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             galaxy_root = config_join("galaxy-dev")
 
         server_name = "planemo%d" % random.randint(0, 100000)
-        _handle_dependency_resolution(config_directory, kwds)
+        _handle_dependency_resolution(ctx, config_directory, kwds)
         _handle_job_config_file(config_directory, server_name, kwds)
         _handle_job_metrics(config_directory, kwds)
         file_path = kwds.get("file_path") or config_join("files")
@@ -1118,7 +1118,7 @@ def _handle_job_config_file(config_directory, server_name, kwds):
     kwds["job_config_file"] = job_config_file
 
 
-def _handle_dependency_resolution(config_directory, kwds):
+def _handle_dependency_resolution(ctx, config_directory, kwds):
     resolutions_strategies = [
         "brew_dependency_resolution",
         "dependency_resolvers_config_file",
@@ -1149,16 +1149,19 @@ def _handle_dependency_resolution(config_directory, kwds):
     def add_attribute(key, value):
         attributes.append('%s="%s"' % (key, value))
 
+    conda_prefix_specified = False
     for key, default_value in iteritems(dependency_attribute_kwds):
         value = kwds.get(key, default_value)
         if value != default_value:
+            conda_prefix_specified = value == "conda_prefix"
             # Strip leading prefix (conda_) off attributes
             attribute_key = "_".join(key.split("_")[1:])
             add_attribute(attribute_key, value)
 
-    if not [attribute for attribute in attributes if "prefix" in attribute]:
-        conda_context = build_conda_context(**kwds)
+    conda_context = build_conda_context(ctx, **kwds)
+    if not conda_prefix_specified:
         add_attribute("prefix", conda_context.conda_prefix)
+    add_attribute("condarc_override", conda_context.condarc_override)
 
     attribute_str = " ".join(attributes)
 
@@ -1173,6 +1176,11 @@ def _handle_dependency_resolution(config_directory, kwds):
                 'attributes': attribute_str
             })
             open(resolvers_conf, "w").write(conf_contents)
+            ctx.vlog(
+                "Writing dependency_resolvers_config_file to path %s with contents [%s]",
+                resolvers_conf,
+                conf_contents,
+            )
             kwds["dependency_resolvers_config_file"] = resolvers_conf
 
 

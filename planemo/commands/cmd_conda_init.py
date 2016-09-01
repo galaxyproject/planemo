@@ -21,5 +21,5 @@ def cli(ctx, **kwds):
     license a 3-clause BSD 3 license. Please review full license at
     http://docs.continuum.io/anaconda/eula.
     """
-    conda_context = build_conda_context(**kwds)
+    conda_context = build_conda_context(ctx, **kwds)
     return conda_util.install_conda(conda_context=conda_context)

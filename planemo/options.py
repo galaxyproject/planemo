@@ -49,6 +49,7 @@ def serve_engine_option():
         type=click.Choice(["galaxy", "docker_galaxy"]),
         default="galaxy",
         use_global_config=True,
+        use_env_var=True,
         help=("Select an engine to serve aritfacts such as tools "
               "and workflows. Defaults to a local Galaxy, but running Galaxy within "
               "a Docker container.")
@@ -102,6 +103,7 @@ def galaxy_email_option():
         type=str,
         default="planemo@galaxyproject.org",
         use_global_config=True,
+        use_env_var=True,
         help="E-mail address to use when launching single-user Galaxy server.",
     )
 
@@ -119,6 +121,7 @@ def galaxy_database_seed_option():
         "--galaxy_database_seed",
         default=None,
         use_global_config=True,
+        use_env_var=True,
         type=click.Path(exists=True, file_okay=True, resolve_path=True),
         help="Preseeded Galaxy sqlite database to target.",
     )
@@ -403,6 +406,7 @@ def conda_prefix_option():
     return planemo_option(
         "--conda_prefix",
         use_global_config=True,
+        use_env_var=True,
         type=click.Path(file_okay=False, dir_okay=True),
         help="Conda prefix to use for conda dependency commands."
     )
@@ -430,9 +434,10 @@ def conda_ensure_channels_option():
         "--conda_ensure_channels",
         type=str,
         use_global_config=True,
+        use_env_var=True,
         help=("Ensure conda is configured with specified comma separated "
               "list of channels."),
-        default="r,bioconda"
+        default="r,bioconda,iuc",
     )
 
 

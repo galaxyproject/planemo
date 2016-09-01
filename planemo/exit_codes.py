@@ -15,6 +15,9 @@ EXIT_CODE_UNKNOWN_FILE_TYPE = 4
 # An unsupported file type was supplied for a given operation.
 EXIT_CODE_UNSUPPORTED_FILE_TYPE = 5
 
+# A dependency of this operation was unavailable (e.g. conda).
+EXIT_CODE_FAILED_DEPENDENCIES = 6
+
 
 class ExitCodeException(Exception):
     """Exception used by planemo framework to track exit codes for CLI."""
