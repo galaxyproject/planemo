@@ -6,10 +6,14 @@ History
 .. to_doc
 
 ---------------------
-0.31.0.dev0
+0.30.1.dev0
 ---------------------
 
-    
+* Fix a problem with conda prefix handling when using
+  ``--conda_dependency_resolution``. f7b6c7e_
+* Fix for quote problem in ``update_planemo_recipe.bash``. 6c03de8_
+* Fix to restore linting of ``tests/`` directory and fix import order 
+  throughout module. ef4b9f4_
 
 ---------------------
 0.30.0 (2016-09-01)
@@ -821,6 +825,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _a8e797b: https://github.com/galaxyproject/planemo/commit/a8e797b
+.. _6c03de8: https://github.com/galaxyproject/planemo/commit/6c03de8
+.. _ef4b9f4: https://github.com/galaxyproject/planemo/commit/ef4b9f4
+.. _f7b6c7e: https://github.com/galaxyproject/planemo/commit/f7b6c7e
 .. _07d94bd: https://github.com/galaxyproject/planemo/commit/07d94bd
 .. _ca19910: https://github.com/galaxyproject/planemo/commit/ca19910
 .. _24008ab: https://github.com/galaxyproject/planemo/commit/24008ab
