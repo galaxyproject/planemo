@@ -1153,7 +1153,7 @@ def _handle_dependency_resolution(ctx, config_directory, kwds):
     for key, default_value in iteritems(dependency_attribute_kwds):
         value = kwds.get(key, default_value)
         if value != default_value:
-            conda_prefix_specified = key == "conda_prefix"
+            conda_prefix_specified = conda_prefix_specified or (key == "conda_prefix")
             # Strip leading prefix (conda_) off attributes
             attribute_key = "_".join(key.split("_")[1:])
             add_attribute(attribute_key, value)
