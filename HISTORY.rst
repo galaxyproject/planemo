@@ -6,10 +6,11 @@ History
 .. to_doc
 
 ---------------------
-0.31.0.dev0
+0.30.2.dev0
 ---------------------
 
-    
+* Fix another problem with conda prefix handling when using
+  ``--conda_dependency_resolution``. f7b6c7e_
 
 ---------------------
 0.30.1 (2016-09-01)
