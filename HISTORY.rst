@@ -9,7 +9,20 @@ History
 0.30.0.dev0
 ---------------------
 
-    
+* Update to the latest galaxy-lib release and change conda semantics to match
+  recent updates to Galaxy. For the most robust conda usage - use planemo 0.30+
+  with Galaxy 16.07 or master.
+  07d94bd_
+* Implement the ``--conda_auto_init`` flag for ``conda_install``. ca19910_
+* Allow the environment variable ``PLANEMO_CONDA_PREFIX`` to set a default
+  for ``--conda_prefix``.
+  24008ab_
+* Fixup documentation regarding installs and conda. ce44e87_
+* Fix and lint Python module import order throughout project.
+  `Pull Request 550`_
+* Use ``cp`` rather than symlink to ``$DOWNLOAD_CACHE`` in the
+  ``dependency_script`` command (thanks to @peterjc).  c2204b3_
+* Fixes for the Homebrew recipe updater. c262b6d_
 
 ---------------------
 0.29.1 (2016-08-19)
@@ -802,6 +815,13 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _07d94bd: https://github.com/galaxyproject/planemo/commit/07d94bd
+.. _ca19910: https://github.com/galaxyproject/planemo/commit/ca19910
+.. _24008ab: https://github.com/galaxyproject/planemo/commit/24008ab
+.. _ce44e87: https://github.com/galaxyproject/planemo/commit/ce44e87
+.. _Pull Request 550: https://github.com/galaxyproject/planemo/pull/550
+.. _c2204b3: https://github.com/galaxyproject/planemo/commit/c2204b3
+.. _c262b6d: https://github.com/galaxyproject/planemo/commit/c262b6d
 .. _Pull Request 539: https://github.com/galaxyproject/planemo/pull/539
 .. _Pull Request 541: https://github.com/galaxyproject/planemo/pull/541
 .. _Pull Request 540: https://github.com/galaxyproject/planemo/pull/540
