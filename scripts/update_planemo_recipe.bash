@@ -15,7 +15,7 @@ cd homebrew-tap
 
 brew uninstall planemo || true
 echo $URL
-sed -E -i "s/^  url.*$/  url $URL/" planemo.rb
+sed -E -i "s/^  url.*$/  url \"$URL\"/" planemo.rb
 echo $SHA256
 sed -i "s/^  sha256.*$/  sha256 \"$SHA256\"/" planemo.rb
 brew install planemo.rb > output
