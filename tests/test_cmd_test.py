@@ -6,9 +6,9 @@ from .test_utils import (
     assert_exists,
     CliTestCase,
     PROJECT_TEMPLATES_DIR,
-    skip_unless_python_2_7,
     skip_if_environ,
     skip_unless_environ,
+    skip_unless_python_2_7,
     TEST_DATA_DIR,
 )
 

@@ -1,19 +1,21 @@
 """ Integration tests for shed_diff command.
 """
 
+import os
+import sys
+import tempfile
+
 from os.path import join
+from xml.etree import ElementTree
+
+from planemo import io
+from planemo.xml.diff import diff
+
+from .test_shed_upload import update_package_1
 from .test_utils import (
     CliShedTestCase,
     TEST_REPOS_DIR,
 )
-from planemo import io
-import tempfile
-import sys
-import os
-from xml.etree import ElementTree
-from planemo.xml.diff import diff
-
-from .test_shed_upload import update_package_1
 
 DIFF_LINES = [
     "diff -r _workingdir_/related_file _custom_shed_/related_file",

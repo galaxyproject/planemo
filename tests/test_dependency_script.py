@@ -1,11 +1,11 @@
-import os
 import glob
+import os
 import tempfile
 
 from .test_utils import (
     CliTestCase,
-    TEST_REPOS_DIR,
     skip_if_environ,
+    TEST_REPOS_DIR,
 )
 
 

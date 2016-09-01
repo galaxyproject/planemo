@@ -1,20 +1,22 @@
 """Provide abstractions over click testing of the app and unittest."""
 from __future__ import print_function
+
 import contextlib
 import os
-from tempfile import mkdtemp
 import shutil
-from sys import version_info
 import traceback
 
+from sys import version_info
+from tempfile import mkdtemp
+
 from click.testing import CliRunner
+from galaxy.tools.deps.commands import which
 
 from planemo import cli
-from planemo import shed
 from planemo import io
+from planemo import shed
 from planemo.config import PLANEMO_CONFIG_ENV_PROP
 
-from galaxy.tools.deps.commands import which
 from .shed_app_test_utils import (
     mock_shed,
     setup_mock_shed,

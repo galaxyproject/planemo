@@ -2,8 +2,8 @@
 import os
 
 from planemo.runnable import (
-    for_path,
     cases,
+    for_path,
 )
 
 from .test_utils import TEST_DATA_DIR

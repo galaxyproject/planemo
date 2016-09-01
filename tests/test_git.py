@@ -1,8 +1,9 @@
 import contextlib
 import os
 
-from .test_utils import io
 from planemo import git
+
+from .test_utils import io
 
 EXPECTED_HELLO_REV = "1c36390f585f8baa953548c00fc18c58e32fcf8b"
 
