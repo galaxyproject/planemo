@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.30.2.dev0
+0.30.2 (2016-09-01)
 ---------------------
 
 * Fix another problem with conda prefix handling when using
