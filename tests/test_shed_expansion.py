@@ -3,9 +3,9 @@ import os
 
 import yaml
 
-from .test_utils import TempDirectoryTestCase
-
 from planemo import shed
+
+from .test_utils import TempDirectoryTestCase
 
 
 class ShedExpansionTestCase(TempDirectoryTestCase):

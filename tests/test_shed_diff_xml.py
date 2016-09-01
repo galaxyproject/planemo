@@ -1,7 +1,8 @@
 import os
 
-from .test_utils import TEST_DIR
 from planemo.shed import diff
+
+from .test_utils import TEST_DIR
 
 
 def test_compare():

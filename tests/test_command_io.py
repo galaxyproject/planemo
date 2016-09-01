@@ -1,7 +1,8 @@
 """Test cases for the CommandIO abstraction in tool_builder."""
 
 from planemo.tool_builder import CommandIO
-from test_utils import assert_equal
+
+from .test_utils import assert_equal
 
 
 def test_simplest_command():

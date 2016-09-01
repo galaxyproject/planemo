@@ -1,7 +1,7 @@
 """Test utilities from :module:`planemo.io`."""
 from .test_utils import (
-    io,
     assert_equal,
+    io,
 )
 
 

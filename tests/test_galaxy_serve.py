@@ -5,17 +5,18 @@ style tests are available in ``test_cmd_serve.py``.
 """
 import os
 
-from .test_utils import (
-    CliTestCase,
-    skip_if_environ,
-    TEST_REPOS_DIR,
-    TEST_DATA_DIR,
-    PROJECT_TEMPLATES_DIR,
-)
-from planemo.runnable import for_path
-from planemo.galaxy import galaxy_serve, shed_serve
 from planemo import network_util
 from planemo import shed
+from planemo.galaxy import galaxy_serve, shed_serve
+from planemo.runnable import for_path
+
+from .test_utils import (
+    CliTestCase,
+    PROJECT_TEMPLATES_DIR,
+    skip_if_environ,
+    TEST_DATA_DIR,
+    TEST_REPOS_DIR,
+)
 
 
 class GalaxyServeTestCase(CliTestCase):

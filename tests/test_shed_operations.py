@@ -1,13 +1,13 @@
-""" Test some lower-level utilities in planemo.shed.
-"""
+"""Test some lower-level utilities in planemo.shed."""
+
 import os
 
-from .test_utils import (
-    TEST_REPOS_DIR,
-    mock_shed_context,
-)
-
 from planemo import shed
+
+from .test_utils import (
+    mock_shed_context,
+    TEST_REPOS_DIR,
+)
 
 
 def test_find_repository_id():

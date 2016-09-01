@@ -3,18 +3,20 @@
 Specifically, tests for shed_upload, shed_download, and shed_create.
 commands.
 """
-from os.path import exists, join
 import os
-import tarfile
 import shutil
+import tarfile
+
+from os.path import exists, join
+
+from planemo import git
+from planemo.io import shell
 
 from .test_utils import (
+    assert_exists,
     CliShedTestCase,
     TEST_REPOS_DIR,
-    assert_exists,
 )
-from planemo.io import shell
-from planemo import git
 
 
 class ShedUploadTestCase(CliShedTestCase):

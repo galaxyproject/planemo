@@ -1,10 +1,10 @@
-import os
 import glob
+import os
 
 from .test_utils import (
     CliTestCase,
-    TEST_TOOLS_DIR,
     TEST_REPOS_DIR,
+    TEST_TOOLS_DIR,
 )
 
 
