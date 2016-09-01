@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.30.0.dev0
+0.30.0 (2016-09-01)
 ---------------------
 
 * Update to the latest galaxy-lib release and change conda semantics to match
