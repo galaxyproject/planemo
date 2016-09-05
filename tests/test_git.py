@@ -1,3 +1,4 @@
+"""Test git library functions in ``planemo.git``."""
 import contextlib
 import os
 
@@ -32,19 +33,39 @@ def test_rev_dirty_if_git():
         assert rev == EXPECTED_HELLO_REV + "-dirty", rev
 
 
+def test_diff():
+    with _git_directory() as t:
+        io.write_file(os.path.join(t, "README"), "new docs")
+        _add_and_commit(t, ["README"])
+        io.write_file(os.path.join(t, "file1"), "file1")
+        _add_and_commit(t, ["file1"])
+        io.write_file(os.path.join(t, "file1"), "file1 changed")
+        _add_and_commit(t, ["file1"])
+        assert git.diff(None, t, "HEAD~..HEAD") == ["file1"]
+        assert "README" in git.diff(None, t, "HEAD~~~..HEAD")
+
+
 @contextlib.contextmanager
 def _git_directory():
     with io.temp_directory() as t:
         io.write_file(os.path.join(t, "README"), "Hello!")
-        cmd = " && ".join([
-            "cd '{0}'",
-            "git init .",
-            "git add README",
-            "%s %s %s" % (
-                COMMITTER_DATE,
-                COMMITTER_NAME,
-                COMMIT
-            )
-        ]).format(t)
-        assert io.shell(cmd) == 0
+        _add_and_commit(t, ["README"], init=True)
         yield t
+
+
+def _add_and_commit(t, files, init=False):
+    cmd = " && ".join([
+        "cd '{0}'",
+        "git init ." if init else "true",
+        "git add %s" % " ".join(files),
+        _commit_command(),
+    ]).format(t)
+    assert io.shell(cmd) == 0
+
+
+def _commit_command():
+    return "%s %s %s" % (
+        COMMITTER_DATE,
+        COMMITTER_NAME,
+        COMMIT
+    )

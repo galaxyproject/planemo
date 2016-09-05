@@ -702,6 +702,14 @@ def build_tarball(realized_path, **kwds):
     return temp_path
 
 
+def find_raw_repositories(ctx, paths, **kwds):
+    """Return a list of "raw" repository objects for each repo on paths."""
+    raw_repo_objects = []
+    for path in paths:
+        raw_repo_objects.extend(_find_raw_repositories(path, **kwds))
+    return raw_repo_objects
+
+
 def for_each_repository(ctx, function, paths, **kwds):
     ret_codes = []
     for path in paths:
@@ -1356,17 +1364,18 @@ class RealizationException(Exception):
     """
 
 __all__ = [
-    'for_each_repository',
     'api_exception_to_message',
-    'tool_shed_client',  # Deprecated...
-    'get_shed_context',
-    'tool_shed_url',
+    'CURRENT_CATEGORIES',
     'diff_repo',
     'download_tarball',
-    'shed_init',
-    'CURRENT_CATEGORIES',
+    'find_raw_repositories',
+    'for_each_repository',
+    'get_shed_context',
     'path_to_repo_name',
-    'REPO_TYPE_UNRESTRICTED',
-    'REPO_TYPE_TOOL_DEP',
     'REPO_TYPE_SUITE',
+    'REPO_TYPE_TOOL_DEP',
+    'REPO_TYPE_UNRESTRICTED',
+    'shed_init',
+    'tool_shed_client',  # Deprecated...
+    'tool_shed_url',
 ]
