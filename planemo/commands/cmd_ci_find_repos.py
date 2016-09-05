@@ -4,9 +4,9 @@ from __future__ import print_function
 import click
 
 from planemo import options
+from planemo.ci import filter_paths, print_path_list
 from planemo.cli import command_function
 from planemo.shed import find_raw_repositories
-from planemo.ci import filter_paths, print_path_list
 
 
 @click.command('ci_find_repos')

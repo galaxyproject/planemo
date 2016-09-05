@@ -3,8 +3,8 @@
 from __future__ import print_function
 
 import copy
-import os
 import math
+import os
 
 from planemo import git
 from planemo import io

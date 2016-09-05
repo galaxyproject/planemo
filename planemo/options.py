@@ -1204,6 +1204,7 @@ def ci_chunk_option():
         default=0,
     )
 
+
 def ci_output_option():
     return planemo_option(
         "--output",

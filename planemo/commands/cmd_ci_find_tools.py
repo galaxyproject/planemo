@@ -4,8 +4,8 @@ from __future__ import print_function
 import click
 
 from planemo import options
-from planemo.cli import command_function
 from planemo.ci import filter_paths, print_path_list
+from planemo.cli import command_function
 from planemo.tools import is_tool_load_error, yield_tool_sources_on_paths
 
 
