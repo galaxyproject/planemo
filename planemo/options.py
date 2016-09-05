@@ -1159,3 +1159,65 @@ def dependencies_script_options():
             default=None,
         ),
     )
+
+
+def filter_exclude_option():
+    return planemo_option(
+        "--exclude",
+        type=click.Path(resolve_path=False),
+        multiple=True,
+        help="Paths to exclude.",
+    )
+
+
+def filter_exclude_from_option():
+    return planemo_option(
+        "--exclude_from",
+        type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True),
+        multiple=True,
+        help="File of paths to exclude.",
+    )
+
+
+def filter_changed_in_commit_option():
+    return planemo_option(
+        "--changed_in_commit_range",
+        help="Exclude paths unchanged in git commit range.",
+    )
+
+
+def ci_chunk_count_option():
+    return planemo_option(
+        "--chunk_count",
+        type=int,
+        help="Split output into chunks of this many item and print --chunk such group.",
+        default=1,
+    )
+
+
+def ci_chunk_option():
+    return planemo_option(
+        "--chunk",
+        type=int,
+        help=("When output is split into --chunk_count groups, output the group 0-indexed"
+              "by this option."),
+        default=0,
+    )
+
+def ci_output_option():
+    return planemo_option(
+        "--output",
+        help="File to output to, or - for standard output.",
+        default="-",
+    )
+
+
+def ci_find_options():
+    return _compose(
+        filter_exclude_option(),
+        filter_exclude_from_option(),
+        filter_changed_in_commit_option(),
+        ci_chunk_count_option(),
+        ci_chunk_option(),
+        ci_output_option(),
+    )

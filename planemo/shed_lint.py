@@ -26,8 +26,8 @@ from planemo.shed2tap import base
 from planemo.tool_lint import (
     build_lint_args,
     handle_tool_load_error,
-    yield_tool_sources,
 )
+from planemo.tools import yield_tool_sources
 from planemo.xml import XSDS_PATH
 
 
