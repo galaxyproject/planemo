@@ -9,6 +9,9 @@ History
 0.31.0.dev0
 ---------------------
 
+* Implement new commands to ``ci_find_repos`` and ``ci_find_tools`` to ease
+  CI scripting.
+  `Pull Request 555`_
     
 
 ---------------------
@@ -838,6 +841,7 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 555: https://github.com/galaxyproject/planemo/pull/555
 .. _a8e797b: https://github.com/galaxyproject/planemo/commit/a8e797b
 .. _6c03de8: https://github.com/galaxyproject/planemo/commit/6c03de8
 .. _ef4b9f4: https://github.com/galaxyproject/planemo/commit/ef4b9f4
