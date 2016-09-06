@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.31.0.dev0
+0.31.0 (2016-09-06)
 ---------------------
 
 * Implement new commands to ``ci_find_repos`` and ``ci_find_tools`` to ease
