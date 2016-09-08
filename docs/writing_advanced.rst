@@ -9,6 +9,7 @@ available - check out tutorial_ if you have never developed a Galaxy tool.
 
 .. include:: _writing_testing.rst
 .. include:: _writing_collections.rst
+.. include:: _writing_macros.rst
 .. include:: _writing_tool_metadata.rst
 .. include:: _writing_clusters.rst
 
