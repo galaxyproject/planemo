@@ -4,14 +4,6 @@ planemo.test package
 Submodules
 ----------
 
-planemo.test.check_output module
---------------------------------
-
-.. automodule:: planemo.test.check_output
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 planemo.test.data module
 ------------------------
 
