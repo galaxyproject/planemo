@@ -12,7 +12,7 @@ Handling cases when tools create a static number of outputs is simple.  Simply i
 .. code-block:: xml
 
     <tool id="example_tool" name="Multiple output" description="example">
-        <command>example_tool.sh $input1 $tool_option1 $output1 $output2</command>
+        <command>example_tool.sh '$input1' $tool_option1 '$output1' '$output2'</command>
         <inputs>
             ...
         </inputs>
@@ -27,12 +27,12 @@ Handling cases when tools create a static number of outputs is simple.  Simply i
 Static Outputs Determinable from Inputs 
 ---------------------------------------------------------
 
-In cases when the number of output files varies, but can be determined based upon a user's parameter selection, the use of the filter tag can be used.  The text contents of the ``<filter>`` tag are ``eval`` ed and if the expression is ``True`` a dataset will be created as normal.  If the expression is ``False``, the output dataset will not be created; instead a ``NoneDataset`` object will be created and made available. When used on the command line the text ``None`` will appear instead of a file path. The local namespace of the filter has been populated with the tool parameters.
+In cases when the number of output files varies, but can be determined based upon a user's parameter selection, the filter tag can be used.  The text contents of the ``<filter>`` tag are ``eval``ed and if the expression is ``True`` a dataset will be created as normal.  If the expression is ``False``, the output dataset will not be created; instead a ``NoneDataset`` object will be created and made available. When used on the command line the text ``None`` will appear instead of a file path. The local namespace of the filter has been populated with the tool parameters.
 
 .. code-block:: xml
 
     <tool id="example_tool" name="Multiple output" description="example">
-        <command>example_tool.sh $input1 $tool_option1 $output1 $output2</command>
+        <command>example_tool.sh '$input1' $tool_option1 '$output1' '$output2'</command>
         <inputs>
            ...
            <param name="tool_option1" type="select" label="Type of output">
@@ -117,7 +117,7 @@ For example:
 .. code-block:: xml
 
 
-    <command>myscript.pl "$input1" "$html_file" "$html_file.extra_files_path" </command>
+    <command>myscript.pl '$input1' '$html_file' '$html_file.extra_files_path' </command>
 
 
 The application must create and write valid html to setup the page ``$html_file`` seen by the user when they view (eye icon) the file. It must create and write that new file at the path passed by Galaxy as the ``$html_file`` command line parameter. All application outputs that will be included as links in that html code should be placed in the specific output directory ``$html_file.extra_files_path`` passed on the command line. The external application is responsible for creating that directory before writing images and files into it. When generating the html, The files written by the application to ``$html_file.extra_files_path`` are referenced in links directly by their name, without any other path decoration - eg:
@@ -138,18 +138,12 @@ The (now unmaintained) Galaxy Tool Factory includes code to gather all output fi
 Dynamic Numbers of Outputs
 ---------------------------------------------------------
 
-This section discusses the case where the number of output datasets cannot be determined until the tool run is complete. If the outputs can be broken into
-groups or collections of similar/homogenous datasets - this is possibly a
-case for using dataset collections. If insted the outputs should be treated
-individually and Galaxy's concept of dataset collections doesn't map cleanly
-to the outputs - Galaxy can "discover" individual output datasets dynamically 
-after the job is complete.
+This section discusses the case where the number of output datasets cannot be determined until the tool run is complete. If the outputs can be broken into groups or collections of similar/homogenous datasets - this is possibly a case for using dataset collections. If instead the outputs should be treated individually and Galaxy's concept of dataset collections doesn't map cleanly to the outputs - Galaxy can "discover" individual output datasets dynamically after the job is complete.
 
 Collections
 ---------------------------------------------------------
 
-See the Planemo documentation on `creating collections <http://planemo.readthedocs.io/en/latest/writing_advanced.html#creating-collections>`__
-for more details on this topic.
+See the Planemo documentation on `creating collections <http://planemo.readthedocs.io/en/latest/writing_advanced.html#creating-collections>`__ for more details on this topic.
 
 A blog post on generating dataset collections from tools can be found
 `here <https://web.science.mq.edu.au/~cassidy/2015/10/21/galaxy-tool-generating-datasets/>`__.
@@ -245,4 +239,4 @@ In the past, it would be necessary to set the attribute ``force_history_refresh`
 
 Discovered datasets are available via post job hooks (a deprecated feature) by using the designation - e.g. ``__collected_datasets__['primary'][designation]``.
 
-In the past these datasets were typically written to ``$__new_file_path__`` instead of the working directory. This is not very scalable and ``$__new_file_path__`` should generally not be used. If you set the option ``collect_outputs_from`` in ``universe_wsgi.ini`` ensure ``job_working_directory`` is listed as an option (if not the only option).
+In the past these datasets were typically written to ``$__new_file_path__`` instead of the working directory. This is not very scalable and ``$__new_file_path__`` should generally not be used. If you set the option ``collect_outputs_from`` in ``galaxy.ini`` ensure ``job_working_directory`` is listed as an option (if not the only option).
