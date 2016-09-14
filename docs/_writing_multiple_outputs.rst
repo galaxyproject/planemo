@@ -95,7 +95,7 @@ Single HTML Output
 
 There are times when a single history item is desired, but this history item is composed of multiple files which are only useful when considered together. This is done by having a single (``primary``) output and storing additional files in a directory (single-level) associated with the primary dataset.
 
-A common usage of this strategy is to have the primary dataset be an HTML file and then store additional content (reports, pdfs, images, etc) in the dataset extra files directory. The content of this directory can be referenced using relative links with in the primary (HTML) file, clicking on the eye icon to view the dataset will display the HTML page.
+A common usage of this strategy is to have the primary dataset be an HTML file and then store additional content (reports, pdfs, images, etc) in the dataset extra files directory. The content of this directory can be referenced using relative links within the primary (HTML) file, clicking on the eye icon to view the dataset will display the HTML page.
 
 If you want to wrap or create a tool that generates an HTML history item that shows the user links to a number of related output objects (files, images..), you need to know where to write the objects and how to reference them when your tool generates HTML which gets written to the HTML file. Galaxy will not write that HTML for you at present.
 
@@ -129,7 +129,7 @@ The application must create and write valid html to setup the page ``$html_file`
     <br/>
     <img src="image1.jpg" >
 
-The (now unmaintained) Galaxy Tool Factory includes code to gather all output files and create a page with links and clickable PDF thumbnail images which may be useful as a starting point - eg see https://bitbucket.org/fubar/rgalaxy/src/9932187787e592238c2c6fb514a39ff3a705a9af/tools/rgenetics/rgToolFactory.py?at=default
+The (now unmaintained) Galaxy Tool Factory includes code to gather all output files and create a page with links and clickable PDF thumbnail images which may be useful as a starting point (e.g. see `rgToolFactory2.py <https://github.com/galaxyproject/tools-iuc/blob/master/tools/tool_factory_2/rgToolFactory2.py#L741>`__.
 
 ``galaxy.datatypes.text.Html`` (the ``html`` datatype) is a subclass of composite datasets so new subclasses of composite can be used to implement even more specific structured outputs but this requires adding the new definition to Galaxy - whereas Html files require no extension of the core framework. For more information visit `Composite Datatypes <https://wiki.galaxyproject.org/Admin/Datatypes/Composite%20Datatypes>`__. 
 
@@ -153,7 +153,7 @@ Individual Datasets
 
 There are times when the number of output datasets varies entirely based upon the content of an input dataset and the user needs to see all of these outputs as new individual history items rather than as a collection of datasets or a group of related files linked in a single new HTML page in the history. Tools can optionally describe how to "discover" an arbitrary number of files that will be added after the job's completion to the user's history as new datasets. Whenever possible, one of the above strategies should be used instead since these discovered datasets cannot be used with workflows and require the user to refresh their history before they are shown.
 
-Discovering datasets (arbitrarily) require a fixed "parent" output dataset to key on - this dataset will act as the reference for our additional datasets. Sometimes the parent dataset that should be used makes sense from context but in instances where one does not readily make sense tool authors can just create an arbitrary text output (like a report of the dataset generation).
+Discovering datasets (arbitrarily) requires a fixed "parent" output dataset to key on - this dataset will act as the reference for our additional datasets. Sometimes the parent dataset that should be used makes sense from context but in instances where one does not readily make sense tool authors can just create an arbitrary text output (like a report of the dataset generation).
 
 Each discovered dataset requires a unique "designation" (used to describe functional tests, the default output name, etc...) and should be located in the job's working direcotry or a sub-directory thereof. Regular expressions are used to describe how to discover the datasets and (though not required) a unique such pattern should be specified for each homogeneous group of such files.
 
