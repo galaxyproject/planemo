@@ -65,8 +65,6 @@ PACKAGE_DATA = {
         'xml/xsd/repository_dependencies.xsd',
         'xml/xsd/tool_dependencies.xsd',
         'xml/xsd/tool/galaxy.xsd',
-        'xml/xsd/tool/citation.xsd',
-        'xml/xsd/tool/citations.xsd',
         'reports/*',
         'scripts/*',
     ],
