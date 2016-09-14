@@ -8,6 +8,7 @@ about wrapping Galaxy tools and that you have an environment with Planemo
 available - check out tutorial_ if you have never developed a Galaxy tool.
 
 .. include:: _writing_testing.rst
+.. include:: _writing_multiple_outputs.rst
 .. include:: _writing_collections.rst
 .. include:: _writing_macros.rst
 .. include:: _writing_tool_metadata.rst
