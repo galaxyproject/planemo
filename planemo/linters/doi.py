@@ -3,5 +3,5 @@
 import planemo.lint
 
 
-def lint_tool_dois(root, lint_ctx):
-    planemo.lint.lint_dois(root, lint_ctx)
+def lint_tool_dois(tool_xml, lint_ctx):
+    planemo.lint.lint_dois(tool_xml, lint_ctx)

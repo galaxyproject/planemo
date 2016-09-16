@@ -10,19 +10,19 @@ from planemo.xml import XSDS_PATH
 TOOL_XSD = os.path.join(XSDS_PATH, "tool", "galaxy.xsd")
 
 
-def lint_tool_xsd(root, lint_ctx):
+def lint_tool_xsd(tool_xml, lint_ctx):
     """Write a temp file out and lint it."""
     with tempfile.NamedTemporaryFile() as tf:
-        _clean_root(root).write(tf.name)
+        _clean_root(tool_xml).write(tf.name)
         planemo.lint.lint_xsd(lint_ctx, TOOL_XSD, tf.name)
 
 
-def _clean_root(root):
+def _clean_root(tool_xml):
     """XSD assumes macros have been expanded, so remove them."""
-    clean_root = copy.deepcopy(root)
+    clean_tool_xml = copy.deepcopy(tool_xml)
     to_remove = []
-    for macros_el in clean_root.findall("macros"):
+    for macros_el in clean_tool_xml.getroot().findall("macros"):
         to_remove.append(macros_el)
     for macros_el in to_remove:
-        clean_root.getroot().remove(macros_el)
-    return clean_root
+        clean_tool_xml.getroot().remove(macros_el)
+    return clean_tool_xml
