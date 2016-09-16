@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.32.0.dev0
+0.32.0 (2016-09-16)
 ---------------------
 
 * Enhance ``planemo lint --xsd`` to use a fairly complete and newly official XSD
