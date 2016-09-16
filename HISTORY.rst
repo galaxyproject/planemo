@@ -9,7 +9,14 @@ History
 0.32.0.dev0
 ---------------------
 
-    
+* Enhance ``planemo lint --xsd`` to use a fairly complete and newly official XSD
+  definition. `Pull Request 566`_
+* Migrate and update documentation related to tool XML macros and handling 
+  multiple outputs from the Galaxy wiki (with help from @bgruening, @mvdbeek,
+  and @nsoranzo). `Pull Request 559`_
+* Documentation fixes (thanks to @ramezrawas). `Pull Request 561`_
+* Do not fail URL linting in case of too many requests (thanks to @nsoranzo).
+  `Pull Request 565`_
 
 ---------------------
 0.31.0 (2016-09-06)
@@ -847,6 +854,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 566: https://github.com/galaxyproject/planemo/pull/566
+.. _Pull Request 559: https://github.com/galaxyproject/planemo/pull/559
+.. _Pull Request 561: https://github.com/galaxyproject/planemo/pull/561
+.. _Pull Request 565: https://github.com/galaxyproject/planemo/pull/565
 .. _Pull Request 555: https://github.com/galaxyproject/planemo/pull/555
 .. _a8e797b: https://github.com/galaxyproject/planemo/commit/a8e797b
 .. _6c03de8: https://github.com/galaxyproject/planemo/commit/6c03de8
