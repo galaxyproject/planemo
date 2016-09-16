@@ -1,11 +1,11 @@
 import os
 import sys
 
-from .test_utils import TEST_DIR
 from xml.etree import ElementTree
 
-
 from planemo.xml.diff import diff
+
+from .test_utils import TEST_DIR
 
 
 def test_diff():

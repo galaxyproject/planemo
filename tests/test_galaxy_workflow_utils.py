@@ -1,8 +1,9 @@
 """Test utilities for dealing with Galaxy workflows."""
 import os
 
-from .test_utils import TEST_DATA_DIR
 from planemo.galaxy.workflows import describe_outputs
+
+from .test_utils import TEST_DATA_DIR
 
 
 def test_describe_outputs():

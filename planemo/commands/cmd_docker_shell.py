@@ -11,15 +11,17 @@ the identifier as a locally cached tag. (Tip: Use the docker_build to populate
 such a tag from a Dockerfile located in the tool's directory.
 """
 from __future__ import print_function
-import click
 import os
-from planemo.cli import command_function
-from planemo import options
 
-from galaxy.tools.loader import load_tool
+import click
+
 from galaxy.tools.deps import docker_util
 from galaxy.tools.deps import dockerfiles
 from galaxy.tools.deps.requirements import parse_requirements_from_xml
+from galaxy.tools.loader import load_tool
+
+from planemo import options
+from planemo.cli import command_function
 
 
 @click.command('docker_shell')
@@ -42,7 +44,9 @@ from galaxy.tools.deps.requirements import parse_requirements_from_xml
 @options.docker_host_option()
 @command_function
 def cli(ctx, path, **kwds):
-    """Launch a shell in the Docker container referenced by the specified
+    """Launch shell in Docker container for a tool.
+
+    Will launch a shell in the Docker container referenced by the specified
     tool. Prints a command to do this the way Galaxy would in job files it
     generates - so be sure to wrap this in $(...) to launch the subshell.::
 

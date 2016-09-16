@@ -1,11 +1,11 @@
 """Module describing the planemo ``conda_init`` command."""
 import click
 
-from planemo.cli import command_function
-from planemo import options
-from planemo.conda import build_conda_context
-
 from galaxy.tools.deps import conda_util
+
+from planemo import options
+from planemo.cli import command_function
+from planemo.conda import build_conda_context
 
 
 @click.command('conda_init')
@@ -21,5 +21,5 @@ def cli(ctx, **kwds):
     license a 3-clause BSD 3 license. Please review full license at
     http://docs.continuum.io/anaconda/eula.
     """
-    conda_context = build_conda_context(**kwds)
+    conda_context = build_conda_context(ctx, **kwds)
     return conda_util.install_conda(conda_context=conda_context)

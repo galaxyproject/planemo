@@ -4,10 +4,10 @@ import sys
 
 import click
 
-from planemo.cli import command_function
-from planemo import options
 from planemo import config
-from planemo.io import warn, info
+from planemo import options
+from planemo.cli import command_function
+from planemo.io import info, warn
 
 CONFIG_TEMPLATE = """## Planemo Global Configuration File.
 ## Everything in this file is completely optional - these values can all be
@@ -47,7 +47,9 @@ SUCCESS_MESSAGE = (
 )
 @command_function
 def cli(ctx, path, template=None, **kwds):
-    """Help initialize global configuration (in home directory) for Planemo.
+    """Initialise global configuration for Planemo.
+
+    Helps initialize global configuration (in home directory) for Planemo.
     """
     # TODO: prompt for values someday.
     config_path = config.global_config_path()

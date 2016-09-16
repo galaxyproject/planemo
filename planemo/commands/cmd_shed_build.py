@@ -1,23 +1,26 @@
 """Module describing the planemo ``shed_build`` command."""
+
+import shutil
 import sys
 
 import click
-import shutil
 
-from planemo.cli import command_function
 from planemo import options
 from planemo import shed
+from planemo.cli import command_function
 
 
 @click.command("shed_build")
 @options.optional_tools_arg(multiple=False)
 @command_function
 def cli(ctx, path, **kwds):
-    """Create a Galaxy tool tarball from a ``.shed.yml`` file.
-    """
+    """Create a Galaxy tool tarball.
 
+    This will use the .shed.yml file to prepare a tarball
+    (which you could upload to the Tool Shed manually).
+    """
     def build(realized_repository):
-        tarpath = shed.build_tarball(realized_repository.real_path)
+        tarpath = shed.build_tarball(realized_repository.path)
         outpath = realized_repository.real_path + ".tar.gz"
         shutil.move(tarpath, outpath)
         print("Created: %s" % (outpath))

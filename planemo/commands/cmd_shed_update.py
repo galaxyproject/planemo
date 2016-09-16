@@ -3,12 +3,15 @@ import sys
 
 import click
 
-from planemo.cli import command_function
 from planemo import options
 from planemo import shed
-from planemo.io import info, error
+from planemo.cli import command_function
+from planemo.io import (
+    captured_io_for_xunit,
+    error,
+    info,
+)
 from planemo.reports import build_report
-from planemo.io import captured_io_for_xunit
 
 
 @click.command("shed_update")
@@ -19,7 +22,7 @@ from planemo.io import captured_io_for_xunit
 @options.shed_skip_metadata()
 @command_function
 def cli(ctx, paths, **kwds):
-    """Update repository in shed from a ``.shed.yml`` file.
+    """Update Tool Shed repository.
 
     By default this command will update both repository metadata
     from ``.shed.yml`` and upload new contents from the repository
@@ -109,13 +112,12 @@ def cli(ctx, paths, **kwds):
             if repo_id is None:
                 exit = shed.report_non_existent_repository(realized_repository)
                 metadata_ok = False
+                error("Failed to update metadata for repository %s." % realized_repository.name)
             else:
                 metadata_ok = realized_repository.update(ctx, shed_context, repo_id)
+                info("Repository metadata updated successfully for repository %s." % realized_repository.name)
         else:
-            info("Skipping repository metadata update.")
-
-        if not metadata_ok:
-            error("Failed to update repository metadata.")
+            info("Skipping metadata update for repository %s." % realized_repository.name)
 
         if metadata_ok and upload_ok:
             pass

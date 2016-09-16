@@ -1,12 +1,12 @@
 """Unit tests for engines and runnables."""
+
 import os
 
 from planemo.engine import engine_context
 from planemo.runnable import for_path
 from planemo.runnable import get_outputs
 
-
-from .test_utils import CWL_DRAFT3_DIR, TEST_DATA_DIR, test_context
+from .test_utils import CWL_DRAFT3_DIR, test_context, TEST_DATA_DIR
 
 A_CWL_TOOL = os.path.join(CWL_DRAFT3_DIR, "cat3-tool.cwl")
 A_CWL_WORKFLOW = os.path.join(CWL_DRAFT3_DIR, "count-lines1-wf.cwl")

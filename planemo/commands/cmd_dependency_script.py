@@ -2,14 +2,13 @@
 import os
 import sys
 
-import click
-
 from xml.etree import ElementTree as ET
 
-from planemo.io import info, error
-from planemo.cli import command_function
-from planemo import options
+import click
 
+from planemo import options
+from planemo.cli import command_function
+from planemo.io import error, info
 from planemo.shed2tap.base import BasePackage, Dependency
 
 
@@ -24,11 +23,13 @@ then
 fi
 # Set full strict mode now, side stepping case $INSTALL_DIR not setup.
 set -euo pipefail
-export DOWNLOAD_CACHE=`(cd "$DOWNLOAD_CACHE"; pwd)`
+export DOWNLOAD_CACHE="${DOWNLOAD_CACHE:-./download_cache}"
 if [[ ! -d $DOWNLOAD_CACHE ]]
 then
     mkdir -p $DOWNLOAD_CACHE
 fi
+# Make this into an absolute path
+export DOWNLOAD_CACHE=`(cd "$DOWNLOAD_CACHE"; pwd)`
 echo "Using $DOWNLOAD_CACHE for cached downloads."
 export INSTALL_DIR=`(cd "$INSTALL_DIR"; pwd)`
 echo "Using $INSTALL_DIR for the installed files."
@@ -163,15 +164,16 @@ def process_tool_dependencies_xml(tool_dep, install_handle, env_sh_handle):
 @options.dependencies_script_options()
 @command_function
 def cli(ctx, paths, recursive=False, fail_fast=True, download_cache=None):
-    """Prepare a bash shell script to install tool requirements (**Experimental**)
+    """Compile tool_dependencies.xml to bash script.
 
     An experimental approach parsing tool_dependencies.xml files into
     bash shell scripts, intended initially for use within Continuous
     Integration testing setups like TravisCI.
 
-    Parses the specified ``tool_dependencies.xml`` files, and converts them into
-    an installation bash script (default ``dep_install.sh``), and a shell script
-    (default ``env.sh``) defining any new/edited environment variables.
+    Parses the ``tool_dependencies.xml`` files from the specified projects,
+    and converts them into an installation bash script (``dep_install.sh``),
+    and a shell script (``env.sh``) defining any new/edited environment
+    variables.
 
     These are intended to be used via ``bash dep_install.sh`` (once), and as
     ``source env.sh`` prior to running any of the dependencies to set the
@@ -193,6 +195,10 @@ def cli(ctx, paths, recursive=False, fail_fast=True, download_cache=None):
     output script ``dep_install.sh`` defaults to ``./download_cache`` (under
     the current working directory), and can be set with ``$DOWNLOAD_CACHE``.
 
+    If the ``tool_dependencies.xml`` file includes SHA256 checksums for
+    downloads, these will be verified after downloading to the cache (by
+    either ``planemo dependency_script`` or ``bash dep_install.sh``).
+
     This is experimental, and is initially intended for use within continuous
     integration testing setups like TravisCI to both verify the dependency
     installation receipe works, and to use this to run functional tests.
@@ -203,7 +209,7 @@ def cli(ctx, paths, recursive=False, fail_fast=True, download_cache=None):
         # Effectively using this as a global variable, refactor this
         # once using a visitor pattern instead of action.to_bash()
         os.environ["DOWNLOAD_CACHE"] = os.path.abspath(download_cache)
-    print("Using $DOWNLOAD_CACHE=%r" % os.environ["DOWNLOAD_CACHE"])
+        print("Using $DOWNLOAD_CACHE=%r" % os.environ["DOWNLOAD_CACHE"])
     failed = False
     with open("env.sh", "w") as env_sh_handle:
         with open("dep_install.sh", "w") as install_handle:

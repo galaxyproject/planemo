@@ -49,6 +49,7 @@ def serve_engine_option():
         type=click.Choice(["galaxy", "docker_galaxy"]),
         default="galaxy",
         use_global_config=True,
+        use_env_var=True,
         help=("Select an engine to serve aritfacts such as tools "
               "and workflows. Defaults to a local Galaxy, but running Galaxy within "
               "a Docker container.")
@@ -102,6 +103,7 @@ def galaxy_email_option():
         type=str,
         default="planemo@galaxyproject.org",
         use_global_config=True,
+        use_env_var=True,
         help="E-mail address to use when launching single-user Galaxy server.",
     )
 
@@ -119,6 +121,7 @@ def galaxy_database_seed_option():
         "--galaxy_database_seed",
         default=None,
         use_global_config=True,
+        use_env_var=True,
         type=click.Path(exists=True, file_okay=True, resolve_path=True),
         help="Preseeded Galaxy sqlite database to target.",
     )
@@ -403,6 +406,7 @@ def conda_prefix_option():
     return planemo_option(
         "--conda_prefix",
         use_global_config=True,
+        use_env_var=True,
         type=click.Path(file_okay=False, dir_okay=True),
         help="Conda prefix to use for conda dependency commands."
     )
@@ -430,9 +434,10 @@ def conda_ensure_channels_option():
         "--conda_ensure_channels",
         type=str,
         use_global_config=True,
+        use_env_var=True,
         help=("Ensure conda is configured with specified comma separated "
               "list of channels."),
-        default="r,bioconda"
+        default="r,bioconda,iuc",
     )
 
 
@@ -1153,4 +1158,67 @@ def dependencies_script_options():
             help=("Directory to cache downloaded files, default is $DOWNLOAD_CACHE"),
             default=None,
         ),
+    )
+
+
+def filter_exclude_option():
+    return planemo_option(
+        "--exclude",
+        type=click.Path(resolve_path=False),
+        multiple=True,
+        help="Paths to exclude.",
+    )
+
+
+def filter_exclude_from_option():
+    return planemo_option(
+        "--exclude_from",
+        type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True),
+        multiple=True,
+        help="File of paths to exclude.",
+    )
+
+
+def filter_changed_in_commit_option():
+    return planemo_option(
+        "--changed_in_commit_range",
+        help="Exclude paths unchanged in git commit range.",
+    )
+
+
+def ci_chunk_count_option():
+    return planemo_option(
+        "--chunk_count",
+        type=int,
+        help="Split output into chunks of this many item and print --chunk such group.",
+        default=1,
+    )
+
+
+def ci_chunk_option():
+    return planemo_option(
+        "--chunk",
+        type=int,
+        help=("When output is split into --chunk_count groups, output the group 0-indexed"
+              "by this option."),
+        default=0,
+    )
+
+
+def ci_output_option():
+    return planemo_option(
+        "--output",
+        help="File to output to, or - for standard output.",
+        default="-",
+    )
+
+
+def ci_find_options():
+    return _compose(
+        filter_exclude_option(),
+        filter_exclude_from_option(),
+        filter_changed_in_commit_option(),
+        ci_chunk_count_option(),
+        ci_chunk_option(),
+        ci_output_option(),
     )

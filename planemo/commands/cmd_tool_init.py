@@ -3,10 +3,10 @@ import os
 
 import click
 
-from planemo.cli import command_function
-from planemo import options
 from planemo import io
+from planemo import options
 from planemo import tool_builder
+from planemo.cli import command_function
 
 REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
                           " it has relevant planemo-generated definitions.")
@@ -192,7 +192,7 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
 @options.build_cwl_option()
 @command_function
 def cli(ctx, **kwds):
-    """Generate a tool outline from supplied arguments."""
+    """Generate tool outline from given arguments."""
     invalid = _validate_kwds(kwds)
     tool_id = kwds.get("id")
     if invalid:

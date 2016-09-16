@@ -1,16 +1,17 @@
 """Module describing the planemo ``shed_diff`` command."""
+import shutil
 import sys
 import tempfile
-import shutil
+
 from xml.sax.saxutils import escape
 
 import click
 
-from planemo.cli import command_function
 from planemo import options
 from planemo import shed
-from planemo.reports import build_report
+from planemo.cli import command_function
 from planemo.io import captured_io_for_xunit
+from planemo.reports import build_report
 
 
 @click.command("shed_diff")
@@ -37,7 +38,7 @@ from planemo.io import captured_io_for_xunit
 @options.report_xunit()
 @command_function
 def cli(ctx, paths, **kwds):
-    """Produce diff between local repository and Tool Shed contents.
+    """diff between local repository and Tool Shed.
 
     By default, this will produce a diff between this repository and what
     would be uploaded to the Tool Shed with the `shed_upload` command - but

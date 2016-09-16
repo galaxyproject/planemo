@@ -1,10 +1,10 @@
 """Module describing the planemo ``shed_lint`` command."""
 import click
 
-from planemo.cli import command_function
 from planemo import options
 from planemo import shed
 from planemo import shed_lint
+from planemo.cli import command_function
 
 
 @click.command('shed_lint')
@@ -39,7 +39,7 @@ from planemo import shed_lint
 # )
 @command_function
 def cli(ctx, paths, **kwds):
-    """Check a Tool Shed repository for common problems.
+    """Check Tool Shed repository for common issues.
 
     With the ``--tools`` flag, this command lints actual Galaxy tools
     in addition to tool shed artifacts.

@@ -1,6 +1,7 @@
+from planemo import shed
+
 from .test_utils import CliShedTestCase
 from .test_utils import skip
-from planemo import shed
 
 CS1_DESCRIPTION = "The tool Cat 1 from the cat tool suite."
 CS2_DESCRIPTION = "The tool Cat 2 from the cat tool suite."

@@ -1,32 +1,35 @@
 from __future__ import absolute_import
+
 import os
-import yaml
-from galaxy.tools.lint import LintContext
-from galaxy.tools.linters.help import rst_invalid
-from planemo.lint import lint_xsd
-from planemo.shed import (
-    REPO_TYPE_UNRESTRICTED,
-    REPO_TYPE_TOOL_DEP,
-    REPO_TYPE_SUITE,
-    CURRENT_CATEGORIES,
-    validate_repo_owner,
-    validate_repo_name,
-)
-from planemo.tool_lint import (
-    build_lint_args,
-    yield_tool_sources,
-    handle_tool_load_error,
-)
-from planemo.lint import lint_urls
-from planemo.shed2tap import base
-from planemo.xml import XSDS_PATH
+
 import xml.etree.ElementTree as ET
 
+import yaml
 
-from planemo.io import info
-from planemo.io import error
-
+from galaxy.tools.lint import LintContext
 from galaxy.tools.lint import lint_tool_source_with
+from galaxy.tools.linters.help import rst_invalid
+
+from planemo.io import error
+from planemo.io import info
+from planemo.lint import lint_urls
+from planemo.lint import lint_xsd
+from planemo.shed import (
+    CURRENT_CATEGORIES,
+    REPO_TYPE_SUITE,
+    REPO_TYPE_TOOL_DEP,
+    REPO_TYPE_UNRESTRICTED,
+    validate_repo_name,
+    validate_repo_owner,
+)
+from planemo.shed2tap import base
+from planemo.tool_lint import (
+    build_lint_args,
+    handle_tool_load_error,
+)
+from planemo.tools import yield_tool_sources
+from planemo.xml import XSDS_PATH
+
 
 TOOL_DEPENDENCIES_XSD = os.path.join(XSDS_PATH, "tool_dependencies.xsd")
 REPO_DEPENDENCIES_XSD = os.path.join(XSDS_PATH, "repository_dependencies.xsd")
@@ -67,6 +70,11 @@ def lint_repository(ctx, realized_repository, **kwds):
     lint_ctx.lint(
         "lint_tool_dependencies_xsd",
         lint_tool_dependencies_xsd,
+        path,
+    )
+    lint_ctx.lint(
+        "lint_tool_dependencies_sha256sum",
+        lint_tool_dependencies_sha256sum,
         path,
     )
     lint_ctx.lint(
@@ -188,6 +196,33 @@ def lint_tool_dependencies_urls(path, lint_ctx):
 
     root = ET.parse(tool_dependencies).getroot()
     lint_urls(root, lint_ctx)
+
+
+def lint_tool_dependencies_sha256sum(path, lint_ctx):
+    tool_dependencies = os.path.join(path, "tool_dependencies.xml")
+    if not os.path.exists(tool_dependencies):
+        lint_ctx.info("No tool_dependencies.xml, skipping.")
+        return
+
+    root = ET.parse(tool_dependencies).getroot()
+
+    count = 0
+    for action in root.findall(".//action"):
+        assert action.tag == "action"
+        if action.attrib.get('type', '') not in ['download_by_url', 'download_file']:
+            continue
+        url = action.text.strip()
+        checksum = action.attrib.get('sha256sum', '')
+        if not checksum:
+            lint_ctx.warn("Missing checksum for %s" % url)
+        elif len(checksum) != 64 or not set("0123456789abcdef").issuperset(checksum.lower()):
+            lint_ctx.error("Invalid checksum %r for %s" % (checksum, url))
+        else:
+            # TODO - See planned --verify option to check it matches
+            # lint_ctx.info("SHA256 checkum listed for %s" % url)
+            count += 1
+    if count:
+        lint_ctx.info("Found %i download action(s) with SHA256 checksums" % count)
 
 
 def lint_tool_dependencies_xsd(path, lint_ctx):

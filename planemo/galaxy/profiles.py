@@ -7,13 +7,14 @@ import json
 import os
 import shutil
 
-from .config import (
-    DATABASE_LOCATION_TEMPLATE,
-    attempt_database_preseed,
-)
-from planemo.database import create_database_source
 from planemo.config import (
     OptionSource,
+)
+from planemo.database import create_database_source
+
+from .config import (
+    attempt_database_preseed,
+    DATABASE_LOCATION_TEMPLATE,
 )
 
 PROFILE_OPTIONS_JSON_NAME = "planemo_profile_options.json"

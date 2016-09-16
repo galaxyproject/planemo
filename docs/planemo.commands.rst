@@ -28,6 +28,22 @@ planemo.commands.cmd_brew_init module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd_ci_find_repos module
+-----------------------------------------
+
+.. automodule:: planemo.commands.cmd_ci_find_repos
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_ci_find_tools module
+-----------------------------------------
+
+.. automodule:: planemo.commands.cmd_ci_find_tools
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd_conda_env module
 -------------------------------------
 

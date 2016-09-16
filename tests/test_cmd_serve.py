@@ -1,20 +1,20 @@
 import functools
 import os
-import time
 import threading
+import time
 import uuid
 
-from planemo.galaxy import api
 from planemo import network_util
+from planemo.galaxy import api
 from planemo.io import kill_pid_file
 
 from .test_utils import (
     CliTestCase,
+    PROJECT_TEMPLATES_DIR,
     skip_if_environ,
     skip_unless_environ,
-    TEST_REPOS_DIR,
-    PROJECT_TEMPLATES_DIR,
     TEST_DATA_DIR,
+    TEST_REPOS_DIR,
 )
 
 TEST_HISTORY_NAME = "Cool History 42"
@@ -100,11 +100,12 @@ class ServeTestCase(CliTestCase):
         t.start()
         time.sleep(10)
         assert network_util.wait_net_service("127.0.0.1", port)
-        time.sleep(.1)
+        time.sleep(1)
+        assert network_util.wait_net_service("127.0.0.1", port)
+        time.sleep(1)
         assert network_util.wait_net_service("127.0.0.1", port)
 
     def _run(self, serve_args=[]):
-        cat_path = os.path.join(TEST_REPOS_DIR, "single_tool", "cat.xml")
         test_cmd = [
             "serve",
             "--install_galaxy",

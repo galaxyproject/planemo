@@ -29,6 +29,14 @@ planemo.bioblend module
     :undoc-members:
     :show-inheritance:
 
+planemo.ci module
+-----------------
+
+.. automodule:: planemo.ci
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.cli module
 ------------------
 

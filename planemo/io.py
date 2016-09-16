@@ -1,5 +1,5 @@
-from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import print_function
 
 import contextlib
 import os
@@ -7,15 +7,17 @@ import shutil
 import sys
 import tempfile
 import time
-from six import StringIO
 from xml.sax.saxutils import escape
 
 import click
+
 from galaxy.tools.deps import commands
 from galaxy.tools.deps.commands import download_command
+from six import StringIO
+
 from .exit_codes import (
-    EXIT_CODE_OK,
     EXIT_CODE_NO_SUCH_TARGET,
+    EXIT_CODE_OK,
 )
 
 
@@ -257,6 +259,40 @@ def wait_on(function, desc, timeout=5):
             return value
 
         time.sleep(delta)
+
+
+@contextlib.contextmanager
+def open_file_or_standard_output(path, *args, **kwds):
+    if path == "-":
+        yield sys.stdout
+    else:
+        yield open(path, *args, **kwds)
+
+
+def filter_paths(paths, cwd=None, **kwds):
+    if cwd is None:
+        cwd = os.getcwd()
+
+    def norm(path):
+        if not os.path.isabs(path):
+            path = os.path.join(cwd, path)
+        return os.path.normpath(path)
+
+    def exclude_func(exclude_path):
+        return lambda p: norm(p).startswith(norm(exclude_path))
+
+    filters_as_funcs = []
+    filters_as_funcs.extend(map(exclude_func, kwds.get("exclude", [])))
+
+    for exclude_paths_ins in kwds.get("exclude_from", []):
+        with open(exclude_paths_ins, "r") as f:
+            for line in f.readlines():
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                filters_as_funcs.append(exclude_func(line))
+
+    return [p for p in paths if not any(map(lambda f: f(p), filters_as_funcs))]
 
 
 def coalesce_return_codes(ret_codes, assert_at_least_one=False):

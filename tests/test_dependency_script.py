@@ -1,9 +1,10 @@
-import os
 import glob
+import os
 import tempfile
 
 from .test_utils import (
     CliTestCase,
+    skip_if_environ,
     TEST_REPOS_DIR,
 )
 
@@ -15,7 +16,7 @@ temp_dir = tempfile.mkdtemp()
 for env_var, default in [
         ("INSTALL_DIR", os.path.join(temp_dir, "install_dir")),
         ("DOWNLOAD_CACHE", os.path.join(temp_dir, "download_cache")),
-        ]:
+]:
     if env_var not in os.environ:
         os.environ[env_var] = default
         os.makedirs(default)
@@ -44,6 +45,7 @@ class DependencyScriptTestCase(CliTestCase):
                   os.path.join(TEST_REPOS_DIR, "fastqc")]
         self._check_exit_code(ds_cmd, 1)
 
+    @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
     def test_samtools_example(self):
         # Also checking the --download_cache option
         ds_cmd = ["dependency_script",
@@ -51,11 +53,13 @@ class DependencyScriptTestCase(CliTestCase):
                   os.path.join(TEST_REPOS_DIR, "package_1")]
         self._check_exit_code(ds_cmd, 0)
 
+    @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
     def test_cd_hit_auxtools(self):
         ds_cmd = ["dependency_script",
                   os.path.join(TEST_REPOS_DIR, "bad_repo_name")]
         self._check_exit_code(ds_cmd, 0)
 
+    @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
     def test_good_examples(self):
         ds_cmd = ["dependency_script",
                   os.path.join(TEST_REPOS_DIR, "package_1"),
@@ -63,21 +67,25 @@ class DependencyScriptTestCase(CliTestCase):
                   os.path.join(TEST_REPOS_DIR, "bad_repo_name")]
         self._check_exit_code(ds_cmd, 0)
 
+    @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
     def test_repos_recurse(self):
         # At least one will fail
         ds_cmd = ["dependency_script", "-r", TEST_REPOS_DIR]
         self._check_exit_code(ds_cmd, 1)
 
+    @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
     def test_repos_recurse_fast(self):
         # At least one will fail
         ds_cmd = ["dependency_script", "--fail_fast", "-r", TEST_REPOS_DIR]
         self._check_exit_code(ds_cmd, 1)
 
+    @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
     def test_repos_list(self):
         # At least one will fail
         ds_cmd = ["dependency_script"] + self.repo_list
         self._check_exit_code(ds_cmd, 1)
 
+    @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
     def test_repos_list_fast(self):
         # At least one will fail
         ds_cmd = ["dependency_script", "--fail_fast"] + self.repo_list

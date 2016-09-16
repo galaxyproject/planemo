@@ -1,11 +1,11 @@
 """ Test app to emulate planemo-relevant portions of the
 the ToolShed API... for now :).
 """
-import os
 import json
+import os
 import tarfile
-from uuid import uuid4
 
+from uuid import uuid4
 from xml.etree import ElementTree
 
 from flask import (

@@ -1,22 +1,21 @@
 """Module describing the planemo ``test`` command."""
 import click
 
+from planemo import options
 from planemo.cli import command_function
 from planemo.engine import (
     engine_context,
     is_galaxy_engine,
 )
-from planemo import options
-from planemo.runnable import (
-    for_paths,
-    RunnableType,
-)
 from planemo.galaxy import galaxy_config
-from planemo.io import info
-
 from planemo.galaxy.test import (
     handle_reports_and_summary,
     run_in_config,
+)
+from planemo.io import info
+from planemo.runnable import (
+    for_paths,
+    RunnableType,
 )
 
 
@@ -37,7 +36,7 @@ from planemo.galaxy.test import (
 @options.engine_options()
 @command_function
 def cli(ctx, paths, **kwds):
-    """Run the tests in the specified tool tests in a Galaxy instance.
+    """Run specified tool's tests within Galaxy.
 
     All referenced tools (by default all the tools in the current working
     directory) will be tested and the results quickly summarized.

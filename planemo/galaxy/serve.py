@@ -1,13 +1,16 @@
 """Abstractions for serving out development Galaxy servers."""
+from __future__ import print_function
+
 import contextlib
 import time
+
+from planemo import io
+from planemo import network_util
 
 from .config import galaxy_config
 from .run import (
     run_galaxy_command,
 )
-from planemo import io
-from planemo import network_util
 
 
 def serve(ctx, runnables=[], **kwds):
@@ -85,6 +88,9 @@ def serve_daemon(ctx, runnables=[], **kwds):
         yield config
     finally:
         if config:
+            if ctx.verbose:
+                print("Galaxy Log:")
+                print(config.log_contents)
             config.kill()
             if not kwds.get("no_cleanup", False):
                 config.cleanup()

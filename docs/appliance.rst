@@ -3,8 +3,8 @@ Virtual Appliance
 ==================
 
 You can use Planemo as part of a Galaxy tool development virtual
-appliance pre-configured with Planemo, Galaxy_, Docker_, a local Tool Shed,
-linuxbrew_, and Komodo_ editor.
+appliance which comes pre-configured with Planemo, Galaxy_, Docker_, Conda_,
+a local Tool Shed, linuxbrew_, Komodo_ and Atom_ editors.
 
 
 Quick Links
@@ -34,7 +34,7 @@ format (OVA_, .ova), Docker, Vagrant, and as a Google Compute Engine cloud image
 
 The OVA image is a stable way to boot a Planemo virtual
 machine on any platform and comes with a pre-configured Xubuntu-based windowed
-operating system with graphical editing tools including Komodo_ editor.
+operating system with graphical editing tools including Komodo_ and Atom_ editors.
 This approach can be thought of more as a complete
 environment and may be better for tutorials and workshops where consistent user
 experience is more important.
@@ -49,12 +49,12 @@ local compute resources are unavailable or insufficient.
 
 Launching the Appliance
 -----------------------
-The following sections will desribe how to launch the appliance using various platforms.
+The following sections will describe how to launch the appliance using various platforms.
 
 Launching the Appliance (VirtualBox - OVA)
 ================================================
 
-The VirtualBox OVA variant of the planemo appliance comes preconfigured with
+The VirtualBox OVA variant of the Planemo appliance comes preconfigured with
 a full windowed development environment (based on Xubuntu). Encompassing the
 complete environment means it is easier to setup and provides an identical
 experience for every developer using it. These make the OVA image ideal
@@ -78,7 +78,7 @@ and the machine should become available.
 .. image:: images/ova_importing.png
    :alt: Screenshot OVA Import
 
-The Firefox browser, Komodo_ editor, Galaxy, Planemo and everything else is
+The Firefox browser, Komodo_ and Atom_ editors, Galaxy, Planemo and everything else is
 available right away on the desktop along with useful links.
 
 .. image:: images/ova_desktop.png
@@ -159,6 +159,7 @@ following command (which will pull the appliance down from `Docker Hub
 <https://registry.hub.docker.com/u/planemo/interactive/>`_).
 
 ::
+
     $ docker run -p 8010:80 -p 9009:9009 -v `pwd`:/opt/galaxy/tools -i -t planemo/interactive
 
 This command will start Galaxy and various other services and then open a bash
@@ -193,6 +194,7 @@ This file must literally be named ``Vagrantfile``. Next you will need to
 startup the appliance. This is as easy as
 
 ::
+
   $ vagrant up
 
 Once the virtual server has booted up completely, Galaxy will be available at
@@ -218,6 +220,7 @@ If you set these defaults, you will not have to supply them to all subsequent
 commands.
 
 ::
+
     $ gcloud auth login
     $ gcloud config set project YOUR-PROJECT-NAME
     $ gcloud config set compute/region us-central1    (replace us-central1 with another region if desired)
@@ -228,13 +231,14 @@ need to be done one time, unless you delete the image from your account.
 
 ::
 
-    gcloud compute images create planemo-machine --source-uri=http://storage.googleapis.com/galaxyproject_images/planemo_machine.image.tar.gz
+    $ gcloud compute images create planemo-machine --source-uri=http://storage.googleapis.com/galaxyproject_images/planemo_machine.image.tar.gz
 
 To launch the image as a fresh instance, use the following command.  This
 command will, upon completion, display an external ip address that you can
 navigate to in your web browser.
 
 ::
+
     $ gcloud compute instances create planemo --machine-type n1-standard-2 --image planemo-machine --tags http-server
 
 If you'd like to SSH in to the instance at this point, it's easy to do with:
@@ -264,4 +268,5 @@ environments such as Amazon Web Services and Google Compute Engine.
 .. _Kitematic: https://kitematic.com/
 .. _boot2docker: http://boot2docker.io/
 .. _OVA: https://en.wikipedia.org/wiki/Open_Virtualization_Format
+.. _Atom: https://atom.io/
 

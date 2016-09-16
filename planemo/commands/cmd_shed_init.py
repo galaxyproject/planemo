@@ -1,11 +1,11 @@
 """Module describing the planemo ``shed_init`` command."""
-import click
 import sys
 
-from planemo.cli import command_function
+import click
 
 from planemo import options
 from planemo import shed
+from planemo.cli import command_function
 
 
 @click.command("shed_init")
@@ -42,11 +42,11 @@ from planemo import shed
 @options.force_option()
 @command_function
 def cli(ctx, path, **kwds):
-    """Bootstrap a new Tool Shed configuration (.shed.yml) file.
+    """Bootstrap new Tool Shed .shed.yml file.
 
-    This file is used by other ``planemo`` commands such as ``shed_lint``,
-    ``shed_create``, ``shed_upload``, and ``shed_diff`` to manage repositories
-    in a Galaxy Tool Shed.
+    This Tool Shed configuration file is used by other ``planemo`` commands
+    such as ``shed_lint``, ``shed_create``, ``shed_upload``, and ``shed_diff``
+    to manage repositories in a Galaxy Tool Shed.
     """
     exit_code = shed.shed_init(ctx, path, **kwds)
     sys.exit(exit_code)

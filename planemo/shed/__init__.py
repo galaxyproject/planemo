@@ -1,5 +1,4 @@
 """Abstractions for shed related interactions used by the rest of planemo."""
-from collections import namedtuple
 import contextlib
 import copy
 import fnmatch
@@ -10,38 +9,41 @@ import re
 import shutil
 import sys
 import tarfile
+
+from collections import namedtuple
 from tempfile import (
     mkstemp,
 )
-from galaxy.util import odict
 
 import six
 import yaml
-from planemo.shed2tap.base import BasePackage
 
-from planemo.io import (
-    error,
-    shell,
-    info,
-    can_write_to_path,
-    temp_directory,
-    coalesce_return_codes,
-)
+from galaxy.util import odict
+
 from planemo import git
 from planemo import glob
-from planemo.tools import load_tool_elements_from_path
 from planemo import templates
-
-from .interface import (
-    username,
-    tool_shed_instance,
-    find_repository,
-    api_exception_to_message,
-    find_category_ids,
-    download_tar,
-    latest_installable_revision,
+from planemo.io import (
+    can_write_to_path,
+    coalesce_return_codes,
+    error,
+    info,
+    shell,
+    temp_directory,
 )
+from planemo.shed2tap.base import BasePackage
+from planemo.tools import load_tool_elements_from_path
+
 from .diff import diff_and_remove
+from .interface import (
+    api_exception_to_message,
+    download_tar,
+    find_category_ids,
+    find_repository,
+    latest_installable_revision,
+    tool_shed_instance,
+    username,
+)
 
 SHED_CONFIG_NAME = '.shed.yml'
 REPO_DEPENDENCIES_CONFIG_NAME = "repository_dependencies.xml"
@@ -97,12 +99,15 @@ CURRENT_CATEGORIES = [
     "ChIP-seq",
     "Combinatorial Selections",
     "Computational chemistry",
+    "Constructive Solid Geometry",
     "Convert Formats",
     "Epigenetics",
+    "Data Export",
     "Data Managers",
     "Data Source",
     "Fasta Manipulation",
     "Fastq Manipulation",
+    "Flow Cytometry Analysis",
     "Genome-Wide Association Study",
     "Genomic Interval Operations",
     "Graphics",
@@ -570,10 +575,11 @@ def _build_suite_repo(config, repos, suite_config):
 
     name = suite_config.get("name", None)
     if name is None:
-        raise Exception("suite_configitories required name key.")
+        raise Exception("suite_config requires name key.")
     description = suite_config.get("description", "")
     long_description = suite_config.get("long_description", None)
     owner = config["owner"]
+    repo_type = suite_config.get('type', REPO_TYPE_SUITE)
 
     repo_pairs = map(lambda name: (owner, name), repos.keys())
     extra_repos = suite_config.get("include_repositories", {})
@@ -590,6 +596,7 @@ def _build_suite_repo(config, repos, suite_config):
         "include": [],
         "name": name,
         "description": description,
+        "type": repo_type,
     }
     if long_description:
         repo["long_description"] = long_description
@@ -597,10 +604,11 @@ def _build_suite_repo(config, repos, suite_config):
 
 
 def update_repository_for(ctx, tsi, id, repo_config):
-    # TODO: enforce no "type" change.
     from bioblend.galaxy.client import Client
+    name = repo_config["name"]
     description = repo_config.get("description", None)
     long_description = repo_config.get("long_description", None)
+    repo_type = shed_repo_type(repo_config, name)
     remote_repository_url = repo_config.get("remote_repository_url", None)
     homepage_url = repo_config.get("homepage_url", None)
     categories = repo_config.get("categories", [])
@@ -609,8 +617,9 @@ def update_repository_for(ctx, tsi, id, repo_config):
     _ensure_shed_description(description)
 
     kwds = dict(
-        name=repo_config["name"],
+        name=name,
         synopsis=description,
+        type=repo_type,
     )
     if long_description is not None:
         kwds["description"] = long_description
@@ -620,11 +629,7 @@ def update_repository_for(ctx, tsi, id, repo_config):
         kwds["homepage_url"] = homepage_url
     if category_ids is not None:
         kwds['category_ids[]'] = category_ids
-    repo = Client._put(tsi.repositories, id=id, payload=kwds)
-    if repo.status_code in [200, 201]:
-        return repo.json()
-    else:
-        raise Exception("Failed to update repository.")
+    return Client._put(tsi.repositories, id=id, payload=kwds)
 
 
 def create_repository_for(ctx, tsi, name, repo_config):
@@ -697,6 +702,14 @@ def build_tarball(realized_path, **kwds):
     return temp_path
 
 
+def find_raw_repositories(ctx, paths, **kwds):
+    """Return a list of "raw" repository objects for each repo on paths."""
+    raw_repo_objects = []
+    for path in paths:
+        raw_repo_objects.extend(_find_raw_repositories(path, **kwds))
+    return raw_repo_objects
+
+
 def for_each_repository(ctx, function, paths, **kwds):
     ret_codes = []
     for path in paths:
@@ -721,12 +734,13 @@ def path_to_repo_name(path):
 
 def shed_repo_type(config, name):
     repo_type = config.get("type", None)
-    if repo_type is None and name.startswith("package_"):
-        repo_type = REPO_TYPE_TOOL_DEP
-    elif repo_type is None and name.startswith("suite_"):
-        repo_type = REPO_TYPE_SUITE
-    elif repo_type is None:
-        repo_type = REPO_TYPE_UNRESTRICTED
+    if repo_type is None:
+        if name.startswith("package_"):
+            repo_type = REPO_TYPE_TOOL_DEP
+        elif name.startswith("suite_"):
+            repo_type = REPO_TYPE_SUITE
+        else:
+            repo_type = REPO_TYPE_UNRESTRICTED
     return repo_type
 
 
@@ -1350,17 +1364,18 @@ class RealizationException(Exception):
     """
 
 __all__ = [
-    'for_each_repository',
     'api_exception_to_message',
-    'tool_shed_client',  # Deprecated...
-    'get_shed_context',
-    'tool_shed_url',
+    'CURRENT_CATEGORIES',
     'diff_repo',
     'download_tarball',
-    'shed_init',
-    'CURRENT_CATEGORIES',
+    'find_raw_repositories',
+    'for_each_repository',
+    'get_shed_context',
     'path_to_repo_name',
-    'REPO_TYPE_UNRESTRICTED',
-    'REPO_TYPE_TOOL_DEP',
     'REPO_TYPE_SUITE',
+    'REPO_TYPE_TOOL_DEP',
+    'REPO_TYPE_UNRESTRICTED',
+    'shed_init',
+    'tool_shed_client',  # Deprecated...
+    'tool_shed_url',
 ]

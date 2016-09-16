@@ -5,8 +5,8 @@ import json
 
 import click
 
-from planemo.cli import command_function
 from planemo import options
+from planemo.cli import command_function
 from planemo.engine import engine_context
 from planemo.io import conditionally_captured_io, warn
 

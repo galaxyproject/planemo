@@ -30,18 +30,26 @@ Consuming Collections
 -------------------------------
 
 Many Galaxy tools can be used without modification in conjuction with collections.
-Galaxy users can take a collection and ``map over`` any tool that
+Galaxy users can take a collection and `map over` any tool that
 consumes individual datasets. For instance, early in typical bioinformatics
 workflows you may have steps that filter raw data, convert to standard
 formats, perform QC on individual files - users can take lists, pairs, or
 lists of paired datasets and map over such tools that consume individual
-files. Galaxy will then run the tool once for each dataset in the collection
-and for each output of that tool Galaxy will rebuild a new collection with the
-same ``identifier`` structure (so sample name or forward/reverse structure is
-perserved).
+dataset (files). Galaxy will then run the tool once for each dataset in the
+collection and for each output of that tool Galaxy will rebuild a new collection.
 
-Tools can also consume collections if they must or should process multiple
-files at once. We will discuss three cases:
+Collection elements have the concept an `identifier` and an `index` when
+the collection is created. Both of these are preserved during these mapping
+steps. As Galaxy builds output collections from these mapping steps, the
+identifier and index for the output entries match those of the supplied input.
+
+.. image:: images/identifiers.svg
+
+If a tool's functionality can be applied to individual files in isolation, the
+implicit mapping described above should be sufficient and no knowledge of collections
+by tools should be needed. However, tools may need to process multiple
+files at once - in this case explict collection consumption is required. This
+document outlines three cases:
 
  * consuming pairs of datasets
  * consuming lists
@@ -93,6 +101,18 @@ In Galaxy's ``command`` block, the individual datasets can be accessed using
 ``$fastq_input1.forward`` and ``$fastq_input1.reverse``. If processing
 arbitrary collection types an array syntax can also be used (e.g.
 ``$fastq_input['forward']``).
+
+.. note:: 
+
+    Mirroring the ability of Galaxy users to map tools that consume individual
+    datasets over lists (and other collection types), users may also map lists
+    of pairs over tools which explicitly consume dataset pair.
+
+    If the output of the tool is datasets, the output of this mapping operation
+    (sometimes referred to as subcollection mapping) will be lists. The element
+    identifier and index of the top level of the list will be preserved.
+
+    .. image:: images/subcollection_mapping_identifiers.svg
 
 Some example tools which consume paired datasets include:
 
@@ -154,8 +174,13 @@ Also see the tools-devteam repository `Pull Request #20 <https://github.com/gala
 Processing Identifiers
 -------------------------------
 
-As mentioned previously, sample identifiers are preserved through mapping
-steps, during reduction steps one may likely want to use these - for
+Collection elements have identifiers that can be used for various kinds of sample 
+tracking. These identifiers are set when the collection is first created - either
+explicitly in the UI (or API), through mapping over collections that preserves input 
+identifers, or as the ``identifier`` when dynamically discovering collection outputs
+described below.
+
+During reduction steps one may likely want to use these - for
 reporting, comparisons, etc. When using these multiple ``data`` parameters
 the dataset objects expose a field called ``element_identifier``. When these
 parameters are used with individual datasets - this will just default to being
@@ -173,18 +198,17 @@ derived from using a little fictitious program called ``merge_rows``.
     merge_rows --name "${re.sub('[^\w\-_]', '_', $input.element_identifier)}" --file "$input" --to $output;
     #end for
 
+.. note:: Here we are rewriting the element identifiers to assure everything is safe to
+    put on the command-line. In the future, collections will not be able to contain
+    keys that are potentially harmful and this won't be necessary.
+
 Some example tools which utilize ``element_identifier`` include:
 
- - `identifier_multiple <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/identifier_multiple.xml>`_
- - `identifier_single <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/identifier_single.xml>`_
- - `vcftools_merge <https://github.com/galaxyproject/tools-devteam/blob/master/tool_collections/vcftools/vcftools_merge/vcftools_merge.xml>`_
+ - `identifier_multiple <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/identifier_multiple.xml>`__
+ - `identifier_single <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/identifier_single.xml>`__
+ - `vcftools_merge <https://github.com/galaxyproject/tools-devteam/blob/master/tool_collections/vcftools/vcftools_merge/vcftools_merge.xml>`__
  - `jbrowse <https://github.com/galaxyproject/tools-iuc/blob/master/tools/jbrowse/jbrowse.xml>`_
-
-.. TODO: https://github.com/galaxyproject/tools-devteam/pull/363/files
-
-.. note:: Here we are rewriting the element identifiers to assure everything is safe to
-    put on the command-line. In the future collections will not be able to contain
-    keys that are potentially harmful and this won't be nessecary.
+ - `kraken-mpa-report <https://github.com/blankenberg/tools-devteam/blob/master/tool_collections/kraken/kraken_report/kraken-mpa-report.xml>`__
 
 More on ``data_collection`` parameters
 ----------------------------------------------
@@ -229,7 +253,7 @@ collection or just a dataset.
     --nested ${input.is_collection}
     #end for
 
-Some example tools which consume collections include:
+Some example tools which consume nested collections include:
 
  - `collection_nested_test <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/collection_nested_test.xml>`_ (small test tool demonstrating consumption of nested collections)
 

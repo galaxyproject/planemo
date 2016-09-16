@@ -12,7 +12,15 @@
 
 class: center, middle
 
-## Galaxy Tool Framework Changes
+layout: true
+class: inverse, middle
+
+---
+
+class: title
+
+# Galaxy Tool Framework Changes
+## John Chilton
 
 This document describes changes to Galaxy's tooling framework over recent 
 releases.
@@ -92,11 +100,11 @@ Full [Galaxy changelog](https://docs.galaxyproject.org/en/master/releases/16.01_
 
 ```xml
 <tool>
-    ...
-    <requirements>
-        <requirement type="package" version="0.11.4">FastQC</requirement>
-    </requirements>
-    ...
+  ...
+  <requirements>
+    <requirement type="package" version="0.11.4">FastQC</requirement>
+  </requirements>
+  ...
 </tool>
 ```
 
@@ -234,17 +242,15 @@ set during tool execution. The new `environment_variables` XML block is
 used to define this.
 
 ```xml
-<tool>
-    ...
-    <command>
-        echo "\$INTVAR"  >  $out_file1;
-        echo "\$FORTEST" >> $out_file1;
-    </command>
-    <environment_variables>
-        <environment_variable name="INTVAR">$inttest</environment_variable>
-        <environment_variable name="FORTEST">#for i in ['m', 'o', 'o']#$i#end for#</environment_variable>
-    </environment_variables>
-    ...
+<command>
+  echo "\$INTVAR"  >  $out_file1;
+  echo "\$FORTEST" >> $out_file1;
+</command>
+<environment_variables>
+  <environment_variable name="INTVAR">$inttest</environment_variable>
+  <environment_variable name="FORTEST">#for i in ['m', 'o', 'o']#$i#end for#</environment_variable>
+  </environment_variables>
+  ...
 ```
 
 [Test tool](https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/environment_variables.xml) demonstrating the use of the `environment_variables` tag.

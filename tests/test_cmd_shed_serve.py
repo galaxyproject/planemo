@@ -1,14 +1,15 @@
 import functools
 import os
-import time
 import threading
+import time
+
+from planemo import network_util
 
 from .test_utils import (
     CliTestCase,
     skip_if_environ,
     TEST_REPOS_DIR,
 )
-from planemo import network_util
 
 
 class ShedServeTestCase(CliTestCase):

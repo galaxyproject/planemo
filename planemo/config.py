@@ -1,9 +1,10 @@
 """Module defines abstractions for configuring Planemo."""
+
 import os
-import yaml
 
 import aenum
 import click
+import yaml
 
 PLANEMO_CONFIG_ENV_PROP = "PLANEMO_GLOBAL_CONFIG_PATH"
 DEFAULT_CONFIG = {
@@ -71,6 +72,7 @@ def planemo_option(*args, **kwargs):
     """
     option_type = kwargs.get("type", None)
     use_global_config = kwargs.pop("use_global_config", False)
+    use_env_var = kwargs.pop("use_env_var", False)
 
     if "default" in kwargs:
         default = kwargs.pop("default")
@@ -92,7 +94,16 @@ def planemo_option(*args, **kwargs):
         kwargs["callback"] = callback
         kwargs["default"] = None
 
-    return click.option(*args, **kwargs)
+    if use_env_var:
+        name = None
+        for arg in args:
+            if arg.startswith("--"):
+                name = arg[len("--"):]
+        assert name
+        kwargs["envvar"] = "PLANEMO_%s" % name.upper()
+
+    option = click.option(*args, **kwargs)
+    return option
 
 
 def global_config_path(config_path=None):

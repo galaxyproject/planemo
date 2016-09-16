@@ -1,8 +1,8 @@
 """Module describing the planemo ``virtualenv`` command."""
 import click
 
-from planemo.cli import command_function
 from planemo import virtualenv
+from planemo.cli import command_function
 
 VIRTUALENV_PATH_TYPE = click.Path(
     exists=False,

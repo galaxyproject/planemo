@@ -2,21 +2,22 @@
 """
 
 import os
-import string
 import random
+import string
 
 import yaml
 
 from bioblend import toolshed
 
+from planemo import io
+from planemo.shed import username
+
 from .test_utils import (
-    skip_unless_environ,
     CliTestCase,
+    skip_unless_environ,
     TEST_DIR
 )
 
-from planemo.shed import username
-from planemo import io
 
 SHED_TEMPLATE = string.Template("""owner: ${owner}
 name: ${name}

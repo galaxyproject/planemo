@@ -20,6 +20,7 @@ def _cwl_file(name):
 class RunTestCase(CliTestCase):
 
     @skip_unless_python_2_7()
+    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_run_cat_cwltool(self):
         with self._isolate():
             tool_path = _cwl_file("cat1-tool.cwl")
@@ -34,6 +35,7 @@ class RunTestCase(CliTestCase):
             self._check_exit_code(test_cmd)
 
     @skip_unless_python_2_7()
+    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_run_cat_cwltool_more_options(self):
         with self._isolate():
             tool_path = _cwl_file("cat1-tool.cwl")
@@ -64,6 +66,7 @@ class RunTestCase(CliTestCase):
 
     @skip_unless_python_2_7()
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_run_cat(self):
         with self._isolate():
             tool_path = _cwl_file("cat1-tool.cwl")
@@ -75,27 +78,30 @@ class RunTestCase(CliTestCase):
             ]
             self._check_exit_code(test_cmd)
 
-    @skip_unless_python_2_7()
-    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-    def test_run_cat_conformance(self):
-        with self._isolate():
-            tool_path = _cwl_file("cat1-tool.cwl")
-            job_path = _cwl_file("cat-job.json")
-            test_cmd = [
-                "run",
-                "--conformance-test",
-                tool_path,
-                job_path,
-            ]
-            self._check_exit_code(test_cmd)
+    # Conformance test option is deprecated in CWL land and obsecures errors.
+    # @skip_unless_python_2_7()
+    # @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    # def test_run_cat_conformance(self):
+    #     with self._isolate():
+    #         tool_path = _cwl_file("cat1-tool.cwl")
+    #         job_path = _cwl_file("cat-job.json")
+    #         test_cmd = [
+    #             "run",
+    #             "--conformance-test",
+    #             tool_path,
+    #             job_path,
+    #        ]
+    #        self._check_exit_code(test_cmd)
 
     @skip_unless_python_2_7()
+    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_run_output_directory(self):
         with self._isolate() as f:
             tool_path = _cwl_file("wc-tool.cwl")
             job_path = _cwl_file("wc-job.json")
             test_cmd = [
+                "--verbose",
                 "run",
                 "--output_directory",
                 f,

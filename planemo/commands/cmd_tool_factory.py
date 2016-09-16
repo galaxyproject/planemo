@@ -2,17 +2,18 @@
 import os
 
 import click
-from planemo.cli import command_function
-from planemo.runnable import for_paths
+
 from planemo import options
+from planemo.cli import command_function
 from planemo.galaxy import serve
+from planemo.runnable import for_paths
 
 
 @click.command('tool_factory')
 @options.galaxy_serve_options()
 @command_function
 def cli(ctx, **kwds):
-    """(Experimental) Launch Galaxy with the Tool Factory 2 available.
+    """(Experimental) Launch Galaxy with Tool Factory 2.
 
     For more information about the Galaxy Tool Factory see the publication
     Creating reusable tools from scripts: the Galaxy Tool Factory by Lazarus

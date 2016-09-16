@@ -37,7 +37,7 @@ command - ``seq`` which converts FASTQ files into FASTA.
 ::
 
     $ wget https://raw.githubusercontent.com/galaxyproject/galaxy-test-data/master/2.fastq
-    $ seqtk seq -a 2.fastq > 2.fasta
+    $ seqtk seq -A 2.fastq > 2.fasta
     $ cat 2.fasta
     >EAS54_6_R1_2_1_413_324
     CCCTTCTTGTCTTCAGCGTTTCTCC

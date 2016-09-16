@@ -33,44 +33,42 @@ develop Galaxy tools.
 Obtaining Planemo
 -----------------
 
-Planemo can be installed via Conda, Homebrew, or
-as a more traditional Python project.
-
-To install using Conda_:
-
-::
-
-    $ conda config --add channels r
-    $ conda config --add channels bioconda
-    $ conda install planemo
-
-To install using Homebrew_ or linuxbrew_:
+For a traditional Python installation of Planemo, first set up a virtualenv
+for ``planemo`` (this example creates a new one in ``.venv``) and then
+install with ``pip``. Planemo requires pip 7.0 or newer.
 
 ::
 
-   $ brew tap galaxyproject/tap
-   $ brew install planemo
+    $ virtualenv .venv; . .venv/bin/activate
+    $ pip install "pip>=7" # Upgrade pip if needed.
+    $ pip install planemo
 
-For a more traditional Python installation set up a virtualenv
-for ``planemo`` (this example creates a new one in ``.venv/``) and then
-install with ``pip``.
+Another approach for installing Planemo is to use Homebrew_ or
+linuxbrew_. To install Planemo this way use the ``brew`` command as
+follows.
 
 ::
 
-   $ virtualenv .venv; . .venv/bin/activate
-   $ pip install planemo
+    $ brew tap galaxyproject/tap
+    $ brew install planemo
+
+For information on updating Planemo, installing the latest development release,
+or installing planemo via bioconda - checkout the `installation
+<http://planemo.readthedocs.io/en/latest/installation.html>`__ 
+documentation.
 
 Planemo is also available as a `virtual appliance
-<https://planemo.readthedocs.org/en/latest/appliance.html>`_ bundled
+<https://planemo.readthedocs.io/en/latest/appliance.html>`_ bundled
 with a preconfigured Galaxy server and set up for Galaxy tool development.
-You can choose from open virtualization format (OVA_, .ova), Docker, or Vagrant appliances.
+You can choose from open virtualization format (OVA_, .ova), Docker_,
+or Vagrant_ appliances.
 
 --------------
 Planemo Basics
 --------------
 
-This quick start will assume you will have a directory with one or more
-tool XML files. If none is available, one can be quickly create for
+This quick start will assume you have a directory with one or more
+tool XML files. If none is available, one can be quickly created for
 demonstrating ``planemo`` as follows ``mkdir mytools; cd mytools; planemo
 project_init --template=demo``.
 
@@ -81,7 +79,6 @@ practices using the ``lint`` `command <http://planemo.readthedocs.org/en/latest/
 ::
 
     $ planemo lint
-    ...
 
 Like many ``planemo`` commands - by default this will search the
 current directory and use all tool files it finds. It can be explicitly
@@ -92,14 +89,14 @@ passed a path to tool files or a directory of tool files.
     $ planemo l randomlines.xml
 
 The ``lint`` command takes in additional options related to
-reporting levels, exit code, etc. These options are described here
-or (like all available commands) can be accessed by passing ``--help`` to it.
+reporting levels, exit code, etc. These options are described
+in the `docs <http://planemo.readthedocs.org/en/latest/commands.html#lint-command>`_
+or (like with all commands) can be accessed by passing ``--help`` to it.
 
 ::
 
     $ planemo l --help
     Usage: planemo lint [OPTIONS] TOOL_PATH
-    ...
 
 Once tools are syntactically correct - it is time to test. The ``test``
 `command <http://planemo.readthedocs.org/en/latest/commands.html#test-command>`__
@@ -121,7 +118,8 @@ testing. Pass ``--install_galaxy`` instead of ``--galaxy_root``.
 	$ planemo t --install_galaxy
 
 Planemo will create a HTML output report in the current directory named
-``tool_test_output.html`` (override with ``--test_output``). See an `example <http://galaxyproject.github.io/planemo/tool_test_viewer.html?test_data_url=https://gist.githubusercontent.com/jmchilton/9d4351c9545d34209904/raw/9ed285d3cf98e435fc4a743320363275949ad63c/index>`_
+``tool_test_output.html`` (override with ``--test_output``). See an
+`example <http://galaxyproject.github.io/planemo/tool_test_viewer.html?test_data_url=https://gist.githubusercontent.com/jmchilton/9d4351c9545d34209904/raw/9ed285d3cf98e435fc4a743320363275949ad63c/index>`_
 of such a report for Tophat.
 
 Once tools have been linted and tested - the tools can be viewed in a
@@ -148,11 +146,12 @@ Experimental Features
 ---------------------
 
 Planemo can also be used to explore some more experimental features related to
-Galaxy tooling - including support for Conda_, `Travis CI`_, Docker_, CWL_, and Homebrew_.
+Galaxy tooling - including support for Conda_, `Travis CI`_, Docker_,
+`Common Workfow Language`_ (CWL), and Homebrew_.
 
------------
-Conda
------------
+---------------------
+Conda Package Manager
+---------------------
 
 Conda_ is package manager that among many other things can be used
 to manage Python packages. Please read a few notes regarding the setup:
@@ -175,8 +174,8 @@ to manage Python packages. Please read a few notes regarding the setup:
 
         $ planemo conda_init
         $ planemo conda_install .
-        $ planemo test --galaxy_branch release_16.01 --conda_dependency_resolution .
-        $ planemo serve --galaxy_branch release_16.01 --conda_dependency_resolution .
+        $ planemo test --galaxy_branch release_16.04 --conda_dependency_resolution .
+        $ planemo serve --galaxy_branch release_16.04 --conda_dependency_resolution .
 
     The test and serve commands above require the target Galaxy to be 16.01 or higher.
 
@@ -217,7 +216,7 @@ TravisCI
 -----------
 
 When tools are ready to be published to GitHub_, it may be valuable to setup
-contineous integration to test changes committed and new pull requests.
+continuous integration to test changes committed and new pull requests.
 `Travis CI`_ is a service providing free testing and deep integration with
 GitHub_.
 
@@ -247,9 +246,9 @@ handful of tools. For larger repositories, such as `tools-devteam`_ or
 Check out the ``.travis.yml`` file used by the IUC as `example
 <https://github.com/galaxyproject/tools-iuc/blob/master/.travis.yml>`__.
 
------------
-Docker
------------
+-----------------
+Docker Containers
+-----------------
 
 Galaxy has `experimental support
 <https://wiki.galaxyproject.org/Admin/Tools/Docker>`_ for running jobs in
@@ -338,5 +337,4 @@ and `brew_env
 .. _`tools-iuc`: https://github.com/galaxyproject/tools-iuc
 .. _Publishing to the Tool Shed: http://planemo.readthedocs.org/en/latest/publishing.html
 .. _Common Workfow Language: http://common-workflow-language.github.io
-.. _CWL: http://common-workflow-language.github.io
 .. _OVA: https://en.wikipedia.org/wiki/Open_Virtualization_Format

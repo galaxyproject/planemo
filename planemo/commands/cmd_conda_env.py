@@ -1,16 +1,15 @@
 """Module describing the planemo ``conda_env`` command."""
 from __future__ import print_function
+
 import click
 
-from planemo.cli import command_function
-from planemo import options
-
-from planemo.io import ps1_for_path
-from planemo.io import error
-
-from planemo.conda import build_conda_context, collect_conda_targets
-
 from galaxy.tools.deps import conda_util
+
+from planemo import options
+from planemo.cli import command_function
+from planemo.conda import build_conda_context, collect_conda_targets
+from planemo.io import error
+from planemo.io import ps1_for_path
 
 
 SOURCE_COMMAND = """
@@ -36,13 +35,15 @@ alias conda_env_deactivate="source %s; %s"
 # @options.skip_install_option()  # TODO
 @command_function
 def cli(ctx, path, **kwds):
-    """Source output to activate a conda environment for this tool.
+    """How to activate conda environment for tool.
+
+    Source output to activate a conda environment for this tool.
 
         % . <(planemo conda_env bowtie2.xml)
         % which bowtie2
         TODO_PLACE_PATH_HERE
     """
-    conda_context = build_conda_context(use_planemo_shell_exec=False, **kwds)
+    conda_context = build_conda_context(ctx, use_planemo_shell_exec=False, **kwds)
     conda_targets = collect_conda_targets(
         path, conda_context=conda_context
     )

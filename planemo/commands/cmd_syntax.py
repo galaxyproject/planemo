@@ -9,5 +9,5 @@ SYNTAX_URL = "https://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax"
 @click.command("syntax")
 @command_function
 def cli(ctx, **kwds):
-    """Open tool config syntax wiki page in a web browser."""
+    """Open tool config syntax page in web browser."""
     click.launch(SYNTAX_URL)

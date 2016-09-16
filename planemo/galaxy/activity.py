@@ -5,18 +5,16 @@ import os
 import tempfile
 
 from bioblend.galaxy.client import Client
-
 from galaxy.tools.parser import get_tool_source
 from six import iteritems
 
-
+from planemo.io import wait_on
 from planemo.runnable import (
+    ErrorRunResponse,
     get_outputs,
     RunnableType,
     SuccessfulRunResponse,
-    ErrorRunResponse,
 )
-from planemo.io import wait_on
 
 DEFAULT_HISTORY_NAME = "CWL Target History"
 

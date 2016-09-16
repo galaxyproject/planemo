@@ -46,6 +46,10 @@ i, em {
     font-size: 1.6em;
 }
 
+.larger {
+    font-size: 1.8em;    
+}
+
 .photo-credit {
     font-weight: bolder;
     font-size: 2.2em;
@@ -55,6 +59,10 @@ i, em {
 
 .smaller {
     font-size: .8em;
+}
+
+.code > pre, .code > code {
+    white-space: pre-wrap;
 }
 
 a, a > code {
@@ -86,9 +94,19 @@ a, a > code {
 #slideshow .slide .content pre code {
 }
 .inverse {
-    background: #000;
+    background-color: #000;
     background-repeat: no-repeat;
     color: #ffffff;
+}
+
+hr {
+    display: none;
+}
+
+.white {
+    background-color: #fff;
+    background-repeat: no-repeat;
+    color: #000;
 }
 
 .inverse strong {
@@ -118,7 +136,7 @@ a, a > code {
     box-shadow: 0 0 10px #777;
 }
 #slide-how .slides .first {
-    background: #fff;
+    background-color: #fff;
     position: absolute;
     top: 20%;
     left: 20%;
@@ -126,7 +144,7 @@ a, a > code {
 }
 #slide-how .slides .second {
     position: relative;
-    background: #fff;
+    background-color: #fff;
     z-index: 0;
 }
 

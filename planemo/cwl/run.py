@@ -8,15 +8,15 @@ import json
 import tempfile
 
 from galaxy.tools.cwl.cwltool_deps import (
-    main,
     ensure_cwltool_available,
+    main,
 )
 
+from planemo.io import error, real_io
 from planemo.runnable import (
-    SuccessfulRunResponse,
     ErrorRunResponse,
+    SuccessfulRunResponse,
 )
-from planemo.io import real_io, error
 
 JSON_PARSE_ERROR_MESSAGE = ("Failed to parse JSON from cwltool output [%s] "
                             "in file [%s]. cwltool logs [%s].")

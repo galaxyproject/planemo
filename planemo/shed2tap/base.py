@@ -1,17 +1,20 @@
 from __future__ import print_function
 
-from xml.etree import ElementTree
-
-from six.moves import map as imap
-from six.moves.urllib.request import urlretrieve
-from six.moves.urllib.error import URLError
-from six import string_types
-from six import iteritems
-
 import os
+import subprocess
+import sys
 import tarfile
 import zipfile
+
 from ftplib import all_errors as FTPErrors  # tuple of exceptions
+from xml.etree import ElementTree
+
+from six import string_types
+from six import iteritems
+from six.moves import map as imap
+from six.moves.urllib.error import URLError
+from six.moves.urllib.request import urlretrieve
+
 
 TOOLSHED_MAP = {
     "toolshed": "https://toolshed.g2.bx.psu.edu",
@@ -395,21 +398,21 @@ def _common_prefix(folders):
     return common_prefix
 
 
-def _cache_download(url, filename):
+def _cache_download(url, filename, sha256sum=None):
     """Returns local path to cached copy of URL using given filename."""
-    try:
-        cache = os.environ["DOWNLOAD_CACHE"]
-    except KeyError:
-        # TODO - expose this as a command line option
-        raise ValueError("Dependencies cache location $DOWNLOAD_CACHE not set.")
+    cache = os.environ.get("DOWNLOAD_CACHE", "./download_cache/")
+    # TODO - expose this as a command line option
+
+    if not os.path.isdir(cache):
+        os.mkdir(cache)
 
     local = os.path.join(cache, filename)
 
     if not os.path.isfile(local):
         # Must download it...
         try:
-            import sys  # TODO - log this nicely...
-            sys.stderr.write("Downloading %s\n" % url)
+            # TODO - log this nicely...
+            sys.stderr.write("Downloading %s to %r\n" % (url, local))
             urlretrieve(url, local)
         except URLError:
             # Most likely server is down, could be bad URL in XML action:
@@ -418,10 +421,19 @@ def _cache_download(url, filename):
             # Most likely server is down, could be bad URL in XML action:
             raise RuntimeError("Unable to download %s" % url)
 
+        # Verifying the checksum is slow, only do this on a fresh
+        # download. Assume locally cached files are already OK.
+        if sha256sum:
+            # TODO - log this nicely...
+            sys.stderr.write("Verifying checksum for %s\n" % filename)
+            filehash = subprocess.check_output(['shasum', '-a', '256', local])[0:64].strip()
+            if filehash != sha256sum:
+                raise RuntimeError("Checksum failure for %s, got %r but wanted %r" % (local, filehash, sha256sum))
+
     return local
 
 
-def _determine_compressed_file_folder(url, downloaded_filename):
+def _determine_compressed_file_folder(url, downloaded_filename, target_filename=None, sha256sum=None):
     """Determine how to decompress the file & its directory structure.
 
     Returns a list of shell commands. Consider this example where the
@@ -439,31 +451,35 @@ def _determine_compressed_file_folder(url, downloaded_filename):
     If not cached, this function will download the file to the
     $DOWNLOAD_CACHE folder, and then open it / decompress it in
     order to find common folder prefix used.  This will also verify
-    how to decompress the file.
+    how to decompress the file, and the checksum if given.
     """
     answer = []
-    local = _cache_download(url, downloaded_filename)
+
+    local = _cache_download(url, downloaded_filename, sha256sum)
+
+    if not target_filename:
+        target_filename = downloaded_filename
 
     if tarfile.is_tarfile(local):
         folders = _tar_folders(local)
-        if downloaded_filename.endswith(".tar.gz") or downloaded_filename.endswith(".tgz"):
-            answer.append('tar -zxvf %s' % downloaded_filename)
-        elif downloaded_filename.endswith(".tar.bz2"):
-            answer.append('tar -jxvf %s' % downloaded_filename)
-        elif downloaded_filename.endswith(".tar"):
-            answer.extend('tar -xvf %s' % downloaded_filename)
+        if target_filename.endswith((".tar.gz", ".tgz")):
+            answer.append('tar -zxvf %s' % target_filename)
+        elif target_filename.endswith(".tar.bz2"):
+            answer.append('tar -jxvf %s' % target_filename)
+        elif target_filename.endswith(".tar"):
+            answer.extend('tar -xvf %s' % target_filename)
         else:
             # Quite possibly this file doesn't need decompressing,
             # but until we've tested lots of real world tool_dependencies.xml
             # files I'd like to check these cases to confirm this.
-            raise NotImplementedError("How to decompress tar file %s?" % downloaded_filename)
+            raise NotImplementedError("How to decompress tar file %s?" % target_filename)
     elif zipfile.is_zipfile(local):
-        if local.endswith('.jar'):
+        if target_filename.endswith(".jar"):
             # Do not decompress!
             return answer
         folders = _zip_folders(local)
-        answer.append('unzip %s' % downloaded_filename)
-    elif downloaded_filename.endswith(".dmg"):
+        answer.append('unzip %s' % target_filename)
+    elif target_filename.endswith(".dmg"):
         # Do not decompress!
         return answer
     else:
@@ -477,34 +493,49 @@ def _determine_compressed_file_folder(url, downloaded_filename):
     return answer
 
 
-def _commands_to_download_and_extract(url, target_filename=None):
-    # TODO - Include checksum validation here?
-    if target_filename:
-        downloaded_filename = target_filename
-    else:
-        downloaded_filename = os.path.split(url)[-1]
-        if "?" in downloaded_filename:
-            downloaded_filename = downloaded_filename[:downloaded_filename.index("?")]
-        if "#" in downloaded_filename:
-            downloaded_filename = downloaded_filename[:downloaded_filename.index("#")]
+def _commands_and_downloaded_file(url, target_filename=None, sha256sum=None):
+    # We preserve the filename from the URL in the cache.
+    # i.e. We do NOT use the target_filename in the cache.
+    # This because some Galaxy recipes normalise platform specific downloads
+    # to use a single target filename, which would therefore break checksums etc
+    # e.g. tests/data/repos/package_1/tool_dependencies.xml
+    downloaded_filename = os.path.split(url)[-1]
+    if "?" in downloaded_filename:
+        downloaded_filename = downloaded_filename[:downloaded_filename.index("?")]
+    if "#" in downloaded_filename:
+        downloaded_filename = downloaded_filename[:downloaded_filename.index("#")]
+
+    if not target_filename:
+        target_filename = downloaded_filename
 
     # Curl is present on Mac OS X, can we assume it will be on Linux?
     # Cannot assume that wget will be on Mac OS X.
     answer = [
-        'if [[ -f "%s" ]]' % downloaded_filename,
+        'if [[ -f "%s" ]]' % target_filename,
         'then',
-        '    echo "Reusing existing %s"' % downloaded_filename,
+        '    echo "Reusing existing %s"' % target_filename,
         'elif [[ -f "$DOWNLOAD_CACHE/%s" ]]' % downloaded_filename,
         'then',
         '    echo "Reusing cached %s"' % downloaded_filename,
-        '    ln -s "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, downloaded_filename),
+        '    cp "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, target_filename),
         'else',
         '    echo "Downloading %s"' % downloaded_filename,
         '    curl -L -o "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, url),
-        '    ln -s "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, downloaded_filename),
-        'fi',
+        '    cp "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, target_filename),
         ]
-    answer.extend(_determine_compressed_file_folder(url, downloaded_filename))
+    if sha256sum:
+        # This is inserted into the if-else for a fresh download only.
+        # Note double space between checksum and filename:
+        answer.append('    echo "%s  %s" | shasum -a 256 -c -' % (sha256sum, target_filename))
+    answer.append('fi')
+
+    return answer, downloaded_filename
+
+
+def _commands_to_download_and_extract(url, target_filename=None, sha256sum=None):
+    answer, downloaded_filename = _commands_and_downloaded_file(url, target_filename, sha256sum)
+    # Now should we unpack the tar-ball etc?
+    answer.extend(_determine_compressed_file_folder(url, downloaded_filename, target_filename, sha256sum))
     return answer, []
 
 
@@ -515,12 +546,13 @@ class DownloadByUrlAction(BaseAction):
     def __init__(self, elem):
         self.url = elem.text.strip()
         assert self.url
+        self.sha256sum = elem.attrib.get("sha256sum", None)
+        self.target_filename = elem.attrib.get("target_filename", None)
 
     def to_bash(self):
         # See class DownloadByUrl in Galaxy,
         # lib/tool_shed/galaxy_install/tool_dependencies/recipe/step_handler.py
-        # Do we need to worry about target_filename here?
-        return _commands_to_download_and_extract(self.url)
+        return _commands_to_download_and_extract(self.url, self.target_filename, self.sha256sum)
 
 
 class DownloadFileAction(BaseAction):
@@ -530,12 +562,15 @@ class DownloadFileAction(BaseAction):
     def __init__(self, elem):
         self.url = elem.text.strip()
         self.extract = asbool(elem.attrib.get("extract", False))
+        self.sha256sum = elem.attrib.get("sha256sum", None)
+        self.target_filename = elem.attrib.get("target_filename", None)
 
     def to_bash(self):
         if self.extract:
-            return _commands_to_download_and_extract(self.url)
+            return _commands_to_download_and_extract(self.url, self.target_filename, self.sha256sum)
         else:
-            return ['wget %s' % self.url], []
+            commands, downloaded_file = _commands_and_downloaded_file(self.url, self.target_filename, self.sha256sum)
+            return commands, []
 
 
 class DownloadBinary(BaseAction):
@@ -556,7 +591,10 @@ class ShellCommandAction(BaseAction):
         self.command = elem.text
 
     def to_bash(self):
-        return [self.command], []
+        # Galaxy would run each action from the same temp
+        # working directory - possible that tool_dependencies.xml
+        # shell_command could change $PWD so reset this:
+        return ["pushd . > /dev/null", self.command, "popd > /dev/null"], []
 
 
 class TemplateShellCommandAction(BaseAction):

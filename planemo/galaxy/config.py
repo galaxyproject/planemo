@@ -7,33 +7,22 @@ import contextlib
 import os
 import random
 import shutil
-from six.moves.urllib.request import urlopen
-from six import iteritems
+
 from string import Template
 from tempfile import mkdtemp
-from six.moves.urllib.request import urlretrieve
 
 import click
+
 from galaxy.tools.deps import docker_util
 from galaxy.tools.deps.commands import argv_to_str
 
-from .run import (
-    setup_common_startup_args,
-    setup_venv,
-    DOWNLOAD_GALAXY,
-)
-from .api import (
-    DEFAULT_MASTER_API_KEY,
-    gi,
-    user_api_key,
-)
-from .workflows import (
-    import_workflow,
-    install_shed_repos,
-)
+from six import iteritems
+from six.moves.urllib.request import urlopen
+from six.moves.urllib.request import urlretrieve
+
+from planemo import git
 from planemo.conda import build_conda_context
 from planemo.docker import docker_host_args
-from planemo import git
 from planemo.io import (
     communicate,
     kill_pid_file,
@@ -44,6 +33,21 @@ from planemo.io import (
     write_file,
 )
 from planemo.shed import tool_shed_url
+
+from .api import (
+    DEFAULT_MASTER_API_KEY,
+    gi,
+    user_api_key,
+)
+from .run import (
+    DOWNLOAD_GALAXY,
+    setup_common_startup_args,
+    setup_venv,
+)
+from .workflows import (
+    import_workflow,
+    install_shed_repos,
+)
 
 
 NO_TEST_DATA_MESSAGE = (
@@ -176,7 +180,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         def config_join(*args):
             return os.path.join(config_directory, *args)
 
-        _handle_dependency_resolution(config_directory, kwds)
+        _handle_dependency_resolution(ctx, config_directory, kwds)
         _handle_job_metrics(config_directory, kwds)
 
         shed_tool_conf = "config/shed_tool_conf.xml"
@@ -285,7 +289,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             galaxy_root = config_join("galaxy-dev")
 
         server_name = "planemo%d" % random.randint(0, 100000)
-        _handle_dependency_resolution(config_directory, kwds)
+        _handle_dependency_resolution(ctx, config_directory, kwds)
         _handle_job_config_file(config_directory, server_name, kwds)
         _handle_job_metrics(config_directory, kwds)
         file_path = kwds.get("file_path") or config_join("files")
@@ -1032,7 +1036,7 @@ def _install_with_command(ctx, config_directory, command, env, kwds):
     # TODO: --watchdog
     pip_installs = []
     if kwds.get("cwl", False):
-        pip_installs.append("cwltool>=1.0.20160511162129")
+        pip_installs.append("cwltool==1.0.20160626203316")
     if pip_installs:
         pip_install_command = PIP_INSTALL_CMD % " ".join(pip_installs)
     else:
@@ -1114,7 +1118,7 @@ def _handle_job_config_file(config_directory, server_name, kwds):
     kwds["job_config_file"] = job_config_file
 
 
-def _handle_dependency_resolution(config_directory, kwds):
+def _handle_dependency_resolution(ctx, config_directory, kwds):
     resolutions_strategies = [
         "brew_dependency_resolution",
         "dependency_resolvers_config_file",
@@ -1145,16 +1149,19 @@ def _handle_dependency_resolution(config_directory, kwds):
     def add_attribute(key, value):
         attributes.append('%s="%s"' % (key, value))
 
+    conda_prefix_specified = False
     for key, default_value in iteritems(dependency_attribute_kwds):
         value = kwds.get(key, default_value)
         if value != default_value:
+            conda_prefix_specified = conda_prefix_specified or (key == "conda_prefix")
             # Strip leading prefix (conda_) off attributes
             attribute_key = "_".join(key.split("_")[1:])
             add_attribute(attribute_key, value)
 
-    if not [attribute for attribute in attributes if "prefix" in attribute]:
-        conda_context = build_conda_context(**kwds)
+    conda_context = build_conda_context(ctx, **kwds)
+    if not conda_prefix_specified:
         add_attribute("prefix", conda_context.conda_prefix)
+    add_attribute("condarc_override", conda_context.condarc_override)
 
     attribute_str = " ".join(attributes)
 
@@ -1169,6 +1176,11 @@ def _handle_dependency_resolution(config_directory, kwds):
                 'attributes': attribute_str
             })
             open(resolvers_conf, "w").write(conf_contents)
+            ctx.vlog(
+                "Writing dependency_resolvers_config_file to path %s with contents [%s]",
+                resolvers_conf,
+                conf_contents,
+            )
             kwds["dependency_resolvers_config_file"] = resolvers_conf
 
 

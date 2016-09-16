@@ -1,11 +1,12 @@
 """Module contianing the :class:`GalaxyEngine` implementation of :class:`Engine`."""
+
 import contextlib
 
-from .interface import BaseEngine
+from planemo.galaxy.activity import execute
+from planemo.galaxy.serve import serve_daemon
 from planemo.runnable import RunnableType
 
-from planemo.galaxy.serve import serve_daemon
-from planemo.galaxy.activity import execute
+from .interface import BaseEngine
 
 
 class GalaxyEngine(BaseEngine):

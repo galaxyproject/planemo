@@ -2,9 +2,9 @@
 import contextlib
 import os
 
-from .test_utils import TempDirectoryContext, test_context
-
 from planemo.galaxy.config import galaxy_config
+
+from .test_utils import TempDirectoryContext, test_context
 
 
 def test_defaults():

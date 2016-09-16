@@ -4,10 +4,10 @@ import sys
 
 import click
 
-from planemo.cli import command_function
 from planemo import options
-from planemo.galaxy.serve import shed_serve
 from planemo import shed
+from planemo.cli import command_function
+from planemo.galaxy.serve import shed_serve
 from planemo.galaxy.test import run_in_config
 
 

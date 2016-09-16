@@ -4,5 +4,5 @@
 import planemo.lint
 
 
-def lint_tool_urls(root, lint_ctx):
-    planemo.lint.lint_urls(root, lint_ctx)
+def lint_tool_urls(tool_source, lint_ctx):
+    planemo.lint.lint_urls(tool_source.root, lint_ctx)

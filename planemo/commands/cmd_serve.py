@@ -1,10 +1,10 @@
 """Module describing the planemo ``serve`` command."""
 import click
 
-from planemo.cli import command_function
-from planemo.runnable import for_paths
-from planemo.galaxy import galaxy_serve
 from planemo import options
+from planemo.cli import command_function
+from planemo.galaxy import galaxy_serve
+from planemo.runnable import for_paths
 
 
 @click.command('serve')
@@ -14,7 +14,7 @@ from planemo import options
 @options.galaxy_cwl_root_option()
 @command_function
 def cli(ctx, paths, **kwds):
-    """Launch a Galaxy instance with the specified tool in the tool panel.
+    """Launch Galaxy instance with specified tools.
 
     The Galaxy tool panel will include just the referenced tool or tools (by
     default all the tools in the current working directory) and the upload
@@ -33,8 +33,8 @@ def cli(ctx, paths, **kwds):
     ``planemo`` uses temporarily generated config files and environment
     variables to attempt to shield this execution of Galaxy from manually
     launched runs against that same Galaxy root - but this may not be bullet
-    proof yet so please careful and do not try this against production Galaxy
-    instances.
+    proof yet, so please be careful and do not try this against a production
+    Galaxy instance.
     """
     runnables = for_paths(paths)
     galaxy_serve(ctx, runnables, **kwds)

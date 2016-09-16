@@ -3,8 +3,8 @@ from __future__ import print_function
 
 import click
 
-from planemo.cli import command_function
 from planemo import options
+from planemo.cli import command_function
 from planemo.cwl import to_script
 
 
@@ -16,7 +16,9 @@ from planemo.cwl import to_script
 @click.option('basedir', '--base_dir', type=click.Path(), default=".")
 @command_function
 def cli(ctx, path, job_path, **kwds):
-    """This compiles simple common workflow language workflows to a shell
+    """Compile simple CWL workflows to shell script.
+
+    Compiles simple common workflow language (CWL) workflows to a shell
     script.
     """
     to_script(ctx, path, job_path, **kwds)

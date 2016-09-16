@@ -6,8 +6,9 @@ from .test_utils import (
     assert_exists,
     CliTestCase,
     PROJECT_TEMPLATES_DIR,
-    skip_unless_python_2_7,
     skip_if_environ,
+    skip_unless_environ,
+    skip_unless_python_2_7,
     TEST_DATA_DIR,
 )
 
@@ -16,6 +17,8 @@ class CmdTestTestCase(CliTestCase):
     """Integration tests for the ``test`` command."""
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
+    @skip_unless_environ("PLANEMO_RUN_BETA_TESTS")
     def test_workflow_test_simple(self):
         """Test testing a simple workflow with Galaxy."""
         with self._isolate():
@@ -32,6 +35,7 @@ class CmdTestTestCase(CliTestCase):
             self._check_exit_code(test_command, exit_code=0)
 
     @skip_unless_python_2_7()
+    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_cwltool_tool_test(self):
         """Test testing a CWL tool with cwltool."""
         with self._isolate() as f:
@@ -45,6 +49,7 @@ class CmdTestTestCase(CliTestCase):
             assert_exists(os.path.join(f, "tool_test_output.json"))
 
     @skip_unless_python_2_7()
+    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_output_checks(self):
         """Test testing a CWL tool with cwltool."""
         with self._isolate() as f:

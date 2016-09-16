@@ -1,17 +1,19 @@
-from collections import namedtuple
 import contextlib
 import shutil
-from tempfile import mkdtemp
 import threading
-from requests import post
 
+from collections import namedtuple
+from tempfile import mkdtemp
+
+from requests import post
 from werkzeug.serving import run_simple
+
+from planemo import network_util
 
 from .shed_app import (
     app,
     InMemoryShedDataModel,
 )
-from planemo import network_util
 
 DEFAULT_OP_TIMEOUT = 2
 

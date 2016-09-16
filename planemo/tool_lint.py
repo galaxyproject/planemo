@@ -1,29 +1,26 @@
 from __future__ import absolute_import
 
-import os
-
-from planemo.io import info
-from planemo.io import error
-from planemo.io import coalesce_return_codes
-from planemo.exit_codes import (
-    EXIT_CODE_OK,
-    EXIT_CODE_GENERIC_FAILURE,
-)
+from galaxy.tools.lint import lint_tool_source
 
 import planemo.linters.doi
 import planemo.linters.urls
 import planemo.linters.xsd
 
-
-from planemo.tools import (
-    load_tool_sources_from_path,
-    is_tool_load_error,
+from planemo.exit_codes import (
+    EXIT_CODE_GENERIC_FAILURE,
+    EXIT_CODE_OK,
 )
-from galaxy.tools.lint import lint_tool_source
+from planemo.io import (
+    coalesce_return_codes,
+    error,
+    info,
+)
+from planemo.tools import (
+    is_tool_load_error,
+    yield_tool_sources_on_paths,
+)
 
-SKIP_XML_MESSAGE = "Skipping XML file - does not appear to be a tool %s."
 LINTING_TOOL_MESSAGE = "Linting tool %s"
-SHED_FILES = ["tool_dependencies.xml", "repository_dependencies.xml"]
 
 
 def lint_tools_on_path(ctx, paths, lint_args, **kwds):
@@ -31,18 +28,17 @@ def lint_tools_on_path(ctx, paths, lint_args, **kwds):
     recursive = kwds.get("recursive", False)
     valid_tools = 0
     exit_codes = []
-    for path in paths:
-        for (tool_path, tool_xml) in yield_tool_sources(ctx, path, recursive):
-            if handle_tool_load_error(tool_path, tool_xml):
-                exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
-                continue
-            info("Linting tool %s" % tool_path)
-            if not lint_tool_source(tool_xml, **lint_args):
-                error("Failed linting")
-                exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
-            else:
-                valid_tools += 1
-                exit_codes.append(EXIT_CODE_OK)
+    for (tool_path, tool_xml) in yield_tool_sources_on_paths(ctx, paths, recursive):
+        if handle_tool_load_error(tool_path, tool_xml):
+            exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
+            continue
+        info("Linting tool %s" % tool_path)
+        if not lint_tool_source(tool_xml, **lint_args):
+            error("Failed linting")
+            exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
+        else:
+            valid_tools += 1
+            exit_codes.append(EXIT_CODE_OK)
     return coalesce_return_codes(exit_codes, assert_at_least_one=assert_tools)
 
 
@@ -55,21 +51,6 @@ def handle_tool_load_error(tool_path, tool_xml):
         info("Could not lint %s due to malformed xml." % tool_path)
         is_error = True
     return is_error
-
-
-def yield_tool_sources(ctx, path, recursive=False):
-    tools = load_tool_sources_from_path(
-        path,
-        recursive,
-        register_load_errors=True,
-    )
-    for (tool_path, tool_source) in tools:
-        if is_tool_load_error(tool_source):
-            yield (tool_path, tool_source)
-            continue
-        if not _is_tool_source(ctx, tool_path, tool_source):
-            continue
-        yield (tool_path, tool_source)
 
 
 def build_lint_args(ctx, **kwds):
@@ -103,15 +84,3 @@ def _lint_extra_modules(**kwds):
         linters.append(planemo.linters.urls)
 
     return linters
-
-
-def _is_tool_source(ctx, tool_path, tool_source):
-    if os.path.basename(tool_path) in SHED_FILES:
-        return False
-    root = getattr(tool_source, "root", None)
-    if root is not None:
-        if root.tag != "tool":
-            if ctx.verbose:
-                info(SKIP_XML_MESSAGE % tool_path)
-            return False
-    return True

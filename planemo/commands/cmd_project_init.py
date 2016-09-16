@@ -1,16 +1,16 @@
 """Module describing the planemo ``project_init`` command."""
 import os
-import tempfile
 import shutil
+import tempfile
 
 import click
 
-from planemo.cli import command_function
 from planemo import options
+from planemo.cli import command_function
 from planemo.io import (
-    warn,
+    shell,
     untar_to,
-    shell
+    warn,
 )
 
 SOURCE_HOST = "https://codeload.github.com"
@@ -27,7 +27,9 @@ UNTAR_ARGS = " -C %s -zxf - " + UNTAR_FILTER
 )
 @command_function
 def cli(ctx, path, template=None, **kwds):
-    """Initialize a new tool project (demo only right now).
+    """(Experimental) Initialize a new tool project.
+
+    This is only a proof-of-concept demo right now.
     """
     if template is None:
         warn("Creating empty project, this function doesn't do much yet.")
