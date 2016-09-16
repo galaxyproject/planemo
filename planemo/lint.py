@@ -14,15 +14,15 @@ from planemo.shed import find_urls_for_xml
 from planemo.xml import validation
 
 
-def lint_dois(root, lint_ctx):
-    dois = find_dois_for_xml(root)
+def lint_dois(tool_xml, lint_ctx):
+    dois = find_dois_for_xml(tool_xml)
     for publication in dois:
         is_doi(publication, lint_ctx)
 
 
-def find_dois_for_xml(root):
+def find_dois_for_xml(tool_xml):
     dois = []
-    for element in root.root.findall("citations"):
+    for element in tool_xml.getroot().findall("citations"):
         for citation in list(element):
             if citation.tag == 'citation' and citation.attrib.get('type', '') == 'doi':
                 dois.append(citation.text)

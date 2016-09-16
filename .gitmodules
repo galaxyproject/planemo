@@ -1,6 +1,3 @@
-[submodule "planemo/xml/xsd/tool"]
-	path = planemo/xml/xsd/tool
-	url = https://github.com/JeanFred/Galaxy-XSD
 [submodule "planemo/cwl/cwl2script"]
 	path = planemo/cwl/cwl2script
 	url = https://github.com/common-workflow-language/cwl2script.git
