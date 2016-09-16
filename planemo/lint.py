@@ -64,14 +64,22 @@ def lint_urls(root, lint_ctx):
     urls = find_urls_for_xml(root)
 
     def validate_url(url, lint_ctx):
+        is_valid = True
         try:
             handle = urlopen(url)
             handle.read(100)
-            lint_ctx.info("URL OK %s" % url)
         except HTTPError as e:
-            lint_ctx.error("HTTP Error %s accessing %s" % (e.code, url))
+            if e.code == 429:
+                # too many requests
+                pass
+            else:
+                is_valid = False
+                lint_ctx.error("HTTP Error %s accessing %s" % (e.code, url))
         except URLError as e:
+            is_valid = False
             lint_ctx.error("URL Error %s accessing %s" % (str(e), url))
+        if is_valid:
+            lint_ctx.info("URL OK %s" % url)
 
     for url in urls:
         validate_url(url, lint_ctx)
