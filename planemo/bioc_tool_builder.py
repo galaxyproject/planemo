@@ -6,6 +6,8 @@ from planemo.tool_builder import (
     MACROS_TEMPLATE,
     ToolDescription,
     UrlCitation,
+    Input,
+    TestCase,
     _handle_help,
     _render,
     _replace_file_in_command,
@@ -166,24 +168,6 @@ def _find_command(kwds):
     return command
 
 
-class Input(object):
-
-    def __init__(self, input_description, name=None):
-        parts = input_description.split(".")
-        name = name or parts[0]
-        if len(parts) > 0:
-            datatype = ".".join(parts[1:])
-        else:
-            datatype = "data"
-
-        self.name = name
-        self.datatype = datatype
-
-    def __str__(self):
-        template = '<param type="data" name="{0}" format="{1}" />'
-        return template.format(self.name, self.datatype)
-
-
 class Output(object):
 
     def __init__(self, from_path=None, name=None, use_from_path=False):
@@ -266,10 +250,3 @@ class Requirement(object):
         else:
             attrs = ''
         return base.format(attrs, self.name)
-
-
-class TestCase(object):
-
-    def __init__(self):
-        self.params = []
-        self.outputs = []
