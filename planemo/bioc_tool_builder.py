@@ -2,17 +2,17 @@
 import subprocess
 import yaml
 import os
-from planemo import templates
 from planemo.conda import write_bioconda_recipe
 from planemo.tool_builder import (
-    TOOL_TEMPLATE,
     MACROS_TEMPLATE,
+    ToolDescription,
+    UrlCitation,
+    _render,
 )
 
 
 def build(**kwds):
-    # Test case to build up from supplied inputs and outputs, ultimately
-    # ignored unless kwds["test_case"] is truthy.
+    """Build up a :func:`ToolDescription` from supplid arguments."""
     test_case = TestCase()
 
     command = _find_command(kwds)
@@ -112,14 +112,11 @@ def build(**kwds):
     if kwds["macros"]:
         macro_contents = _render(kwds, MACROS_TEMPLATE)
 
-    return ToolDescription(contents, macro_contents, test_files)
-
-
-def _render(kwds, template_str=TOOL_TEMPLATE):
-    """ Apply supplied template variables to TOOL_TEMPLATE to generate
-    the final tool.
-    """
-    return templates.render(template_str, **kwds)
+    return ToolDescription(
+        contents,
+        macro_contents,
+        test_files=test_files
+    )
 
 
 def _replace_file_in_command(command, specified_file, name):
@@ -203,49 +200,6 @@ def _find_command(kwds):
         if command:
             del kwds["example_command"]
     return command
-
-
-class UrlCitation(object):
-
-    def __init__(self, url):
-        self.url = url
-
-    def __str__(self):
-        if "github.com" in self.url:
-            return self._github_str()
-        else:
-            return self._url_str()
-
-    def _github_str(self):
-        url = self.url
-        title = url.split("/")[-1]
-        return '''
-@misc{github%s,
-  author = {LastTODO, FirstTODO},
-  year = {TODO},
-  title = {%s},
-  publisher = {GitHub},
-  journal = {GitHub repository},
-  url = {%s},
-}''' % (title, title, url)
-
-    def _url_str(self):
-        url = self.url
-        return '''
-@misc{renameTODO,
-  author = {LastTODO, FirstTODO},
-  year = {TODO},
-  title = {TODO},
-  url = {%s},
-}''' % (url)
-
-
-class ToolDescription(object):
-
-    def __init__(self, contents, macro_contents, test_files):
-        self.contents = contents
-        self.macro_contents = macro_contents
-        self.test_files = test_files
 
 
 class Input(object):
