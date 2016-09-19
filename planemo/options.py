@@ -1232,3 +1232,17 @@ def tool_init_id_option(prompt=True):
         prompt=prompt,
         help="Short identifier for new tool (no whitespace)",
     )
+
+
+def tool_init_output_option():
+    return planemo_option(
+        "-t",
+        "--tool",
+        default=None,
+        type=click.Path(exists=False,
+                        file_okay=True,
+                        dir_okay=False,
+                        writable=True,
+                        resolve_path=True),
+        help="Output path for new tool (default is <id>.xml)",
+    )

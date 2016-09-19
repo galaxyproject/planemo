@@ -23,17 +23,7 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
 @click.command("bioc_tool_init")
 @options.tool_init_id_option(prompt=False)
 @options.force_option(what="tool")
-@click.option(
-    "-t",
-    "--tool",
-    default=None,
-    type=click.Path(exists=False,
-                    file_okay=True,
-                    dir_okay=False,
-                    writable=True,
-                    resolve_path=True),
-    help="Output path for new tool (default is <id>.xml)",
-)
+@options.tool_init_output_option()
 @click.option(
     "-n",
     "--name",
