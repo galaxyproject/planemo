@@ -11,6 +11,14 @@ from planemo import tool_builder
 from planemo.cli import command_function
 from planemo.io import info
 
+NAME_OPTION_HELP = "Name for new Bioconductor tool (user facing)"
+EXAMPLE_CMD_HELP = ("Example to command with paths to build Cheetah template from "
+                    "(e.g. 'Rscript my_r_tool.R --input input.csv --output output.csv')"
+                    ". Option cannot be used with --command,"
+                    "should be used --example_input and --example_output.")
+REQUIREMENT_HELP = ("Give the name of the bioconductor package, "
+                    "requirements will be set using bioconda. eg: 'motifbreakR' ")
+
 
 # --input_format
 # --output_format
@@ -21,31 +29,14 @@ from planemo.io import info
 @options.tool_init_tool_option()
 @options.tool_init_name_option(
     prompt=False,
-    help="Name for new Bioconductor tool (user facing)",
+    help=NAME_OPTION_HELP,
 )
 @options.tool_init_version_option()
 @options.tool_init_description_option()
 @options.tool_init_command_option()
 # TODO: Change this
-@click.option(
-    "--example_command",
-    type=click.STRING,
-    default=None,
-    prompt=False,
-    help=("Example to command with paths to build Cheetah template from "
-          "(e.g. 'Rscript my_r_tool.R --input input.csv --output output.csv')"
-          ". Option cannot be used with --command,"
-          "should be used --example_input and --example_output."),
-)
-@click.option(
-    "--requirement",
-    type=click.STRING,
-    default=None,
-    multiple=True,
-    prompt=False,
-    help=("Give the name of the bioconductor package,"
-          "requirements will be set using bioconda. eg: 'motifbreakR' ")
-)
+@options.tool_init_example_command_option(help=EXAMPLE_CMD_HELP)
+@options.tool_init_requirement_option(help=REQUIREMENT_HELP)
 @options.tool_init_example_input_option()
 @options.tool_init_example_output_option()
 @options.tool_init_named_output_option()
