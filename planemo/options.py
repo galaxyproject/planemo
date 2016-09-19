@@ -1374,3 +1374,40 @@ def tool_init_help_from_command_option():
         prompt=False,
         help="Auto populate help from supplied command.",
     )
+
+
+def tool_init_example_input_option():
+    return planemo_option(
+        "--example_input",
+        type=click.STRING,
+        default=None,
+        prompt=False,
+        multiple=True,
+        help=("For use with --example_command, replace input file (e.g. 2.fastq "
+              "with a data input parameter)."),
+    )
+
+
+def tool_init_example_output_option():
+    return planemo_option(
+        "--example_output",
+        type=click.STRING,
+        default=None,
+        prompt=False,
+        multiple=True,
+        help=("For use with --example_command, replace input file (e.g. 2.fastq "
+              "with a tool output)."),
+    )
+
+
+def tool_init_named_output_option():
+    return planemo_option(
+        "--named_output",
+        type=click.STRING,
+        multiple=True,
+        default=None,
+        prompt=False,
+        help=("Create a named output for use with command block for example "
+              "specify --named_output=output1.bam and then use '-o $output1' "
+              "in your command block."),
+    )

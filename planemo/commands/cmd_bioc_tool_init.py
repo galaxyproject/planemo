@@ -38,24 +38,6 @@ from planemo.io import info
           "should be used --example_input and --example_output."),
 )
 @click.option(
-    "--example_input",
-    type=click.STRING,
-    default=None,
-    prompt=False,
-    multiple=True,
-    help=("For use with --example_command, replace input file (e.g. 2.fastq "
-          "with a data input parameter)."),
-)
-@click.option(
-    "--example_output",
-    type=click.STRING,
-    default=None,
-    prompt=False,
-    multiple=True,
-    help=("For use with --example_command, replace input file (e.g. 2.fastq "
-          "with a tool output)."),
-)
-@click.option(
     "--requirement",
     type=click.STRING,
     default=None,
@@ -64,16 +46,9 @@ from planemo.io import info
     help=("Give the name of the bioconductor package,"
           "requirements will be set using bioconda. eg: 'motifbreakR' ")
 )
-@click.option(
-    "--named_output",
-    type=click.STRING,
-    multiple=True,
-    default=None,
-    prompt=False,
-    help=("Create a named output for use with command block for example "
-          "specify --named_output=output1.bam and then use '-o $ouput1' "
-          "in your command block."),
-)
+@options.tool_init_example_input_option()
+@options.tool_init_example_output_option()
+@options.tool_init_named_output_option()
 @options.tool_init_input_option()
 @options.tool_init_output_option()
 @options.tool_init_help_text_option()

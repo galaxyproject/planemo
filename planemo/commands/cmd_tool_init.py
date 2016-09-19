@@ -30,40 +30,15 @@ from planemo.cli import command_function
           "--example_output."),
 )
 @click.option(
-    "--example_input",
-    type=click.STRING,
-    default=None,
-    prompt=False,
-    multiple=True,
-    help=("For use with --example_command, replace input file (e.g. 2.fastq "
-          "with a data input parameter)."),
-)
-@click.option(
-    "--example_output",
-    type=click.STRING,
-    default=None,
-    prompt=False,
-    multiple=True,
-    help=("For use with --example_command, replace input file (e.g. 2.fastq "
-          "with a tool output)."),
-)
-@click.option(
     "--version_command",
     type=click.STRING,
     default=None,
     prompt=False,
     help="Command to print version (e.g. 'seqtk --version')",
 )
-@click.option(
-    "--named_output",
-    type=click.STRING,
-    multiple=True,
-    default=None,
-    prompt=False,
-    help=("Create a named output for use with command block for example "
-          "specify --named_output=output1.bam and then use '-o $output1' "
-          "in your command block."),
-)
+@options.tool_init_example_input_option()
+@options.tool_init_example_output_option()
+@options.tool_init_named_output_option()
 @click.option(
     "--requirement",
     type=click.STRING,
