@@ -668,6 +668,41 @@ def _find_command(kwds):
     return command
 
 
+class UrlCitation(object):
+
+    def __init__(self, url):
+        self.url = url
+
+    def __str__(self):
+        if "github.com" in self.url:
+            return self._github_str()
+        else:
+            return self._url_str()
+
+    def _github_str(self):
+        url = self.url
+        title = url.split("/")[-1]
+        return '''
+@misc{github%s,
+  author = {LastTODO, FirstTODO},
+  year = {TODO},
+  title = {%s},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  url = {%s},
+}''' % (title, title, url)
+
+    def _url_str(self):
+        url = self.url
+        return '''
+@misc{renameTODO,
+  author = {LastTODO, FirstTODO},
+  year = {TODO},
+  title = {TODO},
+  url = {%s},
+}''' % (url)
+
+
 class ToolDescription(object):
     """An description of the tool and related files to create."""
 
