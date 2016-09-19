@@ -20,29 +20,9 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
 @options.force_option(what="tool")
 @options.tool_init_output_option()
 @options.tool_init_name_option()
-@click.option(
-    "--version",
-    default="0.1.0",
-    type=click.STRING,
-    help="Tool XML version.",
-)
-@click.option(
-    "-d",
-    "--description",
-    type=click.STRING,
-    default=None,
-    prompt=False,
-    help="Short description for new tool (user facing)",
-)
-@click.option(
-    "-c",
-    "--command",
-    type=click.STRING,
-    default=None,
-    prompt=False,
-    help=("Command potentially including cheetah variables ()"
-          "(e.g. 'seqtk seq -a $input > $output')"),
-)
+@options.tool_init_version_option()
+@options.tool_init_description_option()
+@options.tool_init_command_option()
 @click.option(
     "--example_command",
     type=click.STRING,

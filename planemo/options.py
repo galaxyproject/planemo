@@ -1256,3 +1256,35 @@ def tool_init_name_option(prompt=True, help="Name for new tool (user facing)"):
         prompt=prompt,
         help=help,
     )
+
+
+def tool_init_version_option():
+    return planemo_option(
+        "--version",
+        default="0.1.0",
+        type=click.STRING,
+        help="Tool XML version.",
+    )
+
+
+def tool_init_description_option():
+    return planemo_option(
+        "-d",
+        "--description",
+        type=click.STRING,
+        default=None,
+        prompt=False,
+        help="Short description for new tool (user facing)",
+    )
+
+
+def tool_init_command_option():
+    return planemo_option(
+        "-c",
+        "--command",
+        type=click.STRING,
+        default=None,
+        prompt=False,
+        help=("Command potentially including cheetah variables ()"
+              "(e.g. 'seqtk seq -a $input > $output')"),
+    )
