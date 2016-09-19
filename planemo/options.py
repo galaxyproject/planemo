@@ -1333,6 +1333,7 @@ def tool_init_cite_url_option():
         help=("Supply a URL for citation.")
     )
 
+
 def tool_init_input_option():
     return planemo_option(
         "--input",
@@ -1426,7 +1427,7 @@ def tool_init_version_command_option():
 REQUIREMENT_HELP = "Add a tool requirement package (e.g. 'seqtk' or 'seqtk@1.68')."
 
 
-def tool_init_requirement_option(hel=REQUIREMENT_HELP):
+def tool_init_requirement_option(help=REQUIREMENT_HELP):
     return planemo_option(
         "--requirement",
         type=click.STRING,
