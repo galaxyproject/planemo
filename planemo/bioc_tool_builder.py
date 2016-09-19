@@ -4,7 +4,7 @@ import yaml
 import os
 from planemo import templates
 from planemo.conda import write_bioconda_recipe
-from planemo import rscript_parse
+
 
 TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
 {%- if description %}
