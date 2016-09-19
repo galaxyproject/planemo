@@ -1,5 +1,4 @@
 
-import subprocess
 import yaml
 import os
 from planemo.conda import write_bioconda_recipe
