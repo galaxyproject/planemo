@@ -20,9 +20,6 @@ REQUIREMENT_HELP = ("Give the name of the bioconductor package, "
                     "requirements will be set using bioconda. eg: 'motifbreakR' ")
 
 
-# --input_format
-# --output_format
-# --advanced_options
 @click.command("bioc_tool_init")
 @options.tool_init_id_option(prompt=False)
 @options.force_option(what="tool")
@@ -48,6 +45,8 @@ REQUIREMENT_HELP = ("Give the name of the bioconductor package, "
 @options.tool_init_cite_url_option()
 @options.tool_init_test_case_option()
 @options.tool_init_macros_option()
+# Shares all basic Galaxy tool options with tool_init except version_command
+# and container.
 @click.option(
     "--bioconda_path",
     type=click.STRING,

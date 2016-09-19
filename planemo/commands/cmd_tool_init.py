@@ -8,9 +8,6 @@ from planemo import tool_builder
 from planemo.cli import command_function
 
 
-# --input_format
-# --output_format
-# --advanced_options
 @click.command("tool_init")
 @options.tool_init_id_option()
 @options.force_option(what="tool")
@@ -31,7 +28,6 @@ from planemo.cli import command_function
 @options.tool_init_cite_url_option()
 @options.tool_init_test_case_option()
 @options.tool_init_macros_option()
-# Next three options not shared with bioc_tool_init
 @options.tool_init_version_command_option()
 @options.tool_init_requirement_option()
 @options.tool_init_container_option()
