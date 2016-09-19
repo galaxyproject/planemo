@@ -1246,3 +1246,13 @@ def tool_init_output_option():
                         resolve_path=True),
         help="Output path for new tool (default is <id>.xml)",
     )
+
+
+def tool_init_name_option(prompt=True, help="Name for new tool (user facing)"):
+    return planemo_option(
+        "-n",
+        "--name",
+        type=click.STRING,
+        prompt=prompt,
+        help=help,
+    )

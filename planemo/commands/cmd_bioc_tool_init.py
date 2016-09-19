@@ -24,11 +24,7 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
 @options.tool_init_id_option(prompt=False)
 @options.force_option(what="tool")
 @options.tool_init_output_option()
-@click.option(
-    "-n",
-    "--name",
-    type=click.STRING,
-    # TODO: Conditional prompt for Rscript
+@options.tool_init_name_option(
     prompt=False,
     help="Name for new Bioconductor tool (user facing)",
 )

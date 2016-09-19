@@ -19,13 +19,7 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
 @options.tool_init_id_option()
 @options.force_option(what="tool")
 @options.tool_init_output_option()
-@click.option(
-    "-n",
-    "--name",
-    type=click.STRING,
-    prompt=True,
-    help="Name for new tool (user facing)",
-)
+@options.tool_init_name_option()
 @click.option(
     "--version",
     default="0.1.0",
