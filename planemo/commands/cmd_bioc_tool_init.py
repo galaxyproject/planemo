@@ -92,15 +92,6 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
     help="Help text (reStructuredText)",
 )
 @click.option(
-    "--doi",
-    type=click.STRING,
-    default=None,
-    multiple=True,
-    prompt=False,
-    help=("Supply a DOI (http://www.doi.org/) easing citation of the tool "
-          "for Galxy users (e.g. 10.1101/014043).")
-)
-@click.option(
     "--requirement",
     type=click.STRING,
     default=None,
@@ -119,29 +110,10 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
           "specify --named_output=output1.bam and then use '-o $ouput1' "
           "in your command block."),
 )
-@click.option(
-    "--test_case",
-    is_flag=True,
-    default=None,
-    prompt=False,
-    help=("For use with --example_commmand, generate a tool test case from "
-          "the supplied example."),
-)
-@click.option(
-    "--macros",
-    is_flag=True,
-    default=None,
-    prompt=False,
-    help="Generate a macros.xml for reuse across many tools.",
-)
-@click.option(
-    "--cite_url",
-    type=click.STRING,
-    default=None,
-    multiple=True,
-    prompt=False,
-    help=("Supply a URL for citation.")
-)
+@options.tool_init_doi_option()
+@options.tool_init_cite_url_option()
+@options.tool_init_test_case_option()
+@options.tool_init_macros_option()
 @click.option(
     "--bioconda_path",
     type=click.STRING,

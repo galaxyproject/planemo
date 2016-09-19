@@ -1288,3 +1288,47 @@ def tool_init_command_option():
         help=("Command potentially including cheetah variables ()"
               "(e.g. 'seqtk seq -a $input > $output')"),
     )
+
+
+def tool_init_doi_option():
+    return planemo_option(
+        "--doi",
+        type=click.STRING,
+        default=None,
+        multiple=True,
+        prompt=False,
+        help=("Supply a DOI (http://www.doi.org/) easing citation of the tool "
+              "for Galxy users (e.g. 10.1101/014043).")
+    )
+
+
+def tool_init_test_case_option():
+    return planemo_option(
+        "--test_case",
+        is_flag=True,
+        default=None,
+        prompt=False,
+        help=("For use with --example_commmand, generate a tool test case from "
+              "the supplied example."),
+    )
+
+
+def tool_init_macros_option():
+    return planemo_option(
+        "--macros",
+        is_flag=True,
+        default=None,
+        prompt=False,
+        help="Generate a macros.xml for reuse across many tools.",
+    )
+
+
+def tool_init_cite_url_option():
+    return planemo_option(
+        "--cite_url",
+        type=click.STRING,
+        default=None,
+        multiple=True,
+        prompt=False,
+        help=("Supply a URL for citation.")
+    )
