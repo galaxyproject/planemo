@@ -8,7 +8,9 @@ from planemo.tool_builder import (
     UrlCitation,
     Input,
     TestCase,
+    _find_command,
     _handle_help,
+    _handle_tests,
     _render,
     _replace_file_in_command,
 )
@@ -122,20 +124,6 @@ def build(**kwds):
     )
 
 
-def _handle_tests(kwds, test_case):
-    """ Given state built up from handling rest of arguments (test_case) and
-    supplied kwds - build tests for template and corresponding test files.
-    """
-    test_files = []
-    if kwds["test_case"]:
-        tests = [test_case]
-        test_files.extend(map(lambda x: x[1], test_case.params))
-        test_files.extend(map(lambda x: x[1], test_case.outputs))
-    else:
-        tests = []
-    return tests, test_files
-
-
 def _handle_requirements(kwds):
     """ Convert requirements and containers specified from the command-line
     into abstract format for consumption by the template.
@@ -153,19 +141,6 @@ def _handle_requirements(kwds):
 
     kwds["requirements"] = requirements
     # kwds["containers"] = containers
-
-
-def _find_command(kwds):
-    """ Find base command from supplied arguments or just return None if no
-    such k was supplied (template will just replace this with TODO
-    item).
-    """
-    command = kwds.get("command")
-    if not command:
-        command = kwds.get("example_command", None)
-        if command:
-            del kwds["example_command"]
-    return command
 
 
 class Output(object):
