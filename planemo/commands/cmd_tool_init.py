@@ -8,9 +8,6 @@ from planemo import options
 from planemo import tool_builder
 from planemo.cli import command_function
 
-REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
-                          " it has relevant planemo-generated definitions.")
-
 
 # --input_format
 # --output_format
@@ -116,48 +113,20 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
     help="Add a Docker image identifier for this tool."
 )
 @options.tool_init_doi_option()
+@options.tool_init_cite_url_option()
 @options.tool_init_test_case_option()
 @options.tool_init_macros_option()
-@options.tool_init_cite_url_option()
 @options.build_cwl_option()
 @command_function
 def cli(ctx, **kwds):
     """Generate tool outline from given arguments."""
     invalid = _validate_kwds(kwds)
-    tool_id = kwds.get("id")
     if invalid:
         ctx.exit(invalid)
-    output = kwds.get("tool")
-    if not output:
-        extension = "cwl" if kwds.get("cwl") else "xml"
-        output = "%s.%s" % (tool_id, extension)
-    if not io.can_write_to_path(output, **kwds):
-        ctx.exit(1)
     tool_description = tool_builder.build(**kwds)
-    io.write_file(output, tool_description.contents)
-    io.info("Tool written to %s" % output)
-    test_contents = tool_description.test_contents
-    if test_contents:
-        sep = "-" if "-" in tool_id else "_"
-        tests_path = "%s%stests.yml" % (kwds.get("id"), sep)
-        if not io.can_write_to_path(tests_path, **kwds):
-            ctx.exit(1)
-        io.write_file(tests_path, test_contents)
-        io.info("Tool tests written to %s" % tests_path)
-
-    macros = kwds["macros"]
-    macros_file = "macros.xml"
-    if macros and not os.path.exists(macros_file):
-        io.write_file(macros_file, tool_description.macro_contents)
-    elif macros:
-        io.info(REUSING_MACROS_MESSAGE)
-    if tool_description.test_files:
-        if not os.path.exists("test-data"):
-            io.info("No test-data directory, creating one.")
-            io.shell("mkdir -p 'test-data'")
-        for test_file in tool_description.test_files:
-            io.info("Copying test-file %s" % test_file)
-            io.shell("cp '%s' 'test-data'" % test_file)
+    tool_builder.write_tool_description(
+        ctx, tool_description, **kwds
+    )
 
 
 def _validate_kwds(kwds):

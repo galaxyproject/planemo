@@ -1,6 +1,4 @@
 """Module describing the planemo ``bioc_tool_init`` command."""
-import os
-import sys
 
 import click
 
@@ -8,13 +6,10 @@ from planemo import bioc_tool_builder
 # from planemo import bioconductor_skeleton
 from planemo import io
 from planemo import options
+from planemo import rscript_parse
+from planemo import tool_builder
 from planemo.cli import command_function
 from planemo.io import info
-from planemo import rscript_parse
-
-
-REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
-                          " it has relevant planemo-generated definitions.")
 
 
 # --input_format
@@ -147,37 +142,13 @@ def cli(ctx, **kwds):
     else:  # if no rscript
         info("No Rscript found, must provide correct planemo arguments.")
 
-    # print("\n === \n")
-    # print("Print parsed data from Rscript: ", rscript_data)
-
     if invalid:
-        return invalid
+        ctx.exit(invalid)
 
-    output = kwds.get("tool")
-    if not output:
-        output = "%s.xml" % kwds.get("id")
-
-    if not io.can_write_to_path(output, **kwds):
-        sys.exit(1)
-
-    # info("Tool building starts here")
     tool_description = bioc_tool_builder.build(**kwds)
-
-    open(output, "w").write(tool_description.contents)
-    io.info("Tool written to %s" % output)
-    macros = kwds["macros"]
-    macros_file = "macros.xmll"
-    if macros and not os.path.exists(macros_file):
-        open(macros_file, "w").write(tool_description.macro_contents)
-    elif macros:
-        io.info(REUSING_MACROS_MESSAGE)
-    if tool_description.test_files:
-        if not os.path.exists("test-data"):
-            io.info("No test-data directory, creating one.")
-            io.shell("mkdir -p 'test-data'")
-        for test_file in tool_description.test_files:
-            io.info("Copying test-file %s" % test_file)
-            io.shell("cp '%s' 'test-data'" % test_file)
+    tool_builder.write_tool_description(
+        ctx, tool_description, **kwds
+    )
 
 
 def _validate_kwds(kwds):
