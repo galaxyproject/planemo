@@ -18,7 +18,7 @@ from planemo.io import info
 @click.command("bioc_tool_init")
 @options.tool_init_id_option(prompt=False)
 @options.force_option(what="tool")
-@options.tool_init_output_option()
+@options.tool_init_tool_option()
 @options.tool_init_name_option(
     prompt=False,
     help="Name for new Bioconductor tool (user facing)",
@@ -26,13 +26,6 @@ from planemo.io import info
 @options.tool_init_version_option()
 @options.tool_init_description_option()
 @options.tool_init_command_option()
-@click.option(
-    "--help_from_command",
-    type=click.STRING,
-    default=None,
-    prompt=False,
-    help="Auto populate help from supplied command.",
-)
 # TODO: Change this
 @click.option(
     "--example_command",
@@ -63,30 +56,6 @@ from planemo.io import info
           "with a tool output)."),
 )
 @click.option(
-    "--input",
-    type=click.STRING,
-    default=None,
-    prompt=False,
-    multiple=True,
-    help="An input description (e.g. input.fasta)",
-)
-@click.option(
-    "--output",
-    type=click.STRING,
-    multiple=True,
-    default=None,
-    prompt=False,
-    help=("An output location (e.g. output.bam), the Galaxy datatype is "
-          "inferred from the extension."),
-)
-@click.option(
-    "--help_text",
-    type=click.STRING,
-    default=None,
-    prompt=False,
-    help="Help text (reStructuredText)",
-)
-@click.option(
     "--requirement",
     type=click.STRING,
     default=None,
@@ -105,6 +74,10 @@ from planemo.io import info
           "specify --named_output=output1.bam and then use '-o $ouput1' "
           "in your command block."),
 )
+@options.tool_init_input_option()
+@options.tool_init_output_option()
+@options.tool_init_help_text_option()
+@options.tool_init_help_from_command_option()
 @options.tool_init_doi_option()
 @options.tool_init_cite_url_option()
 @options.tool_init_test_case_option()

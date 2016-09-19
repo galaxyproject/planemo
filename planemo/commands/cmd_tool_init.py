@@ -15,7 +15,7 @@ from planemo.cli import command_function
 @click.command("tool_init")
 @options.tool_init_id_option()
 @options.force_option(what="tool")
-@options.tool_init_output_option()
+@options.tool_init_tool_option()
 @options.tool_init_name_option()
 @options.tool_init_version_option()
 @options.tool_init_description_option()
@@ -56,23 +56,6 @@ from planemo.cli import command_function
     help="Command to print version (e.g. 'seqtk --version')",
 )
 @click.option(
-    "--input",
-    type=click.STRING,
-    default=None,
-    prompt=False,
-    multiple=True,
-    help="An input description (e.g. input.fasta)",
-)
-@click.option(
-    "--output",
-    type=click.STRING,
-    multiple=True,
-    default=None,
-    prompt=False,
-    help=("An output location (e.g. output.bam), the Galaxy datatype is "
-          "inferred from the extension."),
-)
-@click.option(
     "--named_output",
     type=click.STRING,
     multiple=True,
@@ -81,20 +64,6 @@ from planemo.cli import command_function
     help=("Create a named output for use with command block for example "
           "specify --named_output=output1.bam and then use '-o $output1' "
           "in your command block."),
-)
-@click.option(
-    "--help_text",
-    type=click.STRING,
-    default=None,
-    prompt=False,
-    help="Help text (reStructuredText)",
-)
-@click.option(
-    "--help_from_command",
-    type=click.STRING,
-    default=None,
-    prompt=False,
-    help="Auto populate help from supplied command.",
 )
 @click.option(
     "--requirement",
@@ -112,6 +81,10 @@ from planemo.cli import command_function
     prompt=False,
     help="Add a Docker image identifier for this tool."
 )
+@options.tool_init_input_option()
+@options.tool_init_output_option()
+@options.tool_init_help_text_option()
+@options.tool_init_help_from_command_option()
 @options.tool_init_doi_option()
 @options.tool_init_cite_url_option()
 @options.tool_init_test_case_option()

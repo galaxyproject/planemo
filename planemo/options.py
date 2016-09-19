@@ -1234,7 +1234,7 @@ def tool_init_id_option(prompt=True):
     )
 
 
-def tool_init_output_option():
+def tool_init_tool_option():
     return planemo_option(
         "-t",
         "--tool",
@@ -1331,4 +1331,46 @@ def tool_init_cite_url_option():
         multiple=True,
         prompt=False,
         help=("Supply a URL for citation.")
+    )
+
+def tool_init_input_option():
+    return planemo_option(
+        "--input",
+        type=click.STRING,
+        default=None,
+        prompt=False,
+        multiple=True,
+        help="An input description (e.g. input.fasta)",
+    )
+
+
+def tool_init_output_option():
+    return planemo_option(
+        "--output",
+        type=click.STRING,
+        multiple=True,
+        default=None,
+        prompt=False,
+        help=("An output location (e.g. output.bam), the Galaxy datatype is "
+              "inferred from the extension."),
+    )
+
+
+def tool_init_help_text_option():
+    return planemo_option(
+        "--help_text",
+        type=click.STRING,
+        default=None,
+        prompt=False,
+        help="Help text (reStructuredText)",
+    )
+
+
+def tool_init_help_from_command_option():
+    return planemo_option(
+        "--help_from_command",
+        type=click.STRING,
+        default=None,
+        prompt=False,
+        help="Auto populate help from supplied command.",
     )
