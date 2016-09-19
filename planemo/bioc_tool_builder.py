@@ -269,17 +269,6 @@ class Requirement(object):
         return base.format(attrs, self.name)
 
 
-class Container(object):
-
-    def __init__(self, image_id):
-        self.type = "docker"
-        self.image_id = image_id
-
-    def __str__(self):
-        template = '<container type="{0}">{1}</container>'
-        return template.format(self.type, self.image_id)
-
-
 class TestCase(object):
 
     def __init__(self):
