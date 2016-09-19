@@ -7,7 +7,9 @@ from planemo.tool_builder import (
     MACROS_TEMPLATE,
     ToolDescription,
     UrlCitation,
+    _handle_help,
     _render,
+    _replace_file_in_command,
 )
 
 
@@ -117,43 +119,6 @@ def build(**kwds):
         macro_contents,
         test_files=test_files
     )
-
-
-def _replace_file_in_command(command, specified_file, name):
-    """ Replace example file with cheetah variable name in supplied command
-    or command template. Be sure to quote the name.
-    """
-    # TODO: check if the supplied variant was single quoted already.kk
-    if '"%s"' % specified_file in command:
-        # Sample command already wrapped filename in double quotes
-        command = command.replace(specified_file, '$%s' % name)
-    else:
-        # In case of spaces, best to wrap filename in double quotes
-        command = command.replace(specified_file, '"$%s"' % name)
-    return command
-
-
-def _handle_help(kwds):
-    """ Convert supplied help parameters into a help variable for template.
-    If help_text is supplied, use as is. If help is specified from a command,
-    run the command and use that help text.
-    """
-    help_text = kwds.get("help_text")
-    if not help_text:
-        help_from_command = kwds.get("help_from_command")
-        if help_from_command:
-            p = subprocess.Popen(
-                help_from_command,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT
-            )
-            help_text = p.communicate()[0]
-
-    del kwds["help_text"]
-    del kwds["help_from_command"]
-
-    kwds["help"] = help_text
 
 
 def _handle_tests(kwds, test_case):
