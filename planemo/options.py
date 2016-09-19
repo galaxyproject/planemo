@@ -1411,3 +1411,56 @@ def tool_init_named_output_option():
               "specify --named_output=output1.bam and then use '-o $output1' "
               "in your command block."),
     )
+
+
+def tool_init_version_command_option():
+    return planemo_option(
+        "--version_command",
+        type=click.STRING,
+        default=None,
+        prompt=False,
+        help="Command to print version (e.g. 'seqtk --version')",
+    )
+
+
+REQUIREMENT_HELP = "Add a tool requirement package (e.g. 'seqtk' or 'seqtk@1.68')."
+
+
+def tool_init_requirement_option(hel=REQUIREMENT_HELP):
+    return planemo_option(
+        "--requirement",
+        type=click.STRING,
+        default=None,
+        multiple=True,
+        prompt=False,
+        help=help,
+    )
+
+
+def tool_init_container_option():
+    return planemo_option(
+        "--container",
+        type=click.STRING,
+        default=None,
+        multiple=True,
+        prompt=False,
+        help="Add a Docker image identifier for this tool."
+    )
+
+
+EXAMPLE_COMMAND_HELP = (
+    "Example to command with paths to build Cheetah template from "
+    "(e.g. 'seqtk seq -a 2.fastq > 2.fasta'). Option cannot be used "
+    "with --command, should be used --example_input and "
+    "--example_output."
+)
+
+
+def tool_init_example_command_option(help=EXAMPLE_COMMAND_HELP):
+    return planemo_option(
+        "--example_command",
+        type=click.STRING,
+        default=None,
+        prompt=False,
+        help=help,
+    )

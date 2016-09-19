@@ -19,42 +19,10 @@ from planemo.cli import command_function
 @options.tool_init_version_option()
 @options.tool_init_description_option()
 @options.tool_init_command_option()
-@click.option(
-    "--example_command",
-    type=click.STRING,
-    default=None,
-    prompt=False,
-    help=("Example to command with paths to build Cheetah template from "
-          "(e.g. 'seqtk seq -a 2.fastq > 2.fasta'). Option cannot be used "
-          "with --command, should be used --example_input and "
-          "--example_output."),
-)
-@click.option(
-    "--version_command",
-    type=click.STRING,
-    default=None,
-    prompt=False,
-    help="Command to print version (e.g. 'seqtk --version')",
-)
+@options.tool_init_example_command_option()
 @options.tool_init_example_input_option()
 @options.tool_init_example_output_option()
 @options.tool_init_named_output_option()
-@click.option(
-    "--requirement",
-    type=click.STRING,
-    default=None,
-    multiple=True,
-    prompt=False,
-    help="Add a tool requirement package (e.g. 'seqtk' or 'seqtk@1.68')."
-)
-@click.option(
-    "--container",
-    type=click.STRING,
-    default=None,
-    multiple=True,
-    prompt=False,
-    help="Add a Docker image identifier for this tool."
-)
 @options.tool_init_input_option()
 @options.tool_init_output_option()
 @options.tool_init_help_text_option()
@@ -63,6 +31,10 @@ from planemo.cli import command_function
 @options.tool_init_cite_url_option()
 @options.tool_init_test_case_option()
 @options.tool_init_macros_option()
+# Next three options not shared with bioc_tool_init
+@options.tool_init_version_command_option()
+@options.tool_init_requirement_option()
+@options.tool_init_container_option()
 @options.build_cwl_option()
 @command_function
 def cli(ctx, **kwds):
