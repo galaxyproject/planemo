@@ -1222,3 +1222,245 @@ def ci_find_options():
         ci_chunk_option(),
         ci_output_option(),
     )
+
+
+def tool_init_id_option(prompt=True):
+    return planemo_option(
+        "-i",
+        "--id",
+        type=click.STRING,
+        prompt=prompt,
+        help="Short identifier for new tool (no whitespace)",
+    )
+
+
+def tool_init_tool_option():
+    return planemo_option(
+        "-t",
+        "--tool",
+        default=None,
+        type=click.Path(exists=False,
+                        file_okay=True,
+                        dir_okay=False,
+                        writable=True,
+                        resolve_path=True),
+        help="Output path for new tool (default is <id>.xml)",
+    )
+
+
+def tool_init_name_option(prompt=True, help="Name for new tool (user facing)"):
+    return planemo_option(
+        "-n",
+        "--name",
+        type=click.STRING,
+        prompt=prompt,
+        help=help,
+    )
+
+
+def tool_init_version_option():
+    return planemo_option(
+        "--version",
+        default="0.1.0",
+        type=click.STRING,
+        help="Tool XML version.",
+    )
+
+
+def tool_init_description_option():
+    return planemo_option(
+        "-d",
+        "--description",
+        type=click.STRING,
+        default=None,
+        prompt=False,
+        help="Short description for new tool (user facing)",
+    )
+
+
+def tool_init_command_option():
+    return planemo_option(
+        "-c",
+        "--command",
+        type=click.STRING,
+        default=None,
+        prompt=False,
+        help=("Command potentially including cheetah variables ()"
+              "(e.g. 'seqtk seq -a $input > $output')"),
+    )
+
+
+def tool_init_doi_option():
+    return planemo_option(
+        "--doi",
+        type=click.STRING,
+        default=None,
+        multiple=True,
+        prompt=False,
+        help=("Supply a DOI (http://www.doi.org/) easing citation of the tool "
+              "for Galxy users (e.g. 10.1101/014043).")
+    )
+
+
+def tool_init_test_case_option():
+    return planemo_option(
+        "--test_case",
+        is_flag=True,
+        default=None,
+        prompt=False,
+        help=("For use with --example_commmand, generate a tool test case from "
+              "the supplied example."),
+    )
+
+
+def tool_init_macros_option():
+    return planemo_option(
+        "--macros",
+        is_flag=True,
+        default=None,
+        prompt=False,
+        help="Generate a macros.xml for reuse across many tools.",
+    )
+
+
+def tool_init_cite_url_option():
+    return planemo_option(
+        "--cite_url",
+        type=click.STRING,
+        default=None,
+        multiple=True,
+        prompt=False,
+        help=("Supply a URL for citation.")
+    )
+
+def tool_init_input_option():
+    return planemo_option(
+        "--input",
+        type=click.STRING,
+        default=None,
+        prompt=False,
+        multiple=True,
+        help="An input description (e.g. input.fasta)",
+    )
+
+
+def tool_init_output_option():
+    return planemo_option(
+        "--output",
+        type=click.STRING,
+        multiple=True,
+        default=None,
+        prompt=False,
+        help=("An output location (e.g. output.bam), the Galaxy datatype is "
+              "inferred from the extension."),
+    )
+
+
+def tool_init_help_text_option():
+    return planemo_option(
+        "--help_text",
+        type=click.STRING,
+        default=None,
+        prompt=False,
+        help="Help text (reStructuredText)",
+    )
+
+
+def tool_init_help_from_command_option():
+    return planemo_option(
+        "--help_from_command",
+        type=click.STRING,
+        default=None,
+        prompt=False,
+        help="Auto populate help from supplied command.",
+    )
+
+
+def tool_init_example_input_option():
+    return planemo_option(
+        "--example_input",
+        type=click.STRING,
+        default=None,
+        prompt=False,
+        multiple=True,
+        help=("For use with --example_command, replace input file (e.g. 2.fastq "
+              "with a data input parameter)."),
+    )
+
+
+def tool_init_example_output_option():
+    return planemo_option(
+        "--example_output",
+        type=click.STRING,
+        default=None,
+        prompt=False,
+        multiple=True,
+        help=("For use with --example_command, replace input file (e.g. 2.fastq "
+              "with a tool output)."),
+    )
+
+
+def tool_init_named_output_option():
+    return planemo_option(
+        "--named_output",
+        type=click.STRING,
+        multiple=True,
+        default=None,
+        prompt=False,
+        help=("Create a named output for use with command block for example "
+              "specify --named_output=output1.bam and then use '-o $output1' "
+              "in your command block."),
+    )
+
+
+def tool_init_version_command_option():
+    return planemo_option(
+        "--version_command",
+        type=click.STRING,
+        default=None,
+        prompt=False,
+        help="Command to print version (e.g. 'seqtk --version')",
+    )
+
+
+REQUIREMENT_HELP = "Add a tool requirement package (e.g. 'seqtk' or 'seqtk@1.68')."
+
+
+def tool_init_requirement_option(hel=REQUIREMENT_HELP):
+    return planemo_option(
+        "--requirement",
+        type=click.STRING,
+        default=None,
+        multiple=True,
+        prompt=False,
+        help=help,
+    )
+
+
+def tool_init_container_option():
+    return planemo_option(
+        "--container",
+        type=click.STRING,
+        default=None,
+        multiple=True,
+        prompt=False,
+        help="Add a Docker image identifier for this tool."
+    )
+
+
+EXAMPLE_COMMAND_HELP = (
+    "Example to command with paths to build Cheetah template from "
+    "(e.g. 'seqtk seq -a 2.fastq > 2.fasta'). Option cannot be used "
+    "with --command, should be used --example_input and "
+    "--example_output."
+)
+
+
+def tool_init_example_command_option(help=EXAMPLE_COMMAND_HELP):
+    return planemo_option(
+        "--example_command",
+        type=click.STRING,
+        default=None,
+        prompt=False,
+        help=help,
+    )

@@ -4,6 +4,7 @@ This class is used by the `tool_init` command and can be used to build
 Galaxy and CWL tool descriptions.
 """
 
+import os
 import re
 import shlex
 import subprocess
@@ -12,6 +13,9 @@ from collections import namedtuple
 
 from planemo import io
 from planemo import templates
+
+REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
+                          " it has relevant planemo-generated definitions.")
 
 
 TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
@@ -821,7 +825,44 @@ class TestCase(object):
         self.outputs = []
 
 
+def write_tool_description(ctx, tool_description, **kwds):
+    """Write a tool description to the file system guided by supplied CLI kwds."""
+    tool_id = kwds.get("id")
+    output = kwds.get("tool")
+    if not output:
+        extension = "cwl" if kwds.get("cwl") else "xml"
+        output = "%s.%s" % (tool_id, extension)
+    if not io.can_write_to_path(output, **kwds):
+        ctx.exit(1)
+
+    io.write_file(output, tool_description.contents)
+    io.info("Tool written to %s" % output)
+    test_contents = tool_description.test_contents
+    if test_contents:
+        sep = "-" if "-" in tool_id else "_"
+        tests_path = "%s%stests.yml" % (kwds.get("id"), sep)
+        if not io.can_write_to_path(tests_path, **kwds):
+            ctx.exit(1)
+        io.write_file(tests_path, test_contents)
+        io.info("Tool tests written to %s" % tests_path)
+
+    macros = kwds["macros"]
+    macros_file = "macros.xml"
+    if macros and not os.path.exists(macros_file):
+        io.write_file(macros_file, tool_description.macro_contents)
+    elif macros:
+        io.info(REUSING_MACROS_MESSAGE)
+    if tool_description.test_files:
+        if not os.path.exists("test-data"):
+            io.info("No test-data directory, creating one.")
+            io.shell("mkdir -p 'test-data'")
+        for test_file in tool_description.test_files:
+            io.info("Copying test-file %s" % test_file)
+            io.shell("cp '%s' 'test-data'" % test_file)
+
+
 __all__ = [
     "build",
-    "ToolDescription"
+    "ToolDescription",
+    "write_tool_description",
 ]
