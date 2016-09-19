@@ -4,44 +4,10 @@ import yaml
 import os
 from planemo import templates
 from planemo.conda import write_bioconda_recipe
-from planemo.tool_builder import TOOL_TEMPLATE
-
-
-MACROS_TEMPLATE = """<macros>
-    <xml name="requirements">
-        <requirements>
-{%- for requirement in requirements %}
-        {{ requirement }}
-{%- endfor %}
-            <yield/>
-{%- for container in containers %}
-        {{ container }}
-{%- endfor %}
-        </requirements>
-    </xml>
-    <xml name="stdio">
-        <stdio>
-            <exit_code range="1:" />
-        </stdio>
-    </xml>
-    <xml name="citations">
-        <citations>
-{%- for single_doi in doi %}
-            <citation type="doi">{{ single_doi }}</citation>
-{%- endfor %}
-{%- for bibtex_citation in bibtex_citations %}
-            <citation type="bibtex">{{ bibtex_citation }}</citation>
-{%- endfor %}
-            <yield />
-        </citations>
-    </xml>
-{%- if version_command %}
-    <xml name="version_command">
-        <version_command>{{ version_command }}</version_command>
-    </xml>
-{%- endif %}
-</macros>
-"""
+from planemo.tool_builder import (
+    TOOL_TEMPLATE,
+    MACROS_TEMPLATE,
+)
 
 
 def build(**kwds):
