@@ -20,14 +20,8 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
 # --input_format
 # --output_format
 # --advanced_options
-@click.option(
-    "-i",
-    "--id",
-    type=click.STRING,
-    # TODO: Conditional prompt for Rscript
-    prompt=False,
-    help="Short identifier for new tool (no whitespace)",
-)
+@click.command("bioc_tool_init")
+@options.tool_init_id_option(prompt=False)
 @options.force_option(what="tool")
 @click.option(
     "-t",
@@ -199,7 +193,6 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
           "best practices, and create a tool definition file."
           "eg: planemo bioc_tool_init --rscript 'file.R' ")
 )
-@click.command("bioc_tool_init")
 @command_function
 def cli(ctx, **kwds):
     """Generate a bioconductor tool outline from supplied arguments."""

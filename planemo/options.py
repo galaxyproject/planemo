@@ -1222,3 +1222,13 @@ def ci_find_options():
         ci_chunk_option(),
         ci_output_option(),
     )
+
+
+def tool_init_id_option(prompt=True):
+    return planemo_option(
+        "-i",
+        "--id",
+        type=click.STRING,
+        prompt=prompt,
+        help="Short identifier for new tool (no whitespace)",
+    )

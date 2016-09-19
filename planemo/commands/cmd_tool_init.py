@@ -16,13 +16,7 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
 # --output_format
 # --advanced_options
 @click.command("tool_init")
-@click.option(
-    "-i",
-    "--id",
-    type=click.STRING,
-    prompt=True,
-    help="Short identifier for new tool (no whitespace)",
-)
+@options.tool_init_id_option()
 @options.force_option(what="tool")
 @click.option(
     "-t",
