@@ -1,4 +1,3 @@
-
 import yaml
 import os
 from planemo.conda import write_bioconda_recipe
@@ -134,13 +133,7 @@ def _handle_requirements(kwds):
     requirements = requirements or []
 
     requirements = [Requirement(req, bioconda_path=bioconda_path) for req in requirements]
-
-    # container = kwds["container"]
-    # del kwds["container"]
-    # containers = map(Container, container or [])
-
     kwds["requirements"] = requirements
-    # kwds["containers"] = containers
 
 
 class Output(object):
