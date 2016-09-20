@@ -555,7 +555,7 @@ def shed_project_arg(multiple=True):
     )
 
 
-def optional_project_arg(exists=True):
+def optional_project_arg(exists=True, default="."):
     arg_type = click.Path(
         exists=exists,
         file_okay=False,
@@ -566,7 +566,7 @@ def optional_project_arg(exists=True):
     return click.argument(
         "path",
         metavar="PROJECT",
-        default=".",
+        default=default,
         type=arg_type
     )
 
