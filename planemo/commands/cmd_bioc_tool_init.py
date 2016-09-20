@@ -31,7 +31,6 @@ REQUIREMENT_HELP = ("Give the name of the bioconductor package, "
 @options.tool_init_version_option()
 @options.tool_init_description_option()
 @options.tool_init_command_option()
-# TODO: Change this
 @options.tool_init_example_command_option(help=EXAMPLE_CMD_HELP)
 @options.tool_init_requirement_option(help=REQUIREMENT_HELP)
 @options.tool_init_example_input_option()

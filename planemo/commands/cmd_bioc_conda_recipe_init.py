@@ -18,7 +18,7 @@ from planemo.conda import write_bioconda_recipe
 )
 @click.option(
     '-c',
-    '--clone/--no-clone',
+    '--clone/--no_clone',
     default=False,
     prompt=True,
     help=("Clone bioconda repository from github or not?")
@@ -32,7 +32,7 @@ from planemo.conda import write_bioconda_recipe
 )
 @click.option(
     '-u',
-    '--update/--no-update',
+    '--update/--no_update',
     default=False,
     help=("Update an existing bioconda recipe")
 )
