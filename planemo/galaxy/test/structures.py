@@ -62,8 +62,7 @@ class GalaxyTestCommand(object):
 
 
 class StructuredData(BaseStructuredData):
-    """ Abstraction around Galaxy's structured test data output.
-    """
+    """Abstraction around Galaxy's structured test data output."""
 
     def __init__(self, json_path):
         if not json_path or not os.path.exists(json_path):

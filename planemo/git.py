@@ -1,5 +1,5 @@
-""" Utilities for interacting with git using planemo abstractions.
-"""
+"""Utilities for interacting with git using planemo abstractions."""
+import os
 import subprocess
 
 from six import text_type
@@ -7,8 +7,33 @@ from six import text_type
 from planemo import io
 
 
+def git_env_for(path):
+    """Setup env dictionary to target specified git repo with git commands."""
+    env = {
+        "GIT_WORK_DIR": path,
+        "GIT_DIR": os.path.join(path, ".git")
+    }
+    return env
+
+
+def checkout(ctx, remote_repo, local_path, branch=None, remote="origin", from_branch="master"):
+    """Checkout a new branch from a remote repository."""
+    env = git_env_for(local_path)
+    if not os.path.exists(local_path):
+        io.communicate(command_clone(ctx, remote_repo, local_path))
+    else:
+        io.communicate(["git", "fetch", remote], env=env)
+
+    if branch:
+        io.communicate(["git", "checkout", "%s/%s" % (remote, from_branch), "-b", branch], env=env)
+    else:
+        io.communicate(["git", "merge", "--ff-only", "%s/%s" % (remote, from_branch)], env=env)
+
+
 def command_clone(ctx, src, dest, bare=False, branch=None):
-    """ Take in ctx to allow more configurability down the road.
+    """Produce a command-line string to clone a repository.
+
+    Take in ``ctx`` to allow more configurability down the road.
     """
     bare_arg = ""
     if bare:
@@ -21,6 +46,7 @@ def command_clone(ctx, src, dest, bare=False, branch=None):
 
 
 def diff(ctx, directory, range):
+    """Produce a list of diff-ed files for commit range."""
     cmd_template = "cd '%s' && git diff --name-only '%s'"
     cmd = cmd_template % (directory, range)
     stdout, _ = io.communicate(
@@ -30,8 +56,12 @@ def diff(ctx, directory, range):
 
 
 def clone(*args, **kwds):
+    """Clone a git repository.
+
+    See :func:`command_clone` for description of arguments.
+    """
     command = command_clone(*args, **kwds)
-    return io.shell(command)
+    return io.communicate(command)
 
 
 def rev(ctx, directory):
@@ -48,11 +78,14 @@ def rev(ctx, directory):
 
 
 def is_rev_dirty(ctx, directory):
+    """Check if specified git repository has uncommitted changes."""
+    # TODO: Use ENV instead of cd.
     cmd = "cd '%s' && git diff --quiet" % directory
     return io.shell(cmd) != 0
 
 
 def rev_if_git(ctx, directory):
+    """Determine git revision (or ``None``)."""
     try:
         the_rev = rev(ctx, directory)
         is_dirtry = is_rev_dirty(ctx, directory)
