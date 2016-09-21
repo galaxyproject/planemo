@@ -1,5 +1,7 @@
 aenum
+BeautifulSoup4
 Click
+configparser
 six>=1.7.0
 pyyaml
 bioblend>=0.8.0
