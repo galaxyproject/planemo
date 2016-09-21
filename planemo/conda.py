@@ -10,8 +10,10 @@ import os
 from galaxy.tools.deps import conda_util
 from galaxy.tools.deps.requirements import parse_requirements_from_xml
 from galaxy.tools.loader_directory import load_tool_elements_from_path
-
+from planemo import git
 from planemo.io import shell
+from planemo.io import info
+from planemo.bioconda_scripts import bioconductor_skeleton
 
 
 def build_conda_context(ctx, **kwds):
@@ -82,9 +84,9 @@ def write_bioconda_recipe(package_name, clone, update, bioconda_dir_path=None):
         if update:
             info("Package will be updated")
             recipe_dir = os.path.join(bioconda_recipe_path, "recipes")
-            write_recipe(package_name, recipe_dir, True)
+            bioconductor_skeleton.write_recipe(package_name, recipe_dir, True)
     elif not presence:
         info("Package found in bioconda recipes")
         recipe_dir = os.path.join(bioconda_recipe_path, "recipes")
-        write_recipe(package_name, recipe_dir, True)
+        bioconductor_skeleton.write_recipe(package_name, recipe_dir, True)
     return
