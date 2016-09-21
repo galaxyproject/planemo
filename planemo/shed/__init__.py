@@ -713,7 +713,7 @@ def find_raw_repositories(ctx, paths, **kwds):
 def for_each_repository(ctx, function, paths, **kwds):
     ret_codes = []
     for path in paths:
-        with _path_on_disk(path) as raw_path:
+        with _path_on_disk(ctx, path) as raw_path:
             try:
                 for realized_repository in _realize_effective_repositories(
                     ctx, raw_path, **kwds
@@ -852,7 +852,7 @@ def _parse_repos_from_workflow(path):
 
 
 @contextlib.contextmanager
-def _path_on_disk(path):
+def _path_on_disk(ctx, path):
     git_path = None
     if path.startswith("git:"):
         git_path = path
@@ -862,8 +862,7 @@ def _path_on_disk(path):
         yield path
     else:
         with temp_directory() as git_repo:
-            # TODO: pass ctx down through
-            git.clone(None, git_path, git_repo)
+            git.clone(ctx, git_path, git_repo)
             yield git_repo
 
 

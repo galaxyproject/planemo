@@ -16,7 +16,7 @@ from planemo.cli import command_function
 @options.brew_option()
 @command_function
 def cli(ctx, path, brew=None):
-    """Install tool requirements using brew. (**Experimental**)
+    """Install tool requirements using brew.
 
     An experimental approach to versioning brew recipes will be used.
     See full discussion on the homebrew-science issues page here -
