@@ -21,7 +21,7 @@ def cli(ctx, path, message=None, **kwds):
     """Short-cut to quickly create a pull request for a relevant Github repo.
 
     For instance, the following will clone, fork, and branch the tools-iuc
-    repository to allow this pull request to issues against the repository.
+    repository to allow a subsequent pull request to fix a problem with bwa.
 
     ::
 
