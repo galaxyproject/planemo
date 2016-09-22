@@ -26,7 +26,6 @@ LINTING_TOOL_MESSAGE = "Linting tool %s"
 def lint_tools_on_path(ctx, paths, lint_args, **kwds):
     assert_tools = kwds.get("assert_tools", True)
     recursive = kwds.get("recursive", False)
-    valid_tools = 0
     exit_codes = []
     for (tool_path, tool_xml) in yield_tool_sources_on_paths(ctx, paths, recursive):
         if handle_tool_load_error(tool_path, tool_xml):
@@ -37,7 +36,6 @@ def lint_tools_on_path(ctx, paths, lint_args, **kwds):
             error("Failed linting")
             exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
         else:
-            valid_tools += 1
             exit_codes.append(EXIT_CODE_OK)
     return coalesce_return_codes(exit_codes, assert_at_least_one=assert_tools)
 

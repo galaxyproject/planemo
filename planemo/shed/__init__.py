@@ -27,6 +27,7 @@ from planemo.io import (
     can_write_to_path,
     coalesce_return_codes,
     error,
+    find_matching_directories,
     info,
     shell,
     temp_directory,
@@ -870,14 +871,9 @@ def _find_raw_repositories(path, **kwds):
     name = kwds.get("name", None)
     recursive = kwds.get("recursive", False)
 
-    shed_file_dirs = []
-    if recursive:
-        for base_path, dirnames, filenames in os.walk(path):
-            dirnames.sort()
-            for filename in fnmatch.filter(filenames, SHED_CONFIG_NAME):
-                shed_file_dirs.append(base_path)
-    elif os.path.exists(os.path.join(path, SHED_CONFIG_NAME)):
-        shed_file_dirs.append(path)
+    shed_file_dirs = find_matching_directories(
+        path, SHED_CONFIG_NAME, recursive=recursive
+    )
 
     config_name = None
     if len(shed_file_dirs) == 1:

@@ -541,7 +541,6 @@ def shed_project_arg(multiple=True):
         exists=True,
         file_okay=False,
         dir_okay=True,
-        writable=True,
         resolve_path=True,
     )
     name = "paths" if multiple else "path"
@@ -550,6 +549,23 @@ def shed_project_arg(multiple=True):
         name,
         metavar="PROJECT",
         type=arg_type,
+        nargs=nargs,
+        callback=_optional_tools_default,
+    )
+
+
+def recipe_arg(multiple=True):
+    name = "paths" if multiple else "path"
+    nargs = -1 if multiple else 1
+    return click.argument(
+        name,
+        metavar="RECIPE_DIR",
+        type=click.Path(
+            exists=True,
+            file_okay=True,
+            dir_okay=True,
+            resolve_path=True,
+        ),
         nargs=nargs,
         callback=_optional_tools_default,
     )
