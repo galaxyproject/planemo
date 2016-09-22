@@ -1,5 +1,4 @@
-""" Click definitions for various shared options and arguments.
-"""
+"""Click definitions for various shared options and arguments."""
 
 from __future__ import absolute_import
 
@@ -933,11 +932,10 @@ def shed_fail_fast_option():
 
 def lint_xsd_option():
     return planemo_option(
-        "--xsd",
+        "--xsd/--no_xsd",
         is_flag=True,
-        default=False,
-        help=("Include experimental tool XSD validation in linting "
-              "process (requires xmllint on PATH or lxml installed).")
+        default=True,
+        help=("Include tool XSD validation in linting process.")
     )
 
 
@@ -963,8 +961,8 @@ def skip_option():
         "-s",
         "--skip",
         default=None,
-        help=("Comma-separated list of lint tests to skip (e.g send ."
-              "--skip 'citations,xml_order' to skip linting of citations "
+        help=("Comma-separated list of lint tests to skip (e.g. passing "
+              "--skip 'citations,xml_order' would skip linting of citations "
               "and best-practice XML ordering.")
     )
 
