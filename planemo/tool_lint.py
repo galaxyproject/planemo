@@ -72,7 +72,7 @@ def build_lint_args(ctx, **kwds):
 
 def _lint_extra_modules(**kwds):
     linters = []
-    if kwds.get("xsd", False):
+    if kwds.get("xsd", True):
         linters.append(planemo.linters.xsd)
 
     if kwds.get("doi", False):

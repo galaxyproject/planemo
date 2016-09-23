@@ -1,3 +1,4 @@
+"""Module describing abstractions for validating XML content."""
 import abc
 import subprocess
 
@@ -17,18 +18,20 @@ INSTALL_VALIDATOR_MESSAGE = ("This feature requires an external dependency "
 
 
 class XsdValidator(object):
+    """Class allowing validation of XML files against XSD schema."""
+
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def validate(self, schema_path, target_path):
-        """ Validate ``target_path`` against ``schema_path``.
+        """Validate ``target_path`` against ``schema_path``.
 
         :return type: ValidationResult
         """
 
     @abc.abstractmethod
     def enabled(self):
-        """ Return True iff system has dependencies for this validator.
+        """Return True iff system has dependencies for this validator.
 
         :return type: bool
         """
@@ -37,7 +40,7 @@ ValidationResult = namedtuple("ValidationResult", ["passed", "output"])
 
 
 class LxmlValidator(XsdValidator):
-    """ Validate XSD files using lxml library. """
+    """Validate XSD files using lxml library."""
 
     def validate(self, schema_path, target_path):
         try:
@@ -54,7 +57,7 @@ class LxmlValidator(XsdValidator):
 
 
 class XmllintValidator(XsdValidator):
-    """ Validate XSD files with the external tool xmllint. """
+    """Validate XSD files with the external tool xmllint."""
 
     def validate(self, schema_path, target_path):
         command = XMLLINT_COMMAND.format(schema_path, target_path)
@@ -71,6 +74,7 @@ VALIDATORS = [LxmlValidator(), XmllintValidator()]
 
 
 def get_validator(require=True):
+    """Return a :class:`XsdValidator` object based on available dependencies."""
     for validator in VALIDATORS:
         if validator.enabled():
             return validator
@@ -79,3 +83,9 @@ def get_validator(require=True):
         raise Exception(INSTALL_VALIDATOR_MESSAGE)
 
     return None
+
+
+__all__ = [
+    "get_validator",
+    "XsdValidator",
+]
