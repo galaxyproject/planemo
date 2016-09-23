@@ -44,6 +44,14 @@ planemo.commands.cmd_ci_find_tools module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd_clone module
+---------------------------------
+
+.. automodule:: planemo.commands.cmd_clone
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd_conda_env module
 -------------------------------------
 
@@ -64,6 +72,14 @@ planemo.commands.cmd_conda_install module
 -----------------------------------------
 
 .. automodule:: planemo.commands.cmd_conda_install
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_conda_lint module
+--------------------------------------
+
+.. automodule:: planemo.commands.cmd_conda_lint
     :members:
     :undoc-members:
     :show-inheritance:
@@ -192,6 +208,14 @@ planemo.commands.cmd_project_init module
 ----------------------------------------
 
 .. automodule:: planemo.commands.cmd_project_init
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_pull_request module
+----------------------------------------
+
+.. automodule:: planemo.commands.cmd_pull_request
     :members:
     :undoc-members:
     :show-inheritance:
