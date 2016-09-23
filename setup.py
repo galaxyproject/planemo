@@ -14,6 +14,13 @@ if sys.version_info < (2, 7):
     sys.stderr.write("ERROR: planemo requires at least Python Version 2.7\n")
     sys.exit(1)
 
+# Allow installer to turn off dependency on lxml by setting the environment variable
+# PLANEMO_REQUIRE_LXML to "0". lxml should be considered optional if xmllint is
+# available on the PATH - but python doesn't really provide me a fantastic way to
+# express that.
+DEFAULT_PLANEMO_REQUIRE_LXML = 1
+PLANEMO_REQUIRE_LXML = os.environ.get("PLANEMO_REQUIRE_LXML", "%d" % DEFAULT_PLANEMO_REQUIRE_LXML) != "0"
+
 SOURCE_DIR = "planemo"
 
 _version_re = re.compile(r'__version__\s+=\s+(.*)')
@@ -81,6 +88,8 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 if os.path.exists("requirements.txt"):
     requirements = [ r for r in open("requirements.txt").read().split("\n") if ";" not in r ]
     py27_requirements = [ r.split(";", 1)[0].strip() for r in open("requirements.txt").read().split("\n") if ";" in r ]
+    if not PLANEMO_REQUIRE_LXML:
+        requirements.remove("lxml")
 else:
     # In tox, it will cover them anyway.
     requirements = []
