@@ -28,7 +28,10 @@ from planemo.io import (
     find_matching_directories,
     info,
 )
-from planemo.lint_util import handle_lint_complete, setup_lint
+from planemo.lint import (
+    handle_lint_complete,
+    setup_lint,
+)
 
 
 def lint_recipes_on_paths(ctx, paths, **kwds):

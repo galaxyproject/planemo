@@ -1,7 +1,11 @@
+"""Utilities to help linting various targets."""
+from __future__ import absolute_import
+
 import os
 
 import requests
 
+from galaxy.tools.lint import LintContext
 from six.moves.urllib.error import (
     HTTPError,
     URLError,
@@ -10,11 +14,68 @@ from six.moves.urllib.request import (
     urlopen,
 )
 
+import planemo.linters.doi
+import planemo.linters.urls
+import planemo.linters.xsd
+
+from planemo.io import error
 from planemo.shed import find_urls_for_xml
 from planemo.xml import validation
 
 
+def build_lint_args(ctx, **kwds):
+    """Handle common report, error, and skip linting arguments."""
+    report_level = kwds.get("report_level", "all")
+    fail_level = kwds.get("fail_level", "warn")
+    skip = kwds.get("skip", None)
+    if skip is None:
+        skip = ctx.global_config.get("lint_skip", "")
+        if isinstance(skip, list):
+            skip = ",".join(skip)
+
+    skip_types = [s.strip() for s in skip.split(",")]
+    lint_args = dict(
+        level=report_level,
+        fail_level=fail_level,
+        extra_modules=_lint_extra_modules(**kwds),
+        skip_types=skip_types,
+    )
+    return lint_args
+
+
+# TODO: Move this back to tool_lint.
+def _lint_extra_modules(**kwds):
+    linters = []
+    if kwds.get("xsd", True):
+        linters.append(planemo.linters.xsd)
+
+    if kwds.get("doi", False):
+        linters.append(planemo.linters.doi)
+
+    if kwds.get("urls", False):
+        linters.append(planemo.linters.urls)
+
+    return linters
+
+
+def setup_lint(ctx, **kwds):
+    """Setup lint_args and lint_ctx to begin linting a target."""
+    lint_args = build_lint_args(ctx, **kwds)
+    lint_ctx = LintContext(lint_args["level"])
+    return lint_args, lint_ctx
+
+
+def handle_lint_complete(lint_ctx, lint_args, failed=False):
+    """Complete linting of a target and decide exit code."""
+    if not failed:
+        failed = lint_ctx.failed(lint_args["fail_level"])
+    if failed:
+        error("Failed linting")
+    return 1 if failed else 0
+
+
 def lint_dois(tool_xml, lint_ctx):
+    """Find referenced DOIs and check they have valid with http://dx.doi.org."""
     dois = find_dois_for_xml(tool_xml)
     for publication in dois:
         is_doi(publication, lint_ctx)
@@ -30,9 +91,7 @@ def find_dois_for_xml(tool_xml):
 
 
 def is_doi(publication_id, lint_ctx):
-    """
-    Check if dx.doi knows about the publication_id
-    """
+    """Check if dx.doi knows about the ``publication_id``."""
     base_url = "http://dx.doi.org"
     doiless_publication_id = publication_id.split("doi:", 1)[-1]
     url = "%s/%s" % (base_url, doiless_publication_id)
@@ -49,6 +108,7 @@ def is_doi(publication_id, lint_ctx):
 
 
 def lint_xsd(lint_ctx, schema_path, path):
+    """Lint XML at specified path with supplied schema."""
     name = os.path.basename(path)
     validator = validation.get_validator(require=True)
     validation_result = validator.validate(schema_path, path)
@@ -61,6 +121,7 @@ def lint_xsd(lint_ctx, schema_path, path):
 
 
 def lint_urls(root, lint_ctx):
+    """Find referenced URLs and verify they are valid."""
     urls = find_urls_for_xml(root)
 
     def validate_url(url, lint_ctx):
@@ -83,3 +144,12 @@ def lint_urls(root, lint_ctx):
 
     for url in urls:
         validate_url(url, lint_ctx)
+
+
+__all__ = [
+    "build_lint_args",
+    "handle_lint_complete",
+    "lint_dois",
+    "lint_urls",
+    "lint_xsd",
+]

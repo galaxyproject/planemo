@@ -1,3 +1,4 @@
+"""Logic related to linting shed repositories."""
 from __future__ import absolute_import
 
 import os
@@ -10,9 +11,12 @@ from galaxy.tools.lint import lint_tool_source_with
 from galaxy.tools.linters.help import rst_invalid
 
 from planemo.io import info
-from planemo.lint import lint_urls
-from planemo.lint import lint_xsd
-from planemo.lint_util import handle_lint_complete, setup_lint
+from planemo.lint import (
+    handle_lint_complete,
+    lint_urls,
+    lint_xsd,
+    setup_lint,
+)
 from planemo.shed import (
     CURRENT_CATEGORIES,
     REPO_TYPE_SUITE,
@@ -49,6 +53,11 @@ SHED_METADATA = [
 
 
 def lint_repository(ctx, realized_repository, **kwds):
+    """Lint a realized shed repository.
+
+    See :module:`planemo.shed` for details on constructing a realized
+    repository data structure.
+    """
     # TODO: this really needs to start working with realized path.
     failed = False
     path = realized_repository.real_path
@@ -332,3 +341,7 @@ def _validate_categories(categories, realized_repository):
                        "in the category 'Tool Dependency Packages'.")
 
     return msg
+
+__all__ = [
+    "lint_repository",
+]

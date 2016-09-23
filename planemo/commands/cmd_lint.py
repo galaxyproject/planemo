@@ -3,7 +3,7 @@ import click
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.tool_lint import build_lint_args
+from planemo.lint import build_lint_args
 from planemo.tool_lint import lint_tools_on_path
 
 
