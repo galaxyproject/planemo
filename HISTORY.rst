@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.33.0.dev0
+0.33.0 (2016-09-23)
 ---------------------
 
 * Enable XSD validation of tools by default (restore old behavior with
