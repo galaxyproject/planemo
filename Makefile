@@ -88,6 +88,10 @@ _open-coverage: ## open coverage report using open
 
 coverage: _coverage-report open-coverage ## check code coverage quickly with the default Python
 
+open-history:  # view HISTORY.rst as HTML.
+	rst2html HISTORY.rst > /tmp/planemo_history.html
+	$(OPEN_RESOURCE) /tmp/planemo_history.html
+
 ready-docs:  ## rebuild docs folder ahead of running docs or lint-docs
 	rm -f $(DOCS_DIR)/$(SOURCE_DIR).rst
 	rm -f $(DOCS_DIR)/planemo_ext.rst

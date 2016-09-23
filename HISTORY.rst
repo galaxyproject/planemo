@@ -9,6 +9,24 @@ History
 0.33.0.dev0
 ---------------------
 
+* Enable XSD validation of tools by default (restore old behavior with
+  ``planemo lint --no_xsd``). 1ef05d2_
+* Implement a ``conda_lint`` command to lint Conda_ recipes based
+  on `anaconda-verify`_. 6a6f164_
+* Implement ``clone`` and ``pull_request`` commands to ease PRs
+  (with documentation fixes from @martenson).
+  e925ba1_, ea5324f_
+* Update `galaxy.xsd`_ to allow version_command's to have an interpreter
+  attribute. 7cca2e4_
+* Apply improvement from @nsoranzo for Planemo's use of git_ 
+  `diff <https://git-scm.com/docs/git-diff>`__.
+  6f91719_
+* Pull in downstream refactoring of ``tool_init`` code from @nturaga's 
+  Bioconductor_ work. ccdd2d5_
+* Update to latest `Tool Factory`_ code from `tools-iuc`_. ca88b0c_
+* Small code cleanups. b6d8294_, d6da3a8_
+* Fixup docs in ``planemo.xml.validation``.
+* Allow skipping newly required lxml_ dependency in `setup.py`_. 34538de_
     
 
 ---------------------
@@ -37,14 +55,14 @@ History
 0.30.2 (2016-09-01)
 ---------------------
 
-* Fix another problem with conda prefix handling when using
+* Fix another problem with Conda_ prefix handling when using
   ``--conda_dependency_resolution``. f7b6c7e_
 
 ---------------------
 0.30.1 (2016-09-01)
 ---------------------
 
-* Fix a problem with conda prefix handling when using
+* Fix a problem with Conda_ prefix handling when using
   ``--conda_dependency_resolution``. f7b6c7e_
 * Fix for quote problem in ``update_planemo_recipe.bash``. 6c03de8_
 * Fix to restore linting of ``tests/`` directory and fix import order 
@@ -54,15 +72,15 @@ History
 0.30.0 (2016-09-01)
 ---------------------
 
-* Update to the latest galaxy-lib release and change conda semantics to match
-  recent updates to Galaxy. For the most robust conda usage - use planemo 0.30+
+* Update to the latest galaxy-lib release and change Conda_ semantics to match
+  recent updates to Galaxy. For the most robust Conda_ usage - use planemo 0.30+
   with Galaxy 16.07 or master.
   07d94bd_
 * Implement the ``--conda_auto_init`` flag for ``conda_install``. ca19910_
 * Allow the environment variable ``PLANEMO_CONDA_PREFIX`` to set a default
   for ``--conda_prefix``.
   24008ab_
-* Fixup documentation regarding installs and conda. ce44e87_
+* Fixup documentation regarding installs and Conda_. ce44e87_
 * Fix and lint Python module import order throughout project.
   `Pull Request 550`_
 * Use ``cp`` rather than symlink to ``$DOWNLOAD_CACHE`` in the
@@ -180,7 +198,7 @@ History
 * Add code and documentation for linting (``lint``) and
   building (``tool_init``) CWL_ tools. a4e6958_, b0b867e_,
   4cd571c_
-* If needed for conda workaround, shorten ``config_directory`` 
+* If needed for Conda_ workaround, shorten ``config_directory`` 
   path (thanks to Marius van den Beek). efc5f30_
 * Fix ``--no_cache_galaxy`` option (thanks to Gildas Le 
   Corguillé). d8f2038_
@@ -198,7 +216,7 @@ History
 * Revise command-line handling framework for consistency and
   extension - allow extra options to be configured as 
   defaults ``~/.planemo.yml`` including ``--job_config_file``
-  and conda configuration options. e769118_, 26e378e_
+  and Conda_ configuration options. e769118_, 26e378e_
 * Fix ``tool_init`` commans options typos (thanks to
   Nitesh Turaga). 826d371_
 * Refactor galaxy-related modules into submodules of a new
@@ -251,7 +269,7 @@ History
 0.23.0 (2016-02-15)
 ---------------------
 
-* Fix duplicated attributes with conda resolver (thanks
+* Fix duplicated attributes with Conda_ resolver (thanks
   to Björn Grüning). `Pull Request 403`_
 * Upgrade to latest version of galaxy-lib for more linting.
 * Attempt to better handle conditional dependency on cwltool.
@@ -266,7 +284,7 @@ History
 0.22.1 (2016-01-14)
 ---------------------
 
-* Fixed problem with PyPI build artifacts due to submodule's not
+* Fixed problem with PyPI_ build artifacts due to submodule's not
   being initialized during previous release.
 
 ---------------------
@@ -277,12 +295,12 @@ History
   conda environments. 9f3957d_
 * Implement conda support. f99f6c1_, ad3b2f0_, 5e0b6d1_
 * Update LICENSE for Planemo to match Galaxy. 15d33c7_
-* Depend on new galaxy-lib on PyPI instead of previous hacks....
+* Depend on new galaxy-lib on PyPI_ instead of previous hacks....
   `Pull Request 394`_
 * Fix egg caching against master/15.10. 6d0f502_
 * Fix bug causing shed publishing of ``.svn`` directories.
   `Issue 391`_
-* Bug fixes for conda support thanks to @bgruening. 63e456c_
+* Bug fixes for Conda_ support thanks to @bgruening. 63e456c_
 * Fix document issues thanks to @einon.
   `Pull Request 390`_
 * Improve client for shed publishing to support newer shed backend
@@ -370,7 +388,7 @@ History
   `Pull Request 356`_
 * Add ``--cite_url`` to ``tool_init``. fdb1b51_
 * ``tool_init`` bug fix. f854138_
-* Fix ``setup.py`` for cwltool and bioblend changes. 1a157d4_
+* Fix `setup.py`_ for cwltool and bioblend changes. 1a157d4_
 * Add option to specify template sqlite database locally. c23569f_
 * Add example IPython notebooks to docs. c8640b6_
 
@@ -436,7 +454,7 @@ History
   `Pull Request 292`_    
 * Improved documentation for ``serve`` command - thanks to @lparsons.
   `Pull Request 312`_
-* Tiny backward compatible Python 3 tweaks for tool factory - thanks
+* Tiny backward compatible Python 3 tweaks for `Tool Factory`_ - thanks
   to @peterjc. dad2d9d_
 * Fixed detection of virtual environment in ``Makefile`` - thanks to
   @lparsons. `Pull Request 311`_
@@ -582,7 +600,7 @@ History
 * Extend ``shed_lint`` to check for required files based on repository type.
   `Issue 156`_
 * Ignore common editor backup files during ``shed_upload``. `Issue 179`_
-* Fix missing file when installing from source via PyPI. `Issue 181`_
+* Fix missing file when installing from source via PyPI_. `Issue 181`_
 * Fix ``lint`` to verify ``data`` inputs specify a ``format`` attribute.
   8117e03_
 * Docstring fix thanks to @peterjc. fe7ad46_
@@ -614,7 +632,7 @@ History
   multipe repositories. 40a1f57_
 * Add ``--port`` option to the ``serve`` and ``tool_factory`` commands.
   15804be_
-* Fix problem introduced with ``setup.py`` during the 0.9.0 development cycle
+* Fix problem introduced with `setup.py`_ during the 0.9.0 development cycle
   - thanks to @peterjc. `Pull Request 171`_
 * Fix clone bug introduced during 0.9.0 development cycle - thanks to
   @bgruening. `Pull Request 175`_
@@ -725,7 +743,7 @@ History
   182fe57_
 * Fix incorrect link in HTML test report (thanks to Martin Čech). 4c71299_
 * Download Galaxy from the new, official Github repository. 7c69bf6_
-* Update travis_test to install stable planemo from PyPI. 39fedd2_
+* Update travis_test to install stable planemo from PyPI_. 39fedd2_
 * Enable caching on ``--install_galaxy`` by default (disable with
   ``--no_cache_galaxy``). d755fe7_
 
@@ -755,7 +773,7 @@ History
 0.4.2 (2015-02-21)
 ---------------------
 
-* Fix setup.py for installing non-Python data from PyPI (required newer
+* Fix `setup.py`_ for installing non-Python data from PyPI_ (required newer
   for ``tool_factory`` command and reStructuredText linting). Thanks to
   Damion Dooley for the bug report. `Issue 83`_
 
@@ -763,7 +781,7 @@ History
 0.4.1 (2015-02-16)
 ---------------------
 
-* Fix README.rst so it renders properly on PyPI.
+* Fix README.rst so it renders properly on PyPI_.
 
 ---------------------
 0.4.0 (2015-02-16)
@@ -774,8 +792,7 @@ History
 * Implement ``normalize`` command for reorganizing tool XML and macro
   debugging. e8c1d45_
 * Implement ``tool_factory`` command to spin up Galaxy pre-configured the
-  `Tool Factory
-  <http://bioinformatics.oxfordjournals.org/content/early/2012/09/27/bioinformatics.bts573.full.pdf>`_. 9e746b4_
+  `Tool Factory`_. 9e746b4_
 * Added basic linting of ``command`` blocks. b8d90ab_
 * Improved linting of ``help`` blocks, including verifying valid
   `reStructuredText`. 411a8da_
@@ -791,7 +808,7 @@ History
 0.3.1 (2015-02-15)
 ---------------------
 
-* Fixes to get PyPI workflow working properly.
+* Fixes to get PyPI_ workflow working properly.
 
 ---------------------
 0.3.0 (2015-02-13)
@@ -860,6 +877,17 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _ccdd2d5: https://github.com/galaxyproject/planemo/commit/ccdd2d5
+.. _e925ba1: https://github.com/galaxyproject/planemo/commit/e925ba1
+.. _ea5324f: https://github.com/galaxyproject/planemo/commit/ea5324f
+.. _ca88b0c: https://github.com/galaxyproject/planemo/commit/ca88b0c
+.. _b6d8294: https://github.com/galaxyproject/planemo/commit/b6d8294
+.. _6a6f164: https://github.com/galaxyproject/planemo/commit/6a6f164
+.. _d6da3a8: https://github.com/galaxyproject/planemo/commit/d6da3a8
+.. _1ef05d2: https://github.com/galaxyproject/planemo/commit/1ef05d2
+.. _7cca2e4: https://github.com/galaxyproject/planemo/commit/7cca2e4
+.. _34538de: https://github.com/galaxyproject/planemo/commit/34538de
+.. _6f91719: https://github.com/galaxyproject/planemo/commit/6f91719
 .. _Pull Request 566: https://github.com/galaxyproject/planemo/pull/566
 .. _Pull Request 559: https://github.com/galaxyproject/planemo/pull/559
 .. _Pull Request 561: https://github.com/galaxyproject/planemo/pull/561
@@ -1228,3 +1256,12 @@ History
 .. _lxml: http://lxml.de/
 .. _nose: https://nose.readthedocs.org/en/latest/
 .. _xmllint: http://xmlsoft.org/xmllint.html
+.. _Conda: http://conda.pydata.org/
+.. _Tool Factory: http://bioinformatics.oxfordjournals.org/content/early/2012/09/27/bioinformatics.bts573.full.pdf
+.. _git: https://git-scm.com/
+.. _anaconda-verify: https://github.com/ContinuumIO/anaconda-verify
+.. _galaxy.xsd: https://github.com/galaxyproject/planemo/blob/master/planemo/xml/xsd/tool/galaxy.xsd
+.. _setup.py: https://github.com/galaxyproject/planemo/blob/master/setup.py
+.. _Bioconductor: https://www.bioconductor.org/
+.. _tools-iuc: https://github.com/galaxyproject/tools-iuc
+.. _PyPI: https://pypi.python.org/pypi
