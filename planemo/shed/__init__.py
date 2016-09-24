@@ -139,6 +139,16 @@ HTTP_REGEX_PATTERN = re.compile(
     r"""(?i)\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>\[\]]+|\(([^\s()<>\[\]]+|(\([^\s()<>\[\]]+\)))*\))+(?:\(([^\s()<>\[\]]+|(\([^\s()<>\[\]]+\)))*\)|[^\s`!(){};:'".,<>?\[\]]))"""  # noqa
 )
 
+def _is_url(url):
+    return '://' in url and \
+        (
+            url.startswith('http') or
+            url.startswith('ftp')
+        )
+
+def _find_urls_in_text(text):
+    return [url for url in HTTP_REGEX_PATTERN.findall(text) if _is_url(url[0])]
+
 
 def construct_yaml_str(self, node):
     # Override the default string handling function
@@ -229,7 +239,7 @@ def find_urls_for_xml(root):
                     urls.extend(subaction.packages)
 
     for help_text in root.findall("help"):
-        for url in HTTP_REGEX_PATTERN.findall(help_text.text):
+        for url in _find_urls_in_text(help_text.text):
             urls.append(url[0])
 
     return urls

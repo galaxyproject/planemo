@@ -13,7 +13,7 @@ class LintTestCase(CliTestCase):
     def test_ok_tools(self):
         ok_tools = glob.glob("%s/ok_*" % TEST_TOOLS_DIR)
         for ok_tool in ok_tools:
-            lint_cmd = ["lint", ok_tool]
+            lint_cmd = ["lint", "--urls", ok_tool]
             self._check_exit_code(lint_cmd)
 
     def test_fail_tools(self):

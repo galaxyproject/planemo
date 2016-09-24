@@ -1,0 +1,39 @@
+<tool id="ok_urls" name="ok_urls" version="1.0">
+    <description>test for valid urls in help</description>
+    <command>
+        echo "$select_opt" > $output
+    </command>
+    <inputs>
+        <param name="select_opt" type="select" label="Option">
+            <option value="moo">Cow</option>
+        </param>
+    </inputs>
+    <outputs>
+        <data name="output" format="txt"/>
+    </outputs>
+    <tests>
+        <test>
+            <param name="select_opt" value="Hello World!" />
+            <output name="output">
+                <assert_contents>
+                    <has_line line="Hello World!" />
+                </assert_contents>
+            </output>
+        </test>
+    </tests>
+    <help>
+These should work:
+
+http://example.com
+https://example.com
+ftp://ftp.ebi.ac.uk/
+
+And these should not be fetched (or will throw an error if they are):
+
+pmid:1023123
+go:1234123
+    </help>
+    <citations>
+        <citation type="doi">10.1101/014043</citation>
+    </citations>
+</tool>
