@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.33.2.dev0
+0.33.2 (2016-09-28)
 ---------------------
 
 * Fix HISTORY.rst link problem that prevented correct display of content on PyPI.
