@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.33.1.dev0
+0.33.1 (2016-09-28)
 ---------------------
 
 * Fix ``lint --urls`` false positives by being more restrictive with what is considered a URL
