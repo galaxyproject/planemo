@@ -6,10 +6,10 @@ History
 .. to_doc
 
 ---------------------
-0.34.0.dev0
+0.33.2.dev0
 ---------------------
 
-    
+* Fix HISTORY.rst link problem that prevented correct display of content on PyPI.
 
 ---------------------
 0.33.1 (2016-09-28)
@@ -1303,3 +1303,4 @@ History
 .. _@blankenberg: https://github.com/blankenberg
 .. _@JeanFred: https://github.com/JeanFred
 .. _@gregvonkuster: https://github.com/gregvonkuster
+.. _@remimarenco: https://github.com/remimarenco
