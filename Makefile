@@ -52,7 +52,7 @@ install:
 
 setup-venv: ## setup a development virutalenv in current directory
 	if [ ! -d $(VENV) ]; then virtualenv $(VENV); exit; fi;
-	$(IN_VENV) pip install -r requirements.txt && pip install -r dev-requirements.txt
+	$(IN_VENV) pip install --upgrade pip && pip install -r requirements.txt && pip install -r dev-requirements.txt
 
 setup-git-hook-lint: ## setup precommit hook for linting project
 	cp $(BUILD_SCRIPTS_DIR)/pre-commit-lint .git/hooks/pre-commit
