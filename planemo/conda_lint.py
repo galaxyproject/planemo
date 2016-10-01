@@ -1,8 +1,10 @@
 """Logic for linting conda recipes."""
 
-import os
+from __future__ import absolute_import
 
 from functools import wraps
+
+from galaxy.tools.deps.conda_compat import raw_metadata
 
 from planemo.conda_verify.recipe import (
     check_build_number,
@@ -16,8 +18,6 @@ from planemo.conda_verify.recipe import (
     FIELDS,
     get_field,
     RecipeError,
-    render_jinja2,
-    yamlize,
 )
 from planemo.exit_codes import (
     EXIT_CODE_GENERIC_FAILURE,
@@ -93,12 +93,7 @@ def lints_metadata(f):
 
     @wraps(f)
     def wrapper(recipe_dir, lint_ctx):
-        meta_path = os.path.join(recipe_dir, 'meta.yaml')
-        with open(meta_path, 'rb') as fi:
-            data = fi.read()
-            if b'{{' in data:
-                data = render_jinja2(recipe_dir)
-        meta = dict(yamlize(data))
+        meta = raw_metadata(recipe_dir)
         f(meta, lint_ctx)
 
     return wrapper
