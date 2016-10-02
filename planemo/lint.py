@@ -14,6 +14,7 @@ from six.moves.urllib.request import (
     urlopen,
 )
 
+import planemo.linters.conda_requirements
 import planemo.linters.doi
 import planemo.linters.urls
 import planemo.linters.xsd
@@ -54,6 +55,9 @@ def _lint_extra_modules(**kwds):
 
     if kwds.get("urls", False):
         linters.append(planemo.linters.urls)
+
+    if kwds.get("conda_requirements", False):
+        linters.append(planemo.linters.conda_requirements)
 
     return linters
 
@@ -117,7 +121,7 @@ def lint_xsd(lint_ctx, schema_path, path):
         msg = msg % (name, validation_result.output)
         lint_ctx.error(msg)
     else:
-        lint_ctx.info("%s found and appears to be valid XML" % name)
+        lint_ctx.info("File validates against XML schema.")
 
 
 def lint_urls(root, lint_ctx):

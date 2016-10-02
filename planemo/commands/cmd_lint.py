@@ -27,6 +27,12 @@ from planemo.tool_lint import lint_tools_on_path
     default=False,
     help="Check validity of DOIs in XML files",
 )
+@click.option(
+    "--conda_requirements",
+    is_flag=True,
+    default=False,
+    help="Check tool requirements for availability in best practice Conda channels.",
+)
 # @click.option(
 # "--verify",
 # is_flag=True,
