@@ -10,6 +10,6 @@ virtualenv
 lxml
 gxformat2>=0.1.1
 ephemeris>=0.2.0
-galaxy-lib>=16.10.0
+galaxy-lib>=16.10.3
 html5lib>=0.9999999,!=0.99999999,!=0.999999999,!=1.0b10,!=1.0b09 ; python_version == '2.7'
 cwltool==1.0.20160726135535 ; python_version == '2.7'
