@@ -11,11 +11,11 @@ from planemo.io import coalesce_return_codes, error
 
 
 @click.command('conda_install')
-@options.optional_tools_arg()
+@options.optional_tools_arg(multiple=True)
 @options.conda_target_options()
 @options.conda_auto_init_option()
 @command_function
-def cli(ctx, path, **kwds):
+def cli(ctx, paths, **kwds):
     """Install conda packages for tool requirements."""
     conda_context = build_conda_context(ctx, **kwds)
     if not conda_context.is_conda_installed():
@@ -36,7 +36,7 @@ def cli(ctx, path, **kwds):
             raise ExitCodeException(EXIT_CODE_FAILED_DEPENDENCIES)
 
     return_codes = []
-    for conda_target in collect_conda_targets(path):
+    for conda_target in collect_conda_targets(ctx, paths):
         ctx.log("Install conda target %s" % conda_target)
         return_code = conda_util.install_conda_target(
             conda_target, conda_context=conda_context
