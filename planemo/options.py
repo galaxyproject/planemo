@@ -10,6 +10,16 @@ from galaxy.tools.deps import docker_util
 from .config import planemo_option
 
 
+def _option_function(f):
+    def build_option(*i_args, **i_kwds):
+        assert "help" not in i_kwds
+        return planemo_option(*i_args, help=f.__doc__, **i_kwds)
+
+    @functools.wraps(f)
+    def functon(*args, **kwds):
+        return f(build_option, *args, **kwds)
+
+
 def force_option(what="files"):
     return planemo_option(
         "-f",
@@ -19,13 +29,13 @@ def force_option(what="files"):
     )
 
 
-def skip_venv_option():
-    return planemo_option(
+@_option_function
+def skip_venv_option(build_option):
+    """Do not create or source a virtualenv environment for Galaxy, this should be used or instance to preserve an externally
+    configured virtual environment or conda environment."""
+    return build_option(
         "--skip_venv",
         is_flag=True,
-        help=("Do not create or source a virtualenv environment for Galaxy, "
-              "this should be used or instance to preserve an externally "
-              "configured virtual environment or conda environment.")
     )
 
 
