@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.34.0.dev0
+0.34.0 (2016-10-05)
 ---------------------
 
 * Implement ``mull`` command to build containers for tools based on Conda_
