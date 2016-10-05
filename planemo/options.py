@@ -333,6 +333,14 @@ def job_config_option():
     )
 
 
+def mulled_containers_option():
+    return planemo_option(
+        "--mulled_containers",
+        is_flag=True,
+        help="Test tools against mulled containers (forces --docker).",
+    )
+
+
 def install_galaxy_option():
     return planemo_option(
         "--install_galaxy",
@@ -430,6 +438,8 @@ def conda_debug_option():
 
 def conda_ensure_channels_option():
     return planemo_option(
+        "conda_ensure_channels",
+        "--conda_channels",
         "--conda_ensure_channels",
         type=str,
         use_global_config=True,
@@ -878,6 +888,7 @@ def galaxy_target_options():
         no_cleanup_option(),
         galaxy_email_option(),
         galaxy_docker_options(),
+        mulled_containers_option(),
         # Profile options...
         job_config_option(),
         tool_dependency_dir_option(),

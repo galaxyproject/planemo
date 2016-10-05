@@ -7,9 +7,9 @@ from __future__ import absolute_import
 import os
 
 from galaxy.tools.deps import conda_util
-from galaxy.tools.loader_directory import load_tool_sources_from_path
 
 from planemo.io import shell
+from planemo.tools import yield_tool_sources_on_paths
 
 
 def build_conda_context(ctx, **kwds):
@@ -29,14 +29,33 @@ def build_conda_context(ctx, **kwds):
                                    shell_exec=shell_exec)
 
 
-def collect_conda_targets(path, found_tool_callback=None, conda_context=None):
-    """Load CondaTarget objects from supplied artifact sources."""
-    conda_targets = []
-    for (tool_path, tool_source) in load_tool_sources_from_path(path):
+def collect_conda_targets(ctx, paths, found_tool_callback=None, conda_context=None):
+    """Load CondaTarget objects from supplied artifact sources.
+
+    If a tool contains more than one requirement, the requirements will each
+    appear once in the output.
+    """
+    conda_targets = set([])
+    for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, paths):
         if found_tool_callback:
             found_tool_callback(tool_path)
-        conda_targets.extend(tool_source_conda_targets(tool_source))
+        for target in tool_source_conda_targets(tool_source):
+            conda_targets.add(target)
     return conda_targets
+
+
+def collect_conda_target_lists(ctx, paths, found_tool_callback=None):
+    """Load CondaTarget lists from supplied artifact sources.
+
+    If a tool contains more than one requirement, the requirements will all
+    appear together as one list element of the output list.
+    """
+    conda_target_lists = set([])
+    for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, paths):
+        if found_tool_callback:
+            found_tool_callback(tool_path)
+        conda_target_lists.add(frozenset(tool_source_conda_targets(tool_source)))
+    return conda_target_lists
 
 
 def tool_source_conda_targets(tool_source):
@@ -48,5 +67,6 @@ def tool_source_conda_targets(tool_source):
 __all__ = [
     "build_conda_context",
     "collect_conda_targets",
+    "collect_conda_target_lists",
     "tool_source_conda_targets",
 ]
