@@ -9,7 +9,20 @@ History
 0.34.0.dev0
 ---------------------
 
-    
+* Implement ``mull`` command to build containers for tools based on Conda_
+  recipes matching requirement definitions. 08cef54_
+* Implement ``--mulled_containers`` flag on ``test``, ``serve``, and ``run``
+  commands to run tools in "mulled" containers. Galaxy will first search
+  locally cache containers (such as ones built with ``mull``), then search
+  the mulled namespace of `quay.io`_, and finally build one on-demand if
+  needed using `galaxy-lib`_ and Involucro_ developed by `@thriqon`_.
+* Implement ``--conda_requirements`` flag on ``lint`` command to ensure requirements
+  can be resolved in best practice channels. 9da8387_
+* Allow ``conda_install`` command over multiple tool paths. 2e4e5fc_
+* Update pip_ as part of setting virtual environment in ``Makefile`` target.
+  19b2ee9_
+* Add script to auto-update Bioconda_ recipe for Planemo and open a pull request.
+  f0da66f_
 
 ---------------------
 0.33.2 (2016-09-28)
@@ -92,7 +105,7 @@ History
 0.30.0 (2016-09-01)
 ---------------------
 
-* Update to the latest galaxy-lib release and change Conda_ semantics to match
+* Update to the latest `galaxy-lib`_ release and change Conda_ semantics to match
   recent updates to Galaxy. For the most robust Conda_ usage - use planemo 0.30+
   with Galaxy 16.07 or master.
   07d94bd_
@@ -129,7 +142,7 @@ History
 0.28.0 (2016-08-17)
 ---------------------
 
-* Fixes for BioBlend v0.8.0 (thanks to `@nsoranzo`_). 9fdf490_ 
+* Fixes for bioblend_ v0.8.0 (thanks to `@nsoranzo`_). 9fdf490_ 
 * Enable shed repo type update (thanks to `@nsoranzo`_). 3ceaa40_
 * Create suite repositories with repository_suite_definition type by default
   (thanks to `@nsoranzo`_).
@@ -138,7 +151,7 @@ History
   `Pull Request 528`_
 * Minor polish to the ``travis_init`` command (thanks to `@peterjc`_).
   `Pull Request 512`_
-* Update pip and setuptools on TravisCI; fix travis_init (thanks to `@peterjc`_).
+* Update pip_ and setuptools on TravisCI; fix travis_init (thanks to `@peterjc`_).
   `Pull Request 521`_
 * Shorten command one line descriptions for main help (thanks to `@peterjc`_).
   `Pull Request 510`_
@@ -268,7 +281,7 @@ History
 * Improve error reporting when running ``shed_test``. ce8e1be_
 * Improved code comments and tests for shed related functionality.
   89674cb_
-* Rev galaxy-lib dependency to 16.4.1 to fix wget usage in
+* Rev `galaxy-lib`_ dependency to 16.4.1 to fix wget usage in
   newer versions of wget. d76b489_
 
 ---------------------
@@ -291,7 +304,7 @@ History
 
 * Fix duplicated attributes with Conda_ resolver (thanks
   to Björn Grüning). `Pull Request 403`_
-* Upgrade to latest version of galaxy-lib for more linting.
+* Upgrade to latest version of `galaxy-lib`_ for more linting.
 * Attempt to better handle conditional dependency on cwltool.
 
 ---------------------
@@ -315,7 +328,7 @@ History
   conda environments. 9f3957d_
 * Implement conda support. f99f6c1_, ad3b2f0_, 5e0b6d1_
 * Update LICENSE for Planemo to match Galaxy. 15d33c7_
-* Depend on new galaxy-lib on PyPI_ instead of previous hacks....
+* Depend on new `galaxy-lib`_ on PyPI_ instead of previous hacks....
   `Pull Request 394`_
 * Fix egg caching against master/15.10. 6d0f502_
 * Fix bug causing shed publishing of ``.svn`` directories.
@@ -408,7 +421,7 @@ History
   `Pull Request 356`_
 * Add ``--cite_url`` to ``tool_init``. fdb1b51_
 * ``tool_init`` bug fix. f854138_
-* Fix `setup.py`_ for cwltool and bioblend changes. 1a157d4_
+* Fix `setup.py`_ for cwltool and bioblend_ changes. 1a157d4_
 * Add option to specify template sqlite database locally. c23569f_
 * Add example IPython notebooks to docs. c8640b6_
 
@@ -820,7 +833,7 @@ History
 * Have ``serve`` command display tools at the top level instead of in shallow sections. badc25f_
 * Add additional dependencies to ``setup.py`` more functionality works out
   of the box. 85b9614_
-* Fix terrible error message related to ``bioblend`` being unavailable.
+* Fix terrible error message related to bioblend_ being unavailable.
   `Issue 70`_
 * Various smaller documentation and project structure improvements.
 
@@ -897,6 +910,12 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _f0da66f: https://github.com/galaxyproject/planemo/commit/f0da66f
+.. _19b2ee9: https://github.com/galaxyproject/planemo/commit/19b2ee9
+.. _9da8387: https://github.com/galaxyproject/planemo/commit/9da8387
+.. _08cef54: https://github.com/galaxyproject/planemo/commit/08cef54
+.. _2e4e5fc: https://github.com/galaxyproject/planemo/commit/2e4e5fc
+.. _2e4e5fc: https://github.com/galaxyproject/planemo/commit/2e4e5fc
 .. _Issue 573: https://github.com/galaxyproject/planemo/issues/573
 .. _Pull Request 579: https://github.com/galaxyproject/planemo/pull/579
 .. _ccdd2d5: https://github.com/galaxyproject/planemo/commit/ccdd2d5
@@ -1287,6 +1306,11 @@ History
 .. _Bioconductor: https://www.bioconductor.org/
 .. _tools-iuc: https://github.com/galaxyproject/tools-iuc
 .. _PyPI: https://pypi.python.org/pypi
+.. _Involucro: https://github.com/involucro/involucro
+.. _Bioconda: https://bioconda.github.io/
+.. _pip: https://pip.pypa.io/en/stable/
+.. _quay.io: https://quay.io/
+.. _galaxy-lib: https://github.com/galaxyproject/galaxy-lib
 .. _@erasche: https://github.com/erasche
 .. _@peterjc: https://github.com/peterjc
 .. _@mr-c: https://github.com/mr-c
@@ -1310,3 +1334,5 @@ History
 .. _@JeanFred: https://github.com/JeanFred
 .. _@gregvonkuster: https://github.com/gregvonkuster
 .. _@remimarenco: https://github.com/remimarenco
+.. _@thriqon: https://github.com/thriqon
+
