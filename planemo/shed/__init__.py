@@ -223,6 +223,11 @@ def install_arg_lists(ctx, paths, **kwds):
 
 
 def find_urls_for_xml(root):
+    """Returns two lists: explicit package URLs, and help text URLs.
+
+    For validating the user-facing URLs is it sensible to mimic
+    a web browser user agent.
+    """
     urls = []
     for packages in root.findall("package"):
         install_els = packages.findall("install")
@@ -240,11 +245,12 @@ def find_urls_for_xml(root):
                 if hasattr(subaction, 'packages'):
                     urls.extend(subaction.packages)
 
+    docs = []
     for help_text in root.findall("help"):
         for url in _find_urls_in_text(help_text.text):
-            urls.append(url[0])
+            docs.append(url[0])
 
-    return urls
+    return urls, docs
 
 
 def handle_force_create(realized_repository, ctx, shed_context, **kwds):

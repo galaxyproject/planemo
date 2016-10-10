@@ -11,6 +11,7 @@ from six.moves.urllib.error import (
     URLError,
 )
 from six.moves.urllib.request import (
+    Request,
     urlopen,
 )
 
@@ -126,12 +127,19 @@ def lint_xsd(lint_ctx, schema_path, path):
 
 def lint_urls(root, lint_ctx):
     """Find referenced URLs and verify they are valid."""
-    urls = find_urls_for_xml(root)
+    urls, docs = find_urls_for_xml(root)
 
-    def validate_url(url, lint_ctx):
+    # This is from Google Chome 53.0.2785.143, current at time of writing:
+    BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36"
+
+    def validate_url(url, lint_ctx, user_agent=None):
         is_valid = True
+        if user_agent:
+            req = Request(url, headers={"User-Agent": user_agent})
+        else:
+            req = url
         try:
-            handle = urlopen(url)
+            handle = urlopen(req)
             handle.read(100)
         except HTTPError as e:
             if e.code == 429:
@@ -148,6 +156,8 @@ def lint_urls(root, lint_ctx):
 
     for url in urls:
         validate_url(url, lint_ctx)
+    for url in docs:
+        validate_url(url, lint_ctx, BROWSER_USER_AGENT)
 
 
 __all__ = [
