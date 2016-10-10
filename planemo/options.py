@@ -446,7 +446,7 @@ def conda_ensure_channels_option():
         use_env_var=True,
         help=("Ensure conda is configured with specified comma separated "
               "list of channels."),
-        default="r,bioconda,iuc",
+        default="conda-forge,r,bioconda,iuc",
     )
 
 
