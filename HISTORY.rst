@@ -6,10 +6,14 @@ History
 .. to_doc
 
 ---------------------
-0.35.0.dev0
+0.34.1.dev0
 ---------------------
 
-    
+* Mimic web browser to validate user help URLs fixing `Issue 578`_
+  (thanks to `@peterjc`_). `Pull Request 591`_
+* Fix for Bioconda recipes depending on ``conda-forge`` (thanks to `@nsoranzo`_).
+  `Pull Request 590`_
+
 
 ---------------------
 0.34.0 (2016-10-05)
@@ -916,6 +920,9 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Issue 578: https://github.com/galaxyproject/planemo/issues/578
+.. _Pull Request 591: https://github.com/galaxyproject/planemo/pull/591
+.. _Pull Request 590: https://github.com/galaxyproject/planemo/pull/590
 .. _f0da66f: https://github.com/galaxyproject/planemo/commit/f0da66f
 .. _19b2ee9: https://github.com/galaxyproject/planemo/commit/19b2ee9
 .. _9da8387: https://github.com/galaxyproject/planemo/commit/9da8387
