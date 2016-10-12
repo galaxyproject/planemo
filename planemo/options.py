@@ -1,5 +1,4 @@
-""" Click definitions for various shared options and arguments.
-"""
+"""Click definitions for various shared options and arguments."""
 
 from __future__ import absolute_import
 
@@ -334,6 +333,14 @@ def job_config_option():
     )
 
 
+def mulled_containers_option():
+    return planemo_option(
+        "--mulled_containers",
+        is_flag=True,
+        help="Test tools against mulled containers (forces --docker).",
+    )
+
+
 def install_galaxy_option():
     return planemo_option(
         "--install_galaxy",
@@ -431,13 +438,15 @@ def conda_debug_option():
 
 def conda_ensure_channels_option():
     return planemo_option(
+        "conda_ensure_channels",
+        "--conda_channels",
         "--conda_ensure_channels",
         type=str,
         use_global_config=True,
         use_env_var=True,
         help=("Ensure conda is configured with specified comma separated "
               "list of channels."),
-        default="r,bioconda,iuc",
+        default="conda-forge,r,bioconda,iuc",
     )
 
 
@@ -541,7 +550,6 @@ def shed_project_arg(multiple=True):
         exists=True,
         file_okay=False,
         dir_okay=True,
-        writable=True,
         resolve_path=True,
     )
     name = "paths" if multiple else "path"
@@ -550,6 +558,23 @@ def shed_project_arg(multiple=True):
         name,
         metavar="PROJECT",
         type=arg_type,
+        nargs=nargs,
+        callback=_optional_tools_default,
+    )
+
+
+def recipe_arg(multiple=True):
+    name = "paths" if multiple else "path"
+    nargs = -1 if multiple else 1
+    return click.argument(
+        name,
+        metavar="RECIPE_DIR",
+        type=click.Path(
+            exists=True,
+            file_okay=True,
+            dir_okay=True,
+            resolve_path=True,
+        ),
         nargs=nargs,
         callback=_optional_tools_default,
     )
@@ -863,6 +888,7 @@ def galaxy_target_options():
         no_cleanup_option(),
         galaxy_email_option(),
         galaxy_docker_options(),
+        mulled_containers_option(),
         # Profile options...
         job_config_option(),
         tool_dependency_dir_option(),
@@ -917,11 +943,10 @@ def shed_fail_fast_option():
 
 def lint_xsd_option():
     return planemo_option(
-        "--xsd",
+        "--xsd/--no_xsd",
         is_flag=True,
-        default=False,
-        help=("Include experimental tool XSD validation in linting "
-              "process (requires xmllint on PATH or lxml installed).")
+        default=True,
+        help=("Include tool XSD validation in linting process.")
     )
 
 
@@ -947,8 +972,8 @@ def skip_option():
         "-s",
         "--skip",
         default=None,
-        help=("Comma-separated list of lint tests to skip (e.g send ."
-              "--skip 'citations,xml_order' to skip linting of citations "
+        help=("Comma-separated list of lint tests to skip (e.g. passing "
+              "--skip 'citations,xml_order' would skip linting of citations "
               "and best-practice XML ordering.")
     )
 

@@ -47,7 +47,7 @@ def command_clone(ctx, src, dest, bare=False, branch=None):
 
 def diff(ctx, directory, range):
     """Produce a list of diff-ed files for commit range."""
-    cmd_template = "cd '%s' && git diff --name-only '%s'"
+    cmd_template = "cd '%s' && git diff --name-only '%s' --"
     cmd = cmd_template % (directory, range)
     stdout, _ = io.communicate(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE

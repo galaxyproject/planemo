@@ -8,12 +8,9 @@ from __future__ import absolute_import
 import os
 
 from galaxy.tools.deps import conda_util
-from galaxy.tools.deps.requirements import parse_requirements_from_xml
-from galaxy.tools.loader_directory import load_tool_elements_from_path
-from planemo import git
+
 from planemo.io import shell
-from planemo.io import info
-from planemo.bioconda_scripts import bioconductor_skeleton
+from planemo.tools import yield_tool_sources_on_paths
 
 
 def build_conda_context(ctx, **kwds):
@@ -33,26 +30,28 @@ def build_conda_context(ctx, **kwds):
                                    shell_exec=shell_exec)
 
 
-def collect_conda_targets(path, found_tool_callback=None, conda_context=None):
-    """Load CondaTarget objects from supplied artifact sources."""
-    conda_targets = []
-    for (tool_path, tool_xml) in load_tool_elements_from_path(path):
+def collect_conda_targets(ctx, paths, found_tool_callback=None, conda_context=None):
+    """Load CondaTarget objects from supplied artifact sources.
+
+    If a tool contains more than one requirement, the requirements will each
+    appear once in the output.
+    """
+    conda_targets = set([])
+    for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, paths):
         if found_tool_callback:
             found_tool_callback(tool_path)
-        requirements, containers = parse_requirements_from_xml(tool_xml)
-        conda_targets.extend(conda_util.requirements_to_conda_targets(requirements))
+        for target in tool_source_conda_targets(tool_source):
+            conda_targets.add(target)
     return conda_targets
 
 
 # Bioconda helper functions
-
 
 def clone_bioconda_repo(path):
     """Clone bioconda repository in given path."""
     bioconda_repo = "git@github.com:bioconda/bioconda-recipes.git"
     git.clone(None, bioconda_repo, path)
     return "git clone of bioconda repo worked"
-
 
 def write_bioconda_recipe(package_name, clone, update, bioconda_dir_path=None):
     """Make a bioconda recipe given the package name.
@@ -90,3 +89,31 @@ def write_bioconda_recipe(package_name, clone, update, bioconda_dir_path=None):
         recipe_dir = os.path.join(bioconda_recipe_path, "recipes")
         bioconductor_skeleton.write_recipe(package_name, recipe_dir, True)
     return
+
+
+def collect_conda_target_lists(ctx, paths, found_tool_callback=None):
+    """Load CondaTarget lists from supplied artifact sources.
+
+    If a tool contains more than one requirement, the requirements will all
+    appear together as one list element of the output list.
+    """
+    conda_target_lists = set([])
+    for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, paths):
+        if found_tool_callback:
+            found_tool_callback(tool_path)
+        conda_target_lists.add(frozenset(tool_source_conda_targets(tool_source)))
+    return conda_target_lists
+
+
+def tool_source_conda_targets(tool_source):
+    """Load CondaTarget object from supplied abstract tool source."""
+    requirements, _ = tool_source.parse_requirements_and_containers()
+    return conda_util.requirements_to_conda_targets(requirements)
+
+
+__all__ = [
+    "build_conda_context",
+    "collect_conda_targets",
+    "collect_conda_target_lists",
+    "tool_source_conda_targets",
+]

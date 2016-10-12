@@ -22,6 +22,7 @@ from six.moves.urllib.request import urlretrieve
 
 from planemo import git
 from planemo.conda import build_conda_context
+from planemo.config import OptionSource
 from planemo.docker import docker_host_args
 from planemo.io import (
     communicate,
@@ -32,6 +33,7 @@ from planemo.io import (
     warn,
     write_file,
 )
+from planemo.mulled import build_involucro_context
 from planemo.shed import tool_shed_url
 
 from .api import (
@@ -118,13 +120,20 @@ JOB_CONFIG_LOCAL = """<job_conf>
     </handlers>
     <destinations default="planemo_dest">
         <destination id="planemo_dest" runner="planemo_runner">
-            <param id="docker_enable">${docker_enable}</param>
+            <param id="require_container">${require_container}</param>
+            <param id="docker_enabled">${docker_enable}</param>
             <param id="docker_sudo">${docker_sudo}</param>
             <param id="docker_sudo_cmd">${docker_sudo_cmd}</param>
             <param id="docker_cmd">${docker_cmd}</param>
-            <param id="docker_host">${docker_host}</param>
+            ${docker_host_param}
+        </destination>
+        <destination id="upload_dest" runner="planemo_runner">
+            <param id="docker_enable">false</param>
         </destination>
     </destinations>
+    <tools>
+        <tool id="upload1" destination="upload_dest" />
+    </tools>
 </job_conf>
 """
 
@@ -211,6 +220,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         )
         port = _get_port(kwds)
         properties = _shared_galaxy_properties(kwds)
+        _handle_container_resolution(ctx, kwds, properties)
         master_api_key = _get_master_api_key(kwds)
 
         template_args = dict(
@@ -276,6 +286,14 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
     )
     galaxy_root = _check_galaxy(ctx, **kwds)
     install_galaxy = galaxy_root is None
+
+    # Duplicate block in docker variant above.
+    if kwds.get("mulled_containers", False) and not kwds.get("docker", False):
+        if ctx.get_option_source("docker") != OptionSource.cli:
+            kwds["docker"] = True
+        else:
+            raise Exception("Specified no docker and mulled containers together.")
+
     with _config_directory(ctx, **kwds) as config_directory:
         def config_join(*args):
             return os.path.join(config_directory, *args)
@@ -374,6 +392,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             migrated_tools_config=empty_tool_conf,
             test_data_dir=test_data_dir,  # TODO: make gx respect this
         ))
+        _handle_container_resolution(ctx, kwds, properties)
         if not for_tests:
             properties["database_connection"] = _database_connection(database_location, **kwds)
 
@@ -1106,13 +1125,20 @@ def _handle_job_config_file(config_directory, server_name, kwds):
             config_directory,
             "job_conf.xml",
         )
+        docker_enable = str(kwds.get("docker", False))
+        docker_host = str(kwds.get("docker_host", docker_util.DEFAULT_HOST))
+        docker_host_param = ""
+        if docker_host:
+            docker_host_param = """<param id="docker_host">%s</param>""" % docker_host
+
         conf_contents = Template(template_str).safe_substitute({
             "server_name": server_name,
             "docker_enable": str(kwds.get("docker", False)),
+            "require_container": docker_enable,
             "docker_sudo": str(kwds.get("docker_sudo", False)),
             "docker_sudo_cmd": str(kwds.get("docker_sudo_cmd", docker_util.DEFAULT_SUDO_COMMAND)),
             "docker_cmd": str(kwds.get("docker_cmd", docker_util.DEFAULT_DOCKER_COMMAND)),
-            "docker_host": str(kwds.get("docker_host", docker_util.DEFAULT_HOST)),
+            "docker_host": docker_host_param,
         })
         write_file(job_config_file, conf_contents)
     kwds["job_config_file"] = job_config_file
@@ -1182,6 +1208,14 @@ def _handle_dependency_resolution(ctx, config_directory, kwds):
                 conf_contents,
             )
             kwds["dependency_resolvers_config_file"] = resolvers_conf
+
+
+def _handle_container_resolution(ctx, kwds, galaxy_properties):
+    if kwds.get("mulled_containers", False):
+        galaxy_properties["enable_beta_mulled_containers"] = "True"
+        involucro_context = build_involucro_context(ctx, **kwds)
+        galaxy_properties["involucro_auto_init"] = "False"  # Use planemo's
+        galaxy_properties["involucro_path"] = involucro_context.involucro_bin
 
 
 def _handle_job_metrics(config_directory, kwds):

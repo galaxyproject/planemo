@@ -1,3 +1,4 @@
+"""Logic related to linting shed repositories."""
 from __future__ import absolute_import
 
 import os
@@ -6,14 +7,16 @@ import xml.etree.ElementTree as ET
 
 import yaml
 
-from galaxy.tools.lint import LintContext
 from galaxy.tools.lint import lint_tool_source_with
 from galaxy.tools.linters.help import rst_invalid
 
-from planemo.io import error
 from planemo.io import info
-from planemo.lint import lint_urls
-from planemo.lint import lint_xsd
+from planemo.lint import (
+    handle_lint_complete,
+    lint_urls,
+    lint_xsd,
+    setup_lint,
+)
 from planemo.shed import (
     CURRENT_CATEGORIES,
     REPO_TYPE_SUITE,
@@ -24,7 +27,6 @@ from planemo.shed import (
 )
 from planemo.shed2tap import base
 from planemo.tool_lint import (
-    build_lint_args,
     handle_tool_load_error,
 )
 from planemo.tools import yield_tool_sources
@@ -51,12 +53,16 @@ SHED_METADATA = [
 
 
 def lint_repository(ctx, realized_repository, **kwds):
+    """Lint a realized shed repository.
+
+    See :module:`planemo.shed` for details on constructing a realized
+    repository data structure.
+    """
     # TODO: this really needs to start working with realized path.
     failed = False
     path = realized_repository.real_path
     info("Linting repository %s" % path)
-    lint_args = build_lint_args(ctx, **kwds)
-    lint_ctx = LintContext(lint_args["level"])
+    lint_args, lint_ctx = setup_lint(ctx, **kwds)
     lint_ctx.lint(
         "lint_expansion",
         lint_expansion,
@@ -121,11 +127,7 @@ def lint_repository(ctx, realized_repository, **kwds):
             lint_shed_metadata,
             realized_repository,
         )
-    if not failed:
-        failed = lint_ctx.failed(lint_args["fail_level"])
-    if failed:
-        error("Failed linting")
-    return 1 if failed else 0
+    return handle_lint_complete(lint_ctx, lint_args, failed=failed)
 
 
 def lint_expansion(realized_repository, lint_ctx):
@@ -339,3 +341,7 @@ def _validate_categories(categories, realized_repository):
                        "in the category 'Tool Dependency Packages'.")
 
     return msg
+
+__all__ = [
+    "lint_repository",
+]

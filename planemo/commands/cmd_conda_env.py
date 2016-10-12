@@ -46,7 +46,7 @@ def cli(ctx, path, **kwds):
     """
     conda_context = build_conda_context(ctx, use_planemo_shell_exec=False, **kwds)
     conda_targets = collect_conda_targets(
-        path, conda_context=conda_context
+        ctx, path, conda_context=conda_context
     )
     installed_conda_targets = conda_util.filter_installed_targets(
         conda_targets, conda_context=conda_context

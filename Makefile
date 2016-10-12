@@ -52,7 +52,7 @@ install:
 
 setup-venv: ## setup a development virutalenv in current directory
 	if [ ! -d $(VENV) ]; then virtualenv $(VENV); exit; fi;
-	$(IN_VENV) pip install -r requirements.txt && pip install -r dev-requirements.txt
+	$(IN_VENV) pip install --upgrade pip && pip install -r requirements.txt && pip install -r dev-requirements.txt
 
 setup-git-hook-lint: ## setup precommit hook for linting project
 	cp $(BUILD_SCRIPTS_DIR)/pre-commit-lint .git/hooks/pre-commit
@@ -87,6 +87,10 @@ _open-coverage: ## open coverage report using open
 	open htmlcov/index.html || xdg-open htmlcov/index.html
 
 coverage: _coverage-report open-coverage ## check code coverage quickly with the default Python
+
+open-history:  # view HISTORY.rst as HTML.
+	rst2html HISTORY.rst > /tmp/planemo_history.html
+	$(OPEN_RESOURCE) /tmp/planemo_history.html
 
 ready-docs:  ## rebuild docs folder ahead of running docs or lint-docs
 	rm -f $(DOCS_DIR)/$(SOURCE_DIR).rst
