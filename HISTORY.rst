@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.34.1.dev0
+0.34.1 (2016-10-12)
 ---------------------
 
 * Mimic web browser to validate user help URLs fixing `Issue 578`_
