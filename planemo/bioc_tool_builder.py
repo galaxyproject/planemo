@@ -1,7 +1,7 @@
 import yaml
 import sys
 import os
-from planemo.conda import write_bioconda_recipe
+from planemo.conda_recipes import write_bioconda_recipe
 from planemo.tool_builder import (
     MACROS_TEMPLATE,
     ToolDescription,
