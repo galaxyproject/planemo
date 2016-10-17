@@ -11,13 +11,13 @@ from planemo import tool_builder
 from planemo.cli import command_function
 from planemo.io import info
 
-NAME_OPTION_HELP = "Name for new Bioconductor tool (user facing)"
-EXAMPLE_CMD_HELP = ("Example to command with paths to build Cheetah template from "
-                    "(e.g. 'Rscript my_r_tool.R --input input.csv --output output.csv')"
-                    ". Option cannot be used with --command,"
+NAME_OPTION_HELP = "Name for new R/Bioconductor tool (user facing)."
+EXAMPLE_CMD_HELP = ("Example command with paths to build Cheetah template from. "
+                    "(e.g. --example_command 'Rscript /full/path/to/my_r_tool.R --input input.csv --output output.csv'). "
+                    "This option cannot be used with --command. Instead, this option "
                     "should be used --example_input and --example_output.")
-REQUIREMENT_HELP = ("Give the name of the bioconductor package, "
-                    "requirements will be set using bioconda. eg: 'motifbreakR' ")
+REQUIREMENT_HELP = ("Name of the bioconductor package. "
+                    "Requirements will be set using bioconda. (e.g. --requirement 'motifbreakR') ")
 
 
 @click.command("bioc_tool_init")
@@ -51,17 +51,17 @@ REQUIREMENT_HELP = ("Give the name of the bioconductor package, "
     type=click.STRING,
     default=None,
     prompt=False,
-    help=("Give path to bioconda repository,"
-          " if left empty, path will be made in home directory")
+    help=("Path to bioconda repository. "
+          "If left empty, path will be made in home directory.")
 )
 @click.option(
     "--rscript",
     type=click.Path(exists=True),
     default=None,
     prompt=False,
-    help=("Give an R Script, designed as per Galaxy R tool"
-          "best practices, and create a tool definition file."
-          "eg: planemo bioc_tool_init --rscript 'file.R' ")
+    help=("Name of an R script - designed per Galaxy R tool "
+          "best practices - from which to create a tool definition file."
+          " (e.g. --rscript 'file.R') ")
 )
 @command_function
 def cli(ctx, **kwds):
@@ -73,11 +73,11 @@ def cli(ctx, **kwds):
         rscript_data = rscript_parse.parse_rscript(rscript, example_command)
         # print(rscript_data)
         # Get name replace .R, or .r
-        kwds['name'] = rscript.split("/")[-1].replace(".R", "")
-        kwds['id'] = kwds.get("name")
+        kwds['name'] = kwds.get("name")
+        kwds['id'] = rscript.split("/")[-1].replace(".R", "")
         kwds['rscript_data'] = rscript_data
     else:  # if no rscript
-        info("No Rscript found, must provide correct planemo arguments.")
+        info("No Rscript found. Must provide correct planemo arguments.")
 
     if invalid:
         ctx.exit(invalid)
