@@ -1,12 +1,11 @@
 """Module parses R scripts and sends a yaml file to cmd_bioc_tool_init."""
 # import yaml
 import os
-
-# TODO : 1. Make sure R script works, run it in python
-
+import sys
 
 def read_rscript(path):
     """Read the rscript."""
+
     try:
         with open(os.path.expanduser(path), 'r') as f:
             rscript = f.readlines()
@@ -17,8 +16,10 @@ def read_rscript(path):
 
 def parse_rscript(script, example_command):
     """Parse script."""
+
     rscript = read_rscript(script)
     data = {}
+
     # Find libraries
     lib = Library(rscript)
     library_list = lib.find_library()
@@ -39,17 +40,18 @@ def parse_rscript(script, example_command):
 def parse_example_command(example_command):
     """
     Parse example_command to get inputs.
-
-    Each input command should be unique
-    Example command : Rscript my_tool.R --input x --input2 y --output z
+    Each input stored as element in a dictionary list.
     """
+
     cmd = example_command.replace("\n", " ")
     opts = [i.strip() for i in cmd.split("--")]
     opt_dict = {}
     for opt in opts:
-        # print("opt: ", opt)
         opt = opt.split(" ")
-        opt_dict.update({opt[0]: opt[1]})
+        if not opt_dict.has_key(opt[0]):
+            opt_dict[opt[0]] = [opt[1]]
+        else:
+            opt_dict[opt[0]].append(opt[1])
     return opt_dict
 
 
@@ -74,7 +76,6 @@ class Library(object):
         for i, line in enumerate(self.script):
             line = line.strip()
             if (self.searchtext in line) and (not line.startswith("#")):
-                # print i, line
                 lib_value = self._prune_library(line)
                 # if lib_value != "getopt":  # getopt already exists
                 lib.append(lib_value)
@@ -85,26 +86,27 @@ class Input(object):
     """Input class for parsing inputs."""
 
     def __init__(self, script, example_command):
-        """Initialize Input with searchtext - input."""
+        """Initialize Input with searchtext = input."""
         self.script = script
         self.example_command = example_command
         self.searchtext = "input"
 
     def find_inputs(self):
-        """Find inputs in example command."""
+        """Find inputs in example command.
+        This parses the R script and has NOTHING TO DO WITH kwds
+        """
         opt_dict = parse_example_command(self.example_command)
-        # print opt_dict
         inputs = {}
         for key, value in opt_dict.iteritems():
-            # print("key: %s , value: %s" % (key, value))
-            if self.searchtext in key:
+            if self.searchtext in key: # key here is "input"
                 for i, line in enumerate(self.script):
                     line = line.strip()
                     if (key in line) and (not line.startswith("#")):
-                        # print("key: %s in line: %s" % (key, line))
+                        # print >> sys.stderr, 'Line: %s\nkey: %s\nvalue: %s' % (line,key,value)
                         inputs[key] = value
                     else:
                         continue
+        # print >> sys.stderr, 'INPUTS: %s' % inputs
         if not bool(inputs):  # if inputs are empty
             print("No inputs found in the Rscript, please specify inputs.")
         return inputs
@@ -122,15 +124,12 @@ class Output(object):
     def find_outputs(self):
         """Find outputs in example command."""
         opt_dict = parse_example_command(self.example_command)
-        # print opt_dict
         outputs = {}
         for key, value in opt_dict.iteritems():
-            # print("key: %s , value: %s" % (key, value))
             if self.searchtext in key:
                 for i, line in enumerate(self.script):
                     line = line.strip()
                     if (key in line) and (not line.startswith("#")):
-                        # print("key: %s in line: %s" % (key, line))
                         outputs[key] = value
                     else:
                         continue
