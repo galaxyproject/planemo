@@ -21,9 +21,6 @@ def build(**kwds):
 
     test_case = TestCase()
     command = _find_command(kwds)
-    # print >> sys.stderr, '\nCommand: %s' % command
-    # exit('Found command')
-
     # process raw cite urls
     cite_urls = kwds.get("cite_url", [])
     del kwds["cite_url"]
@@ -45,14 +42,12 @@ def build(**kwds):
     if bool(rscript_data):
         input_dict = rscript_data.get('inputs') # dictionary of input parameters
         inputs = input_dict.values()[0]
-        # print >> sys.stderr, '\nInputs: %s' % inputs
-    # for i in range(0,2):
-    #     print >> sys.stderr, '\nBefore Inputs: %s' % inputs[i]
-        # inputs[i] = 'input' + str(i+1)
+
+    def edit_params(iodata):
+        return iodata.split("/")[-1]
+    inputs = map(edit_params, inputs)
+    param_set = inputs
     inputs = list(map(Input, inputs or []))
-    # for i in range(0,2):
-    #     print >> sys.stderr, '\nAfter Inputs: %s' % inputs[i]
-    # exit('Found inputs')
 
     ## DEPRICATE HANDLING OF EXAMPLE INPUT
     if not bool(rscript_data) and example_inputs:
@@ -70,12 +65,12 @@ def build(**kwds):
     if bool(rscript_data):
         output_dict = rscript_data.get('outputs')
         outputs = output_dict.values()[0]
-    outputs = list(map(Output, outputs or []))
-    for i in range(0,2):
-        print >> sys.stderr, '\nOutputs: %s' % outputs[i]
-    exit('Found outputs')
+    # Add all parameters to a list called param_set
+    outputs = map(edit_params,outputs)
+    param_set.extend(outputs)
 
-    ## WHAT ARE NAMED OUTPUTS?
+    outputs = list(map(Output, outputs or []))
+
     named_outputs = kwds.get("named_output", [])
     del kwds["named_output"]
     for named_output in (named_outputs or []):
@@ -86,32 +81,11 @@ def build(**kwds):
     example_outputs = kwds["example_output"]
     del kwds["example_output"]
 
-    ## What does this do?
-    ## This changed the name that --output appears in <command> tag to the correct $galaxy_output1, etc.
-    print >> sys.stderr, 'Command: %s' % command
-    for i, output_file in enumerate(outputs or []):
-        # exit('got here')
-        name = "output%d" % (i + 1)
-        from_path = output_file
-        print >> sys.stderr, 'name: %s\nfrom_path: %s' % (name,from_path)
-        use_from_path = True
-        # if output_file in command:
-            # Actually found the file in the command, assume it can
-            # be specified directly and skip from_work_dir.
-            # use_from_path = False
-        output = Output(name=name, from_path=from_path,
-                        use_from_path=use_from_path)
-        # print >> sys.stderr, '\noutput: %s' % output
-        outputs.append(output) ## This is appending example_output to output
-        test_case.outputs.append((name, output_file))
-        command = _replace_file_in_command(command, output_file, output.name)
-
     kwds['inputs'] = inputs
     kwds["outputs"] = outputs
 
     # handle requirements and containers
     if bool(rscript_data):
-        # print(rscript_data.get('library'))
         if not type([rscript_data.get('library')]) is list:
             kwds['requirements'] = [rscript_data.get('library')]
         else:
@@ -128,6 +102,8 @@ def build(**kwds):
     # Handle help
     _handle_help(kwds)
 
+    # Edit command before sending it into the kwds dictionary
+    command = _parse_command_rbioc(command, param_set)
     kwds["command"] = command
 
     # finally wrap up tests
@@ -145,6 +121,20 @@ def build(**kwds):
         macro_contents,
         test_files=test_files
     )
+
+
+
+def _parse_command_rbioc(command,param_set):
+    """Find a r-bioc command and replace the inputs and outputs
+    with appropriate galaxy template
+    """
+    cmd = command.split(" ")
+    count = 0
+    for i in xrange(len(cmd)):
+        if "--" in cmd[i]:
+            cmd[i+1] = "$" + param_set[count].split(".")[0]
+            count = count+1
+    return  " ".join(cmd)
 
 
 def _handle_requirements(kwds):

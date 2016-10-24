@@ -47,7 +47,6 @@ def parse_example_command(example_command):
     opts = [i.strip() for i in cmd.split("--")]
     opt_dict = {}
     for opt in opts:
-        # print("opt: ", opt)
         opt = opt.split(" ")
         if not opt_dict.has_key(opt[0]):
             opt_dict[opt[0]] = [opt[1]]
@@ -77,7 +76,6 @@ class Library(object):
         for i, line in enumerate(self.script):
             line = line.strip()
             if (self.searchtext in line) and (not line.startswith("#")):
-                # print i, line
                 lib_value = self._prune_library(line)
                 # if lib_value != "getopt":  # getopt already exists
                 lib.append(lib_value)
@@ -98,19 +96,17 @@ class Input(object):
         This parses the R script and has NOTHING TO DO WITH kwds
         """
         opt_dict = parse_example_command(self.example_command)
-        # print >> sys.stderr, '\n\nself.script: %s' % self.script
         inputs = {}
         for key, value in opt_dict.iteritems():
             if self.searchtext in key: # key here is "input"
-                # print >> sys.stderr, '%s: %s' % (key, value)
                 for i, line in enumerate(self.script):
                     line = line.strip()
                     if (key in line) and (not line.startswith("#")):
-                        print >> sys.stderr, 'Line: %s\nkey: %s\nvalue: %s' % (line,key,value)
+                        # print >> sys.stderr, 'Line: %s\nkey: %s\nvalue: %s' % (line,key,value)
                         inputs[key] = value
                     else:
                         continue
-        print >> sys.stderr, 'INPUTS: %s' % inputs
+        # print >> sys.stderr, 'INPUTS: %s' % inputs
         if not bool(inputs):  # if inputs are empty
             print("No inputs found in the Rscript, please specify inputs.")
         return inputs
@@ -128,7 +124,6 @@ class Output(object):
     def find_outputs(self):
         """Find outputs in example command."""
         opt_dict = parse_example_command(self.example_command)
-        # print opt_dict
         outputs = {}
         for key, value in opt_dict.iteritems():
             if self.searchtext in key:

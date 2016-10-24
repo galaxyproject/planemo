@@ -672,6 +672,7 @@ def _find_command(kwds):
     return command
 
 
+
 class UrlCitation(object):
 
     def __init__(self, url):
@@ -733,7 +734,6 @@ class Input(object):
         self.datatype = datatype
 
     def __str__(self):
-        print("Name: " ,self.name)
         template = '<param type="data" name="{0}" format="{1}" />'
         return template.format(self.name, self.datatype)
 
