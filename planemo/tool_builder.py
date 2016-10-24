@@ -733,6 +733,7 @@ class Input(object):
         self.datatype = datatype
 
     def __str__(self):
+        print("Name: " ,self.name)
         template = '<param type="data" name="{0}" format="{1}" />'
         return template.format(self.name, self.datatype)
 

@@ -1,4 +1,5 @@
 import yaml
+import sys
 import os
 from planemo.conda import write_bioconda_recipe
 from planemo.tool_builder import (
@@ -17,9 +18,11 @@ from planemo.tool_builder import (
 
 def build(**kwds):
     """Build up a :func:`ToolDescription` from supplid arguments."""
-    test_case = TestCase()
 
+    test_case = TestCase()
     command = _find_command(kwds)
+    # print >> sys.stderr, '\nCommand: %s' % command
+    # exit('Found command')
 
     # process raw cite urls
     cite_urls = kwds.get("cite_url", [])
@@ -28,21 +31,32 @@ def build(**kwds):
     kwds["bibtex_citations"] = citations
 
     # process raw inputs
+    # inputs are in a list
     inputs = kwds.get("input", [])
     del kwds["input"]
-    # alternatively process example inputs
+
+    ## DEPRICATE HANDLING OF EXAMPLE INPUT
     example_inputs = kwds["example_input"]
     del kwds["example_input"]
 
-    # Rscript inputs
     rscript_data = kwds["rscript_data"]
-    if bool(rscript_data):
-        input_dict = rscript_data.get('inputs')
-        inputs = list(input_dict.values())
-    # print(inputs)
-    inputs = list(map(Input, inputs or []))
 
+    # Rscript inputs
+    if bool(rscript_data):
+        input_dict = rscript_data.get('inputs') # dictionary of input parameters
+        inputs = input_dict.values()[0]
+        # print >> sys.stderr, '\nInputs: %s' % inputs
+    # for i in range(0,2):
+    #     print >> sys.stderr, '\nBefore Inputs: %s' % inputs[i]
+        # inputs[i] = 'input' + str(i+1)
+    inputs = list(map(Input, inputs or []))
+    # for i in range(0,2):
+    #     print >> sys.stderr, '\nAfter Inputs: %s' % inputs[i]
+    # exit('Found inputs')
+
+    ## DEPRICATE HANDLING OF EXAMPLE INPUT
     if not bool(rscript_data) and example_inputs:
+        '''If no Rscript data is found but example_inputs are given - this should not happen'''
         for i, input_file in enumerate(example_inputs or []):
             name = "input%d" % (i + 1)
             inputs.append(Input(input_file, name=name))
@@ -55,34 +69,44 @@ def build(**kwds):
 
     if bool(rscript_data):
         output_dict = rscript_data.get('outputs')
-        outputs = list(output_dict.values())
-    # print(outputs)
-
+        outputs = output_dict.values()[0]
     outputs = list(map(Output, outputs or []))
+    for i in range(0,2):
+        print >> sys.stderr, '\nOutputs: %s' % outputs[i]
+    exit('Found outputs')
 
+    ## WHAT ARE NAMED OUTPUTS?
     named_outputs = kwds.get("named_output", [])
     del kwds["named_output"]
     for named_output in (named_outputs or []):
         outputs.append(Output(name=named_output))
 
+    ## DEPRICATED HANDLING OF EXAMPLE OUTPUT
     # handle example outputs
     example_outputs = kwds["example_output"]
     del kwds["example_output"]
-    for i, output_file in enumerate(example_outputs or []):
+
+    ## What does this do?
+    ## This changed the name that --output appears in <command> tag to the correct $galaxy_output1, etc.
+    print >> sys.stderr, 'Command: %s' % command
+    for i, output_file in enumerate(outputs or []):
+        # exit('got here')
         name = "output%d" % (i + 1)
         from_path = output_file
+        print >> sys.stderr, 'name: %s\nfrom_path: %s' % (name,from_path)
         use_from_path = True
-        if output_file in command:
+        # if output_file in command:
             # Actually found the file in the command, assume it can
             # be specified directly and skip from_work_dir.
-            use_from_path = False
+            # use_from_path = False
         output = Output(name=name, from_path=from_path,
                         use_from_path=use_from_path)
-        outputs.append(output)
+        # print >> sys.stderr, '\noutput: %s' % output
+        outputs.append(output) ## This is appending example_output to output
         test_case.outputs.append((name, output_file))
         command = _replace_file_in_command(command, output_file, output.name)
 
-    kwds["inputs"] = inputs
+    kwds['inputs'] = inputs
     kwds["outputs"] = outputs
 
     # handle requirements and containers
