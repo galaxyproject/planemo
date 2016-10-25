@@ -1,5 +1,4 @@
 """Module parses R scripts and sends a yaml file to cmd_bioc_tool_init."""
-# import yaml
 import os
 
 
@@ -150,10 +149,6 @@ if __name__ == "__main__":
     # Test case with NO EXPLICIT OUTPUT
     print(" \n ===  Tool test 2 ==== \n")
     parse_rscript(test_file2, "Rscript my_r_tool_verbose.R --verbose TRUE --input intput.csv")
-
-    # Test case with tools with multiple inputs and outputs
-    print(" \n === Tool test 3 ==== \n")
-    parse_rscript(test_file3, "Rscript my_r_tool_multi_inputs_outputs.R --input1 input1.csv --input2 input2.csv --output1 output1.csv --output2 output2.csv")
 
     # Test case with tool which has to fail
     print("\n == Tool test 4: Fail case ==== \n")

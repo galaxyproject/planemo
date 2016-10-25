@@ -78,8 +78,9 @@ def build(**kwds):
 
     # DEPRICATED HANDLING OF EXAMPLE OUTPUT
     # TODO: handle example outputs
-    example_outputs = kwds["example_output"]
-    del kwds["example_output"]
+    # if kwds.get("example_ouput"):
+        # example_outputs = kwds["example_output"]
+        # del kwds["example_output"]
 
     kwds['inputs'] = inputs
     kwds["outputs"] = outputs

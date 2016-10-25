@@ -672,7 +672,6 @@ def _find_command(kwds):
     return command
 
 
-
 class UrlCitation(object):
 
     def __init__(self, url):
