@@ -131,7 +131,7 @@ def _parse_command_rbioc(command, param_set):
     """
     cmd = command.split(" ")
     count = 0
-    for i in xrange(len(cmd)):
+    for i in range(len(cmd)):
         if "--" in cmd[i]:
             cmd[i + 1] = "$" + param_set[count].split(".")[0]
             count = count + 1
