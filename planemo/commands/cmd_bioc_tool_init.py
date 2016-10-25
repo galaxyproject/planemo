@@ -89,11 +89,11 @@ def cli(ctx, **kwds):
 
     if kwds.get("command"):
         command = kwds["command"]
-        rscript = command.split()[1] # Name of Custom R file
+        rscript = command.split()[1]  # Name of Custom R file
 
     elif kwds.get("rscript") and kwds.get("input") and kwds.get("output"):
         rscript = kwds["rscript"]
-        command = 'Rscript %s ' % rscript # Build command from --rscript, --input, --output
+        command = 'Rscript %s ' % rscript  # Build command from --rscript, --input, --output
         for i in kwds["input"]:
             command += '--input %s ' % i
         for o in kwds["output"]:
@@ -113,7 +113,7 @@ def cli(ctx, **kwds):
     kwds['rscript'] = rscript
     kwds['command'] = command
     kwds['name'] = kwds.get("name")
-    kwds['id'] = rscript.split("/")[-1].replace(".R", "") # Default: name of R script w/o extension
+    kwds['id'] = rscript.split("/")[-1].replace(".R", "")  # Default: name of R script w/o extension
 
     # Assign input/output to kwds if --input/--output not used
     if not kwds['input']:
