@@ -10,7 +10,6 @@ from planemo import rscript_parse
 from planemo import tool_builder
 from planemo.cli import command_function
 from planemo.io import info
-import sys
 
 NAME_OPTION_HELP = "Name for new R/Bioconductor tool (user facing)."
 EXAMPLE_CMD_HELP = ("Example command with paths to build Cheetah template from. "
@@ -40,6 +39,15 @@ REQUIREMENT_HELP = ("Name of the R/Bioconductor package. "
           "Requires use of --input and --output arguments. "
           "(e.g. --rscript 'file.R') ")
 )
+@click.option(
+    "--rversion",
+    default="R 3.2.1",
+    prompt=False,
+    help=("R version this tool requries, if not given, "
+          "the tool defaults to R 3.2.1, "
+          "(eg: --rversion 'R 3.2.1'). This option adds the R dependency "
+          "in the tool requirements.")
+)
 @options.tool_init_input_option()
 @options.tool_init_output_option()
 @options.tool_init_requirement_option(help=REQUIREMENT_HELP)
@@ -47,7 +55,7 @@ REQUIREMENT_HELP = ("Name of the R/Bioconductor package. "
 @options.tool_init_doi_option()
 @options.tool_init_cite_url_option()
 @options.tool_init_version_option()
-## The following are not actually used
+# TODO: The following are not actually used, remove later
 @options.tool_init_help_from_command_option()
 @options.tool_init_test_case_option()
 @options.tool_init_macros_option()
@@ -62,15 +70,22 @@ REQUIREMENT_HELP = ("Name of the R/Bioconductor package. "
     help=("Path to bioconda repository. "
           "If left empty, path will be made in home directory.")
 )
-## THESE FEATURES ARE NOT YET IMPLEMENTED
+# TODO: THESE FEATURES ARE NOT YET IMPLEMENTED
 # @options.tool_init_example_command_option()
 # @options.tool_init_example_input_option()
 # @options.tool_init_example_output_option()
-
 @command_function
 def cli(ctx, **kwds):
     """Generate a bioconductor tool outline from supplied arguments."""
     invalid = _validate_kwds(kwds)
+
+    if kwds.get("rversion"):
+        rversion = kwds["rversion"]
+        print("R version {0} is being used.".format(rversion))
+    elif kwds.get("rscript") and not kwds.get("rversion"):
+        print("Default R 3.2.1 version will be put in the requirements")
+    else:
+        print("No R requirement given")
 
     if kwds.get("command"):
         command = kwds["command"]
@@ -83,7 +98,9 @@ def cli(ctx, **kwds):
             command += '--input %s ' % i
         for o in kwds["output"]:
             command += '--output %s ' % o
-
+        # if kwds.get("rversion"):
+            # print("R version given, make this R version available")
+            # print(kwds.get("rversion"))
     else:  # No --rscript/input/output and no --command given
         info("Need to supply EITHER a full command (--command) OR an R script (--rscript), input(s) (--input), and output(s) (--output).")
         ctx.exit(1)
@@ -91,28 +108,14 @@ def cli(ctx, **kwds):
     if invalid:
         ctx.exit(invalid)
 
-    # print >> sys.stderr, '\nCommand: %s' % (command)
-    # print >> sys.stderr, '\nR script: %s\n\n' % (rscript)
-    # exit()
-
-    rscript_data = rscript_parse.parse_rscript(rscript, command) ## BROKEN: only gets first input/output
+    rscript_data = rscript_parse.parse_rscript(rscript, command)
     kwds['rscript_data'] = rscript_data
     kwds['rscript'] = rscript
     kwds['command'] = command
     kwds['name'] = kwds.get("name")
     kwds['id'] = rscript.split("/")[-1].replace(".R", "") # Default: name of R script w/o extension
 
-    ## FOR TESTING
-    # print >> sys.stderr, '\n\n'
-    # for i in kwds:
-    #     print >> sys.stderr, '%s: %s' % (i, kwds[i])
-    # print >> sys.stderr, '\n\n'
-    # for i in kwds['rscript_data'].keys():
-    #     print >> sys.stderr, '%s: %s' % (i,kwds['rscript_data'][i])
-    # print >> sys.stderr, '\n\n'
-    # exit()
-
-    ## Assign input/output to kwds if --input/--output not used
+    # Assign input/output to kwds if --input/--output not used
     if not kwds['input']:
         new_inputs = ()
         for i in kwds['rscript_data']['inputs']['input']:
@@ -125,17 +128,6 @@ def cli(ctx, **kwds):
             new_outputs += (i,)
         kwds['output'] = new_outputs
 
-    ## FOR TESTING
-    # print >> sys.stderr, '\n\n'
-    # for i in kwds:
-    #     print >> sys.stderr, '%s: %s' % (i, kwds[i])
-    # print >> sys.stderr, '\n\n'
-    # for i in kwds['rscript_data'].keys():
-    #     print >> sys.stderr, '%s: %s' % (i,kwds['rscript_data'][i])
-    # print >> sys.stderr, '\n\n'
-    # exit()
-    # kwds.set()
-
     input_dict = rscript_data.get('inputs')
     inputs = list(input_dict.values())
     kwds['inputs'] = inputs
@@ -144,8 +136,6 @@ def cli(ctx, **kwds):
     # Probably can remove example_input/output in future
     kwds['example_input'] = kwds['input']
     kwds['example_output'] = kwds['output']
-
-    # exit("OK")
 
     # Build Tool definition file
     tool_description = bioc_tool_builder.build(**kwds)

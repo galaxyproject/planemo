@@ -735,6 +735,7 @@ class Input(object):
 
     def __str__(self):
         template = '<param type="data" name="{0}" format="{1}" />'
+        self.datatype = self.datatype.split(".")[-1]
         return template.format(self.name, self.datatype)
 
 
