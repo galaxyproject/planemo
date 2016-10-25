@@ -1,24 +1,22 @@
-#!/usr/bin/env python
+"""Taken from.
 
-"""
-Taken from:
 https://github.com/bioconda/bioconda-recipes/blob/master/scripts/bioconductor/bioconductor_skeleton.py
 (written by Ryan Dale github: daler)
 """
 
 import shutil
-import tempfile
 import configparser
-from textwrap import dedent
+import tempfile
 import tarfile
-import pyaml
+from textwrap import dedent
 import hashlib
+import pyaml
 import os
 import re
-import bs4
 import urlparse
-from collections import OrderedDict
+import bs4
 import logging
+from collections import OrderedDict
 import requests
 
 logging.basicConfig(level=logging.INFO, format='[bioconductor_skeleton.py %(asctime)s]: %(message)s')
@@ -47,18 +45,24 @@ GCC_PACKAGES = ['r-rcpp']
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
-class PageNotFoundError(Exception): pass
+
+class PageNotFoundError(Exception):
+    """Page not found error."""
+
+    pass
+
 
 class BioCProjectPage(object):
+
     def __init__(self, package):
-        """
+        """Initialize BioCProjectPage.
+
         Represents a single Bioconductor package page and provides access to
         scraped data.
         >>> x = BioCProjectPage('DESeq2')
         >>> x.tarball_url
         'http://bioconductor.org/packages/release/bioc/src/contrib/DESeq2_1.8.2.tar.gz'
         """
-
         self.base_url = base_url
         self.package = package
         self._md5 = None
@@ -73,7 +77,6 @@ class BioCProjectPage(object):
         # requests allows us to keep track of the final destination URL, which
         # we need for reconstructing the tarball URL.
         self.url = self.request.url
-
 
         # The table at the bottom of the page has the info we want. An earlier
         # draft of this script parsed the dependencies from the details table.
@@ -111,7 +114,6 @@ class BioCProjectPage(object):
             return
         else:
             raise PageNotFoundError("Unexpected error: {0.status_code} ({0.reason})".format(response))
-
 
     @property
     def bioconductor_tarball_url(self):
@@ -197,10 +199,6 @@ class BioCProjectPage(object):
 
         return dict(e)
 
-    #@property
-    #def version(self):
-    #    return self.description['version']
-
     @property
     def license(self):
         return self.description['license']
@@ -233,7 +231,6 @@ class BioCProjectPage(object):
                 ('package3', " >=0.1"),
                 ('package1', ""),
             ]
-
         """
         results = []
         for item in items:
@@ -275,7 +272,6 @@ class BioCProjectPage(object):
                     versions[name] = version
             else:
                 versions[name] = version
-
 
         for name, version in sorted(versions.items()):
             # DESCRIPTION notes base R packages, but we don't need to specify
@@ -408,9 +404,7 @@ class BioCProjectPage(object):
 
 
 def write_recipe(package, recipe_dir, force=False):
-    """
-    Write the meta.yaml and build.sh files.
-    """
+    """Write the meta.yaml and build.sh files."""
     proj = BioCProjectPage(package)
     recipe_dir = os.path.join(recipe_dir, 'bioconductor-' + proj.package.lower())
     if os.path.exists(recipe_dir) and not force:
@@ -435,17 +429,13 @@ def write_recipe(package, recipe_dir, force=False):
         current_build_number = current_meta['build'].pop('number')
 
         if (
-            (updated_version == current_version)
-            and
+            (updated_version == current_version) and
             (updated_meta != current_meta)
         ):
             proj.build_number = int(current_build_number) + 1
 
-
     with open(os.path.join(recipe_dir, 'meta.yaml'), 'w') as fout:
         fout.write(proj.meta_yaml)
-
-
 
     with open(os.path.join(recipe_dir, 'build.sh'), 'w') as fout:
         fout.write(dedent(
@@ -465,10 +455,8 @@ def write_recipe(package, recipe_dir, force=False):
             # http://docs.continuum.io/conda/build.html
             # for a list of environment variables that are set during the build
             # process.
-            # """
-            )
+            # """)
         )
-
 
 if __name__ == "__main__":
     import argparse

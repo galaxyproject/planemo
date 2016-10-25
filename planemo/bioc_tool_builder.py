@@ -1,23 +1,24 @@
-import yaml
+"""Tool builder for R-bioc tools."""
+
 import os
+import yaml
 from planemo.conda_recipes import write_bioconda_recipe
 from planemo.tool_builder import (
-    MACROS_TEMPLATE,
-    ToolDescription,
-    UrlCitation,
-    Input,
-    TestCase,
     _find_command,
     _handle_help,
     _handle_tests,
     _render,
     _replace_file_in_command,
+    Input,
+    MACROS_TEMPLATE,
+    TestCase,
+    ToolDescription,
+    UrlCitation,
 )
 
 
 def build(**kwds):
     """Build up a :func:`ToolDescription` from supplid arguments."""
-
     test_case = TestCase()
     command = _find_command(kwds)
     # process raw cite urls
@@ -181,6 +182,7 @@ class Output(object):
             self.from_path = None
 
     def __str__(self):
+        """Method override str function in Output class."""
         if self.from_path:
             return self._from_path_str()
         else:

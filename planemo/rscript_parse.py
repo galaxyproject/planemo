@@ -1,11 +1,10 @@
 """Module parses R scripts and sends a yaml file to cmd_bioc_tool_init."""
 # import yaml
 import os
-import sys
+
 
 def read_rscript(path):
     """Read the rscript."""
-
     try:
         with open(os.path.expanduser(path), 'r') as f:
             rscript = f.readlines()
@@ -16,7 +15,6 @@ def read_rscript(path):
 
 def parse_rscript(script, example_command):
     """Parse script."""
-
     rscript = read_rscript(script)
     data = {}
 
@@ -38,17 +36,16 @@ def parse_rscript(script, example_command):
 
 
 def parse_example_command(example_command):
-    """
-    Parse example_command to get inputs.
+    """Parse example_command to get inputs.
+
     Each input stored as element in a dictionary list.
     """
-
     cmd = example_command.replace("\n", " ")
     opts = [i.strip() for i in cmd.split("--")]
     opt_dict = {}
     for opt in opts:
         opt = opt.split(" ")
-        if not opt_dict.has_key(opt[0]):
+        if not opt[0] in opt_dict.keys():
             opt_dict[opt[0]] = [opt[1]]
         else:
             opt_dict[opt[0]].append(opt[1])
@@ -93,12 +90,13 @@ class Input(object):
 
     def find_inputs(self):
         """Find inputs in example command.
+
         This parses the R script and has NOTHING TO DO WITH kwds
         """
         opt_dict = parse_example_command(self.example_command)
         inputs = {}
         for key, value in opt_dict.iteritems():
-            if self.searchtext in key: # key here is "input"
+            if self.searchtext in key:  # key here is "input"
                 for i, line in enumerate(self.script):
                     line = line.strip()
                     if (key in line) and (not line.startswith("#")):
