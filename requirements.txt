@@ -3,7 +3,7 @@ BeautifulSoup4
 Click
 configparser
 six>=1.7.0
-pyyaml
+pyaml
 bioblend>=0.8.0
 docutils
 jinja2
