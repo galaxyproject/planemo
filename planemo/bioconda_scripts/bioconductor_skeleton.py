@@ -4,20 +4,24 @@ https://github.com/bioconda/bioconda-recipes/blob/master/scripts/bioconductor/bi
 (written by Ryan Dale github: daler)
 """
 
-import shutil
 import configparser
-import tempfile
-import tarfile
-from textwrap import dedent
-import hashlib
-import pyaml
 import os
 import re
-import urlparse
+import shutil
+import tarfile
+import tempfile
+
+import hashlib
+import pyaml
+
+from textwrap import dedent
+
 import bs4
 import logging
-from collections import OrderedDict
 import requests
+import urlparse
+
+from collections import OrderedDict
 
 logging.basicConfig(level=logging.INFO, format='[bioconductor_skeleton.py %(asctime)s]: %(message)s')
 logger = logging.getLogger()
