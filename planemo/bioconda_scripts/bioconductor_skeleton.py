@@ -429,7 +429,7 @@ def write_recipe(package, recipe_dir, force=False):
         # the dicts
         updated_version = updated_meta['package'].pop('version')
         current_version = current_meta['package'].pop('version')
-        updated_build_number = updated_meta['build'].pop('number')
+        # updated_build_number = updated_meta['build'].pop('number')  # FIXME
         current_build_number = current_meta['build'].pop('number')
 
         if (
