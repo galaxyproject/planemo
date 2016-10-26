@@ -4,17 +4,18 @@ The extend Galaxy/galaxy-lib's features with planemo specific idioms.
 """
 
 from __future__ import absolute_import
-
 import os
+
+from planemo import git
+from planemo.bioconda_scripts import bioconductor_skeleton
+from planemo.io import info
+
 
 # from galaxy.tools.deps import conda_util
 
 # from planemo.io import shell
 # from planemo.tools import yield_tool_sources_on_paths
-from planemo.io import info
-from planemo import git
 
-from planemo.bioconda_scripts import bioconductor_skeleton
 
 # Bioconda helper functions
 

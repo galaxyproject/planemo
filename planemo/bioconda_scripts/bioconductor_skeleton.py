@@ -1,27 +1,25 @@
-"""Taken from.
+"""Taken from bioconda.
 
 https://github.com/bioconda/bioconda-recipes/blob/master/scripts/bioconductor/bioconductor_skeleton.py
 (written by Ryan Dale github: daler)
 """
 
-import configparser
+import hashlib
+import logging
 import os
 import re
 import shutil
 import tarfile
 import tempfile
-
-import hashlib
-import pyaml
-
+import urlparse
+from collections import OrderedDict
 from textwrap import dedent
 
 import bs4
-import logging
+import configparser
+import pyaml
 import requests
-import urlparse
 
-from collections import OrderedDict
 
 logging.basicConfig(level=logging.INFO, format='[bioconductor_skeleton.py %(asctime)s]: %(message)s')
 logger = logging.getLogger()

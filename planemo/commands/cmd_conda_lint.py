@@ -1,8 +1,6 @@
 """Module describing the planemo ``conda_lint`` command."""
 import click
-
-from planemo import options
-from planemo import conda_lint
+from planemo import conda_lint, options
 from planemo.cli import command_function
 
 
