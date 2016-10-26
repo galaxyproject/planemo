@@ -12,8 +12,8 @@ import shutil
 import tarfile
 import tempfile
 import urlparse
-from collections import OrderedDict
 import configparser
+from collections import OrderedDict
 from textwrap import dedent
 
 import bs4
