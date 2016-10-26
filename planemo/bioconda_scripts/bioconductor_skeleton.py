@@ -64,7 +64,7 @@ class BioCProjectPage(object):
         scraped data.
         >>> x = BioCProjectPage('DESeq2')
         >>> x.tarball_url
-        'http://bioconductor.org/packages/release/bioc/src/contrib/DESeq2_1.8.2.tar.gz'
+        'https://bioarchive.galaxyproject.org/DESeq2_1.14.0.tar.gz'
         """
         self.base_url = base_url
         self.package = package
