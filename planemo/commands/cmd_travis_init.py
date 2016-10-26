@@ -2,13 +2,11 @@
 import os
 
 import click
-
 from galaxy.tools.deps.commands import shell
-
-from planemo import options
-from planemo import RAW_CONTENT_URL
+from planemo import RAW_CONTENT_URL, options
 from planemo.cli import command_function
 from planemo.io import info, warn
+
 
 PREPARE_MESSAGE = (
     "Place commands to prepare an Ubuntu VM for use with your tool(s) "

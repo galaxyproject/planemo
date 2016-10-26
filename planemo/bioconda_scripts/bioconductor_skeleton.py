@@ -15,8 +15,8 @@ import urlparse
 from collections import OrderedDict
 from textwrap import dedent
 
-import bs4
 import configparser
+import bs4
 import pyaml
 import requests
 
