@@ -4,6 +4,7 @@ https://github.com/bioconda/bioconda-recipes/blob/master/scripts/bioconductor/bi
 (written by Ryan Dale github: daler)
 """
 
+import configparser
 import hashlib
 import logging
 import os
@@ -11,7 +12,6 @@ import re
 import shutil
 import tarfile
 import tempfile
-import configparser
 import urlparse
 from collections import OrderedDict
 from textwrap import dedent
