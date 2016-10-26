@@ -13,9 +13,9 @@ import tarfile
 import tempfile
 import urlparse
 from collections import OrderedDict
+import configparser
 from textwrap import dedent
 
-import configparser
 import bs4
 import pyaml
 import requests
@@ -55,6 +55,7 @@ class PageNotFoundError(Exception):
 
 
 class BioCProjectPage(object):
+    """Main BiocProjectPage class."""
 
     def __init__(self, package):
         """Initialize BioCProjectPage.
@@ -102,6 +103,8 @@ class BioCProjectPage(object):
     @property
     def bioaRchive_url(self):
         """
+        Return bioarchive URL.
+
         Returns the bioaRchive URL if one exists for this version of this
         package, otherwise returns None.
 
@@ -119,9 +122,7 @@ class BioCProjectPage(object):
 
     @property
     def bioconductor_tarball_url(self):
-        """
-        Return the url to the tarball from the bioconductor site.
-        """
+        """Return the url to the tarball from the bioconductor site."""
         r = re.compile('{0}.*\.tar.gz'.format(self.package))
 
         def f(href):
@@ -140,6 +141,7 @@ class BioCProjectPage(object):
 
     @property
     def tarball_url(self):
+        """Return tarball url."""
         url = self.bioaRchive_url
         if url:
             return url
@@ -147,11 +149,14 @@ class BioCProjectPage(object):
 
     @property
     def tarball_basename(self):
+        """Return full path of tarball."""
         return os.path.basename(self.tarball_url)
 
     @property
     def cached_tarball(self):
         """
+        Download tarball to cache directory.
+
         Downloads the tarball to the `cached_bioconductor_tarballs` dir if one
         hasn't already been downloaded for this package.
 
@@ -181,9 +186,7 @@ class BioCProjectPage(object):
 
     @property
     def description(self):
-        """
-        Extract the DESCRIPTION file from the tarball and parse it.
-        """
+        """Extract the DESCRIPTION file from the tarball and parse it."""
         t = tarfile.open(self.cached_tarball)
         d = t.extractfile(os.path.join(self.package, 'DESCRIPTION')).read()
         self._contents = d
@@ -203,10 +206,12 @@ class BioCProjectPage(object):
 
     @property
     def license(self):
+        """Add lisence to description."""
         return self.description['license']
 
     @property
     def imports(self):
+        """Return package dependencies."""
         try:
             return self.description['imports'].split(', ')
         except KeyError:
@@ -214,13 +219,15 @@ class BioCProjectPage(object):
 
     @property
     def depends(self):
+        """Return package description."""
         try:
             return self.description['depends'].split(', ')
         except KeyError:
             return []
 
     def _parse_dependencies(self, items):
-        """
+        """Return list of package dependencies.
+
         The goal is to go from
 
         ['package1', 'package2', 'package3 (>= 0.1)', 'package4']
@@ -247,17 +254,9 @@ class BioCProjectPage(object):
                 raise ValueError("Found {0} toks: {1}".format(len(toks), toks))
         return results
 
-    @property
-    def dependencies(self):
-        if self._dependencies:
-            return self._dependencies
-
-        results = []
-
-        # Some packages specify a minimum R version, which we'll need to keep
-        # track of
-        specific_r_version = False
-
+    #  Helper functions for dependencies function
+    def _version_specs(self):
+        """Helper function for version specs."""
         # Sometimes a version is specified only in the `depends` and not in the
         # `imports`. We keep the most specific version of each.
         version_specs = list(
@@ -274,6 +273,21 @@ class BioCProjectPage(object):
                     versions[name] = version
             else:
                 versions[name] = version
+        return versions
+
+    @property
+    def dependencies(self):
+        """Define dependencies."""
+        if self._dependencies:
+            return self._dependencies
+
+        results = []
+
+        # Some packages specify a minimum R version, which we'll need to keep
+        # track of
+        specific_r_version = False
+
+        versions = self._version_specs(self)
 
         for name, version in sorted(versions.items()):
             # DESCRIPTION notes base R packages, but we don't need to specify
@@ -315,9 +329,10 @@ class BioCProjectPage(object):
 
     @property
     def md5(self):
-        """
-        Calculate the md5 hash of the tarball so it can be filled into the
-        meta.yaml.
+        """Get md5 hash.
+
+        Calculate the md5 hash of the tarball so it can be filled into
+        the meta.yaml.
         """
         if self._md5 is None:
             self._md5 = hashlib.md5(

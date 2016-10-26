@@ -78,15 +78,7 @@ REQUIREMENT_HELP = ("Name of the R/Bioconductor package. "
 def cli(ctx, **kwds):
     """Generate a bioconductor tool outline from supplied arguments."""
     invalid = _validate_kwds(kwds)
-
-    if kwds.get("rversion"):
-        rversion = kwds["rversion"]
-        print("R version {0} is being used.".format(rversion))
-    elif kwds.get("rscript") and not kwds.get("rversion"):
-        print("Default R 3.2.1 version will be put in the requirements")
-    else:
-        print("No R requirement given")
-
+    _check_r_version(kwds)
     if kwds.get("command"):
         command = kwds["command"]
         rscript = command.split()[1]  # Name of Custom R file
@@ -98,9 +90,6 @@ def cli(ctx, **kwds):
             command += '--input %s ' % i
         for o in kwds["output"]:
             command += '--output %s ' % o
-        # if kwds.get("rversion"):
-            # print("R version given, make this R version available")
-            # print(kwds.get("rversion"))
     else:  # No --rscript/input/output and no --command given
         info("Need to supply EITHER a full command (--command) OR an R script (--rscript), input(s) (--input), and output(s) (--output).")
         ctx.exit(1)
@@ -142,6 +131,17 @@ def cli(ctx, **kwds):
     tool_builder.write_tool_description(
         ctx, tool_description, **kwds
     )
+
+
+def _check_r_version(kwds):
+    """Check if R version is supplied."""
+    if kwds.get("rversion"):
+        rversion = kwds["rversion"]
+        print("R version {0} is being used.".format(rversion))
+    elif kwds.get("rscript") and not kwds.get("rversion"):
+        print("Default R 3.2.1 version will be put in the requirements")
+    else:
+        print("No R requirement given")
 
 
 def _validate_kwds(kwds):
