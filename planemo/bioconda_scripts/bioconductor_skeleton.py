@@ -11,8 +11,8 @@ import re
 import shutil
 import tarfile
 import tempfile
-import urlparse
 import configparser
+import urlparse
 from collections import OrderedDict
 from textwrap import dedent
 
