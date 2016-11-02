@@ -20,7 +20,7 @@ def build_engine(ctx, **kwds):
     engine_type_str = kwds.get("engine", "galaxy")
     if engine_type_str == "galaxy":
         engine_type = GalaxyEngine
-    elif engine_type_str == "dockerize_galaxy":
+    elif engine_type_str == "docker_galaxy":
         engine_type = DockerizedGalaxyEngine
     elif engine_type_str == "cwltool":
         engine_type = CwlToolEngine
