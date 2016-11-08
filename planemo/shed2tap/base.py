@@ -7,7 +7,8 @@ import zipfile
 from ftplib import all_errors as FTPErrors  # tuple of exceptions
 from xml.etree import ElementTree
 
-from six import iteritems, string_types
+from six import iteritems
+from six import string_types
 from six.moves import map as imap
 from six.moves.urllib.error import URLError
 from six.moves.urllib.request import urlretrieve
