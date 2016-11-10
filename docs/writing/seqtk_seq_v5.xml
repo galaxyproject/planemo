@@ -11,7 +11,7 @@
               -q $quality_min
               -X $quality_max
               #if $mask_regions
-              -M $mask_regions
+              -M "$mask_regions"
               #end if
               #if $sample.sample
               -f $sample.fraction
