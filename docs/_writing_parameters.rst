@@ -77,7 +77,7 @@ support `Cheetah <http://www.cheetahtemplate.org/docs/users_guide_html/users_gui
 ::
 
     #if $mask_regions
-    -M $mask_regions
+    -M '$mask_regions'
     #end if
 
 Next consider the parameters:
