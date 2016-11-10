@@ -12,14 +12,14 @@
               -q $settings.quality_min
               -X $settings.quality_max
               #if $settings.mask_regions
-              -M "$settings.mask_regions"
+              -M '$settings.mask_regions'
               #end if
               #if $settings.sample.sample
               -f $settings.sample.fraction
               -s $settings.sample.seed
               #end if
               #end if
-              -a "$input1" > "$output1"
+              -a '$input1' > '$output1'
     ]]></command>
     <inputs>
         <param type="data" name="input1" format="fastq" />
