@@ -4,6 +4,7 @@ Click
 configparser
 six>=1.7.0
 pyaml
+pyyaml
 bioblend>=0.8.0
 docutils
 jinja2
