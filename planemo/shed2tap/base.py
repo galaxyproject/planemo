@@ -1,11 +1,9 @@
 from __future__ import print_function
-
 import os
 import subprocess
 import sys
 import tarfile
 import zipfile
-
 from ftplib import all_errors as FTPErrors  # tuple of exceptions
 from xml.etree import ElementTree
 

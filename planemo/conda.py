@@ -2,6 +2,7 @@
 
 The extend Galaxy/galaxy-lib's features with planemo specific idioms.
 """
+
 from __future__ import absolute_import
 
 import os

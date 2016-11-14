@@ -3,12 +3,12 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import os
-import xml.etree.ElementTree as ET
-
 from collections import namedtuple
+from xml.etree import ElementTree as ET
 
 from planemo.io import error
 from planemo.test.results import StructuredData as BaseStructuredData
+
 
 RUN_TESTS_CMD = (
     "sh run_tests.sh $COMMON_STARTUP_ARGS --report_file %s %s %s %s"
