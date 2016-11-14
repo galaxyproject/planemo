@@ -4,6 +4,14 @@ planemo.linters package
 Submodules
 ----------
 
+planemo.linters.conda_requirements module
+-----------------------------------------
+
+.. automodule:: planemo.linters.conda_requirements
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.linters.doi module
 --------------------------
 

@@ -6,6 +6,7 @@ Subpackages
 
 .. toctree::
 
+    planemo.bioconda_scripts
     planemo.commands
     planemo.conda_verify
     planemo.cwl
@@ -26,6 +27,14 @@ planemo.bioblend module
 -----------------------
 
 .. automodule:: planemo.bioblend
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.bioc_tool_builder module
+--------------------------------
+
+.. automodule:: planemo.bioc_tool_builder
     :members:
     :undoc-members:
     :show-inheritance:
@@ -58,6 +67,14 @@ planemo.conda_lint module
 -------------------------
 
 .. automodule:: planemo.conda_lint
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.conda_recipes module
+----------------------------
+
+.. automodule:: planemo.conda_recipes
     :members:
     :undoc-members:
     :show-inheritance:
@@ -126,6 +143,14 @@ planemo.lint module
     :undoc-members:
     :show-inheritance:
 
+planemo.mulled module
+---------------------
+
+.. automodule:: planemo.mulled
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.network_util module
 ---------------------------
 
@@ -138,6 +163,14 @@ planemo.options module
 ----------------------
 
 .. automodule:: planemo.options
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.rscript_parse module
+----------------------------
+
+.. automodule:: planemo.rscript_parse
     :members:
     :undoc-members:
     :show-inheritance:

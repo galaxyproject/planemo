@@ -9,7 +9,11 @@ History
 0.35.0.dev0
 ---------------------
 
-    
+* Native support for building bioconductor tools and recipes
+  (thanks to `@nturaga`_). `Pull Request 570`_
+* Fixes for running Galaxy via docker-galaxy-stable (thanks to
+  `@bgruening`_). 50d3c4a_
+* Import order linting fixes (thanks to `@bgruening`_).
 
 ---------------------
 0.34.1 (2016-10-12)
@@ -926,6 +930,9 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 570: https://github.com/galaxyproject/planemo/pull/570
+.. _9228416: https://github.com/galaxyproject/planemo/commit/9228416
+.. _50d3c4a: https://github.com/galaxyproject/planemo/commit/50d3c4a
 .. _Issue 578: https://github.com/galaxyproject/planemo/issues/578
 .. _Pull Request 591: https://github.com/galaxyproject/planemo/pull/591
 .. _Pull Request 590: https://github.com/galaxyproject/planemo/pull/590

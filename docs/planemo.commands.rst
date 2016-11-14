@@ -4,6 +4,22 @@ planemo.commands package
 Submodules
 ----------
 
+planemo.commands.cmd_bioc_conda_recipe_init module
+--------------------------------------------------
+
+.. automodule:: planemo.commands.cmd_bioc_conda_recipe_init
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_bioc_tool_init module
+------------------------------------------
+
+.. automodule:: planemo.commands.cmd_bioc_tool_init
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd_brew module
 --------------------------------
 
@@ -168,6 +184,14 @@ planemo.commands.cmd_lint module
 --------------------------------
 
 .. automodule:: planemo.commands.cmd_lint
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_mull module
+--------------------------------
+
+.. automodule:: planemo.commands.cmd_mull
     :members:
     :undoc-members:
     :show-inheritance:
