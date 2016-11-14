@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.35.0.dev0
+0.35.0 (2016-11-14)
 ---------------------
 
 * Native support for building bioconductor tools and recipes
