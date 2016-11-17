@@ -20,7 +20,10 @@ def cli(ctx, paths, **kwds):
     file.
     """
     kwds["recursive"] = True
+    kwds["fail_fast"] = True
     repos = find_raw_repositories(ctx, paths, **kwds)
+    # Since fail_fast is True, all repos are actual raw repo objects and
+    # not exceptions.
     raw_paths = [r.path for r in repos]
     paths = filter_paths(ctx, raw_paths, path_type="dir", **kwds)
     print_path_list(paths, **kwds)
