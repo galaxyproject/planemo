@@ -3,7 +3,7 @@ import click
 
 from planemo.cli import command_function
 
-SYNTAX_URL = "https://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax"
+SYNTAX_URL = "https://docs.galaxyproject.org/en/latest/dev/schema.html"
 
 
 @click.command("syntax")
