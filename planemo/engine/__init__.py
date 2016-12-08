@@ -8,7 +8,7 @@ from .factory import (
     is_galaxy_engine,
 )
 
-__all__ = [
+__all__ = (
     "engine_context",
     "is_galaxy_engine",
-]
+)

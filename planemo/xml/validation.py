@@ -86,7 +86,7 @@ def get_validator(require=True):
     return None
 
 
-__all__ = [
+__all__ = (
     "get_validator",
     "XsdValidator",
-]
+)

@@ -42,6 +42,6 @@ def build_mull_target_kwds(ctx, **kwds):
     }
 
 
-__all__ = [
+__all__ = (
     "build_involucro_context",
-]
+)

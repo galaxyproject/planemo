@@ -96,4 +96,8 @@ def serve_daemon(ctx, runnables=[], **kwds):
                 config.cleanup()
 
 
-__all__ = ["serve", "serve_daemon", "shed_serve"]
+__all__ = (
+    "serve",
+    "serve_daemon",
+    "shed_serve",
+)

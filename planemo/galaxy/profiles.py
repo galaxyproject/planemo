@@ -156,9 +156,9 @@ def _profile_directory(ctx, profile_name):
     return os.path.join(ctx.galaxy_profiles_directory, profile_name)
 
 
-__all__ = [
+__all__ = (
     "create_profile",
     "delete_profile",
     "ensure_profile",
     "list_profiles",
-]
+)

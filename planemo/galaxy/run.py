@@ -104,9 +104,9 @@ def run_galaxy_command(ctx, command, env, action):
     return exit_code
 
 
-__all__ = [
+__all__ = (
     "setup_venv",
     "run_galaxy_command",
     "DOWNLOAD_GALAXY",
     "setup_common_startup_args",
-]
+)

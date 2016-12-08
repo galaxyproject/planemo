@@ -51,4 +51,7 @@ class DockerizedGalaxyEngine(GalaxyEngine):
         return serve_kwds
 
 
-__all__ = ["GalaxyEngine", "DockerizedGalaxyEngine"]
+__all__ = (
+    "GalaxyEngine",
+    "DockerizedGalaxyEngine",
+)

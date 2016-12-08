@@ -66,7 +66,7 @@ def write_bioconda_recipe(package_name, clone, update, bioconda_dir_path=None):
     return
 
 
-__all__ = [
+__all__ = (
     "clone_bioconda_repo",
     "write_bioconda_recipe",
-]
+)

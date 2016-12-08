@@ -1380,7 +1380,7 @@ class RealizationException(Exception):
     """
 
 
-__all__ = [
+__all__ = (
     'api_exception_to_message',
     'CURRENT_CATEGORIES',
     'diff_repo',
@@ -1395,4 +1395,4 @@ __all__ = [
     'shed_init',
     'tool_shed_client',  # Deprecated...
     'tool_shed_url',
-]
+)

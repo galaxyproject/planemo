@@ -73,7 +73,7 @@ class MockErrorRunResponse(object):
     log = "Error log"
 
 
-__all__ = [
+__all__ = (
     "test_non_file_case_checker",
     "test_file_case_checker",
-]
+)

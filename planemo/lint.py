@@ -160,10 +160,10 @@ def lint_urls(root, lint_ctx):
         validate_url(url, lint_ctx, BROWSER_USER_AGENT)
 
 
-__all__ = [
+__all__ = (
     "build_lint_args",
     "handle_lint_complete",
     "lint_dois",
     "lint_urls",
     "lint_xsd",
-]
+)

@@ -15,4 +15,6 @@ def create_database_source(**kwds):
         raise Exception("Unknown database type [%s]." % database_type)
 
 
-__all__ = ['create_database_source']
+__all__ = (
+    "create_database_source",
+)

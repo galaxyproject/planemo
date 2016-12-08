@@ -76,4 +76,7 @@ def _shutdown(self):
 MockShed = namedtuple("MockShed", ["url", "directory", "thread", "model"])
 MockShed.shutdown = _shutdown
 
-__all__ = ["setup_mock_shed", "mock_shed"]
+__all__ = (
+    "setup_mock_shed",
+    "mock_shed",
+)

@@ -8,6 +8,6 @@ from __future__ import absolute_import
 from galaxy.tools.deps.dockerfiles import docker_host_args
 
 
-__all__ = [
+__all__ = (
     'docker_host_args',
-]
+)

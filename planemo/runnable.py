@@ -433,7 +433,7 @@ class ErrorRunResponse(RunResponse):
         return message
 
 
-__all__ = [
+__all__ = (
     "cases",
     "ErrorRunResponse",
     "for_path",
@@ -445,4 +445,4 @@ __all__ = [
     "RunnableOutput",
     "SuccessfulRunResponse",
     "TestCase",
-]
+)

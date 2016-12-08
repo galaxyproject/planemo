@@ -5,9 +5,9 @@ from .actions import run_in_config
 
 from .structures import StructuredData
 
-__all__ = [
+__all__ = (
     "handle_reports",
     "handle_reports_and_summary",
     "run_in_config",
     "StructuredData",
-]
+)

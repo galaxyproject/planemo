@@ -215,10 +215,10 @@ def planemo(ctx, config, directory, verbose):
     ctx.planemo_directory = os.path.expanduser(directory)
 
 
-__all__ = [
+__all__ = (
     "command_function",
     "Context",
     "list_cmds",
     "name_to_command",
     "planemo",
-]
+)

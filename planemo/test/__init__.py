@@ -2,6 +2,6 @@
 
 from ._check_output import check_output
 
-__all__ = [
-    'check_output',
-]
+__all__ = (
+    "check_output",
+)

@@ -346,8 +346,8 @@ class _FileChangeTracker(object):
             return os.path.exists(self.path)
 
 
-__all__ = [
+__all__ = (
     "run_in_config",
     "handle_reports",
     "handle_reports_and_summary",
-]
+)

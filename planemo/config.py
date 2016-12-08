@@ -125,8 +125,8 @@ def read_global_config(config_path):
         return yaml.load(f)
 
 
-__all__ = [
+__all__ = (
     "global_config_path",
     "read_global_config",
     "planemo_option",
-]
+)

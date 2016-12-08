@@ -418,6 +418,6 @@ def _ensure_file_exists(file_path):
         raise Exception(message)
 
 
-__all__ = [
+__all__ = (
     "execute",
-]
+)

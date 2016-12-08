@@ -63,4 +63,6 @@ def _remove_attribs(xml_element):
             del xml_element.attrib[attrib]
 
 
-__all__ = ["diff_and_remove"]
+__all__ = (
+    "diff_and_remove",
+)

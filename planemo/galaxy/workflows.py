@@ -89,7 +89,7 @@ class DummyImporterGalaxyInterface(ImporterGalaxyInterface):
         return None
 
 
-__all__ = [
+__all__ = (
     "import_workflow",
     "describe_outputs",
-]
+)

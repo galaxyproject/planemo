@@ -3,7 +3,7 @@ from .run import run_cwltool
 from .script import to_script
 
 
-__all__ = [
+__all__ = (
     'run_cwltool',
     'to_script',
-]
+)

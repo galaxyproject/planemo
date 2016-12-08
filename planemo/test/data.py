@@ -32,6 +32,6 @@ def search_tool_path_for(path, target, extra_paths=[]):
     return None
 
 
-__all__ = [
+__all__ = (
     "search_tool_path_for",
-]
+)

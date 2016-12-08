@@ -65,9 +65,9 @@ def tool_source_conda_targets(tool_source):
     return conda_util.requirements_to_conda_targets(requirements)
 
 
-__all__ = [
+__all__ = (
     "build_conda_context",
     "collect_conda_targets",
     "collect_conda_target_lists",
     "tool_source_conda_targets",
-]
+)

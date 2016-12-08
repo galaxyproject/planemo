@@ -15,4 +15,6 @@ def glob(*args, **kwds):
     return _glob(*args, **kwds)
 
 
-__all__ = ["glob"]
+__all__ = (
+    "glob",
+)
