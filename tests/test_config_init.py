@@ -1,5 +1,7 @@
 import os
+
 import yaml
+
 from .test_utils import CliTestCase
 
 
