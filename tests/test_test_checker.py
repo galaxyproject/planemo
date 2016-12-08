@@ -72,6 +72,7 @@ class MockErrorRunResponse(object):
     error_message = "Problem running job."
     log = "Error log"
 
+
 __all__ = [
     "test_non_file_case_checker",
     "test_file_case_checker",

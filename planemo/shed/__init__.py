@@ -157,6 +157,7 @@ def construct_yaml_str(self, node):
     # to always return unicode objects
     return self.construct_scalar(node)
 
+
 yaml.Loader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
 yaml.SafeLoader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
 
@@ -169,6 +170,7 @@ def _shed_context_owner(self):
     if owner is None:
         owner = username(self.tsi)
     return owner
+
 
 ShedContext.owner = _shed_context_owner
 
@@ -1082,6 +1084,7 @@ class RawRepositoryDirectory(object):
                 return True
         return False
 
+
 RealizedFiles = namedtuple("RealizedFiles", ["files", "include_failures"])
 
 
@@ -1375,6 +1378,7 @@ class RealizationException(Exception):
     realizing effective repositories for a shed command. As a
     precondition - the user has already been informed with error().
     """
+
 
 __all__ = [
     'api_exception_to_message',

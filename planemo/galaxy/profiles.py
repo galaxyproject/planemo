@@ -155,6 +155,7 @@ def _stored_profile_options_path(profile_directory):
 def _profile_directory(ctx, profile_name):
     return os.path.join(ctx.galaxy_profiles_directory, profile_name)
 
+
 __all__ = [
     "create_profile",
     "delete_profile",

@@ -72,6 +72,7 @@ def _shutdown(self):
     self.thread.join(DEFAULT_OP_TIMEOUT)
     shutil.rmtree(self.directory)
 
+
 MockShed = namedtuple("MockShed", ["url", "directory", "thread", "model"])
 MockShed.shutdown = _shutdown
 

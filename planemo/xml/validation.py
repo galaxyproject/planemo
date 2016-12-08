@@ -36,6 +36,7 @@ class XsdValidator(object):
         :return type: bool
         """
 
+
 ValidationResult = namedtuple("ValidationResult", ["passed", "output"])
 
 
