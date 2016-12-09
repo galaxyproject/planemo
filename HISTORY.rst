@@ -9,7 +9,13 @@ History
 0.36.0.dev0
 ---------------------
 
-    
+* Bring in latest tool XSD file from Galaxy (thanks to `@peterjc`_).
+  `Pull Request 605`_
+* PEP8 fixes for various linting problems 
+  (thanks to `@peterjc`_).
+  `Pull Request 606`_
+* Update tool syntax URL to new URL (thanks to `@mvdbeek`_).
+  `Pull Request 602`_
 
 ---------------------
 0.35.0 (2016-11-14)
@@ -936,6 +942,9 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 605: https://github.com/galaxyproject/planemo/pull/605
+.. _Pull Request 606: https://github.com/galaxyproject/planemo/pull/606
+.. _Pull Request 602: https://github.com/galaxyproject/planemo/pull/602
 .. _Pull Request 570: https://github.com/galaxyproject/planemo/pull/570
 .. _9228416: https://github.com/galaxyproject/planemo/commit/9228416
 .. _50d3c4a: https://github.com/galaxyproject/planemo/commit/50d3c4a
