@@ -203,6 +203,6 @@ def yield_recipes_on_paths(ctx, paths, recursive):
             yield recipe_dir
 
 
-__all__ = [
+__all__ = (
     "lint_recipes_on_paths",
-]
+)

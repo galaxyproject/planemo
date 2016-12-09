@@ -103,9 +103,10 @@ def run_galaxy_command(ctx, command, env, action):
     ctx.vlog("run command exited with return code %s" % exit_code)
     return exit_code
 
-__all__ = [
+
+__all__ = (
     "setup_venv",
     "run_galaxy_command",
     "DOWNLOAD_GALAXY",
     "setup_common_startup_args",
-]
+)

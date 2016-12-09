@@ -11,6 +11,7 @@ the identifier as a locally cached tag. (Tip: Use the docker_build to populate
 such a tag from a Dockerfile located in the tool's directory.
 """
 from __future__ import print_function
+
 import os
 
 import click

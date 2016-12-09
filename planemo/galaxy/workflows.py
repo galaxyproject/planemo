@@ -88,7 +88,8 @@ class DummyImporterGalaxyInterface(ImporterGalaxyInterface):
     def import_workflow(self, workflow, **kwds):
         return None
 
-__all__ = [
+
+__all__ = (
     "import_workflow",
     "describe_outputs",
-]
+)

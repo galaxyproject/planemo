@@ -47,8 +47,8 @@ def user_api_key(admin_gi):
     return users.create_user_apikey(user_id)
 
 
-__all__ = [
+__all__ = (
     "DEFAULT_MASTER_API_KEY",
     "gi",
     "user_api_key",
-]
+)

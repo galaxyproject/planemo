@@ -20,4 +20,6 @@ class CwlToolEngine(BaseEngine):
         return cwl.run_cwltool(self._ctx, path, job_path, **self._kwds)
 
 
-__all__ = ["CwlToolEngine"]
+__all__ = (
+    "CwlToolEngine",
+)

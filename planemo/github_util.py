@@ -145,11 +145,11 @@ def publish_as_gist_file(ctx, path, name="index"):
     return gist.files[name].raw_url
 
 
-__all__ = [
+__all__ = (
     "clone_fork_branch",
     "ensure_hub",
     "fork",
     "get_github_config",
     "get_hub_env",
     "publish_as_gist_file",
-]
+)

@@ -45,8 +45,8 @@ def engine_context(ctx, **kwds):
             engine.cleanup()
 
 
-__all__ = [
+__all__ = (
     "is_galaxy_engine",
     "build_engine",
     "engine_context",
-]
+)

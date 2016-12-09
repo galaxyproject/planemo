@@ -1247,8 +1247,8 @@ def _ensure_directory(path):
         os.makedirs(path)
 
 
-__all__ = [
+__all__ = (
     "attempt_database_preseed",
     "DATABASE_LOCATION_TEMPLATE",
     "galaxy_config",
-]
+)

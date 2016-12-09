@@ -41,6 +41,7 @@ def build_mull_target_kwds(ctx, **kwds):
         'channels': channels.split(","),
     }
 
-__all__ = [
+
+__all__ = (
     "build_involucro_context",
-]
+)

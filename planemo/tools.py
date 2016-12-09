@@ -74,10 +74,10 @@ def _is_tool_source(ctx, tool_path, tool_source):
     return True
 
 
-__all__ = [
+__all__ = (
     "load_tool_elements_from_path",
     "is_tool_load_error",
     "load_tool_sources_from_path",
     "yield_tool_sources",
     "yield_tool_sources_on_paths",
-]
+)

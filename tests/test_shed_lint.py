@@ -1,4 +1,5 @@
 from os.path import join
+
 from .test_utils import CliTestCase
 
 

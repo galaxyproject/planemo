@@ -115,6 +115,6 @@ def run_cwltool(ctx, path, job_path, **kwds):
     )
 
 
-__all__ = [
+__all__ = (
     "run_cwltool",
-]
+)

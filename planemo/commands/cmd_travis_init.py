@@ -2,10 +2,11 @@
 import os
 
 import click
+
 from galaxy.tools.deps.commands import shell
 
-from planemo import RAW_CONTENT_URL
 from planemo import options
+from planemo import RAW_CONTENT_URL
 from planemo.cli import command_function
 from planemo.io import info, warn
 

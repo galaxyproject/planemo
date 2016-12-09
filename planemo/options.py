@@ -6,7 +6,9 @@ import functools
 import os
 
 import click
+
 from galaxy.tools.deps import docker_util
+
 from .config import planemo_option
 
 

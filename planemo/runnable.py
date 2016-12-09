@@ -49,6 +49,7 @@ def _runnable_type_has_tools(runnable_type):
 def _runnable_type_is_single_artifact(runnable_type):
     return runnable_type.name not in ["directory"]
 
+
 RunnableType.has_tools = _runnable_type_has_tools
 RunnableType.is_single_artifact = _runnable_type_is_single_artifact
 
@@ -62,6 +63,7 @@ def _runnable_delegate_attribute(attribute):
         return getattr(runnable.type, attribute)
 
     return getter
+
 
 Runnable.has_tools = _runnable_delegate_attribute('has_tools')
 Runnable.is_single_artifact = _runnable_delegate_attribute('is_single_artifact')
@@ -430,7 +432,8 @@ class ErrorRunResponse(RunResponse):
             message += " and log [%s]" % log
         return message
 
-__all__ = [
+
+__all__ = (
     "cases",
     "ErrorRunResponse",
     "for_path",
@@ -442,4 +445,4 @@ __all__ = [
     "RunnableOutput",
     "SuccessfulRunResponse",
     "TestCase",
-]
+)

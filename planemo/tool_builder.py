@@ -862,8 +862,8 @@ def write_tool_description(ctx, tool_description, **kwds):
             io.shell("cp '%s' 'test-data'" % test_file)
 
 
-__all__ = [
+__all__ = (
     "build",
     "ToolDescription",
     "write_tool_description",
-]
+)

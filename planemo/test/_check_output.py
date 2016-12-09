@@ -47,6 +47,6 @@ def _test_filename_getter(runnable):
     return get_filename
 
 
-__all__ = [
+__all__ = (
     "check_output",
-]
+)

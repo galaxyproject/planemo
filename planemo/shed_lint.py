@@ -342,6 +342,7 @@ def _validate_categories(categories, realized_repository):
 
     return msg
 
-__all__ = [
+
+__all__ = (
     "lint_repository",
-]
+)

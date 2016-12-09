@@ -113,4 +113,7 @@ def get_dict_value(key, data):
         raise KeyError("No key [%s] in [%s]" % (key, data))
 
 
-__all__ = ["StructuredData", "get_dict_value"]
+__all__ = (
+    "StructuredData",
+    "get_dict_value",
+)

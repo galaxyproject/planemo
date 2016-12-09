@@ -2,6 +2,7 @@
 """
 
 import os
+
 from .test_utils import CliTestCase
 from .test_utils import TEST_TOOLS_DIR
 

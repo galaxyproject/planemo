@@ -31,6 +31,6 @@ class DatabaseSource(object):
         """Return a URL string for use by sqlalchemy."""
 
 
-__all__ = [
-    "DatabaseSource"
-]
+__all__ = (
+    "DatabaseSource",
+)

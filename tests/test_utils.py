@@ -251,8 +251,8 @@ def assert_exists(path):
 
 
 # TODO: everything should be considered "exported".
-__all__ = [
+__all__ = (
     "assert_exists",
     "TestCase",
     "CliTestCase",
-]
+)

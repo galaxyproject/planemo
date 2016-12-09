@@ -4,6 +4,7 @@ The extend Galaxy/galaxy-lib's features with planemo specific idioms.
 """
 
 from __future__ import absolute_import
+
 import os
 
 from planemo import git
@@ -65,7 +66,7 @@ def write_bioconda_recipe(package_name, clone, update, bioconda_dir_path=None):
     return
 
 
-__all__ = [
+__all__ = (
     "clone_bioconda_repo",
     "write_bioconda_recipe",
-]
+)
