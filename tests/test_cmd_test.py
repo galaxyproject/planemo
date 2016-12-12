@@ -17,7 +17,6 @@ class CmdTestTestCase(CliTestCase):
     """Integration tests for the ``test`` command."""
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     @skip_unless_environ("PLANEMO_RUN_BETA_TESTS")
     def test_workflow_test_simple(self):
         """Test testing a simple workflow with Galaxy."""
