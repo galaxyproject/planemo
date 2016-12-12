@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.36.1.dev0
+0.36.1 (2016-12-12)
 ---------------------
 
 * Fix move error when using ``project_init``.
