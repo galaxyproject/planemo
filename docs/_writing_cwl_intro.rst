@@ -137,6 +137,6 @@ For more information on the Common Workflow Language check out the Draft 3
 `User Guide`_ and Specification_.
 
 .. _YAML: http://yaml.org/
-.. _User Guide: http://www.commonwl.org/draft-3/UserGuide.html
-.. _Specification: http://www.commonwl.org/draft-3/CommandLineTool.html
+.. _User Guide: http://www.commonwl.org/v1.0/UserGuide.html
+.. _Specification: http://www.commonwl.org/v1.0/CommandLineTool.html
 
