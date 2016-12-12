@@ -6,20 +6,24 @@
 
 Command-line utilities to assist in building and publishing Galaxy_ tools.
 
-.. image:: https://readthedocs.org/projects/pip/badge/?version=latest
-   :target: https://planemo.readthedocs.org
+.. image:: https://readthedocs.org/projects/planemo/badge/?version=latest
+   :target: http://planemo.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
 
 .. image:: https://badge.fury.io/py/planemo.svg
    :target: https://pypi.python.org/pypi/planemo/
+   :alt: Planemo on the Python Package Index (PyPI)
 
 .. image:: https://travis-ci.org/galaxyproject/planemo.png?branch=master
    :target: https://travis-ci.org/galaxyproject/planemo
+   :alt: Build Status
 
 .. image:: https://coveralls.io/repos/galaxyproject/planemo/badge.svg?branch=master
    :target: https://coveralls.io/r/galaxyproject/planemo?branch=master
+   :alt: Coverage Status
 
 * Free software: Academic Free License version 3.0
-* Documentation: https://planemo.readthedocs.org.
+* Documentation: https://planemo.readthedocs.io.
 * Code: https://github.com/galaxyproject/planemo
 
 
