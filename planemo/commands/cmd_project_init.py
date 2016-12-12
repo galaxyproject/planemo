@@ -42,8 +42,12 @@ def cli(ctx, path, template=None, **kwds):
     try:
         untar_args = UNTAR_ARGS % (tempdir)
         untar_to(DOWNLOAD_URL, tempdir, untar_args)
-        shell("ls '%s'" % (tempdir))
-        shell("mv '%s/%s'/* '%s'" % (tempdir, template, path))
-        shell("mv '%s/%s'/.* '%s'" % (tempdir, template, path))
+        template_dir = os.path.join(tempdir, template)
+        shell("ls '%s'" % (template_dir))
+        shell("mv '%s'/* '%s'" % (template_dir, path))
+        dot_files = [os.path.join(template_dir, f) for f in os.listdir(template_dir) if f.startswith(".")]
+        if len(dot_files) > 0:
+            dot_files_quoted = "'" + "' '".join(dot_files) + "'"
+            shell("mv %s '%s'" % (dot_files_quoted, path))
     finally:
         shutil.rmtree(tempdir)
