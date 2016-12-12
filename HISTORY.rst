@@ -6,10 +6,14 @@ History
 .. to_doc
 
 ---------------------
-0.37.0.dev0
+0.36.1.dev0
 ---------------------
 
-    
+* Fix move error when using ``project_init``.
+  `Issue 388`_, `Pull Request 610`_
+* Improved integration testing for ``test`` command. `Pull Request 609`_
+* Update CWL links to v1.0 (thanks to `@mr-c`_).
+  `Pull Request 608`_
 
 ---------------------
 0.36.0 (2016-12-11)
@@ -948,6 +952,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Issue 388: https://github.com/galaxyproject/planemo/issues/388
+.. _Pull Request 610: https://github.com/galaxyproject/planemo/pull/610
+.. _Pull Request 609: https://github.com/galaxyproject/planemo/pull/609
+.. _Pull Request 608: https://github.com/galaxyproject/planemo/pull/608
 .. _Pull Request 605: https://github.com/galaxyproject/planemo/pull/605
 .. _Pull Request 606: https://github.com/galaxyproject/planemo/pull/606
 .. _Pull Request 602: https://github.com/galaxyproject/planemo/pull/602
