@@ -1169,6 +1169,7 @@ def _handle_dependency_resolution(ctx, config_directory, kwds):
         'conda_auto_init': False,
         'conda_auto_install': False,
         'conda_ensure_channels': '',
+        'use_cached_dependency_manager': False,
     }
     attributes = []
 

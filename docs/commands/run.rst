@@ -93,6 +93,9 @@ Planemo command for running tools and jobs.
       --conda_auto_init               Conda dependency resolution for Galaxy will
                                       auto install conda itself using miniconda if
                                       not availabe on conda_prefix.
+      --use_cached_dependency_manager  Will cache the dependencies in a folder
+                                      instead of building an isolated job
+                                      environment in the job_working_directory.
       --profile TEXT                  Location of pid file is executed with
                                       --daemon.
       --postgres                      Use postgres database type.
@@ -136,4 +139,3 @@ Planemo command for running tools and jobs.
       --no-container, --no_container  If cwltool engine is used, disable Docker
                                       container usage.
       --help                          Show this message and exit.
-    
