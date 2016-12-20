@@ -462,6 +462,7 @@ def _shared_galaxy_properties(kwds):
         'cleanup_job': 'never',
         'collect_outputs_from': "job_working_directory",
         'check_migrate_tools': "False",
+        'use_cached_dependency_manager': str(kwds.get("use_cached_dependency_manager", False)),
         'brand': kwds.get("galaxy_brand", DEFAULT_GALAXY_BRAND),
     }
     return properties
@@ -1169,7 +1170,6 @@ def _handle_dependency_resolution(ctx, config_directory, kwds):
         'conda_auto_init': False,
         'conda_auto_install': False,
         'conda_ensure_channels': '',
-        'use_cached_dependency_manager': False,
     }
     attributes = []
 
