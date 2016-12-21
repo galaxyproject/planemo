@@ -109,9 +109,6 @@ instances.
       --conda_auto_init               Conda dependency resolution for Galaxy will
                                       auto install conda itself using miniconda if
                                       not availabe on conda_prefix.
-      --use_cached_dependency_manager  Will cache the dependencies in a folder
-                                      instead of building an isolated job
-                                      environment in the job_working_directory.
       --profile TEXT                  Location of pid file is executed with
                                       --daemon.
       --postgres                      Use postgres database type.

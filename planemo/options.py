@@ -479,15 +479,6 @@ def conda_auto_init_option():
     )
 
 
-def use_cached_dependency_manager_option():
-    return planemo_option(
-        "--use_cached_dependency_manager",
-        is_flag=True,
-        help=("Will cache the dependencies in a folder instead of building "
-              "an isolated job environment in the job_working_directory.")
-    )
-
-
 def required_tool_arg():
     """ Decorate click method as requiring the path to a single tool.
     """
@@ -876,7 +867,6 @@ def galaxy_config_options():
         conda_copy_dependencies_option(),
         conda_auto_install_option(),
         conda_auto_init_option(),
-        use_cached_dependency_manager_option(),
         # Profile options...
         profile_option(),
         profile_database_options(),
