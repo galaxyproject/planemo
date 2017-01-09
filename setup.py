@@ -44,6 +44,7 @@ TEST_DIR = 'tests'
 PROJECT_DESCRIPTION = 'Command-line utilities to assist in building tools for the Galaxy project (http://galaxyproject.org/).'
 PACKAGES = [
     'planemo',
+    'planemo.bioconda_scripts',
     'planemo.cwl',
     'planemo.cwl.cwl2script',
     'planemo.commands',
