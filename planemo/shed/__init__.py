@@ -902,7 +902,7 @@ def _find_raw_repositories(path, **kwds):
             config = shed_repo_config(shed_file_dir, name=name)
         except Exception as e:
             error_message = PARSING_PROBLEM % (shed_file_dir, e)
-            return [RuntimeError(error_message)]
+            raise RuntimeError(error_message)
         config_name = config.get("name", None)
 
     if len(shed_file_dirs) > 1 and name is not None:
