@@ -10,12 +10,12 @@ History
 ---------------------
 
 * Update to the latest `galaxy-lib`_ release. This means new installs start with
-  Miniconda 3 instaed of Minicoda 2 and at a newer version. This fixes many
+  Miniconda 3 instead of Minicoda 2 and at a newer version. This fixes many
   Conda_ related bugs.
-* Change defaults so that Conda auto initializes and aut install tools by default
-  from within Galaxy. The trio of flags ``--conda_dependency_resolution``,
-  ``--conda_auto_install``, and ``--conda_auto_init`` are effectively the new
-  defaults.
+* Change defaults so that Conda automatically initializes and performs tool installs
+  by default from within the spawned Galaxy server. The trio of flags
+  ``--conda_dependency_resolution``, ``--conda_auto_install``, and ``--conda_auto_init``
+  are effectively enabled by default now.
 
 ---------------------
 0.36.1 (2016-12-12)
