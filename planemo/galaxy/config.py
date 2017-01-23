@@ -93,6 +93,16 @@ CONDA_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
 """
 
 
+# Like Conda resolution above, but allow tool shed packages to be used for
+# shed_serve and shed_test.
+DEFAULT_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
+  <tool_shed_packages />
+  <conda ${attributes} />
+  <conda versionless="true" ${attributes} />
+</dependency_resolvers>
+"""
+
+
 BREW_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
   <homebrew />
   <!--
@@ -143,6 +153,7 @@ STOCK_DEPENDENCY_RESOLUTION_STRATEGIES = {
     "brew_dependency_resolution": BREW_DEPENDENCY_RESOLUTION_CONF,
     "shed_dependency_resolution": SHED_DEPENDENCY_RESOLUTION_CONF,
     "conda_dependency_resolution": CONDA_DEPENDENCY_RESOLUTION_CONF,
+    "default_dependency_resolution": DEFAULT_DEPENDENCY_RESOLUTION_CONF,
 }
 
 EMPTY_TOOL_CONF_TEMPLATE = """<toolbox></toolbox>"""
@@ -1145,29 +1156,16 @@ def _handle_job_config_file(config_directory, server_name, kwds):
 
 
 def _handle_dependency_resolution(ctx, config_directory, kwds):
-    resolutions_strategies = [
-        "brew_dependency_resolution",
-        "dependency_resolvers_config_file",
-        "shed_dependency_resolution",
-        "conda_dependency_resolution",
-    ]
-
-    selected_strategies = 0
-    for key in resolutions_strategies:
-        if kwds.get(key):
-            selected_strategies += 1
-
-    if selected_strategies > 1:
-        message = "At most one option from [%s] may be specified"
-        raise click.UsageError(message % resolutions_strategies)
+    _validate_dependency_resolution_options(kwds)
+    always_specify_attribute = object()
 
     dependency_attribute_kwds = {
         'conda_prefix': None,
         'conda_exec': None,
         'conda_debug': False,
         'conda_copy_dependencies': False,
-        'conda_auto_init': False,
-        'conda_auto_install': False,
+        'conda_auto_init': always_specify_attribute,
+        'conda_auto_install': always_specify_attribute,
         'conda_ensure_channels': '',
     }
     attributes = []
@@ -1191,23 +1189,49 @@ def _handle_dependency_resolution(ctx, config_directory, kwds):
 
     attribute_str = " ".join(attributes)
 
-    for key in STOCK_DEPENDENCY_RESOLUTION_STRATEGIES:
+    if kwds.get("dependency_resolvers_config_file", None):
+        resolution_type = "__explicit__"
+    else:
+        resolution_type = "default_dependency_resolution"
+        for key in STOCK_DEPENDENCY_RESOLUTION_STRATEGIES:
+            if kwds.get(key):
+                resolution_type = key
+
+    if resolution_type != "__explicit__":
+        # Planemo manages the dependency resolve conf file.
+        resolvers_conf = os.path.join(
+            config_directory,
+            "resolvers_conf.xml"
+        )
+        template_str = STOCK_DEPENDENCY_RESOLUTION_STRATEGIES[resolution_type]
+        conf_contents = Template(template_str).safe_substitute({
+            'attributes': attribute_str
+        })
+        open(resolvers_conf, "w").write(conf_contents)
+        ctx.vlog(
+            "Writing dependency_resolvers_config_file to path %s with contents [%s]",
+            resolvers_conf,
+            conf_contents,
+        )
+        kwds["dependency_resolvers_config_file"] = resolvers_conf
+
+
+def _validate_dependency_resolution_options(kwds):
+    resolutions_strategies = [
+        "brew_dependency_resolution",
+        "dependency_resolvers_config_file",
+        "shed_dependency_resolution",
+        "conda_dependency_resolution",
+    ]
+
+    selected_strategies = 0
+    for key in resolutions_strategies:
         if kwds.get(key):
-            resolvers_conf = os.path.join(
-                config_directory,
-                "resolvers_conf.xml"
-            )
-            template_str = STOCK_DEPENDENCY_RESOLUTION_STRATEGIES[key]
-            conf_contents = Template(template_str).safe_substitute({
-                'attributes': attribute_str
-            })
-            open(resolvers_conf, "w").write(conf_contents)
-            ctx.vlog(
-                "Writing dependency_resolvers_config_file to path %s with contents [%s]",
-                resolvers_conf,
-                conf_contents,
-            )
-            kwds["dependency_resolvers_config_file"] = resolvers_conf
+            selected_strategies += 1
+
+    if selected_strategies > 1:
+        message = "At most one option from [%s] may be specified"
+        raise click.UsageError(message % resolutions_strategies)
 
 
 def _handle_container_resolution(ctx, kwds, galaxy_properties):

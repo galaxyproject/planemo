@@ -448,7 +448,7 @@ def conda_ensure_channels_option():
         use_env_var=True,
         help=("Ensure conda is configured with specified comma separated "
               "list of channels."),
-        default="conda-forge,r,bioconda,iuc",
+        default="iuc,bioconda,r,defaults,conda-forge",
     )
 
 
@@ -463,8 +463,9 @@ def conda_copy_dependencies_option():
 
 def conda_auto_install_option():
     return planemo_option(
-        "--conda_auto_install",
+        "--conda_auto_install/--no_conda_auto_install",
         is_flag=True,
+        default=True,
         help=("Conda dependency resolution for Galaxy will auto install "
               "will attempt to install requested but missing packages.")
     )
@@ -472,8 +473,9 @@ def conda_auto_install_option():
 
 def conda_auto_init_option():
     return planemo_option(
-        "--conda_auto_init",
+        "--conda_auto_init/--no_conda_auto_init",
         is_flag=True,
+        default=True,
         help=("Conda dependency resolution for Galaxy will auto install "
               "conda itself using miniconda if not availabe on conda_prefix.")
     )

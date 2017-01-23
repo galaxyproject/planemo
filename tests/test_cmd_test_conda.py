@@ -9,7 +9,7 @@ from .test_utils import (
 )
 
 
-class CmdTestTestCase(CliTestCase):
+class CmdTestCondaTestCase(CliTestCase):
     """Integration tests for the ``test`` command."""
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
