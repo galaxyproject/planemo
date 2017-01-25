@@ -47,6 +47,7 @@ CWL_DRAFT3_DIR = os.path.join(PROJECT_TEMPLATES_DIR, "cwl_draft3_spec")
 # More information on testing click applications at following link.
 # http://click.pocoo.org/3/testing/#basic-testing
 class CliTestCase(TestCase):
+    non_zero_exit_code = object()
 
     def setUp(self):  # noqa
         self._runner = CliRunner()
@@ -81,7 +82,11 @@ class CliTestCase(TestCase):
         result = self._invoke(command_list)
         print("Command list output is [%s]" % result.output)
         result_exit_code = result.exit_code
-        if result_exit_code != expected_exit_code:
+        if expected_exit_code is self.non_zero_exit_code:
+            matches_expectation = result_exit_code != 0
+        else:
+            matches_expectation = result_exit_code == expected_exit_code
+        if not matches_expectation:
             message = EXIT_CODE_MESSAGE % (
                 " ".join(command_list),
                 result_exit_code,
