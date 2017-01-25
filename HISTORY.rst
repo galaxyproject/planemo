@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.37.0.dev0
+0.37.0 (2017-01-25)
 ---------------------
 
 * Update to the latest `galaxy-lib`_ release. This means new installs start with
