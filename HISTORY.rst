@@ -15,7 +15,14 @@ History
 * Change defaults so that Conda automatically initializes and performs tool installs
   by default from within the spawned Galaxy server. The trio of flags
   ``--conda_dependency_resolution``, ``--conda_auto_install``, and ``--conda_auto_init``
-  are effectively enabled by default now.
+  are effectively enabled by default now. 4595953_
+* Use the Galaxy cached dependency manager by default (thanks to `@abretaud`_).
+  `Pull Request 612`_
+* Test Conda dependency resolution for more versions of Galaxy including the forthcoming
+  release of 17.01.
+* Update to the latest Galaxy tool XSD for various tool linting fixes. 32acd68_
+* Fix pip ignores for ``bioconda_scripts`` (thanks to `@nturaga`_)
+  `Pull Request 614`_
 
 ---------------------
 0.36.1 (2016-12-12)
@@ -964,6 +971,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 614: https://github.com/galaxyproject/planemo/pull/614
+.. _32acd68: https://github.com/galaxyproject/planemo/commit/32acd68
+.. _4595953: https://github.com/galaxyproject/planemo/commit/4595953
+.. _Pull Request 612: https://github.com/galaxyproject/planemo/pull/612
 .. _Issue 388: https://github.com/galaxyproject/planemo/issues/388
 .. _Pull Request 610: https://github.com/galaxyproject/planemo/pull/610
 .. _Pull Request 609: https://github.com/galaxyproject/planemo/pull/609
@@ -1378,6 +1389,7 @@ History
 .. _pip: https://pip.pypa.io/en/stable/
 .. _quay.io: https://quay.io/
 .. _galaxy-lib: https://github.com/galaxyproject/galaxy-lib
+.. _@abretaud: https://github.com/abretaud
 .. _@erasche: https://github.com/erasche
 .. _@peterjc: https://github.com/peterjc
 .. _@mr-c: https://github.com/mr-c
