@@ -141,4 +141,3 @@ instances.
                                       and will be replaced with --galaxy_root when
                                       and if CWL support is merged into Galaxy.
       --help                          Show this message and exit.
-    

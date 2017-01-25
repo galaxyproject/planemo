@@ -117,4 +117,3 @@ http://www.ncbi.nlm.nih.gov/pubmed/23024011.
       --pid_file TEXT                 Location of pid file is executed with
                                       --daemon.
       --help                          Show this message and exit.
-    

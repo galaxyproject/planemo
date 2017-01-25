@@ -473,6 +473,7 @@ def _shared_galaxy_properties(kwds):
         'cleanup_job': 'never',
         'collect_outputs_from': "job_working_directory",
         'check_migrate_tools': "False",
+        'use_cached_dependency_manager': str(kwds.get("conda_auto_install", False)),
         'brand': kwds.get("galaxy_brand", DEFAULT_GALAXY_BRAND),
     }
     return properties

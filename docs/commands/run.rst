@@ -136,4 +136,3 @@ Planemo command for running tools and jobs.
       --no-container, --no_container  If cwltool engine is used, disable Docker
                                       container usage.
       --help                          Show this message and exit.
-    
