@@ -95,29 +95,31 @@ def cli(ctx, paths, **kwds):
         # Now that we've uploaded (or skipped appropriately), collect results.
         if upload_ret_code == 2:
             collected_data['results']['failures'] += 1
+            message = "Failed to update repository '%s' as it does not exist on the %s." % (realized_repository.name, shed_context.label)
             repo_result.update({
                 'errorType': 'FailedUpdate',
-                'errorMessage': 'Failed to update repository as it does not exist in target ToolShed',
+                'errorMessage': message,
             })
             collected_data['tests'].append(repo_result)
-            error("Failed to update repository it does not exist "
-                  "in target ToolShed.")
+            error(message)
             return upload_ret_code
 
         exit = 0
         metadata_ok = True
+        repository_destination_label = "repository '%s' on the %s" % (realized_repository.name, shed_context.label)
         if not skip_metadata:
             repo_id = shed.handle_force_create(realized_repository, ctx, shed_context, **kwds)
             # failing to create the repo, give up
             if repo_id is None:
                 exit = shed.report_non_existent_repository(realized_repository)
                 metadata_ok = False
-                error("Failed to update metadata for repository %s." % realized_repository.name)
+                error("Failed to update metadata for %s." % repository_destination_label)
             else:
                 metadata_ok = realized_repository.update(ctx, shed_context, repo_id)
-                info("Repository metadata updated successfully for repository %s." % realized_repository.name)
+                if metadata_ok:
+                    info("Repository metadata updated successfully for %s." % repository_destination_label)
         else:
-            info("Skipping metadata update for repository %s." % realized_repository.name)
+            info("Skipping metadata update for %s" % repository_destination_label)
 
         if metadata_ok and upload_ok:
             pass
@@ -128,7 +130,7 @@ def cli(ctx, paths, **kwds):
                 'errorMessage': 'Failed to update repository metadata',
             })
             if not skip_upload:
-                error("Repo updated but metadata was not.")
+                error("Repository contents updated but failed to update metadata for %s." % repository_destination_label)
             exit = exit or 1
         else:
             collected_data['results']['failures'] += 1
@@ -136,7 +138,10 @@ def cli(ctx, paths, **kwds):
                 'errorType': 'FailedUpdate',
                 'errorMessage': 'Failed to update repository',
             })
-            error("Failed to update a repository.")
+            if metadata_ok:
+                error("Failed to update repository contents for %s." % repository_destination_label)
+            else:
+                error("Failed to update repository contents and metadata for %s." % repository_destination_label)
             exit = exit or 1
         collected_data['tests'].append(repo_result)
         return exit

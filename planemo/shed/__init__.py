@@ -84,7 +84,12 @@ PLANEMO_FILES = [
 SHED_SHORT_NAMES = {
     "toolshed": "https://toolshed.g2.bx.psu.edu/",
     "testtoolshed": "https://testtoolshed.g2.bx.psu.edu/",
-    "local": "http://localhost:9009/"
+    "local": "http://localhost:9009/",
+}
+SHED_LABELS = {
+    "toolshed": "main Tool Shed",
+    "testtoolshed": "test Tool Shed",
+    "local": "local Tool Shed",
 }
 REPO_TYPE_UNRESTRICTED = "unrestricted"
 REPO_TYPE_TOOL_DEP = "tool_dependency_definition"
@@ -172,7 +177,13 @@ def _shed_context_owner(self):
     return owner
 
 
+@property
+def _shed_context_label(self):
+    return self.shed_config.get("label") or "tool shed"
+
+
 ShedContext.owner = _shed_context_owner
+ShedContext.label = _shed_context_label
 
 
 def shed_init(ctx, path, **kwds):
@@ -465,6 +476,12 @@ def _shed_config_and_username(ctx, **kwds):
             shed_config["url"] = SHED_SHORT_NAMES[shed_target]
         else:
             shed_config["url"] = shed_target
+
+    if "label" not in shed_config:
+        if shed_target and shed_target in SHED_LABELS:
+            shed_config["label"] = SHED_LABELS[shed_target]
+        else:
+            shed_config["label"] = "custom tool shed at %s" % shed_target
 
     default_shed_username = global_config.get("shed_username", None)
     username = shed_config.get("username", default_shed_username)
