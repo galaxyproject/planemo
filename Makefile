@@ -47,7 +47,7 @@ clean-test: ## remove test and coverage artifacts
 	rm -f .coverage
 	rm -fr htmlcov/
 
-install:
+install: ## install into Python envirnoment
 	python setup.py install && cd cwl-runner && python setup.py install
 
 setup-venv: ## setup a development virutalenv in current directory
@@ -61,7 +61,7 @@ setup-git-hook-lint-and-test: ## setup precommit hook for linting and testing pr
 	cp $(BUILD_SCRIPTS_DIR)/pre-commit-lint-and-test .git/hooks/pre-commit
 
 flake8: ## check style using flake8 for current Python (faster than lint)
-	$(IN_VENV) flake8 --max-complexity 11 $(SOURCE_DIR)  $(TEST_DIR)
+	$(IN_VENV) flake8 $(SOURCE_DIR)  $(TEST_DIR)
 
 lint: ## check style using tox and flake8 for Python 2 and Python 3
 	$(IN_VENV) tox -e py27-lint && tox -e py34-lint
@@ -135,7 +135,7 @@ dist: clean ## package
 
 release-test-artifacts: dist
 	$(IN_VENV) twine upload -r test dist/*
-	open https://testpypi.python.org/pypi/$(PROJECT_NAME) || xdg-open https://testpypi.python.org/pypi/$(PROJECT_NAME)
+	$(OPEN_RESOURCE) https://testpypi.python.org/pypi/$(PROJECT_NAME)
 
 release-aritfacts: release-test-artifacts ## Package and Upload to PyPi
 	@while [ -z "$$CONTINUE" ]; do \
