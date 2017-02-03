@@ -11,7 +11,7 @@ from planemo.io import (
     error,
     info,
 )
-from planemo.reports import build_report
+from planemo.reports.xunit_handler import handle_report_xunit_kwd
 
 
 @click.command("shed_update")
@@ -148,10 +148,6 @@ def cli(ctx, paths, **kwds):
 
     exit_code = shed.for_each_repository(ctx, update, paths, **kwds)
 
-    if kwds.get('report_xunit', False):
-        with open(kwds['report_xunit'], 'w') as handle:
-            handle.write(build_report.template_data(
-                collected_data, template_name='xunit.tpl')
-                .encode('ascii', 'xmlcharrefreplace'))
+    handle_report_xunit_kwd(kwds, collected_data)
 
     sys.exit(exit_code)
