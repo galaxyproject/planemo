@@ -58,7 +58,6 @@ def lint_repository(ctx, realized_repository, **kwds):
     See :module:`planemo.shed` for details on constructing a realized
     repository data structure.
     """
-    # TODO: this really needs to start working with realized path.
     failed = False
     path = realized_repository.real_path
     info("Linting repository %s" % path)
@@ -76,22 +75,22 @@ def lint_repository(ctx, realized_repository, **kwds):
     lint_ctx.lint(
         "lint_tool_dependencies_xsd",
         lint_tool_dependencies_xsd,
-        path,
+        realized_repository,
     )
     lint_ctx.lint(
         "lint_tool_dependencies_sha256sum",
         lint_tool_dependencies_sha256sum,
-        path,
+        realized_repository,
     )
     lint_ctx.lint(
         "lint_tool_dependencies_actions",
         lint_tool_dependencies_actions,
-        path,
+        realized_repository,
     )
     lint_ctx.lint(
         "lint_repository_dependencies",
         lint_repository_dependencies,
-        path,
+        realized_repository,
     )
     lint_ctx.lint(
         "lint_shed_yaml",
@@ -101,7 +100,7 @@ def lint_repository(ctx, realized_repository, **kwds):
     lint_ctx.lint(
         "lint_readme",
         lint_readme,
-        path,
+        realized_repository,
     )
     if kwds["urls"]:
         lint_ctx.lint(
@@ -110,17 +109,8 @@ def lint_repository(ctx, realized_repository, **kwds):
             path,
         )
     if kwds["tools"]:
-        for (tool_path, tool_source) in yield_tool_sources(ctx, path,
-                                                           recursive=True):
-            info("+Linting tool %s" % tool_path)
-            if handle_tool_load_error(tool_path, tool_source):
-                failed = True
-                continue
-            lint_tool_source_with(
-                lint_ctx,
-                tool_source,
-                extra_modules=lint_args["extra_modules"]
-            )
+        tools_failed = lint_repository_tools(ctx, realized_repository, lint_ctx, lint_args)
+        failed = failed or tools_failed
     if kwds["ensure_metadata"]:
         lint_ctx.lint(
             "lint_shed_metadata",
@@ -128,6 +118,21 @@ def lint_repository(ctx, realized_repository, **kwds):
             realized_repository,
         )
     return handle_lint_complete(lint_ctx, lint_args, failed=failed)
+
+
+def lint_repository_tools(ctx, realized_repository, lint_ctx, lint_args):
+    path = realized_repository.path
+    for (tool_path, tool_source) in yield_tool_sources(ctx, path,
+                                                       recursive=True):
+        original_path = tool_path.replace(path, realized_repository.real_path)
+        info("+Linting tool %s" % original_path)
+        if handle_tool_load_error(tool_path, tool_source):
+            return True
+        lint_tool_source_with(
+            lint_ctx,
+            tool_source,
+            extra_modules=lint_args["extra_modules"]
+        )
 
 
 def lint_expansion(realized_repository, lint_ctx):
@@ -154,7 +159,8 @@ def lint_shed_metadata(realized_repository, lint_ctx):
         )
 
 
-def lint_readme(path, lint_ctx):
+def lint_readme(realized_repository, lint_ctx):
+    path = realized_repository.real_path
     readme_rst = os.path.join(path, "README.rst")
     readme = os.path.join(path, "README")
     readme_txt = os.path.join(path, "README.txt")
@@ -190,7 +196,8 @@ def lint_readme(path, lint_ctx):
         lint_ctx.info("README found containing plain text.")
 
 
-def lint_tool_dependencies_urls(path, lint_ctx):
+def lint_tool_dependencies_urls(realized_repository, lint_ctx):
+    path = realized_repository.real_path
     tool_dependencies = os.path.join(path, "tool_dependencies.xml")
     if not os.path.exists(tool_dependencies):
         lint_ctx.info("No tool_dependencies.xml, skipping.")
@@ -200,8 +207,8 @@ def lint_tool_dependencies_urls(path, lint_ctx):
     lint_urls(root, lint_ctx)
 
 
-def lint_tool_dependencies_sha256sum(path, lint_ctx):
-    tool_dependencies = os.path.join(path, "tool_dependencies.xml")
+def lint_tool_dependencies_sha256sum(realized_repository, lint_ctx):
+    tool_dependencies = os.path.join(realized_repository.real_path, "tool_dependencies.xml")
     if not os.path.exists(tool_dependencies):
         lint_ctx.info("No tool_dependencies.xml, skipping.")
         return
@@ -227,7 +234,8 @@ def lint_tool_dependencies_sha256sum(path, lint_ctx):
         lint_ctx.info("Found %i download action(s) with SHA256 checksums" % count)
 
 
-def lint_tool_dependencies_xsd(path, lint_ctx):
+def lint_tool_dependencies_xsd(realized_repository, lint_ctx):
+    path = realized_repository.real_path
     tool_dependencies = os.path.join(path, "tool_dependencies.xml")
     if not os.path.exists(tool_dependencies):
         lint_ctx.info("No tool_dependencies.xml, skipping.")
@@ -235,7 +243,8 @@ def lint_tool_dependencies_xsd(path, lint_ctx):
     lint_xsd(lint_ctx, TOOL_DEPENDENCIES_XSD, tool_dependencies)
 
 
-def lint_tool_dependencies_actions(path, lint_ctx):
+def lint_tool_dependencies_actions(realized_repository, lint_ctx):
+    path = realized_repository.real_path
     tool_dependencies = os.path.join(path, "tool_dependencies.xml")
     if not os.path.exists(tool_dependencies):
         lint_ctx.info("No tool_dependencies.xml, skipping.")
@@ -267,7 +276,8 @@ def lint_expected_files(realized_repository, lint_ctx):
                           "repository_dependencies.xml file.")
 
 
-def lint_repository_dependencies(path, lint_ctx):
+def lint_repository_dependencies(realized_repository, lint_ctx):
+    path = realized_repository.real_path
     repo_dependencies = os.path.join(path, "repository_dependencies.xml")
     if not os.path.exists(repo_dependencies):
         lint_ctx.info("No repository_dependencies.xml, skipping.")
