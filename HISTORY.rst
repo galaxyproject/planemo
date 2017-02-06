@@ -9,7 +9,14 @@ History
 0.38.0.dev0
 ---------------------
 
-    
+* Trim down the default amount of logging during testing.
+  `Pull Request 629`_, `Issue 515`_
+* Improved log messages during shed operations. 08c067c_
+* Update tool XSD against latest Galaxy.
+  fca4183_, 03c9658_
+* Fix bug where ``shed_lint --tools`` for a suite lints the same tools multiple
+  times.
+  `Issue 564`_, `Pull Request 628`_
 
 ---------------------
 0.37.0 (2017-01-25)
@@ -977,6 +984,13 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _03c9658: https://github.com/galaxyproject/planemo/commit/03c9658
+.. _08c067c: https://github.com/galaxyproject/planemo/commit/08c067c
+.. _fca4183: https://github.com/galaxyproject/planemo/commit/fca4183
+.. _Issue 564: https://github.com/galaxyproject/planemo/issues/564
+.. _Pull Request 628: https://github.com/galaxyproject/planemo/pull/628
+.. _Issue 515: https://github.com/galaxyproject/planemo/issues/515
+.. _Pull Request 629: https://github.com/galaxyproject/planemo/pull/629
 .. _Pull Request 614: https://github.com/galaxyproject/planemo/pull/614
 .. _32acd68: https://github.com/galaxyproject/planemo/commit/32acd68
 .. _4595953: https://github.com/galaxyproject/planemo/commit/4595953
