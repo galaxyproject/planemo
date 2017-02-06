@@ -147,6 +147,50 @@ JOB_CONFIG_LOCAL = """<job_conf>
 </job_conf>
 """
 
+LOGGING_TEMPLATE = """
+## Configure Python loggers.
+[loggers]
+keys = root,galaxydeps,galaxy
+
+[handlers]
+keys = console
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = WARN
+handlers = console
+
+[logger_paste]
+level = WARN
+handlers = console
+qualname = paste
+propagate = 0
+
+
+[logger_galaxydeps]
+level = DEBUG
+handlers = console
+qualname = galaxy.tools.deps
+propagate = 0
+
+[logger_galaxy]
+level = ${log_level}
+handlers = console
+qualname = galaxy
+propagate = 0
+
+[handler_console]
+class = StreamHandler
+args = (sys.stderr,)
+level = DEBUG
+formatter = generic
+
+[formatter_generic]
+format = %(asctime)s %(levelname)-5.5s [%(name)s] %(message)s
+"""
+
 
 # Provide some shortcuts for simple/common dependency resolutions strategies.
 STOCK_DEPENDENCY_RESOLUTION_STRATEGIES = {
@@ -364,7 +408,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             tool_conf=tool_conf,
             debug=kwds.get("debug", "true"),
             id_secret=kwds.get("id_secret", "test_secret"),
-            log_level=kwds.get("log_level", "DEBUG"),
+            log_level="DEBUG" if ctx.verbose else "INFO",
         )
         tool_config_file = "%s,%s" % (tool_conf, shed_tool_conf)
         # Setup both galaxy_email and older test user test@bx.psu.edu
@@ -404,6 +448,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             test_data_dir=test_data_dir,  # TODO: make gx respect this
         ))
         _handle_container_resolution(ctx, kwds, properties)
+        write_file(config_join("logging.ini"), _sub(LOGGING_TEMPLATE, template_args))
         if not for_tests:
             properties["database_connection"] = _database_connection(database_location, **kwds)
 
@@ -430,6 +475,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         if preseeded_database:
             env["GALAXY_TEST_DB_TEMPLATE"] = os.path.abspath(database_location)
         env["GALAXY_TEST_UPLOAD_ASYNC"] = "false"
+        env["GALAXY_TEST_LOGGING_CONFIG"] = config_join("logging.ini")
         env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
         web_config = _sub(WEB_SERVER_CONFIG_TEMPLATE, template_args)
         write_file(config_join("galaxy.ini"), web_config)
