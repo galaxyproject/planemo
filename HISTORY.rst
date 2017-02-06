@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.38.0.dev0
+0.38.0 (2017-02-06)
 ---------------------
 
 * Trim down the default amount of logging during testing.
