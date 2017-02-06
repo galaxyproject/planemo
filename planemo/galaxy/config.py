@@ -150,7 +150,7 @@ JOB_CONFIG_LOCAL = """<job_conf>
 LOGGING_TEMPLATE = """
 ## Configure Python loggers.
 [loggers]
-keys = root,galaxydeps,galaxy
+keys = root,paste,galaxydeps,galaxymasterapikey,galaxy
 
 [handlers]
 keys = console
@@ -168,11 +168,16 @@ handlers = console
 qualname = paste
 propagate = 0
 
-
 [logger_galaxydeps]
 level = DEBUG
 handlers = console
 qualname = galaxy.tools.deps
+propagate = 0
+
+[logger_galaxymasterapikey]
+level = WARN
+handlers = console
+qualname = galaxy.web.framework.webapp
 propagate = 0
 
 [logger_galaxy]
@@ -274,7 +279,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             ctx, config_directory, **kwds
         )
         port = _get_port(kwds)
-        properties = _shared_galaxy_properties(kwds)
+        properties = _shared_galaxy_properties(config_directory, kwds, for_tests=for_tests)
         _handle_container_resolution(ctx, kwds, properties)
         master_api_key = _get_master_api_key(kwds)
 
@@ -413,7 +418,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         tool_config_file = "%s,%s" % (tool_conf, shed_tool_conf)
         # Setup both galaxy_email and older test user test@bx.psu.edu
         # as admins for command_line, etc...
-        properties = _shared_galaxy_properties(kwds)
+        properties = _shared_galaxy_properties(config_directory, kwds, for_tests=for_tests)
         properties.update(dict(
             server_name="main",
             ftp_upload_dir_template="${ftp_upload_dir}",
@@ -502,7 +507,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         )
 
 
-def _shared_galaxy_properties(kwds):
+def _shared_galaxy_properties(config_directory, kwds, for_tests):
     """Setup properties useful for local and Docker Galaxy instances.
 
     Most things related to paths, etc... are very different between Galaxy
@@ -522,6 +527,12 @@ def _shared_galaxy_properties(kwds):
         'use_cached_dependency_manager': str(kwds.get("conda_auto_install", False)),
         'brand': kwds.get("galaxy_brand", DEFAULT_GALAXY_BRAND),
     }
+    if for_tests:
+        empty_dir = os.path.join(config_directory, "empty")
+        _ensure_directory(empty_dir)
+        properties["tour_config_dir"] = empty_dir
+        properties["interactive_environment_plugins_directory"] = empty_dir
+        properties["visualization_plugins_directory"] = empty_dir
     return properties
 
 
