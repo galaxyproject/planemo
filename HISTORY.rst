@@ -6,10 +6,11 @@ History
 .. to_doc
 
 ---------------------
-0.39.0.dev0
+0.38.1.dev0
 ---------------------
 
-    
+* Fix bug with ``shed_lint --urls`` introduced in 0.38.0.
+  84ebc1f_
 
 ---------------------
 0.38.0 (2017-02-06)
@@ -990,6 +991,7 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _84ebc1f: https://github.com/galaxyproject/planemo/commit/84ebc1f
 .. _03c9658: https://github.com/galaxyproject/planemo/commit/03c9658
 .. _08c067c: https://github.com/galaxyproject/planemo/commit/08c067c
 .. _fca4183: https://github.com/galaxyproject/planemo/commit/fca4183
