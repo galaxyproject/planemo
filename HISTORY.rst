@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.38.1.dev0
+0.38.1 (2017-02-06)
 ---------------------
 
 * Fix bug with ``shed_lint --urls`` introduced in 0.38.0.
