@@ -106,7 +106,7 @@ def lint_repository(ctx, realized_repository, **kwds):
         lint_ctx.lint(
             "lint_urls",
             lint_tool_dependencies_urls,
-            path,
+            realized_repository,
         )
     if kwds["tools"]:
         tools_failed = lint_repository_tools(ctx, realized_repository, lint_ctx, lint_args)
