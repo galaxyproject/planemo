@@ -12,6 +12,14 @@ planemo.reports.build_report module
     :undoc-members:
     :show-inheritance:
 
+planemo.reports.xunit_handler module
+------------------------------------
+
+.. automodule:: planemo.reports.xunit_handler
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

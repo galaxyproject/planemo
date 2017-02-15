@@ -7,9 +7,7 @@ install Seqtk - but however you obtain it should be fine.
 
 ::
 
-    $ conda config --add channels r
-    $ conda config --add channels bioconda
-    $ conda install seqtk
+    $ conda install -c bioconda seqtk=1.2
         ... seqtk installation ...
     $ seqtk seq
             Usage:   seqtk seq [options] <in.fq>|<in.fa>

@@ -100,6 +100,14 @@ planemo.commands.cmd_conda_lint module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd_conda_search module
+----------------------------------------
+
+.. automodule:: planemo.commands.cmd_conda_search
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd_config_init module
 ---------------------------------------
 
@@ -200,6 +208,14 @@ planemo.commands.cmd_normalize module
 -------------------------------------
 
 .. automodule:: planemo.commands.cmd_normalize
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd_open module
+--------------------------------
+
+.. automodule:: planemo.commands.cmd_open
     :members:
     :undoc-members:
     :show-inheritance:
