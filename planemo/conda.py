@@ -9,8 +9,13 @@ import os
 
 from galaxy.tools.deps import conda_util
 
-from planemo.io import shell
+from planemo.exit_codes import EXIT_CODE_FAILED_DEPENDENCIES, ExitCodeException
+from planemo.io import error, shell
 from planemo.tools import yield_tool_sources_on_paths
+
+MESSAGE_ERROR_FAILED_INSTALL = "Attempted to install conda and failed."
+MESSAGE_ERROR_CANNOT_INSTALL = "Cannot install Conda - perhaps due to a failed installation or permission problems."
+MESSAGE_ERROR_NOT_INSTALLING = "Conda not configured - run ``planemo conda_init`` or pass ``--conda_auto_init`` to continue."
 
 
 def build_conda_context(ctx, **kwds):
@@ -24,10 +29,28 @@ def build_conda_context(ctx, **kwds):
     ensure_channels = kwds.get("conda_ensure_channels", "")
     condarc_override = kwds.get("condarc", condarc_override_default)
     shell_exec = shell if use_planemo_shell else None
-    return conda_util.CondaContext(conda_prefix=conda_prefix,
-                                   ensure_channels=ensure_channels,
-                                   condarc_override=condarc_override,
-                                   shell_exec=shell_exec)
+    conda_context = conda_util.CondaContext(conda_prefix=conda_prefix,
+                                            ensure_channels=ensure_channels,
+                                            condarc_override=condarc_override,
+                                            shell_exec=shell_exec)
+    handle_auto_init = kwds.get("handle_auto_init", False)
+    if handle_auto_init and not conda_context.is_installed():
+        auto_init = kwds.get("conda_auto_init", True)
+        failed = True
+        if auto_init:
+            if conda_context.can_install_conda():
+                if conda_util.install_conda(conda_context):
+                    error(MESSAGE_ERROR_FAILED_INSTALL)
+                else:
+                    failed = False
+            else:
+                error(MESSAGE_ERROR_CANNOT_INSTALL)
+        else:
+            error(MESSAGE_ERROR_NOT_INSTALLING)
+
+        if failed:
+            raise ExitCodeException(EXIT_CODE_FAILED_DEPENDENCIES)
+    return conda_context
 
 
 def collect_conda_targets(ctx, paths, found_tool_callback=None, conda_context=None):
@@ -37,12 +60,35 @@ def collect_conda_targets(ctx, paths, found_tool_callback=None, conda_context=No
     appear once in the output.
     """
     conda_targets = set([])
-    for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, paths):
+    real_paths = []
+    for path in paths:
+        if not os.path.exists(path):
+            targets = target_str_to_targets(path)
+            [conda_targets.add(_) for _ in targets]
+        else:
+            real_paths.append(path)
+
+    for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, real_paths):
         if found_tool_callback:
             found_tool_callback(tool_path)
         for target in tool_source_conda_targets(tool_source):
             conda_targets.add(target)
     return conda_targets
+
+
+# Copied and modified from mulled stuff - need to syncronize these concepts.
+def target_str_to_targets(targets_raw):
+    def parse_target(target_str):
+        if "=" in target_str:
+            package_name, version = target_str.split("=", 1)
+        else:
+            package_name = target_str
+            version = None
+        target = conda_util.CondaTarget(package_name, version)
+        return target
+
+    targets = [parse_target(_) for _ in targets_raw.split(",")]
+    return targets
 
 
 def collect_conda_target_lists(ctx, paths, found_tool_callback=None):

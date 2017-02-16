@@ -481,6 +481,18 @@ def conda_auto_init_option():
     )
 
 
+def conda_global_option():
+    return planemo_option(
+        "--global",
+        is_flag=True,
+        default=False,
+        help=("Install Conda dependencies globally instead of in requirement specific "
+              "environments packaged for tools. If the Conda bin directory is on your "
+              "PATH, tools may still use binaries but this is more designed for "
+              "interactive testing and debugging.")
+    )
+
+
 def required_tool_arg():
     """ Decorate click method as requiring the path to a single tool.
     """
@@ -512,6 +524,20 @@ def _optional_tools_default(ctx, param, value):
         return [os.path.abspath(os.getcwd())]
     else:
         return value
+
+
+def optional_tools_or_packages_arg(multiple=False):
+    """ Decorate click method as optionally taking in the path to a tool
+    or directory of tools or a Conda package. If no such argument is given
+    the current working directory will be treated as a directory of tools.
+    """
+    name = "paths" if multiple else "path"
+    nargs = -1 if multiple else 1
+    return click.argument(
+        name,
+        metavar="TARGET",
+        nargs=nargs,
+    )
 
 
 def optional_tools_arg(multiple=False):

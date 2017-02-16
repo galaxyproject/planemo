@@ -1,7 +1,4 @@
 <tool id="bwa" name="BWA" version="0.1.0">
-    <requirements>
-        <requirement type="package" version="0.7.12">bwa</requirement>
-    </requirements>
     <stdio>
         <exit_code range="2:" />
     </stdio>

@@ -1,6 +1,6 @@
 <tool id="seqtk_seq" name="Convert to FASTA (seqtk)" version="0.1.0">
     <requirements>
-        <requirement type="package" version="1.0-r68">seqtk</requirement>
+        <requirement type="package" version="1.2">seqtk</requirement>
     </requirements>
     <stdio>
         <exit_code range="1:" />

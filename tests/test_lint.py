@@ -69,3 +69,17 @@ class LintTestCase(CliTestCase):
         fail_doi = os.path.join(TEST_TOOLS_DIR, "invalid_doi.xml")
         lint_cmd = ["lint", "--doi", fail_doi]
         self._check_exit_code(lint_cmd, exit_code=1)
+
+    def test_lint_conda_requirements_empty(self):
+        bwa_no_reqs = os.path.join(TEST_TOOLS_DIR, "bwa_without_requirements.xml")
+        lint_cmd = ["lint", bwa_no_reqs]
+        self._check_exit_code(lint_cmd)
+        lint_cmd = ["lint", "--conda_requirements", bwa_no_reqs]
+        self._check_exit_code(lint_cmd, exit_code=self.non_zero_exit_code)
+
+    def test_lint_conda_requirements_wrong_version(self):
+        bwa_wrong_version = os.path.join(TEST_TOOLS_DIR, "bwa_invalid_version.xml")
+        lint_cmd = ["lint", bwa_wrong_version]
+        self._check_exit_code(lint_cmd)
+        lint_cmd = ["lint", "--conda_requirements", bwa_wrong_version]
+        self._check_exit_code(lint_cmd, exit_code=self.non_zero_exit_code)

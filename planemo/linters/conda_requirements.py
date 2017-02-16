@@ -10,6 +10,10 @@ BEST_PRACTICE_CHANNELS = ["conda-forge", "anaconda", "r", "bioconda"]
 def lint_requirements_in_conda(tool_source, lint_ctx):
     """Check requirements of tool source against best practice Conda channels."""
     conda_targets = tool_source_conda_targets(tool_source)
+    if not conda_targets:
+        lint_ctx.warn("No valid package requirement tags found to check against Conda.")
+        return
+
     for conda_target in conda_targets:
         (best_hit, exact) = best_search_result(conda_target, channels_override=BEST_PRACTICE_CHANNELS)
         conda_target_str = conda_target.package
