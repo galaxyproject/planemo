@@ -18,6 +18,9 @@ EXIT_CODE_UNSUPPORTED_FILE_TYPE = 5
 # A dependency of this operation was unavailable (e.g. conda).
 EXIT_CODE_FAILED_DEPENDENCIES = 6
 
+# Attempt to do a one time action that already happened.
+EXIT_CODE_ALREADY_EXISTS = 7
+
 
 class ExitCodeException(Exception):
     """Exception used by planemo framework to track exit codes for CLI."""
