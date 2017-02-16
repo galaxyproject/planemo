@@ -1,7 +1,7 @@
 <macros>
     <xml name="requirements">
         <requirements>
-        <requirement type="package" version="1.0-r68">seqtk</requirement>
+        <requirement type="package" version="1.2">seqtk</requirement>
             <yield/>
         </requirements>
     </xml>
