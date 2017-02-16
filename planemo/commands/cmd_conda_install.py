@@ -10,8 +10,9 @@ from planemo.io import coalesce_return_codes
 
 
 @click.command('conda_install')
-@options.optional_tools_arg(multiple=True)
+@options.optional_tools_or_packages_arg(multiple=True)
 @options.conda_target_options()
+@options.conda_global_option()
 @options.conda_auto_init_option()
 @command_function
 def cli(ctx, paths, **kwds):
@@ -21,7 +22,7 @@ def cli(ctx, paths, **kwds):
     for conda_target in collect_conda_targets(ctx, paths):
         ctx.log("Install conda target %s" % conda_target)
         return_code = conda_util.install_conda_target(
-            conda_target, conda_context=conda_context
+            conda_target, conda_context=conda_context, skip_environment=kwds.get("global", False)
         )
         return_codes.append(return_code)
     return coalesce_return_codes(return_codes, assert_at_least_one=True)
