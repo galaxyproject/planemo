@@ -102,6 +102,9 @@ DEFAULT_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
 </dependency_resolvers>
 """
 
+NO_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
+</dependency_resolvers>
+"""
 
 BREW_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
   <homebrew />
@@ -208,6 +211,7 @@ STOCK_DEPENDENCY_RESOLUTION_STRATEGIES = {
     "brew_dependency_resolution": BREW_DEPENDENCY_RESOLUTION_CONF,
     "shed_dependency_resolution": SHED_DEPENDENCY_RESOLUTION_CONF,
     "conda_dependency_resolution": CONDA_DEPENDENCY_RESOLUTION_CONF,
+    "no_dependency_resolution": NO_DEPENDENCY_RESOLUTION_CONF,
     "default_dependency_resolution": DEFAULT_DEPENDENCY_RESOLUTION_CONF,
 }
 
