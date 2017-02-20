@@ -1,10 +1,12 @@
 from .test_utils import (
     CliTestCase,
+    skip_unless_environ,
 )
 
 
 class ProfileCommandsTestCase(CliTestCase):
 
+    @skip_unless_environ("PLANEMO_ENABLE_POSTGRES_TESTS")
     def test_profile_commands(self):
         with self._isolate():
             result = self._check_exit_code(["profile_list"])
