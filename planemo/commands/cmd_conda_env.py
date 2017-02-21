@@ -52,7 +52,7 @@ def cli(ctx, path, **kwds):
         conda_targets, conda_context=conda_context
     )
     env_name, exit_code = conda_util.build_isolated_environment(
-        installed_conda_targets, conda_context=conda_context
+        installed_conda_targets, conda_context=conda_context, quiet=True
     )
     if exit_code:
         error("Failed to build environmnt for request.")
