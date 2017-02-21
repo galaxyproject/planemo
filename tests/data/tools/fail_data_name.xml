@@ -1,8 +1,9 @@
-<tool id="ok_select_param" name="ok_select_param" version="1.0">
+<tool id="fail_data_name" name="fail_data_name" version="1.0">
     <description>select param</description>
     <command><![CDATA[
         echo "$select_opt" > $output
-    ]]></command>
+    ]]>
+    </command>
     <inputs>
         <param name="select_opt" type="select" label="Option">
             <option value="moo">Cow</option>
@@ -14,7 +15,7 @@
     <tests>
         <test>
             <param name="select_opt" value="Hello World!" />
-            <output name="output">
+            <output>
                 <assert_contents>
                     <has_line line="Hello World!" />
                 </assert_contents>
