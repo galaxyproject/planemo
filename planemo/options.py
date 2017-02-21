@@ -236,6 +236,14 @@ def cwl_conformance_test():
     )
 
 
+def no_dependency_resolution():
+    return planemo_option(
+        "--no_dependency_resolution",
+        is_flag=True,
+        help="Configure Galaxy with no dependency resolvers.",
+    )
+
+
 def brew_dependency_resolution():
     return planemo_option(
         "--brew_dependency_resolution",
@@ -890,6 +898,7 @@ def galaxy_config_options():
         dependency_resolvers_option(),
         brew_dependency_resolution(),
         shed_dependency_resolution(),
+        no_dependency_resolution(),
         conda_target_options(),
         conda_dependency_resolution(),
         conda_copy_dependencies_option(),
