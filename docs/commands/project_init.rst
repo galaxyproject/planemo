@@ -12,7 +12,9 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-Initialize a new tool project (demo only right now).
+(Experimental) Initialize a new tool project.
+
+This is only a proof-of-concept demo right now.
 
 **Options**::
 

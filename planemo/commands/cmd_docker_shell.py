@@ -49,9 +49,10 @@ def cli(ctx, path, **kwds):
 
     Will launch a shell in the Docker container referenced by the specified
     tool. Prints a command to do this the way Galaxy would in job files it
-    generates - so be sure to wrap this in $(...) to launch the subshell.::
+    generates - so be sure to wrap this in $(...) to launch the subshell.
 
-        % $(planemo docker_shell bowtie2.xml)
+    \b
+        $ $(planemo docker_shell bowtie2.xml)
         ...
         root@b8754062f875:/#
 

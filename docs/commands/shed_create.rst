@@ -12,7 +12,9 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-Create a repository in a Galaxy Tool Shed from a ``.shed.yml`` file.
+Create a repository in a Galaxy Tool Shed.
+
+This will read the settings from the ``.shed.yml`` file.
 
 **Options**::
 

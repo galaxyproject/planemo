@@ -12,7 +12,10 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-Create a Galaxy tool tarball from a ``.shed.yml`` file.
+Create a Galaxy tool tarball.
+
+This will use the .shed.yml file to prepare a tarball
+(which you could upload to the Tool Shed manually).
 
 **Options**::
 

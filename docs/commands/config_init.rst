@@ -12,7 +12,9 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-Help initialize global configuration (in home directory) for Planemo.
+Initialise global configuration for Planemo.
+
+Helps initialize global configuration (in home directory) for Planemo.
 
 **Options**::
 

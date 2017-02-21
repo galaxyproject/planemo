@@ -12,12 +12,16 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-Publish JSON test results to Github Gist and produce sharable URL.
+Publish JSON test results as sharable Gist.
 
-Sharable URL  can be used to share an HTML version of the report that
-can be easily embedded in pull requests or commit messages. Requires
-a ~/.planemo.yml with Github 'username' and 'password' defined in a
-'github' section of that configuration file.
+This will upload the JSON test results to Github as a Gist and
+produce sharable URL.
+
+The sharable URL can be used to share an HTML version of the report
+that can be easily embedded in pull requests or commit messages.
+
+Requires a ~/.planemo.yml with Github 'username' and 'password'
+defined in a 'github' section of that configuration file.
 
 **Options**::
 

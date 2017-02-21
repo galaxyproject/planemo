@@ -12,7 +12,9 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-This compiles simple common workflow language workflows to a shell
+Compile simple CWL workflows to shell script.
+
+Compiles simple common workflow language (CWL) workflows to a shell
 script.
 
 **Options**::

@@ -29,8 +29,9 @@ def cli(ctx, path, brew=None, skip_install=False, shell=None):
     """List commands to inject brew dependencies.
 
     Display commands used to modify environment to inject tool's brew
-    dependencies.::
+    dependencies.
 
+    \b
         % . <(planemo brew_env bowtie2.xml)
         % which bowtie2
         /home/john/.linuxbrew/Cellar/bowtie2/2.1.0/bin/bowtie2
@@ -41,8 +42,9 @@ def cli(ctx, path, brew=None, skip_install=False, shell=None):
 
     Intead of injecting the enviornment into your current shell using the above
     idiom, the ``--shell`` flag can be sent to launch a new subshell when
-    sourced.::
+    sourced.
 
+    \b
         % . <(planemo brew_env --skip_install --shell bowtie2.xml)
         (bowtie2) % which bowtie2
         /home/john/.linuxbrew/Cellar/bowtie2/2.1.0/bin/bowtie2

@@ -40,9 +40,14 @@ def cli(ctx, path, **kwds):
     Source the output of this command to activate a conda environment for this
     tool.
 
-        % . <(planemo conda_env bowtie2.xml)
-        % which bowtie2
-        TODO_PLACE_PATH_HERE
+    \b
+        $ . <(planemo conda_env seqtk_seq.xml)
+        Deactivate environment with conda_env_deactivate
+        (seqtk_seq_v6) $ which seqtk
+        /home/planemo/miniconda2/envs/jobdepsDkzcjjfecc6d406196737781ff4456ec60975c137e04884e4f4b05dc68192f7cec4656/bin/seqtk
+        (seqtk_seq_v6) $ conda_env_deactivate
+        $
+
     """
     conda_context = build_conda_context(ctx, use_planemo_shell_exec=False, **kwds)
     conda_targets = collect_conda_targets(

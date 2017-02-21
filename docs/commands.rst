@@ -7,12 +7,19 @@ implemented as a subcommand of the ``planemo`` executable. This section of the
 documentation describes these commands.
 
 
+.. include:: commands/bioc_conda_recipe_init.rst
+.. include:: commands/bioc_tool_init.rst
 .. include:: commands/brew.rst
 .. include:: commands/brew_env.rst
 .. include:: commands/brew_init.rst
+.. include:: commands/ci_find_repos.rst
+.. include:: commands/ci_find_tools.rst
+.. include:: commands/clone.rst
 .. include:: commands/conda_env.rst
 .. include:: commands/conda_init.rst
 .. include:: commands/conda_install.rst
+.. include:: commands/conda_lint.rst
+.. include:: commands/conda_search.rst
 .. include:: commands/config_init.rst
 .. include:: commands/cwl_script.rst
 .. include:: commands/database_create.rst
@@ -23,11 +30,13 @@ documentation describes these commands.
 .. include:: commands/docker_shell.rst
 .. include:: commands/docs.rst
 .. include:: commands/lint.rst
+.. include:: commands/mull.rst
 .. include:: commands/normalize.rst
 .. include:: commands/profile_create.rst
 .. include:: commands/profile_delete.rst
 .. include:: commands/profile_list.rst
 .. include:: commands/project_init.rst
+.. include:: commands/pull_request.rst
 .. include:: commands/run.rst
 .. include:: commands/serve.rst
 .. include:: commands/share_test.rst

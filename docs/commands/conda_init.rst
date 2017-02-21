@@ -21,14 +21,18 @@ By running this command, you are agreeing to the terms of the conda
 license a 3-clause BSD 3 license. Please review full license at
 http://docs.continuum.io/anaconda/eula.
 
+Planemo will print a warning and terminate with an exit code of 7
+if Conda is already installed.
+
 **Options**::
 
 
-      --conda_prefix DIRECTORY      Conda prefix to use for conda dependency
-                                    commands.
-      --conda_exec PATH             Location of conda executable.
-      --conda_debug                 Enable more verbose conda logging.
-      --conda_ensure_channels TEXT  Ensure conda is configured with specified comma
-                                    separated list of channels.
-      --help                        Show this message and exit.
+      --conda_prefix DIRECTORY        Conda prefix to use for conda dependency
+                                      commands.
+      --conda_exec PATH               Location of conda executable.
+      --conda_debug                   Enable more verbose conda logging.
+      --conda_channels, --conda_ensure_channels TEXT
+                                      Ensure conda is configured with specified
+                                      comma separated list of channels.
+      --help                          Show this message and exit.
     

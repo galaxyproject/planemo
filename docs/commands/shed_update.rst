@@ -12,7 +12,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-Update repository in shed from a ``.shed.yml`` file.
+Update Tool Shed repository.
 
 By default this command will update both repository metadata
 from ``.shed.yml`` and upload new contents from the repository

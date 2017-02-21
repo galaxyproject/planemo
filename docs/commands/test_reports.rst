@@ -12,8 +12,10 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-Generate various tool test reports (HTML, text, markdown) from
-structure output from tests (tool_test_output.json).
+Generate human readable tool test reports.
+
+Creates reports in various formats  (HTML, text, markdown)
+from the structured test output (tool_test_output.json).
 
 **Options**::
 

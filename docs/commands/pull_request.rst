@@ -1,0 +1,37 @@
+
+``pull_request`` command
+======================================
+
+This section is auto-generated from the help text for the planemo command
+``pull_request``. This help message can be generated with ``planemo pull_request
+--help``.
+
+**Usage**::
+
+    planemo pull_request [OPTIONS] PROJECT
+
+**Help**
+
+Short-cut to quickly create a pull request for a relevant Github repo.
+
+For instance, the following will clone, fork, and branch the tools-iuc
+repository to allow a subsequent pull request to fix a problem with bwa.
+
+::
+
+    $ planemo clone --branch bwa-fix tools-iuc
+    $ cd tools-iuc
+    $ # Make changes.
+    $ git add -p # Add desired changes.
+    $ git commit -m "Fix bwa problem."
+    $ planemo pull_request -m "Fix bwa problem."
+
+These changes do require that a github username and password are
+specified in ~/.planemo.yml.
+
+**Options**::
+
+
+      -m, --message TEXT  Message describing the pull request to create.
+      --help              Show this message and exit.
+    

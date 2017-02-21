@@ -52,11 +52,14 @@ Planemo command for running tools and jobs.
       --docker / --no_docker          Run Galaxy tools in Docker if enabled.
       --docker_cmd TEXT               Command used to launch docker (defaults to
                                       docker).
-      --docker_sudo                   Flag to use sudo when running docker.
+      --docker_sudo / --no_docker_sudo
+                                      Flag to use sudo when running docker.
       --docker_host TEXT              Docker host to target when executing docker
                                       commands (defaults to localhost).
       --docker_sudo_cmd TEXT          sudo command to use when --docker_sudo is
                                       enabled (defaults to sudo).
+      --mulled_containers             Test tools against mulled containers (forces
+                                      --docker).
       --job_config_file PATH          Job configuration file for Galaxy to target.
       --tool_dependency_dir DIRECTORY
                                       Tool dependency dir for Galaxy to target.
@@ -80,17 +83,20 @@ Planemo command for running tools and jobs.
                                       commands.
       --conda_exec PATH               Location of conda executable.
       --conda_debug                   Enable more verbose conda logging.
-      --conda_ensure_channels TEXT    Ensure conda is configured with specified
+      --conda_channels, --conda_ensure_channels TEXT
+                                      Ensure conda is configured with specified
                                       comma separated list of channels.
       --conda_dependency_resolution   Configure Galaxy to use only conda for
                                       dependency resolution.
       --conda_copy_dependencies       Conda dependency resolution for Galaxy will
                                       copy dependencies instead of attempting to
                                       link them.
-      --conda_auto_install            Conda dependency resolution for Galaxy will
+      --conda_auto_install / --no_conda_auto_install
+                                      Conda dependency resolution for Galaxy will
                                       auto install will attempt to install requested
                                       but missing packages.
-      --conda_auto_init               Conda dependency resolution for Galaxy will
+      --conda_auto_init / --no_conda_auto_init
+                                      Conda dependency resolution for Galaxy will
                                       auto install conda itself using miniconda if
                                       not availabe on conda_prefix.
       --profile TEXT                  Location of pid file is executed with
@@ -112,9 +118,6 @@ Planemo command for running tools and jobs.
       --database_connection TEXT      Database connection string to use for Galaxy.
       --shed_tool_conf TEXT           Location of shed tools conf file for Galaxy.
       --shed_tool_path TEXT           Location of shed tools directory for Galaxy.
-      --daemon                        Serve Galaxy process as a daemon.
-      --pid_file TEXT                 Location of pid file is executed with
-                                      --daemon.
       --cwl_galaxy_root DIRECTORY     Root of development galaxy directory to
                                       execute command with (must be branch of Galaxy
                                       with CWL support, this option is experimental
@@ -129,10 +132,17 @@ Planemo command for running tools and jobs.
                                       Where to store outputs of a 'run' task.
       --output_json PATH              Where to store JSON dictionary describing
                                       outputs of a 'run' task.
-      --engine [galaxy|cwltool]       Select an engine to run tools and workflows
-                                      using, defaults to Galaxy, but the CWL
-                                      reference implementation 'cwltool' and be
-                                      selected.
+      --engine [galaxy|docker_galaxy|cwltool]
+                                      Select an engine to run or test aritfacts such
+                                      as tools and workflows. Defaults to a local
+                                      Galaxy, but running Galaxy within a Docker
+                                      container or the CWL reference implementation
+                                      'cwltool' and be selected.
       --no-container, --no_container  If cwltool engine is used, disable Docker
                                       container usage.
+      --docker_galaxy_image TEXT      Docker image identifier for docker-galaxy-
+                                      flavor used if engine type is specified as
+                                      ``docker-galaxy``. Defaults to to bgruening
+                                      /galaxy-stable.
       --help                          Show this message and exit.
+    

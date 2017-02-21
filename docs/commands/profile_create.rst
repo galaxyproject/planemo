@@ -28,5 +28,10 @@ Create a profile.
                                       databases.
       --postgres_database_port TEXT   Postgres port for managed development
                                       databases.
+      --engine [galaxy|docker_galaxy]
+                                      Select an engine to serve aritfacts such as
+                                      tools and workflows. Defaults to a local
+                                      Galaxy, but running Galaxy within a Docker
+                                      container.
       --help                          Show this message and exit.
     

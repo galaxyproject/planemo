@@ -39,8 +39,7 @@ def cli(ctx, paths, **kwds):
     both tool shed contents (via tar ball generation and upload) as well as
     metadata (to handle metadata changes in ``.shed.yml`` files).
 
-    ::
-
+    \b
         % planemo shed_upload --tar_only  ~/
         % tar -tzf shed_upload.tar.gz
         test-data/blastdb.loc

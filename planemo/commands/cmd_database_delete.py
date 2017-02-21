@@ -31,8 +31,9 @@ def cli(ctx, identifier, **kwds):
     the postgres configuration file ``pg_hba.conf`` (on Ubuntu/Debian linux
     distros this file is in /etc/postgresql/<postgres_version>/main/ directory).
     Adding the following lines to that file will allow planemo and Galaxy to
-    access the databases without a password.::
+    access the databases without a password.
 
+    \b
         # "local" is for Unix domain socket connections only
         local   all   all                    trust
         # IPv4 local connections:
@@ -48,8 +49,7 @@ def cli(ctx, identifier, **kwds):
     Debian distros - a postgres user likely already exists and its password can
     be set by setting up a file ``~/.pgpass`` file with the following contents.
 
-    ::
-
+    \b
         *:*:*:postgres:<postgres_password>
     """
     create_database_source(**kwds).delete_database(identifier)

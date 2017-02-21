@@ -12,8 +12,12 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
+Create files to use GitHub/TravisCI testing.
+
 Setup files in a github tool repository to enable continuous
-integration testing.::
+integration testing.
+
+::
 
     % planemo travis_init .
     % # setup Ubuntu 12.04 w/ dependencies in

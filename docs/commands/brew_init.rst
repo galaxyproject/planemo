@@ -12,8 +12,9 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-Download linuxbrew install and run it with ruby. Linuxbrew is a fork
-of Homebrew (http://brew.sh/linuxbrew/).
+Download linuxbrew install & run it in ruby.
+
+Linuxbrew is a fork of Homebrew (http://brew.sh/linuxbrew/).
 
 For more information on installing linuxbrew and pre-requisites see
 https://github.com/Homebrew/linuxbrew#installation.

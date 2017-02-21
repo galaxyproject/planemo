@@ -29,8 +29,9 @@ def cli(ctx, path=".", dockerfile=None, **kwds):
 
     This command will then build and tag the image so it is ready to be tested
     and published. The docker_shell command be used to test out the built
-    image.::
+    image.
 
+    \b
         % planemo docker_build bowtie2.xml # asssumes Dockerfile in same dir
         % planemo docker_shell --from_tag bowtie2.xml
 

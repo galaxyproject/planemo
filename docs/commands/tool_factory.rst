@@ -12,7 +12,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-(Experimental) Launch Galaxy with the Tool Factory 2 available.
+(Experimental) Launch Galaxy with Tool Factory 2.
 
 For more information about the Galaxy Tool Factory see the publication
 Creating reusable tools from scripts: the Galaxy Tool Factory by Lazarus
@@ -53,11 +53,14 @@ http://www.ncbi.nlm.nih.gov/pubmed/23024011.
       --docker / --no_docker          Run Galaxy tools in Docker if enabled.
       --docker_cmd TEXT               Command used to launch docker (defaults to
                                       docker).
-      --docker_sudo                   Flag to use sudo when running docker.
+      --docker_sudo / --no_docker_sudo
+                                      Flag to use sudo when running docker.
       --docker_host TEXT              Docker host to target when executing docker
                                       commands (defaults to localhost).
       --docker_sudo_cmd TEXT          sudo command to use when --docker_sudo is
                                       enabled (defaults to sudo).
+      --mulled_containers             Test tools against mulled containers (forces
+                                      --docker).
       --job_config_file PATH          Job configuration file for Galaxy to target.
       --tool_dependency_dir DIRECTORY
                                       Tool dependency dir for Galaxy to target.
@@ -67,6 +70,15 @@ http://www.ncbi.nlm.nih.gov/pubmed/23024011.
                                       for security reasons set to 0.0.0.0 to bind
                                       Galaxy to all ports including potentially
                                       publicly accessible ones.
+      --engine [galaxy|docker_galaxy]
+                                      Select an engine to serve aritfacts such as
+                                      tools and workflows. Defaults to a local
+                                      Galaxy, but running Galaxy within a Docker
+                                      container.
+      --docker_galaxy_image TEXT      Docker image identifier for docker-galaxy-
+                                      flavor used if engine type is specified as
+                                      ``docker-galaxy``. Defaults to to bgruening
+                                      /galaxy-stable.
       --test_data DIRECTORY           test-data directory to for specified tool(s).
       --tool_data_table PATH          tool_data_table_conf.xml file to for specified
                                       tool(s).
@@ -81,17 +93,20 @@ http://www.ncbi.nlm.nih.gov/pubmed/23024011.
                                       commands.
       --conda_exec PATH               Location of conda executable.
       --conda_debug                   Enable more verbose conda logging.
-      --conda_ensure_channels TEXT    Ensure conda is configured with specified
+      --conda_channels, --conda_ensure_channels TEXT
+                                      Ensure conda is configured with specified
                                       comma separated list of channels.
       --conda_dependency_resolution   Configure Galaxy to use only conda for
                                       dependency resolution.
       --conda_copy_dependencies       Conda dependency resolution for Galaxy will
                                       copy dependencies instead of attempting to
                                       link them.
-      --conda_auto_install            Conda dependency resolution for Galaxy will
+      --conda_auto_install / --no_conda_auto_install
+                                      Conda dependency resolution for Galaxy will
                                       auto install will attempt to install requested
                                       but missing packages.
-      --conda_auto_init               Conda dependency resolution for Galaxy will
+      --conda_auto_init / --no_conda_auto_init
+                                      Conda dependency resolution for Galaxy will
                                       auto install conda itself using miniconda if
                                       not availabe on conda_prefix.
       --profile TEXT                  Location of pid file is executed with
@@ -117,3 +132,4 @@ http://www.ncbi.nlm.nih.gov/pubmed/23024011.
       --pid_file TEXT                 Location of pid file is executed with
                                       --daemon.
       --help                          Show this message and exit.
+    
