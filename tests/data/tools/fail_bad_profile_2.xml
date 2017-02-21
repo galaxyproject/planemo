@@ -1,4 +1,4 @@
-<tool id="ok_select_param" name="ok_select_param" version="1.0">
+<tool id="fail_bad_profile_2" name="fail_bad_profile_2" version="1.0" profile="04.12">
     <description>select param</description>
     <command><![CDATA[
         echo "$select_opt" > $output

@@ -1,4 +1,4 @@
-<tool id="ok_select_param" name="ok_select_param" version="1.0">
+<tool id="fail_name_mismatch" name="fail_name_mismatch" version="1.0">
     <description>select param</description>
     <command><![CDATA[
         echo "$select_opt" > $output
@@ -14,7 +14,7 @@
     <tests>
         <test>
             <param name="select_opt" value="Hello World!" />
-            <output name="output">
+            <output name="output1">
                 <assert_contents>
                     <has_line line="Hello World!" />
                 </assert_contents>
