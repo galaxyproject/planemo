@@ -23,6 +23,7 @@ IS_PYTHON_2_7 = sys.version_info[0] == 2 and sys.version_info[1] >= 7
 CONTEXT_SETTINGS = dict(auto_envvar_prefix='PLANEMO')
 COMMAND_ALIASES = {
     "l": "lint",
+    "o": "open",
     "t": "test",
     "s": "serve",
 }
