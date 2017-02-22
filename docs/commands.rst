@@ -32,6 +32,7 @@ documentation describes these commands.
 .. include:: commands/lint.rst
 .. include:: commands/mull.rst
 .. include:: commands/normalize.rst
+.. include:: commands/open.rst
 .. include:: commands/profile_create.rst
 .. include:: commands/profile_delete.rst
 .. include:: commands/profile_list.rst
