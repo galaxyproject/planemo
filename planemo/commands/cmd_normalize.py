@@ -47,8 +47,7 @@ def cli(ctx, path, expand_macros=False, **kwds):
     The top-level blocks will be reordered and whitespace fixed according to
     the tool development best practices outlined on the Galaxy wiki.
 
-    ::
-
+    \b
         % # Print normalized version of tool.
         % planemo normalize tool.xml
         <tool>

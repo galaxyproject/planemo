@@ -49,8 +49,8 @@ def cli(ctx, target, path, **kwds):
     For instance, the following will clone, fork, and branch the tools-iuc
     repository to allow a subsequent pull request to fix a problem with bwa.
 
-    ::
 
+    \b
         $ planemo clone --branch bwa-fix tools-iuc
         $ cd tools-iuc
         $ # Make changes.

@@ -12,7 +12,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-Open the Planemo documentation in a web browser.
+Open Planemo documentation in web browser.
 **Options**::
 
 

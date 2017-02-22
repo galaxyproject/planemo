@@ -12,7 +12,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-Generate a tool outline from supplied arguments.
+Generate tool outline from given arguments.
 **Options**::
 
 
@@ -32,24 +32,24 @@ Generate a tool outline from supplied arguments.
                                 (e.g. 2.fastq with a data input parameter).
       --example_output TEXT     For use with --example_command, replace input file
                                 (e.g. 2.fastq with a tool output).
-      --version_command TEXT    Command to print version (e.g. 'seqtk --version')
-      --input TEXT              An input description (e.g. input.fasta)
-      --output TEXT             An output location (e.g. output.bam), the Galaxy
-                                datatype is inferred from the extension.
       --named_output TEXT       Create a named output for use with command block for
                                 example specify --named_output=output1.bam and then
                                 use '-o $output1' in your command block.
+      --input TEXT              An input description (e.g. input.fasta)
+      --output TEXT             An output location (e.g. output.bam), the Galaxy
+                                datatype is inferred from the extension.
       --help_text TEXT          Help text (reStructuredText)
       --help_from_command TEXT  Auto populate help from supplied command.
-      --requirement TEXT        Add a tool requirement package (e.g. 'seqtk' or
-                                'seqtk@1.68').
-      --container TEXT          Add a Docker image identifier for this tool.
       --doi TEXT                Supply a DOI (http://www.doi.org/) easing citation
-                                of the tool for Galaxy users (e.g. 10.1101/014043).
+                                of the tool for Galxy users (e.g. 10.1101/014043).
       --cite_url TEXT           Supply a URL for citation.
       --test_case               For use with --example_commmand, generate a tool
                                 test case from the supplied example.
       --macros                  Generate a macros.xml for reuse across many tools.
+      --version_command TEXT    Command to print version (e.g. 'seqtk --version')
+      --requirement TEXT        Add a tool requirement package (e.g. 'seqtk' or
+                                'seqtk@1.68').
+      --container TEXT          Add a Docker image identifier for this tool.
       --cwl                     Build a CWL tool instead of a Galaxy tool.
       --help                    Show this message and exit.
     

@@ -25,8 +25,7 @@ from planemo.io import conditionally_captured_io, warn
 def cli(ctx, path, job_path, **kwds):
     """Planemo command for running tools and jobs.
 
-    ::
-
+    \b
         % planemo run cat1-tool.cwl cat-job.json
     """
     kwds["cwl"] = path.endswith(".cwl")

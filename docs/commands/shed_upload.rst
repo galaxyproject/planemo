@@ -12,7 +12,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-Low-level command for uploading tar balls to a shed.
+Low-level command to upload tarballs.
 
 Generally, ``shed_update`` should be used instead since it also updates
 both tool shed contents (via tar ball generation and upload) as well as

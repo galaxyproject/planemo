@@ -56,6 +56,9 @@ for command in list_cmds():
     raw_rst = function.__doc__
 
     def clean_rst_line(line):
+        # Check for that click \b.
+        if line.startswith('    \x08'):
+            return "::\n"
         if line.startswith("    "):
             return line[4:]
         else:
@@ -80,6 +83,8 @@ for command in list_cmds():
             help_lines = False
             new_lines.append("**Options**::\n\n")
             option_lines = True
+        elif line.startswith('\b') or line.startswith("^H") or line.startswith('\x08') or line.startswith(''):
+            new_lines.append("\n::\n\n")
         elif option_lines:
             new_lines.append("    %s" % line)
     text = COMMAND_TEMPLATE.safe_substitute(

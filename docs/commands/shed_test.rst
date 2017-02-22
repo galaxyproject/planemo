@@ -77,11 +77,14 @@ This command requires the target to be version 15.07 or newer.
       --docker / --no_docker          Run Galaxy tools in Docker if enabled.
       --docker_cmd TEXT               Command used to launch docker (defaults to
                                       docker).
-      --docker_sudo                   Flag to use sudo when running docker.
+      --docker_sudo / --no_docker_sudo
+                                      Flag to use sudo when running docker.
       --docker_host TEXT              Docker host to target when executing docker
                                       commands (defaults to localhost).
       --docker_sudo_cmd TEXT          sudo command to use when --docker_sudo is
                                       enabled (defaults to sudo).
+      --mulled_containers             Test tools against mulled containers (forces
+                                      --docker).
       --job_config_file PATH          Job configuration file for Galaxy to target.
       --tool_dependency_dir DIRECTORY
                                       Tool dependency dir for Galaxy to target.

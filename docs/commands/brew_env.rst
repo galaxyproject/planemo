@@ -12,8 +12,12 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
+List commands to inject brew dependencies.
+
 Display commands used to modify environment to inject tool's brew
-dependencies.::
+dependencies.
+
+::
 
     % . <(planemo brew_env bowtie2.xml)
     % which bowtie2
@@ -25,7 +29,9 @@ flag.
 
 Intead of injecting the enviornment into your current shell using the above
 idiom, the ``--shell`` flag can be sent to launch a new subshell when
-sourced.::
+sourced.
+
+::
 
     % . <(planemo brew_env --skip_install --shell bowtie2.xml)
     (bowtie2) % which bowtie2

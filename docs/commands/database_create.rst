@@ -31,7 +31,9 @@ Planemo can be configured to not require a password for the planemo user in
 the postgres configuration file ``pg_hba.conf`` (on Ubuntu/Debian linux
 distros this file is in /etc/postgresql/<postgres_version>/main/ directory).
 Adding the following lines to that file will allow planemo and Galaxy to
-access the databases without a password.::
+access the databases without a password.
+
+::
 
     # "local" is for Unix domain socket connections only
     local   all   all                    trust

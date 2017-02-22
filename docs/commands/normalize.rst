@@ -12,7 +12,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-Generate normalized tool XML from input (breaks formatting).
+Generate normalized tool XML from input.
 
 This will break the formatting of your tool and is currently only intended
 for viewing macro expansions for for use with XSD validation (see

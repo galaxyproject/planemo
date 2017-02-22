@@ -28,8 +28,7 @@ def cli(ctx, paths, **kwds):
     from ``.shed.yml`` and upload new contents from the repository
     directory.
 
-    ::
-
+    \b
         % planemo shed_update
 
     This will update the main tool shed with the repository defined
@@ -39,8 +38,7 @@ def cli(ctx, paths, **kwds):
     be used if ``.shed.yml`` if contained in ``path/to/repo`` and the
     desire is to update the test tool shed.
 
-    ::
-
+    \b
         % planemo shed_update --shed_target testtoolshed path/to/repo
 
     Another important option is ``--check_diff`` - this doesn't affect the

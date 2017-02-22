@@ -12,7 +12,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-Check a Tool Shed repository for common problems.
+Check Tool Shed repository for common issues.
 
 With the ``--tools`` flag, this command lints actual Galaxy tools
 in addition to tool shed artifacts.
@@ -36,9 +36,8 @@ help text for mentioned URLs and checks those.
       --fail_level [warn|error]
       --tools                         Lint tools discovered in the process of
                                       linting repositories.
-      --xsd                           Include experimental tool XSD validation in
-                                      linting process (requires xmllint on PATH or
-                                      lxml installed).
+      --xsd / --no_xsd                Include tool XSD validation in linting
+                                      process.
       --ensure_metadata               Ensure .shed.yml files contain enough metadata
                                       for each repository to allow automated
                                       creation and/or updates.
