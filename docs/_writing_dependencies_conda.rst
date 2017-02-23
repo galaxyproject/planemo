@@ -278,14 +278,14 @@ no ``requirement`` tags and so will not work properly.
 
 1. Run ``planemo test pear.xml`` to verify the tool does not function
    without dependencies defined.
-1. Use ``--conda_requirements`` flag with ``planemo lint`` to verify it does
+2. Use ``--conda_requirements`` flag with ``planemo lint`` to verify it does
    indeed lack requirements.
-1. Use ``planemo conda_search`` or the Anaconda_ website to search for the
+3. Use ``planemo conda_search`` or the Anaconda_ website to search for the
    correct package and version in a best practice channel.
-1. Update ``pear.xml`` with the correct ``requirement`` tags.
-1. Re-run the ``lint`` command from above to verify the tool now has the
+4. Update ``pear.xml`` with the correct ``requirement`` tags.
+5. Re-run the ``lint`` command from above to verify the tool now has the
    correct dependency definition.
-1. Re-run the ``test`` command from above to verify the tool test now
+6. Re-run the ``test`` command from above to verify the tool test now
    works properly.
 
 ----------------------------------------------------------------
