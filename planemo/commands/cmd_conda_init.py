@@ -16,7 +16,7 @@ MESSAGE_INSTALL_OKAY = "Conda installation succeeded - Conda is available at '%s
 
 
 @click.command('conda_init')
-@options.conda_target_options()
+@options.conda_target_options(include_local=False)  # Always use local during init.
 @command_function
 def cli(ctx, **kwds):
     """Download and install conda.
@@ -36,7 +36,7 @@ def cli(ctx, **kwds):
         warn(MESSAGE_ERROR_ALREADY_EXISTS % conda_context.conda_exec)
         exit = EXIT_CODE_ALREADY_EXISTS
     else:
-        exit = conda_util.install_conda(conda_context=conda_context)
+        exit = conda_util.install_conda(conda_context=conda_context, force_conda_build=True)
         if exit:
             warn(MESSAGE_ERROR_FAILED % conda_context.conda_exec)
         else:

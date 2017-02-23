@@ -5,6 +5,8 @@ from .test_utils import (
     CliTestCase,
     PROJECT_TEMPLATES_DIR,
     skip_if_environ,
+    TEST_RECIPES_DIR,
+    TEST_REPOS_DIR,
     TEST_TOOLS_DIR,
 )
 
@@ -82,7 +84,7 @@ class CmdTestCondaTestCase(CliTestCase):
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_conda_dependencies_version(self):
-        """Test testing a simple workflow with Galaxy."""
+        """Test tool with wrong version and ensure it fails."""
         with self._isolate():
             # Try a failing test to ensure the primary test above isn't just passing spuriously.
             bwa_test = os.path.join(TEST_TOOLS_DIR, "bwa_wrong_version.xml")
@@ -95,3 +97,27 @@ class CmdTestCondaTestCase(CliTestCase):
                 bwa_test,
             ]
             self._check_exit_code(test_command, exit_code=1)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_local_conda_dependencies_version(self):
+        """Test a tool that requires local package builds."""
+        with self._isolate():
+            fleeqtk_recipe = os.path.join(TEST_RECIPES_DIR, "fleeqtk")
+            build_command = [
+                "conda_build",
+                fleeqtk_recipe,
+            ]
+            self._check_exit_code(build_command)
+            fleeqtk_tool = os.path.join(TEST_REPOS_DIR, "conda_exercises_fleeqtk", "fleeqtk_seq.xml")
+            conda_install_command = [
+                "conda_install",
+                "--conda_use_local",
+                fleeqtk_tool,
+            ]
+            self._check_exit_code(conda_install_command)
+            test_command = [
+                "test",
+                "--galaxy_branch", "release_17.01",
+                fleeqtk_tool,
+            ]
+            self._check_exit_code(test_command)
