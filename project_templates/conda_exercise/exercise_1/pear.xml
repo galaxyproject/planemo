@@ -1,17 +1,11 @@
 <tool id="iuc_pear" name="Pear" version="0.9.6.1">
     <description>Paired-End read merger</description>
-    <stdio>
-        <exit_code range="1:" />
-        <exit_code range=":-1" />
-        <regex match="Error:" />
-        <regex match="Exception:" />
-    </stdio>
-    <command>
+    <command detect_errors="aggressive">
 <![CDATA[
     pear
         #if str( $library.type ) == "paired":
-            -f "$library.forward"
-            -r "$library.reverse"
+            -f '$library.forward'
+            -r '$library.reverse'
             #if $library.forward.is_of_type( 'fastqillumina' ):
                 --phred-base 64
             #else:
@@ -19,8 +13,8 @@
             #end if
         #else
             ## prepare collection
-            -f "$library.input_collection.forward"
-            -r "$library.input_collection.reverse"
+            -f '$library.input_collection.forward'
+            -r '$library.input_collection.reverse'
             #if $library.input_collection.forward.is_of_type( 'fastqillumina' ):
                 --phred-base 64
             #else:

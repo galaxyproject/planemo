@@ -242,7 +242,7 @@ all the software and all the versions available matching that search term - incl
    ``conda search`` command but configured to use the same channels and other options as
    Planemo and Galaxy. The following Conda command would also work to search::
 
-       $ $HOME/miniconda3/bin/conda -c bioconda -c conda-forge -c iuc seqt
+       $ $HOME/miniconda3/bin/conda -c iuc -c bioconda -c conda-forge seqt
 
 Alternatively the Anaconda_ website can be used to search for packages. Typing ``seqtk``
 into the search form on that page and clicking the top result will bring on to `this page
@@ -251,7 +251,7 @@ https://anaconda.org/bioconda/seqtk`__ with information about the Bioconda packa
 When using the website to search though, you need to aware of what channel you are using. By
 default, Planemo and Galaxy will search a few different Conda channels. While it is possible
 to configure a local Planemo or Galaxy to target different channels - the current best practice
-it to add tools to the existing channels.
+is to add tools to the existing channels.
 
 The existing channels include:
 
@@ -274,7 +274,7 @@ Use the ``project_init`` command to download this exercise.
 
 This will download a tool for `PEAR - Paired-End reAd mergeR
 <http://sco.h-its.org/exelixis/web/software/pear/>`__. This tool however has
-``requirement`` tags and so will not work properly.
+no ``requirement`` tags and so will not work properly.
 
 1. Run ``planemo test pear.xml`` to verify the tool does not function
    without dependencies defined.
