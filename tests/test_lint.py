@@ -91,6 +91,5 @@ class LintTestCase(CliTestCase):
         self._check_exit_code(lint_cmd)
         lint_cmd = ["lint", "--conda_requirements", seqtk_seq_v6]
         self._check_exit_code(lint_cmd)
-        # Doesn't work, it seems to be missing?
-        # lint_cmd = ["lint", "--biocontainer_registered", bwa_no_reqs]
-        # self._check_exit_code(lint_cmd)
+        lint_cmd = ["lint", "--biocontainer", seqtk_seq_v6]
+        self._check_exit_code(lint_cmd)

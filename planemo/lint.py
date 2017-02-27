@@ -15,6 +15,7 @@ from six.moves.urllib.request import (
     urlopen,
 )
 
+import planemo.linters.biocontainer_registered
 import planemo.linters.conda_requirements
 import planemo.linters.doi
 import planemo.linters.urls
@@ -59,6 +60,9 @@ def _lint_extra_modules(**kwds):
 
     if kwds.get("conda_requirements", False):
         linters.append(planemo.linters.conda_requirements)
+
+    if kwds.get("biocontainer", False):
+        linters.append(planemo.linters.biocontainer_registered)
 
     return linters
 
