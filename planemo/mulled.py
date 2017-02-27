@@ -12,7 +12,7 @@ from galaxy.tools.deps.mulled.mulled_build import (
     InvolucroContext,
 )
 
-from planemo.io import shell
+from planemo.io import IS_OS_X, shell
 
 
 def build_involucro_context(ctx, **kwds):
@@ -35,13 +35,26 @@ def build_mull_target_kwds(ctx, **kwds):
     """Adapt Planemo's CLI and workspace configuration to galaxy-lib's mulled_build options."""
     involucro_context = build_involucro_context(ctx, **kwds)
     channels = kwds.get("conda_ensure_channels", ",".join(DEFAULT_CHANNELS))
-
-    return {
+    namespace = kwds.get("mulled_namespace", "biocontainers")
+    target_kwds = {
         'involucro_context': involucro_context,
         'channels': channels.split(","),
+        'namespace': namespace,
+        'verbose': ctx.verbose,
     }
+
+    conda_version = kwds.get("mulled_conda_version", None)
+    if conda_version is not None:
+        target_kwds["conda_version"] = conda_version
+    else:
+        # Hack to workaround a bug with osxfs + Conda 4.2 - remove
+        # when container gets upgraded to 4.3
+        if IS_OS_X:
+            target_kwds["conda_version"] = "4.3"
+    return target_kwds
 
 
 __all__ = (
     "build_involucro_context",
+    "build_mull_target_kwds",
 )

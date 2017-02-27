@@ -4,6 +4,14 @@ planemo.linters package
 Submodules
 ----------
 
+planemo.linters.biocontainer_registered module
+----------------------------------------------
+
+.. automodule:: planemo.linters.biocontainer_registered
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.linters.conda_requirements module
 -----------------------------------------
 

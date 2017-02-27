@@ -64,6 +64,7 @@ def cli(ctx, path, **kwds):
         if container.type == "docker":
             identifier = container.identifier
 
+    # Refactor mulled container resolver to be able to do this.
     if kwds["from_tag"]:
         identifier = "-t %s" % identifier
 

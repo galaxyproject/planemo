@@ -68,6 +68,14 @@ planemo.commands.cmd_clone module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd_conda_build module
+---------------------------------------
+
+.. automodule:: planemo.commands.cmd_conda_build
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd_conda_env module
 -------------------------------------
 
