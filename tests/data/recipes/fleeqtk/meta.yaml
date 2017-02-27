@@ -1,0 +1,29 @@
+package:
+  name: fleeqtk
+  version: 1.3
+
+source:
+  fn: v1.3.tar.gz
+  url: https://github.com/jmchilton/fleeqtk/archive/v1.3.tar.gz
+  md5: 015daf2e21789519eea4e156fc155272
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - gcc   # [not osx]
+    - llvm  # [osx]
+    - zlib
+  run:
+    - zlib
+
+
+about:
+  home: https://github.com/jmchilton/fleeqtk
+  license: MIT License
+  summary: fleeqtk - those sequences are on fleeqtk
+
+test:
+  commands:
+    - fleeqtk seq
