@@ -578,7 +578,7 @@ def _build_auto_tool_repos(path, config, auto_tool_repos):
     excludes = _shed_config_excludes(config)
 
     def _build_repository(tool_path, tool_el):
-        tool_id = tool_el.getroot().get("id")
+        tool_id = tool_el.getroot().get("id").lower()
         tool_name = tool_el.getroot().get("name")
         template_vars = dict(
             tool_id=tool_id,
