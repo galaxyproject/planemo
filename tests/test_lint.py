@@ -3,6 +3,7 @@ import os
 
 from .test_utils import (
     CliTestCase,
+    PROJECT_TEMPLATES_DIR,
     TEST_REPOS_DIR,
     TEST_TOOLS_DIR,
 )
@@ -83,3 +84,12 @@ class LintTestCase(CliTestCase):
         self._check_exit_code(lint_cmd)
         lint_cmd = ["lint", "--conda_requirements", bwa_wrong_version]
         self._check_exit_code(lint_cmd, exit_code=self.non_zero_exit_code)
+
+    def test_lint_dependencies_okay(self):
+        seqtk_seq_v6 = os.path.join(PROJECT_TEMPLATES_DIR, "seqtk_complete", "seqtk_seq.xml")
+        lint_cmd = ["lint", seqtk_seq_v6]
+        self._check_exit_code(lint_cmd)
+        lint_cmd = ["lint", "--conda_requirements", seqtk_seq_v6]
+        self._check_exit_code(lint_cmd)
+        lint_cmd = ["lint", "--biocontainer", seqtk_seq_v6]
+        self._check_exit_code(lint_cmd)

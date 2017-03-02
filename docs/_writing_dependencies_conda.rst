@@ -1,3 +1,5 @@
+.. _dependencies_and_conda:
+
 Dependencies and Conda
 ===========================================
 

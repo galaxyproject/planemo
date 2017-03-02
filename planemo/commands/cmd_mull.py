@@ -13,6 +13,8 @@ from planemo.mulled import build_mull_target_kwds
 @click.command('mull')
 @options.optional_tools_arg(multiple=True)
 @options.recursive_option()
+@options.mulled_options()
+@options.conda_ensure_channels_option()
 @command_function
 def cli(ctx, paths, **kwds):
     """Build containers for specified tools.
@@ -30,4 +32,5 @@ def cli(ctx, paths, **kwds):
     for conda_targets in collect_conda_target_lists(ctx, paths):
         mulled_targets = map(lambda c: build_target(c.package, c.version), conda_targets)
         mull_target_kwds = build_mull_target_kwds(ctx, **kwds)
-        mull_targets(mulled_targets, command="build", **mull_target_kwds)
+        command = kwds["mulled_command"]
+        mull_targets(mulled_targets, command=command, **mull_target_kwds)

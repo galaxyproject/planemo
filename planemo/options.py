@@ -1538,3 +1538,44 @@ def tool_init_example_command_option(help=EXAMPLE_COMMAND_HELP):
         prompt=False,
         help=help,
     )
+
+
+def mulled_conda_option():
+    return planemo_option(
+        "--mulled_conda_version",
+        type=click.STRING,
+        default=None,
+        help=("Install a specific version of Conda before running the command, by "
+              "default the version that comes with the continuumio miniconda3 image "
+              "will be used under Linux and under Mac OS X Conda will be upgraded to "
+              "to work around a bug in 4.2.")
+    )
+
+
+def mulled_namespace_option():
+    return planemo_option(
+        "--mulled_namespace",
+        type=click.STRING,
+        default="biocontainers",
+        help=("Build a mulled image with the specified namespace - defaults to "
+              "biocontainers. Galaxy currently only recognizes images with the "
+              "namespace biocontainers.")
+    )
+
+
+def mulled_action_option():
+    return planemo_option(
+        "--mulled_command",
+        type=click.STRING,
+        default="build",
+        help=("Mulled action to perform for targets - this defaults to 'build'. "
+              "Set this to build-and-test to also test the resulting container.")
+    )
+
+
+def mulled_options():
+    return _compose(
+        mulled_conda_option(),
+        mulled_namespace_option(),
+        mulled_action_option(),
+    )
