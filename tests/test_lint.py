@@ -4,6 +4,7 @@ import os
 from .test_utils import (
     CliTestCase,
     PROJECT_TEMPLATES_DIR,
+    skip_if_environ,
     TEST_REPOS_DIR,
     TEST_TOOLS_DIR,
 )
@@ -71,6 +72,7 @@ class LintTestCase(CliTestCase):
         lint_cmd = ["lint", "--doi", fail_doi]
         self._check_exit_code(lint_cmd, exit_code=1)
 
+    @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
     def test_lint_conda_requirements_empty(self):
         bwa_no_reqs = os.path.join(TEST_TOOLS_DIR, "bwa_without_requirements.xml")
         lint_cmd = ["lint", bwa_no_reqs]
@@ -78,6 +80,7 @@ class LintTestCase(CliTestCase):
         lint_cmd = ["lint", "--conda_requirements", bwa_no_reqs]
         self._check_exit_code(lint_cmd, exit_code=self.non_zero_exit_code)
 
+    @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
     def test_lint_conda_requirements_wrong_version(self):
         bwa_wrong_version = os.path.join(TEST_TOOLS_DIR, "bwa_invalid_version.xml")
         lint_cmd = ["lint", bwa_wrong_version]
@@ -85,6 +88,7 @@ class LintTestCase(CliTestCase):
         lint_cmd = ["lint", "--conda_requirements", bwa_wrong_version]
         self._check_exit_code(lint_cmd, exit_code=self.non_zero_exit_code)
 
+    @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
     def test_lint_dependencies_okay(self):
         seqtk_seq_v6 = os.path.join(PROJECT_TEMPLATES_DIR, "seqtk_complete", "seqtk_seq.xml")
         lint_cmd = ["lint", seqtk_seq_v6]
