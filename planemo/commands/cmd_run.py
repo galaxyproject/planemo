@@ -9,10 +9,11 @@ from planemo import options
 from planemo.cli import command_function
 from planemo.engine import engine_context
 from planemo.io import conditionally_captured_io, warn
+from planemo.tools import uri_to_path
 
 
 @click.command('run')
-@options.required_tool_arg()
+@options.required_tool_arg(allow_uris=True)
 @options.required_job_arg()
 @options.galaxy_run_options()
 @options.galaxy_config_options()
@@ -22,12 +23,13 @@ from planemo.io import conditionally_captured_io, warn
 @options.run_output_json_option()
 @options.engine_options()
 @command_function
-def cli(ctx, path, job_path, **kwds):
+def cli(ctx, uri, job_path, **kwds):
     """Planemo command for running tools and jobs.
 
     \b
         % planemo run cat1-tool.cwl cat-job.json
     """
+    path = DEFAULT_TOOL_LOCATION_FETCHER.to_tool_path(uri)
     kwds["cwl"] = path.endswith(".cwl")
     conformance_test = kwds.get("conformance_test", False)
 

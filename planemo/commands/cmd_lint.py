@@ -8,7 +8,7 @@ from planemo.tool_lint import lint_tools_on_path
 
 
 @click.command('lint')
-@options.optional_tools_arg(multiple=True)
+@options.optional_tools_arg(multiple=True, allow_uris=True)
 @options.report_level_option()
 @options.report_xunit()
 @options.fail_level_option()
@@ -46,12 +46,12 @@ from planemo.tool_lint import lint_tools_on_path
 # default=False,
 # )
 @command_function
-def cli(ctx, paths, **kwds):
+def cli(ctx, uris, **kwds):
     """Check for common errors and best practices."""
     lint_args = build_lint_args(ctx, **kwds)
     exit_code = lint_tools_on_path(
         ctx,
-        paths,
+        uris,
         lint_args,
         recursive=kwds["recursive"]
     )

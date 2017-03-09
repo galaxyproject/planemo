@@ -71,6 +71,8 @@ def run_cwltool(ctx, path, job_path, **kwds):
     if kwds.get("no_container", False):
         args.append("--no-container")
 
+    args.append("--non-strict")
+
     args.extend([path, job_path])
     ctx.vlog("Calling cwltool with arguments %s" % args)
     with tempfile.NamedTemporaryFile() as tmp_stdout, \
@@ -81,7 +83,7 @@ def run_cwltool(ctx, path, job_path, **kwds):
             ret_code = main.main(
                 args,
                 stdout=tmp_stdout,
-                stderr=tmp_stderr
+                stderr=tmp_stderr,
             )
         tmp_stdout.flush()
         tmp_stderr.flush()

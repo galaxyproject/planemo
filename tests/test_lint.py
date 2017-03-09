@@ -18,6 +18,10 @@ class LintTestCase(CliTestCase):
             lint_cmd = ["lint", "--urls", ok_tool]
             self._check_exit_code(lint_cmd)
 
+    def test_ok_http(self):
+        lint_cmd = ["lint", "https://raw.githubusercontent.com/galaxyproject/planemo/master/tests/data/tools/ok_conditional.xml"]
+        self._check_exit_code(lint_cmd)
+
     def test_fail_tools(self):
         fail_tools = glob.glob("%s/fail_*" % TEST_TOOLS_DIR)
         for fail_tool in fail_tools:

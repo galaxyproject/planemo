@@ -6,12 +6,27 @@ import sys
 import traceback
 
 from galaxy.tools import loader_directory
+from galaxy.tools.fetcher import ToolLocationFetcher
 
 from planemo.io import error, info
 
 is_tool_load_error = loader_directory.is_tool_load_error
 SKIP_XML_MESSAGE = "Skipping XML file - does not appear to be a tool %s."
 SHED_FILES = ["tool_dependencies.xml", "repository_dependencies.xml"]
+
+
+def uri_to_path(ctx, uri):
+    fetcher = ToolLocationFetcher()
+    return fetcher.to_tool_path(uri)
+
+
+def uris_to_paths(ctx, uris):
+    fetcher = ToolLocationFetcher()
+    paths = []
+    for uri in uris:
+        path = fetcher.to_tool_path(uri)
+        paths.append(path)
+    return paths
 
 
 def yield_tool_sources_on_paths(ctx, paths, recursive=False):

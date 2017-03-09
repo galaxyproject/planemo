@@ -509,17 +509,24 @@ def conda_global_option():
     )
 
 
-def required_tool_arg():
+def required_tool_arg(allow_uris=False):
     """ Decorate click method as requiring the path to a single tool.
     """
-    arg_type = click.Path(
+    arg_type_class = click.Path if not allow_uris else UriLike
+    arg_type = arg_type_class(
         exists=True,
         file_okay=True,
         dir_okay=False,
         readable=True,
         resolve_path=True,
     )
-    return click.argument("path", metavar="TOOL_PATH", type=arg_type)
+    if allow_uris:
+        name = "uri"
+        metavar = "TOOL_URI"
+    else:
+        name = "path"
+        metavar = "TOOL_PATH"
+    return click.argument(name, metavar=metavar, type=arg_type)
 
 
 def required_job_arg():
@@ -536,7 +543,7 @@ def required_job_arg():
 
 
 def _optional_tools_default(ctx, param, value):
-    if param.name == "paths" and len(value) == 0:
+    if param.name in ["paths", "uris"] and len(value) == 0:
         return [os.path.abspath(os.getcwd())]
     else:
         return value
@@ -556,19 +563,32 @@ def optional_tools_or_packages_arg(multiple=False):
     )
 
 
-def optional_tools_arg(multiple=False):
+class UriLike(click.Path):
+
+    def convert(self, value, param, ctx):
+        if "://" in value:
+            return value
+        else:
+            return super(UriLike, self).convert(value, param, ctx)
+
+
+def optional_tools_arg(multiple=False, allow_uris=False):
     """ Decorate click method as optionally taking in the path to a tool
     or directory of tools. If no such argument is given the current working
     directory will be treated as a directory of tools.
     """
-    arg_type = click.Path(
+    arg_type_class = click.Path if not allow_uris else UriLike
+    arg_type = arg_type_class(
         exists=True,
         file_okay=True,
         dir_okay=True,
         readable=True,
         resolve_path=True,
     )
-    name = "paths" if multiple else "path"
+    if allow_uris:
+        name = "uris" if multiple else "uri"
+    else:
+        name = "paths" if multiple else "path"
     nargs = -1 if multiple else 1
     return click.argument(
         name,
