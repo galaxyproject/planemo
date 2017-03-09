@@ -387,7 +387,7 @@ def galactic_job_json(job, test_data_directory, upload_func):
         if type_class != "File":
             return value
 
-        file_path = value.get("path", None)
+        file_path = value.get("location", None)
         if file_path is None:
             return value
 

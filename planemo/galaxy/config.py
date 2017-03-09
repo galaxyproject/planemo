@@ -1112,7 +1112,7 @@ def _galaxy_branch(kwds):
     branch = kwds.get("galaxy_branch", None)
     if branch is None:
         cwl = kwds.get("cwl", False)
-        branch = "cwl" if cwl else None
+        branch = "cwl-1.0" if cwl else None
     if branch is None:
         branch = DEFAULT_GALAXY_BRANCH
 
@@ -1133,8 +1133,6 @@ def _galaxy_source(kwds):
 def _install_with_command(ctx, config_directory, command, env, kwds):
     # TODO: --watchdog
     pip_installs = []
-    if kwds.get("cwl", False):
-        pip_installs.append("cwltool==1.0.20160626203316")
     if pip_installs:
         pip_install_command = PIP_INSTALL_CMD % " ".join(pip_installs)
     else:
