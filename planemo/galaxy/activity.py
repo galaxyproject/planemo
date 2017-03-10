@@ -134,6 +134,9 @@ def stage_in(config, user_gi, history_id, job_path, **kwds):
 
     if datasets:
         final_state = _wait_for_history(user_gi, history_id)
+    else:
+        # Mark uploads as ok because nothing to do.
+        final_state = "ok"
 
     if final_state != "ok":
         msg = "Failed to run CWL job final job state is [%s]." % final_state
