@@ -17,6 +17,8 @@ from planemo.runnable import (
 )
 
 DEFAULT_HISTORY_NAME = "CWL Target History"
+ERR_NO_SUCH_TOOL = ("Failed to find tool with ID [%s] in Galaxy - cannot execute job. "
+                    "You may need to enable verbose logging and determine why the tool did not load. [%s]")
 
 
 def execute(config, runnable, job_path, **kwds):
@@ -42,6 +44,10 @@ def _execute(config, runnable, job_path, **kwds):
             inputs_representation = "cwl"
         else:
             inputs_representation = "galaxy"
+        try:
+            user_gi.tools.show_tool(tool_id)
+        except Exception as e:
+            raise Exception(ERR_NO_SUCH_TOOL % (tool_id, e))
         run_tool_payload = dict(
             history_id=history_id,
             tool_id=tool_id,
