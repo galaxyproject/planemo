@@ -71,7 +71,8 @@ def run_cwltool(ctx, path, job_path, **kwds):
     if kwds.get("no_container", False):
         args.append("--no-container")
 
-    args.append("--non-strict")
+    if kwds.get("non_strict_cwl", False):
+        args.append("--non-strict")
 
     args.extend([path, job_path])
     ctx.vlog("Calling cwltool with arguments %s" % args)

@@ -44,6 +44,15 @@ def run_engine_option():
     )
 
 
+def non_strict_cwl_option():
+    return planemo_option(
+        "--non_strict_cwl",
+        default=False,
+        is_flag=True,
+        help="Disable strict validation of CWL.",
+    )
+
+
 def serve_engine_option():
     return planemo_option(
         "--engine",
@@ -992,6 +1001,7 @@ def galaxy_serve_options():
     return _compose(
         galaxy_run_options(),
         serve_engine_option(),
+        non_strict_cwl_option(),
         docker_galaxy_image_option(),
         galaxy_config_options(),
         daemon_option(),
@@ -1086,6 +1096,7 @@ def tool_test_json():
 def engine_options():
     return _compose(
         run_engine_option(),
+        non_strict_cwl_option(),
         cwltool_no_container_option(),
         docker_galaxy_image_option(),
     )
