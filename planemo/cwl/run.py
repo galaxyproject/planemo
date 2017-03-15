@@ -25,9 +25,8 @@ JSON_PARSE_ERROR_MESSAGE = ("Failed to parse JSON from cwltool output [%s] "
 class CwlToolRunResponse(SuccessfulRunResponse):
     """Describe the resut of a cwltool invocation."""
 
-    def __init__(self, log, cwl_command_state=None, outputs=None):
+    def __init__(self, log, outputs=None):
         self._log = log
-        self._cwl_command_state = cwl_command_state
         self._outputs = outputs
 
     @property
@@ -39,18 +38,7 @@ class CwlToolRunResponse(SuccessfulRunResponse):
         return None
 
     @property
-    def cwl_command_state(self):
-        if self._cwl_command_state is None:
-            message = "Can only call cwl_command_state if running conformance_test."
-            raise NotImplementedError(message)
-
-        return self._cwl_command_state
-
-    @property
     def outputs_dict(self):
-        if self._outputs is None:
-            message = "Can not call outputs if running conformance_test."
-            raise NotImplementedError(message)
         return self._outputs
 
 
@@ -59,9 +47,6 @@ def run_cwltool(ctx, path, job_path, **kwds):
     ensure_cwltool_available()
 
     args = []
-    conformance_test = kwds.get("conformance_test", False)
-    if conformance_test:
-        args.append("--conformance-test")
     if ctx.verbose:
         args.append("--verbose")
     output_directory = kwds.get("output_directory", None)
@@ -70,6 +55,9 @@ def run_cwltool(ctx, path, job_path, **kwds):
         args.append(output_directory)
     if kwds.get("no_container", False):
         args.append("--no-container")
+
+    if kwds.get("non_strict_cwl", False):
+        args.append("--non-strict")
 
     args.extend([path, job_path])
     ctx.vlog("Calling cwltool with arguments %s" % args)
@@ -81,7 +69,7 @@ def run_cwltool(ctx, path, job_path, **kwds):
             ret_code = main.main(
                 args,
                 stdout=tmp_stdout,
-                stderr=tmp_stderr
+                stderr=tmp_stderr,
             )
         tmp_stdout.flush()
         tmp_stderr.flush()
@@ -102,15 +90,9 @@ def run_cwltool(ctx, path, job_path, **kwds):
 
         if ret_code != 0:
             return ErrorRunResponse("Error running cwltool", log=log)
-        if conformance_test:
-            cwl_command_state = result
-            outputs = None
-        else:
-            cwl_command_state = None
-            outputs = result
+        outputs = result
     return CwlToolRunResponse(
         log,
-        cwl_command_state=cwl_command_state,
         outputs=outputs,
     )
 

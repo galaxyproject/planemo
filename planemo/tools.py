@@ -6,12 +6,27 @@ import sys
 import traceback
 
 from galaxy.tools import loader_directory
+from galaxy.tools.fetcher import ToolLocationFetcher
 
 from planemo.io import error, info
 
 is_tool_load_error = loader_directory.is_tool_load_error
 SKIP_XML_MESSAGE = "Skipping XML file - does not appear to be a tool %s."
 SHED_FILES = ["tool_dependencies.xml", "repository_dependencies.xml"]
+
+
+def uri_to_path(ctx, uri):
+    fetcher = ToolLocationFetcher()
+    return fetcher.to_tool_path(uri)
+
+
+def uris_to_paths(ctx, uris):
+    fetcher = ToolLocationFetcher()
+    paths = []
+    for uri in uris:
+        path = fetcher.to_tool_path(uri)
+        paths.append(path)
+    return paths
 
 
 def yield_tool_sources_on_paths(ctx, paths, recursive=False):
@@ -45,18 +60,6 @@ def load_tool_sources_from_path(path, recursive, register_load_errors=False):
     )
 
 
-# TODO: replace usage of this with tool source so planemo
-# defers XML details to galaxy-lib.
-def load_tool_elements_from_path(path, recursive, register_load_errors=False):
-    """Generator for tool XML elements on a path."""
-    return loader_directory.load_tool_elements_from_path(
-        path,
-        _load_exception_handler,
-        recursive=recursive,
-        register_load_errors=register_load_errors,
-    )
-
-
 def _load_exception_handler(path, exc_info):
     error("Error loading tool with path %s" % path)
     traceback.print_exception(*exc_info, limit=1, file=sys.stderr)
@@ -75,7 +78,6 @@ def _is_tool_source(ctx, tool_path, tool_source):
 
 
 __all__ = (
-    "load_tool_elements_from_path",
     "is_tool_load_error",
     "load_tool_sources_from_path",
     "yield_tool_sources",

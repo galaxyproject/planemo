@@ -5,15 +5,16 @@ from planemo import options
 from planemo.cli import command_function
 from planemo.galaxy import galaxy_serve
 from planemo.runnable import for_paths
+from planemo.tools import uris_to_paths
 
 
 @click.command('serve')
-@options.optional_tools_arg(multiple=True)
+@options.optional_tools_arg(multiple=True, allow_uris=True)
 @options.galaxy_serve_options()
 @options.enable_cwl_option()
 @options.galaxy_cwl_root_option()
 @command_function
-def cli(ctx, paths, **kwds):
+def cli(ctx, uris, **kwds):
     """Launch Galaxy instance with specified tools.
 
     The Galaxy tool panel will include just the referenced tool or tools (by
@@ -36,5 +37,6 @@ def cli(ctx, paths, **kwds):
     proof yet, so please be careful and do not try this against a production
     Galaxy instance.
     """
+    paths = uris_to_paths(ctx, uris)
     runnables = for_paths(paths)
     galaxy_serve(ctx, runnables, **kwds)

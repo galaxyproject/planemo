@@ -536,6 +536,7 @@ def _shared_galaxy_properties(config_directory, kwds, for_tests):
         'check_migrate_tools': "False",
         'use_cached_dependency_manager': str(kwds.get("conda_auto_install", False)),
         'brand': kwds.get("galaxy_brand", DEFAULT_GALAXY_BRAND),
+        'strict_cwl_validation': str(not kwds.get("non_strict_cwl", False)),
     }
     if for_tests:
         empty_dir = os.path.join(config_directory, "empty")
