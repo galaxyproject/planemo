@@ -44,6 +44,12 @@ History
 * Hack around a bug in Conda 4.2 that makes it so ``planemo mull`` doesn't work out of the box on
   Mac OS X.
   0a1abfe_
+* Allow URIs to be used instead of paths for a couple operations. ce0dc4e_
+* Implement non-strict CWL parsing option. 4c0f100_
+* Fixes for changes to cwltool_ and general CWL-relate functionality.
+  3c95b7b_, 06bcf19_, 525de8f_, 9867e56_, 9ab4a0d_
+* Eliminate deprecated XML-based abstraction from ``planemo.tools``. 04238d3_
+* Fix ``MANIFEST.in`` entry that was migrated to galaxy-lib. ced5ce2_
 * Various fixes for the command ``conda_env``. `Pull Request 640`_
 * Improved command help - both formatting and content. `Pull Request 639`_
 * Implement a ``--no_dependency_resolution`` option disabling conda dependency
@@ -1042,6 +1048,15 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _3c95b7b: https://github.com/galaxyproject/planemo/commit/3c95b7b
+.. _06bcf19: https://github.com/galaxyproject/planemo/commit/06bcf19
+.. _525de8f: https://github.com/galaxyproject/planemo/commit/525de8f
+.. _9867e56: https://github.com/galaxyproject/planemo/commit/9867e56
+.. _ce0dc4e: https://github.com/galaxyproject/planemo/commit/ce0dc4e
+.. _4c0f100: https://github.com/galaxyproject/planemo/commit/4c0f100
+.. _04238d3: https://github.com/galaxyproject/planemo/commit/04238d3
+.. _ced5ce2: https://github.com/galaxyproject/planemo/commit/ced5ce2
+.. _9ab4a0d: https://github.com/galaxyproject/planemo/commit/9ab4a0d
 .. _0a1abfe: https://github.com/galaxyproject/planemo/commit/0a1abfe
 .. _Pull Request 649: https://github.com/galaxyproject/planemo/pull/649
 .. _Issue 620: https://github.com/galaxyproject/planemo/issues/620
