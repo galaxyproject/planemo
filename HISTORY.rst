@@ -9,7 +9,52 @@ History
 0.39.0.dev0
 ---------------------
 
-    
+* Implement documentation and examples for Conda-based dependency development (under
+  "Advanced" topics).
+  `Pull Request 642`_, `Pull Request 643`_
+* Implement documentation and examples for container-based dependency development (under
+  "Advanced" topics).
+  0a1abfe_
+* Implement a ``planemo conda_search`` command for searching best practice channels
+  from the command line.
+  `Pull Request 642`_
+* Allow Planemo to work with locally built Conda packages using the ``--conda_use_local``
+  command.
+  `Pull Request 643`_, `Issue 620`_
+* Implement an ``open`` (or just ``o``) command to quickly open the last test results
+  (or any file if supplied). `Pull Request 641`_
+* Linting improvements and fixes due to `galaxy-lib`_ update.
+  * WARN on test output names not found or not matching.
+  * INFO correct information about stdio if profile version is found.
+  * WARN if profile version is incorrect.
+  * INFO profile version
+  * Fix ``assert_command`` not detected as a valid test (fixes  `Issue 260`_).
+* Have ``lint --conda_requirements`` check that at least one actual requirement is found.
+  6638caa_
+* Allow ``conda_install`` to work with packages as well as just tools.
+  8faf661_
+* Add ``--global`` option to conda_install to install requirements into global Conda setup
+  instead of using an environment.
+  8faf661_
+* Implement ``planemo lint --biocontainer`` that checks that a tool has an available BioContainer
+  registered.
+  0a1abfe_
+* Add more options and more documentation to the ``planemo mull`` command.
+  0a1abfe_
+* Hack around a bug in Conda 4.2 that makes it so ``planemo mull`` doesn't work out of the box on
+  Mac OS X.
+  0a1abfe_
+* Various fixes for the command ``conda_env``. `Pull Request 640`_
+* Improved command help - both formatting and content. `Pull Request 639`_
+* Implement a ``--no_dependency_resolution`` option disabling conda dependency
+  resolver.
+  `Pull Request 635`_, `Issue 633`_
+* Tests for new linting logic. `Pull Request 638`_
+* Fix bug where tool IDs needs to be lowercase for the shed (thanks to
+  `@bgruening`_).
+  `Pull Request 649`_
+* Update seqtk version targetted by intro docs. e343b67_
+* Various other Conda usability improvements. `Pull Request 634`_
 
 ---------------------
 0.38.1 (2017-02-06)
@@ -997,6 +1042,21 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _0a1abfe: https://github.com/galaxyproject/planemo/commit/0a1abfe
+.. _Pull Request 649: https://github.com/galaxyproject/planemo/pull/649
+.. _Issue 620: https://github.com/galaxyproject/planemo/issues/620
+.. _Pull Request 643: https://github.com/galaxyproject/planemo/pull/643
+.. _Pull Request 642: https://github.com/galaxyproject/planemo/pull/642
+.. _Pull Request 641: https://github.com/galaxyproject/planemo/pull/641
+.. _Pull Request 639: https://github.com/galaxyproject/planemo/pull/639
+.. _Pull Request 635: https://github.com/galaxyproject/planemo/pull/635
+.. _Issue 633: https://github.com/galaxyproject/planemo/issues/633
+.. _Issue 260: https://github.com/galaxyproject/planemo/issues/260
+.. _Pull Request 638: https://github.com/galaxyproject/planemo/pull/638
+.. _6638caa: https://github.com/galaxyproject/planemo/commit/6638caa
+.. _8faf661: https://github.com/galaxyproject/planemo/commit/8faf661
+.. _e343b67: https://github.com/galaxyproject/planemo/commit/e343b67
+.. _Pull Request 634: https://github.com/galaxyproject/planemo/pull/634
 .. _84ebc1f: https://github.com/galaxyproject/planemo/commit/84ebc1f
 .. _03c9658: https://github.com/galaxyproject/planemo/commit/03c9658
 .. _08c067c: https://github.com/galaxyproject/planemo/commit/08c067c
