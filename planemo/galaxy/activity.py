@@ -216,13 +216,6 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         return None
 
     @property
-    def cwl_command_state(self):
-        cwl_command_state = None
-        if self._job_info is not None:
-            cwl_command_state = self._job_info["cwl_command_state"]
-        return cwl_command_state
-
-    @property
     def outputs_dict(self):
         return self._outputs_dict
 

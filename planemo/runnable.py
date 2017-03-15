@@ -386,10 +386,6 @@ class SuccessfulRunResponse(RunResponse):
         return True
 
     @abc.abstractproperty
-    def cwl_command_state(self):
-        """JSON result of command state for an execution."""
-
-    @abc.abstractproperty
     def outputs_dict(self):
         """Return a dict of output descriptions."""
 

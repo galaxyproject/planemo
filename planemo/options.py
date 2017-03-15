@@ -234,17 +234,6 @@ def run_output_json_option():
     )
 
 
-def cwl_conformance_test():
-    return planemo_option(
-        "--conformance_test",
-        "--conformance-test",
-        is_flag=True,
-        help=("Generate CWL conformance test object describing job. "
-              "Required by CWL conformance test suite and implemented "
-              "by cwltool reference implementation."),
-    )
-
-
 def no_dependency_resolution():
     return planemo_option(
         "--no_dependency_resolution",
