@@ -63,7 +63,7 @@ def test_find_category_ids():
 def test_create_simple():
     with mock_shed_context() as shed_context:
         path = os.path.join(TEST_REPOS_DIR, "single_tool")
-        repo_config = shed.shed_repo_config(path)
+        repo_config = shed.shed_repo_config(shed_context, path)
         create_response = shed.create_repository_for(
             None,
             shed_context.tsi,

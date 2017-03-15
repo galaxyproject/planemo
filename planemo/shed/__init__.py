@@ -33,7 +33,7 @@ from planemo.io import (
     temp_directory,
 )
 from planemo.shed2tap.base import BasePackage
-from planemo.tools import load_tool_elements_from_path
+from planemo.tools import yield_tool_sources
 
 from .diff import diff_and_remove
 from .interface import (
@@ -418,7 +418,7 @@ def _diff_in(ctx, working, realized_repository, **kwds):
     return exit
 
 
-def shed_repo_config(path, name=None):
+def shed_repo_config(ctx, path, name=None):
     shed_yaml_path = os.path.join(path, SHED_CONFIG_NAME)
     config = {}
     if os.path.exists(shed_yaml_path):
@@ -427,7 +427,7 @@ def shed_repo_config(path, name=None):
 
     if config is None:  # yaml may yield None
         config = {}
-    _expand_raw_config(config, path, name=name)
+    _expand_raw_config(ctx, config, path, name=name)
     return config
 
 
@@ -504,7 +504,7 @@ def find_repository_id(ctx, shed_context, path, **kwds):
     repo_config = kwds.get("config", None)
     if repo_config is None:
         name = kwds.get("name", None)
-        repo_config = shed_repo_config(path, name=name)
+        repo_config = shed_repo_config(ctx, path, name=name)
     name = repo_config["name"]
     find_kwds = kwds.copy()
     if "name" in find_kwds:
@@ -537,7 +537,7 @@ def _owner(ctx, repo_config, shed_context=None, **kwds):
     return owner
 
 
-def _expand_raw_config(config, path, name=None):
+def _expand_raw_config(ctx, config, path, name=None):
     name_input = name
     if "name" not in config:
         config["name"] = name
@@ -554,7 +554,7 @@ def _expand_raw_config(config, path, name=None):
     if auto_tool_repos and name_input:
         raise Exception(AUTO_NAME_CONFLICT_MESSAGE)
     if auto_tool_repos:
-        repos = _build_auto_tool_repos(path, config, auto_tool_repos)
+        repos = _build_auto_tool_repos(ctx, path, config, auto_tool_repos)
     if suite_config:
         if repos is None:
             repos = odict.odict()
@@ -571,15 +571,15 @@ def _expand_raw_config(config, path, name=None):
     config["repositories"] = repos
 
 
-def _build_auto_tool_repos(path, config, auto_tool_repos):
+def _build_auto_tool_repos(ctx, path, config, auto_tool_repos):
     default_include = config.get("include", ["**"])
-    tool_els = list(load_tool_elements_from_path(path, recursive=True))
-    paths = list(map(lambda pair: pair[0], tool_els))
+    tool_source_pairs = list(yield_tool_sources(ctx, path, recursive=True))
+    paths = list(map(lambda pair: pair[0], tool_source_pairs))
     excludes = _shed_config_excludes(config)
 
-    def _build_repository(tool_path, tool_el):
-        tool_id = tool_el.getroot().get("id").lower()
-        tool_name = tool_el.getroot().get("name")
+    def _build_repository(tool_path, tool_source):
+        tool_id = tool_source.parse_id().lower()
+        tool_name = tool_source.parse_name()
         template_vars = dict(
             tool_id=tool_id,
             tool_name=tool_name,
@@ -600,8 +600,8 @@ def _build_auto_tool_repos(path, config, auto_tool_repos):
         return repo_dict
 
     repos = odict.odict()
-    for tool_path, tool_el in tool_els:
-        repository_config = _build_repository(tool_path, tool_el)
+    for tool_path, tool_source in tool_source_pairs:
+        repository_config = _build_repository(tool_path, tool_source)
         repository_name = repository_config["name"]
         repos[repository_name] = repository_config
     return repos
@@ -744,7 +744,7 @@ def find_raw_repositories(ctx, paths, **kwds):
     """Return a list of "raw" repository objects for each repo on paths."""
     raw_repo_objects = []
     for path in paths:
-        raw_repo_objects.extend(_find_raw_repositories(path, **kwds))
+        raw_repo_objects.extend(_find_raw_repositories(ctx, path, **kwds))
     return raw_repo_objects
 
 
@@ -804,7 +804,7 @@ def _realize_effective_repositories(ctx, path, **kwds):
     code repository but are published to the tool shed as one repository per
     tool).
     """
-    raw_repo_objects = _find_raw_repositories(path, **kwds)
+    raw_repo_objects = _find_raw_repositories(ctx, path, **kwds)
     failed = False
     with temp_directory() as base_dir:
         for raw_repo_object in raw_repo_objects:
@@ -904,7 +904,7 @@ def _path_on_disk(ctx, path):
             yield git_repo
 
 
-def _find_raw_repositories(path, **kwds):
+def _find_raw_repositories(ctx, path, **kwds):
     name = kwds.get("name", None)
     recursive = kwds.get("recursive", False)
 
@@ -916,7 +916,7 @@ def _find_raw_repositories(path, **kwds):
     if len(shed_file_dirs) == 1:
         shed_file_dir = shed_file_dirs[0]
         try:
-            config = shed_repo_config(shed_file_dir, name=name)
+            config = shed_repo_config(ctx, shed_file_dir, name=name)
         except Exception as e:
             error_message = PARSING_PROBLEM % (shed_file_dir, e)
             exception = RuntimeError(error_message)
@@ -932,10 +932,10 @@ def _find_raw_repositories(path, **kwds):
     raw_dirs = shed_file_dirs or [path]
     kwds_copy = kwds.copy()
     kwds_copy["name"] = name
-    return _build_raw_repo_objects(raw_dirs, **kwds_copy)
+    return _build_raw_repo_objects(ctx, raw_dirs, **kwds_copy)
 
 
-def _build_raw_repo_objects(raw_dirs, **kwds):
+def _build_raw_repo_objects(ctx, raw_dirs, **kwds):
     """
     From specific directories with .shed.yml files or specified directly from
     the command-line build abstract description of directories that should be
@@ -949,7 +949,7 @@ def _build_raw_repo_objects(raw_dirs, **kwds):
     raw_repo_objects = []
     for raw_dir in raw_dirs:
         try:
-            config = shed_repo_config(raw_dir, name=name)
+            config = shed_repo_config(ctx, raw_dir, name=name)
         except Exception as e:
             error_message = PARSING_PROBLEM % (raw_dir, e)
             exception = RuntimeError(error_message)
