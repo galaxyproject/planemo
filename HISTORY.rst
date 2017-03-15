@@ -1057,6 +1057,7 @@ History
 .. _04238d3: https://github.com/galaxyproject/planemo/commit/04238d3
 .. _ced5ce2: https://github.com/galaxyproject/planemo/commit/ced5ce2
 .. _9ab4a0d: https://github.com/galaxyproject/planemo/commit/9ab4a0d
+.. _Pull Request 640: https://github.com/galaxyproject/planemo/pull/640
 .. _0a1abfe: https://github.com/galaxyproject/planemo/commit/0a1abfe
 .. _Pull Request 649: https://github.com/galaxyproject/planemo/pull/649
 .. _Issue 620: https://github.com/galaxyproject/planemo/issues/620
