@@ -1,6 +1,9 @@
 import socket
 from time import time as now
 
+from six.moves.urllib.error import URLError
+from six.moves.urllib.request import urlopen
+
 
 def get_free_port():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -8,6 +11,24 @@ def get_free_port():
     port = sock.getsockname()[1]
     sock.close()
     return port
+
+
+def wait_http_service(url, timeout=None):
+    if timeout:
+        end = now() + timeout
+
+    while True:
+        try:
+            if timeout:
+                next_timeout = end - now()
+                if next_timeout < 0:
+                    return False
+
+            kwds = {} if timeout is None else dict(timeout=next_timeout)
+            urlopen(url, **kwds)
+            return True
+        except URLError:
+            pass
 
 
 # code.activestate.com/recipes/576655-wait-for-network-service-to-appear

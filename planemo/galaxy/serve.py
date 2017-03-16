@@ -49,14 +49,16 @@ def _serve(ctx, runnables, **kwds):
         if port is None:
             port = network_util.get_free_port()
 
+        timeout = 500
+        galaxy_url = "http://%s:%s" % (host, port)
         ctx.vlog("Waiting for service on (%s, %s)" % (host, port))
-        assert network_util.wait_net_service(host, port)
+        assert network_util.wait_http_service(galaxy_url, timeout=timeout)
         time.sleep(.1)
         ctx.vlog("Waiting for service on (%s, %s)" % (host, port))
-        assert network_util.wait_net_service(host, port)
+        assert network_util.wait_http_service(galaxy_url)
         time.sleep(5)
         ctx.vlog("Waiting for service on (%s, %s)" % (host, port))
-        assert network_util.wait_net_service(host, port)
+        assert network_util.wait_http_service(galaxy_url)
         config.install_workflows()
         return config
 
