@@ -569,17 +569,7 @@ def _config_directory(ctx, **kwds):
     created_config_directory = False
     if not config_directory:
         created_config_directory = True
-        config_directory = mkdtemp()
-        # the following makes sure the transient config_dir path is short
-        # enough for conda linking (https://github.com/conda/conda-build/pull/877)
-        if len(config_directory) > 20:
-            try:
-                short_config_directory = mkdtemp(dir="/tmp")
-                os.rmdir(config_directory)
-                config_directory = short_config_directory
-            except OSError:
-                # path doesn't exist or permission denied, keep the long config_dir
-                pass
+        config_directory = os.path.realpath(mkdtemp())
     try:
         yield config_directory
     finally:
