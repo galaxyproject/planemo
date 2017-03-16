@@ -9,7 +9,12 @@ History
 0.40.0.dev0
 ---------------------
 
-    
+* Implement instructions and project template for GA4GH Tool Execution
+  Challenge Phase 1. 84c4a73_
+* Eliminate Conda hack forcing ``/tmp`` as temp directory. b4ae44d_
+* Run dependency script tests in isolated directories. 32f41c9_
+* Fix OS X bug in ``planemo run`` by reworking it to wait using urllib instead of sockets.
+  3129216_
 
 ---------------------
 0.39.0 (2017-03-15)
@@ -1054,6 +1059,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _84c4a73: https://github.com/galaxyproject/planemo/commit/84c4a73
+.. _32f41c9: https://github.com/galaxyproject/planemo/commit/32f41c9
+.. _3129216: https://github.com/galaxyproject/planemo/commit/3129216
+.. _b4ae44d: https://github.com/galaxyproject/planemo/commit/b4ae44d
 .. _3c95b7b: https://github.com/galaxyproject/planemo/commit/3c95b7b
 .. _06bcf19: https://github.com/galaxyproject/planemo/commit/06bcf19
 .. _525de8f: https://github.com/galaxyproject/planemo/commit/525de8f
