@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.40.0.dev0
+0.40.0 (2017-03-16)
 ---------------------
 
 * Implement instructions and project template for GA4GH Tool Execution
