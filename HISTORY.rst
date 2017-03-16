@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.39.0.dev0
+0.39.0 (2017-03-15)
 ---------------------
 
 * Implement documentation and examples for Conda-based dependency development (under
