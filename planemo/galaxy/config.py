@@ -177,6 +177,18 @@ handlers = console
 qualname = galaxy.tools.deps
 propagate = 0
 
+[logger_galaxyrunners]
+level = DEBUG
+handlers = console
+qualname = galaxy.jobs.runners
+propagate = 0
+
+[logger_galaxyoutputchecker]
+level = DEBUG
+handlers = console
+qualname = galaxy.jobs.output_checker
+propagate = 0
+
 [logger_galaxymasterapikey]
 level = WARN
 handlers = console
