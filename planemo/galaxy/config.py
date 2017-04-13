@@ -16,7 +16,10 @@ import click
 from galaxy.tools.deps import docker_util
 from galaxy.tools.deps.commands import argv_to_str
 
-from six import iteritems
+from six import (
+    add_metaclass,
+    iteritems
+)
 from six.moves.urllib.request import urlopen
 from six.moves.urllib.request import urlretrieve
 
@@ -79,6 +82,10 @@ SHED_TOOL_CONF_TEMPLATE = """<?xml version="1.0"?>
 </toolbox>
 """
 
+SHED_DATA_MANAGER_CONF_TEMPLATE = """<?xml version="1.0"?>
+<data_managers>
+</data_managers>
+"""
 
 EMPTY_JOB_METRICS_TEMPLATE = """<?xml version="1.0"?>
 <job_metrics>
@@ -281,7 +288,6 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
         tool_conf = config_join("tool_conf.xml")
 
-        tool_conf = config_join("tool_conf.xml")
         shed_tool_path = kwds.get("shed_tool_path") or config_join("shed_tools")
         _ensure_directory(shed_tool_path)
 
@@ -393,7 +399,8 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
         tool_conf = config_join("tool_conf.xml")
 
-        tool_conf = config_join("tool_conf.xml")
+        shed_data_manager_config_file = config_join("shed_data_manager_conf.xml")
+
         shed_tool_path = kwds.get("shed_tool_path") or config_join("shed_tools")
         _ensure_directory(shed_tool_path)
 
@@ -461,6 +468,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             amqp_internal_connection="sqlalchemy+sqlite://",
             migrated_tools_config=empty_tool_conf,
             test_data_dir=test_data_dir,  # TODO: make gx respect this
+            shed_data_manager_config_file=shed_data_manager_config_file,
         ))
         _handle_container_resolution(ctx, kwds, properties)
         write_file(config_join("logging.ini"), _sub(LOGGING_TEMPLATE, template_args))
@@ -501,6 +509,8 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         shed_tool_conf_contents = _sub(SHED_TOOL_CONF_TEMPLATE, template_args)
         # Write a new shed_tool_conf.xml if needed.
         write_file(shed_tool_conf, shed_tool_conf_contents, force=False)
+
+        write_file(shed_data_manager_config_file, SHED_DATA_MANAGER_CONF_TEMPLATE)
 
         pid_file = kwds.get("pid_file") or config_join("galaxy.pid")
 
@@ -578,14 +588,13 @@ def _config_directory(ctx, **kwds):
             shutil.rmtree(config_directory)
 
 
+@add_metaclass(abc.ABCMeta)
 class GalaxyConfig(object):
     """Abstraction around a Galaxy instance.
 
     This requires more than just an API connection and assumes access to files
     etc....
     """
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractproperty
     def kill(self):
@@ -1167,7 +1176,7 @@ def _build_env_for_galaxy(properties, template_args):
 
 
 def _build_test_env(properties, env):
-    # Keeping these environment variables around for a little while but they
+    # Keeping these environment variables around for a little while but
     # many are probably not needed as of the following commit.
     # https://bitbucket.org/galaxy/galaxy-central/commits/d7dd1f9
     test_property_variants = {
