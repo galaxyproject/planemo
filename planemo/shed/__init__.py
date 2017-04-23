@@ -580,9 +580,11 @@ def _build_auto_tool_repos(ctx, path, config, auto_tool_repos):
     def _build_repository(tool_path, tool_source):
         tool_id = tool_source.parse_id().lower()
         tool_name = tool_source.parse_name()
+        description = tool_source.parse_description()
         template_vars = dict(
             tool_id=tool_id,
             tool_name=tool_name,
+            description=description,
         )
         other_paths = paths[:]
         other_paths.remove(tool_path)
