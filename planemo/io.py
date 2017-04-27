@@ -311,7 +311,17 @@ def filter_paths(paths, cwd=None, **kwds):
         return os.path.normpath(path)
 
     def exclude_func(exclude_path):
-        return lambda p: norm(p).startswith(norm(exclude_path))
+        def path_startswith(p):
+            """Check that p starts with exclude_path and that the first
+            character of p not included in exclude_path (if any) is the
+            directory separator.
+            """
+            norm_p = norm(p)
+            norm_exclude_path = norm(exclude_path)
+            if norm_p.startswith(norm_exclude_path):
+                return norm_p[len(norm_exclude_path):len(norm_exclude_path)+1] in ['', os.sep]
+            return False
+        return path_startswith
 
     filters_as_funcs = []
     filters_as_funcs.extend(map(exclude_func, kwds.get("exclude", [])))
@@ -324,7 +334,7 @@ def filter_paths(paths, cwd=None, **kwds):
                     continue
                 filters_as_funcs.append(exclude_func(line))
 
-    return [p for p in paths if not any(map(lambda f: f(p), filters_as_funcs))]
+    return [p for p in paths if not any(f(p) for f in filters_as_funcs)]
 
 
 def coalesce_return_codes(ret_codes, assert_at_least_one=False):
