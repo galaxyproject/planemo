@@ -153,7 +153,7 @@ JOB_CONFIG_LOCAL = """<job_conf>
 LOGGING_TEMPLATE = """
 ## Configure Python loggers.
 [loggers]
-keys = root,paste,displayapperrors,galaxydeps,galaxymasterapikey,galaxy
+keys = root,paste,displayapperrors,galaxydeps,galaxyrunners,galaxyoutputchecker,galaxymasterapikey,galaxy
 
 [handlers]
 keys = console
