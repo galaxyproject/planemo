@@ -6,10 +6,15 @@ History
 .. to_doc
 
 ---------------------
-0.41.0.dev0
+0.40.1.dev0
 ---------------------
 
-    
+* Fix data manager configuration to not conflict with original Galaxy at
+  ``galaxy_root`` (thanks to `@nsoranzo`_). `Pull Request 662`_
+* Fix ``filter_paths()`` to not partial match paths when filtering shed repositories
+  (thanks to `@nsoranzo`_). `Pull Request 665`_
+* Fix description when creating ``.shed.yml`` files (thanks to `@RJMW`_).
+  .`Pull Request 664`_
 
 ---------------------
 0.40.0 (2017-03-16)
@@ -1065,6 +1070,9 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 662: https://github.com/galaxyproject/planemo/pull/662
+.. _Pull Request 665: https://github.com/galaxyproject/planemo/pull/665
+.. _Pull Request 664: https://github.com/galaxyproject/planemo/pull/664
 .. _84c4a73: https://github.com/galaxyproject/planemo/commit/84c4a73
 .. _32f41c9: https://github.com/galaxyproject/planemo/commit/32f41c9
 .. _3129216: https://github.com/galaxyproject/planemo/commit/3129216
@@ -1545,4 +1553,5 @@ History
 .. _@gregvonkuster: https://github.com/gregvonkuster
 .. _@remimarenco: https://github.com/remimarenco
 .. _@thriqon: https://github.com/thriqon
+.. _@RJMW: https://github.com/RJMW
 
