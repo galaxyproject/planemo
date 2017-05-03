@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.40.1.dev0
+0.40.1 (2017-05-03)
 ---------------------
 
 * Fix data manager configuration to not conflict with original Galaxy at
