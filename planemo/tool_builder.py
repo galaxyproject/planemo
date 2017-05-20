@@ -40,14 +40,11 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
         {{ container }}
 {%- endfor %}
     </requirements>
-    <stdio>
-        <exit_code range="1:" />
-    </stdio>
 {%- if version_command %}
     <version_command>{{ version_command }}</version_command>
 {%- endif %}
 {%- endif %}
-    <command><![CDATA[
+    <command detect_errors="exit_code"><![CDATA[
 {%- if command %}
         {{ command }}
 {%- else %}
