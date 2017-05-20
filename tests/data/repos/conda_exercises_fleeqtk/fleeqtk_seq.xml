@@ -1,23 +1,20 @@
 <tool id="fleeqtk_seq" name="Convert to FASTA (fleeqtk)" version="0.1.0">
-    <stdio>
-        <exit_code range="1:" />
-    </stdio>
     <requirements>
         <requirement type="package" version="1.3">fleeqtk</requirement>
     </requirements>
-    <command><![CDATA[
+    <command detect_errors="exit_code"><![CDATA[
         fleeqtk seq
               #if $settings.advanced == "advanced"
-              $settings.shift_quality
-              -q $settings.quality_min
-              -X $settings.quality_max
-              #if $settings.mask_regions
-              -M '$settings.mask_regions'
-              #end if
-              #if $settings.sample.sample
-              -f $settings.sample.fraction
-              -s $settings.sample.seed
-              #end if
+                  $settings.shift_quality
+                  -q $settings.quality_min
+                  -X $settings.quality_max
+                  #if $settings.mask_regions
+                      -M '$settings.mask_regions'
+                  #end if
+                  #if $settings.sample.sample
+                      -f $settings.sample.fraction
+                      -s $settings.sample.seed
+                  #end if
               #end if
               -a '$input1' > '$output1'
     ]]></command>
