@@ -3,7 +3,7 @@
         <requirement type="package" version="0.7.12">bwa</requirement>
     </requirements>
     <command detect_errors="exit_code"><![CDATA[
-        bwa > $output_1 2>&1
+        bwa > '$output_1' 2>&1
     ]]></command>
     <inputs>
         <param name="ignored" type="text" value="the default" />

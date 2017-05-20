@@ -5,7 +5,7 @@
     <expand macro="requirements" />
     <expand macro="stdio" />
     <command><![CDATA[
-        seqtk seq -a "$input1" > "$output1"
+        seqtk seq -a '$input1' > '$output1'
     ]]></command>
     <inputs>
         <param type="data" name="input1" format="fastq" />
