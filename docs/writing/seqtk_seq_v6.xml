@@ -2,10 +2,7 @@
     <requirements>
         <requirement type="package" version="1.2">seqtk</requirement>
     </requirements>
-    <stdio>
-        <exit_code range="1:" />
-    </stdio>
-    <command><![CDATA[
+    <command detect_errors="exit_code"><![CDATA[
         seqtk seq
               #if $settings.advanced == "advanced"
               $settings.shift_quality
