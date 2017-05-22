@@ -16,6 +16,26 @@ def git_env_for(path):
     return env
 
 
+def add(ctx, repo_path, file_path):
+    env = git_env_for(repo_path)
+    io.communicate("cd '%s' && git add '%s'" % (repo_path, os.path.abspath(file_path)), env=env)
+
+
+def commit(ctx, repo_path, message=""):
+    env = git_env_for(repo_path)
+    io.communicate(["git", "commit", "-m", message], env=env)
+
+
+def push(ctx, repo_path, to, branch):
+    env = git_env_for(repo_path)
+    io.communicate(["git", "push", to, branch], env=env)
+
+
+def branch(ctx, repo_path, branch):
+    env = git_env_for(repo_path)
+    io.communicate(["git", "checkout", "-b", branch], env=env)
+
+
 def checkout(ctx, remote_repo, local_path, branch=None, remote="origin", from_branch="master"):
     """Checkout a new branch from a remote repository."""
     env = git_env_for(local_path)

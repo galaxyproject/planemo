@@ -2,12 +2,10 @@
 import click
 
 from galaxy.tools.deps.mulled.mulled_build import mull_targets
-from galaxy.tools.deps.mulled.util import build_target
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.conda import collect_conda_target_lists
-from planemo.mulled import build_mull_target_kwds
+from planemo.mulled import build_mull_target_kwds, collect_mulled_target_lists
 
 
 @click.command('mull')
@@ -29,7 +27,7 @@ def cli(ctx, paths, **kwds):
     This can be verified by running ``planemo lint --conda_requirements`` on the
     target tool(s).
     """
-    for conda_targets in collect_conda_target_lists(ctx, paths):
+    for conda_targets in collect_mulled_target_lists(ctx, paths):
         mulled_targets = map(lambda c: build_target(c.package, c.version), conda_targets)
         mull_target_kwds = build_mull_target_kwds(ctx, **kwds)
         command = kwds["mulled_command"]

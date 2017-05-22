@@ -43,7 +43,10 @@ def clone_fork_branch(ctx, target, path, **kwds):
         from_branch="master"
     )
     if kwds.get("fork"):
-        fork(ctx, path, **kwds)
+        try:
+            fork(ctx, path, **kwds)
+        except Exception:
+            pass
 
 
 def fork(ctx, path, **kwds):
@@ -143,6 +146,11 @@ def publish_as_gist_file(ctx, path, name="index"):
     content_file = github.InputFileContent(content)
     gist = user.create_gist(False, {name: content_file})
     return gist.files[name].raw_url
+
+
+def get_repository_object(ctx, name):
+    github_object = get_github_config(ctx) or github.Github()
+    return github_object.get_repo(name)
 
 
 __all__ = (

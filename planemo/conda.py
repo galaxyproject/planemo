@@ -6,6 +6,7 @@ The extend Galaxy/galaxy-lib's features with planemo specific idioms.
 from __future__ import absolute_import
 
 import os
+import threading
 
 from galaxy.tools.deps import conda_util
 
@@ -16,6 +17,8 @@ from planemo.tools import yield_tool_sources_on_paths
 MESSAGE_ERROR_FAILED_INSTALL = "Attempted to install conda and failed."
 MESSAGE_ERROR_CANNOT_INSTALL = "Cannot install Conda - perhaps due to a failed installation or permission problems."
 MESSAGE_ERROR_NOT_INSTALLING = "Conda not configured - run ``planemo conda_init`` or pass ``--conda_auto_init`` to continue."
+
+BEST_PRACTICE_CHANNELS = ["conda-forge", "anaconda", "r", "bioconda"]
 
 
 def build_conda_context(ctx, **kwds):
@@ -115,7 +118,24 @@ def tool_source_conda_targets(tool_source):
     return conda_util.requirements_to_conda_targets(requirements)
 
 
+best_practice_search_first = threading.local()
+
+
+def best_practice_search(conda_target):
+    # Call it in offline mode after the first time.
+    try:
+        best_practice_search_first.previously_called
+        offline = True
+    except AttributeError:
+        best_practice_search_first.previously_called = True
+        offline = False
+
+    return conda_util.best_search_result(conda_target, channels_override=BEST_PRACTICE_CHANNELS, offline=offline)
+
+
 __all__ = (
+    "BEST_PRACTICE_CHANNELS",
+    "best_practice_search",
     "build_conda_context",
     "collect_conda_targets",
     "collect_conda_target_lists",
