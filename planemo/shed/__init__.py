@@ -15,6 +15,7 @@ from tempfile import (
     mkstemp,
 )
 
+import bioblend
 import six
 import yaml
 
@@ -31,6 +32,7 @@ from planemo.io import (
     info,
     shell,
     temp_directory,
+    warn,
 )
 from planemo.shed2tap.base import BasePackage
 from planemo.tools import yield_tool_sources
@@ -312,6 +314,10 @@ def upload_repository(ctx, realized_repository, **kwds):
             str(repo_id), tar_path, **update_kwds
         )
     except Exception as e:
+        if isinstance(e, bioblend.ConnectionError) and e.status_code == 400 and \
+                e.body == '{"content_alert": "", "err_msg": "No changes to repository."}':
+            warn("Repository %s was not updated because there were no changes" % realized_repository.name)
+            return 0
         message = api_exception_to_message(e)
         error("Could not update %s" % realized_repository.name)
         error(message)
@@ -644,7 +650,6 @@ def _build_suite_repo(config, repos, suite_config):
 
 
 def update_repository_for(ctx, tsi, id, repo_config):
-    from bioblend.galaxy.client import Client
     name = repo_config["name"]
     description = repo_config.get("description", None)
     long_description = repo_config.get("long_description", None)
@@ -669,7 +674,7 @@ def update_repository_for(ctx, tsi, id, repo_config):
         kwds["homepage_url"] = homepage_url
     if category_ids is not None:
         kwds['category_ids[]'] = category_ids
-    return Client._put(tsi.repositories, id=id, payload=kwds)
+    return bioblend.galaxy.client.Client._put(tsi.repositories, id=id, payload=kwds)
 
 
 def create_repository_for(ctx, tsi, name, repo_config):
