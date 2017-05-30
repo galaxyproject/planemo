@@ -101,7 +101,7 @@ def _try_download_hub(planemo_hub_path):
     link = _hub_link()
     # Strip URL base and .tgz at the end.
     basename = link.split("/")[-1].rsplit(".", 1)[0]
-    untar_to(link, tar_args="-zxvf - %s/bin/hub -O > '%s'" % (basename, planemo_hub_path))
+    untar_to(link, tar_args="-Ozxvf - %s/bin/hub > '%s'" % (basename, planemo_hub_path))
     communicate(["chmod", "+x", planemo_hub_path])
 
 
