@@ -26,10 +26,10 @@ NO_GITHUB_DEP_ERROR = ("Cannot use github functionality - "
 FAILED_TO_DOWNLOAD_HUB = "No hub executable available and it could not be installed."
 
 
-def get_github_config(ctx):
+def get_github_config(ctx, allow_anonymous=False):
     """Return a :class:`planemo.github_util.GithubConfig` for given configuration."""
     global_github_config = _get_raw_github_config(ctx)
-    return None if global_github_config is None else GithubConfig(global_github_config)
+    return GithubConfig(global_github_config, allow_anonymous=allow_anonymous)
 
 
 def clone_fork_branch(ctx, target, path, **kwds):
@@ -111,7 +111,11 @@ def _try_download_hub(planemo_hub_path):
 def _get_raw_github_config(ctx):
     """Return a :class:`planemo.github_util.GithubConfig` for given configuration."""
     if "github" not in ctx.global_config:
-        return None
+        if "GITHUB_USER" in os.environ and "GITHUB_PASSWORD" in os.environ:
+            return {
+                "username": os.environ["GITHUB_USER"],
+                "password": os.environ["GITHUB_PASSWORD"],
+            }
     return ctx.global_config["github"]
 
 
@@ -121,10 +125,16 @@ class GithubConfig(object):
     Required to use ``github`` module methods that require authorization.
     """
 
-    def __init__(self, config):
+    def __init__(self, config, allow_anonymous=False):
         if not has_github_lib:
             raise Exception(NO_GITHUB_DEP_ERROR)
-        self._github = github.Github(config["username"], config["password"])
+        if "username" not in config or "password" not in config:
+            if not allow_anonymous:
+                raise Exception("github authentication unavailable")
+            github_object = github.Github()
+        else:
+            github_object = github.Github(config["username"], config["password"])
+        self._github = github_object
 
 
 def _hub_link():
@@ -140,7 +150,7 @@ def publish_as_gist_file(ctx, path, name="index"):
 
     More information on gists at http://gist.github.com/.
     """
-    github_config = get_github_config(ctx)
+    github_config = get_github_config(ctx, allow_anonymous=False)
     user = github_config._github.get_user()
     content = open(path, "r").read()
     content_file = github.InputFileContent(content)
@@ -149,8 +159,8 @@ def publish_as_gist_file(ctx, path, name="index"):
 
 
 def get_repository_object(ctx, name):
-    github_object = get_github_config(ctx) or github.Github()
-    return github_object.get_repo(name)
+    github_object = get_github_config(ctx, allow_anonymous=True)
+    return github_object._github.get_repo(name)
 
 
 __all__ = (
