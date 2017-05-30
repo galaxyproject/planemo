@@ -75,6 +75,17 @@ As configured by Planemo, when Galaxy encounters these ``requirement`` tags it
 will attempt to install Conda, check for referenced packages (such as
 ``seqtk``), and install them as needed for tool testing.
 
+.. figure:: images/dependency_resolution.png
+   :alt: Diagram describing mapping tool requirements to dependencies.
+
+   Galaxy's dependency resolution maps tool requirement tags to concrete
+   applications and libraries setup by the Galaxy deployer (or Planemo). As
+   the above diagram indicates the same requirements may be used by multiple
+   Galaxy tools and a single Galaxy tool may depend on multiple requirements.
+   The document describes working with Conda dependencies from a developer
+   perspective but other dependency resolution techniques are covered in
+   the `Galaxy docs <https://docs.galaxyproject.org/en/latest/admin/dependency_resolvers.html>`__.
+
 We can check if the requirements on a tool are available in best practice
 Conda channels using an extended form of the ``planemo lint`` command. Passing
 ``--conda_requirements`` flag will ensure all listed requirements are found.
@@ -88,8 +99,8 @@ Conda channels using an extended form of the ``planemo lint`` command. Passing
     .. INFO: Requirement [seqtk@1.2] matches target in best practice Conda channel [bioconda].
 
 
-.. note:: You can download the final version of the seqtk from the Planemo tutorial using
-    the command::
+.. note:: You can download the final version of the seqtk seq wrapper from the Planemo
+    tutorial using the command::
 
         $ planemo project_init --template=seqtk_complete seqtk_example
         $ cd seqtk_example
@@ -136,7 +147,7 @@ for their declared requirements.
     seqtk not found
     $
 
-The above install worked properly, but seqtk is not on your ``PATH`` because this merely
+The above install worked properly, but ``seqtk`` is not on your ``PATH`` because this merely
 created an environment within the Conda directory for the seqtk installation. Planemo
 will configure Galaxy to exploit this installation. If you wish to interactively explore
 the resulting enviornment to explore the installed tool or produce test data the output
