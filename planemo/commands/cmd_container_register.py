@@ -68,8 +68,10 @@ def cli(ctx, paths, **kwds):
 
     combinations_added = 0
     for conda_targets in collect_conda_target_lists(ctx, paths):
+        ctx.vlog("Handling conda_targets [%s]" % conda_targets)
         mulled_targets = conda_to_mulled_targets(conda_targets)
         if len(mulled_targets) < 2:
+            ctx.vlog("Skipping registeration, fewer than 2 targets discovered.")
             # Skip these for now, we will want to revisit this for conda-forge dependencies and such.
             continue
 
@@ -77,6 +79,7 @@ def cli(ctx, paths, **kwds):
         for conda_target in conda_targets:
             best_hit, exact = best_practice_search(conda_target)
             if not best_hit or not exact:
+                ctx.vlog("Target [%s] is not available in best practice channels - skipping" % conda_target)
                 best_practice_requirements = False
 
         if not best_practice_requirements:
@@ -86,17 +89,21 @@ def cli(ctx, paths, **kwds):
         tag = "0"
         name_and_tag = "%s:%s" % (name, tag)
         target_filename = os.path.join(output_directory, "%s.tsv" % name_and_tag)
+        ctx.vlog("Target filename for registeration is [%s]" % target_filename)
         if os.path.exists(target_filename):
+            ctx.vlog("Target file already exists, skipping")
             continue
 
         message = kwds["message"] % name
         namespace = kwds["mulled_namespace"]
         repo_data = quay_repository(namespace, name)
         if "tags" in repo_data:
+            ctx.vlog("quay repository already exists, skipping")
             continue
 
         if do_pull_request:
             if any([name in t for t in pr_titles]):
+                ctx.vlog("Found matching PR title in [%s], skipping" % pr_titles)
                 continue
 
         with open(target_filename, "w") as f:
