@@ -248,7 +248,7 @@ all the software and all the versions available matching that search term - incl
 
 Alternatively the Anaconda_ website can be used to search for packages. Typing ``seqtk``
 into the search form on that page and clicking the top result will bring on to `this page
-https://anaconda.org/bioconda/seqtk`__ with information about the Bioconda package.
+<https://anaconda.org/bioconda/seqtk>`__ with information about the Bioconda package.
 
 When using the website to search though, you need to aware of what channel you are using. By
 default, Planemo and Galaxy will search a few different Conda channels. While it is possible

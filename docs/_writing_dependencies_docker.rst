@@ -47,7 +47,7 @@ tool from the introductory tutorial.
 
 ::
 
-    $ planemo lint --biocontainer seqtk_xml
+    $ planemo lint --biocontainers seqtk_seq.xml
     Linting tool /home/planemo/workspace/planemo/project_templates/seqtk_complete/seqtk_seq.xml
     Applying linter tests... CHECK
     .. CHECK: 1 test(s) found.
@@ -79,11 +79,11 @@ BioConda_ recipes are packaged into containers and registered on quay.io_
 as part of the BioContainers_ project.
 
 This tool can be tested using ``planemo test`` in its BioContainer
-Docker container using the flag ``--mulled_containers`` as shown (in part) next.
+Docker container using the flag ``--biocontainers`` as shown (in part) next.
 
 ::
 
-    $ planemo test --mulled_containers seqtk_seq.xml
+    $ planemo test --biocontainers seqtk_seq.xml
     ...
     2017-03-01 08:18:19,669 INFO  [galaxy.tools.actions] Handled output named output1 for tool seqtk_seq (22.145 ms)
     2017-03-01 08:18:19,683 INFO  [galaxy.tools.actions] Added output datasets to history (14.604 ms)
@@ -123,7 +123,7 @@ This line indicates that Galaxy was able to find a container for this tool and
 executed the tool in that container.
 
 For interactive testing, the ``planemo serve`` command also implements the
-``--mulled_containers`` flag.
+``--biocontainers`` flag.
 
 In this seqtk example the relevant BioContainer already existed on quay.io_,
 this won't always be the case. For tools that contain multiple ``requirement``
@@ -247,11 +247,11 @@ Docker command ``images`` and explore the new container interactively with
     /usr/local/bin/bwa
 
 As before, we can test running the tool inside its container in Galaxy using
-the ``--mulled_containers`` flag.
+the ``--biocontainers`` flag.
 
 ::
 
-    $ planemo test --mulled_containers bwa_and_samtools.xml
+    $ planemo test --biocontainers bwa_and_samtools.xml
     ...
     2017-03-01 10:20:58,077 INFO  [galaxy.tools.actions] Handled output named output_2 for tool bwa_and_samtools (17.443 ms)
     2017-03-01 10:20:58,090 INFO  [galaxy.tools.actions] Added output datasets to history (12.935 ms)
@@ -305,7 +305,7 @@ Planemo doesn't yet expose options that make it possible to build mulled
 containers for local packages that have yet to be published to anaconda.org
 but the mulled toolkit allows this. See mulled_ documentation for more
 information. However, once a container for a local package is built with
-``mulled-build-tool`` the ``--mulled_containers`` command should work to test
+``mulled-build-tool`` the ``--biocontainers`` command should work to test
 it.
 
 ----------------------------------------------------------------

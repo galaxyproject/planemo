@@ -343,7 +343,9 @@ def job_config_option():
 
 def mulled_containers_option():
     return planemo_option(
+        "mulled_containers",
         "--mulled_containers",
+        "--biocontainers",
         is_flag=True,
         help="Test tools against mulled containers (forces --docker).",
     )
