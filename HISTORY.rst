@@ -9,7 +9,14 @@ History
 0.41.0.dev0
 ---------------------
 
-    
+* Fix ``shed_update`` not fail if there is nothing to update
+  (thanks to `@nsoranzo`_). `Issue 494`_, `Pull Request 680`_
+* Conda documentation and option naming improvements.
+  `Pull Request 683`_
+* Implement ``container_register`` for tool repositories.
+  `Pull Request 675`_
+* Fix ``hub`` binary installation for Mac OS X.
+  `Pull Request 682`_
 
 ---------------------
 0.40.1 (2017-05-03)
@@ -20,7 +27,7 @@ History
 * Fix ``filter_paths()`` to not partial match paths when filtering shed repositories
   (thanks to `@nsoranzo`_). `Pull Request 665`_
 * Fix description when creating ``.shed.yml`` files (thanks to `@RJMW`_).
-  .`Pull Request 664`_
+  `Pull Request 664`_
 
 ---------------------
 0.40.0 (2017-03-16)
@@ -1076,6 +1083,12 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Issue 494: https://github.com/galaxyproject/planemo/issues/494
+.. _Pull Request 665: https://github.com/galaxyproject/planemo/pull/665
+.. _Pull Request 675: https://github.com/galaxyproject/planemo/pull/675
+.. _Pull Request 680: https://github.com/galaxyproject/planemo/pull/680
+.. _Pull Request 682: https://github.com/galaxyproject/planemo/pull/682
+.. _Pull Request 683: https://github.com/galaxyproject/planemo/pull/683
 .. _Pull Request 662: https://github.com/galaxyproject/planemo/pull/662
 .. _Pull Request 665: https://github.com/galaxyproject/planemo/pull/665
 .. _Pull Request 664: https://github.com/galaxyproject/planemo/pull/664
