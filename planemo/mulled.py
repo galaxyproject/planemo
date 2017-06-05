@@ -11,8 +11,18 @@ from galaxy.tools.deps.mulled.mulled_build import (
     ensure_installed,
     InvolucroContext,
 )
+from galaxy.tools.deps.mulled.util import build_target
 
+from planemo.conda import collect_conda_target_lists
 from planemo.io import IS_OS_X, shell
+
+
+def conda_to_mulled_targets(conda_targets):
+    return map(lambda c: build_target(c.package, c.version), conda_targets)
+
+
+def collect_mulled_target_lists(ctx, paths, recursive=False):
+    return map(conda_to_mulled_targets, collect_conda_target_lists(ctx, paths, recursive=recursive))
 
 
 def build_involucro_context(ctx, **kwds):
@@ -57,4 +67,6 @@ def build_mull_target_kwds(ctx, **kwds):
 __all__ = (
     "build_involucro_context",
     "build_mull_target_kwds",
+    "collect_mulled_target_lists",
+    "conda_to_mulled_targets",
 )

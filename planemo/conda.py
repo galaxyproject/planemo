@@ -6,6 +6,7 @@ The extend Galaxy/galaxy-lib's features with planemo specific idioms.
 from __future__ import absolute_import
 
 import os
+import threading
 
 from galaxy.tools.deps import conda_util
 
@@ -16,6 +17,8 @@ from planemo.tools import yield_tool_sources_on_paths
 MESSAGE_ERROR_FAILED_INSTALL = "Attempted to install conda and failed."
 MESSAGE_ERROR_CANNOT_INSTALL = "Cannot install Conda - perhaps due to a failed installation or permission problems."
 MESSAGE_ERROR_NOT_INSTALLING = "Conda not configured - run ``planemo conda_init`` or pass ``--conda_auto_init`` to continue."
+
+BEST_PRACTICE_CHANNELS = ["conda-forge", "anaconda", "r", "bioconda"]
 
 
 def build_conda_context(ctx, **kwds):
@@ -57,7 +60,7 @@ def build_conda_context(ctx, **kwds):
     return conda_context
 
 
-def collect_conda_targets(ctx, paths, found_tool_callback=None, conda_context=None):
+def collect_conda_targets(ctx, paths, recursive=False, found_tool_callback=None, conda_context=None):
     """Load CondaTarget objects from supplied artifact sources.
 
     If a tool contains more than one requirement, the requirements will each
@@ -72,7 +75,7 @@ def collect_conda_targets(ctx, paths, found_tool_callback=None, conda_context=No
         else:
             real_paths.append(path)
 
-    for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, real_paths):
+    for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, real_paths, recursive=recursive):
         if found_tool_callback:
             found_tool_callback(tool_path)
         for target in tool_source_conda_targets(tool_source):
@@ -95,14 +98,14 @@ def target_str_to_targets(targets_raw):
     return targets
 
 
-def collect_conda_target_lists(ctx, paths, found_tool_callback=None):
+def collect_conda_target_lists(ctx, paths, recursive=False, found_tool_callback=None):
     """Load CondaTarget lists from supplied artifact sources.
 
     If a tool contains more than one requirement, the requirements will all
     appear together as one list element of the output list.
     """
     conda_target_lists = set([])
-    for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, paths):
+    for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, paths, recursive=recursive, yield_load_errors=False):
         if found_tool_callback:
             found_tool_callback(tool_path)
         conda_target_lists.add(frozenset(tool_source_conda_targets(tool_source)))
@@ -115,7 +118,25 @@ def tool_source_conda_targets(tool_source):
     return conda_util.requirements_to_conda_targets(requirements)
 
 
+best_practice_search_first = threading.local()
+
+
+def best_practice_search(conda_target):
+    # Call it in offline mode after the first time.
+    try:
+        best_practice_search_first.previously_called
+        # TODO: Undo this...
+        offline = False
+    except AttributeError:
+        best_practice_search_first.previously_called = True
+        offline = False
+
+    return conda_util.best_search_result(conda_target, channels_override=BEST_PRACTICE_CHANNELS, offline=offline)
+
+
 __all__ = (
+    "BEST_PRACTICE_CHANNELS",
+    "best_practice_search",
     "build_conda_context",
     "collect_conda_targets",
     "collect_conda_target_lists",

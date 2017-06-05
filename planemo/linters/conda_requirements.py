@@ -1,10 +1,10 @@
 """Ensure requirements are matched in best practice conda channels."""
 
-from galaxy.tools.deps.conda_util import best_search_result
-
-from planemo.conda import tool_source_conda_targets
-
-BEST_PRACTICE_CHANNELS = ["conda-forge", "anaconda", "r", "bioconda"]
+from planemo.conda import (
+    BEST_PRACTICE_CHANNELS,
+    best_practice_search,
+    tool_source_conda_targets,
+)
 
 
 def lint_requirements_in_conda(tool_source, lint_ctx):
@@ -15,7 +15,7 @@ def lint_requirements_in_conda(tool_source, lint_ctx):
         return
 
     for conda_target in conda_targets:
-        (best_hit, exact) = best_search_result(conda_target, channels_override=BEST_PRACTICE_CHANNELS)
+        (best_hit, exact) = best_practice_search(conda_target)
         conda_target_str = conda_target.package
         if conda_target.version:
             conda_target_str += "@%s" % (conda_target.version)

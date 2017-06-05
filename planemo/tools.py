@@ -13,6 +13,7 @@ from planemo.io import error, info
 is_tool_load_error = loader_directory.is_tool_load_error
 SKIP_XML_MESSAGE = "Skipping XML file - does not appear to be a tool %s."
 SHED_FILES = ["tool_dependencies.xml", "repository_dependencies.xml"]
+LOAD_ERROR_MESSAGE = "Error loading tool with path %s"
 
 
 def uri_to_path(ctx, uri):
@@ -29,13 +30,13 @@ def uris_to_paths(ctx, uris):
     return paths
 
 
-def yield_tool_sources_on_paths(ctx, paths, recursive=False):
+def yield_tool_sources_on_paths(ctx, paths, recursive=False, yield_load_errors=True):
     for path in paths:
-        for (tool_path, tool_source) in yield_tool_sources(ctx, path, recursive):
+        for (tool_path, tool_source) in yield_tool_sources(ctx, path, recursive, yield_load_errors):
             yield (tool_path, tool_source)
 
 
-def yield_tool_sources(ctx, path, recursive=False):
+def yield_tool_sources(ctx, path, recursive=False, yield_load_errors=True):
     tools = load_tool_sources_from_path(
         path,
         recursive,
@@ -43,8 +44,12 @@ def yield_tool_sources(ctx, path, recursive=False):
     )
     for (tool_path, tool_source) in tools:
         if is_tool_load_error(tool_source):
-            yield (tool_path, tool_source)
+            if yield_load_errors:
+                yield (tool_path, tool_source)
+            else:
+                error(LOAD_ERROR_MESSAGE % tool_path)
             continue
+
         if not _is_tool_source(ctx, tool_path, tool_source):
             continue
         yield (tool_path, tool_source)
@@ -61,7 +66,7 @@ def load_tool_sources_from_path(path, recursive, register_load_errors=False):
 
 
 def _load_exception_handler(path, exc_info):
-    error("Error loading tool with path %s" % path)
+    error(LOAD_ERROR_MESSAGE % path)
     traceback.print_exception(*exc_info, limit=1, file=sys.stderr)
 
 
