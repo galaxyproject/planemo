@@ -59,7 +59,8 @@ http://www.ncbi.nlm.nih.gov/pubmed/23024011.
                                       commands (defaults to localhost).
       --docker_sudo_cmd TEXT          sudo command to use when --docker_sudo is
                                       enabled (defaults to sudo).
-      --mulled_containers             Test tools against mulled containers (forces
+      --mulled_containers, --biocontainers
+                                      Test tools against mulled containers (forces
                                       --docker).
       --job_config_file PATH          Job configuration file for Galaxy to target.
       --tool_dependency_dir DIRECTORY
@@ -75,6 +76,7 @@ http://www.ncbi.nlm.nih.gov/pubmed/23024011.
                                       tools and workflows. Defaults to a local
                                       Galaxy, but running Galaxy within a Docker
                                       container.
+      --non_strict_cwl                Disable strict validation of CWL.
       --docker_galaxy_image TEXT      Docker image identifier for docker-galaxy-
                                       flavor used if engine type is specified as
                                       ``docker-galaxy``. Defaults to to bgruening
@@ -89,6 +91,7 @@ http://www.ncbi.nlm.nih.gov/pubmed/23024011.
                                       resolution.
       --shed_dependency_resolution    Configure Galaxy to use brewed Tool Shed
                                       dependency resolution.
+      --no_dependency_resolution      Configure Galaxy with no dependency resolvers.
       --conda_prefix DIRECTORY        Conda prefix to use for conda dependency
                                       commands.
       --conda_exec PATH               Location of conda executable.
@@ -96,6 +99,8 @@ http://www.ncbi.nlm.nih.gov/pubmed/23024011.
       --conda_channels, --conda_ensure_channels TEXT
                                       Ensure conda is configured with specified
                                       comma separated list of channels.
+      --conda_use_local               Use locally built packages while building
+                                      Conda environments.
       --conda_dependency_resolution   Configure Galaxy to use only conda for
                                       dependency resolution.
       --conda_copy_dependencies       Conda dependency resolution for Galaxy will

@@ -124,6 +124,14 @@ planemo.commands.cmd_config_init module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd_container_register module
+----------------------------------------------
+
+.. automodule:: planemo.commands.cmd_container_register
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd_create_gist module
 ---------------------------------------
 

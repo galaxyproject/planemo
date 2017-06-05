@@ -16,6 +16,8 @@ Install conda packages for tool requirements.
 **Options**::
 
 
+      -r, --recursive                 Recursively perform command for
+                                      subdirectories.
       --conda_prefix DIRECTORY        Conda prefix to use for conda dependency
                                       commands.
       --conda_exec PATH               Location of conda executable.
@@ -23,6 +25,8 @@ Install conda packages for tool requirements.
       --conda_channels, --conda_ensure_channels TEXT
                                       Ensure conda is configured with specified
                                       comma separated list of channels.
+      --conda_use_local               Use locally built packages while building
+                                      Conda environments.
       --global                        Install Conda dependencies globally instead of
                                       in requirement specific environments packaged
                                       for tools. If the Conda bin directory is on

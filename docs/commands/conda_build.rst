@@ -1,21 +1,18 @@
 
-``conda_search`` command
+``conda_build`` command
 ======================================
 
 This section is auto-generated from the help text for the planemo command
-``conda_search``. This help message can be generated with ``planemo conda_search
+``conda_build``. This help message can be generated with ``planemo conda_build
 --help``.
 
 **Usage**::
 
-    planemo conda_search [OPTIONS] TERM
+    planemo conda_build [OPTIONS] RECIPE_DIR
 
 **Help**
 
-Perform conda search with Planemo's conda.
-
-Implicitly adds channels Planemo is configured with.
-
+Perform conda build with Planemo's conda.
 **Options**::
 
 

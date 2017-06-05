@@ -8,7 +8,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Usage**::
 
-    planemo run [OPTIONS] TOOL_PATH JOB_PATH
+    planemo run [OPTIONS] TOOL_URI JOB_PATH
 
 **Help**
 
@@ -58,7 +58,8 @@ Planemo command for running tools and jobs.
                                       commands (defaults to localhost).
       --docker_sudo_cmd TEXT          sudo command to use when --docker_sudo is
                                       enabled (defaults to sudo).
-      --mulled_containers             Test tools against mulled containers (forces
+      --mulled_containers, --biocontainers
+                                      Test tools against mulled containers (forces
                                       --docker).
       --job_config_file PATH          Job configuration file for Galaxy to target.
       --tool_dependency_dir DIRECTORY
@@ -79,6 +80,7 @@ Planemo command for running tools and jobs.
                                       resolution.
       --shed_dependency_resolution    Configure Galaxy to use brewed Tool Shed
                                       dependency resolution.
+      --no_dependency_resolution      Configure Galaxy with no dependency resolvers.
       --conda_prefix DIRECTORY        Conda prefix to use for conda dependency
                                       commands.
       --conda_exec PATH               Location of conda executable.
@@ -86,6 +88,8 @@ Planemo command for running tools and jobs.
       --conda_channels, --conda_ensure_channels TEXT
                                       Ensure conda is configured with specified
                                       comma separated list of channels.
+      --conda_use_local               Use locally built packages while building
+                                      Conda environments.
       --conda_dependency_resolution   Configure Galaxy to use only conda for
                                       dependency resolution.
       --conda_copy_dependencies       Conda dependency resolution for Galaxy will
@@ -123,11 +127,6 @@ Planemo command for running tools and jobs.
                                       with CWL support, this option is experimental
                                       and will be replaced with --galaxy_root when
                                       and if CWL support is merged into Galaxy.
-      --conformance_test, --conformance-test
-                                      Generate CWL conformance test object
-                                      describing job. Required by CWL conformance
-                                      test suite and implemented by cwltool
-                                      reference implementation.
       --output_directory, --outdir DIRECTORY
                                       Where to store outputs of a 'run' task.
       --output_json PATH              Where to store JSON dictionary describing
@@ -138,6 +137,7 @@ Planemo command for running tools and jobs.
                                       Galaxy, but running Galaxy within a Docker
                                       container or the CWL reference implementation
                                       'cwltool' and be selected.
+      --non_strict_cwl                Disable strict validation of CWL.
       --no-container, --no_container  If cwltool engine is used, disable Docker
                                       container usage.
       --docker_galaxy_image TEXT      Docker image identifier for docker-galaxy-

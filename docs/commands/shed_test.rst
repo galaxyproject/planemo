@@ -83,7 +83,8 @@ This command requires the target to be version 15.07 or newer.
                                       commands (defaults to localhost).
       --docker_sudo_cmd TEXT          sudo command to use when --docker_sudo is
                                       enabled (defaults to sudo).
-      --mulled_containers             Test tools against mulled containers (forces
+      --mulled_containers, --biocontainers
+                                      Test tools against mulled containers (forces
                                       --docker).
       --job_config_file PATH          Job configuration file for Galaxy to target.
       --tool_dependency_dir DIRECTORY

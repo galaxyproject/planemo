@@ -34,5 +34,7 @@ if Conda is already installed.
       --conda_channels, --conda_ensure_channels TEXT
                                       Ensure conda is configured with specified
                                       comma separated list of channels.
+      --conda_use_local               Use locally built packages while building
+                                      Conda environments.
       --help                          Show this message and exit.
     

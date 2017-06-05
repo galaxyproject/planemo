@@ -31,5 +31,9 @@ Check for common errors and best practices.
       --doi                           Check validity of DOIs in XML files
       --conda_requirements            Check tool requirements for availability in
                                       best practice Conda channels.
+      --biocontainer, --biocontainers
+                                      Check best practice BioContainer namespaces
+                                      for a container definition applicable for this
+                                      tool.
       --help                          Show this message and exit.
     

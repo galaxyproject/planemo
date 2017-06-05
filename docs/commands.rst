@@ -15,12 +15,14 @@ documentation describes these commands.
 .. include:: commands/ci_find_repos.rst
 .. include:: commands/ci_find_tools.rst
 .. include:: commands/clone.rst
+.. include:: commands/conda_build.rst
 .. include:: commands/conda_env.rst
 .. include:: commands/conda_init.rst
 .. include:: commands/conda_install.rst
 .. include:: commands/conda_lint.rst
 .. include:: commands/conda_search.rst
 .. include:: commands/config_init.rst
+.. include:: commands/container_register.rst
 .. include:: commands/cwl_script.rst
 .. include:: commands/database_create.rst
 .. include:: commands/database_delete.rst
