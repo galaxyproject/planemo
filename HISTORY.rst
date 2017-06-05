@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.41.0.dev0
+0.41.0 (2017-06-05)
 ---------------------
 
 * Fix ``shed_update`` not fail if there is nothing to update
