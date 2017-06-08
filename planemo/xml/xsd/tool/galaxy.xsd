@@ -3093,8 +3093,8 @@ validators is in the ``validator_types`` dictionary in
 [/lib/galaxy/tools/parameters/validation.py](https://github.com/galaxyproject/galaxy/blob/dev/lib/galaxy/tools/parameters/validation.py).
 Valid values include: ``expression``, ``regex``, ``in_range``, ``length``,
 ``metadata``, ``unspecified_build``, ``no_options``, ``empty_field``,
-``dataset_metadata_in_file``, ``dataset_metadata_in_data_table``,
-``dataset_ok_validator``]]></xs:documentation>
+``empty_dataset``, ``empty_extra_files_path``, ``dataset_metadata_in_file``,
+``dataset_metadata_in_data_table``, ``dataset_ok_validator``]]></xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute name="message" type="xs:string">
