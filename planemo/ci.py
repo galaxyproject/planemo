@@ -8,12 +8,13 @@ import os
 
 from planemo import git
 from planemo import io
+from planemo.shed import SHED_CONFIG_NAME
 
 
-def filter_paths(ctx, raw_paths, path_type="dir", **kwds):
+def filter_paths(ctx, raw_paths, path_type="repo", **kwds):
     """Filter ``paths``.
 
-    ``path_type`` is ``dir`` or ``file``.
+    ``path_type`` is ``repo`` or ``file``.
     """
     cwd = os.getcwd()
 
@@ -22,11 +23,18 @@ def filter_paths(ctx, raw_paths, path_type="dir", **kwds):
     diff_paths = None
     if changed_in_commit_range is not None:
         diff_files = git.diff(ctx, cwd, changed_in_commit_range)
-        if path_type == "dir":
-            diff_paths = [os.path.dirname(p) for p in diff_files]
+        if path_type == "repo":
+            diff_dirs = set(os.path.dirname(p) for p in diff_files)
+            diff_paths = set()
+            for diff_dir in diff_dirs:
+                while diff_dir:
+                    if os.path.isfile(os.path.join(diff_dir, SHED_CONFIG_NAME)):
+                        diff_paths.add(diff_dir)
+                        break
+                    diff_dir = os.path.dirname(diff_dir)
         else:
             diff_paths = diff_files
-        diff_paths = sorted(set(diff_paths))
+        diff_paths = sorted(diff_paths)
 
     unique_paths = sorted(set(map(lambda p: os.path.relpath(p, cwd), raw_paths)))
     filtered_paths = io.filter_paths(unique_paths, cwd=cwd, **filter_kwds)

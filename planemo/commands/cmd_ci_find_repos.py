@@ -25,5 +25,5 @@ def cli(ctx, paths, **kwds):
     # Since fail_fast is True, all repos are actual raw repo objects and
     # not exceptions.
     raw_paths = [r.path for r in repos]
-    paths = filter_paths(ctx, raw_paths, path_type="dir", **kwds)
+    paths = filter_paths(ctx, raw_paths, path_type="repo", **kwds)
     print_path_list(paths, **kwds)
