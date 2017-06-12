@@ -5,6 +5,7 @@ The extend Galaxy/galaxy-lib's features with planemo specific idioms.
 
 from __future__ import absolute_import
 
+import collections
 import os
 import threading
 
@@ -115,14 +116,12 @@ def collect_conda_target_lists_and_tool_paths(ctx, paths, recursive=False, found
     appear together as one list element of the output list.
     """
     conda_target_lists = set([])
-    tool_paths = {}
+    tool_paths = collections.defaultdict(list)
     for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, paths, recursive=recursive, yield_load_errors=False):
         if found_tool_callback:
             found_tool_callback(tool_path)
         targets = frozenset(tool_source_conda_targets(tool_source))
         conda_target_lists.add(targets)
-        if targets not in tool_paths:
-            tool_paths[targets] = []
         tool_paths[targets].append(tool_path)
 
     # Turn them into lists so the order matches before returning...
