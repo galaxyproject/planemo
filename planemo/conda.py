@@ -104,12 +104,32 @@ def collect_conda_target_lists(ctx, paths, recursive=False, found_tool_callback=
     If a tool contains more than one requirement, the requirements will all
     appear together as one list element of the output list.
     """
+    conda_target_lists, _ = collect_conda_target_lists_and_tool_paths(ctx, paths, recursive=recursive, found_tool_callback=found_tool_callback)
+    return conda_target_lists
+
+
+def collect_conda_target_lists_and_tool_paths(ctx, paths, recursive=False, found_tool_callback=None):
+    """Load CondaTarget lists from supplied artifact sources.
+
+    If a tool contains more than one requirement, the requirements will all
+    appear together as one list element of the output list.
+    """
     conda_target_lists = set([])
+    tool_paths = {}
     for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, paths, recursive=recursive, yield_load_errors=False):
         if found_tool_callback:
             found_tool_callback(tool_path)
-        conda_target_lists.add(frozenset(tool_source_conda_targets(tool_source)))
-    return conda_target_lists
+        targets = frozenset(tool_source_conda_targets(tool_source))
+        conda_target_lists.add(targets)
+        if targets not in tool_paths:
+            tool_paths[targets] = []
+        tool_paths[targets].append(tool_path)
+
+    # Turn them into lists so the order matches before returning...
+    conda_target_lists = list(conda_target_lists)
+    conda_target_tool_paths = [tool_paths[c] for c in conda_target_lists]
+
+    return conda_target_lists, conda_target_tool_paths
 
 
 def tool_source_conda_targets(tool_source):
@@ -140,5 +160,6 @@ __all__ = (
     "build_conda_context",
     "collect_conda_targets",
     "collect_conda_target_lists",
+    "collect_conda_target_lists_and_tool_paths",
     "tool_source_conda_targets",
 )

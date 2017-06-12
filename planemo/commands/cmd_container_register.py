@@ -1,13 +1,14 @@
 """Module describing the planemo ``container_register`` command."""
 import os
+import string
 
 import click
 
-from galaxy.tools.deps.mulled.util import quay_repository, v2_image_name
+from galaxy.tools.deps.mulled.util import conda_build_target_str, quay_repository, v2_image_name
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.conda import best_practice_search, collect_conda_target_lists
+from planemo.conda import best_practice_search, collect_conda_target_lists_and_tool_paths
 from planemo.git import add, branch, commit, push
 from planemo.github_util import clone_fork_branch, get_repository_object, pull_request
 from planemo.mulled import conda_to_mulled_targets
@@ -15,7 +16,7 @@ from planemo.mulled import conda_to_mulled_targets
 REGISTERY_TARGET_NAME = "multi-package-containers"
 REGISTERY_TARGET_PATH = "combinations"
 REGISTERY_REPOSITORY = "jmchilton/multi-package-containers"
-DEFAULT_MESSAGE = "Add %s (generated with Planemo)."
+DEFAULT_MESSAGE = "Add container $hash.\n**Hash**: $hash\n\n**Packages**:\n$packages\n\n**For** :\n$tools\n\nGenerated with Planemo."
 
 
 @click.command('container_register')
@@ -63,9 +64,11 @@ def cli(ctx, paths, **kwds):
     registry_target = RegistryTarget(ctx, **kwds)
 
     combinations_added = 0
-    for conda_targets in collect_conda_target_lists(ctx, paths, recursive=kwds["recursive"]):
+    conda_targets_list, tool_paths_list = collect_conda_target_lists_and_tool_paths(ctx, paths, recursive=kwds["recursive"])
+    for conda_targets, tool_paths in zip(conda_targets_list, tool_paths_list):
         ctx.vlog("Handling conda_targets [%s]" % conda_targets)
         mulled_targets = conda_to_mulled_targets(conda_targets)
+        mulled_targets_str = "- " + "\n- ".join(map(conda_build_target_str, mulled_targets))
         if len(mulled_targets) < 2:
             ctx.vlog("Skipping registeration, fewer than 2 targets discovered.")
             # Skip these for now, we will want to revisit this for conda-forge dependencies and such.
@@ -101,7 +104,8 @@ def cli(ctx, paths, **kwds):
             continue
 
         registry_target.write_targets(ctx, target_filename, mulled_targets)
-        registry_target.handle_pull_request(ctx, name, target_filename, **kwds)
+        tools_str = "\n".join(map(lambda p: "- " + os.path.basename(p), tool_paths))
+        registry_target.handle_pull_request(ctx, name, target_filename, mulled_targets_str, tools_str, **kwds)
         combinations_added += 1
 
 
@@ -137,9 +141,14 @@ class RegistryTarget(object):
 
         return has_pr
 
-    def handle_pull_request(self, ctx, name, target_filename, **kwds):
+    def handle_pull_request(self, ctx, name, target_filename, packages_str, tools_str, **kwds):
         if self.do_pull_request:
-            message = kwds["message"] % name
+            message = kwds["message"]
+            message = string.Template(message).safe_substitute({
+                "hash": name,
+                "packages": packages_str,
+                "tools": tools_str,
+            })
             branch_name = name.replace(":", "-")
             branch(ctx, self.target_repository, branch_name, from_branch="master")
             add(ctx, self.target_repository, target_filename)
