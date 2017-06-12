@@ -3,7 +3,7 @@ import os
 
 import click
 
-from galaxy.tools.deps.mulled.util import image_name, quay_repository
+from galaxy.tools.deps.mulled.util import quay_repository, v2_image_name
 
 from planemo import options
 from planemo.cli import command_function
@@ -12,9 +12,9 @@ from planemo.git import add, branch, commit, push
 from planemo.github_util import clone_fork_branch, get_repository_object, pull_request
 from planemo.mulled import conda_to_mulled_targets
 
-REGISTERY_TARGET_NAME = "multireqcontainers"
+REGISTERY_TARGET_NAME = "multi-package-containers"
 REGISTERY_TARGET_PATH = "combinations"
-REGISTERY_REPOSITORY = "jmchilton/multireqcontainers"
+REGISTERY_REPOSITORY = "jmchilton/multi-package-containers"
 DEFAULT_MESSAGE = "Add %s (generated with Planemo)."
 
 
@@ -31,7 +31,7 @@ DEFAULT_MESSAGE = "Add %s (generated with Planemo)."
         resolve_path=True,
     ),
     default=None,
-    help=("Container registration directory (defaults to ~/.planemo/multireqcontainers."),
+    help=("Container registration directory (defaults to ~/.planemo/multi-package-containers."),
 )
 @click.option(
     "-m",
@@ -81,9 +81,9 @@ def cli(ctx, paths, **kwds):
         if not best_practice_requirements:
             continue
 
-        name = image_name(mulled_targets)
+        name = v2_image_name(mulled_targets)
         tag = "0"
-        name_and_tag = "%s:%s" % (name, tag)
+        name_and_tag = "%s-%s" % (name, tag)
         target_filename = os.path.join(registry_target.output_directory, "%s.tsv" % name_and_tag)
         ctx.vlog("Target filename for registeration is [%s]" % target_filename)
         if os.path.exists(target_filename):
@@ -140,7 +140,7 @@ class RegistryTarget(object):
     def handle_pull_request(self, ctx, name, target_filename, **kwds):
         if self.do_pull_request:
             message = kwds["message"] % name
-            branch_name = name
+            branch_name = name.replace(":", "-")
             branch(ctx, self.target_repository, branch_name, from_branch="master")
             add(ctx, self.target_repository, target_filename)
             commit(ctx, self.target_repository, message=message)
