@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.42.0.dev0
+0.42.0 (2017-06-15)
 ---------------------
 
 * Conda/Container documentation and option naming improvements. `Pull Request
