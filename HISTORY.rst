@@ -9,7 +9,17 @@ History
 0.42.0.dev0
 ---------------------
 
-    
+* Conda/Container documentation and option naming improvements. `Pull Request
+  684`_
+* Sync `galaxy.xsd` with latest upstream Galaxy updates (thanks to `@nsoranzo`_).
+  `Pull Request 687`_
+* Fix `ci_find_repos` command to not filter repos whose only modifications where
+  in subdirs (thanks to `@nsoranzo`_).
+  `Pull Request 688`_
+* Update `container_register` for mulled version 2 and repository name changes.
+  `Pull Request 689`_
+* Better pull request messages for the `container_register` command.
+  `Pull Request 690`_
 
 ---------------------
 0.41.0 (2017-06-05)
@@ -1089,6 +1099,11 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 684: https://github.com/galaxyproject/planemo/pull/684
+.. _Pull Request 687: https://github.com/galaxyproject/planemo/pull/687
+.. _Pull Request 688: https://github.com/galaxyproject/planemo/pull/688
+.. _Pull Request 689: https://github.com/galaxyproject/planemo/pull/689
+.. _Pull Request 690: https://github.com/galaxyproject/planemo/pull/690
 .. _Issue 494: https://github.com/galaxyproject/planemo/issues/494
 .. _Pull Request 665: https://github.com/galaxyproject/planemo/pull/665
 .. _Pull Request 675: https://github.com/galaxyproject/planemo/pull/675
