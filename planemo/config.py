@@ -74,8 +74,12 @@ def planemo_option(*args, **kwargs):
     use_global_config = kwargs.pop("use_global_config", False)
     use_env_var = kwargs.pop("use_env_var", False)
 
-    if "default" in kwargs:
+    default_specified = "default" in kwargs
+    default = None
+    if default_specified:
         default = kwargs.pop("default")
+
+    if default_specified or use_global_config or use_env_var:
         outer_callback = kwargs.pop("callback", None)
 
         def callback(ctx, param, value):
@@ -92,6 +96,8 @@ def planemo_option(*args, **kwargs):
             return result
 
         kwargs["callback"] = callback
+
+    if default_specified:
         kwargs["default"] = None
 
     if use_env_var:
