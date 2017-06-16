@@ -6,10 +6,16 @@ History
 .. to_doc
 
 ---------------------
-0.43.0.dev0
+0.42.1.dev0
 ---------------------
 
-    
+* Fix Readme typos (thanks to `@manabuishii`_) 904d77a_
+* Fix `container_register` to create pull requests against the newly finalized home of the
+  multi-package-containers registry repository. 
+  9636682_
+* Fix `use_global_config` and `use_env_var` for options with unspecified defaults.
+  475104c_
+
 
 ---------------------
 0.42.0 (2017-06-15)
@@ -1105,6 +1111,9 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _904d77a: https://github.com/galaxyproject/planemo/commit/904d77a
+.. _9636682: https://github.com/galaxyproject/planemo/commit/9636682
+.. _475104c: https://github.com/galaxyproject/planemo/commit/475104c
 .. _Pull Request 684: https://github.com/galaxyproject/planemo/pull/684
 .. _Pull Request 687: https://github.com/galaxyproject/planemo/pull/687
 .. _Pull Request 688: https://github.com/galaxyproject/planemo/pull/688
@@ -1600,4 +1609,4 @@ History
 .. _@remimarenco: https://github.com/remimarenco
 .. _@thriqon: https://github.com/thriqon
 .. _@RJMW: https://github.com/RJMW
-
+.. _@manabuishii: https://github.com/manabuishii
