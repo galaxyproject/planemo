@@ -151,7 +151,7 @@ Experimental Features
 
 Planemo can also be used to explore some more experimental features related to
 Galaxy tooling - including support for Conda_, `Travis CI`_, Docker_,
-`Common Workfow Language`_ (CWL), and Homebrew_.
+`Common Workflow Language`_ (CWL), and Homebrew_.
 
 ---------------------
 Conda Package Manager
@@ -226,7 +226,7 @@ GitHub_.
 
 The ``travis_init`` `command
 <http://planemo.readthedocs.org/en/latest/commands.html#travis_init-
-command>`__ will bootstrap a project with files to ease contineous integration
+command>`__ will bootstrap a project with files to ease continuous integration
 testing of tools using a Planemo driven approach inspired by this great `blog
 post <http://bit.ly/gxtravisci>`_ by `Peter Cock
 <https://github.com/peterjc>`_.
@@ -259,7 +259,7 @@ Galaxy has `experimental support
 Docker_ containers. Planemo contains tools to assist in development of Docker
 images for Galaxy tools.
 
-A shell can be launched to explore the Docker enviornment referenced by tools
+A shell can be launched to explore the Docker environment referenced by tools
 that are annotated with publically registered Docker images.
 
 ::
@@ -273,7 +273,7 @@ following commands.
 
 ::
 
-    $ planemo docker_build bowtie2.xml # asssumes Dockerfile in same dir
+    $ planemo docker_build bowtie2.xml # assumes Dockerfile in same dir
     $ (planemo docker_shell --from_tag bowtie2.xml)
 
 For more details see the documentation for the `docker_build
@@ -340,5 +340,5 @@ and `brew_env
 .. _`tools-devteam`: https://github.com/galaxyproject/tools-devteam
 .. _`tools-iuc`: https://github.com/galaxyproject/tools-iuc
 .. _Publishing to the Tool Shed: http://planemo.readthedocs.org/en/latest/publishing.html
-.. _Common Workfow Language: http://common-workflow-language.github.io
+.. _Common Workflow Language: http://common-workflow-language.github.io
 .. _OVA: https://en.wikipedia.org/wiki/Open_Virtualization_Format
