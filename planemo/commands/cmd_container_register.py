@@ -15,7 +15,7 @@ from planemo.mulled import conda_to_mulled_targets
 
 REGISTERY_TARGET_NAME = "multi-package-containers"
 REGISTERY_TARGET_PATH = "combinations"
-REGISTERY_REPOSITORY = "jmchilton/multi-package-containers"
+REGISTERY_REPOSITORY = "BioContainers/multi-package-containers"
 DEFAULT_MESSAGE = "Add container $hash.\n**Hash**: $hash\n\n**Packages**:\n$packages\n\n**For** :\n$tools\n\nGenerated with Planemo."
 
 
