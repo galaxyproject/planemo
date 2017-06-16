@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.42.1.dev0
+0.42.1 (2017-06-16)
 ---------------------
 
 * Fix Readme typos (thanks to `@manabuishii`_) 904d77a_
