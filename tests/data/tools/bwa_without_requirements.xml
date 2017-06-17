@@ -1,8 +1,5 @@
 <tool id="bwa" name="BWA" version="0.1.0">
-    <stdio>
-        <exit_code range="2:" />
-    </stdio>
-    <command><![CDATA[
+    <command detect_errors="exit_code"><![CDATA[
         bwa > $output_1 2>&1
     ]]></command>
     <inputs>
