@@ -53,7 +53,7 @@ definitions for the input and output as well as an actual command template.
 
 .. literalinclude:: writing/seqtk_seq_v2.xml
    :language: xml
-   :emphasize-lines: 8-16
+   :emphasize-lines: 5-13
 
 .. include:: _writing_from_help_command.rst
 
@@ -76,7 +76,7 @@ underlying tool. The resulting tool XML file is:
 
 .. literalinclude:: writing/seqtk_seq_v3.xml
    :language: xml
-   :emphasize-lines: 17-58
+   :emphasize-lines: 14-55
 
 .. include:: _writing_lint_intro.rst
 

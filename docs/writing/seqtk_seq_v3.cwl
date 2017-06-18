@@ -3,7 +3,7 @@ cwlVersion: 'cwl:draft-3'
 class: CommandLineTool
 id: "seqtk_seq"
 label: "Convert to FASTA (seqtk)"
-requirements:
+hints:
   - class: DockerRequirement
     dockerPull: dukegcb/seqtk
 inputs:
