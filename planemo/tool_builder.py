@@ -27,7 +27,6 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
         <import>macros.xml</import>
     </macros>
     <expand macro="requirements" />
-    <expand macro="stdio" />
 {%- if version_command %}
     <expand macro="version_command" />
 {%- endif %}
@@ -40,14 +39,11 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
         {{ container }}
 {%- endfor %}
     </requirements>
-    <stdio>
-        <exit_code range="1:" />
-    </stdio>
 {%- if version_command %}
     <version_command>{{ version_command }}</version_command>
 {%- endif %}
 {%- endif %}
-    <command><![CDATA[
+    <command detect_errors="exit_code"><![CDATA[
 {%- if command %}
         {{ command }}
 {%- else %}
@@ -113,11 +109,6 @@ MACROS_TEMPLATE = """<macros>
         {{ container }}
 {%- endfor %}
         </requirements>
-    </xml>
-    <xml name="stdio">
-        <stdio>
-            <exit_code range="1:" />
-        </stdio>
     </xml>
     <xml name="citations">
         <citations>

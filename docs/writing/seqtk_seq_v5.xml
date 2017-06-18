@@ -2,20 +2,17 @@
     <requirements>
         <requirement type="package" version="1.2">seqtk</requirement>
     </requirements>
-    <stdio>
-        <exit_code range="1:" />
-    </stdio>
-    <command><![CDATA[
+    <command detect_errors="exit_code"><![CDATA[
         seqtk seq
               $shift_quality
               -q $quality_min
               -X $quality_max
               #if $mask_regions
-              -M '$mask_regions'
+                  -M '$mask_regions'
               #end if
               #if $sample.sample
-              -f $sample.fraction
-              -s $sample.seed
+                  -f $sample.fraction
+                  -s $sample.seed
               #end if
               -a '$input1' > '$output1'
     ]]></command>

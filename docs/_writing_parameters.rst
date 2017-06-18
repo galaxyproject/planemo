@@ -50,7 +50,7 @@ At this point the tool would look like:
 
 .. literalinclude:: writing/seqtk_seq_v4.xml
    :language: xml
-   :emphasize-lines: 10-13,17-23
+   :emphasize-lines: 7-10,14-20
 
 
 Conditional Parameters
@@ -121,7 +121,7 @@ The newest version of this tool is now
 
 .. literalinclude:: writing/seqtk_seq_v5.xml
    :language: xml
-   :emphasize-lines: 13-19,31-43
+   :emphasize-lines: 10-16,28-40
 
 For tools like this where there are many options but in the most uses the defaults
 are preferred - a common idiom is to break the parameters into simple and
@@ -131,4 +131,4 @@ Updating this tool to use that idiom might look as follows.
 
 .. literalinclude:: writing/seqtk_seq_v6.xml
    :language: xml
-   :emphasize-lines: 10-21,26-33,54-55
+   :emphasize-lines: 7-18,23-30,51-52
