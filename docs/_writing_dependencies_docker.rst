@@ -34,6 +34,10 @@ BioContainers_
     please review that section for background information on resolving
     requirements with Conda.
 
+Finding and Building BioContainers_
+----------------------------------------------------------------
+
+
 If a tool contains requirements in best practice Conda channels, a
 BioContainers_-style container can be found or built for it.
 
@@ -130,7 +134,8 @@ this won't always be the case. For tools that contain multiple ``requirement``
 tags an existing container likely won't exist. The mulled_ toolkit
 (distributed with planemo or available standalone) can be used to build
 containers for such tools. For such tools, if Galaxy is configured to use
-BioContainers it will attempt to build these containers on-demand.
+BioContainers it will attempt to build these containers on the fly by default
+(though this behavior can be disabled).
 
 You can try it directly using the ``mull`` command in Planemo. The ``conda_testing``
 Planemo project template has a toy example tool with two requirements for
@@ -225,12 +230,15 @@ demonstrating this - `bwa_and_samtools.xml
 As the output indicates, this command built the container named
 ``quay.io/biocontainers/mulled-v1-01afc412d1f216348d85970ce5f88c984aa443f3``.
 This is the same namespace / URL that would be used if or when published by
-the BioContainers_ project. We can see this new container when running the
-Docker command ``images`` and explore the new container interactively with
-``docker run``.
+the BioContainers_ project.
 
-::
+.. note:: The first part of this ``mulled-v2`` hash is a hash of the package names
+    that went into it, the second the packages used and build number. Check out
+    the `Multi-package Containers <http://biocontainers.pro/multi-package-containers/>`__
+    web application to explore best practice channels and build such hashes.
 
+We can see this new container when running the Docker command ``images`` and
+explore the new container interactively with ``docker run``.
 
     $ docker images
     REPOSITORY                                                                 TAG                 IMAGE ID            CREATED              SIZE
@@ -308,6 +316,36 @@ information. However, once a container for a local package is built with
 ``mulled-build-tool`` the ``--biocontainers`` command should work to test
 it.
 
+
+Publishing BioContainers_
+----------------------------------------------------------------
+
+Building unpublished BioContainers on the fly is great for testing but
+for production use and to increase reproducibility such containers should
+ideally be published as well.
+
+BioContainers_ maintains a registry of package combinations to be published
+using these long mulled hashes. This registry is represented as a Github repository
+named `multi-package-containers <https://github.com/biocontainers/multi-package-containers>`__.
+The Planemo command ``container_register`` will inspect a tool and open a
+Github pull request to add the tool's combination
+of packages to the registry. Once merged, this pull request will
+result in the corresponding BioContainers image to be published (with the
+correct mulled has as its name) - these can be subsequently be picked up by
+Galaxy.
+
+Various Github related settings need to be configured in order for Planemo
+to be able to open pull requests on your behalf as part of the
+``container_register`` command. To simplify all of this - the Planemo community
+maintains a list of Github repositories containing Galaxy and/or CWL tools that
+are scanned daily by Travis_. For each such repository, the Travis job will run
+``container_register`` across the repository on all tools resulting in new registry
+pull requests for all new combinations of tools. This list is maintained
+in a script named ``monitor.sh`` in the `planemo-monitor
+<https://github.com/galaxyproject/planemo-monitor/>`__ repository. The easiest way
+to ensure new containers are built for your tools is simply to open open a pull
+request to add your tool repositories to this list.
+
 ----------------------------------------------------------------
 Explicit Annotation
 ----------------------------------------------------------------
@@ -320,3 +358,4 @@ example is worked through `this documentation
 .. _BioContainers: http://biocontainers.pro/
 .. _mulled: https://github.com/BioContainers/auto-mulled
 .. _quay.io: https://quay.io
+.. _Travis: https://travis-ci.org
