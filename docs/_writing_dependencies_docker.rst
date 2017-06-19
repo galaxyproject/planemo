@@ -97,9 +97,9 @@ Docker container using the flag ``--biocontainers`` as shown (in part) next.
     2017-03-01 08:18:20,120 INFO  [galaxy.jobs.handler] (2) Job dispatched
     2017-03-01 08:18:20,311 DEBUG [galaxy.tools.deps] Using dependency seqtk version 1.2 of type conda
     2017-03-01 08:18:20,312 DEBUG [galaxy.tools.deps] Using dependency seqtk version 1.2 of type conda
-    2017-03-01 08:18:20,325 INFO  [galaxy.tools.deps.containers] Checking with container resolver [ExplicitContainerResolver[]] found description [None]
-    2017-03-01 08:18:20,468 INFO  [galaxy.tools.deps.containers] Checking with container resolver [CachedMulledContainerResolver[namespace=None]] found description [None]
-    2017-03-01 08:18:20,881 INFO  [galaxy.tools.deps.containers] Checking with container resolver [MulledContainerResolver[namespace=biocontainers]] found description [ContainerDescription[identifier=quay.io/biocontainers/seqtk:1.2--0,type=docker]]
+    2017-03-01 08:18:20,325 INFO  [galaxy.tools.deps.containers] Checking with container resolver [ExplicitDockerContainerResolver[]] found description [None]
+    2017-03-01 08:18:20,468 INFO  [galaxy.tools.deps.containers] Checking with container resolver [CachedMulledDockerContainerResolver[namespace=None]] found description [None]
+    2017-03-01 08:18:20,881 INFO  [galaxy.tools.deps.containers] Checking with container resolver [MulledDockerContainerResolver[namespace=biocontainers]] found description [ContainerDescription[identifier=quay.io/biocontainers/seqtk:1.2--0,type=docker]]
     2017-03-01 08:18:20,904 INFO  [galaxy.jobs.command_factory] Built script [/tmp/tmpw8_UQm/job_working_directory/000/2/tool_script.sh] for tool command [seqtk seq -a '/tmp/tmpw8_UQm/files/000/dataset_1.dat' > '/tmp/tmpw8_UQm/files/000/dataset_2.dat']
     2017-03-01 08:18:21,060 DEBUG [galaxy.tools.deps] Using dependency samtools version None of type conda
     2017-03-01 08:18:21,061 DEBUG [galaxy.tools.deps] Using dependency samtools version None of type conda
@@ -147,88 +147,57 @@ demonstrating this - `bwa_and_samtools.xml
     $ planemo project_init --project_template=conda_testing conda_testing
     $ cd conda_testing/
     $ planemo mull bwa_and_samtools.xml
-    /home/planemo/.planemo/involucro -v=3 -f /home/planemo/workspace/planemo/.venv/lib/python2.7/site-packages/galaxy_lib-17.5.6.dev0-py2.7.egg/galaxy/tools/deps/mulled/invfile.lua -set CHANNELS='iuc,bioconda,r,defaults,conda-forge' -set TEST='true' -set TARGETS='samtools=1.3.1,bwa=0.7.15' -set REPO='quay.io/biocontainers/mulled-v1-01afc412d1f216348d85970ce5f88c984aa443f3' -set BINDS='build/dist:/usr/local/' -set PREINSTALL='conda install --quiet --yes conda=4.3' build
-    /home/planemo/.planemo/involucro -v=3 -f /home/planemo/workspace/planemo/.venv/lib/python2.7/site-packages/galaxy_lib-17.5.6.dev0-py2.7.egg/galaxy/tools/deps/mulled/invfile.lua -set CHANNELS='iuc,bioconda,r,defaults,conda-forge' -set TEST='true' -set TARGETS='samtools=1.3.1,bwa=0.7.15' -set REPO='quay.io/biocontainers/mulled-v1-01afc412d1f216348d85970ce5f88c984aa443f3' -set BINDS='build/dist:/usr/local/' -set PREINSTALL='conda install --quiet --yes conda=4.3' build
-    [Mar  1 10:35:52] DEBU Run file [/home/planemo/workspace/planemo/.venv/lib/python2.7/site-packages/galaxy_lib-17.5.6.dev0-py2.7.egg/galaxy/tools/deps/mulled/invfile.lua]
-    [Mar  1 10:35:52] STEP Run image [continuumio/miniconda:latest] with command [[rm -rf /data/dist]]
-    [Mar  1 10:35:52] DEBU Creating container [step-dc0ca6a011]
-    [Mar  1 10:35:52] DEBU Created container [fc1f03ba6d5c step-dc0ca6a011], starting it
-    [Mar  1 10:35:52] DEBU Container [fc1f03ba6d5c step-dc0ca6a011] started, waiting for completion
-    [Mar  1 10:35:55] DEBU Container [fc1f03ba6d5c step-dc0ca6a011] completed with exit code [0] as expected
-    [Mar  1 10:35:55] DEBU Container [fc1f03ba6d5c step-dc0ca6a011] removed
-    [Mar  1 10:35:55] STEP Run image [continuumio/miniconda:latest] with command [[/bin/sh -c conda install --quiet --yes conda=4.3 && conda install  -c iuc -c bioconda -c r -c defaults -c conda-forge  samtools=1.3.1 bwa=0.7.15 -p /usr/local --copy --yes --quiet]]
-    [Mar  1 10:35:55] DEBU Creating container [step-15585c5e5f]
-    [Mar  1 10:35:55] DEBU Created container [fd60643cbd2e step-15585c5e5f], starting it
-    [Mar  1 10:35:57] DEBU Container [fd60643cbd2e step-15585c5e5f] started, waiting for completion
-    [Mar  1 10:35:58] SOUT Fetching package metadata .......
-    [Mar  1 10:35:59] SOUT Solving package specifications: ..........
-    [Mar  1 10:36:07] SOUT
-    [Mar  1 10:36:07] SOUT Package plan for installation in environment /opt/conda:
-    [Mar  1 10:36:07] SOUT
-    [Mar  1 10:36:07] SOUT The following packages will be downloaded:
-    [Mar  1 10:36:07] SOUT
-    [Mar  1 10:36:07] SOUT package                    |            build
-    [Mar  1 10:36:07] SOUT ---------------------------|-----------------
-    [Mar  1 10:36:07] SOUT libffi-3.2.1               |                1          38 KB
-    [Mar  1 10:36:07] SOUT idna-2.2                   |           py27_0         122 KB
-    [Mar  1 10:36:07] SOUT ipaddress-1.0.18           |           py27_0          31 KB
-    [Mar  1 10:36:07] SOUT pyasn1-0.1.9               |           py27_0          54 KB
-    [Mar  1 10:36:07] SOUT pycparser-2.17             |           py27_0         153 KB
-    [Mar  1 10:36:07] SOUT requests-2.13.0            |           py27_0         776 KB
-    [Mar  1 10:36:07] SOUT six-1.10.0                 |           py27_0          16 KB
-    [Mar  1 10:36:07] SOUT cffi-1.9.1                 |           py27_0         325 KB
-    [Mar  1 10:36:07] SOUT cryptography-1.7.1         |           py27_0         848 KB
-    [Mar  1 10:36:07] SOUT pyopenssl-16.2.0           |           py27_0          68 KB
-    [Mar  1 10:36:07] SOUT conda-4.3.13               |           py27_0         482 KB
-    [Mar  1 10:36:07] SOUT ------------------------------------------------------------
-    [Mar  1 10:36:07] SOUT Total:         2.8 MB
-    [Mar  1 10:36:07] SOUT
-    [Mar  1 10:36:07] SOUT The following NEW packages will be INSTALLED:
-    [Mar  1 10:36:07] SOUT
-    [Mar  1 10:36:07] SOUT cffi:         1.9.1-py27_0
-    [Mar  1 10:36:07] SOUT cryptography: 1.7.1-py27_0
-    [Mar  1 10:36:07] SOUT idna:         2.2-py27_0
-    [Mar  1 10:36:07] SOUT ipaddress:    1.0.18-py27_0
-    [Mar  1 10:36:07] SOUT libffi:       3.2.1-1
-    [Mar  1 10:36:07] SOUT pyasn1:       0.1.9-py27_0
-    [Mar  1 10:36:07] SOUT pycparser:    2.17-py27_0
-    [Mar  1 10:36:07] SOUT pyopenssl:    16.2.0-py27_0
-    [Mar  1 10:36:07] SOUT six:          1.10.0-py27_0
-    [Mar  1 10:36:07] SOUT
-    [Mar  1 10:36:07] SOUT The following packages will be UPDATED:
-    [Mar  1 10:36:07] SOUT
-    [Mar  1 10:36:07] SOUT conda:        4.2.12-py27_0 --> 4.3.13-py27_0
-    [Mar  1 10:36:07] SOUT requests:     2.11.1-py27_0 --> 2.13.0-py27_0
-    [Mar  1 10:36:07] SOUT
-    [Mar  1 10:36:29] SOUT Fetching package metadata .................
-    [Mar  1 10:36:30] SOUT Solving package specifications: .
-    [Mar  1 10:36:56] SOUT
-    [Mar  1 10:36:56] SOUT Package plan for installation in environment /usr/local:
-    [Mar  1 10:36:56] SOUT
-    [Mar  1 10:36:56] SOUT The following NEW packages will be INSTALLED:
-    [Mar  1 10:36:56] SOUT
-    [Mar  1 10:36:56] SOUT bwa:        0.7.15-0      bioconda
-    [Mar  1 10:36:56] SOUT curl:       7.45.0-2      bioconda
-    [Mar  1 10:36:56] SOUT libgcc:     5.2.0-0
-    [Mar  1 10:36:56] SOUT openssl:    1.0.2k-0
-    [Mar  1 10:36:56] SOUT pip:        9.0.1-py27_1
-    [Mar  1 10:36:56] SOUT python:     2.7.13-0
-    [Mar  1 10:36:56] SOUT readline:   6.2-2
-    [Mar  1 10:36:56] SOUT samtools:   1.3.1-5       bioconda
-    [Mar  1 10:36:56] SOUT setuptools: 27.2.0-py27_0
-    [Mar  1 10:36:56] SOUT sqlite:     3.13.0-0
-    [Mar  1 10:36:56] SOUT tk:         8.5.18-0
-    [Mar  1 10:36:56] SOUT wheel:      0.29.0-py27_0
-    [Mar  1 10:36:56] SOUT zlib:       1.2.8-3
-    [Mar  1 10:36:56] SOUT
-    [Mar  1 10:36:57] DEBU Container [fd60643cbd2e step-15585c5e5f] completed with exit code [0] as expected
-    [Mar  1 10:36:58] DEBU Container [fd60643cbd2e step-15585c5e5f] removed
-    [Mar  1 10:36:58] STEP Wrap [build/dist] as [quay.io/biocontainers/mulled-v1-01afc412d1f216348d85970ce5f88c984aa443f3]
-    [Mar  1 10:36:58] DEBU Creating container [step-dfbadd3a91]
-    [Mar  1 10:36:59] DEBU Packing succeeded
+    /Users/john/.planemo/involucro -v=3 -f /Users/john/workspace/planemo/.venv/lib/python2.7/site-packages/galaxy_lib-17.9.0-py2.7.egg/galaxy/tools/deps/mulled/invfile.lua -set CHANNELS='iuc,bioconda,r,defaults,conda-forge' -set TEST='true' -set TARGETS='samtools=1.3.1,bwa=0.7.15' -set REPO='quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:03dc1d2818d9de56938078b8b78b82d967c1f820' -set BINDS='build/dist:/usr/local/' -set PREINSTALL='conda install --quiet --yes conda=4.3' build
+    /Users/john/.planemo/involucro -v=3 -f /Users/john/workspace/planemo/.venv/lib/python2.7/site-packages/galaxy_lib-17.9.0-py2.7.egg/galaxy/tools/deps/mulled/invfile.lua -set CHANNELS='iuc,bioconda,r,defaults,conda-forge' -set TEST='true' -set TARGETS='samtools=1.3.1,bwa=0.7.15' -set REPO='quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:03dc1d2818d9de56938078b8b78b82d967c1f820' -set BINDS='build/dist:/usr/local/' -set PREINSTALL='conda install --quiet --yes conda=4.3' build
+    [Jun 19 11:28:35] DEBU Run file [/Users/john/workspace/planemo/.venv/lib/python2.7/site-packages/galaxy_lib-17.9.0-py2.7.egg/galaxy/tools/deps/mulled/invfile.lua]
+    [Jun 19 11:28:35] STEP Run image [continuumio/miniconda:latest] with command [[rm -rf /data/dist]]
+    [Jun 19 11:28:35] DEBU Creating container [step-730a02d79e]
+    [Jun 19 11:28:35] DEBU Created container [5e4b5f83c455 step-730a02d79e], starting it
+    [Jun 19 11:28:35] DEBU Container [5e4b5f83c455 step-730a02d79e] started, waiting for completion
+    [Jun 19 11:28:36] DEBU Container [5e4b5f83c455 step-730a02d79e] completed with exit code [0] as expected
+    [Jun 19 11:28:36] DEBU Container [5e4b5f83c455 step-730a02d79e] removed
+    [Jun 19 11:28:36] STEP Run image [continuumio/miniconda:latest] with command [[/bin/sh -c conda install --quiet --yes conda=4.3 && conda install  -c iuc -c bioconda -c r -c defaults -c conda-forge  samtools=1.3.1 bwa=0.7.15 -p /usr/local --copy --yes --quiet]]
+    [Jun 19 11:28:36] DEBU Creating container [step-e95bf001c8]
+    [Jun 19 11:28:36] DEBU Created container [72b9ca0e56f8 step-e95bf001c8], starting it
+    [Jun 19 11:28:37] DEBU Container [72b9ca0e56f8 step-e95bf001c8] started, waiting for completion
+    [Jun 19 11:28:46] SOUT Fetching package metadata .........
+    [Jun 19 11:28:47] SOUT Solving package specifications: .
+    [Jun 19 11:28:50] SOUT
+    [Jun 19 11:28:50] SOUT Package plan for installation in environment /opt/conda:
+    [Jun 19 11:28:50] SOUT
+    [Jun 19 11:28:50] SOUT The following packages will be UPDATED:
+    [Jun 19 11:28:50] SOUT
+    [Jun 19 11:28:50] SOUT conda: 4.3.11-py27_0 --> 4.3.22-py27_0
+    [Jun 19 11:28:50] SOUT
+    [Jun 19 11:29:04] SOUT Fetching package metadata .................
+    [Jun 19 11:29:06] SOUT Solving package specifications: .
+    [Jun 19 11:29:56] SOUT
+    [Jun 19 11:29:56] SOUT Package plan for installation in environment /usr/local:
+    [Jun 19 11:29:56] SOUT
+    [Jun 19 11:29:56] SOUT The following NEW packages will be INSTALLED:
+    [Jun 19 11:29:56] SOUT
+    [Jun 19 11:29:56] SOUT bwa:        0.7.15-1      bioconda
+    [Jun 19 11:29:56] SOUT curl:       7.52.1-0
+    [Jun 19 11:29:56] SOUT libgcc:     5.2.0-0
+    [Jun 19 11:29:56] SOUT openssl:    1.0.2l-0
+    [Jun 19 11:29:56] SOUT pip:        9.0.1-py27_1
+    [Jun 19 11:29:56] SOUT python:     2.7.13-0
+    [Jun 19 11:29:56] SOUT readline:   6.2-2
+    [Jun 19 11:29:56] SOUT samtools:   1.3.1-5       bioconda
+    [Jun 19 11:29:56] SOUT setuptools: 27.2.0-py27_0
+    [Jun 19 11:29:56] SOUT sqlite:     3.13.0-0
+    [Jun 19 11:29:56] SOUT tk:         8.5.18-0
+    [Jun 19 11:29:56] SOUT wheel:      0.29.0-py27_0
+    [Jun 19 11:29:56] SOUT zlib:       1.2.8-3
+    [Jun 19 11:29:56] SOUT
+    [Jun 19 11:29:57] DEBU Container [72b9ca0e56f8 step-e95bf001c8] completed with exit code [0] as expected
+    [Jun 19 11:29:57] DEBU Container [72b9ca0e56f8 step-e95bf001c8] removed
+    [Jun 19 11:29:57] STEP Wrap [build/dist] as [quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:03dc1d2818d9de56938078b8b78b82d967c1f820-0]
+    [Jun 19 11:29:57] DEBU Creating container [step-6f1c176372]
+    [Jun 19 11:29:58] DEBU Packing succeeded
 
 As the output indicates, this command built the container named
-``quay.io/biocontainers/mulled-v1-01afc412d1f216348d85970ce5f88c984aa443f3``.
+``quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:03dc1d2818d9de56938078b8b78b82d967c1f820-0``.
 This is the same namespace / URL that would be used if or when published by
 the BioContainers_ project.
 
@@ -240,15 +209,15 @@ the BioContainers_ project.
 We can see this new container when running the Docker command ``images`` and
 explore the new container interactively with ``docker run``.
 
+::
+
     $ docker images
-    REPOSITORY                                                                 TAG                 IMAGE ID            CREATED              SIZE
-    quay.io/biocontainers/mulled-v1-01afc412d1f216348d85970ce5f88c984aa443f3   latest              bc9bac4f0711        About a minute ago   105 MB
-    quay.io/biocontainers/seqtk                                                1.2                 fb2a142cec61        14 hours ago         7.27 MB
-    quay.io/biocontainers/mulled-v1-5a0cd13674b8e343e5f49a52e2f4a9e5ca4dd799   latest              1c3052972fc3        45 hours ago         12.1 MB
-    quay.io/biocontainers/seqtk                                                1.2--0              10bc359ebd30        2 days ago           7.34 MB
-    continuumio/miniconda                                                      latest              6965a4889098        3 weeks ago          437 MB
-    bgruening/busybox-bash                                                     0.1                 3d974f51245c        9 months ago         6.73 MB
-    $ docker run -i -t quay.io/biocontainers/mulled-v1-01afc412d1f216348d85970ce5f88c984aa443f3 /bin/bash
+    REPOSITORY                                                                 TAG                                          IMAGE ID            CREATED              SIZE
+    quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40   03dc1d2818d9de56938078b8b78b82d967c1f820-0   a740fe1e6a9e        16 hours ago         104 MB
+    quay.io/biocontainers/seqtk                                                1.2--0                                       10bc359ebd30        2 days ago           7.34 MB
+    continuumio/miniconda                                                      latest                                       6965a4889098        3 weeks ago          437 MB
+    bgruening/busybox-bash                                                     0.1                                          3d974f51245c        9 months ago         6.73 MB
+    $ docker run -i -t quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:03dc1d2818d9de56938078b8b78b82d967c1f820-0 /bin/bash
     bash-4.2# which samtools
     /usr/local/bin/samtools
     bash-4.2# which bwa
@@ -272,7 +241,7 @@ the ``--biocontainers`` flag.
     2017-03-01 10:20:59,067 DEBUG [galaxy.tools.deps] Using dependency bwa version 0.7.15 of type conda
     2017-03-01 10:20:59,068 DEBUG [galaxy.tools.deps] Using dependency samtools version 1.3.1 of type conda
     2017-03-01 10:20:59,083 INFO  [galaxy.tools.deps.containers] Checking with container resolver [ExplicitContainerResolver[]] found description [None]
-    2017-03-01 10:20:59,142 INFO  [galaxy.tools.deps.containers] Checking with container resolver [CachedMulledContainerResolver[namespace=None]] found description [ContainerDescription[identifier=quay.io/biocontainers/mulled-v1-01afc412d1f216348d85970ce5f88c984aa443f3:latest,type=docker]]
+    2017-03-01 10:20:59,142 INFO  [galaxy.tools.deps.containers] Checking with container resolver [CachedMulledDockerContainerResolver[namespace=biocontainers]] found description [ContainerDescription[identifier=quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:03dc1d2818d9de56938078b8b78b82d967c1f820-0,type=docker]]
     2017-03-01 10:20:59,163 INFO  [galaxy.jobs.command_factory] Built script [/tmp/tmpQs0gyp/job_working_directory/000/1/tool_script.sh] for tool command [bwa > /tmp/tmpQs0gyp/files/000/dataset_1.dat 2>&1 ; samtools > /tmp/tmpQs0gyp/files/000/dataset_2.dat 2>&1]
     2017-03-01 10:20:59,367 DEBUG [galaxy.tools.deps] Using dependency samtools version None of type conda
     2017-03-01 10:20:59,367 DEBUG [galaxy.tools.deps] Using dependency samtools version None of type conda
@@ -296,18 +265,18 @@ the ``--biocontainers`` flag.
 
 In particular take note of the line::
 
-    2017-03-01 10:20:59,142 INFO  [galaxy.tools.deps.containers] Checking with container resolver [CachedMulledContainerResolver[namespace=None]] found description [ContainerDescription[identifier=quay.io/biocontainers/mulled-v1-01afc412d1f216348d85970ce5f88c984aa443f3:latest,type=docker]]
+    2017-03-01 10:20:59,142 INFO  [galaxy.tools.deps.containers] Checking with container resolver [CachedMulledDockerContainerResolver[namespace=biocontainers]] found description [ContainerDescription[identifier=quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:03dc1d2818d9de56938078b8b78b82d967c1f820-0,type=docker]]
 
-Here we can see the container ID (``quay.io/biocontainers/mulled-v1-01afc412d1f216348d85970ce5f88c984aa443f3``)
+Here we can see the container ID (``quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:03dc1d2818d9de56938078b8b78b82d967c1f820-0``)
 from earlier has been cached on our Docker host is picked up by Galaxy. This is used to run the simple
 tool tests and indeed they pass.
 
 In our initial seqtk example, the container resolver that matched was of type
-``MulledContainerResolver`` indicating that the Docker image would be downloaded
+``MulledDockerContainerResolver`` indicating that the Docker image would be downloaded
 from the BioContainer repository and this time the resolve that matched was of type
-``CachedMulledContainerResolver`` meaning that Galaxy would just use the locally
+``CachedMulledDockerContainerResolver`` meaning that Galaxy would just use the locally
 cached version from the Docker host (i.e. the one we built with ``planemo mull``
-above). 
+above).
 
 Planemo doesn't yet expose options that make it possible to build mulled
 containers for local packages that have yet to be published to anaconda.org
