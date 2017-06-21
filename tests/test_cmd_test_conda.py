@@ -5,7 +5,6 @@ from .test_utils import (
     CliTestCase,
     PROJECT_TEMPLATES_DIR,
     skip_if_environ,
-    TEST_RECIPES_DIR,
     TEST_REPOS_DIR,
     TEST_TOOLS_DIR,
 )
@@ -102,7 +101,7 @@ class CmdTestCondaTestCase(CliTestCase):
     def test_local_conda_dependencies_version(self):
         """Test a tool that requires local package builds."""
         with self._isolate():
-            fleeqtk_recipe = os.path.join(TEST_RECIPES_DIR, "fleeqtk")
+            fleeqtk_recipe = os.path.join(PROJECT_TEMPLATES_DIR, "conda_answers", "exercise_2", "fleeqtk")
             build_command = [
                 "conda_build",
                 fleeqtk_recipe,
