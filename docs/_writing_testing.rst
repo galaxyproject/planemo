@@ -96,12 +96,18 @@ result - all following the pattern from the command block in the tool.
     $ bwa index -a is bwa-mem-mt-genome.fa
     $ bwa mem bwa-mem-mt-genome.fa bwa-mem-fastq1.fq bwa-mem-fastq2.fq | \
       samtools view -Sb - > temporary_bam_file.bam && \
-      samtools sort -f temporary_bam_file.bam bwa-aln-test2.bam
+      (samtools sort -f temporary_bam_file.bam bwa-aln-test2.bam || samtools sort -o bwa-aln-test2.bam temporary_bam_file.bam)
 
 .. warning:: In many ways this magic is the hardest part of wrapping Galaxy
    tools and is something this tutorial cannot really teach. The command line
    magic required for each tool is going to be different. Developing a Galaxy
    wrapper requires a lot of knowledge of the underlying applications.
+
+.. note:: Sort appears twice in this odd command because two different
+   versions of samtools with conflicting syntaxes may happen
+   to be on your machine when running this command. Galaxy manages
+   versioned dependencies and so the tool itself does not reflect this
+   complexity.
 
 The primary result of this is the file ``test-data/bwa-aln-test2.bam``. We
 will  now copy and paste the existing test case to add a new test case that
