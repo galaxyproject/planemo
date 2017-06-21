@@ -144,7 +144,7 @@ demonstrating this - `bwa_and_samtools.xml
 
 ::
 
-    $ planemo project_init --project_template=conda_testing conda_testing
+    $ planemo project_init --template=conda_testing conda_testing
     $ cd conda_testing/
     $ planemo mull bwa_and_samtools.xml
     /Users/john/.planemo/involucro -v=3 -f /Users/john/workspace/planemo/.venv/lib/python2.7/site-packages/galaxy_lib-17.9.0-py2.7.egg/galaxy/tools/deps/mulled/invfile.lua -set CHANNELS='iuc,bioconda,r,defaults,conda-forge' -set TEST='true' -set TARGETS='samtools=1.3.1,bwa=0.7.15' -set REPO='quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:03dc1d2818d9de56938078b8b78b82d967c1f820' -set BINDS='build/dist:/usr/local/' -set PREINSTALL='conda install --quiet --yes conda=4.3' build
