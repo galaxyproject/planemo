@@ -57,7 +57,7 @@ Specifying and Using Tool Requirements
 
             conda: 4.2.12-py35_0 --> 4.2.13-py35_0
 
-        Conda installation succeeded - Conda is available at '/Users/john/miniconda2/bin/conda'
+        Conda installation succeeded - Conda is available at '/Users/john/miniconda3/bin/conda'
 
 While Galaxy can be configured to resolve dependencies various ways, Planemo
 is configured with opinionated defaults geared at making building tools that
