@@ -33,3 +33,5 @@ diff bwa-mem_v4.xml bwa-mem_v5.xml
 echo "pear from question to answer"
 diff ../../project_templates/conda_exercises/exercise_1/pear.xml ../../project_templates/conda_answers/exercise_1/pear.xml
 
+echo "fleeqtk from question to answer"
+diff ../../project_templates/conda_exercises/exercise_2/fleeqtk_seq.xml ../../project_templates/conda_answers/exercise_2/fleeqtk_seq.xml
