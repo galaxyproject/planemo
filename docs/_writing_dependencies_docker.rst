@@ -121,7 +121,7 @@ Docker container using the flag ``--biocontainers`` as shown (in part) next.
 
 A very important line here is::
 
-    2017-03-01 08:18:20,881 INFO  [galaxy.tools.deps.containers] Checking with container resolver [MulledContainerResolver[namespace=biocontainers]] found description [ContainerDescription[identifier=quay.io/biocontainers/seqtk:1.2--0,type=docker]]
+    2017-03-01 08:18:20,881 INFO  [galaxy.tools.deps.containers] Checking with container resolver [MulledDockerContainerResolver[namespace=biocontainers]] found description [ContainerDescription[identifier=quay.io/biocontainers/seqtk:1.2--0,type=docker]]
 
 This line indicates that Galaxy was able to find a container for this tool and
 executed the tool in that container.
