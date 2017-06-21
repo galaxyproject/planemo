@@ -10,9 +10,7 @@ install BWA - but however you obtain it should be fine.
 
 ::
 
-    $ conda config --add channels r
-    $ conda config --add channels bioconda
-    $ conda install bwa
+    $ conda install -c bioconda bwa
         ... bwa installation ...
     $ bwa
     Program: bwa (alignment via Burrows-Wheeler transformation)
@@ -57,9 +55,6 @@ using Planemo's ``project_init`` command.
 
     $ planemo project_init --template bwa bwa
     $ cd bwa
-
-.. note:: The above command shows the following warning but works fine.
-  ``mv: cannot move '/tmp/tmpG59z0F/bwa/..' to '/opt/galaxy/tools/bwa/..': Device or resource busy``
 
 This will create a folder with a ``bwa-mem.xml`` as follows:
 
@@ -269,7 +264,7 @@ the procedure described in the `tutorial <http://planemo.readthedocs.io/en/lates
 
 .. note:: A full list of the current assertion elements like these that are
     allowed can be found `on the tool syntax page
-    <https://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax#A.3Cassert_contents.3E_tag_set_.28functional_tests.29>`__.
+    <https://docs.galaxyproject.org/en/latest/dev/schema.html#tool-tests-test-output-assert-contents>`__.
 
     In additon to the assertion-based testing of the command, the jobs standard
     output and standard error can be checked using ``assert_stdout`` and

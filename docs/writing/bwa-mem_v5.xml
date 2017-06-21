@@ -2,8 +2,8 @@
 <tool id="bwa_mem_test" name="Map with BWA-MEM" version="0.0.1">
     <description>- map medium and long reads</description>
     <requirements>
-        <requirement type="package" version="0.7.7">bwa</requirement>
-        <requirement type="package" version="0.1.16">samtools</requirement>
+        <requirement type="package" version="0.7.15">bwa</requirement>
+        <requirement type="package" version="1.3">samtools</requirement>
     </requirements>
     <command detect_errors="exit_code"><![CDATA[
       ## Build reference
@@ -28,7 +28,7 @@
       "${input_type_conditional.fastq_input.forward}" "${input_type_conditional.fastq_input.reverse}"
       #end if
       | samtools view -Sb - > temporary_bam_file.bam &&
-      samtools sort -f temporary_bam_file.bam ${bam_output}
+      samtools sort -o ${bam_output} temporary_bam_file.bam
     ]]></command>
 
     <inputs>
