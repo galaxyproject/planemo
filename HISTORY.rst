@@ -6,10 +6,15 @@ History
 .. to_doc
 
 ---------------------
-0.44.0.dev0
+0.44.0 (2017-06-22)
 ---------------------
 
-    
+* Fix and improve Galaxy root option specification options.
+  `Pull Request 701`_, 8a608e0_
+* Update `planemo mull` to use a default action of `build-and-test` since
+  `build` no longer cleans up itself. ecc1bc2_
+* Add a command to pre-install Involucro_.
+  `Pull Request 702`_
 
 ---------------------
 0.43.0 (2017-06-22)
@@ -1127,6 +1132,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _8a608e0: https://github.com/galaxyproject/planemo/commit/8a608e0
+.. _ecc1bc2: https://github.com/galaxyproject/planemo/commit/ecc1bc2
+.. _Pull Request 702: https://github.com/galaxyproject/planemo/pull/702
+.. _Pull Request 701: https://github.com/galaxyproject/planemo/pull/701
 .. _Pull Request 699: https://github.com/galaxyproject/planemo/pull/699
 .. _91b6fa0: https://github.com/galaxyproject/planemo/commit/91b6fa0
 .. _904d77a: https://github.com/galaxyproject/planemo/commit/904d77a
