@@ -43,7 +43,7 @@ BioContainers_-style container can be found or built for it.
 
 As reminder, ``planemo lint --conda_requirements <tool.xml>`` can be used
 to check if a tool contains only best-practice ``requirement`` tags. The ``lint``
-command can also be fed the ``--biocontainer`` flag to check if a
+command can also be fed the ``--biocontainers`` flag to check if a
 BioContainers_ container has been registered that is compatible with that tool.
 
 Below is an example of using this with the completed ``seqtk_seq.xml``
@@ -228,7 +228,7 @@ the ``--biocontainers`` flag.
 
 ::
 
-    $ planemo test --biocontainers bwa_and_samtools.xml
+    $ planemo test --galaxy_branch dev --biocontainers bwa_and_samtools.xml
     ...
     2017-03-01 10:20:58,077 INFO  [galaxy.tools.actions] Handled output named output_2 for tool bwa_and_samtools (17.443 ms)
     2017-03-01 10:20:58,090 INFO  [galaxy.tools.actions] Added output datasets to history (12.935 ms)
@@ -262,6 +262,11 @@ the ``--biocontainers`` flag.
     Testing complete. HTML report is in "/home/planemo/workspace/planemo/tool_test_output.html".
     All 1 test(s) executed passed.
     bwa_and_samtools[0]: passed
+
+.. warning:: The newer version 2 mulled hasing used by Planemo in the examples will only be
+    available in Galaxy's development branch until 17.09 is released in September or October of 2017.
+    This is why the above example uses the ``--galaxy_branch dev`` flag to fetch that branch of
+    Galaxy on the fly.
 
 In particular take note of the line::
 

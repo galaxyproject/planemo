@@ -32,4 +32,4 @@ echo "Should see quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31
 docker images 
 
 echo "Should see cached container was used for this"
-planemo test --biocontainers bwa_and_samtools.xml
+planemo test --galaxy_branch dev --biocontainers bwa_and_samtools.xml
