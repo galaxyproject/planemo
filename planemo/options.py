@@ -122,6 +122,7 @@ def galaxy_root_option():
     return planemo_option(
         "--galaxy_root",
         use_global_config=True,
+        extra_global_config_vars=["galaxy_root"],
         use_env_var=True,
         type=click.Path(exists=True, file_okay=False, resolve_path=True),
         help="Root of development galaxy directory to execute command with.",
@@ -143,6 +144,8 @@ def galaxy_cwl_root_option():
     return planemo_option(
         "--cwl_galaxy_root",
         use_global_config=True,
+        extra_global_config_vars=["cwl_galaxy_root"],
+        use_env_var=True,
         type=click.Path(exists=True, file_okay=False, resolve_path=True),
         help=("Root of development galaxy directory to execute command with"
               " (must be branch of Galaxy with CWL support, this option"

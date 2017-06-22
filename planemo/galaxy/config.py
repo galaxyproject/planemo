@@ -977,8 +977,6 @@ def _find_galaxy_root(ctx, **kwds):
     galaxy_root = kwds.get(root_prop, None)
     if galaxy_root:
         return galaxy_root
-    elif ctx.global_config.get(root_prop, None):
-        return ctx.global_config[root_prop]
     else:
         par_dir = os.getcwd()
         while True:

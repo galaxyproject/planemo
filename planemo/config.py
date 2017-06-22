@@ -19,7 +19,7 @@ OptionSource = aenum.Enum(
 
 
 def _default_callback(
-    default, use_global_config=False, resolve_path=False,
+    default, use_global_config=False, resolve_path=False, extra_global_config_vars=[],
 ):
 
     def callback(ctx, param, value):
@@ -33,6 +33,7 @@ def _default_callback(
                 planemo_ctx,
                 param,
                 use_global_config=use_global_config,
+                extra_global_config_vars=extra_global_config_vars,
             )
 
         if result is VALUE_UNSET:
@@ -51,13 +52,14 @@ def _default_callback(
     return callback
 
 
-def _find_default(ctx, param, use_global_config):
+def _find_default(ctx, param, use_global_config, extra_global_config_vars):
     if use_global_config:
         global_config = ctx.global_config
-        global_config_key = "default_%s" % param.name
-        if global_config_key in global_config:
-            default_value = global_config[global_config_key]
-            return default_value, OptionSource.global_config
+        global_config_keys = ["default_%s" % param.name] + extra_global_config_vars
+        for global_config_key in global_config_keys:
+            if global_config_key in global_config:
+                default_value = global_config[global_config_key]
+                return default_value, OptionSource.global_config
 
     return VALUE_UNSET, None
 
@@ -73,6 +75,7 @@ def planemo_option(*args, **kwargs):
     option_type = kwargs.get("type", None)
     use_global_config = kwargs.pop("use_global_config", False)
     use_env_var = kwargs.pop("use_env_var", False)
+    extra_global_config_vars = kwargs.pop("extra_global_config_vars", [])
 
     default_specified = "default" in kwargs
     default = None
@@ -87,6 +90,7 @@ def planemo_option(*args, **kwargs):
             result = _default_callback(
                 default,
                 use_global_config=use_global_config,
+                extra_global_config_vars=extra_global_config_vars,
                 resolve_path=resolve_path,
             )(ctx, param, value)
 
