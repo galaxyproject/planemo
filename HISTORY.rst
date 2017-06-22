@@ -9,7 +9,11 @@ History
 0.43.0.dev0
 ---------------------
 
-    
+* Remove stdio from generated tools - just use exit_code for everything.
+  91b6fa0_
+* Implement some ad-hoc documentation tests. `Pull Request 699`_
+* A large number of small enhancements and fixes for the documentation and
+  example projects.
 
 ---------------------
 0.42.1 (2017-06-16)
@@ -1117,6 +1121,8 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 699: https://github.com/galaxyproject/planemo/pull/699
+.. _91b6fa0: https://github.com/galaxyproject/planemo/commit/91b6fa0
 .. _904d77a: https://github.com/galaxyproject/planemo/commit/904d77a
 .. _9636682: https://github.com/galaxyproject/planemo/commit/9636682
 .. _475104c: https://github.com/galaxyproject/planemo/commit/475104c
