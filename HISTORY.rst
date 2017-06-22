@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.43.0.dev0
+0.43.0 (2017-06-22)
 ---------------------
 
 * Remove stdio from generated tools - just use exit_code for everything.
