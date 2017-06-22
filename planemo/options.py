@@ -121,6 +121,8 @@ def galaxy_email_option():
 def galaxy_root_option():
     return planemo_option(
         "--galaxy_root",
+        use_global_config=True,
+        use_env_var=True,
         type=click.Path(exists=True, file_okay=False, resolve_path=True),
         help="Root of development galaxy directory to execute command with.",
     )
@@ -386,6 +388,7 @@ def galaxy_branch_option():
         "--galaxy_branch",
         default=None,
         use_global_config=True,
+        use_env_var=True,
         help=("Branch of Galaxy to target (defaults to master) if a Galaxy "
               "root isn't specified.")
     )
