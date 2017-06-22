@@ -1589,9 +1589,8 @@ def mulled_action_option():
     return planemo_option(
         "--mulled_command",
         type=click.STRING,
-        default="build",
-        help=("Mulled action to perform for targets - this defaults to 'build'. "
-              "Set this to build-and-test to also test the resulting container.")
+        default="build-and-test",
+        help=("Mulled action to perform for targets - this defaults to 'build-and-test'.")
     )
 
 
