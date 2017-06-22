@@ -220,6 +220,14 @@ planemo.commands.cmd_mull module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd_mulled_init module
+---------------------------------------
+
+.. automodule:: planemo.commands.cmd_mulled_init
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd_normalize module
 -------------------------------------
 
