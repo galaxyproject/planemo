@@ -159,7 +159,14 @@ class RegistryTarget(object):
 
     def write_targets(self, ctx, target_filename, mulled_targets):
         with open(target_filename, "w") as f:
-            contents = ",".join(["%s=%s" % (t.package_name, t.version) for t in mulled_targets])
+            target_strings = list()
+            for target in mulled_targets:
+                if target.version:
+                    target_str = "%s=%s" % (target.package_name, target.version)
+                else:
+                    target_str = target.package_name
+                target_strings.append(target_str)
+            contents = ",".join(target_strings)
             f.write(contents)
             ctx.vlog("Wrote requirements [%s] to file [%s]" % (contents, target_filename))
 
