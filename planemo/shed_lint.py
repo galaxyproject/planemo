@@ -289,7 +289,7 @@ def lint_shed_yaml(realized_repository, lint_ctx):
     path = realized_repository.real_path
     shed_yaml = os.path.join(path, ".shed.yml")
     if not os.path.exists(shed_yaml):
-        lint_ctx.info("No .shed.yml file found, skipping.")
+        lint_ctx.error("No .shed.yml file found.")
         return
     try:
         yaml.load(open(shed_yaml, "r"))
