@@ -246,6 +246,9 @@ def planemo(ctx, config, directory, verbose):
 
     Check out the full documentation for Planemo online
     http://planemo.readthedocs.org or open with ``planemo docs``.
+
+    All the individual planemo commands support the ``--help`` option, for
+    example use ``planemo lint --help`` for more details on checking tools.
     """
     ctx.verbose = verbose
     ctx.planemo_config = os.path.expanduser(config)
