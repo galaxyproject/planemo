@@ -17,6 +17,7 @@ class GalaxyEngine(BaseEngine):
 
     handled_runnable_types = [
         RunnableType.cwl_tool,
+        RunnableType.cwl_workflow,
         RunnableType.galaxy_workflow,
         RunnableType.galaxy_tool
     ]
@@ -26,7 +27,7 @@ class GalaxyEngine(BaseEngine):
         self._ctx.vlog("Serving artifact [%s] with Galaxy." % (runnable,))
         with self._serve([runnable]) as config:
             self._ctx.vlog("Running job path [%s]" % job_path)
-            run_response = execute(config, runnable, job_path, **self._kwds)
+            run_response = execute(self._ctx, config, runnable, job_path, **self._kwds)
 
         return run_response
 

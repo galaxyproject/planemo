@@ -6,6 +6,8 @@ from collections import namedtuple
 
 import yaml
 
+from bioblend.galaxy.client import Client
+
 try:
     from ephemeris import shed_install
 except ImportError:
@@ -21,8 +23,12 @@ except ImportError:
     ImporterGalaxyInterface = object
 
 
-def load_shed_repos(path):
-    # TODO: This is crap - doesn't have nested repositories at all.
+def load_shed_repos(runnable):
+    if runnable.type.name != "galaxy_workflow":
+        return []
+
+    # TODO: This is crap - doesn't handle nested repositories at all.
+    path = runnable.path
     if path.endswith(".ga"):
         with open(path, "r") as f:
             workflow = json.load(f)
@@ -33,20 +39,29 @@ def load_shed_repos(path):
     return workflow.get("tools", [])
 
 
-def install_shed_repos(path, admin_gi):
-    tools_info = load_shed_repos(path)
+def install_shed_repos(runnable, admin_gi):
+    tools_info = load_shed_repos(runnable)
     if tools_info:
-        shed_install.install_tools(tools_info, admin_gi, path, default_install_tool_dependencies=False)
+        shed_install.install_tools(tools_info, admin_gi, runnable.path, default_install_tool_dependencies=False)
 
 
-def import_workflow(path, admin_gi, user_gi):
+def import_workflow(path, admin_gi, user_gi, from_path=False):
     """Import a workflow path to specified Galaxy instance."""
-    importer = BioBlendImporterGalaxyInterface(
-        admin_gi=admin_gi,
-        user_gi=user_gi
-    )
-    workflow = _raw_dict(path, importer)
-    return importer.import_workflow(workflow)
+    if not from_path:
+        importer = BioBlendImporterGalaxyInterface(
+            admin_gi=admin_gi,
+            user_gi=user_gi
+        )
+        workflow = _raw_dict(path, importer)
+        return importer.import_workflow(workflow)
+    else:
+        # TODO: Update bioblend to allow from_path.
+        payload = dict(
+            from_path=path
+        )
+        workflows_url = user_gi._make_url(user_gi.workflows)
+        workflow = Client._post(user_gi.workflows, payload, url=workflows_url)
+        return workflow
 
 
 def _raw_dict(path, importer):

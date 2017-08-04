@@ -4,13 +4,13 @@ from __future__ import absolute_import
 
 import abc
 import collections
-import hashlib
 import os
 
 import aenum
 import six
 import yaml
 
+from galaxy.tools.cwl.parser import workflow_proxy
 from galaxy.tools.loader_directory import (
     is_a_yaml_with_class,
     looks_like_a_cwl_artifact,
@@ -272,24 +272,6 @@ class TestCase(object):
             return os.path.basename(self.runnable.path)
 
 
-def output_properties(path):
-    checksum = hashlib.sha1()
-    properties = {
-        "path": path,
-        "class": "File",
-    }
-    with open(path, "rb") as f:
-        contents = f.read(1024 * 1024)
-        filesize = 0
-        while contents != "":
-            checksum.update(contents)
-            filesize += len(contents)
-            contents = f.read(1024 * 1024)
-    properties["checksum"] = "sha1$%s" % checksum.hexdigest()
-    properties["size"] = filesize
-    return properties
-
-
 def _tests_path(runnable):
     if not runnable.is_single_artifact:
         raise NotImplementedError("Tests for directories are not yet implemented.")
@@ -318,6 +300,9 @@ def get_outputs(runnable):
     elif runnable.type == RunnableType.galaxy_workflow:
         workflow_outputs = describe_outputs(runnable.path)
         return [GalaxyWorkflowOutput(o) for o in workflow_outputs]
+    elif runnable.type == RunnableType.cwl_workflow:
+        workflow = workflow_proxy(runnable.path, strict_cwl_validation=False)
+        return [CwlWorkflowOutput(label) for label in workflow.output_labels]
     else:
         raise NotImplementedError("Getting outputs for this artifact type is not yet supported.")
 
@@ -352,6 +337,15 @@ class GalaxyWorkflowOutput(RunnableOutput):
     @property
     def workflow_output(self):
         return self._workflow_output
+
+
+class CwlWorkflowOutput(RunnableOutput):
+
+    def __init__(self, label):
+        self._label = label
+
+    def get_id(self):
+        return self._label
 
 
 class RunResponse(object):

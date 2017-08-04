@@ -18,7 +18,7 @@ A_GALAXY_YAML_WORKFLOW = os.path.join(TEST_DATA_DIR, "wf1.gxwf.yml")
 CAN_HANDLE = {
     'galaxy': {
         A_CWL_TOOL: True,
-        A_CWL_WORKFLOW: False,
+        A_CWL_WORKFLOW: True,
         A_GALAXY_TOOL: True,
         A_GALAXY_GA_WORKFLOW: True,
         A_GALAXY_YAML_WORKFLOW: True,
