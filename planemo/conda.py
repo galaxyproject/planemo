@@ -19,7 +19,7 @@ MESSAGE_ERROR_FAILED_INSTALL = "Attempted to install conda and failed."
 MESSAGE_ERROR_CANNOT_INSTALL = "Cannot install Conda - perhaps due to a failed installation or permission problems."
 MESSAGE_ERROR_NOT_INSTALLING = "Conda not configured - run ``planemo conda_init`` or pass ``--conda_auto_init`` to continue."
 
-BEST_PRACTICE_CHANNELS = ["conda-forge", "anaconda", "r", "bioconda"]
+BEST_PRACTICE_CHANNELS = ["bioconda", "conda-forge", "defaults", "r"]
 
 
 def build_conda_context(ctx, **kwds):
