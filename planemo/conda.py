@@ -25,7 +25,7 @@ BEST_PRACTICE_CHANNELS = ["bioconda", "conda-forge", "defaults", "r"]
 def build_conda_context(ctx, **kwds):
     """Build a galaxy-lib CondaContext tailored to planemo use.
 
-    Using planemo's common command-line/globa config options.
+    Using planemo's common command-line/global config options.
     """
     condarc_override_default = os.path.join(ctx.workspace, "condarc")
     conda_prefix = kwds.get("conda_prefix", None)
@@ -61,7 +61,7 @@ def build_conda_context(ctx, **kwds):
     return conda_context
 
 
-def collect_conda_targets(ctx, paths, recursive=False, found_tool_callback=None, conda_context=None):
+def collect_conda_targets(ctx, paths, recursive=False, found_tool_callback=None):
     """Load CondaTarget objects from supplied artifact sources.
 
     If a tool contains more than one requirement, the requirements will each
@@ -140,7 +140,7 @@ def tool_source_conda_targets(tool_source):
 best_practice_search_first = threading.local()
 
 
-def best_practice_search(conda_target):
+def best_practice_search(conda_target, conda_context=None):
     # Call it in offline mode after the first time.
     try:
         best_practice_search_first.previously_called
@@ -150,7 +150,9 @@ def best_practice_search(conda_target):
         best_practice_search_first.previously_called = True
         offline = False
 
-    return conda_util.best_search_result(conda_target, channels_override=BEST_PRACTICE_CHANNELS, offline=offline)
+    if not conda_context:
+        conda_context = conda_util.CondaContext()
+    return conda_util.best_search_result(conda_target, conda_context=conda_context, channels_override=BEST_PRACTICE_CHANNELS, offline=offline)
 
 
 __all__ = (

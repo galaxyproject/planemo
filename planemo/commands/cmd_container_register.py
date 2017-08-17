@@ -8,7 +8,11 @@ from galaxy.tools.deps.mulled.util import conda_build_target_str, quay_repositor
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.conda import best_practice_search, collect_conda_target_lists_and_tool_paths
+from planemo.conda import (
+    best_practice_search,
+    build_conda_context,
+    collect_conda_target_lists_and_tool_paths
+)
 from planemo.git import add, branch, commit, push
 from planemo.github_util import clone_fork_branch, get_repository_object, pull_request
 from planemo.mulled import conda_to_mulled_targets
@@ -23,6 +27,7 @@ DEFAULT_MESSAGE = "Add container $hash.\n**Hash**: $hash\n\n**Packages**:\n$pack
 @options.optional_tools_arg(multiple=True)
 @options.recursive_option()
 @options.mulled_namespace_option()
+@options.conda_target_options()
 @click.option(
     "output_directory",
     "--output_directory",
@@ -62,6 +67,7 @@ def cli(ctx, paths, **kwds):
     so that a container can be created and registered for these tools.
     """
     registry_target = RegistryTarget(ctx, **kwds)
+    conda_context = build_conda_context(ctx, **kwds)
 
     combinations_added = 0
     conda_targets_list, tool_paths_list = collect_conda_target_lists_and_tool_paths(ctx, paths, recursive=kwds["recursive"])
@@ -76,7 +82,7 @@ def cli(ctx, paths, **kwds):
 
         best_practice_requirements = True
         for conda_target in conda_targets:
-            best_hit, exact = best_practice_search(conda_target)
+            best_hit, exact = best_practice_search(conda_target, conda_context=conda_context)
             if not best_hit or not exact:
                 ctx.vlog("Target [%s] is not available in best practice channels - skipping" % conda_target)
                 best_practice_requirements = False
