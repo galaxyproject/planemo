@@ -9,7 +9,17 @@ History
 0.45.0.dev0
 ---------------------
 
-    
+* Update to the latest `galaxy-lib`_ for Conda fixes. (thanks `@nsoranzo`_)
+  and updated CWL_ utilities.  `Pull Request 716`_, `Pull Request 723`_
+* Update Conda_ channel order to sync with Bioconda_
+  (thanks to `@nsoranzo`_). `Pull Request 715`_
+* Experimental support running CWL_ workflows through the CWL_ fork of Galaxy.
+* Mention ``planemo command --help`` in main help
+  (thanks to `@peterjc`_). `Pull Request 709`_
+* Bugfix handle ``None`` requirement versions when registering containers
+  (thanks to `@bgruening`_). `Pull Request 704`_
+* Bugfix for dependencies by pinning ruamel.yaml version
+  (thanks to `@mvdbeek`_). `Pull Request 720`_
 
 ---------------------
 0.44.0 (2017-06-22)
@@ -422,7 +432,7 @@ History
 
 * Implement ``Engine`` and ``Runnable`` abstractions - Planemo now has
   beta support for testing Galaxy workflows and CWL_ tools with Galaxy and
-  any CWL artifact with cwltool_.
+  any CWL_ artifact with cwltool_.
   `Pull Request 454`_, 7be1bf5_
 * Fix missing command_line in test output json. e38c436_
 * More explicit Galaxy ``job_conf.xml`` handling, fixes bugs caused by
@@ -1138,6 +1148,12 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 704: https://github.com/galaxyproject/planemo/pull/704
+.. _Pull Request 709: https://github.com/galaxyproject/planemo/pull/709
+.. _Pull Request 715: https://github.com/galaxyproject/planemo/pull/715
+.. _Pull Request 716: https://github.com/galaxyproject/planemo/pull/716
+.. _Pull Request 720: https://github.com/galaxyproject/planemo/pull/720
+.. _Pull Request 723: https://github.com/galaxyproject/planemo/pull/723
 .. _8a608e0: https://github.com/galaxyproject/planemo/commit/8a608e0
 .. _ecc1bc2: https://github.com/galaxyproject/planemo/commit/ecc1bc2
 .. _Pull Request 702: https://github.com/galaxyproject/planemo/pull/702
