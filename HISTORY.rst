@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.45.0.dev0
+0.45.0 (2017-09-06)
 ---------------------
 
 * Update to the latest `galaxy-lib`_ for Conda fixes. (thanks `@nsoranzo`_)
