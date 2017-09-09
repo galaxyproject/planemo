@@ -108,7 +108,11 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         invocation = Client._post(user_gi.workflows, payload, url=invocations_url)
         invocation_id = invocation["id"]
         ctx.vlog("Waiting for invocation [%s]" % invocation_id)
-        final_invocation_state = _wait_for_invocation(user_gi, workflow_id, invocation_id)
+        try:
+            final_invocation_state = _wait_for_invocation(ctx, user_gi, workflow_id, invocation_id)
+        except Exception:
+            ctx.vlog("Problem waiting on invocation...")
+            raise
         ctx.vlog("Final invocation state is [%s]" % final_invocation_state)
         final_state = _wait_for_history(user_gi, history_id)
         if final_state != "ok":
@@ -194,12 +198,12 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
             "name": "dataset collection",
             "instance_type": "history",
             "history_id": history_id,
-            "element_identifiers": json.dumps(element_identifiers),
+            "element_identifiers": element_identifiers,
             "collection_type": collection_type,
             "fields": None if collection_type != "record" else "auto",
         }
-        dataset_collections_url = user_gi._make_url(user_gi.dataset_collections)
-        dataset_collection = Client._post(user_gi.workflows, payload, url=dataset_collections_url)
+        dataset_collections_url = user_gi.url + "/dataset_collections"
+        dataset_collection = Client._post(user_gi.histories, payload, url=dataset_collections_url)
         return dataset_collection
 
     with open(job_path, "r") as f:
@@ -514,9 +518,19 @@ def _history_id(gi, **kwds):
     return history_id
 
 
-def _wait_for_invocation(gi, workflow_id, invocation_id):
+def _wait_for_invocation(ctx, gi, workflow_id, invocation_id):
+
     def state_func():
-        return gi.workflows.show_invocation(workflow_id, invocation_id)
+        # TODO: Hack gi to work around Galaxy simply handing on this request
+        # sometimes.
+        gi.timeout = 30
+        try:
+            rval = gi.workflows.show_invocation(workflow_id, invocation_id)
+        except Exception:
+            # TODO: check if Galaxy is alive.
+            rval = {"state": "ready"}
+        gi.timeout = None
+        return rval
 
     return _wait_on_state(state_func)
 

@@ -17,6 +17,7 @@ from planemo.tools import uri_to_path
 @options.required_job_arg()
 @options.galaxy_run_options()
 @options.galaxy_config_options()
+@options.enable_cwl_option()
 @options.galaxy_cwl_root_option()
 @options.run_output_directory_option()
 @options.run_output_json_option()
