@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.46.0.dev0
+0.46.0 (2017-09-15)
 ---------------------
 
 * Change behavior of ``--docker`` flag, for a few releases it would require
