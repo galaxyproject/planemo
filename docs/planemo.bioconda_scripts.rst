@@ -1,11 +1,11 @@
-planemo.bioconda_scripts package
-================================
+planemo\.bioconda\_scripts package
+==================================
 
 Submodules
 ----------
 
-planemo.bioconda_scripts.bioconductor_skeleton module
------------------------------------------------------
+planemo\.bioconda\_scripts\.bioconductor\_skeleton module
+---------------------------------------------------------
 
 .. automodule:: planemo.bioconda_scripts.bioconductor_skeleton
     :members:

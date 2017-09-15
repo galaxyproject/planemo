@@ -40,8 +40,7 @@ target tool(s).
                                       currently only recognizes images with the
                                       namespace biocontainers.
       --mulled_command TEXT           Mulled action to perform for targets - this
-                                      defaults to 'build'. Set this to build-and-
-                                      test to also test the resulting container.
+                                      defaults to 'build-and-test'.
       --conda_channels, --conda_ensure_channels TEXT
                                       Ensure conda is configured with specified
                                       comma separated list of channels.
