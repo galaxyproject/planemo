@@ -1,5 +1,5 @@
-planemo_ext package
-===================
+planemo\_ext package
+====================
 
 Module contents
 ---------------

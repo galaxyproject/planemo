@@ -488,8 +488,8 @@ def conda_auto_install_option():
         "--conda_auto_install/--no_conda_auto_install",
         is_flag=True,
         default=True,
-        help=("Conda dependency resolution for Galaxy will auto install "
-              "will attempt to install requested but missing packages.")
+        help=("Conda dependency resolution for Galaxy will attempt to install "
+              "requested but missing packages.")
     )
 
 

@@ -1,19 +1,19 @@
-planemo.test package
-====================
+planemo\.test package
+=====================
 
 Submodules
 ----------
 
-planemo.test.data module
-------------------------
+planemo\.test\.data module
+--------------------------
 
 .. automodule:: planemo.test.data
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo.test.results module
----------------------------
+planemo\.test\.results module
+-----------------------------
 
 .. automodule:: planemo.test.results
     :members:

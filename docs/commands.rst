@@ -33,6 +33,7 @@ documentation describes these commands.
 .. include:: commands/docs.rst
 .. include:: commands/lint.rst
 .. include:: commands/mull.rst
+.. include:: commands/mulled_init.rst
 .. include:: commands/normalize.rst
 .. include:: commands/open.rst
 .. include:: commands/profile_create.rst
