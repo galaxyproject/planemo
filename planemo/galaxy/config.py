@@ -877,6 +877,8 @@ class LocalGalaxyConfig(BaseGalaxyConfig):
 
     @property
     def log_contents(self):
+        if not os.path.exists(self.log_file):
+            return ""
         with open(self.log_file, "r") as f:
             return f.read()
 

@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/bin/sh
 
 PLANEMO_BIN="${PLANEMO_BIN:-planemo}"
 PLANEMO_ARGS="${PLANEMO_ARGS:-}"
 
 VERBOSE_ARG="--verbose"
-USE_CONTAINER=0
+USE_CONTAINER=1
 
 # Pop args meant for common_startup.sh                                                     
 while :
@@ -15,7 +15,7 @@ do
              exit $?
              ;;
         --no-container)
-             USE_CONTAINER=1
+             USE_CONTAINER=0
              shift
              ;;
         --quiet)
@@ -39,4 +39,11 @@ do
 done
 
 # TODO: Do something with USE_CONTAINER
-$PLANEMO_BIN $VERBOSE_ARG run $PLANEMO_ARGS
+if [ -n USE_CONTAINER ];
+then
+    PLANEMO_ARGS="$PLANEMO_ARGS --docker --cwl"
+fi
+
+echo "$PLANEMO_ARGS"
+
+"$PLANEMO_BIN" --verbose run $PLANEMO_ARGS
