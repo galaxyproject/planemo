@@ -9,7 +9,20 @@ History
 0.46.0.dev0
 ---------------------
 
-    
+* Change behavior of ``--docker`` flag, for a few releases it would require
+  Galaxy use a container for every non-upload tool. This breaks various
+  conversion tools for instance and so was reverted.
+  `Pull Request 733`_
+* Add 'Accept' header when linting doc URLs (thanks to `@nsoranzo`_).
+  `Pull Request 725`_
+* Fix `--conda_auto_install` help (thanks to `@nsoranzo`_).
+  `Pull Request 727`_
+* Incremental progress toward CWL support via Galaxy.
+  `Pull Request 729`_, `Pull Request 732`_
+* Update galaxy-lib to latest version to fix various issues.
+  `Pull Request 730`_
+* Fix lint detected problems with documentation.
+  `Pull Request 731`_
 
 ---------------------
 0.45.0 (2017-09-06)
@@ -1154,6 +1167,13 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 725: https://github.com/galaxyproject/planemo/pull/725
+.. _Pull Request 727: https://github.com/galaxyproject/planemo/pull/727
+.. _Pull Request 729: https://github.com/galaxyproject/planemo/pull/729
+.. _Pull Request 730: https://github.com/galaxyproject/planemo/pull/730
+.. _Pull Request 731: https://github.com/galaxyproject/planemo/pull/731
+.. _Pull Request 733: https://github.com/galaxyproject/planemo/pull/733
+.. _Pull Request 732: https://github.com/galaxyproject/planemo/pull/732
 .. _Pull Request 704: https://github.com/galaxyproject/planemo/pull/704
 .. _Pull Request 709: https://github.com/galaxyproject/planemo/pull/709
 .. _Pull Request 715: https://github.com/galaxyproject/planemo/pull/715
