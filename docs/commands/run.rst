@@ -122,6 +122,10 @@ Planemo command for running tools and jobs.
       --database_connection TEXT      Database connection string to use for Galaxy.
       --shed_tool_conf TEXT           Location of shed tools conf file for Galaxy.
       --shed_tool_path TEXT           Location of shed tools directory for Galaxy.
+      --cwl                           Configure Galaxy for use with CWL tool. (this
+                                      option is experimental and will be replaced
+                                      when and if CWL support is merged into
+                                      Galaxy).
       --cwl_galaxy_root DIRECTORY     Root of development galaxy directory to
                                       execute command with (must be branch of Galaxy
                                       with CWL support, this option is experimental
