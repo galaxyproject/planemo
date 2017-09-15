@@ -1216,8 +1216,8 @@ def _handle_job_config_file(config_directory, server_name, kwds):
 
         conf_contents = Template(template_str).safe_substitute({
             "server_name": server_name,
-            "docker_enable": str(kwds.get("docker", False)),
-            "require_container": docker_enable,
+            "docker_enable": docker_enable,
+            "require_container": "false",
             "docker_sudo": str(kwds.get("docker_sudo", False)),
             "docker_sudo_cmd": str(kwds.get("docker_sudo_cmd", docker_util.DEFAULT_SUDO_COMMAND)),
             "docker_cmd": str(kwds.get("docker_cmd", docker_util.DEFAULT_DOCKER_COMMAND)),
