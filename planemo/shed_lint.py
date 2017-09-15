@@ -55,7 +55,7 @@ SHED_METADATA = [
 def lint_repository(ctx, realized_repository, **kwds):
     """Lint a realized shed repository.
 
-    See :module:`planemo.shed` for details on constructing a realized
+    See :mod:`planemo.shed` for details on constructing a realized
     repository data structure.
     """
     failed = False

@@ -257,6 +257,7 @@ environments such as Amazon Web Services and Google Compute Engine.
 
 .. _Galaxy: http://galaxyproject.org/
 .. _Docker: https://www.docker.com/
+.. _Conda: http://conda.pydata.org/
 .. _linuxbrew: https://github.com/Homebrew/linuxbrew
 .. _Vagrant: https://www.vagrantup.com/
 .. _Codebox: https://www.codebox.io/
