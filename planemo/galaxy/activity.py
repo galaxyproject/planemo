@@ -3,6 +3,7 @@
 import json
 import os
 import tempfile
+import time
 
 import yaml
 
@@ -175,12 +176,9 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
             upload_payload["inputs"]["files_0|auto_decompress"] = False
             upload_payload["inputs"]["files_0|url_paste"] = "file://%s" % tar_path
             tar_upload_response = user_gi.tools._tool_post(upload_payload, files_attached=False)
-
-            assert tar_upload_response.status_code == 200
-
             convert_response = user_gi.tools.run_tool(
                 tool_id="CONVERTER_tar_to_directory",
-                inputs={"input1": {"src": "hda", "id": tar_upload_response.json()["outputs"][0]["id"]}},
+                tool_inputs={"input1": {"src": "hda", "id": tar_upload_response["outputs"][0]["id"]}},
                 history_id=history_id,
             )
             assert "outputs" in convert_response, convert_response
@@ -523,12 +521,20 @@ def _wait_for_invocation(ctx, gi, workflow_id, invocation_id):
     def state_func():
         # TODO: Hack gi to work around Galaxy simply handing on this request
         # sometimes.
-        gi.timeout = 30
-        try:
-            rval = gi.workflows.show_invocation(workflow_id, invocation_id)
-        except Exception:
-            # TODO: check if Galaxy is alive.
-            rval = {"state": "ready"}
+        gi.timeout = 60
+        rval = None
+        try_count = 5
+        for try_num in range(try_count):
+            start_time = time.time()
+            try:
+                rval = gi.workflows.show_invocation(workflow_id, invocation_id)
+            except Exception:
+                end_time = time.time()
+                if end_time - start_time > 45 and (try_num + 1) < try_count:
+                    ctx.vlog("Galaxy seems to have timedout, retrying to fetch status.")
+                    continue
+                else:
+                    raise
         gi.timeout = None
         return rval
 
