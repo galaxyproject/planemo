@@ -11,6 +11,8 @@ IGNORE_PATTERNS = [
 def warning_line(line):
     if 'WARNING' not in line:
         return False
+    if 'docs/tests' in line:  # Doesn't actually show up in docs so don't lint.
+        return False
     for pat in IGNORE_PATTERNS:
         if pat.search(line):
             return False

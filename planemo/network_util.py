@@ -33,10 +33,11 @@ def wait_http_service(url, timeout=None):
 
 # code.activestate.com/recipes/576655-wait-for-network-service-to-appear
 def wait_net_service(server, port, timeout=None):
-    """ Wait for network service to appear
-        @param timeout: in seconds, if None or 0 wait forever
-        @return: True of False, if timeout is None may return only True or
-                 throw unhandled network exception
+    """ Wait for network service to appear.
+
+    @param timeout: in seconds, if None or 0 wait forever
+    @return: True of False, if ``timeout`` is ``None`` may return only True or
+    throw unhandled network exception
     """
     if port is None:
         raise TypeError("wait_net_service passed NoneType port value.")

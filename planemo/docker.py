@@ -1,7 +1,7 @@
 """Docker utilities for planemo.
 
-Built on Galaxy abstractions in :module:`galaxy.tools.deps.dockerfiles` and
-:module:`galaxy.tools.deps.docker_util`.
+Built on Galaxy abstractions in :mod:`galaxy.tools.deps.dockerfiles` and
+:mod:`galaxy.tools.deps.docker_util`.
 """
 from __future__ import absolute_import
 

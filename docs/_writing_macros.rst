@@ -55,6 +55,7 @@ With this in place, each output data element can include this block using the ex
 
 .. code-block:: xml
 
+    <outputs>
         <data format="bed" name="insertions" label="${tool.name} on ${on_string}: insertions" from_work_dir="tophat_out/insertions.bed">
             <expand macro="dbKeyActions" />
         </data>
@@ -67,7 +68,7 @@ With this in place, each output data element can include this block using the ex
         <data format="bam" name="accepted_hits" label="${tool.name} on ${on_string}: accepted_hits" from_work_dir="tophat_out/accepted_hits.bam">
           <expand macro="dbKeyActions" />
         </data>
-
+    </outputs>
 
 This has reduced the size of the XML file by dozens of lines and reduces the long term maintenance associated with copied and pasted code.
 
@@ -146,6 +147,9 @@ Any tool definition in that directory can use the macros contained therein once 
       <inputs>
         <expand macro="own_junctionsConditional" />
         ...
+      </inputs>
+      ...
+    </tool>
 
 This example also demonstrates that macros may themselves expand macros.
 
@@ -256,7 +260,7 @@ definition, and then using ``@XYZ@`` anywhere within the XML.
 
     <macros>
       <xml name="color" token_varname="myvar" token_default_color="#00ff00" token_label="Pick a color">
-          <param name="@VARNAME@" type="color" label="@LABEL@" value="@DEFAULT_COLOR@">
+          <param name="@VARNAME@" type="color" label="@LABEL@" value="@DEFAULT_COLOR@" />
       </xml>
     </macros>
 
@@ -264,15 +268,19 @@ When invoking this macro, you can pass those values and produce varying results.
 
 .. code-block:: xml
 
-    <expand macro="color" default_color="#ff0000" />
-    <expand macro="color" default_color="#0000ff" varname="c2" label="Choose a different color/>
+    <inputs>
+        <expand macro="color" default_color="#ff0000" />
+        <expand macro="color" default_color="#0000ff" varname="c2" label="Choose a different color" />
+    </inputs>
 
 The attributes passed to the macro definition will be filled in (or defaults used when not provided).
 
 .. code-block:: xml
 
-    <param name="myvar" type="color" label="Pick a color" value="#ff0000">
-    <param name="c2" type="color" label="Choose a different color" value="#0000ff">
+    <inputs>
+        <param name="myvar" type="color" label="Pick a color" value="#ff0000" />
+        <param name="c2" type="color" label="Choose a different color" value="#0000ff" />
+    </inputs>
 
 -----------------------------------------
 Macro Tokens
@@ -286,6 +294,6 @@ You can use
 
 and then call the token within any element of the file like this:
 
-.. code-block:: xml
+.. code-block:: shell
 
     Vcfallelicprimitives @IS_PART_OF_VCFLIB@
