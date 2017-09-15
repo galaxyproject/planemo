@@ -139,7 +139,7 @@ def lint_urls(root, lint_ctx):
     def validate_url(url, lint_ctx, user_agent=None):
         is_valid = True
         if user_agent:
-            req = Request(url, headers={"User-Agent": user_agent})
+            req = Request(url, headers={"User-Agent": user_agent, 'Accept': '*/*'})
         else:
             req = url
         try:
