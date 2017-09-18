@@ -115,7 +115,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):
             ctx.vlog("Problem waiting on invocation...")
             raise
         ctx.vlog("Final invocation state is [%s]" % final_invocation_state)
-        final_state = _wait_for_history(user_gi, history_id)
+        final_state = _wait_for_history(ctx, user_gi, history_id)
         if final_state != "ok":
             msg = "Failed to run workflow final history state is [%s]." % final_state
             with open("errored_galaxy.log", "w") as f:
@@ -159,12 +159,13 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
             upload_payload["inputs"]["files_0|url_paste"] = "file://%s" % os.path.abspath(file_path)
             upload_payload["inputs"]["files_0|NAME"] = name
             if upload_target.secondary_files:
-                upload_payload["files_1|url_paste"] = "file://%s" % os.path.abspath(upload_target.secondary_files)
-                upload_payload["files_1|type"] = "upload_dataset"
-                upload_payload["files_1|auto_decompress"] = True
-                upload_payload["file_count"] = "2"
-                upload_payload["force_composite"] = "True"
+                upload_payload["inputs"]["files_1|url_paste"] = "file://%s" % os.path.abspath(upload_target.secondary_files)
+                upload_payload["inputs"]["files_1|type"] = "upload_dataset"
+                upload_payload["inputs"]["files_1|auto_decompress"] = True
+                upload_payload["inputs"]["file_count"] = "2"
+                upload_payload["inputs"]["force_composite"] = "True"
 
+            ctx.vlog("upload_payload is %s" % upload_payload)
             return user_gi.tools._tool_post(upload_payload, files_attached=False)
         elif isinstance(upload_target, DirectoryUploadTarget):
             tar_path = upload_target.tar_path
@@ -218,7 +219,7 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
     )
 
     if datasets:
-        final_state = _wait_for_history(user_gi, history_id)
+        final_state = _wait_for_history(ctx, user_gi, history_id)
 
         for (dataset, path) in datasets:
             dataset_details = user_gi.histories.show_dataset(
@@ -519,15 +520,19 @@ def _history_id(gi, **kwds):
 def _wait_for_invocation(ctx, gi, workflow_id, invocation_id):
 
     def state_func():
-        # TODO: Hack gi to work around Galaxy simply handing on this request
-        # sometimes.
-        gi.timeout = 60
-        rval = None
-        try_count = 5
+        return _retry_on_timeouts(ctx, gi, lambda gi: gi.workflows.show_invocation(workflow_id, invocation_id))
+
+    return _wait_on_state(state_func)
+
+
+def _retry_on_timeouts(ctx, gi, f):
+    gi.timeout = 60
+    try_count = 5
+    try:
         for try_num in range(try_count):
             start_time = time.time()
             try:
-                rval = gi.workflows.show_invocation(workflow_id, invocation_id)
+                return f(gi)
             except Exception:
                 end_time = time.time()
                 if end_time - start_time > 45 and (try_num + 1) < try_count:
@@ -535,15 +540,13 @@ def _wait_for_invocation(ctx, gi, workflow_id, invocation_id):
                     continue
                 else:
                     raise
+    finally:
         gi.timeout = None
-        return rval
-
-    return _wait_on_state(state_func)
 
 
-def _wait_for_history(gi, history_id):
+def _wait_for_history(ctx, gi, history_id):
 
-    def has_active_jobs():
+    def has_active_jobs(gi):
         params = {"history_id": history_id}
         jobs_url = gi._make_url(gi.jobs)
         jobs = Client._get(gi.jobs, params=params, url=jobs_url)
@@ -555,10 +558,10 @@ def _wait_for_history(gi, history_id):
         else:
             return None
 
-    wait_on(has_active_jobs, "active jobs", timeout=60 * 60 * 24)
+    wait_on(lambda: _retry_on_timeouts(ctx, gi, has_active_jobs), "active jobs", timeout=60 * 60 * 24)
 
     def state_func():
-        return gi.histories.show_history(history_id)
+        return _retry_on_timeouts(ctx, gi, lambda gi: gi.histories.show_history(history_id))
 
     return _wait_on_state(state_func)
 
