@@ -442,6 +442,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             ftp_upload_purge="False",
             ftp_upload_dir=test_data_dir or os.path.abspath('.'),
             ftp_upload_site="Test Data",
+            check_upload_content="False",
             allow_path_paste="True",
             tool_dependency_dir=dependency_dir,
             file_path=file_path,

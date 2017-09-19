@@ -20,6 +20,7 @@ from galaxy.tools.cwl.util import (
 from galaxy.tools.parser import get_tool_source
 
 
+from planemo.galaxy.api import summarize_history
 from planemo.io import wait_on
 from planemo.runnable import (
     ErrorRunResponse,
@@ -71,9 +72,14 @@ def _execute(ctx, config, runnable, job_path, **kwds):
 
         job = tool_run_response["jobs"][0]
         job_id = job["id"]
-        final_state = _wait_for_job(user_gi, job_id)
+        try:
+            final_state = _wait_for_job(user_gi, job_id)
+        except Exception:
+            summarize_history(ctx, user_gi, history_id)
+            raise
         if final_state != "ok":
             msg = "Failed to run CWL tool job final job state is [%s]." % final_state
+            summarize_history(ctx, user_gi, history_id)
             with open("errored_galaxy.log", "w") as f:
                 f.write(config.log_contents)
             raise Exception(msg)
@@ -110,14 +116,16 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         invocation_id = invocation["id"]
         ctx.vlog("Waiting for invocation [%s]" % invocation_id)
         try:
-            final_invocation_state = _wait_for_invocation(ctx, user_gi, workflow_id, invocation_id)
+            final_invocation_state = _wait_for_invocation(ctx, user_gi, history_id, workflow_id, invocation_id)
         except Exception:
             ctx.vlog("Problem waiting on invocation...")
+            summarize_history(ctx, user_gi, history_id)
             raise
         ctx.vlog("Final invocation state is [%s]" % final_invocation_state)
         final_state = _wait_for_history(ctx, user_gi, history_id)
         if final_state != "ok":
             msg = "Failed to run workflow final history state is [%s]." % final_state
+            summarize_history(ctx, user_gi, history_id)
             with open("errored_galaxy.log", "w") as f:
                 f.write(config.log_contents)
             raise Exception(msg)
@@ -156,6 +164,7 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
             )
             name = os.path.basename(file_path)
             upload_payload["inputs"]["files_0|auto_decompress"] = False
+            upload_payload["inputs"]["auto_decompress"] = False
             upload_payload["inputs"]["files_0|url_paste"] = "file://%s" % os.path.abspath(file_path)
             upload_payload["inputs"]["files_0|NAME"] = name
             if upload_target.secondary_files:
@@ -234,6 +243,7 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
     ctx.vlog("final state is %s" % final_state)
     if final_state != "ok":
         msg = "Failed to run CWL job final job state is [%s]." % final_state
+        summarize_history(ctx, user_gi, history_id)
         with open("errored_galaxy.log", "w") as f:
             f.write(config.log_contents)
         raise Exception(msg)
@@ -517,9 +527,12 @@ def _history_id(gi, **kwds):
     return history_id
 
 
-def _wait_for_invocation(ctx, gi, workflow_id, invocation_id):
+def _wait_for_invocation(ctx, gi, history_id, workflow_id, invocation_id):
 
     def state_func():
+        if _retry_on_timeouts(ctx, gi, lambda gi: has_jobs_in_states(gi, history_id, ["error", "deleted", "deleted_new"])):
+            raise Exception("Problem running workflow, one or more jobs failed.")
+
         return _retry_on_timeouts(ctx, gi, lambda gi: gi.workflows.show_invocation(workflow_id, invocation_id))
 
     return _wait_on_state(state_func)
@@ -544,16 +557,20 @@ def _retry_on_timeouts(ctx, gi, f):
         gi.timeout = None
 
 
+def has_jobs_in_states(gi, history_id, states):
+    params = {"history_id": history_id}
+    jobs_url = gi._make_url(gi.jobs)
+    jobs = Client._get(gi.jobs, params=params, url=jobs_url)
+
+    target_jobs = [j for j in jobs if j["state"] in states]
+
+    return len(target_jobs) > 0
+
+
 def _wait_for_history(ctx, gi, history_id):
 
     def has_active_jobs(gi):
-        params = {"history_id": history_id}
-        jobs_url = gi._make_url(gi.jobs)
-        jobs = Client._get(gi.jobs, params=params, url=jobs_url)
-
-        active_jobs = [j for j in jobs if j["state"] in ["new", "upload", "waiting", "queued", "running"]]
-
-        if len(active_jobs) == 0:
+        if has_jobs_in_states(gi, history_id, ["new", "upload", "waiting", "queued", "running"]):
             return True
         else:
             return None
