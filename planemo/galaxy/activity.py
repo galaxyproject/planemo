@@ -42,25 +42,35 @@ def execute(ctx, config, runnable, job_path, **kwds):
         return ErrorRunResponse(str(e))
 
 
+def _verified_tool_id(runnable, user_gi):
+    tool_id = _tool_id(runnable.path)
+    try:
+        user_gi.tools.show_tool(tool_id)
+    except Exception as e:
+        raise Exception(ERR_NO_SUCH_TOOL % (tool_id, e))
+    return tool_id
+
+
+def _inputs_representation(runnable):
+    if runnable.type == RunnableType.cwl_tool:
+        inputs_representation = "cwl"
+    else:
+        inputs_representation = "galaxy"
+    return inputs_representation
+
+
 def _execute(ctx, config, runnable, job_path, **kwds):
     user_gi = config.user_gi
     admin_gi = config.gi
 
     history_id = _history_id(user_gi, **kwds)
 
-    galaxy_paths, job_dict, datasets = stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds)
+    galaxy_paths, job_dict, _ = stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds)
 
     if runnable.type in [RunnableType.galaxy_tool, RunnableType.cwl_tool]:
         response_class = GalaxyToolRunResponse
-        tool_id = _tool_id(runnable.path)
-        if runnable.type == RunnableType.cwl_tool:
-            inputs_representation = "cwl"
-        else:
-            inputs_representation = "galaxy"
-        try:
-            user_gi.tools.show_tool(tool_id)
-        except Exception as e:
-            raise Exception(ERR_NO_SUCH_TOOL % (tool_id, e))
+        tool_id = _verified_tool_id(runnable)
+        inputs_representation = _inputs_representation(runnable)
         run_tool_payload = dict(
             history_id=history_id,
             tool_id=tool_id,
