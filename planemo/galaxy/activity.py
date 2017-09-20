@@ -18,7 +18,7 @@ from galaxy.tools.cwl.util import (
     tool_response_to_output,
 )
 from galaxy.tools.parser import get_tool_source
-
+from galaxy.util import safe_makedirs
 
 from planemo.galaxy.api import summarize_history
 from planemo.io import wait_on
@@ -335,11 +335,20 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             output_directory = tempfile.mkdtemp()
 
         def get_dataset(dataset_details, filename=None):
-            destination = self.download_output_to(dataset_details, output_directory)
+            parent_basename = dataset_details.get("cwl_file_name")
+            if not parent_basename:
+                parent_basename = dataset_details.get("name")
+            file_ext = dataset_details["file_ext"]
+            if file_ext == "directory":
+                # TODO: rename output_directory to outputs_directory because we can have output directories
+                # and this is confusing...
+                the_output_directory = os.path.join(output_directory, parent_basename)
+                safe_makedirs(the_output_directory)
+                destination = self.download_output_to(dataset_details, the_output_directory, filename=filename)
+            else:
+                destination = self.download_output_to(dataset_details, output_directory, filename=filename)
             if filename is None:
-                basename = dataset_details.get("cwl_file_name")
-                if not basename:
-                    basename = dataset_details.get("name")
+                basename = parent_basename
             else:
                 basename = os.path.basename(filename)
 
@@ -398,9 +407,10 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
     def outputs_dict(self):
         return self._outputs_dict
 
-    def download_output_to(self, dataset_details, output_directory):
-        file_name = dataset_details.get("cwl_file_name") or dataset_details.get("name")
-        destination = os.path.join(output_directory, file_name)
+    def download_output_to(self, dataset_details, output_directory, filename=None):
+        if filename is None:
+            filename = dataset_details.get("cwl_file_name") or dataset_details.get("name")
+        destination = os.path.join(output_directory, filename)
         self._user_gi.histories.download_dataset(
             self._history_id,
             dataset_details["id"],
