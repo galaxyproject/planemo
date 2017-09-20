@@ -69,7 +69,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):
 
     if runnable.type in [RunnableType.galaxy_tool, RunnableType.cwl_tool]:
         response_class = GalaxyToolRunResponse
-        tool_id = _verified_tool_id(runnable)
+        tool_id = _verified_tool_id(runnable, user_gi)
         inputs_representation = _inputs_representation(runnable)
         run_tool_payload = dict(
             history_id=history_id,
