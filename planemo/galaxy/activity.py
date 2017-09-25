@@ -5,6 +5,8 @@ import os
 import tempfile
 import time
 
+import bioblend
+import requests
 import yaml
 
 from bioblend.galaxy.client import Client
@@ -100,7 +102,8 @@ def _execute(ctx, config, runnable, job_path, **kwds):
             'job_info': job_info,
             'api_run_response': tool_run_response,
         }
-
+        if ctx.verbose:
+            summarize_history(ctx, user_gi, history_id)
     elif runnable.type in [RunnableType.galaxy_workflow, RunnableType.cwl_workflow]:
         response_class = GalaxyWorkflowRunResponse
         workflow_id = config.workflow_id(runnable.path)
@@ -409,15 +412,33 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
 
     def download_output_to(self, dataset_details, output_directory, filename=None):
         if filename is None:
-            filename = dataset_details.get("cwl_file_name") or dataset_details.get("name")
-        destination = os.path.join(output_directory, filename)
-        self._user_gi.histories.download_dataset(
+            local_filename = dataset_details.get("cwl_file_name") or dataset_details.get("name")
+        else:
+            local_filename = filename
+        destination = os.path.join(output_directory, local_filename)
+        self._history_content_download(
             self._history_id,
             dataset_details["id"],
-            file_path=destination,
-            use_default_filename=False,
+            to_path=destination,
+            filename=filename,
         )
         return destination
+
+    def _history_content_download(self, history_id, dataset_id, to_path, filename=None):
+        user_gi = self._user_gi
+        url = user_gi.url + "/histories/%s/contents/%s/display" % (history_id, dataset_id)
+
+        data = {}
+        if filename:
+            data["filename"] = filename
+
+        r = requests.get(url, params=data, verify=user_gi.verify, stream=True, timeout=user_gi.timeout)
+        r.raise_for_status()
+
+        with open(to_path, 'wb') as fp:
+            for chunk in r.iter_content(chunk_size=bioblend.CHUNK_SIZE):
+                if chunk:
+                    fp.write(chunk)
 
 
 class GalaxyToolRunResponse(GalaxyBaseRunResponse):
