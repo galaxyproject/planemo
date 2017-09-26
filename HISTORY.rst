@@ -6,10 +6,11 @@ History
 .. to_doc
 
 ---------------------
-0.47.0.dev0
+0.46.1.dev0
 ---------------------
 
-    
+* Rev to latest versions of bioblend_ and `galaxy-lib`_ for various fixes
+  related to CWL_.
 
 ---------------------
 0.46.0 (2017-09-15)
