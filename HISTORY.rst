@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.46.1.dev0
+0.46.1 (2017-09-26)
 ---------------------
 
 * Rev to latest versions of bioblend_ and `galaxy-lib`_ for various fixes
