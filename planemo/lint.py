@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 
 import os
+import socket
 
 import requests
 
@@ -151,10 +152,10 @@ def lint_urls(root, lint_ctx):
                 pass
             else:
                 is_valid = False
-                lint_ctx.error("HTTP Error %s accessing %s" % (e.code, url))
-        except URLError as e:
+                lint_ctx.error("HTTP Error '%s' accessing %s" % (e.code, url))
+        except (URLError, socket.error) as e:
             is_valid = False
-            lint_ctx.error("URL Error %s accessing %s" % (str(e), url))
+            lint_ctx.error("URL Error '%s' accessing %s" % (str(e), url))
         if is_valid:
             lint_ctx.info("URL OK %s" % url)
 
