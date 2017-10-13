@@ -788,7 +788,7 @@ class DockerGalaxyConfig(BaseGalaxyConfig):
         )
         chmod_command = [
             "chmod",
-            "--recursive",
+            "-R",
             "o+rwx",
             self.config_directory,
         ]
