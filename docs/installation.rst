@@ -63,7 +63,7 @@ Afterwards run the following commands.
 
 ::
 
-    $ conda config --add channels r
+    $ conda config --add channels conda-forge
     $ conda config --add channels bioconda
     $ conda install planemo
 
