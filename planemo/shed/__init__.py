@@ -315,7 +315,7 @@ def upload_repository(ctx, realized_repository, **kwds):
         )
     except Exception as e:
         if isinstance(e, bioblend.ConnectionError) and e.status_code == 400 and \
-                e.body == '{"content_alert": "", "err_msg": "No changes to repository."}':
+                '"No changes to repository."' in e.body:
             warn("Repository %s was not updated because there were no changes" % realized_repository.name)
             return 0
         message = api_exception_to_message(e)
