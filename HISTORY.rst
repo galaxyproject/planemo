@@ -9,7 +9,17 @@ History
 0.47.0.dev0
 ---------------------
 
-    
+* Update to the latest Galaxy tool XSD  (thanks to `@nsoranzo`_).
+  `Pull Request 747`_
+* Re-fix problem when shed_update would fail if nothing to update
+  (thanks to `@nsoranzo`_). `Pull Request 747`_
+* Update instructions for installation via conda (thanks to `@nsoranzo`_) .
+  `Pull Request 743`_
+* Bug fix for MacOS `chmod` doesn't support `--recursive` flag.
+  (thanks to `@dfornika`_). `Pull Request 739`_
+* Bug fix to also `socket.error` when linting URLs
+  (thanks to `@nsoranzo`_). `Pull Request 738`_
+* Disable broken tests. `Pull Request 745`_
 
 ---------------------
 0.46.1 (2017-09-26)
@@ -1180,6 +1190,11 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 747: https://github.com/galaxyproject/planemo/pull/747
+.. _Pull Request 745: https://github.com/galaxyproject/planemo/pull/745
+.. _Pull Request 743: https://github.com/galaxyproject/planemo/pull/743
+.. _Pull Request 739: https://github.com/galaxyproject/planemo/pull/739
+.. _Pull Request 738: https://github.com/galaxyproject/planemo/pull/738
 .. _Pull Request 725: https://github.com/galaxyproject/planemo/pull/725
 .. _Pull Request 727: https://github.com/galaxyproject/planemo/pull/727
 .. _Pull Request 729: https://github.com/galaxyproject/planemo/pull/729
@@ -1698,3 +1713,4 @@ History
 .. _@thriqon: https://github.com/thriqon
 .. _@RJMW: https://github.com/RJMW
 .. _@manabuishii: https://github.com/manabuishii
+.. _@dfornika: https://github.com/dfornika
