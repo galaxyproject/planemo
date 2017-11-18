@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.47.0.dev0
+0.47.0 (2017-11-18)
 ---------------------
 
 * Update to the latest Galaxy tool XSD  (thanks to `@nsoranzo`_).
