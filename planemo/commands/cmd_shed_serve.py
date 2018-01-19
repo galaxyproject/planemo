@@ -14,7 +14,6 @@ from planemo.galaxy import shed_serve
 @options.shed_read_options()
 @options.galaxy_run_options()
 @options.galaxy_config_options()
-@options.pid_file_option()
 @click.option(
     "--skip_dependencies",
     is_flag=True,

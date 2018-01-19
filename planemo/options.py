@@ -969,14 +969,6 @@ def galaxy_target_options():
     )
 
 
-def pid_file_option():
-    return planemo_option(
-        "--pid_file",
-        default=None,
-        help="Location of pid file is executed with --daemon."
-    )
-
-
 def daemon_option():
     return planemo_option(
         "--daemon",
@@ -1002,7 +994,6 @@ def galaxy_serve_options():
         docker_galaxy_image_option(),
         galaxy_config_options(),
         daemon_option(),
-        pid_file_option(),
     )
 
 
