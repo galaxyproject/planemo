@@ -514,8 +514,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
         write_file(shed_data_manager_config_file, SHED_DATA_MANAGER_CONF_TEMPLATE)
 
-        pid_file = kwds.get("pid_file") or config_join("galaxy.pid")
-
         yield LocalGalaxyConfig(
             config_directory,
             env,
@@ -525,7 +523,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             master_api_key,
             runnables,
             galaxy_root,
-            pid_file,
         )
 
 
@@ -827,7 +824,6 @@ class LocalGalaxyConfig(BaseGalaxyConfig):
         master_api_key,
         runnables,
         galaxy_root,
-        pid_file,
     ):
         super(LocalGalaxyConfig, self).__init__(
             config_directory,
@@ -839,10 +835,9 @@ class LocalGalaxyConfig(BaseGalaxyConfig):
             runnables,
         )
         self.galaxy_root = galaxy_root
-        self._pid_file = pid_file
 
     def kill(self):
-        kill_pid_file(self._pid_file)
+        kill_pid_file(self.pid_file)
 
     def startup_command(self, ctx, **kwds):
         """Return a shell command used to startup this instance.
@@ -851,13 +846,12 @@ class LocalGalaxyConfig(BaseGalaxyConfig):
         ``daemon`` keyword.
         """
         daemon = kwds.get("daemon", False)
-        pid_file = self._pid_file
         # TODO: Allow running dockerized Galaxy here instead.
         setup_venv_command = setup_venv(ctx, kwds)
         run_script = os.path.join(self.galaxy_root, "run.sh")
         run_script += " $COMMON_STARTUP_ARGS"
         if daemon:
-            run_script += " --pid-file '%s' --daemon" % pid_file
+            run_script += "--daemon"
             self.env["GALAXY_RUN_ALL"] = "1"
         else:
             run_script += " --server-name '%s' --reload" % self.server_name
@@ -875,6 +869,11 @@ class LocalGalaxyConfig(BaseGalaxyConfig):
         """Log file used when planemo serves this Galaxy instance."""
         file_name = "%s.log" % self.server_name
         return os.path.join(self.galaxy_root, file_name)
+
+    @property
+    def pid_file(self):
+        pid_file_name = "%s.pid" % self.server_name
+        return os.path.join(self.galaxy_root, pid_file_name)
 
     @property
     def log_contents(self):

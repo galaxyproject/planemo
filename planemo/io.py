@@ -174,10 +174,12 @@ def ps1_for_path(path, base="PS1"):
 
 def kill_pid_file(pid_file):
     if not os.path.exists(pid_file):
+        print("No pid file...")
         return
 
     pid = int(open(pid_file, "r").read())
-    kill_posix(pid)
+    killed = kill_posix(pid)
+    print("killed? s" % killed)
 
 
 def kill_posix(pid):

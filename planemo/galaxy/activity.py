@@ -360,18 +360,16 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         ctx.vlog("collecting outputs to directory %s" % output_directory)
         for runnable_output in get_outputs(self._runnable):
             output_id = runnable_output.get_id()
-
             output_dict_value = None
             if self._runnable.type in [RunnableType.cwl_workflow, RunnableType.cwl_tool]:
                 galaxy_output = self.to_galaxy_output(runnable_output)
-
                 cwl_output = output_to_cwl_json(
                     galaxy_output,
                     self._get_metadata,
                     get_dataset,
                     self._get_extra_files,
+                    pseduo_location=True,
                 )
-
                 output_dict_value = cwl_output
             else:
                 # TODO: deprecate this route for finding workflow outputs,
@@ -389,8 +387,8 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
 
             outputs_dict[output_id] = output_dict_value
 
-        ctx.vlog("collected outputs [%s]" % self._outputs_dict)
         self._outputs_dict = outputs_dict
+        ctx.vlog("collected outputs [%s]" % self._outputs_dict)
 
     @property
     def log(self):
