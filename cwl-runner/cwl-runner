@@ -1,5 +1,7 @@
 #!/bin/sh
 
+CWD="$( pwd -P )"
+
 PLANEMO_BIN="${PLANEMO_BIN:-planemo}"
 PLANEMO_ARGS="${PLANEMO_ARGS:-}"
 
@@ -41,11 +43,11 @@ done
 # TODO: Do something with USE_CONTAINER
 if [ -n USE_CONTAINER ];
 then
-    PLANEMO_ARGS="$PLANEMO_ARGS --docker --cwl --output_json outputs.json"
+    PLANEMO_ARGS="$PLANEMO_ARGS --docker --cwl --output_json $CWD/outputs.json"
 fi
 
 # echo "$PLANEMO_ARGS"
 
 "$PLANEMO_BIN" $VERBOSE_ARG run $PLANEMO_ARGS >planemo_run.log 2>&1
 
-cat outputs.json
+cat "$CWD/outputs.json"
