@@ -296,7 +296,8 @@ def get_outputs(runnable):
         tool_source = get_tool_source(runnable.path)
         # TODO: do something with collections at some point
         output_datasets, _ = tool_source.parse_outputs(None)
-        return [ToolOutput(o) for o in output_datasets.values()]
+        outputs = [ToolOutput(o) for o in output_datasets.values()]
+        return outputs
     elif runnable.type == RunnableType.galaxy_workflow:
         workflow_outputs = describe_outputs(runnable.path)
         return [GalaxyWorkflowOutput(o) for o in workflow_outputs]

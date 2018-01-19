@@ -41,9 +41,11 @@ done
 # TODO: Do something with USE_CONTAINER
 if [ -n USE_CONTAINER ];
 then
-    PLANEMO_ARGS="$PLANEMO_ARGS --docker --cwl"
+    PLANEMO_ARGS="$PLANEMO_ARGS --docker --cwl --output_json outputs.json"
 fi
 
-echo "$PLANEMO_ARGS"
+# echo "$PLANEMO_ARGS"
 
-"$PLANEMO_BIN" --verbose run $PLANEMO_ARGS
+"$PLANEMO_BIN" $VERBOSE_ARG run $PLANEMO_ARGS >planemo_run.log 2>&1
+
+cat outputs.json
