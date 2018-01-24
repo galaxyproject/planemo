@@ -5,7 +5,6 @@ import contextlib
 import os
 import shutil
 import traceback
-
 from sys import version_info
 from tempfile import mkdtemp
 
@@ -16,7 +15,6 @@ from planemo import cli
 from planemo import io
 from planemo import shed
 from planemo.config import PLANEMO_CONFIG_ENV_PROP
-
 from .shed_app_test_utils import (
     mock_shed,
     setup_mock_shed,

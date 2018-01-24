@@ -2,7 +2,6 @@
 import os
 
 import click
-
 from galaxy.tools.deps.commands import shell
 
 from planemo import options

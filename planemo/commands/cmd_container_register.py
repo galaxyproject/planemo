@@ -3,7 +3,6 @@ import os
 import string
 
 import click
-
 from galaxy.tools.deps.mulled.util import conda_build_target_str, quay_repository, v2_image_name
 
 from planemo import options

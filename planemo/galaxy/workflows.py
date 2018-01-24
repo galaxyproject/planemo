@@ -1,11 +1,9 @@
 """Utilities for Galaxy workflows."""
 import json
 import os
-
 from collections import namedtuple
 
 import yaml
-
 from bioblend.galaxy.client import Client
 
 try:

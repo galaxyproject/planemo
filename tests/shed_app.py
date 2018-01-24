@@ -4,7 +4,6 @@ the ToolShed API... for now :).
 import json
 import os
 import tarfile
-
 from uuid import uuid4
 from xml.etree import ElementTree
 

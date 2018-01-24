@@ -5,7 +5,6 @@ import os
 import socket
 
 import requests
-
 from galaxy.tools.lint import LintContext
 from six.moves.urllib.error import (
     HTTPError,
@@ -21,7 +20,6 @@ import planemo.linters.conda_requirements
 import planemo.linters.doi
 import planemo.linters.urls
 import planemo.linters.xsd
-
 from planemo.io import error
 from planemo.shed import find_urls_for_xml
 from planemo.xml import validation

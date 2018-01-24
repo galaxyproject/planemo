@@ -3,7 +3,6 @@
 import subprocess
 
 from planemo.io import communicate
-
 from .interface import DatabaseSource
 
 

@@ -6,7 +6,6 @@ import shutil
 from planemo.galaxy.test import structures
 from planemo.galaxy.test.actions import passed
 from planemo.galaxy.test.actions import run_in_config
-
 from .test_utils import (
     TempDirectoryTestCase,
     test_context,

@@ -15,7 +15,6 @@ from __future__ import print_function
 import os
 
 import click
-
 from galaxy.tools.deps import docker_util
 from galaxy.tools.deps import dockerfiles
 from galaxy.tools.deps.requirements import parse_requirements_from_xml

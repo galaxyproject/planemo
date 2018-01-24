@@ -1,7 +1,6 @@
 import contextlib
 import shutil
 import threading
-
 from collections import namedtuple
 from tempfile import mkdtemp
 
@@ -9,7 +8,6 @@ from requests import post
 from werkzeug.serving import run_simple
 
 from planemo import network_util
-
 from .shed_app import (
     app,
     InMemoryShedDataModel,

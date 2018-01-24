@@ -4,7 +4,6 @@ import threading
 import time
 
 from planemo import network_util
-
 from .test_utils import (
     CliTestCase,
     skip_if_environ,

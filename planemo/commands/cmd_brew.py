@@ -1,6 +1,5 @@
 """Module describing the planemo ``brew`` command."""
 import click
-
 from galaxy.tools.deps import brew_exts
 from galaxy.tools.deps import brew_util
 from galaxy.tools.deps.requirements import parse_requirements_from_xml

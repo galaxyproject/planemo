@@ -4,7 +4,6 @@ import json
 import os
 
 import click
-
 from galaxy.tools.deps.commands import shell
 
 from planemo.exit_codes import (
@@ -19,7 +18,6 @@ from planemo.galaxy.run import (
 from planemo.io import error, info, shell_join, warn
 from planemo.reports import build_report
 from planemo.test.results import get_dict_value
-
 from . import structures as test_structures
 
 

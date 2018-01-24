@@ -5,7 +5,6 @@ import contextlib
 from planemo.galaxy.activity import execute
 from planemo.galaxy.serve import serve_daemon
 from planemo.runnable import RunnableType
-
 from .interface import BaseEngine
 
 

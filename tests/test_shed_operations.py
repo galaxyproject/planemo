@@ -3,7 +3,6 @@
 import os
 
 from planemo import shed
-
 from .test_utils import (
     mock_shed_context,
     TEST_REPOS_DIR,

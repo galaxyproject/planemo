@@ -7,15 +7,12 @@ import contextlib
 import os
 import random
 import shutil
-
 from string import Template
 from tempfile import mkdtemp
 
 import click
-
 from galaxy.tools.deps import docker_util
 from galaxy.tools.deps.commands import argv_to_str
-
 from six import (
     add_metaclass,
     iteritems
@@ -38,7 +35,6 @@ from planemo.io import (
 )
 from planemo.mulled import build_involucro_context
 from planemo.shed import tool_shed_url
-
 from .api import (
     DEFAULT_MASTER_API_KEY,
     gi,

@@ -6,7 +6,6 @@ import time
 
 from planemo import io
 from planemo import network_util
-
 from .config import galaxy_config
 from .run import (
     run_galaxy_command,

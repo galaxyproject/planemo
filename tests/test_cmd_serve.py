@@ -7,7 +7,6 @@ import uuid
 from planemo import network_util
 from planemo.galaxy import api
 from planemo.io import kill_pid_file
-
 from .test_utils import (
     CliTestCase,
     PROJECT_TEMPLATES_DIR,

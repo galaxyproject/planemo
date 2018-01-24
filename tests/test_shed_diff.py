@@ -4,13 +4,11 @@
 import os
 import sys
 import tempfile
-
 from os.path import join
 from xml.etree import ElementTree
 
 from planemo import io
 from planemo.xml.diff import diff
-
 from .test_shed_upload import update_package_1
 from .test_utils import (
     CliShedTestCase,

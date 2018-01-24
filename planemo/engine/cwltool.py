@@ -2,7 +2,6 @@
 
 from planemo import cwl
 from planemo.runnable import RunnableType
-
 from .interface import BaseEngine
 
 

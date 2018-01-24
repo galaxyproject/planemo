@@ -11,7 +11,6 @@ from planemo.config import (
     OptionSource,
 )
 from planemo.database import create_database_source
-
 from .config import (
     attempt_database_preseed,
     DATABASE_LOCATION_TEMPLATE,

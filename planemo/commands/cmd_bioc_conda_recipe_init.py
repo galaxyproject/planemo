@@ -1,10 +1,7 @@
 """Module describing the planemo ``bioc_conda_recipe_init`` command."""
 import click
-# import os
 
 from planemo.cli import command_function
-# from planemo import options
-
 from planemo.conda_recipes import write_bioconda_recipe
 
 

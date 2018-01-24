@@ -2,7 +2,6 @@ import os
 
 from planemo import shed_lint
 from planemo.xml import validation
-
 from .test_utils import (
     skip_unless_executable,
     skip_unless_module,

@@ -1,7 +1,6 @@
 """Module describing the planemo ``dependency_script`` command."""
 import os
 import sys
-
 from xml.etree import ElementTree as ET
 
 import click

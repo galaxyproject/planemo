@@ -6,12 +6,10 @@ import random
 import string
 
 import yaml
-
 from bioblend import toolshed
 
 from planemo import io
 from planemo.shed import username
-
 from .test_utils import (
     CliTestCase,
     skip_unless_environ,
