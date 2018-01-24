@@ -11,9 +11,7 @@ import time
 
 from sys import platform as _platform
 from xml.sax.saxutils import escape
-
 import click
-
 from galaxy.tools.deps import commands
 from galaxy.tools.deps.commands import download_command
 from six import StringIO

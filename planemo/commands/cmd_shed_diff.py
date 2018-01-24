@@ -2,7 +2,6 @@
 import shutil
 import sys
 import tempfile
-
 from xml.sax.saxutils import escape
 
 import click

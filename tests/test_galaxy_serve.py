@@ -9,7 +9,6 @@ from planemo import network_util
 from planemo import shed
 from planemo.galaxy import galaxy_serve, shed_serve
 from planemo.runnable import for_path
-
 from .test_utils import (
     CliTestCase,
     PROJECT_TEMPLATES_DIR,

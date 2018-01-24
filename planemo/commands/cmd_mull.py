@@ -1,6 +1,5 @@
 """Module describing the planemo ``mull`` command."""
 import click
-
 from galaxy.tools.deps.mulled.mulled_build import mull_targets
 
 from planemo import options

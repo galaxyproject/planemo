@@ -2,7 +2,6 @@
 from .actions import handle_reports
 from .actions import handle_reports_and_summary
 from .actions import run_in_config
-
 from .structures import StructuredData
 
 __all__ = (

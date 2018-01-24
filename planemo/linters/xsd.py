@@ -4,7 +4,6 @@ import os
 import tempfile
 
 import planemo.lint
-
 from planemo.xml import XSDS_PATH
 
 TOOL_XSD = os.path.join(XSDS_PATH, "tool", "galaxy.xsd")

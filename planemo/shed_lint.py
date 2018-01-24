@@ -2,11 +2,9 @@
 from __future__ import absolute_import
 
 import os
-
 import xml.etree.ElementTree as ET
 
 import yaml
-
 from galaxy.tools.lint import lint_tool_source_with
 from galaxy.tools.linters.help import rst_invalid
 

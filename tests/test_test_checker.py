@@ -5,7 +5,6 @@ from planemo.runnable import (
     cases,
     for_path,
 )
-
 from .test_utils import TEST_DATA_DIR
 
 

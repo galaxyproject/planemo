@@ -6,12 +6,10 @@ commands.
 import os
 import shutil
 import tarfile
-
 from os.path import exists, join
 
 from planemo import git
 from planemo.io import shell
-
 from .test_utils import (
     assert_exists,
     CliShedTestCase,

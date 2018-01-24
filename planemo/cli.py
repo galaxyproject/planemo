@@ -9,7 +9,6 @@ import click
 from planemo import __version__
 from planemo.exit_codes import ExitCodeException
 from planemo.galaxy import profiles
-
 from .config import (
     OptionSource,
     read_global_config,

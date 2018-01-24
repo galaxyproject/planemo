@@ -3,7 +3,6 @@ import contextlib
 import os
 
 from planemo.galaxy.config import galaxy_config
-
 from .test_utils import TempDirectoryContext, test_context
 
 

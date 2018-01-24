@@ -2,7 +2,6 @@
 import os
 
 from planemo.galaxy.workflows import describe_outputs
-
 from .test_utils import TEST_DATA_DIR
 
 

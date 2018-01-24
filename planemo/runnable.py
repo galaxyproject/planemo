@@ -9,7 +9,6 @@ import os
 import aenum
 import six
 import yaml
-
 from galaxy.tools.cwl.parser import workflow_proxy
 from galaxy.tools.loader_directory import (
     is_a_yaml_with_class,

@@ -1,6 +1,5 @@
 """Module describing the planemo ``conda_install`` command."""
 import click
-
 from galaxy.tools.deps import conda_util
 
 from planemo import options

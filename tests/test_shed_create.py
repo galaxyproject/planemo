@@ -1,5 +1,4 @@
 from planemo import shed
-
 from .test_utils import CliShedTestCase
 from .test_utils import skip
 

@@ -18,7 +18,6 @@ from tempfile import (
 import bioblend
 import six
 import yaml
-
 from galaxy.util import odict
 
 from planemo import git
@@ -36,7 +35,6 @@ from planemo.io import (
 )
 from planemo.shed2tap.base import BasePackage
 from planemo.tools import yield_tool_sources
-
 from .diff import diff_and_remove
 from .interface import (
     api_exception_to_message,

@@ -13,7 +13,6 @@ such a tag from a Dockerfile located in the tool's directory.
 from __future__ import print_function
 
 import os
-
 import click
 
 from galaxy.tools.deps import docker_util

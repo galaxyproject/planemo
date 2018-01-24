@@ -4,7 +4,6 @@ import os
 import yaml
 
 from planemo import shed
-
 from .test_utils import TempDirectoryTestCase
 
 
