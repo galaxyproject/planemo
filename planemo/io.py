@@ -179,7 +179,7 @@ def kill_pid_file(pid_file):
 
     pid = int(open(pid_file, "r").read())
     killed = kill_posix(pid)
-    print("killed? s" % killed)
+    print("killed? %s" % killed)
 
 
 def kill_posix(pid):

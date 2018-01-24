@@ -48,6 +48,12 @@ fi
 
 # echo "$PLANEMO_ARGS"
 
-"$PLANEMO_BIN" $VERBOSE_ARG run $PLANEMO_ARGS >planemo_run.log 2>&1
+"$PLANEMO_BIN" $VERBOSE_ARG run $PLANEMO_ARGS > "$CWD/planemo_run.log" 2>&1
 
-cat "$CWD/outputs.json"
+if [ -f "$CWD/outputs.json" ];
+then
+    cat "$CWD/outputs.json"
+else
+    echo "Failed to run CWL job." 1>&2;
+    cat "$CWD/planemo_run.log" 1>&2;
+fi

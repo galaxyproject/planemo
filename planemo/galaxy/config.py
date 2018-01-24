@@ -851,7 +851,7 @@ class LocalGalaxyConfig(BaseGalaxyConfig):
         run_script = os.path.join(self.galaxy_root, "run.sh")
         run_script += " $COMMON_STARTUP_ARGS"
         if daemon:
-            run_script += "--daemon"
+            run_script += " --daemon"
             self.env["GALAXY_RUN_ALL"] = "1"
         else:
             run_script += " --server-name '%s' --reload" % self.server_name
