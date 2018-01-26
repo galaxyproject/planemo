@@ -20,4 +20,4 @@ fi
 cd common-workflow-language
 git pull
 export PLANEMO_ARGS="--no_dependency_resolution"
-./run_test.sh $@
+./run_test.sh --junit-xml=result.xml $@
