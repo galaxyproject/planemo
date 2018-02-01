@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import contextlib
+import errno
 import fnmatch
 import os
 import shutil
@@ -171,13 +172,14 @@ def ps1_for_path(path, base="PS1"):
 
 
 def kill_pid_file(pid_file):
-    if not os.path.exists(pid_file):
-        print("No pid file...")
-        return
+    try:
+        os.stat(pid_file)
+    except OSError as e:
+        if e.errno == errno.ENOENT:
+            return False
 
     pid = int(open(pid_file, "r").read())
-    killed = kill_posix(pid)
-    print("killed? %s" % killed)
+    kill_posix(pid)
 
 
 def kill_posix(pid):

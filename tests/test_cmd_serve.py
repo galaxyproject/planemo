@@ -32,6 +32,7 @@ class ServeTestCase(CliTestCase):
         user_gi = self._user_gi
         assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0
         user_gi.histories.create_history(TEST_HISTORY_NAME)
+        kill_pid_file(self._pid_file)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_serve_workflow(self):

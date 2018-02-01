@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import contextlib
+import os
 import time
 
 from planemo import io
@@ -59,6 +60,12 @@ def _serve(ctx, runnables, **kwds):
         ctx.vlog("Waiting for service on (%s, %s)" % (host, port))
         assert network_util.wait_http_service(galaxy_url)
         config.install_workflows()
+        if kwds.get("pid_file"):
+            real_pid_file = config.pid_file
+            if os.path.exists(config.pid_file):
+                os.symlink(real_pid_file, kwds["pid_file"])
+            else:
+                io.warn("Can't find Galaxy pid file [%s] to link" % real_pid_file)
         return config
 
 
