@@ -5,7 +5,7 @@ Installation
 pip_
 ============
 
-For a traditional Python installation of Planemo, first set up a virtualenv
+For a traditional Python 2 installation of Planemo, first set up a virtualenv
 for ``planemo`` (this example creates a new one in ``.venv``) and then
 install with ``pip``. Planemo requires pip 7.0 or newer.
 
@@ -29,32 +29,16 @@ use the  following ``pip install`` idiom instead:
 
     $ pip install -U git+git://github.com/galaxyproject/planemo.git
 
+If your ``PATH`` contains a Python installed through Conda it should likely not be used to run Planemo,
+consider using the ``virtualenv`` argument ``-p`` to point at a non-Conda Python 2 executable installed
+natively on your system or using a tool such pyenv_. ``virtualenv`` can be installed via Conda, pyenv_,
+or a package manager - it should make no difference.
 
-Homebrew_
-============
+Planemo in theory runs under Python 3 but Galaxy does not, so it is best to use a Python 2 with Planemo
+for now.
 
-Another approach for installing Planemo is to use Homebrew_ or
-linuxbrew_. To install Planemo this way use the ``brew`` command as
-follows.
-
-::
-
-    $ brew tap galaxyproject/tap
-    $ brew install planemo
-
-This will install the latest Planemo release. ``brew`` provide a very nice
-upgrade path as new versions of Planemo are released.
-
-::
-
-    $ brew update
-    $ brew upgrade planemo
-
-To install or upgrade to the latest development branch of Planemo add
-the argument ``--HEAD`` to either ``install`` or ``upgrade``.
-
-Conda_
-============
+Conda_ (Experimental)
+=======================
 
 Another approach for installing Planemo is to use Conda_
 (most easily obtained via the
@@ -67,7 +51,10 @@ Afterwards run the following commands.
     $ conda config --add channels bioconda
     $ conda install planemo
 
+Galaxy is known to have issues when running with a Conda Python so this approach
+should be considered experimental for now. If you have problems with it or hacks to
+make it work better - please report them.
+
 .. _pip: https://pip.pypa.io/
-.. _Homebrew: http://brew.sh/
-.. _linuxbrew: https://github.com/Homebrew/linuxbrew
 .. _Conda: http://conda.pydata.org/docs/
+.. _pyenv: https://github.com/pyenv/pyenv

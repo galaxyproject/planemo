@@ -47,15 +47,6 @@ install with ``pip``. Planemo requires pip 7.0 or newer.
     $ pip install "pip>=7" # Upgrade pip if needed.
     $ pip install planemo
 
-Another approach for installing Planemo is to use Homebrew_ or
-linuxbrew_. To install Planemo this way use the ``brew`` command as
-follows.
-
-::
-
-    $ brew tap galaxyproject/tap
-    $ brew install planemo
-
 For information on updating Planemo, installing the latest development release,
 or installing planemo via bioconda - checkout the `installation
 <http://planemo.readthedocs.io/en/latest/installation.html>`__ 
