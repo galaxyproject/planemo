@@ -498,6 +498,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         env["GALAXY_TEST_UPLOAD_ASYNC"] = "false"
         env["GALAXY_TEST_LOGGING_CONFIG"] = config_join("logging.ini")
         env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
+        env["GALAXY_SKIP_CLIENT_BUILD"] = "1"
         web_config = _sub(WEB_SERVER_CONFIG_TEMPLATE, template_args)
         write_file(config_join("galaxy.ini"), web_config)
         tool_conf_contents = _sub(TOOL_CONF_TEMPLATE, template_args)
