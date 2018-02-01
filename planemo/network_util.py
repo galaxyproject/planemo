@@ -44,14 +44,14 @@ def wait_net_service(server, port, timeout=None):
 
     port = int(port)
 
-    s = socket.socket()
-    # Following line prevents this method from interfering with process
-    # it is waiting for on localhost.
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     if timeout:
         end = now() + timeout
 
     while True:
+        s = socket.socket()
+        # Following line prevents this method from interfering with process
+        # it is waiting for on localhost.
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             if timeout:
                 next_timeout = end - now()
@@ -68,7 +68,9 @@ def wait_net_service(server, port, timeout=None):
                 return False
 
         except socket.error:
-            pass
+            # if getattr(e, "errno") == 61:
+            #    refused_connections += 1
+            s.close()
         else:
             s.close()
             return True

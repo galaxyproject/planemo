@@ -3,9 +3,14 @@ import contextlib
 import os
 
 from planemo.galaxy.config import galaxy_config
-from .test_utils import TempDirectoryContext, test_context
+from .test_utils import (
+    skip_if_environ,
+    TempDirectoryContext,
+    test_context,
+)
 
 
+@skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
 def test_defaults():
     """Test by default Galaxy files are stored in temp ``config_directory``."""
     with _test_galaxy_config() as config:
@@ -15,6 +20,7 @@ def test_defaults():
         _assert_property_is(config, "database_connection", conn)
 
 
+@skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
 def test_database_connection_override_path():
     """Test by default Galaxy files are stored in temp ``config_directory``."""
     conn = "postgresql://username:password@localhost/mydatabase"
@@ -22,6 +28,7 @@ def test_database_connection_override_path():
         _assert_property_is(config, "database_connection", conn)
 
 
+@skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
 def test_override_files_path():
     """Test Galaxy file path overrideable with --file_path."""
     with TempDirectoryContext() as tdc:

@@ -498,6 +498,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         env["GALAXY_TEST_UPLOAD_ASYNC"] = "false"
         env["GALAXY_TEST_LOGGING_CONFIG"] = config_join("logging.ini")
         env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
+        env["GALAXY_SKIP_CLIENT_BUILD"] = "1"
         web_config = _sub(WEB_SERVER_CONFIG_TEMPLATE, template_args)
         write_file(config_join("galaxy.ini"), web_config)
         tool_conf_contents = _sub(TOOL_CONF_TEMPLATE, template_args)
@@ -850,7 +851,7 @@ class LocalGalaxyConfig(BaseGalaxyConfig):
             run_script += " --daemon"
             self.env["GALAXY_RUN_ALL"] = "1"
         else:
-            run_script += " --server-name '%s' --reload" % self.server_name
+            run_script += " --server-name '%s'" % self.server_name
         server_ini = os.path.join(self.config_directory, "galaxy.ini")
         self.env["GALAXY_CONFIG_FILE"] = server_ini
         cd_to_galaxy_command = "cd %s" % self.galaxy_root

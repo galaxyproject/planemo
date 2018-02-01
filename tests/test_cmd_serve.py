@@ -32,6 +32,7 @@ class ServeTestCase(CliTestCase):
         user_gi = self._user_gi
         assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0
         user_gi.histories.create_history(TEST_HISTORY_NAME)
+        kill_pid_file(self._pid_file)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_serve_workflow(self):
@@ -97,12 +98,12 @@ class ServeTestCase(CliTestCase):
         t = threading.Thread(target=target)
         t.daemon = True
         t.start()
-        time.sleep(10)
-        assert network_util.wait_net_service("127.0.0.1", port)
+        time.sleep(5)
+        assert network_util.wait_net_service("127.0.0.1", port, timeout=600)
         time.sleep(1)
-        assert network_util.wait_net_service("127.0.0.1", port)
+        assert network_util.wait_net_service("127.0.0.1", port, timeout=600)
         time.sleep(1)
-        assert network_util.wait_net_service("127.0.0.1", port)
+        assert network_util.wait_net_service("127.0.0.1", port, timeout=600)
 
     def _run(self, serve_args=[]):
         test_cmd = [
