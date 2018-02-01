@@ -65,7 +65,7 @@ class Context(object):
         """
         if self._global_config is None:
             self._global_config = read_global_config(self.planemo_config)
-        return self._global_config
+        return self._global_config or {}
 
     def log(self, msg, *args):
         """Log a message to stderr."""
