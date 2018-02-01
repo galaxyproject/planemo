@@ -851,7 +851,7 @@ class LocalGalaxyConfig(BaseGalaxyConfig):
             run_script += " --daemon"
             self.env["GALAXY_RUN_ALL"] = "1"
         else:
-            run_script += " --server-name '%s' --reload" % self.server_name
+            run_script += " --server-name '%s'" % self.server_name
         server_ini = os.path.join(self.config_directory, "galaxy.ini")
         self.env["GALAXY_CONFIG_FILE"] = server_ini
         cd_to_galaxy_command = "cd %s" % self.galaxy_root
