@@ -608,7 +608,8 @@ def _handle_help(kwds):
                 help_from_command,
                 shell=True,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT
+                stderr=subprocess.STDOUT,
+                universal_newlines=True
             )
             help_text = p.communicate()[0]
 
