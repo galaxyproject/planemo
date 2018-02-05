@@ -77,7 +77,9 @@ def diff(ctx, directory, range):
     cmd_template = "cd '%s' && git diff --name-only '%s' --"
     cmd = cmd_template % (directory, range)
     stdout, _ = io.communicate(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        cmd,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        universal_newlines=True
     )
     return [l.strip() for l in text_type(stdout).splitlines() if l]
 
