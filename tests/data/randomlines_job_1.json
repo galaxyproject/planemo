@@ -2,6 +2,6 @@
     "num_lines": 1,
     "input": {
         "class": "File",
-        "location": "randomlines_job_1.json"
+        "path": "hello.txt"
     }
 }
