@@ -40,7 +40,7 @@ def test_filter_paths():
     assert_filtered_is(["/a/c"], [], exclude=["/a"])
     assert_filtered_is(["/b"], ["/b"], exclude=["/a"])
     assert_filtered_is(["/a/b/c"], [], exclude=["c"])
-    with tempfile.NamedTemporaryFile() as tmp:
+    with tempfile.NamedTemporaryFile(mode='w+') as tmp:
         tmp.write("#exclude c\n\nc\n")
         tmp.flush()
         assert_filtered_is(["/a/b/c", "/a/b/d"], ["/a/b/d"], exclude_from=[tmp.name])

@@ -3,6 +3,7 @@
 https://github.com/bioconda/bioconda-recipes/blob/master/scripts/bioconductor/bioconductor_skeleton.py
 (written by Ryan Dale github: daler)
 """
+from __future__ import print_function
 
 import configparser
 import hashlib
@@ -12,14 +13,13 @@ import re
 import shutil
 import tarfile
 import tempfile
-import urlparse
 from collections import OrderedDict
 from textwrap import dedent
 
 import bs4
 import pyaml
 import requests
-
+from six.moves.urllib.parse import urljoin
 
 logging.basicConfig(level=logging.INFO, format='[bioconductor_skeleton.py %(asctime)s]: %(message)s')
 logger = logging.getLogger()
@@ -135,7 +135,7 @@ class BioCProjectPage(object):
         # build the actual URL based on the identified package name and the
         # relative URL from the source. Here we're just hard-coding
         # '../src/contrib' based on the structure of the bioconductor site.
-        return os.path.join(urlparse.urljoin(self.url, '../src/contrib'), s[0])
+        return os.path.join(urljoin(self.url, '../src/contrib'), s[0])
 
     @property
     def tarball_url(self):
@@ -197,8 +197,8 @@ class BioCProjectPage(object):
         e = c['top']
 
         # Glue together newlines
-        for k in e.keys():
-            e[k] = e[k].replace('\n', ' ')
+        for k, v in e.items():
+            e[k] = v.replace('\n', ' ')
 
         return dict(e)
 
