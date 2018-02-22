@@ -300,7 +300,7 @@ def _build_galaxy(**kwds):
     # process raw cite urls
     cite_urls = kwds.get("cite_url", [])
     del kwds["cite_url"]
-    citations = map(UrlCitation, cite_urls)
+    citations = list(map(UrlCitation, cite_urls))
     kwds["bibtex_citations"] = citations
 
     # handle requirements and containers
