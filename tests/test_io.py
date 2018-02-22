@@ -1,10 +1,8 @@
 """Test utilities from :module:`planemo.io`."""
 import tempfile
 
-from .test_utils import (
-    assert_equal,
-    io,
-)
+from planemo import io
+from .test_utils import assert_equal
 
 
 def test_io_capture():
