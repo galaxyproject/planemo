@@ -138,7 +138,7 @@ class ShedUploadTestCase(CliShedTestCase):
                 "git add .",
                 "git commit -m 'initial commit'"
             ]))
-            rev = git.rev(None, "single_tool").decode("UTF-8")
+            rev = git.rev(None, "single_tool")
             upload_command = [
                 "shed_update", "--force_repository_creation",
                 "git+single_tool/.git"
