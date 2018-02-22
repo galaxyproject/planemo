@@ -51,7 +51,7 @@ def shell(cmds, **kwds):
 def info(message, *args):
     if args:
         message = message % args
-    _echo(click.style(message, bold=True, fg='green'))
+    click.echo(click.style(message, bold=True, fg='green'))
 
 
 def can_write_to_path(path, **kwds):
@@ -64,20 +64,13 @@ def can_write_to_path(path, **kwds):
 def error(message, *args):
     if args:
         message = message % args
-    _echo(click.style(message, bold=True, fg='red'), err=True)
+    click.echo(click.style(message, bold=True, fg='red'), err=True)
 
 
 def warn(message, *args):
     if args:
         message = message % args
-    _echo(click.style(message, fg='red'), err=True)
-
-
-def _echo(message, err=False):
-    if sys.version_info[0] == 2:
-        click.echo(message, err=err)
-    else:
-        print(message)
+    click.echo(click.style(message, fg='red'), err=True)
 
 
 def shell_join(*args):
@@ -133,7 +126,7 @@ def find_matching_directories(path, pattern, recursive):
 
 @contextlib.contextmanager
 def real_io():
-    """Ensure stdout and stderr have ``fileno`` attributes.
+    """Ensure stdout and stderr have supported ``fileno()`` method.
 
     nosetests replaces these streams with :class:`StringIO` objects
     that may not work the same in every situtation - :func:`subprocess.Popen`
@@ -142,9 +135,8 @@ def real_io():
     original_stdout = sys.stdout
     original_stderr = sys.stderr
     try:
-        if not hasattr(sys.stdout, "fileno"):
+        if commands.redirecting_io(sys=sys):
             sys.stdout = sys.__stdout__
-        if not hasattr(sys.stderr, "fileno"):
             sys.stderr = sys.__stderr__
         yield
     finally:
