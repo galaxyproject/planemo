@@ -1,0 +1,6 @@
+WorkflowInput1:
+  class: File
+  path: hello.txt
+WorkflowInput2:
+  class: File
+  path: hello.txt

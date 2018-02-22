@@ -16,8 +16,8 @@ class CmdTestTestCase(CliTestCase):
     """Integration tests for the ``test`` command."""
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-    def test_workflow_test_simple(self):
-        """Test testing a simple workflow with Galaxy."""
+    def test_workflow_test_simple_yaml(self):
+        """Test testing a simple YAML workflow with Galaxy."""
         with self._isolate():
             random_lines = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "randomlines.xml")
             cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
@@ -33,6 +33,28 @@ class CmdTestTestCase(CliTestCase):
                 test_artifact,
             ]
             self._check_exit_code(test_command, exit_code=0)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_test_simple_ga(self):
+        """Test testing a simple GA workflow with Galaxy."""
+        with self._isolate():
+            cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
+            test_artifact = os.path.join(TEST_DATA_DIR, "wf2.ga")
+            test_command = [
+                "--verbose",
+                "test"
+            ]
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command += [
+                "--extra_tools", cat,
+                test_artifact,
+            ]
+            # try:
+            self._check_exit_code(test_command, exit_code=0)
+            # except Exception:
+            #    with open(os.path.join(f, "tool_test_output.json"), "r") as o:
+            #        print(o.read())
+            #    raise
 
     @skip_unless_python_2_7()
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
