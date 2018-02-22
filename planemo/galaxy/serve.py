@@ -31,6 +31,11 @@ def _serve(ctx, runnables, **kwds):
     if daemon:
         kwds["no_cleanup"] = True
 
+    port = kwds.get("port", None)
+    if port is None:
+        port = network_util.get_free_port()
+        kwds["port"] = port
+
     with galaxy_config(ctx, runnables, **kwds) as config:
         cmd = config.startup_command(ctx, **kwds)
         action = "Starting galaxy"
@@ -45,10 +50,6 @@ def _serve(ctx, runnables, **kwds):
             io.warn(message)
             raise Exception(message)
         host = kwds.get("host", "127.0.0.1")
-        port = kwds.get("port", None)
-        if port is None:
-            port = network_util.get_free_port()
-
         timeout = 500
         galaxy_url = "http://%s:%s" % (host, port)
         ctx.vlog("Waiting for service on (%s, %s)" % (host, port))
