@@ -2,6 +2,8 @@
 
 import subprocess
 
+from galaxy.util import unicodify
+
 from planemo.io import communicate
 from .interface import DatabaseSource
 
@@ -20,7 +22,7 @@ class LocalPostgresDatabaseSource(DatabaseSource):
     def list_databases(self):
         """Use `psql --list` to generate a list of identifiers."""
         command_builder = self._psql_command_builder("--list")
-        stdout = self._communicate(command_builder)
+        stdout = unicodify(self._communicate(command_builder))
         output_lines = stdout.splitlines()
         identifiers = []
         for line in output_lines:
