@@ -236,7 +236,7 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
         job_dir,
         upload_func,
         create_collection_func,
-        tool_or_workflow="tool" if runnable.type == RunnableType.cwl_tool else "workflow",
+        tool_or_workflow="tool" if runnable.type in [RunnableType.cwl_tool, RunnableType.galaxy_tool] else "workflow",
     )
 
     if datasets:
@@ -254,7 +254,7 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
 
     ctx.vlog("final state is %s" % final_state)
     if final_state != "ok":
-        msg = "Failed to run CWL job final job state is [%s]." % final_state
+        msg = "Failed to run job final job state is [%s]." % final_state
         summarize_history(ctx, user_gi, history_id)
         with open("errored_galaxy.log", "w") as f:
             f.write(config.log_contents)
