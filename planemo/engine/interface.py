@@ -16,9 +16,6 @@ from planemo.test.results import StructuredData
 
 class Engine(object):
     """Abstract description of an external process for running tools or workflows.
-
-    Currently there are only two engines - Galaxy and cwltool - but ideally
-    there would be more.
     """
 
     __metaclass__ = abc.ABCMeta

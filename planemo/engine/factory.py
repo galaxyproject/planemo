@@ -12,7 +12,7 @@ UNKNOWN_ENGINE_TYPE_MESSAGE = "Unknown engine type specified [%s]."
 def is_galaxy_engine(**kwds):
     """Return True iff the engine configured is :class:`GalaxyEngine`."""
     engine_type_str = kwds.get("engine", "galaxy")
-    return engine_type_str == "galaxy"
+    return engine_type_str in ["galaxy", "docker_galaxy"]
 
 
 def build_engine(ctx, **kwds):

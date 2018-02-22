@@ -24,14 +24,16 @@ class GalaxyEngine(BaseEngine):
     def _run(self, runnable, job_path):
         """Run CWL job in Galaxy."""
         self._ctx.vlog("Serving artifact [%s] with Galaxy." % (runnable,))
-        with self._serve([runnable]) as config:
+        with self.serve_runnables([runnable]) as config:
             self._ctx.vlog("Running job path [%s]" % job_path)
             run_response = execute(self._ctx, config, runnable, job_path, **self._kwds)
 
         return run_response
 
     @contextlib.contextmanager
-    def _serve(self, runnables):
+    def serve_runnables(self, runnables):
+        # TODO: define an interface for this - not everything in config would make sense for a
+        # pre-existing Galaxy interface.
         with serve_daemon(self._ctx, runnables, **self._serve_kwds()) as config:
             yield config
 

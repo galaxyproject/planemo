@@ -534,8 +534,19 @@ def required_tool_arg(allow_uris=False):
     return click.argument(name, metavar=metavar, type=arg_type)
 
 
+def required_workflow_arg():
+    arg_type = click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=False,
+    )
+    return click.argument("workflow_path", metavar="WORKFLOW_PATH", type=arg_type)
+
+
 def required_job_arg():
-    """ Decorate click method as requiring the path to a single tool.
+    """Decorate click method as requiring the path to a single tool.
     """
     arg_type = click.Path(
         exists=True,
