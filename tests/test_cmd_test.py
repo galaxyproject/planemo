@@ -7,7 +7,6 @@ from .test_utils import (
     CliTestCase,
     PROJECT_TEMPLATES_DIR,
     skip_if_environ,
-    skip_unless_environ,
     skip_unless_python_2_7,
     TEST_DATA_DIR,
 )
@@ -17,7 +16,6 @@ class CmdTestTestCase(CliTestCase):
     """Integration tests for the ``test`` command."""
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-    @skip_unless_environ("PLANEMO_RUN_BETA_TESTS")
     def test_workflow_test_simple(self):
         """Test testing a simple workflow with Galaxy."""
         with self._isolate():
