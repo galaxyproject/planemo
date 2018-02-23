@@ -59,6 +59,7 @@ class RunTestCase(CliTestCase):
             test_cmd = [
                 "--verbose",
                 "run",
+                "--no_dependency_resolution",
                 tool_path,
                 job_path,
             ]
@@ -73,6 +74,7 @@ class RunTestCase(CliTestCase):
             job_path = _cwl_file("cat-job.json")
             test_cmd = [
                 "run",
+                "--no_dependency_resolution",
                 tool_path,
                 job_path,
             ]
@@ -88,6 +90,7 @@ class RunTestCase(CliTestCase):
             test_cmd = [
                 "--verbose",
                 "run",
+                "--no_dependency_resolution",
                 "--output_directory",
                 f,
                 tool_path,

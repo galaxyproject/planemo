@@ -109,6 +109,7 @@ class ServeTestCase(CliTestCase):
         test_cmd = [
             "serve",
             "--install_galaxy",
+            "--no_dependency_resolution",
             "--port",
             str(self._port),
             self._serve_artifact,

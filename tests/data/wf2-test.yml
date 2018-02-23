@@ -1,0 +1,6 @@
+- doc: Simple concat workflow test
+  job: wf2-job.yml
+  outputs:
+    wf_output_1:
+      checksum: 'sha1$7bd92c6cd84285e4fc7215d506bbabfe328acb8f'
+
