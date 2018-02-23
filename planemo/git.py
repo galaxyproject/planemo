@@ -1,8 +1,10 @@
 """Utilities for interacting with git using planemo abstractions."""
+from __future__ import absolute_import
+
 import os
 import subprocess
 
-from six import text_type
+from galaxy.util import unicodify
 
 from planemo import io
 
@@ -81,7 +83,7 @@ def diff(ctx, directory, range):
         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         universal_newlines=True
     )
-    return [l.strip() for l in text_type(stdout).splitlines() if l]
+    return [l.strip() for l in unicodify(stdout).splitlines() if l]
 
 
 def clone(*args, **kwds):
@@ -103,7 +105,7 @@ def rev(ctx, directory):
     stdout, _ = io.communicate(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
-    return text_type(stdout).strip()
+    return unicodify(stdout).strip()
 
 
 def is_rev_dirty(ctx, directory):
@@ -117,8 +119,8 @@ def rev_if_git(ctx, directory):
     """Determine git revision (or ``None``)."""
     try:
         the_rev = rev(ctx, directory)
-        is_dirtry = is_rev_dirty(ctx, directory)
-        if is_dirtry:
+        is_dirty = is_rev_dirty(ctx, directory)
+        if is_dirty:
             the_rev += "-dirty"
         return the_rev
     except RuntimeError:
