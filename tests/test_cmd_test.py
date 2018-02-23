@@ -28,6 +28,7 @@ class CmdTestTestCase(CliTestCase):
             ]
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
+                "--no_dependency_resolution",
                 "--extra_tools", random_lines,
                 "--extra_tools", cat,
                 test_artifact,
@@ -46,6 +47,7 @@ class CmdTestTestCase(CliTestCase):
             ]
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
+                "--no_dependency_resolution",
                 "--extra_tools", cat,
                 test_artifact,
             ]

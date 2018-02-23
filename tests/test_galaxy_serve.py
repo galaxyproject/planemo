@@ -32,6 +32,7 @@ class GalaxyServeTestCase(CliTestCase):
             install_galaxy=True,
             port=port,
             daemon=True,
+            no_dependency_resolution=True,
         )
 
         assert network_util.wait_net_service(
@@ -63,6 +64,7 @@ class GalaxyServeTestCase(CliTestCase):
             port=port,
             daemon=True,
             extra_tools=extra_tools,
+            no_dependency_resolution=True,
         )
         user_gi = config.user_gi
         assert user_gi.tools.get_tools(tool_id="random_lines1")
