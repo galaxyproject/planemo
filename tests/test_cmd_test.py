@@ -25,6 +25,9 @@ class CmdTestTestCase(CliTestCase):
             test_command = [
                 "--verbose",
                 "test",
+            ]
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command += [
                 "--extra_tools", random_lines,
                 "--extra_tools", cat,
                 test_artifact,
@@ -82,3 +85,17 @@ class CmdTestTestCase(CliTestCase):
                 data = test_i["data"]
                 expected_status = expected_statuses[i]
                 assert data["status"] == expected_status
+
+    def append_profile_argument_if_needed(self, command):
+        # Hook into tests to allow leveraging postgres databases to prevent Galaxy locking errors
+        # while running tests.
+        profile_name = os.getenv("PLANEMO_TEST_WORKFLOW_RUN_PROFILE", None)
+
+        if not profile_name:
+            command += ["--profile", profile_name]
+
+            database_type = os.getenv("PLANEMO_TEST_WORKFLOW_RUN_PROFILE_DATABASE_TYPE", None)
+            if database_type:
+                command += ["--database_type", database_type]
+
+        return command

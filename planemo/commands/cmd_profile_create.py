@@ -12,6 +12,7 @@ from planemo.galaxy import profiles
 @options.profile_name_argument()
 @options.profile_database_options()
 @options.serve_engine_option()
+@options.docker_config_options()
 @command_function
 def cli(ctx, profile_name, **kwds):
     """Create a profile."""

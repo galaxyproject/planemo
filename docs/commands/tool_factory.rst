@@ -114,12 +114,21 @@ http://www.ncbi.nlm.nih.gov/pubmed/23024011.
                                       Conda dependency resolution for Galaxy will
                                       auto install conda itself using miniconda if
                                       not availabe on conda_prefix.
-      --profile TEXT                  Location of pid file is executed with
-                                      --daemon.
+      --profile TEXT                  Name of profile (created with the
+                                      profile_create command) to use with this
+                                      command.
       --postgres                      Use postgres database type.
-      --database_type [postgres|sqlite]
-                                      Type of database to use for profile -
-                                      currently only 'postgres' is available.
+      --database_type [postgres|postgres_docker|sqlite|auto]
+                                      Type of database to use for profile - 'auto',
+                                      'sqlite', 'postgres', and 'postgres_docker'
+                                      are available options. Use postgres to use an
+                                      existing postgres server you user can access
+                                      without a password via the psql command. Use
+                                      postgres_docker to have Planemo manage a
+                                      docker container running postgres. Data with
+                                      postgres_docker is not yet persisted past when
+                                      you restart the docker container launched by
+                                      Planemo so be careful with this option.
       --postgres_psql_path TEXT       Name or or path to postgres client binary
                                       (psql).
       --postgres_database_user TEXT   Postgres username for managed development
@@ -134,7 +143,7 @@ http://www.ncbi.nlm.nih.gov/pubmed/23024011.
       --shed_tool_conf TEXT           Location of shed tools conf file for Galaxy.
       --shed_tool_path TEXT           Location of shed tools directory for Galaxy.
       --daemon                        Serve Galaxy process as a daemon.
-      --pid_file TEXT                 Location of pid file is executed with
+      --pid_file PATH                 Location of pid file is executed with
                                       --daemon.
       --help                          Show this message and exit.
     

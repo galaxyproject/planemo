@@ -103,12 +103,21 @@ Planemo command for running tools and jobs.
                                       Conda dependency resolution for Galaxy will
                                       auto install conda itself using miniconda if
                                       not availabe on conda_prefix.
-      --profile TEXT                  Location of pid file is executed with
-                                      --daemon.
+      --profile TEXT                  Name of profile (created with the
+                                      profile_create command) to use with this
+                                      command.
       --postgres                      Use postgres database type.
-      --database_type [postgres|sqlite]
-                                      Type of database to use for profile -
-                                      currently only 'postgres' is available.
+      --database_type [postgres|postgres_docker|sqlite|auto]
+                                      Type of database to use for profile - 'auto',
+                                      'sqlite', 'postgres', and 'postgres_docker'
+                                      are available options. Use postgres to use an
+                                      existing postgres server you user can access
+                                      without a password via the psql command. Use
+                                      postgres_docker to have Planemo manage a
+                                      docker container running postgres. Data with
+                                      postgres_docker is not yet persisted past when
+                                      you restart the docker container launched by
+                                      Planemo so be careful with this option.
       --postgres_psql_path TEXT       Name or or path to postgres client binary
                                       (psql).
       --postgres_database_user TEXT   Postgres username for managed development

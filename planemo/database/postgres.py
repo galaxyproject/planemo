@@ -6,16 +6,7 @@ from planemo.io import communicate
 from .interface import DatabaseSource
 
 
-class LocalPostgresDatabaseSource(DatabaseSource):
-    """Local postgres database source managed through psql application."""
-
-    def __init__(self, **kwds):
-        """Construct a postgres database source from planemo configuration."""
-        self.psql_path = kwds.get("postgres_psql_path", None) or 'psql'
-        self.database_user = kwds.get("postgres_database_user", None)
-        self.database_host = kwds.get("postgres_database_host", None)
-        self.database_port = kwds.get("postgres_database_port", None)
-        self._kwds = kwds
+class ExecutesPostgresSqlMixin:
 
     def list_databases(self):
         """Use `psql --list` to generate a list of identifiers."""
@@ -37,6 +28,33 @@ class LocalPostgresDatabaseSource(DatabaseSource):
         sql = "drop database %s;" % identifier
         self._run_sql_command(sql)
 
+    def _run_sql_command(self, sql):
+        # communicate is just joining commands so we need to modify the
+        # sql as an argument - it shouldn't do this.
+        sql_arg = '%s' % sql
+        command_builder = self._psql_command_builder("--command", sql_arg)
+        self._communicate(command_builder)
+
+    def _communicate(self, command_builder):
+        stdout, _ = communicate(
+            command_builder.command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        return stdout
+
+
+class LocalPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource):
+    """Local postgres database source managed through psql application."""
+
+    def __init__(self, **kwds):
+        """Construct a postgres database source from planemo configuration."""
+        self.psql_path = kwds.get("postgres_psql_path", None) or 'psql'
+        self.database_user = kwds.get("postgres_database_user", None)
+        self.database_host = kwds.get("postgres_database_host", None)
+        self.database_port = kwds.get("postgres_database_port", None)
+        self._kwds = kwds
+
     def sqlalchemy_url(self, identifier):
         """Return URL or form postgresql://username:password@localhost/mydatabase."""
         hostname = self.database_host or "localhost"
@@ -47,13 +65,6 @@ class LocalPostgresDatabaseSource(DatabaseSource):
             hostname,
             identifier
         )
-
-    def _run_sql_command(self, sql):
-        # communicate is just joining commands so we need to modify the
-        # sql as an argument - it shouldn't do this.
-        sql_arg = '%s' % sql
-        command_builder = self._psql_command_builder("--command", sql_arg)
-        self._communicate(command_builder)
 
     def _psql_command_builder(self, *args):
         command_builder = _CommandBuilder(self.psql_path)
@@ -71,14 +82,6 @@ class LocalPostgresDatabaseSource(DatabaseSource):
         command_builder.extend_command(args)
         return command_builder
 
-    def _communicate(self, command_builder):
-        stdout, _ = communicate(
-            command_builder.command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        return stdout
-
 
 class _CommandBuilder(object):
 
@@ -94,3 +97,8 @@ class _CommandBuilder(object):
     def extend_command(self, args):
         for arg in (args or []):
             self.append_command(arg)
+
+
+__all__ = (
+    "LocalPostgresDatabaseSource",
+)
