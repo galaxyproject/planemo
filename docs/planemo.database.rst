@@ -28,6 +28,14 @@ planemo\.database\.postgres module
     :undoc-members:
     :show-inheritance:
 
+planemo\.database\.postgres\_docker module
+------------------------------------------
+
+.. automodule:: planemo.database.postgres_docker
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

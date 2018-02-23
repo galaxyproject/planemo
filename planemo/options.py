@@ -995,7 +995,8 @@ def profile_option():
         "--profile",
         type=str,
         default=None,
-        help="Location of pid file is executed with --daemon."
+        help=("Name of profile (created with the profile_create command) to use "
+              "with this command.")
     )
 
 
@@ -1160,14 +1161,21 @@ def postgres_datatype_type_option():
 def database_type_option():
     return planemo_option(
         "--database_type",
-        default="postgres",
+        default="auto",
         type=click.Choice([
             "postgres",
+            "postgres_docker",
             "sqlite",
+            "auto",
         ]),
         use_global_config=True,
         help=("Type of database to use for profile - "
-              "currently only 'postgres' is available."),
+              "'auto', 'sqlite', 'postgres', and 'postgres_docker' are available options. "
+              "Use postgres to use an existing postgres server you user can "
+              "access without a password via the psql command. Use postgres_docker "
+              "to have Planemo manage a docker container running postgres. "
+              "Data with postgres_docker is not yet persisted past when you restart "
+              "the docker container launched by Planemo so be careful with this option."),
     )
 
 

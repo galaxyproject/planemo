@@ -7,6 +7,8 @@ import json
 import os
 import shutil
 
+from galaxy.tools.deps.commands import which
+
 from planemo.config import (
     OptionSource,
 )
@@ -73,7 +75,15 @@ def _create_profile_docker(profile_directory, profile_name, kwds):
 
 
 def _create_profile_local(profile_directory, profile_name, kwds):
-    database_type = kwds.get("database_type", "sqlite")
+    database_type = kwds.get("database_type", "auto")
+    if database_type == "auto":
+        if which("psql"):
+            database_type = "postgres"
+        elif which("docker"):
+            database_type = "postgres_docker"
+        else:
+            database_type = "sqlite"
+
     if database_type != "sqlite":
         database_source = create_database_source(**kwds)
         database_identifier = _profile_to_database_identifier(profile_name)
