@@ -12,7 +12,7 @@ glob2
 virtualenv
 lxml
 gxformat2>=0.2.0
-ephemeris>=0.2.0
+ephemeris>=0.8
 galaxy-lib>=17.9.12
 html5lib>=0.9999999,!=0.99999999,!=0.999999999,!=1.0b10,!=1.0b09
 cwltool==1.0.20170828135420
