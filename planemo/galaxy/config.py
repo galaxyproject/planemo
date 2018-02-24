@@ -585,11 +585,50 @@ def _config_directory(ctx, **kwds):
 
 
 @add_metaclass(abc.ABCMeta)
-class GalaxyConfig(object):
+class GalaxyInterface(object):
     """Abstraction around a Galaxy instance.
 
-    This requires more than just an API connection and assumes access to files
-    etc....
+    Description of a Galaxy instance and how to interact with it - this could
+    potentially be a remote, already running instance or an instance Planemo manages
+    to execute some task(s).
+    """
+
+    @abc.abstractproperty
+    def gi(self):
+        """Return an admin bioblend Galaxy instance for API interactions."""
+
+    @abc.abstractproperty
+    def user_gi(self):
+        """Return a user-backed bioblend Galaxy instance for API interactions."""
+
+    @abc.abstractmethod
+    def install_repo(self, *args, **kwds):
+        """Install specified tool shed repository."""
+
+    @abc.abstractproperty
+    def tool_shed_client(self):
+        """Return a admin bioblend tool shed client."""
+
+    @abc.abstractmethod
+    def wait_for_all_installed(self):
+        """Wait for all queued up repositories installs to complete."""
+
+    @abc.abstractmethod
+    def install_workflows(self):
+        """Install all workflows configured with these planemo arguments."""
+
+    @abc.abstractmethod
+    def workflow_id(self, path):
+        """Get installed workflow API ID for input path."""
+
+
+@add_metaclass(abc.ABCMeta)
+class GalaxyConfig(GalaxyInterface):
+    """Specialization of GalaxyInterface for Galaxy instances Planemo manages itself.
+
+    This assumes more than an API connection is available - Planemo needs to be able to
+    start and stop the Galaxy instance, recover logs, etc... There are currently two
+    implementations - a locally executed Galaxy and one running inside a Docker containe
     """
 
     @abc.abstractproperty
