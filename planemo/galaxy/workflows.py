@@ -6,19 +6,12 @@ from collections import namedtuple
 import yaml
 from bioblend.galaxy.client import Client
 
-try:
-    from ephemeris import shed_install
-except ImportError:
-    shed_install = None
+from ephemeris import generate_tool_list_from_ga_workflow_files
+from ephemeris import shed_tools
 
-try:
-    from gxformat2.converter import python_to_workflow
-    from gxformat2.interface import BioBlendImporterGalaxyInterface
-    from gxformat2.interface import ImporterGalaxyInterface
-except ImportError:
-    python_to_workflow = None
-    BioBlendImporterGalaxyInterface = None
-    ImporterGalaxyInterface = object
+from gxformat2.converter import python_to_workflow
+from gxformat2.interface import BioBlendImporterGalaxyInterface
+from gxformat2.interface import ImporterGalaxyInterface
 
 
 def load_shed_repos(runnable):
@@ -28,19 +21,27 @@ def load_shed_repos(runnable):
     # TODO: This is crap - doesn't handle nested repositories at all.
     path = runnable.path
     if path.endswith(".ga"):
-        with open(path, "r") as f:
-            workflow = json.load(f)
+        generate_tool_list_from_ga_workflow_files.generate_tool_list_from_workflow([path], "Tools from workflows", "tools.yml")
+        with open("tools.yml", "r") as f:
+            tools = yaml.load(f)["tools"]
+
     else:
         with open(path, "r") as f:
             workflow = yaml.load(f)
 
-    return workflow.get("tools", [])
+        tools = workflow.get("tools", [])
+
+    return tools
 
 
 def install_shed_repos(runnable, admin_gi):
     tools_info = load_shed_repos(runnable)
     if tools_info:
-        shed_install.install_tools(tools_info, admin_gi, runnable.path, default_install_tool_dependencies=False)
+        shed_tools._ensure_log_configured("ephemeris")
+        install_tool_manager = shed_tools.InstallToolManager(tools_info, admin_gi)
+        install_tool_manager.install_repositories()
+        if install_tool_manager.errored_repositories:
+            raise Exception("Failed to install one or more repositories.")
 
 
 def import_workflow(path, admin_gi, user_gi, from_path=False):
