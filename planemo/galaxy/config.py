@@ -571,11 +571,11 @@ def _user_email(kwds):
 @contextlib.contextmanager
 def _config_directory(ctx, **kwds):
     config_directory = kwds.get("config_directory", None)
-    ctx.vlog("Created directory for Galaxy configuration [%s]" % config_directory)
     created_config_directory = False
     if not config_directory:
         created_config_directory = True
         config_directory = os.path.realpath(mkdtemp())
+        ctx.vlog("Created directory for Galaxy configuration [%s]" % config_directory)
     try:
         yield config_directory
     finally:
