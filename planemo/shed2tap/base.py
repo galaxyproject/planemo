@@ -8,6 +8,7 @@ import zipfile
 from ftplib import all_errors as FTPErrors  # tuple of exceptions
 from xml.etree import ElementTree
 
+from galaxy.util import unicodify
 from six import iteritems
 from six import string_types
 from six.moves import map as imap
@@ -426,6 +427,7 @@ def _cache_download(url, filename, sha256sum=None):
             # TODO - log this nicely...
             sys.stderr.write("Verifying checksum for %s\n" % filename)
             filehash = subprocess.check_output(['shasum', '-a', '256', local])[0:64].strip()
+            filehash = unicodify(filehash)
             if filehash != sha256sum:
                 raise RuntimeError("Checksum failure for %s, got %r but wanted %r" % (local, filehash, sha256sum))
 
