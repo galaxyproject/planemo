@@ -13,6 +13,7 @@ from tempfile import mkdtemp
 import click
 from galaxy.tools.deps import docker_util
 from galaxy.tools.deps.commands import argv_to_str
+from galaxy.util import unicodify
 from six import (
     add_metaclass,
     iteritems
@@ -967,7 +968,8 @@ def _download_database_template(
         return True
 
     if latest or not galaxy_root:
-        template_url = DOWNLOADS_URL + urlopen(LATEST_URL).read()
+        symlink_target = unicodify(urlopen(LATEST_URL).read())
+        template_url = DOWNLOADS_URL + symlink_target
         urlretrieve(template_url, database_location)
         return True
 
