@@ -18,11 +18,11 @@ from planemo.io import IS_OS_X, shell
 
 
 def conda_to_mulled_targets(conda_targets):
-    return map(lambda c: build_target(c.package, c.version), conda_targets)
+    return list(map(lambda c: build_target(c.package, c.version), conda_targets))
 
 
 def collect_mulled_target_lists(ctx, paths, recursive=False):
-    return map(conda_to_mulled_targets, collect_conda_target_lists(ctx, paths, recursive=recursive))
+    return list(map(conda_to_mulled_targets, collect_conda_target_lists(ctx, paths, recursive=recursive)))
 
 
 def build_involucro_context(ctx, **kwds):

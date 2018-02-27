@@ -93,7 +93,7 @@ def for_path(path):
 
 def for_paths(paths):
     """Return a specialized list of Runnable objects for paths."""
-    return map(for_path, paths)
+    return list(map(for_path, paths))
 
 
 def cases(runnable):

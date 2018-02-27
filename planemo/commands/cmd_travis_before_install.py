@@ -8,17 +8,8 @@ from planemo.cli import command_function
 from planemo.io import shell
 
 SETUP_FILE_NAME = "setup_custom_dependencies.bash"
-SAMTOOLS_URL = (
-    "http://archive.ubuntu.com/ubuntu/pool/universe/"
-    "s/samtools/samtools_0.1.19-1_amd64.deb"
-)
-
-FIX_EGGS_DIR = 'mkdir -p "$HOME/.python-eggs"; chmod 700 "$HOME/.python-eggs"'
-# samtools essentially required by Galaxy
-INSTALL_SAMTOOLS = (
-    "wget %s; "
-    "sudo dpkg -i samtools_0.1.19-1_amd64.deb"
-) % SAMTOOLS_URL
+SAMTOOLS_DEB = 'samtools_0.1.19-1_amd64.deb'
+SAMTOOLS_URL = "http://archive.ubuntu.com/ubuntu/pool/universe/s/samtools/%s" % SAMTOOLS_DEB
 
 BUILD_ENVIRONMENT_TEMPLATE = """
 export PATH=$PATH:${BUILD_BIN_DIR}
@@ -56,8 +47,14 @@ def cli(ctx):
     )
     open(build_env_path, "a").write(build_env)
 
-    shell(FIX_EGGS_DIR)
-    shell(INSTALL_SAMTOOLS)
+    eggs_dir = os.path.join(os.getenv('HOME'), '.python-eggs')
+    if not os.path.exists(eggs_dir):
+        os.makedirs(eggs_dir, 0o700)
+    else:
+        os.chmod(eggs_dir, 0o700)
+    # samtools essentially required by Galaxy
+    shell(['wget', SAMTOOLS_URL])
+    shell(['sudo', 'dpkg', '-i', SAMTOOLS_DEB])
     setup_file = os.path.join(build_travis_dir, SETUP_FILE_NAME)
     if os.path.exists(setup_file):
         shell(

@@ -13,6 +13,7 @@ from tempfile import mkdtemp
 import click
 from galaxy.tools.deps import docker_util
 from galaxy.tools.deps.commands import argv_to_str
+from galaxy.util import unicodify
 from six import (
     add_metaclass,
     iteritems
@@ -571,11 +572,11 @@ def _user_email(kwds):
 @contextlib.contextmanager
 def _config_directory(ctx, **kwds):
     config_directory = kwds.get("config_directory", None)
-    ctx.vlog("Created directory for Galaxy configuration [%s]" % config_directory)
     created_config_directory = False
     if not config_directory:
         created_config_directory = True
         config_directory = os.path.realpath(mkdtemp())
+        ctx.vlog("Created directory for Galaxy configuration [%s]" % config_directory)
     try:
         yield config_directory
     finally:
@@ -967,7 +968,8 @@ def _download_database_template(
         return True
 
     if latest or not galaxy_root:
-        template_url = DOWNLOADS_URL + urlopen(LATEST_URL).read()
+        symlink_target = unicodify(urlopen(LATEST_URL).read())
+        template_url = DOWNLOADS_URL + symlink_target
         urlretrieve(template_url, database_location)
         return True
 

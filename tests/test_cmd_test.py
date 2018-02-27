@@ -115,7 +115,7 @@ class CmdTestTestCase(CliTestCase):
         # while running tests.
         profile_name = os.getenv("PLANEMO_TEST_WORKFLOW_RUN_PROFILE", None)
 
-        if not profile_name:
+        if profile_name:
             command += ["--profile", profile_name]
 
             database_type = os.getenv("PLANEMO_TEST_WORKFLOW_RUN_PROFILE_DATABASE_TYPE", None)

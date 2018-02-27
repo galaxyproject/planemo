@@ -8,7 +8,6 @@ import click
 from planemo import options
 from planemo.cli import command_function
 from planemo.io import (
-    shell,
     untar_to,
     warn,
 )
@@ -43,11 +42,7 @@ def cli(ctx, path, template=None, **kwds):
         untar_args = UNTAR_ARGS % (tempdir)
         untar_to(DOWNLOAD_URL, tempdir, untar_args)
         template_dir = os.path.join(tempdir, template)
-        shell("ls '%s'" % (template_dir))
-        shell("mv '%s'/* '%s'" % (template_dir, path))
-        dot_files = [os.path.join(template_dir, f) for f in os.listdir(template_dir) if f.startswith(".")]
-        if len(dot_files) > 0:
-            dot_files_quoted = "'" + "' '".join(dot_files) + "'"
-            shell("mv %s '%s'" % (dot_files_quoted, path))
+        for entry in os.listdir(template_dir):
+            shutil.move(os.path.join(template_dir, entry), path)
     finally:
         shutil.rmtree(tempdir)

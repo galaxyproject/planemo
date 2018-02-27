@@ -287,7 +287,7 @@ def upload_repository(ctx, realized_repository, **kwds):
         tar_path = build_tarball(path, **kwds)
     if kwds.get("tar_only", False):
         name = realized_repository.pattern_to_file_name("shed_upload.tar.gz")
-        shell("cp '%s' '%s'" % (tar_path, name))
+        shutil.copy(tar_path, name)
         return 0
     shed_context = get_shed_context(ctx, **kwds)
     update_kwds = {}
@@ -393,8 +393,9 @@ def _diff_in(ctx, working, realized_repository, **kwds):
         )
     else:
         tar_path = build_tarball(path)
-        cmd_template = 'mkdir "%s"; tar -xzf "%s" -C "%s"; rm -rf %s'
-        shell(cmd_template % (mine, tar_path, mine, tar_path))
+        os.mkdir(mine)
+        shell(['tar', '-xzf', tar_path, '-C', mine])
+        shutil.rmtree(tar_path, ignore_errors=True)
 
     output = kwds.get("output", None)
     raw = kwds.get("raw", False)

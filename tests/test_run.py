@@ -50,7 +50,6 @@ class RunTestCase(CliTestCase):
             ]
             self._check_exit_code(test_cmd)
 
-    @skip_unless_python_2_7()
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_run_gxtool_randomlines(self):
         with self._isolate():
