@@ -58,6 +58,7 @@ class BuildAndLintTestCase(CliTestCase):
                 test_dict = yaml.load(stream)
                 assert test_dict
 
+    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_cwl_fail_on_empty_help(self):
         with self._isolate():
             self._check_exit_code(_cwl_init_command(help_text=False))

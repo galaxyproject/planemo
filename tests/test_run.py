@@ -6,7 +6,6 @@ from .test_utils import (
     CWL_DRAFT3_DIR,
     PROJECT_TEMPLATES_DIR,
     skip_if_environ,
-    skip_unless_python_2_7,
     TEST_DATA_DIR,
 )
 
@@ -19,7 +18,6 @@ def _cwl_file(name):
 # of just arbitrarily exercising the code.
 class RunTestCase(CliTestCase):
 
-    @skip_unless_python_2_7()
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_run_cat_cwltool(self):
         with self._isolate():
@@ -34,7 +32,6 @@ class RunTestCase(CliTestCase):
             ]
             self._check_exit_code(test_cmd)
 
-    @skip_unless_python_2_7()
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_run_cat_cwltool_more_options(self):
         with self._isolate():
@@ -64,9 +61,9 @@ class RunTestCase(CliTestCase):
             ]
             self._check_exit_code(test_cmd)
 
-    @skip_unless_python_2_7()
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_CWL_TESTS")
     def test_run_cat(self):
         with self._isolate():
             tool_path = _cwl_file("cat1-tool.cwl")
@@ -79,9 +76,9 @@ class RunTestCase(CliTestCase):
             ]
             self._check_exit_code(test_cmd)
 
-    @skip_unless_python_2_7()
-    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_CWL_TESTS")
     def test_run_output_directory(self):
         with self._isolate() as f:
             tool_path = _cwl_file("wc-tool.cwl")
