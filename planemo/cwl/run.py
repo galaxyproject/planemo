@@ -61,8 +61,8 @@ def run_cwltool(ctx, path, job_path, **kwds):
 
     args.extend([path, job_path])
     ctx.vlog("Calling cwltool with arguments %s" % args)
-    with tempfile.NamedTemporaryFile() as tmp_stdout, \
-            tempfile.NamedTemporaryFile() as tmp_stderr:
+    with tempfile.NamedTemporaryFile("w") as tmp_stdout, \
+            tempfile.NamedTemporaryFile("w") as tmp_stderr:
         # cwltool passes sys.stderr to subprocess.Popen - ensure it has
         # and actual fileno.
         with real_io():
