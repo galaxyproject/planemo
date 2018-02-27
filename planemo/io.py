@@ -28,8 +28,10 @@ IS_OS_X = _platform == "darwin"
 
 def communicate(cmds, **kwds):
     if isinstance(cmds, list):
-        cmds = commands.argv_to_str(cmds)
-    info(cmds)
+        cmd_string = commands.argv_to_str(cmds)
+    else:
+        cmd_string = cmds
+    info(cmd_string)
     p = commands.shell_process(cmds, **kwds)
     if kwds.get("stdout", None) is None and commands.redirecting_io(sys=sys):
         output = commands.redirect_aware_commmunicate(p)
@@ -38,13 +40,17 @@ def communicate(cmds, **kwds):
 
     if p.returncode != 0:
         template = "Problem executing commands {0} - ({1}, {2})"
-        msg = template.format(cmds, output[0], output[1])
+        msg = template.format(cmd_string, output[0], output[1])
         raise RuntimeError(msg)
     return output
 
 
 def shell(cmds, **kwds):
-    info(cmds)
+    if isinstance(cmds, list):
+        cmd_string = commands.argv_to_str(cmds)
+    else:
+        cmd_string = cmds
+    info(cmd_string)
     return commands.shell(cmds, **kwds)
 
 

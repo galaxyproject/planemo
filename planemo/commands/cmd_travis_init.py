@@ -2,7 +2,6 @@
 import os
 
 import click
-from galaxy.tools.deps.commands import shell
 
 from planemo import options
 from planemo import RAW_CONTENT_URL
@@ -71,9 +70,11 @@ def cli(ctx, path):
     # TODO: Option --verbose_travis_yaml to unroll travis_test.sh line by line
     # and place all but last in 'install' section and last in 'script'. Would
     # require a yaml dependency though.
-    shell("mkdir -p '%s/.travis'" % path)
+    dot_travis_dir = os.path.join(path, '.travis')
+    if not os.path.exists(dot_travis_dir):
+        os.makedirs(dot_travis_dir)
     travis_yml = os.path.join(path, ".travis.yml")
-    setup_sh = os.path.join(path, ".travis", "setup_custom_dependencies.bash")
+    setup_sh = os.path.join(dot_travis_dir, "setup_custom_dependencies.bash")
     if not os.path.exists(travis_yml):
         open(travis_yml, "w").write(TRAVIS_YML)
     else:
@@ -81,5 +82,5 @@ def cli(ctx, path):
     if not os.path.exists(setup_sh):
         open(setup_sh, "w").write(TRAVIS_SETUP)
     else:
-        warn(".travis/setup_custom_dependencies.bash already exists, not overwriting.")
+        warn("%s already exists, not overwriting." % setup_sh)
     info(PREPARE_MESSAGE)
