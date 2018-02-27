@@ -22,7 +22,7 @@ matrix:
   allow_failures:
     - env: TOX_ENV=py27-lint-docstrings
 
-script: PLANEMO_ENABLE_POSTGRES_TESTS=1 PLANEMO_SKIP_CWLTOOL_TESTS=1 PLANEMO_TEST_WORKFLOW_RUN_PROFILE=travisworkflowtests tox -e $TOX_ENV
+script: PLANEMO_ENABLE_POSTGRES_TESTS=1 PLANEMO_SKIP_GALAXY_CWL_TESTS=1 PLANEMO_TEST_WORKFLOW_RUN_PROFILE=travisworkflowtests tox -e $TOX_ENV
 
 after_success:
   - coveralls
