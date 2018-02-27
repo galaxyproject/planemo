@@ -8,6 +8,7 @@ import click
 from planemo import options
 from planemo.cli import command_function
 from planemo.io import (
+    info,
     untar_to,
     warn,
 )
@@ -42,6 +43,7 @@ def cli(ctx, path, template=None, **kwds):
         untar_args = UNTAR_ARGS % (tempdir)
         untar_to(DOWNLOAD_URL, tempdir, untar_args)
         template_dir = os.path.join(tempdir, template)
+        info("mv '%s'/* '%s'" % (template_dir, path))
         for entry in os.listdir(template_dir):
             shutil.move(os.path.join(template_dir, entry), path)
     finally:

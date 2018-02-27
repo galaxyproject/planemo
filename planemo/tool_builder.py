@@ -848,7 +848,7 @@ def write_tool_description(ctx, tool_description, **kwds):
     if tool_description.test_files:
         if not os.path.exists("test-data"):
             io.info("No test-data directory, creating one.")
-            os.makedirs('test-data')
+            io.makedirs('test-data')
         for test_file in tool_description.test_files:
             io.info("Copying test-file %s" % test_file)
             try:

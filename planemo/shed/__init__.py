@@ -6,7 +6,6 @@ import hashlib
 import json
 import os
 import re
-import shutil
 import sys
 import tarfile
 from collections import namedtuple
@@ -25,9 +24,12 @@ from planemo import templates
 from planemo.io import (
     can_write_to_path,
     coalesce_return_codes,
+    copy as io_copy,
     error,
     find_matching_directories,
     info,
+    mkdir,
+    rm_rf_tree,
     shell,
     temp_directory,
     warn,
@@ -205,7 +207,7 @@ def shed_init(ctx, path, **kwds):
         workflow_name = os.path.basename(from_workflow)
         workflow_target = os.path.join(path, workflow_name)
         if not os.path.exists(workflow_target):
-            shutil.copyfile(from_workflow, workflow_target)
+            io_copy(from_workflow, workflow_target)
 
         if not can_write_to_path(repo_dependencies_path, **kwds):
             return 1
@@ -287,7 +289,7 @@ def upload_repository(ctx, realized_repository, **kwds):
         tar_path = build_tarball(path, **kwds)
     if kwds.get("tar_only", False):
         name = realized_repository.pattern_to_file_name("shed_upload.tar.gz")
-        shutil.copy(tar_path, name)
+        io_copy(tar_path, name)
         return 0
     shed_context = get_shed_context(ctx, **kwds)
     update_kwds = {}
@@ -393,9 +395,9 @@ def _diff_in(ctx, working, realized_repository, **kwds):
         )
     else:
         tar_path = build_tarball(path)
-        os.mkdir(mine)
+        mkdir(mine)
         shell(['tar', '-xzf', tar_path, '-C', mine])
-        shutil.rmtree(tar_path, ignore_errors=True)
+        rm_rf_tree(tar_path)
 
     output = kwds.get("output", None)
     raw = kwds.get("raw", False)
