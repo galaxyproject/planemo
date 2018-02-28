@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.48.0.dev0
+0.48.0 (2018-02-28)
 ---------------------
 
 * Run all CI tests against Python 3 (thanks to `@nsoranzo`_).
