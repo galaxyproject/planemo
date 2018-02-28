@@ -10,6 +10,7 @@ shopt -s expand_aliases  # Needed for conda_env test
 # - seqtk_example doesn't exist and in home directory
 # - conda_exercises doesn't exist in home directory.
 # - seqtk environment is absent
+# - conda on the PATH
 
 cd
 

@@ -4,7 +4,12 @@ set -o xtrace
 
 set -e
 
-# Preconditions - seqtk_example directory doesn't exist and in home directory.
+# Preconditions
+# - Planemo installed
+# - seqtk_example directory doesn't exist in the home directory.
+# - conda_testing directory doesn't exist in the home directory
+# - docker running and sudo-less access available via the docker command.
+
 cd
 rm -rf seqtk_example
 rm -rf conda_testing
