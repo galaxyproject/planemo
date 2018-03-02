@@ -65,6 +65,18 @@ def serve_engine_option():
     )
 
 
+def ignore_dependency_problems_option():
+    return planemo_option(
+        "--ignore_dependency_problems",
+        is_flag=True,
+        default=False,
+        use_global_config=True,
+        help=("When installing shed repositories for workflows, ignore dependency issues. "
+              "These likely indicate a problem but in some cases may not prevent a workflow "
+              "from successfully executing.")
+    )
+
+
 def cwltool_no_container_option():
     return planemo_option(
         "--no-container",
@@ -1020,6 +1032,7 @@ def galaxy_serve_options():
         galaxy_config_options(),
         daemon_option(),
         pid_file_option(),
+        ignore_dependency_problems_option(),
     )
 
 
@@ -1113,6 +1126,7 @@ def engine_options():
         non_strict_cwl_option(),
         cwltool_no_container_option(),
         docker_galaxy_image_option(),
+        ignore_dependency_problems_option(),
     )
 
 

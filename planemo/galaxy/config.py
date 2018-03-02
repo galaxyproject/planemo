@@ -334,6 +334,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         if export_directory is not None:
             volumes.append(docker_util.DockerVolume(export_directory, "/export"))
         yield DockerGalaxyConfig(
+            ctx,
             config_directory,
             env,
             test_data_dir,
@@ -344,6 +345,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             docker_target_kwds=docker_target_kwds,
             volumes=volumes,
             export_directory=export_directory,
+            kwds=kwds,
         )
 
 
@@ -521,6 +523,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         write_file(shed_data_manager_config_file, SHED_DATA_MANAGER_CONF_TEMPLATE)
 
         yield LocalGalaxyConfig(
+            ctx,
             config_directory,
             env,
             test_data_dir,
@@ -529,6 +532,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             master_api_key,
             runnables,
             galaxy_root,
+            kwds,
         )
 
 
@@ -693,6 +697,7 @@ class BaseGalaxyConfig(GalaxyConfig):
 
     def __init__(
         self,
+        ctx,
         config_directory,
         env,
         test_data_dir,
@@ -700,7 +705,10 @@ class BaseGalaxyConfig(GalaxyConfig):
         server_name,
         master_api_key,
         runnables,
+        kwds,
     ):
+        self._ctx = ctx
+        self._kwds = kwds
         self.config_directory = config_directory
         self.env = env
         self.test_data_dir = test_data_dir
@@ -757,7 +765,7 @@ class BaseGalaxyConfig(GalaxyConfig):
                 self._install_workflow(runnable)
 
     def _install_workflow(self, runnable):
-        install_shed_repos(runnable, self.gi)
+        install_shed_repos(runnable, self.gi, self._kwds.get("ignore_dependency_problems", False))
         # TODO: Allow serialization so this doesn't need to assume a
         # shared filesystem with Galaxy server.
         from_path = runnable.type.name == "cwl_workflow"
@@ -775,6 +783,7 @@ class DockerGalaxyConfig(BaseGalaxyConfig):
 
     def __init__(
         self,
+        ctx,
         config_directory,
         env,
         test_data_dir,
@@ -785,8 +794,10 @@ class DockerGalaxyConfig(BaseGalaxyConfig):
         docker_target_kwds,
         volumes,
         export_directory,
+        kwds,
     ):
         super(DockerGalaxyConfig, self).__init__(
+            ctx,
             config_directory,
             env,
             test_data_dir,
@@ -794,6 +805,7 @@ class DockerGalaxyConfig(BaseGalaxyConfig):
             server_name,
             master_api_key,
             runnables,
+            kwds,
         )
         self.docker_target_kwds = docker_target_kwds
         self.volumes = volumes
@@ -861,6 +873,7 @@ class LocalGalaxyConfig(BaseGalaxyConfig):
 
     def __init__(
         self,
+        ctx,
         config_directory,
         env,
         test_data_dir,
@@ -869,8 +882,10 @@ class LocalGalaxyConfig(BaseGalaxyConfig):
         master_api_key,
         runnables,
         galaxy_root,
+        kwds,
     ):
         super(LocalGalaxyConfig, self).__init__(
+            ctx,
             config_directory,
             env,
             test_data_dir,
@@ -878,6 +893,7 @@ class LocalGalaxyConfig(BaseGalaxyConfig):
             server_name,
             master_api_key,
             runnables,
+            kwds,
         )
         self.galaxy_root = galaxy_root
 
