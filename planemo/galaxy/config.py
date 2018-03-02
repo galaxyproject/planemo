@@ -41,12 +41,16 @@ from .api import (
     gi,
     user_api_key,
 )
+from .distro_tools import (
+    DISTRO_TOOLS_ID_TO_PATH
+)
 from .run import (
     DOWNLOAD_GALAXY,
     setup_common_startup_args,
     setup_venv,
 )
 from .workflows import (
+    find_tool_ids,
     import_workflow,
     install_shed_repos,
 )
@@ -267,12 +271,13 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         _handle_job_metrics(config_directory, kwds)
 
         shed_tool_conf = "config/shed_tool_conf.xml"
-        all_tool_paths = list(tool_paths) + list(kwds.get("extra_tools", []))
+        all_tool_paths = _all_tool_paths(runnables, **kwds)
 
         tool_directories = set([])  # Things to mount...
         for tool_path in all_tool_paths:
             directory = os.path.dirname(os.path.normpath(tool_path))
-            tool_directories.add(directory)
+            if os.path.exists(directory):
+                tool_directories.add(directory)
 
         # TODO: remap these.
         tool_volumes = []
@@ -396,7 +401,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         _ensure_directory(tool_dependency_dir)
 
         shed_tool_conf = kwds.get("shed_tool_conf") or config_join("shed_tools_conf.xml")
-        all_tool_paths = list(tool_paths) + list(kwds.get("extra_tools", []))
+        all_tool_paths = _all_tool_paths(runnables, **kwds)
         tool_definition = _tool_conf_entry_for(all_tool_paths)
         empty_tool_conf = config_join("empty_tool_conf.xml")
 
@@ -534,6 +539,19 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             galaxy_root,
             kwds,
         )
+
+
+def _all_tool_paths(runnables, **kwds):
+    tool_paths = [r.path for r in runnables if r.has_tools]
+    all_tool_paths = list(tool_paths) + list(kwds.get("extra_tools", []))
+    for runnable in runnables:
+        if runnable.type.name == "galaxy_workflow":
+            tool_ids = find_tool_ids(runnable.path)
+            for tool_id in tool_ids:
+                if tool_id in DISTRO_TOOLS_ID_TO_PATH:
+                    all_tool_paths.append(DISTRO_TOOLS_ID_TO_PATH[tool_id])
+
+    return all_tool_paths
 
 
 def _shared_galaxy_properties(config_directory, kwds, for_tests):

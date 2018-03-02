@@ -69,11 +69,14 @@ def import_workflow(path, admin_gi, user_gi, from_path=False):
         return workflow
 
 
-def _raw_dict(path, importer):
+def _raw_dict(path, importer=None):
     if path.endswith(".ga"):
         with open(path, "r") as f:
             workflow = json.load(f)
     else:
+        if importer is None:
+            importer = DummyImporterGalaxyInterface()
+
         workflow_directory = os.path.dirname(path)
         workflow_directory = os.path.abspath(workflow_directory)
         with open(path, "r") as f:
@@ -83,13 +86,22 @@ def _raw_dict(path, importer):
     return workflow
 
 
+def find_tool_ids(path):
+    tool_ids = []
+    workflow = _raw_dict(path)
+    for (order_index, step) in workflow["steps"].items():
+        tool_id = step.get("tool_id")
+        tool_ids.append(tool_id)
+
+    return tool_ids
+
+
 WorkflowOutput = namedtuple("WorkflowOutput", ["order_index", "output_name", "label"])
 
 
 def describe_outputs(path):
     """Return a list of :class:`WorkflowOutput` objects for target workflow."""
-    importer = DummyImporterGalaxyInterface()
-    workflow = _raw_dict(path, importer)
+    workflow = _raw_dict(path)
     outputs = []
     for (order_index, step) in workflow["steps"].items():
         step_outputs = step.get("workflow_outputs", [])
