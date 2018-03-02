@@ -380,6 +380,10 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             galaxy_root = config_join("galaxy-dev")
 
         server_name = "planemo%d" % random.randint(0, 100000)
+        # Once we don't have to support earlier than 18.01 - try putting these files
+        # somewhere better than with Galaxy.
+        log_file = "%s.log" % server_name
+        pid_file = "%s.pid" % server_name
         _handle_dependency_resolution(ctx, config_directory, kwds)
         _handle_job_config_file(config_directory, server_name, kwds)
         _handle_job_metrics(config_directory, kwds)
@@ -500,6 +504,10 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         env["GALAXY_TEST_LOGGING_CONFIG"] = config_join("logging.ini")
         env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
         env["GALAXY_SKIP_CLIENT_BUILD"] = "1"
+        # Following are needed in 18.01 to prevent Galaxy from changing log and pid.
+        # https://github.com/galaxyproject/planemo/issues/788
+        env["GALAXY_LOG"] = log_file
+        env["GALAXY_PID"] = pid_file
         web_config = _sub(WEB_SERVER_CONFIG_TEMPLATE, template_args)
         write_file(config_join("galaxy.ini"), web_config)
         tool_conf_contents = _sub(TOOL_CONF_TEMPLATE, template_args)
