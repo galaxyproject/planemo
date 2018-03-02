@@ -116,6 +116,8 @@ tests with Galaxy but we can also specify the use of ``cwltool`` (the
 reference implementation of CWL) which will be quicker and more robust until
 while Galaxy support for the CWL is still in development.
 
+::
+
     $ planemo test --no-container --engine cwltool seqtk_seq.cwl
     Enable beta testing mode to test artifact that isn't a Galaxy tool.
     All 1 test(s) executed passed.
