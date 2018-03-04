@@ -13,6 +13,7 @@ from tempfile import mkdtemp
 import click
 from galaxy.tools.deps import docker_util
 from galaxy.tools.deps.commands import argv_to_str
+from galaxy.util import unicodify
 from six import (
     add_metaclass,
     iteritems
@@ -571,11 +572,11 @@ def _user_email(kwds):
 @contextlib.contextmanager
 def _config_directory(ctx, **kwds):
     config_directory = kwds.get("config_directory", None)
-    ctx.vlog("Created directory for Galaxy configuration [%s]" % config_directory)
     created_config_directory = False
     if not config_directory:
         created_config_directory = True
         config_directory = os.path.realpath(mkdtemp())
+        ctx.vlog("Created directory for Galaxy configuration [%s]" % config_directory)
     try:
         yield config_directory
     finally:
@@ -585,11 +586,50 @@ def _config_directory(ctx, **kwds):
 
 
 @add_metaclass(abc.ABCMeta)
-class GalaxyConfig(object):
+class GalaxyInterface(object):
     """Abstraction around a Galaxy instance.
 
-    This requires more than just an API connection and assumes access to files
-    etc....
+    Description of a Galaxy instance and how to interact with it - this could
+    potentially be a remote, already running instance or an instance Planemo manages
+    to execute some task(s).
+    """
+
+    @abc.abstractproperty
+    def gi(self):
+        """Return an admin bioblend Galaxy instance for API interactions."""
+
+    @abc.abstractproperty
+    def user_gi(self):
+        """Return a user-backed bioblend Galaxy instance for API interactions."""
+
+    @abc.abstractmethod
+    def install_repo(self, *args, **kwds):
+        """Install specified tool shed repository."""
+
+    @abc.abstractproperty
+    def tool_shed_client(self):
+        """Return a admin bioblend tool shed client."""
+
+    @abc.abstractmethod
+    def wait_for_all_installed(self):
+        """Wait for all queued up repositories installs to complete."""
+
+    @abc.abstractmethod
+    def install_workflows(self):
+        """Install all workflows configured with these planemo arguments."""
+
+    @abc.abstractmethod
+    def workflow_id(self, path):
+        """Get installed workflow API ID for input path."""
+
+
+@add_metaclass(abc.ABCMeta)
+class GalaxyConfig(GalaxyInterface):
+    """Specialization of GalaxyInterface for Galaxy instances Planemo manages itself.
+
+    This assumes more than an API connection is available - Planemo needs to be able to
+    start and stop the Galaxy instance, recover logs, etc... There are currently two
+    implementations - a locally executed Galaxy and one running inside a Docker containe
     """
 
     @abc.abstractproperty
@@ -928,7 +968,8 @@ def _download_database_template(
         return True
 
     if latest or not galaxy_root:
-        template_url = DOWNLOADS_URL + urlopen(LATEST_URL).read()
+        symlink_target = unicodify(urlopen(LATEST_URL).read())
+        template_url = DOWNLOADS_URL + symlink_target
         urlretrieve(template_url, database_location)
         return True
 

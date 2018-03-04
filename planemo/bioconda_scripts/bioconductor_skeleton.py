@@ -21,9 +21,9 @@ import pyaml
 import requests
 from six.moves.urllib.parse import urljoin
 
-logging.basicConfig(level=logging.INFO, format='[bioconductor_skeleton.py %(asctime)s]: %(message)s')
+# logging.basicConfig(level=logging.INFO, format='[bioconductor_skeleton.py %(asctime)s]: %(message)s')
 logger = logging.getLogger()
-logging.getLogger("requests").setLevel(logging.WARNING)
+# logging.getLogger("requests").setLevel(logging.WARNING)
 
 base_url = 'http://bioconductor.org/packages/'
 

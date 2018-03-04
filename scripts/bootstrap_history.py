@@ -21,6 +21,7 @@ PROJECT_OWNER = project.PROJECT_OWNER
 PROJECT_NAME = project.PROJECT_NAME
 PROJECT_URL = "https://github.com/%s/%s" % (PROJECT_OWNER, PROJECT_NAME)
 PROJECT_API = "https://api.github.com/repos/%s/%s/" % (PROJECT_OWNER, PROJECT_NAME)
+AUTHORS_SKIP_CREDIT = ["jmchilton"]
 
 
 def main(argv):
@@ -29,7 +30,7 @@ def main(argv):
 
     def extend(from_str, line):
         from_str += "\n"
-        return history.replace(from_str, from_str + line + "\n" )
+        return history.replace(from_str, from_str + line + "\n")
 
     ident = argv[1]
 
@@ -47,6 +48,10 @@ def main(argv):
         api_url = urlparse.urljoin(PROJECT_API, "pulls/%s" % pull_request)
         req = requests.get(api_url).json()
         message = req["title"]
+        login = req["user"]["login"]
+        if login not in AUTHORS_SKIP_CREDIT:
+            message = message.rstrip(".")
+            message += " (thanks to `@%s`_)." % req["user"]["login"]
     elif requests is not None and ident.startswith("issue"):
         issue = ident[len("issue"):]
         api_url = urlparse.urljoin(PROJECT_API, "issues/%s" % issue)

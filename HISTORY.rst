@@ -6,10 +6,39 @@ History
 .. to_doc
 
 ---------------------
-0.48.0.dev0
+0.49.0.dev0
 ---------------------
 
     
+
+---------------------
+0.48.0 (2018-02-28)
+---------------------
+
+* Run all CI tests against Python 3 (thanks to `@nsoranzo`_).
+  `Pull Request 768`_ and `Pull Request 774`_
+* Python 3 fix - subprocess with ``universal_newlines=True``
+  (thanks to `@peterjc`_).
+  `Pull Request 764`_
+* Record CWL_ conformance test results using JUnit xml
+  (thanks to `@mr-c`_).
+  `Pull Request 756`_
+* Restore run test case for simple Galaxy tools.
+  `Pull Request 769`_
+* Enhancements to Galaxy profiles and workflow testing.
+  `Pull Request 773`_
+* Fix resolving & installing shed repositories from workflows for ``test``
+  and ``run`` commands.
+  `Pull Request 776`_
+* Implement planemo command to convert format 2 workflows into .ga workflows.
+  `Pull Request 771`_
+* Add a native Galaxy workflow (.ga) testing test.
+  `Pull Request 770`_
+* Drop Brew support but add more detailed install instructions.
+  `Pull Request 761`_
+* Clean up CWL_ conformance test execution. `Pull Request 753`_
+* Assorted small CWL_ and deamon serve fixes. `Pull Request 759`_
+
 
 ---------------------
 0.47.0 (2017-11-18)
@@ -1196,6 +1225,18 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 776: https://github.com/galaxyproject/planemo/pull/776
+.. _Pull Request 774: https://github.com/galaxyproject/planemo/pull/774
+.. _Pull Request 773: https://github.com/galaxyproject/planemo/pull/773
+.. _Pull Request 771: https://github.com/galaxyproject/planemo/pull/771
+.. _Pull Request 770: https://github.com/galaxyproject/planemo/pull/770
+.. _Pull Request 769: https://github.com/galaxyproject/planemo/pull/769
+.. _Pull Request 768: https://github.com/galaxyproject/planemo/pull/768
+.. _Pull Request 764: https://github.com/galaxyproject/planemo/pull/764
+.. _Pull Request 761: https://github.com/galaxyproject/planemo/pull/761
+.. _Pull Request 759: https://github.com/galaxyproject/planemo/pull/759
+.. _Pull Request 756: https://github.com/galaxyproject/planemo/pull/756
+.. _Pull Request 753: https://github.com/galaxyproject/planemo/pull/753
 .. _Pull Request 747: https://github.com/galaxyproject/planemo/pull/747
 .. _Pull Request 745: https://github.com/galaxyproject/planemo/pull/745
 .. _Pull Request 743: https://github.com/galaxyproject/planemo/pull/743

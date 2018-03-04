@@ -8,7 +8,6 @@ from bioblend.galaxy.client import Client
 
 from ephemeris import generate_tool_list_from_ga_workflow_files
 from ephemeris import shed_tools
-
 from gxformat2.converter import python_to_workflow
 from gxformat2.interface import BioBlendImporterGalaxyInterface
 from gxformat2.interface import ImporterGalaxyInterface
@@ -18,7 +17,6 @@ def load_shed_repos(runnable):
     if runnable.type.name != "galaxy_workflow":
         return []
 
-    # TODO: This is crap - doesn't handle nested repositories at all.
     path = runnable.path
     if path.endswith(".ga"):
         generate_tool_list_from_ga_workflow_files.generate_tool_list_from_workflow([path], "Tools from workflows", "tools.yml")
@@ -26,6 +24,8 @@ def load_shed_repos(runnable):
             tools = yaml.load(f)["tools"]
 
     else:
+        # It'd be better to just infer this from the tool shed ID somehow than
+        # require explicit annotation like this... I think?
         with open(path, "r") as f:
             workflow = yaml.load(f)
 

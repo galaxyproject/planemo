@@ -1,5 +1,6 @@
 """The module describes a CLI framework extending ``click``."""
 import functools
+import logging.config
 import os
 import sys
 import traceback
@@ -240,7 +241,7 @@ def _setup_profile_options(ctx, profile_defaults, kwds):
               envvar="PLANEMO_GLOBAL_WORKSPACE",
               help="Workspace for planemo.")
 @pass_context
-def planemo(ctx, config, directory, verbose):
+def planemo(ctx, config, directory, verbose, configure_logging=True):
     """A command-line toolkit for building tools and workflows for Galaxy.
 
     Check out the full documentation for Planemo online
@@ -250,6 +251,44 @@ def planemo(ctx, config, directory, verbose):
     example use ``planemo lint --help`` for more details on checking tools.
     """
     ctx.verbose = verbose
+    if configure_logging:
+        logging_config = {
+            'version': 1,
+            'disable_existing_loggers': False,
+            'formatters': {
+                'verbose': {
+                    'format': '%(name)s %(levelname)s %(asctime)s: %(message)s'
+                },
+                'simple': {
+                    'format': '%(name)s %(levelname)s: %(message)s'
+                },
+            },
+            'handlers': {
+                'console': {
+                    'level': 'DEBUG',
+                    'class': 'logging.StreamHandler',
+                    'formatter': 'simple' if not verbose else 'verbose'
+                },
+            },
+            'loggers': {
+                'galaxy.tools.deps.commands': {
+                    'handlers': ['console'],
+                    'propagate': False,
+                    'level': 'ERROR' if not verbose else "DEBUG",
+                },
+                'galaxy': {
+                    'handlers': ['console'],
+                    'propagate': False,
+                    'level': 'INFO' if not verbose else "DEBUG",
+                },
+            },
+            'root': {
+                'handlers': ['console'],
+                'propagate': False,
+                'level': 'WARNING' if not verbose else "DEBUG",
+            }
+        }
+        logging.config.dictConfig(logging_config)
     ctx.planemo_config = os.path.expanduser(config)
     ctx.planemo_directory = os.path.expanduser(directory)
 

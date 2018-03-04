@@ -57,7 +57,7 @@ def cli(ctx, path, **kwds):
         installed_conda_targets, conda_context=conda_context, quiet=True
     )
     if exit_code:
-        error("Failed to build environmnt for request.")
+        error("Failed to build environment for request.")
         return 1
 
     ps1 = ps1_for_path(path, base="PRE_CONDA_PS1")

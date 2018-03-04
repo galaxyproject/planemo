@@ -7,6 +7,7 @@ Galaxy and CWL tool descriptions.
 import os
 import re
 import shlex
+import shutil
 import subprocess
 from collections import namedtuple
 
@@ -847,10 +848,13 @@ def write_tool_description(ctx, tool_description, **kwds):
     if tool_description.test_files:
         if not os.path.exists("test-data"):
             io.info("No test-data directory, creating one.")
-            io.shell("mkdir -p 'test-data'")
+            os.makedirs('test-data')
         for test_file in tool_description.test_files:
             io.info("Copying test-file %s" % test_file)
-            io.shell("cp '%s' 'test-data'" % test_file)
+            try:
+                shutil.copy(test_file, 'test-data')
+            except Exception as e:
+                io.info("Copy of %s failed: %s" % (test_file, e))
 
 
 __all__ = (

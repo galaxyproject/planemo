@@ -452,6 +452,14 @@ planemo\.commands\.cmd\_virtualenv module
     :undoc-members:
     :show-inheritance:
 
+planemo\.commands\.cmd\_workflow\_convert module
+------------------------------------------------
+
+.. automodule:: planemo.commands.cmd_workflow_convert
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

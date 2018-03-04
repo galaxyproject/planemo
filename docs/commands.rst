@@ -60,3 +60,4 @@ documentation describes these commands.
 .. include:: commands/tool_init.rst
 .. include:: commands/travis_init.rst
 .. include:: commands/virtualenv.rst
+.. include:: commands/workflow_convert.rst

@@ -4,7 +4,11 @@ set -o xtrace
 
 set -e
 
-# Preconditions - tool init directory doesn't exist and in home directory.
+# Preconditions:
+# - planemo installed
+# - tool_init_exercise directory doesn't exist and in home directory.
+# - local tool shed running and configured with ~/.planemo.yml
+
 cd
 rm -rf tool_init_exercise
 

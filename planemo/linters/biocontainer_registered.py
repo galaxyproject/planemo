@@ -20,7 +20,7 @@ def lint_biocontainer_registered(tool_source, lint_ctx):
         lint_ctx.warn(MESSAGE_WARN_NO_REQUIREMENTS)
         return
 
-    mulled_targets = map(lambda c: build_target(c.package, c.version), conda_targets)
+    mulled_targets = [build_target(c.package, c.version) for c in conda_targets]
     name = mulled_container_name("biocontainers", mulled_targets)
     if name:
         lint_ctx.info(MESSAGE_INFO_FOUND_BIOCONTAINER % name)

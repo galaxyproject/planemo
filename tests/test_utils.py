@@ -108,7 +108,7 @@ class CliTestCase(TestCase):
 
     def _copy_repo(self, name, dest):
         repo = os.path.join(TEST_REPOS_DIR, name)
-        io.shell("cp -r '%s/.' '%s'" % (repo, dest))
+        io.shell(['cp', '-r', "%s/." % repo, dest])
 
     @property
     def test_context(self):
