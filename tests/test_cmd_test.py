@@ -58,6 +58,28 @@ class CmdTestTestCase(CliTestCase):
             #        print(o.read())
             #    raise
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_test_assembly_intro_example(self):
+        """Test testing a simple GA workflow with Galaxy."""
+        with self._isolate():
+            test_artifact = os.path.join(TEST_DATA_DIR, "wf-training-assembly-intro.ga")
+            test_command = [
+                "--verbose",
+                "test"
+            ]
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command += [
+                test_artifact,
+            ]
+            # try:
+            self._check_exit_code(test_command, exit_code=0)
+            # except Exception:
+            #    with open(os.path.join(f, "tool_test_output.json"), "r") as o:
+            #        print(o.read())
+            #    raise
+
+    @skip_unless_python_2_7()
+
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_cwltool_tool_test(self):
         """Test testing a CWL tool with cwltool."""

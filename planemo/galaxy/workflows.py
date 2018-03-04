@@ -5,6 +5,7 @@ from collections import namedtuple
 
 import yaml
 from bioblend.galaxy.client import Client
+
 from ephemeris import generate_tool_list_from_ga_workflow_files
 from ephemeris import shed_tools
 from gxformat2.converter import python_to_workflow
