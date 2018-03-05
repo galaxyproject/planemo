@@ -15,6 +15,7 @@ from planemo.galaxy import shed_serve
 @options.galaxy_run_options()
 @options.galaxy_config_options()
 @options.pid_file_option()
+@options.daemon_option()
 @click.option(
     "--skip_dependencies",
     is_flag=True,

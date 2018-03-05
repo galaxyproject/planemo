@@ -46,12 +46,31 @@ class ServeTestCase(CliTestCase):
             "--extra_tools", cat,
         ]
         self._launch_thread_and_wait(self._run, extra_args)
-        time.sleep(40)
+        time.sleep(30)
         user_gi = self._user_gi
         assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0
         user_gi.histories.create_history(TEST_HISTORY_NAME)
         assert user_gi.tools.get_tools(tool_id="random_lines1")
         assert len(user_gi.workflows.get_workflows()) == 1
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_shed_serve(self):
+        extra_args = ["--daemon", "--pid_file", self._pid_file, "--shed_target", "toolshed"]
+        fastqc_path = os.path.join(TEST_REPOS_DIR, "fastqc")
+        self._serve_artifact = fastqc_path
+        self._launch_thread_and_wait(self._run_shed, extra_args)
+        user_gi = self._user_gi
+        found = False
+        tool_ids = None
+        for i in range(30):
+            tool_ids = [t["id"] for t in user_gi.tools.get_tools()]
+            if "toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.71" in tool_ids:
+                found = True
+                break
+            time.sleep(5)
+
+        assert found, "Failed to find fastqc id in %s" % tool_ids
+        kill_pid_file(self._pid_file)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_serve_profile(self):
@@ -105,9 +124,12 @@ class ServeTestCase(CliTestCase):
         time.sleep(1)
         assert network_util.wait_net_service("127.0.0.1", port, timeout=600)
 
-    def _run(self, serve_args=[]):
+    def _run_shed(self, serve_args=[]):
+        return self._run(serve_args=serve_args, serve_cmd="shed_serve")
+
+    def _run(self, serve_args=[], serve_cmd="serve"):
         test_cmd = [
-            "serve",
+            serve_cmd,
             "--install_galaxy",
             "--no_dependency_resolution",
             "--port",
