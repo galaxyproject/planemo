@@ -45,11 +45,11 @@ class BuildAndLintTestCase(CliTestCase):
             assert process_dict["id"] == "seqtk_seq"
             assert process_dict["label"] == "Convert to FASTA (seqtk)"
             assert process_dict["baseCommand"] == ["seqtk", "seq"]
-            input0 = process_dict["inputs"][0]
+            input0 = process_dict["inputs"]["input1"]
             assert input0["inputBinding"]["position"] == 1
             assert input0["inputBinding"]["prefix"] == "-a"
             assert input0["type"] == "File"
-            output = process_dict["outputs"][0]
+            output = process_dict["outputs"]["output1"]
             assert output["type"] == "File"
             assert output["outputBinding"]["glob"] == "out"
             assert process_dict["stdout"] == "out"
@@ -85,14 +85,13 @@ def _cwl_init_command(help_text=True, container=True, test_case=True):
         "tool_init", "--force", "--cwl",
         "--id", "seqtk_seq",
         "--name", "Convert to FASTA (seqtk)",
-        "--container", "jmchilton/seqtk:v1",
         "--name", "Convert to FASTA (seqtk)",
         "--example_command", "seqtk seq -a 2.fastq > 2.fasta",
         "--example_input", "2.fastq",
         "--example_output", "2.fasta"
     ]
     if container:
-        command.extend(["--container", "jmchilton/seqtk:v1"])
+        command.extend(["--container", "quay.io/biocontainers/seqtk:1.2--0"])
     if help_text:
         command.extend(["--help_text", "The help text."])
     if test_case:
