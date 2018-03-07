@@ -1,0 +1,6 @@
+GSE37268_mof3:
+  class: File
+  path: GSE37268_mof3.out.hpeak.txt
+Genes:
+  class: File
+  path: Genes.bed

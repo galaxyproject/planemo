@@ -1,0 +1,7 @@
+- doc: Test sample data for intro workflow
+  job: wf3-shed-tools-job.yml
+  outputs:
+    intersect:
+      asserts:
+        has_line:
+          line: 'chr7	147127754	147139754	NM_009482	0	+	147129772	147130889	0	2	574,586,0,671,'
