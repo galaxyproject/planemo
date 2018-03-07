@@ -41,21 +41,6 @@ class CmdTestCondaTestCase(CliTestCase):
             self._check_exit_code(test_command, exit_code=0)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-    def test_conda_dependencies_verify_branch_testing_properly(self):
-        # This tries to test Conda dependency resolution with a pre-Conda Galaxy and
-        # expects a failure. This verifies the other test cases are in fact testing
-        # different versions of Galaxy as expected.
-        with self._isolate():
-            bwa_test = os.path.join(PROJECT_TEMPLATES_DIR, "conda_testing", "bwa.xml")
-            test_command = [
-                "--verbose",
-                "test",
-                "--galaxy_branch", "release_15.10",
-                bwa_test,
-            ]
-            self._check_exit_code(test_command, exit_code=self.non_zero_exit_code)
-
-    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_conda_dependencies_version(self):
         """Test tool with wrong version and ensure it fails."""
         with self._isolate():
@@ -90,7 +75,7 @@ class CmdTestCondaTestCase(CliTestCase):
             self._check_exit_code(conda_install_command)
             test_command = [
                 "test",
-                "--galaxy_branch", "release_17.01",
+                "--galaxy_branch", "release_17.09",
                 fleeqtk_tool,
             ]
             self._check_exit_code(test_command)
