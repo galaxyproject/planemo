@@ -14,10 +14,6 @@ class InitAndTestTestCase(CliTestCase):
     def test_init_and_test_dev(self):
         self.__run_commands(test_args=["--galaxy_branch", "dev"])
 
-    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-    def test_init_and_test_release_16_01(self):
-        self.__run_commands(test_args=["--galaxy_branch", "release_16.01"])
-
     def __run_commands(self, test_args=[]):
         with self._isolate():
             init_cmd = ["project_init", "--template", "demo", "basic"]
