@@ -9,7 +9,13 @@ History
 0.49.0.dev0
 ---------------------
 
-    
+* Automatically load tools shipped with Galaxy when testing, running, or serving
+  workflows that reference these tools. `Pull Request 790`_
+* Revise README and touch up documentation in general. `Pull Request 787`_
+* Various small changes to testing and test framework. `Pull Request 792`_
+* Various Python 3 fixes. 8cfe9e9_, 41f7df1_
+* Fix Planemo serve for the forthcoming Galaxy 18.01 release. dc443d6_
+
 
 ---------------------
 0.48.0 (2018-02-28)
@@ -1225,6 +1231,12 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 787: https://github.com/galaxyproject/planemo/pull/787
+.. _Pull Request 792: https://github.com/galaxyproject/planemo/pull/792
+.. _dc443d6: https://github.com/galaxyproject/planemo/commit/dc443d6
+.. _8cfe9e9: https://github.com/galaxyproject/planemo/commit/8cfe9e9
+.. _41f7df1: https://github.com/galaxyproject/planemo/commit/41f7df1
+.. _Pull Request 790: https://github.com/galaxyproject/planemo/pull/790
 .. _Pull Request 776: https://github.com/galaxyproject/planemo/pull/776
 .. _Pull Request 774: https://github.com/galaxyproject/planemo/pull/774
 .. _Pull Request 773: https://github.com/galaxyproject/planemo/pull/773
