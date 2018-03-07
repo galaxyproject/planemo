@@ -22,6 +22,10 @@ def check_output(runnable, output_properties, test_properties, **kwds):
     job_output_files = kwds.get("job_output_files", None)
     item_label = "Output with path %s" % path
     problems = []
+    if "asserts" in test_properties:
+        # TODO: break fewer abstractions here...
+        from galaxy.tools.parser.yaml import __to_test_assert_list
+        test_properties["assert_list"] = __to_test_assert_list(test_properties["asserts"])
     try:
         verify(
             item_label,

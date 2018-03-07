@@ -105,6 +105,7 @@ class BaseEngine(Engine):
                     suffix=".json",
                     prefix="plnmotmptestjob",
                     delete=False,
+                    mode="w+",
                 )
                 tmp_path = f.name
                 job_path = tmp_path

@@ -1,0 +1,10 @@
+- doc: Test Galaxy finds Grouping1 tool.
+  job:
+    input1:
+      class: File
+      path: '1.bed'
+  outputs:
+    wf_output_1:
+      asserts:
+        has_line:
+          line: 'chr16	206638'

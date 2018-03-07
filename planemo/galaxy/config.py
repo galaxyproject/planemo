@@ -41,12 +41,16 @@ from .api import (
     gi,
     user_api_key,
 )
+from .distro_tools import (
+    DISTRO_TOOLS_ID_TO_PATH
+)
 from .run import (
     DOWNLOAD_GALAXY,
     setup_common_startup_args,
     setup_venv,
 )
 from .workflows import (
+    find_tool_ids,
     import_workflow,
     install_shed_repos,
 )
@@ -267,12 +271,13 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         _handle_job_metrics(config_directory, kwds)
 
         shed_tool_conf = "config/shed_tool_conf.xml"
-        all_tool_paths = list(tool_paths) + list(kwds.get("extra_tools", []))
+        all_tool_paths = _all_tool_paths(runnables, **kwds)
 
         tool_directories = set([])  # Things to mount...
         for tool_path in all_tool_paths:
             directory = os.path.dirname(os.path.normpath(tool_path))
-            tool_directories.add(directory)
+            if os.path.exists(directory):
+                tool_directories.add(directory)
 
         # TODO: remap these.
         tool_volumes = []
@@ -334,6 +339,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         if export_directory is not None:
             volumes.append(docker_util.DockerVolume(export_directory, "/export"))
         yield DockerGalaxyConfig(
+            ctx,
             config_directory,
             env,
             test_data_dir,
@@ -344,6 +350,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             docker_target_kwds=docker_target_kwds,
             volumes=volumes,
             export_directory=export_directory,
+            kwds=kwds,
         )
 
 
@@ -380,6 +387,10 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             galaxy_root = config_join("galaxy-dev")
 
         server_name = "planemo%d" % random.randint(0, 100000)
+        # Once we don't have to support earlier than 18.01 - try putting these files
+        # somewhere better than with Galaxy.
+        log_file = "%s.log" % server_name
+        pid_file = "%s.pid" % server_name
         _handle_dependency_resolution(ctx, config_directory, kwds)
         _handle_job_config_file(config_directory, server_name, kwds)
         _handle_job_metrics(config_directory, kwds)
@@ -390,7 +401,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         _ensure_directory(tool_dependency_dir)
 
         shed_tool_conf = kwds.get("shed_tool_conf") or config_join("shed_tools_conf.xml")
-        all_tool_paths = list(tool_paths) + list(kwds.get("extra_tools", []))
+        all_tool_paths = _all_tool_paths(runnables, **kwds)
         tool_definition = _tool_conf_entry_for(all_tool_paths)
         empty_tool_conf = config_join("empty_tool_conf.xml")
 
@@ -500,6 +511,10 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         env["GALAXY_TEST_LOGGING_CONFIG"] = config_join("logging.ini")
         env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
         env["GALAXY_SKIP_CLIENT_BUILD"] = "1"
+        # Following are needed in 18.01 to prevent Galaxy from changing log and pid.
+        # https://github.com/galaxyproject/planemo/issues/788
+        env["GALAXY_LOG"] = log_file
+        env["GALAXY_PID"] = pid_file
         web_config = _sub(WEB_SERVER_CONFIG_TEMPLATE, template_args)
         write_file(config_join("galaxy.ini"), web_config)
         tool_conf_contents = _sub(TOOL_CONF_TEMPLATE, template_args)
@@ -513,6 +528,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         write_file(shed_data_manager_config_file, SHED_DATA_MANAGER_CONF_TEMPLATE)
 
         yield LocalGalaxyConfig(
+            ctx,
             config_directory,
             env,
             test_data_dir,
@@ -521,7 +537,21 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             master_api_key,
             runnables,
             galaxy_root,
+            kwds,
         )
+
+
+def _all_tool_paths(runnables, **kwds):
+    tool_paths = [r.path for r in runnables if r.has_tools]
+    all_tool_paths = list(tool_paths) + list(kwds.get("extra_tools", []))
+    for runnable in runnables:
+        if runnable.type.name == "galaxy_workflow":
+            tool_ids = find_tool_ids(runnable.path)
+            for tool_id in tool_ids:
+                if tool_id in DISTRO_TOOLS_ID_TO_PATH:
+                    all_tool_paths.append(DISTRO_TOOLS_ID_TO_PATH[tool_id])
+
+    return all_tool_paths
 
 
 def _shared_galaxy_properties(config_directory, kwds, for_tests):
@@ -685,6 +715,7 @@ class BaseGalaxyConfig(GalaxyConfig):
 
     def __init__(
         self,
+        ctx,
         config_directory,
         env,
         test_data_dir,
@@ -692,7 +723,10 @@ class BaseGalaxyConfig(GalaxyConfig):
         server_name,
         master_api_key,
         runnables,
+        kwds,
     ):
+        self._ctx = ctx
+        self._kwds = kwds
         self.config_directory = config_directory
         self.env = env
         self.test_data_dir = test_data_dir
@@ -749,7 +783,7 @@ class BaseGalaxyConfig(GalaxyConfig):
                 self._install_workflow(runnable)
 
     def _install_workflow(self, runnable):
-        install_shed_repos(runnable, self.gi)
+        install_shed_repos(runnable, self.gi, self._kwds.get("ignore_dependency_problems", False))
         # TODO: Allow serialization so this doesn't need to assume a
         # shared filesystem with Galaxy server.
         from_path = runnable.type.name == "cwl_workflow"
@@ -767,6 +801,7 @@ class DockerGalaxyConfig(BaseGalaxyConfig):
 
     def __init__(
         self,
+        ctx,
         config_directory,
         env,
         test_data_dir,
@@ -777,8 +812,10 @@ class DockerGalaxyConfig(BaseGalaxyConfig):
         docker_target_kwds,
         volumes,
         export_directory,
+        kwds,
     ):
         super(DockerGalaxyConfig, self).__init__(
+            ctx,
             config_directory,
             env,
             test_data_dir,
@@ -786,6 +823,7 @@ class DockerGalaxyConfig(BaseGalaxyConfig):
             server_name,
             master_api_key,
             runnables,
+            kwds,
         )
         self.docker_target_kwds = docker_target_kwds
         self.volumes = volumes
@@ -853,6 +891,7 @@ class LocalGalaxyConfig(BaseGalaxyConfig):
 
     def __init__(
         self,
+        ctx,
         config_directory,
         env,
         test_data_dir,
@@ -861,8 +900,10 @@ class LocalGalaxyConfig(BaseGalaxyConfig):
         master_api_key,
         runnables,
         galaxy_root,
+        kwds,
     ):
         super(LocalGalaxyConfig, self).__init__(
+            ctx,
             config_directory,
             env,
             test_data_dir,
@@ -870,6 +911,7 @@ class LocalGalaxyConfig(BaseGalaxyConfig):
             server_name,
             master_api_key,
             runnables,
+            kwds,
         )
         self.galaxy_root = galaxy_root
 

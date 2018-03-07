@@ -1,0 +1,18 @@
+class: GalaxyWorkflow
+name: "Test Workflow with Distro Tool"
+inputs:
+  - id: input1
+outputs:
+  - id: wf_output_1
+    source: grouping#out_file1
+steps:
+  - tool_id: Grouping1
+    label: grouping
+    state:
+      input1:
+        $link: input1
+      groupcol: 1
+      operations:
+        - opcol: '2'  # TODO: shouldn't need to be a string, but integer doesn't work here - does outside conditional :(
+          optype: mean
+          opround: 'no'  # TODO: default shouldn't need to be specified, but does because in conditional :(

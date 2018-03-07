@@ -11,6 +11,10 @@ from gxformat2.converter import python_to_workflow
 from gxformat2.interface import BioBlendImporterGalaxyInterface
 from gxformat2.interface import ImporterGalaxyInterface
 
+from planemo.io import warn
+
+FAILED_REPOSITORIES_MESSAGE = "Failed to install one or more repositories."
+
 
 def load_shed_repos(runnable):
     if runnable.type.name != "galaxy_workflow":
@@ -33,14 +37,17 @@ def load_shed_repos(runnable):
     return tools
 
 
-def install_shed_repos(runnable, admin_gi):
+def install_shed_repos(runnable, admin_gi, ignore_dependency_problems):
     tools_info = load_shed_repos(runnable)
     if tools_info:
         shed_tools._ensure_log_configured("ephemeris")
         install_tool_manager = shed_tools.InstallToolManager(tools_info, admin_gi)
         install_tool_manager.install_repositories()
         if install_tool_manager.errored_repositories:
-            raise Exception("Failed to install one or more repositories.")
+            if ignore_dependency_problems:
+                warn(FAILED_REPOSITORIES_MESSAGE)
+            else:
+                raise Exception(FAILED_REPOSITORIES_MESSAGE)
 
 
 def import_workflow(path, admin_gi, user_gi, from_path=False):
@@ -62,11 +69,14 @@ def import_workflow(path, admin_gi, user_gi, from_path=False):
         return workflow
 
 
-def _raw_dict(path, importer):
+def _raw_dict(path, importer=None):
     if path.endswith(".ga"):
         with open(path, "r") as f:
             workflow = json.load(f)
     else:
+        if importer is None:
+            importer = DummyImporterGalaxyInterface()
+
         workflow_directory = os.path.dirname(path)
         workflow_directory = os.path.abspath(workflow_directory)
         with open(path, "r") as f:
@@ -76,13 +86,22 @@ def _raw_dict(path, importer):
     return workflow
 
 
+def find_tool_ids(path):
+    tool_ids = []
+    workflow = _raw_dict(path)
+    for (order_index, step) in workflow["steps"].items():
+        tool_id = step.get("tool_id")
+        tool_ids.append(tool_id)
+
+    return tool_ids
+
+
 WorkflowOutput = namedtuple("WorkflowOutput", ["order_index", "output_name", "label"])
 
 
 def describe_outputs(path):
     """Return a list of :class:`WorkflowOutput` objects for target workflow."""
-    importer = DummyImporterGalaxyInterface()
-    workflow = _raw_dict(path, importer)
+    workflow = _raw_dict(path)
     outputs = []
     for (order_index, step) in workflow["steps"].items():
         step_outputs = step.get("workflow_outputs", [])
