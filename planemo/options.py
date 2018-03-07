@@ -33,7 +33,7 @@ def skip_venv_option():
 def run_engine_option():
     return planemo_option(
         "--engine",
-        type=click.Choice(["galaxy", "docker_galaxy", "cwltool"]),
+        type=click.Choice(["galaxy", "docker_galaxy", "cwltool", "external_galaxy"]),
         default="galaxy",
         use_global_config=True,
         help=("Select an engine to run or test aritfacts such as tools "
@@ -55,7 +55,7 @@ def non_strict_cwl_option():
 def serve_engine_option():
     return planemo_option(
         "--engine",
-        type=click.Choice(["galaxy", "docker_galaxy"]),
+        type=click.Choice(["galaxy", "docker_galaxy", "external_galaxy"]),
         default="galaxy",
         use_global_config=True,
         use_env_var=True,
@@ -383,6 +383,39 @@ def docker_galaxy_image_option():
         help=("Docker image identifier for docker-galaxy-flavor used if "
               "engine type is specified as ``docker-galaxy``. Defaults to "
               "to bgruening/galaxy-stable.")
+    )
+
+
+def galaxy_url_option():
+    return planemo_option(
+        "--galaxy_url",
+        use_global_config=True,
+        extra_global_config_vars=["galaxy_url"],
+        use_env_var=True,
+        type=str,
+        help="Remote Galaxy URL to use with external Galaxy engine.",
+    )
+
+
+def galaxy_admin_key_option():
+    return planemo_option(
+        "--galaxy_admin_key",
+        use_global_config=True,
+        extra_global_config_vars=["admin_key"],
+        use_env_var=True,
+        type=str,
+        help="Admin key to use with external Galaxy engine.",
+    )
+
+
+def galaxy_user_key_option():
+    return planemo_option(
+        "--galaxy_user_key",
+        use_global_config=True,
+        extra_global_config_vars=["admin_key"],
+        use_env_var=True,
+        type=str,
+        help="User key to use with external Galaxy engine.",
     )
 
 
@@ -1127,6 +1160,9 @@ def engine_options():
         cwltool_no_container_option(),
         docker_galaxy_image_option(),
         ignore_dependency_problems_option(),
+        galaxy_url_option(),
+        galaxy_admin_key_option(),
+        galaxy_user_key_option(),
     )
 
 

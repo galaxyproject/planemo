@@ -114,7 +114,7 @@ class ServeTestCase(CliTestCase):
     def _user_gi(self):
         admin_gi = api.gi(self._port)
         user_api_key = api.user_api_key(admin_gi)
-        user_gi = api.gi(self._port, user_api_key)
+        user_gi = api.gi(self._port, key=user_api_key)
         return user_gi
 
     def _launch_thread_and_wait(self, func, args=[]):

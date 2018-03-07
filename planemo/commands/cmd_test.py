@@ -65,9 +65,9 @@ def cli(ctx, paths, **kwds):
     """
     runnables = for_paths(paths)
     enable_beta_test = any([r.type not in [RunnableType.galaxy_tool, RunnableType.directory] for r in runnables])
-    enable_beta_test = enable_beta_test or not is_galaxy_engine(**kwds)
+    enable_beta_test = enable_beta_test or kwds.get("engine", "galaxy") != "engine"
     if enable_beta_test:
-        info("Enable beta testing mode to test artifact that isn't a Galaxy tool.")
+        info("Enable beta testing mode for testing.")
         with engine_context(ctx, **kwds) as engine:
             test_data = engine.test(runnables)
             return_value = handle_reports_and_summary(ctx, test_data.structured_data, kwds=kwds)
