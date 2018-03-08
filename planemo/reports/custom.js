@@ -112,7 +112,12 @@ var TestResult = function(data) {
 		splitParts = rSplit(testMethod, "_", 1);
 	}
 	var toolName = splitParts[0];
-	var testIndex = splitParts[1];
+	var testIndex;
+	if(data["data"]["test_index"] !== null) {
+		testIndex = data["data"]["test_index"];
+	} else {
+		testIndex = splitParts[1];
+	}
 	this.toolName = toolName;
 	this.testIndex = parseInt(testIndex);
 	console.log(data);

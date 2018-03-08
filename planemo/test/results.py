@@ -52,6 +52,10 @@ class StructuredData(object):
         """Set the exit_code for the this test."""
         self.structured_data["exit_code"] = exit_code
 
+    def calculate_summary_data_if_needed(self):
+        if "summary" not in self.structured_data:
+            self.calculate_summary_data()
+
     def calculate_summary_data(self):
         """Use full details on individual test data to update structured data with summary info."""
         num_tests = 0
