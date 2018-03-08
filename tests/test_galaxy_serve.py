@@ -21,6 +21,7 @@ from .test_utils import (
 class GalaxyServeTestCase(CliTestCase):
     """Tests for planemo.galaxy.serve."""
 
+    @skip_if_environ("PLANEMO_SKIP_REDUNDANT_TESTS")  # redundant with test_cmd_serve -> test_serve_daemon
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_serve_daemon(self):
         """Test serving a galaxy tool via a daemon Galaxy process."""
@@ -71,6 +72,7 @@ class GalaxyServeTestCase(CliTestCase):
         assert len(user_gi.workflows.get_workflows()) == 1
         config.kill()
 
+    @skip_if_environ("PLANEMO_SKIP_REDUNDANT_TESTS")  # redundant with test_cmd_serve -> test_shed_serve
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_shed_serve_daemon(self):
         """Test serving FASTQC from the tool shed via a daemon Galaxy process."""

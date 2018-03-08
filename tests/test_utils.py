@@ -2,8 +2,11 @@
 from __future__ import print_function
 
 import contextlib
+import functools
 import os
 import shutil
+import threading
+import time
 import traceback
 from sys import version_info
 from tempfile import mkdtemp
@@ -13,6 +16,7 @@ from galaxy.tools.deps.commands import which
 
 from planemo import cli
 from planemo import io
+from planemo import network_util
 from planemo import shed
 from planemo.config import PLANEMO_CONFIG_ENV_PROP
 from .shed_app_test_utils import (
@@ -40,12 +44,13 @@ PROJECT_TEMPLATES_DIR = os.path.join(TEST_DIR, os.path.pardir, "project_template
 EXIT_CODE_MESSAGE = ("Planemo command [%s] resulted in unexpected exit code "
                      "[%s], expected exit code [%s]]. Command output [%s]")
 CWL_DRAFT3_DIR = os.path.join(PROJECT_TEMPLATES_DIR, "cwl_draft3_spec")
+NON_ZERO_EXIT_CODE = object()
 
 
 # More information on testing click applications at following link.
 # http://click.pocoo.org/3/testing/#basic-testing
 class CliTestCase(TestCase):
-    non_zero_exit_code = object()
+    non_zero_exit_code = NON_ZERO_EXIT_CODE
 
     def setUp(self):  # noqa
         self._runner = CliRunner()
@@ -71,34 +76,8 @@ class CliTestCase(TestCase):
     def _isolate(self):
         return self._runner.isolated_filesystem()
 
-    def _invoke(self, command_list):
-        planemo_cli = self._cli.planemo
-        return self._runner.invoke(planemo_cli, command_list)
-
     def _check_exit_code(self, command_list, exit_code=0):
-        expected_exit_code = exit_code
-        result = self._invoke(command_list)
-        print("Command list output is [%s]" % result.output)
-        result_exit_code = result.exit_code
-        if expected_exit_code is self.non_zero_exit_code:
-            matches_expectation = result_exit_code != 0
-        else:
-            matches_expectation = result_exit_code == expected_exit_code
-        if not matches_expectation:
-            message = EXIT_CODE_MESSAGE % (
-                " ".join(command_list),
-                result_exit_code,
-                expected_exit_code,
-                result.output,
-            )
-            if result.exception:
-                message += " Exception [%s], " % str(result.exception)
-                exc_type, exc_value, exc_traceback = result.exc_info
-                tb = traceback.format_exception(exc_type, exc_value,
-                                                exc_traceback)
-                message += "Traceback [%s]" % tb
-            raise AssertionError(message)
-        return result
+        return check_exit_code(self._runner, command_list, exit_code=exit_code)
 
     @contextlib.contextmanager
     def _isolate_repo(self, name):
@@ -253,9 +232,65 @@ def assert_exists(path):
         raise AssertionError(msg)
 
 
+def check_exit_code(runner, command_list, exit_code=0):
+    expected_exit_code = exit_code
+    planemo_cli = cli.planemo
+    result = runner.invoke(planemo_cli, command_list)
+    print("Command list output is [%s]" % result.output)
+    result_exit_code = result.exit_code
+    if expected_exit_code is NON_ZERO_EXIT_CODE:
+        matches_expectation = result_exit_code != 0
+    else:
+        matches_expectation = result_exit_code == expected_exit_code
+    if not matches_expectation:
+        message = EXIT_CODE_MESSAGE % (
+            " ".join(command_list),
+            result_exit_code,
+            expected_exit_code,
+            result.output,
+        )
+        if result.exception:
+            message += " Exception [%s], " % str(result.exception)
+            exc_type, exc_value, exc_traceback = result.exc_info
+            tb = traceback.format_exception(exc_type, exc_value,
+                                            exc_traceback)
+            message += "Traceback [%s]" % tb
+        raise AssertionError(message)
+    return result
+
+
+@contextlib.contextmanager
+def cli_daemon_service(runner, pid_file, port, command_list, exit_code=0):
+    t = launch_and_wait_for_service(port, check_exit_code, args=[runner, command_list, exit_code])
+    yield
+    io.kill_pid_file(pid_file)
+    t.join(timeout=60)
+
+
+def launch_and_wait_for_service(port, func, args=[]):
+    """Run func(args) in a thread and wait on port for service.
+
+    Service should remain up so check network a few times, this prevents
+    the code that finds a free port from causing a false positive when
+    detecting that the port is bound to.
+    """
+    target = functools.partial(func, *args)
+    t = threading.Thread(target=target)
+    t.daemon = True
+    t.start()
+    time.sleep(5)
+    assert network_util.wait_net_service("127.0.0.1", port, timeout=600)
+    time.sleep(1)
+    assert network_util.wait_net_service("127.0.0.1", port, timeout=600)
+    time.sleep(1)
+    assert network_util.wait_net_service("127.0.0.1", port, timeout=600)
+    return t
+
+
 # TODO: everything should be considered "exported".
 __all__ = (
     "assert_exists",
+    "launch_and_wait_for_service",
     "TestCase",
     "CliTestCase",
 )

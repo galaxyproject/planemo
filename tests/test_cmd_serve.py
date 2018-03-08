@@ -1,6 +1,4 @@
-import functools
 import os
-import threading
 import time
 import uuid
 
@@ -8,7 +6,9 @@ from planemo import network_util
 from planemo.galaxy import api
 from planemo.io import kill_pid_file
 from .test_utils import (
+    cli_daemon_service,
     CliTestCase,
+    launch_and_wait_for_service,
     PROJECT_TEMPLATES_DIR,
     skip_if_environ,
     skip_unless_environ,
@@ -88,15 +88,15 @@ class ServeTestCase(CliTestCase):
             "--pid_file", self._pid_file,
             "--profile", new_profile,
         ]
-        extra_args.extend(db_options)
-        self._launch_thread_and_wait(self._run, extra_args)
-        user_gi = self._user_gi
-        assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0
-        user_gi.histories.create_history(TEST_HISTORY_NAME)
-        kill_pid_file(self._pid_file)
+        serve_cmd = self._serve_command_list(extra_args)
+        with cli_daemon_service(self._runner, self._pid_file, self._port, serve_cmd):
+            user_gi = self._user_gi
+            assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0
+            user_gi.histories.create_history(TEST_HISTORY_NAME)
 
-        self._launch_thread_and_wait(self._run, extra_args)
-        assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 1
+        # TODO: Pretty sure this is getting killed, but we should verify.
+        with cli_daemon_service(self._runner, self._pid_file, self._port, serve_cmd):
+            assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 1
 
     def setUp(self):
         super(ServeTestCase, self).setUp()
@@ -112,22 +112,16 @@ class ServeTestCase(CliTestCase):
         return user_gi
 
     def _launch_thread_and_wait(self, func, args=[]):
-        target = functools.partial(func, args)
-        port = self._port
-        t = threading.Thread(target=target)
-        t.daemon = True
-        t.start()
-        time.sleep(5)
-        assert network_util.wait_net_service("127.0.0.1", port, timeout=600)
-        time.sleep(1)
-        assert network_util.wait_net_service("127.0.0.1", port, timeout=600)
-        time.sleep(1)
-        assert network_util.wait_net_service("127.0.0.1", port, timeout=600)
+        launch_and_wait_for_service(self._port, func, [args])
 
     def _run_shed(self, serve_args=[]):
         return self._run(serve_args=serve_args, serve_cmd="shed_serve")
 
     def _run(self, serve_args=[], serve_cmd="serve"):
+        serve_cmd = self._serve_command_list(serve_args, serve_cmd)
+        self._check_exit_code(serve_cmd)
+
+    def _serve_command_list(self, serve_args=[], serve_cmd="serve"):
         test_cmd = [
             serve_cmd,
             "--install_galaxy",
@@ -137,4 +131,4 @@ class ServeTestCase(CliTestCase):
             self._serve_artifact,
         ]
         test_cmd.extend(serve_args)
-        self._check_exit_code(test_cmd)
+        return test_cmd
