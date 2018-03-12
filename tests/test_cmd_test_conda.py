@@ -14,6 +14,19 @@ class CmdTestCondaTestCase(CliTestCase):
     """Integration tests for the ``test`` command."""
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_conda_dependencies_by_default(self):
+        with self._isolate():
+            bwa_test = os.path.join(PROJECT_TEMPLATES_DIR, "conda_testing", "bwa.xml")
+            test_command = [
+                "--verbose",
+                "test",
+                "--galaxy_branch", "dev",
+                bwa_test,
+            ]
+            self._check_exit_code(test_command, exit_code=0)
+
+    @skip_if_environ("PLANEMO_SKIP_REDUNDANT_TESTS")  # same code path as test above.
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_conda_dependencies_explicit_resolution(self):
         with self._isolate():
             bwa_test = os.path.join(PROJECT_TEMPLATES_DIR, "conda_testing", "bwa.xml")
@@ -23,19 +36,6 @@ class CmdTestCondaTestCase(CliTestCase):
                 "--conda_dependency_resolution",
                 "--conda_auto_install",
                 "--conda_auto_init",
-                bwa_test,
-            ]
-            self._check_exit_code(test_command, exit_code=0)
-
-    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-    def test_conda_dependencies_implicit_resolution(self):
-        # Shouldn't need to explicitly declare resolution of these things anymore.
-        with self._isolate():
-            bwa_test = os.path.join(PROJECT_TEMPLATES_DIR, "conda_testing", "bwa.xml")
-            test_command = [
-                "--verbose",
-                "test",
-                "--galaxy_branch", "dev",
                 bwa_test,
             ]
             self._check_exit_code(test_command, exit_code=0)
