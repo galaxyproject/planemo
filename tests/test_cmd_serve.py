@@ -9,9 +9,11 @@ from .test_utils import (
     cli_daemon_service,
     CliTestCase,
     launch_and_wait_for_service,
+    mark,
     PROJECT_TEMPLATES_DIR,
     skip_if_environ,
     skip_unless_environ,
+    target_galaxy_branch,
     TEST_DATA_DIR,
     TEST_REPOS_DIR,
 )
@@ -22,10 +24,12 @@ TEST_HISTORY_NAME = "Cool History 42"
 class ServeTestCase(CliTestCase):
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @mark.tests_galaxy_branch
     def test_serve(self):
         self._launch_thread_and_wait(self._run)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @mark.tests_galaxy_branch
     def test_serve_daemon(self):
         extra_args = ["--daemon", "--pid_file", self._pid_file]
         self._launch_thread_and_wait(self._run, extra_args)
@@ -35,6 +39,7 @@ class ServeTestCase(CliTestCase):
         kill_pid_file(self._pid_file)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @mark.tests_galaxy_branch
     def test_serve_workflow(self):
         random_lines = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "randomlines.xml")
         cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
@@ -54,6 +59,7 @@ class ServeTestCase(CliTestCase):
         assert len(user_gi.workflows.get_workflows()) == 1
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @mark.tests_galaxy_branch
     def test_shed_serve(self):
         extra_args = ["--daemon", "--pid_file", self._pid_file, "--shed_target", "toolshed"]
         fastqc_path = os.path.join(TEST_REPOS_DIR, "fastqc")
@@ -124,7 +130,7 @@ class ServeTestCase(CliTestCase):
     def _serve_command_list(self, serve_args=[], serve_cmd="serve"):
         test_cmd = [
             serve_cmd,
-            "--install_galaxy",
+            "--galaxy_branch", target_galaxy_branch(),
             "--no_dependency_resolution",
             "--port",
             str(self._port),

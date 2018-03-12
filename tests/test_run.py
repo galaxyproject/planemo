@@ -4,8 +4,10 @@ import os
 from .test_utils import (
     CliTestCase,
     CWL_DRAFT3_DIR,
+    mark,
     PROJECT_TEMPLATES_DIR,
     skip_if_environ,
+    target_galaxy_branch,
     TEST_DATA_DIR,
 )
 
@@ -48,6 +50,7 @@ class RunTestCase(CliTestCase):
             self._check_exit_code(test_cmd)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @mark.tests_galaxy_branch
     def test_run_gxtool_randomlines(self):
         with self._isolate():
             tool_path = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "randomlines.xml")
@@ -56,6 +59,7 @@ class RunTestCase(CliTestCase):
                 "--verbose",
                 "run",
                 "--no_dependency_resolution",
+                "--galaxy_branch", target_galaxy_branch(),
                 tool_path,
                 job_path,
             ]
