@@ -5,7 +5,6 @@ from planemo import options
 from planemo.cli import command_function
 from planemo.engine import (
     engine_context,
-    is_galaxy_engine,
 )
 from planemo.galaxy import galaxy_config
 from planemo.galaxy.test import (
