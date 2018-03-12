@@ -50,6 +50,7 @@ class GalaxyServeTestCase(CliTestCase):
             timeout=.1,
         )
 
+    @skip_if_environ("PLANEMO_SKIP_REDUNDANT_TESTS")  # redundant with test_cmd_serve -> test_serve_workflow
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_serve_workflow(self):
         """Test serving a galaxy workflow via a daemon Galaxy process."""

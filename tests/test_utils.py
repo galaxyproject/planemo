@@ -24,6 +24,12 @@ from .shed_app_test_utils import (
     setup_mock_shed,
 )
 
+try:
+    import pytest
+except ImportError:
+    pytest = None
+    from nose.plugins.attrib import attr
+
 if version_info < (2, 7):
     from unittest2 import TestCase, skip
     PRE_PYTHON_27 = True
@@ -45,6 +51,18 @@ EXIT_CODE_MESSAGE = ("Planemo command [%s] resulted in unexpected exit code "
                      "[%s], expected exit code [%s]]. Command output [%s]")
 CWL_DRAFT3_DIR = os.path.join(PROJECT_TEMPLATES_DIR, "cwl_draft3_spec")
 NON_ZERO_EXIT_CODE = object()
+
+
+class MarkGenerator(object):
+
+    def __getattr__(self, name):
+        if pytest:
+            return getattr(pytest.mark, name)
+        else:
+            return attr(name)
+
+
+mark = MarkGenerator()
 
 
 # More information on testing click applications at following link.
@@ -201,6 +219,10 @@ def skip_unless_python_2_7():
     if PYTHON_27:
         return lambda func: func
     return skip("Python 2.7 required for test.")
+
+
+def target_galaxy_branch():
+    return os.environ.get("PLANEMO_TEST_GALAXY_BRANCH", "master")
 
 
 def test_context():

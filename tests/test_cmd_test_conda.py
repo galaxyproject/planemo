@@ -3,8 +3,10 @@ import os
 
 from .test_utils import (
     CliTestCase,
+    mark,
     PROJECT_TEMPLATES_DIR,
     skip_if_environ,
+    target_galaxy_branch,
     TEST_REPOS_DIR,
     TEST_TOOLS_DIR,
 )
@@ -14,13 +16,14 @@ class CmdTestCondaTestCase(CliTestCase):
     """Integration tests for the ``test`` command."""
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @mark.tests_galaxy_branch
     def test_conda_dependencies_by_default(self):
         with self._isolate():
             bwa_test = os.path.join(PROJECT_TEMPLATES_DIR, "conda_testing", "bwa.xml")
             test_command = [
                 "--verbose",
                 "test",
-                "--galaxy_branch", "dev",
+                "--galaxy_branch", target_galaxy_branch(),
                 bwa_test,
             ]
             self._check_exit_code(test_command, exit_code=0)
@@ -41,6 +44,7 @@ class CmdTestCondaTestCase(CliTestCase):
             self._check_exit_code(test_command, exit_code=0)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @mark.tests_galaxy_branch
     def test_conda_dependencies_version(self):
         """Test tool with wrong version and ensure it fails."""
         with self._isolate():
@@ -49,6 +53,7 @@ class CmdTestCondaTestCase(CliTestCase):
             test_command = [
                 "--verbose",
                 "test",
+                "--galaxy_branch", target_galaxy_branch(),
                 "--conda_dependency_resolution",
                 "--conda_auto_install",
                 "--conda_auto_init",
@@ -57,6 +62,7 @@ class CmdTestCondaTestCase(CliTestCase):
             self._check_exit_code(test_command, exit_code=1)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @mark.tests_galaxy_branch
     def test_local_conda_dependencies_version(self):
         """Test a tool that requires local package builds."""
         with self._isolate():
@@ -75,7 +81,7 @@ class CmdTestCondaTestCase(CliTestCase):
             self._check_exit_code(conda_install_command)
             test_command = [
                 "test",
-                "--galaxy_branch", "release_17.09",
+                "--galaxy_branch", target_galaxy_branch(),
                 fleeqtk_tool,
             ]
             self._check_exit_code(test_command)
