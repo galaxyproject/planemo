@@ -63,7 +63,7 @@ class BaseEngine(Engine):
 
     def _check_can_run(self, runnable):
         if not self.can_run(runnable):
-            template = "Engine type %s can not execute %ss"
+            template = "Engine type [%s] cannot execute [%s]s"
             message = template % (self.__class__, runnable.type)
             error(message)
             self._ctx.exit(EXIT_CODE_UNSUPPORTED_FILE_TYPE)
