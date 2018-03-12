@@ -88,7 +88,7 @@ class GalaxyEngine(BaseEngine):
                 return test_results[0]
 
 
-class LocalManagedGalaxyEngine(BaseEngine):
+class LocalManagedGalaxyEngine(GalaxyEngine):
     """An :class:`Engine` implementation backed by a managed Galaxy.
 
     More information on Galaxy can be found at http://galaxyproject.org/.
