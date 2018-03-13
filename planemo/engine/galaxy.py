@@ -44,7 +44,7 @@ class GalaxyEngine(BaseEngine):
     def _run_test_case(self, test_case):
         if hasattr(test_case, "job_path"):
             # Simple file-based job path.
-            super(GalaxyEngine, self)._run_test_case(test_case)
+            return super(GalaxyEngine, self)._run_test_case(test_case)
         else:
             with self.ensure_runnables_served([test_case.runnable]) as config:
                 galaxy_interactor_kwds = {
