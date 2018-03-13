@@ -7,13 +7,18 @@ from planemo.bioblend import galaxy
 DEFAULT_MASTER_API_KEY = "test_key"
 
 
-def gi(port, key=None):
+def gi(port=None, url=None, key=None):
     """Return a bioblend ``GalaxyInstance`` for Galaxy on this port."""
     ensure_module()
     if key is None:
         key = DEFAULT_MASTER_API_KEY
+    if port is None:
+        url = url
+    else:
+        url = "http://localhost:%d" % int(port)
+
     return galaxy.GalaxyInstance(
-        url="http://localhost:%d" % int(port),
+        url=url,
         key=key
     )
 

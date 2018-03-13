@@ -98,9 +98,18 @@ def for_paths(paths):
 
 def cases(runnable):
     """Build a `list` of :class:`TestCase` objects for specified runnable."""
+    cases = []
+
     tests_path = _tests_path(runnable)
     if tests_path is None:
-        return []
+        if runnable.type == RunnableType.galaxy_tool:
+            tool_source = get_tool_source(runnable.path)
+            test_dicts = tool_source.parse_tests_to_dict()
+            tool_id = tool_source.parse_id()
+            tool_version = tool_source.parse_version()
+            for i, test_dict in enumerate(test_dicts.get("tests", [])):
+                cases.append(ExternalGalaxyToolTestCase(runnable, tool_id, tool_version, i, test_dict))
+        return cases
 
     tests_directory = os.path.abspath(os.path.dirname(tests_path))
 
@@ -118,7 +127,6 @@ def cases(runnable):
         message = TEST_FILE_NOT_LIST_MESSAGE % tests_path
         raise Exception(message)
 
-    cases = []
     for i, test_def in enumerate(tests_def):
         if "job" not in test_def:
             message = TEST_FIELD_MISSING_MESSAGE % (
@@ -149,21 +157,14 @@ def cases(runnable):
     return cases
 
 
-class TestCase(object):
-    """Describe an abstract test case for a specified runnable."""
+class AbstractTestCase(object):
+    """Description of a test case for a runnable.
+    """
 
-    def __init__(self, runnable, tests_directory, output_expectations, job_path, job, index, doc):
-        """Construct TestCase object from required attributes."""
-        self.runnable = runnable
-        self.job_path = job_path
-        self.job = job
-        self.output_expectations = output_expectations
-        self.tests_directory = tests_directory
-        self.index = index
-        self.doc = doc
+    __metaclass__ = abc.ABCMeta
 
     def structured_test_data(self, run_response):
-        """Check a test case against outputs dictionary.
+        """Result of executing this test case - a "structured_data" dict.
 
         :rtype: dict
         :return:
@@ -185,6 +186,24 @@ class TestCase(object):
                            "problem_log": ""
                        }
                    }
+        """
+
+
+class TestCase(AbstractTestCase):
+    """Describe an abstract test case for a specified runnable."""
+
+    def __init__(self, runnable, tests_directory, output_expectations, job_path, job, index, doc):
+        """Construct TestCase object from required attributes."""
+        self.runnable = runnable
+        self.job_path = job_path
+        self.job = job
+        self.output_expectations = output_expectations
+        self.tests_directory = tests_directory
+        self.index = index
+        self.doc = doc
+
+    def structured_test_data(self, run_response):
+        """Check a test case against outputs dictionary.
         """
         output_problems = []
         if run_response.was_successful:
@@ -269,6 +288,24 @@ class TestCase(object):
             return get_tool_source(self.runnable.path).parse_id()
         else:
             return os.path.basename(self.runnable.path)
+
+
+class ExternalGalaxyToolTestCase(AbstractTestCase):
+    """Special class of AbstractCase that doesn't use job_path but uses test data from a Galaxy server.
+    """
+
+    def __init__(self, runnable, tool_id, tool_version, test_index, test_dict):
+        """Construct TestCase object from required attributes."""
+        self.runnable = runnable
+        self.tool_id = tool_id
+        self.tool_version = tool_version
+        self.test_index = test_index
+        self.test_dict = test_dict
+
+    def structured_test_data(self, run_response):
+        """Just return the structured_test_data generated from galaxy-lib for this test variant.
+        """
+        return run_response
 
 
 def _tests_path(runnable):

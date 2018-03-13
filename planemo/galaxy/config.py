@@ -251,8 +251,12 @@ DEFAULT_GALAXY_BRAND = 'Configured by Planemo'
 @contextlib.contextmanager
 def galaxy_config(ctx, runnables, **kwds):
     """Set up a ``GalaxyConfig`` in an auto-cleaned context."""
-    dockerize = kwds.get("dockerize", False)
-    c = docker_galaxy_config if dockerize else local_galaxy_config
+    c = local_galaxy_config
+    if kwds.get("dockerize", False):
+        c = docker_galaxy_config
+    elif kwds.get("external", False):
+        c = external_galaxy_config
+
     with c(ctx, runnables, **kwds) as config:
         yield config
 
@@ -584,8 +588,20 @@ def _shared_galaxy_properties(config_directory, kwds, for_tests):
     return properties
 
 
+@contextlib.contextmanager
+def external_galaxy_config(ctx, runnables, for_tests=False, **kwds):
+    yield BaseGalaxyConfig(
+        ctx=ctx,
+        galaxy_url=kwds.get("galaxy_url", None),
+        master_api_key=_get_master_api_key(kwds),
+        user_api_key=kwds.get("galaxy_user_key", None),
+        runnables=runnables,
+        kwds=kwds
+    )
+
+
 def _get_master_api_key(kwds):
-    master_api_key = kwds.get("master_api_key", DEFAULT_MASTER_API_KEY)
+    master_api_key = kwds.get("galaxy_admin_key") or DEFAULT_MASTER_API_KEY
     return master_api_key
 
 
@@ -678,79 +694,52 @@ class GalaxyConfig(GalaxyInterface):
     def log_contents(self):
         """Retrieve text of log for running Galaxy instance."""
 
-    @abc.abstractproperty
-    def gi(self):
-        """Return an admin bioblend Galaxy instance for API interactions."""
-
-    @abc.abstractproperty
-    def user_gi(self):
-        """Return a user-backed bioblend Galaxy instance for API interactions."""
-
-    @abc.abstractmethod
-    def install_repo(self, *args, **kwds):
-        """Install specified tool shed repository."""
-
-    @abc.abstractproperty
-    def tool_shed_client(self):
-        """Return a admin bioblend tool shed client."""
-
-    @abc.abstractmethod
-    def wait_for_all_installed(self):
-        """Wait for all queued up repositories installs to complete."""
-
-    @abc.abstractmethod
-    def install_workflows(self):
-        """Install all workflows configured with these planemo arguments."""
-
-    @abc.abstractmethod
-    def workflow_id(self, path):
-        """Get installed workflow API ID for input path."""
-
     @abc.abstractmethod
     def cleanup(self):
         """Cleanup allocated resources to run this instance."""
 
 
-class BaseGalaxyConfig(GalaxyConfig):
+class BaseGalaxyConfig(GalaxyInterface):
 
     def __init__(
         self,
         ctx,
-        config_directory,
-        env,
-        test_data_dir,
-        port,
-        server_name,
+        galaxy_url,
         master_api_key,
+        user_api_key,
         runnables,
         kwds,
     ):
         self._ctx = ctx
-        self._kwds = kwds
-        self.config_directory = config_directory
-        self.env = env
-        self.test_data_dir = test_data_dir
-        self.port = port
-        self.server_name = server_name
+        self.galaxy_url = galaxy_url
         self.master_api_key = master_api_key
+        self._user_api_key = user_api_key
         self.runnables = runnables
-        self._user_api_key = None
+        self._kwds = kwds
         self._workflow_ids = {}
 
     @property
     def gi(self):
-        return gi(self.port, self.master_api_key)
+        assert self.galaxy_url
+        return gi(url=self.galaxy_url, key=self.master_api_key)
 
     @property
     def user_gi(self):
+        user_api_key = self.user_api_key
+        assert user_api_key
+        return self._gi_for_key(user_api_key)
+
+    @property
+    def user_api_key(self):
         # TODO: thread-safe
         if self._user_api_key is None:
+            # TODO: respect --galaxy_email - seems like a real bug
             self._user_api_key = user_api_key(self.gi)
 
-        return self._gi_for_key(self._user_api_key)
+        return self._user_api_key
 
     def _gi_for_key(self, key):
-        return gi(self.port, key)
+        return gi(port=self.port, key=key)
 
     def install_repo(self, *args, **kwds):
         self.tool_shed_client.install_repository_revision(
@@ -796,7 +785,37 @@ class BaseGalaxyConfig(GalaxyConfig):
         return self._workflow_ids[path]
 
 
-class DockerGalaxyConfig(BaseGalaxyConfig):
+class BaseManagedGalaxyConfig(BaseGalaxyConfig):
+
+    def __init__(
+        self,
+        ctx,
+        config_directory,
+        env,
+        test_data_dir,
+        port,
+        server_name,
+        master_api_key,
+        runnables,
+        kwds,
+    ):
+        galaxy_url = "http://localhost:%d" % port
+        super(BaseManagedGalaxyConfig, self).__init__(
+            ctx=ctx,
+            galaxy_url=galaxy_url,
+            master_api_key=master_api_key,
+            user_api_key=None,
+            runnables=runnables,
+            kwds=kwds
+        )
+        self.config_directory = config_directory
+        self.env = env
+        self.test_data_dir = test_data_dir
+        self.port = port
+        self.server_name = server_name
+
+
+class DockerGalaxyConfig(BaseManagedGalaxyConfig):
     """A :class:`GalaxyConfig` description of a Dockerized Galaxy instance."""
 
     def __init__(
@@ -886,7 +905,7 @@ class DockerGalaxyConfig(BaseGalaxyConfig):
         shutil.rmtree(self.config_directory, CLEANUP_IGNORE_ERRORS)
 
 
-class LocalGalaxyConfig(BaseGalaxyConfig):
+class LocalGalaxyConfig(BaseManagedGalaxyConfig):
     """A local, non-containerized implementation of :class:`GalaxyConfig`."""
 
     def __init__(

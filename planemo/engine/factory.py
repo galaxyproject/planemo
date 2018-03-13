@@ -3,8 +3,12 @@
 import contextlib
 
 from .cwltool import CwlToolEngine
-from .galaxy import DockerizedGalaxyEngine
-from .galaxy import GalaxyEngine
+from .galaxy import (
+    DockerizedManagedGalaxyEngine,
+    ExternalGalaxyEngine,
+    LocalManagedGalaxyEngine,
+)
+
 
 UNKNOWN_ENGINE_TYPE_MESSAGE = "Unknown engine type specified [%s]."
 
@@ -12,16 +16,18 @@ UNKNOWN_ENGINE_TYPE_MESSAGE = "Unknown engine type specified [%s]."
 def is_galaxy_engine(**kwds):
     """Return True iff the engine configured is :class:`GalaxyEngine`."""
     engine_type_str = kwds.get("engine", "galaxy")
-    return engine_type_str in ["galaxy", "docker_galaxy"]
+    return engine_type_str in ["galaxy", "docker_galaxy", "external_galaxy"]
 
 
 def build_engine(ctx, **kwds):
     """Build an engine from the supplied planemo configuration."""
     engine_type_str = kwds.get("engine", "galaxy")
     if engine_type_str == "galaxy":
-        engine_type = GalaxyEngine
+        engine_type = LocalManagedGalaxyEngine
     elif engine_type_str == "docker_galaxy":
-        engine_type = DockerizedGalaxyEngine
+        engine_type = DockerizedManagedGalaxyEngine
+    elif engine_type_str == "external_galaxy":
+        engine_type = ExternalGalaxyEngine
     elif engine_type_str == "cwltool":
         engine_type = CwlToolEngine
     else:
