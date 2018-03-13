@@ -64,7 +64,7 @@ def cli(ctx, paths, **kwds):
     """
     runnables = for_paths(paths)
     enable_beta_test = any([r.type not in [RunnableType.galaxy_tool, RunnableType.directory] for r in runnables])
-    enable_beta_test = enable_beta_test or kwds.get("engine", "galaxy") != "engine"
+    enable_beta_test = enable_beta_test or kwds.get("engine", "galaxy") != "galaxy"
     if enable_beta_test:
         info("Enable beta testing mode for testing.")
         with engine_context(ctx, **kwds) as engine:
