@@ -715,6 +715,7 @@ class BaseGalaxyConfig(GalaxyInterface):
         self.master_api_key = master_api_key
         self._user_api_key = user_api_key
         self.runnables = runnables
+        self._kwds = kwds
         self._workflow_ids = {}
 
     @property
