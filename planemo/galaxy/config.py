@@ -285,7 +285,6 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             volume = docker_util.DockerVolume(tool_directory)
             tool_volumes.append(volume)
 
-        tool_definition = _tool_conf_entry_for(all_tool_paths)
         empty_tool_conf = config_join("empty_tool_conf.xml")
 
         tool_conf = config_join("tool_conf.xml")
@@ -303,13 +302,11 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
         template_args = dict(
             shed_tool_path=shed_tool_path,
-            tool_definition=tool_definition,
             tool_conf=tool_conf,
         )
         tool_config_file = "%s,%s" % (tool_conf, shed_tool_conf)
 
-        tool_conf_contents = _sub(TOOL_CONF_TEMPLATE, template_args)
-        write_file(tool_conf, tool_conf_contents)
+        _write_tool_conf(ctx, all_tool_paths, tool_conf)
         write_file(empty_tool_conf, EMPTY_TOOL_CONF_TEMPLATE)
 
         properties.update(dict(
@@ -402,7 +399,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
         shed_tool_conf = kwds.get("shed_tool_conf") or config_join("shed_tools_conf.xml")
         all_tool_paths = _all_tool_paths(runnables, **kwds)
-        tool_definition = _tool_conf_entry_for(all_tool_paths)
         empty_tool_conf = config_join("empty_tool_conf.xml")
 
         tool_conf = config_join("tool_conf.xml")
@@ -434,7 +430,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             temp_directory=config_directory,
             shed_tool_path=shed_tool_path,
             database_location=database_location,
-            tool_definition=tool_definition,
             tool_conf=tool_conf,
             debug=kwds.get("debug", "true"),
             id_secret=kwds.get("id_secret", "test_secret"),
@@ -517,8 +512,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         env["GALAXY_PID"] = pid_file
         web_config = _sub(WEB_SERVER_CONFIG_TEMPLATE, template_args)
         write_file(config_join("galaxy.ini"), web_config)
-        tool_conf_contents = _sub(TOOL_CONF_TEMPLATE, template_args)
-        write_file(tool_conf, tool_conf_contents)
+        _write_tool_conf(ctx, all_tool_paths, tool_conf)
         write_file(empty_tool_conf, EMPTY_TOOL_CONF_TEMPLATE)
 
         shed_tool_conf_contents = _sub(SHED_TOOL_CONF_TEMPLATE, template_args)
@@ -1366,6 +1360,18 @@ def _handle_dependency_resolution(ctx, config_directory, kwds):
             conf_contents,
         )
         kwds["dependency_resolvers_config_file"] = resolvers_conf
+
+
+def _write_tool_conf(ctx, tool_paths, tool_conf_path):
+    tool_definition = _tool_conf_entry_for(tool_paths)
+    tool_conf_template_kwds = dict(tool_definition=tool_definition)
+    tool_conf_contents = _sub(TOOL_CONF_TEMPLATE, tool_conf_template_kwds)
+    write_file(tool_conf_path, tool_conf_contents)
+    ctx.vlog(
+        "Writing tool_conf to path %s with contents [%s]",
+        tool_conf_path,
+        tool_conf_contents,
+    )
 
 
 def _validate_dependency_resolution_options(kwds):
