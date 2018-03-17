@@ -380,7 +380,9 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             return os.path.join(config_directory, *args)
 
         latest_galaxy = False
-        install_env = {}
+        install_env = {
+            'GALAXY_SKIP_CLIENT_BUILD': '1',
+        }
         if install_galaxy:
             _build_eggs_cache(ctx, install_env, kwds)
             _install_galaxy(ctx, config_directory, install_env, kwds)
