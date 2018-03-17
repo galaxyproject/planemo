@@ -225,6 +225,29 @@ def target_galaxy_branch():
     return os.environ.get("PLANEMO_TEST_GALAXY_BRANCH", "master")
 
 
+# Taken from Galaxy's test/unit/tools/test_tool_deps.py
+@contextlib.contextmanager
+def test_environ(values, remove=[]):
+    """
+    Modify the environment for a test, adding/updating values in dict `values` and
+    removing any environment variables mentioned in list `remove`.
+    """
+    new_keys = set(os.environ.keys()) - set(values.keys())
+    old_environ = os.environ.copy()
+    try:
+        os.environ.update(values)
+        for to_remove in remove:
+            try:
+                del os.environ[remove]
+            except KeyError:
+                pass
+        yield
+    finally:
+        os.environ.update(old_environ)
+        for key in new_keys:
+            del os.environ[key]
+
+
 def test_context():
     context = cli.Context()
     context.planemo_directory = "/tmp/planemo-test-workspace"
