@@ -35,6 +35,14 @@ planemo\.galaxy\.config module
     :undoc-members:
     :show-inheritance:
 
+planemo\.galaxy\.distro\_tools module
+-------------------------------------
+
+.. automodule:: planemo.galaxy.distro_tools
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo\.galaxy\.profiles module
 --------------------------------
 

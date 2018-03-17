@@ -86,7 +86,7 @@ Galaxy instance.
                                       for security reasons set to 0.0.0.0 to bind
                                       Galaxy to all ports including potentially
                                       publicly accessible ones.
-      --engine [galaxy|docker_galaxy]
+      --engine [galaxy|docker_galaxy|external_galaxy]
                                       Select an engine to serve aritfacts such as
                                       tools and workflows. Defaults to a local
                                       Galaxy, but running Galaxy within a Docker
@@ -160,6 +160,11 @@ Galaxy instance.
       --daemon                        Serve Galaxy process as a daemon.
       --pid_file PATH                 Location of pid file is executed with
                                       --daemon.
+      --ignore_dependency_problems    When installing shed repositories for
+                                      workflows, ignore dependency issues. These
+                                      likely indicate a problem but in some cases
+                                      may not prevent a workflow from successfully
+                                      executing.
       --cwl                           Configure Galaxy for use with CWL tool. (this
                                       option is experimental and will be replaced
                                       when and if CWL support is merged into

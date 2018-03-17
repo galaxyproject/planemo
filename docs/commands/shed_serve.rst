@@ -157,6 +157,7 @@ logged into and explored interactively.
       --shed_tool_path TEXT           Location of shed tools directory for Galaxy.
       --pid_file PATH                 Location of pid file is executed with
                                       --daemon.
+      --daemon                        Serve Galaxy process as a daemon.
       --skip_dependencies             Do not install shed dependencies as part of
                                       repository installation.
       --help                          Show this message and exit.

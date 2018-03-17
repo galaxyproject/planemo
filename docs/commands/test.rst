@@ -169,7 +169,7 @@ please careful and do not try this against production Galaxy instances.
                                       Summary style printed to planemo's standard
                                       output (see output reports for more complete
                                       summary). Set to 'none' to disable completely.
-      --engine [galaxy|docker_galaxy|cwltool]
+      --engine [galaxy|docker_galaxy|cwltool|external_galaxy]
                                       Select an engine to run or test aritfacts such
                                       as tools and workflows. Defaults to a local
                                       Galaxy, but running Galaxy within a Docker
@@ -182,5 +182,14 @@ please careful and do not try this against production Galaxy instances.
                                       flavor used if engine type is specified as
                                       ``docker-galaxy``. Defaults to to bgruening
                                       /galaxy-stable.
+      --ignore_dependency_problems    When installing shed repositories for
+                                      workflows, ignore dependency issues. These
+                                      likely indicate a problem but in some cases
+                                      may not prevent a workflow from successfully
+                                      executing.
+      --galaxy_url TEXT               Remote Galaxy URL to use with external Galaxy
+                                      engine.
+      --galaxy_admin_key TEXT         Admin key to use with external Galaxy engine.
+      --galaxy_user_key TEXT          User key to use with external Galaxy engine.
       --help                          Show this message and exit.
     

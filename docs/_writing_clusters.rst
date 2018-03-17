@@ -27,16 +27,16 @@ value. Now server administrators can configure how many processes the
 tool should be allowed to use.
 
 For information on how server administrators can configure this value for
-a particular tool, check out `the Galaxy wiki
-<https://wiki.galaxyproject.org/Admin/Config/GALAXY_SLOTS>`__.
+a particular tool, check out `the Galaxy admin documentation
+<https://galaxyproject.org/admin/config/galaxy_slots/>`__.
 
 Analogously ``GALAXY_MEMORY_MB`` and ``GALAXY_MEMORY_MB_PER_SLOT`` are special 
 environment variables in a Galaxy tool's runtime environment that can be used
-to specify the amount of memory that a tool can use overall and per slot, 
+to specify the amount of memory that a tool can use overall and per slot,
 respectively. 
 
-For an example see the samtools sort tool (`here https://github.com/galaxyproject/tools-iuc/blob/master/tool_collections/samtools/samtools_sort/samtools_sort.xml`__) which allows to specify the 
-total memory with the -m parameter. 
+For an example see the samtools sort tool (`here <https://github.com/galaxyproject/tools-iuc/blob/master/tool_collections/samtools/samtools_sort/samtools_sort.xml>`__) which allows to specify the
+total memory with the -m parameter.
 
 -----------------------------------------------
 Test Against Clusters - ``--job_config_file``
