@@ -51,7 +51,7 @@ sed -E -i "s/^  version: .*$/  version: \"$VERSION\"/" $METADATA
 sed -E -i "s/^  url: .*$/  url: $URL/" $METADATA
 sed -E -i "s/^  md5: .*$/  md5: $MD5SUM/" $METADATA
 
-"$CONDA_EXEC" build "$RECIPE" --channel bioconda --channel r
+"$CONDA_EXEC" build "$RECIPE" --channel bioconda --channel conda-forge
 git add "$RECIPE/meta.yaml"
 git add "$OLD_RECIPE"
 git commit -m "Update $PACKAGE to version $VERSION"
