@@ -148,6 +148,9 @@ def lint_urls(root, lint_ctx):
             if e.code == 429:
                 # too many requests
                 pass
+            elif e.code >= 300 and e.code < 400:
+                is_valid = True
+                lint_ctx.info("URL redirection ('%s') accessing %s" % (e.code, url))
             else:
                 is_valid = False
                 lint_ctx.error("HTTP Error '%s' accessing %s" % (e.code, url))
