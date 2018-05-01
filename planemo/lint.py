@@ -2,18 +2,10 @@
 from __future__ import absolute_import
 
 import os
-import socket
 
 import requests
 from galaxy.tools.lint import LintContext
-from six.moves.urllib.error import (
-    HTTPError,
-    URLError,
-)
-from six.moves.urllib.request import (
-    Request,
-    urlopen,
-)
+from six.moves.urllib.request import urlopen
 
 import planemo.linters.biocontainer_registered
 import planemo.linters.conda_requirements
@@ -137,23 +129,30 @@ def lint_urls(root, lint_ctx):
 
     def validate_url(url, lint_ctx, user_agent=None):
         is_valid = True
-        if user_agent:
-            req = Request(url, headers={"User-Agent": user_agent, 'Accept': '*/*'})
-        else:
-            req = url
-        try:
-            handle = urlopen(req)
-            handle.read(100)
-        except HTTPError as e:
-            if e.code == 429:
-                # too many requests
-                pass
+        if url.startswith('http://') or url.startswith('https://'):
+            if user_agent:
+                headers = {"User-Agent": user_agent, 'Accept': '*/*'}
             else:
+                headers = None
+            r = None
+            try:
+                r = requests.get(url, headers=headers, stream=True)
+                r.raise_for_status()
+                next(r.iter_content(1000))
+            except Exception as e:
+                if r and r.status_code == 429:
+                    # too many requests
+                    pass
+                else:
+                    is_valid = False
+                    lint_ctx.error("Error '%s' accessing %s" % (e, url))
+        else:
+            try:
+                handle = urlopen(url)
+                handle.read(100)
+            except Exception as e:
                 is_valid = False
-                lint_ctx.error("HTTP Error '%s' accessing %s" % (e.code, url))
-        except (URLError, socket.error) as e:
-            is_valid = False
-            lint_ctx.error("URL Error '%s' accessing %s" % (str(e), url))
+                lint_ctx.error("Error '%s' accessing %s" % (e, url))
         if is_valid:
             lint_ctx.info("URL OK %s" % url)
 
