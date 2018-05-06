@@ -76,7 +76,7 @@ def collect_conda_targets(ctx, paths, recursive=False, found_tool_callback=None)
         else:
             real_paths.append(path)
 
-    for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, real_paths, recursive=recursive):
+    for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, real_paths, recursive=recursive, exclude_deprecated=True):
         if found_tool_callback:
             found_tool_callback(tool_path)
         for target in tool_source_conda_targets(tool_source):

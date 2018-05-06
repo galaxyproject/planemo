@@ -30,9 +30,11 @@ def uris_to_paths(ctx, uris):
     return paths
 
 
-def yield_tool_sources_on_paths(ctx, paths, recursive=False, yield_load_errors=True):
+def yield_tool_sources_on_paths(ctx, paths, recursive=False, yield_load_errors=True, exclude_deprecated=False):
     for path in paths:
         for (tool_path, tool_source) in yield_tool_sources(ctx, path, recursive, yield_load_errors):
+            if exclude_deprecated and 'deprecated' in tool_path:
+                continue
             yield (tool_path, tool_source)
 
 
