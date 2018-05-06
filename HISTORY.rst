@@ -6,10 +6,10 @@ History
 .. to_doc
 
 ---------------------
-0.50.0.dev0
+0.49.1.dev0
 ---------------------
 
-    
+* Fix PyPI_ README rendering for 0.49.0 release changes.
 
 ---------------------
 0.49.0 (2018-05-06)
@@ -371,7 +371,7 @@ History
 0.33.2 (2016-09-28)
 ---------------------
 
-* Fix HISTORY.rst link problem that prevented correct display of content on PyPI.
+* Fix HISTORY.rst link problem that prevented correct display of content on PyPI_.
 
 ---------------------
 0.33.1 (2016-09-28)
@@ -1806,3 +1806,4 @@ History
 .. _@RJMW: https://github.com/RJMW
 .. _@manabuishii: https://github.com/manabuishii
 .. _@dfornika: https://github.com/dfornika
+.. _@bernt-matthias: https://github.com/bernt-matthias
