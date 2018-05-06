@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.49.1.dev0
+0.49.1 (2018-05-06)
 ---------------------
 
 * Fix PyPI_ README rendering for 0.49.0 release changes.
