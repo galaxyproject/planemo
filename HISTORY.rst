@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.49.0.dev0
+0.49.0 (2018-05-06)
 ---------------------
 
 * Implement external Galaxy engine. `Pull Request 781`_
