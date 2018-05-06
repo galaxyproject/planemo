@@ -9,13 +9,29 @@ History
 0.49.0.dev0
 ---------------------
 
+* Implement external Galaxy engine. `Pull Request 781`_
+* Restructure serve testing code for reuse. `Pull Request 795`_
+* Improve test report handling for JSON generated via galaxy-lib testing
+  script. `Pull Request 799`_
+* Improve how various branches of Galaxy are tested. `Pull Request 800`_
+* Added documentation for ``GALAXY_MEMORY_MB`` (thanks to `@bernt-matthias`_).
+  `Pull Request 801`_
+* Log tool config in verbose logging mode. `Pull Request 802`_
+* Replace ``r`` channel with ``conda-forge`` (thanks to `@bgruening`_).
+  `Pull Request 805`_
+* Sync ``galaxy.xsd`` with latest Galaxy updates (thanks to `@nsoranzo`_).
+  `Pull Request 806`_
+* Use ``requests.get()`` when validating http URLs (thanks to `@nsoranzo`_).
+  `Pull Request 809`_
+* Do not consider tools with "deprecated" in the path (thanks to
+  `@bgruening`_). `Pull Request 810`_
 * Automatically load tools shipped with Galaxy when testing, running, or serving
   workflows that reference these tools. `Pull Request 790`_
 * Revise README and touch up documentation in general. `Pull Request 787`_
 * Various small changes to testing and test framework. `Pull Request 792`_
 * Various Python 3 fixes. 8cfe9e9_, 41f7df1_
-* Fix Planemo serve for the forthcoming Galaxy 18.01 release. dc443d6_
-
+* Fixes for Galaxy 18.0X releases.
+  `Pull Request 803`_, dc443d6_
 
 ---------------------
 0.48.0 (2018-02-28)
@@ -1231,6 +1247,17 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 795: https://github.com/galaxyproject/planemo/pull/795
+.. _Pull Request 799: https://github.com/galaxyproject/planemo/pull/799
+.. _Pull Request 800: https://github.com/galaxyproject/planemo/pull/800
+.. _Pull Request 781: https://github.com/galaxyproject/planemo/pull/781
+.. _Pull Request 801: https://github.com/galaxyproject/planemo/pull/801
+.. _Pull Request 802: https://github.com/galaxyproject/planemo/pull/802
+.. _Pull Request 803: https://github.com/galaxyproject/planemo/pull/803
+.. _Pull Request 805: https://github.com/galaxyproject/planemo/pull/805
+.. _Pull Request 806: https://github.com/galaxyproject/planemo/pull/806
+.. _Pull Request 809: https://github.com/galaxyproject/planemo/pull/809
+.. _Pull Request 810: https://github.com/galaxyproject/planemo/pull/810
 .. _Pull Request 787: https://github.com/galaxyproject/planemo/pull/787
 .. _Pull Request 792: https://github.com/galaxyproject/planemo/pull/792
 .. _dc443d6: https://github.com/galaxyproject/planemo/commit/dc443d6
