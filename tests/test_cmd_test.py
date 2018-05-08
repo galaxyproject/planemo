@@ -6,7 +6,6 @@ from .test_utils import (
     assert_exists,
     CliTestCase,
     PROJECT_TEMPLATES_DIR,
-    skip,
     skip_if_environ,
     TEST_DATA_DIR,
 )
@@ -95,7 +94,6 @@ class CmdTestTestCase(CliTestCase):
             self._check_exit_code(test_command, exit_code=0)
             assert_exists(os.path.join(f, "tool_test_output.json"))
 
-    @skip  # Test is broken :(
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_output_checks(self):
         """Test testing a CWL tool with cwltool."""

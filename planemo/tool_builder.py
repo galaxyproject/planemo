@@ -16,6 +16,7 @@ from planemo import templates
 
 REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
                           " it has relevant planemo-generated definitions.")
+DEFAULT_CWL_VERSION = "v1.0"
 
 
 TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}">
@@ -144,9 +145,9 @@ hints:
 {%- if inputs or outputs %}
 inputs:
 {%- for input in inputs %}
-  - id: {{ input.id }}
+  {{ input.id }}:
     type: {{ input.type }}
-    description: |
+    doc: |
       TODO
     inputBinding:
       position: {{ input.position }}
@@ -159,9 +160,9 @@ inputs:
 {%- endfor %}
 {%- for output in outputs %}
 {%- if output.require_filename %}
-  - id: {{ output.id }}
+  {{ output.id }}:
     type: string
-    description: |
+    doc: |
       Filename for output {{ output.id }}
     inputBinding:
       position: {{ output.position }}
@@ -179,7 +180,7 @@ inputs: [] # TODO
 {%- if outputs %}
 outputs:
 {%- for output in outputs %}
-  - id: {{ output.id }}
+  {{ output.id }}:
     type: File
     outputBinding:
       glob: {{ output.glob }}
@@ -213,7 +214,7 @@ arguments: []
 {%- if stdout %}
 stdout: {{ stdout }}
 {%- endif %}
-description: |
+doc: |
 {%- if help %}
   {{ help|indent(2) }}
 {%- else %}
@@ -261,10 +262,10 @@ def build(**kwds):
 def _build_cwl(**kwds):
     _handle_help(kwds)
     _handle_requirements(kwds)
-
+    assert len(kwds["containers"]) == 1, kwds
     command_io = CommandIO(**kwds)
     render_kwds = {
-        "cwl_version": "cwl:draft-3",
+        "cwl_version": DEFAULT_CWL_VERSION,
         "help": kwds.get("help", ""),
         "containers": kwds.get("containers", []),
         "id": kwds.get("id"),
@@ -644,7 +645,7 @@ def _handle_requirements(kwds):
 
     container = kwds["container"]
     del kwds["container"]
-    containers = map(Container, container or [])
+    containers = list(map(Container, container or []))
 
     kwds["requirements"] = requirements
     kwds["containers"] = containers
