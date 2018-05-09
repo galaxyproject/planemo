@@ -735,7 +735,8 @@ class BaseGalaxyConfig(GalaxyInterface):
         return self._user_api_key
 
     def _gi_for_key(self, key):
-        return gi(port=self.port, key=key)
+        assert self.galaxy_url
+        return gi(url=self.galaxy_url, key=key)
 
     def install_repo(self, *args, **kwds):
         self.tool_shed_client.install_repository_revision(

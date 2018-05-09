@@ -60,6 +60,13 @@ def _inputs_representation(runnable):
     return inputs_representation
 
 
+def log_contents_str(config):
+    if hasattr(config, "log_contents"):
+        return config.log_contents
+    else:
+        return "No log for this engine type."
+
+
 def _execute(ctx, config, runnable, job_path, **kwds):
     user_gi = config.user_gi
     admin_gi = config.gi
@@ -92,7 +99,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):
             msg = "Failed to run CWL tool job final job state is [%s]." % final_state
             summarize_history(ctx, user_gi, history_id)
             with open("errored_galaxy.log", "w") as f:
-                f.write(config.log_contents)
+                f.write(log_contents_str(config))
             raise Exception(msg)
 
         ctx.vlog("Final job state was ok, fetching details for job [%s]" % job_id)
@@ -139,7 +146,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):
             msg = "Failed to run workflow final history state is [%s]." % final_state
             summarize_history(ctx, user_gi, history_id)
             with open("errored_galaxy.log", "w") as f:
-                f.write(config.log_contents)
+                f.write(log_contents_str(config))
             raise Exception(msg)
         ctx.vlog("Final history state is 'ok'")
         response_kwds = {
@@ -155,7 +162,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         user_gi=user_gi,
         history_id=history_id,
         galaxy_paths=galaxy_paths,
-        log=config.log_contents,
+        log=log_contents_str(config),
         **response_kwds
     )
     output_directory = kwds.get("output_directory", None)
@@ -257,7 +264,7 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
         msg = "Failed to run job final job state is [%s]." % final_state
         summarize_history(ctx, user_gi, history_id)
         with open("errored_galaxy.log", "w") as f:
-            f.write(config.log_contents)
+            f.write(log_contents_str(config))
         raise Exception(msg)
 
     galaxy_paths = []
