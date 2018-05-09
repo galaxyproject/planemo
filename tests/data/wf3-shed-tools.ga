@@ -1,0 +1,278 @@
+{
+ "a_galaxy_workflow": "true", 
+ "uuid": "eb7fc9c5-992b-495a-9baa-4a9bb67d6262", 
+ "tags": [], 
+ "format-version": "0.1", 
+ "steps": {
+  "1": {
+   "tool_id": null, 
+   "errors": null, 
+   "uuid": "0d2e344b-fd58-462c-bd21-c60acd045d9d", 
+   "tool_version": null, 
+   "outputs": [], 
+   "workflow_outputs": [], 
+   "annotation": "", 
+   "content_id": null, 
+   "input_connections": {}, 
+   "inputs": [
+    {
+     "name": "Genes", 
+     "description": ""
+    }
+   ], 
+   "position": {
+    "top": 455, 
+    "left": 200
+   }, 
+   "tool_state": "{\"name\": \"Genes\"}", 
+   "label": "Genes", 
+   "type": "data_input", 
+   "id": 1, 
+   "name": "Input dataset"
+  }, 
+  "0": {
+   "tool_id": null, 
+   "errors": null, 
+   "uuid": "4216f74b-f994-432a-b5be-2a6b981ac16a", 
+   "tool_version": null, 
+   "outputs": [], 
+   "workflow_outputs": [], 
+   "annotation": "", 
+   "content_id": null, 
+   "input_connections": {}, 
+   "inputs": [
+    {
+     "name": "GSE37268_mof3", 
+     "description": ""
+    }
+   ], 
+   "position": {
+    "top": 335, 
+    "left": 200
+   }, 
+   "tool_state": "{\"name\": \"GSE37268_mof3\"}", 
+   "label": "GSE37268_mof3", 
+   "type": "data_input", 
+   "id": 0, 
+   "name": "Input dataset"
+  }, 
+  "3": {
+   "tool_id": "toolshed.g2.bx.psu.edu/repos/devteam/get_flanks/get_flanks1/1.0.0", 
+   "errors": null, 
+   "uuid": "652af7e8-710b-4476-952f-484d6a2e4a7a", 
+   "tool_version": "1.0.0", 
+   "outputs": [
+    {
+     "type": "input", 
+     "name": "out_file1"
+    }
+   ], 
+   "post_job_actions": {}, 
+   "workflow_outputs": [], 
+   "annotation": "", 
+   "content_id": "toolshed.g2.bx.psu.edu/repos/devteam/get_flanks/get_flanks1/1.0.0", 
+   "input_connections": {
+    "input": {
+     "output_name": "output", 
+     "id": 1
+    }
+   }, 
+   "inputs": [
+    {
+     "name": "input", 
+     "description": "runtime parameter for tool Get flanks"
+    }
+   ], 
+   "position": {
+    "top": 475, 
+    "left": 415
+   }, 
+   "tool_state": "{\"__page__\": null, \"direction\": \"\\\"Upstream\\\"\", \"region\": \"\\\"start\\\"\", \"offset\": \"\\\"10000\\\"\", \"input\": \"{\\\"__class__\\\": \\\"RuntimeValue\\\"}\", \"chromInfo\": \"\\\"/usr/local/galaxy/galaxy-dist/tool-data/shared/ucsc/chrom/mm9.len\\\"\", \"__rerun_remap_job_id__\": null, \"size\": \"\\\"12000\\\"\"}", 
+   "label": null, 
+   "type": "tool", 
+   "id": 3, 
+   "tool_shed_repository": {
+    "owner": "devteam", 
+    "changeset_revision": "077f404ae1bb", 
+    "name": "get_flanks", 
+    "tool_shed": "toolshed.g2.bx.psu.edu"
+   }, 
+   "name": "Get flanks"
+  }, 
+  "2": {
+   "tool_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_replace_in_column/1.1.0", 
+   "errors": null, 
+   "uuid": "d40b3d69-2a99-4b00-bf75-7ded995dfbd7", 
+   "tool_version": "1.1.0", 
+   "outputs": [
+    {
+     "type": "input", 
+     "name": "outfile"
+    }
+   ], 
+   "post_job_actions": {}, 
+   "workflow_outputs": [], 
+   "annotation": "", 
+   "content_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_replace_in_column/1.1.0", 
+   "input_connections": {
+    "infile": {
+     "output_name": "output", 
+     "id": 0
+    }
+   }, 
+   "inputs": [
+    {
+     "name": "infile", 
+     "description": "runtime parameter for tool Replace Text"
+    }
+   ], 
+   "position": {
+    "top": 335, 
+    "left": 420
+   }, 
+   "tool_state": "{\"__page__\": null, \"find_pattern\": \"\\\"[0-9]+\\\"\", \"column\": \"\\\"1\\\"\", \"chromInfo\": \"\\\"/usr/local/galaxy/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"__rerun_remap_job_id__\": null, \"replace_pattern\": \"\\\"chr&\\\"\", \"infile\": \"{\\\"__class__\\\": \\\"RuntimeValue\\\"}\"}", 
+   "label": null, 
+   "type": "tool", 
+   "id": 2, 
+   "tool_shed_repository": {
+    "owner": "bgruening", 
+    "changeset_revision": "20344ce0c811", 
+    "name": "text_processing", 
+    "tool_shed": "toolshed.g2.bx.psu.edu"
+   }, 
+   "name": "Replace Text"
+  }, 
+  "5": {
+   "tool_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_replace_in_column/1.1.0", 
+   "errors": null, 
+   "uuid": "8ce00200-94b7-4daf-a0e5-e3b8d6d87eeb", 
+   "tool_version": "1.1.0", 
+   "outputs": [
+    {
+     "type": "input", 
+     "name": "outfile"
+    }
+   ], 
+   "post_job_actions": {}, 
+   "workflow_outputs": [], 
+   "annotation": "", 
+   "content_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_replace_in_column/1.1.0", 
+   "input_connections": {
+    "infile": {
+     "output_name": "outfile", 
+     "id": 4
+    }
+   }, 
+   "inputs": [
+    {
+     "name": "infile", 
+     "description": "runtime parameter for tool Replace Text"
+    }
+   ], 
+   "position": {
+    "top": 335, 
+    "left": 860
+   }, 
+   "tool_state": "{\"__page__\": null, \"find_pattern\": \"\\\"chr21\\\"\", \"column\": \"\\\"1\\\"\", \"chromInfo\": \"\\\"/usr/local/galaxy/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"__rerun_remap_job_id__\": null, \"replace_pattern\": \"\\\"chrY\\\"\", \"infile\": \"{\\\"__class__\\\": \\\"RuntimeValue\\\"}\"}", 
+   "label": null, 
+   "type": "tool", 
+   "id": 5, 
+   "tool_shed_repository": {
+    "owner": "bgruening", 
+    "changeset_revision": "20344ce0c811", 
+    "name": "text_processing", 
+    "tool_shed": "toolshed.g2.bx.psu.edu"
+   }, 
+   "name": "Replace Text"
+  }, 
+  "4": {
+   "tool_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_replace_in_column/1.1.0", 
+   "errors": null, 
+   "uuid": "37f15259-3b03-4461-8da3-6e8ee34fd2f5", 
+   "tool_version": "1.1.0", 
+   "outputs": [
+    {
+     "type": "input", 
+     "name": "outfile"
+    }
+   ], 
+   "post_job_actions": {}, 
+   "workflow_outputs": [], 
+   "annotation": "", 
+   "content_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_replace_in_column/1.1.0", 
+   "input_connections": {
+    "infile": {
+     "output_name": "outfile", 
+     "id": 2
+    }
+   }, 
+   "inputs": [
+    {
+     "name": "infile", 
+     "description": "runtime parameter for tool Replace Text"
+    }
+   ], 
+   "position": {
+    "top": 335, 
+    "left": 640
+   }, 
+   "tool_state": "{\"__page__\": null, \"find_pattern\": \"\\\"chr20\\\"\", \"column\": \"\\\"1\\\"\", \"chromInfo\": \"\\\"/usr/local/galaxy/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"__rerun_remap_job_id__\": null, \"replace_pattern\": \"\\\"chrX\\\"\", \"infile\": \"{\\\"__class__\\\": \\\"RuntimeValue\\\"}\"}", 
+   "label": null, 
+   "type": "tool", 
+   "id": 4, 
+   "tool_shed_repository": {
+    "owner": "bgruening", 
+    "changeset_revision": "20344ce0c811", 
+    "name": "text_processing", 
+    "tool_shed": "toolshed.g2.bx.psu.edu"
+   }, 
+   "name": "Replace Text"
+  },
+  "6": {
+   "tool_id": "toolshed.g2.bx.psu.edu/repos/iuc/bedtools/bedtools_intersectbed/2.27.0.1", 
+   "errors": null, 
+   "uuid": "c65fd1f5-9fc2-4acf-96c6-94ea61906042", 
+   "tool_version": "2.27.0.1", 
+   "outputs": [
+    {
+     "type": "input", 
+     "name": "output"
+    }
+   ], 
+   "post_job_actions": {}, 
+   "workflow_outputs": [
+      {"output_name": "output", "label": "intersect"}
+   ], 
+   "annotation": "", 
+   "content_id": "toolshed.g2.bx.psu.edu/repos/iuc/bedtools/bedtools_intersectbed/2.27.0.1", 
+   "input_connections": {
+    "inputA": {
+     "output_name": "out_file1", 
+     "id": 3
+    }, 
+    "reduce_or_iterate|inputB": {
+     "output_name": "outfile", 
+     "id": 5
+    }
+   }, 
+   "inputs": [], 
+   "position": {
+    "top": 655, 
+    "left": 1022
+   }, 
+   "tool_state": "{\"count\": \"\\\"false\\\"\", \"__page__\": null, \"reciprocal\": \"\\\"false\\\"\", \"overlap_mode\": \"\\\"-wa\\\"\", \"invert\": \"\\\"false\\\"\", \"header\": \"\\\"false\\\"\", \"inputA\": \"{\\\"values\\\": [{\\\"src\\\": \\\"hda\\\", \\\"id\\\": 6112359}]}\", \"reduce_or_iterate\": \"{\\\"inputB\\\": {\\\"values\\\": [{\\\"src\\\": \\\"hda\\\", \\\"id\\\": 6112359}]}, \\\"reduce_or_iterate_selector\\\": \\\"iterate\\\", \\\"__current_case__\\\": 0}\", \"split\": \"\\\"false\\\"\", \"fraction\": \"\\\"\\\"\", \"__rerun_remap_job_id__\": null, \"strand\": \"\\\"\\\"\", \"once\": \"\\\"false\\\"\"}", 
+   "label": null, 
+   "type": "tool", 
+   "id": 6, 
+   "tool_shed_repository": {
+    "owner": "iuc", 
+    "changeset_revision": "33c3ddea63c5", 
+    "name": "bedtools", 
+    "tool_shed": "toolshed.g2.bx.psu.edu"
+   }, 
+   "name": "Intersect intervals"
+  }
+ }, 
+ "annotation": "", 
+ "name": "Workflow constructed from history 'Cell paper'"
+}

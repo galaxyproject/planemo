@@ -5,8 +5,10 @@ import os
 from .test_utils import (
     assert_exists,
     CliTestCase,
+    mark,
     PROJECT_TEMPLATES_DIR,
     skip_if_environ,
+    skip_unless_environ,
     TEST_DATA_DIR,
 )
 
@@ -80,6 +82,29 @@ class CmdTestTestCase(CliTestCase):
             #    with open(os.path.join(f, "tool_test_output.json"), "r") as o:
             #        print(o.read())
             #    raise
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_unless_environ("PLANEMO_REAL_WORKFLOW_TEST")
+    @mark.tests_real_workflow
+    def test_workflow_test_shed(self):
+        """Test testing a simple GA workflow with shed tools."""
+        with self._isolate() as f:
+            test_artifact = os.path.join(TEST_DATA_DIR, "wf3-shed-tools.ga")
+            test_command = [
+                "--verbose",
+                "test"
+            ]
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command += [
+                "--ignore_dependency_problems",
+                test_artifact,
+            ]
+            try:
+                self._check_exit_code(test_command, exit_code=0)
+            except Exception:
+                with open(os.path.join(f, "tool_test_output.json"), "r") as o:
+                    print(o.read())
+                raise
 
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_cwltool_tool_test(self):

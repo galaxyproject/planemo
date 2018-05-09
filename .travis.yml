@@ -13,6 +13,7 @@ env:
   - TOX_ENV=py34-gx-dev
   - TOX_ENV=py34-gx-1709
   - TOX_ENV=py27-lint-docstrings
+  - TOX_ENV=py27-realworkflow
 
 install:
   # Setup git to allow git operations.
