@@ -6,10 +6,10 @@ History
 .. to_doc
 
 ---------------------
-0.50.0.dev0
+0.49.2.dev0
 ---------------------
 
-    
+* Various small fixes for new external Galaxy engine type.
 
 ---------------------
 0.49.1 (2018-05-06)
