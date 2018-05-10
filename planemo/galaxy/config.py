@@ -11,6 +11,7 @@ from string import Template
 from tempfile import mkdtemp
 
 import click
+from galaxy.containers.docker_model import DockerVolume
 from galaxy.tools.deps import docker_util
 from galaxy.tools.deps.commands import argv_to_str
 from galaxy.util import unicodify
@@ -261,6 +262,11 @@ def galaxy_config(ctx, runnables, **kwds):
         yield config
 
 
+def simple_docker_volume(path):
+    path = os.path.abspath(path)
+    return DockerVolume("%s:%s:rw" % (path, path))
+
+
 @contextlib.contextmanager
 def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
     """Set up a ``GalaxyConfig`` for Docker container."""
@@ -286,7 +292,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         # TODO: remap these.
         tool_volumes = []
         for tool_directory in tool_directories:
-            volume = docker_util.DockerVolume(tool_directory)
+            volume = simple_docker_volume(tool_directory)
             tool_volumes.append(volume)
 
         empty_tool_conf = config_join("empty_tool_conf.xml")
@@ -316,7 +322,6 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         properties.update(dict(
             tool_config_file=tool_config_file,
             tool_sheds_config_file=sheds_config_path,
-            amqp_internal_connection="sqlalchemy+sqlite://",
             migrated_tools_config=empty_tool_conf,
         ))
 
@@ -335,10 +340,15 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         _build_test_env(properties, env)
 
         docker_target_kwds = docker_host_args(**kwds)
-        volumes = tool_volumes + [docker_util.DockerVolume(config_directory)]
+        volumes = tool_volumes + [simple_docker_volume(config_directory)]
         export_directory = kwds.get("export_directory", None)
         if export_directory is not None:
-            volumes.append(docker_util.DockerVolume(export_directory, "/export"))
+            volumes.append(DockerVolume("%s:/export:rw" % export_directory))
+
+        # TODO: Allow this to real Docker volumes and allow multiple.
+        extra_volume = kwds.get("docker_extra_volume")
+        if extra_volume:
+            volumes.append(simple_docker_volume(extra_volume))
         yield DockerGalaxyConfig(
             ctx,
             config_directory,
@@ -452,7 +462,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             ftp_upload_dir=test_data_dir or os.path.abspath('.'),
             ftp_upload_site="Test Data",
             check_upload_content="False",
-            allow_path_paste="True",
             tool_dependency_dir=dependency_dir,
             file_path=file_path,
             new_file_path="${temp_directory}/tmp",
@@ -570,6 +579,7 @@ def _shared_galaxy_properties(config_directory, kwds, for_tests):
         'expose_dataset_path': "True",
         'cleanup_job': 'never',
         'collect_outputs_from': "job_working_directory",
+        'allow_path_paste': "True",
         'check_migrate_tools': "False",
         'use_cached_dependency_manager': str(kwds.get("conda_auto_install", False)),
         'brand': kwds.get("galaxy_brand", DEFAULT_GALAXY_BRAND),
@@ -848,6 +858,7 @@ class DockerGalaxyConfig(BaseManagedGalaxyConfig):
     def kill(self):
         """Kill planemo container..."""
         kill_command = docker_util.kill_command(
+            self.server_name,
             **self.docker_target_kwds
         )
         return shell(kill_command)
@@ -861,7 +872,7 @@ class DockerGalaxyConfig(BaseManagedGalaxyConfig):
         daemon = kwds.get("daemon", False)
         daemon_str = "" if not daemon else " -d"
         docker_run_extras = "-p %s:80%s" % (self.port, daemon_str)
-        env_directives = ["%s=%s" % item for item in self.env.items()]
+        env_directives = ["%s='%s'" % item for item in self.env.items()]
         image = kwds.get("docker_galaxy_image", "bgruening/galaxy-stable")
         run_command = docker_util.build_docker_run_command(
             "", image,
@@ -891,6 +902,7 @@ class DockerGalaxyConfig(BaseManagedGalaxyConfig):
     @property
     def log_contents(self):
         logs_command = docker_util.logs_command(
+            self.server_name,
             **self.docker_target_kwds
         )
         output, _ = communicate(

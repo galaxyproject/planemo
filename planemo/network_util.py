@@ -1,4 +1,8 @@
 import socket
+try:
+    from http.client import BadStatusLine
+except ImportError:
+    from httplib import BadStatusLine
 from time import time as now
 
 from six.moves.urllib.error import URLError
@@ -27,6 +31,8 @@ def wait_http_service(url, timeout=None):
             kwds = {} if timeout is None else dict(timeout=next_timeout)
             urlopen(url, **kwds)
             return True
+        except BadStatusLine:
+            pass
         except URLError:
             pass
 
