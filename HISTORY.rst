@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.50.0.dev0
+0.50.0 (2018-05-10)
 ---------------------
 
 * Fixes and small CLI tweaks to get the Docker Galaxy container working as an ``--engine`` for the
