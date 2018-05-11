@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.50.1.dev0
+0.50.1 (2018-05-11)
 ---------------------
 
 * Fix the process of waiting on Galaxy to boot up for the Docker Galaxy container ``--engine``.
