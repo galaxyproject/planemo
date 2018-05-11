@@ -9,7 +9,8 @@ History
 0.50.0.dev0
 ---------------------
 
-    
+* Fixes and small CLI tweaks to get the Docker Galaxy container working as an ``--engine`` for the
+  run, serve, and test commands.
 
 ---------------------
 0.49.2 (2018-05-09)

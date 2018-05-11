@@ -378,11 +378,28 @@ def install_galaxy_option():
 def docker_galaxy_image_option():
     return planemo_option(
         "--docker_galaxy_image",
-        default="bgruening/galaxy-stable",
+        default="quay.io/bgruening/galaxy",
         use_global_config=True,
         help=("Docker image identifier for docker-galaxy-flavor used if "
               "engine type is specified as ``docker-galaxy``. Defaults to "
-              "to bgruening/galaxy-stable.")
+              "to quay.io/bgruening/galaxy.")
+    )
+
+
+def docker_extra_volume_option():
+    arg_type = click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=True,
+        readable=True,
+        resolve_path=True,
+    )
+    return planemo_option(
+        "--docker_extra_volume",
+        type=arg_type,
+        default=None,
+        use_global_config=True,
+        help=("Extra path to mount if --engine docker.")
     )
 
 
@@ -1062,6 +1079,7 @@ def galaxy_serve_options():
         serve_engine_option(),
         non_strict_cwl_option(),
         docker_galaxy_image_option(),
+        docker_extra_volume_option(),
         galaxy_config_options(),
         daemon_option(),
         pid_file_option(),
@@ -1159,6 +1177,7 @@ def engine_options():
         non_strict_cwl_option(),
         cwltool_no_container_option(),
         docker_galaxy_image_option(),
+        docker_extra_volume_option(),
         ignore_dependency_problems_option(),
         galaxy_url_option(),
         galaxy_admin_key_option(),
