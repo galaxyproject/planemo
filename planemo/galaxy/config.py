@@ -704,6 +704,10 @@ class GalaxyConfig(GalaxyInterface):
     def cleanup(self):
         """Cleanup allocated resources to run this instance."""
 
+    @abc.abstractproperty
+    def use_path_paste(self):
+        """Use path paste to upload data."""
+
 
 class BaseGalaxyConfig(GalaxyInterface):
 
@@ -790,6 +794,16 @@ class BaseGalaxyConfig(GalaxyInterface):
 
     def workflow_id(self, path):
         return self._workflow_ids[path]
+
+    @property
+    def use_path_paste(self):
+        option = self._kwds.get("paste_test_data_paths")
+        if option is None:
+            return self.default_use_path_paste
+
+    @property
+    def default_use_path_paste(self):
+        return False
 
 
 class BaseManagedGalaxyConfig(BaseGalaxyConfig):
@@ -991,6 +1005,12 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
 
     def cleanup(self):
         shutil.rmtree(self.config_directory, CLEANUP_IGNORE_ERRORS)
+
+    @property
+    def default_use_path_paste(self):
+        # If Planemo started a local, native Galaxy instance assume files URLs can be
+        # pasted.
+        return True
 
 
 def _database_connection(database_location, **kwds):
