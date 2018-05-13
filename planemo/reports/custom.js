@@ -22,7 +22,7 @@ var renderTestResults = function(testData) {
 	var $sidebar = $("#nav-sidebar-tests");
 	for(var index in testData["tests"]) {
 		var test = testData["tests"][index];
-		var testResult = new TestResult(test);
+		var testResult = new TestResult(index, test);
 		var rawId = testResult.rawId;
 
 		var panelType = testResult.passed ? "panel-success panel-success-custom" : "panel-danger panel-danger-custom";
@@ -100,7 +100,7 @@ var renderTestResults = function(testData) {
 	}
 }
 
-var TestResult = function(data) {
+var TestResult = function(index, data) {
 	this.rawId = data["id"];
 
 	var idParts = this.rawId.split("TestForTool_");
@@ -119,8 +119,7 @@ var TestResult = function(data) {
 		testIndex = splitParts[1];
 	}
 	this.toolName = toolName;
-	this.testIndex = parseInt(testIndex);
-	console.log(data);
+	this.testIndex = parseInt(testIndex === undefined ? index : testIndex);
 	this.status = data["data"]["status"];
 	var job = data["data"]["job"];
 	if(job) {
