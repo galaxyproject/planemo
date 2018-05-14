@@ -596,6 +596,17 @@ def required_tool_arg(allow_uris=False):
     return click.argument(name, metavar=metavar, type=arg_type)
 
 
+def paste_test_data_paths_option():
+    return planemo_option(
+        "--paste_test_data_paths/--no_paste_test_data_paths",
+        is_flag=True,
+        default=None,
+        help=("By default Planemo will use or not use Galaxy's paste paste option to load "
+              "test data into a history based on the engine type it is targeting. This can "
+              "can override the logic to explicitly enable or disable path pasting.")
+    )
+
+
 def required_workflow_arg():
     arg_type = click.Path(
         exists=True,
@@ -1305,6 +1316,7 @@ def test_options():
             help="Update test-data directory with job outputs (normally"
                  " written to directory --job_output_files if specified.)"
         ),
+        paste_test_data_paths_option(),
         test_report_options(),
         planemo_option(
             "--test_output_xunit",

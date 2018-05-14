@@ -9,6 +9,7 @@ import bioblend
 import requests
 import yaml
 from bioblend.galaxy.client import Client
+from bioblend.util import attach_file
 from galaxy.tools.cwl.util import (
     DirectoryUploadTarget,
     FileUploadTarget,
@@ -173,8 +174,18 @@ def _execute(ctx, config, runnable, job_path, **kwds):
 
 
 def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
+    files_attached = [False]
 
     def upload_func(upload_target):
+
+        def _attach_file(upload_payload, uri, index=0):
+            is_path = not uri.startswith("http://") and not uri.startswith("https://") and not uri.startswith("ftp://")
+            if not config.use_path_paste and is_path:
+                upload_payload["inputs"]["files_%d|url_paste" % index] = "file://%s" % os.path.abspath(uri)
+            else:
+                files_attached[0] = True
+                upload_payload["files_%d|file_data" % index] = attach_file(uri)
+
         if isinstance(upload_target, FileUploadTarget):
             file_path = upload_target.path
             upload_payload = user_gi.tools._upload_payload(
@@ -184,17 +195,17 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
             name = os.path.basename(file_path)
             upload_payload["inputs"]["files_0|auto_decompress"] = False
             upload_payload["inputs"]["auto_decompress"] = False
-            upload_payload["inputs"]["files_0|url_paste"] = "file://%s" % os.path.abspath(file_path)
+            _attach_file(upload_payload, file_path)
             upload_payload["inputs"]["files_0|NAME"] = name
             if upload_target.secondary_files:
-                upload_payload["inputs"]["files_1|url_paste"] = "file://%s" % os.path.abspath(upload_target.secondary_files)
+                _attach_file(upload_payload, upload_target.secondary_files, index=1)
                 upload_payload["inputs"]["files_1|type"] = "upload_dataset"
                 upload_payload["inputs"]["files_1|auto_decompress"] = True
                 upload_payload["inputs"]["file_count"] = "2"
                 upload_payload["inputs"]["force_composite"] = "True"
 
             ctx.vlog("upload_payload is %s" % upload_payload)
-            return user_gi.tools._tool_post(upload_payload, files_attached=False)
+            return user_gi.tools._tool_post(upload_payload, files_attached=files_attached[0])
         elif isinstance(upload_target, DirectoryUploadTarget):
             tar_path = upload_target.tar_path
 
@@ -203,8 +214,8 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
                 file_type="tar",
             )
             upload_payload["inputs"]["files_0|auto_decompress"] = False
-            upload_payload["inputs"]["files_0|url_paste"] = "file://%s" % tar_path
-            tar_upload_response = user_gi.tools._tool_post(upload_payload, files_attached=False)
+            _attach_file(upload_payload, tar_path)
+            tar_upload_response = user_gi.tools._tool_post(upload_payload, files_attached=files_attached[0])
             convert_response = user_gi.tools.run_tool(
                 tool_id="CONVERTER_tar_to_directory",
                 tool_inputs={"input1": {"src": "hda", "id": tar_upload_response["outputs"][0]["id"]}},
