@@ -13,6 +13,7 @@ from planemo.io import shell
 from .test_utils import (
     assert_exists,
     CliShedTestCase,
+    test_environ,
     TEST_REPOS_DIR,
 )
 
@@ -130,28 +131,29 @@ class ShedUploadTestCase(CliShedTestCase):
 
     def test_upload_from_git(self):
         with self._isolate() as f:
-            dest = join(f, "single_tool")
-            self._copy_repo("single_tool", dest)
-            shell(" && ".join([
-                "cd %s" % dest,
-                "git init",
-                "git add .",
-                "git commit -m 'initial commit'"
-            ]))
-            rev = git.rev(None, "single_tool")
-            upload_command = [
-                "shed_update", "--force_repository_creation",
-                "git+single_tool/.git"
-            ]
-            upload_command.extend(self._shed_args())
-            self._check_exit_code(upload_command)
-            self._verify_single_uploaded(f, ["single_tool"])
-            model = self.mock_shed.model
-            repo_id = self.repository_by_name("single_tool")["id"]
-            message = model._repositories_msg[repo_id][0]
-            assert "planemo upload for repository " in message
-            assert "repository https://github.com/galaxyproject" in message
-            assert rev in message
+            with test_environ({"GIT_AUTHOR_NAME": "planemo developer", "EMAIL": "planemo@galaxyproject.org"}):
+                dest = join(f, "single_tool")
+                self._copy_repo("single_tool", dest)
+                shell(" && ".join([
+                    "cd %s" % dest,
+                    "git init",
+                    "git add .",
+                    "git commit -m 'initial commit'"
+                ]))
+                rev = git.rev(None, "single_tool")
+                upload_command = [
+                    "shed_update", "--force_repository_creation",
+                    "git+single_tool/.git"
+                ]
+                upload_command.extend(self._shed_args())
+                self._check_exit_code(upload_command)
+                self._verify_single_uploaded(f, ["single_tool"])
+                model = self.mock_shed.model
+                repo_id = self.repository_by_name("single_tool")["id"]
+                message = model._repositories_msg[repo_id][0]
+                assert "planemo upload for repository " in message
+                assert "repository https://github.com/galaxyproject" in message
+                assert rev in message
 
     def test_create_and_upload(self):
         with self._isolate_repo("single_tool") as f:
