@@ -23,7 +23,7 @@ def main(argv=None):
         'title': title,
         'content': content,
     })
-    print html
+    print(html)
     open(output, "w").write(html)
 
 if __name__ == "__main__":

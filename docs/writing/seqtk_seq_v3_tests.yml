@@ -3,7 +3,7 @@
   job:
     input1:
       class: File
-      value: test-data/2.fastq
+      path: test-data/2.fastq
   outputs:
     output1:
       path: test-data/2.fasta

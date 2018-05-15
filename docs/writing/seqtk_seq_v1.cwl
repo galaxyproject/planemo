@@ -1,5 +1,5 @@
 #!/usr/bin/env cwl-runner
-cwlVersion: 'cwl:draft-3'
+cwlVersion: 'v1.0'
 class: CommandLineTool
 id: "seqtk_seq"
 label: "Convert to FASTA (seqtk)"
@@ -7,5 +7,5 @@ inputs: [] # TODO
 outputs: [] # TODO
 baseCommand: []
 arguments: []
-description: |
+doc: |
    TODO: Fill in description.

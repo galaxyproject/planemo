@@ -1,21 +1,26 @@
 #!/usr/bin/env cwl-runner
-cwlVersion: 'cwl:draft-3'
+cwlVersion: 'v1.0'
 class: CommandLineTool
 id: "seqtk_seq"
 label: "Convert to FASTA (seqtk)"
 hints:
-  - class: DockerRequirement
-    dockerPull: dukegcb/seqtk
+  DockerRequirement:
+    dockerPull: quay.io/biocontainers/seqtk:1.2--0
+  SoftwareRequirement:
+    packages:
+    - package: seqtk
+      version:
+      - "1.2"
 inputs:
-  - id: input1
+  input1:
     type: File
-    description: |
+    doc: |
       TODO
     inputBinding:
       position: 1
       prefix: "-a"
 outputs:
-  - id: output1
+  output1:
     type: File
     outputBinding:
       glob: out
@@ -24,10 +29,10 @@ baseCommand:
   - "seq"
 arguments: []
 stdout: out
-description: |
+doc: |
   
   Usage:   seqtk seq [options] <in.fq>|<in.fa>
-  
+
   Options: -q INT    mask bases with quality lower than INT [0]
            -X INT    mask bases with quality higher than INT [255]
            -n CHAR   masked bases converted to CHAR; 0 for lowercase [0]
@@ -46,4 +51,5 @@ description: |
            -2        output the 2n reads only
            -V        shift quality by '(-Q) - 33'
            -U        convert all bases to uppercases
-  
+           -S        strip of white spaces in sequences
+

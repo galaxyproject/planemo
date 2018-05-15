@@ -63,7 +63,8 @@ tool is generated.
                         --example_command 'seqtk seq -A 2.fastq > 2.fasta' \
                         --example_input 2.fastq \
                         --example_output 2.fasta \
-                        --container 'dukegcb/seqtk' \
+                        --requirement seqtk@1.2 \
+                        --container 'quay.io/biocontainers/seqtk:1.2--0' \
                         --test_case \
                         --help_from_command 'seqtk seq'
 
@@ -77,17 +78,18 @@ This command generates the following CWL YAML file.
 ::
 
     $ planemo l seqtk_seq.cwl
-    Linting tool /home/john/workspace/planemo/docs/writing/seqtk_seq.cwl
+    Linting tool /Users/john/workspace/planemo/docs/writing/seqtk_seq.cwl
     Applying linter general... CHECK
     .. CHECK: Tool defines a version [0.0.1].
     .. CHECK: Tool defines a name [Convert to FASTA (seqtk)].
     .. CHECK: Tool defines an id [seqtk_seq_v3].
+    .. CHECK: Tool specifies profile version [16.04].
     Applying linter cwl_validation... CHECK
     .. INFO: CWL appears to be valid.
     Applying linter docker_image... CHECK
-    .. INFO: Tool will run in Docker image [dukegcb/seqtk].
+    .. INFO: Tool will run in Docker image [quay.io/biocontainers/seqtk:1.2--0].
     Applying linter new_draft... CHECK
-    .. INFO: Modern CWL version [cwl:draft-3]
+    .. INFO: Modern CWL version [v1.0]
 
 In addition to the actual tool file, a test file will be generated
 using the example command and provided test data. The file contents are as

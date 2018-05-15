@@ -17,7 +17,7 @@ cd
 rm -rf seqtk_example
 rm -rf conda_exercises
 echo "Remove existing seqtk environment - it is fine if it doesn't exist."
-conda remove --force --name '__seqtk@1.2' --all || true
+conda remove --force --yes --name '__seqtk@1.2' --all || true
 
 # Tests
 

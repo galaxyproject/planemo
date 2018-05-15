@@ -8,13 +8,14 @@ set -e
 # - planemo installed
 # - tool_init_exercise directory doesn't exist and in home directory.
 # - local tool shed running and configured with ~/.planemo.yml
+# - conda on PATH
 
 cd
 rm -rf tool_init_exercise
 
 # Tests
 
-conda install --force -c bioconda seqtk=1.2
+conda install --force --yes -c bioconda seqtk=1.2
 
 seqtk seq
 

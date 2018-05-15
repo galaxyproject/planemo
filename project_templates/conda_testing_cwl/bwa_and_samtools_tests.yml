@@ -1,0 +1,11 @@
+- doc: test versions
+  job: {}
+  outputs:
+    bwa_help:
+      asserts:
+        has_text:
+          text: "Version: 0.7.15-r1140"
+    samtools_help:
+      asserts:
+        has_text:
+          text: "Version: 1.3.1"

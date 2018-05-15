@@ -1,0 +1,16 @@
+- doc: simple test
+  job:
+    input_f:
+      class: File
+      path: test-data/forward.fastq
+    input_r:
+      class: File
+      path: test-data/reverse.fastq
+    min_overlap: 10
+    min_assembly_length: 50
+    cap: 0
+  outputs:
+    assembled_pairs:
+      file: test-data/pear_assembled_results1.fastq
+    unassembled_forward_reads:
+      file: test-data/pear_unassembled_forward_results1.fastq

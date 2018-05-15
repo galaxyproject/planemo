@@ -12,52 +12,7 @@ Specifying and Using Tool Requirements
     admistrator's perspective can be found `here <https://docs.galaxyproject.org/en/latest/admin/conda_faq.html>`__.
     That document also serves as good background for this discussion.
 
-.. note:: Planemo requires a Conda installation to target with its various Conda
-    related commands. A properly configured Conda installation can be initialized
-    with the ``conda_init`` command. This should only need to be executed once
-    per development machine.
-
-    ::
-
-        $ planemo conda_init
-        wget -q --recursive -O '/var/folders/78/zxz5mz4d0jn53xf0l06j7ppc0000gp/T/conda_installLuGDHE.sh' 'https://repo.continuum.io/miniconda/Miniconda3-4.2.12-MacOSX-x86_64.sh' && bash '/var/folders/78/zxz5mz4d0jn53xf0l06j7ppc0000gp/T/conda_installLuGDHE.sh' -b -p '/Users/john/miniconda2' && /Users/john/miniconda2/bin/conda install -y -q conda=4.2.13
-        PREFIX=/Users/john/miniconda2
-        installing: python-3.5.2-0 ...
-        installing: conda-env-2.6.0-0 ...
-        installing: openssl-1.0.2j-0 ...
-        installing: pycosat-0.6.1-py35_1 ...
-        installing: readline-6.2-2 ...
-        installing: requests-2.11.1-py35_0 ...
-        installing: ruamel_yaml-0.11.14-py35_0 ...
-        installing: sqlite-3.13.0-0 ...
-        installing: tk-8.5.18-0 ...
-        installing: xz-5.2.2-0 ...
-        installing: yaml-0.1.6-0 ...
-        installing: zlib-1.2.8-3 ...
-        installing: conda-4.2.12-py35_0 ...
-        installing: pycrypto-2.6.1-py35_4 ...
-        installing: pip-8.1.2-py35_0 ...
-        installing: wheel-0.29.0-py35_0 ...
-        installing: setuptools-27.2.0-py35_0 ...
-        Python 3.5.2 :: Continuum Analytics, Inc.
-        creating default environment...
-        installation finished.
-        Fetching package metadata .......
-        Solving package specifications: ..........
-
-        Package plan for installation in environment /Users/john/miniconda2:
-
-        The following packages will be downloaded:
-
-            package                    |            build
-            ---------------------------|-----------------
-            conda-4.2.13               |           py35_0         389 KB
-
-        The following packages will be UPDATED:
-
-            conda: 4.2.12-py35_0 --> 4.2.13-py35_0
-
-        Conda installation succeeded - Conda is available at '/Users/john/miniconda3/bin/conda'
+.. include:: _writing_conda_init.rst
 
 While Galaxy can be configured to resolve dependencies various ways, Planemo
 is configured with opinionated defaults geared at making building tools that
@@ -93,7 +48,7 @@ Conda channels using an extended form of the ``planemo lint`` command. Passing
 ::
 
     $ planemo lint --conda_requirements seqtk_seq.xml
-    Linting tool /Users/john/workspace/planemo/docs/writing/seqtk_seq_v6.xml
+    Linting tool /Users/john/workspace/planemo/docs/writing/seqtk_seq.xml
       ...
     Applying linter requirements_in_conda... CHECK
     .. INFO: Requirement [seqtk@1.2] matches target in best practice Conda channel [bioconda].
@@ -232,45 +187,7 @@ demonstrating using this tool.
 In this case the tests passed and the line containing ``[galaxy.tools.deps] Using dependency seqtk version 1.2 of type conda``
 indicates Galaxy dependency resolution was successful and it found the environment we previously installed with ``conda_install``.
 
-----------------------------------------------------------------
-Finding Existing Conda Packages
-----------------------------------------------------------------
-
-How did we know what software name and software version to use? We found the existing
-packages available for Conda and referenced them. To do this yourself, you can simply
-use the planemo command ``conda_search``. If we do a search for ``seqt`` it will show
-all the software and all the versions available matching that search term - including
-``seqtk``.
-
-::
-
-    $ planemo conda_search seqt
-    Fetching package metadata ...............
-    seqtk                        r75                           0  bioconda
-                                 r82                           0  bioconda
-                                 r93                           0  bioconda
-                                 1.2                           0  bioconda
-
-.. note:: The Planemo command ``conda_search`` is a light wrapper around the underlying
-   ``conda search`` command but configured to use the same channels and other options as
-   Planemo and Galaxy. The following Conda command would also work to search::
-
-       $ $HOME/miniconda3/bin/conda -c iuc -c bioconda -c conda-forge seqt
-
-Alternatively the Anaconda_ website can be used to search for packages. Typing ``seqtk``
-into the search form on that page and clicking the top result will bring on to `this page
-<https://anaconda.org/bioconda/seqtk>`__ with information about the Bioconda package.
-
-When using the website to search though, you need to aware of what channel you are using. By
-default, Planemo and Galaxy will search a few different Conda channels. While it is possible
-to configure a local Planemo or Galaxy to target different channels - the current best practice
-is to add tools to the existing channels.
-
-The existing channels include:
-
-* Bioconda (`github <https://github.com/bioconda/bioconda-recipes>`__ | `conda <https://anaconda.org/bioconda>`__) - best practice channel for various bioinformatics packages.
-* Conda-Forge (`github <https://github.com/conda-forge/staged-recipes>`__ | `conda <https://anaconda.org/conda-forge>`__) - best practice channel for general purpose and widely useful computing packages and libraries.
-* iuc (`github <https://github.com/galaxyproject/conda-iuc>`__ | `conda <https://anaconda.org/iuc>`__) - best practice channel for other more Galaxy specific packages.
+.. include:: _writing_conda_search.rst
 
 ----------------------------------------------------------------
 Exercise - Leveraging Bioconda
@@ -302,61 +219,7 @@ no ``requirement`` tags and so will not work properly.
 6. Re-run the ``test`` command from above to verify the tool test now
    works properly.
 
-----------------------------------------------------------------
-Building New Conda Packages
-----------------------------------------------------------------
-
-Frequently packages your tool will require are not found in Bioconda_
-or conda-forge yet. In these cases, it is likely best to contribute
-your package to one of these projects. Unless the tool is exceedingly
-general Bioconda_ is usually the correct starting point.
-
-.. note:: Many things that are not strictly or even remotely "bio" have
-    been accepted into Bioconda_ - including tools for image analysis,
-    natural language processing, and cheminformatics.
-
-To get quickly learn to write Conda_ recipes for typical Galaxy tools,
-please read the following pieces of external documentation.
-
-- `Contributing to Bioconda <https://bioconda.github.io/contributing.html>`__ in particular focusing on
-
-  - `One time setup <https://bioconda.github.io/contrib-setup.html>`__
-  - `Contributing a recipe <https://bioconda.github.io/contribute-a-recipe.html>`__ (through "Write a Recipe")
-- `Building conda packages <https://conda.io/docs/building/bpp.html#>`__ in particular
-
-  - `Building conda packages with conda skeleton <https://conda.io/docs/build_tutorials/pkgs.html>`__ (the best approach for common scripting languages such as R and Python)
-  - `Building conda packages from scratch <https://conda.io/docs/build_tutorials/pkgs2.html>`__
-  - `Building conda packages for general code projects <https://conda.io/docs/build_tutorials/postgis.html>`__
-  - `Using conda build <https://conda.io/docs/building/recipe.html>`__
-- Then return to the Bioconda documentation and read
-
-  - The rest of "Contributing a recipe" continuing from `Testing locally <https://bioconda.github.io/contribute-a-recipe.html#test-locally>`__
-  - And finally `Guidelines for bioconda recipes <https://bioconda.github.io/guidelines.html>`__
-
-These guidelines in particular can be skimmed depending on your recipe type, for
-instance that document provides specific advice for:
-
-- `Python <https://bioconda.github.io/guidelines.html#python>`__
-- `R (CRAN) <https://bioconda.github.io/guidelines.html#r-cran>`__
-- `R (Bioconductor) <https://bioconda.github.io/guidelines.html#r-bioconductor>`__
-- `Perl <https://bioconda.github.io/guidelines.html#perl>`__
-- `C/C++ <https://bioconda.github.io/guidelines.html#c-c>`__
-
-To go a little deeper, you may want to read: 
-
-- `Specification for meta.yaml <https://conda.io/docs/building/meta-yaml.html>`__
-- `Environment variables <https://conda.io/docs/building/environment-vars.html>`__
-- `Custom channels <https://conda.io/docs/custom-channels.html>`__
-
-And finally to debug problems the `Bioconda troubleshooting <https://bioconda.github.io/troubleshooting.html>`__
-documentation may prove useful.
-
-----------------------------------------------------------------
-Exercise - Build a Recipe
-----------------------------------------------------------------
-
-If you have just completed the exercise above - this exercise can be found in parent folder. Get
-there with ``cd ../exercise2``. If not, the exercise can be downloaded with
+.. include:: _writing_conda_new.rst
 
 ::
 
@@ -365,11 +228,7 @@ there with ``cd ../exercise2``. If not, the exercise can be downloaded with
     $ ls 
     fleeqtk_seq.xml              test-data
 
-This is the skeleton of a tool wrapping the parody bioinformatics software package fleeqtk_.
-fleeqtk is a fork of the project seqtk that many Planemo tutorials are built around and the
-example tool ``fleeqtk_seq.xml`` should be fairly familiar. fleeqtk version 1.3 can be downloaded
-from `here <https://github.com/jmchilton/fleeqtk/archive/v1.3.tar.gz>`__ and built using
-``make``. The result of ``make`` includes a single executable ``fleeqtk``.
+.. include:: _writing_conda_fleeqtk.rst
 
 1. Clone and branch Bioconda_.
 2. Build a recipe for fleeqtk version 1.3. You may wish to use ``conda skeleton``, start from
@@ -379,13 +238,10 @@ from `here <https://github.com/jmchilton/fleeqtk/archive/v1.3.tar.gz>`__ and bui
    can be built into a Galaxy environment.
 5. Run ``planemo test fleeqtk_seq.xml`` to verify the resulting package works as expected.
 
-.. note: The planemo flag ``--conda_use_local`` causes planemo and Galaxy to use locally built
+.. note: The planemo flag ``--conda_use_local`` causes Planemo to use locally built
      packages during dependency resolution and related commands.
 
-Congratulations on writing a Conda recipe and building a package.  Upon succesfully building
-and testing such a Bioconda package, you would normally push your branch to Github
-and open a pull request. This step is skipped here as to not pollute Bioconda with unneeded
-software packages.
+.. include:: _writing_conda_recipe_complete.rst
 
 .. _fleeqtk: https://github.com/jmchilton/fleeqtk
 .. _Bioconda: https://github.com/bioconda/bioconda-recipes

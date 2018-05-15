@@ -14,6 +14,12 @@ Docker_, Vagrant_, etc...).
    ...using Planemo <writing_cwl_standalone>
    ...using a Planemo Virtual Appliance <writing_cwl_appliance>
 
+Additional tutorials include
+
+.. toctree::
+
+    Advanced Tool Development Topics <writing_advanced_cwl>
+
 .. _Common Workflow Language: http://www.commonwl.org/
 .. _Galaxy: http://galaxyproject.org/
 .. _Docker: https://www.docker.com/

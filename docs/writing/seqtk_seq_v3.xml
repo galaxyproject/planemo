@@ -39,6 +39,7 @@ Options: -q INT    mask bases with quality lower than INT [0]
          -2        output the 2n reads only
          -V        shift quality by '(-Q) - 33'
          -U        convert all bases to uppercases
+         -S        strip of white spaces in sequences
 
 
     ]]></help>

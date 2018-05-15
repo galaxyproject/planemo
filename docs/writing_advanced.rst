@@ -14,7 +14,7 @@ available - check out tutorial_ if you have never developed a Galaxy tool.
 .. include:: _writing_tool_metadata.rst
 .. include:: _writing_clusters.rst
 .. include:: _writing_dependencies_conda.rst
-.. include:: _writing_dependencies_docker.rst
+.. include:: _writing_dependencies_containers.rst
 
 .. _Galaxy: http://galaxyproject.org/
 .. _Docker: https://www.docker.com/
