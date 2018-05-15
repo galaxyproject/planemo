@@ -156,9 +156,9 @@ please careful and do not try this against production Galaxy instances.
                                       --job_output_files if specified.)
       --paste_test_data_paths / --no_paste_test_data_paths
                                       By default Planemo will use or not use
-                                      Galaxy's paste paste option to load test data
+                                      Galaxy's path paste option to load test data
                                       into a history based on the engine type it is
-                                      targeting. This can can override the logic to
+                                      targeting. This can override the logic to
                                       explicitly enable or disable path pasting.
       --test_output PATH              Output test report (HTML - for humans)
                                       defaults to tool_test_output.html.
@@ -186,7 +186,7 @@ please careful and do not try this against production Galaxy instances.
                                       container usage.
       --docker_galaxy_image TEXT      Docker image identifier for docker-galaxy-
                                       flavor used if engine type is specified as
-                                      ``docker-galaxy``. Defaults to to
+                                      ``docker-galaxy``. Defaults to
                                       quay.io/bgruening/galaxy.
       --docker_extra_volume PATH      Extra path to mount if --engine docker.
       --ignore_dependency_problems    When installing shed repositories for

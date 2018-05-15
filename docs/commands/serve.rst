@@ -94,7 +94,7 @@ Galaxy instance.
       --non_strict_cwl                Disable strict validation of CWL.
       --docker_galaxy_image TEXT      Docker image identifier for docker-galaxy-
                                       flavor used if engine type is specified as
-                                      ``docker-galaxy``. Defaults to to
+                                      ``docker-galaxy``. Defaults to
                                       quay.io/bgruening/galaxy.
       --docker_extra_volume PATH      Extra path to mount if --engine docker.
       --test_data DIRECTORY           test-data directory to for specified tool(s).

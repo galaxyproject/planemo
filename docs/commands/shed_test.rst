@@ -94,9 +94,9 @@ This command requires the target to be version 15.07 or newer.
                                       --job_output_files if specified.)
       --paste_test_data_paths / --no_paste_test_data_paths
                                       By default Planemo will use or not use
-                                      Galaxy's paste paste option to load test data
+                                      Galaxy's path paste option to load test data
                                       into a history based on the engine type it is
-                                      targeting. This can can override the logic to
+                                      targeting. This can override the logic to
                                       explicitly enable or disable path pasting.
       --test_output PATH              Output test report (HTML - for humans)
                                       defaults to tool_test_output.html.
