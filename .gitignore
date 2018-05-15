@@ -50,6 +50,7 @@ output/*/index.html
 docs/_build
 
 .venv
+.venv3
 
 tool_test_output.*
 

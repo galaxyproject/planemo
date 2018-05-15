@@ -6,10 +6,12 @@ ENV?=py27
 ARGS?=
 # Location of virtualenv used for development.
 VENV?=.venv
+VENV3?=.venv3
 # Open resource on Mac OS X or Linux
 OPEN_RESOURCE=bash -c 'open $$0 || xdg-open $$0'
 # Source virtualenv to execute command (flake8, sphinx, twine, etc...)
 IN_VENV=if [ -f $(VENV)/bin/activate ]; then . $(VENV)/bin/activate; fi;
+IN_VENV3=if [ -f $(VENV3)/bin/activate ]; then . $(VENV3)/bin/activate; fi;
 # TODO: add this upstream as a remote if it doesn't already exist.
 UPSTREAM?=galaxyproject
 SOURCE_DIR?=planemo
@@ -53,6 +55,10 @@ install: ## install into Python envirnoment
 setup-venv: ## setup a development virutalenv in current directory
 	if [ ! -d $(VENV) ]; then virtualenv $(VENV); exit; fi;
 	$(IN_VENV) pip install --upgrade pip && pip install -r requirements.txt && pip install -r dev-requirements.txt
+
+setup-venv3: ## setup a development virutalenv in current directory
+	if [ ! -d $(VENV3) ]; then virtualenv -p python3 $(VENV3); exit; fi;
+	$(IN_VENV3) pip install --upgrade pip && pip install -r requirements.txt && pip install -r dev-requirements.txt
 
 setup-git-hook-lint: ## setup precommit hook for linting project
 	cp $(BUILD_SCRIPTS_DIR)/pre-commit-lint .git/hooks/pre-commit
