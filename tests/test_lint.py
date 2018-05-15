@@ -15,9 +15,16 @@ class LintTestCase(CliTestCase):
     def test_ok_tools(self):
         ok_tools = glob.glob("%s/ok_*" % TEST_TOOLS_DIR)
         for ok_tool in ok_tools:
-            lint_cmd = ["lint", "--urls", ok_tool]
+            lint_cmd = ["lint", ok_tool]
             self._check_exit_code(lint_cmd)
 
+    @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
+    def test_ok_urls(self):
+        url_path = os.path.join(TEST_TOOLS_DIR, "url.xml")
+        lint_cmd = ["lint", "--urls", url_path]
+        self._check_exit_code(lint_cmd)
+
+    @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
     def test_ok_http(self):
         lint_cmd = ["lint", "https://raw.githubusercontent.com/galaxyproject/planemo/master/tests/data/tools/ok_conditional.xml"]
         self._check_exit_code(lint_cmd)

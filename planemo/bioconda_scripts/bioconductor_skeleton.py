@@ -62,7 +62,6 @@ class BioCProjectPage(object):
 
         Represents a single Bioconductor package page and provides access to
         scraped data.
-        >>> x = BioCProjectPage('DESeq2')
         """
         self.base_url = base_url
         self.package = package
