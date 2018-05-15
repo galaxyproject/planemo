@@ -262,7 +262,7 @@ def build(**kwds):
 def _build_cwl(**kwds):
     _handle_help(kwds)
     _handle_requirements(kwds)
-    assert len(kwds["containers"]) == 1, kwds
+    assert len(kwds["containers"]) <= 1, kwds
     command_io = CommandIO(**kwds)
     render_kwds = {
         "cwl_version": DEFAULT_CWL_VERSION,
