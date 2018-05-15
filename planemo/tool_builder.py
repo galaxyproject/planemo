@@ -135,12 +135,25 @@ cwlVersion: '{{cwl_version}}'
 class: CommandLineTool
 id: "{{id}}"
 label: "{{label}}"
-{%- if containers %}
+{%- if containers or requirements %}
 hints:
 {%- for container in containers %}
-  - class: DockerRequirement
+  DockerRequirement:
     dockerPull: {{ container.image_id }}
 {%- endfor %}
+{%- if requirements %}
+  SoftwareRequirement:
+    packages:
+{%- for requirement in requirements %}
+    - package: {{ requirement.name }}
+{%- if requirement.version %}
+      version:
+      - "{{ requirement.version }}"
+{%- else %}
+      version: []
+{%- endif %}
+{%- endfor %}
+{%- endif %}
 {%- endif %}
 {%- if inputs or outputs %}
 inputs:
@@ -268,6 +281,7 @@ def _build_cwl(**kwds):
         "cwl_version": DEFAULT_CWL_VERSION,
         "help": kwds.get("help", ""),
         "containers": kwds.get("containers", []),
+        "requirements": kwds.get("requirements", []),
         "id": kwds.get("id"),
         "label": kwds.get("name"),
     }
@@ -641,7 +655,7 @@ def _handle_requirements(kwds):
     """
     requirements = kwds["requirement"]
     del kwds["requirement"]
-    requirements = map(Requirement, requirements or [])
+    requirements = list(map(Requirement, requirements or []))
 
     container = kwds["container"]
     del kwds["container"]
