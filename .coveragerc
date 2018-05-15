@@ -2,6 +2,7 @@
 [run]
 branch = True
 include = planemo/*
+omit = .tox/*
 
 [report]
 # Regexes for lines to exclude from consideration
@@ -9,6 +10,8 @@ exclude_lines =
     if __name__ == .__main__.:
 
 ignore_errors = True
+include = planemo/*
+omit = .tox/*
 
 [html]
 directory = htmlcov/
