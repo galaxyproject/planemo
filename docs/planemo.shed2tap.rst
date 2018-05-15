@@ -1,11 +1,11 @@
-planemo\.shed2tap package
-=========================
+planemo.shed2tap package
+========================
 
 Submodules
 ----------
 
-planemo\.shed2tap\.base module
-------------------------------
+planemo.shed2tap.base module
+----------------------------
 
 .. automodule:: planemo.shed2tap.base
     :members:

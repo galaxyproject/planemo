@@ -1,19 +1,19 @@
-planemo\.xml package
-====================
+planemo.xml package
+===================
 
 Submodules
 ----------
 
-planemo\.xml\.diff module
--------------------------
+planemo.xml.diff module
+-----------------------
 
 .. automodule:: planemo.xml.diff
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.xml\.validation module
--------------------------------
+planemo.xml.validation module
+-----------------------------
 
 .. automodule:: planemo.xml.validation
     :members:

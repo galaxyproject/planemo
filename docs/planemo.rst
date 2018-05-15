@@ -23,208 +23,208 @@ Subpackages
 Submodules
 ----------
 
-planemo\.bioblend module
-------------------------
+planemo.bioblend module
+-----------------------
 
 .. automodule:: planemo.bioblend
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.bioc\_tool\_builder module
------------------------------------
+planemo.bioc\_tool\_builder module
+----------------------------------
 
 .. automodule:: planemo.bioc_tool_builder
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.ci module
-------------------
+planemo.ci module
+-----------------
 
 .. automodule:: planemo.ci
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.cli module
--------------------
+planemo.cli module
+------------------
 
 .. automodule:: planemo.cli
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.conda module
----------------------
+planemo.conda module
+--------------------
 
 .. automodule:: planemo.conda
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.conda\_lint module
----------------------------
+planemo.conda\_lint module
+--------------------------
 
 .. automodule:: planemo.conda_lint
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.conda\_recipes module
-------------------------------
+planemo.conda\_recipes module
+-----------------------------
 
 .. automodule:: planemo.conda_recipes
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.config module
-----------------------
+planemo.config module
+---------------------
 
 .. automodule:: planemo.config
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.docker module
-----------------------
+planemo.docker module
+---------------------
 
 .. automodule:: planemo.docker
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.exit\_codes module
----------------------------
+planemo.exit\_codes module
+--------------------------
 
 .. automodule:: planemo.exit_codes
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.git module
--------------------
+planemo.git module
+------------------
 
 .. automodule:: planemo.git
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.github\_util module
-----------------------------
+planemo.github\_util module
+---------------------------
 
 .. automodule:: planemo.github_util
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.glob module
---------------------
+planemo.glob module
+-------------------
 
 .. automodule:: planemo.glob
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.io module
-------------------
+planemo.io module
+-----------------
 
 .. automodule:: planemo.io
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.lint module
---------------------
+planemo.lint module
+-------------------
 
 .. automodule:: planemo.lint
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.mulled module
-----------------------
+planemo.mulled module
+---------------------
 
 .. automodule:: planemo.mulled
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.network\_util module
------------------------------
+planemo.network\_util module
+----------------------------
 
 .. automodule:: planemo.network_util
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.options module
------------------------
+planemo.options module
+----------------------
 
 .. automodule:: planemo.options
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.rscript\_parse module
-------------------------------
+planemo.rscript\_parse module
+-----------------------------
 
 .. automodule:: planemo.rscript_parse
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.runnable module
-------------------------
+planemo.runnable module
+-----------------------
 
 .. automodule:: planemo.runnable
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.shed\_lint module
---------------------------
+planemo.shed\_lint module
+-------------------------
 
 .. automodule:: planemo.shed_lint
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.templates module
--------------------------
+planemo.templates module
+------------------------
 
 .. automodule:: planemo.templates
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.tool\_builder module
------------------------------
+planemo.tool\_builder module
+----------------------------
 
 .. automodule:: planemo.tool_builder
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.tool\_lint module
---------------------------
+planemo.tool\_lint module
+-------------------------
 
 .. automodule:: planemo.tool_lint
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.tools module
----------------------
+planemo.tools module
+--------------------
 
 .. automodule:: planemo.tools
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.virtualenv module
---------------------------
+planemo.virtualenv module
+-------------------------
 
 .. automodule:: planemo.virtualenv
     :members:
