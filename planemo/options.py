@@ -382,7 +382,7 @@ def docker_galaxy_image_option():
         use_global_config=True,
         help=("Docker image identifier for docker-galaxy-flavor used if "
               "engine type is specified as ``docker-galaxy``. Defaults to "
-              "to quay.io/bgruening/galaxy.")
+              "quay.io/bgruening/galaxy.")
     )
 
 
@@ -601,9 +601,9 @@ def paste_test_data_paths_option():
         "--paste_test_data_paths/--no_paste_test_data_paths",
         is_flag=True,
         default=None,
-        help=("By default Planemo will use or not use Galaxy's paste paste option to load "
+        help=("By default Planemo will use or not use Galaxy's path paste option to load "
               "test data into a history based on the engine type it is targeting. This can "
-              "can override the logic to explicitly enable or disable path pasting.")
+              "override the logic to explicitly enable or disable path pasting.")
     )
 
 

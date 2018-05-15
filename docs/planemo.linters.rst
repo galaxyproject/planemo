@@ -1,43 +1,43 @@
-planemo\.linters package
-========================
+planemo.linters package
+=======================
 
 Submodules
 ----------
 
-planemo\.linters\.biocontainer\_registered module
--------------------------------------------------
+planemo.linters.biocontainer\_registered module
+-----------------------------------------------
 
 .. automodule:: planemo.linters.biocontainer_registered
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.linters\.conda\_requirements module
---------------------------------------------
+planemo.linters.conda\_requirements module
+------------------------------------------
 
 .. automodule:: planemo.linters.conda_requirements
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.linters\.doi module
-----------------------------
+planemo.linters.doi module
+--------------------------
 
 .. automodule:: planemo.linters.doi
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.linters\.urls module
------------------------------
+planemo.linters.urls module
+---------------------------
 
 .. automodule:: planemo.linters.urls
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.linters\.xsd module
-----------------------------
+planemo.linters.xsd module
+--------------------------
 
 .. automodule:: planemo.linters.xsd
     :members:

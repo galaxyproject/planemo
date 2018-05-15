@@ -1,35 +1,35 @@
-planemo\.database package
-=========================
+planemo.database package
+========================
 
 Submodules
 ----------
 
-planemo\.database\.factory module
----------------------------------
+planemo.database.factory module
+-------------------------------
 
 .. automodule:: planemo.database.factory
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.database\.interface module
------------------------------------
+planemo.database.interface module
+---------------------------------
 
 .. automodule:: planemo.database.interface
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.database\.postgres module
-----------------------------------
+planemo.database.postgres module
+--------------------------------
 
 .. automodule:: planemo.database.postgres
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.database\.postgres\_docker module
-------------------------------------------
+planemo.database.postgres\_docker module
+----------------------------------------
 
 .. automodule:: planemo.database.postgres_docker
     :members:

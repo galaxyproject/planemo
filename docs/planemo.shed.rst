@@ -1,19 +1,19 @@
-planemo\.shed package
-=====================
+planemo.shed package
+====================
 
 Submodules
 ----------
 
-planemo\.shed\.diff module
---------------------------
+planemo.shed.diff module
+------------------------
 
 .. automodule:: planemo.shed.diff
     :members:
     :undoc-members:
     :show-inheritance:
 
-planemo\.shed\.interface module
--------------------------------
+planemo.shed.interface module
+-----------------------------
 
 .. automodule:: planemo.shed.interface
     :members:

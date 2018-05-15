@@ -79,8 +79,9 @@ http://www.ncbi.nlm.nih.gov/pubmed/23024011.
       --non_strict_cwl                Disable strict validation of CWL.
       --docker_galaxy_image TEXT      Docker image identifier for docker-galaxy-
                                       flavor used if engine type is specified as
-                                      ``docker-galaxy``. Defaults to to bgruening
-                                      /galaxy-stable.
+                                      ``docker-galaxy``. Defaults to
+                                      quay.io/bgruening/galaxy.
+      --docker_extra_volume PATH      Extra path to mount if --engine docker.
       --test_data DIRECTORY           test-data directory to for specified tool(s).
       --tool_data_table PATH          tool_data_table_conf.xml file to for specified
                                       tool(s).
