@@ -23,4 +23,5 @@ def cli(ctx, term, **kwds):
     Implicitly adds channels Planemo is configured with.
     """
     conda_context = build_conda_context(ctx, handle_auto_init=True, **kwds)
-    conda_context.exec_command("search", [term])
+    args = conda_context._override_channels_args + ["*%s*" % term]
+    conda_context.exec_command("search", args)
