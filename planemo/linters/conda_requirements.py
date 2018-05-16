@@ -6,6 +6,8 @@ from planemo.conda import (
     tool_source_conda_targets,
 )
 
+lint_tool_types = ["*"]
+
 
 def lint_requirements_in_conda(tool_source, lint_ctx):
     """Check requirements of tool source against best practice Conda channels."""
