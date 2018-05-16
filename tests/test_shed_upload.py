@@ -113,21 +113,22 @@ class ShedUploadTestCase(CliShedTestCase):
 
     def test_tar_from_git(self):
         with self._isolate() as f:
-            dest = join(f, "single_tool")
-            self._copy_repo("single_tool", dest)
-            shell(" && ".join([
-                "cd %s" % dest,
-                "git init",
-                "git add .",
-                "git commit -m 'initial commit'"
-            ]))
-            upload_command = [
-                "shed_update", "--force_repository_creation",
-                "git+single_tool/.git"
-            ]
-            upload_command.extend(self._shed_args())
-            self._check_exit_code(upload_command)
-            self._verify_single_uploaded(f, ["single_tool"])
+            with modify_environ({"GIT_AUTHOR_NAME": "planemo developer", "EMAIL": "planemo@galaxyproject.org"}):
+                dest = join(f, "single_tool")
+                self._copy_repo("single_tool", dest)
+                shell(" && ".join([
+                    "cd %s" % dest,
+                    "git init",
+                    "git add .",
+                    "git commit -m 'initial commit'"
+                ]))
+                upload_command = [
+                    "shed_update", "--force_repository_creation",
+                    "git+single_tool/.git"
+                ]
+                upload_command.extend(self._shed_args())
+                self._check_exit_code(upload_command)
+                self._verify_single_uploaded(f, ["single_tool"])
 
     def test_upload_from_git(self):
         with self._isolate() as f:
