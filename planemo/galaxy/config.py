@@ -10,7 +10,6 @@ import shutil
 from string import Template
 from tempfile import mkdtemp
 
-import click
 from galaxy.containers.docker_model import DockerVolume
 from galaxy.tools.deps import docker_util
 from galaxy.tools.deps.commands import argv_to_str
@@ -23,8 +22,8 @@ from six.moves.urllib.request import urlopen
 from six.moves.urllib.request import urlretrieve
 
 from planemo import git
-from planemo.conda import build_conda_context
 from planemo.config import OptionSource
+from planemo.deps import ensure_dependency_resolvers_conf_configured
 from planemo.docker import docker_host_args
 from planemo.io import (
     communicate,
@@ -92,40 +91,6 @@ SHED_DATA_MANAGER_CONF_TEMPLATE = """<?xml version="1.0"?>
 EMPTY_JOB_METRICS_TEMPLATE = """<?xml version="1.0"?>
 <job_metrics>
 </job_metrics>
-"""
-
-# TODO: fill in properties to match CLI args.
-CONDA_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
-  <conda ${attributes} />
-  <conda versionless="true" ${attributes} />
-</dependency_resolvers>
-"""
-
-
-# Like Conda resolution above, but allow tool shed packages to be used for
-# shed_serve and shed_test.
-DEFAULT_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
-  <tool_shed_packages />
-  <conda ${attributes} />
-  <conda versionless="true" ${attributes} />
-</dependency_resolvers>
-"""
-
-NO_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
-</dependency_resolvers>
-"""
-
-BREW_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
-  <homebrew />
-  <!--
-  <homebrew versionless="true" />
-  -->
-</dependency_resolvers>
-"""
-
-SHED_DEPENDENCY_RESOLUTION_CONF = """<dependency_resolvers>
-  <tool_shed_tap />
-</dependency_resolvers>
 """
 
 TOOL_SHEDS_CONF = """<tool_sheds>
@@ -215,15 +180,6 @@ format = %(asctime)s %(levelname)-5.5s [%(name)s] %(message)s
 """
 
 
-# Provide some shortcuts for simple/common dependency resolutions strategies.
-STOCK_DEPENDENCY_RESOLUTION_STRATEGIES = {
-    "brew_dependency_resolution": BREW_DEPENDENCY_RESOLUTION_CONF,
-    "shed_dependency_resolution": SHED_DEPENDENCY_RESOLUTION_CONF,
-    "conda_dependency_resolution": CONDA_DEPENDENCY_RESOLUTION_CONF,
-    "no_dependency_resolution": NO_DEPENDENCY_RESOLUTION_CONF,
-    "default_dependency_resolution": DEFAULT_DEPENDENCY_RESOLUTION_CONF,
-}
-
 EMPTY_TOOL_CONF_TEMPLATE = """<toolbox></toolbox>"""
 
 DEFAULT_GALAXY_BRANCH = "master"
@@ -277,7 +233,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         def config_join(*args):
             return os.path.join(config_directory, *args)
 
-        _handle_dependency_resolution(ctx, config_directory, kwds)
+        ensure_dependency_resolvers_conf_configured(ctx, kwds, os.path.join(config_directory, "resolvers_conf.xml"))
         _handle_job_metrics(config_directory, kwds)
 
         shed_tool_conf = "config/shed_tool_conf.xml"
@@ -404,7 +360,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         # somewhere better than with Galaxy.
         log_file = "%s.log" % server_name
         pid_file = "%s.pid" % server_name
-        _handle_dependency_resolution(ctx, config_directory, kwds)
+        ensure_dependency_resolvers_conf_configured(ctx, kwds, os.path.join(config_directory, "resolvers_conf.xml"))
         _handle_job_config_file(config_directory, server_name, kwds)
         _handle_job_metrics(config_directory, kwds)
         file_path = kwds.get("file_path") or config_join("files")
@@ -1355,67 +1311,6 @@ def _handle_job_config_file(config_directory, server_name, kwds):
     kwds["job_config_file"] = job_config_file
 
 
-def _handle_dependency_resolution(ctx, config_directory, kwds):
-    _validate_dependency_resolution_options(kwds)
-    always_specify_attribute = object()
-
-    dependency_attribute_kwds = {
-        'conda_prefix': None,
-        'conda_exec': None,
-        'conda_debug': False,
-        'conda_copy_dependencies': False,
-        'conda_auto_init': always_specify_attribute,
-        'conda_auto_install': always_specify_attribute,
-        'conda_ensure_channels': '',
-    }
-    attributes = []
-
-    def add_attribute(key, value):
-        attributes.append('%s="%s"' % (key, value))
-
-    conda_prefix_specified = False
-    for key, default_value in iteritems(dependency_attribute_kwds):
-        value = kwds.get(key, default_value)
-        if value != default_value:
-            conda_prefix_specified = conda_prefix_specified or (key == "conda_prefix")
-            # Strip leading prefix (conda_) off attributes
-            attribute_key = "_".join(key.split("_")[1:])
-            add_attribute(attribute_key, value)
-
-    conda_context = build_conda_context(ctx, **kwds)
-    if not conda_prefix_specified:
-        add_attribute("prefix", conda_context.conda_prefix)
-    add_attribute("condarc_override", conda_context.condarc_override)
-
-    attribute_str = " ".join(attributes)
-
-    if kwds.get("dependency_resolvers_config_file", None):
-        resolution_type = "__explicit__"
-    else:
-        resolution_type = "default_dependency_resolution"
-        for key in STOCK_DEPENDENCY_RESOLUTION_STRATEGIES:
-            if kwds.get(key):
-                resolution_type = key
-
-    if resolution_type != "__explicit__":
-        # Planemo manages the dependency resolve conf file.
-        resolvers_conf = os.path.join(
-            config_directory,
-            "resolvers_conf.xml"
-        )
-        template_str = STOCK_DEPENDENCY_RESOLUTION_STRATEGIES[resolution_type]
-        conf_contents = Template(template_str).safe_substitute({
-            'attributes': attribute_str
-        })
-        open(resolvers_conf, "w").write(conf_contents)
-        ctx.vlog(
-            "Writing dependency_resolvers_config_file to path %s with contents [%s]",
-            resolvers_conf,
-            conf_contents,
-        )
-        kwds["dependency_resolvers_config_file"] = resolvers_conf
-
-
 def _write_tool_conf(ctx, tool_paths, tool_conf_path):
     tool_definition = _tool_conf_entry_for(tool_paths)
     tool_conf_template_kwds = dict(tool_definition=tool_definition)
@@ -1426,24 +1321,6 @@ def _write_tool_conf(ctx, tool_paths, tool_conf_path):
         tool_conf_path,
         tool_conf_contents,
     )
-
-
-def _validate_dependency_resolution_options(kwds):
-    resolutions_strategies = [
-        "brew_dependency_resolution",
-        "dependency_resolvers_config_file",
-        "shed_dependency_resolution",
-        "conda_dependency_resolution",
-    ]
-
-    selected_strategies = 0
-    for key in resolutions_strategies:
-        if kwds.get(key):
-            selected_strategies += 1
-
-    if selected_strategies > 1:
-        message = "At most one option from [%s] may be specified"
-        raise click.UsageError(message % resolutions_strategies)
 
 
 def _handle_container_resolution(ctx, kwds, galaxy_properties):

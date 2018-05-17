@@ -2,7 +2,7 @@
 class: ExpressionTool
 requirements:
   - class: InlineJavascriptRequirement
-cwlVersion: cwl:draft-3
+cwlVersion: 'v1.0'
 inputs: []
 outputs:
   - { id: output, type: int }

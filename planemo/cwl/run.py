@@ -12,6 +12,7 @@ from galaxy.tools.cwl.cwltool_deps import (
     main,
 )
 
+from planemo.deps import ensure_dependency_resolvers_conf_configured
 from planemo.io import error, real_io
 from planemo.runnable import (
     ErrorRunResponse,
@@ -55,6 +56,11 @@ def run_cwltool(ctx, path, job_path, **kwds):
         args.append(output_directory)
     if kwds.get("no_container", False):
         args.append("--no-container")
+        ensure_dependency_resolvers_conf_configured(ctx, kwds)
+        args.append("--beta-dependency-resolvers-configuration")
+        args.append(kwds["dependency_resolvers_config_file"])
+    if kwds.get("mulled_containers"):
+        args.append("--beta-use-biocontainers")
 
     if kwds.get("non_strict_cwl", False):
         args.append("--non-strict")

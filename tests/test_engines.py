@@ -5,10 +5,10 @@ import os
 from planemo.engine import engine_context
 from planemo.runnable import for_path
 from planemo.runnable import get_outputs
-from .test_utils import CWL_DRAFT3_DIR, test_context, TEST_DATA_DIR
+from .test_utils import test_context, TEST_DATA_DIR
 
-A_CWL_TOOL = os.path.join(CWL_DRAFT3_DIR, "cat3-tool.cwl")
-A_CWL_WORKFLOW = os.path.join(CWL_DRAFT3_DIR, "count-lines1-wf.cwl")
+A_CWL_TOOL = os.path.join(TEST_DATA_DIR, "tools", "ok-cat1-tool.cwl")
+A_CWL_WORKFLOW = os.path.join(TEST_DATA_DIR, "count-lines2-wf.cwl")
 
 A_GALAXY_TOOL = os.path.join(TEST_DATA_DIR, "tools", "ok_select_param.xml")
 A_GALAXY_GA_WORKFLOW = os.path.join(TEST_DATA_DIR, "test_workflow_1.ga")
@@ -41,7 +41,7 @@ def test_can_handle():
 
 
 def test_outputs():
-    outputs = get_outputs(for_path(A_CWL_TOOL))
+    outputs = get_outputs(for_path(A_CWL_WORKFLOW))
     assert len(outputs) == 1
     output_id = outputs[0].get_id()
-    assert output_id == "output_file"
+    assert output_id == "count_output"

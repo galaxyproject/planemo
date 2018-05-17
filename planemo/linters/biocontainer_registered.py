@@ -13,6 +13,8 @@ MESSAGE_WARN_NO_REQUIREMENTS = "No valid package requirement tags found to infer
 MESSAGE_WARN_NO_CONTAINER = "Failed to find a BioContainer registered for these requirements."
 MESSAGE_INFO_FOUND_BIOCONTAINER = "BioContainer best-practice container found [%s]."
 
+lint_tool_types = ["*"]
+
 
 def lint_biocontainer_registered(tool_source, lint_ctx):
     conda_targets = tool_source_conda_targets(tool_source)
