@@ -1,5 +1,5 @@
 language: python
-sudo: false
+sudo: true
 python: 2.7
 env:
   global:
@@ -18,6 +18,8 @@ env:
     - TOX_ENV=py34-gx-1801
     - TOX_ENV=py34-gx-dev
     - TOX_ENV=py34-gx-1709
+    - TOX_ENV=py27-gxwf-test-test PLANEMO_TEST_STYLE=docker_test
+    - TOX_ENV=py27-gxwf-test-test PLANEMO_TEST_STYLE=serve_and_test
     - TOX_ENV=py27-lint-docstrings
 
 install:
@@ -26,6 +28,7 @@ install:
 matrix:
   allow_failures:
     - env: TOX_ENV=py27-lint-docstrings
+    - env: TOX_ENV=py27-gxwf-test-test PLANEMO_TEST_STYLE=docker_test
 
 script: tox -e $TOX_ENV
 
@@ -34,3 +37,4 @@ after_success:
 
 services:
   - postgresql
+  - docker
