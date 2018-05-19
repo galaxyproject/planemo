@@ -18,6 +18,7 @@ Contents:
    writing
    writing_cwl
    publishing
+   test_format
    commands
    standards/docs/best_practices
    galaxy_changelog
