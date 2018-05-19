@@ -33,7 +33,7 @@ def skip_venv_option():
 def run_engine_option():
     return planemo_option(
         "--engine",
-        type=click.Choice(["galaxy", "docker_galaxy", "cwltool", "external_galaxy"]),
+        type=click.Choice(["galaxy", "docker_galaxy", "cwltool", "toil", "external_galaxy"]),
         default="galaxy",
         use_global_config=True,
         help=("Select an engine to run or test aritfacts such as tools "

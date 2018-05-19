@@ -8,6 +8,7 @@ from .galaxy import (
     ExternalGalaxyEngine,
     LocalManagedGalaxyEngine,
 )
+from .toil import ToilEngine
 
 
 UNKNOWN_ENGINE_TYPE_MESSAGE = "Unknown engine type specified [%s]."
@@ -30,6 +31,8 @@ def build_engine(ctx, **kwds):
         engine_type = ExternalGalaxyEngine
     elif engine_type_str == "cwltool":
         engine_type = CwlToolEngine
+    elif engine_type_str == "toil":
+        engine_type = ToilEngine
     else:
         raise Exception(UNKNOWN_ENGINE_TYPE_MESSAGE % engine_type_str)
 

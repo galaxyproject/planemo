@@ -264,6 +264,9 @@ class TestCase(AbstractTestCase):
             if not isinstance(output_value, dict):
                 output_problems.append("Expected file properties for output [%s]" % output_id)
                 return
+            if "path" not in output_value and "location" in output_value:
+                assert output_value["location"].startswith("file://")
+                output_value["path"] = output_value["location"][len("file://"):]
             if "path" not in output_value:
                 output_problems.append("No path specified for expected output file [%s]" % output_id)
                 return
