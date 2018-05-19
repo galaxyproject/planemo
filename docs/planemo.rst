@@ -87,6 +87,14 @@ planemo.config module
     :undoc-members:
     :show-inheritance:
 
+planemo.deps module
+-------------------
+
+.. automodule:: planemo.deps
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.docker module
 ---------------------
 

@@ -175,7 +175,7 @@ please careful and do not try this against production Galaxy instances.
                                       Summary style printed to planemo's standard
                                       output (see output reports for more complete
                                       summary). Set to 'none' to disable completely.
-      --engine [galaxy|docker_galaxy|cwltool|external_galaxy]
+      --engine [galaxy|docker_galaxy|cwltool|toil|external_galaxy]
                                       Select an engine to run or test aritfacts such
                                       as tools and workflows. Defaults to a local
                                       Galaxy, but running Galaxy within a Docker

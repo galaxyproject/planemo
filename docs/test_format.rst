@@ -247,10 +247,32 @@ WIP - stay tuned - but this will allow testing workflows against running Galaxy 
 Galaxy Testing Template
 -------------------------
 
-WIP - https://github.com/jmchilton/planemo-workflow-test-template.
+The following a script that can be used with `continuous integration`_ (CI) services such
+Travis_ to test Galaxy workflows in a Github repository. This shell script can be configured via
+various environment variables and shows off some of the modalities Planemo ``test`` should work in
+(there may be bugs but we are trying to stablize this functionality).
 
+.. literalinclude:: run_galaxy_workflow_tests.sh
+   :language: bash
+
+A Travis_ configuration file (.travis.yml) that would test workflows using a Docker Galaxy image might
+look like:
+
+.. literalinclude:: example_travis_gxwf_docker.yml
+   :language: bash
+
+To skip Docker and instead test with a native Galaxy instance and postgres database one might use the
+configuration:
+
+.. literalinclude:: example_travis_gxwf_native.yml
+   :language: bash
+
+.. _Travis: https://travis-ci.org/
+.. _test command: http://planemo.readthedocs.org/en/latest/commands.html#test-command
+.. _run command: http://planemo.readthedocs.org/en/latest/commands.html#run-command
 .. _SHA1: https://en.wikipedia.org/wiki/SHA-1
 .. _checksum: https://en.wikipedia.org/wiki/Checksum
+.. _continuous integration: https://en.wikipedia.org/wiki/Continuous_integration
 .. _Common Workflow Language: https://www.commonwl.org/
 .. _CWL: https://www.commonwl.org/
 .. _cwltool: https://github.com/common-workflow-language/cwltool

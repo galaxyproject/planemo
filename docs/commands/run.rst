@@ -144,7 +144,7 @@ Planemo command for running tools and jobs.
                                       Where to store outputs of a 'run' task.
       --output_json PATH              Where to store JSON dictionary describing
                                       outputs of a 'run' task.
-      --engine [galaxy|docker_galaxy|cwltool|external_galaxy]
+      --engine [galaxy|docker_galaxy|cwltool|toil|external_galaxy]
                                       Select an engine to run or test aritfacts such
                                       as tools and workflows. Defaults to a local
                                       Galaxy, but running Galaxy within a Docker

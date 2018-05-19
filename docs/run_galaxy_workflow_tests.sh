@@ -1,0 +1,1 @@
+../scripts/run_galaxy_workflow_tests.sh
