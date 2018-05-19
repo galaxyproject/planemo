@@ -2,7 +2,7 @@
 Test Format
 ====================
 
-Planemo has traditionally been used to test Galaxy tools.
+Planemo has traditionally been used to test Galaxy_ tools.
 
 ::
 
@@ -11,15 +11,21 @@ Planemo has traditionally been used to test Galaxy tools.
 This starts a Galaxy instance, runs the tests described in the XML file, prints a nice summary of the
 test results (pass or fail for each test) in the console and creates an HTML report in the current
 directory. Additional bells and whistles include the ability to generate XUnit reports, publish
-test results and get embedded Markdown to link to them for PRs, and test remote tests in Git repositories.
+test results and get embedded Markdown to link to them for PRs, and test remote artifacts in Git repositories.
 
-Much of this same functionality is also now available for Galaxy Workflows, CWL tools, and CWL workflows.
-Unlike the traditional Galaxy tool approach, these artifacts should define tests in files located next
-artifact. For instance, if ``planemo test`` is called on a Galaxy workflow called ``ref-rnaseq.ga`` tests
-should be defined in ``ref-rnaseq-tests.yml`` or ``ref-rnaseq-tests.yaml``. If instead it is called on a CWL
-tool called ``seqtk_seq.cwl``, tests should be defined in ``seqtk_seq_tests.yml`` for instance.
+Much of this same functionality is now also available for Galaxy_ Workflows as well as `Common Workflow Language`_
+(CWL) tools and workflows. The rest of this page describes this testing format and testing options for these
+artifacts - for information about testing Galaxy tools specifically using the embedded tool XML tests see
+`Test-Driven Development <http://planemo.readthedocs.io/en/latest/writing_advanced.html#test-driven-development>`__
+of Galaxy tools tutorial.
 
-Below are two examples of such YAML files - the first for a CWL tool and the second for Galaxy workflow.
+Unlike the traditional Galaxy tool approach, these newer types of artifacts should define tests in files
+located next artifact. For instance, if ``planemo test`` is called on a Galaxy workflow called ``ref-rnaseq.ga``
+tests should be defined in ``ref-rnaseq-tests.yml`` or ``ref-rnaseq-tests.yaml``. If instead it is called on a
+CWL_ tool called ``seqtk_seq.cwl``, tests can be defined in ``seqtk_seq_tests.yml`` for instance.
+
+Below are two examples of such YAML files - the first for a CWL_ tool and the second for Galaxy_ workflow. Note the
+same testing file format is used for both kinds of artifacts.
 
 .. code-block:: yaml
 
@@ -75,10 +81,9 @@ about outputs to test.
 --------
 
 The ``job`` object can be a mapping embedded right in the file or a reference to a "job" input file.
-The job input file is a proper CWL job document - which is fairly straight forward as demonstrated in
-the above examples. Planemo adapts the CWL job document to Galaxy workflows and tools - using input
-names for Galaxy tools and input node labels for workflows.
-
+The job input file is a proper CWL_ job document - which is fairly straight forward as demonstrated in
+the above examples. Planemo adapts the CWL_ job document to Galaxy_ workflows and tools - using input
+names for Galaxy_ tools and input node labels for workflows.
 
 .. note::
 
@@ -97,15 +102,15 @@ names for Galaxy tools and input node labels for workflows.
 ``outputs``
 --------------
 
-Galaxy tools and CWL artifacts have obvious output names that much match the mapping in this block on test 
+Galaxy_ tools and CWL_ artifacts have obvious output names that much match the mapping in this block on test 
 file. Galaxy workflows require explicit output labels to be used with tests, but the important outputs in 
-your workflows should be labeled anyway to work with subworkflows and more cleanly with the API.
+your workflows should be labeled anyway to work with Galaxy subworkflows and more cleanly with API calls.
 
 If an output is known, fixed, and small it makes a lot of sense to just include a copy of the output next
 to your test and set ``file: relative/path/to/output`` in your output definition block as show in the first
 example above. For completely reproducible processes this is a great guarentee that results are fixed over
-time, across CWL engines and engine versions. If the results are fixed but large - it can make sense to just
-describe the outputs by a SHA1 sum.
+time, across CWL_ engines and engine versions. If the results are fixed but large - it may make sense to just
+describe the outputs by a SHA1_ checksum_.
 
 .. code-block:: yaml
 
@@ -115,33 +120,41 @@ describe the outputs by a SHA1 sum.
         wf_output_1:
           checksum: "sha1$a0b65939670bc2c010f4d5d6a0b3e4e4590fb92b"
 
-One advantage of included an exact file instead of a checksum is that Planemo can produce very nice
-diffs if outputs change by comparing an expected output to an actual output.
+One advantage of included an exact file instead of a checksum is that Planemo can produce very nice line
+by line diffs for incorrect test results by comparing an expected output to an actual output.
 
 There are reasons one may not be able to write such exact test assertions about outputs however, perhaps
 date or time information is incorporated into the result, unseeded random numbers are used, small numeric
 differences occur across runtimes of interest, etc.. For these cases, a variety of other assertions can
 be executed against the execution results to verify outputs. The types and implementation of these test
-assertions match those available to Galaxy tool outputs in XML but have equivalent YAML formulation.
+assertions match those available to Galaxy_ tool outputs in XML but have equivalent YAML formulations that
+should be used in test descriptions.
 
 Even if one can write exact tests, a really useful technique is to write sanity checks on outputs as one
 builds up workflows that may be changing rapidly and developing complex tools or worklflows via a
 `Test-Driven Development cycle
 <https://en.wikipedia.org/wiki/Test-driven_development#Test-driven_development_cycle>`__
 using Planemo. *Tests shouldn't just be an extra step you have to do after development is done, they should
-guide development.*
+guide development as well.*
 
 The workflow example all the way above demonstrates some assertions one can make about the contents of
 files. The full list of assertions available is only documented for the Galaxy XML format but it straight
 forwad to adapt to the YAML format above - check out the `Galaxy XSD <https://docs.galaxyproject.org/en/latest/dev/schema.html#tool-tests-test-output-assert-contents>`__ for more information.
 
-Some more example assertions from the Planemo test suite that describe file comparisons include:
+Some examples of inexact file comparisons derived from an artificial test case in the Planemo test suite is shown below,
+these are more options available for checking outputs that may change in small ways over time.
 
 .. literalinclude:: example_assertions.yml
    :language: yaml
 
 Engines for Testing
 ---------------------
+
+Below are descriptions of various testing engines that can be used with Planemo (both with the
+`test command`_ and the `run command`_) as well as some command-line options of particular interest for testing.
+The first two types ``cwltool`` and ``toil`` can be used to test CWL artifacts (tools and workflows).
+The remaining engine types are varations on engines that target Galaxy and are useful for testing
+workflows (and tools with newer style tests or job documents).
 
 ``cwltool``
 ~~~~~~~~~~~~~~~~~
@@ -150,11 +163,22 @@ Engines for Testing
 
     $ planemo test --engine cwltool [--no-container] [--biocontainers]
 
-This is the most straight forward engine, it can be used to test CWL tools and workflows using
-the CWL reference implementation bundled as a requirement of Planemo. Use the ``--no-container``
+This is the most straight forward engine, it can be used to test CWL_ tools and workflows using
+the CWL reference implementation cwltool_ (bundled as a dependency of Planemo). Use the ``--no-container``
 option to disable Docker and use Conda resolution of ``SoftwareRequirement``s or applications
 on the ``PATH``. Use the ``--biocontainers`` flag to use BioContainers_ for tools without
 explicit ``DockerRequirement`` hints.
+
+``toil``
+~~~~~~~~~~~~~~~~~
+
+::
+
+    $ planemo test --engine toil [--no-container] [--biocontainers]
+
+This engine largely mirrors the ``cwltool`` engine but runs CWL artifacts using Toil_. Toil_ is
+an optional dependency of Planemo so you will likely have to install it in Planemo's environment
+using ``pip install toil``.
 
 ``galaxy``
 ~~~~~~~~~~~~~~~~~
@@ -167,14 +191,14 @@ This is the default engine type, but can be made explicit ``--engine galaxy``. W
 Planemo will start a Galaxy instance and test against it.
 
 Planemo will automatically detect and load "stock" Galaxy tools used by workflows and install any
-Tool Shed tools contained in the workflow, if other non-Tool Shed tools are required - they can be
-loaded using ``-extra_tools``.
+Tool Shed tools contained in the workflow, if other non-Tool Shed tools are required for a workflow they can be
+loaded using ``--extra_tools``.
 
 Set ``--galaxy_root`` to target an externally cloned Galaxy directory or use ``--galaxy_branch`` to
 target a particular branch of Galaxy other than the latest stable.
 
-Use the ``--biocontainers`` flag to use BioContainers_ for tools or ``--docker`` to use Docker with tools
-configured with ``container`` tags.
+Use the ``--biocontainers`` flag to enable Docker and use BioContainers_ for tools or use ``--docker`` to use
+Docker but limited to tools configured with ``container`` tags.
 
 By default Galaxy when configured by Planemo will attempt to run with an sqlite database. This configuration
 is quite buggy and should not be used to test workflows. The ``--profile`` option can be used to target
@@ -192,6 +216,9 @@ to interact with Postgres using ``psql`` (assumed to be on the ``PATH``). For a 
 connection options check out the documentation for the ``database_create`` `command
 <http://planemo.readthedocs.io/en/latest/commands.html#database-create-command>`__ that has similar options.
 
+Profiles may also really help testing local setups by saving previously installed shed repository installations
+and Conda environments.
+
 ``docker_galaxy``
 ~~~~~~~~~~~~~~~~~
 
@@ -201,12 +228,12 @@ connection options check out the documentation for the ``database_create`` `comm
 
 With this engine Planemo will start a Docker container to run tests against it. See the `docker-galaxy-stable
 <https://github.com/bgruening/docker-galaxy-stable/>`__ project spearheaded by Björn Grüning for more
-information on Dockerized Galaxy. The exact container image to use can be controlled using the
+information on Docker-ized Galaxy execution. The exact container image to use can be controlled using the
 ``--docker_galaxy_image`` option.
 
 Planemo will automatically detect and load "stock" Galaxy tools used by workflows and install any
 Tool Shed tools contained in the workflow, if other non-Tool Shed tools are required - they can be
-loaded using ``-extra_tools``.
+loaded using ``--extra_tools``.
 
 At the time of this writing, there is a bug in Planemo that requires using the ``--docker_extra_volume``
 option to mount test data into the testing container.
@@ -216,4 +243,17 @@ option to mount test data into the testing container.
 
 WIP - stay tuned - but this will allow testing workflows against running Galaxy instances.
 
+
+Galaxy Testing Template
+-------------------------
+
+WIP - https://github.com/jmchilton/planemo-workflow-test-template.
+
+.. _SHA1: https://en.wikipedia.org/wiki/SHA-1
+.. _checksum: https://en.wikipedia.org/wiki/Checksum
+.. _Common Workflow Language: https://www.commonwl.org/
+.. _CWL: https://www.commonwl.org/
+.. _cwltool: https://github.com/common-workflow-language/cwltool
+.. _Galaxy: http://galaxyproject.org/
+.. _Toil: https://github.com/BD2KGenomics/toil
 .. _BioContainers: http://biocontainers.pro/
