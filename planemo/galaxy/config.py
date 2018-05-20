@@ -530,7 +530,6 @@ def _shared_galaxy_properties(config_directory, kwds, for_tests):
     user_email = _user_email(kwds)
     properties = {
         'master_api_key': master_api_key,
-        'single_user': user_email,
         'admin_users': "%s,test@bx.psu.edu" % user_email,
         'expose_dataset_path': "True",
         'cleanup_job': 'never',
@@ -541,6 +540,9 @@ def _shared_galaxy_properties(config_directory, kwds, for_tests):
         'brand': kwds.get("galaxy_brand", DEFAULT_GALAXY_BRAND),
         'strict_cwl_validation': str(not kwds.get("non_strict_cwl", False)),
     }
+    if kwds.get("galaxy_single_user", True):
+        properties['single_user'] = user_email
+
     if for_tests:
         empty_dir = os.path.join(config_directory, "empty")
         _ensure_directory(empty_dir)

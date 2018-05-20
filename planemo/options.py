@@ -607,6 +607,18 @@ def paste_test_data_paths_option():
     )
 
 
+def single_user_mode_option():
+    return planemo_option(
+        "galaxy_single_user",
+        "--galaxy_single_user/--no_galaxy_single_user",
+        is_flag=True,
+        default=True,
+        help=("By default Planemo will configure Galaxy to run in single-user mode where there "
+              "is just one user and this user is automatically logged it. Use --no_galaxy_single_user "
+              "to prevent Galaxy from running this way.")
+    )
+
+
 def required_workflow_arg():
     arg_type = click.Path(
         exists=True,
@@ -1029,6 +1041,7 @@ def galaxy_config_options():
         database_connection_option(),
         shed_tools_conf_option(),
         shed_tools_directory_option(),
+        single_user_mode_option(),
     )
 
 
