@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.52.0.dev0
+0.52.0 (2018-05-20)
 ---------------------
 
 * Allow optional disabling of Galaxy single user mode. `Pull Request 835`_
