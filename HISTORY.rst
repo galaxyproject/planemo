@@ -9,7 +9,8 @@ History
 0.52.0.dev0
 ---------------------
 
-    
+* Allow optional disabling of Galaxy single user mode. `Pull Request 835`_
+* Fix for path pasting options during workflow testing. `Pull Request 834`_
 
 ---------------------
 0.51.0 (2018-05-19)
@@ -1317,6 +1318,8 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 834: https://github.com/galaxyproject/planemo/pull/834
+.. _Pull Request 835: https://github.com/galaxyproject/planemo/pull/835
 .. _347c622: https://github.com/galaxyproject/planemo/commit/347c622
 .. _Pull Request 832: https://github.com/galaxyproject/planemo/pull/832
 .. _Pull Request 831: https://github.com/galaxyproject/planemo/pull/831
