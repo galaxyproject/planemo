@@ -253,19 +253,19 @@ various environment variables and shows off some of the modalities Planemo ``tes
 (there may be bugs but we are trying to stablize this functionality).
 
 .. literalinclude:: run_galaxy_workflow_tests.sh
-   :language: bash
+   :language: sh
 
 A Travis_ configuration file (.travis.yml) that would test workflows using a Docker Galaxy image might
 look like:
 
 .. literalinclude:: example_travis_gxwf_docker.yml
-   :language: bash
+   :language: yaml
 
 To skip Docker and instead test with a native Galaxy instance and postgres database one might use the
 configuration:
 
 .. literalinclude:: example_travis_gxwf_native.yml
-   :language: bash
+   :language: yaml
 
 .. _Travis: https://travis-ci.org/
 .. _test command: http://planemo.readthedocs.org/en/latest/commands.html#test-command
