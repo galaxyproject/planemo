@@ -756,6 +756,8 @@ class BaseGalaxyConfig(GalaxyInterface):
         option = self._kwds.get("paste_test_data_paths")
         if option is None:
             return self.default_use_path_paste
+        else:
+            return option
 
     @property
     def default_use_path_paste(self):
