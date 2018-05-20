@@ -45,8 +45,8 @@ install with ``pip``. Planemo requires pip 7.0 or newer.
     $ pip install planemo
 
 For information on updating Planemo, installing the latest development release,
-or installing Planemo via Bioconda_ - checkout the `installation
-<http://planemo.readthedocs.io/en/latest/installation.html>`__ 
+or installing Planemo via `Bioconda <https://github.com/bioconda/bioconda-recipes>`__
+- checkout the `installation <http://planemo.readthedocs.io/en/latest/installation.html>`__
 documentation.
 
 Planemo is also available as a `virtual appliance
@@ -210,4 +210,4 @@ scientific workflows. Check out the `Galaxy <http://planemo.readthedocs.io/en/la
 .. _Commmon Workflow User Guide: http://www.commonwl.org/user_guide/
 .. _Building Common Workflow Language Tools: http://planemo.readthedocs.io/en/latest/writing_cwl_standalone.html
 .. _OVA: https://en.wikipedia.org/wiki/Open_Virtualization_Format
-.. _Bioconda: https://github.com/bioconda/bioconda-recipes
+
