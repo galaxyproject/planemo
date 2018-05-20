@@ -180,7 +180,7 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
 
         def _attach_file(upload_payload, uri, index=0):
             is_path = not uri.startswith("http://") and not uri.startswith("https://") and not uri.startswith("ftp://")
-            if not config.use_path_paste and is_path:
+            if config.use_path_paste and is_path:
                 upload_payload["inputs"]["files_%d|url_paste" % index] = "file://%s" % os.path.abspath(uri)
             else:
                 files_attached[0] = True
