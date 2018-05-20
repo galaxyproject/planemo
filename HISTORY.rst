@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.51.0.dev0
+0.51.0 (2018-05-19)
 ---------------------
 
 * Fix essentially all Conda_ and BioContainers_ related functionality to allow parity between
