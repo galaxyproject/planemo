@@ -92,10 +92,10 @@ elif [ "$PLANEMO_TEST_STYLE" = "manual_docker_run_and_test" ]; then
     docker run -e "NONUSE=nodejs,proftp,reports" -p "${PLANEMO_SERVE_PORT}:80" "${PLANEMO_DOCKER_GALAXY_IMAGE}"
     galaxy-wait "http://localhost:${PLANEMO_SERVE_PORT}"
     planemo $PLANEMO_OPTIONS test \
+        --engine external_galaxy \
         --galaxy_url "$GALAXY_URL" \
         --galaxy_admin_key admin \
         --galaxy_user_key admin \
-        --engine external_galaxy \
         "$1"
 else
     echo "Unknown test style ${PLANEMO_TEST_STYLE}"

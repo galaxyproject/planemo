@@ -241,8 +241,15 @@ option to mount test data into the testing container.
 ``external_galaxy``
 ~~~~~~~~~~~~~~~~~~~~
 
-WIP - stay tuned - but this will allow testing workflows against running Galaxy instances.
+    $ planemo test --engine external_galaxy --galaxy_admin_key <admin_key> --galaxy_user_key <user_key> --galaxy_user <url>
 
+This is primarily useful for testing workflows against already running Galaxy instances. An admin or
+master API key should be supplied to install missing tool repositories for the workflow and a user API
+key should be supplied to run the workflow using.
+
+To run tool tests against a running Galaxy, ``galaxy-tool-test`` is a script that gets installed with 
+galaxy-lib and so may very well already be on your ``PATH``. Check out the options available with that
+using ``galaxy-tool-test --help``.
 
 Galaxy Testing Template
 -------------------------
