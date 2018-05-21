@@ -11,8 +11,8 @@ from planemo.tool_builder import (
     _handle_tests,
     _render,
     _replace_file_in_command,
+    append_macro_file,
     Input,
-    MACROS_TEMPLATE,
     TestCase,
     ToolDescription,
     UrlCitation,
@@ -113,13 +113,13 @@ def build(**kwds):
 
     # Render tool content from template.
     contents = _render(kwds)
-    macro_contents = None
-    if kwds["macros"]:
-        macro_contents = _render(kwds, MACROS_TEMPLATE)
+
+    tool_files = []
+    append_macro_file(tool_files, kwds)
 
     return ToolDescription(
         contents,
-        macro_contents,
+        tool_files=tool_files,
         test_files=test_files
     )
 

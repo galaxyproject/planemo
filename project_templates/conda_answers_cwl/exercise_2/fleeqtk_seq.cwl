@@ -74,10 +74,6 @@ s:mainEntity:
 
 s:downloadUrl: https://github.com/galaxyproject/planemo/blob/master/project_templates/conda_exercises_cwl/fleeqtk_seq.cwl
 s:codeRepository: https://github.com/galaxyproject/planemo
-s:isPartOf:
-  class: s:CreativeWork
-  s:name: Common Workflow Language
-  s:url: http://commonwl.org/
 
 s:author:
   class: s:Person

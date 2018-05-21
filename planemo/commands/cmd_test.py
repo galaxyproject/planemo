@@ -11,7 +11,6 @@ from planemo.galaxy.test import (
     handle_reports_and_summary,
     run_in_config,
 )
-from planemo.io import info
 from planemo.runnable import (
     for_paths,
     RunnableType,
@@ -63,14 +62,20 @@ def cli(ctx, paths, **kwds):
     please careful and do not try this against production Galaxy instances.
     """
     runnables = for_paths(paths)
-    enable_beta_test = any([r.type not in [RunnableType.galaxy_tool, RunnableType.directory] for r in runnables])
-    enable_beta_test = enable_beta_test or kwds.get("engine", "galaxy") != "galaxy"
-    if enable_beta_test:
-        info("Enable beta testing mode for testing.")
+    is_cwl = all([r.type in [RunnableType.cwl_tool, RunnableType.cwl_workflow] for r in runnables])
+    if kwds.get("engine", None) is None:
+        kwds["engine"] = "galaxy" if not is_cwl else "cwltool"
+
+    engine_type = kwds["engine"]
+    enable_test_engines = any([r.type not in [RunnableType.galaxy_tool, RunnableType.directory] for r in runnables])
+    enable_test_engines = enable_test_engines or engine_type != "galaxy"
+    if enable_test_engines:
+        ctx.vlog("Using test engine type %s" % engine_type)
         with engine_context(ctx, **kwds) as engine:
             test_data = engine.test(runnables)
             return_value = handle_reports_and_summary(ctx, test_data.structured_data, kwds=kwds)
     else:
+        ctx.vlog("Running traditional Galaxy tool tests using run_tests.sh in Galaxy root %s" % engine_type)
         kwds["for_tests"] = True
         with galaxy_config(ctx, runnables, **kwds) as config:
             return_value = run_in_config(ctx, config, **kwds)

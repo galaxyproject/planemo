@@ -47,7 +47,7 @@ conda_env_deactivate
 
 sleep 5  # Need to wait for the package to get cleaned up.
 
-planemo test --engine cwltool --no-container seqtk_seq.cwl
+planemo test --no-container seqtk_seq.cwl
 
 cd
 
@@ -59,7 +59,7 @@ cd conda_exercises/exercise_1
 ls
 
 echo "Running test wrong - this should fail"
-planemo test --no-container --engine cwltool pear.cwl || true
+planemo test --no-container pear.cwl || true
 echo "Linting pear without requirements - this should fail"
 planemo lint --conda_requirements pear.cwl || true
 
@@ -69,7 +69,7 @@ planemo conda_search pear
 wget https://raw.githubusercontent.com/galaxyproject/planemo/master/project_templates_cwl/conda_answers/exercise_1/pear.xml -O pear.xml
 planemo lint --conda_requirements pear.cwl || true
 
-planemo test --no-container --engine cwltool pear.cwl
+planemo test --no-container pear.cwl
 
 cd ../exercise_2
 
@@ -88,4 +88,4 @@ conda build fleeqtk
 
 wget https://raw.githubusercontent.com/galaxyproject/planemo/master/project_templates/conda_answers_cwl/exercise_2/fleeqtk_seq.cwl -O fleeqtk_seq.cwl
 planemo conda_install --conda_use_local fleeqtk_seq.cwl
-planemo test  --no-container --engine cwltool fleeqtk_seq.cwl
+planemo test --no-container fleeqtk_seq.cwl

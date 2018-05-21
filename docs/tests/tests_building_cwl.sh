@@ -5,7 +5,7 @@ set -o xtrace
 set -e
 
 # Preconditions:
-# - planemo installed
+# - planemo installed + toil
 # - tool_init_exercise directory doesn't exist and in home directory.
 # - conda on PATH
 
@@ -45,8 +45,13 @@ planemo tool_init --force \
                         --example_input 2.fastq \
                         --example_output 2.fasta \
                         --requirement seqtk@1.2 \
-                        --container 'quay.io/biocontainers/seqtk:1.2--0' \
+                        --container 'quay.io/biocontainers/seqtk:1.2--1' \
                         --test_case \
                         --help_from_command 'seqtk seq'
 
-planemo test --no-container --engine cwltool seqtk_seq.cwl
+cwltool seqtk_seq.cwl seqtk_seq_job.yml
+cwltoil seqtk_seq.cwl seqtk_seq_job.yml
+
+planemo test --no-container seqtk_seq.cwl
+planemo test seqtk_seq.cwl
+planemo test --no-container --engine toil seqtk_seq.cwl

@@ -30,7 +30,11 @@ def cli(ctx, uri, job_path, **kwds):
         % planemo run cat1-tool.cwl cat-job.json
     """
     path = uri_to_path(ctx, uri)
-    kwds["cwl"] = path.endswith(".cwl")
+    # TODO: convert UI to runnable and do a better test of cwl.
+    is_cwl = path.endswith(".cwl")
+    kwds["cwl"] = is_cwl
+    if kwds.get("engine", None) is None:
+        kwds["engine"] = "galaxy" if not is_cwl else "cwltool"
 
     with engine_context(ctx, **kwds) as engine:
         run_result = engine.run(path, job_path)
