@@ -4,7 +4,7 @@ env:
   global:
     - PLANEMO_TEST_SCRIPT=https://raw.githubusercontent.com/galaxyproject/planemo/master/scripts/run_galaxy_workflow_tests.sh
     - PLANEMO_TEST_STYLE=serve_and_test
-    - PLANEMO_TARGET="planemo==0.50.1"
+    - PLANEMO_TARGET="planemo==0.52.0"
     - PLANEMO_GALAXY_BRANCH="release_18.05"
    matrix:
     - WORKFLOW_TEST=example1/ref-rnaseq.ga
