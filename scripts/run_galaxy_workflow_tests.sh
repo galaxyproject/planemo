@@ -89,7 +89,7 @@ elif [ "$PLANEMO_TEST_STYLE" = "docker_test_path_paste" ]; then
         "$1" > /dev/null
 elif [ "$PLANEMO_TEST_STYLE" = "manual_docker_run_and_test" ]; then
     docker pull "${PLANEMO_DOCKER_GALAXY_IMAGE}"
-    docker run -e "NONUSE=nodejs,proftp,reports" -p "${PLANEMO_SERVE_PORT}:80" "${PLANEMO_DOCKER_GALAXY_IMAGE}"
+    docker run -d -e "NONUSE=nodejs,proftp,reports" -p "${PLANEMO_SERVE_PORT}:80" "${PLANEMO_DOCKER_GALAXY_IMAGE}"
     galaxy-wait "http://localhost:${PLANEMO_SERVE_PORT}"
     planemo $PLANEMO_OPTIONS test \
         --engine external_galaxy \
