@@ -64,7 +64,9 @@ elif [ "$PLANEMO_TEST_STYLE" = "docker_serve_and_test" ]; then
         --engine external_galaxy \
         "$1"
 elif [ "$PLANEMO_TEST_STYLE" = "test" ]; then
-    # TODO: This variant is broken in initial tests for some reason.
+    # TODO: this conda_init shouldn't be needed, but this mode is broken without it.
+    planemo conda_init || true
+
     planemo $PLANEMO_OPTIONS test \
         --database_type "$PLANEMO_SERVE_DATABASE_TYPE" \
         --galaxy_branch "$PLANEMO_GALAXY_BRANCH" \
