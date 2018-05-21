@@ -87,6 +87,16 @@ elif [ "$PLANEMO_TEST_STYLE" = "docker_test_path_paste" ]; then
         --paste_test_data_paths \
         --docker_galaxy_image "${PLANEMO_DOCKER_GALAXY_IMAGE}" \
         "$1" > /dev/null
+elif [ "$PLANEMO_TEST_STYLE" = "manual_docker_run_and_test" ]; then
+    docker pull "${PLANEMO_DOCKER_GALAXY_IMAGE}"
+    docker run -e "NONUSE=nodejs,proftp,reports" -p "${PLANEMO_SERVE_PORT}:80" "${PLANEMO_DOCKER_GALAXY_IMAGE}"
+    galaxy-wait "http://localhost:${PLANEMO_SERVE_PORT}"
+    planemo $PLANEMO_OPTIONS test \
+        --galaxy_url "$GALAXY_URL" \
+        --galaxy_admin_key admin \
+        --galaxy_user_key admin \
+        --engine external_galaxy \
+        "$1"
 else
     echo "Unknown test style ${PLANEMO_TEST_STYLE}"
     exit 1
