@@ -95,6 +95,19 @@ class CmdTestTestCase(CliTestCase):
             assert_exists(os.path.join(f, "tool_test_output.json"))
 
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
+    def test_cwltool_tool_url_inputs_test(self):
+        """Test testing a CWL tool with cwltool."""
+        with self._isolate() as f:
+            test_artifact = os.path.join(TEST_DATA_DIR, "cat_tool_url.cwl")
+            test_command = [
+                "test",
+                "--no-container",
+                test_artifact,
+            ]
+            self._check_exit_code(test_command, exit_code=0)
+            assert_exists(os.path.join(f, "tool_test_output.json"))
+
+    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     @skip_unless_module("toil")
     def test_toil_tool_test(self):
         """Test testing a CWL tool with cwltool."""
