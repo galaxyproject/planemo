@@ -33,9 +33,9 @@ same testing file format is used for both kinds of artifacts.
       job: pear_job.yml
       outputs:
         assembled_pairs:
-          file: test-data/pear_assembled_results1.fastq
+          path: test-data/pear_assembled_results1.fastq
         unassembled_forward_reads:
-          file: test-data/pear_unassembled_forward_results1.fastq
+          path: test-data/pear_unassembled_forward_results1.fastq
 
 
 .. code-block:: yaml
@@ -50,13 +50,13 @@ same testing file format is used for both kinds of artifacts.
           path: mutant_R2.fastq
         wildtype.fna:
           class: File
-          path: wildtype.fna
+          location: https://zenodo.org/record/582600/files/wildtype.fna
         wildtype.gbk:
           class: File
-          path: wildtype.gbk
+          location: https://zenodo.org/record/582600/files/wildtype.gbk
         wildtype.gff:
           class: File
-          path: wildtype.gff
+          location: https://zenodo.org/record/582600/files/wildtype.gff
       outputs:
         jbrowse_html:
           asserts:
@@ -84,6 +84,11 @@ The ``job`` object can be a mapping embedded right in the file or a reference to
 The job input file is a proper CWL_ job document - which is fairly straight forward as demonstrated in
 the above examples. Planemo adapts the CWL_ job document to Galaxy_ workflows and tools - using input
 names for Galaxy_ tools and input node labels for workflows.
+
+Input files can be specified using either ``path`` attributes (which should generally be file
+paths relative to the aritfact and test directory) or ``location`` (which should be a URI). The 
+examples above demonstrate using both paths relative to the tool file and test data published
+to `Zenodo <https://zenodo.org/>`__.
 
 .. note::
 
@@ -241,11 +246,13 @@ option to mount test data into the testing container.
 ``external_galaxy``
 ~~~~~~~~~~~~~~~~~~~~
 
-    $ planemo test --engine external_galaxy --galaxy_admin_key <admin_key> --galaxy_user_key <user_key> --galaxy_user <url>
+    $ planemo test --engine external_galaxy --galaxy_admin_key <admin_key> --galaxy_user_key <user_key> [--no_shed_install] <url>
 
 This is primarily useful for testing workflows against already running Galaxy instances. An admin or
 master API key should be supplied to install missing tool repositories for the workflow and a user API
-key should be supplied to run the workflow using.
+key should be supplied to run the workflow using. If you wish to skip tool shed repository installation
+(this requires the tool all be present already), use the ``-no_shed_install`` option with the ``test``
+command.
 
 To run tool tests against a running Galaxy, ``galaxy-tool-test`` is a script that gets installed with 
 galaxy-lib and so may very well already be on your ``PATH``. Check out the options available with that

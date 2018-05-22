@@ -741,7 +741,9 @@ class BaseGalaxyConfig(GalaxyInterface):
                 self._install_workflow(runnable)
 
     def _install_workflow(self, runnable):
-        install_shed_repos(runnable, self.gi, self._kwds.get("ignore_dependency_problems", False))
+        if self._kwds["shed_install"]:
+            install_shed_repos(runnable, self.gi, self._kwds.get("ignore_dependency_problems", False))
+
         # TODO: Allow serialization so this doesn't need to assume a
         # shared filesystem with Galaxy server.
         from_path = runnable.type.name == "cwl_workflow"
