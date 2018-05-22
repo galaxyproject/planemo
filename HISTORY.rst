@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.53.0.dev0
+0.53.0 (2018-05-22)
 ---------------------
 
 * Make Planemo testing easier for CWL tools and workflows in various ways and update
