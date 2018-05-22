@@ -6,6 +6,8 @@
     All 1 test(s) executed passed.
     seqtk_seq[0]: passed
 
+.. include:: _writing_test_reports.rst
+
 Now we can open Galaxy with the ``serve`` (or just ``s``).
 
 ::

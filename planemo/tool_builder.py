@@ -237,20 +237,7 @@ doc: |
 
 CWL_TEST_TEMPLATE = """
 - doc: test generated from example command
-{%- if inputs %}
-  job:
-{%- for input in inputs %}
-{%- if input.type == "File" %}
-    {{ input.id }}:
-      class: File
-      path: test-data/{{ input.example_value }}
-{%- else %}
-    {{ input.id }}: {{ input.example_value }}
-{%- endif %}
-{%- endfor %}
-{%- else %}
-  job: TODO
-{%- endif %}
+  job: {{ job_filename }}
 {%- if outputs %}
   outputs:
 {%- for output in outputs %}
@@ -259,6 +246,23 @@ CWL_TEST_TEMPLATE = """
 {%- endfor %}
 {%- else %}
   outputs: TODO
+{%- endif %}
+"""
+
+CWL_JOB_TEMPLATE = """
+{%- if inputs %}
+{%- for input in inputs %}
+{%- if input.type == "File" %}
+{{ input.id }}:
+  class: File
+  path: test-data/{{ input.example_value }}
+{%- else %}
+  {{ input.id }}: {{ input.example_value }}
+{%- endif %}
+{%- endfor %}
+{%- else %}
+# TODO: Specify job input.
+{}
 {%- endif %}
 """
 
@@ -288,10 +292,17 @@ def _build_cwl(**kwds):
     render_kwds.update(command_io.cwl_properties())
 
     contents = _render(render_kwds, template_str=CWL_TEMPLATE)
-    test_contents = None
+    tool_files = []
     test_files = []
     if kwds["test_case"]:
+        sep = "-" if "-" in kwds.get("id") else "_"
+        tests_path = "%s%stests.yml" % (kwds.get("id"), sep)
+        job_path = "%s%sjob.yml" % (kwds.get("id"), sep)
+        render_kwds["job_filename"] = job_path
         test_contents = _render(render_kwds, template_str=CWL_TEST_TEMPLATE)
+        job_contents = _render(render_kwds, template_str=CWL_JOB_TEMPLATE)
+        tool_files.append(ToolFile(tests_path, test_contents, "test"))
+        tool_files.append(ToolFile(job_path, job_contents, "job"))
         for cwl_input in render_kwds["inputs"] or []:
             if cwl_input.type == "File" and cwl_input.example_value:
                 test_files.append(cwl_input.example_value)
@@ -302,7 +313,7 @@ def _build_cwl(**kwds):
 
     return ToolDescription(
         contents,
-        test_contents=test_contents,
+        tool_files=tool_files,
         test_files=test_files
     )
 
@@ -336,15 +347,26 @@ def _build_galaxy(**kwds):
     # Render tool content from template.
     contents = _render(kwds)
 
+    tool_files = []
+    append_macro_file(tool_files, kwds)
+
+    return ToolDescription(
+        contents,
+        tool_files=tool_files,
+        test_files=test_files
+    )
+
+
+def append_macro_file(tool_files, kwds):
     macro_contents = None
     if kwds["macros"]:
         macro_contents = _render(kwds, MACROS_TEMPLATE)
 
-    return ToolDescription(
-        contents,
-        macro_contents,
-        test_files=test_files
-    )
+        macros_file = "macros.xml"
+        if not os.path.exists(macros_file):
+            tool_files.append(ToolFile(macros_file, macro_contents, "macros"))
+
+        io.info(REUSING_MACROS_MESSAGE)
 
 
 class CommandIO(object):
@@ -717,11 +739,18 @@ class UrlCitation(object):
 class ToolDescription(object):
     """An description of the tool and related files to create."""
 
-    def __init__(self, contents, macro_contents=None, test_contents=None, test_files=[]):
+    def __init__(self, contents, tool_files=None, test_files=[]):
         self.contents = contents
-        self.test_contents = test_contents
-        self.macro_contents = macro_contents
+        self.tool_files = tool_files or []
         self.test_files = test_files
+
+
+class ToolFile(object):
+
+    def __init__(self, filename, contents, description):
+        self.filename = filename
+        self.contents = contents
+        self.description = description
 
 
 class Input(object):
@@ -845,14 +874,15 @@ def write_tool_description(ctx, tool_description, **kwds):
 
     io.write_file(output, tool_description.contents)
     io.info("Tool written to %s" % output)
-    test_contents = tool_description.test_contents
-    if test_contents:
-        sep = "-" if "-" in tool_id else "_"
-        tests_path = "%s%stests.yml" % (kwds.get("id"), sep)
-        if not io.can_write_to_path(tests_path, **kwds):
+    for tool_file in tool_description.tool_files:
+        if tool_file.contents is None:
+            continue
+
+        path = tool_file.filename
+        if not io.can_write_to_path(path, **kwds):
             ctx.exit(1)
-        io.write_file(tests_path, test_contents)
-        io.info("Tool tests written to %s" % tests_path)
+        io.write_file(path, tool_file.contents)
+        io.info("Tool %s written to %s" % (tool_file.description, path))
 
     macros = kwds["macros"]
     macros_file = "macros.xml"

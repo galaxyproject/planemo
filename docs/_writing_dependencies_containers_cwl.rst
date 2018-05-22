@@ -83,7 +83,7 @@ to grab the exercise as show below.
 
 ::
 
-    $ planemo test --biocontainers --engine cwltool seqtk_seq.cwl
+    $ planemo test --biocontainers seqtk_seq.cwl
     Enable beta testing mode for testing.
     cwltool INFO: /Users/john/workspace/planemo/.venv/bin/planemo 1.0.20180508202931
     cwltool INFO: Resolved '/Users/john/workspace/planemo/project_templates/conda_exercises_cwl/exercise_3/seqtk_seq.cwl' to 'file:///Users/john/workspace/planemo/project_templates/conda_exercises_cwl/exercise_3/seqtk_seq.cwl'
@@ -201,7 +201,7 @@ the ``--biocontainers`` flag.
 
 ::
 
-    $ planemo test --biocontainers --engine cwltool bwa_and_samtools.cwl
+    $ planemo test --biocontainers bwa_and_samtools.cwl
     Enable beta testing mode for testing.
     cwltool INFO: /Users/john/workspace/planemo/.venv/bin/planemo 1.0.20180508202931
     cwltool INFO: Resolved '/Users/john/workspace/planemo/project_templates/conda_testing_cwl/bwa_and_samtools.cwl' to 'file:///Users/john/workspace/planemo/project_templates/conda_testing_cwl/bwa_and_samtools.cwl'

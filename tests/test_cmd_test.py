@@ -7,6 +7,7 @@ from .test_utils import (
     CliTestCase,
     PROJECT_TEMPLATES_DIR,
     skip_if_environ,
+    skip_unless_module,
     TEST_DATA_DIR,
 )
 
@@ -88,23 +89,46 @@ class CmdTestTestCase(CliTestCase):
             test_artifact = os.path.join(TEST_DATA_DIR, "int_tool.cwl")
             test_command = [
                 "test",
-                "--engine", "cwltool",
                 test_artifact,
             ]
             self._check_exit_code(test_command, exit_code=0)
             assert_exists(os.path.join(f, "tool_test_output.json"))
 
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
-    def test_output_checks(self):
+    @skip_unless_module("toil")
+    def test_toil_tool_test(self):
         """Test testing a CWL tool with cwltool."""
+        with self._isolate() as f:
+            test_artifact = os.path.join(TEST_DATA_DIR, "int_tool.cwl")
+            test_command = [
+                "test",
+                "--engine", "toil",
+                test_artifact,
+            ]
+            self._check_exit_code(test_command, exit_code=0)
+            assert_exists(os.path.join(f, "tool_test_output.json"))
+
+    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
+    def test_output_checks_cwltool(self):
+        """Test output assertions with a CWL tool with cwltool."""
+        self._output_checks([])
+
+    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
+    @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
+    @skip_unless_module("toil")
+    def test_output_checks_toil(self):
+        """Test output assertions with a CWL tool with toil."""
+        self._output_checks(["--engine", "toil"])
+
+    def _output_checks(self, extra_args):
         with self._isolate() as f:
             test_artifact = os.path.join(TEST_DATA_DIR, "output_tests_tool.cwl")
             test_command = [
                 "test",
                 "--no-container",
-                "--engine", "cwltool",
-                test_artifact,
             ]
+            test_command.extend(extra_args)
+            test_command.append(test_artifact)
             self._check_exit_code(test_command, exit_code=1)
             output_json_path = os.path.join(f, "tool_test_output.json")
             with open(output_json_path, "r") as f:

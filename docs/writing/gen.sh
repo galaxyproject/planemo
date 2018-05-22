@@ -44,7 +44,8 @@ planemo tool_init --force \
                   --example_output 2.fasta \
                   --test_case \
                   --requirement seqtk@1.2 \
-                  --container 'quay.io/biocontainers/seqtk:1.2--0' \
+                  --container 'quay.io/biocontainers/seqtk:1.2--1' \
                   --help_from_command 'seqtk seq'
 mv seqtk_seq.cwl seqtk_seq_v3.cwl
-mv seqtk_seq_tests.yml seqtk_seq_tests_v3.yml
+mv seqtk_seq_tests.yml seqtk_seq_v3_tests.yml
+mv seqtk_seq_job.yml seqtk_seq_v3_job.yml

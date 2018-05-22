@@ -161,7 +161,7 @@ demonstrating using this tool.
 
 ::
 
-    $ planemo test --no-container --engine cwltool seqtk_seq.cwl
+    $ planemo test --no-container seqtk_seq.cwl
     Enable beta testing mode for testing.
     cwltool INFO: /Users/john/workspace/planemo/.venv/bin/planemo 1.0.20170828135420
     cwltool INFO: Resolved '/Users/john/workspace/planemo/project_templates/seqtk_complete_cwl/seqtk_seq.cwl' to 'file:///Users/john/workspace/planemo/project_templates/seqtk_complete_cwl/seqtk_seq.cwl'

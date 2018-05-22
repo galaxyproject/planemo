@@ -18,7 +18,13 @@ def check_output(runnable, output_properties, test_properties, **kwds):
     get_filename = _test_filename_getter(runnable)
     path = output_properties["path"]
     output_content = open(path, "rb").read()
+    # Support Galaxy-like file location (using "file") or CWL-like ("path" or "location").
     expected_file = test_properties.get("file", None)
+    if expected_file is None:
+        expected_file = test_properties.get("path", None)
+    if expected_file is None:
+        expected_file = test_properties.get("location", None)
+
     job_output_files = kwds.get("job_output_files", None)
     item_label = "Output with path %s" % path
     problems = []

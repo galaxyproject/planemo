@@ -5,7 +5,7 @@ id: "seqtk_seq"
 label: "Convert to FASTA (seqtk)"
 hints:
   DockerRequirement:
-    dockerPull: quay.io/biocontainers/seqtk:1.2--0
+    dockerPull: quay.io/biocontainers/seqtk:1.2--1
   SoftwareRequirement:
     packages:
     - package: seqtk
