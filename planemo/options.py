@@ -607,6 +607,17 @@ def paste_test_data_paths_option():
     )
 
 
+def shed_install_option():
+    return planemo_option(
+        "--shed_install/--no_shed_install",
+        is_flag=True,
+        default=True,
+        help=("By default Planemo will attempt to install repositories needed for workflow "
+              "testing. This may not be appropriate for production servers and so this can "
+              "disabled by calling planemo with --no_shed_install.")
+    )
+
+
 def single_user_mode_option():
     return planemo_option(
         "galaxy_single_user",
@@ -1108,6 +1119,7 @@ def galaxy_serve_options():
         daemon_option(),
         pid_file_option(),
         ignore_dependency_problems_option(),
+        shed_install_option()
     )
 
 
@@ -1203,6 +1215,7 @@ def engine_options():
         docker_galaxy_image_option(),
         docker_extra_volume_option(),
         ignore_dependency_problems_option(),
+        shed_install_option(),
         galaxy_url_option(),
         galaxy_admin_key_option(),
         galaxy_user_key_option(),
