@@ -17,6 +17,7 @@ from galaxy.tools.cwl.util import (
     invocation_to_output,
     output_properties,
     output_to_cwl_json,
+    path_or_uri_to_uri,
     tool_response_to_output,
 )
 from galaxy.tools.parser import get_tool_source
@@ -179,12 +180,14 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
     def upload_func(upload_target):
 
         def _attach_file(upload_payload, uri, index=0):
-            is_path = not uri.startswith("http://") and not uri.startswith("https://") and not uri.startswith("ftp://")
-            if config.use_path_paste and is_path:
-                upload_payload["inputs"]["files_%d|url_paste" % index] = "file://%s" % os.path.abspath(uri)
+            uri = path_or_uri_to_uri(uri)
+            is_path = uri.startswith("file://")
+            if not is_path or config.use_path_paste:
+                upload_payload["inputs"]["files_%d|url_paste" % index] = uri
             else:
                 files_attached[0] = True
-                upload_payload["files_%d|file_data" % index] = attach_file(uri)
+                path = uri[len("file://"):]
+                upload_payload["files_%d|file_data" % index] = attach_file(path)
 
         if isinstance(upload_target, FileUploadTarget):
             file_path = upload_target.path

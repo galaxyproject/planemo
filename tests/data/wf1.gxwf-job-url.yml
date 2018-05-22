@@ -1,0 +1,6 @@
+{
+    "input1": {
+        "class": "File",
+        "location": "https://raw.githubusercontent.com/galaxyproject/planemo/master/tests/data/hello.txt"
+    },
+}

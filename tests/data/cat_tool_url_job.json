@@ -1,0 +1,6 @@
+{
+    "file1": {
+        "class": "File",
+        "path": "https://raw.githubusercontent.com/galaxyproject/planemo/master/tests/data/hello.txt"
+    }
+}
