@@ -9,7 +9,12 @@ History
 0.53.0.dev0
 ---------------------
 
-    
+* Make Planemo testing easier for CWL tools and workflows in various ways and update
+  tutorials to reflect these simplifications. `Pull Request 837`_
+* Test and fix running workflow tests against externally managed Galaxy servers.
+  `Pull Request 833`_, `Pull Request 836`_
+* Allow using URIs for inputs of workflow test. `Pull Request 840`_
+* Slide Galaxy testing window to include 18.05 and drop 17.09. `Pull Request 838`_
 
 ---------------------
 0.52.0 (2018-05-20)
@@ -1324,6 +1329,11 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 836: https://github.com/galaxyproject/planemo/pull/836
+.. _Pull Request 833: https://github.com/galaxyproject/planemo/pull/833
+.. _Pull Request 837: https://github.com/galaxyproject/planemo/pull/837
+.. _Pull Request 840: https://github.com/galaxyproject/planemo/pull/840
+.. _Pull Request 838: https://github.com/galaxyproject/planemo/pull/838
 .. _Pull Request 834: https://github.com/galaxyproject/planemo/pull/834
 .. _Pull Request 835: https://github.com/galaxyproject/planemo/pull/835
 .. _347c622: https://github.com/galaxyproject/planemo/commit/347c622
