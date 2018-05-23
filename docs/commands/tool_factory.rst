@@ -143,6 +143,12 @@ http://www.ncbi.nlm.nih.gov/pubmed/23024011.
       --database_connection TEXT      Database connection string to use for Galaxy.
       --shed_tool_conf TEXT           Location of shed tools conf file for Galaxy.
       --shed_tool_path TEXT           Location of shed tools directory for Galaxy.
+      --galaxy_single_user / --no_galaxy_single_user
+                                      By default Planemo will configure Galaxy to
+                                      run in single-user mode where there is just
+                                      one user and this user is automatically logged
+                                      it. Use --no_galaxy_single_user to prevent
+                                      Galaxy from running this way.
       --daemon                        Serve Galaxy process as a daemon.
       --pid_file PATH                 Location of pid file is executed with
                                       --daemon.
@@ -151,5 +157,11 @@ http://www.ncbi.nlm.nih.gov/pubmed/23024011.
                                       likely indicate a problem but in some cases
                                       may not prevent a workflow from successfully
                                       executing.
+      --shed_install / --no_shed_install
+                                      By default Planemo will attempt to install
+                                      repositories needed for workflow testing. This
+                                      may not be appropriate for production servers
+                                      and so this can disabled by calling planemo
+                                      with --no_shed_install.
       --help                          Show this message and exit.
     

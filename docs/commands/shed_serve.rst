@@ -155,6 +155,12 @@ logged into and explored interactively.
       --database_connection TEXT      Database connection string to use for Galaxy.
       --shed_tool_conf TEXT           Location of shed tools conf file for Galaxy.
       --shed_tool_path TEXT           Location of shed tools directory for Galaxy.
+      --galaxy_single_user / --no_galaxy_single_user
+                                      By default Planemo will configure Galaxy to
+                                      run in single-user mode where there is just
+                                      one user and this user is automatically logged
+                                      it. Use --no_galaxy_single_user to prevent
+                                      Galaxy from running this way.
       --pid_file PATH                 Location of pid file is executed with
                                       --daemon.
       --daemon                        Serve Galaxy process as a daemon.
