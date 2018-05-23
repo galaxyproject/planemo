@@ -1,9 +1,6 @@
 
 - doc: test generated from example command
-  job:
-    input1:
-      class: File
-      path: test-data/2.fastq
+  job: seqtk_seq_job.json
   outputs:
     output1:
       path: test-data/2.fasta

@@ -41,6 +41,8 @@ will attempt to install Conda, check for referenced packages (such as
    perspective but other dependency resolution techniques are covered in
    the `Galaxy docs <https://docs.galaxyproject.org/en/latest/admin/dependency_resolvers.html>`__.
 
+.. include:: _writing_conda_overview.rst
+
 We can check if the requirements on a tool are available in best practice
 Conda channels using an extended form of the ``planemo lint`` command. Passing
 ``--conda_requirements`` flag will ensure all listed requirements are found.
