@@ -193,7 +193,7 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
             file_path = upload_target.path
             upload_payload = user_gi.tools._upload_payload(
                 history_id,
-                file_type= upload_target.properties.get('filetype', None) or "auto",
+                file_type=upload_target.properties.get('filetype', None) or "auto",
             )
             name = os.path.basename(file_path)
             upload_payload["inputs"]["files_0|auto_decompress"] = False
