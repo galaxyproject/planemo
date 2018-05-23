@@ -62,7 +62,7 @@ class CmdTestTestCase(CliTestCase):
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_workflow_test_distro_tool(self):
-        """Test testing a simple GA workflow with Galaxy."""
+        """Test testing a workflow that uses distro tools."""
         with self._isolate():
             test_artifact = os.path.join(TEST_DATA_DIR, "wf4-distro-tools.gxwf.yml")
             test_command = [
@@ -73,6 +73,30 @@ class CmdTestTestCase(CliTestCase):
             test_command += [
                 "--no_dependency_resolution",
                 "--galaxy_branch", "release_18.01",  # Much better workflow output detection than master for now (pre-release of 18.01)
+                test_artifact,
+            ]
+            # try:
+            self._check_exit_code(test_command, exit_code=0)
+            # except Exception:
+            #    with open(os.path.join(f, "tool_test_output.json"), "r") as o:
+            #        print(o.read())
+            #    raise
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_test_collection_inputs(self):
+        """Test testing a workflow with collection inputs Galaxy."""
+        with self._isolate():
+            test_artifact = os.path.join(TEST_DATA_DIR, "wf5-collection-input.gxwf.yml")
+            cat_list = os.path.join(TEST_DATA_DIR, "cat_list.xml")
+            test_command = [
+                "--verbose",
+                "test"
+            ]
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command += [
+                "--no_dependency_resolution",
+                "--galaxy_branch", "release_18.01",  # Much better workflow output detection than master for now (pre-release of 18.01)
+                "--extra_tools", cat_list,
                 test_artifact,
             ]
             # try:
