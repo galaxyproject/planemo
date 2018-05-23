@@ -1,0 +1,18 @@
+class: GalaxyWorkflow
+name: "Test Workflow - Collection Inputs"
+
+inputs:
+  - id: input1
+    type: collection
+    collection_type: list
+
+outputs:
+  - id: wf_output_1
+    source: first_cat#out_file1
+
+steps:
+  - tool_id: cat_list
+    label: first_cat
+    state:
+      input1:
+        $link: input1
