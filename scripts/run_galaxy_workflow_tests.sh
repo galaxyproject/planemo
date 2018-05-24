@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Usage: http://planemo.readthedocs.io/en/latest/test_format.html#galaxy-testing-template
+
 : ${PLANEMO_TARGET:="planemo==0.52.0"}
 : ${PLANEMO_OPTIONS:=""}  # e.g. PLANEMO_OPTIONS="--verbose"
 : ${PLANEMO_PROFILE_NAME:="wxflowtest"}
@@ -8,19 +10,20 @@
 : ${PLANEMO_TEST_STYLE:="serve_and_test"}  # profile_serve_and_test, serve_and_test, docker_serve_and_test, test, docker_test, docker_test_path_paste
 : ${PLANEMO_SERVE_DATABASE_TYPE:="postgres"}  # used if not using Docker with PLANEMO_TEST_STYLE
 : ${PLANEMO_DOCKER_GALAXY_IMAGE:="quay.io/bgruening/galaxy:18.01"}  # used if used Docker with PLANEMO_TEST_STYLE
+: ${PLANEMO_VIRTUAL_ENV:=".venv"}
 
 GALAXY_URL="http://localhost:$PLANEMO_SERVE_PORT"
 
 # Ensure Planemo is installed.
-if [ ! -d .venv ]; then
-    virtualenv .venv
-    . .venv/bin/activate
-    pip install -U pip
+if [ ! -d "${PLANEMO_VIRTUAL_ENV}" ]; then
+    virtualenv "${PLANEMO_VIRTUAL_ENV}"
+    . "${PLANEMO_VIRTUAL_ENV}"/bin/activate
+    pip install -U pip>7
     # Intentionally expand wildcards in PLANEMO_TARGET.
     shopt -s extglob
     pip install ${PLANEMO_TARGET}
 fi
-. .venv/bin/activate
+. "${PLANEMO_VIRTUAL_ENV}"/bin/activate
 
 # Run test.
 # This example shows off a bunch of different ways one could test with Planemo,

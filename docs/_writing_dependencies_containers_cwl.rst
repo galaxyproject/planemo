@@ -53,6 +53,8 @@ to check if a tool contains only best-practice ``requirement`` tags. The ``lint`
 command can also be fed the ``--biocontainers`` flag to check if a
 BioContainers_ container has been registered that is compatible with that tool.
 
+.. include:: _writing_containers_linter_explain.rst
+
 The Conda exercises project template has an example tool (``exercise3``) that we
 can use to demonstrate ``--biocontainers``. If you are continuing from the Conda
 tutorial, simply move to ``../exercise3`` otherwise using ``planemo project_init``
@@ -78,8 +80,6 @@ to grab the exercise as show below.
     Applying linter biocontainer_registered... CHECK
     .. INFO: BioContainer best-practice container found [quay.io/biocontainers/seqtk:1.2--1].
     Failed linting
-
-.. include:: _writing_containers_linter_explain.rst
 
 ::
 

@@ -1,0 +1,4 @@
+
+input1:
+  class: File
+  path: test-data/2.fastq

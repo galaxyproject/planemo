@@ -1,8 +1,5 @@
 #!/bin/bash
 
-SCRIPTS_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_DIRECTORY="${SCRIPTS_DIRECTORY}/../.."
-
 set -o xtrace
 
 set -e
@@ -10,6 +7,7 @@ set -e
 shopt -s expand_aliases  # Needed for conda_env test
 
 # Preconditions:
+# - seqtk not on PATH
 # - seqtk_example doesn't exist and in home directory
 # - conda_exercises doesn't exist in home directory.
 # - seqtk environment is absent
@@ -24,8 +22,7 @@ conda remove --force --yes --name '__seqtk@1.2' --all || true
 
 echo "Setup completed seqtk example"
 # TODO: project_init once in master branch
-# planemo project_init --template=seqtk_complete_cwl seqtk_example
-cp -r $PROJECT_DIRECTORY/project_templates/seqtk_complete_cwl seqtk_example
+planemo project_init --template=seqtk_complete_cwl seqtk_example
 cd seqtk_example
 
 echo "Check conda_requirements - should see them linting properly"
@@ -52,8 +49,7 @@ planemo test --no-container seqtk_seq.cwl
 cd
 
 # TODO: project_init once in master branch
-# planemo project_init --template conda_exercises_cwl conda_exercises
-cp -r $PROJECT_DIRECTORY/project_templates/conda_exercises_cwl conda_exercises
+planemo project_init --template conda_exercises_cwl conda_exercises
 cd conda_exercises/exercise_1
 
 ls
