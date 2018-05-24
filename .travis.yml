@@ -15,9 +15,6 @@ env:
     - TOX_ENV=py34-quick
     - TOX_ENV=py27
     - TOX_ENV=py34
-    - TOX_ENV=py27-gx-1805
-    - TOX_ENV=py34-gx-1801
-    - TOX_ENV=py34-gx-dev
     - TOX_ENV=py27-lint-docstrings
 
 install:

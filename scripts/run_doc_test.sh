@@ -22,7 +22,7 @@ if [ ! -d "${PLANEMO_VIRTUAL_ENV}" ]; then
 fi
 . "${PLANEMO_VIRTUAL_ENV}"/bin/activate
 
-planemo conda_init | true
+planemo --verbose conda_init || true
 export PATH="$HOME/miniconda3/bin:$PATH"
 
 bash docs/tests/tests_"${DOCS}".sh
