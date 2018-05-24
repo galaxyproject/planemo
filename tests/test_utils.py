@@ -6,7 +6,6 @@ import functools
 import os
 import shutil
 import threading
-import time
 import traceback
 from sys import version_info
 from tempfile import mkdtemp
@@ -16,9 +15,9 @@ from galaxy.tools.deps.commands import which
 
 from planemo import cli
 from planemo import io
-from planemo import network_util
 from planemo import shed
 from planemo.config import PLANEMO_CONFIG_ENV_PROP
+from planemo.galaxy.ephemeris_sleep import sleep
 from .shed_app_test_utils import (
     mock_shed,
     setup_mock_shed,
@@ -305,14 +304,14 @@ def check_exit_code(runner, command_list, exit_code=0):
 
 
 @contextlib.contextmanager
-def cli_daemon_service(runner, pid_file, port, command_list, exit_code=0):
-    t = launch_and_wait_for_service(port, check_exit_code, args=[runner, command_list, exit_code])
+def cli_daemon_galaxy(runner, pid_file, port, command_list, exit_code=0):
+    t = launch_and_wait_for_galaxy(port, check_exit_code, args=[runner, command_list, exit_code])
     yield
     io.kill_pid_file(pid_file)
     t.join(timeout=60)
 
 
-def launch_and_wait_for_service(port, func, args=[]):
+def launch_and_wait_for_galaxy(port, func, args=[]):
     """Run func(args) in a thread and wait on port for service.
 
     Service should remain up so check network a few times, this prevents
@@ -323,19 +322,15 @@ def launch_and_wait_for_service(port, func, args=[]):
     t = threading.Thread(target=target)
     t.daemon = True
     t.start()
-    time.sleep(5)
-    assert network_util.wait_net_service("127.0.0.1", port, timeout=600)
-    time.sleep(1)
-    assert network_util.wait_net_service("127.0.0.1", port, timeout=600)
-    time.sleep(1)
-    assert network_util.wait_net_service("127.0.0.1", port, timeout=600)
+    sleep("http://localhost:%d" % port, timeout=600)
     return t
 
 
 # TODO: everything should be considered "exported".
 __all__ = (
     "assert_exists",
-    "launch_and_wait_for_service",
+    "cli_daemon_galaxy",
+    "launch_and_wait_for_galaxy",
     "TestCase",
     "CliTestCase",
 )

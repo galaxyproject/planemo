@@ -3,11 +3,11 @@ from __future__ import print_function
 
 import contextlib
 import os
-import time
 
 from planemo import io
 from planemo import network_util
 from .config import galaxy_config
+from .ephemeris_sleep import sleep
 from .run import (
     run_galaxy_command,
 )
@@ -50,19 +50,12 @@ def _serve(ctx, runnables, **kwds):
             io.warn(message)
             raise Exception(message)
         host = kwds.get("host", "127.0.0.1")
+
         timeout = 500
         galaxy_url = "http://%s:%s" % (host, port)
-        ctx.vlog("Waiting for URL %s" % galaxy_url)
-        assert network_util.wait_http_service(galaxy_url, timeout=timeout)
-        time.sleep(.1)
-        ctx.vlog("Waiting for URL %s" % galaxy_url)
-        assert network_util.wait_http_service(galaxy_url, timeout=timeout)
-        time.sleep(5)
-        ctx.vlog("Waiting for URL %s" % galaxy_url)
-        assert network_util.wait_http_service(galaxy_url, timeout=timeout)
-        version_url = "%s/api/version" % galaxy_url
-        ctx.vlog("Waiting for URL %s" % version_url)
-        assert network_util.wait_http_service(version_url, timeout=timeout)
+        galaxy_alive = sleep(galaxy_url, verbose=ctx.verbose, timeout=timeout)
+        if not galaxy_alive:
+            raise Exception("Attempted to serve Galaxy at %s, but it failed to start in %d seconds." % (galaxy_url, timeout))
         config.install_workflows()
         if kwds.get("pid_file"):
             real_pid_file = config.pid_file

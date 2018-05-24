@@ -6,9 +6,9 @@ from planemo import network_util
 from planemo.galaxy import api
 from planemo.io import kill_pid_file
 from .test_utils import (
-    cli_daemon_service,
+    cli_daemon_galaxy,
     CliTestCase,
-    launch_and_wait_for_service,
+    launch_and_wait_for_galaxy,
     mark,
     PROJECT_TEMPLATES_DIR,
     skip_if_environ,
@@ -95,13 +95,13 @@ class ServeTestCase(CliTestCase):
             "--profile", new_profile,
         ]
         serve_cmd = self._serve_command_list(extra_args)
-        with cli_daemon_service(self._runner, self._pid_file, self._port, serve_cmd):
+        with cli_daemon_galaxy(self._runner, self._pid_file, self._port, serve_cmd):
             user_gi = self._user_gi
             assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0
             user_gi.histories.create_history(TEST_HISTORY_NAME)
 
         # TODO: Pretty sure this is getting killed, but we should verify.
-        with cli_daemon_service(self._runner, self._pid_file, self._port, serve_cmd):
+        with cli_daemon_galaxy(self._runner, self._pid_file, self._port, serve_cmd):
             assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 1
 
     def setUp(self):
@@ -118,7 +118,7 @@ class ServeTestCase(CliTestCase):
         return user_gi
 
     def _launch_thread_and_wait(self, func, args=[]):
-        launch_and_wait_for_service(self._port, func, [args])
+        launch_and_wait_for_galaxy(self._port, func, [args])
 
     def _run_shed(self, serve_args=[]):
         return self._run(serve_args=serve_args, serve_cmd="shed_serve")
