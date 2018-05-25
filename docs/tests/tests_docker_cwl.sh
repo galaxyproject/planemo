@@ -28,7 +28,7 @@ echo "This should pass and we should see container was used."
 planemo test --biocontainers seqtk_seq.cwl
 
 echo "This should fail without biocontainers"
-planemo test seqtk_seq.cwl
+planemo test seqtk_seq.cwl || true
 
 cd ..
 
@@ -37,7 +37,7 @@ planemo project_init --template=conda_answers_cwl conda_answers
 cd conda_answers/exercise_3
 
 planemo lint --biocontainers seqtk_seq.cwl
-planemo test seqtk_seq.cwl || true
+planemo test seqtk_seq.cwl
 
 
 planemo project_init --template=conda_testing_cwl conda_testing
