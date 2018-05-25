@@ -18,8 +18,8 @@ rm -rf conda_answers_cwl
 rm -rf conda_testing
 
 echo "Setup completed seqtk example"
-planemo project_init --template=conda_exercies_cwl conda_exercies
-cd conda_exercies
+planemo project_init --template=conda_exercises_cwl conda_exercises
+cd conda_exercises
 
 cd conda_exercises/exercise_3
 
