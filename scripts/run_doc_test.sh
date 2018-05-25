@@ -16,6 +16,7 @@ if [ ! -d "${PLANEMO_VIRTUAL_ENV}" ]; then
     virtualenv "${PLANEMO_VIRTUAL_ENV}"
     . "${PLANEMO_VIRTUAL_ENV}"/bin/activate
     pip install -U pip>7
+    pip install toil==3.15.0
     # Intentionally expand wildcards in PLANEMO_TARGET.
     shopt -s extglob
     pip install ${PLANEMO_TARGET}
