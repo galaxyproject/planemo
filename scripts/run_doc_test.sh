@@ -26,4 +26,10 @@ fi
 planemo --verbose conda_init || true
 export PATH="$HOME/miniconda3/bin:$PATH"
 
-bash docs/tests/tests_"${DOCS}".sh
+PLANEMO_DOC_TEST_PATH="docs/tests/tests_${DOCS}.sh"
+if [ -f $PLANEMO_DOC_TEST_PATH ];
+then
+    bash "$PLANEMO_DOC_TEST_PATH"
+else
+    bash <(curl -s "https://raw.githubusercontent.com/galaxyproject/planemo/master/$PLANEMO_DOC_TEST_PATH")
+fi
