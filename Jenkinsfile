@@ -10,6 +10,7 @@ pipeline {
     stage("test") {
       steps {
         sh 'tox -e py27-quick'
+        sh 'tox -e py35'
       }
     }
   }
