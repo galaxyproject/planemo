@@ -3,6 +3,7 @@
 Specifically, tests for shed_upload, shed_download, and shed_create.
 commands.
 """
+import contextlib
 import os
 import shutil
 import tarfile
@@ -113,7 +114,7 @@ class ShedUploadTestCase(CliShedTestCase):
 
     def test_tar_from_git(self):
         with self._isolate() as f:
-            with modify_environ({"GIT_AUTHOR_NAME": "planemo developer", "EMAIL": "planemo@galaxyproject.org"}):
+            with self._git_configured():
                 dest = join(f, "single_tool")
                 self._copy_repo("single_tool", dest)
                 shell(" && ".join([
@@ -132,7 +133,7 @@ class ShedUploadTestCase(CliShedTestCase):
 
     def test_upload_from_git(self):
         with self._isolate() as f:
-            with modify_environ({"GIT_AUTHOR_NAME": "planemo developer", "EMAIL": "planemo@galaxyproject.org"}):
+            with self._git_configured():
                 dest = join(f, "single_tool")
                 self._copy_repo("single_tool", dest)
                 shell(" && ".join([
@@ -155,6 +156,17 @@ class ShedUploadTestCase(CliShedTestCase):
                 assert "planemo upload for repository " in message
                 assert "repository https://github.com/galaxyproject" in message
                 assert rev in message
+
+    @contextlib.contextmanager
+    def _git_configured(self):
+        with modify_environ({
+            "GIT_AUTHOR_NAME": "planemo developer",
+            "GIT_COMMITTER_NAME": "planemo developer",
+            "EMAIL": "planemo@galaxyproject.org",
+            "GIT_AUTHOR_EMAIL": "planemo@galaxyproject.org",
+            "GIT_COMMITTER_EMAIL": "planemo@galaxyproject.org",
+        }):
+            yield
 
     def test_create_and_upload(self):
         with self._isolate_repo("single_tool") as f:
