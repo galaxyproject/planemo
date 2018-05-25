@@ -1,6 +1,6 @@
 
 - doc: test generated from example command
-  job: seqtk_seq_job.json
+  job: seqtk_seq_job.yml
   outputs:
     output1:
       path: test-data/2.fasta
