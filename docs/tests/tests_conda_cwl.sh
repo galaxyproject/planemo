@@ -62,7 +62,7 @@ planemo lint --conda_requirements pear.cwl || true
 echo "Should see pear from bioconda at 0.9.6"
 planemo conda_search pear
 
-wget https://raw.githubusercontent.com/galaxyproject/planemo/master/project_templates_cwl/conda_answers/exercise_1/pear.xml -O pear.xml
+wget https://raw.githubusercontent.com/galaxyproject/planemo/master/project_templates_cwl/conda_answers/exercise_1/pear.cwl -O pear.cwl
 planemo lint --conda_requirements pear.cwl || true
 
 planemo test --no-container pear.cwl
