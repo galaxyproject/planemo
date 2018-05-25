@@ -19,8 +19,6 @@ rm -rf conda_testing
 
 echo "Setup completed seqtk example"
 planemo project_init --template=conda_exercises_cwl conda_exercises
-cd conda_exercises
-
 cd conda_exercises/exercise_3
 
 echo "We should see biocontainer found for this tool, but not a Docker container"
