@@ -188,7 +188,7 @@ CWL_GALAXY_SOURCE = "https://github.com/common-workflow-language/galaxy"
 
 DOWNLOADS_URL = ("https://raw.githubusercontent.com/"
                  "jmchilton/galaxy-downloads/master/")
-DOWNLOADABLE_MIGRATION_VERSIONS = [127, 120, 117]
+DOWNLOADABLE_MIGRATION_VERSIONS = [141, 127, 120, 117]
 LATEST_URL = DOWNLOADS_URL + "latest.sqlite"
 
 DATABASE_LOCATION_TEMPLATE = "sqlite:///%s?isolation_level=IMMEDIATE"
