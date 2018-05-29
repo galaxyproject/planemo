@@ -48,7 +48,7 @@ Committers
 - John Chilton (@jmchilton)
 - Peter Cock (@peterjc)
 - Björn Grüning (@bgruening)
-- Eric Rasche (@erasche)
+- Helena Rasche (@erasche)
 - Nicola Soranzo (@nsoranzo)
 - James Taylor (@jxtx)
 - Marius van den Beek (@mvdbeek)
