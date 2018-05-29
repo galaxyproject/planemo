@@ -18,6 +18,10 @@ Command-line utilities to assist in developing Galaxy_ and `Common Workflow Lang
    :target: https://travis-ci.org/galaxyproject/planemo
    :alt: Build Status
 
+.. image:: https://travis-ci.org/jmchilton/planemo-extended-tests.svg?branch=master
+    :target: https://travis-ci.org/jmchilton/planemo-extended-tests
+    :alt: Build Status of Extended Tests
+
 .. image:: https://coveralls.io/repos/galaxyproject/planemo/badge.svg?branch=master
    :target: https://coveralls.io/r/galaxyproject/planemo?branch=master
    :alt: Coverage Status
