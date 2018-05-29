@@ -635,7 +635,7 @@ background-color: black
 - Common Workflow Language group - with special thanks to *Michael Crusoe* and *Peter Amstutz* for working through detailed compromises
 - Everyone that has ever built something cool with Planemo or Galaxy workflows
 ]
-.smaller.pull-right[- *Eric Rasche*
+.smaller.pull-right[- *Helena Rasche*
 - *Martin Cech*
 - *Peter Cock*
 - *Daniel Blankenberg*

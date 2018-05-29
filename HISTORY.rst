@@ -958,7 +958,7 @@ History
   ``name``. `Issue 245`_, aad1eed_
 * Many doc updates including a tutorial for developing tools in a test-driven
   fashion and instructions for using the planemo appliance through Kitematic
-  (with Kitematic screenshots from Eric Rasche).
+  (with Kitematic screenshots from E. Rasche).
 
 ---------------------
 0.13.0 (2015-06-28)
@@ -1183,9 +1183,9 @@ History
 ---------------------
 
 * Implement `shed_create` command to create Tool Shed repositories from
-  ``.shed.yml`` files (thanks to Eric Rasche). `Pull Request 101`_
+  ``.shed.yml`` files (thanks to E. Rasche). `Pull Request 101`_
 * Allow automatic creation of missing repositories  during ``shed_upload``
-  with the new ``--force_repository_creation`` flag (thanks to Eric Rasche).
+  with the new ``--force_repository_creation`` flag (thanks to E. Rasche).
   `Pull Request 102`_
 * Allow specifying files to exclude in ``.shed.yml`` when creating tar files
   for ``shed_upload`` (thanks to Björn Grüning). `Pull Request 99`_
@@ -1273,11 +1273,11 @@ History
 ---------------------
 
 * Add option (``-r``) to the ``shed_upload`` command to recursively upload
-  subdirectories (thanks to Eric Rasche). `Pull Request 68`_
-* Fix diff formatting in test reports (thanks to Eric Rasche).
+  subdirectories (thanks to E. Rasche). `Pull Request 68`_
+* Fix diff formatting in test reports (thanks to E. Rasche).
   `Pull Request 63`_
 * Grab updated test database to speed up testing (thanks to approach from
-  Eric Rasche and Dannon Baker). `Issue 61`_, dff4f33_
+  E. Rasche and Dannon Baker). `Issue 61`_, dff4f33_
 * Fix test data command-line argument name (was ``test-data`` now it is
   ``test_data``). 834bfb2_
 * Use ``tool_data_table_conf.xml.sample`` file if
