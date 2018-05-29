@@ -15,7 +15,7 @@ rm -rf tool_init_exercise
 # Tests
 conda install --force --yes -c bioconda seqtk=1.2
 
-seqtk seq
+seqtk seq | cat
 
 mkdir tool_init_exercise
 
