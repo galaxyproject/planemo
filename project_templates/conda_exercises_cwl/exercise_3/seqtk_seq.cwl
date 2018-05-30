@@ -73,7 +73,7 @@ s:mainEntity:
   s:programmingLanguage: C
   s:publication:
   - class: s:ScholarlyArticle
-    id: http://dx.doi.org/10.1093/bioinformatics/bts635
+    id: https://doi.org/10.1093/bioinformatics/bts635
 
   s:author:
   - class: s:Person
