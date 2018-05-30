@@ -59,14 +59,14 @@ def create_profile(ctx, profile_name, **kwds):
 
     os.makedirs(profile_directory)
     create_for_engine = _create_profile_docker if engine_type == "docker_galaxy" else _create_profile_local
-    stored_profile_options = create_for_engine(profile_directory, profile_name, kwds)
+    stored_profile_options = create_for_engine(ctx, profile_directory, profile_name, kwds)
 
     profile_options_path = _stored_profile_options_path(profile_directory)
     with open(profile_options_path, "w") as f:
         json.dump(stored_profile_options, f)
 
 
-def _create_profile_docker(profile_directory, profile_name, kwds):
+def _create_profile_docker(ctx, profile_directory, profile_name, kwds):
     export_directory = os.path.join(profile_directory, "export")
     os.makedirs(export_directory)
     return {
@@ -74,7 +74,7 @@ def _create_profile_docker(profile_directory, profile_name, kwds):
     }
 
 
-def _create_profile_local(profile_directory, profile_name, kwds):
+def _create_profile_local(ctx, profile_directory, profile_name, kwds):
     database_type = kwds.get("database_type", "auto")
     if database_type == "auto":
         if which("psql"):
@@ -93,7 +93,7 @@ def _create_profile_local(profile_directory, profile_name, kwds):
         database_connection = database_source.sqlalchemy_url(database_identifier)
     else:
         database_location = os.path.join(profile_directory, "galaxy.sqlite")
-        attempt_database_preseed(None, database_location, **kwds)
+        attempt_database_preseed(ctx, None, database_location, **kwds)
         database_connection = DATABASE_LOCATION_TEMPLATE % database_location
 
     return {

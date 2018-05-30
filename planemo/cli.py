@@ -2,10 +2,12 @@
 import functools
 import logging.config
 import os
+import shutil
 import sys
 import traceback
 
 import click
+from six.moves.urllib.request import urlopen
 
 from planemo import __version__
 from planemo.exit_codes import ExitCodeException
@@ -111,6 +113,21 @@ class Context(object):
         """Exit planemo with the supplied exit code."""
         self.vlog("Exiting planemo with exit code [%d]" % exit_code)
         raise ExitCodeException(exit_code)
+
+    def cache_download(self, url, destination):
+        cache = os.path.join(self.workspace, "cache")
+        if not os.path.exists(cache):
+            os.makedirs(cache)
+        filename = os.path.basename(url)
+        cache_destination = os.path.join(cache, filename)
+        if not os.path.exists(cache_destination):
+            content = urlopen(url).read()
+            if len(content) == 0:
+                raise Exception("Failed to download [%s]." % url)
+            with open(cache_destination, "wb") as f:
+                f.write(content)
+
+        shutil.copy(cache_destination, destination)
 
 
 pass_context = click.make_pass_decorator(Context, ensure=True)

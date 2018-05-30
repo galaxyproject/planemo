@@ -13,13 +13,10 @@ from tempfile import mkdtemp
 from galaxy.containers.docker_model import DockerVolume
 from galaxy.tools.deps import docker_util
 from galaxy.tools.deps.commands import argv_to_str
-from galaxy.util import unicodify
 from six import (
     add_metaclass,
     iteritems
 )
-from six.moves.urllib.request import urlopen
-from six.moves.urllib.request import urlretrieve
 
 from planemo import git
 from planemo.config import OptionSource
@@ -189,7 +186,15 @@ CWL_GALAXY_SOURCE = "https://github.com/common-workflow-language/galaxy"
 DOWNLOADS_URL = ("https://raw.githubusercontent.com/"
                  "jmchilton/galaxy-downloads/master/")
 DOWNLOADABLE_MIGRATION_VERSIONS = [141, 127, 120, 117]
-LATEST_URL = DOWNLOADS_URL + "latest.sqlite"
+MIGRATION_PER_VERSION = {
+    "master": 141,
+    "18.05": 141,
+    "18.01": 140,
+    "17.09": 135,
+    "17.05": 134,
+    "17.01": 133,
+}
+OLDEST_SUPPORTED_VERSION = 127
 
 DATABASE_LOCATION_TEMPLATE = "sqlite:///%s?isolation_level=IMMEDIATE"
 
@@ -345,14 +350,12 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         def config_join(*args):
             return os.path.join(config_directory, *args)
 
-        latest_galaxy = False
         install_env = {
             'GALAXY_SKIP_CLIENT_BUILD': '1',
         }
         if install_galaxy:
             _build_eggs_cache(ctx, install_env, kwds)
             _install_galaxy(ctx, config_directory, install_env, kwds)
-            latest_galaxy = True
             galaxy_root = config_join("galaxy-dev")
 
         server_name = "planemo%d" % random.randint(0, 100000)
@@ -388,9 +391,9 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         master_api_key = _get_master_api_key(kwds)
         dependency_dir = os.path.join(config_directory, "deps")
         preseeded_database = attempt_database_preseed(
+            ctx,
             galaxy_root,
             database_location,
-            latest_galaxy=latest_galaxy,
             **kwds
         )
         _ensure_directory(shed_tool_path)
@@ -982,7 +985,7 @@ def _database_connection(database_location, **kwds):
 
 
 def attempt_database_preseed(
-    effective_galaxy_root, database_location, latest_galaxy=False, **kwds
+    ctx, effective_galaxy_root, database_location, **kwds
 ):
     """If database location is unset, attempt to seed the database."""
     if os.path.exists(database_location):
@@ -995,12 +998,14 @@ def attempt_database_preseed(
 
     preseeded_database = True
     galaxy_sqlite_database = kwds.get("galaxy_database_seed", None)
+    galaxy_branch = kwds.get("galaxy_branch", None)
     try:
         _download_database_template(
+            ctx,
             effective_galaxy_root,
             database_location,
-            latest=latest_galaxy,
             galaxy_sqlite_database=galaxy_sqlite_database,
+            galaxy_branch=galaxy_branch
         )
     except Exception as e:
         print(e)
@@ -1010,40 +1015,43 @@ def attempt_database_preseed(
 
 
 def _download_database_template(
+    ctx,
     galaxy_root,
     database_location,
-    latest=False,
-    galaxy_sqlite_database=None
+    galaxy_sqlite_database=None,
+    galaxy_branch=None,
 ):
+
     if galaxy_sqlite_database is not None:
         shutil.copyfile(galaxy_sqlite_database, database_location)
         return True
 
-    if latest or not galaxy_root:
-        symlink_target = unicodify(urlopen(LATEST_URL).read())
-        template_url = DOWNLOADS_URL + symlink_target
-        urlretrieve(template_url, database_location)
-        return True
-
-    newest_migration = _newest_migration_version(galaxy_root)
     download_migration = None
+    newest_migration = _newest_migration_version(galaxy_root, galaxy_branch)
     for migration in DOWNLOADABLE_MIGRATION_VERSIONS:
-        if newest_migration > migration:
+        if newest_migration >= migration:
             download_migration = migration
             break
 
     if download_migration:
         download_name = "db_gx_rev_0%d.sqlite" % download_migration
         download_url = DOWNLOADS_URL + download_name
-        urlretrieve(download_url, database_location)
+        ctx.cache_download(download_url, database_location)
         return True
     else:
         return False
 
 
-def _newest_migration_version(galaxy_root):
-    versions = os.path.join(galaxy_root, "lib/galaxy/model/migrate/versions")
-    version = max(map(_file_name_to_migration_version, os.listdir(versions)))
+def _newest_migration_version(galaxy_root, galaxy_branch):
+    versions_dir = galaxy_root and os.path.join(galaxy_root, "lib/galaxy/model/migrate/versions")
+    if versions_dir and os.path.exists(versions_dir):
+        version = max(map(_file_name_to_migration_version, os.listdir(versions_dir)))
+    elif galaxy_branch:
+        for branch in MIGRATION_PER_VERSION:
+            if branch in galaxy_branch:
+                version = MIGRATION_PER_VERSION[branch]
+    else:
+        version = OLDEST_SUPPORTED_VERSION
     return version
 
 
