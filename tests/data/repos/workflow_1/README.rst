@@ -54,7 +54,7 @@ Sample Data
 
 As an example, you can upload the transcriptome assembly of the nematode
 *Nacobbus abberans* from Eves van den Akker *et al.* (2015),
-http://dx.doi.org/10.1093/gbe/evu171 using this URL:
+https://doi.org/10.1093/gbe/evu171 using this URL:
 
 http://nematode.net/Data/nacobbus_aberrans_transcript_assembly/N.abberans_reference_no_contam.zip
 
@@ -170,13 +170,13 @@ Please cite the following paper (currently available as a preprint):
 
 NCBI BLAST+ integrated into Galaxy.
 P.J.A. Cock, J.M. Chilton, B. Gruening, J.E. Johnson, N. Soranzo
-bioRxiv DOI: http://dx.doi.org/10.1101/014043 (preprint)
+bioRxiv DOI: https://doi.org/10.1101/014043 (preprint)
 
 You should also cite Galaxy, and the NCBI BLAST+ tools:
 
 BLAST+: architecture and applications.
 C. Camacho et al. BMC Bioinformatics 2009, 10:421.
-DOI: http://dx.doi.org/10.1186/1471-2105-10-421
+DOI: https://doi.org/10.1186/1471-2105-10-421
 
 
 Automated Installation

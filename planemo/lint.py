@@ -75,7 +75,7 @@ def handle_lint_complete(lint_ctx, lint_args, failed=False):
 
 
 def lint_dois(tool_xml, lint_ctx):
-    """Find referenced DOIs and check they have valid with http://dx.doi.org."""
+    """Find referenced DOIs and check they have valid with https://doi.org."""
     dois = find_dois_for_xml(tool_xml)
     for publication in dois:
         is_doi(publication, lint_ctx)
@@ -92,7 +92,7 @@ def find_dois_for_xml(tool_xml):
 
 def is_doi(publication_id, lint_ctx):
     """Check if dx.doi knows about the ``publication_id``."""
-    base_url = "http://dx.doi.org"
+    base_url = "https://doi.org"
     doiless_publication_id = publication_id.split("doi:", 1)[-1]
     url = "%s/%s" % (base_url, doiless_publication_id)
     r = requests.get(url)
