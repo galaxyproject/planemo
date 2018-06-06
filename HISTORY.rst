@@ -9,7 +9,23 @@ History
 0.54.0.dev0
 ---------------------
 
-    
+* Better support for testings against different versions of Galaxy efficiently and robustly.
+  `Pull Request 849`_
+* New database version (thanks to `@bgruening`_).
+  `Pull Request 847`_
+* Hyperlink DOIs against preferred resolver (thanks to `@katrinleinweber`_).
+  `Pull Request 850`_
+* Tests for collection inputs to workflows. `Pull Request 843`_
+* Bring in Ephemeris sleep function - hopefully makes serve tests a bit more robust.
+  b12b117_
+* More tutorial testing, tutorial updates.
+  016b923_, 324c776_, 2002b49_
+* More isolated ``test_shed_upload.py`` tests. 72d2ca7_
+* Add filetype support for workflow test inputs (thanks to `@bgruening`_).
+  `Pull Request 842`_
+* Add ``--no_shed_install`` option, to prevent shed installs as part of workflow testing.
+  `Pull Request 841`_
+* Small docs fix (thanks to `@erasche`_). `Pull Request 848`_
 
 ---------------------
 0.53.0 (2018-05-22)
@@ -1335,6 +1351,18 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _324c776: https://github.com/galaxyproject/planemo/commit/324c776
+.. _72d2ca7: https://github.com/galaxyproject/planemo/commit/72d2ca7
+.. _b12b117: https://github.com/galaxyproject/planemo/commit/b12b117
+.. _016b923: https://github.com/galaxyproject/planemo/commit/016b923
+.. _2002b49: https://github.com/galaxyproject/planemo/commit/2002b49
+.. _Pull Request 843: https://github.com/galaxyproject/planemo/pull/843
+.. _Pull Request 842: https://github.com/galaxyproject/planemo/pull/842
+.. _Pull Request 841: https://github.com/galaxyproject/planemo/pull/841
+.. _Pull Request 847: https://github.com/galaxyproject/planemo/pull/847
+.. _Pull Request 848: https://github.com/galaxyproject/planemo/pull/848
+.. _Pull Request 849: https://github.com/galaxyproject/planemo/pull/849
+.. _Pull Request 850: https://github.com/galaxyproject/planemo/pull/850
 .. _Pull Request 836: https://github.com/galaxyproject/planemo/pull/836
 .. _Pull Request 833: https://github.com/galaxyproject/planemo/pull/833
 .. _Pull Request 837: https://github.com/galaxyproject/planemo/pull/837
@@ -1914,3 +1942,4 @@ History
 .. _@manabuishii: https://github.com/manabuishii
 .. _@dfornika: https://github.com/dfornika
 .. _@bernt-matthias: https://github.com/bernt-matthias
+.. _@katrinleinweber: https://github.com/katrinleinweber
