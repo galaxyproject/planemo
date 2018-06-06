@@ -19,5 +19,5 @@ then
 fi
 cd common-workflow-language
 git pull
-export PLANEMO_ARGS="--no_dependency_resolution"
+export PLANEMO_ARGS="--no_dependency_resolution --engine=galaxy"
 ./run_test.sh --junit-xml=result.xml $@
