@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.54.0.dev0
+0.54.0 (2018-06-06)
 ---------------------
 
 * Better support for testings against different versions of Galaxy efficiently and robustly.
