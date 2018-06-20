@@ -17,6 +17,7 @@ from six import (
     add_metaclass,
     iteritems
 )
+from six.moves import shlex_quote
 
 from planemo import git
 from planemo.config import OptionSource
@@ -197,8 +198,6 @@ MIGRATION_PER_VERSION = {
 OLDEST_SUPPORTED_VERSION = 127
 
 DATABASE_LOCATION_TEMPLATE = "sqlite:///%s?isolation_level=IMMEDIATE"
-
-PIP_INSTALL_CMD = "pip install %s"
 
 COMMAND_STARTUP_COMMAND = "./scripts/common_startup.sh ${COMMON_STARTUP_ARGS}"
 
@@ -934,16 +933,15 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         daemon = kwds.get("daemon", False)
         # TODO: Allow running dockerized Galaxy here instead.
         setup_venv_command = setup_venv(ctx, kwds)
-        run_script = os.path.join(self.galaxy_root, "run.sh")
-        run_script += " $COMMON_STARTUP_ARGS"
+        run_script = "%s $COMMON_STARTUP_ARGS" % shlex_quote(os.path.join(self.galaxy_root, "run.sh"))
         if daemon:
             run_script += " --daemon"
             self.env["GALAXY_RUN_ALL"] = "1"
         else:
-            run_script += " --server-name '%s'" % self.server_name
+            run_script += " --server-name %s" % shlex_quote(self.server_name)
         server_ini = os.path.join(self.config_directory, "galaxy.ini")
         self.env["GALAXY_CONFIG_FILE"] = server_ini
-        cd_to_galaxy_command = "cd %s" % self.galaxy_root
+        cd_to_galaxy_command = ['cd', self.galaxy_root]
         return shell_join(
             cd_to_galaxy_command,
             setup_venv_command,
@@ -1238,14 +1236,14 @@ def _install_with_command(ctx, config_directory, command, env, kwds):
     # TODO: --watchdog
     pip_installs = []
     if pip_installs:
-        pip_install_command = PIP_INSTALL_CMD % " ".join(pip_installs)
+        pip_install_command = ['pip', 'install'] + pip_installs
     else:
         pip_install_command = ""
     setup_venv_command = setup_venv(ctx, kwds)
     install_cmd = shell_join(
-        "cd %s" % config_directory,
+        ['cd', config_directory],
         command,
-        "cd galaxy-dev",
+        ['cd', 'galaxy-dev'],
         setup_venv_command,
         pip_install_command,
         setup_common_startup_args(),

@@ -15,7 +15,10 @@ from xml.sax.saxutils import escape
 import click
 from galaxy.tools.deps import commands
 from galaxy.tools.deps.commands import download_command
-from six import StringIO
+from six import (
+    string_types,
+    StringIO
+)
 
 from .exit_codes import (
     EXIT_CODE_NO_SUCH_TARGET,
@@ -26,11 +29,15 @@ from .exit_codes import (
 IS_OS_X = _platform == "darwin"
 
 
-def communicate(cmds, **kwds):
-    if isinstance(cmds, list):
-        cmd_string = commands.argv_to_str(cmds)
+def args_to_str(args):
+    if args is None or isinstance(args, string_types):
+        return args
     else:
-        cmd_string = cmds
+        return commands.argv_to_str(args)
+
+
+def communicate(cmds, **kwds):
+    cmd_string = args_to_str(cmds)
     info(cmd_string)
     p = commands.shell_process(cmds, **kwds)
     if kwds.get("stdout", None) is None and commands.redirecting_io(sys=sys):
@@ -46,10 +53,7 @@ def communicate(cmds, **kwds):
 
 
 def shell(cmds, **kwds):
-    if isinstance(cmds, list):
-        cmd_string = commands.argv_to_str(cmds)
-    else:
-        cmd_string = cmds
+    cmd_string = args_to_str(cmds)
     info(cmd_string)
     return commands.shell(cmds, **kwds)
 
@@ -81,7 +85,7 @@ def warn(message, *args):
 
 def shell_join(*args):
     """Join potentially empty commands together with ;."""
-    return "; ".join([c for c in args if c])
+    return "; ".join(args_to_str(_) for _ in args if _)
 
 
 def write_file(path, content, force=True):

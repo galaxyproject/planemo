@@ -6,13 +6,11 @@ import os
 from collections import namedtuple
 from xml.etree import ElementTree as ET
 
+from six.moves import shlex_quote
+
 from planemo.io import error
 from planemo.test.results import StructuredData as BaseStructuredData
 
-
-RUN_TESTS_CMD = (
-    "sh run_tests.sh $COMMON_STARTUP_ARGS --report_file %s %s %s %s"
-)
 
 NO_STRUCTURED_FILE = (
     "Warning: Problem with target Galaxy, it did not "
@@ -41,24 +39,20 @@ class GalaxyTestCommand(object):
     def build(self):
         xunit_report_file = self.xunit_report_file
         sd_report_file = self.structured_report_file
-        html_report_file = self.html_report_file
+        cmd = "sh run_tests.sh $COMMON_STARTUP_ARGS --report_file %s" % shlex_quote(self.html_report_file)
         if xunit_report_file:
-            xunit_arg = "--xunit_report_file %s" % xunit_report_file
-        else:
-            xunit_arg = ""
+            cmd += " --xunit_report_file %s" % shlex_quote(xunit_report_file)
         if sd_report_file:
-            sd_arg = "--structured_data_report_file %s" % sd_report_file
-        else:
-            sd_arg = ""
+            cmd += " --structured_data_report_file %s" % shlex_quote(sd_report_file)
         if self.installed:
-            tests = "-installed"
+            cmd += ' -installed'
+        elif self.failed:
+            sd = StructuredData(sd_report_file)
+            tests = " ".join(sd.failed_ids)
+            cmd += " %s" % tests
         else:
-            tests = "functional.test_toolbox"
-            if self.failed:
-                sd = StructuredData(self.structured_report_file)
-                failed_ids = sd.failed_ids
-                tests = " ".join(failed_ids)
-        return RUN_TESTS_CMD % (html_report_file, xunit_arg, sd_arg, tests)
+            cmd += ' functional.test_toolbox'
+        return cmd
 
 
 class StructuredData(BaseStructuredData):
