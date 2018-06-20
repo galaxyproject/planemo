@@ -3,6 +3,7 @@ import os
 import string
 
 from galaxy.tools.deps.commands import shell
+from six.moves import shlex_quote
 
 from planemo.io import info, shell_join
 from planemo.virtualenv import create_command
@@ -10,16 +11,15 @@ from planemo.virtualenv import create_command
 
 # Activate galaxy's virtualenv if present (needed for tests say but not for
 # server because run.sh does this).
-ACTIVATE_COMMAND = "[ -e $GALAXY_VIRTUAL_ENV ] && . $GALAXY_VIRTUAL_ENV/bin/activate"
+ACTIVATE_COMMAND = '[ -e "$GALAXY_VIRTUAL_ENV" ] && . "$GALAXY_VIRTUAL_ENV"/bin/activate'
 CREATE_COMMAND_TEMPLATE = string.Template(
-    'if [ ! -e $GALAXY_VIRTUAL_ENV ]; then $create_virtualenv; fi',
+    'if [ ! -e "$GALAXY_VIRTUAL_ENV" ]; then $create_virtualenv; fi',
 )
 PRINT_VENV_COMMAND = shell_join(
     'echo "Set \$GALAXY_VIRTUAL_ENV to $GALAXY_VIRTUAL_ENV"',
-    'if [ -e $GALAXY_VIRTUAL_ENV ]',
-    'then echo "Virtual environment directory exists."',
-    'else echo "Virtual environment directory does not exist."',
-    'fi',
+    ('if [ -e "$GALAXY_VIRTUAL_ENV" ]; ',
+     'then echo "Virtual environment directory exists."; ',
+     'else echo "Virtual environment directory does not exist."; fi'),
 )
 
 
@@ -28,9 +28,9 @@ DOWNLOAD_GALAXY = (
     "wget https://codeload.github.com/galaxyproject/galaxy/tar.gz/"
 )
 
-CACHED_VIRTUAL_ENV_COMMAND = ("if [ -d .venv ] || [ -f dist-eggs.ini ];"
-                              " then GALAXY_VIRTUAL_ENV=.venv; "
-                              " else GALAXY_VIRTUAL_ENV=%s; fi")
+CACHED_VIRTUAL_ENV_COMMAND = ("if [ -d .venv ] || [ -f dist-eggs.ini ]; "
+                              "then GALAXY_VIRTUAL_ENV=.venv; "
+                              "else GALAXY_VIRTUAL_ENV=%s; fi")
 UNCACHED_VIRTUAL_ENV_COMMAND = "GALAXY_VIRTUAL_ENV=.venv"
 
 
@@ -57,7 +57,7 @@ def locate_galaxy_virtualenv(ctx, kwds):
         shared_venv_path = os.path.join(workspace, "gx_venv")
         if galaxy_branch != "master":
             shared_venv_path = "%s_%s" % (shared_venv_path, galaxy_branch)
-        venv_command = CACHED_VIRTUAL_ENV_COMMAND % shared_venv_path
+        venv_command = CACHED_VIRTUAL_ENV_COMMAND % shlex_quote(shared_venv_path)
     else:
         venv_command = UNCACHED_VIRTUAL_ENV_COMMAND
     return shell_join(

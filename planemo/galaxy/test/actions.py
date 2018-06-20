@@ -64,7 +64,7 @@ def run_in_config(ctx, config, run=run_galaxy_command, **kwds):
     config.env["GALAXY_TEST_VERBOSE_ERRORS"] = "true"
     config.env["GALAXY_TEST_SAVE"] = job_output_files
 
-    cd_to_galaxy_command = "cd %s" % config.galaxy_root
+    cd_to_galaxy_command = ['cd', config.galaxy_root]
     test_cmd = test_structures.GalaxyTestCommand(
         html_report_file,
         xunit_report_file,
@@ -74,9 +74,9 @@ def run_in_config(ctx, config, run=run_galaxy_command, **kwds):
     ).build()
     setup_common_startup_args = ""
     if kwds.get("skip_venv", False):
-        setup_common_startup_args = (
-            'COMMON_STARTUP_ARGS=--skip-venv; '
-            'export COMMON_STARTUP_ARGS; '
+        setup_common_startup_args = shell_join(
+            'COMMON_STARTUP_ARGS=--skip-venv'
+            'export COMMON_STARTUP_ARGS'
             'echo "Set COMMON_STARTUP_ARGS to ${COMMON_STARTUP_ARGS}"'
         )
     setup_venv_command = setup_venv(ctx, kwds)
