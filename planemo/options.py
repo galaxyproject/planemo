@@ -1123,6 +1123,56 @@ def galaxy_serve_options():
     )
 
 
+def training_topic_option():
+    return _compose(
+        planemo_option(
+            "--topic_name",
+            required=True,
+            help="Name (directory name) of the topic to create or in which "
+                "the tutorial should be create"),
+        planemo_option(
+            "--topic_title",
+            help="Title of the topic to create"),
+        planemo_option(
+            "--topic_target",
+            type=click.Choice(['use', 'admin-dev', 'instructors']),
+            default="use",
+            help="Target audience for the topic"),
+        planemo_option(
+            "--topic_summary",
+            help="Summary of the topic")
+    )
+
+
+def training_tutorial_option():
+    return _compose(
+        planemo_option(
+            "--tutorial_name",
+            help="Name (directory name) of the new tutorial to create "
+                "(it will be the directory name)"),
+        planemo_option(
+            "--tutorial_title",
+            help="Title of the tutorial"),
+        planemo_option(
+            "--hands_on",
+            is_flag=True,
+            default=True,
+            help="Add hands-on for the new tutorial"),
+        planemo_option(
+            "--slides",
+            is_flag=True,
+            default=False,
+            help="Add slides for the new tutorial")
+    )
+
+
+def training_init_options():
+    return _compose(
+        training_topic_option(),
+        training_tutorial_option()
+    )
+
+
 def shed_fail_fast_option():
     return planemo_option(
         "--fail_fast",
