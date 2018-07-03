@@ -1123,13 +1123,18 @@ def galaxy_serve_options():
     )
 
 
+def training_topic_name_option():
+    return planemo_option(
+        "--topic_name",
+        required=True,
+        help="Name (directory name) of the topic to create or in which "
+            "the tutorial should be create"
+    )
+
+
 def training_topic_option():
     return _compose(
-        planemo_option(
-            "--topic_name",
-            required=True,
-            help="Name (directory name) of the topic to create or in which "
-                "the tutorial should be create"),
+        training_topic_name_option(),
         planemo_option(
             "--topic_title",
             help="Title of the topic to create"),
@@ -1144,12 +1149,33 @@ def training_topic_option():
     )
 
 
-def training_tutorial_option():
-    return _compose(
-        planemo_option(
+def training_tutorial_name_option():
+    return planemo_option(
             "--tutorial_name",
             help="Name (directory name) of the new tutorial to create "
-                "(it will be the directory name)"),
+                "(it will be the directory name)"
+    )
+
+
+def training_tutorial_worflow_option():
+    return _compose(
+        planemo_option(
+            "--workflow",
+            type=click.Path(file_okay=True, resolve_path=True),
+            help="Workflow of the tutorial (locally)",
+            default=None),
+        planemo_option(
+            "--galaxy_url",
+            help="URL of a Galaxy instance with the workflow"),
+        planemo_option(
+            "--workflow_id",
+            help="ID of the workflow on the Galaxy instance")
+    )
+
+
+def training_tutorial_option():
+    return _compose(
+        training_tutorial_name_option(),
         planemo_option(
             "--tutorial_title",
             help="Title of the tutorial"),
@@ -1162,7 +1188,11 @@ def training_tutorial_option():
             "--slides",
             is_flag=True,
             default=False,
-            help="Add slides for the new tutorial")
+            help="Add slides for the new tutorial"),
+        training_tutorial_worflow_option(),
+        planemo_option(
+            "--zenodo",
+            help="Zenodo URL with the input data")
     )
 
 
