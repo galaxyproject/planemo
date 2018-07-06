@@ -11,8 +11,7 @@
 : ${PLANEMO_SERVE_DATABASE_TYPE:="postgres"}  # used if not using Docker with PLANEMO_TEST_STYLE
 : ${PLANEMO_DOCKER_GALAXY_IMAGE:="quay.io/bgruening/galaxy:18.01"}  # used if used Docker with PLANEMO_TEST_STYLE
 : ${PLANEMO_VIRTUAL_ENV:=".venv"}
-
-GALAXY_URL="http://localhost:$PLANEMO_SERVE_PORT"
+: ${GALAXY_URL:="http://localhost:$PLANEMO_SERVE_PORT"}
 
 # Ensure Planemo is installed.
 if [ ! -d "${PLANEMO_VIRTUAL_ENV}" ]; then
@@ -101,6 +100,19 @@ elif [ "$PLANEMO_TEST_STYLE" = "manual_docker_run_and_test" ]; then
         --galaxy_url "$GALAXY_URL" \
         --galaxy_admin_key admin \
         --galaxy_user_key admin \
+        "$1"
+elif [ "$PLANEMO_TEST_STYLE" = "external_galaxy" ]; then
+    if [[ -n $PLANEMO_INSTALL_TOOLS ]]; then
+        INSTALL_TOOLS="";
+    else
+        INSTALL_TOOLS="--no_shed_install";
+    fi
+    planemo $PLANEMO_OPTIONS test \
+        --engine external_galaxy \
+        --galaxy_url "$GALAXY_URL" \
+        --galaxy_admin_key "$PLANEMO_ADMIN_KEY" \
+        --galaxy_user_key "$PLANEMO_USER_KEY" \
+        $INSTALL_TOOLS \
         "$1"
 else
     echo "Unknown test style ${PLANEMO_TEST_STYLE}"
