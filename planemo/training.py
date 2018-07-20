@@ -18,16 +18,39 @@ from planemo.engine import (
 )
 
 
-INPUT_TEMPLATE = """
->   - icon {{icon}} *"{{input_name}}"*: {{input_value}}
-"""
-
-INPUT_TEMPLATE_2 = """
+INPUT_FILE_TEMPLATE = """
 >   - {{ '{%' }} icon {{icon}} {{ '%}' }} *"{{input_name}}"*: {{input_value}}
 """
 
+INPUT_SECTION = """
+>{{space}}- In *"{{section_label}}"*:
+"""
+
+INPUT_ADD_REPEAT = """
+>{{space}}- Click on *"Instert {{section_label}}"*:
+"""
+
+INPUT_PARAM = """
+>{{space}}- *"{{param_label}}"*: `{{param_value}}`
+"""
 
 HANDS_ON_TOOL_BOX_TEMPLATE = """
+# Title of the section usually corresponding to a big step
+
+Description of the step: some background and some theory. Some image can be added there to support the theory explanation:
+
+![Alternative text](../../images/image_name "Legend of the image")
+
+The idea is to keep the theory description before quite simple to focus more on the practical part. 
+
+<-- Consider adding a detail box to expand the theory -->
+
+> ### {{ '{%' }} icon details {{ '%}' }} More details about the theory
+>
+> But to describe more details, it is possible to use the detail boxes which are expandable
+> 
+{: .details}
+
 > ### {{ '{%' }} icon hands_on {{ '%}' }} Hands-on: TODO: task description
 >
 > 1. **{{tool_name}}** {{ '{%' }} icon tool {{ '%}' }} with the following parameters:{{inputlist}}{{paramlist}}
@@ -36,22 +59,32 @@ HANDS_ON_TOOL_BOX_TEMPLATE = """
 >   TODO: some of these parameters may be the default values and can be removed
 >         unless they have some didactic value.
 >
+>   <-- Consider adding a comment or tip box -->
+>
+>   > ### {{ '{%' }} icon comment {{ '%}' }}} Comment
+>   >
+>   > A comment about the tool or something else. This box can also be in the main text
+>   {: .comment}
+>
 {: .hands_on}
 
 <-- Consider adding a question to test the learners understanding of the previous exercise -->
+
 > ### {{ '{%' }} icon question {{ '%}' }} Questions
 >
 > 1. Question1?
 > 2. Question2?
 >
->    > ### {{ '{%' }} icon solution {{ '%}' }} Solution
->    >
->    > 1. Answer for question1
->    > 2. Answer for question2
->    >
->    {: .solution}
+> > ### {{ '{%' }} icon solution {{ '%}' }} Solution
+> >
+> > 1. Answer for question1
+> > 2. Answer for question2
+> >
+> {: .solution}
 >
 {: .question}
+
+
 """
 
 
@@ -134,8 +167,6 @@ have fun!
 >    {: .tip}
 >
 {: .hands_on}
-
-# Different steps
 
 {{ body }}
 
@@ -318,16 +349,116 @@ def get_input_tool_name(step_id, steps):
     inp_provenance = ''
     inp_prov_id = str(step_id)
     if inp_prov_id in steps:
-        inp_provenance = '(output of `%s`)' % steps[inp_prov_id]['name']
+        inp_provenance = '(output of **%s** {% icon tool %})' % steps[inp_prov_id]['name']
     return inp_provenance
 
 
-def get_input_label(inp_n, inputs):
-    """Get the label of an input"""
-    #for inp in inputs:
-    #    if inp["name"] == inp_n:
-    #        return inp["label"]
-    return inp_n
+def get_tool_input(tool_desc):
+    """Get a dictionary with label being the tool parameter name and the value the description
+    of the parameter extracted from the show_tool function of bioblend"""
+    tool_inp = collections.OrderedDict()
+    for inp in tool_desc["inputs"]:
+        tool_inp.setdefault(inp['name'], inp)
+    return tool_inp
+
+
+def format_inputs(wf_inputs, tp_desc, wf_steps):
+    inputlist = ''
+    for inp_n, inp in wf_inputs.items():
+        if inp_n != tp_desc['name']:
+            continue
+        inps = []
+        if isinstance(inp, list): # multiple input (not collection)
+            icon = 'param-files'
+            for i in inp:
+                inps.append('`%s` %s' % (
+                    i['output_name'],
+                    get_input_tool_name(i['id'], wf_steps)))
+        else: # sinle input
+            icon = 'param-file'
+            inps = ['`%s` %s' % (
+                inp['output_name'],
+                get_input_tool_name(inp['id'], wf_steps))]
+        context = {
+            "icon": icon,
+            "input_name": tp_desc['label'],
+            "input_value": ', '.join(inps)
+        }
+        inputlist += templates.render(INPUT_FILE_TEMPLATE, **context)
+    return inputlist
+
+
+def format_param_desc(wf_params, wf_inputs, tp_desc, level, wf_steps):
+    """Format the parameter description (label and value) given the type of parameter"""
+    paramlist = ''
+    if 'type' not in tp_desc:
+        raise ValueError("No type for the paramater %s" % tp_desc['name'])
+    if tp_desc['type'] == 'data':
+        paramlist += format_inputs(wf_inputs, tp_desc, wf_steps)
+    elif tp_desc['type'] == 'data_collection':
+        info("data_collection parameters are currently not supported")
+    elif tp_desc['type'] == 'section':
+        context = {'space': '   ' * level, 'section_label': tp_desc['title']}
+        sub_param_desc = get_param_desc(wf_params, wf_inputs, get_tool_input(tp_desc), level+1, wf_steps)
+        if sub_param_desc != '':
+            paramlist += templates.render(INPUT_SECTION, **context)
+            paramlist += sub_param_desc
+    elif tp_desc['type'] == 'conditional':
+        test_param = tp_desc['test_param']
+        paramlist += format_param_desc(wf_params[test_param['name']], wf_inputs, test_param, level, wf_steps)
+        for case in tp_desc['cases']:
+            if case['value'] == wf_params[test_param['name']]:
+                if len(case['inputs']) > 1:
+                    paramlist += get_param_desc(wf_params, wf_inputs, get_tool_input(case), level+1, wf_steps)
+    elif tp_desc['type'] == 'repeat':
+        repeat_inp_desc = get_tool_input(tp_desc)
+        context = {'space': '   ' * level, 'section_label': tp_desc['title']}
+        paramlist += templates.render(INPUT_SECTION, **context)
+        for r in range(len(wf_params)):
+            context = {
+                'space': '   ' * (level+1),
+                'section_label': "%s: %s" % (r+1, tp_desc['title'])}
+            paramlist += templates.render(INPUT_SECTION, **context)
+            paramlist += get_param_desc(wf_params[r], wf_inputs, repeat_inp_desc, level+2, wf_steps)
+            if r < len(wf_params) - 1:
+                context = {'space': '   ' * (level+1), 'section_label': tp_desc['title']}
+                paramlist += templates.render(INPUT_ADD_REPEAT, **context)
+    else:
+        if tp_desc['value'] == wf_params:
+            return paramlist
+        elif tp_desc['type'] == 'boolean':
+            if bool(tp_desc['value']) == wf_params:
+                return paramlist
+            param_value = 'Yes' if wf_params else 'No'
+        elif tp_desc['type'] == 'select':
+            param_value = ''
+            for opt in tp_desc['options']:
+                if opt[1] == wf_params:
+                    param_value = opt[0]
+        elif tp_desc['type'] == 'data_column':
+            param_value = "c%s" % wf_params
+        else:
+            param_value = wf_params
+        context = {
+            'space': '   ' * level,
+            'param_label': tp_desc['label'],
+            'param_value': param_value}
+        paramlist += templates.render(INPUT_PARAM, **context)
+    return paramlist
+
+
+def get_param_desc(wf_params, wf_inputs, tp_desc, level, wf_steps):
+    """Parse the parameters of the tool and return the formatted list of the
+    parameters and values set in the workflow"""
+    paramlist = ''
+    for n, tp_d in tp_desc.items():
+        if n not in wf_params:
+            raise ValueError("%s not in workflow" % n)
+        wf_param = wf_params[n]
+        if isinstance(wf_param, str):
+            wf_param = json.loads(wf_param)
+        paramlist += format_param_desc(wf_param, wf_inputs, tp_d, level, wf_steps)
+    return paramlist
 
 
 def get_handson_box(step_id, steps, tools):
@@ -338,64 +469,14 @@ def get_handson_box(step_id, steps, tools):
     tool_name = step['name']
     if len(step['input_connections']) == 0:
         return ''
-    tool = {}#tools[tool_name]
+    tp_desc = tools[tool_name]
 
-    # add input description
-    input_conn = step['input_connections']
-    inputlist = ''
-    for inp_n, inp in input_conn.items():
-        inps = []
-        if isinstance(inp, list): # multiple input (not collection)
-            icon = 'param-files'
-            for i in inp:
-                inps.append('`%s` %s' % (
-                    i['output_name'],
-                    get_input_tool_name(i['id'], steps)))
-        else: # sinle input
-            icon = 'param-file'
-            inps = ['`%s` %s' % (
-                inp['output_name'],
-                get_input_tool_name(inp['id'], steps))]
+    # add description
+    wf_inputs = step['input_connections']
+    wf_params = json.loads(step['tool_state'])
+    paramlist = get_param_desc(wf_params, wf_inputs, tp_desc, 1, steps)
 
-        context = {
-            "icon": icon,
-            "input_name": get_input_label(inp_n, tool["inputs"]),
-            "input_value": ', '.join(inps)
-        }
-        inputlist += templates.render(INPUT_TEMPLATE, **context)
-
-    # add parameters
-    parameters = step['tool_state']
-    print(parameters)
-
-    #g = nested_dict_iter(json.loads(parameters))
-    #print(g)
-    
-    paramlist = ''
-
-    # while True:
-    #    try:
-    #        (k, v) = next(g)
-    #        print("param: ", k, v)
-    #    except StopIteration:
-    #        break
-
-    #    if not v or v == 'null' or v == '[]':
-    #        pass
-    #    elif 'RuntimeValue' in str(v):
-    #        pass
-            # print("myinputs:", v, inputs)
-            # print(inputs)
-    #    elif '__' not in k and k != 'chromInfo':
-    #        paramlist += '\n>   - *"' + k + '"*: `' + str(v).strip('"[]') + '`'
-
-    # print(paramlist)
-
-    context = {
-        "tool_name": tool_name,
-        "inputlist": inputlist,
-        "paramlist": paramlist
-    }
+    context = {"tool_name": tool_name, "paramlist": paramlist}
     return templates.render(HANDS_ON_TOOL_BOX_TEMPLATE, **context)
 
 
@@ -405,16 +486,14 @@ def get_wf_from_running_galaxy(kwds, ctx):
 
 
 def get_wf_tool_description(wf, gi):
-    """Get a dictionary with description of all tools in a workflow"""
+    """Get a dictionary with description of inputs of all tools in a workflow"""
     tools = {}
     for s in wf['steps']:
         step = wf['steps'][s]
         if len(step['input_connections']) == 0:
             continue
-        print()
-        print(step)
-        tools.setdefault(step['name'],
-                         gi.tools.show_tool(step['tool_id'], io_details = True))
+        tool_desc = gi.tools.show_tool(step['tool_id'], io_details = True)
+        tools.setdefault(step['name'], get_tool_input(tool_desc))
     return tools
 
 
@@ -426,8 +505,7 @@ def serve_wf_locally(kwds, wf_filepath, ctx):
         with galaxy_engine.ensure_runnables_served([runnable]) as config:
             workflow_id = config.workflow_id(wf_filepath)
             wf = config.gi.workflows.export_workflow_dict(workflow_id)
-            print(wf)
-            tools = {} # get_wf_tool_description(wf, config.gi) 
+            tools = get_wf_tool_description(wf, config.gi) 
     return wf, tools
 
 
@@ -440,19 +518,19 @@ def create_tutorial_from_workflow(kwds, tuto_dir, ctx):
     else:
         wf, tools = serve_wf_locally(kwds, kwds["workflow"], ctx)
 
-    # get 
+    # get link to data on zenodo
     z_file_links = get_zenodo_file_url(kwds['zenodo'])
 
     body = ''
-    for step in wf['steps']:
-        body += get_handson_box(step, wf['steps'], tools)
+    for step in range(len(wf['steps'].keys())):
+        body += get_handson_box(str(step), wf['steps'], tools)
 
     context = {
         "topic_name": kwds["topic_name"],
         "tutorial_name": kwds["tutorial_name"],
         "zenodo_link": kwds["zenodo"] if kwds["zenodo"] else '',
         "z_file_links": "\n>    ".join(z_file_links),
-        "hands_on_boxes": body
+        "body": body
     }
     template = templates.render(TUTORIAL_TEMPLATE, **context)
     
@@ -481,7 +559,6 @@ def create_tutorial(kwds, tuto_dir, topic_dir, template_dir, ctx):
     else:
         shutil.copytree(template_dir, tuto_dir)
 
-    print(kwds)
     # create tutorial skeleton from workflow
     if kwds["workflow"] or kwds['workflow_id']:
         info("Create tutorial skeleton from workflow")
