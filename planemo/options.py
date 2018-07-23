@@ -1137,6 +1137,7 @@ def training_topic_option():
         training_topic_name_option(),
         planemo_option(
             "--topic_title",
+            default="Title of the topic",
             help="Title of the topic to create"),
         planemo_option(
             "--topic_target",
@@ -1145,6 +1146,7 @@ def training_topic_option():
             help="Target audience for the topic"),
         planemo_option(
             "--topic_summary",
+            default="Summary of the topic",
             help="Summary of the topic")
     )
 
@@ -1178,6 +1180,7 @@ def training_tutorial_option():
         training_tutorial_name_option(),
         planemo_option(
             "--tutorial_title",
+            default="Title of the tutorial",
             help="Title of the tutorial"),
         planemo_option(
             "--hands_on",
@@ -1199,7 +1202,12 @@ def training_tutorial_option():
 def training_init_options():
     return _compose(
         training_topic_option(),
-        training_tutorial_option()
+        training_tutorial_option(),
+        planemo_option(
+            "--datatypes",
+            type=click.Path(file_okay=True, resolve_path=True),
+            help="YAML file with the correspondance between Zenodo extension and Galaxy datatypes",
+            default="shared/datatypes.yaml")
     )
 
 

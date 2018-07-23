@@ -27,7 +27,7 @@ INPUT_SECTION = """
 """
 
 INPUT_ADD_REPEAT = """
->{{space}}- Click on *"Instert {{section_label}}"*:
+>{{space}}- Click on *"Insert {{section_label}}"*:
 """
 
 INPUT_PARAM = """
@@ -316,12 +316,8 @@ def update_tutorial(kwds, tuto_dir, topic_dir):
     update_tuto_file(slides_path, kwds["slides"], kwds["topic_name"], kwds["tutorial_name"])
 
 
-def get_zenodo_file_url(zenodo_link):
-    """Get the list of URLs of the files on Zenodo"""
-    links = []
-    if not zenodo_link:
-        return links
-
+def get_zenodo_record(zenodo_link):
+    """Get the content of a Zenodo record"""
     # get the record in the Zenodo link
     if 'doi' in zenodo_link:
         z_record = zenodo_link.split('.')[-1]
@@ -334,13 +330,114 @@ def get_zenodo_file_url(zenodo_link):
     r.raise_for_status()
     req_res = r.json()
 
+    return(z_record, req_res)
+
+
+def fill_data_library(files, kwds, z_record, tuto_dir):
+    """Fill or update the data library file"""
+    data_lib_filepath = os.path.join(tuto_dir, "data-library.yaml")
+
+    if os.path.exists(data_lib_filepath):
+        data_lib = load_yaml(data_lib_filepath)
+    else:
+        data_lib = collections.OrderedDict()
+    
+    # set default information
+    data_lib.setdefault('destination', collections.OrderedDict({
+        'type': 'library',
+        'name': 'GTN - Material',
+        'description': 'Galaxy Training Network Material',
+        'synopsis': 'Galaxy Training Network Material. See https://training.galaxyproject.org'}))
+    data_lib.setdefault('items', [])
+    data_lib.pop('libraries', None)
+
+    # get topic or create new one
+    topic = collections.OrderedDict()
+    for item in data_lib['items']:
+        if item['name'] == kwds['topic_title']:
+            topic = item
+    if not topic:
+        topic = collections.OrderedDict({
+            'name': kwds['topic_title'],
+            'description': kwds['topic_summary'],
+            'items': []})
+    
+    # get tutorial or create new one
+    tuto = collections.OrderedDict()
+    for item in topic['items']:
+        if item['name'] == kwds['tutorial_title']:
+            tuto = item
+    if not tuto:
+        tuto = collections.OrderedDict({
+            'name': kwds['tutorial_title'],
+            'items': []})
+
+    # get current data library and/or previous data library for the tutorial
+    # remove the latest tag of any existing library
+    # remove the any other existing library
+    current_data_lib = collections.OrderedDict()
+    previous_data_lib = collections.OrderedDict()
+    for item in tuto['items']:
+        if item['name'] == "DOI: 10.5281/zenodo.%s" % z_record:
+            current_data_lib = item
+        elif item['description'] == 'latest':
+            previous_data_lib = item
+            previous_data_lib['description'] = ''
+    if not current_data_lib:
+        current_data_lib = collections.OrderedDict({
+            'name': "DOI: 10.5281/zenodo.%s" % z_record,
+            'description': 'latest',
+            'items': []})
+    current_data_lib['items'] = files
+    
+    # add data lib, tuto and topic
+    tuto['items'] = [current_data_lib]
+    if previous_data_lib:
+        tuto['items'].append(previous_data_lib)
+    topic['items'].append(tuto)
+    data_lib['items'].append(topic)
+   
+    save_to_yaml(data_lib, data_lib_filepath)
+
+
+def get_galaxy_datatype(z_ext, kwds):
+    """Get the Galaxy datatype corresponding to a Zenodo file type"""
+    g_datatype = '' 
+    datatypes = load_yaml(kwds['datatypes'])
+    if z_ext in datatypes:
+        g_datatype = datatypes[z_ext]
+    if g_datatype == '':
+        g_datatype = '# Please add a Galaxy datatype or update the shared/datatypes.yaml file' 
+    info("Get Galaxy datatypes: %s --> %s" %(z_ext, g_datatype))
+    return g_datatype
+
+
+def extract_from_zenodo(kwds, tuto_dir):
+    """Get the list of URLs of the files on Zenodo and fill the data library file"""
+    links = []
+    if not kwds['zenodo']:
+        return links
+
+    z_record, req_res = get_zenodo_record(kwds['zenodo'])
+
     # extract the URLs from the JSON
     if 'files' not in req_res:
-        return links
-    
-    for f in req_res['files']:
-        links.append(f['links']['self'])
+        raise ValueError("No files in the Zenodo record")
 
+    files = []
+    for f in req_res['files']:
+        file_dict = {'url':'', 'src': 'url', 'ext': '', 'info': kwds['zenodo']}
+        if 'type' in f:
+            file_dict['ext'] = get_galaxy_datatype(f['type'], kwds)
+        if 'links' not in f and 'self' not in f['links']:
+            raise ValueError("No link for file %s" % f)
+        file_dict['url'] = f['links']['self']
+        links.append(f['links']['self'])
+        files.append(file_dict)
+
+    # prepare the data library dictionary
+    fill_data_library(files, kwds, z_record, tuto_dir)
+    
     return links
 
 
@@ -349,7 +446,7 @@ def get_input_tool_name(step_id, steps):
     inp_provenance = ''
     inp_prov_id = str(step_id)
     if inp_prov_id in steps:
-        inp_provenance = '(output of **%s** {% icon tool %})' % steps[inp_prov_id]['name']
+        inp_provenance = "(output of **%s** {%% icon tool %%})" % steps[inp_prov_id]['name']
     return inp_provenance
 
 
@@ -509,7 +606,7 @@ def serve_wf_locally(kwds, wf_filepath, ctx):
     return wf, tools
 
 
-def create_tutorial_from_workflow(kwds, tuto_dir, ctx):
+def create_tutorial_from_workflow(kwds, z_file_links, tuto_dir, ctx):
     """Create tutorial structure from the workflow file"""
     # load workflow
     if kwds['workflow_id']:
@@ -517,9 +614,6 @@ def create_tutorial_from_workflow(kwds, tuto_dir, ctx):
             wf = get_wf_from_running_galaxy(kwds, ctx)
     else:
         wf, tools = serve_wf_locally(kwds, kwds["workflow"], ctx)
-
-    # get link to data on zenodo
-    z_file_links = get_zenodo_file_url(kwds['zenodo'])
 
     body = ''
     for step in range(len(wf['steps'].keys())):
@@ -540,16 +634,6 @@ def create_tutorial_from_workflow(kwds, tuto_dir, ctx):
         md.write(template)
 
 
-def extract_tools_from_workflow(kwds, tuto_dir):
-    """Create and fill tools.yaml file from workflow"""
-    info("Test")
-
-
-def extract_data_library_from_zenodo(zenodo_link, tuto_dir):
-    """Create the data_library from Zenodo"""
-    info("Test")
-
-
 def create_tutorial(kwds, tuto_dir, topic_dir, template_dir, ctx):
     """Create the skeleton of a new tutorial"""
     # copy or rename templates
@@ -559,18 +643,19 @@ def create_tutorial(kwds, tuto_dir, topic_dir, template_dir, ctx):
     else:
         shutil.copytree(template_dir, tuto_dir)
 
+    # extract the data library from Zenodo and the links for the tutorial
+    z_file_links = ''
+    if kwds["zenodo"]:
+        info("Create the data library from Zenodo")
+        z_file_links = extract_from_zenodo(kwds, tuto_dir)
+
     # create tutorial skeleton from workflow
     if kwds["workflow"] or kwds['workflow_id']:
         info("Create tutorial skeleton from workflow")
-        create_tutorial_from_workflow(kwds, tuto_dir, ctx)
-        extract_tools_from_workflow(kwds, tuto_dir)
+        #create_tutorial_from_workflow(kwds, z_file_links, tuto_dir, ctx)
 
     # fill the metadata of the new tutorial
     update_tutorial(kwds, tuto_dir, topic_dir)
-
-    # extract the data library from Zenodo
-    if kwds["zenodo"]:
-        extract_data_library_from_zenodo(kwds["zenodo"], tuto_dir)
 
 
 def init(ctx, kwds):
