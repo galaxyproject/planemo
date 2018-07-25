@@ -1170,6 +1170,9 @@ def training_tutorial_worflow_option():
             "--galaxy_url",
             help="URL of a Galaxy instance with the workflow"),
         planemo_option(
+            "--galaxy_api_key",
+            help="API key on the Galaxy instance with the workflow"),
+        planemo_option(
             "--workflow_id",
             help="ID of the workflow on the Galaxy instance")
     )

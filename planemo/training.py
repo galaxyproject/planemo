@@ -10,6 +10,7 @@ import oyaml as yaml
 
 
 from planemo import templates
+from planemo.bioblend import galaxy
 from planemo.io import info
 from planemo.runnable import for_path
 from planemo.engine import (
@@ -552,7 +553,7 @@ def get_param_desc(wf_params, wf_inputs, tp_desc, level, wf_steps):
         if n not in wf_params:
             raise ValueError("%s not in workflow" % n)
         wf_param = wf_params[n]
-        if isinstance(wf_param, str):
+        if isinstance(wf_param, str) and ":" in wf_param:
             wf_param = json.loads(wf_param)
         paramlist += format_param_desc(wf_param, wf_inputs, tp_d, level, wf_steps)
     return paramlist
@@ -579,7 +580,10 @@ def get_handson_box(step_id, steps, tools):
 
 def get_wf_from_running_galaxy(kwds, ctx):
     """Get the workflow dictionary from a running Galaxy instance with the workflow installed there"""
-    return {}
+    gi = galaxy.GalaxyInstance(kwds['galaxy_url'], key=kwds['galaxy_api_key'])
+    wf = gi.workflows.export_workflow_dict(kwds['workflow_id'])
+    tools = get_wf_tool_description(wf, gi)
+    return wf, tools
 
 
 def get_wf_tool_description(wf, gi):
@@ -589,7 +593,10 @@ def get_wf_tool_description(wf, gi):
         step = wf['steps'][s]
         if len(step['input_connections']) == 0:
             continue
-        tool_desc = gi.tools.show_tool(step['tool_id'], io_details = True)
+        try:
+            tool_desc = gi.tools.show_tool(step['tool_id'], io_details = True)
+        except:
+            tool_desc = {'inputs': []}
         tools.setdefault(step['name'], get_tool_input(tool_desc))
     return tools
 
@@ -610,8 +617,11 @@ def create_tutorial_from_workflow(kwds, z_file_links, tuto_dir, ctx):
     """Create tutorial structure from the workflow file"""
     # load workflow
     if kwds['workflow_id']:
-        if kwds['galaxy_url']:
-            wf = get_wf_from_running_galaxy(kwds, ctx)
+        if not kwds['galaxy_url']:
+            raise ValueError("No Galaxy URL given")
+        if not kwds['galaxy_api_key']:
+            raise ValueError("No API key to access Galaxy given")
+        wf, tools = get_wf_from_running_galaxy(kwds, ctx)           
     else:
         wf, tools = serve_wf_locally(kwds, kwds["workflow"], ctx)
 
@@ -652,7 +662,7 @@ def create_tutorial(kwds, tuto_dir, topic_dir, template_dir, ctx):
     # create tutorial skeleton from workflow
     if kwds["workflow"] or kwds['workflow_id']:
         info("Create tutorial skeleton from workflow")
-        #create_tutorial_from_workflow(kwds, z_file_links, tuto_dir, ctx)
+        create_tutorial_from_workflow(kwds, z_file_links, tuto_dir, ctx)
 
     # fill the metadata of the new tutorial
     update_tutorial(kwds, tuto_dir, topic_dir)
