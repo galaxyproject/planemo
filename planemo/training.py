@@ -334,7 +334,7 @@ def get_zenodo_record(zenodo_link):
     return(z_record, req_res)
 
 
-def fill_data_library(files, kwds, z_record, tuto_dir):
+def prepare_data_library(files, kwds, z_record, tuto_dir):
     """Fill or update the data library file"""
     data_lib_filepath = os.path.join(tuto_dir, "data-library.yaml")
 
@@ -344,11 +344,11 @@ def fill_data_library(files, kwds, z_record, tuto_dir):
         data_lib = collections.OrderedDict()
     
     # set default information
-    data_lib.setdefault('destination', collections.OrderedDict({
-        'type': 'library',
-        'name': 'GTN - Material',
-        'description': 'Galaxy Training Network Material',
-        'synopsis': 'Galaxy Training Network Material. See https://training.galaxyproject.org'}))
+    data_lib.setdefault('destination', collections.OrderedDict())
+    data_lib['destination']['type'] = 'library'
+    data_lib['destination']['name'] = 'GTN - Material'
+    data_lib['destination']['description'] = 'Galaxy Training Network Material'
+    data_lib['destination']['synopsis'] = 'Galaxy Training Network Material. See https://training.galaxyproject.org'
     data_lib.setdefault('items', [])
     data_lib.pop('libraries', None)
 
@@ -358,10 +358,10 @@ def fill_data_library(files, kwds, z_record, tuto_dir):
         if item['name'] == kwds['topic_title']:
             topic = item
     if not topic:
-        topic = collections.OrderedDict({
-            'name': kwds['topic_title'],
-            'description': kwds['topic_summary'],
-            'items': []})
+        data_lib['items'].append(topic)
+        topic['name'] = kwds['topic_title']
+        topic['description'] = kwds['topic_summary']
+        topic['items'] = []
     
     # get tutorial or create new one
     tuto = collections.OrderedDict()
@@ -369,9 +369,9 @@ def fill_data_library(files, kwds, z_record, tuto_dir):
         if item['name'] == kwds['tutorial_title']:
             tuto = item
     if not tuto:
-        tuto = collections.OrderedDict({
-            'name': kwds['tutorial_title'],
-            'items': []})
+        topic['items'].append(tuto)
+        tuto['name'] = kwds['tutorial_title']
+        tuto['items'] = []
 
     # get current data library and/or previous data library for the tutorial
     # remove the latest tag of any existing library
@@ -385,19 +385,15 @@ def fill_data_library(files, kwds, z_record, tuto_dir):
             previous_data_lib = item
             previous_data_lib['description'] = ''
     if not current_data_lib:
-        current_data_lib = collections.OrderedDict({
-            'name': "DOI: 10.5281/zenodo.%s" % z_record,
-            'description': 'latest',
-            'items': []})
+        current_data_lib['name'] = "DOI: 10.5281/zenodo.%s" % z_record
+        current_data_lib['description'] = 'latest'
+        current_data_lib['items'] = []
     current_data_lib['items'] = files
     
-    # add data lib, tuto and topic
     tuto['items'] = [current_data_lib]
     if previous_data_lib:
         tuto['items'].append(previous_data_lib)
-    topic['items'].append(tuto)
-    data_lib['items'].append(topic)
-   
+    
     save_to_yaml(data_lib, data_lib_filepath)
 
 
@@ -437,7 +433,7 @@ def extract_from_zenodo(kwds, tuto_dir):
         files.append(file_dict)
 
     # prepare the data library dictionary
-    fill_data_library(files, kwds, z_record, tuto_dir)
+    prepare_data_library(files, kwds, z_record, tuto_dir)
     
     return links
 
@@ -691,3 +687,54 @@ def init(ctx, kwds):
         else:
             info("The tutorial %s in topic %s already exists. It will be updated with the other arguments" % (kwds['tutorial_name'], kwds['topic_name']))
             update_tutorial(kwds, tuto_dir, topic_dir)
+
+
+def fill_data_library(ctx, kwds):
+    """Fill a data library for a tutorial"""
+    topic_dir = os.path.join("topics", kwds['topic_name'])
+    if not os.path.isdir(topic_dir):
+        raise Exception("The topic %s does not exists. It should be created" % kwds['topic_name'])
+
+    tuto_dir = os.path.join(topic_dir, "tutorials", kwds['tutorial_name'])
+    if not os.path.isdir(tuto_dir):
+        raise Exception("The tutorial %s does not exists. It should be created" % kwds['tutorial_name'])
+
+    # get metadata
+    metadata_path = os.path.join(topic_dir, "metadata.yaml")
+    metadata = load_yaml(metadata_path)
+    tuto_metadata = collections.OrderedDict()
+
+    for mat in metadata['material']:
+        if mat['name'] == kwds['tutorial_name']:
+            tuto_metadata = mat
+
+    # get the zenodo link
+    z_link = ''
+    if 'zenodo_link' in tuto_metadata and tuto_metadata['zenodo_link'] != '':
+        if kwds['zenodo']:
+            info("The data library and the metadata will be updated with the new Zenodo link")
+            tuto_metadata['zenodo_link'] = z_link
+            z_link = kwds['zenodo']
+        else:
+            info("The data library will be extracted using the Zenodo link in the metadata")
+            z_link = tuto_metadata['zenodo_link']
+    else:
+        info("The data library will be created and the metadata will be filled with the new Zenodo link")
+        tuto_metadata['zenodo_link'] = z_link
+        z_link = kwds['zenodo']
+    
+    if z_link == '' or z_link is None:
+        raise Exception("A Zenodo link should be provided either in the metadata file or as argument of the command")
+
+    # extract the data library from Zenodo
+    topic_kwds = {
+        'topic_title': metadata['title'],
+        'topic_summary': metadata['summary'],
+        'tutorial_title': tuto_metadata['title'],
+        'zenodo': z_link,
+        'datatypes': kwds['datatypes']
+    }
+    extract_from_zenodo(topic_kwds, tuto_dir)
+
+    # update the metadata
+    save_to_yaml(metadata, metadata_path)
