@@ -288,6 +288,8 @@ def update_tutorial(kwds, tuto_dir, topic_dir):
             mat["workflows"] = True if kwds["workflow"] else False
             mat["zenodo_link"] = kwds["zenodo"] if kwds["zenodo"] else ''
             found = True
+        elif mat["name"] == "tutorial1":
+            metadata["material"].remove(mat)
 
     if not found:
         new_mat = collections.OrderedDict()
