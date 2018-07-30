@@ -89,8 +89,7 @@ The idea is to keep the theory description before quite simple to focus more on 
 """
 
 
-TUTORIAL_TEMPLATE = """
----
+TUTORIAL_TEMPLATE = """---
 layout: tutorial_hands_on
 topic_name: {{ topic_name }}
 tutorial_name: {{ tutorial_name }}
