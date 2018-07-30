@@ -298,7 +298,7 @@ def update_tutorial(kwds, tuto_dir, topic_dir):
         new_mat["zenodo_link"] = kwds["zenodo"] if kwds["zenodo"] else ''
         new_mat["hands_on"] = kwds["hands_on"]
         new_mat["slides"] = kwds["slides"]
-        new_mat["workflows"] = True if kwds["workflow"] else False
+        new_mat["workflows"] = True if kwds["workflow"] or kwds["workflow_id"] else False
         new_mat["galaxy_tour"] = False
         new_mat["questions"] = ['', '']
         new_mat["objectives"] = ['', '']
@@ -641,6 +641,24 @@ def create_tutorial_from_workflow(kwds, z_file_links, tuto_dir, ctx):
         md.write(template)
 
 
+def add_workflow_file(kwds, tuto_dir):
+    """Copy or extract workflow file and add it to the tutorial directory"""
+    wf_dir = os.path.join(tuto_dir, "workflows")
+    # copy / extract workflow
+    wf_filepath = os.path.join(wf_dir, "init_workflow.ga")
+    if kwds["workflow"]:
+        shutil.copy(kwds["workflow"], wf_filepath)
+    else:
+        gi = galaxy.GalaxyInstance(kwds['galaxy_url'], key=kwds['galaxy_api_key'])
+        gi.workflows.export_workflow_to_local_path(kwds['workflow_id'],
+                                                   wf_filepath,
+                                                   use_default_filename = False)
+    # remove empty workflow file if there
+    empty_wf_filepath = os.path.join(wf_dir, "empty_workflow.ga")
+    if os.path.exists(empty_wf_filepath):
+        os.remove(empty_wf_filepath)
+
+
 def create_tutorial(kwds, tuto_dir, topic_dir, template_dir, ctx):
     """Create the skeleton of a new tutorial"""
     # copy or rename templates
@@ -656,10 +674,11 @@ def create_tutorial(kwds, tuto_dir, topic_dir, template_dir, ctx):
         info("Create the data library from Zenodo")
         z_file_links = extract_from_zenodo(kwds, tuto_dir)
 
-    # create tutorial skeleton from workflow
+    # create tutorial skeleton from workflow and copy workflow file
     if kwds["workflow"] or kwds['workflow_id']:
         info("Create tutorial skeleton from workflow")
         create_tutorial_from_workflow(kwds, z_file_links, tuto_dir, ctx)
+        add_workflow_file(kwds, tuto_dir)
 
     # fill the metadata of the new tutorial
     update_tutorial(kwds, tuto_dir, topic_dir)
