@@ -1128,7 +1128,7 @@ def training_topic_name_option():
         "--topic_name",
         required=True,
         help="Name (directory name) of the topic to create or in which "
-            "a tutorial should be created or updates"
+             "a tutorial should be created or updates"
     )
 
 
@@ -1163,7 +1163,7 @@ def training_tutorial_name_req_option():
             "--tutorial_name",
             required=True,
             help="Name (directory name) of the tutorial to modify"
-    )  
+    )
 
 
 def training_datatype_option():

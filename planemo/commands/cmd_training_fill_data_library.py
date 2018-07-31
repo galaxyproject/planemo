@@ -1,11 +1,8 @@
 """Module describing the planemo ``training_fill_data_library`` command."""
-import os
-
 import click
 
 from planemo import options
 from planemo import training
-from planemo.config import planemo_option
 from planemo.cli import command_function
 
 
