@@ -1140,14 +1140,19 @@ def training_topic_option():
             default="Title of the topic",
             help="Title of the topic to create"),
         planemo_option(
+            "--topic_summary",
+            default="Summary of the topic",
+            help="Summary of the topic"),
+        planemo_option(
             "--topic_target",
             type=click.Choice(['use', 'admin-dev', 'instructors']),
             default="use",
             help="Target audience for the topic"),
         planemo_option(
-            "--topic_summary",
-            default="Summary of the topic",
-            help="Summary of the topic")
+            "--templates",
+            type=click.Path(file_okay=True, resolve_path=True),
+            default="templates",
+            help="Directory with the training templates")
     )
 
 

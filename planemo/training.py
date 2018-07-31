@@ -196,11 +196,14 @@ def save_to_yaml(content, filepath):
                   explicit_start=True)
 
 
-def get_template_dir():
+def get_template_dir(kwds):
     """Check and return the templates directory"""
-    template_dir = "templates"
-    if not os.path.isdir(template_dir):
-        raise Exception("This script needs to be run in the training material repository")
+    if not kwds["templates"]:
+        template_dir = "templates"
+        if not os.path.isdir(template_dir):
+            raise Exception("This script needs to be run in the training material repository")
+    else:
+        template_dir = kwds["templates"]
     return template_dir
 
 
@@ -250,7 +253,10 @@ def create_topic(kwds, topic_dir, template_dir):
     change_topic_name(kwds["topic_name"], slides_path)
 
     # add a symbolic link to the metadata.yaml
-    os.chdir("metadata")
+    metadata_dir = "metadata"
+    if not os.path.isdir(metadata_dir):
+        os.makedirs(metadata_dir)
+    os.chdir(metadata_dir)
     os.symlink(os.path.join("..", metadata_path), "%s.yaml" % kwds["topic_name"])
     os.chdir("..")
 
@@ -722,7 +728,7 @@ def create_tutorial(kwds, tuto_dir, topic_dir, template_dir, ctx):
 
 def init(ctx, kwds):
     """Create/update a topic/tutorial"""
-    topic_template_dir = get_template_dir()
+    topic_template_dir = get_template_dir(kwds)
 
     topic_dir = os.path.join("topics", kwds['topic_name'])
     if not os.path.isdir(topic_dir):
@@ -748,7 +754,11 @@ def init(ctx, kwds):
 
 def fill_data_library(ctx, kwds):
     """Fill a data library for a tutorial"""
-    topic_dir = os.path.join("topics", kwds['topic_name'])
+    topics_dir = "topics"
+    if not os.path.isdir(topics_dir):
+        os.makedirs(topics_dir)
+
+    topic_dir = os.path.join(topics_dir, kwds['topic_name'])
     if not os.path.isdir(topic_dir):
         raise Exception("The topic %s does not exists. It should be created" % kwds['topic_name'])
 
