@@ -28,6 +28,10 @@ from planemo.runnable import (
          "previously.",
     default=False,
 )
+@click.option(
+    "--history_name",
+    help="Name for history (if a history is generated as part of testing.)"
+)
 @options.galaxy_target_options()
 @options.galaxy_config_options()
 @options.test_options()
