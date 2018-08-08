@@ -1244,6 +1244,14 @@ def training_fill_data_library_options():
     )
 
 
+def training_generate_tuto_from_wf_options():
+    return _compose(
+        training_topic_name_option(),
+        training_tutorial_name_req_option(),
+        training_tutorial_worflow_option()
+    )
+
+
 def shed_fail_fast_option():
     return planemo_option(
         "--fail_fast",
