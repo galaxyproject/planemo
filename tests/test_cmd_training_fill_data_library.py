@@ -57,8 +57,8 @@ class CmdTrainingFillDataLibraryTestCase(CliTestCase):
                 "--datatypes", datatype
             ]
             remove_topics()
-            # working
             self._check_exit_code(training_fill_data_library_command, exit_code=-1)
+            # working
             create_tutorial_dir(topic_n, tuto_n, "training_metadata_w_zenodo.yaml")
             training_fill_data_library_command = [
                 "training_fill_data_library",

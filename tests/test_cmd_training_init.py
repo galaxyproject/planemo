@@ -115,7 +115,7 @@ class CmdTrainingInitTestCase(CliTestCase):
                 "--workflow", test_workflow,
                 "--templates", training_template
             ]
-            self._check_exit_code(training_init_command, exit_code=0)
+            self._check_exit_code(training_init_command, exit_code=-1)
 
     def test_training_init_command_tutorial_remote_wf(self):
         with self._isolate():
@@ -139,4 +139,4 @@ class CmdTrainingInitTestCase(CliTestCase):
                 "--galaxy_api_key", "API",
                 "--templates", training_template
             ]
-            self._check_exit_code(training_init_command, exit_code=0)
+            self._check_exit_code(training_init_command, exit_code=-1)
