@@ -1,4 +1,4 @@
-"""Tests for the ``training_generate_tuto_from_wf`` command."""
+"""Tests for the ``training_generate_from_wf`` command."""
 import os
 import shutil
 
@@ -25,25 +25,25 @@ def remove_topics():
     shutil.rmtree("topics")
 
 
-class CmdTrainingGenerateTutoFromWfTestCase(CliTestCase):
-    """Container class defining test cases for the ``training_generate_tuto_from_wf`` command."""
+class CmdTrainingGenerateFromWfTestCase(CliTestCase):
+    """Container class defining test cases for the ``training_generate_from_wf`` command."""
 
-    def test_training_generate_tuto_from_wf_command_empty(self):
+    def test_training_generate_from_wf_command_empty(self):
         with self._isolate():
             training_fill_data_library_command = [
-                "training_generate_tuto_from_wf"
+                "training_generate_from_wf"
             ]
             self._check_exit_code(training_fill_data_library_command, exit_code=2)
 
-    def test_training_generate_tuto_from_wf_command_topic(self):
+    def test_training_generate_from_wf_command_topic(self):
         with self._isolate():
             training_fill_data_library_command = [
-                "training_generate_tuto_from_wf",
+                "training_generate_from_wf",
                 "--topic_name", "test"
             ]
             self._check_exit_code(training_fill_data_library_command, exit_code=2)
 
-    def test_training_generate_tuto_from_wf_command_local_wf(self):
+    def test_training_generate_from_wf_command_local_wf(self):
         with self._isolate():
             topic_n = "test"
             tuto_n = "test"
@@ -59,13 +59,13 @@ class CmdTrainingGenerateTutoFromWfTestCase(CliTestCase):
             self._check_exit_code(training_init_command, exit_code=-1)
             remove_topics()
 
-    def test_training_generate_tuto_from_wf_command_remote_wf(self):
+    def test_training_generate_from_wf_command_remote_wf(self):
         with self._isolate():
             topic_n = "test"
             tuto_n = "test"
             # not working test
             training_init_command = [
-                "training_generate_tuto_from_wf",
+                "training_generate_from_wf",
                 "--topic_name", "test",
                 "--tutorial_name", "test",
                 "--workflow_id", "ID"
@@ -74,7 +74,7 @@ class CmdTrainingGenerateTutoFromWfTestCase(CliTestCase):
             # not working test
             create_tutorial_dir(topic_n, tuto_n, "training_metadata_wo_zenodo.yaml")
             training_init_command = [
-                "training_generate_tuto_from_wf",
+                "training_generate_from_wf",
                 "--topic_name", "test",
                 "--tutorial_name", "test",
                 "--workflow_id", "ID",
