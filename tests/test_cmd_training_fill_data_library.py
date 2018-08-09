@@ -9,6 +9,7 @@ from .test_utils import (
 
 
 def create_tutorial_dir(topic_n, tuto_n, metadata_n):
+    """Create the tutorial directory structure."""
     topic_dir = os.path.join("topics", topic_n)
     tuto_dir = os.path.join(topic_dir, "tutorials", tuto_n)
     metadata_path = os.path.join(topic_dir, "metadata.yaml")
@@ -21,14 +22,11 @@ def create_tutorial_dir(topic_n, tuto_n, metadata_n):
         shutil.copy(metadata, metadata_path)
 
 
-def remove_topics():
-    shutil.rmtree("topics")
-
-
 class CmdTrainingFillDataLibraryTestCase(CliTestCase):
     """Container class defining test cases for the ``training_fill_data_library`` command."""
 
     def test_training_fill_data_library_command_empty(self):
+        """Test training_fill_data_library command with no arguments."""
         with self._isolate():
             training_fill_data_library_command = [
                 "training_fill_data_library"
@@ -36,6 +34,7 @@ class CmdTrainingFillDataLibraryTestCase(CliTestCase):
             self._check_exit_code(training_fill_data_library_command, exit_code=2)
 
     def test_training_fill_data_library_command_topic(self):
+        """Test training_fill_data_library command with only topic name."""
         with self._isolate():
             training_fill_data_library_command = [
                 "training_fill_data_library",
@@ -44,6 +43,7 @@ class CmdTrainingFillDataLibraryTestCase(CliTestCase):
             self._check_exit_code(training_fill_data_library_command, exit_code=2)
 
     def test_training_fill_data_library_command_tutorial_topic(self):
+        """Test training_fill_data_library command with tutorial name."""
         with self._isolate():
             topic_n = "test"
             tuto_n = "test"
@@ -56,7 +56,7 @@ class CmdTrainingFillDataLibraryTestCase(CliTestCase):
                 "--tutorial_name", tuto_n,
                 "--datatypes", datatype
             ]
-            remove_topics()
+            shutil.rmtree("topics")
             self._check_exit_code(training_fill_data_library_command, exit_code=-1)
             # working
             create_tutorial_dir(topic_n, tuto_n, "training_metadata_w_zenodo.yaml")
@@ -69,6 +69,7 @@ class CmdTrainingFillDataLibraryTestCase(CliTestCase):
             self._check_exit_code(training_fill_data_library_command, exit_code=0)
 
     def test_training_fill_data_library_command_tutorial_zenodo(self):
+        """Test training_fill_data_library command with zenodo link."""
         with self._isolate():
             topic_n = "test"
             tuto_n = "test"

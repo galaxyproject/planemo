@@ -1,3 +1,5 @@
+"""Training training functions."""
+
 import json
 import os
 import shutil
@@ -29,6 +31,7 @@ CTX.planemo_directory = "/tmp/planemo-test-workspace"
 
 
 def prepare_test():
+    """Prepare kwds, topic_dir and tuto_dir."""
     topic_name = 'my_new_topic'
     topic_dir = topic_name
     tuto_name = "new_tuto"
@@ -128,7 +131,7 @@ def test_save_to_yaml():
 
 
 def test_get_template_dir_1():
-    """Test :func:`planemo.training.get_template_dir`: test exception raising"""
+    """Test :func:`planemo.training.get_template_dir`: test exception raising."""
     kwds = {"templates": None}
     exp_exception = "This script needs to be run in the training material repository"
     with assert_raises_regexp(Exception, exp_exception):
@@ -136,7 +139,7 @@ def test_get_template_dir_1():
 
 
 def test_get_template_dir_2():
-    """Test :func:`planemo.training.get_template_dir`: test default return value"""
+    """Test :func:`planemo.training.get_template_dir`: test default return value."""
     kwds = {"templates": None}
     os.makedirs("templates")
     assert training.get_template_dir(kwds) == "templates"
@@ -144,7 +147,7 @@ def test_get_template_dir_2():
 
 
 def test_get_template_dir_3():
-    """Test :func:`planemo.training.get_template_dir`: test return value"""
+    """Test :func:`planemo.training.get_template_dir`: test return value."""
     template_path = "temp"
     kwds = {"templates": template_path}
     assert training.get_template_dir(kwds) == template_path
@@ -367,7 +370,7 @@ def test_get_tool_input():
 
 
 def check_tools(tools):
-    """Test the tool return from get_wf_tool_description"""
+    """Test the tool return from get_wf_tool_description."""
     assert 'FastQC' in tools
     assert 'input_file' in tools['FastQC']
 
@@ -397,7 +400,7 @@ def test_get_wf_tool_description():
 
 
 def check_workflow(wf):
-    """Test the worflow return"""
+    """Test the worflow return."""
     assert 'steps' in wf
     assert '1' in wf['steps']
     assert 'name' in wf['steps']['1']
@@ -444,7 +447,7 @@ def test_get_input_tool_name():
 
 
 def get_wf_a_tools():
-    """Get workflow and tool of a workflow"""
+    """Get workflow and tool of a workflow."""
     kwds, topic_dir, tuto_dir = prepare_test()
     assert is_galaxy_engine(**kwds)
     with engine_context(CTX, **kwds) as galaxy_engine:

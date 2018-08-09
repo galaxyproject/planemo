@@ -9,6 +9,7 @@ from .test_utils import (
 
 
 def create_tutorial_dir(topic_n, tuto_n, metadata_n):
+    """Create the tutorial directory structure."""
     topic_dir = os.path.join("topics", topic_n)
     tuto_dir = os.path.join(topic_dir, "tutorials", tuto_n)
     metadata_path = os.path.join(topic_dir, "metadata.yaml")
@@ -21,14 +22,11 @@ def create_tutorial_dir(topic_n, tuto_n, metadata_n):
         shutil.copy(metadata, metadata_path)
 
 
-def remove_topics():
-    shutil.rmtree("topics")
-
-
 class CmdTrainingGenerateFromWfTestCase(CliTestCase):
     """Container class defining test cases for the ``training_generate_from_wf`` command."""
 
     def test_training_generate_from_wf_command_empty(self):
+        """Test training_generate_from_wf command with no arguments."""
         with self._isolate():
             training_fill_data_library_command = [
                 "training_generate_from_wf"
@@ -36,6 +34,7 @@ class CmdTrainingGenerateFromWfTestCase(CliTestCase):
             self._check_exit_code(training_fill_data_library_command, exit_code=2)
 
     def test_training_generate_from_wf_command_topic(self):
+        """Test training_generate_from_wf command with only topic name."""
         with self._isolate():
             training_fill_data_library_command = [
                 "training_generate_from_wf",
@@ -44,6 +43,7 @@ class CmdTrainingGenerateFromWfTestCase(CliTestCase):
             self._check_exit_code(training_fill_data_library_command, exit_code=2)
 
     def test_training_generate_from_wf_command_local_wf(self):
+        """Test training_generate_from_wf command with local workflow."""
         with self._isolate():
             topic_n = "test"
             tuto_n = "test"
@@ -57,9 +57,10 @@ class CmdTrainingGenerateFromWfTestCase(CliTestCase):
                 "--workflow", test_workflow
             ]
             self._check_exit_code(training_init_command, exit_code=-1)
-            remove_topics()
+            shutil.rmtree("topics")
 
     def test_training_generate_from_wf_command_remote_wf(self):
+        """Test training_generate_from_wf command with workflow on running instance."""
         with self._isolate():
             topic_n = "test"
             tuto_n = "test"
@@ -82,4 +83,4 @@ class CmdTrainingGenerateFromWfTestCase(CliTestCase):
                 "--galaxy_api_key", "API"
             ]
             self._check_exit_code(training_init_command, exit_code=0)
-            remove_topics()
+            shutil.rmtree("topics")

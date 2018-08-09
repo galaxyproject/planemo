@@ -12,6 +12,7 @@ class CmdTrainingInitTestCase(CliTestCase):
     """Container class defining test cases for the ``training_init`` command."""
 
     def test_training_init_command_by_default(self):
+        """Test training_init command with only topic name."""
         with self._isolate():
             training_init_command = [
                 "training_init",
@@ -20,6 +21,7 @@ class CmdTrainingInitTestCase(CliTestCase):
             self._check_exit_code(training_init_command, exit_code=-1)
 
     def test_training_init_command_templates(self):
+        """Test training_init command with template path."""
         with self._isolate():
             training_template = os.path.join(PROJECT_TEMPLATES_DIR, "training")
             training_init_command = [
@@ -30,6 +32,7 @@ class CmdTrainingInitTestCase(CliTestCase):
             self._check_exit_code(training_init_command, exit_code=0)
 
     def test_training_init_command_topic(self):
+        """Test training_init command to create new topic."""
         with self._isolate():
             training_template = os.path.join(PROJECT_TEMPLATES_DIR, "training")
             # working test
@@ -54,6 +57,7 @@ class CmdTrainingInitTestCase(CliTestCase):
             self._check_exit_code(training_init_command, exit_code=2)
 
     def test_training_init_command_tutorial_no_topic(self):
+        """Test training_init command with tutorial but no topic."""
         with self._isolate():
             training_template = os.path.join(PROJECT_TEMPLATES_DIR, "training")
             # working test
@@ -65,6 +69,7 @@ class CmdTrainingInitTestCase(CliTestCase):
             self._check_exit_code(training_init_command, exit_code=2)
 
     def test_training_init_command_tutorial(self):
+        """Test training_init command to create new tutorial."""
         with self._isolate():
             training_template = os.path.join(PROJECT_TEMPLATES_DIR, "training")
             # working test
@@ -80,6 +85,7 @@ class CmdTrainingInitTestCase(CliTestCase):
             self._check_exit_code(training_init_command, exit_code=0)
 
     def test_training_init_command_tutorial_zenodo(self):
+        """Test training_init command to create new tutorial with zenodo."""
         with self._isolate():
             training_template = os.path.join(PROJECT_TEMPLATES_DIR, "training")
             datatype = os.path.join(TEST_DATA_DIR, "training_datatypes.yaml")
@@ -104,6 +110,7 @@ class CmdTrainingInitTestCase(CliTestCase):
             self._check_exit_code(training_init_command, exit_code=0)
 
     def test_training_init_command_tutorial_local_wf(self):
+        """Test training_init command to create new tutorial with local workflow."""
         with self._isolate():
             training_template = os.path.join(PROJECT_TEMPLATES_DIR, "training")
             test_workflow = os.path.join(TEST_DATA_DIR, "test_workflow_1.ga")
@@ -118,6 +125,7 @@ class CmdTrainingInitTestCase(CliTestCase):
             self._check_exit_code(training_init_command, exit_code=-1)
 
     def test_training_init_command_tutorial_remote_wf(self):
+        """Test training_init command to create new tutorial with workflow on running instance."""
         with self._isolate():
             training_template = os.path.join(PROJECT_TEMPLATES_DIR, "training")
             # not working test
