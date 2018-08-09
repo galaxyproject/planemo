@@ -81,5 +81,5 @@ class CmdTrainingGenerateFromWfTestCase(CliTestCase):
                 "--galaxy_url", "https://usegalaxy.eu/",
                 "--galaxy_api_key", "API"
             ]
-            self._check_exit_code(training_init_command, exit_code=-1)
+            self._check_exit_code(training_init_command, exit_code=0)
             remove_topics()
