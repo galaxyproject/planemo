@@ -508,7 +508,8 @@ def test_get_lower_params():
     assert 'name' in training.get_lower_params(step_params, 'n1')
     assert training.get_lower_params(step_params, 'name') == '1'
     print(training.get_lower_params('{"name": "1"}', 'n1'))
-    assert 'name' in training.get_lower_params('{"name": "1"}', 'n1')
+    assert 'name' in training.get_lower_params('{"name": "1"}', 'name')
+    assert 'name' in training.get_lower_params('name:1', 'name')
 
 
 def test_get_lower_inputs():
@@ -589,6 +590,9 @@ def test_get_param_value():
     # test select
     tp_desc = {'type': 'select', 'options': [['opt1', 'val1'], ['opt2', 'val2']], 'value': ''}
     assert training.get_param_value('val1', tp_desc) == 'opt1'
+    # test select with extra quotes
+    tp_desc = {'type': 'select', 'options': [['opt1', 'val1'], ['opt2', 'val2']], 'value': ''}
+    assert training.get_param_value('"val1"', tp_desc) == 'opt1'
     # test data_column
     tp_desc = {'type': 'data_column', 'value': ''}
     assert training.get_param_value('1', tp_desc) == 'c1'

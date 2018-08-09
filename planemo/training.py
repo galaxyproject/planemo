@@ -623,6 +623,7 @@ def format_conditional_param_desc(step_params, step_inputs, tp_desc, level, wf_s
     # Get conditional parameter
     test_param = tp_desc['test_param']
     params = get_lower_params(step_params, tp_desc['name'])
+    inputs = get_lower_inputs(step_inputs, tp_desc['name'])
     conditional_paramlist += format_param_desc(
         params[test_param['name']],
         step_inputs,
@@ -636,7 +637,7 @@ def format_conditional_param_desc(step_params, step_inputs, tp_desc, level, wf_s
             if len(case['inputs']) > 0:
                 conditional_paramlist += get_param_desc(
                     params,
-                    step_inputs,
+                    inputs,
                     get_tool_input(case),
                     level+1,
                     wf_steps)
@@ -671,6 +672,8 @@ def format_repeat_param_desc(step_params, step_inputs, tp_desc, level, wf_steps)
 def get_param_value(step_params, tp_desc, force_default=False):
     """Get value of a 'simple' parameter if different from the default value, None otherwise."""
     param_value = ''
+    if '"' in step_params:
+        step_params = step_params.replace('"', '')
     if tp_desc['value'] == step_params and not force_default:
         param_value = None
     elif tp_desc['type'] == 'boolean':
@@ -697,7 +700,6 @@ def format_param_desc(step_params, step_inputs, tp_desc, level, wf_steps, force_
         raise ValueError("No type for the paramater %s" % tp_desc['name'])
     if tp_desc['type'] == 'data' or tp_desc['type'] == 'data_collection':
         paramlist += format_inputs(step_inputs, tp_desc, wf_steps, level)
-        # info("data_collection parameters are currently not supported")
     elif tp_desc['type'] == 'section':
         paramlist += format_section_param_desc(step_params, step_inputs, tp_desc, level, wf_steps)
     elif tp_desc['type'] == 'conditional':
