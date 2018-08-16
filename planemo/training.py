@@ -577,7 +577,7 @@ def get_wf_step_inputs(step_inp):
 
 def json_load(string):
     """Transform a string into a dictionary."""
-    if ":" in string and '{' in string:
+    if string is not None and ":" in string and '{' in string:
         return json.loads(string)
     else:
         return string
@@ -624,8 +624,9 @@ def format_conditional_param_desc(step_params, step_inputs, tp_desc, level, wf_s
     test_param = tp_desc['test_param']
     params = get_lower_params(step_params, tp_desc['name'])
     inputs = get_lower_inputs(step_inputs, tp_desc['name'])
+    cond_param = step_params[test_param['name']]
     conditional_paramlist += format_param_desc(
-        params[test_param['name']],
+        cond_param,
         step_inputs,
         test_param,
         level,
@@ -633,7 +634,7 @@ def format_conditional_param_desc(step_params, step_inputs, tp_desc, level, wf_s
         force_default=True)
     # Get parameters in the when
     for case in tp_desc['cases']:
-        if case['value'] == params[test_param['name']]:
+        if case['value'] == cond_param:
             if len(case['inputs']) > 0:
                 conditional_paramlist += get_param_desc(
                     params,
@@ -728,6 +729,8 @@ def get_param_desc(step_params, step_inputs, tp_desc, level, wf_steps, should_be
                 raise ValueError("%s not in workflow" % n)
         else:
             step_param = get_lower_params(step_params, n)
+            if step_param is None:
+                continue
             paramlist += format_param_desc(step_param, step_inputs, tp_d, level, wf_steps)
     return paramlist
 
@@ -914,7 +917,6 @@ def fill_data_library(ctx, kwds):
         'datatypes': kwds['datatypes']
     }
     prepare_data_library_from_zenodo(topic_kwds, tuto_dir)
-    print(metadata)
     # update the metadata
     save_to_yaml(metadata, metadata_path)
 
