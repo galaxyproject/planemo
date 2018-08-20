@@ -109,11 +109,11 @@ def is_doi(publication_id, lint_ctx):
 
 def lint_xsd(lint_ctx, schema_path, path):
     """Lint XML at specified path with supplied schema."""
-    name = os.path.basename(path)
+    name = lint_ctx.object_name or os.path.basename(path)
     validator = validation.get_validator(require=True)
     validation_result = validator.validate(schema_path, path)
     if not validation_result.passed:
-        msg = "Invalid %s found. Errors [%s]"
+        msg = "Invalid XML found in file: %s. Errors [%s]"
         msg = msg % (name, validation_result.output)
         lint_ctx.error(msg)
     else:
