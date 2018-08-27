@@ -1182,7 +1182,7 @@ def training_datatype_option():
 
 def training_zenodo_option():
     return planemo_option(
-            "--zenodo",
+            "--zenodo_link",
             help="Zenodo URL with the input data")
 
 

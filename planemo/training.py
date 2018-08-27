@@ -19,6 +19,90 @@ from planemo.io import info
 from planemo.runnable import for_path
 
 
+INDEX_FILE_TEMPLATE = """---
+layout: topic
+topic_name: {{ topic }}
+---
+"""
+
+
+README_FILE_TEMPLATE = """
+{{ topic }}
+==========
+
+Please refer to the [CONTRIBUTING.md](../../CONTRIBUTING.md) before adding or updating any material
+"""
+
+
+DOCKER_FILE_TEMPLATE = """
+# Galaxy - {{ topic_title }}
+#
+# to build the docker image, go to root of training repo and
+#    docker build -t {{ topic_name }} -f topics/{{ topic_name }}/docker/Dockerfile .
+#
+# to run image:
+#    docker run -p "8080:80" -t {{ topic_name }}
+
+FROM bgruening/galaxy-stable
+
+MAINTAINER Galaxy Training Material
+
+ENV GALAXY_CONFIG_BRAND "GTN: {{ topic_title }}"
+
+# prerequisites
+RUN pip install ephemeris -U
+ADD bin/galaxy-sleep.py /galaxy-sleep.py
+
+# copy the tutorials directory for your topic
+ADD topics/{{ topic_name }}/tutorials/ /tutorials/
+
+# install everything for tutorials
+ADD bin/docker-install-tutorials.sh /setup-tutorials.sh
+ADD bin/mergeyaml.py /mergeyaml.py
+RUN /setup-tutorials.sh
+"""
+
+
+INTRO_SLIDES_FILE_TEMPLATE = """---
+layout: introduction_slides
+logo: "GTN"
+
+title: {{ title }}
+type: {{ type }}
+contributors:
+- contributor
+---
+
+### How to fill the slide decks?
+
+Please follow our
+[tutorial to learn how to fill the slides]({{ '{{' }} site.baseurl {{ '}}' }}/topics/contributing/tutorials/create-new-tutorial-slides/slides.html)
+"""
+
+TUTO_SLIDES_TEMPLATE = """---
+layout: tutorial_slides
+logo: "GTN"
+
+{{ metadata }}
+---
+
+### How to fill the slide decks?
+
+Please follow our
+[tutorial to learn how to fill the slides]({{ '{{' }} site.baseurl {{ '}}' }}/topics/contributing/tutorials/create-new-tutorial-slides/slides.html)
+"""
+
+
+TUTO_HAND_ON_TEMPLATE = """---
+layout: tutorial_hands_on
+
+{{ metadata }}
+---
+
+{{ body }}
+"""
+
+
 INPUT_FILE_TEMPLATE = """
 >{{space}}- {{ '{%' }} icon {{icon}} {{ '%}' }} *"{{input_name}}"*: {{input_value}}
 """
@@ -71,13 +155,7 @@ HANDS_ON_TOOL_BOX_TEMPLATE = """
 
 """
 
-
-TUTORIAL_TEMPLATE = """---
-layout: tutorial_hands_on
-topic_name: {{ topic_name }}
-tutorial_name: {{ tutorial_name }}
----
-
+TUTO_HAND_ON_BODY_TEMPLATE = """
 # Introduction
 {:.no_toc}
 
@@ -120,8 +198,8 @@ have fun!
 
 > ### {{ '{%' }} icon hands_on {{ '%}' }} Hands-on: Data upload
 >
-> 1. Import the following files from [Zenodo]({{ zenodo_link }}) or from a data
->    library named `TODO` if available (ask your instructor)
+> 1. Create a new history for this tutorial
+> 2. Import the files from [Zenodo]({{ zenodo_link }}) or from the shared data library
 >
 >    ```
 >    {{ z_file_links }}
@@ -130,26 +208,18 @@ have fun!
 >
 >    ***TODO***: *Remove the useless files (if added)*
 >
->    > ### {{ '{%' }} icon tip {{ '%}' }} Tip: Importing data via links
->    >
->    > * Copy the link location
->    > * Open the Galaxy Upload Manager
->    > * Select **Paste/Fetch Data**
->    > * Paste the link into the text field
->    > * Press **Start**
->    >
->    > By default, Galaxy uses the url as the name, so please rename them to something more pleasing.
->    {: .tip}
+>    {{ '{%' }} include snippets/import_via_link.md {{ '%}' }}
+>    {{ '{%' }} include snippets/import_from_data_library.md {{ '%}' }}
 >
->    > ### {{ '{%' }} icon tip {{ '%}' }} Tip: Importing data from a data library
->    >
->    > * Go into "Shared data" (top panel) then "Data libraries"
->    > * Click on "Training data" and then "{{ topic_title }}"
->    > * Select interesting file
->    > * Click on "Import selected datasets into history"
->    > * Import in a new history
->    {: .tip}
+> 3. Rename the datasets
+> 4. Check that the datatype
 >
+>    {{ '{%' }} include snippets/change_datatype.md datatype="datatypes" {{ '%}' }}
+>
+> 5. Add to each database a tag corresponding to ...
+>
+>    {{ '{%' }} include snippets/add_tag.md {{ '%}' }}
+>    
 {: .hands_on}
 
 # Title of the section usually corresponding to a big step in the analysis
@@ -210,121 +280,87 @@ def save_to_yaml(content, filepath):
                        allow_unicode=True)
 
 
-def get_template_dir(kwds):
-    """Check and return the templates directory."""
-    if not kwds["templates"]:
-        template_dir = "templates"
-        if not os.path.isdir(template_dir):
-            raise Exception("This script needs to be run in the training material repository")
-    else:
-        template_dir = kwds["templates"]
-    return template_dir
-
-
-def update_top_metadata_file(filepath, topic_name, tuto_name="tutorial1", keep=True):
-    """Update metadata on the top or delete a (tutorial or index) file."""
-    if keep:
-        with open(filepath, "r") as in_f:
-            content = in_f.read()
-
-        content = content.replace("your_topic", topic_name)
-        content = content.replace("your_tutorial_name", tuto_name)
-
-        with open(filepath, 'w') as out_f:
-            out_f.write(content)
-
-    elif os.path.isfile(filepath):
-        os.remove(filepath)
-
-
-def create_topic(kwds, topic_dir, template_dir):
+def create_topic(kwds, topic_dir):
     """
     Create the skeleton of a new topic.
 
-    1. copy templates
+    1. create the folder and its structure
     2. update the index.md to match your topic's name
     3. fill the metadata
     4. add a symbolic link to the metadata.yaml from the metadata folder
     """
-    # copy templates
-    shutil.copytree(template_dir, topic_dir)
+    # create the folder and its structure
+    os.makedirs(topic_dir)
+    img_folder = os.path.join(topic_dir, "images")
+    os.makedirs(img_folder)
+    tuto_folder = os.path.join(topic_dir, "tutorials")
+    os.makedirs(tuto_folder)
 
-    # update the index.md to match your topic's name
-    index_path = os.path.join(topic_dir, "index.md")
-    update_top_metadata_file(index_path, kwds["topic_name"])
+    # create the index.md and add the topic name
+    index_fp = os.path.join(topic_dir, "index.md")
+    with open(index_fp, 'w') as index_f:
+        index_f.write(
+            templates.render(INDEX_FILE_TEMPLATE, **{'topic': kwds["topic_name"]}))
 
-    # update the metadata file
-    metadata_path = os.path.join(topic_dir, "metadata.yaml")
+    # create the README file
+    readme_fp = os.path.join(topic_dir, "README.md")
+    with open(readme_fp, 'w') as readme_f:
+        readme_f.write(
+            templates.render(README_FILE_TEMPLATE, **{'topic': kwds["topic_title"]}))
 
-    metadata = load_yaml(metadata_path)
+    # create the metadata file
+    metadata_fp = os.path.join(topic_dir, "metadata.yaml")
+    metadata = collections.OrderedDict()
     metadata['name'] = kwds["topic_name"]
-    metadata['title'] = kwds["topic_title"]
     metadata['type'] = kwds["topic_target"]
+    metadata['title'] = kwds["topic_title"]
     metadata['summary'] = kwds["topic_summary"]
-
-    save_to_yaml(metadata, metadata_path)
-
-    # update the metadata in top of tutorial.md and slides.html
-    tuto_path = os.path.join(topic_dir, "tutorials", "tutorial1")
-    hand_on_path = os.path.join(tuto_path, "tutorial.md")
-    update_top_metadata_file(hand_on_path, kwds["topic_name"])
-    slides_path = os.path.join(tuto_path, "slides.html")
-    update_top_metadata_file(slides_path, kwds["topic_name"])
+    metadata['requirements'] = []
+    if metadata['type'] == 'use':
+        req = collections.OrderedDict()
+        req['title'] = "Galaxy introduction"
+        req['type'] = "internal"
+        req['link'] = "/introduction/"
+        metadata['requirements'].append(req)
+    metadata['docker_image'] = ""
+    metadata['maintainers'] = ["maintainer"]
+    if metadata['type'] == 'use':
+        metadata['references'] = []
+        ref = collections.OrderedDict()
+        ref['authors'] = "authors et al"
+        ref['title'] = "the title"
+        ref['link'] = "link"
+        ref['summary'] = "A short explanation of why this reference is useful"
+        metadata['references'].append(ref)
+    save_to_yaml(metadata, metadata_fp)
 
     # add a symbolic link to the metadata.yaml
     metadata_dir = "metadata"
     if not os.path.isdir(metadata_dir):
         os.makedirs(metadata_dir)
     os.chdir(metadata_dir)
-    os.symlink(os.path.join("..", metadata_path), "%s.yaml" % kwds["topic_name"])
+    os.symlink(os.path.join("..", metadata_fp), "%s.yaml" % kwds["topic_name"])
     os.chdir("..")
 
+    # create Dockerfile
+    docker_folder = os.path.join(topic_dir, "docker")
+    os.makedirs(docker_folder)
+    dockerfile_fp = os.path.join(docker_folder, "Dockerfile")
+    with open(dockerfile_fp, 'w') as dockerfile:
+        dockerfile.write(
+            templates.render(
+                DOCKER_FILE_TEMPLATE,
+                **{'topic_name': kwds["topic_name"], 'topic_title': kwds["topic_title"]}))
 
-def update_tutorial(kwds, tuto_dir, topic_dir):
-    """Update the metadata information of a tutorial and add it if not there."""
-    # update the metadata file to add the new tutorial
-    metadata_path = os.path.join(topic_dir, "metadata.yaml")
-
-    metadata = load_yaml(metadata_path)
-    found = False
-    for mat in metadata["material"]:
-        if mat["name"] == kwds["tutorial_name"]:
-            mat["name"] = kwds["tutorial_name"]
-            mat["title"] = kwds["tutorial_title"]
-            mat["hands_on"] = kwds["hands_on"]
-            mat["slides"] = kwds["slides"]
-            mat["workflows"] = True if kwds["workflow"] or kwds["workflow_id"] else False
-            mat["zenodo_link"] = kwds["zenodo"] if kwds["zenodo"] else ''
-            found = True
-        elif mat["name"] == "tutorial1":
-            metadata["material"].remove(mat)
-
-    if not found:
-        new_mat = collections.OrderedDict()
-        new_mat["title"] = kwds["tutorial_title"]
-        new_mat["name"] = kwds["tutorial_name"]
-        new_mat["type"] = 'tutorial'
-        new_mat["zenodo_link"] = kwds["zenodo"] if kwds["zenodo"] else ''
-        new_mat["hands_on"] = kwds["hands_on"]
-        new_mat["slides"] = kwds["slides"]
-        new_mat["workflows"] = True if kwds["workflow"] or kwds["workflow_id"] else False
-        new_mat["galaxy_tour"] = False
-        new_mat["questions"] = ['', '']
-        new_mat["objectives"] = ['', '']
-        new_mat["time_estimation"] = '1d/3h/6h'
-        new_mat["key_points"] = ['', '']
-        new_mat["contributors"] = ['contributor1', 'contributor2']
-        metadata["material"].append(new_mat)
-
-    save_to_yaml(metadata, metadata_path)
-
-    # update the metadata in top of tutorial.md or remove it if not needed
-    hand_on_path = os.path.join(tuto_dir, "tutorial.md")
-    update_top_metadata_file(hand_on_path, kwds["topic_name"], tuto_name=kwds["tutorial_name"], keep=kwds["hands_on"])
-
-    # update the metadata in top of slides.md or remove it if not needed
-    slides_path = os.path.join(tuto_dir, "slides.html")
-    update_top_metadata_file(slides_path, kwds["topic_name"], tuto_name=kwds["tutorial_name"], keep=kwds["slides"])
+    # create empty introduction slides
+    slides_folder = os.path.join(topic_dir, "slides")
+    os.makedirs(slides_folder)
+    intro_slide_fp = os.path.join(slides_folder, "introduction.html")
+    with open(intro_slide_fp, 'w') as intro_slide_f:
+        intro_slide_f.write(
+            templates.render(
+                INTRO_SLIDES_FILE_TEMPLATE,
+                **{'title': "Introduction to %s" % kwds["topic_title"], 'type': "introduction"}))
 
 
 def get_zenodo_record(zenodo_link):
@@ -450,9 +486,9 @@ def prepare_data_library(files, kwds, z_record, tuto_dir):
 def prepare_data_library_from_zenodo(kwds, tuto_dir):
     """Get the list of URLs of the files on Zenodo and fill the data library file."""
     links = []
-    if not kwds['zenodo']:
+    if not kwds['zenodo_link']:
         return links
-    files, links, z_record = get_files_from_zenodo(kwds['zenodo'], kwds['datatypes'])
+    files, links, z_record = get_files_from_zenodo(kwds['zenodo_link'], kwds['datatypes'])
     prepare_data_library(files, kwds, z_record, tuto_dir)
     return links
 
@@ -511,7 +547,7 @@ def get_input_tool_name(step_id, steps):
     inp_prov_id = str(step_id)
     if inp_prov_id in steps:
         name = steps[inp_prov_id]['name']
-        if name.find('Input dataset') != -1:
+        if 'Input dataset' in name:
             inp_provenance = "(%s)" % name
         else:
             inp_provenance = "(output of **%s** {%% icon tool %%})" % name
@@ -535,20 +571,19 @@ def format_inputs(step_inputs, tp_desc, wf_steps, level):
         else:
             # sinle input or collection
             inp_type = wf_steps[str(inp['id'])]['type']
-            if inp_type.find('collection') != -1:
+            if 'collection' in inp_type:
                 icon = 'param-collection'
             else:
                 icon = 'param-file'
             inps = ['`%s` %s' % (
                 inp['output_name'],
                 get_input_tool_name(inp['id'], wf_steps))]
-        context = {
+        inputlist += templates.render(INPUT_FILE_TEMPLATE, **{
             "icon": icon,
             "input_name": tp_desc['label'],
             "input_value": ', '.join(inps),
             "space": SPACE * level
-        }
-        inputlist += templates.render(INPUT_FILE_TEMPLATE, **context)
+        })
     return inputlist
 
 
@@ -556,7 +591,7 @@ def get_wf_step_inputs(step_inp):
     """Get the inputs from a workflow step and format them."""
     step_inputs = {}
     for inp_n, inp in step_inp.items():
-        if inp_n.find('|') != -1:
+        if '|' in inp_n:
             repeat_regex = '(?P<prefix>[^\|]*)_(?P<nb>\d+)\|(?P<suffix>.+).+'
             repeat_search = re.search(repeat_regex, inp_n)
             hier_regex = '(?P<prefix>[^\|]*)\|(?P<suffix>.+)'
@@ -586,7 +621,7 @@ def json_load(string):
 def get_lower_params(step_params, name):
     """Get the parameters from workflow that are below name in the hierarchy."""
     params = json_load(step_params)
-    if name in params:
+    if isinstance(params, dict) and name in params:
         params = json_load(params[name])
     return params
 
@@ -594,7 +629,7 @@ def get_lower_params(step_params, name):
 def get_lower_inputs(step_inputs, name):
     """Get the inputs from workflow that are below name in the hierarchy."""
     inputs = {}
-    if name in step_inputs:
+    if isinstance(step_inputs, dict) and name in step_inputs:
         inputs = step_inputs[name]
     else:
         inputs = step_inputs
@@ -604,15 +639,15 @@ def get_lower_inputs(step_inputs, name):
 def format_section_param_desc(step_params, step_inputs, tp_desc, level, wf_steps):
     """Format the description (label and value) for parameters in a section."""
     section_paramlist = ''
-    # get section description
-    context = {'space': SPACE * level, 'section_label': tp_desc['title']}
     # get sub params and inputs
     params = get_lower_params(step_params, tp_desc['name'])
     inputs = get_lower_inputs(step_inputs, tp_desc['name'])
     # get description of parameters in lower hierarchy
     sub_param_desc = get_param_desc(params, inputs, get_tool_input(tp_desc), level+1, wf_steps)
     if sub_param_desc != '':
-        section_paramlist += templates.render(INPUT_SECTION, **context)
+        section_paramlist += templates.render(INPUT_SECTION, **{
+            'space': SPACE * level, 
+            'section_label': tp_desc['title']})
         section_paramlist += sub_param_desc
     return section_paramlist
 
@@ -624,7 +659,12 @@ def format_conditional_param_desc(step_params, step_inputs, tp_desc, level, wf_s
     test_param = tp_desc['test_param']
     params = get_lower_params(step_params, tp_desc['name'])
     inputs = get_lower_inputs(step_inputs, tp_desc['name'])
-    cond_param = step_params[test_param['name']]
+    cond_param = get_lower_params(params, test_param['name'])
+    print("-")
+    print(cond_param)
+    print("-")
+    print(test_param)
+    print("-")
     conditional_paramlist += format_param_desc(
         cond_param,
         step_inputs,
@@ -652,28 +692,30 @@ def format_repeat_param_desc(step_params, step_inputs, tp_desc, level, wf_steps)
     inputs = get_lower_inputs(step_inputs, tp_desc['name'])
     repeat_paramlist = ''
     for r in range(len(params)):
-        r_inputs = inputs[str(r)] if str(r) in inputs else inputs
-        paramlist_in_repeat = get_param_desc(params[r], r_inputs, repeat_inp_desc, level+2, wf_steps)
+        r_inputs = get_lower_inputs(inputs, str(r))
+        r_params = params[r]
+        paramlist_in_repeat = get_param_desc(r_params, r_inputs, repeat_inp_desc, level+2, wf_steps)
         if paramlist_in_repeat != '':
             # add first click
-            context = {'space': SPACE * (level+1), 'repeat_label': tp_desc['title']}
-            repeat_paramlist += templates.render(INPUT_ADD_REPEAT, **context)
-            # add description of parameters in the repeat
-            context = {
+            repeat_paramlist += templates.render(INPUT_ADD_REPEAT, **{
                 'space': SPACE * (level+1),
-                'section_label': "%s: %s" % (r+1, tp_desc['title'])}
-            repeat_paramlist += templates.render(INPUT_SECTION, **context)
+                'repeat_label': tp_desc['title']})
+            # add description of parameters in the repeat
+            repeat_paramlist += templates.render(INPUT_SECTION, **{
+                'space': SPACE * (level+1),
+                'section_label': "%s: %s" % (r+1, tp_desc['title'])})
             repeat_paramlist += paramlist_in_repeat
     if repeat_paramlist != '':
-        context = {'space': SPACE * level, 'section_label': tp_desc['title']}
-        repeat_paramlist = templates.render(INPUT_SECTION, **context) + repeat_paramlist
+        repeat_paramlist = templates.render(INPUT_SECTION, **{
+            'space': SPACE * level,
+            'section_label': tp_desc['title']}) + repeat_paramlist
     return repeat_paramlist
 
 
 def get_param_value(step_params, tp_desc, force_default=False):
     """Get value of a 'simple' parameter if different from the default value, None otherwise."""
     param_value = ''
-    if '"' in step_params:
+    if isinstance(step_params, str) and '"' in step_params:
         step_params = step_params.replace('"', '')
     if tp_desc['value'] == step_params and not force_default:
         param_value = None
@@ -710,11 +752,10 @@ def format_param_desc(step_params, step_inputs, tp_desc, level, wf_steps, force_
     else:
         param_value = get_param_value(step_params, tp_desc, force_default)
         if param_value is not None:
-            context = {
+            paramlist += templates.render(INPUT_PARAM, **{
                 'space': SPACE * level,
                 'param_label': tp_desc['label'],
-                'param_value': param_value}
-            paramlist += templates.render(INPUT_PARAM, **context)
+                'param_value': param_value})
     return paramlist
 
 
@@ -752,7 +793,72 @@ def get_handson_box(step, steps, tools):
     return templates.render(HANDS_ON_TOOL_BOX_TEMPLATE, **context)
 
 
-def create_tutorial_from_workflow(kwds, z_file_links, tuto_dir, ctx):
+def init_tuto_metadata(kwds):
+    """Init tutorial metadata"""
+    metadata = collections.OrderedDict()
+    metadata['title'] = kwds["tutorial_title"]
+    metadata['zenodo_link'] = kwds["zenodo_link"] if kwds["zenodo_link"] else ''
+    metadata['questions'] = [
+            "Which biological questions are addressed by the tutorial?",
+            "Which bioinformatics techniques is important to know for this type of data?"]
+    metadata['objectives'] = [
+            "The learning objectives are the goals of the tutorial",
+            "They will be informed by your audience and will communicate to them and to yourself what you should focus on during the course",
+            "They are single sentence describing what a learner will be able to do once they have done the tutorial",
+            "You can use the Bloom's Taxonomy to write effective learning objectives"]
+    metadata['time'] = "3H"
+    metadata['key_points'] = [
+            "The take-home messages",
+            "They will appear at the end of the tutorial"]
+    metadata['contributors'] = ["contributor1", "contributor2"]
+    return metadata
+
+
+def format_tuto_metadata(metadata):
+    """Return the string corresponding to the tutorial metadata"""
+    return yaml.safe_dump(metadata,
+                           indent=2,
+                           default_flow_style=False,
+                           default_style='',
+                           explicit_start=False)
+        
+
+def write_hands_on_tutorial(metadata, body, tuto_dir):
+    """Write the tutorial hands-on"""
+    m_str = format_tuto_metadata(metadata)
+    template = templates.render(TUTO_HAND_ON_TEMPLATE, **{
+        "metadata": m_str,
+        "body": body
+    })
+
+    md_path = os.path.join(tuto_dir, "tutorial.md")
+    with open(md_path, 'w') as md:
+        md.write(template)
+
+
+def get_tuto_body(z_file_links, body = None):
+    """Get the body for a tutorial"""
+    if body is None:
+        body = templates.render(HANDS_ON_TOOL_BOX_TEMPLATE, **{
+            'tool_name': "My Tool",
+            'inputlist': templates.render(INPUT_FILE_TEMPLATE, **{
+                'space': 1*SPACE,
+                'icon': 'param-file',
+                'input_name': 'Input file',
+                'input_value': 'File'
+                }),
+            'paramlist': templates.render(INPUT_PARAM, **{
+                'space': 1*SPACE,
+                'param_label': 'Parameter',
+                'param_value': 'a value'
+                })
+        })
+    return templates.render(TUTO_HAND_ON_BODY_TEMPLATE, **{
+        "z_file_links": "\n>    ".join(z_file_links),
+        "body": body})
+
+
+def create_hands_on_tutorial_from_workflow(kwds, z_file_links, tuto_dir, ctx, metadata=None):
     """Create tutorial structure from the workflow file."""
     # load workflow
     if kwds['workflow_id']:
@@ -763,29 +869,20 @@ def create_tutorial_from_workflow(kwds, z_file_links, tuto_dir, ctx):
         wf, tools = get_wf_tools_from_running_galaxy(kwds)
     else:
         wf, tools = get_wf_tool_from_local_galaxy(kwds, kwds["workflow"], ctx)
-    save_to_yaml(tools, 'tools.yaml')
 
+    # get hands-on body from the workflow
     body = ''
     for step_id in range(len(wf['steps'].keys())):
         step = wf['steps'][str(step_id)]
         if not step['tool_state']:
             continue
         body += get_handson_box(step, wf['steps'], tools)
+    body = get_tuto_body(z_file_links, body)
 
-    context = {
-        "topic_name": kwds["topic_name"],
-        "topic_title": kwds["topic_title"],
-        "tutorial_name": kwds["tutorial_name"],
-        "zenodo_link": kwds["zenodo"] if kwds["zenodo"] else '',
-        "z_file_links": "\n>    ".join(z_file_links),
-        "body": body
-    }
-    template = templates.render(TUTORIAL_TEMPLATE, **context)
-
-    # create the tutorial markdown file
-    md_path = os.path.join(tuto_dir, "tutorial.md")
-    with open(md_path, 'w') as md:
-        md.write(template)
+    # write in the tutorial file with the metadata on the top
+    if not metadata:
+        metadata = init_tuto_metadata(kwds)
+    write_hands_on_tutorial(metadata, body, tuto_dir)
 
 
 def add_workflow_file(kwds, tuto_dir):
@@ -806,133 +903,143 @@ def add_workflow_file(kwds, tuto_dir):
         os.remove(empty_wf_filepath)
 
 
-def create_tutorial(kwds, tuto_dir, topic_dir, template_dir, ctx):
+def create_tutorial(kwds, tuto_dir, ctx):
     """Create the skeleton of a new tutorial."""
-    # copy or rename templates
-    template_tuto_path = os.path.join(topic_dir, "tutorials", "tutorial1")
-    if os.path.isdir(template_tuto_path):
-        os.rename(template_tuto_path, tuto_dir)
-    else:
-        shutil.copytree(template_dir, tuto_dir)
+    # create tuto folder and empty files
+    os.makedirs(tuto_dir)
+    tour_folder = os.path.join(tuto_dir, "tours")
+    os.makedirs(tour_folder)
+    workflow_folder = os.path.join(tuto_dir, "workflows")
+    os.makedirs(workflow_folder)
+
+    metadata = init_tuto_metadata(kwds)
 
     # extract the data library from Zenodo and the links for the tutorial
     z_file_links = ''
-    if kwds["zenodo"]:
+    if kwds["zenodo_link"]:
         info("Create the data library from Zenodo")
         z_file_links = prepare_data_library_from_zenodo(kwds, tuto_dir)
 
     # create tutorial skeleton from workflow and copy workflow file
-    if kwds["workflow"] or kwds['workflow_id']:
-        info("Create tutorial skeleton from workflow")
-        create_tutorial_from_workflow(kwds, z_file_links, tuto_dir, ctx)
-        add_workflow_file(kwds, tuto_dir)
+    if kwds["hands_on"]:
+        if kwds["workflow"] or kwds['workflow_id']:
+            info("Create tutorial skeleton from workflow")
+            create_hands_on_tutorial_from_workflow(kwds, z_file_links, tuto_dir, ctx)
+            add_workflow_file(kwds, tuto_dir)
+        else:
+            body = get_tuto_body(z_file_links)
+            print(body)
+            write_hands_on_tutorial(metadata, body, tuto_dir)
 
-    # fill the metadata of the new tutorial
-    update_tutorial(kwds, tuto_dir, topic_dir)
+    # create slide skeleton
+    if kwds["slides"]:
+        slide_path = os.path.join(tuto_dir, 'slides.html')
+        m_str = format_tuto_metadata(metadata)
+        with open(slide_path, 'w') as slide_f:
+            slide_f.write(
+                templates.render(TUTO_SLIDES_TEMPLATE, **{"metadata": m_str}))
 
 
 def init(ctx, kwds):
     """Create/update a topic/tutorial"""
-    topic_template_dir = get_template_dir(kwds)
-
     topic_dir = os.path.join("topics", kwds['topic_name'])
     if not os.path.isdir(topic_dir):
         info("The topic %s does not exist. It will be created" % kwds['topic_name'])
-        create_topic(kwds, topic_dir, topic_template_dir)
-    else:
-        metadata_path = os.path.join(topic_dir, "metadata.yaml")
-        metadata = load_yaml(metadata_path)
-        kwds['topic_title'] = metadata['title']
-        kwds['topic_summary'] = metadata['summary']
+        create_topic(kwds, topic_dir)
 
     if not kwds['tutorial_name']:
+        if kwds["slides"]:
+            raise Exception("A tutorial name is needed to create the skeleton of a tutorial slide deck")
         if kwds['workflow'] or kwds['workflow_id']:
             raise Exception("A tutorial name is needed to create the skeleton of the tutorial from a workflow")
-        if kwds['zenodo']:
+        if kwds['zenodo_link']:
             raise Exception("A tutorial name is needed to add Zenodo information")
     else:
         tuto_dir = os.path.join(topic_dir, "tutorials", kwds['tutorial_name'])
         if not os.path.isdir(tuto_dir):
-            tuto_template_dir = os.path.join(topic_template_dir, "tutorials", "tutorial1")
             info("The tutorial %s in topic %s does not exist. It will be created." % (kwds['tutorial_name'], kwds['topic_name']))
-            create_tutorial(kwds, tuto_dir, topic_dir, tuto_template_dir, ctx)
-        else:
-            info("The tutorial %s in topic %s already exists. It will be updated with the other arguments" % (
-                kwds['tutorial_name'], kwds['topic_name']))
-            update_tutorial(kwds, tuto_dir, topic_dir)
+            create_tutorial(kwds, tuto_dir, ctx)
 
 
-def prepare_tuto_update(kwds):
-    """Prepare the update of a tutorial."""
-    topics_dir = "topics"
-    if not os.path.isdir(topics_dir):
-        os.makedirs(topics_dir)
+def get_tuto_info(tuto_dir):
+    """Extract the metadata front matter on the top of the tutorial file and its body"""
+    tuto_fp = os.path.join(tuto_dir, "tutorial.md")
+    with open(tuto_fp, "r") as tuto_f:
+        tuto_content = tuto_f.read()
 
-    topic_dir = os.path.join(topics_dir, kwds['topic_name'])
+    regex = '^---\n(?P<metadata>[\s\S]*)\n---(?P<body>[\s\S]*)'
+    tuto_split_regex = re.search(regex, tuto_content)
+    if not tuto_split_regex:
+        raise Exception("No metadata found at the top of the tutorial")
+
+    metadata = yaml.load(tuto_split_regex.group("metadata"))
+    body = tuto_split_regex.group("body")
+
+    return metadata, body
+
+
+def check_topic_tuto_exist(kwds):
+    """Check that the topic and tutorial are already there."""
+    topic_dir = os.path.join("topics", kwds['topic_name'])
     if not os.path.isdir(topic_dir):
         raise Exception("The topic %s does not exists. It should be created" % kwds['topic_name'])
 
     tuto_dir = os.path.join(topic_dir, "tutorials", kwds['tutorial_name'])
     if not os.path.isdir(tuto_dir):
         raise Exception("The tutorial %s does not exists. It should be created" % kwds['tutorial_name'])
-    # get metadata
-    metadata_path = os.path.join(topic_dir, "metadata.yaml")
-    metadata = load_yaml(metadata_path)
-    tuto_metadata = collections.OrderedDict()
-    for mat in metadata['material']:
-        if mat['name'] == kwds['tutorial_name']:
-            tuto_metadata = mat
 
-    return (topic_dir, tuto_dir, metadata, metadata_path, tuto_metadata)
+    return topic_dir, tuto_dir
 
 
 def fill_data_library(ctx, kwds):
     """Fill a data library for a tutorial."""
-    topic_dir, tuto_dir, metadata, metadata_path, tuto_metadata = prepare_tuto_update(kwds)
+    topic_dir, tuto_dir = check_topic_tuto_exist(kwds)
+    metadata, body = get_tuto_info(tuto_dir)
 
     # get the zenodo link
     z_link = ''
-    if 'zenodo_link' in tuto_metadata and tuto_metadata['zenodo_link'] != '':
-        if kwds['zenodo']:
+    if 'zenodo_link' in metadata and metadata['zenodo_link'] != '':
+        if kwds['zenodo_link']:
             info("The data library and the metadata will be updated with the new Zenodo link")
-            z_link = kwds['zenodo']
-            tuto_metadata['zenodo_link'] = z_link
+            z_link = kwds['zenodo_link']
+            metadata['zenodo_link'] = z_link
         else:
             info("The data library will be extracted using the Zenodo link in the metadata")
-            z_link = tuto_metadata['zenodo_link']
-    elif kwds['zenodo']:
+            z_link = metadata['zenodo_link']
+    elif kwds['zenodo_link']:
         info("The data library will be created and the metadata will be filled with the new Zenodo link")
-        z_link = kwds['zenodo']
-        tuto_metadata['zenodo_link'] = z_link
+        z_link = kwds['zenodo_link']
+        metadata['zenodo_link'] = z_link
 
     if z_link == '' or z_link is None:
         raise Exception("A Zenodo link should be provided either in the metadata file or as argument of the command")
 
+    # get the topic metadata
+    topic_metadata_fp = os.path.join(topic_dir, "metadata.yaml")
+    topic_metadata = load_yaml(topic_metadata_fp)
+
     # extract the data library from Zenodo
     topic_kwds = {
-        'topic_title': metadata['title'],
-        'topic_summary': metadata['summary'],
-        'tutorial_title': tuto_metadata['title'],
-        'zenodo': z_link,
+        'topic_title': topic_metadata['title'],
+        'topic_summary': topic_metadata['summary'],
+        'tutorial_title': metadata['title'],
+        'zenodo_link': z_link,
         'datatypes': kwds['datatypes']
     }
     prepare_data_library_from_zenodo(topic_kwds, tuto_dir)
+
     # update the metadata
-    save_to_yaml(metadata, metadata_path)
+    write_hands_on_tutorial(metadata, body, tuto_dir)
 
 
 def generate_tuto_from_wf(ctx, kwds):
     """Generate the skeleton of a tutorial from a workflow."""
-    topic_dir, tuto_dir, metadata, metadata_path, tuto_metadata = prepare_tuto_update(kwds)
     if kwds["workflow"] or kwds['workflow_id']:
-        kwds["zenodo"] = ''
-        kwds["topic_title"] = metadata['title']
+        topic_dir, tuto_dir = check_topic_tuto_exist(kwds)
+        metadata, body = get_tuto_info(tuto_dir)
         info("Create tutorial skeleton from workflow")
-        create_tutorial_from_workflow(kwds, [], tuto_dir, ctx)
+        create_hands_on_tutorial_from_workflow(kwds, [], tuto_dir, ctx, metadata)
         add_workflow_file(kwds, tuto_dir)
     else:
         exc = "A path to a local workflow or the id of a workflow on a running Galaxy instance should be provided"
         raise Exception(exc)
-    # update the metadata
-    tuto_metadata['workflows'] = True
-    save_to_yaml(metadata, metadata_path)
