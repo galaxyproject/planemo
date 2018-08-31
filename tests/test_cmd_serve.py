@@ -70,7 +70,7 @@ class ServeTestCase(CliTestCase):
         tool_ids = None
         for i in range(30):
             tool_ids = [t["id"] for t in user_gi.tools.get_tools()]
-            if "toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.71" in tool_ids:
+            if any(_.startswith("toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/") for _ in tool_ids):
                 found = True
                 break
             time.sleep(5)
