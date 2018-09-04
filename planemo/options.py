@@ -1147,12 +1147,7 @@ def training_topic_option():
             "--topic_target",
             type=click.Choice(['use', 'admin-dev', 'instructors']),
             default="use",
-            help="Target audience for the topic"),
-        planemo_option(
-            "--templates",
-            type=click.Path(file_okay=True, resolve_path=True),
-            default="templates",
-            help="Directory with the training templates")
+            help="Target audience for the topic")
     )
 
 

@@ -8,7 +8,7 @@ from .test_utils import (
 )
 
 
-def create_tutorial_dir(topic_n, tuto_n, metadata_n):
+def create_tutorial_dir(topic_n, tuto_n):
     """Create the tutorial directory structure."""
     topic_dir = os.path.join("topics", topic_n)
     tuto_dir = os.path.join(topic_dir, "tutorials", tuto_n)
@@ -18,8 +18,11 @@ def create_tutorial_dir(topic_n, tuto_n, metadata_n):
     if not os.path.isdir(tuto_dir):
         os.makedirs(tuto_dir)
     if not os.path.exists(metadata_path):
-        metadata = os.path.join(TEST_DATA_DIR, metadata_n)
+        metadata = os.path.join(TEST_DATA_DIR, "training_metadata.yaml")
         shutil.copy(metadata, metadata_path)
+    shutil.copy(
+        os.path.join(TEST_DATA_DIR, "training_tutorial.md"),
+        os.path.join(tuto_dir, "tutorial.md"))
 
 
 class CmdTrainingGenerateFromWfTestCase(CliTestCase):
@@ -49,14 +52,14 @@ class CmdTrainingGenerateFromWfTestCase(CliTestCase):
             tuto_n = "test"
             test_workflow = os.path.join(TEST_DATA_DIR, "test_workflow_1.ga")
             # working test
-            create_tutorial_dir(topic_n, tuto_n, "training_metadata_wo_zenodo.yaml")
+            create_tutorial_dir(topic_n, tuto_n)
             training_init_command = [
-                "training_generate_tuto_from_wf",
-                "--topic_name", "test",
-                "--tutorial_name", "test",
+                "training_generate_from_wf",
+                "--topic_name", topic_n,
+                "--tutorial_name", tuto_n,
                 "--workflow", test_workflow
             ]
-            self._check_exit_code(training_init_command, exit_code=-1)
+            self._check_exit_code(training_init_command, exit_code=0)
             shutil.rmtree("topics")
 
     def test_training_generate_from_wf_command_remote_wf(self):
@@ -67,20 +70,20 @@ class CmdTrainingGenerateFromWfTestCase(CliTestCase):
             # not working test
             training_init_command = [
                 "training_generate_from_wf",
-                "--topic_name", "test",
-                "--tutorial_name", "test",
+                "--topic_name", topic_n,
+                "--tutorial_name", tuto_n,
                 "--workflow_id", "ID"
             ]
             self._check_exit_code(training_init_command, exit_code=-1)
             # not working test
-            create_tutorial_dir(topic_n, tuto_n, "training_metadata_wo_zenodo.yaml")
+            create_tutorial_dir(topic_n, tuto_n)
             training_init_command = [
                 "training_generate_from_wf",
-                "--topic_name", "test",
-                "--tutorial_name", "test",
+                "--topic_name", topic_n,
+                "--tutorial_name", tuto_n,
                 "--workflow_id", "ID",
                 "--galaxy_url", "https://usegalaxy.eu/",
                 "--galaxy_api_key", "API"
             ]
-            self._check_exit_code(training_init_command, exit_code=0)
+            self._check_exit_code(training_init_command, exit_code=-1)
             shutil.rmtree("topics")

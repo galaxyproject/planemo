@@ -2,7 +2,7 @@
 layout: tutorial_hands_on
 
 title: "A tutorial to test"
-zenodo_link: "https://zenodo.org/record/1321885"
+zenodo_link: ""
 questions:
   - "What is the purpose of the tutorial?"
 objectives:

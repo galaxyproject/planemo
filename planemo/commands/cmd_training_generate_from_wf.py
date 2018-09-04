@@ -3,8 +3,8 @@
 import click
 
 from planemo import options
-from planemo import training
 from planemo.cli import command_function
+from planemo.training import Training
 
 
 @click.command('training_generate_from_wf')
@@ -15,4 +15,5 @@ from planemo.cli import command_function
 def cli(ctx, uris, **kwds):
     """Create tutorial skeleton from workflow."""
     kwds["no_dependency_resolution"] = True
-    training.generate_tuto_from_wf(ctx, kwds)
+    training = Training(kwds)
+    training.generate_tuto_from_wf(ctx)

@@ -3,7 +3,6 @@ import os
 
 from .test_utils import (
     CliTestCase,
-    PROJECT_TEMPLATES_DIR,
     TEST_DATA_DIR
 )
 
@@ -18,28 +17,15 @@ class CmdTrainingInitTestCase(CliTestCase):
                 "training_init",
                 "--topic_name", "test"
             ]
-            self._check_exit_code(training_init_command, exit_code=-1)
-
-    def test_training_init_command_templates(self):
-        """Test training_init command with template path."""
-        with self._isolate():
-            training_template = os.path.join(PROJECT_TEMPLATES_DIR, "training")
-            training_init_command = [
-                "training_init",
-                "--topic_name", "test",
-                "--templates", training_template
-            ]
             self._check_exit_code(training_init_command, exit_code=0)
 
     def test_training_init_command_topic(self):
         """Test training_init command to create new topic."""
         with self._isolate():
-            training_template = os.path.join(PROJECT_TEMPLATES_DIR, "training")
             # working test
             training_init_command = [
                 "training_init",
                 "--topic_name", "test",
-                "--templates", training_template,
                 "--topic_title", "Topic title",
                 "--topic_target", "use",
                 "--topic_summary", "Summary"
@@ -49,7 +35,6 @@ class CmdTrainingInitTestCase(CliTestCase):
             training_init_command = [
                 "training_init",
                 "--topic_name", "test",
-                "--templates", training_template,
                 "--topic_title", "Topic title",
                 "--topic_target", "test",
                 "--topic_summary", "Summary"
@@ -59,25 +44,21 @@ class CmdTrainingInitTestCase(CliTestCase):
     def test_training_init_command_tutorial_no_topic(self):
         """Test training_init command with tutorial but no topic."""
         with self._isolate():
-            training_template = os.path.join(PROJECT_TEMPLATES_DIR, "training")
             # working test
             training_init_command = [
                 "training_init",
-                "--tutorial_name", "test",
-                "--templates", training_template,
+                "--tutorial_name", "test"
             ]
             self._check_exit_code(training_init_command, exit_code=2)
 
     def test_training_init_command_tutorial(self):
         """Test training_init command to create new tutorial."""
         with self._isolate():
-            training_template = os.path.join(PROJECT_TEMPLATES_DIR, "training")
             # working test
             training_init_command = [
                 "training_init",
                 "--topic_name", "test",
                 "--tutorial_name", "test",
-                "--templates", training_template,
                 "--tutorial_title", "Title of the tutorial",
                 "--hands_on",
                 "--slides"
@@ -87,15 +68,13 @@ class CmdTrainingInitTestCase(CliTestCase):
     def test_training_init_command_tutorial_zenodo(self):
         """Test training_init command to create new tutorial with zenodo."""
         with self._isolate():
-            training_template = os.path.join(PROJECT_TEMPLATES_DIR, "training")
             datatype = os.path.join(TEST_DATA_DIR, "training_datatypes.yaml")
             # not working test
             training_init_command = [
                 "training_init",
                 "--topic_name", "test",
                 "--tutorial_name", "test",
-                "--zenodo", "https://zenodo.org/record/1321885",
-                "--templates", training_template
+                "--zenodo_link", "https://zenodo.org/record/1321885"
             ]
             self._check_exit_code(training_init_command, exit_code=-1)
             # working
@@ -103,38 +82,33 @@ class CmdTrainingInitTestCase(CliTestCase):
                 "training_init",
                 "--topic_name", "test",
                 "--tutorial_name", "test",
-                "--zenodo", "https://zenodo.org/record/1321885",
-                "--datatypes", datatype,
-                "--templates", training_template
+                "--zenodo_link", "https://zenodo.org/record/1321885",
+                "--datatypes", datatype
             ]
             self._check_exit_code(training_init_command, exit_code=0)
 
     def test_training_init_command_tutorial_local_wf(self):
         """Test training_init command to create new tutorial with local workflow."""
         with self._isolate():
-            training_template = os.path.join(PROJECT_TEMPLATES_DIR, "training")
             test_workflow = os.path.join(TEST_DATA_DIR, "test_workflow_1.ga")
             # working test
             training_init_command = [
                 "training_init",
                 "--topic_name", "test",
                 "--tutorial_name", "test",
-                "--workflow", test_workflow,
-                "--templates", training_template
+                "--workflow", test_workflow
             ]
-            self._check_exit_code(training_init_command, exit_code=-1)
+            self._check_exit_code(training_init_command, exit_code=0)
 
     def test_training_init_command_tutorial_remote_wf(self):
         """Test training_init command to create new tutorial with workflow on running instance."""
         with self._isolate():
-            training_template = os.path.join(PROJECT_TEMPLATES_DIR, "training")
             # not working test
             training_init_command = [
                 "training_init",
                 "--topic_name", "test",
                 "--tutorial_name", "test",
-                "--workflow_id", "ID",
-                "--templates", training_template
+                "--workflow_id", "ID"
             ]
             self._check_exit_code(training_init_command, exit_code=-1)
             # working test
@@ -144,7 +118,6 @@ class CmdTrainingInitTestCase(CliTestCase):
                 "--tutorial_name", "test",
                 "--workflow_id", "ID",
                 "--galaxy_url", "https://usegalaxy.eu/",
-                "--galaxy_api_key", "API",
-                "--templates", training_template
+                "--galaxy_api_key", "API"
             ]
-            self._check_exit_code(training_init_command, exit_code=-1)
+            self._check_exit_code(training_init_command, exit_code=0)

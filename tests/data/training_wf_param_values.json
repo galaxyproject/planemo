@@ -1,0 +1,65 @@
+{
+    "save_db": "false",
+    "add_to_database": {
+        "withdb": {
+            "output_name": "output",
+            "id": 0
+        }
+    },
+    "workdb": "workdb.sqlite",
+    "__rerun_remap_job_id__": null,
+    "__page__": null,
+    "tables": [
+        {
+            "tbl_opts": {
+                "pkey_autoincr": "",
+                "column_names_from_first_line": "false",
+                "table_name": "",
+                "indexes": [],
+                "load_named_columns": "false",
+                "col_names": ""
+            },
+            "__index__": 0,
+            "input_opts": {
+                "linefilters": [
+                    {
+                        "__index__": 0,
+                        "filter": {
+                            "filter_type": "skip",
+                            "skip_lines": "1",
+                            "__current_case__": 0
+                        }
+                    }
+                ]
+            },
+            "table": {
+                "output_name": "output",
+                "id": 1
+            }
+        },
+        {
+            "tbl_opts": {
+                "pkey_autoincr": "",
+                "column_names_from_first_line": "false",
+                "table_name": "",
+                "indexes": [],
+                "load_named_columns": "false",
+                "col_names": ""
+            },
+            "__index__": 1,
+            "input_opts": {
+                "linefilters": []
+            },
+            "table": {
+                "output_name": "output",
+                "id": 2
+            }
+        }
+    ],
+    "query_result": {
+        "header_prefix": "38",
+        "header": "yes",
+        "__current_case__": 0
+    },
+    "sqlquery": ""
+}
