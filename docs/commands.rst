@@ -23,7 +23,6 @@ documentation describes these commands.
 .. include:: commands/conda_search.rst
 .. include:: commands/config_init.rst
 .. include:: commands/container_register.rst
-.. include:: commands/cwl_script.rst
 .. include:: commands/database_create.rst
 .. include:: commands/database_delete.rst
 .. include:: commands/database_list.rst
@@ -41,7 +40,6 @@ documentation describes these commands.
 .. include:: commands/profile_list.rst
 .. include:: commands/project_init.rst
 .. include:: commands/pull_request.rst
-.. include:: commands/run.rst
 .. include:: commands/serve.rst
 .. include:: commands/share_test.rst
 .. include:: commands/shed_build.rst
@@ -58,6 +56,9 @@ documentation describes these commands.
 .. include:: commands/test_reports.rst
 .. include:: commands/tool_factory.rst
 .. include:: commands/tool_init.rst
+.. include:: commands/training_fill_data_library.rst
+.. include:: commands/training_generate_from_wf.rst
+.. include:: commands/training_init.rst
 .. include:: commands/travis_init.rst
 .. include:: commands/virtualenv.rst
 .. include:: commands/workflow_convert.rst

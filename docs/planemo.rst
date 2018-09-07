@@ -18,6 +18,7 @@ Subpackages
     planemo.shed
     planemo.shed2tap
     planemo.test
+    planemo.training
     planemo.xml
 
 Submodules
