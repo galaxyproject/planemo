@@ -4,6 +4,7 @@ import collections
 import json
 import os
 import re
+import six
 import shutil
 
 import oyaml as yaml
@@ -27,6 +28,7 @@ from .utils import (
     save_to_yaml
 )
 
+from pprint import pprint
 
 TUTO_HAND_ON_TEMPLATE = """---
 layout: tutorial_hands_on
@@ -526,7 +528,7 @@ def get_wf_inputs(step_inp):
 
 def get_wf_param_values(init_params, inp_connections):
     """Get the param values from a workflow step and format them into a hierarchical dictionary."""
-    if not isinstance(init_params, str) or '\": \"' not in init_params:
+    if not isinstance(init_params, six.string_types) or '": ' not in init_params:
         form_params = init_params
     else:
         form_params = json.loads(init_params)
@@ -534,18 +536,16 @@ def get_wf_param_values(init_params, inp_connections):
         if '__class__' in form_params and form_params['__class__'] == 'RuntimeValue':
             form_params = inp_connections
         else:
-            json_params = form_params
-            form_params = {}
-            for p in json_params:
+            for p in form_params:
                 inp = inp_connections[p] if p in inp_connections else {}
-                form_params[p] = get_wf_param_values(json_params[p], inp)
+                form_params[p] = get_wf_param_values(form_params[p], inp)
     elif isinstance(form_params, list):
         json_params = form_params
         form_params = []
         for i, p in enumerate(json_params):
             inp = inp_connections[str(i)] if str(i) in inp_connections else {}
             form_params.append(get_wf_param_values(p, inp))
-    elif isinstance(form_params, str) and '"' in form_params:
+    elif isinstance(form_params, six.string_types) and '"' in form_params:
         form_params = form_params.replace('"', '')
     return form_params
 
@@ -556,7 +556,9 @@ def format_wf_steps(wf, gi):
     steps = wf['steps']
 
     for s in range(len(steps)):
+        print('format_wf_steps')
         wf_step = steps[str(s)]
+        pprint(wf_step)
         # get params in workflow
         wf_param_values = {}
         if wf_step['tool_state'] and wf_step['input_connections']:
@@ -570,7 +572,11 @@ def format_wf_steps(wf, gi):
             tool_desc = {'inputs': []}
         # get formatted param description
         paramlist = ''
+        pprint(tool_desc)
+        pprint(wf_param_values)
+        print(type(wf_param_values))
         for inp in tool_desc["inputs"]:
+            pprint(inp)
             tool_inp = ToolInput(inp, wf_param_values, steps, 1, should_be_there=True)
             paramlist += tool_inp.get_formatted_desc()
         # format the hands-on box
