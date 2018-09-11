@@ -1,0 +1,13 @@
+---
+name: test
+type: use
+title: Test
+summary: 'Summary'
+edam_ontology: ''
+requirements:
+- title: Galaxy introduction
+  type: internal
+  link: /introduction/
+maintainers:
+- maintainer1
+- maintainer2

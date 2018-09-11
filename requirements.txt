@@ -5,6 +5,7 @@ configparser
 six>=1.7.0
 pyaml
 pyyaml
+oyaml
 bioblend>=0.10.0
 docutils
 jinja2

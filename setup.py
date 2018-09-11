@@ -58,6 +58,7 @@ PACKAGES = [
     'planemo.shed',
     'planemo.shed2tap',
     'planemo.test',
+    'planemo.training',
     'planemo.xml',
 ]
 ENTRY_POINTS = '''

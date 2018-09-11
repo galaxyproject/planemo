@@ -1,0 +1,243 @@
+"""Training training functions."""
+import json
+import os
+import shutil
+
+from nose.tools import assert_raises_regexp
+
+from planemo import cli
+from planemo.runnable import for_path
+from planemo.training import Training
+from .test_utils import (
+    skip_if_environ,
+    TEST_DATA_DIR,
+)
+
+
+datatype_fp = os.path.join(TEST_DATA_DIR, "training_datatypes.yaml")
+tuto_fp = os.path.join(TEST_DATA_DIR, "training_tutorial.md")
+tuto_wo_zenodo_fp = os.path.join(TEST_DATA_DIR, "training_tutorial_wo_zenodo.md")
+zenodo_link = 'https://zenodo.org/record/1321885'
+# load a workflow generated from Galaxy
+WF_FP = os.path.join(TEST_DATA_DIR, "training_workflow.ga")
+with open(WF_FP, "r") as wf_f:
+    wf = json.load(wf_f)
+# load wf_param_values (output of tutorial.get_wf_param_values on wf['steps']['4'])
+with open(os.path.join(TEST_DATA_DIR, "training_wf_param_values.json"), "r") as wf_param_values_f:
+    wf_param_values = json.load(wf_param_values_f)
+# configuration
+RUNNABLE = for_path(WF_FP)
+CTX = cli.Context()
+CTX.planemo_directory = "/tmp/planemo-test-workspace"
+KWDS = {
+    'topic_name': 'my_new_topic',
+    'topic_title': "New topic",
+    'topic_target': "use",
+    'topic_summary': "Topic summary",
+    'tutorial_name': "new_tuto",
+    'tutorial_title': "Title of tuto",
+    'hands_on': True,
+    'slides': True,
+    'workflow': None,
+    'workflow_id': None,
+    'zenodo_link': None,
+    'datatypes': os.path.join(TEST_DATA_DIR, "training_datatypes.yaml"),
+    'templates': None,
+    # planemo configuation
+    'conda_auto_init': True,
+    'conda_auto_install': True,
+    'conda_copy_dependencies': False,
+    'conda_debug': False,
+    'conda_dependency_resolution': False,
+    'conda_ensure_channels': 'iuc,bioconda,conda-forge,defaults',
+    'conda_exec': None,
+    'conda_prefix': None,
+    'conda_use_local': False,
+    'brew_dependency_resolution': False,
+    'daemon': False,
+    'database_connection': None,
+    'database_type': 'auto',
+    'dependency_resolvers_config_file': None,
+    'docker': False,
+    'docker_cmd': 'docker',
+    'docker_extra_volume': None,
+    'docker_galaxy_image': 'quay.io/bgruening/galaxy',
+    'docker_host': None,
+    'docker_sudo': False,
+    'docker_sudo_cmd': 'sudo',
+    'engine': 'galaxy',
+    'extra_tools': (),
+    'file_path': None,
+    'galaxy_api_key': None,
+    'galaxy_branch': None,
+    'galaxy_database_seed': None,
+    'galaxy_email': 'planemo@galaxyproject.org',
+    'galaxy_root': None,
+    'galaxy_single_user': True,
+    'galaxy_source': None,
+    'galaxy_url': None,
+    'host': '127.0.0.1',
+    'ignore_dependency_problems': False,
+    'install_galaxy': False,
+    'job_config_file': None,
+    'mulled_containers': False,
+    'no_cleanup': False,
+    'no_cache_galaxy': False,
+    'no_dependency_resolution': True,
+    'non_strict_cwl': False,
+    'pid_file': None,
+    'port': '9090',
+    'postgres_database_host': None,
+    'postgres_database_port': None,
+    'postgres_database_user': 'postgres',
+    'postgres_psql_path': 'psql',
+    'profile': None,
+    'shed_dependency_resolution': False,
+    'shed_install': True,
+    'shed_tool_conf': None,
+    'shed_tool_path': None,
+    'skip_venv': False,
+    'test_data': None,
+    'tool_data_table': None,
+    'tool_dependency_dir': None
+}
+
+
+def test_training_init():
+    """Test :func:`planemo.training.Training.init`."""
+    train = Training(KWDS)
+    assert train.topics_dir == "topics"
+    assert train.topic is not None
+    assert train.tuto is None
+
+
+def test_training_init_training():
+    """Test :func:`planemo.training.Training.init_training`."""
+    train = Training(KWDS)
+    # new topic, nothing else
+    train.kwds['tutorial_name'] = None
+    train.kwds['slides'] = None
+    train.kwds['workflow'] = None
+    train.kwds['workflow_id'] = None
+    train.kwds['zenodo_link'] = None
+    train.init_training(CTX)
+    assert os.path.exists(train.topic.dir)
+    assert not os.listdir(os.path.join(train.topic.dir, 'tutorials'))
+    # no new topic, no tutorial name but hands-on
+    train.kwds['slides'] = True
+    exp_exception = "A tutorial name is needed to create the skeleton of a tutorial slide deck"
+    with assert_raises_regexp(Exception, exp_exception):
+        train.init_training(CTX)
+    # no new topic, no tutorial name but workflow
+    train.kwds['workflow'] = WF_FP
+    train.kwds['slides'] = False
+    exp_exception = "A tutorial name is needed to create the skeleton of the tutorial from a workflow"
+    with assert_raises_regexp(Exception, exp_exception):
+        train.init_training(CTX)
+    # no new topic, no tutorial name but zenodo
+    train.kwds['workflow'] = None
+    train.kwds['zenodo_link'] = zenodo_link
+    exp_exception = "A tutorial name is needed to add Zenodo information"
+    with assert_raises_regexp(Exception, exp_exception):
+        train.init_training(CTX)
+    # no new topic, new tutorial
+    train.kwds['tutorial_name'] = "new_tuto"
+    train.kwds['workflow'] = None
+    train.kwds['zenodo_link'] = None
+    train.init_training(CTX)
+    assert os.path.exists(train.tuto.dir)
+    assert os.path.exists(train.tuto.tuto_fp)
+    assert train.kwds['tutorial_title'] in open(train.tuto.tuto_fp, 'r').read()
+    # clean after
+    shutil.rmtree(train.topics_dir)
+    shutil.rmtree("metadata")
+
+
+def create_existing_tutorial(exit_tuto_name, tuto_fp, topic):
+    exist_tuto_dir = os.path.join(topic.dir, 'tutorials', exit_tuto_name)
+    os.makedirs(exist_tuto_dir)
+    shutil.copyfile(tuto_fp, os.path.join(exist_tuto_dir, 'tutorial.md'))
+
+
+def test_training_check_topic_init_tuto():
+    """Test :func:`planemo.training.Training.check_topic_init_tuto`."""
+    train = Training(KWDS)
+    # no topic
+    exp_exception = "The topic my_new_topic does not exists. It should be created"
+    with assert_raises_regexp(Exception, exp_exception):
+        train.check_topic_init_tuto()
+    # add topic
+    train.kwds['tutorial_name'] = None
+    train.kwds['slides'] = None
+    train.kwds['workflow'] = None
+    train.kwds['workflow_id'] = None
+    train.kwds['zenodo_link'] = None
+    train.init_training(CTX)
+    train.kwds['tutorial_name'] = 'existing_tutorial'
+    create_existing_tutorial('existing_tutorial', tuto_fp, train.topic)
+    train.check_topic_init_tuto()
+    assert train.tuto.name == train.kwds['tutorial_name']
+    assert train.tuto.datatype_fp
+    # clean after
+    shutil.rmtree(train.topics_dir)
+    shutil.rmtree("metadata")
+
+
+def test_fill_data_library():
+    """Test :func:`planemo.training.fill_data_library`."""
+    train = Training(KWDS)
+    train.kwds['tutorial_name'] = None
+    train.kwds['slides'] = False
+    train.kwds['hands_on'] = False
+    train.init_training(CTX)
+    train.kwds['tutorial_name'] = 'existing_tutorial'
+    create_existing_tutorial('existing_tutorial', tuto_wo_zenodo_fp, train.topic)
+    # no Zenodo link
+    train.kwds['zenodo_link'] = None
+    exp_exception = "A Zenodo link should be provided either in the metadata file or as argument of the command"
+    with assert_raises_regexp(Exception, exp_exception):
+        train.fill_data_library(CTX)
+    # with a given Zenodo link and no Zenodo in metadata
+    train.kwds['zenodo_link'] = zenodo_link
+    train.fill_data_library(CTX)
+    assert 'DOI: 10.5281/zenodo.1321885' in open(train.tuto.data_lib_fp, 'r').read()
+    assert 'zenodo_link: %s' % zenodo_link in open(train.tuto.tuto_fp, 'r').read()
+    # with a given Zenodo link and Zenodo in metadata
+    new_z_link = 'https://zenodo.org/record/1324204'
+    train.kwds['zenodo_link'] = new_z_link
+    train.tuto = None
+    train.fill_data_library(CTX)
+    assert 'DOI: 10.5281/zenodo.1324204' in open(train.tuto.data_lib_fp, 'r').read()
+    assert 'zenodo_link: %s' % new_z_link in open(train.tuto.tuto_fp, 'r').read()
+    # with no given Zenodo link
+    train.kwds['zenodo_link'] = None
+    train.fill_data_library(CTX)
+    assert 'DOI: 10.5281/zenodo.1324204' in open(train.tuto.data_lib_fp, 'r').read()
+    assert 'zenodo_link: %s' % new_z_link in open(train.tuto.tuto_fp, 'r').read()
+    # clean after
+    shutil.rmtree(train.topics_dir)
+    shutil.rmtree("metadata")
+
+
+@skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+def test_generate_tuto_from_wf():
+    """Test :func:`planemo.training.generate_tuto_from_wf`."""
+    train = Training(KWDS)
+    train.kwds['tutorial_name'] = None
+    train.kwds['slides'] = False
+    train.init_training(CTX)
+    train.kwds['tutorial_name'] = 'existing_tutorial'
+    create_existing_tutorial('existing_tutorial', tuto_fp, train.topic)
+    # no workflow
+    train.kwds['workflow'] = None
+    exp_exception = "A path to a local workflow or the id of a workflow on a running Galaxy instance should be provided"
+    with assert_raises_regexp(Exception, exp_exception):
+        train.generate_tuto_from_wf(CTX)
+    # with workflow
+    train.kwds['workflow'] = WF_FP
+    train.generate_tuto_from_wf(CTX)
+    assert '**FastQC** {% icon tool %} with the following parameters:' in open(train.tuto.tuto_fp, 'r').read()
+    assert os.path.exists(train.tuto.wf_fp)
+    # clean after
+    shutil.rmtree(train.topics_dir)
+    shutil.rmtree("metadata")

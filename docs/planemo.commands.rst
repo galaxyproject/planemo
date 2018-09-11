@@ -428,6 +428,30 @@ planemo.commands.cmd\_tool\_init module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd\_training\_fill\_data\_library module
+----------------------------------------------------------
+
+.. automodule:: planemo.commands.cmd_training_fill_data_library
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd\_training\_generate\_from\_wf module
+---------------------------------------------------------
+
+.. automodule:: planemo.commands.cmd_training_generate_from_wf
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+planemo.commands.cmd\_training\_init module
+-------------------------------------------
+
+.. automodule:: planemo.commands.cmd_training_init
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.commands.cmd\_travis\_before\_install module
 ----------------------------------------------------
 
