@@ -4,11 +4,12 @@ import collections
 import json
 import os
 import re
-import six
 import shutil
+from pprint import pprint
 
 import oyaml as yaml
 import requests
+import six
 
 from planemo import templates
 from planemo.bioblend import galaxy
@@ -27,8 +28,6 @@ from .utils import (
     load_yaml,
     save_to_yaml
 )
-
-from pprint import pprint
 
 TUTO_HAND_ON_TEMPLATE = """---
 layout: tutorial_hands_on

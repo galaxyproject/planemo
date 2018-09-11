@@ -36,6 +36,9 @@ from .test_training import (
     wf_param_values,
     zenodo_link
 )
+from .test_utils import (
+    skip_if_environ,
+)
 
 topic = Topic()
 training = Training(KWDS)
@@ -105,6 +108,7 @@ def test_get_wf_param_values():
         assert k in wf_param_value_tests
 
 
+@skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
 def test_format_wf_steps():
     """Test :func:`planemo.training.tutorial.format_wf_steps`."""
     assert is_galaxy_engine(**KWDS)
@@ -118,6 +122,7 @@ def test_format_wf_steps():
     assert '## Sub-step with **Select first**' in body
 
 
+@skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
 def test_get_hands_on_boxes_from_local_galaxy():
     """Test :func:`planemo.training.tutorial.get_hands_on_boxes_from_local_galaxy`."""
     tuto_body = get_hands_on_boxes_from_local_galaxy(KWDS, WF_FP, CTX)
@@ -126,6 +131,7 @@ def test_get_hands_on_boxes_from_local_galaxy():
     assert '## Sub-step with **Select first**' in tuto_body
 
 
+@skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
 def test_get_hands_on_boxes_from_running_galaxy():
     """Test :func:`planemo.training.tutorial.get_hands_on_boxes_from_running_galaxy`."""
     assert is_galaxy_engine(**KWDS)
@@ -299,6 +305,7 @@ def test_tutorial_has_workflow():
     assert tuto.has_workflow()
 
 
+@skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
 def test_tutorial_export_workflow_file():
     """Test :func:`planemo.training.tutorial.tutorial.export_workflow_file`."""
     tuto = Tutorial(
@@ -380,6 +387,7 @@ def test_tutorial_write_hands_on_tutorial():
     shutil.rmtree("topics")
 
 
+@skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
 def test_tutorial_create_hands_on_tutorial():
     """Test :func:`planemo.training.tutorial.tutorial.create_hands_on_tutorial`."""
     tuto = Tutorial(
@@ -416,6 +424,7 @@ def test_tutorial_create_hands_on_tutorial():
     shutil.rmtree("topics")
 
 
+@skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
 def test_tutorial_create_tutorial():
     """Test :func:`planemo.training.tutorial.tutorial.create_tutorial`."""
     tuto = Tutorial(

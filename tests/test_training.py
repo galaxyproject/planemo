@@ -8,7 +8,10 @@ from nose.tools import assert_raises_regexp
 from planemo import cli
 from planemo.runnable import for_path
 from planemo.training import Training
-from .test_utils import TEST_DATA_DIR
+from .test_utils import (
+    skip_if_environ,
+    TEST_DATA_DIR,
+)
 
 
 datatype_fp = os.path.join(TEST_DATA_DIR, "training_datatypes.yaml")
@@ -216,6 +219,7 @@ def test_fill_data_library():
     shutil.rmtree("metadata")
 
 
+@skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
 def test_generate_tuto_from_wf():
     """Test :func:`planemo.training.generate_tuto_from_wf`."""
     train = Training(KWDS)
