@@ -9,7 +9,18 @@ History
 0.55.0.dev0
 ---------------------
 
-    
+* Add commands to create Galaxy training materials (thanks to `@bebatut`_).
+  `Pull Request 861`_
+* Fix `planemo test` when TEMP env variable contain spaces (thanks to
+  `@nsoranzo`_).
+  `Pull Request 851`_
+* Support testing a completely remote galaxy instance (thanks to `@erasche`_).
+  `Pull Request 856`_
+* Allow naming history from command line (thanks to `@erasche`_).
+  `Pull Request 860`_
+* Sync galaxy.xsd from galaxy repo (thanks to `@nsoranzo`_).
+  `Pull Request 866`_
+* Fix ServeTestCase.test_shed_serve test (thanks to `@nsoranzo`). bad810a_
 
 ---------------------
 0.54.0 (2018-06-06)
@@ -1357,6 +1368,12 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _bad810a: https://github.com/galaxyproject/planemo/commit/bad810a
+.. _Pull Request 851: https://github.com/galaxyproject/planemo/pull/851
+.. _Pull Request 856: https://github.com/galaxyproject/planemo/pull/856
+.. _Pull Request 860: https://github.com/galaxyproject/planemo/pull/860
+.. _Pull Request 866: https://github.com/galaxyproject/planemo/pull/866
+.. _Pull Request 861: https://github.com/galaxyproject/planemo/pull/861
 .. _324c776: https://github.com/galaxyproject/planemo/commit/324c776
 .. _72d2ca7: https://github.com/galaxyproject/planemo/commit/72d2ca7
 .. _b12b117: https://github.com/galaxyproject/planemo/commit/b12b117
