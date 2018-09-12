@@ -47,8 +47,8 @@ Afterwards run the following commands.
 
 ::
 
-    $ conda config --add channels conda-forge
     $ conda config --add channels bioconda
+    $ conda config --add channels conda-forge
     $ conda install planemo
 
 Galaxy is known to have issues when running with a Conda Python so this approach

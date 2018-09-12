@@ -12,7 +12,7 @@ all the software and all the versions available matching that search term - incl
 ::
 
     $ planemo conda_search seqt
-    /Users/john/miniconda3/bin/conda search --override-channels --channel iuc --channel bioconda --channel conda-forge --channel defaults '*seqt*'
+    /Users/john/miniconda3/bin/conda search --override-channels --channel iuc --channel conda-forge --channel bioconda --channel defaults '*seqt*'
     Loading channels: done
     # Name                  Version           Build  Channel
     bioconductor-htseqtools          1.26.0        r3.4.1_0  bioconda
@@ -30,12 +30,12 @@ all the software and all the versions available matching that search term - incl
    ``conda search`` command but configured to use the same channels and other options as
    Planemo and Galaxy. The following Conda command would also work to search::
 
-       $ $HOME/miniconda3/bin/conda -c iuc -c bioconda -c conda-forge '*seqt*'
+       $ $HOME/miniconda3/bin/conda -c iuc -c conda-forge -c bioconda '*seqt*'
 
    For Conda versions 4.3.X or less, the search invocation would be something a bit
    different::
 
-       $ $HOME/miniconda3/bin/conda -c iuc -c bioconda -c conda-forge seqt
+       $ $HOME/miniconda3/bin/conda -c iuc -c conda-forge -c bioconda seqt
 
 
 Alternatively the Anaconda_ website can be used to search for packages. Typing ``seqtk``

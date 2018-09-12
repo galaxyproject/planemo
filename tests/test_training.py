@@ -49,7 +49,7 @@ KWDS = {
     'conda_copy_dependencies': False,
     'conda_debug': False,
     'conda_dependency_resolution': False,
-    'conda_ensure_channels': 'iuc,bioconda,conda-forge,defaults',
+    'conda_ensure_channels': 'iuc,conda-forge,bioconda,defaults',
     'conda_exec': None,
     'conda_prefix': None,
     'conda_use_local': False,
