@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.55.0.dev0
+0.55.0 (2018-09-12)
 ---------------------
 
 * Add commands to create Galaxy training materials (thanks to `@bebatut`_).
