@@ -1,0 +1,893 @@
+{
+    "model_class": "Tool",
+    "version": "2.0.0",
+    "id": "toolshed.g2.bx.psu.edu/repos/iuc/query_tabular/query_tabular/2.0.0",
+    "inputs": [
+        {
+            "type": "hidden",
+            "model_class": "HiddenToolParameter",
+            "value": "workdb.sqlite",
+            "is_dynamic": false,
+            "refresh_on_change": false,
+            "label": "",
+            "name": "workdb",
+            "argument": null,
+            "help": "",
+            "hidden": true,
+            "optional": false
+        },
+        {
+            "type": "section",
+            "expanded": false,
+            "inputs": [
+                {
+                    "type": "data",
+                    "model_class": "DataToolParameter",
+                    "value": null,
+                    "edam": {
+                        "edam_formats": [
+                            "format_3621"
+                        ],
+                        "edam_data": [
+                            "data_0006"
+                        ]
+                    },
+                    "extensions": [
+                        "sqlite"
+                    ],
+                    "argument": null,
+                    "optional": true,
+                    "hidden": false,
+                    "help": "Make sure your added table names are not already in this database",
+                    "name": "withdb",
+                    "refresh_on_change": true,
+                    "multiple": false,
+                    "label": "Add tables to this Database",
+                    "options": {
+                        "hda": [],
+                        "hdca": []
+                    },
+                    "is_dynamic": false
+                }
+            ],
+            "model_class": "Section",
+            "name": "add_to_database",
+            "title": "Add tables to an existing database",
+            "help": null
+        },
+        {
+            "type": "repeat",
+            "model_class": "Repeat",
+            "default": 0,
+            "max": "__Infinity__",
+            "inputs": [
+                {
+                    "type": "data",
+                    "model_class": "DataToolParameter",
+                    "value": null,
+                    "edam": {
+                        "edam_formats": [
+                            "format_3475"
+                        ],
+                        "edam_data": [
+                            "data_0006"
+                        ]
+                    },
+                    "extensions": [
+                        "tabular"
+                    ],
+                    "argument": null,
+                    "optional": false,
+                    "hidden": false,
+                    "help": "",
+                    "name": "table",
+                    "refresh_on_change": true,
+                    "multiple": false,
+                    "label": "Tabular Dataset for Table",
+                    "options": {
+                        "hda": [],
+                        "hdca": []
+                    },
+                    "is_dynamic": false
+                },
+                {
+                    "type": "section",
+                    "expanded": false,
+                    "inputs": [
+                        {
+                            "type": "repeat",
+                            "model_class": "Repeat",
+                            "default": 0,
+                            "max": "__Infinity__",
+                            "inputs": [
+                                {
+                                    "type": "conditional",
+                                    "model_class": "Conditional",
+                                    "name": "filter",
+                                    "test_param": {
+                                        "type": "select",
+                                        "model_class": "SelectToolParameter",
+                                        "value": "skip",
+                                        "is_dynamic": false,
+                                        "argument": null,
+                                        "optional": false,
+                                        "hidden": false,
+                                        "help": "",
+                                        "name": "filter_type",
+                                        "refresh_on_change": true,
+                                        "multiple": false,
+                                        "textable": true,
+                                        "label": "Filter By",
+                                        "options": [
+                                            [
+                                                "skip leading lines",
+                                                "skip",
+                                                false
+                                            ],
+                                            [
+                                                "comment char",
+                                                "comment",
+                                                false
+                                            ],
+                                            [
+                                                "by regex expression matching",
+                                                "regex",
+                                                false
+                                            ],
+                                            [
+                                                "select columns",
+                                                "select_columns",
+                                                false
+                                            ],
+                                            [
+                                                "regex replace value in column",
+                                                "replace",
+                                                false
+                                            ],
+                                            [
+                                                "prepend a line number column",
+                                                "prepend_line_num",
+                                                false
+                                            ],
+                                            [
+                                                "append a line number column",
+                                                "append_line_num",
+                                                false
+                                            ],
+                                            [
+                                                "prepend a column with the given text",
+                                                "prepend_text",
+                                                false
+                                            ],
+                                            [
+                                                "append a column with the given text",
+                                                "append_text",
+                                                false
+                                            ],
+                                            [
+                                                "normalize list columns, replicates row for each item in list",
+                                                "normalize",
+                                                false
+                                            ]
+                                        ],
+                                        "display": null
+                                    },
+                                    "cases": [
+                                        {
+                                            "model_class": "ConditionalWhen",
+                                            "value": "skip",
+                                            "inputs": [
+                                                {
+                                                    "type": "integer",
+                                                    "model_class": "IntegerToolParameter",
+                                                    "value": "",
+                                                    "refresh_on_change": false,
+                                                    "area": false,
+                                                    "argument": null,
+                                                    "help": "Leave blank to use the comment lines metadata for this dataset",
+                                                    "hidden": false,
+                                                    "optional": true,
+                                                    "name": "skip_lines",
+                                                    "min": 0,
+                                                    "max": null,
+                                                    "label": "Skip lines",
+                                                    "datalist": [],
+                                                    "is_dynamic": false
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "model_class": "ConditionalWhen",
+                                            "value": "comment",
+                                            "inputs": [
+                                                {
+                                                    "type": "select",
+                                                    "model_class": "SelectToolParameter",
+                                                    "value": "35",
+                                                    "is_dynamic": false,
+                                                    "argument": null,
+                                                    "optional": true,
+                                                    "hidden": false,
+                                                    "help": "lines beginning with these are skipped",
+                                                    "name": "comment_char",
+                                                    "refresh_on_change": false,
+                                                    "multiple": true,
+                                                    "textable": true,
+                                                    "label": "Ignore lines beginning with these characters",
+                                                    "options": [
+                                                        [
+                                                            ">",
+                                                            "62",
+                                                            false
+                                                        ],
+                                                        [
+                                                            "@",
+                                                            "64",
+                                                            false
+                                                        ],
+                                                        [
+                                                            "+",
+                                                            "43",
+                                                            false
+                                                        ],
+                                                        [
+                                                            "<",
+                                                            "60",
+                                                            false
+                                                        ],
+                                                        [
+                                                            "*",
+                                                            "42",
+                                                            false
+                                                        ],
+                                                        [
+                                                            "-",
+                                                            "45",
+                                                            false
+                                                        ],
+                                                        [
+                                                            "=",
+                                                            "61",
+                                                            false
+                                                        ],
+                                                        [
+                                                            "|",
+                                                            "124",
+                                                            false
+                                                        ],
+                                                        [
+                                                            "?",
+                                                            "63",
+                                                            false
+                                                        ],
+                                                        [
+                                                            "$",
+                                                            "36",
+                                                            false
+                                                        ],
+                                                        [
+                                                            ".",
+                                                            "46",
+                                                            false
+                                                        ],
+                                                        [
+                                                            ":",
+                                                            "58",
+                                                            false
+                                                        ],
+                                                        [
+                                                            "&",
+                                                            "38",
+                                                            false
+                                                        ],
+                                                        [
+                                                            "%",
+                                                            "37",
+                                                            false
+                                                        ],
+                                                        [
+                                                            "^",
+                                                            "94",
+                                                            false
+                                                        ],
+                                                        [
+                                                            "#",
+                                                            "35",
+                                                            true
+                                                        ],
+                                                        [
+                                                            "!",
+                                                            "33",
+                                                            false
+                                                        ]
+                                                    ],
+                                                    "display": "checkboxes"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "model_class": "ConditionalWhen",
+                                            "value": "prepend_line_num",
+                                            "inputs": []
+                                        },
+                                        {
+                                            "model_class": "ConditionalWhen",
+                                            "value": "append_line_num",
+                                            "inputs": []
+                                        },
+                                        {
+                                            "model_class": "ConditionalWhen",
+                                            "value": "prepend_text",
+                                            "inputs": [
+                                                {
+                                                    "type": "text",
+                                                    "model_class": "TextToolParameter",
+                                                    "value": "",
+                                                    "refresh_on_change": false,
+                                                    "area": false,
+                                                    "argument": null,
+                                                    "optional": false,
+                                                    "hidden": false,
+                                                    "help": "",
+                                                    "name": "column_text",
+                                                    "label": "text for column",
+                                                    "datalist": [],
+                                                    "is_dynamic": false
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "model_class": "ConditionalWhen",
+                                            "value": "append_text",
+                                            "inputs": [
+                                                {
+                                                    "type": "text",
+                                                    "model_class": "TextToolParameter",
+                                                    "value": "",
+                                                    "refresh_on_change": false,
+                                                    "area": false,
+                                                    "argument": null,
+                                                    "optional": false,
+                                                    "hidden": false,
+                                                    "help": "",
+                                                    "name": "column_text",
+                                                    "label": "text for column",
+                                                    "datalist": [],
+                                                    "is_dynamic": false
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "model_class": "ConditionalWhen",
+                                            "value": "regex",
+                                            "inputs": [
+                                                {
+                                                    "type": "text",
+                                                    "model_class": "TextToolParameter",
+                                                    "value": "",
+                                                    "refresh_on_change": false,
+                                                    "area": false,
+                                                    "argument": null,
+                                                    "optional": false,
+                                                    "hidden": false,
+                                                    "help": "",
+                                                    "name": "regex_pattern",
+                                                    "label": "regex pattern",
+                                                    "datalist": [],
+                                                    "is_dynamic": false
+                                                },
+                                                {
+                                                    "type": "select",
+                                                    "model_class": "SelectToolParameter",
+                                                    "value": "exclude_match",
+                                                    "is_dynamic": false,
+                                                    "argument": null,
+                                                    "optional": false,
+                                                    "hidden": false,
+                                                    "help": "",
+                                                    "name": "regex_action",
+                                                    "refresh_on_change": false,
+                                                    "multiple": false,
+                                                    "textable": true,
+                                                    "label": "action for regex match",
+                                                    "options": [
+                                                        [
+                                                            "exclude line on pattern match",
+                                                            "exclude_match",
+                                                            false
+                                                        ],
+                                                        [
+                                                            "include line on pattern match",
+                                                            "include_match",
+                                                            false
+                                                        ],
+                                                        [
+                                                            "exclude line if pattern found",
+                                                            "exclude_find",
+                                                            false
+                                                        ],
+                                                        [
+                                                            "include line if pattern found",
+                                                            "include_find",
+                                                            false
+                                                        ]
+                                                    ],
+                                                    "display": null
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "model_class": "ConditionalWhen",
+                                            "value": "select_columns",
+                                            "inputs": [
+                                                {
+                                                    "type": "text",
+                                                    "model_class": "TextToolParameter",
+                                                    "value": "",
+                                                    "refresh_on_change": false,
+                                                    "area": false,
+                                                    "argument": null,
+                                                    "optional": false,
+                                                    "hidden": false,
+                                                    "help": "example: 1,4,2 or c1,c4,c2(selects the first,fourth, and second columns)",
+                                                    "name": "columns",
+                                                    "label": "enter column numbers to keep",
+                                                    "datalist": [],
+                                                    "is_dynamic": false
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "model_class": "ConditionalWhen",
+                                            "value": "replace",
+                                            "inputs": [
+                                                {
+                                                    "type": "text",
+                                                    "model_class": "TextToolParameter",
+                                                    "value": "",
+                                                    "refresh_on_change": false,
+                                                    "area": false,
+                                                    "argument": null,
+                                                    "optional": false,
+                                                    "hidden": false,
+                                                    "help": "example: 1 or c1 (selects the first column)",
+                                                    "name": "column",
+                                                    "label": "enter column number to replace",
+                                                    "datalist": [],
+                                                    "is_dynamic": false
+                                                },
+                                                {
+                                                    "type": "text",
+                                                    "model_class": "TextToolParameter",
+                                                    "value": "",
+                                                    "refresh_on_change": false,
+                                                    "area": false,
+                                                    "argument": null,
+                                                    "optional": false,
+                                                    "hidden": false,
+                                                    "help": "",
+                                                    "name": "regex_pattern",
+                                                    "label": "regex pattern",
+                                                    "datalist": [],
+                                                    "is_dynamic": false
+                                                },
+                                                {
+                                                    "type": "text",
+                                                    "model_class": "TextToolParameter",
+                                                    "value": "",
+                                                    "refresh_on_change": false,
+                                                    "area": false,
+                                                    "argument": null,
+                                                    "optional": false,
+                                                    "hidden": false,
+                                                    "help": "",
+                                                    "name": "regex_replace",
+                                                    "label": "replacement expression",
+                                                    "datalist": [],
+                                                    "is_dynamic": false
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "model_class": "ConditionalWhen",
+                                            "value": "normalize",
+                                            "inputs": [
+                                                {
+                                                    "type": "text",
+                                                    "model_class": "TextToolParameter",
+                                                    "value": "",
+                                                    "refresh_on_change": false,
+                                                    "area": false,
+                                                    "argument": null,
+                                                    "optional": false,
+                                                    "hidden": false,
+                                                    "help": "example: 2,4 or c2,c4 (selects the second, and fourth columns)                                If multiple columns are selected, they should have the same length and separator on each line",
+                                                    "name": "columns",
+                                                    "label": "enter column numbers to normalize",
+                                                    "datalist": [],
+                                                    "is_dynamic": false
+                                                },
+                                                {
+                                                    "type": "text",
+                                                    "model_class": "TextToolParameter",
+                                                    "value": ",",
+                                                    "refresh_on_change": false,
+                                                    "area": false,
+                                                    "argument": null,
+                                                    "optional": false,
+                                                    "hidden": false,
+                                                    "help": "",
+                                                    "name": "separator",
+                                                    "label": "List item delimiter in column",
+                                                    "datalist": [],
+                                                    "is_dynamic": false
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ],
+                            "min": 0,
+                            "name": "linefilters",
+                            "title": "Filter Tabular Input Lines",
+                            "help": null
+                        }
+                    ],
+                    "model_class": "Section",
+                    "name": "input_opts",
+                    "title": "Filter Dataset Input",
+                    "help": null
+                },
+                {
+                    "type": "section",
+                    "expanded": false,
+                    "inputs": [
+                        {
+                            "type": "text",
+                            "model_class": "TextToolParameter",
+                            "value": "",
+                            "refresh_on_change": false,
+                            "area": false,
+                            "argument": null,
+                            "optional": true,
+                            "hidden": false,
+                            "help": "By default, tables will be named: t1,t2,...,tn (table names must be unique)",
+                            "name": "table_name",
+                            "label": "Specify Name for Table",
+                            "datalist": [],
+                            "is_dynamic": false
+                        },
+                        {
+                            "type": "boolean",
+                            "model_class": "BooleanToolParameter",
+                            "value": "false",
+                            "refresh_on_change": false,
+                            "argument": null,
+                            "help": "The names will be quoted if they are not valid SQLite column names.",
+                            "hidden": false,
+                            "optional": false,
+                            "name": "column_names_from_first_line",
+                            "falsevalue": "False",
+                            "truevalue": "True",
+                            "label": "Use first line as column names",
+                            "is_dynamic": false
+                        },
+                        {
+                            "type": "text",
+                            "model_class": "TextToolParameter",
+                            "value": "",
+                            "refresh_on_change": false,
+                            "area": false,
+                            "argument": null,
+                            "optional": true,
+                            "hidden": false,
+                            "help": "By default, table columns will be named: c1,c2,c3,...,cn  (column names for a table must be unique)                          You can override the default names by entering a comma -separated list of names, e.g. ',name1,,,name2' would rename the second and fifth columns.",
+                            "name": "col_names",
+                            "label": "Specify Column Names (comma-separated list)",
+                            "datalist": [],
+                            "is_dynamic": false
+                        },
+                        {
+                            "type": "boolean",
+                            "model_class": "BooleanToolParameter",
+                            "value": "false",
+                            "refresh_on_change": false,
+                            "argument": null,
+                            "help": "",
+                            "hidden": false,
+                            "optional": false,
+                            "name": "load_named_columns",
+                            "falsevalue": "",
+                            "truevalue": "load_named_columns",
+                            "label": "Only load the columns you have named into database",
+                            "is_dynamic": false
+                        },
+                        {
+                            "type": "text",
+                            "model_class": "TextToolParameter",
+                            "value": "",
+                            "refresh_on_change": false,
+                            "area": false,
+                            "argument": null,
+                            "optional": true,
+                            "hidden": false,
+                            "help": "Only creates this additional column when a name is entered. (This can not be the same name as any of the other columns in this table.)",
+                            "name": "pkey_autoincr",
+                            "label": "Add an auto increment primary key column with this name",
+                            "datalist": [],
+                            "is_dynamic": false
+                        },
+                        {
+                            "type": "repeat",
+                            "model_class": "Repeat",
+                            "default": 0,
+                            "max": "__Infinity__",
+                            "inputs": [
+                                {
+                                    "type": "boolean",
+                                    "model_class": "BooleanToolParameter",
+                                    "value": "false",
+                                    "refresh_on_change": false,
+                                    "argument": null,
+                                    "help": "",
+                                    "hidden": false,
+                                    "optional": false,
+                                    "name": "unique",
+                                    "falsevalue": "no",
+                                    "truevalue": "yes",
+                                    "label": "This is a unique index",
+                                    "is_dynamic": false
+                                },
+                                {
+                                    "type": "text",
+                                    "model_class": "TextToolParameter",
+                                    "value": "",
+                                    "refresh_on_change": false,
+                                    "area": false,
+                                    "argument": null,
+                                    "optional": false,
+                                    "hidden": false,
+                                    "help": "Create an index on the column names: e.g. for default column names:  c1  or c2,c4 ( use the names you gave for columns)",
+                                    "name": "index_columns",
+                                    "label": "Index on Columns",
+                                    "datalist": [],
+                                    "is_dynamic": false
+                                }
+                            ],
+                            "min": 0,
+                            "name": "indexes",
+                            "title": "Table Index",
+                            "help": null
+                        }
+                    ],
+                    "model_class": "Section",
+                    "name": "tbl_opts",
+                    "title": "Table Options",
+                    "help": null
+                }
+            ],
+            "min": 0,
+            "name": "tables",
+            "title": "Database Table",
+            "help": null
+        },
+        {
+            "type": "boolean",
+            "model_class": "BooleanToolParameter",
+            "value": "false",
+            "refresh_on_change": false,
+            "argument": null,
+            "help": "SQLite to tabular tool can run additional queries on this database",
+            "hidden": false,
+            "optional": false,
+            "name": "save_db",
+            "falsevalue": "no",
+            "truevalue": "yes",
+            "label": "Save the sqlite database in your history",
+            "is_dynamic": false
+        },
+        {
+            "type": "text",
+            "model_class": "TextToolParameter",
+            "value": "",
+            "refresh_on_change": false,
+            "area": true,
+            "argument": null,
+            "optional": true,
+            "hidden": false,
+            "help": "By default: tables are named: t1,t2,...,tn and columns in each table: c1,c2,...,cn",
+            "name": "sqlquery",
+            "label": "SQL Query to generate tabular output",
+            "datalist": [],
+            "is_dynamic": false
+        },
+        {
+            "type": "conditional",
+            "model_class": "Conditional",
+            "name": "query_result",
+            "test_param": {
+                "type": "select",
+                "model_class": "SelectToolParameter",
+                "value": "yes",
+                "is_dynamic": false,
+                "argument": null,
+                "optional": false,
+                "hidden": false,
+                "help": "",
+                "name": "header",
+                "refresh_on_change": true,
+                "multiple": false,
+                "textable": true,
+                "label": "include query result column headers",
+                "options": [
+                    [
+                        "Yes",
+                        "yes",
+                        false
+                    ],
+                    [
+                        "No",
+                        "no",
+                        false
+                    ]
+                ],
+                "display": null
+            },
+            "cases": [
+                {
+                    "model_class": "ConditionalWhen",
+                    "value": "yes",
+                    "inputs": [
+                        {
+                            "type": "select",
+                            "model_class": "SelectToolParameter",
+                            "value": "35",
+                            "is_dynamic": false,
+                            "argument": null,
+                            "optional": true,
+                            "hidden": false,
+                            "help": "",
+                            "name": "header_prefix",
+                            "refresh_on_change": false,
+                            "multiple": false,
+                            "textable": true,
+                            "label": "Prefix character for column_header line",
+                            "options": [
+                                [
+                                    "no comment character prefix",
+                                    "",
+                                    false
+                                ],
+                                [
+                                    ">",
+                                    "62",
+                                    false
+                                ],
+                                [
+                                    "@",
+                                    "64",
+                                    false
+                                ],
+                                [
+                                    "+",
+                                    "43",
+                                    false
+                                ],
+                                [
+                                    "<",
+                                    "60",
+                                    false
+                                ],
+                                [
+                                    "*",
+                                    "42",
+                                    false
+                                ],
+                                [
+                                    "-",
+                                    "45",
+                                    false
+                                ],
+                                [
+                                    "=",
+                                    "61",
+                                    false
+                                ],
+                                [
+                                    "|",
+                                    "124",
+                                    false
+                                ],
+                                [
+                                    "?",
+                                    "63",
+                                    false
+                                ],
+                                [
+                                    "$",
+                                    "36",
+                                    false
+                                ],
+                                [
+                                    ".",
+                                    "46",
+                                    false
+                                ],
+                                [
+                                    ":",
+                                    "58",
+                                    false
+                                ],
+                                [
+                                    "&",
+                                    "38",
+                                    false
+                                ],
+                                [
+                                    "%",
+                                    "37",
+                                    false
+                                ],
+                                [
+                                    "^",
+                                    "94",
+                                    false
+                                ],
+                                [
+                                    "#",
+                                    "35",
+                                    true
+                                ],
+                                [
+                                    "!",
+                                    "33",
+                                    false
+                                ]
+                            ],
+                            "display": null
+                        }
+                    ]
+                },
+                {
+                    "model_class": "ConditionalWhen",
+                    "value": "no",
+                    "inputs": []
+                }
+            ]
+        }
+    ],
+    "outputs": [
+        {
+            "label": "sqlite db of ${on_string}",
+            "model_class": "ToolOutput",
+            "name": "sqlitedb",
+            "format": "sqlite",
+            "edam_format": "format_3621",
+            "hidden": false,
+            "edam_data": "data_0006"
+        },
+        {
+            "label": "query results on ${on_string}",
+            "model_class": "ToolOutput",
+            "name": "output",
+            "format": "tabular",
+            "edam_format": "format_3475",
+            "hidden": false,
+            "edam_data": "data_0006"
+        }
+    ],
+    "edam_operations": [],
+    "description": "using sqlite sql",
+    "panel_section_id": "proteomics",
+    "panel_section_name": "Proteomics",
+    "labels": [],
+    "tool_shed_repository": {
+        "name": "query_tabular",
+        "owner": "iuc",
+        "changeset_revision": "1ea4e668bf73",
+        "tool_shed": "toolshed.g2.bx.psu.edu"
+    },
+    "name": "Query Tabular",
+    "form_style": "regular",
+    "edam_topics": []
+}

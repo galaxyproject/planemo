@@ -1123,6 +1123,130 @@ def galaxy_serve_options():
     )
 
 
+def training_topic_name_option():
+    return planemo_option(
+        "--topic_name",
+        required=True,
+        help="Name (directory name) of the topic to create or in which "
+             "a tutorial should be created or updates"
+    )
+
+
+def training_topic_option():
+    return _compose(
+        training_topic_name_option(),
+        planemo_option(
+            "--topic_title",
+            default="Title of the topic",
+            help="Title of the topic to create"),
+        planemo_option(
+            "--topic_summary",
+            default="Summary of the topic",
+            help="Summary of the topic"),
+        planemo_option(
+            "--topic_target",
+            type=click.Choice(['use', 'admin-dev', 'instructors']),
+            default="use",
+            help="Target audience for the topic")
+    )
+
+
+def training_tutorial_name_option():
+    return planemo_option(
+            "--tutorial_name",
+            help="Name (directory name) of the tutorial to create or to modify"
+    )
+
+
+def training_tutorial_name_req_option():
+    return planemo_option(
+            "--tutorial_name",
+            required=True,
+            help="Name (directory name) of the tutorial to modify"
+    )
+
+
+def training_datatype_option():
+    return planemo_option(
+            "--datatypes",
+            type=click.Path(file_okay=True, resolve_path=True),
+            help="YAML file with the correspondance between Zenodo extension and Galaxy datatypes",
+            default="shared/datatypes.yaml"
+    )
+
+
+def training_zenodo_option():
+    return planemo_option(
+            "--zenodo_link",
+            help="Zenodo URL with the input data")
+
+
+def training_tutorial_worflow_option():
+    return _compose(
+        planemo_option(
+            "--workflow",
+            type=click.Path(file_okay=True, resolve_path=True),
+            help="Workflow of the tutorial (locally)",
+            default=None),
+        planemo_option(
+            "--galaxy_url",
+            help="URL of a Galaxy instance with the workflow"),
+        planemo_option(
+            "--galaxy_api_key",
+            help="API key on the Galaxy instance with the workflow"),
+        planemo_option(
+            "--workflow_id",
+            help="ID of the workflow on the Galaxy instance")
+    )
+
+
+def training_tutorial_option():
+    return _compose(
+        training_tutorial_name_option(),
+        planemo_option(
+            "--tutorial_title",
+            default="Title of the tutorial",
+            help="Title of the tutorial"),
+        planemo_option(
+            "--hands_on",
+            is_flag=True,
+            default=True,
+            help="Add hands-on for the new tutorial"),
+        planemo_option(
+            "--slides",
+            is_flag=True,
+            default=False,
+            help="Add slides for the new tutorial"),
+        training_tutorial_worflow_option(),
+        training_zenodo_option()
+    )
+
+
+def training_init_options():
+    return _compose(
+        training_topic_option(),
+        training_tutorial_option(),
+        training_datatype_option()
+    )
+
+
+def training_fill_data_library_options():
+    return _compose(
+        training_topic_name_option(),
+        training_tutorial_name_req_option(),
+        training_zenodo_option(),
+        training_datatype_option()
+    )
+
+
+def training_generate_tuto_from_wf_options():
+    return _compose(
+        training_topic_name_option(),
+        training_tutorial_name_req_option(),
+        training_tutorial_worflow_option()
+    )
+
+
 def shed_fail_fast_option():
     return planemo_option(
         "--fail_fast",
