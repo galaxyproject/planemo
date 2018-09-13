@@ -228,12 +228,12 @@ class Tutorial:
         self.zenodo_link = kwds["zenodo_link"] if kwds["zenodo_link"] else ''
         self.questions = [
                 "Which biological questions are addressed by the tutorial?",
-                "Which bioinformatics techniques is important to know for this type of data?"]
+                "Which bioinformatics techniques are important to know for this type of data?"]
         self.objectives = [
                 "The learning objectives are the goals of the tutorial",
                 "They will be informed by your audience and will communicate to them and to yourself what you should focus on during the course",
-                "They are single sentence describing what a learner will be able to do once they have done the tutorial",
-                "You can use the Bloom's Taxonomy to write effective learning objectives"]
+                "They are single sentences describing what a learner should be able to do once they have completed the tutorial",
+                "You can use Bloom's Taxonomy to write effective learning objectives"]
         self.time = "3H"
         self.key_points = [
                 "The take-home messages",
