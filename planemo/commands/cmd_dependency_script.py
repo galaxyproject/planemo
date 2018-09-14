@@ -55,6 +55,14 @@ export INSTALL_DIR=${INSTALL_DIR:-$PWD}
 export INSTALL_DIR=`(cd "$INSTALL_DIR"; pwd)`
 """
 
+# Installation recipes using one of these as the opening action use
+# a temporary working directory, otherwise use $INSTALL_DIR - see
+# class InstallToolDependencyManager in Galaxy's
+# lib/tool_shed/galaxy_install/install_manager.py
+INSTALL_ACTIONS = ['download_binary', 'download_by_url', 'download_file',
+                   'setup_perl_environment', 'setup_python_environment',
+                   'setup_r_environment', 'setup_ruby_environment', 'shell_command']
+
 
 def find_tool_dependencis_xml(path, recursive):
     """Iterator function, quick & dirty tree walking."""
@@ -108,15 +116,26 @@ def convert_tool_dep(dependencies_file):
     name = package_el.attrib["name"]
     version = package_el.attrib["version"]
 
-    # TODO - Set $INSTALL_DIR in the script
-    # os.environ["INSTALL_DIR"] = os.path.abspath(os.curdir)
+    # TODO - Set $INSTALL_DIR in the script?
     for action in package.all_actions:
         inst, env = action.to_bash()
+        if inst:
+            # TODO: put this cd command inside the os/arch specific if-block?
+            if action.actions and action.actions[0].action_type in INSTALL_ACTIONS:
+                # Typical case, download and clone actions should be done from
+                # a temp working directory
+                inst.insert(0, 'cd "$dep_install_tmp"')
+            else:
+                # For tools avoiding the provided download or clone action, should
+                # instead change to the $INSTALL_DIR. See install_and_build_package
+                # in Galaxy's lib/tool_shed/galaxy_install/install_manager.py
+                inst.insert(0, 'cd "$INSTALL_DIR"')
+                inst.insert(0, '# Note this recipe does not use a temp working directory:')
         install_cmds.extend(inst)
         env_cmds.extend(env)
 
     if install_cmds:
-        install_cmds.insert(0, 'cd $dep_install_tmp')
+        # These inserts are in reverse order!
         install_cmds.insert(0, 'specifc_action_done=0')
         install_cmds.insert(0, 'echo "%s"' % ('=' * 60))
         install_cmds.insert(0, 'echo "Installing %s version %s"' % (name, version))
