@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+from os.path import basename
+
 from galaxy.tools.lint import lint_tool_source
 
 from planemo.exit_codes import (
@@ -28,7 +30,7 @@ def lint_tools_on_path(ctx, paths, lint_args, **kwds):
             exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
             continue
         info("Linting tool %s" % tool_path)
-        if not lint_tool_source(tool_xml, **lint_args):
+        if not lint_tool_source(tool_xml, name=basename(tool_path), **lint_args):
             error("Failed linting")
             exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
         else:
