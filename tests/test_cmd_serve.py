@@ -13,6 +13,7 @@ from .test_utils import (
     PROJECT_TEMPLATES_DIR,
     skip_if_environ,
     skip_unless_environ,
+    skip_unless_executable,
     target_galaxy_branch,
     TEST_DATA_DIR,
     TEST_REPOS_DIR,
@@ -27,6 +28,12 @@ class ServeTestCase(CliTestCase):
     @mark.tests_galaxy_branch
     def test_serve(self):
         self._launch_thread_and_wait(self._run)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TEST")
+    @skip_unless_executable("python3")
+    def test_serve_python3(self):
+        extra_args = ['--galaxy_python_version', '3', '--galaxy_branch', 'release_18.09']
+        self._launch_thread_and_wait(self._run, extra_args)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch
