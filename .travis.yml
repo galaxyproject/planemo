@@ -1,28 +1,35 @@
 language: python
 sudo: false
-python: 2.7
 env:
   global:
     - PLANEMO_SKIP_REDUNDANT_TESTS=1
     - PLANEMO_ENABLE_POSTGRES_TESTS=1
     - PLANEMO_SKIP_GALAXY_CWL_TESTS=1
     - PLANEMO_TEST_WORKFLOW_RUN_PROFILE=travisworkflowtests
-  matrix:
-    - TOX_ENV=py27-lint
-    - TOX_ENV=py34-lint
-    - TOX_ENV=py27-lint-readme
-    - TOX_ENV=py27-lint-docs
-    - TOX_ENV=py34-quick
-    - TOX_ENV=py27
-    - TOX_ENV=py34
-    - TOX_ENV=py27-lint-docstrings
+matrix:
+  include:
+    - python: 2.7
+      env: TOX_ENV=py27-lint
+    - python: 2.7
+      env: TOX_ENV=py27-lint-readme
+    - python: 2.7
+      env: TOX_ENV=py27-lint-docs
+    - python: 2.7
+      env: TOX_ENV=py27-lint-docstrings
+    - python: 2.7
+      env: TOX_ENV=py27
+    - python: 3.6
+      env: TOX_ENV=py36-lint
+    - python: 3.6
+      env: TOX_ENV=py36-quick
+    - python: 3.6
+      env: TOX_ENV=py36
+  allow_failures:
+    - env: TOX_ENV=py27-lint-docstrings
+
 
 install:
   - pip install tox coveralls
-
-matrix:
-  allow_failures:
-    - env: TOX_ENV=py27-lint-docstrings
 
 script: tox -e $TOX_ENV
 
