@@ -1248,6 +1248,7 @@ def _install_with_command(ctx, config_directory, command, env, kwds):
     else:
         pip_install_command = ""
     setup_venv_command = setup_venv(ctx, kwds)
+    env['__PYVENV_LAUNCHER__'] = ''
     install_cmd = shell_join(
         ['cd', config_directory],
         command,
