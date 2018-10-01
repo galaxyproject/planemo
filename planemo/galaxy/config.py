@@ -34,6 +34,7 @@ from planemo.io import (
 )
 from planemo.mulled import build_involucro_context
 from planemo.shed import tool_shed_url
+from planemo.virtualenv import DEFAULT_PYTHON_VERSION
 from .api import (
     DEFAULT_MASTER_API_KEY,
     gi,
@@ -400,7 +401,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         template_args = dict(
             port=port,
             host=kwds.get("host", "127.0.0.1"),
-            server_name=server_name if float(kwds.get('galaxy_python_version')) < 3 else 'main',  # gunicorn needs main
+            server_name=server_name if float(kwds.get('galaxy_python_version', DEFAULT_PYTHON_VERSION)) < 3 else 'main',  # gunicorn needs main
             temp_directory=config_directory,
             shed_tool_path=shed_tool_path,
             database_location=database_location,
@@ -941,7 +942,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
             run_script += " --server-name %s" % shlex_quote(self.server_name)
         server_ini = os.path.join(self.config_directory, "galaxy.ini")
         self.env["GALAXY_CONFIG_FILE"] = server_ini
-        if float(kwds.get('galaxy_python_version')) >= 3:
+        if float(kwds.get('galaxy_python_version', DEFAULT_PYTHON_VERSION)) >= 3:
             # We need to start under gunicorn
             self.env['APP_WEBSERVER'] = 'gunicorn'
             self.env['GUNICORN_CMD_ARGS'] = "--bind={host}:{port} --name={server_name}".format(
@@ -1264,7 +1265,7 @@ def _install_with_command(ctx, config_directory, command, env, kwds):
 def _ensure_galaxy_repository_available(ctx, kwds):
     workspace = ctx.workspace
     cwl = kwds.get("cwl", False)
-    galaxy_source = kwds['galaxy_source']
+    galaxy_source = kwds.get('galaxy_source')
     if galaxy_source and galaxy_source != DEFAULT_GALAXY_SOURCE:
         sanitized_repo_name = "".join(c if c.isalnum() else '_' for c in kwds['galaxy_source']).rstrip()[:255]
         gx_repo = os.path.join(workspace, "gx_repo_%s" % sanitized_repo_name)

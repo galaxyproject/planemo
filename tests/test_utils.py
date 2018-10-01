@@ -5,11 +5,13 @@ import contextlib
 import functools
 import os
 import shutil
+import signal
 import threading
 import traceback
 from sys import version_info
 from tempfile import mkdtemp
 
+import psutil
 from click.testing import CliRunner
 from galaxy.tools.deps.commands import which
 
@@ -73,9 +75,15 @@ class CliTestCase(TestCase):
         self._runner = CliRunner()
         self._home = mkdtemp()
         self._old_config = os.environ.get(PLANEMO_CONFIG_ENV_PROP, None)
+        self._threads = []
+        self._port = None
         os.environ[PLANEMO_CONFIG_ENV_PROP] = self.planemo_yaml_path
 
     def tearDown(self):  # noqa
+        for t in self._threads:
+            t.join(timeout=10)
+        if self._port:
+            kill_process_on_port(self._port)
         if self._old_config:
             os.environ[PLANEMO_CONFIG_ENV_PROP] = self._old_config
         else:
@@ -301,6 +309,20 @@ def check_exit_code(runner, command_list, exit_code=0):
             message += "Traceback [%s]" % tb
         raise AssertionError(message)
     return result
+
+
+def kill_process_on_port(port):
+    # based on https://stackoverflow.com/a/20691431
+    processes = []
+    for proc in psutil.process_iter():
+        try:
+            for conns in proc.connections(kind='inet'):
+                if conns.laddr.port == port:
+                    proc.send_signal(signal.SIGINT)
+                    processes.append(proc)
+                    continue
+        except Exception:
+            pass
 
 
 @contextlib.contextmanager
