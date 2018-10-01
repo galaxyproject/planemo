@@ -400,7 +400,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         template_args = dict(
             port=port,
             host=kwds.get("host", "127.0.0.1"),
-            server_name=server_name,
+            server_name=server_name if float(kwds.get('galaxy_python_version')) < 3 else 'main',  # gunicorn needs main
             temp_directory=config_directory,
             shed_tool_path=shed_tool_path,
             database_location=database_location,
@@ -941,6 +941,14 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
             run_script += " --server-name %s" % shlex_quote(self.server_name)
         server_ini = os.path.join(self.config_directory, "galaxy.ini")
         self.env["GALAXY_CONFIG_FILE"] = server_ini
+        if float(kwds.get('galaxy_python_version')) >= 3:
+            # We need to start under gunicorn
+            self.env['APP_WEBSERVER'] = 'gunicorn'
+            self.env['GUNICORN_CMD_ARGS'] = "--bind={host}:{port} --name={server_name}".format(
+                host=kwds['host'],
+                port=kwds['port'],
+                server_name=self.server_name,
+            )
         cd_to_galaxy_command = ['cd', self.galaxy_root]
         return shell_join(
             cd_to_galaxy_command,
