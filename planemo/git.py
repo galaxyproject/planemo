@@ -64,13 +64,12 @@ def command_clone(ctx, src, dest, mirror=False, branch=None):
 
     Take in ``ctx`` to allow more configurability down the road.
     """
-    mirror_arg = ""
+    cmd = ['git', 'clone']
     if mirror:
-        mirror_arg = "--mirror"
-    branch_arg = ""
+        cmd.append("--mirror")
     if branch is not None:
-        branch_arg = "--branch '%s'" % branch
-    cmd = "git clone %s %s '%s' '%s'" % (mirror_arg, branch_arg, src, dest)
+        cmd.extend(["--branch", branch])
+    cmd.extend([src, dest])
     return cmd
 
 
