@@ -50,7 +50,9 @@ class ServeTestCase(CliTestCase):
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TEST")
     @skip_unless_executable("python3")
     def test_serve_python3(self):
-        extra_args = ['--galaxy_python_version', '3', '--galaxy_branch', 'release_18.09']
+        extra_args = ['--galaxy_python_version', '3',
+                      '--galaxy_source', 'https://github.com/mvdbeek/galaxy',
+                      '--galaxy_branch', 'gunicorn_run_sh_support']
         self._launch_thread_and_wait(self._run, extra_args)
         kill_process_on_port(self._port)
 
