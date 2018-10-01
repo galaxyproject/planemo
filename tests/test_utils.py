@@ -322,7 +322,8 @@ def launch_and_wait_for_galaxy(port, func, args=[]):
     t = threading.Thread(target=target)
     t.daemon = True
     t.start()
-    sleep("http://localhost:%d" % port, timeout=600)
+    if not sleep("http://localhost:%d" % port, timeout=600):
+        raise Exception('Galaxy failed to start')
     return t
 
 

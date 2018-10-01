@@ -1,6 +1,9 @@
 import os
+import signal
 import time
 import uuid
+
+import psutil
 
 from planemo import network_util
 from planemo.galaxy import api
@@ -22,18 +25,34 @@ from .test_utils import (
 TEST_HISTORY_NAME = "Cool History 42"
 
 
+def kill_process_on_port(port):
+    # based on https://stackoverflow.com/a/20691431
+    processes = []
+    for proc in psutil.process_iter():
+        try:
+            for conns in proc.connections(kind='inet'):
+                if conns.laddr.port == port:
+                    proc.send_signal(signal.SIGTERM)
+                    processes.append(proc)
+                    continue
+        except Exception:
+            pass
+
+
 class ServeTestCase(CliTestCase):
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch
     def test_serve(self):
         self._launch_thread_and_wait(self._run)
+        kill_process_on_port(self._port)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TEST")
     @skip_unless_executable("python3")
     def test_serve_python3(self):
         extra_args = ['--galaxy_python_version', '3', '--galaxy_branch', 'release_18.09']
         self._launch_thread_and_wait(self._run, extra_args)
+        kill_process_on_port(self._port)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch
@@ -125,7 +144,8 @@ class ServeTestCase(CliTestCase):
         return user_gi
 
     def _launch_thread_and_wait(self, func, args=[]):
-        launch_and_wait_for_galaxy(self._port, func, [args])
+        t = launch_and_wait_for_galaxy(self._port, func, [args])
+        t.join(timeout=10)
 
     def _run_shed(self, serve_args=[]):
         return self._run(serve_args=serve_args, serve_cmd="shed_serve")
