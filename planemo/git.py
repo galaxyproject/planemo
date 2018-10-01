@@ -59,18 +59,18 @@ def checkout(ctx, remote_repo, local_path, branch=None, remote="origin", from_br
         io.communicate(["git", "merge", "--ff-only", "%s/%s" % (remote, from_branch)], env=env)
 
 
-def command_clone(ctx, src, dest, bare=False, branch=None):
+def command_clone(ctx, src, dest, mirror=False, branch=None):
     """Produce a command-line string to clone a repository.
 
     Take in ``ctx`` to allow more configurability down the road.
     """
-    bare_arg = ""
-    if bare:
-        bare_arg = "--bare"
+    mirror_arg = ""
+    if mirror:
+        mirror_arg = "--mirror"
     branch_arg = ""
     if branch is not None:
         branch_arg = "--branch '%s'" % branch
-    cmd = "git clone %s %s '%s' '%s'" % (bare_arg, branch_arg, src, dest)
+    cmd = "git clone %s %s '%s' '%s'" % (mirror_arg, branch_arg, src, dest)
     return cmd
 
 

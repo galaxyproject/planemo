@@ -1263,15 +1263,20 @@ def _install_with_command(ctx, config_directory, command, env, kwds):
 def _ensure_galaxy_repository_available(ctx, kwds):
     workspace = ctx.workspace
     cwl = kwds.get("cwl", False)
-    gx_repo = os.path.join(workspace, "gx_repo")
+    galaxy_source = kwds['galaxy_source']
+    if galaxy_source and galaxy_source != DEFAULT_GALAXY_SOURCE:
+        sanitized_repo_name = "".join(c if c.isalnum() else '_' for c in kwds['galaxy_source']).rstrip()[:255]
+        gx_repo = os.path.join(workspace, "gx_repo_%s" % sanitized_repo_name)
+    else:
+        gx_repo = os.path.join(workspace, "gx_repo")
     if cwl:
         gx_repo += "_cwl"
     if os.path.exists(gx_repo):
         # Attempt fetch - but don't fail if not interweb, etc...
-        shell("git --git-dir %s fetch >/dev/null 2>&1" % gx_repo)
+        shell("git --git-dir %s remote update >/dev/null 2>&1" % gx_repo)
     else:
         remote_repo = _galaxy_source(kwds)
-        command = git.command_clone(ctx, remote_repo, gx_repo, bare=True)
+        command = git.command_clone(ctx, remote_repo, gx_repo, mirror=True)
         shell(command)
     return gx_repo
 
