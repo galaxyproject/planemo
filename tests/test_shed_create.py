@@ -21,7 +21,7 @@ class ShedCreateTestCase(CliShedTestCase):
         with self._isolate_repo("single_tool_other_owner"):
             create_command = ["shed_create", "--skip_upload"]
             create_command.extend(self._shed_args())
-            self._check_exit_code(create_command, exit_code=-1)
+            self._check_exit_code(create_command, exit_code=1)
 
     def test_create_multiple(self):
         with self._isolate_repo("multi_repos_nested"):

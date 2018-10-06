@@ -44,7 +44,7 @@ class CmdTrainingFillDataLibraryTestCase(CliTestCase):
                 "--datatypes", datatype
             ]
             shutil.rmtree("topics")
-            self._check_exit_code(training_fill_data_library_command, exit_code=-1)
+            self._check_exit_code(training_fill_data_library_command, exit_code=1)
             # working
             create_tutorial_dir(topic_n, tuto_n)
             training_fill_data_library_command = [
@@ -69,7 +69,7 @@ class CmdTrainingFillDataLibraryTestCase(CliTestCase):
                 "--tutorial_name", tuto_n,
                 "--zenodo_link", "https://zenodo.org/record/1321885"
             ]
-            self._check_exit_code(training_fill_data_library_command, exit_code=-1)
+            self._check_exit_code(training_fill_data_library_command, exit_code=1)
             # working
             training_fill_data_library_command = [
                 "training_fill_data_library",
