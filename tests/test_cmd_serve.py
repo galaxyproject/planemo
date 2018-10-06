@@ -25,11 +25,13 @@ TEST_HISTORY_NAME = "Cool History 42"
 class ServeTestCase(CliTestCase):
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_if_environ("PLANEMO_SKIP_PYTHON2")
     @mark.tests_galaxy_branch
     def test_serve(self):
         self._launch_thread_and_wait(self._run)
 
-    @skip_if_environ("PLANEMO_SKIP_GALAXY_TEST")
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_if_environ("PLANEMO_SKIP_PYTHON3")
     @skip_unless_executable("python3")
     def test_serve_python3(self):
         extra_args = ['--galaxy_python_version', '3',
