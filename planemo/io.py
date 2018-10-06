@@ -323,7 +323,7 @@ def filter_paths(paths, cwd=None, **kwds):
             norm_p = norm(p)
             norm_exclude_path = norm(exclude_path)
             if norm_p.startswith(norm_exclude_path):
-                return norm_p[len(norm_exclude_path):len(norm_exclude_path)+1] in ['', os.sep]
+                return norm_p[len(norm_exclude_path):len(norm_exclude_path) + 1] in ['', os.sep]
             return False
         return path_startswith
 

@@ -145,7 +145,7 @@ class ToolInput():
                 # add description of parameters in the repeat
                 repeat_paramlist += templates.render(INPUT_SECTION, **{
                     'space': SPACE * (self.level),
-                    'section_label': "%s: %s" % (ind+1, self.tool_inp_desc['title'])})
+                    'section_label': "%s: %s" % (ind + 1, self.tool_inp_desc['title'])})
                 repeat_paramlist += paramlist_in_repeat
             self.level = cur_level
         self.wf_param_values = tmp_wf_param_values
@@ -218,17 +218,17 @@ def get_input_tool_name(step_id, steps):
 def get_empty_input():
     """Get the string for an empty input."""
     return templates.render(INPUT_FILE_TEMPLATE, **{
-        'space': 1*SPACE,
+        'space': 1 * SPACE,
         'icon': 'param-file',
         'input_name': 'Input file',
         'input_value': 'File'
-        })
+    })
 
 
 def get_empty_param():
     """Get the string for an empty param."""
     return templates.render(INPUT_PARAM, **{
-        'space': 1*SPACE,
+        'space': 1 * SPACE,
         'param_label': 'Parameter',
         'param_value': 'a value'
-        })
+    })

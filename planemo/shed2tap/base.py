@@ -523,7 +523,7 @@ def _commands_and_downloaded_file(url, target_filename=None, sha256sum=None):
         '    echo "Downloading %s"' % downloaded_filename,
         '    curl -L -o "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, url),
         '    cp "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, target_filename),
-        ]
+    ]
     if sha256sum:
         # This is inserted into the if-else for a fresh download only.
         # Note double space between checksum and filename:
