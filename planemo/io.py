@@ -182,6 +182,7 @@ def kill_pid_file(pid_file):
 
     pid = int(open(pid_file, "r").read())
     kill_posix(pid)
+    os.unlink(pid_file)
 
 
 def kill_posix(pid):
