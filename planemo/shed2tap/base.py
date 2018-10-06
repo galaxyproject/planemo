@@ -380,12 +380,12 @@ def _tar_folders(filename):
             folders.add(i.name.rstrip("/"))
         else:
             folders.add(os.path.split(i.name)[0])
-    return folders
+    return list(folders)
 
 
 def _zip_folders(filename):
     archive = zipfile.ZipFile(filename, "r")
-    return set(i.filename.rstrip("/") for i in archive.infolist() if i.filename.endswith("/"))
+    return list(set(i.filename.rstrip("/") for i in archive.infolist() if i.filename.endswith("/")))
 
 
 def _common_prefix(folders):
