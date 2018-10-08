@@ -53,4 +53,4 @@ Exercise - Build a Recipe
 ----------------------------------------------------------------
 
 If you have just completed the exercise above - this exercise can be found in parent folder. Get
-there with ``cd ../exercise2``. If not, the exercise can be downloaded with
+there with ``cd ../exercise_2``. If not, the exercise can be downloaded with
