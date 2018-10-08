@@ -3,6 +3,12 @@ cwlVersion: 'v1.0'
 class: CommandLineTool
 id: "fleeqtk_seq"
 label: "Convert to FASTA (fleeqtk)"
+hints:
+  SoftwareRequirement:
+    packages:
+    - package: fleeqtk
+      version:
+      - "1.3"
 inputs:
   input1:
     type: File
