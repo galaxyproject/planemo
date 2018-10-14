@@ -404,8 +404,9 @@ not work properly without modification.
 .. include:: _writing_conda_fleeqtk.rst
 
 1. Clone and branch Bioconda_.
-2. Build a recipe for fleeqtk version 1.3. You may wish to use ``conda skeleton``, start from
-   scratch, or copy the recipe of seqtk and work from there - any of these strategies should work.
+2. Build a recipe for fleeqtk version 1.3. You may wish to start from scratch
+   (``conda skeleton`` is not available for C programs like fleeqtk), or copy
+   the recipe of seqtk and modify it for fleeqtk.
 3. Use ``conda build`` or Bioconda tooling to build the recipe.
 4. Run ``planemo test --conda_use_local fleeqtk_seq.cwl`` to verify the resulting package works as expected.
 
