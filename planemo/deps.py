@@ -64,6 +64,7 @@ def ensure_dependency_resolvers_conf_configured(ctx, kwds, resolvers_conf=None):
         'conda_auto_init': always_specify_attribute,
         'conda_auto_install': always_specify_attribute,
         'conda_ensure_channels': '',
+        'conda_use_local': False,
     }
     attributes = []
 
