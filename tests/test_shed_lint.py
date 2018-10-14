@@ -58,11 +58,12 @@ class ShedLintTestCase(CliTestCase):
 
     def test_fail_fast(self):
         # Created a nested repository with one good and one
-        # invalid repository and make sure it runs and produces
-        # a 254 (it ran to completion but one or more things failed
-        # )
-        with self._isolate_repo("bad_invalid_yaml"):
-            r = self._check_exit_code(["shed_lint", "--fail_fast"],
+        # invalid repository and make sure it exits immediately with 1.
+        with self._isolate() as f:
+            for name in ["bad_invalid_yaml", "single_tool_exclude"]:
+                self._copy_repo(name, join(f, name))
+                self._copy_repo(name, join(f, name))
+            r = self._check_exit_code(["shed_lint", "-r", "--fail_fast"],
                                       exit_code=1)
             assert isinstance(r.exception, RuntimeError)
 
