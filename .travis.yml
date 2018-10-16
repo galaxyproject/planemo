@@ -25,7 +25,6 @@ matrix:
   allow_failures:
     - env: TOX_ENV=py27-lint-docstrings
 
-
 install:
   - pip install tox coveralls
 
