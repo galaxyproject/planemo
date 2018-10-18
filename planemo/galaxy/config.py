@@ -13,6 +13,7 @@ from tempfile import mkdtemp
 from galaxy.containers.docker_model import DockerVolume
 from galaxy.tools.deps import docker_util
 from galaxy.tools.deps.commands import argv_to_str
+from pkg_resources import parse_version
 from six import (
     add_metaclass,
     iteritems
@@ -398,10 +399,14 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         )
         _ensure_directory(shed_tool_path)
         port = _get_port(kwds)
+        if not parse_version(kwds.get('galaxy_python_version', DEFAULT_PYTHON_VERSION)) < parse_version('3'):
+            # on python 3 we use gunicorn,
+            # which requires 'main' as server name
+            server_name = 'main'
         template_args = dict(
             port=port,
             host=kwds.get("host", "127.0.0.1"),
-            server_name=server_name if float(kwds.get('galaxy_python_version', DEFAULT_PYTHON_VERSION)) < 3 else 'main',  # gunicorn needs main
+            server_name=server_name,
             temp_directory=config_directory,
             shed_tool_path=shed_tool_path,
             database_location=database_location,
@@ -942,7 +947,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
             run_script += " --server-name %s" % shlex_quote(self.server_name)
         server_ini = os.path.join(self.config_directory, "galaxy.ini")
         self.env["GALAXY_CONFIG_FILE"] = server_ini
-        if float(kwds.get('galaxy_python_version', DEFAULT_PYTHON_VERSION)) >= 3:
+        if parse_version(kwds.get('galaxy_python_version', DEFAULT_PYTHON_VERSION)) >= parse_version('3'):
             # We need to start under gunicorn
             self.env['APP_WEBSERVER'] = 'gunicorn'
             self.env['GUNICORN_CMD_ARGS'] = "--bind={host}:{port} --name={server_name}".format(
