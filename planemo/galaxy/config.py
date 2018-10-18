@@ -1247,12 +1247,6 @@ def _galaxy_source(kwds):
 
 
 def _install_with_command(ctx, config_directory, command, env, kwds):
-    # TODO: --watchdog
-    pip_installs = []
-    if pip_installs:
-        pip_install_command = ['pip', 'install'] + pip_installs
-    else:
-        pip_install_command = ""
     setup_venv_command = setup_venv(ctx, kwds)
     env['__PYVENV_LAUNCHER__'] = ''
     install_cmd = shell_join(
@@ -1260,7 +1254,6 @@ def _install_with_command(ctx, config_directory, command, env, kwds):
         command,
         ['cd', 'galaxy-dev'],
         setup_venv_command,
-        pip_install_command,
         setup_common_startup_args(),
         COMMAND_STARTUP_COMMAND,
     )
