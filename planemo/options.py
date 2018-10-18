@@ -129,6 +129,16 @@ def galaxy_email_option():
     )
 
 
+def galaxy_python_version():
+    return planemo_option(
+        '--galaxy_python_version',
+        use_global_config=True,
+        default='2.7',
+        type=click.Choice(['2', '2.7', '3', '3.3', '3.4', '3.5', '3.6', '3.7']),
+        help="Python version to start Galaxy under",
+    )
+
+
 def galaxy_root_option():
     return planemo_option(
         "--galaxy_root",
@@ -1059,6 +1069,7 @@ def galaxy_config_options():
 def galaxy_target_options():
     return _compose(
         galaxy_root_option(),
+        galaxy_python_version(),
         galaxy_database_seed_option(),
         extra_tools_option(),
         install_galaxy_option(),
@@ -1153,32 +1164,32 @@ def training_topic_option():
 
 def training_tutorial_name_option():
     return planemo_option(
-            "--tutorial_name",
-            help="Name (directory name) of the tutorial to create or to modify"
+        "--tutorial_name",
+        help="Name (directory name) of the tutorial to create or to modify"
     )
 
 
 def training_tutorial_name_req_option():
     return planemo_option(
-            "--tutorial_name",
-            required=True,
-            help="Name (directory name) of the tutorial to modify"
+        "--tutorial_name",
+        required=True,
+        help="Name (directory name) of the tutorial to modify"
     )
 
 
 def training_datatype_option():
     return planemo_option(
-            "--datatypes",
-            type=click.Path(file_okay=True, resolve_path=True),
-            help="YAML file with the correspondance between Zenodo extension and Galaxy datatypes",
-            default="shared/datatypes.yaml"
+        "--datatypes",
+        type=click.Path(file_okay=True, resolve_path=True),
+        help="YAML file with the correspondance between Zenodo extension and Galaxy datatypes",
+        default="shared/datatypes.yaml"
     )
 
 
 def training_zenodo_option():
     return planemo_option(
-            "--zenodo_link",
-            help="Zenodo URL with the input data")
+        "--zenodo_link",
+        help="Zenodo URL with the input data")
 
 
 def training_tutorial_worflow_option():

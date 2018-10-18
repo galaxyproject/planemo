@@ -6,7 +6,10 @@ from galaxy.tools.deps.commands import shell
 from six.moves import shlex_quote
 
 from planemo.io import info, shell_join
-from planemo.virtualenv import create_command
+from planemo.virtualenv import (
+    create_command,
+    DEFAULT_PYTHON_VERSION,
+)
 
 
 # Activate galaxy's virtualenv if present (needed for tests say but not for
@@ -39,7 +42,7 @@ def setup_venv(ctx, kwds):
         return ""
 
     create_template_params = {
-        'create_virtualenv': create_command("$GALAXY_VIRTUAL_ENV")
+        'create_virtualenv': create_command("$GALAXY_VIRTUAL_ENV", kwds.get('galaxy_python_version'))
     }
     return shell_join(
         locate_galaxy_virtualenv(ctx, kwds),
@@ -55,6 +58,9 @@ def locate_galaxy_virtualenv(ctx, kwds):
         workspace = ctx.workspace
         galaxy_branch = kwds.get("galaxy_branch") or "master"
         shared_venv_path = os.path.join(workspace, "gx_venv")
+        galaxy_python_version = kwds.get('galaxy_python_version', DEFAULT_PYTHON_VERSION)
+        if galaxy_python_version != DEFAULT_PYTHON_VERSION:
+            shared_venv_path = "%s_%s" % (shared_venv_path, galaxy_python_version)
         if galaxy_branch != "master":
             shared_venv_path = "%s_%s" % (shared_venv_path, galaxy_branch)
         venv_command = CACHED_VIRTUAL_ENV_COMMAND % shlex_quote(shared_venv_path)

@@ -227,17 +227,17 @@ class Tutorial:
         self.title = kwds["tutorial_title"]
         self.zenodo_link = kwds["zenodo_link"] if kwds["zenodo_link"] else ''
         self.questions = [
-                "Which biological questions are addressed by the tutorial?",
-                "Which bioinformatics techniques are important to know for this type of data?"]
+            "Which biological questions are addressed by the tutorial?",
+            "Which bioinformatics techniques are important to know for this type of data?"]
         self.objectives = [
-                "The learning objectives are the goals of the tutorial",
-                "They will be informed by your audience and will communicate to them and to yourself what you should focus on during the course",
-                "They are single sentences describing what a learner should be able to do once they have completed the tutorial",
-                "You can use Bloom's Taxonomy to write effective learning objectives"]
+            "The learning objectives are the goals of the tutorial",
+            "They will be informed by your audience and will communicate to them and to yourself what you should focus on during the course",
+            "They are single sentences describing what a learner should be able to do once they have completed the tutorial",
+            "You can use Bloom's Taxonomy to write effective learning objectives"]
         self.time = "3H"
         self.key_points = [
-                "The take-home messages",
-                "They will appear at the end of the tutorial"]
+            "The take-home messages",
+            "They will appear at the end of the tutorial"]
         self.contributors = ["contributor1", "contributor2"]
         self.init_wf_fp = kwds['workflow']
         self.init_wf_id = kwds['workflow_id']

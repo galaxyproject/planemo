@@ -63,7 +63,7 @@ class ShedLintTestCase(CliTestCase):
         # )
         with self._isolate_repo("bad_invalid_yaml"):
             r = self._check_exit_code(["shed_lint", "--fail_fast"],
-                                      exit_code=-1)
+                                      exit_code=1)
             assert isinstance(r.exception, RuntimeError)
 
     def test_ensure_metadata(self):

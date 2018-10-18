@@ -9,6 +9,9 @@ import virtualenv
 from galaxy.tools.deps.commands import which
 
 
+DEFAULT_PYTHON_VERSION = "2.7"
+
+
 def create_and_exit(virtualenv_path, **kwds):
     sys.argv = ["virtualenv", virtualenv_path]
     python = kwds.get("python", None)
@@ -17,7 +20,7 @@ def create_and_exit(virtualenv_path, **kwds):
     return virtualenv.main()
 
 
-def create_command(virtualenv_path):
+def create_command(virtualenv_path, galaxy_python_version=None):
     """ If virtualenv is on Planemo's path use it, otherwise use the planemo
     subcommand virtualenv to create the virtualenv.
     """
@@ -34,11 +37,13 @@ def create_command(virtualenv_path):
 
     command = base_command
 
-    # If planemo is running in a Python 3 environment but Python 2.7
-    # is available for Galaxy, use it.
-    python27 = which("python2.7")
-    if python27:
-        python27 = os.path.abspath(python27)
-        command.extend(["-p", python27])
+    # Create a virtualenv with the selected python version.
+    # default to 2.7
+    if galaxy_python_version is None:
+        galaxy_python_version = DEFAULT_PYTHON_VERSION
+    python = which("python%s" % galaxy_python_version)
+    if python:
+        python = os.path.abspath(python)
+        command.extend(["-p", python])
     command.append(virtualenv_path)
     return " ".join(command)

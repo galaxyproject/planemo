@@ -13,6 +13,7 @@ from tempfile import mkdtemp
 from galaxy.containers.docker_model import DockerVolume
 from galaxy.tools.deps import docker_util
 from galaxy.tools.deps.commands import argv_to_str
+from pkg_resources import parse_version
 from six import (
     add_metaclass,
     iteritems
@@ -34,6 +35,7 @@ from planemo.io import (
 )
 from planemo.mulled import build_involucro_context
 from planemo.shed import tool_shed_url
+from planemo.virtualenv import DEFAULT_PYTHON_VERSION
 from .api import (
     DEFAULT_MASTER_API_KEY,
     gi,
@@ -397,6 +399,10 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         )
         _ensure_directory(shed_tool_path)
         port = _get_port(kwds)
+        if parse_version(kwds.get('galaxy_python_version', DEFAULT_PYTHON_VERSION)) >= parse_version('3'):
+            # on python 3 we use gunicorn,
+            # which requires 'main' as server name
+            server_name = 'main'
         template_args = dict(
             port=port,
             host=kwds.get("host", "127.0.0.1"),
@@ -941,6 +947,14 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
             run_script += " --server-name %s" % shlex_quote(self.server_name)
         server_ini = os.path.join(self.config_directory, "galaxy.ini")
         self.env["GALAXY_CONFIG_FILE"] = server_ini
+        if parse_version(kwds.get('galaxy_python_version', DEFAULT_PYTHON_VERSION)) >= parse_version('3'):
+            # We need to start under gunicorn
+            self.env['APP_WEBSERVER'] = 'gunicorn'
+            self.env['GUNICORN_CMD_ARGS'] = "--bind={host}:{port} --name={server_name}".format(
+                host=kwds['host'],
+                port=kwds['port'],
+                server_name=self.server_name,
+            )
         cd_to_galaxy_command = ['cd', self.galaxy_root]
         return shell_join(
             cd_to_galaxy_command,
@@ -1233,19 +1247,13 @@ def _galaxy_source(kwds):
 
 
 def _install_with_command(ctx, config_directory, command, env, kwds):
-    # TODO: --watchdog
-    pip_installs = []
-    if pip_installs:
-        pip_install_command = ['pip', 'install'] + pip_installs
-    else:
-        pip_install_command = ""
     setup_venv_command = setup_venv(ctx, kwds)
+    env['__PYVENV_LAUNCHER__'] = ''
     install_cmd = shell_join(
         ['cd', config_directory],
         command,
         ['cd', 'galaxy-dev'],
         setup_venv_command,
-        pip_install_command,
         setup_common_startup_args(),
         COMMAND_STARTUP_COMMAND,
     )
@@ -1255,15 +1263,20 @@ def _install_with_command(ctx, config_directory, command, env, kwds):
 def _ensure_galaxy_repository_available(ctx, kwds):
     workspace = ctx.workspace
     cwl = kwds.get("cwl", False)
-    gx_repo = os.path.join(workspace, "gx_repo")
+    galaxy_source = kwds.get('galaxy_source')
+    if galaxy_source and galaxy_source != DEFAULT_GALAXY_SOURCE:
+        sanitized_repo_name = "".join(c if c.isalnum() else '_' for c in kwds['galaxy_source']).rstrip()[:255]
+        gx_repo = os.path.join(workspace, "gx_repo_%s" % sanitized_repo_name)
+    else:
+        gx_repo = os.path.join(workspace, "gx_repo")
     if cwl:
         gx_repo += "_cwl"
     if os.path.exists(gx_repo):
         # Attempt fetch - but don't fail if not interweb, etc...
-        shell("git --git-dir %s fetch >/dev/null 2>&1" % gx_repo)
+        shell("git --git-dir %s remote update >/dev/null 2>&1" % gx_repo)
     else:
         remote_repo = _galaxy_source(kwds)
-        command = git.command_clone(ctx, remote_repo, gx_repo, bare=True)
+        command = git.command_clone(ctx, remote_repo, gx_repo, mirror=True)
         shell(command)
     return gx_repo
 
