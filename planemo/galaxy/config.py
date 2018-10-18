@@ -399,7 +399,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         )
         _ensure_directory(shed_tool_path)
         port = _get_port(kwds)
-        if not parse_version(kwds.get('galaxy_python_version', DEFAULT_PYTHON_VERSION)) < parse_version('3'):
+        if parse_version(kwds.get('galaxy_python_version', DEFAULT_PYTHON_VERSION)) >= parse_version('3'):
             # on python 3 we use gunicorn,
             # which requires 'main' as server name
             server_name = 'main'
