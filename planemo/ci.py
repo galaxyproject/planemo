@@ -34,17 +34,18 @@ def filter_paths(ctx, raw_paths, path_type="repo", **kwds):
                     diff_dir = os.path.dirname(diff_dir)
         else:
             diff_paths = diff_files
-        diff_paths = sorted(diff_paths)
 
-    unique_paths = sorted(set(map(lambda p: os.path.relpath(p, cwd), raw_paths)))
-    filtered_paths = io.filter_paths(unique_paths, cwd=cwd, **filter_kwds)
+    unique_paths = set(os.path.relpath(p, cwd) for p in raw_paths)
     if diff_paths is not None:
-        new_filtered_paths = []
-        for path in filtered_paths:
+        new_unique_paths = []
+        for path in unique_paths:
             if path in diff_paths:
-                new_filtered_paths.append(path)
-
-        filtered_paths = new_filtered_paths
+                new_unique_paths.append(path)
+        unique_paths = new_unique_paths
+    filtered_paths = sorted(io.filter_paths(unique_paths, cwd=cwd, **filter_kwds))
+    excluded_paths = sorted(set(unique_paths) - set(filtered_paths))
+    if excluded_paths:
+        ctx.log("List of excluded paths: %s" % excluded_paths)
 
     path_count = len(filtered_paths)
     chunk_size = ((1.0 * path_count) / kwds["chunk_count"])
