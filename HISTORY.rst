@@ -9,7 +9,19 @@ History
 0.56.0.dev0
 ---------------------
 
-    
+* Allow selection of Python version when starting managed Galaxy
+  (thanks to `@mvdbeek`_). `Pull Request 874`_
+* Change the channel priority of conda (again). (thanks to `@bgruening`_).
+  `Pull Request 867`_
+* Some small english corrections (thanks to `@erasche`_). `Pull Request 868`_
+* Print the list of excluded paths when running ``ci_find_repos``
+  (thanks to `@nsoranzo`_). `Pull Request 877`_
+* Improved XSD lint reporting. `Pull Request 871`_
+* Fix Planemo writing a file called ``gx_venv_None``. `Pull Request 870`_
+* Update cwltool and galaxy-lib dependencies for Python 3.7 (thanks to
+  `@nsoranzo`_). `Pull Request 864`_
+* Fix to make workflow testing more robust.
+  `Pull Request 882`_
 
 ---------------------
 0.55.0 (2018-09-12)
@@ -1374,6 +1386,14 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 882: https://github.com/galaxyproject/planemo/pull/882
+.. _Pull Request 877: https://github.com/galaxyproject/planemo/pull/877
+.. _Pull Request 874: https://github.com/galaxyproject/planemo/pull/874
+.. _Pull Request 871: https://github.com/galaxyproject/planemo/pull/871
+.. _Pull Request 870: https://github.com/galaxyproject/planemo/pull/870
+.. _Pull Request 864: https://github.com/galaxyproject/planemo/pull/864
+.. _Pull Request 867: https://github.com/galaxyproject/planemo/pull/867
+.. _Pull Request 868: https://github.com/galaxyproject/planemo/pull/868
 .. _bad810a: https://github.com/galaxyproject/planemo/commit/bad810a
 .. _Pull Request 851: https://github.com/galaxyproject/planemo/pull/851
 .. _Pull Request 856: https://github.com/galaxyproject/planemo/pull/856
