@@ -75,7 +75,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):
 
     history_id = _history_id(user_gi, **kwds)
 
-    galaxy_paths, job_dict, _ = stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds)
+    job_dict, _ = stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds)
 
     if runnable.type in [RunnableType.galaxy_tool, RunnableType.cwl_tool]:
         response_class = GalaxyToolRunResponse
@@ -163,7 +163,6 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         runnable=runnable,
         user_gi=user_gi,
         history_id=history_id,
-        galaxy_paths=galaxy_paths,
         log=log_contents_str(config),
         **response_kwds
     )
@@ -281,19 +280,7 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
             f.write(log_contents_str(config))
         raise Exception(msg)
 
-    galaxy_paths = []
-    for (dataset, upload_target) in datasets:
-        if isinstance(upload_target, FileUploadTarget):
-            local_path = upload_target.path
-            ctx.vlog("fetching full dataset for %s, %s" % (dataset, local_path))
-            dataset_full = user_gi.datasets.show_dataset(dataset["id"])
-            galaxy_path = dataset_full["file_name"]
-            ctx.vlog("galaxy_path is %s" % galaxy_path)
-            job_path = os.path.join(job_dir, local_path)
-            galaxy_paths.append((job_path, galaxy_path))
-
-    ctx.vlog("galaxy_paths are %s" % galaxy_paths)
-    return galaxy_paths, job_dict, datasets
+    return job_dict, datasets
 
 
 class GalaxyBaseRunResponse(SuccessfulRunResponse):
@@ -304,7 +291,6 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         runnable,
         user_gi,
         history_id,
-        galaxy_paths,
         log,
     ):
         self._ctx = ctx
@@ -314,8 +300,6 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         self._log = log
 
         self._job_info = None
-
-        self.galaxy_paths = galaxy_paths
 
         self._outputs_dict = None
 
@@ -467,7 +451,6 @@ class GalaxyToolRunResponse(GalaxyBaseRunResponse):
         runnable,
         user_gi,
         history_id,
-        galaxy_paths,
         log,
         job_info,
         api_run_response,
@@ -477,7 +460,6 @@ class GalaxyToolRunResponse(GalaxyBaseRunResponse):
             runnable=runnable,
             user_gi=user_gi,
             history_id=history_id,
-            galaxy_paths=galaxy_paths,
             log=log,
         )
         self._job_info = job_info
@@ -513,7 +495,6 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         runnable,
         user_gi,
         history_id,
-        galaxy_paths,
         log,
         workflow_id,
         invocation_id,
@@ -523,7 +504,6 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
             runnable=runnable,
             user_gi=user_gi,
             history_id=history_id,
-            galaxy_paths=galaxy_paths,
             log=log,
         )
         self._workflow_id = workflow_id
