@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.56.0.dev0
+0.56.0 (2018-10-30)
 ---------------------
 
 * Allow selection of Python version when starting managed Galaxy
