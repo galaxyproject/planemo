@@ -286,10 +286,10 @@ def tee_captured_output(output):
 
 # Taken from Galaxy's twilltestcase.
 def wait_on(function, desc, timeout=5):
-    delta = .25
+    delta = timing = .25
     iteration = 0
     while True:
-        if (delta * iteration) > timeout:
+        if (timing) > timeout:
             message = "Timed out waiting on %s." % desc
             raise Exception(message)
 
@@ -297,8 +297,9 @@ def wait_on(function, desc, timeout=5):
         value = function()
         if value is not None:
             return value
-
-        time.sleep(delta)
+        next_sleep = delta + iteration
+        timing += next_sleep
+        time.sleep(next_sleep)
 
 
 @contextlib.contextmanager
