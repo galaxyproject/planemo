@@ -120,7 +120,7 @@ class BioCProjectPage(object):
     @property
     def bioconductor_tarball_url(self):
         """Return the url to the tarball from the bioconductor site."""
-        r = re.compile('{0}.*\.tar.gz'.format(self.package))
+        r = re.compile(r'{0}.*\.tar.gz'.format(self.package))
 
         def f(href):
             return href and r.search(href)
