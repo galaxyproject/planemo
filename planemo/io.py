@@ -285,21 +285,32 @@ def tee_captured_output(output):
 
 
 # Taken from Galaxy's twilltestcase.
-def wait_on(function, desc, timeout=5):
-    delta = timing = .25
+def wait_on(function, desc, timeout=5, use_easy_polling=False):
+    delta = .25
     iteration = 0
-    while True:
-        if (timing) > timeout:
-            message = "Timed out waiting on %s." % desc
-            raise Exception(message)
-
-        iteration += 1
-        value = function()
-        if value is not None:
-            return value
-        next_sleep = delta + iteration
-        timing += next_sleep
-        time.sleep(next_sleep)
+    if not use_easy_polling:
+        while True:
+            if (delta * iteration) > timeout:
+                message = "Timed out waiting on %s." % desc
+                raise Exception(message)
+            iteration += 1
+            value = function()
+            if value is not None:
+                return value
+            time.sleep(delta)
+    else:
+        timing = 0
+        while True:
+            if (timing) > timeout:
+                message = "Timed out waiting on %s." % desc
+                raise Exception(message)
+            next_sleep = delta + iteration
+            timing += next_sleep
+            iteration += 1
+            value = function()
+            if value is not None:
+                return value
+            time.sleep(next_sleep)
 
 
 @contextlib.contextmanager
