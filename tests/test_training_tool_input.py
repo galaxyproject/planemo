@@ -176,10 +176,8 @@ def test_ToolInput_get_formatted_repeat_desc():
         force_default=False)
     repeat_desc = tool_input.get_formatted_repeat_desc()
     assert '>    - In *"' in repeat_desc
-    assert '>        - Click on' in repeat_desc
-    assert '>        - In *"1:' in repeat_desc
+    assert '>        - {% icon param-repeat %} *"Insert' in repeat_desc
     assert '>            -' in repeat_desc
-    assert '>        - In *"2:' in repeat_desc
 
 
 def test_ToolInput_get_formatted_other_param_desc():

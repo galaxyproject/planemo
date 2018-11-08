@@ -17,7 +17,7 @@ INPUT_SECTION = """
 """
 
 INPUT_ADD_REPEAT = """
->{{space}}- Click on *"Insert {{repeat_label}}"*:
+>{{space}}- {{ '{%' }} icon param-repeat {{ '%}' }} *"Insert {{repeat_label}}"*
 """
 
 SPACE = '    '
@@ -142,10 +142,6 @@ class ToolInput():
                 repeat_paramlist += templates.render(INPUT_ADD_REPEAT, **{
                     'space': SPACE * (self.level),
                     'repeat_label': self.tool_inp_desc['title']})
-                # add description of parameters in the repeat
-                repeat_paramlist += templates.render(INPUT_SECTION, **{
-                    'space': SPACE * (self.level),
-                    'section_label': "%s: %s" % (ind + 1, self.tool_inp_desc['title'])})
                 repeat_paramlist += paramlist_in_repeat
             self.level = cur_level
         self.wf_param_values = tmp_wf_param_values
