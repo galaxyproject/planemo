@@ -258,7 +258,7 @@ class Tutorial:
         # get the metadata information of the tutorial (from the top of the tutorial.md)
         with open(self.tuto_fp, "r") as tuto_f:
             tuto_content = tuto_f.read()
-        regex = '^---\n(?P<metadata>[\s\S]*)\n---(?P<body>[\s\S]*)'
+        regex = r'^---\n(?P<metadata>[\s\S]*)\n---(?P<body>[\s\S]*)'
         tuto_split_regex = re.search(regex, tuto_content)
         if not tuto_split_regex:
             raise Exception("No metadata found at the top of the tutorial")
@@ -507,9 +507,9 @@ def get_wf_inputs(step_inp):
     inputs = {}
     for inp_n, inp in step_inp.items():
         if '|' in inp_n:
-            repeat_regex = '(?P<prefix>[^\|]*)_(?P<nb>\d+)\|(?P<suffix>.+).+'
+            repeat_regex = r'(?P<prefix>[^\|]*)_(?P<nb>\d+)\|(?P<suffix>.+).+'
             repeat_search = re.search(repeat_regex, inp_n)
-            hier_regex = '(?P<prefix>[^\|]*)\|(?P<suffix>.+)'
+            hier_regex = r'(?P<prefix>[^\|]*)\|(?P<suffix>.+)'
             hier_regex = re.search(hier_regex, inp_n)
             if repeat_search and repeat_search.start(0) <= hier_regex.start(0):
                 inputs.setdefault(repeat_search.group('prefix'), {})

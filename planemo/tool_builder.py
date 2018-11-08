@@ -836,9 +836,9 @@ class Requirement(object):
 
 
 def param_type(value):
-    if re.match("^\d+$", value):
+    if re.match(r"^\d+$", value):
         return "int"
-    elif re.match("^\d+?\.\d+?$", value):
+    elif re.match(r"^\d+?\.\d+?$", value):
         return "float"
     else:
         return "string"

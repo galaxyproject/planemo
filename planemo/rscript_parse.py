@@ -62,7 +62,7 @@ class Library(object):
     def _prune_library(self, line):
         """Prune line to get the names in library."""
         import re
-        split_words = re.compile('\w+').findall(line)
+        split_words = re.compile(r'\w+').findall(line)
         lib = [w for w in split_words if w != "library"]
         return lib[0]
 

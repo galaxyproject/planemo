@@ -95,8 +95,8 @@ REPO_TYPE_TOOL_DEP = "tool_dependency_definition"
 REPO_TYPE_SUITE = "repository_suite_definition"
 
 # TODO: sync this with tool shed impl someday
-VALID_REPOSITORYNAME_RE = re.compile("^[a-z0-9\_]+$")
-VALID_PUBLICNAME_RE = re.compile("^[a-z0-9\-]+$")
+VALID_REPOSITORYNAME_RE = re.compile(r"^[a-z0-9\_]+$")
+VALID_PUBLICNAME_RE = re.compile(r"^[a-z0-9\-]+$")
 
 # Generate with python scripts/categories.py
 CURRENT_CATEGORIES = [

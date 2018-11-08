@@ -19,7 +19,7 @@ CREATE_COMMAND_TEMPLATE = string.Template(
     'if [ ! -e "$GALAXY_VIRTUAL_ENV" ]; then $create_virtualenv; fi',
 )
 PRINT_VENV_COMMAND = shell_join(
-    'echo "Set \$GALAXY_VIRTUAL_ENV to $GALAXY_VIRTUAL_ENV"',
+    r'echo "Set \$GALAXY_VIRTUAL_ENV to $GALAXY_VIRTUAL_ENV"',
     ('if [ -e "$GALAXY_VIRTUAL_ENV" ]; ',
      'then echo "Virtual environment directory exists."; ',
      'else echo "Virtual environment directory does not exist."; fi'),
