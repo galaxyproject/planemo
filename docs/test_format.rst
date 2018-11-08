@@ -252,7 +252,7 @@ This is primarily useful for testing workflows against already running Galaxy in
 master API key should be supplied to install missing tool repositories for the workflow and a user API
 key should be supplied to run the workflow using. If you wish to skip tool shed repository installation
 (this requires all the tools be present already), use the ``--no_shed_install`` option. If you want to
-reduce the load on the target Galaxy while checking for the dtatus changes use the ``--easy_polling``
+reduce the load on the target Galaxy while checking for the status changes use the ``--easy_polling``
 option.
 
 To run tool tests against a running Galaxy, ``galaxy-tool-test`` is a script that gets installed with
