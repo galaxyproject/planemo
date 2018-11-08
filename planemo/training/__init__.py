@@ -5,7 +5,7 @@ from .topic import Topic
 from .tutorial import Tutorial
 
 
-class Training:
+class Training(object):
     """Class to describe a training."""
 
     def __init__(self, kwds):
