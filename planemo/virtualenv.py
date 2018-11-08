@@ -9,7 +9,7 @@ import virtualenv
 from galaxy.tools.deps.commands import which
 
 
-DEFAULT_PYTHON_VERSION = "2.7"
+DEFAULT_PYTHON_VERSION = os.environ.get("PLANEMO_DEFAULT_PYTHON_VERSION", "2.7")
 
 
 def create_and_exit(virtualenv_path, **kwds):
