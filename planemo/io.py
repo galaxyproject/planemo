@@ -284,18 +284,17 @@ def tee_captured_output(output):
             sys.stderr.write(message['data'] + '\n')
 
 
-def wait_on(function, desc, timeout=5, use_easy_polling=False):
+def wait_on(function, desc, timeout=5, polling_backoff=0):
     """Wait on given function's readiness. Grow the polling
-    interval steadily if the use_easy_polling flag is on."""
+    interval incrementally by the polling_backoff if specified."""
     delta = .25
     timing = 0
-    polling_increase = int(use_easy_polling)
     while True:
         if timing > timeout:
             message = "Timed out waiting on %s." % desc
             raise Exception(message)
         timing += delta
-        delta += polling_increase
+        delta += polling_backoff
         value = function()
         if value is not None:
             return value

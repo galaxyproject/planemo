@@ -136,15 +136,15 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         invocation = Client._post(user_gi.workflows, payload, url=invocations_url)
         invocation_id = invocation["id"]
         ctx.vlog("Waiting for invocation [%s]" % invocation_id)
-        use_easy_polling = kwds.get("easy_polling", False)
+        polling_backoff = kwds.get("polling_backoff", 0)
         try:
-            final_invocation_state = _wait_for_invocation(ctx, user_gi, history_id, workflow_id, invocation_id, use_easy_polling)
+            final_invocation_state = _wait_for_invocation(ctx, user_gi, history_id, workflow_id, invocation_id, polling_backoff)
         except Exception:
             ctx.vlog("Problem waiting on invocation...")
             summarize_history(ctx, user_gi, history_id)
             raise
         ctx.vlog("Final invocation state is [%s]" % final_invocation_state)
-        final_state = _wait_for_history(ctx, user_gi, history_id, use_easy_polling)
+        final_state = _wait_for_history(ctx, user_gi, history_id, polling_backoff)
         if final_state != "ok":
             msg = "Failed to run workflow final history state is [%s]." % final_state
             summarize_history(ctx, user_gi, history_id)
@@ -567,7 +567,7 @@ def _history_id(gi, **kwds):
     return history_id
 
 
-def _wait_for_invocation(ctx, gi, history_id, workflow_id, invocation_id, use_easy_polling=False):
+def _wait_for_invocation(ctx, gi, history_id, workflow_id, invocation_id, polling_backoff=0):
 
     def state_func():
         if _retry_on_timeouts(ctx, gi, lambda gi: has_jobs_in_states(gi, history_id, ["error", "deleted", "deleted_new"])):
@@ -575,7 +575,7 @@ def _wait_for_invocation(ctx, gi, history_id, workflow_id, invocation_id, use_ea
 
         return _retry_on_timeouts(ctx, gi, lambda gi: gi.workflows.show_invocation(workflow_id, invocation_id))
 
-    return _wait_on_state(state_func, use_easy_polling)
+    return _wait_on_state(state_func, polling_backoff)
 
 
 def _retry_on_timeouts(ctx, gi, f):
@@ -607,7 +607,7 @@ def has_jobs_in_states(gi, history_id, states):
     return len(target_jobs) > 0
 
 
-def _wait_for_history(ctx, gi, history_id, use_easy_polling=False):
+def _wait_for_history(ctx, gi, history_id, polling_backoff=0):
 
     def has_active_jobs(gi):
         if has_jobs_in_states(gi, history_id, ["new", "upload", "waiting", "queued", "running"]):
@@ -616,12 +616,12 @@ def _wait_for_history(ctx, gi, history_id, use_easy_polling=False):
             return None
 
     timeout = 60 * 60 * 24
-    wait_on(lambda: _retry_on_timeouts(ctx, gi, has_active_jobs), "active jobs", timeout, use_easy_polling)
+    wait_on(lambda: _retry_on_timeouts(ctx, gi, has_active_jobs), "active jobs", timeout, polling_backoff)
 
     def state_func():
         return _retry_on_timeouts(ctx, gi, lambda gi: gi.histories.show_history(history_id))
 
-    return _wait_on_state(state_func, use_easy_polling)
+    return _wait_on_state(state_func, polling_backoff)
 
 
 def _wait_for_job(gi, job_id):
@@ -631,7 +631,7 @@ def _wait_for_job(gi, job_id):
     return _wait_on_state(state_func)
 
 
-def _wait_on_state(state_func, use_easy_polling=False):
+def _wait_on_state(state_func, polling_backoff=0):
 
     def get_state():
         response = state_func()
@@ -641,7 +641,7 @@ def _wait_on_state(state_func, use_easy_polling=False):
         else:
             return None
     timeout = 60 * 60 * 24
-    final_state = wait_on(get_state, "state", timeout, use_easy_polling)
+    final_state = wait_on(get_state, "state", timeout, polling_backoff)
     return final_state
 
 

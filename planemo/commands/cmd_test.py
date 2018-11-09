@@ -29,12 +29,12 @@ from planemo.runnable import (
     default=False,
 )
 @click.option(
-    "--easy_polling",
-    is_flag=True,
+    "--polling_backoff",
+    type=int,
     help="Poll resources with an increasing interval between requests. "
          "Useful when testing against remote and/or production "
-         "instances to limit traffic generated.",
-    default=False,
+         "instances to limit generated traffic.",
+    default="0",
 )
 @click.option(
     "--history_name",
