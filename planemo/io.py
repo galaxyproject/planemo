@@ -286,7 +286,7 @@ def tee_captured_output(output):
 
 def wait_on(function, desc, timeout=5, polling_backoff=0):
     """Wait on given function's readiness. Grow the polling
-    interval incrementally by the polling_backoff if specified."""
+    interval incrementally by the polling_backoff."""
     delta = .25
     timing = 0
     while True:
