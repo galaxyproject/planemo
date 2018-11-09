@@ -5,7 +5,7 @@ import collections
 import oyaml as yaml
 
 
-class Requirement:
+class Requirement(object):
     """Class to describe a training requirement."""
 
     def __init__(self, title="", req_type="internal", link="/introduction/"):
@@ -29,7 +29,7 @@ class Requirement:
         return req
 
 
-class Reference:
+class Reference(object):
     """Class to describe a training reference."""
 
     def __init__(self, authors="authors et al", title="the title", link="link", summary="Why this reference is useful"):

@@ -23,7 +23,7 @@ INPUT_ADD_REPEAT = """
 SPACE = '    '
 
 
-class ToolInput():
+class ToolInput(object):
     """Class to describe a tool input / parameter and its value from a workflow."""
 
     def __init__(self, tool_inp_desc, wf_param_values, wf_steps, level, should_be_there=False, force_default=False):

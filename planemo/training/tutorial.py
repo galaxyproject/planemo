@@ -191,7 +191,7 @@ pipeline used.
 """
 
 
-class Tutorial:
+class Tutorial(object):
     """Class to describe a training tutorial."""
 
     def __init__(self, training, topic, name="new_tuto", title="The new tutorial", zenodo_link=""):
