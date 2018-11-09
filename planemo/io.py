@@ -284,33 +284,22 @@ def tee_captured_output(output):
             sys.stderr.write(message['data'] + '\n')
 
 
-# Taken from Galaxy's twilltestcase.
 def wait_on(function, desc, timeout=5, use_easy_polling=False):
+    """Wait on given function's readiness. Grow the polling
+    interval steadily if the use_easy_polling flag is on."""
     delta = .25
-    iteration = 0
-    if not use_easy_polling:
-        while True:
-            if (delta * iteration) > timeout:
-                message = "Timed out waiting on %s." % desc
-                raise Exception(message)
-            iteration += 1
-            value = function()
-            if value is not None:
-                return value
-            time.sleep(delta)
-    else:
-        timing = 0
-        while True:
-            if (timing) > timeout:
-                message = "Timed out waiting on %s." % desc
-                raise Exception(message)
-            next_sleep = delta + iteration
-            timing += next_sleep
-            iteration += 1
-            value = function()
-            if value is not None:
-                return value
-            time.sleep(next_sleep)
+    timing = 0
+    polling_increase = int(use_easy_polling)
+    while True:
+        if timing > timeout:
+            message = "Timed out waiting on %s." % desc
+            raise Exception(message)
+        timing += delta
+        delta += polling_increase
+        value = function()
+        if value is not None:
+            return value
+        time.sleep(delta)
 
 
 @contextlib.contextmanager
