@@ -284,20 +284,20 @@ def tee_captured_output(output):
             sys.stderr.write(message['data'] + '\n')
 
 
-# Taken from Galaxy's twilltestcase.
-def wait_on(function, desc, timeout=5):
+def wait_on(function, desc, timeout=5, polling_backoff=0):
+    """Wait on given function's readiness. Grow the polling
+    interval incrementally by the polling_backoff."""
     delta = .25
-    iteration = 0
+    timing = 0
     while True:
-        if (delta * iteration) > timeout:
+        if timing > timeout:
             message = "Timed out waiting on %s." % desc
             raise Exception(message)
-
-        iteration += 1
+        timing += delta
+        delta += polling_backoff
         value = function()
         if value is not None:
             return value
-
         time.sleep(delta)
 
 

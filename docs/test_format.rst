@@ -86,19 +86,19 @@ the above examples. Planemo adapts the CWL_ job document to Galaxy_ workflows an
 names for Galaxy_ tools and input node labels for workflows.
 
 Input files can be specified using either ``path`` attributes (which should generally be file
-paths relative to the aritfact and test directory) or ``location`` (which should be a URI). The 
+paths relative to the artifact and test directory) or ``location`` (which should be a URI). The
 examples above demonstrate using both paths relative to the tool file and test data published
 to `Zenodo <https://zenodo.org/>`__.
 
 .. note::
 
     These job objects can be run directly with ``planemo run``.
-    
+
     ::
 
         $ planemo run --engine=<engine_type> [ENGINE_OPTIONS] [ARTIFACT_PATH] [JOB_PATH]
-    
-    This should be familar to CWL developers - and indeed if ``--engine=cwltool`` this works as a formal CWL 
+
+    This should be familar to CWL developers - and indeed if ``--engine=cwltool`` this works as a formal CWL
     runner. Planemo provides a uniform interface to Galaxy for Galaxy workflows and tools though using the same
     CLI invocation if ``--engine=galaxy`` (for a Planemo managed Galaxy instance), ``--engine=docker_galaxy``
     (for a Docker instance of Galaxy launched by Planemo), or ``--engine=external_galaxy`` (for a running
@@ -107,8 +107,8 @@ to `Zenodo <https://zenodo.org/>`__.
 ``outputs``
 --------------
 
-Galaxy_ tools and CWL_ artifacts have obvious output names that much match the mapping in this block on test 
-file. Galaxy workflows require explicit output labels to be used with tests, but the important outputs in 
+Galaxy_ tools and CWL_ artifacts have obvious output names that much match the mapping in this block on test
+file. Galaxy workflows require explicit output labels to be used with tests, but the important outputs in
 your workflows should be labeled anyway to work with Galaxy subworkflows and more cleanly with API calls.
 
 If an output is known, fixed, and small it makes a lot of sense to just include a copy of the output next
@@ -246,15 +246,16 @@ option to mount test data into the testing container.
 ``external_galaxy``
 ~~~~~~~~~~~~~~~~~~~~
 
-    $ planemo test --engine external_galaxy --galaxy_admin_key <admin_key> --galaxy_user_key <user_key> [--no_shed_install] <url>
+    $ planemo test --engine external_galaxy --galaxy_admin_key <admin_key> --galaxy_user_key <user_key> [--no_shed_install] [--polling_backoff <integer>] <url>
 
 This is primarily useful for testing workflows against already running Galaxy instances. An admin or
 master API key should be supplied to install missing tool repositories for the workflow and a user API
 key should be supplied to run the workflow using. If you wish to skip tool shed repository installation
-(this requires the tool all be present already), use the ``-no_shed_install`` option with the ``test``
-command.
+(this requires all the tools be present already), use the ``--no_shed_install`` option. If you want to
+reduce the load on the target Galaxy while checking for the status changes use the ``--polling_backoff <integer>``
+option where integer is the incremental increase in seconds for every request.
 
-To run tool tests against a running Galaxy, ``galaxy-tool-test`` is a script that gets installed with 
+To run tool tests against a running Galaxy, ``galaxy-tool-test`` is a script that gets installed with
 galaxy-lib and so may very well already be on your ``PATH``. Check out the options available with that
 using ``galaxy-tool-test --help``.
 
