@@ -86,7 +86,7 @@ the above examples. Planemo adapts the CWL_ job document to Galaxy_ workflows an
 names for Galaxy_ tools and input node labels for workflows.
 
 Input files can be specified using either ``path`` attributes (which should generally be file
-paths relative to the aritfact and test directory) or ``location`` (which should be a URI). The
+paths relative to the artifact and test directory) or ``location`` (which should be a URI). The
 examples above demonstrate using both paths relative to the tool file and test data published
 to `Zenodo <https://zenodo.org/>`__.
 
