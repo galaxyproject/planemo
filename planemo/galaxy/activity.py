@@ -640,7 +640,7 @@ def _wait_on_state(state_func, use_easy_polling=False):
             return state
         else:
             return None
-    timeout=60 * 60 * 24
+    timeout = 60 * 60 * 24
     final_state = wait_on(get_state, "state", timeout, use_easy_polling)
     return final_state
 
