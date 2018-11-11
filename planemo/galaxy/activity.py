@@ -364,6 +364,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
 
         ctx.vlog("collecting outputs to directory %s" % output_directory)
         for runnable_output in get_outputs(self._runnable):
+            output_id = runnable_output.get_id()
             if not output_id:
                 ctx.vlog("Workflow output identified without an ID (label), skipping")
                 continue
