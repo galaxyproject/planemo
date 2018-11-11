@@ -368,7 +368,6 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             if not output_id:
                 ctx.vlog("Workflow output identified without an ID (label), skipping")
                 continue
-            output_id = runnable_output.get_id()
             output_dict_value = None
             if self._runnable.type in [RunnableType.cwl_workflow, RunnableType.cwl_tool]:
                 galaxy_output = self.to_galaxy_output(runnable_output)
