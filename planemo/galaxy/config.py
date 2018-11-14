@@ -399,7 +399,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         )
         _ensure_directory(shed_tool_path)
         port = _get_port(kwds)
-        if parse_version(kwds.get('galaxy_python_version', DEFAULT_PYTHON_VERSION)) >= parse_version('3'):
+        if parse_version(kwds.get('galaxy_python_version') or DEFAULT_PYTHON_VERSION) >= parse_version('3'):
             # on python 3 we use gunicorn,
             # which requires 'main' as server name
             server_name = 'main'
@@ -947,7 +947,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
             run_script += " --server-name %s" % shlex_quote(self.server_name)
         server_ini = os.path.join(self.config_directory, "galaxy.ini")
         self.env["GALAXY_CONFIG_FILE"] = server_ini
-        if parse_version(kwds.get('galaxy_python_version', DEFAULT_PYTHON_VERSION)) >= parse_version('3'):
+        if parse_version(kwds.get('galaxy_python_version') or DEFAULT_PYTHON_VERSION) >= parse_version('3'):
             # We need to start under gunicorn
             self.env['APP_WEBSERVER'] = 'gunicorn'
             self.env['GUNICORN_CMD_ARGS'] = "--bind={host}:{port} --name={server_name}".format(

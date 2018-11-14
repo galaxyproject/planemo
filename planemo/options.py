@@ -133,7 +133,7 @@ def galaxy_python_version():
     return planemo_option(
         '--galaxy_python_version',
         use_global_config=True,
-        default='2.7',
+        default=None,
         type=click.Choice(['2', '2.7', '3', '3.3', '3.4', '3.5', '3.6', '3.7']),
         help="Python version to start Galaxy under",
     )
