@@ -166,7 +166,7 @@ Consider a tool that creates a bunch of text files or bam files and writes them 
 .. code-block:: xml
 
     <outputs>
-        <data format="txt" name="report">
+        <data name="report" format="txt">
             <discover_datasets pattern="__designation_and_ext__" directory="split" visible="true" />
         </data>
     </outputs>
@@ -178,8 +178,8 @@ If the tool doesn't create the files in ``split`` with extensions or does but wi
 .. code-block:: xml
 
     <outputs>
-        <data format="txt" name="report">
-        <discover_datasets pattern="__designation__" format="tabular" directory="tables" visible="true" />
+        <data name="report" format="txt">
+            <discover_datasets pattern="__designation__" format="tabular" directory="tables" visible="true" />
         </data>
     </outputs>
 
@@ -190,8 +190,8 @@ It may not be desirable for the extension/format (``.tsv``) to appear in the ``d
 .. code-block:: xml
 
     <outputs>
-        <data format="txt" name="report">
-        <discover_datasets pattern="(?P&lt;designation&gt;.+)\.tsv" format="tabular" directory="tables" visible="true" />
+        <data name="report" format="txt">
+            <discover_datasets pattern="(?P&lt;designation&gt;.+)\.tsv" format="tabular" directory="tables" visible="true" />
         </data>
     </outputs>
 
