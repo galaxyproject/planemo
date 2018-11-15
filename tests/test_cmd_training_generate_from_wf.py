@@ -74,7 +74,7 @@ class CmdTrainingGenerateFromWfTestCase(CliTestCase):
                 "--tutorial_name", tuto_n,
                 "--workflow_id", "ID"
             ]
-            self._check_exit_code(training_init_command, exit_code=1)
+            self._check_exit_code(training_init_command, exit_code=self.non_zero_exit_code)
             # not working test
             create_tutorial_dir(topic_n, tuto_n)
             training_init_command = [
@@ -85,5 +85,5 @@ class CmdTrainingGenerateFromWfTestCase(CliTestCase):
                 "--galaxy_url", "https://usegalaxy.eu/",
                 "--galaxy_api_key", "API"
             ]
-            self._check_exit_code(training_init_command, exit_code=1)
+            self._check_exit_code(training_init_command, exit_code=self.non_zero_exit_code)
             shutil.rmtree("topics")
