@@ -3,6 +3,7 @@ import os
 
 from .test_utils import (
     CliTestCase,
+    skip_if_environ,
     TEST_DATA_DIR
 )
 
@@ -10,6 +11,7 @@ from .test_utils import (
 class CmdTrainingInitTestCase(CliTestCase):
     """Container class defining test cases for the ``training_init`` command."""
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_training_init_command_by_default(self):
         """Test training_init command with only topic name."""
         with self._isolate():
@@ -19,6 +21,7 @@ class CmdTrainingInitTestCase(CliTestCase):
             ]
             self._check_exit_code(training_init_command, exit_code=0)
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_training_init_command_topic(self):
         """Test training_init command to create new topic."""
         with self._isolate():
@@ -41,6 +44,7 @@ class CmdTrainingInitTestCase(CliTestCase):
             ]
             self._check_exit_code(training_init_command, exit_code=2)
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_training_init_command_tutorial_no_topic(self):
         """Test training_init command with tutorial but no topic."""
         with self._isolate():
@@ -51,6 +55,7 @@ class CmdTrainingInitTestCase(CliTestCase):
             ]
             self._check_exit_code(training_init_command, exit_code=2)
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_training_init_command_tutorial(self):
         """Test training_init command to create new tutorial."""
         with self._isolate():
@@ -65,6 +70,7 @@ class CmdTrainingInitTestCase(CliTestCase):
             ]
             self._check_exit_code(training_init_command, exit_code=0)
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_training_init_command_tutorial_zenodo(self):
         """Test training_init command to create new tutorial with zenodo."""
         with self._isolate():
@@ -87,6 +93,7 @@ class CmdTrainingInitTestCase(CliTestCase):
             ]
             self._check_exit_code(training_init_command, exit_code=0)
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_training_init_command_tutorial_local_wf(self):
         """Test training_init command to create new tutorial with local workflow."""
         with self._isolate():
@@ -100,6 +107,7 @@ class CmdTrainingInitTestCase(CliTestCase):
             ]
             self._check_exit_code(training_init_command, exit_code=0)
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_training_init_command_tutorial_remote_wf(self):
         """Test training_init command to create new tutorial with workflow on running instance."""
         with self._isolate():

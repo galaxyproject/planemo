@@ -4,7 +4,8 @@ import shutil
 
 from .test_utils import (
     CliTestCase,
-    TEST_DATA_DIR
+    skip_if_environ,
+    TEST_DATA_DIR,
 )
 
 
@@ -28,6 +29,7 @@ def create_tutorial_dir(topic_n, tuto_n):
 class CmdTrainingGenerateFromWfTestCase(CliTestCase):
     """Container class defining test cases for the ``training_generate_from_wf`` command."""
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_training_generate_from_wf_command_empty(self):
         """Test training_generate_from_wf command with no arguments."""
         with self._isolate():
@@ -36,6 +38,7 @@ class CmdTrainingGenerateFromWfTestCase(CliTestCase):
             ]
             self._check_exit_code(training_fill_data_library_command, exit_code=2)
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_training_generate_from_wf_command_topic(self):
         """Test training_generate_from_wf command with only topic name."""
         with self._isolate():
@@ -45,6 +48,7 @@ class CmdTrainingGenerateFromWfTestCase(CliTestCase):
             ]
             self._check_exit_code(training_fill_data_library_command, exit_code=2)
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_training_generate_from_wf_command_local_wf(self):
         """Test training_generate_from_wf command with local workflow."""
         with self._isolate():
@@ -62,6 +66,7 @@ class CmdTrainingGenerateFromWfTestCase(CliTestCase):
             self._check_exit_code(training_init_command, exit_code=0)
             shutil.rmtree("topics")
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_training_generate_from_wf_command_remote_wf(self):
         """Test training_generate_from_wf command with workflow on running instance."""
         with self._isolate():
