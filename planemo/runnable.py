@@ -203,7 +203,8 @@ class TestCase(AbstractTestCase):
         self.doc = doc
 
     def __repr__(self):
-        return 'TestCase (%s) for runnable (%s) with job (%s) and expected outputs (%s) in directory (%s) with id (%s)' % (self.doc, self.runnable, self.job, self.output_expectations, self.tests_directory, self.index)
+        return 'TestCase (%s) for runnable (%s) with job (%s) and expected outputs (%s) in directory (%s) with id (%s)' % \
+            (self.doc, self.runnable, self.job, self.output_expectations, self.tests_directory, self.index)
 
     def structured_test_data(self, run_response):
         """Check a test case against outputs dictionary.
