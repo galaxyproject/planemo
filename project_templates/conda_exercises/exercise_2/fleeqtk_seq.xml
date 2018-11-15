@@ -1,4 +1,7 @@
 <tool id="fleeqtk_seq" name="Convert to FASTA (fleeqtk)" version="0.1.0">
+    <requirements>
+        <requirement type="package" version="1.3">fleeqtk</requirement>
+    </requirements>
     <command detect_errors="exit_code"><![CDATA[
         fleeqtk seq
               #if $settings.advanced == "advanced"

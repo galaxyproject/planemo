@@ -77,7 +77,7 @@ listed requirements are found.
 
 We can verify these tool requirements install with the ``conda_install`` command. With
 its default parameters ``conda_install`` processes tools and creates isolated environments
-for their declared `Software Requirements`_ (mirroring what can be done in production with 
+for their declared `Software Requirements`_ (mirroring what can be done in production with
 cwltool_ and Toil_).
 
 ::
@@ -178,7 +178,7 @@ demonstrating using this tool.
     All 1 test(s) executed passed.
     seqtk_seq_0: passed
 
-Since ``seqtk`` isn't on the path and we did not use a container, we can see the SoftwareRequirement 
+Since ``seqtk`` isn't on the path and we did not use a container, we can see the SoftwareRequirement
 resolution was successful and it found the environment we previously installed with ``conda_install``.
 
 This can be used outside of Planemo testing as well, the following invocation shows running a job
@@ -370,8 +370,8 @@ Use the ``project_init`` command to download this exercise.
 ::
 
     $ planemo project_init --template conda_exercises_cwl conda_exercises
-    $ cd conda_exercises/exercise1
-    $ ls 
+    $ cd conda_exercises/exercise_1
+    $ ls
     pear.cwl              test-data
 
 This project template contains a few exercises. The first uses a CWL tool for
@@ -397,19 +397,18 @@ not work properly without modification.
 ::
 
     $ planemo project_init --template conda_exercises_cwl conda_exercises
-    $ cd conda_exercises/exercise2
-    $ ls 
+    $ cd conda_exercises/exercise_2
+    $ ls
     fleeqtk_seq.cwl      fleeqtk_seq_tests.yml         test-data
 
 .. include:: _writing_conda_fleeqtk.rst
 
 1. Clone and branch Bioconda_.
-2. Build a recipe for fleeqtk version 1.3. You may wish to use ``conda skeleton``, start from
-   scratch, or copy the recipe of seqtk and work from there - any of these strategies should work.  
+2. Build a recipe for fleeqtk version 1.3. You may wish to start from scratch
+   (``conda skeleton`` is not available for C programs like fleeqtk), or copy
+   the recipe of seqtk and modify it for fleeqtk.
 3. Use ``conda build`` or Bioconda tooling to build the recipe.
-4. Run ``planemo conda_install --conda_use_local fleeqtk_seq.cwl`` to verify the resulting package
-   can be built into a Galaxy environment.
-5. Run ``planemo test fleeqtk_seq.cwl`` to verify the resulting package works as expected.
+4. Run ``planemo test --conda_use_local fleeqtk_seq.cwl`` to verify the resulting package works as expected.
 
 .. note: The planemo flag ``--conda_use_local`` causes Planemo to use locally built
      packages during dependency resolution and related commands.

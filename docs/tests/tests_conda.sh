@@ -89,5 +89,4 @@ conda build fleeqtk
 # Update to fix tool and see it work.
 
 wget https://raw.githubusercontent.com/galaxyproject/planemo/master/project_templates/conda_answers/exercise_2/fleeqtk_seq.xml -O fleeqtk_seq.xml
-planemo conda_install --conda_use_local fleeqtk_seq.xml
-planemo test fleeqtk_seq.xml
+planemo test --conda_use_local fleeqtk_seq.xml

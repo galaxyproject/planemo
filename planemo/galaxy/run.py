@@ -58,7 +58,7 @@ def locate_galaxy_virtualenv(ctx, kwds):
         workspace = ctx.workspace
         galaxy_branch = kwds.get("galaxy_branch") or "master"
         shared_venv_path = os.path.join(workspace, "gx_venv")
-        galaxy_python_version = kwds.get('galaxy_python_version', DEFAULT_PYTHON_VERSION)
+        galaxy_python_version = kwds.get('galaxy_python_version') or DEFAULT_PYTHON_VERSION
         if galaxy_python_version != DEFAULT_PYTHON_VERSION:
             shared_venv_path = "%s_%s" % (shared_venv_path, galaxy_python_version)
         if galaxy_branch != "master":

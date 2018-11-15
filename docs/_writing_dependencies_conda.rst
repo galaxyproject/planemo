@@ -200,8 +200,8 @@ Use the ``project_init`` command to download this exercise.
 ::
 
     $ planemo project_init --template conda_exercises conda_exercises
-    $ cd conda_exercises/exercise1
-    $ ls 
+    $ cd conda_exercises/exercise_1
+    $ ls
     pear.xml              test-data
 
 This project template contains a few exercises. The first uses an adapted
@@ -226,19 +226,18 @@ no ``requirement`` tags and so will not work properly.
 ::
 
     $ planemo project_init --template conda_exercises conda_exercises
-    $ cd conda_exercises/exercise2
-    $ ls 
+    $ cd conda_exercises/exercise_2
+    $ ls
     fleeqtk_seq.xml              test-data
 
 .. include:: _writing_conda_fleeqtk.rst
 
 1. Clone and branch Bioconda_.
-2. Build a recipe for fleeqtk version 1.3. You may wish to use ``conda skeleton``, start from
-   scratch, or copy the recipe of seqtk and work from there - any of these strategies should work.  
+2. Build a recipe for fleeqtk version 1.3. You may wish to start from scratch
+   (``conda skeleton`` is not available for C programs like fleeqtk), or copy
+   the recipe of seqtk and modify it for fleeqtk.
 3. Use ``conda build`` or Bioconda tooling to build the recipe.
-4. Run ``planemo conda_install --conda_use_local fleeqtk_seq.xml`` to verify the resulting package
-   can be built into a Galaxy environment.
-5. Run ``planemo test fleeqtk_seq.xml`` to verify the resulting package works as expected.
+4. Run ``planemo test --conda_use_local fleeqtk_seq.xml`` to verify the resulting package works as expected.
 
 .. note: The planemo flag ``--conda_use_local`` causes Planemo to use locally built
      packages during dependency resolution and related commands.
