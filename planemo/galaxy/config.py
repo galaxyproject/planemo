@@ -752,9 +752,10 @@ class BaseGalaxyConfig(GalaxyInterface):
         if self._kwds["shed_install"]:
             install_shed_repos(runnable, self.gi, self._kwds.get("ignore_dependency_problems", False))
 
+        default_from_path = self._kwds.get("workflows_from_path", False)
         # TODO: Allow serialization so this doesn't need to assume a
         # shared filesystem with Galaxy server.
-        from_path = runnable.type.name == "cwl_workflow"
+        from_path = default_from_path or (runnable.type.name == "cwl_workflow")
         workflow = import_workflow(
             runnable.path, admin_gi=self.gi, user_gi=self.user_gi, from_path=from_path
         )

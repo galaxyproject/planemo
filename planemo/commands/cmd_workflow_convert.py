@@ -45,7 +45,7 @@ def cli(ctx, workflow_path, output=None, force=False, **kwds):
 
     runnable = for_path(workflow_path)
     with engine_context(ctx, **kwds) as galaxy_engine:
-        with galaxy_engine.serve_runnables([runnable]) as config:
+        with galaxy_engine.ensure_runnables_served([runnable]) as config:
             workflow_id = config.workflow_id(workflow_path)
             output_dict = config.gi.workflows.export_workflow_dict(workflow_id)
 

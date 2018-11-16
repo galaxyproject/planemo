@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import contextlib
 import os
+import time
 
 from planemo import io
 from planemo import network_util
@@ -99,6 +100,11 @@ def serve_daemon(ctx, runnables=[], **kwds):
             config.kill()
             if not kwds.get("no_cleanup", False):
                 config.cleanup()
+
+
+def sleep_for_serve():
+    # This is bad, do something better...
+    time.sleep(1000000)
 
 
 __all__ = (
