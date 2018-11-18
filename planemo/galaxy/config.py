@@ -1272,7 +1272,10 @@ def _ensure_galaxy_repository_available(ctx, kwds):
     if cwl:
         gx_repo += "_cwl"
     if os.path.exists(gx_repo):
-        # Attempt fetch - but don't fail if not interweb, etc...
+        # Convert the git repository from bare to mirror, if needed
+        shell(['git', '--git-dir', gx_repo, 'config', 'remote.origin.fetch', '+refs/*:refs/*'])
+        shell(['git', '--git-dir', gx_repo, 'config', 'remote.origin.mirror', 'true'])
+        # Attempt remote update - but don't fail if not interweb, etc...
         shell("git --git-dir %s remote update >/dev/null 2>&1" % gx_repo)
     else:
         remote_repo = _galaxy_source(kwds)
