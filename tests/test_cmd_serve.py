@@ -2,6 +2,8 @@ import os
 import time
 import uuid
 
+import requests
+
 from planemo import network_util
 from planemo.galaxy import api
 from planemo.io import kill_pid_file
@@ -34,14 +36,21 @@ class ServeTestCase(CliTestCase):
     @skip_if_environ("PLANEMO_SKIP_PYTHON3")
     @skip_unless_executable("python3")
     def test_serve_python3(self):
-        extra_args = ['--galaxy_python_version', '3',
-                      '--galaxy_branch', 'release_18.09']
+        extra_args = [
+            "--galaxy_python_version", "3",
+            "--galaxy_branch", "release_18.09"]
         self._launch_thread_and_wait(self._run, extra_args)
+        # Check that the client was correctly built
+        url = "http://localhost:%d/static/scripts/libs/require.js" % int(self._port)
+        r = requests.get(url)
+        assert r.status_code == 200
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch
     def test_serve_daemon(self):
-        extra_args = ["--daemon", "--pid_file", self._pid_file]
+        extra_args = [
+            "--daemon",
+            "--pid_file", self._pid_file]
         self._launch_thread_and_wait(self._run, extra_args)
         user_gi = self._user_gi
         assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0

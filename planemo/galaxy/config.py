@@ -351,9 +351,9 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         def config_join(*args):
             return os.path.join(config_directory, *args)
 
-        install_env = {
-            'GALAXY_SKIP_CLIENT_BUILD': '1',
-        }
+        install_env = {}
+        if kwds.get('galaxy_skip_client_build', True):
+            install_env['GALAXY_SKIP_CLIENT_BUILD'] = '1'
         if install_galaxy:
             _build_eggs_cache(ctx, install_env, kwds)
             _install_galaxy(ctx, config_directory, install_env, kwds)
@@ -484,7 +484,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         env["GALAXY_TEST_UPLOAD_ASYNC"] = "false"
         env["GALAXY_TEST_LOGGING_CONFIG"] = config_join("logging.ini")
         env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
-        env["GALAXY_SKIP_CLIENT_BUILD"] = "1"
         # Following are needed in 18.01 to prevent Galaxy from changing log and pid.
         # https://github.com/galaxyproject/planemo/issues/788
         env["GALAXY_LOG"] = log_file

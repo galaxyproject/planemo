@@ -30,6 +30,7 @@ def cli(ctx, paths, **kwds):
     install these artifacts, and serve a Galaxy instances that can be
     logged into and explored interactively.
     """
+    kwds['galaxy_skip_client_build'] = False
     install_args_list = shed.install_arg_lists(ctx, paths, **kwds)
     with shed_serve(ctx, install_args_list, **kwds) as config:
         io.info("Galaxy running with tools installed at %s" % config.galaxy_url)

@@ -5,8 +5,10 @@ import contextlib
 import os
 import time
 
-from planemo import io
-from planemo import network_util
+from planemo import (
+    io,
+    network_util
+)
 from .config import galaxy_config
 from .ephemeris_sleep import sleep
 from .run import (
