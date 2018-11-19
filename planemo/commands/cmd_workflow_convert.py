@@ -3,7 +3,7 @@ import json
 import os
 
 import click
-
+from gxformat2 import from_galaxy_native
 
 from planemo import options
 from planemo.cli import command_function
@@ -40,14 +40,24 @@ def cli(ctx, workflow_path, output=None, force=False, **kwds):
 
     kwds["no_dependency_resolution"] = True
 
-    if output is None:
-        output = os.path.splitext(workflow_path)[0] + ".ga"
+    if workflow_path.endswith(".ga"):
+        if output is None:
+            output = os.path.splitext(workflow_path)[0] + ".gxwf.yml"
 
-    runnable = for_path(workflow_path)
-    with engine_context(ctx, **kwds) as galaxy_engine:
-        with galaxy_engine.ensure_runnables_served([runnable]) as config:
-            workflow_id = config.workflow_id(workflow_path)
-            output_dict = config.gi.workflows.export_workflow_dict(workflow_id)
+        with open(workflow_path, "r") as f:
+            workflow_dict = json.load(f)
+        format2_wrapper = from_galaxy_native(workflow_dict, json_wrapper=True)
+        with open(output, "w") as f:
+            f.write(format2_wrapper["yaml_content"])
+    else:
+        if output is None:
+            output = os.path.splitext(workflow_path)[0] + ".ga"
 
-            output_contents = json.dumps(output_dict)
-            write_file(output, output_contents, force=force)
+        runnable = for_path(workflow_path)
+        with engine_context(ctx, **kwds) as galaxy_engine:
+            with galaxy_engine.ensure_runnables_served([runnable]) as config:
+                workflow_id = config.workflow_id(workflow_path)
+                output_dict = config.gi.workflows.export_workflow_dict(workflow_id)
+
+                output_contents = json.dumps(output_dict)
+                write_file(output, output_contents, force=force)
