@@ -9,7 +9,24 @@ History
 0.57.0.dev0
 ---------------------
 
-    
+* Allow ``workflow_convert`` to convert a native ``.ga`` workflows to format 2 (yaml).
+  `Pull Request 896`_
+* New command (``workflow_edit``) to open workflow in a synchronized graphical editor.
+  `Pull Request 894`_
+* Conda tutorial fixes (thanks to `@nsoranzo`_). `Pull Request 876`_
+* Enable ``--conda_use_local`` option for ``planemo test`` (thanks to
+  `@nsoranzo`_). `Pull Request 876`_
+* When testing, skip workflow outputs that do not have a `label` set (thanks to
+  `@bgruening`_). `Pull Request 893`_
+* Add ``__repr__`` for ``TestCase`` to improve debugging Planemo
+  (thanks to `@bgruening`_). `Pull Request 892`_
+* Increase IO polling interval over time (thanks to `@martenson`_).
+  `Pull Request 891`_
+* Sync galaxy xsd and fix tests (thanks to `@mvdbeek`_).
+  `Pull Request 889`_
+* Linting fix for ``W605`` (thanks to `@martenson`_). `Pull Request 888`_
+* Add icon for repeat parameters in training (thanks to `@bebatut`_).
+  `Pull Request 887`_
 
 ---------------------
 0.56.0 (2018-10-30)
@@ -1392,6 +1409,15 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 896: https://github.com/galaxyproject/planemo/pull/896
+.. _Pull Request 894: https://github.com/galaxyproject/planemo/pull/894
+.. _Pull Request 876: https://github.com/galaxyproject/planemo/pull/876
+.. _Pull Request 893: https://github.com/galaxyproject/planemo/pull/893
+.. _Pull Request 892: https://github.com/galaxyproject/planemo/pull/892
+.. _Pull Request 891: https://github.com/galaxyproject/planemo/pull/891
+.. _Pull Request 889: https://github.com/galaxyproject/planemo/pull/889
+.. _Pull Request 888: https://github.com/galaxyproject/planemo/pull/888
+.. _Pull Request 887: https://github.com/galaxyproject/planemo/pull/887
 .. _Pull Request 882: https://github.com/galaxyproject/planemo/pull/882
 .. _Pull Request 877: https://github.com/galaxyproject/planemo/pull/877
 .. _Pull Request 874: https://github.com/galaxyproject/planemo/pull/874
