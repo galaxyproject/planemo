@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.57.0.dev0
+0.57.0 (2018-11-19)
 ---------------------
 
 * Allow ``workflow_convert`` to convert a native ``.ga`` workflows to format 2 (yaml).
