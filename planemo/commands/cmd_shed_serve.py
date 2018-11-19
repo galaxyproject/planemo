@@ -1,6 +1,4 @@
 """Module describing the planemo ``shed_serve`` command."""
-import time
-
 import click
 
 from planemo import io
@@ -8,6 +6,7 @@ from planemo import options
 from planemo import shed
 from planemo.cli import command_function
 from planemo.galaxy import shed_serve
+from planemo.galaxy.serve import sleep_for_serve
 
 
 @click.command("shed_serve")
@@ -33,6 +32,5 @@ def cli(ctx, paths, **kwds):
     """
     install_args_list = shed.install_arg_lists(ctx, paths, **kwds)
     with shed_serve(ctx, install_args_list, **kwds) as config:
-        gx_url = "http://localhost:%d/" % config.port
-        io.info("Galaxy running with tools installed at %s" % gx_url)
-        time.sleep(1000000)
+        io.info("Galaxy running with tools installed at %s" % config.galaxy_url)
+        sleep_for_serve()

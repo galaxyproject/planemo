@@ -61,6 +61,7 @@ def import_workflow(path, admin_gi, user_gi, from_path=False):
         return importer.import_workflow(workflow)
     else:
         # TODO: Update bioblend to allow from_path.
+        path = os.path.abspath(path)
         payload = dict(
             from_path=path
         )
