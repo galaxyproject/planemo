@@ -1,4 +1,6 @@
 import os
+import shutil
+import tempfile
 import time
 import uuid
 
@@ -25,6 +27,20 @@ TEST_HISTORY_NAME = "Cool History 42"
 
 
 class ServeTestCase(CliTestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.galaxy_root = tempfile.mkdtemp()
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.galaxy_root)
+
+    def setUp(self):
+        super(ServeTestCase, self).setUp()
+        self._port = network_util.get_free_port()
+        self._pid_file = os.path.join(self._home, "test.pid")
+        self._serve_artifact = os.path.join(TEST_REPOS_DIR, "single_tool", "cat.xml")
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @skip_if_environ("PLANEMO_SKIP_PYTHON2")
@@ -123,12 +139,6 @@ class ServeTestCase(CliTestCase):
         with cli_daemon_galaxy(self._runner, self._pid_file, self._port, serve_cmd):
             assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 1
 
-    def setUp(self):
-        super(ServeTestCase, self).setUp()
-        self._port = network_util.get_free_port()
-        self._pid_file = os.path.join(self._home, "test.pid")
-        self._serve_artifact = os.path.join(TEST_REPOS_DIR, "single_tool", "cat.xml")
-
     @property
     def _user_gi(self):
         admin_gi = api.gi(self._port)
@@ -150,10 +160,10 @@ class ServeTestCase(CliTestCase):
     def _serve_command_list(self, serve_args=[], serve_cmd="serve"):
         test_cmd = [
             serve_cmd,
+            "--galaxy_root", self.galaxy_root,
             "--galaxy_branch", target_galaxy_branch(),
             "--no_dependency_resolution",
-            "--port",
-            str(self._port),
+            "--port", str(self._port),
             self._serve_artifact,
         ]
         test_cmd.extend(serve_args)
