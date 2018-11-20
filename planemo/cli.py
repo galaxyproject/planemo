@@ -200,8 +200,6 @@ def command_function(f):
 
 
 EXCLUSIVE_OPTIONS_LIST = [
-    ("galaxy_root", "galaxy_branch"),
-    ("galaxy_root", "galaxy_source"),
 ]
 
 

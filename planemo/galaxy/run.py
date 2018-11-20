@@ -26,11 +26,6 @@ PRINT_VENV_COMMAND = shell_join(
 )
 
 
-# TODO: Mac-y curl variant of this.
-DOWNLOAD_GALAXY = (
-    "wget https://codeload.github.com/galaxyproject/galaxy/tar.gz/"
-)
-
 CACHED_VIRTUAL_ENV_COMMAND = ("if [ -d .venv ] || [ -f dist-eggs.ini ]; "
                               "then GALAXY_VIRTUAL_ENV=.venv; "
                               "else GALAXY_VIRTUAL_ENV=%s; fi")
@@ -116,6 +111,5 @@ def run_galaxy_command(ctx, command, env, action):
 __all__ = (
     "setup_venv",
     "run_galaxy_command",
-    "DOWNLOAD_GALAXY",
     "setup_common_startup_args",
 )
