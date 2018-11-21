@@ -14,14 +14,14 @@ from planemo.virtualenv import (
 
 # Activate galaxy's virtualenv if present (needed for tests say but not for
 # server because run.sh does this).
-ACTIVATE_COMMAND = '[ -e "$GALAXY_VIRTUAL_ENV" ] && . "$GALAXY_VIRTUAL_ENV"/bin/activate'
+ACTIVATE_COMMAND = 'if [ -e "$GALAXY_VIRTUAL_ENV" ]; then . "$GALAXY_VIRTUAL_ENV"/bin/activate; fi'
 CREATE_COMMAND_TEMPLATE = string.Template(
     'if [ ! -e "$GALAXY_VIRTUAL_ENV" ]; then $create_virtualenv; fi',
 )
 PRINT_VENV_COMMAND = shell_join(
     r'echo "Set \$GALAXY_VIRTUAL_ENV to $GALAXY_VIRTUAL_ENV"',
-    ('if [ -e "$GALAXY_VIRTUAL_ENV" ]; ',
-     'then echo "Virtual environment directory exists."; ',
+    ('if [ -e "$GALAXY_VIRTUAL_ENV" ]; '
+     'then echo "Virtual environment directory exists."; '
      'else echo "Virtual environment directory does not exist."; fi'),
 )
 
