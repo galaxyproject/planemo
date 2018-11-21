@@ -29,7 +29,6 @@ class CmdTestTestCase(CliTestCase):
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
                 "--no_dependency_resolution",
-                "--galaxy_branch", "release_18.01",  # Much better workflow output detection than master for now (pre-release of 18.01)
                 "--extra_tools", random_lines,
                 "--extra_tools", cat,
                 test_artifact,
@@ -49,7 +48,6 @@ class CmdTestTestCase(CliTestCase):
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
                 "--no_dependency_resolution",
-                "--galaxy_branch", "release_18.01",  # Much better workflow output detection than master for now (pre-release of 18.01)
                 "--extra_tools", cat,
                 test_artifact,
             ]
@@ -72,7 +70,6 @@ class CmdTestTestCase(CliTestCase):
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
                 "--no_dependency_resolution",
-                "--galaxy_branch", "release_18.01",  # Much better workflow output detection than master for now (pre-release of 18.01)
                 test_artifact,
             ]
             # try:
@@ -95,7 +92,6 @@ class CmdTestTestCase(CliTestCase):
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
                 "--no_dependency_resolution",
-                "--galaxy_branch", "release_18.01",  # Much better workflow output detection than master for now (pre-release of 18.01)
                 "--extra_tools", cat_list,
                 test_artifact,
             ]
