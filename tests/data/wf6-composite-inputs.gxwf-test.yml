@@ -1,0 +1,11 @@
+- doc: Test Composite Inputs
+  job:
+    input1:
+      class: File
+      filetype: imzml
+      composite_data:
+        - Example_Continuous.imzML
+        - Example_Continuous.ibd
+  outputs:
+    wf_output_1:
+      file: Example_Continuous.imzML
