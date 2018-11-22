@@ -177,7 +177,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):
     return run_response
 
 
-def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
+def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):  # noqa C901
     files_attached = [False]
 
     def upload_func(upload_target):
@@ -198,10 +198,11 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
                 history_id,
                 file_type=upload_target.properties.get('filetype', None) or "auto",
             )
-            name = os.path.basename(file_path)
+            name = _file_path_to_name(file_path)
             upload_payload["inputs"]["files_0|auto_decompress"] = False
             upload_payload["inputs"]["auto_decompress"] = False
-            _attach_file(upload_payload, file_path)
+            if file_path is not None:
+                _attach_file(upload_payload, file_path)
             upload_payload["inputs"]["files_0|NAME"] = name
             if upload_target.secondary_files:
                 _attach_file(upload_payload, upload_target.secondary_files, index=1)
@@ -209,6 +210,14 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
                 upload_payload["inputs"]["files_1|auto_decompress"] = True
                 upload_payload["inputs"]["file_count"] = "2"
                 upload_payload["inputs"]["force_composite"] = "True"
+            # galaxy.exceptions.RequestParameterInvalidException: Not input source type
+            # defined for input '{'class': 'File', 'filetype': 'imzml', 'composite_data':
+            # ['Example_Continuous.imzML', 'Example_Continuous.ibd']}'.\n"}]]
+
+            if upload_target.composite_data:
+                for i, composite_data in enumerate(upload_target.composite_data):
+                    upload_payload["inputs"]["files_%s|type" % i] = "upload_dataset"
+                    _attach_file(upload_payload, composite_data, index=i)
 
             ctx.vlog("upload_payload is %s" % upload_payload)
             return user_gi.tools._post(upload_payload, files_attached=files_attached[0])
@@ -285,6 +294,14 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
         raise Exception(msg)
 
     return job_dict, datasets
+
+
+def _file_path_to_name(file_path):
+    if file_path is not None:
+        name = os.path.basename(file_path)
+    else:
+        name = "defaultname"
+    return name
 
 
 class GalaxyBaseRunResponse(SuccessfulRunResponse):
@@ -372,20 +389,10 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                 ctx.vlog("Workflow output identified without an ID (label), skipping")
                 continue
             output_dict_value = None
-            if self._runnable.type in [RunnableType.cwl_workflow, RunnableType.cwl_tool]:
-                galaxy_output = self.to_galaxy_output(runnable_output)
-                cwl_output = output_to_cwl_json(
-                    galaxy_output,
-                    self._get_metadata,
-                    get_dataset,
-                    self._get_extra_files,
-                    pseduo_location=True,
-                )
-                output_dict_value = cwl_output
-            else:
-                # TODO: deprecate this route for finding workflow outputs,
-                # it is a brittle and bad approach...
-                output_dataset_id = self.output_dataset_id(runnable_output)
+            is_cwl = self._runnable.type in [RunnableType.cwl_workflow, RunnableType.cwl_tool]
+            output_src = self.output_src(runnable_output)
+            if not is_cwl and output_src["src"] == "hda":
+                output_dataset_id = output_src["id"]
                 dataset = self._get_metadata("dataset", output_dataset_id)
                 dataset_dict = get_dataset(dataset)
                 ctx.vlog("populated destination [%s]" % dataset_dict["path"])
@@ -395,6 +402,16 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                         output_dict_value = json.load(f)
                 else:
                     output_dict_value = output_properties(**dataset_dict)
+            else:
+                galaxy_output = self.to_galaxy_output(runnable_output)
+                cwl_output = output_to_cwl_json(
+                    galaxy_output,
+                    self._get_metadata,
+                    get_dataset,
+                    self._get_extra_files,
+                    pseduo_location=True,
+                )
+                output_dict_value = cwl_output
 
             outputs_dict[output_id] = output_dict_value
 
@@ -476,22 +493,25 @@ class GalaxyToolRunResponse(GalaxyBaseRunResponse):
         # TODO: Make this more rigorous - search both output and output
         # collections - throw an exception if not found in either place instead
         # of just assuming all non-datasets are collections.
-        return self.output_dataset_id(output) is None
+        return self.output_src(output)["src"] == "hdca"
 
     def to_galaxy_output(self, runnable_output):
         output_id = runnable_output.get_id()
         return tool_response_to_output(self.api_run_response, self._history_id, output_id)
 
-    def output_dataset_id(self, output):
+    def output_src(self, output):
         outputs = self.api_run_response["outputs"]
+        output_collections = self.api_run_response["output_collections"]
         output_id = output.get_id()
-        output_dataset_id = None
+        output_src = None
         self._ctx.vlog("Looking for id [%s] in outputs [%s]" % (output_id, outputs))
         for output in outputs:
             if output["output_name"] == output_id:
-                output_dataset_id = output["id"]
-
-        return output_dataset_id
+                output_src = {"src": "hda", "id": output["id"]}
+        for output_collection in output_collections:
+            if output_collection["output_name"] == output_id:
+                output_src = {"src": "hdca", "id": output_collection["id"]}
+        return output_src
 
 
 class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
@@ -521,35 +541,17 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         self._ctx.vlog("checking for output in invocation [%s]" % self._invocation)
         return invocation_to_output(self._invocation, self._history_id, output_id)
 
-    def output_dataset_id(self, output):
+    def output_src(self, output):
         invocation = self._invocation
-        if "outputs" in invocation:
-            # Use newer workflow outputs API.
+        # Use newer workflow outputs API.
 
-            output_name = output.get_id()
-            if output_name in invocation["outputs"]:
-                return invocation["outputs"][output.get_id()]["id"]
-            else:
-                raise Exception("Failed to find output [%s] in invocation outputs [%s]" % (output_name, invocation["outputs"]))
+        output_name = output.get_id()
+        if output_name in invocation["outputs"]:
+            return invocation["outputs"][output.get_id()]
+        elif output_name in invocation["output_collections"]:
+            return invocation["output_collections"][output.get_id()]
         else:
-            # Assume the output knows its order_index and such - older line of
-            # development not worth persuing.
-            workflow_output = output.workflow_output
-            order_index = workflow_output.order_index
-
-            invocation_steps = invocation["steps"]
-            output_steps = [s for s in invocation_steps if s["order_index"] == order_index]
-            assert len(output_steps) == 1, "More than one step matching outputs, behavior undefined."
-            output_step = output_steps[0]
-            job_id = output_step["job_id"]
-            assert job_id, "Output doesn't define a job_id, behavior undefined."
-            job_info = self._user_gi.jobs.show_job(job_id, full_details=True)
-            job_outputs = job_info["outputs"]
-            output_name = workflow_output.output_name
-            assert output_name in job_outputs, "No output [%s] found for output job."
-            job_output = job_outputs[output_name]
-            assert "id" in job_output, "Job output [%s] does not contain 'id'." % job_output
-            return job_output["id"]
+            raise Exception("Failed to find output [%s] in invocation outputs [%s]" % (output_name, invocation["outputs"]))
 
     @property
     def _invocation(self):

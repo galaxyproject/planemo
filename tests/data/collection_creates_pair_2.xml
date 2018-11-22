@@ -1,0 +1,15 @@
+<tool id="collection_creates_pair_2" name="collection_creates_pair_2" version="0.1.0">
+  <command>
+    tail -n 1 '$input1' > $forward ;
+    head -n 1 '$input1' > "reverse.txt";
+  </command>
+  <inputs>
+    <param name="input1" type="data" label="Input" help="Input to be split." />
+  </inputs>
+  <outputs>
+    <collection name="paired_output" type="paired" label="Head/Tail Pair">
+      <data name="forward" format="txt" />
+      <data name="reverse" format="txt" />
+    </collection>
+  </outputs>
+</tool>

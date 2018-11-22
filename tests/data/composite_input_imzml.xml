@@ -1,0 +1,19 @@
+<tool id="composite_input_imzml" name="composite_input_imzml" version="1.0.0">
+  <command>cat '$input1.extra_files_path/imzml' > '$output1'</command>
+  <inputs>
+    <param name="input1" type="data" format="imzml"/>
+  </inputs>
+  <outputs>
+    <data format="txt" name="output1" label="cool output">
+    </data>
+  </outputs>
+  <tests>
+    <test>
+      <param name="input1" value="" ftype="imzml" >
+        <composite_data value="Example_Continuous.imzML"/>
+        <composite_data value="Example_Continuous.ibd"/>
+      </param>
+      <output name="output1" file="Example_Continuous.imzML" />
+    </test>
+  </tests>
+</tool>
