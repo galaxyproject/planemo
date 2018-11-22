@@ -96,7 +96,8 @@ REPO_TYPE_SUITE = "repository_suite_definition"
 
 # TODO: sync this with tool shed impl someday
 VALID_REPOSITORYNAME_RE = re.compile(r"^[a-z0-9\_]+$")
-VALID_PUBLICNAME_RE = re.compile(r"^[a-z0-9\-]+$")
+VALID_PUBLICNAME_RE = re.compile(r"^[a-z0-9._\-]+$")
+
 
 # Generate with python scripts/categories.py
 CURRENT_CATEGORIES = [
@@ -1392,7 +1393,7 @@ def validate_repo_owner(owner):
         )
     if not(VALID_PUBLICNAME_RE.match(owner)):
         msg = _build_error(
-            "Owner must contain only lower-case letters, numbers and '-'"
+            "Owner must contain only lower-case letters, numbers, dots, underscores, and '-'"
         )
     return msg
 
