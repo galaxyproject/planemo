@@ -41,7 +41,7 @@ def _serve(ctx, runnables, **kwds):
 
     with galaxy_config(ctx, runnables, **kwds) as config:
         cmd = config.startup_command(ctx, **kwds)
-        action = "Starting galaxy"
+        action = "Starting Galaxy"
         exit_code = run_galaxy_command(
             ctx,
             cmd,

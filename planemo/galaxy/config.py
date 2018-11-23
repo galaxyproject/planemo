@@ -367,7 +367,12 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             _build_eggs_cache(ctx, install_env, kwds)
             _install_galaxy(ctx, galaxy_root, install_env, kwds)
 
-        server_name = "planemo%d" % random.randint(0, 100000)
+        if parse_version(kwds.get('galaxy_python_version') or DEFAULT_PYTHON_VERSION) >= parse_version('3'):
+            # on python 3 we use gunicorn,
+            # which requires 'main' as server name
+            server_name = 'main'
+        else:
+            server_name = "planemo%d" % random.randint(0, 100000)
         # Once we don't have to support earlier than 18.01 - try putting these files
         # somewhere better than with Galaxy.
         log_file = "%s.log" % server_name
@@ -407,10 +412,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         )
         _ensure_directory(shed_tool_path)
         port = _get_port(kwds)
-        if parse_version(kwds.get('galaxy_python_version') or DEFAULT_PYTHON_VERSION) >= parse_version('3'):
-            # on python 3 we use gunicorn,
-            # which requires 'main' as server name
-            server_name = 'main'
         template_args = dict(
             port=port,
             host=kwds.get("host", "127.0.0.1"),
