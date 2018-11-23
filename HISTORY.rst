@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.57.1.dev0
+0.57.1 (2018-11-23)
 ---------------------
 
 * Fix username validation for shed linting (thanks to `@martenson`_).
