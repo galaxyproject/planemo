@@ -6,10 +6,11 @@ History
 .. to_doc
 
 ---------------------
-0.58.0.dev0
+0.57.1.dev0
 ---------------------
 
-    
+* Fix username validation for shed linting (thanks to `@martenson`_).
+  `Pull Request 899`_, `Issue 898`_
 
 ---------------------
 0.57.0 (2018-11-19)
@@ -1415,6 +1416,8 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Issue 898: https://github.com/galaxyproject/planemo/issues/898
+.. _Pull Request 899: https://github.com/galaxyproject/planemo/pull/899
 .. _Pull Request 896: https://github.com/galaxyproject/planemo/pull/896
 .. _Pull Request 894: https://github.com/galaxyproject/planemo/pull/894
 .. _Pull Request 876: https://github.com/galaxyproject/planemo/pull/876
