@@ -968,6 +968,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         return shell_join(
             cd_to_galaxy_command,
             setup_venv_command,
+            setup_common_startup_args(),
             run_script,
         )
 

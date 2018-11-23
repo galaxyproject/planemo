@@ -53,8 +53,7 @@ class ServeTestCase(CliTestCase):
     @skip_unless_executable("python3")
     def test_serve_python3(self):
         extra_args = [
-            "--galaxy_python_version", "3",
-            "--galaxy_branch", "release_18.09"]
+            "--galaxy_python_version", "3"]
         self._launch_thread_and_wait(self._run, extra_args)
         # Check that the client was correctly built
         url = "http://localhost:%d/static/scripts/libs/require.js" % int(self._port)
@@ -96,7 +95,10 @@ class ServeTestCase(CliTestCase):
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch
     def test_shed_serve(self):
-        extra_args = ["--daemon", "--pid_file", self._pid_file, "--shed_target", "toolshed"]
+        extra_args = [
+            "--daemon",
+            "--pid_file", self._pid_file,
+            "--shed_target", "toolshed"]
         fastqc_path = os.path.join(TEST_REPOS_DIR, "fastqc")
         self._serve_artifact = fastqc_path
         self._launch_thread_and_wait(self._run_shed, extra_args)
