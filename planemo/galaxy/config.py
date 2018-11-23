@@ -960,7 +960,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
             # We need to start under gunicorn
             self.env['APP_WEBSERVER'] = 'gunicorn'
             self.env['GUNICORN_CMD_ARGS'] = "--bind={host}:{port} --name={server_name}".format(
-                host=kwds['host'],
+                host=kwds.get('host', '127.0.0.1'),
                 port=kwds['port'],
                 server_name=self.server_name,
             )
