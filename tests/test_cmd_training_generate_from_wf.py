@@ -14,8 +14,6 @@ def create_tutorial_dir(topic_n, tuto_n):
     topic_dir = os.path.join("topics", topic_n)
     tuto_dir = os.path.join(topic_dir, "tutorials", tuto_n)
     metadata_path = os.path.join(topic_dir, "metadata.yaml")
-    if not os.path.isdir(topic_dir):
-        os.makedirs(topic_dir)
     if not os.path.isdir(tuto_dir):
         os.makedirs(tuto_dir)
     if not os.path.exists(metadata_path):

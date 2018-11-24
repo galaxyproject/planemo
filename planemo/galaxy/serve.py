@@ -5,8 +5,10 @@ import contextlib
 import os
 import time
 
-from planemo import io
-from planemo import network_util
+from planemo import (
+    io,
+    network_util
+)
 from .config import galaxy_config
 from .ephemeris_sleep import sleep
 from .run import (
@@ -39,7 +41,7 @@ def _serve(ctx, runnables, **kwds):
 
     with galaxy_config(ctx, runnables, **kwds) as config:
         cmd = config.startup_command(ctx, **kwds)
-        action = "Starting galaxy"
+        action = "Starting Galaxy"
         exit_code = run_galaxy_command(
             ctx,
             cmd,

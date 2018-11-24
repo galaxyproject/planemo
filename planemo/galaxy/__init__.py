@@ -7,8 +7,10 @@ from .run import (
     run_galaxy_command,
     setup_venv,
 )
-from .serve import serve as galaxy_serve
-from .serve import shed_serve
+from .serve import (
+    serve as galaxy_serve,
+    shed_serve
+)
 
 __all__ = (
     "galaxy_config",

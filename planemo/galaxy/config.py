@@ -45,7 +45,6 @@ from .distro_tools import (
     DISTRO_TOOLS_ID_TO_PATH
 )
 from .run import (
-    DOWNLOAD_GALAXY,
     setup_common_startup_args,
     setup_venv,
 )
@@ -186,11 +185,18 @@ DEFAULT_GALAXY_BRANCH = "master"
 DEFAULT_GALAXY_SOURCE = "https://github.com/galaxyproject/galaxy"
 CWL_GALAXY_SOURCE = "https://github.com/common-workflow-language/galaxy"
 
+# TODO: Mac-y curl variant of this.
+DOWNLOAD_GALAXY = (
+    "wget -q https://codeload.github.com/galaxyproject/galaxy/tar.gz/"
+)
+
 DOWNLOADS_URL = ("https://raw.githubusercontent.com/"
                  "jmchilton/galaxy-downloads/master/")
 DOWNLOADABLE_MIGRATION_VERSIONS = [141, 127, 120, 117]
 MIGRATION_PER_VERSION = {
-    "master": 141,
+    "dev": 145,
+    "master": 142,
+    "18.09": 142,
     "18.05": 141,
     "18.01": 140,
     "17.09": 135,
@@ -203,10 +209,6 @@ DATABASE_LOCATION_TEMPLATE = "sqlite:///%s?isolation_level=IMMEDIATE"
 
 COMMAND_STARTUP_COMMAND = "./scripts/common_startup.sh ${COMMON_STARTUP_ARGS}"
 
-FAILED_TO_FIND_GALAXY_EXCEPTION = (
-    "Failed to find Galaxy root directory - please explicitly specify one "
-    "with --galaxy_root."
-)
 CLEANUP_IGNORE_ERRORS = True
 DEFAULT_GALAXY_BRAND = 'Configured by Planemo'
 
@@ -337,8 +339,13 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         test_data_dir=test_data_dir,
         **kwds
     )
-    galaxy_root = _check_galaxy(ctx, **kwds)
-    install_galaxy = galaxy_root is None
+    galaxy_root = _find_galaxy_root(ctx, **kwds)
+    install_galaxy = kwds.get("install_galaxy", False)
+    if galaxy_root is not None:
+        if os.path.isdir(galaxy_root) and not os.listdir(galaxy_root):
+            os.rmdir(galaxy_root)
+        if os.path.isdir(galaxy_root) and install_galaxy:
+            raise Exception("%s is an existing non-empty directory, cannot install Galaxy again" % galaxy_root)
 
     # Duplicate block in docker variant above.
     if kwds.get("mulled_containers", False) and not kwds.get("docker", False):
@@ -351,15 +358,21 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         def config_join(*args):
             return os.path.join(config_directory, *args)
 
-        install_env = {
-            'GALAXY_SKIP_CLIENT_BUILD': '1',
-        }
-        if install_galaxy:
-            _build_eggs_cache(ctx, install_env, kwds)
-            _install_galaxy(ctx, config_directory, install_env, kwds)
+        install_env = {}
+        if kwds.get('galaxy_skip_client_build', True):
+            install_env['GALAXY_SKIP_CLIENT_BUILD'] = '1'
+        if galaxy_root is None:
             galaxy_root = config_join("galaxy-dev")
+        if not os.path.isdir(galaxy_root):
+            _build_eggs_cache(ctx, install_env, kwds)
+            _install_galaxy(ctx, galaxy_root, install_env, kwds)
 
-        server_name = "planemo%d" % random.randint(0, 100000)
+        if parse_version(kwds.get('galaxy_python_version') or DEFAULT_PYTHON_VERSION) >= parse_version('3'):
+            # on python 3 we use gunicorn,
+            # which requires 'main' as server name
+            server_name = 'main'
+        else:
+            server_name = "planemo%d" % random.randint(0, 100000)
         # Once we don't have to support earlier than 18.01 - try putting these files
         # somewhere better than with Galaxy.
         log_file = "%s.log" % server_name
@@ -399,10 +412,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         )
         _ensure_directory(shed_tool_path)
         port = _get_port(kwds)
-        if parse_version(kwds.get('galaxy_python_version') or DEFAULT_PYTHON_VERSION) >= parse_version('3'):
-            # on python 3 we use gunicorn,
-            # which requires 'main' as server name
-            server_name = 'main'
         template_args = dict(
             port=port,
             host=kwds.get("host", "127.0.0.1"),
@@ -484,7 +493,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         env["GALAXY_TEST_UPLOAD_ASYNC"] = "false"
         env["GALAXY_TEST_LOGGING_CONFIG"] = config_join("logging.ini")
         env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
-        env["GALAXY_SKIP_CLIENT_BUILD"] = "1"
         # Following are needed in 18.01 to prevent Galaxy from changing log and pid.
         # https://github.com/galaxyproject/planemo/issues/788
         env["GALAXY_LOG"] = log_file
@@ -934,7 +942,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
     def startup_command(self, ctx, **kwds):
         """Return a shell command used to startup this instance.
 
-        Among other common planmo kwds, this should respect the
+        Among other common planemo kwds, this should respect the
         ``daemon`` keyword.
         """
         daemon = kwds.get("daemon", False)
@@ -952,7 +960,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
             # We need to start under gunicorn
             self.env['APP_WEBSERVER'] = 'gunicorn'
             self.env['GUNICORN_CMD_ARGS'] = "--bind={host}:{port} --name={server_name}".format(
-                host=kwds['host'],
+                host=kwds.get('host', '127.0.0.1'),
                 port=kwds['port'],
                 server_name=self.server_name,
             )
@@ -960,6 +968,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         return shell_join(
             cd_to_galaxy_command,
             setup_venv_command,
+            setup_common_startup_args(),
             run_script,
         )
 
@@ -1075,19 +1084,6 @@ def _file_name_to_migration_version(name):
         return -1
 
 
-def _check_galaxy(ctx, **kwds):
-    """Find specified Galaxy root or ``None``.
-
-    Return value of ``None`` indicates it should be installed automatically
-    by planemo.
-    """
-    install_galaxy = kwds.get("install_galaxy", None)
-    galaxy_root = None
-    if not install_galaxy:
-        galaxy_root = _find_galaxy_root(ctx, **kwds)
-    return galaxy_root
-
-
 def _find_galaxy_root(ctx, **kwds):
     root_prop = "galaxy_root"
     cwl = kwds.get("cwl", False)
@@ -1182,37 +1178,26 @@ def _tool_conf_entry_for(tool_paths):
     return tool_definitions
 
 
-def _shed_tool_conf(install_galaxy, config_directory):
-    # TODO: There is probably a reason this is split up like this but I have
-    # no clue why I did it and not documented on the commit message.
-    if install_galaxy:
-        config_dir = os.path.join(config_directory, "galaxy-dev", "config")
-    else:
-        config_dir = config_directory
-    return os.path.join(config_dir, "shed_tool_conf.xml")
-
-
-def _install_galaxy(ctx, config_directory, env, kwds):
+def _install_galaxy(ctx, galaxy_root, env, kwds):
     if not kwds.get("no_cache_galaxy", False):
-        _install_galaxy_via_git(ctx, config_directory, env, kwds)
+        _install_galaxy_via_git(ctx, galaxy_root, env, kwds)
     else:
-        _install_galaxy_via_download(ctx, config_directory, env, kwds)
+        _install_galaxy_via_download(ctx, galaxy_root, env, kwds)
 
 
-def _install_galaxy_via_download(ctx, config_directory, env, kwds):
+def _install_galaxy_via_download(ctx, galaxy_root, env, kwds):
+    tmpdir = mkdtemp()
     branch = _galaxy_branch(kwds)
-    tar_cmd = "tar -zxvf %s" % branch
-    command = DOWNLOAD_GALAXY + "%s; %s | tail" % (branch, tar_cmd)
-    if branch != "dev":
-        command = command + "; ln -s galaxy-%s galaxy-dev" % (branch)
-    _install_with_command(ctx, config_directory, command, env, kwds)
+    command = DOWNLOAD_GALAXY + "%s -O - | tar -C '%s' -xvz | tail && mv '%s' '%s'" % \
+        (branch, tmpdir, os.path.join(tmpdir, 'galaxy-' + branch), galaxy_root)
+    _install_with_command(ctx, command, galaxy_root, env, kwds)
 
 
-def _install_galaxy_via_git(ctx, config_directory, env, kwds):
+def _install_galaxy_via_git(ctx, galaxy_root, env, kwds):
     gx_repo = _ensure_galaxy_repository_available(ctx, kwds)
     branch = _galaxy_branch(kwds)
-    command = git.command_clone(ctx, gx_repo, "galaxy-dev", branch=branch)
-    _install_with_command(ctx, config_directory, command, env, kwds)
+    command = git.command_clone(ctx, gx_repo, galaxy_root, branch=branch)
+    _install_with_command(ctx, command, galaxy_root, env, kwds)
 
 
 def _build_eggs_cache(ctx, env, kwds):
@@ -1247,13 +1232,12 @@ def _galaxy_source(kwds):
     return source
 
 
-def _install_with_command(ctx, config_directory, command, env, kwds):
+def _install_with_command(ctx, command, galaxy_root, env, kwds):
     setup_venv_command = setup_venv(ctx, kwds)
     env['__PYVENV_LAUNCHER__'] = ''
     install_cmd = shell_join(
-        ['cd', config_directory],
         command,
-        ['cd', 'galaxy-dev'],
+        ['cd', galaxy_root],
         setup_venv_command,
         setup_common_startup_args(),
         COMMAND_STARTUP_COMMAND,
@@ -1273,7 +1257,10 @@ def _ensure_galaxy_repository_available(ctx, kwds):
     if cwl:
         gx_repo += "_cwl"
     if os.path.exists(gx_repo):
-        # Attempt fetch - but don't fail if not interweb, etc...
+        # Convert the git repository from bare to mirror, if needed
+        shell(['git', '--git-dir', gx_repo, 'config', 'remote.origin.fetch', '+refs/*:refs/*'])
+        shell(['git', '--git-dir', gx_repo, 'config', 'remote.origin.mirror', 'true'])
+        # Attempt remote update - but don't fail if not interweb, etc...
         shell("git --git-dir %s remote update >/dev/null 2>&1" % gx_repo)
     else:
         remote_repo = _galaxy_source(kwds)

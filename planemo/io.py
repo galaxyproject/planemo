@@ -84,8 +84,8 @@ def warn(message, *args):
 
 
 def shell_join(*args):
-    """Join potentially empty commands together with ;."""
-    return "; ".join(args_to_str(_) for _ in args if _)
+    """Join potentially empty commands together with '&&'."""
+    return " && ".join(args_to_str(_) for _ in args if _)
 
 
 def write_file(path, content, force=True):
