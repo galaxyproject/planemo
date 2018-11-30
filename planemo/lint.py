@@ -124,8 +124,8 @@ def lint_urls(root, lint_ctx):
     """Find referenced URLs and verify they are valid."""
     urls, docs = find_urls_for_xml(root)
 
-    # This is from Google Chome 53.0.2785.143, current at time of writing:
-    BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36"
+    # This is from Google Chome on macOS, current at time of writing:
+    BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.75 Safari/537.36"
 
     def validate_url(url, lint_ctx, user_agent=None):
         is_valid = True

@@ -24,9 +24,8 @@
     <help>
 These should work:
 
-http://example.com
-https://example.com
-ftp://ftp.ebi.ac.uk/
+http://example.org/
+https://example.org/
 
 And these should not be fetched (or will throw an error if they are):
 
