@@ -36,7 +36,7 @@ def run_engine_option():
         type=click.Choice(["galaxy", "docker_galaxy", "cwltool", "toil", "external_galaxy"]),
         default=None,
         use_global_config=True,
-        help=("Select an engine to run or test aritfacts such as tools "
+        help=("Select an engine to run or test artifacts such as tools "
               "and workflows. Defaults to a local Galaxy, but running Galaxy within "
               "a Docker container or the CWL reference implementation 'cwltool' and "
               "'toil' be selected.")
@@ -59,7 +59,7 @@ def serve_engine_option():
         default="galaxy",
         use_global_config=True,
         use_env_var=True,
-        help=("Select an engine to serve aritfacts such as tools "
+        help=("Select an engine to serve artifacts such as tools "
               "and workflows. Defaults to a local Galaxy, but running Galaxy within "
               "a Docker container.")
     )

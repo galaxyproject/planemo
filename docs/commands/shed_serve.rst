@@ -47,6 +47,8 @@ logged into and explored interactively.
                                       mappings defined ~/.planemo.yml.
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
+      --galaxy_python_version [2|2.7|3|3.3|3.4|3.5|3.6|3.7]
+                                      Python version to start Galaxy under
       --galaxy_database_seed PATH     Preseeded Galaxy sqlite database to target.
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be

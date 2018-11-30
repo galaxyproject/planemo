@@ -52,11 +52,11 @@ clean-test: ## remove test and coverage artifacts
 install: ## install into Python envirnoment
 	python setup.py install && cd cwl-runner && python setup.py install
 
-setup-venv: ## setup a development virutalenv in current directory
+setup-venv: ## setup a development virtualenv in current directory
 	if [ ! -d $(VENV) ]; then virtualenv $(VENV); exit; fi;
 	$(IN_VENV) pip install --upgrade pip && pip install -r dev-requirements.txt -r requirements.txt
 
-setup-venv3: ## setup a development virutalenv in current directory
+setup-venv3: ## setup a development virtualenv in current directory
 	if [ ! -d $(VENV3) ]; then virtualenv -p python3 $(VENV3); exit; fi;
 	$(IN_VENV3) pip install --upgrade pip && pip install -r dev-requirements.txt -r requirements.txt
 
@@ -144,7 +144,7 @@ release-test-artifacts: dist
 	$(IN_VENV) twine upload -r test dist/*
 	$(OPEN_RESOURCE) https://testpypi.python.org/pypi/$(PROJECT_NAME)
 
-release-aritfacts: release-test-artifacts ## Package and Upload to PyPi
+release-artifacts: release-test-artifacts ## Package and Upload to PyPi
 	@while [ -z "$$CONTINUE" ]; do \
 		read -r -p "Have you executed release-test and reviewed results? [y/N]: " CONTINUE; \
 	done ; \
@@ -158,7 +158,7 @@ commit-version: ## Update version and history, commit.
 new-version: ## Mint a new version
 	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/new_version.py $(SOURCE_DIR) $(VERSION)
 
-release-local: commit-version release-aritfacts new-version
+release-local: commit-version release-artifacts new-version
 
 release-brew: ## Mint a new homebrew release
 	bash $(BUILD_SCRIPTS_DIR)/update_planemo_recipe.bash $(VERSION)

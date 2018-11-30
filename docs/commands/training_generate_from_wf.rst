@@ -28,6 +28,8 @@ Create tutorial skeleton from workflow.
       --workflow_id TEXT              ID of the workflow on the Galaxy instance
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
+      --galaxy_python_version [2|2.7|3|3.3|3.4|3.5|3.6|3.7]
+                                      Python version to start Galaxy under
       --galaxy_database_seed PATH     Preseeded Galaxy sqlite database to target.
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be
@@ -76,7 +78,7 @@ Create tutorial skeleton from workflow.
                                       Galaxy to all ports including potentially
                                       publicly accessible ones.
       --engine [galaxy|docker_galaxy|external_galaxy]
-                                      Select an engine to serve aritfacts such as
+                                      Select an engine to serve artifacts such as
                                       tools and workflows. Defaults to a local
                                       Galaxy, but running Galaxy within a Docker
                                       container.

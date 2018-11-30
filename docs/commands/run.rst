@@ -23,6 +23,8 @@ Planemo command for running tools and jobs.
 
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
+      --galaxy_python_version [2|2.7|3|3.3|3.4|3.5|3.6|3.7]
+                                      Python version to start Galaxy under
       --galaxy_database_seed PATH     Preseeded Galaxy sqlite database to target.
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be
@@ -151,7 +153,7 @@ Planemo command for running tools and jobs.
       --output_json PATH              Where to store JSON dictionary describing
                                       outputs of a 'run' task.
       --engine [galaxy|docker_galaxy|cwltool|toil|external_galaxy]
-                                      Select an engine to run or test aritfacts such
+                                      Select an engine to run or test artifacts such
                                       as tools and workflows. Defaults to a local
                                       Galaxy, but running Galaxy within a Docker
                                       container or the CWL reference implementation

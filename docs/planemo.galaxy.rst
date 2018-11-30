@@ -43,6 +43,14 @@ planemo.galaxy.distro\_tools module
     :undoc-members:
     :show-inheritance:
 
+planemo.galaxy.ephemeris\_sleep module
+--------------------------------------
+
+.. automodule:: planemo.galaxy.ephemeris_sleep
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 planemo.galaxy.profiles module
 ------------------------------
 

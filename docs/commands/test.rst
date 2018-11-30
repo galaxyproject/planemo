@@ -47,8 +47,16 @@ please careful and do not try this against production Galaxy instances.
                                       tests failed so this file must have been
                                       produced with the same set of tool ids
                                       previously.
+      --polling_backoff INTEGER       Poll resources with an increasing interval
+                                      between requests. Useful when testing against
+                                      remote and/or production instances to limit
+                                      generated traffic.
+      --history_name TEXT             Name for history (if a history is generated as
+                                      part of testing.)
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
+      --galaxy_python_version [2|2.7|3|3.3|3.4|3.5|3.6|3.7]
+                                      Python version to start Galaxy under
       --galaxy_database_seed PATH     Preseeded Galaxy sqlite database to target.
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be
@@ -182,7 +190,7 @@ please careful and do not try this against production Galaxy instances.
                                       output (see output reports for more complete
                                       summary). Set to 'none' to disable completely.
       --engine [galaxy|docker_galaxy|cwltool|toil|external_galaxy]
-                                      Select an engine to run or test aritfacts such
+                                      Select an engine to run or test artifacts such
                                       as tools and workflows. Defaults to a local
                                       Galaxy, but running Galaxy within a Docker
                                       container or the CWL reference implementation

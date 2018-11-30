@@ -23,7 +23,6 @@ Build training template from workflow.
       --topic_summary TEXT            Summary of the topic
       --topic_target [use|admin-dev|instructors]
                                       Target audience for the topic
-      --templates PATH                Directory with the training templates
       --tutorial_name TEXT            Name (directory name) of the tutorial to
                                       create or to modify
       --tutorial_title TEXT           Title of the tutorial
@@ -39,6 +38,8 @@ Build training template from workflow.
                                       Zenodo extension and Galaxy datatypes
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
+      --galaxy_python_version [2|2.7|3|3.3|3.4|3.5|3.6|3.7]
+                                      Python version to start Galaxy under
       --galaxy_database_seed PATH     Preseeded Galaxy sqlite database to target.
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be
@@ -87,7 +88,7 @@ Build training template from workflow.
                                       Galaxy to all ports including potentially
                                       publicly accessible ones.
       --engine [galaxy|docker_galaxy|external_galaxy]
-                                      Select an engine to serve aritfacts such as
+                                      Select an engine to serve artifacts such as
                                       tools and workflows. Defaults to a local
                                       Galaxy, but running Galaxy within a Docker
                                       container.

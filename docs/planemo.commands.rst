@@ -484,6 +484,14 @@ planemo.commands.cmd\_workflow\_convert module
     :undoc-members:
     :show-inheritance:
 
+planemo.commands.cmd\_workflow\_edit module
+-------------------------------------------
+
+.. automodule:: planemo.commands.cmd_workflow_edit
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
