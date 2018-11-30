@@ -9,7 +9,11 @@ History
 0.58.0.dev0
 ---------------------
 
-    
+* Remove deprecated ``sudo: false`` from .travis.yml (thanks to `@nsoranzo`_).
+  `Pull Request 902`_
+* Do not skip Galaxy client build for ``planemo serve``. Install Galaxy when the
+  directory specified with ``--galaxy_root`` does not exist or is empty. (thanks
+  to `@nsoranzo`_). `Pull Request 895`_, `Issue 845`_
 
 ---------------------
 0.57.1 (2018-11-23)
@@ -1422,6 +1426,9 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 902: https://github.com/galaxyproject/planemo/pull/902
+.. _Pull Request 895: https://github.com/galaxyproject/planemo/pull/895
+.. _Issue 845: https://github.com/galaxyproject/planemo/issues/845
 .. _Issue 898: https://github.com/galaxyproject/planemo/issues/898
 .. _Pull Request 899: https://github.com/galaxyproject/planemo/pull/899
 .. _Pull Request 896: https://github.com/galaxyproject/planemo/pull/896
