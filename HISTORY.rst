@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.58.0.dev0
+0.58.0 (2019-01-01)
 ---------------------
 
 * Remove deprecated ``sudo: false`` from .travis.yml (thanks to `@nsoranzo`_).
