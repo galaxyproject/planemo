@@ -109,7 +109,7 @@ var TestResult = function(index, data) {
 	if(testMethod.indexOf(".test_tool_") > -1) {
 		splitParts = testMethod.split(".test_tool_");
 	} else {
-		splitParts = rSplit(testMethod, "_", 1);
+		splitParts = rSplit(testMethod, "-", 1);
 	}
 	var toolName = splitParts[0];
 	var testIndex;
