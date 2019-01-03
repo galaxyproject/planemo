@@ -75,9 +75,9 @@ def run_in_config(ctx, config, run=run_galaxy_command, **kwds):
     setup_common_startup_args = ""
     if kwds.get("skip_venv", False):
         setup_common_startup_args = shell_join(
-            'COMMON_STARTUP_ARGS=--skip-venv'
-            'export COMMON_STARTUP_ARGS'
-            'echo "Set COMMON_STARTUP_ARGS to ${COMMON_STARTUP_ARGS}"'
+            'COMMON_STARTUP_ARGS=--skip-venv',
+            'export COMMON_STARTUP_ARGS',
+            'echo "Set COMMON_STARTUP_ARGS to ${COMMON_STARTUP_ARGS}"',
         )
     setup_venv_command = setup_venv(ctx, kwds)
     cmd = shell_join(
