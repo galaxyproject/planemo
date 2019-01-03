@@ -6,10 +6,13 @@ History
 .. to_doc
 
 ---------------------
-0.59.0.dev0
+0.58.1 (2019-01-03)
 ---------------------
 
-    
+* Update galaxy-lib requirement to 18.9.2 to add Python 3.7 support (thanks to
+  `@nsoranzo`_). `Pull Request 906`_
+* Fix command run by `planemo test --skip_venv` (thanks to `@nsoranzo`_).
+  `Pull Request 907`_
 
 ---------------------
 0.58.0 (2019-01-01)
@@ -1432,6 +1435,8 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 907: https://github.com/galaxyproject/planemo/pull/907
+.. _Pull Request 906: https://github.com/galaxyproject/planemo/pull/906
 .. _Pull Request 902: https://github.com/galaxyproject/planemo/pull/902
 .. _Pull Request 895: https://github.com/galaxyproject/planemo/pull/895
 .. _Issue 845: https://github.com/galaxyproject/planemo/issues/845
