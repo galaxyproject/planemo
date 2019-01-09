@@ -619,15 +619,15 @@ def _render(kwds, template_str=TOOL_TEMPLATE):
 
 def _replace_file_in_command(command, specified_file, name):
     """ Replace example file with cheetah variable name in supplied command
-    or command template. Be sure to quote the name.
+    or command template. Be sure to single quote the name.
     """
     # TODO: check if the supplied variant was single quoted already.
     if '"%s"' % specified_file in command:
         # Sample command already wrapped filename in double quotes
-        command = command.replace(specified_file, '$%s' % name)
+        command = command.replace('"%s"' % specified_file, "'$%s'" % name)
     elif (" %s " % specified_file) in (" " + command + " "):
         # In case of spaces, best to wrap filename in double quotes
-        command = command.replace(specified_file, '"$%s"' % name)
+        command = command.replace(specified_file, "'$%s'" % name)
     else:
         command = command.replace(specified_file, '$%s' % name)
     return command
