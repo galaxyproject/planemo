@@ -13,7 +13,7 @@ def test_simplest_command():
 def test_example_and_quotes():
     """Test example input/output transition."""
     command_io = _example("convert 1.bed 1.bam", example_outputs=["1.bam"], example_inputs=["1.bed"])
-    assert_equal(command_io.cheetah_template, 'convert "$input1" "$output1"')
+    assert_equal(command_io.cheetah_template, "convert '$input1' '$output1'")
     assert_equal(len(command_io.outputs), 1)
     assert_equal(len(command_io.inputs), 1)
 
@@ -21,7 +21,7 @@ def test_example_and_quotes():
 def test_example_already_quoted():
     """Test example input/output transition."""
     command_io = _example('convert "1.bed" "1.bam"', example_outputs=["1.bam"], example_inputs=["1.bed"])
-    assert_equal(command_io.cheetah_template, 'convert "$input1" "$output1"')
+    assert_equal(command_io.cheetah_template, "convert '$input1' '$output1'")
 
 
 def test_example_already_quoted_single():
