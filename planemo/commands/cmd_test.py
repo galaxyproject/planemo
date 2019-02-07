@@ -79,7 +79,7 @@ def cli(ctx, paths, **kwds):
         kwds["engine"] = "galaxy" if not is_cwl else "cwltool"
 
     engine_type = kwds["engine"]
-    enable_test_engines = any([r.type not in [RunnableType.galaxy_tool, RunnableType.directory] for r in runnables])
+    enable_test_engines = any([r.type not in [RunnableType.galaxy_tool, RunnableType.galaxy_datamanager, RunnableType.directory] for r in runnables])
     enable_test_engines = enable_test_engines or engine_type != "galaxy"
     if enable_test_engines:
         ctx.vlog("Using test engine type %s" % engine_type)
