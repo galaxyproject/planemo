@@ -1,6 +1,7 @@
 """Module contains :class:`CmdTestTestCase` - integration tests for the ``test`` command."""
 import json
 import os
+from tempfile import NamedTemporaryFile
 
 from .test_utils import (
     assert_exists,
@@ -11,9 +12,30 @@ from .test_utils import (
     TEST_DATA_DIR,
 )
 
+DATA_MANAGER_TEST_PATH = "data_manager/data_manager_fetch_genome_dbkeys_all_fasta/data_manager/data_manager_fetch_genome_all_fasta_dbkeys.xml"
+
 
 class CmdTestTestCase(CliTestCase):
     """Integration tests for the ``test`` command."""
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_data_manager(self):
+        """Test testing a data manager test."""
+        with self._isolate(), NamedTemporaryFile(prefix="data_manager_test_json") as json_out:
+            test_artifact = os.path.join(TEST_DATA_DIR, DATA_MANAGER_TEST_PATH)
+            test_command = [
+                "--verbose",
+                "test",
+                "--test_output_json",
+                json_out.name
+            ]
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command += [
+                "--no_dependency_resolution",
+                test_artifact,
+            ]
+            self._check_exit_code(test_command, exit_code=0)
+            assert json.load(open(json_out.name, 'r'))['summary']['num_tests'] == 1
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_workflow_test_simple_yaml(self):
