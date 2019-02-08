@@ -520,7 +520,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
 
 def _all_tool_paths(runnables, **kwds):
-    tool_paths = [r.path for r in runnables if r.has_tools]
+    tool_paths = [r.path for r in runnables if r.has_tools and not r.data_manager_conf_path]
     all_tool_paths = list(tool_paths) + list(kwds.get("extra_tools", []))
     for runnable in runnables:
         if runnable.type.name == "galaxy_workflow":
