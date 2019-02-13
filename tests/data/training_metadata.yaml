@@ -5,9 +5,10 @@ title: Test
 summary: 'Summary'
 edam_ontology: ''
 requirements:
-- title: Galaxy introduction
-  type: internal
-  link: /introduction/
+- type: internal
+  topic_name: introduction
+  tutorials:
+    - peaks2genes
 maintainers:
 - maintainer1
 - maintainer2
