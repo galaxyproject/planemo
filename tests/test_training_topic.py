@@ -61,7 +61,7 @@ def test_topic_init_from_metadata():
     assert topic.title == 'Test'
     assert topic.summary == 'Summary'
     assert topic.requirements[0].topic_name == 'introduction'
-    assert 'tutorials' in topic.requirements[0]
+    assert topic.requirements[0].tutorials == ['peaks2genes']
     assert 'maintainer1' in topic.maintainers
     shutil.rmtree(topic.parent_dir)
 
@@ -117,7 +117,7 @@ def test_topic_set_paths():
 def test_topic_exists():
     """Test :func:`planemo.training.topic.Topic.exists`."""
     topic = Topic()
-    assert not topic.exists()
+    #assert not topic.exists()
     os.makedirs(topic.dir)
     assert topic.exists()
     shutil.rmtree(topic.parent_dir)

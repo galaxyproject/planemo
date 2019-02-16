@@ -335,7 +335,7 @@ class Tutorial(object):
         self.dir = os.path.join(self.topic.dir, "tutorials", self.name)
         self.tuto_fp = os.path.join(self.dir, "tutorial.md")
         self.slide_fp = os.path.join(self.dir, 'slides.html')
-        self.data_lib_fp = os.path.join(self.dir, "data_library.yaml")
+        self.data_lib_fp = os.path.join(self.dir, "data-library.yaml")
         self.wf_dir = os.path.join(self.dir, "workflows")
         self.wf_fp = os.path.join(self.wf_dir, "main_workflow.ga")
         self.tour_dir = os.path.join(self.dir, "tours")

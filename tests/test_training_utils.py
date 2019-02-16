@@ -34,9 +34,9 @@ def test_requirement_init():
     """Test :func:`planemo.training.utils.Requirement.init`."""
     # test requirement with default parameter
     req = Requirement()
-    assert req.title == ""
+    assert req.title is None
     assert req.type == "internal"
-    assert req.link == "/introduction/"
+    assert req.topic_name == "introduction"
     # test requirement with non default
     req = Requirement(title="Introduction", req_type="external", link="URL")
     assert req.title == "Introduction"
@@ -61,10 +61,10 @@ def test_requirement_export_to_ordered_dict():
     """Test :func:`planemo.training.utils.Requirement.export_to_ordered_dict`."""
     req = Requirement()
     exp_req = req.export_to_ordered_dict()
-    assert 'title' in exp_req
-    assert exp_req['title'] == ""
     assert 'type' in exp_req
-    assert 'link' in exp_req
+    assert exp_req['type'] == "internal"
+    assert 'topic_name' in exp_req
+    assert 'link' not in exp_req
 
 
 def test_reference_init():
@@ -74,7 +74,7 @@ def test_reference_init():
     assert ref.authors == "authors et al"
     assert ref.title == "the title"
     assert ref.link == "link"
-    assert ref.summary == "Why this reference is useful"
+    assert ref.summary == ""
     # test requirement with non default
     ref = Reference(authors="the authors", title="a title", link="URL", summary="The summary")
     assert ref.authors == "the authors"

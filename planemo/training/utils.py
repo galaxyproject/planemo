@@ -22,7 +22,7 @@ class Requirement(object):
         if self.type == 'internal':
             self.topic_name = metadata['topic_name']
             if 'tutorials' in metadata:
-                self.tutorials = metadata[tutorials]
+                self.tutorials = metadata['tutorials']
         else:
             self.title = metadata['title']
             if self.type == 'external':
