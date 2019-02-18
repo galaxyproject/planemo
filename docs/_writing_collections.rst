@@ -319,7 +319,7 @@ input - a structured_like attribute can be defined on the collection tag.
 
 .. code-block:: xml
 
-    <collection name="list_output" type="list" label="Duplicate List" structured_like="input1" inherit_format="true">
+    <collection name="list_output" type="list" label="Duplicate List" structured_like="input1" inherit_format="true" />
 
 Templates can then loop over ``input1`` or ``list_output`` when buliding up command-line
 expressions. See ``test/functional/tools/collection_creates_list.xml`` for an example.
