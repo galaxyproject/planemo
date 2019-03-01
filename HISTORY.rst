@@ -6,10 +6,18 @@ History
 .. to_doc
 
 ---------------------
-0.59.0.dev0
+0.58.2 (2019-03-01)
 ---------------------
 
-    
+* Fix display of tool ids in planemo html report (thanks to `@mvdbeek`_).
+  `Pull Request 908`_
+* Single quotes for file names (thanks to `@bernt-matthias`_). `Pull Request
+  909`_
+* Fix doc linting (thanks to `@mvdbeek`_). `Pull Request 910`_
+* Update TS categories (thanks to `@nsoranzo`_). 07dc6e0_
+* Close tag in doc help, to help with copy&paste (thanks to `@blankenberg`_).
+  `Pull Request 914`_
+* Update the tool XSD file (thanks to `@bgruening`_). `Pull Request 915`_
 
 ---------------------
 0.58.1 (2019-01-03)
@@ -1441,6 +1449,12 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 915: https://github.com/galaxyproject/planemo/pull/915
+.. _Pull Request 914: https://github.com/galaxyproject/planemo/pull/914
+.. _07dc6e0: https://github.com/galaxyproject/planemo/commit/07dc6e0
+.. _Pull Request 910: https://github.com/galaxyproject/planemo/pull/910
+.. _Pull Request 909: https://github.com/galaxyproject/planemo/pull/909
+.. _Pull Request 908: https://github.com/galaxyproject/planemo/pull/908
 .. _Pull Request 907: https://github.com/galaxyproject/planemo/pull/907
 .. _Pull Request 906: https://github.com/galaxyproject/planemo/pull/906
 .. _Pull Request 902: https://github.com/galaxyproject/planemo/pull/902
