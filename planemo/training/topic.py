@@ -106,10 +106,11 @@ class Topic(object):
         self.title = metadata['title']
         self.summary = metadata['summary']
         self.requirements = []
-        for r in metadata['requirements']:
-            req = Requirement()
-            req.init_from_dict(r)
-            self.requirements.append(req)
+        if 'requirements' in metadata:
+            for r in metadata['requirements']:
+                req = Requirement()
+                req.init_from_dict(r)
+                self.requirements.append(req)
         if 'docker_image' in metadata:
             self.docker_image = metadata['docker_image']
         self.maintainers = metadata['maintainers']
