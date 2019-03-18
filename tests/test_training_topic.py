@@ -117,7 +117,6 @@ def test_topic_set_paths():
 def test_topic_exists():
     """Test :func:`planemo.training.topic.Topic.exists`."""
     topic = Topic()
-    #assert not topic.exists()
     os.makedirs(topic.dir)
     assert topic.exists()
     shutil.rmtree(topic.parent_dir)
