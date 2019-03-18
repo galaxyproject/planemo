@@ -271,7 +271,7 @@ class Tutorial(object):
         self.key_points = metadata["key_points"]
         self.contributors = metadata["contributors"]
 
-        # the the tutorial content
+        # the tutorial content
         self.body = tuto_split_regex.group("body")
 
         # get the data library
@@ -417,13 +417,13 @@ class Tutorial(object):
                     self.tuto_data_lib['items'].append(previous_data_lib)
         save_to_yaml(self.data_lib, self.data_lib_fp)
 
-    def write_hands_on_tutorial(self):
+    def write_hands_on_tutorial(self, add_z_file_links=True):
         """Write the content of the hands-on tutorial in the corresponding file."""
-        # add the zenodo links
-        self.body = templates.render(TUTO_HAND_ON_BODY_TEMPLATE, **{
-            "z_file_links": "\n>    ".join(self.zenodo_file_links),
-            "body": self.body
-        })
+        if add_z_file_links:
+            self.body = templates.render(TUTO_HAND_ON_BODY_TEMPLATE, **{
+                "z_file_links": "\n>    ".join(self.zenodo_file_links),
+                "body": self.body
+            })
         # write in the tutorial file with the metadata on the top
         metadata = self.get_tuto_metata()
         with open(self.tuto_fp, 'w') as md:
