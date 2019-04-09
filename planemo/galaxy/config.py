@@ -456,9 +456,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             tool_data_table_config_path=tool_data_table,
             integrated_tool_panel_config=("${temp_directory}/"
                                           "integrated_tool_panel_conf.xml"),
-            # Use in-memory database for kombu to avoid database contention
-            # during tests.
-            amqp_internal_connection="sqlalchemy+sqlite://",
             migrated_tools_config=empty_tool_conf,
             test_data_dir=test_data_dir,  # TODO: make gx respect this
             shed_data_manager_config_file=shed_data_manager_config_file,
