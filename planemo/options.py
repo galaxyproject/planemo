@@ -1382,6 +1382,13 @@ def test_report_options():
                   "computers)"),
             default=None,
         ),
+        planemo_option(
+            "--test_output_xunit",
+            type=click.Path(file_okay=True, resolve_path=True),
+            use_global_config=True,
+            help=("Output test report (xunit style - for CI systems"),
+            default=None,
+        ),
     )
 
 
@@ -1479,12 +1486,6 @@ def test_options():
         ),
         paste_test_data_paths_option(),
         test_report_options(),
-        planemo_option(
-            "--test_output_xunit",
-            type=click.Path(file_okay=True, resolve_path=True),
-            use_global_config=True,
-            help="Output test report (xUnit style - for computers).",
-        ),
         planemo_option(
             "--test_output_json",
             type=click.Path(file_okay=True, resolve_path=True),
