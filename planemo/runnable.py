@@ -121,7 +121,7 @@ def cases(runnable):
         return os.path.normpath(absolute_path)
 
     with open(tests_path, "r") as f:
-        tests_def = yaml.load(f)
+        tests_def = yaml.safe_load(f)
 
     if not isinstance(tests_def, list):
         message = TEST_FILE_NOT_LIST_MESSAGE % tests_path

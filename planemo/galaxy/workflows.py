@@ -24,13 +24,13 @@ def load_shed_repos(runnable):
     if path.endswith(".ga"):
         generate_tool_list_from_ga_workflow_files.generate_tool_list_from_workflow([path], "Tools from workflows", "tools.yml")
         with open("tools.yml", "r") as f:
-            tools = yaml.load(f)["tools"]
+            tools = yaml.safe_load(f)["tools"]
 
     else:
         # It'd be better to just infer this from the tool shed ID somehow than
         # require explicit annotation like this... I think?
         with open(path, "r") as f:
-            workflow = yaml.load(f)
+            workflow = yaml.safe_load(f)
 
         tools = workflow.get("tools", [])
 
@@ -81,7 +81,7 @@ def _raw_dict(path, importer=None):
         workflow_directory = os.path.dirname(path)
         workflow_directory = os.path.abspath(workflow_directory)
         with open(path, "r") as f:
-            workflow = yaml.load(f)
+            workflow = yaml.safe_load(f)
             workflow = python_to_workflow(workflow, importer, workflow_directory)
 
     return workflow

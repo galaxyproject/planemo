@@ -41,7 +41,7 @@ class BuildAndLintTestCase(CliTestCase):
             self._check_lint(filename="seqtk_seq.cwl", exit_code=0)
 
             with open(os.path.join(f, "seqtk_seq.cwl")) as stream:
-                process_dict = yaml.load(stream)
+                process_dict = yaml.safe_load(stream)
             assert process_dict["id"] == "seqtk_seq"
             assert process_dict["label"] == "Convert to FASTA (seqtk)"
             assert process_dict["baseCommand"] == ["seqtk", "seq"]
@@ -55,7 +55,7 @@ class BuildAndLintTestCase(CliTestCase):
             assert process_dict["stdout"] == "out"
 
             with open(os.path.join(f, "seqtk_seq_tests.yml")) as stream:
-                test_dict = yaml.load(stream)
+                test_dict = yaml.safe_load(stream)
                 assert test_dict
 
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")

@@ -39,7 +39,7 @@ git checkout master
 git merge --ff-only origin/master
 
 METADATA="$RECIPE/meta.yaml"
-OLD_VERSION=`python2 -c "import yaml; print yaml.load(open('$METADATA', 'r').read())['package']['version']"`
+OLD_VERSION=`python2 -c "import yaml; print yaml.safe_load(open('$METADATA', 'r').read())['package']['version']"`
 
 OLD_RECIPE="$RECIPE/$OLD_VERSION"
 mkdir "$OLD_RECIPE"

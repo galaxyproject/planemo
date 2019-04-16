@@ -74,7 +74,7 @@ class Reference(object):
 def load_yaml(filepath):
     """Load the content of a YAML file to a dictionary."""
     with open(filepath, "r") as m_file:
-        content = yaml.load(m_file)
+        content = yaml.safe_load(m_file)
     return content
 
 

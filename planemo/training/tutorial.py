@@ -262,7 +262,7 @@ class Tutorial(object):
         tuto_split_regex = re.search(regex, tuto_content)
         if not tuto_split_regex:
             raise Exception("No metadata found at the top of the tutorial")
-        metadata = yaml.load(tuto_split_regex.group("metadata"))
+        metadata = yaml.safe_load(tuto_split_regex.group("metadata"))
         self.title = metadata["title"]
         self.zenodo_link = metadata["zenodo_link"]
         self.questions = metadata["questions"]

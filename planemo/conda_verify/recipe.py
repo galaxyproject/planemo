@@ -73,7 +73,7 @@ def select_lines(data, namespace):
 
 @memoized
 def yamlize(data):
-    res = yaml.load(data)
+    res = yaml.safe_load(data)
     # ensure the result is a dict
     if res is None:
         res = {}

@@ -234,7 +234,7 @@ class Requirement(object):
                                            "r-" + name.lower(),
                                            "meta.yaml")
             with open(recipe_path, 'r') as f:
-                doc = yaml.load(f)
+                doc = yaml.safe_load(f)
                 if not version:
                     version = doc["package"]["version"]
                 package_url = doc["about"]["home"]
