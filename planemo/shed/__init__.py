@@ -433,7 +433,7 @@ def shed_repo_config(ctx, path, name=None):
     config = {}
     if os.path.exists(shed_yaml_path):
         with open(shed_yaml_path, "r") as f:
-            config = yaml.load(f)
+            config = yaml.safe_load(f)
 
     if config is None:  # yaml may yield None
         config = {}

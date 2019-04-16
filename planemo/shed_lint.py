@@ -290,7 +290,8 @@ def lint_shed_yaml(realized_repository, lint_ctx):
         lint_ctx.info("No .shed.yml file found, skipping.")
         return
     try:
-        yaml.load(open(shed_yaml, "r"))
+        with open(shed_yaml, "r") as fh:
+            yaml.safe_load(fh)
     except Exception as e:
         lint_ctx.warn("Failed to parse .shed.yml file [%s]" % str(e))
         return

@@ -248,7 +248,7 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
         return dataset_collection
 
     with open(job_path, "r") as f:
-        job = yaml.load(f)
+        job = yaml.safe_load(f)
 
     # Figure out what "." should be here instead.
     job_dir = os.path.dirname(job_path)
