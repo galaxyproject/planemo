@@ -140,7 +140,7 @@ def handle_reports(ctx, structured_data, kwds):
         except Exception as e:
             exceptions.append(e)
 
-    for report_type in ["html", "markdown", "text"]:
+    for report_type in ["html", "markdown", "text", "xunit"]:
         try:
             _handle_test_output_file(
                 ctx, report_type, structured_data, kwds
