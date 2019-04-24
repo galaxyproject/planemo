@@ -51,10 +51,8 @@ def _shed_diff(file_a, file_b, f=sys.stdout):
 def _strip_shed_attributes(xml_element):
     if xml_element.tag == "repository":
         _remove_attribs(xml_element)
-    children = xml_element.getchildren()
-    if len(children) > 0:
-        for child in children:
-            _strip_shed_attributes(child)
+    for child in xml_element:
+        _strip_shed_attributes(child)
 
 
 def _remove_attribs(xml_element):

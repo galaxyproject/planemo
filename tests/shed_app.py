@@ -173,10 +173,8 @@ def _modify_attributes(xml_element):
         xml_element.attrib["toolshed"] = "localhost:9012"
         xml_element.attrib["changeset_revision"] = "12345"
 
-    children = xml_element.getchildren()
-    if len(children) > 0:
-        for child in children:
-            _modify_attributes(child)
+    for child in xml_element:
+        _modify_attributes(child)
 
 
 def _shutdown_server():
