@@ -3,7 +3,6 @@ import os
 
 from planemo.training.utils import (
     load_yaml,
-    Reference,
     Requirement,
     save_to_yaml
 )
@@ -65,45 +64,3 @@ def test_requirement_export_to_ordered_dict():
     assert exp_req['type'] == "internal"
     assert 'topic_name' in exp_req
     assert 'link' not in exp_req
-
-
-def test_reference_init():
-    """Test :func:`planemo.training.utils.Reference.init`."""
-    # test requirement with default parameter
-    ref = Reference()
-    assert ref.authors == "authors et al"
-    assert ref.title == "the title"
-    assert ref.link == "link"
-    assert ref.summary == ""
-    # test requirement with non default
-    ref = Reference(authors="the authors", title="a title", link="URL", summary="The summary")
-    assert ref.authors == "the authors"
-    assert ref.title == "a title"
-    assert ref.link == "URL"
-    assert ref.summary == "The summary"
-
-
-def test_reference_init_from_dict():
-    """Test :func:`planemo.training.utils.Reference.init_from_dict`."""
-    ref = Reference()
-    ref.init_from_dict({
-        'authors': 'my author et al',
-        'title': 'The Reference to read',
-        'link': "http://URL",
-        'summary': 'why we should read it'
-    })
-    assert ref.authors == 'my author et al'
-    assert ref.title == 'The Reference to read'
-    assert ref.link == "http://URL"
-    assert ref.summary == "why we should read it"
-
-
-def test_reference_export_to_ordered_dict():
-    """Test :func:`planemo.training.utils.Reference.export_to_ordered_dict`."""
-    ref = Reference()
-    exp_ref = ref.export_to_ordered_dict()
-    assert 'authors' in exp_ref
-    assert 'title' in exp_ref
-    assert exp_ref['title'] == "the title"
-    assert 'link' in exp_ref
-    assert 'summary' in exp_ref

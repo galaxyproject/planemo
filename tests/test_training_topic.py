@@ -20,7 +20,6 @@ def test_topic_init():
     assert topic.parent_dir == "topics"
     assert topic.dir == "topics/new_topic"
     assert topic.requirements[0].topic_name == "introduction"
-    assert topic.references[0].link == "link"
     # test requirement with non default
     topic = Topic(name="topic2", target="admin", title="The 2nd topic", summary="", parent_dir="dir")
     assert topic.name == "topic2"
@@ -30,7 +29,6 @@ def test_topic_init():
     assert topic.parent_dir == "dir"
     assert topic.dir == "dir/topic2"
     assert len(topic.requirements) == 0
-    assert len(topic.references) == 0
 
 
 def test_topic_init_from_kwds():
@@ -48,7 +46,6 @@ def test_topic_init_from_kwds():
     assert topic.summary == "Topic summary"
     assert topic.dir == "topics/topic"
     assert len(topic.requirements) == 0
-    assert len(topic.references) == 0
 
 
 def test_topic_init_from_metadata():
@@ -74,14 +71,6 @@ def test_topic_get_requirements():
     assert 'topic_name' in reqs[0]
 
 
-def test_topic_get_references():
-    """Test :func:`planemo.training.topic.Topic.get_references`."""
-    topic = Topic()
-    refs = topic.get_references()
-    assert len(refs) == 1
-    assert 'authors' in refs[0]
-
-
 def test_topic_export_metadata_to_ordered_dict():
     """Test :func:`planemo.training.topic.Topic.export_metadata_to_ordered_dict`."""
     topic = Topic()
@@ -94,7 +83,6 @@ def test_topic_export_metadata_to_ordered_dict():
     assert 'requirements' in metadata
     assert 'docker_image' in metadata
     assert 'maintainers' in metadata
-    assert 'references' in metadata
 
 
 def test_topic_set_paths():
