@@ -618,9 +618,7 @@ def format_wf_steps(wf, gi):
     steps = wf['steps']
 
     for s in range(len(steps)):
-        print('format_wf_steps')
         wf_step = steps[str(s)]
-        pprint(wf_step)
         # get params in workflow
         wf_param_values = {}
         if wf_step['tool_state'] and wf_step['input_connections']:
@@ -634,11 +632,7 @@ def format_wf_steps(wf, gi):
             tool_desc = {'inputs': []}
         # get formatted param description
         paramlist = ''
-        pprint(tool_desc)
-        pprint(wf_param_values)
-        print(type(wf_param_values))
         for inp in tool_desc["inputs"]:
-            pprint(inp)
             tool_inp = ToolInput(inp, wf_param_values, steps, 1, should_be_there=True)
             paramlist += tool_inp.get_formatted_desc()
         # format the hands-on box
