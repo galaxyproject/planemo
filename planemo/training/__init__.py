@@ -37,7 +37,7 @@ class Training(object):
             if not self.tuto.exists():
                 info("The tutorial %s in topic %s does not exist. It will be created." % (self.tuto.name, self.topic.name))
                 self.tuto.create_tutorial(ctx)
-        info("WARNING: Change the contributors listed in the metadata of the new training ")
+        info("WARNING: Change the contributors/maintainers listed in the metadata of the new training ")
         info("before serving the website to fit the one listed in the CONTRIBUTORS.yaml file")
 
     def check_topic_init_tuto(self):
