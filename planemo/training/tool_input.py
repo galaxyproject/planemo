@@ -43,7 +43,7 @@ class ToolInput(object):
             if not should_be_there:
                 info("%s not in workflow" % self.name)
             else:
-                raise ValueError("%s not in workflow" % self.name)
+                raise ValueError("%s not in workflow for %s" % (self.name, self.name))
         else:
             self.wf_param_values = self.wf_param_values[self.name]
 
@@ -127,24 +127,25 @@ class ToolInput(object):
 
     def get_formatted_repeat_desc(self):
         """Format the description (label and value) for parameters in a repeat."""
-        tool_inp = {}
-        for inp in self.tool_inp_desc["inputs"]:
-            tool_inp.setdefault(inp['name'], inp)
         repeat_paramlist = ''
-        tmp_wf_param_values = self.wf_param_values
-        cur_level = self.level
-        for ind, param in enumerate(tmp_wf_param_values):
-            self.wf_param_values = param
-            self.level = cur_level + 1
-            paramlist_in_repeat = self.get_lower_param_desc()
-            if paramlist_in_repeat != '':
-                # add first click
-                repeat_paramlist += templates.render(INPUT_ADD_REPEAT, **{
-                    'space': SPACE * (self.level),
-                    'repeat_label': self.tool_inp_desc['title']})
-                repeat_paramlist += paramlist_in_repeat
-            self.level = cur_level
-        self.wf_param_values = tmp_wf_param_values
+        if self.wf_param_values != '[]':
+            tool_inp = {}
+            for inp in self.tool_inp_desc["inputs"]:
+                tool_inp.setdefault(inp['name'], inp)
+            tmp_wf_param_values = self.wf_param_values
+            cur_level = self.level
+            for ind, param in enumerate(tmp_wf_param_values):
+                self.wf_param_values = param
+                self.level = cur_level + 1
+                paramlist_in_repeat = self.get_lower_param_desc()
+                if paramlist_in_repeat != '':
+                    # add first click
+                    repeat_paramlist += templates.render(INPUT_ADD_REPEAT, **{
+                        'space': SPACE * (self.level),
+                        'repeat_label': self.tool_inp_desc['title']})
+                    repeat_paramlist += paramlist_in_repeat
+                self.level = cur_level
+            self.wf_param_values = tmp_wf_param_values
 
         repeat_desc = ''
         if repeat_paramlist != '':
