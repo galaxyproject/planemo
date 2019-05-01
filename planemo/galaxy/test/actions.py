@@ -6,6 +6,7 @@ import os
 
 import click
 from galaxy.tools.deps.commands import shell
+from galaxy.util import unicodify
 
 from planemo.exit_codes import (
     EXIT_CODE_GENERIC_FAILURE,
@@ -137,7 +138,7 @@ def handle_reports(ctx, structured_data, kwds):
     if structured_report_file and not os.path.exists(structured_report_file):
         try:
             with io.open(structured_report_file, mode="w", encoding='utf-8') as f:
-                json.dump(structured_data, f)
+                f.write(unicodify(json.dumps(structured_data)))
         except Exception as e:
             exceptions.append(e)
 
@@ -177,7 +178,7 @@ def _handle_test_output_file(ctx, report_type, test_data, kwds):
 
     try:
         with io.open(path, mode='w', encoding='utf-8') as handle:
-            handle.write(contents)
+            handle.write(unicodify(contents))
     except Exception:
         message = "Problem writing output file %s for %s" % (
             kwd_name, path
