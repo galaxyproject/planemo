@@ -1,10 +1,12 @@
 import json
 
+from galaxy.util import strip_control_characters
 from jinja2 import Environment, PackageLoader
 from pkg_resources import resource_string
 
 TITLE = "Tool Test Results (powered by Planemo)"
 env = Environment(loader=PackageLoader('planemo', 'reports'))
+env.filters['strip_control_characters'] = lambda x: strip_control_characters(x) if x else x
 
 
 def build_report(structured_data, report_type="html", **kwds):

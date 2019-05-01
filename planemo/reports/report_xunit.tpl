@@ -9,18 +9,18 @@
         {% if 'job' in testcase.data %}
             {% if testcase.data.status != 'success' %}
                 <error type="error" message="Tool exit code: {{ testcase.data.job.exit_code }}"><![CDATA[
-                    {{ testcase.data | tojson(indent=True) }}
+                    {{ testcase.data | tojson(indent=True)| strip_control_characters }}
                 ]]></error>
             {% endif %}
             <system-out><![CDATA[
-            {{ testcase.data.job.stdout }}
+            {{ testcase.data.job.stdout | strip_control_characters }}
             ]]></system-out>
             <system-err><![CDATA[
-            {{ testcase.data.job.stderr }}
+            {{ testcase.data.job.stderr | strip_control_characters }}
             ]]></system-err>
         {% else %}
             <error type="error" message="{{  testcase.data.execution_problem }}"><![CDATA[
-                {{ testcase.data | tojson(indent=True) }}
+                {{ testcase.data | tojson(indent=True)| strip_control_characters }}
             ]]></error>
         {% endif %}
     </testcase>
