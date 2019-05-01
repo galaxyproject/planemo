@@ -1,5 +1,6 @@
 """Actions related to running and reporting on Galaxy-specific testing."""
 
+import io
 import json
 import os
 
@@ -135,7 +136,7 @@ def handle_reports(ctx, structured_data, kwds):
     structured_report_file = kwds.get("test_output_json", None)
     if structured_report_file and not os.path.exists(structured_report_file):
         try:
-            with open(structured_report_file, "w") as f:
+            with io.open(structured_report_file, mode="w", encoding='utf-8') as f:
                 json.dump(structured_data, f)
         except Exception as e:
             exceptions.append(e)
@@ -175,7 +176,7 @@ def _handle_test_output_file(ctx, report_type, test_data, kwds):
         raise
 
     try:
-        with open(path, 'w') as handle:
+        with io.open(path, mode='w', encoding='utf-8') as handle:
             handle.write(contents)
     except Exception:
         message = "Problem writing output file %s for %s" % (
