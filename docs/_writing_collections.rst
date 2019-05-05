@@ -138,7 +138,7 @@ possible:
 
 - to find out if a collection was passed, 
 - to access properties of the collection (name,...), or
-- to write tests that pass collections to the parameter (which would allow to name the elements explicitly) 
+- to write tests that pass a collection to the parameter (which would allow to name the elements explicitly).
 
 .. code-block:: xml
 
