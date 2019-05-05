@@ -134,7 +134,7 @@ process both. This has the benefit of allowing tools to
 process either individual datasets or collections.
 A noteworthy difference is that if ``multiple="True"`` is used the elements of
 the collection are passed to the tool as a (Python) list, i.e. it is not
-possible
+possible:
 
 - to find out if a collection was passed, 
 - to access properties of the collection (name,...), or
