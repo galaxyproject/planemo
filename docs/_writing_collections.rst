@@ -10,8 +10,8 @@ types - ``list`` and ``paired``.
 * A **list** is a collection of datasets (or other collections) where
   each element has an ``identifier``. Unlike Galaxy dataset names which are
   transformed throughout complex analyses - the ``identifier`` is generally
-  perserved and can be used for concepts such as ``sample`` name that one wants to
-  perserve in the earlier mapping steps of a workflow and use it
+  preserved and can be used for concepts such as ``sample`` name that one wants to
+  preserve in the earlier mapping steps of a workflow and use it
   during reduction steps and reporting later.
 
 * The **paired** collection type is much simpler and more specific to sequencing
@@ -29,7 +29,7 @@ dataset having a list idenifier, each pair of datasets does.
 Consuming Collections
 -------------------------------
 
-Many Galaxy tools can be used without modification in conjuction with collections.
+Many Galaxy tools can be used without modification in conjunction with collections.
 Galaxy users can take a collection and `map over` any tool that
 consumes individual datasets. For instance, early in typical bioinformatics
 workflows you may have steps that filter raw data, convert to standard
@@ -48,7 +48,7 @@ identifier and index for the output entries match those of the supplied input.
 If a tool's functionality can be applied to individual files in isolation, the
 implicit mapping described above should be sufficient and no knowledge of collections
 by tools should be needed. However, tools may need to process multiple
-files at once - in this case explict collection consumption is required. This
+files at once - in this case explicit collection consumption is required. This
 document outlines three cases:
 
  * consuming pairs of datasets
@@ -125,13 +125,17 @@ Processing Lists (Reductions)
 -------------------------------
 
 The ``data_collection`` parameter type can specify a ``collection_type`` or
-``list`` but whenever possible, it is actually better to not explicitly
+``list`` but whenever possible, it might actually be better to not explicitly
 consume lists as a tool author. Parameters of type ``data`` can include a
 ``multiple="True"`` attribute to allow many datasets to be selected
 simultaneously. While the default UI will then have Galaxy users pick
-individual datsets, they can choose a collections as the tool can
+individual datasets, they can choose a collections as the tool can
 process both. This has the benefit of allowing tools to
 process either individual datasets or collections.
+A noteworthy difference is that if ``multiple="True"`` is used the elements of
+the collection are passed to the tool as (python) list, i.e., it is not
+possible to find out if a collection was passed or to access properties of the 
+collection (name,...).
 
 .. code-block:: xml
 
@@ -177,7 +181,7 @@ Processing Identifiers
 Collection elements have identifiers that can be used for various kinds of sample 
 tracking. These identifiers are set when the collection is first created - either
 explicitly in the UI (or API), through mapping over collections that preserves input 
-identifers, or as the ``identifier`` when dynamically discovering collection outputs
+identifiers, or as the ``identifier`` when dynamically discovering collection outputs
 described below.
 
 During reduction steps one may likely want to use these - for
@@ -321,7 +325,7 @@ input - a structured_like attribute can be defined on the collection tag.
 
     <collection name="list_output" type="list" label="Duplicate List" structured_like="input1" inherit_format="true" />
 
-Templates can then loop over ``input1`` or ``list_output`` when buliding up command-line
+Templates can then loop over ``input1`` or ``list_output`` when building up command-line
 expressions. See ``test/functional/tools/collection_creates_list.xml`` for an example.
 
 ``format``, ``format_source``, and ``metadata_source`` can be defined for such collections if the
