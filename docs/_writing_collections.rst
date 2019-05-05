@@ -133,7 +133,7 @@ individual datasets, they can choose a collections as the tool can
 process both. This has the benefit of allowing tools to
 process either individual datasets or collections.
 A noteworthy difference is that if ``multiple="True"`` is used the elements of
-the collection are passed to the tool as (python) list, i.e., it is not
+the collection are passed to the tool as a (Python) list, i.e. it is not
 possible to find out if a collection was passed or to access properties of the 
 collection (name,...).
 
