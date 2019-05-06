@@ -134,11 +134,11 @@ process both. This has the benefit of allowing tools to
 process either individual datasets or collections.
 A noteworthy difference is that if ``multiple="True"`` is used the elements of
 the collection are passed to the tool as a (Python) list, i.e. it is not
-possible
+possible:
 
 - to find out if a collection was passed, 
 - to access properties of the collection (name,...), or
-- to write tests that pass collections to the parameter (which would allow to name the elements explicitly) 
+- to write tests that pass a collection to the parameter (which would allow to name the elements explicitly).
 
 Another drawback is that the `${on_string}` of the label contains the list of data sets in the collection (which can be confusing, since these data sets are in most cases hidden) and not the name of the collection. 
 
