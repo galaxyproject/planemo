@@ -140,6 +140,8 @@ possible
 - to access properties of the collection (name,...), or
 - to write tests that pass collections to the parameter (which would allow to name the elements explicitly) 
 
+Another drawback is that the `${on_string}` of the label contains the list of data sets in the collection (which can be confusing, since these data sets are in most cases hidden) and not the name of the collection. 
+
 .. code-block:: xml
 
     <param type="data" name="inputs" label="Input BAM(s)" format="bam" multiple="true" />
