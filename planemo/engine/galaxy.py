@@ -25,7 +25,8 @@ class GalaxyEngine(BaseEngine):
         RunnableType.cwl_tool,
         RunnableType.cwl_workflow,
         RunnableType.galaxy_workflow,
-        RunnableType.galaxy_tool
+        RunnableType.galaxy_tool,
+        RunnableType.galaxy_datamanager,
     ]
 
     def _run(self, runnable, job_path):

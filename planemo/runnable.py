@@ -13,6 +13,7 @@ from galaxy.tools.cwl.parser import workflow_proxy
 from galaxy.tools.loader_directory import (
     is_a_yaml_with_class,
     looks_like_a_cwl_artifact,
+    looks_like_a_data_manager_xml,
     looks_like_a_tool_cwl,
     looks_like_a_tool_xml,
 )
@@ -35,13 +36,13 @@ TEST_FIELD_MISSING_MESSAGE = ("Invalid test definition [test #%d in %s] -"
 
 
 RunnableType = aenum.Enum(
-    "RunnableType", 'galaxy_tool galaxy_workflow cwl_tool cwl_workflow directory'
+    "RunnableType", 'galaxy_tool galaxy_datamanager galaxy_workflow cwl_tool cwl_workflow directory'
 )
 
 
 @property
 def _runnable_type_has_tools(runnable_type):
-    return runnable_type.name in ["galaxy_tool", "cwl_tool", "directory"]
+    return runnable_type.name in ["galaxy_tool", "galaxy_datamanager", "cwl_tool", "directory"]
 
 
 @property
@@ -49,10 +50,43 @@ def _runnable_type_is_single_artifact(runnable_type):
     return runnable_type.name not in ["directory"]
 
 
+@property
+def _runnable_type_test_data_in_parent_dir(runnable_type):
+    return runnable_type.name in ["galaxy_datamanager"]
+
+
 RunnableType.has_tools = _runnable_type_has_tools
 RunnableType.is_single_artifact = _runnable_type_is_single_artifact
+RunnableType.test_data_in_parent_dir = _runnable_type_test_data_in_parent_dir
 
-Runnable = collections.namedtuple("Runnable", ["path", "type"])
+_Runnable = collections.namedtuple("Runnable", ["path", "type"])
+
+
+class Runnable(_Runnable):
+
+    @property
+    def test_data_search_path(self):
+        if self.type.name in ['galaxy_datamanager']:
+            return os.path.join(os.path.dirname(self.path), os.path.pardir)
+        else:
+            return self.path
+
+    @property
+    def tool_data_search_path(self):
+        return self.test_data_search_path
+
+    @property
+    def data_manager_conf_path(self):
+        if self.type.name in ['galaxy_datamanager']:
+            return os.path.join(os.path.dirname(self.path), os.pardir, 'data_manager_conf.xml')
+
+    @property
+    def has_tools(self):
+        return _runnable_delegate_attribute('has_tools')
+
+    @property
+    def is_single_artifact(self):
+        return _runnable_delegate_attribute('is_single_artifact')
 
 
 def _runnable_delegate_attribute(attribute):
@@ -64,10 +98,6 @@ def _runnable_delegate_attribute(attribute):
     return getter
 
 
-Runnable.has_tools = _runnable_delegate_attribute('has_tools')
-Runnable.is_single_artifact = _runnable_delegate_attribute('is_single_artifact')
-
-
 def for_path(path):
     """Produce a class:`Runnable` for supplied path."""
     runnable_type = None
@@ -75,6 +105,8 @@ def for_path(path):
         runnable_type = RunnableType.directory
     elif looks_like_a_tool_cwl(path):
         runnable_type = RunnableType.cwl_tool
+    elif looks_like_a_data_manager_xml(path):
+        runnable_type = RunnableType.galaxy_datamanager
     elif looks_like_a_tool_xml(path):
         runnable_type = RunnableType.galaxy_tool
     elif is_a_yaml_with_class(path, ["GalaxyWorkflow"]):

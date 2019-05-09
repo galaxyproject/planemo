@@ -234,8 +234,7 @@ def simple_docker_volume(path):
 @contextlib.contextmanager
 def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
     """Set up a ``GalaxyConfig`` for Docker container."""
-    tool_paths = [r.path for r in runnables if r.has_tools]
-    test_data_dir = _find_test_data(tool_paths, **kwds)
+    test_data_dir = _find_test_data(runnables, **kwds)
 
     with _config_directory(ctx, **kwds) as config_directory:
         def config_join(*args):
@@ -332,13 +331,13 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 @contextlib.contextmanager
 def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
     """Set up a ``GalaxyConfig`` in an auto-cleaned context."""
-    tool_paths = [r.path for r in runnables if r.has_tools]
-    test_data_dir = _find_test_data(tool_paths, **kwds)
+    test_data_dir = _find_test_data(runnables, **kwds)
     tool_data_table = _find_tool_data_table(
-        tool_paths,
+        runnables,
         test_data_dir=test_data_dir,
         **kwds
     )
+    data_manager_config_paths = [r.data_manager_conf_path for r in runnables if r.data_manager_conf_path]
     galaxy_root = _find_galaxy_root(ctx, **kwds)
     install_galaxy = kwds.get("install_galaxy", False)
     if galaxy_root is not None:
@@ -454,6 +453,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             watch_tools="auto",
             default_job_shell="/bin/bash",  # For conda dependency resolution
             tool_data_table_config_path=tool_data_table,
+            data_manager_config_file=",".join(data_manager_config_paths),
             integrated_tool_panel_config=("${temp_directory}/"
                                           "integrated_tool_panel_conf.xml"),
             migrated_tools_config=empty_tool_conf,
@@ -520,7 +520,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
 
 def _all_tool_paths(runnables, **kwds):
-    tool_paths = [r.path for r in runnables if r.has_tools]
+    tool_paths = [r.path for r in runnables if r.has_tools and not r.data_manager_conf_path]
     all_tool_paths = list(tool_paths) + list(kwds.get("extra_tools", []))
     for runnable in runnables:
         if runnable.type.name == "galaxy_workflow":
@@ -1103,27 +1103,29 @@ def _find_galaxy_root(ctx, **kwds):
     return None
 
 
-def _find_test_data(tool_paths, **kwds):
-    path = "."
-    if len(tool_paths) > 0:
-        path = tool_paths[0]
+def _find_test_data(runnables, **kwds):
+    test_data_search_path = "."
+    runnables = [r for r in runnables if r.has_tools]
+    if len(runnables) > 0:
+        test_data_search_path = runnables[0].test_data_search_path
 
     # Find test data directory associated with path.
     test_data = kwds.get("test_data", None)
     if test_data:
         return os.path.abspath(test_data)
     else:
-        test_data = _search_tool_path_for(path, "test-data")
+        test_data = _search_tool_path_for(test_data_search_path, "test-data")
         if test_data:
             return test_data
     warn(NO_TEST_DATA_MESSAGE)
     return None
 
 
-def _find_tool_data_table(tool_paths, test_data_dir, **kwds):
-    path = "."
-    if len(tool_paths) > 0:
-        path = tool_paths[0]
+def _find_tool_data_table(runnables, test_data_dir, **kwds):
+    tool_data_search_path = "."
+    runnables = [r for r in runnables if r.has_tools]
+    if len(runnables) > 0:
+        tool_data_search_path = runnables[0].tool_data_search_path
 
     tool_data_table = kwds.get("tool_data_table", None)
     if tool_data_table:
@@ -1131,11 +1133,11 @@ def _find_tool_data_table(tool_paths, test_data_dir, **kwds):
     else:
         extra_paths = [test_data_dir] if test_data_dir else []
         return _search_tool_path_for(
-            path,
+            tool_data_search_path,
             "tool_data_table_conf.xml.test",
             extra_paths,
         ) or _search_tool_path_for(  # if all else fails just use sample
-            path,
+            tool_data_search_path,
             "tool_data_table_conf.xml.sample"
         )
 
