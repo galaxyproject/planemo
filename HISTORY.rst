@@ -7,7 +7,7 @@ History
 
 
 ---------------------
-0.59.0.dev0
+0.59.0 (2019-05-09)
 ---------------------
 
 * Add ability to test data manager tools (thanks to `@mvdbeek`_). 
