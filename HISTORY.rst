@@ -5,6 +5,25 @@ History
 
 .. to_doc
 
+
+---------------------
+0.59.0.dev0
+---------------------
+
+* Add ability to test data manager tools (thanks to `@mvdbeek`_). 
+  `Pull Request 912`_
+* Update Training for new requirement definition (thanks to `@bebatut`_).
+  `Pull Request 913`_
+* Drop amqp workaround (thanks to `@mvdbeek`_). `Pull Request 917`_
+* Use ``yaml.safe_load()`` instead of deprecated ``load()`` (thanks to `@nsoranzo`_).
+  `Pull Request 921`_
+* Allow converting ``tool_test_report.json`` to xunit (thanks to `@mvdbeek`_).
+  `Pull Request 918`_
+* Fix error if testcase.data.job does not exist (thanks to `@mvdbeek`_).
+  `Pull Request 924`_
+* Fix deprecated ``getchildren()`` (thanks to `@nsoranzo`_).
+  `Pull Request 925`_
+
 ---------------------
 0.58.2 (2019-03-01)
 ---------------------
@@ -1449,6 +1468,13 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 913: https://github.com/galaxyproject/planemo/pull/913
+.. _Pull Request 917: https://github.com/galaxyproject/planemo/pull/917
+.. _Pull Request 921: https://github.com/galaxyproject/planemo/pull/921
+.. _Pull Request 918: https://github.com/galaxyproject/planemo/pull/918
+.. _Pull Request 924: https://github.com/galaxyproject/planemo/pull/924
+.. _Pull Request 925: https://github.com/galaxyproject/planemo/pull/925
+.. _Pull Request 912: https://github.com/galaxyproject/planemo/pull/912
 .. _Pull Request 915: https://github.com/galaxyproject/planemo/pull/915
 .. _Pull Request 914: https://github.com/galaxyproject/planemo/pull/914
 .. _07dc6e0: https://github.com/galaxyproject/planemo/commit/07dc6e0
