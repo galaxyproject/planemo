@@ -125,14 +125,14 @@ Processing Lists (Reductions)
 -------------------------------
 
 The ``data_collection`` parameter type can specify a ``collection_type`` or
-``list`` but whenever possible, it might actually be better to not explicitly
+``list`` but whenever possible, it is recommended to not explicitly
 consume lists as a tool author. Parameters of type ``data`` can include a
 ``multiple="True"`` attribute to allow many datasets to be selected
 simultaneously. While the default UI will then have Galaxy users pick
 individual datasets, they can choose a collections as the tool can
-process both. This has the benefit of allowing tools to
+process both. This has the benefit of allowing tools to 
 process either individual datasets or collections.
-A noteworthy difference is that if ``multiple="True"`` is used the elements of
+A noteworthy difference is that if a parameter of type ``data`` wth ``multiple="True"`` is used the elements of
 the collection are passed to the tool as a (Python) list, i.e. it is not
 possible:
 
