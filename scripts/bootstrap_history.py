@@ -7,12 +7,13 @@ try:
     import requests
 except ImportError:
     requests = None
-import urlparse
 import textwrap
+
+from six.moves.urllib.parse import urljoin
 
 PROJECT_DIRECTORY = os.path.join(os.path.dirname(__file__), "..")
 new_path = [PROJECT_DIRECTORY]
-new_path.extend( sys.path[1:] )  # remove scripts/ from the path
+new_path.extend(sys.path[1:])  # remove scripts/ from the path
 sys.path = new_path
 
 import planemo as project
@@ -21,12 +22,12 @@ PROJECT_OWNER = project.PROJECT_OWNER
 PROJECT_NAME = project.PROJECT_NAME
 PROJECT_URL = "https://github.com/%s/%s" % (PROJECT_OWNER, PROJECT_NAME)
 PROJECT_API = "https://api.github.com/repos/%s/%s/" % (PROJECT_OWNER, PROJECT_NAME)
-AUTHORS_SKIP_CREDIT = ["jmchilton"]
+AUTHORS_SKIP_CREDIT = ["jmchilton", "mvdbeek", "nsoranzo", "bgruening", "natefoo"]
 
 
 def main(argv):
     history_path = os.path.join(PROJECT_DIRECTORY, "HISTORY.rst")
-    history = open(history_path, "r").read().decode("utf-8")
+    history = open(history_path, "r").read()
 
     def extend(from_str, line):
         from_str += "\n"
@@ -38,14 +39,14 @@ def main(argv):
     if len(argv) > 2:
         message = argv[2]
     elif not (ident.startswith("pr") or ident.startswith("issue")):
-        api_url = urlparse.urljoin(PROJECT_API, "commits/%s" % ident)
+        api_url = urljoin(PROJECT_API, "commits/%s" % ident)
         req = requests.get(api_url).json()
         commit = req["commit"]
         message = commit["message"]
         message = get_first_sentence(message)
     elif requests is not None and ident.startswith("pr"):
         pull_request = ident[len("pr"):]
-        api_url = urlparse.urljoin(PROJECT_API, "pulls/%s" % pull_request)
+        api_url = urljoin(PROJECT_API, "pulls/%s" % pull_request)
         req = requests.get(api_url).json()
         message = req["title"]
         login = req["user"]["login"]
@@ -54,7 +55,7 @@ def main(argv):
             message += " (thanks to `@%s`_)." % req["user"]["login"]
     elif requests is not None and ident.startswith("issue"):
         issue = ident[len("issue"):]
-        api_url = urlparse.urljoin(PROJECT_API, "issues/%s" % issue)
+        api_url = urljoin(PROJECT_API, "issues/%s" % issue)
         req = requests.get(api_url).json()
         message = req["title"]
     else:
@@ -80,7 +81,7 @@ def main(argv):
 
     to_doc = wrap(to_doc)
     history = extend(".. to_doc", to_doc)
-    open(history_path, "w").write(history.encode("utf-8"))
+    open(history_path, "w").write(history)
 
 
 def get_first_sentence(message):
@@ -93,6 +94,7 @@ def wrap(message):
     wrapper.subsequent_indent = '  '
     wrapper.width = 78
     return "\n".join(wrapper.wrap(message))
+
 
 if __name__ == "__main__":
     main(sys.argv)
