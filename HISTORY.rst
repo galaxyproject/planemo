@@ -9,8 +9,12 @@ History
 0.60.0 (2019-05-31)
 ---------------------
 
-    
-
+* Return validation error if doi is empty `Pull Request 937`_
+* Add junit as test reporter (thanks to `@selten`_). `Pull Request 935`_
+* Update galaxy.xsd for new python 3 compatibility attribute (thanks to `@martenson`_). `Pull Request
+  931`_
+* Documentation: add a little warning for <param ... multiple="true"> (thanks to
+  `@bernt-matthias`_). `Pull Request 930`_
 
 ---------------------
 0.59.0 (2019-05-09)
@@ -1474,6 +1478,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 937: https://github.com/galaxyproject/planemo/pull/937
+.. _Pull Request 935: https://github.com/galaxyproject/planemo/pull/935
+.. _Pull Request 931: https://github.com/galaxyproject/planemo/pull/931
+.. _Pull Request 930: https://github.com/galaxyproject/planemo/pull/930
 .. _Pull Request 913: https://github.com/galaxyproject/planemo/pull/913
 .. _Pull Request 917: https://github.com/galaxyproject/planemo/pull/917
 .. _Pull Request 921: https://github.com/galaxyproject/planemo/pull/921
@@ -2110,3 +2118,4 @@ History
 .. _@bernt-matthias: https://github.com/bernt-matthias
 .. _@katrinleinweber: https://github.com/katrinleinweber
 .. _@bebatut: https://github.com/bebatut
+.. _@selten: https://github.com/selten
