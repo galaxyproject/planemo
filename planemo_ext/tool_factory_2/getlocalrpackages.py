@@ -12,7 +12,7 @@ def find_packages(prefix="package_r_"):
     # /data/home/rlazarus/galtest/tool_dependency_dir/R_3_1_1/3.1.1/fubar/package_r_3_1_1/63cdb9b2234c/env.sh
     eprefix = prefix
     if prefix.find('/') != -1:
-        eprefix = prefix.replace('/', '\/')  # for grep
+        eprefix = prefix.replace('/', r'\/')  # for grep
     path = '.'
     # fails on nitesh's recent mac - locate not working
     # cl = ['locate env.sh | grep -i %s' % eprefix,]

@@ -95,13 +95,13 @@ please careful and do not try this against production Galaxy instances.
       --mulled_containers, --biocontainers
                                       Test tools against mulled containers (forces
                                       --docker).
-      --job_config_file PATH          Job configuration file for Galaxy to target.
+      --job_config_file FILE          Job configuration file for Galaxy to target.
       --tool_dependency_dir DIRECTORY
                                       Tool dependency dir for Galaxy to target.
       --test_data DIRECTORY           test-data directory to for specified tool(s).
       --tool_data_table PATH          tool_data_table_conf.xml file to for specified
                                       tool(s).
-      --dependency_resolvers_config_file PATH
+      --dependency_resolvers_config_file FILE
                                       Dependency resolver configuration for Galaxy
                                       to target.
       --brew_dependency_resolution    Configure Galaxy to use plain brew dependency
@@ -111,7 +111,7 @@ please careful and do not try this against production Galaxy instances.
       --no_dependency_resolution      Configure Galaxy with no dependency resolvers.
       --conda_prefix DIRECTORY        Conda prefix to use for conda dependency
                                       commands.
-      --conda_exec PATH               Location of conda executable.
+      --conda_exec FILE               Location of conda executable.
       --conda_debug                   Enable more verbose conda logging.
       --conda_channels, --conda_ensure_channels TEXT
                                       Ensure conda is configured with specified
@@ -180,8 +180,10 @@ please careful and do not try this against production Galaxy instances.
                                       in CI)
       --test_output_markdown PATH     Output test report (Markdown style - for
                                       humans & computers)
-      --test_output_xunit PATH        Output test report (xUnit style - for
-                                      computers).
+      --test_output_xunit PATH        Output test report (xunit style - for CI
+                                      systems
+      --test_output_junit PATH        Output test report (jUnit style - for CI
+                                      systems
       --test_output_json PATH         Output test report (planemo json) defaults to
                                       tool_test_output.json.
       --job_output_files DIRECTORY    Write job outputs to specified directory.

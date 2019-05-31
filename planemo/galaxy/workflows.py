@@ -40,10 +40,9 @@ def load_shed_repos(runnable):
 def install_shed_repos(runnable, admin_gi, ignore_dependency_problems):
     tools_info = load_shed_repos(runnable)
     if tools_info:
-        shed_tools._ensure_log_configured("ephemeris")
-        install_tool_manager = shed_tools.InstallToolManager(tools_info, admin_gi)
-        install_tool_manager.install_repositories()
-        if install_tool_manager.errored_repositories:
+        install_tool_manager = shed_tools.InstallRepositoryManager(admin_gi)
+        install_results = install_tool_manager.install_repositories(tools_info)
+        if install_results.errored_repositories:
             if ignore_dependency_problems:
                 warn(FAILED_REPOSITORIES_MESSAGE)
             else:

@@ -9,8 +9,8 @@ from click.testing import CliRunner
 project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, project_dir)
 
-from planemo.cli import list_cmds
-from planemo import cli
+from planemo import cli  # noqa: E402
+from planemo.cli import list_cmds  # noqa: E402
 
 planemo_cli = cli.planemo
 runner = CliRunner()

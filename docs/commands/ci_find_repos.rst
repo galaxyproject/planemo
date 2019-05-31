@@ -21,7 +21,7 @@ file.
 
 
       --exclude PATH                  Paths to exclude.
-      --exclude_from PATH             File of paths to exclude.
+      --exclude_from FILE             File of paths to exclude.
       --changed_in_commit_range TEXT  Exclude paths unchanged in git commit range.
       --chunk_count INTEGER           Split output into chunks of this many item and
                                       print --chunk such group.

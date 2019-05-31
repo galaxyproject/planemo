@@ -133,6 +133,7 @@ def quote_non_numeric(s):
     except ValueError:
         return '"%s"' % s
 
+
 html_escape_table = {
     "&": "&amp;",
     ">": "&gt;",
@@ -163,9 +164,9 @@ def parse_citations(citations_text):
     citation_tuples = []
     for citation in citations:
         if citation.startswith("doi"):
-            citation_tuples.append( ("doi", citation[len("doi"):].strip() ) )
+            citation_tuples.append(("doi", citation[len("doi"):].strip()))
         else:
-            citation_tuples.append( ("bibtex", citation[len("bibtex"):].strip() ) )
+            citation_tuples.append(("bibtex", citation[len("bibtex"):].strip()))
     return citation_tuples
 
 
@@ -443,7 +444,7 @@ https://toolshed.g2.bx.psu.edu/view/fubar/tool_factory_2
                 self.interpreter_name = packdetails[1].split('_')[1].upper()
                 self.interpreter_revision = packdetails[2]
                 self.interpreter_version = '.'.join(packdetails[1].split('_')[2:])
-            except:
+            except Exception:
                 pass
         self.outFormats = opts.output_format
         self.inputFormats = opts.input_formats
@@ -691,7 +692,7 @@ o.close()
             newtmp = os.path.join(self.opts.output_dir, 'tmp')
             try:
                 os.mkdir(newtmp)
-            except:
+            except Exception:
                 sto.write('## WARNING - cannot make %s - it may exist or permissions need fixing\n' % newtmp)
             our_env['TEMP'] = newtmp
             if not self.temp_warned:
@@ -843,7 +844,7 @@ o.close()
         else:
             html.append('<div class="warningmessagelarge">### Error - %s returned no files - please confirm that parameters are sane</div>' % self.opts.interpreter)
         html.append(galhtmlpostfix)
-        htmlf = file(self.opts.output_html, 'w')
+        htmlf = open(self.opts.output_html, 'w')
         htmlf.write('\n'.join(html))
         htmlf.write('\n')
         htmlf.close()
@@ -868,13 +869,13 @@ o.close()
             retval = p.wait()
             sto.close()
             ste.close()
-            tmp_stderr = open( self.elog, 'rb' )
+            tmp_stderr = open(self.elog, 'rb')
             err = ''
             buffsize = 1048576
             try:
                 while True:
-                    err += tmp_stderr.read( buffsize )
-                    if not err or len( err ) % buffsize != 0:
+                    err += tmp_stderr.read(buffsize)
+                    if not err or len(err) % buffsize != 0:
                         break
             except OverflowError:
                 pass
@@ -928,7 +929,7 @@ def main():
     if opts.output_dir:
         try:
             os.makedirs(opts.output_dir)
-        except:
+        except Exception:
             pass
     opts.input_tab = [x.replace('"', '').replace("'", '') for x in opts.input_tab]
     for i, x in enumerate(opts.additional_parameters):  # remove quotes we need to deal with spaces in CL params

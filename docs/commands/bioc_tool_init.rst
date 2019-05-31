@@ -18,7 +18,7 @@ Generate a bioconductor tool outline from supplied arguments.
 
       -i, --id TEXT             Short identifier for new tool (no whitespace)
       -f, --force               Overwrite existing tool if present.
-      -t, --tool PATH           Output path for new tool (default is <id>.xml)
+      -t, --tool FILE           Output path for new tool (default is <id>.xml)
       -n, --name TEXT           Name for new R/Bioconductor tool (user facing).
       -d, --description TEXT    Short description for new tool (user facing)
       -c, --command TEXT        Command potentially including cheetah variables

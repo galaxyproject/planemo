@@ -18,9 +18,6 @@ from .config import (
 )
 from .io import error
 
-PYTHON_2_7_COMMANDS = ["run", "cwl_script"]
-IS_PYTHON_2_7 = sys.version_info[0] == 2 and sys.version_info[1] >= 7
-
 
 CONTEXT_SETTINGS = dict(auto_envvar_prefix='PLANEMO')
 COMMAND_ALIASES = {
@@ -143,9 +140,6 @@ def list_cmds():
            filename.startswith('cmd_'):
             rv.append(filename[len("cmd_"):-len(".py")])
     rv.sort()
-    if not IS_PYTHON_2_7:
-        for command in PYTHON_2_7_COMMANDS:
-            rv.remove(command)
     return rv
 
 
