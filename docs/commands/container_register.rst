@@ -30,7 +30,7 @@ so that a container can be created and registered for these tools.
                                       namespace biocontainers.
       --conda_prefix DIRECTORY        Conda prefix to use for conda dependency
                                       commands.
-      --conda_exec PATH               Location of conda executable.
+      --conda_exec FILE               Location of conda executable.
       --conda_debug                   Enable more verbose conda logging.
       --conda_channels, --conda_ensure_channels TEXT
                                       Ensure conda is configured with specified

@@ -63,7 +63,7 @@ metadata (to handle metadata changes in ``.shed.yml`` files).
                                    populated by the shed would be updated.)
       --tar_only                   Produce tar file for upload but do not publish to
                                    a tool shed.
-      --tar PATH                   Specify a pre-existing tar file instead of
+      --tar FILE                   Specify a pre-existing tar file instead of
                                    automatically building one as part of this
                                    command.
       --help                       Show this message and exit.

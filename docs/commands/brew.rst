@@ -24,6 +24,6 @@ until a more permanent project home is setup.
 **Options**::
 
 
-      --brew PATH  Homebrew 'brew' executable to use.
+      --brew FILE  Homebrew 'brew' executable to use.
       --help       Show this message and exit.
     

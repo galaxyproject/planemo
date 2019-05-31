@@ -88,7 +88,7 @@ This command requires the target to be version 15.07 or newer.
       --mulled_containers, --biocontainers
                                       Test tools against mulled containers (forces
                                       --docker).
-      --job_config_file PATH          Job configuration file for Galaxy to target.
+      --job_config_file FILE          Job configuration file for Galaxy to target.
       --tool_dependency_dir DIRECTORY
                                       Tool dependency dir for Galaxy to target.
       --update_test_data              Update test-data directory with job outputs
@@ -106,8 +106,10 @@ This command requires the target to be version 15.07 or newer.
                                       in CI)
       --test_output_markdown PATH     Output test report (Markdown style - for
                                       humans & computers)
-      --test_output_xunit PATH        Output test report (xUnit style - for
-                                      computers).
+      --test_output_xunit PATH        Output test report (xunit style - for CI
+                                      systems
+      --test_output_junit PATH        Output test report (jUnit style - for CI
+                                      systems
       --test_output_json PATH         Output test report (planemo json) defaults to
                                       tool_test_output.json.
       --job_output_files DIRECTORY    Write job outputs to specified directory.

@@ -41,7 +41,7 @@ sourced.
 **Options**::
 
 
-      --brew PATH     Homebrew 'brew' executable to use.
+      --brew FILE     Homebrew 'brew' executable to use.
       --skip_install  Skip installation - only source requirements already
                       available.
       --shell

@@ -63,7 +63,7 @@ Planemo command for running tools and jobs.
       --mulled_containers, --biocontainers
                                       Test tools against mulled containers (forces
                                       --docker).
-      --job_config_file PATH          Job configuration file for Galaxy to target.
+      --job_config_file FILE          Job configuration file for Galaxy to target.
       --tool_dependency_dir DIRECTORY
                                       Tool dependency dir for Galaxy to target.
       --port INTEGER                  Port to serve Galaxy on (default is 9090).
@@ -75,7 +75,7 @@ Planemo command for running tools and jobs.
       --test_data DIRECTORY           test-data directory to for specified tool(s).
       --tool_data_table PATH          tool_data_table_conf.xml file to for specified
                                       tool(s).
-      --dependency_resolvers_config_file PATH
+      --dependency_resolvers_config_file FILE
                                       Dependency resolver configuration for Galaxy
                                       to target.
       --brew_dependency_resolution    Configure Galaxy to use plain brew dependency
@@ -85,7 +85,7 @@ Planemo command for running tools and jobs.
       --no_dependency_resolution      Configure Galaxy with no dependency resolvers.
       --conda_prefix DIRECTORY        Conda prefix to use for conda dependency
                                       commands.
-      --conda_exec PATH               Location of conda executable.
+      --conda_exec FILE               Location of conda executable.
       --conda_debug                   Enable more verbose conda logging.
       --conda_channels, --conda_ensure_channels TEXT
                                       Ensure conda is configured with specified
@@ -150,7 +150,7 @@ Planemo command for running tools and jobs.
                                       and if CWL support is merged into Galaxy.
       --output_directory, --outdir DIRECTORY
                                       Where to store outputs of a 'run' task.
-      --output_json PATH              Where to store JSON dictionary describing
+      --output_json FILE              Where to store JSON dictionary describing
                                       outputs of a 'run' task.
       --engine [galaxy|docker_galaxy|cwltool|toil|external_galaxy]
                                       Select an engine to run or test artifacts such
