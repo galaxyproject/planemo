@@ -5,7 +5,7 @@ Click
 configparser
 cwltool==1.0.20180820141117
 docutils
-ephemeris>=0.8
+ephemeris>=0.10.0
 galaxy-lib>=18.9.2
 glob2
 gxformat2>=0.8.0
