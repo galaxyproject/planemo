@@ -16,7 +16,7 @@ new_path = [PROJECT_DIRECTORY]
 new_path.extend(sys.path[1:])  # remove scripts/ from the path
 sys.path = new_path
 
-import planemo as project
+import planemo as project  # noqa: E402
 
 PROJECT_OWNER = project.PROJECT_OWNER
 PROJECT_NAME = project.PROJECT_NAME

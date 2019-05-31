@@ -1,8 +1,9 @@
 from __future__ import print_function
-from distutils.version import LooseVersion
+
 import ast
 import re
 import sys
+from distutils.version import LooseVersion
 
 source_dir = sys.argv[1]
 

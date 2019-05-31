@@ -88,8 +88,8 @@ readme = open('README.rst').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 if os.path.exists("requirements.txt"):
-    requirements = [ r for r in open("requirements.txt").read().split("\n") if ";" not in r ]
-    py27_requirements = [ r.split(";", 1)[0].strip() for r in open("requirements.txt").read().split("\n") if ";" in r ]
+    requirements = [r for r in open("requirements.txt").read().split("\n") if ";" not in r]
+    py27_requirements = [r.split(";", 1)[0].strip() for r in open("requirements.txt").read().split("\n") if ";" in r]
     if not PLANEMO_REQUIRE_LXML:
         requirements.remove("lxml")
 else:

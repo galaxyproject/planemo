@@ -1,6 +1,7 @@
 from __future__ import print_function
-import sys
+
 import re
+import sys
 
 IGNORE_PATTERNS = [
     re.compile(r'nonlocal image URI found'),
