@@ -43,7 +43,7 @@ class ToolInput(object):
             if not should_be_there:
                 info("%s not in workflow" % self.name)
             else:
-                raise ValueError("%s not in workflow for %s" % (self.name, self.name))
+                raise ValueError("%s not in workflow" % (self.name))
         else:
             self.wf_param_values = self.wf_param_values[self.name]
 
