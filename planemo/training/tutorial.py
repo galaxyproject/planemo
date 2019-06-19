@@ -5,7 +5,6 @@ import json
 import os
 import re
 import shutil
-from pprint import pprint
 
 import oyaml as yaml
 import requests
