@@ -108,13 +108,13 @@ TUTO_BIBLIOGRAPHY_TEMPLATE = """
   volume = {6},
   number = {6},
   pages = {752--758.e1},
-  author = {B{\'{e}}r{\'{e}}nice Batut and Saskia Hiltemann and Andrea Bagnacani and Dannon Baker and Vivek Bhardwaj and
-           Clemens Blank and Anthony Bretaudeau and Loraine Brillet-Gu{\'{e}}guen and Martin {\v{C}}ech and John Chilton
+  author = {B{\\'{e}}r{\\'{e}}nice Batut and Saskia Hiltemann and Andrea Bagnacani and Dannon Baker and Vivek Bhardwaj and
+           Clemens Blank and Anthony Bretaudeau and Loraine Brillet-Gu{\\'{e}}guen and Martin {\\v{C}}ech and John Chilton
            and Dave Clements and Olivia Doppelt-Azeroual and Anika Erxleben and Mallory Ann Freeberg and Simon Gladman and
-           Youri Hoogstrate and Hans-Rudolf Hotz and Torsten Houwaart and Pratik Jagtap and Delphine Larivi{\`{e}}re and
-           Gildas Le Corguill{\'{e}} and Thomas Manke and Fabien Mareuil and Fidel Ram{\'{\i}}rez and Devon Ryan and
+           Youri Hoogstrate and Hans-Rudolf Hotz and Torsten Houwaart and Pratik Jagtap and Delphine Larivi{\\`{e}}re and
+           Gildas Le Corguill{\\'{e}} and Thomas Manke and Fabien Mareuil and Fidel Ram{\\'{\i}}rez and Devon Ryan and
            Florian Christoph Sigloch and Nicola Soranzo and Joachim Wolff and Pavankumar Videm and Markus Wolfien and
-           Aisanjiang Wubuli and Dilmurat Yusuf and James Taylor and Rolf Backofen and Anton Nekrutenko and Bj\"{o}rn Gr\"{u}ning},
+           Aisanjiang Wubuli and Dilmurat Yusuf and James Taylor and Rolf Backofen and Anton Nekrutenko and Bj\\"{o}rn Gr\\"{u}ning},
   title = {Community-Driven Data Analysis Training for Biology},
   journal = {Cell Systems}
 }
