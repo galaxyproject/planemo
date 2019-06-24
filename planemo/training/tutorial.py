@@ -162,7 +162,7 @@ create-new-tutorial-content/tutorial.html)**
 
 Give some background about what the trainees will be doing in the section.
 Remember that many people reading your materials will likely be novices,
-so make sure to explain all the relative concepts.
+so make sure to explain all the relevant concepts.
 
 ## Title for a subsection
 Section and subsection titles will be displayed in the tutorial index on the left side of
