@@ -9,7 +9,7 @@ cd
 rm -rf bwa
 
 # Tests
-conda install --force --yes -c bioconda bwa
+conda install --force --yes -c conda-forge -c bioconda bwa
 
 echo "Executing bwa to see help - should see output, but it has a non-zero exit code."
 bwa | true

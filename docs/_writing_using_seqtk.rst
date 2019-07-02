@@ -7,7 +7,7 @@ install Seqtk - but however you obtain it should be fine.
 
 ::
 
-    $ conda install --force --yes -c bioconda seqtk=1.2
+    $ conda install --force --yes -c conda-forge -c bioconda seqtk=1.2
         ... seqtk installation ...
     $ seqtk seq
             Usage:   seqtk seq [options] <in.fq>|<in.fa>

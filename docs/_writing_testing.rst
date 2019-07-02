@@ -10,7 +10,7 @@ install BWA - but however you obtain it should be fine.
 
 ::
 
-    $ conda install --force -c bioconda bwa
+    $ conda install --force -c conda-forge -c bioconda bwa
         ... bwa installation ...
     $ bwa
     Program: bwa (alignment via Burrows-Wheeler transformation)
