@@ -532,7 +532,7 @@ def get_wf_param_values(init_params, inp_connections):
     else:
         form_params = json.loads(init_params)
     if isinstance(form_params, dict):
-        if '__class__' in form_params and form_params['__class__'] == 'RuntimeValue':
+        if '__class__' in form_params and (form_params['__class__'] == 'RuntimeValue' or form_params['__class__'] == 'ConnectedValue'):
             form_params = inp_connections
         else:
             for p in form_params:

@@ -101,7 +101,7 @@ def test_get_wf_inputs():
 
 def test_get_wf_param_values():
     """Test :func:`planemo.training.tutorial.get_wf_param_values`."""
-    wf_step = wf['steps']['4']
+    wf_step = wf['steps']['5']
     wf_param_value_tests = get_wf_param_values(wf_step['tool_state'], get_wf_inputs(wf_step['input_connections']))
     assert isinstance(wf_param_value_tests, dict)
     for k in wf_param_values:
