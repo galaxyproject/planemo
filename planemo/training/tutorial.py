@@ -88,6 +88,38 @@ HANDS_ON_TOOL_BOX_TEMPLATE = """
 
 """
 
+TUTO_BIBLIOGRAPHY_TEMPLATE = """
+# This is the bibliography file for your tutorial.
+#
+# To add bibliography (bibtex) entries here, follow these steps:
+#  1) Find the DOI for the article you want to cite
+#  2) Go to https://doi2bib.org and fill in the DOI
+#  3) Copy the resulting bibtex entry into this file
+#
+# To cite the example below, in your tutorial.md file
+# use {{ '{%' }} Batut2018 {{ '%}' }}
+
+@article{Batut2018,
+  doi = {10.1016/j.cels.2018.05.012},
+  url = {https://doi.org/10.1016/j.cels.2018.05.012},
+  year = {2018},
+  month = jun,
+  publisher = {Elsevier {BV}},
+  volume = {6},
+  number = {6},
+  pages = {752--758.e1},
+  author = {B{\\'{e}}r{\\'{e}}nice Batut and Saskia Hiltemann and Andrea Bagnacani and Dannon Baker and Vivek Bhardwaj and
+           Clemens Blank and Anthony Bretaudeau and Loraine Brillet-Gu{\\'{e}}guen and Martin {\\v{C}}ech and John Chilton
+           and Dave Clements and Olivia Doppelt-Azeroual and Anika Erxleben and Mallory Ann Freeberg and Simon Gladman and
+           Youri Hoogstrate and Hans-Rudolf Hotz and Torsten Houwaart and Pratik Jagtap and Delphine Larivi{\\`{e}}re and
+           Gildas Le Corguill{\\'{e}} and Thomas Manke and Fabien Mareuil and Fidel Ram{\\'{i}}rez and Devon Ryan and
+           Florian Christoph Sigloch and Nicola Soranzo and Joachim Wolff and Pavankumar Videm and Markus Wolfien and
+           Aisanjiang Wubuli and Dilmurat Yusuf and James Taylor and Rolf Backofen and Anton Nekrutenko and Bj\\"{o}rn Gr\\"{u}ning},
+  title = {Community-Driven Data Analysis Training for Biology},
+  journal = {Cell Systems}
+}
+"""
+
 TUTO_HAND_ON_BODY_TEMPLATE = """
 # Introduction
 {:.no_toc}
@@ -99,6 +131,19 @@ tutorial (the questions and the objectives). It is nice also to have a
 scheme to sum up the pipeline used during the tutorial. The idea is to
 give to trainees insight into the content of the tutorial and the (theoretical
 and technical) key concepts they will learn.
+
+You may want to cite some publications; this can be done by adding citations to the
+bibliography file (`tutorial.bib` file next to your `tutorial.md` file). These citations
+must be in bibtex format. If you have the DOI for the paper you wish to cite, you can
+get the corresponding bibtex entry using [doi2bib.org](https://doi2bib.org).
+
+With the example you will find in the `tutorial.bib` file, you can add a citation to
+this article here in your tutorial like this:
+{{ '{%' }} raw {{ '%}' }} `{{ '{%' }} cite Batut2018 {{ '%}' }}`{{ '{%' }} endraw {{ '%}' }}.
+This will be rendered like this: {{ '{%' }} cite Batut2018 {{ '%}' }}, and links to a
+[bibliography section](#bibliography) which will automatically be created at the end of the
+tutorial.
+
 
 **Please follow our
 [tutorial to learn how to fill the Markdown]({{ '{{' }} site.baseurl {{ '}}' }}/topics/contributing/tutorials/\
@@ -116,7 +161,14 @@ create-new-tutorial-content/tutorial.html)**
 # Title for your first section
 
 Give some background about what the trainees will be doing in the section.
+Remember that many people reading your materials will likely be novices,
+so make sure to explain all the relevant concepts.
 
+## Title for a subsection
+Section and subsection titles will be displayed in the tutorial index on the left side of
+the page, so try to make them informative and concise!
+
+# Hands-on Sections
 Below are a series of hand-on boxes, one for each tool in your workflow file.
 Often you may wish to combine several boxes into one or make other adjustments such
 as breaking the tutorial into sections, we encourage you to make such changes as you
@@ -334,6 +386,7 @@ class Tutorial(object):
         """Set the path to dir and files of a tutorial."""
         self.dir = os.path.join(self.topic.dir, "tutorials", self.name)
         self.tuto_fp = os.path.join(self.dir, "tutorial.md")
+        self.bib_fp = os.path.join(self.dir, "tutorial.bib")
         self.slide_fp = os.path.join(self.dir, 'slides.html')
         self.data_lib_fp = os.path.join(self.dir, "data-library.yaml")
         self.wf_dir = os.path.join(self.dir, "workflows")
@@ -429,6 +482,16 @@ class Tutorial(object):
         with open(self.tuto_fp, 'w') as md:
             md.write(templates.render(TUTO_HAND_ON_TEMPLATE, **{
                 "metadata": metadata,
+                "body": self.body
+            }))
+
+        # create the bibliography file
+        self.write_bibliography()
+
+    def write_bibliography(self):
+        """Write the content of the bibliography file for the tutorial."""
+        with open(self.bib_fp, 'w') as bib:
+            bib.write(templates.render(TUTO_BIBLIOGRAPHY_TEMPLATE, **{
                 "body": self.body
             }))
 
