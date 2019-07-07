@@ -1,9 +1,9 @@
 {
-    "uuid": "ec5c4576-e33b-4cfb-b96f-db9945765487",
+    "uuid": "d4817b2f-d255-4577-ab5c-cc67a3d9b401",
     "tags": [],
     "format-version": "0.1",
-    "name": "Test training workflow (imported from uploaded file)",
-    "version": 1,
+    "name": "Test training workflow (imported from uploaded file) (imported from uploaded file)",
+    "version": 0,
     "steps": {
         "0": {
             "tool_id": null,
@@ -19,8 +19,8 @@
             "label": null,
             "inputs": [],
             "position": {
-                "top": 135,
-                "left": 163.5
+                "top": 224,
+                "left": 198.5
             },
             "annotation": "",
             "content_id": null,
@@ -40,8 +40,8 @@
             "label": null,
             "inputs": [],
             "position": {
-                "top": 208,
-                "left": 199.5
+                "top": 296,
+                "left": 234.5
             },
             "annotation": "",
             "content_id": null,
@@ -61,37 +61,59 @@
             "label": null,
             "inputs": [],
             "position": {
-                "top": 518,
-                "left": 204
+                "top": 388,
+                "left": 228
             },
             "annotation": "",
             "content_id": null,
             "type": "data_input"
         },
         "3": {
-            "tool_id": null,
-            "tool_version": null,
-            "outputs": [],
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/iuc/query_tabular/query_tabular/2.0.0",
+            "tool_version": "2.0.0",
+            "outputs": [
+                {
+                    "type": "tabular",
+                    "name": "output"
+                }
+            ],
             "workflow_outputs": [],
-            "input_connections": {},
-            "tool_state": "{\"collection_type\": \"list\"}",
+            "input_connections": {
+                "add_to_database|withdb": {
+                    "output_name": "output",
+                    "id": 0
+                }
+            },
+            "tool_state": "{\"tables\": \"[]\", \"save_db\": \"\\\"false\\\"\", \"__page__\": null, \"__rerun_remap_job_id__\": null, \"sqlquery\": \"\\\"\\\"\", \"add_to_database\": \"{\\\"withdb\\\": {\\\"__class__\\\": \\\"RuntimeValue\\\"}}\", \"query_result\": \"{\\\"__current_case__\\\": 0, \\\"header\\\": \\\"yes\\\", \\\"header_prefix\\\": \\\"38\\\"}\", \"workdb\": \"\\\"workdb.sqlite\\\"\"}",
             "id": 3,
-            "uuid": "b163ba97-85b2-4830-a889-f9c46a23e44d",
+            "tool_shed_repository": {
+                "owner": "iuc",
+                "changeset_revision": "1ea4e668bf73",
+                "name": "query_tabular",
+                "tool_shed": "toolshed.g2.bx.psu.edu"
+            },
+            "uuid": "4e14bce8-afa9-4673-bb8f-26d33237f83e",
             "errors": null,
-            "name": "Input dataset collection",
+            "name": "Query Tabular",
+            "post_job_actions": {},
             "label": null,
-            "inputs": [],
+            "inputs": [
+                {
+                    "name": "add_to_database",
+                    "description": "runtime parameter for tool Query Tabular"
+                }
+            ],
             "position": {
-                "top": 637,
-                "left": 491
+                "top": 644,
+                "left": 503
             },
             "annotation": "",
-            "content_id": null,
-            "type": "data_collection_input"
+            "content_id": "toolshed.g2.bx.psu.edu/repos/iuc/query_tabular/query_tabular/2.0.0",
+            "type": "tool"
         },
         "4": {
-            "tool_id": "toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.72+galaxy1",
-            "tool_version": "0.72+galaxy1",
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.71",
+            "tool_version": "0.71",
             "outputs": [
                 {
                     "type": "html",
@@ -102,18 +124,7 @@
                     "name": "text_file"
                 }
             ],
-            "workflow_outputs": [
-                {
-                    "output_name": "html_file",
-                    "uuid": "992bcf6b-0671-43f9-898f-b69e18fde0ad",
-                    "label": null
-                },
-                {
-                    "output_name": "text_file",
-                    "uuid": "d5b81ddc-17b6-4f7f-b6f4-50be36f9915e",
-                    "label": null
-                }
-            ],
+            "workflow_outputs": [],
             "input_connections": {
                 "contaminants": {
                     "output_name": "output",
@@ -124,15 +135,15 @@
                     "id": 0
                 }
             },
-            "tool_state": "{\"min_length\": \"\\\"\\\"\", \"kmers\": \"\\\"7\\\"\", \"limits\": \"{\\\"__class__\\\": \\\"RuntimeValue\\\"}\", \"input_file\": \"{\\\"__class__\\\": \\\"RuntimeValue\\\"}\", \"__page__\": null, \"__rerun_remap_job_id__\": null, \"contaminants\": \"{\\\"__class__\\\": \\\"RuntimeValue\\\"}\", \"adapters\": \"{\\\"__class__\\\": \\\"RuntimeValue\\\"}\", \"nogroup\": \"\\\"false\\\"\"}",
+            "tool_state": "{\"__page__\": null, \"contaminants\": \"{\\\"__class__\\\": \\\"ConnectedValue\\\"}\", \"__rerun_remap_job_id__\": null, \"limits\": \"{\\\"__class__\\\": \\\"RuntimeValue\\\"}\", \"input_file\": \"{\\\"__class__\\\": \\\"ConnectedValue\\\"}\"}",
             "id": 4,
             "tool_shed_repository": {
                 "owner": "devteam",
-                "changeset_revision": "ddf5c37952ac",
+                "changeset_revision": "ff9530579d1f",
                 "name": "fastqc",
                 "tool_shed": "toolshed.g2.bx.psu.edu"
             },
-            "uuid": "1ad91514-bbd6-4799-b764-1fb5b6bd4797",
+            "uuid": "e0c41ba6-03a9-4ff3-8ab4-9f5dd8125e4c",
             "errors": null,
             "name": "FastQC",
             "post_job_actions": {},
@@ -141,26 +152,14 @@
                 {
                     "name": "limits",
                     "description": "runtime parameter for tool FastQC"
-                },
-                {
-                    "name": "input_file",
-                    "description": "runtime parameter for tool FastQC"
-                },
-                {
-                    "name": "contaminants",
-                    "description": "runtime parameter for tool FastQC"
-                },
-                {
-                    "name": "adapters",
-                    "description": "runtime parameter for tool FastQC"
                 }
             ],
             "position": {
-                "top": 123,
-                "left": 499.5
+                "top": 144,
+                "left": 514.5
             },
             "annotation": "",
-            "content_id": "toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.72+galaxy1",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.71",
             "type": "tool"
         },
         "5": {
@@ -198,18 +197,12 @@
             "uuid": "e09d110a-526a-4dea-b58f-0c03ae0287f1",
             "errors": null,
             "name": "Query Tabular",
-            "post_job_actions": {
-                "HideDatasetActionoutput": {
-                    "output_name": "output",
-                    "action_type": "HideDatasetAction",
-                    "action_arguments": {}
-                }
-            },
+            "post_job_actions": {},
             "label": null,
             "inputs": [],
             "position": {
-                "top": 399,
-                "left": 507
+                "top": 407,
+                "left": 550
             },
             "annotation": "",
             "content_id": "toolshed.g2.bx.psu.edu/repos/iuc/query_tabular/query_tabular/2.0.0",
@@ -242,18 +235,12 @@
             "uuid": "732d789d-e3e2-4d5e-bd28-257e6be0602b",
             "errors": null,
             "name": "Select first",
-            "post_job_actions": {
-                "HideDatasetActionoutfile": {
-                    "output_name": "outfile",
-                    "action_type": "HideDatasetAction",
-                    "action_arguments": {}
-                }
-            },
+            "post_job_actions": {},
             "label": null,
             "inputs": [],
             "position": {
-                "top": 417,
-                "left": 875.5
+                "top": 410,
+                "left": 863.5
             },
             "annotation": "",
             "content_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_head_tool/1.1.0",
