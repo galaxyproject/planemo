@@ -2139,3 +2139,4 @@ History
 .. _@katrinleinweber: https://github.com/katrinleinweber
 .. _@bebatut: https://github.com/bebatut
 .. _@selten: https://github.com/selten
+.. _@shiltemann: https://github.com/shiltemann
