@@ -31,7 +31,7 @@ def main(argv):
 
     def extend(from_str, line):
         from_str += "\n"
-        return history.replace(from_str, from_str + line + "\n")
+        return history.replace(from_str, from_str + line.encode("utf-8") + "\n")
 
     ident = argv[1]
 

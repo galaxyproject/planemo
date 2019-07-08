@@ -9,7 +9,16 @@ History
 0.61.0.dev0
 ---------------------
 
-    
+* Training - fix empty repeat + some formatting (thanks to `@bebatut`_). `Pull
+  Request 926`_
+* Training - add bibliography to tutorial template (thanks to `@shiltemann`_).
+  `Pull Request 938`_
+* Training - support new class definition for input in workflow step (thanks to
+  `@bebatut`_). `Pull Request 943`_
+* Various tool tutorial fixes ahead of GCC 2019 (thanks to `@nsoranzo`_).
+  `Pull Request 940`_
+* Return validation error if doi is empty (thanks to `@nsoranzo`_).
+  `Pull Request 937`_
 
 ---------------------
 0.60.0 (2019-05-31)
@@ -1484,6 +1493,11 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 926: https://github.com/galaxyproject/planemo/pull/926
+.. _Pull Request 937: https://github.com/galaxyproject/planemo/pull/937
+.. _Pull Request 938: https://github.com/galaxyproject/planemo/pull/938
+.. _Pull Request 943: https://github.com/galaxyproject/planemo/pull/943
+.. _Pull Request 940: https://github.com/galaxyproject/planemo/pull/940
 .. _Pull Request 937: https://github.com/galaxyproject/planemo/pull/937
 .. _Pull Request 935: https://github.com/galaxyproject/planemo/pull/935
 .. _Pull Request 931: https://github.com/galaxyproject/planemo/pull/931
