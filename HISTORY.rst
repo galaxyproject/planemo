@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.61.0.dev0
+0.61.0 (2019-07-08)
 ---------------------
 
 * Training - fix empty repeat + some formatting (thanks to `@bebatut`_). `Pull
