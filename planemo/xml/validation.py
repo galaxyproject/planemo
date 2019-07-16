@@ -4,6 +4,7 @@ import subprocess
 from collections import namedtuple
 
 from galaxy.tools.deps.commands import which
+from galaxy.util import unicodify
 try:
     from lxml import etree
 except ImportError:
@@ -50,7 +51,7 @@ class LxmlValidator(XsdValidator):
             passed = xsd.validate(xml)
             return ValidationResult(passed, xsd.error_log)
         except etree.XMLSyntaxError as e:
-            return ValidationResult(False, str(e))
+            return ValidationResult(False, unicodify(e))
 
     def enabled(self):
         return etree is not None

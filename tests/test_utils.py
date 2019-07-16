@@ -14,6 +14,7 @@ from tempfile import mkdtemp
 import psutil
 from click.testing import CliRunner
 from galaxy.tools.deps.commands import which
+from galaxy.util import unicodify
 
 from planemo import cli
 from planemo import io
@@ -302,7 +303,7 @@ def check_exit_code(runner, command_list, exit_code=0):
             result.output,
         )
         if result.exception:
-            message += " Exception [%s], " % str(result.exception)
+            message += " Exception [%s], " % unicodify(result.exception)
             exc_type, exc_value, exc_traceback = result.exc_info
             tb = traceback.format_exception(exc_type, exc_value,
                                             exc_traceback)

@@ -21,7 +21,10 @@ from galaxy.tools.cwl.util import (
     tool_response_to_output,
 )
 from galaxy.tools.parser import get_tool_source
-from galaxy.util import safe_makedirs
+from galaxy.util import (
+    safe_makedirs,
+    unicodify,
+)
 
 from planemo.galaxy.api import summarize_history
 from planemo.io import wait_on
@@ -42,7 +45,7 @@ def execute(ctx, config, runnable, job_path, **kwds):
     try:
         return _execute(ctx, config, runnable, job_path, **kwds)
     except Exception as e:
-        return ErrorRunResponse(str(e))
+        return ErrorRunResponse(unicodify(e))
 
 
 def _verified_tool_id(runnable, user_gi):

@@ -5,6 +5,7 @@ from __future__ import absolute_import
 from functools import wraps
 
 from galaxy.tools.deps.conda_compat import raw_metadata
+from galaxy.util import unicodify
 
 from planemo.conda_verify.recipe import (
     check_build_number,
@@ -78,11 +79,11 @@ def wraps_recipe_error(is_error=True):
                 f(recipe_dir, lint_ctx)
             except RecipeError as e:
                 if is_error:
-                    lint_ctx.error(str(e))
+                    lint_ctx.error(unicodify(e))
                 else:
-                    lint_ctx.warn(str(e))
+                    lint_ctx.warn(unicodify(e))
             except TypeError as e:  # Errors in recipe checking code from YAML.
-                lint_ctx.error(str(e))
+                lint_ctx.error(unicodify(e))
 
         return wrapper
 
