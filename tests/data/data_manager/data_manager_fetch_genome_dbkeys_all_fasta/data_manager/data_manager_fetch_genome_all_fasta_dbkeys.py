@@ -3,6 +3,7 @@
 
 import bz2
 import gzip
+import json
 import optparse
 import os
 import shutil
@@ -11,7 +12,6 @@ import tarfile
 import tempfile
 import zipfile
 from ftplib import FTP
-from json import dumps, loads
 
 try:
     # For Python 3.0 and later
@@ -452,7 +452,8 @@ def main():
 
     filename = args[0]
 
-    params = loads(open(filename).read())
+    with open(filename) as fh:
+        params = json.load(fh)
     target_directory = params['output_data'][0]['extra_files_path']
     os.mkdir(target_directory)
     data_manager_dict = {}
@@ -488,7 +489,8 @@ def main():
     finally:
         cleanup_before_exit(tmp_dir)
     # save info to json file
-    open(filename, 'w').write(dumps(data_manager_dict))
+    with open(filename, 'w') as fh:
+        json.dump(data_manager_dict, fh, sort_keys=True)
 
 
 if __name__ == "__main__":
