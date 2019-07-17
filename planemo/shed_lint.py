@@ -7,6 +7,7 @@ import xml.etree.ElementTree as ET
 import yaml
 from galaxy.tools.lint import lint_tool_source_with
 from galaxy.tools.linters.help import rst_invalid
+from galaxy.util import unicodify
 
 from planemo.io import info
 from planemo.lint import (
@@ -257,7 +258,7 @@ def lint_tool_dependencies_actions(realized_repository, lint_ctx):
         traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
         traceback.print_exc()
         template = "Problem parsing tool_dependenies.xml [%s]"
-        msg = template % str(e)
+        msg = template % unicodify(e)
         lint_ctx.warn(msg)
         return
 
@@ -293,7 +294,7 @@ def lint_shed_yaml(realized_repository, lint_ctx):
         with open(shed_yaml, "r") as fh:
             yaml.safe_load(fh)
     except Exception as e:
-        lint_ctx.warn("Failed to parse .shed.yml file [%s]" % str(e))
+        lint_ctx.warn("Failed to parse .shed.yml file [%s]" % unicodify(e))
         return
     lint_ctx.info(".shed.yml found and appears to be valid YAML.")
     _lint_shed_contents(lint_ctx, realized_repository)

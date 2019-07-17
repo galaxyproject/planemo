@@ -1,5 +1,7 @@
 import os
 
+from galaxy.util import unicodify
+
 from planemo import shed_lint
 from planemo.xml import validation
 from .test_utils import (
@@ -48,8 +50,8 @@ def _check_validator(xsd_validator):
     result = xsd_validator.validate(_path("xsd_schema_1.xsd"),
                                     _path("xml_bad_1.xml"))
     assert not result.passed
-    output = result.output
-    assert "not_command" in str(output), str(output)
+    output = unicodify(result.output)
+    assert "not_command" in output, output
 
 
 def _assert_validates(schema, target, xsd_validator=None):

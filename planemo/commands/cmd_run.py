@@ -4,6 +4,7 @@ from __future__ import print_function
 import json
 
 import click
+from galaxy.util import unicodify
 
 from planemo import options
 from planemo.cli import command_function
@@ -40,7 +41,7 @@ def cli(ctx, uri, job_path, **kwds):
         run_result = engine.run(path, job_path)
 
     if not run_result.was_successful:
-        warn("Run failed [%s]" % str(run_result))
+        warn("Run failed [%s]" % unicodify(run_result))
         ctx.exit(1)
 
     outputs_dict = run_result.outputs_dict

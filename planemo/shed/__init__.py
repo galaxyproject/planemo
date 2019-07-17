@@ -17,7 +17,10 @@ from tempfile import (
 import bioblend
 import six
 import yaml
-from galaxy.util import odict
+from galaxy.util import (
+    odict,
+    unicodify,
+)
 
 from planemo import git
 from planemo import glob
@@ -1316,7 +1319,7 @@ class RealizedRepositry(object):
                 upstream_error = json.loads(e.read())
                 error(upstream_error['err_msg'])
             except Exception:
-                error(str(e))
+                error(unicodify(e))
             return None
 
     def latest_installable_revision(self, ctx, shed_context):
@@ -1354,7 +1357,7 @@ def _handle_realization_error(exception, **kwds):
     if fail_fast:
         raise exception
     else:
-        error(str(exception))
+        error(unicodify(exception))
 
 
 def _ensure_shed_description(description):

@@ -1,1 +1,1 @@
-{"data_tables": {"__dbkeys__": [{"len_path": "phiX174.len", "value": "phiX174", "name": "phiX174"}], "all_fasta": [{"path": "phix174.fa", "dbkey": "phiX174", "name": "phiX174 sequence name", "value": "phix174"}]}}
+{"data_tables": {"__dbkeys__": [{"len_path": "phiX174.len", "name": "phiX174", "value": "phiX174"}], "all_fasta": [{"dbkey": "phiX174", "name": "phiX174 sequence name", "path": "phix174.fa", "value": "phix174"}]}}

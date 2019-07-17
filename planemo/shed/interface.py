@@ -2,6 +2,8 @@
 
 import json
 
+from galaxy.util import unicodify
+
 from planemo.bioblend import (
     ensure_module,
     toolshed,
@@ -69,7 +71,7 @@ def api_exception_to_message(e):
     """ Convert API exception to human digestable error message - parsing
     out the shed generate message if possible.
     """
-    message = str(e)
+    message = unicodify(e)
     if hasattr(e, "read"):
         message = e.read()
         try:

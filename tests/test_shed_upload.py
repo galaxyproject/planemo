@@ -9,6 +9,8 @@ import shutil
 import tarfile
 from os.path import exists, join
 
+from galaxy.util import unicodify
+
 from planemo import git
 from planemo.io import shell
 from .test_utils import (
@@ -417,7 +419,7 @@ class ShedUploadTestCase(CliShedTestCase):
         except tarfile.ReadError as e:
             # Fixed in later version of Python, see
             # http://bugs.python.org/issue6123
-            assert str(e) == "empty header", e
+            assert unicodify(e) == "empty header", e
             return target  # note contained no files!
         tar.extractall(path=target)
         tar.close()
