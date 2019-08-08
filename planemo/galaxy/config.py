@@ -453,7 +453,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             watch_tools="auto",
             default_job_shell="/bin/bash",  # For conda dependency resolution
             tool_data_table_config_path=tool_data_table,
-            data_manager_config_file=",".join(data_manager_config_paths),
+            data_manager_config_file=",".join(data_manager_config_paths) or None,  # without 'or None' may raise IOError in galaxy (see #946)
             integrated_tool_panel_config=("${temp_directory}/"
                                           "integrated_tool_panel_conf.xml"),
             migrated_tools_config=empty_tool_conf,
@@ -1271,9 +1271,10 @@ def _ensure_galaxy_repository_available(ctx, kwds):
 def _build_env_for_galaxy(properties, template_args):
     env = {}
     for key, value in iteritems(properties):
-        var = "GALAXY_CONFIG_OVERRIDE_%s" % key.upper()
-        value = _sub(value, template_args)
-        env[var] = value
+        if value is not None:  # Do not override None with empty string
+            var = "GALAXY_CONFIG_OVERRIDE_%s" % key.upper()
+            value = _sub(value, template_args)
+            env[var] = value
     return env
 
 
