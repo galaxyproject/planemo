@@ -23,7 +23,8 @@ class ShedInitTestCase(CliShedTestCase):
             ])
             shed_config_path = os.path.join(f, ".shed.yml")
             assert os.path.exists(shed_config_path)
-            shed_config = yaml.load(open(shed_config_path, "r"))
+            with open(shed_config_path, "r") as fh:
+                shed_config = yaml.safe_load(fh)
             assert shed_config["name"] == "samtools_filter"
             assert shed_config["owner"] == "iuc"
             assert shed_config["description"] == "samtools_filter"
@@ -48,7 +49,8 @@ class ShedInitTestCase(CliShedTestCase):
             self._check_exit_code(init_command)
             shed_config_path = os.path.join(f, ".shed.yml")
             assert os.path.exists(shed_config_path)
-            shed_config = yaml.load(open(shed_config_path, "r"))
+            with open(shed_config_path, "r") as fh:
+                shed_config = yaml.safe_load(fh)
             assert shed_config["name"] == "samtools_filter"
             assert shed_config["owner"] == "devteam"
             assert shed_config["description"] == "A samtools repo"

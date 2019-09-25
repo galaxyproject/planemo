@@ -15,7 +15,7 @@ rm -rf tool_init_exercise
 
 # Tests
 
-conda install --force --yes -c bioconda seqtk=1.2
+conda install --force --yes -c conda-forge -c bioconda seqtk=1.2
 
 cat <(seqtk seq)
 

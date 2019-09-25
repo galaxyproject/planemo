@@ -14,7 +14,7 @@ class ConfigInitTestCase(CliTestCase):
             assert os.path.exists(self.planemo_yaml_path)
             with open(self.planemo_yaml_path, "r") as f:
                 # Ensure it is valid YAML
-                yaml.load(f)
+                yaml.safe_load(f)
 
     def test_config_wont_overwrite(self):
         with self._isolate():

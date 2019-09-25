@@ -3,6 +3,7 @@
 import os
 
 from galaxy.tools.verify import verify
+from galaxy.util import unicodify
 
 
 def check_output(runnable, output_properties, test_properties, **kwds):
@@ -43,7 +44,7 @@ def check_output(runnable, output_properties, test_properties, **kwds):
             verify_extra_files=None,
         )
     except AssertionError as e:
-        problems.append(str(e))
+        problems.append(unicodify(e))
 
     return problems
 

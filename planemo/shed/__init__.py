@@ -17,7 +17,10 @@ from tempfile import (
 import bioblend
 import six
 import yaml
-from galaxy.util import odict
+from galaxy.util import (
+    odict,
+    unicodify,
+)
 
 from planemo import git
 from planemo import glob
@@ -433,7 +436,7 @@ def shed_repo_config(ctx, path, name=None):
     config = {}
     if os.path.exists(shed_yaml_path):
         with open(shed_yaml_path, "r") as f:
-            config = yaml.load(f)
+            config = yaml.safe_load(f)
 
     if config is None:  # yaml may yield None
         config = {}
@@ -1316,7 +1319,7 @@ class RealizedRepositry(object):
                 upstream_error = json.loads(e.read())
                 error(upstream_error['err_msg'])
             except Exception:
-                error(str(e))
+                error(unicodify(e))
             return None
 
     def latest_installable_revision(self, ctx, shed_context):
@@ -1354,7 +1357,7 @@ def _handle_realization_error(exception, **kwds):
     if fail_fast:
         raise exception
     else:
-        error(str(exception))
+        error(unicodify(exception))
 
 
 def _ensure_shed_description(description):

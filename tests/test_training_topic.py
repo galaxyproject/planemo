@@ -19,8 +19,7 @@ def test_topic_init():
     assert "maintainers" in topic.maintainers
     assert topic.parent_dir == "topics"
     assert topic.dir == "topics/new_topic"
-    assert topic.requirements[0].link == "/introduction/"
-    assert topic.references[0].link == "link"
+    assert topic.requirements[0].topic_name == "introduction"
     # test requirement with non default
     topic = Topic(name="topic2", target="admin", title="The 2nd topic", summary="", parent_dir="dir")
     assert topic.name == "topic2"
@@ -30,7 +29,6 @@ def test_topic_init():
     assert topic.parent_dir == "dir"
     assert topic.dir == "dir/topic2"
     assert len(topic.requirements) == 0
-    assert len(topic.references) == 0
 
 
 def test_topic_init_from_kwds():
@@ -48,7 +46,6 @@ def test_topic_init_from_kwds():
     assert topic.summary == "Topic summary"
     assert topic.dir == "topics/topic"
     assert len(topic.requirements) == 0
-    assert len(topic.references) == 0
 
 
 def test_topic_init_from_metadata():
@@ -60,7 +57,8 @@ def test_topic_init_from_metadata():
     assert topic.name == 'test'
     assert topic.title == 'Test'
     assert topic.summary == 'Summary'
-    assert topic.requirements[0].title == 'Galaxy introduction'
+    assert topic.requirements[0].topic_name == 'introduction'
+    assert topic.requirements[0].tutorials == ['peaks2genes']
     assert 'maintainer1' in topic.maintainers
     shutil.rmtree(topic.parent_dir)
 
@@ -70,15 +68,7 @@ def test_topic_get_requirements():
     topic = Topic()
     reqs = topic.get_requirements()
     assert len(reqs) == 1
-    assert 'title' in reqs[0]
-
-
-def test_topic_get_references():
-    """Test :func:`planemo.training.topic.Topic.get_references`."""
-    topic = Topic()
-    refs = topic.get_references()
-    assert len(refs) == 1
-    assert 'authors' in refs[0]
+    assert 'topic_name' in reqs[0]
 
 
 def test_topic_export_metadata_to_ordered_dict():
@@ -93,7 +83,6 @@ def test_topic_export_metadata_to_ordered_dict():
     assert 'requirements' in metadata
     assert 'docker_image' in metadata
     assert 'maintainers' in metadata
-    assert 'references' in metadata
 
 
 def test_topic_set_paths():
@@ -116,7 +105,6 @@ def test_topic_set_paths():
 def test_topic_exists():
     """Test :func:`planemo.training.topic.Topic.exists`."""
     topic = Topic()
-    assert not topic.exists()
     os.makedirs(topic.dir)
     assert topic.exists()
     shutil.rmtree(topic.parent_dir)

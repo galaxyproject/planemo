@@ -59,7 +59,7 @@ Open a synchronized Galaxy workflow editor.
       --mulled_containers, --biocontainers
                                       Test tools against mulled containers (forces
                                       --docker).
-      --job_config_file PATH          Job configuration file for Galaxy to target.
+      --job_config_file FILE          Job configuration file for Galaxy to target.
       --tool_dependency_dir DIRECTORY
                                       Tool dependency dir for Galaxy to target.
       --port INTEGER                  Port to serve Galaxy on (default is 9090).
@@ -82,7 +82,7 @@ Open a synchronized Galaxy workflow editor.
       --test_data DIRECTORY           test-data directory to for specified tool(s).
       --tool_data_table PATH          tool_data_table_conf.xml file to for specified
                                       tool(s).
-      --dependency_resolvers_config_file PATH
+      --dependency_resolvers_config_file FILE
                                       Dependency resolver configuration for Galaxy
                                       to target.
       --brew_dependency_resolution    Configure Galaxy to use plain brew dependency
@@ -92,7 +92,7 @@ Open a synchronized Galaxy workflow editor.
       --no_dependency_resolution      Configure Galaxy with no dependency resolvers.
       --conda_prefix DIRECTORY        Conda prefix to use for conda dependency
                                       commands.
-      --conda_exec PATH               Location of conda executable.
+      --conda_exec FILE               Location of conda executable.
       --conda_debug                   Enable more verbose conda logging.
       --conda_channels, --conda_ensure_channels TEXT
                                       Ensure conda is configured with specified
@@ -147,7 +147,7 @@ Open a synchronized Galaxy workflow editor.
                                       it. Use --no_galaxy_single_user to prevent
                                       Galaxy from running this way.
       --daemon                        Serve Galaxy process as a daemon.
-      --pid_file PATH                 Location of pid file is executed with
+      --pid_file FILE                 Location of pid file is executed with
                                       --daemon.
       --ignore_dependency_problems    When installing shed repositories for
                                       workflows, ignore dependency issues. These

@@ -18,7 +18,7 @@ Perform conda build with Planemo's conda.
 
       --conda_prefix DIRECTORY        Conda prefix to use for conda dependency
                                       commands.
-      --conda_exec PATH               Location of conda executable.
+      --conda_exec FILE               Location of conda executable.
       --conda_debug                   Enable more verbose conda logging.
       --conda_channels, --conda_ensure_channels TEXT
                                       Ensure conda is configured with specified

@@ -78,6 +78,15 @@ and the machine should become available.
 .. image:: images/ova_importing.png
    :alt: Screenshot OVA Import
 
+When the import is finished (and before starting the VM), right-click on the new appliance and select "Settings":
+
+1. in the "General" -> "Advanced" tab, select "Bidirectional" for "Shared Clipboard"
+2. in the "Display" -> "Screen" tab, tick "Enable 3D Acceleration"
+3. in the "Network" -> "Adapter 1" tab, select "PCnet-FAST III (Am79c973)" as "Adapter Type"
+4. Click the "OK" button
+
+Now start the appliance by clicking the "Start" button.
+
 The Firefox browser, Komodo_ and Atom_ editors, Galaxy, Planemo and everything else is
 available right away on the desktop along with useful links.
 

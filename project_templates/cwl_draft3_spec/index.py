@@ -3,8 +3,8 @@
 # Toy program to generate inverted index of word to line.
 # Takes input text file on stdin and prints output index on stdout.
 
-import sys
 import os
+import sys
 
 words = {}
 
@@ -15,10 +15,10 @@ main = open(mainfile)
 index = open(indexfile, "w")
 
 linenum = 0
-for l in main:
+for line in main:
     linenum += 1
-    l = l.rstrip().lower().replace(".", "").replace(",", "").replace(";", "").replace("-", " ")
-    for w in l.split(" "):
+    line = line.rstrip().lower().replace(".", "").replace(",", "").replace(";", "").replace("-", " ")
+    for w in line.split(" "):
         if w:
             if w not in words:
                 words[w] = set()

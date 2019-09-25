@@ -37,6 +37,8 @@ class Training(object):
             if not self.tuto.exists():
                 info("The tutorial %s in topic %s does not exist. It will be created." % (self.tuto.name, self.topic.name))
                 self.tuto.create_tutorial(ctx)
+        info("WARNING: Change the contributors/maintainers listed in the metadata of the new training ")
+        info("before serving the website to fit the one listed in the CONTRIBUTORS.yaml file")
 
     def check_topic_init_tuto(self):
         """Check that the topic and tutorial are already there and retrieve them."""
@@ -59,11 +61,13 @@ class Training(object):
         self.check_topic_init_tuto()
         # get the zenodo link
         z_link = ''
+        update_metadata = False
         if self.tuto.zenodo_link != '':
             if self.kwds['zenodo_link']:
                 info("The data library and the metadata will be updated with the new Zenodo link")
                 z_link = self.kwds['zenodo_link']
                 self.tuto.zenodo_link = z_link
+                update_metadata = True
             else:
                 info("The data library will be extracted using the Zenodo link in the metadata of the tutorial")
                 z_link = self.tuto.zenodo_link
@@ -71,6 +75,7 @@ class Training(object):
             info("The data library will be created and the metadata will be filled with the new Zenodo link")
             z_link = self.kwds['zenodo_link']
             self.tuto.zenodo_link = z_link
+            update_metadata = True
 
         if z_link == '' or z_link is None:
             raise Exception("A Zenodo link should be provided either in the metadata file or as argument of the command")
@@ -79,7 +84,8 @@ class Training(object):
         self.tuto.prepare_data_library_from_zenodo()
 
         # update the metadata
-        self.tuto.write_hands_on_tutorial()
+        if update_metadata:
+            self.tuto.write_hands_on_tutorial(add_z_file_links=False)
 
     def generate_tuto_from_wf(self, ctx):
         """Generate the skeleton of a tutorial from a workflow."""

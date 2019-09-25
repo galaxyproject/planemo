@@ -56,7 +56,7 @@ class ServeTestCase(CliTestCase):
             "--galaxy_python_version", "3"]
         self._launch_thread_and_wait(self._run, extra_args)
         # Check that the client was correctly built
-        url = "http://localhost:%d/static/scripts/libs/require.js" % int(self._port)
+        url = "http://localhost:%d/static/scripts/bundled/analysis.bundled.js" % int(self._port)
         r = requests.get(url)
         assert r.status_code == 200
 

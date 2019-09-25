@@ -1,10 +1,12 @@
 """Actions related to running and reporting on Galaxy-specific testing."""
 
+import io
 import json
 import os
 
 import click
 from galaxy.tools.deps.commands import shell
+from galaxy.util import unicodify
 
 from planemo.exit_codes import (
     EXIT_CODE_GENERIC_FAILURE,
@@ -135,12 +137,12 @@ def handle_reports(ctx, structured_data, kwds):
     structured_report_file = kwds.get("test_output_json", None)
     if structured_report_file and not os.path.exists(structured_report_file):
         try:
-            with open(structured_report_file, "w") as f:
-                json.dump(structured_data, f)
+            with io.open(structured_report_file, mode="w", encoding='utf-8') as f:
+                f.write(unicodify(json.dumps(structured_data)))
         except Exception as e:
             exceptions.append(e)
 
-    for report_type in ["html", "markdown", "text"]:
+    for report_type in ["html", "markdown", "text", "xunit", "junit"]:
         try:
             _handle_test_output_file(
                 ctx, report_type, structured_data, kwds
@@ -175,8 +177,8 @@ def _handle_test_output_file(ctx, report_type, test_data, kwds):
         raise
 
     try:
-        with open(path, 'w') as handle:
-            handle.write(contents)
+        with io.open(path, mode='w', encoding='utf-8') as handle:
+            handle.write(unicodify(contents))
     except Exception:
         message = "Problem writing output file %s for %s" % (
             kwd_name, path

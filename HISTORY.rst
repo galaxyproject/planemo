@@ -6,10 +6,68 @@ History
 .. to_doc
 
 ---------------------
-0.59.0.dev0
+0.62.0.dev0
 ---------------------
 
     
+
+---------------------
+0.61.0 (2019-07-08)
+---------------------
+
+* Training - fix empty repeat + some formatting (thanks to `@bebatut`_). `Pull
+  Request 926`_
+* Training - add bibliography to tutorial template (thanks to `@shiltemann`_).
+  `Pull Request 938`_
+* Training - support new class definition for input in workflow step (thanks to
+  `@bebatut`_). `Pull Request 943`_
+* Various tool tutorial fixes ahead of GCC 2019 (thanks to `@nsoranzo`_).
+  `Pull Request 940`_
+* Return validation error if doi is empty (thanks to `@nsoranzo`_).
+  `Pull Request 937`_
+
+---------------------
+0.60.0 (2019-05-31)
+---------------------
+
+* Return validation error if doi is empty `Pull Request 937`_
+* Add junit as test reporter (thanks to `@selten`_). `Pull Request 935`_
+* Update galaxy.xsd for new python 3 compatibility attribute (thanks to `@martenson`_). `Pull Request
+  931`_
+* Documentation: add a little warning for <param ... multiple="true"> (thanks to
+  `@bernt-matthias`_). `Pull Request 930`_
+
+---------------------
+0.59.0 (2019-05-09)
+---------------------
+
+* Add ability to test data manager tools (thanks to `@mvdbeek`_). 
+  `Pull Request 912`_
+* Update Training for new requirement definition (thanks to `@bebatut`_).
+  `Pull Request 913`_
+* Drop amqp workaround (thanks to `@mvdbeek`_). `Pull Request 917`_
+* Use ``yaml.safe_load()`` instead of deprecated ``load()`` (thanks to `@nsoranzo`_).
+  `Pull Request 921`_
+* Allow converting ``tool_test_report.json`` to xunit (thanks to `@mvdbeek`_).
+  `Pull Request 918`_
+* Fix error if testcase.data.job does not exist (thanks to `@mvdbeek`_).
+  `Pull Request 924`_
+* Fix deprecated ``getchildren()`` (thanks to `@nsoranzo`_).
+  `Pull Request 925`_
+
+---------------------
+0.58.2 (2019-03-01)
+---------------------
+
+* Fix display of tool ids in planemo html report (thanks to `@mvdbeek`_).
+  `Pull Request 908`_
+* Single quotes for file names (thanks to `@bernt-matthias`_). `Pull Request
+  909`_
+* Fix doc linting (thanks to `@mvdbeek`_). `Pull Request 910`_
+* Update TS categories (thanks to `@nsoranzo`_). 07dc6e0_
+* Close tag in doc help, to help with copy&paste (thanks to `@blankenberg`_).
+  `Pull Request 914`_
+* Update the tool XSD file (thanks to `@bgruening`_). `Pull Request 915`_
 
 ---------------------
 0.58.1 (2019-01-03)
@@ -1441,6 +1499,28 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 926: https://github.com/galaxyproject/planemo/pull/926
+.. _Pull Request 937: https://github.com/galaxyproject/planemo/pull/937
+.. _Pull Request 938: https://github.com/galaxyproject/planemo/pull/938
+.. _Pull Request 943: https://github.com/galaxyproject/planemo/pull/943
+.. _Pull Request 940: https://github.com/galaxyproject/planemo/pull/940
+.. _Pull Request 937: https://github.com/galaxyproject/planemo/pull/937
+.. _Pull Request 935: https://github.com/galaxyproject/planemo/pull/935
+.. _Pull Request 931: https://github.com/galaxyproject/planemo/pull/931
+.. _Pull Request 930: https://github.com/galaxyproject/planemo/pull/930
+.. _Pull Request 913: https://github.com/galaxyproject/planemo/pull/913
+.. _Pull Request 917: https://github.com/galaxyproject/planemo/pull/917
+.. _Pull Request 921: https://github.com/galaxyproject/planemo/pull/921
+.. _Pull Request 918: https://github.com/galaxyproject/planemo/pull/918
+.. _Pull Request 924: https://github.com/galaxyproject/planemo/pull/924
+.. _Pull Request 925: https://github.com/galaxyproject/planemo/pull/925
+.. _Pull Request 912: https://github.com/galaxyproject/planemo/pull/912
+.. _Pull Request 915: https://github.com/galaxyproject/planemo/pull/915
+.. _Pull Request 914: https://github.com/galaxyproject/planemo/pull/914
+.. _07dc6e0: https://github.com/galaxyproject/planemo/commit/07dc6e0
+.. _Pull Request 910: https://github.com/galaxyproject/planemo/pull/910
+.. _Pull Request 909: https://github.com/galaxyproject/planemo/pull/909
+.. _Pull Request 908: https://github.com/galaxyproject/planemo/pull/908
 .. _Pull Request 907: https://github.com/galaxyproject/planemo/pull/907
 .. _Pull Request 906: https://github.com/galaxyproject/planemo/pull/906
 .. _Pull Request 902: https://github.com/galaxyproject/planemo/pull/902
@@ -2064,3 +2144,5 @@ History
 .. _@bernt-matthias: https://github.com/bernt-matthias
 .. _@katrinleinweber: https://github.com/katrinleinweber
 .. _@bebatut: https://github.com/bebatut
+.. _@selten: https://github.com/selten
+.. _@shiltemann: https://github.com/shiltemann

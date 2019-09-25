@@ -1,11 +1,11 @@
 <tool id="gc_content" name="Compute GC content">
   <description>for each sequence in a file</description>
-  <command>perl $__tool_directory__/gc_content.pl $input output.tsv</command>
+  <command>perl '$__tool_directory__/gc_content.pl' '$input' output.tsv</command>
   <inputs>
-    <param format="fasta" name="input" type="data" label="Source file"/>
+    <param name="input" type="data" format="fasta" label="Source file"/>
   </inputs>
   <outputs>
-    <data format="tabular" name="output" from_work_dir="output.tsv" />
+    <data name="output" format="tabular" from_work_dir="output.tsv" />
   </outputs>
   <help>
 This tool computes GC content from a FASTA file.

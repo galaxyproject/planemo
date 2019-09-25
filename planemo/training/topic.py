@@ -6,7 +6,6 @@ import os
 from planemo import templates
 from .utils import (
     load_yaml,
-    Reference,
     Requirement,
     save_to_yaml
 )
@@ -85,7 +84,6 @@ class Topic(object):
         self.maintainers = ["maintainers"]
         self.parent_dir = parent_dir
         self.set_default_requirement()
-        self.set_default_reference()
         self.set_paths()
 
     def init_from_kwds(self, kwds):
@@ -95,7 +93,6 @@ class Topic(object):
         self.title = kwds["topic_title"]
         self.summary = kwds["topic_summary"]
         self.set_default_requirement()
-        self.set_default_reference()
         self.set_paths()
 
     def init_from_metadata(self):
@@ -106,19 +103,14 @@ class Topic(object):
         self.title = metadata['title']
         self.summary = metadata['summary']
         self.requirements = []
-        for r in metadata['requirements']:
-            req = Requirement()
-            req.init_from_dict(r)
-            self.requirements.append(req)
+        if 'requirements' in metadata:
+            for r in metadata['requirements']:
+                req = Requirement()
+                req.init_from_dict(r)
+                self.requirements.append(req)
         if 'docker_image' in metadata:
             self.docker_image = metadata['docker_image']
         self.maintainers = metadata['maintainers']
-        self.references = []
-        if 'references' in metadata:
-            for r in metadata['references']:
-                ref = Reference()
-                ref.init_from_dict(r)
-                self.references.append(ref)
         self.set_paths()
 
     # GETTERS
@@ -128,13 +120,6 @@ class Topic(object):
         for req in self.requirements:
             reqs.append(req.export_to_ordered_dict())
         return reqs
-
-    def get_references(self):
-        """Get the references as a list of ordered dictionaries."""
-        refs = []
-        for ref in self.references:
-            refs.append(ref.export_to_ordered_dict())
-        return refs
 
     def export_metadata_to_ordered_dict(self):
         """Export the topic metadata into an ordered dictionary."""
@@ -146,7 +131,6 @@ class Topic(object):
         metadata['requirements'] = self.get_requirements()
         metadata['docker_image'] = self.docker_image
         metadata['maintainers'] = self.maintainers
-        metadata['references'] = self.get_references()
         return metadata
 
     # SETTERS
@@ -155,12 +139,6 @@ class Topic(object):
         self.requirements = []
         if self.type == 'use':
             self.requirements.append(Requirement())
-
-    def set_default_reference(self):
-        """Set default refences: no information."""
-        self.references = []
-        if self.type == 'use':
-            self.references.append(Reference())
 
     def set_paths(self):
         """Set the paths to folder and files."""

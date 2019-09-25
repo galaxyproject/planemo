@@ -29,7 +29,7 @@ to manage repositories in a Galaxy Tool Shed.
       --remote_repository_url TEXT    Specify repository remote_repository_url for
                                       .shed.yml.
       --homepage_url TEXT             Specify repository homepage_url for .shed.yml.
-      --category [Assembly|ChIP-seq|Combinatorial Selections|Computational chemistry|Constructive Solid Geometry|Convert Formats|Epigenetics|Data Export|Data Managers|Data Source|Fasta Manipulation|Fastq Manipulation|Flow Cytometry Analysis|Genome-Wide Association Study|Genomic Interval Operations|Graphics|Imaging|Metabolomics|Metagenomics|Micro-array Analysis|Next Gen Mappers|NLP|Ontology Manipulation|Phylogenetics|Proteomics|RNA|SAM|Sequence Analysis|Statistics|Systems Biology|Text Manipulation|Tool Dependency Packages|Tool Generators|Transcriptomics|Variant Analysis|Visualization|Web Services]
+      --category [Assembly|ChIP-seq|Combinatorial Selections|Computational chemistry|Constructive Solid Geometry|Convert Formats|Data Export|Data Managers|Data Source|Entomology|Epigenetics|Fasta Manipulation|Fastq Manipulation|Flow Cytometry Analysis|Genome annotation|Genome editing|Genome-Wide Association Study|Genomic Interval Operations|Graphics|Imaging|Machine Learning|Metabolomics|Metagenomics|Micro-array Analysis|Molecular Dynamics|Next Gen Mappers|NLP|Ontology Manipulation|Phylogenetics|Proteomics|RNA|SAM|Sequence Analysis|Statistics|Systems Biology|Text Manipulation|Tool Dependency Packages|Tool Generators|Transcriptomics|Variant Analysis|Visualization|Web Services]
                                       Specify repository category for .shed.yml (may
                                       specify multiple).
       --owner TEXT                    Tool Shed repository owner (username).

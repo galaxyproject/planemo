@@ -24,13 +24,13 @@ def load_shed_repos(runnable):
     if path.endswith(".ga"):
         generate_tool_list_from_ga_workflow_files.generate_tool_list_from_workflow([path], "Tools from workflows", "tools.yml")
         with open("tools.yml", "r") as f:
-            tools = yaml.load(f)["tools"]
+            tools = yaml.safe_load(f)["tools"]
 
     else:
         # It'd be better to just infer this from the tool shed ID somehow than
         # require explicit annotation like this... I think?
         with open(path, "r") as f:
-            workflow = yaml.load(f)
+            workflow = yaml.safe_load(f)
 
         tools = workflow.get("tools", [])
 
@@ -40,10 +40,9 @@ def load_shed_repos(runnable):
 def install_shed_repos(runnable, admin_gi, ignore_dependency_problems):
     tools_info = load_shed_repos(runnable)
     if tools_info:
-        shed_tools._ensure_log_configured("ephemeris")
-        install_tool_manager = shed_tools.InstallToolManager(tools_info, admin_gi)
-        install_tool_manager.install_repositories()
-        if install_tool_manager.errored_repositories:
+        install_tool_manager = shed_tools.InstallRepositoryManager(admin_gi)
+        install_results = install_tool_manager.install_repositories(tools_info)
+        if install_results.errored_repositories:
             if ignore_dependency_problems:
                 warn(FAILED_REPOSITORIES_MESSAGE)
             else:
@@ -81,7 +80,7 @@ def _raw_dict(path, importer=None):
         workflow_directory = os.path.dirname(path)
         workflow_directory = os.path.abspath(workflow_directory)
         with open(path, "r") as f:
-            workflow = yaml.load(f)
+            workflow = yaml.safe_load(f)
             workflow = python_to_workflow(workflow, importer, workflow_directory)
 
     return workflow

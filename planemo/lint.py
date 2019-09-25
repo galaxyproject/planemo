@@ -93,7 +93,14 @@ def find_dois_for_xml(tool_xml):
 def is_doi(publication_id, lint_ctx):
     """Check if dx.doi knows about the ``publication_id``."""
     base_url = "https://doi.org"
+    if publication_id is None:
+        lint_ctx.error('Empty DOI citation')
+        return
+    publication_id = publication_id.strip()
     doiless_publication_id = publication_id.split("doi:", 1)[-1]
+    if not doiless_publication_id:
+        lint_ctx.error('Empty DOI citation')
+        return
     url = "%s/%s" % (base_url, doiless_publication_id)
     r = requests.get(url)
     if r.status_code == 200:
