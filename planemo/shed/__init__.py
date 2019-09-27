@@ -208,7 +208,7 @@ def shed_init(ctx, path, **kwds):
         return 1
 
     repo_dependencies_path = os.path.join(path, REPO_DEPENDENCIES_CONFIG_NAME)
-    from_workflow = kwds.get("from_workflow", None)
+    from_workflow = kwds.get("from_workflow")
 
     if from_workflow:
         workflow_name = os.path.basename(from_workflow)
@@ -220,8 +220,7 @@ def shed_init(ctx, path, **kwds):
             return 1
 
         repo_pairs = _parse_repos_from_workflow(from_workflow)
-        repository_dependencies = RepositoryDependencies()
-        repository_dependencies.repo_pairs = repo_pairs
+        repository_dependencies = RepositoryDependencies(repo_pairs)
         repository_dependencies.write_to_path(repo_dependencies_path)
 
     return 0
@@ -276,7 +275,7 @@ def find_urls_for_xml(root):
 
 def handle_force_create(realized_repository, ctx, shed_context, **kwds):
     repo_id = realized_repository.find_repository_id(ctx, shed_context)
-    if repo_id is None and kwds.get("force_repository_creation", None):
+    if repo_id is None and kwds.get("force_repository_creation"):
         repo_id = realized_repository.create(ctx, shed_context)
     # failing to create the repo, give up
     return repo_id
@@ -291,7 +290,7 @@ def report_non_existent_repository(realized_repository):
 def upload_repository(ctx, realized_repository, **kwds):
     """Upload a tool directory as a tarball to a tool shed."""
     path = realized_repository.path
-    tar_path = kwds.get("tar", None)
+    tar_path = kwds.get("tar")
     if not tar_path:
         tar_path = build_tarball(path, **kwds)
     if kwds.get("tar_only", False):
@@ -333,7 +332,7 @@ def upload_repository(ctx, realized_repository, **kwds):
 
 
 def _update_commit_message(ctx, realized_repository, update_kwds, **kwds):
-    message = kwds.get("message", None)
+    message = kwds.get("message")
     git_rev = realized_repository.git_rev(ctx)
     git_repo = realized_repository.git_repo(ctx)
     if message is None:
@@ -357,7 +356,7 @@ def diff_repo(ctx, realized_repository, **kwds):
 
 def _diff_in(ctx, working, realized_repository, **kwds):
     path = realized_repository.path
-    shed_target_source = kwds.get("shed_target_source", None)
+    shed_target_source = kwds.get("shed_target_source")
 
     label_a = "_%s_" % (shed_target_source if shed_target_source else "workingdir")
     shed_target = kwds.get("shed_target", "B")
@@ -406,7 +405,7 @@ def _diff_in(ctx, working, realized_repository, **kwds):
         shell(['tar', '-xzf', tar_path, '-C', mine])
         shutil.rmtree(tar_path, ignore_errors=True)
 
-    output = kwds.get("output", None)
+    output = kwds.get("output")
     raw = kwds.get("raw", False)
     xml_diff = 0
     if not raw:
@@ -453,7 +452,7 @@ def get_shed_context(ctx=None, **kwds):
     shed_config, username = _shed_config_and_username(ctx, **kwds)
 
     def prop(key):
-        return kwds.get("shed_%s" % key, None) or shed_config.get(key, None)
+        return kwds.get("shed_%s" % key) or shed_config.get(key)
 
     url = _shed_config_to_url(shed_config)
     if read_only:
@@ -496,27 +495,27 @@ def _shed_config_and_username(ctx, **kwds):
         else:
             shed_config["label"] = "custom tool shed at %s" % shed_target
 
-    default_shed_username = global_config.get("shed_username", None)
+    default_shed_username = global_config.get("shed_username")
     username = shed_config.get("username", default_shed_username)
 
     return shed_config, username
 
 
 def _find_shed_key(kwds, shed_config):
-    shed_key = kwds.get("shed_key", None)
+    shed_key = kwds.get("shed_key")
     if shed_key is None:
-        shed_key_from_env = kwds.get("shed_key_from_env", None)
+        shed_key_from_env = kwds.get("shed_key_from_env")
         if shed_key_from_env is not None:
             shed_key = os.environ[shed_key_from_env]
     if shed_key is None:
-        shed_key = shed_config.get("key", None)
+        shed_key = shed_config.get("key")
     return shed_key
 
 
 def find_repository_id(ctx, shed_context, path, **kwds):
-    repo_config = kwds.get("config", None)
+    repo_config = kwds.get("config")
     if repo_config is None:
-        name = kwds.get("name", None)
+        name = kwds.get("name")
         repo_config = shed_repo_config(ctx, path, name=name)
     name = repo_config["name"]
     find_kwds = kwds.copy()
@@ -541,7 +540,7 @@ def _find_repository_id(ctx, shed_context, name, repo_config, **kwds):
 
 
 def _owner(ctx, repo_config, shed_context=None, **kwds):
-    owner = kwds.get("owner", None) or repo_config.get("owner", None)
+    owner = kwds.get("owner") or repo_config.get("owner")
     if owner is None:
         if shed_context is None and "shed_target" in kwds:
             shed_context = get_shed_context(ctx, **kwds)
@@ -558,7 +557,7 @@ def _expand_raw_config(ctx, config, path, name=None):
         config["name"] = path_to_repo_name(path)
 
     default_include = config.get("include", ["**"])
-    repos = config.get("repositories", None)
+    repos = config.get("repositories")
     auto_tool_repos = config.get("auto_tool_repositories", False)
     suite_config = config.get("suite", False)
 
@@ -587,7 +586,7 @@ def _expand_raw_config(ctx, config, path, name=None):
 def _build_auto_tool_repos(ctx, path, config, auto_tool_repos):
     default_include = config.get("include", ["**"])
     tool_source_pairs = list(yield_tool_sources(ctx, path, recursive=True))
-    paths = list(map(lambda pair: pair[0], tool_source_pairs))
+    paths = [_[0] for _ in tool_source_pairs]
     excludes = _shed_config_excludes(config)
 
     def _build_repository(tool_path, tool_source):
@@ -608,7 +607,7 @@ def _build_auto_tool_repos(ctx, path, config, auto_tool_repos):
         }
         for key in ["name", "description", "long_description"]:
             template_key = "%s_template" % key
-            template = auto_tool_repos.get(template_key, None)
+            template = auto_tool_repos.get(template_key)
             if template:
                 value = templates.render(template, **template_vars)
                 repo_dict[key] = value
@@ -623,24 +622,19 @@ def _build_auto_tool_repos(ctx, path, config, auto_tool_repos):
 
 
 def _build_suite_repo(config, repos, suite_config):
-    if not isinstance(suite_config, dict):
-        suite_config = {}
-
-    name = suite_config.get("name", None)
-    if name is None:
-        raise Exception("suite_config requires name key.")
+    name = suite_config.get("name")
+    if not name:
+        raise Exception("suite requires a 'name'.")
     description = suite_config.get("description", "")
-    long_description = suite_config.get("long_description", None)
+    long_description = suite_config.get("long_description")
     owner = config["owner"]
     repo_type = suite_config.get('type', REPO_TYPE_SUITE)
 
-    repo_pairs = map(lambda name: (owner, name), repos.keys())
+    repo_pairs = [(repo_dict.get('owner') or owner, repo_name) for repo_name, repo_dict in repos.items()]
     extra_repos = suite_config.get("include_repositories", {})
-    extra_pairs = map(lambda item: (item["owner"], item["name"]), extra_repos)
+    repo_pairs += [(_["owner"], _["name"]) for _ in extra_repos]
 
-    repository_dependencies = RepositoryDependencies()
-    repository_dependencies.description = description
-    repository_dependencies.repo_pairs = list(repo_pairs) + list(extra_pairs)
+    repository_dependencies = RepositoryDependencies(repo_pairs, description)
 
     repo = {
         "_files": {
@@ -658,11 +652,11 @@ def _build_suite_repo(config, repos, suite_config):
 
 def update_repository_for(ctx, tsi, id, repo_config):
     name = repo_config["name"]
-    description = repo_config.get("description", None)
-    long_description = repo_config.get("long_description", None)
+    description = repo_config.get("description")
+    long_description = repo_config.get("long_description")
     repo_type = shed_repo_type(repo_config, name)
-    remote_repository_url = repo_config.get("remote_repository_url", None)
-    homepage_url = repo_config.get("homepage_url", None)
+    remote_repository_url = repo_config.get("remote_repository_url")
+    homepage_url = repo_config.get("homepage_url")
     categories = repo_config.get("categories", [])
     category_ids = find_category_ids(tsi, categories)
 
@@ -685,11 +679,11 @@ def update_repository_for(ctx, tsi, id, repo_config):
 
 
 def create_repository_for(ctx, tsi, name, repo_config):
-    description = repo_config.get("description", None)
-    long_description = repo_config.get("long_description", None)
+    description = repo_config.get("description")
+    long_description = repo_config.get("long_description")
     repo_type = shed_repo_type(repo_config, name)
-    remote_repository_url = repo_config.get("remote_repository_url", None)
-    homepage_url = repo_config.get("homepage_url", None)
+    remote_repository_url = repo_config.get("remote_repository_url")
+    homepage_url = repo_config.get("homepage_url")
     categories = repo_config.get("categories", [])
     category_ids = find_category_ids(tsi, categories)
 
@@ -785,7 +779,7 @@ def path_to_repo_name(path):
 
 
 def shed_repo_type(config, name):
-    repo_type = config.get("type", None)
+    repo_type = config.get("type")
     if repo_type is None:
         if name.startswith("package_"):
             repo_type = REPO_TYPE_TOOL_DEP
@@ -802,9 +796,7 @@ def _shed_config_to_url(shed_config):
         message = (
             "Invalid shed url specified [{0}]. Please specify a valid "
             "HTTP address or one of {1}"
-        ).format(
-            url, SHED_SHORT_NAMES.keys()
-        )
+        ).format(url, list(SHED_SHORT_NAMES.keys()))
         raise ValueError(message)
     return url
 
@@ -843,23 +835,23 @@ def _realize_effective_repositories(ctx, path, **kwds):
 
 
 def _create_shed_config(ctx, path, **kwds):
-    name = kwds.get("name", None) or path_to_repo_name(os.path.dirname(path))
+    name = kwds.get("name") or path_to_repo_name(os.path.dirname(path))
     name_invalid = validate_repo_name(name)
     if name_invalid:
         error(name_invalid)
         return 1
 
-    owner = kwds.get("owner", None)
+    owner = kwds.get("owner")
     if owner is None:
-        owner = ctx.global_config.get("shed_username", None)
+        owner = ctx.global_config.get("shed_username")
     owner_invalid = validate_repo_owner(owner)
     if owner_invalid:
         error(owner_invalid)
         return 1
-    description = kwds.get("description", None) or name
-    long_description = kwds.get("long_description", None)
-    remote_repository_url = kwds.get("remote_repository_url", None)
-    homepage_url = kwds.get("homepage_url", None)
+    description = kwds.get("description") or name
+    long_description = kwds.get("long_description")
+    remote_repository_url = kwds.get("remote_repository_url")
+    homepage_url = kwds.get("homepage_url")
     categories = kwds.get("category", [])
     config = dict(
         name=name,
@@ -919,7 +911,7 @@ def _path_on_disk(ctx, path):
 
 
 def _find_raw_repositories(ctx, path, **kwds):
-    name = kwds.get("name", None)
+    name = kwds.get("name")
     recursive = kwds.get("recursive", False)
 
     shed_file_dirs = find_matching_directories(
@@ -936,7 +928,7 @@ def _find_raw_repositories(ctx, path, **kwds):
             exception = RuntimeError(error_message)
             _handle_realization_error(exception, **kwds)
             return [exception]
-        config_name = config.get("name", None)
+        config_name = config.get("name")
 
     if len(shed_file_dirs) > 1 and name is not None:
         raise Exception(NAME_INVALID_MESSAGE)
@@ -956,7 +948,7 @@ def _build_raw_repo_objects(ctx, raw_dirs, **kwds):
     expanded out into shed repositories.
     """
     multiple = len(raw_dirs) > 1
-    name = kwds.get("name", None)
+    name = kwds.get("name")
 
     # List of RawRepositoryDirectories or parsing failures if
     # fail_fast is not enabled.
@@ -980,9 +972,9 @@ class RepositoryDependencies(object):
     """ Abstraction for shed repository_dependencies.xml files.
     """
 
-    def __init__(self):
-        self.description = ""
-        self.repo_pairs = []
+    def __init__(self, repo_pairs, description=None):
+        self.repo_pairs = repo_pairs
+        self.description = description or ""
 
     def __str__(self):
         contents = '<repositories description="%s">' % self.description
@@ -1164,7 +1156,7 @@ class RealizedFile(object):
             include_info = {"source": include_info}
         source = include_info.get("source")
         abs_source = os.path.join(path, source)
-        destination = include_info.get("destination", None)
+        destination = include_info.get("destination")
         strip_components = include_info.get("strip_components", 0)
         if destination is None:
             destination = "./"
@@ -1242,7 +1234,7 @@ class RealizedRepositry(object):
         return git.rev_if_git(ctx, self.real_path)
 
     def git_repo(self, ctx):
-        return self.config.get("remote_repository_url", None)
+        return self.config.get("remote_repository_url")
 
     def pattern_to_file_name(self, pattern):
         if not self.multiple:
@@ -1277,7 +1269,7 @@ class RealizedRepositry(object):
         """Wrapper for creating the endpoint if it doesn't exist
         """
         context_owner = shed_context.owner()
-        config_owner = self.config.get("owner", None)
+        config_owner = self.config.get("owner")
         if context_owner and config_owner and context_owner != config_owner:
             # This is broken because context_owner is incorrect if using an API key.
             # message = INCORRECT_OWNER_MESSAGE % (config_owner, context_owner)
