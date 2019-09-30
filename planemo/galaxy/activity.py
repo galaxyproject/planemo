@@ -91,7 +91,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):
             inputs_representation=inputs_representation,
         )
         ctx.vlog("Post to Galaxy tool API with payload [%s]" % run_tool_payload)
-        tool_run_response = user_gi.tools._tool_post(run_tool_payload)
+        tool_run_response = user_gi.tools._post(run_tool_payload)
 
         job = tool_run_response["jobs"][0]
         job_id = job["id"]
@@ -211,7 +211,7 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
                 upload_payload["inputs"]["force_composite"] = "True"
 
             ctx.vlog("upload_payload is %s" % upload_payload)
-            return user_gi.tools._tool_post(upload_payload, files_attached=files_attached[0])
+            return user_gi.tools._post(upload_payload, files_attached=files_attached[0])
         elif isinstance(upload_target, DirectoryUploadTarget):
             tar_path = upload_target.tar_path
 
@@ -221,7 +221,7 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
             )
             upload_payload["inputs"]["files_0|auto_decompress"] = False
             _attach_file(upload_payload, tar_path)
-            tar_upload_response = user_gi.tools._tool_post(upload_payload, files_attached=files_attached[0])
+            tar_upload_response = user_gi.tools._post(upload_payload, files_attached=files_attached[0])
             convert_response = user_gi.tools.run_tool(
                 tool_id="CONVERTER_tar_to_directory",
                 tool_inputs={"input1": {"src": "hda", "id": tar_upload_response["outputs"][0]["id"]}},
