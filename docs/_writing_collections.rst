@@ -19,8 +19,7 @@ types - ``list`` and ``paired``.
   ``reverse`` dataset.
 
 .. note:: Read more about
-  `creating and managing collections <https://galaxyproject.org/tutorials/collections/>`_
-  on the Galaxy Community Hub.
+  `creating and managing collections <https://galaxyproject.org/tutorials/collections/>`__.
 
 Composite types include for instance the ``list:paired`` collection type -
 which represents a list of dataset pairs. In this case, instead of each
