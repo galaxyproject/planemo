@@ -18,8 +18,9 @@ types - ``list`` and ``paired``.
   applications. Each ``paired`` collection consists of a ``forward`` and
   ``reverse`` dataset.
 
-.. note:: Read more about creating and managing collections on the
-  `Galaxy Wiki <https://wiki.galaxyproject.org/Histories#Dataset_Collections>`__.
+.. note:: Read more about
+  `creating and managing collections <https://wiki.galaxyproject.org/Histories#Dataset_Collections>`_
+  on the Galaxy Community Hub.
 
 Composite types include for instance the ``list:paired`` collection type -
 which represents a list of dataset pairs. In this case, instead of each
