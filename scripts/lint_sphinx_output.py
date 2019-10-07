@@ -24,7 +24,7 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv
     sphinx_output = sys.stdin.read()
-    warning_lines = filter(warning_line, sphinx_output.splitlines())
+    warning_lines = [_ for _ in sphinx_output.splitlines() if warning_line(_)]
     for line in warning_lines:
         print(line)
     sys.exit(1 if warning_lines else 0)

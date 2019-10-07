@@ -1,8 +1,10 @@
-import sys
 import collections
+import sys
 
-from planemo.conda_verify.const import MAGIC_HEADERS, DLL_TYPES
-
+from planemo.conda_verify.const import (
+    DLL_TYPES,
+    MAGIC_HEADERS,
+)
 
 
 def get_object_type(data):
@@ -32,9 +34,9 @@ def get_bad_seq(s):
 
 
 def all_ascii(data, allow_CR=False):
-    newline = [10] # LF
+    newline = [10]  # LF
     if allow_CR:
-        newline.append(13) # CF
+        newline.append(13)  # CF
     for c in data:
         n = ord(c) if sys.version_info[0] == 2 else c
         if not (n in newline or 32 <= n < 127):
@@ -50,6 +52,7 @@ class memoized(object):
     def __init__(self, func):
         self.func = func
         self.cache = {}
+
     def __call__(self, *args):
         if not isinstance(args, collections.Hashable):
             # uncacheable. a list, for instance.
