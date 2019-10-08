@@ -78,7 +78,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):
 
     history_id = _history_id(user_gi, **kwds)
 
-    job_dict, _ = stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds)
+    job_dict, _ = stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds)  # noqa C901
 
     if runnable.type in [RunnableType.galaxy_tool, RunnableType.cwl_tool]:
         response_class = GalaxyToolRunResponse
@@ -385,7 +385,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             if not is_cwl and output_src["src"] == "hda":
                 # TODO: deprecate this route for finding workflow outputs,
                 # it is a brittle and bad approach...
-                dataset = self._get_metadata("dataset", output_dataset_id)
+                dataset = self._get_metadata("dataset", output_id)
                 dataset_dict = get_dataset(dataset)
                 ctx.vlog("populated destination [%s]" % dataset_dict["path"])
 
