@@ -9,22 +9,22 @@ matrix:
   include:
     - python: 2.7
       env: TOX_ENV=py27-lint
+    - python: 3.7
+      env: TOX_ENV=py37-lint_readme
+    - python: 3.7
+      env: TOX_ENV=py37-lint_docs
+    - python: 3.7
+      env: TOX_ENV=py37-lint_docstrings
+    - python: 3.7
+      env: TOX_ENV=py37-lint
+    - python: 3.7
+      env: TOX_ENV=py37-quick
     - python: 2.7
-      env: TOX_ENV=py27-lint-readme
-    - python: 2.7
-      env: TOX_ENV=py27-lint-docs
-    - python: 2.7
-      env: TOX_ENV=py27-lint-docstrings
-    - python: 3.6
-      env: TOX_ENV=py36-lint
-    - python: 3.6
-      env: TOX_ENV=py36-quick
-    - python: 2.7
-      env: TOX_ENV=py27
-    - python: 3.6
-      env: TOX_ENV=py36
+      env: TOX_ENV=py27-unit
+    - python: 3.7
+      env: TOX_ENV=py37-unit
   allow_failures:
-    - env: TOX_ENV=py27-lint-docstrings
+    - env: TOX_ENV=py37-lint_docstrings
 
 install:
   - pip install tox coveralls

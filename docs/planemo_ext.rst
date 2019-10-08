@@ -5,6 +5,6 @@ Module contents
 ---------------
 
 .. automodule:: planemo_ext
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
