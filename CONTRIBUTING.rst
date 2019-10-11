@@ -151,7 +151,7 @@ testing environment. Planemo defines the following environments:
     Lint the planemo code using Python 2.7.
 
 ``py37-lint``
-    Lint the planemo code using Python 3.4 (also ensures valid Python 3
+    Lint the planemo code using Python 3.7 (also ensures valid Python 3
     syntax).
 
 ``py37-lint_readme``
