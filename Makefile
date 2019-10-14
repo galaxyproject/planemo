@@ -49,7 +49,11 @@ clean-test: ## remove test and coverage artifacts
 	rm -f .coverage
 	rm -fr htmlcov/
 
-install: ## install into Python envirnoment
+submodule:
+	git submodule init
+	git submodule update
+
+install: submodule ## install into Python envirnoment
 	python setup.py install && cd cwl-runner && python setup.py install
 
 setup-venv: ## setup a development virtualenv in current directory
@@ -136,8 +140,8 @@ open-rtd: docs ## open docs on readthedocs.org
 open-project: ## open project on github
 	$(OPEN_RESOURCE) $(PROJECT_URL)
 
-dist: clean ## package
-	$(IN_VENV) python setup.py sdist bdist_egg bdist_wheel
+dist: clean submodule ## package
+	$(IN_VENV) python setup.py sdist bdist_wheel
 	ls -l dist
 
 release-test-artifacts: dist
