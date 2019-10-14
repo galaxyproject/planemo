@@ -6,10 +6,11 @@ History
 .. to_doc
 
 ---------------------
-0.63.0.dev0
+0.62.1 (2019-10-14)
 ---------------------
 
-    
+* Init & update submodules when installing and creating packages. Stop
+  distributing eggs (thanks to `@nsoranzo`_). 1ab8530_
 
 ---------------------
 0.62.0 (2019-10-11)
@@ -1511,6 +1512,7 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _1ab8530: https://github.com/galaxyproject/planemo/commit/1ab8530
 .. _Pull Request 966: https://github.com/galaxyproject/planemo/pull/966
 .. _Pull Request 964: https://github.com/galaxyproject/planemo/pull/964
 .. _Pull Request 963: https://github.com/galaxyproject/planemo/pull/963
