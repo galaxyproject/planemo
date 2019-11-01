@@ -106,7 +106,7 @@ Before you submit a pull request, check that it meets these guidelines:
 
 1. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring.
-2. The pull request should work for Python 2.7 and 3.7. Check
+2. The pull request should work for Python 2.7 and >=3.5. Check
    https://travis-ci.org/galaxyproject/planemo/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
