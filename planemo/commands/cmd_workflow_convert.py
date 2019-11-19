@@ -34,7 +34,7 @@ from planemo.runnable import (
 @options.galaxy_serve_options()
 @command_function
 def cli(ctx, workflow_path, output=None, force=False, **kwds):
-    """Convert Format 2 workflow to a native Galaxy workflow.
+    """Convert Format 2 workflows to native Galaxy workflows, and vice-versa.
     """
     assert is_galaxy_engine(**kwds)
 
