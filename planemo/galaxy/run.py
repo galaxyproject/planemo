@@ -58,7 +58,7 @@ def locate_galaxy_virtualenv(ctx, kwds):
             shared_venv_path = "%s_%s" % (shared_venv_path, galaxy_python_version)
         if galaxy_branch != "master":
             shared_venv_path = "%s_%s" % (shared_venv_path, galaxy_branch)
-        venv_command = CACHED_VIRTUAL_ENV_COMMAND % shlex_quote(shared_venv_path)
+        venv_command = CACHED_VIRTUAL_ENV_COMMAND % shlex_quote(os.environ.get("GALAXY_VIRTUAL_ENV") or shared_venv_path)
     else:
         venv_command = UNCACHED_VIRTUAL_ENV_COMMAND
     return shell_join(
