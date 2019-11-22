@@ -131,6 +131,19 @@ def handle_reports_and_summary(ctx, structured_data, exit_code=None, kwds={}):
     return exit_code if exit_code is not None else summary_exit_code
 
 
+def merge_reports(input_paths, output_path):
+    reports = []
+    for path in input_paths:
+        with io.open(path, encoding='utf-8') as f:
+            reports.append(json.load(f))
+    tests = []
+    for report in reports:
+        tests.extend(report["tests"])
+    merged_report = {"tests": tests for report in reports}
+    with io.open(output_path, mode="w", encoding='utf-8') as out:
+        json.dump(merged_report, out)
+
+
 def handle_reports(ctx, structured_data, kwds):
     """Write reports based on user specified kwds."""
     exceptions = []
