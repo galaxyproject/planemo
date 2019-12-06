@@ -121,6 +121,7 @@ class ServeTestCase(CliTestCase):
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @skip_unless_environ("PLANEMO_ENABLE_POSTGRES_TESTS")
+    @skip_unless_executable("psql")
     def test_serve_postgres_profile(self):
         self._test_serve_profile("--database_type", "postgres")
 
