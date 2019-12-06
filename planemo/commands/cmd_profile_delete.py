@@ -11,6 +11,7 @@ from planemo.galaxy import profiles
 @click.command('profile_delete')
 @options.profile_name_argument()
 @options.profile_database_options()
+@options.docker_config_options()
 @command_function
 def cli(ctx, profile_name, **kwds):
     """Delete a profile."""
