@@ -10,6 +10,7 @@ from planemo.database import create_database_source
 
 @click.command('database_create')
 @options.database_source_options()
+@options.docker_config_options()
 @command_function
 def cli(ctx, **kwds):
     """List databases in configured database source.
