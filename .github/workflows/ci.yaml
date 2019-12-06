@@ -17,7 +17,7 @@ jobs:
           - lint_readme
           - lint_docs
           - quick
-          # - unit
+          - unit
     steps:
     - uses: actions/checkout@v1
       with:
