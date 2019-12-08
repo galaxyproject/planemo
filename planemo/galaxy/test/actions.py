@@ -141,7 +141,7 @@ def merge_reports(input_paths, output_path):
         tests.extend(report["tests"])
     merged_report = {"tests": tests}
     with io.open(output_path, mode="w", encoding='utf-8') as out:
-        json.dump(merged_report, out)
+        out.write(unicodify(json.dumps(merged_report)))
 
 
 def handle_reports(ctx, structured_data, kwds):
