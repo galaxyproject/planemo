@@ -78,7 +78,7 @@
         .success(function(content) { renderTestResults( $.parseJSON(content) ); })
         .failure(function() { alert("Failed to load test data.")} );
       } else {
-        var test_data = {{ json.dumps(raw_data) }};
+        var test_data = {{ raw_data|tojson }};
         renderTestResults(test_data);
       }
     </script>
