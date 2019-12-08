@@ -1,11 +1,7 @@
 """Ensure best-practice biocontainer registered for this tool."""
 
-from galaxy.tools.deps.mulled.util import (
-    build_target,
-    image_name,
-    mulled_tags_for,
-    split_tag,
-)
+from galaxy.tools.deps.container_resolvers.mulled import targets_to_mulled_name
+from galaxy.tools.deps.mulled.util import build_target
 
 from planemo.conda import tool_source_conda_targets
 
@@ -30,33 +26,7 @@ def lint_biocontainer_registered(tool_source, lint_ctx):
         lint_ctx.warn(MESSAGE_WARN_NO_CONTAINER)
 
 
-# TODO: Refactor following method into mulled util and then refactor same code out of mulled
-# container resolver.
 def mulled_container_name(namespace, targets):
-    name = None
-
-    if len(targets) == 1:
-        target = targets[0]
-        target_version = target.version
-        tags = mulled_tags_for(namespace, target.package_name)
-
-        if not tags:
-            return None
-
-        if target_version:
-            for tag in tags:
-                version, build = split_tag(tag)
-                if version == target_version:
-                    name = "%s:%s--%s" % (target.package_name, version, build)
-                    break
-        else:
-            version, build = split_tag(tags[0])
-            name = "%s:%s--%s" % (target.package_name, version, build)
-    else:
-        base_image_name = image_name(targets)
-        tags = mulled_tags_for(namespace, base_image_name)
-        if tags:
-            name = "%s:%s" % (base_image_name, tags[0])
-
+    name = targets_to_mulled_name(targets=targets, hash_func="v2", namespace=namespace)
     if name:
         return "quay.io/%s/%s" % (namespace, name)
