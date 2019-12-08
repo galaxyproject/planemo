@@ -1328,14 +1328,28 @@ def recursive_option(help="Recursively perform command for subdirectories."):
     )
 
 
-def tool_test_json():
+def merge_test_json():
     target_path = click.Path(
         file_okay=True,
         dir_okay=False,
         resolve_path=True,
     )
     return click.argument(
-        'path',
+        'input_paths',
+        metavar="INPUT_PATHS",
+        type=target_path,
+        nargs=-1,
+    )
+
+
+def tool_test_json(var="path"):
+    target_path = click.Path(
+        file_okay=True,
+        dir_okay=False,
+        resolve_path=True,
+    )
+    return click.argument(
+        var,
         metavar="FILE_PATH",
         type=target_path,
         default="tool_test_output.json",
