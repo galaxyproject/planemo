@@ -81,10 +81,9 @@ def cli(ctx, paths, **kwds):
                 ctx.log("Target [%s] is not available in best practice channels - skipping" % conda_target)
                 best_practice_requirements = False
             if not exact:
-                ctx.log("Target version [%s] for package [%s] is not available in best practice channels - skipping",
+                ctx.log("Target version [%s] for package [%s] is not available in best practice channels - please specify the full version",
                         conda_target.version,
                         conda_target.package)
-                best_practice_requirements = False
 
         if not best_practice_requirements:
             continue
