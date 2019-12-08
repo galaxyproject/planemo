@@ -139,7 +139,7 @@ def merge_reports(input_paths, output_path):
     tests = []
     for report in reports:
         tests.extend(report["tests"])
-    merged_report = {"tests": tests for report in reports}
+    merged_report = {"tests": tests}
     with io.open(output_path, mode="w", encoding='utf-8') as out:
         json.dump(merged_report, out)
 
