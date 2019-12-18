@@ -165,7 +165,7 @@ class RegistryTarget(object):
             pull_request(ctx, self.target_repository, message=message)
 
     def write_targets(self, ctx, target_filename, mulled_targets):
-        with open(target_filename, "a") as f:
+        with open(target_filename, "w") as f:
             contents = to_target_str(mulled_targets)
             f.write("%s\n" % contents)
             ctx.log("Wrote requirements [%s] to file [%s]" % (contents, target_filename))
