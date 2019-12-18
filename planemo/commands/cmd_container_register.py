@@ -93,20 +93,12 @@ def cli(ctx, paths, **kwds):
             continue
 
         name = v2_image_name(mulled_targets)
-
-        if len(mulled_targets) == 1:
-            target_filename = os.path.join(registry_target.output_directory, "hash.tsv")
-            if registry_target.targets_in_file(ctx, target_filename, mulled_targets):
-                ctx.log("'%s' already in hash.tsv, skipping" % to_target_str(mulled_targets))
-                continue
-
-        elif len(mulled_targets) > 1:
-            tag = "0"
-            name_and_tag = "%s-%s" % (name, tag)
-            target_filename = os.path.join(registry_target.output_directory, "%s.tsv" % name_and_tag)
-            if os.path.exists(target_filename):
-                ctx.log("Target file '%s' already exists, skipping" % target_filename)
-                continue
+        tag = "0"
+        name_and_tag = "%s-%s" % (name, tag)
+        target_filename = os.path.join(registry_target.output_directory, "%s.tsv" % name_and_tag)
+        if os.path.exists(target_filename):
+            ctx.log("Target file '%s' already exists, skipping" % target_filename)
+            continue
 
         namespace = kwds["mulled_namespace"]
         repo_data = quay_repository(namespace, name)
@@ -177,14 +169,6 @@ class RegistryTarget(object):
             contents = to_target_str(mulled_targets)
             f.write("%s\n" % contents)
             ctx.log("Wrote requirements [%s] to file [%s]" % (contents, target_filename))
-
-    def targets_in_file(self, ctx, target_filename, targets):
-        target_str = to_target_str(targets)
-        with open(target_filename) as build_tsv:
-            for line in build_tsv:
-                if line.strip() == target_str:
-                    return True
-        return False
 
 
 def to_target_str(targets):
