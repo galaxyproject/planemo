@@ -74,28 +74,30 @@ def cli(ctx, paths, **kwds):
         ctx.vlog("Handling conda_targets [%s]" % conda_targets)
         mulled_targets = conda_to_mulled_targets(conda_targets)
         mulled_targets_str = "- " + "\n- ".join(map(conda_build_target_str, mulled_targets))
-        if len(mulled_targets) < 2:
-            ctx.vlog("Skipping registeration, fewer than 2 targets discovered.")
-            # Skip these for now, we will want to revisit this for conda-forge dependencies and such.
-            continue
-
         best_practice_requirements = True
         for conda_target in conda_targets:
             best_hit, exact = best_practice_search(conda_target, conda_context=conda_context)
-            if not best_hit or not exact:
-                ctx.vlog("Target [%s] is not available in best practice channels - skipping" % conda_target)
+            if not best_hit:
+                ctx.log("Target [%s] is not available in best practice channels - skipping" % conda_target)
                 best_practice_requirements = False
+            if not exact:
+                ctx.log("Target version [%s] for package [%s] is not available in best practice channels - please specify the full version",
+                        conda_target.version,
+                        conda_target.package)
 
         if not best_practice_requirements:
+            continue
+
+        if len(mulled_targets) < 1:
+            ctx.log("Skipping registration, no targets discovered.")
             continue
 
         name = v2_image_name(mulled_targets)
         tag = "0"
         name_and_tag = "%s-%s" % (name, tag)
         target_filename = os.path.join(registry_target.output_directory, "%s.tsv" % name_and_tag)
-        ctx.vlog("Target filename for registeration is [%s]" % target_filename)
         if os.path.exists(target_filename):
-            ctx.vlog("Target file already exists, skipping")
+            ctx.log("Target file '%s' already exists, skipping" % target_filename)
             continue
 
         namespace = kwds["mulled_namespace"]
@@ -164,16 +166,20 @@ class RegistryTarget(object):
 
     def write_targets(self, ctx, target_filename, mulled_targets):
         with open(target_filename, "w") as f:
-            target_strings = list()
-            for target in mulled_targets:
-                if target.version:
-                    target_str = "%s=%s" % (target.package_name, target.version)
-                else:
-                    target_str = target.package_name
-                target_strings.append(target_str)
-            contents = ",".join(target_strings)
-            f.write(contents)
-            ctx.vlog("Wrote requirements [%s] to file [%s]" % (contents, target_filename))
+            contents = to_target_str(mulled_targets)
+            f.write("%s\n" % contents)
+            ctx.log("Wrote requirements [%s] to file [%s]" % (contents, target_filename))
+
+
+def to_target_str(targets):
+    target_strings = []
+    for target in targets:
+        if target.version:
+            target_str = "%s=%s" % (target.package_name, target.version)
+        else:
+            target_str = target.package_name
+        target_strings.append(target_str)
+    return ",".join(target_strings)
 
 
 def open_prs(ctx):
