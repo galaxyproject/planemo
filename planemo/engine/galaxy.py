@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import abc
 import contextlib
 
-from galaxy.tools.verify import interactor
+from galaxy.tool_util.verify import interactor
 
 from planemo.galaxy.activity import execute
 from planemo.galaxy.config import external_galaxy_config

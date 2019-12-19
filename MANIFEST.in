@@ -1,6 +1,5 @@
 include *.rst LICENSE
 include planemo/xml/xsd/*
-include planemo/xml/xsd/tool/*
 include planemo_ext/tool_factory_2/*
 include planemo/reports/*
 include planemo/scripts/*

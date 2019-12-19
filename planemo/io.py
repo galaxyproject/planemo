@@ -13,8 +13,8 @@ from sys import platform as _platform
 from xml.sax.saxutils import escape
 
 import click
-from galaxy.tools.deps import commands
-from galaxy.tools.deps.commands import download_command
+from galaxy.tool_util.deps import commands
+from galaxy.tool_util.deps.commands import download_command
 from six import (
     string_types,
     StringIO

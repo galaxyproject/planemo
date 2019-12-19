@@ -13,7 +13,7 @@ from tempfile import mkdtemp
 
 import psutil
 from click.testing import CliRunner
-from galaxy.tools.deps.commands import which
+from galaxy.tool_util.deps.commands import which
 from galaxy.util import unicodify
 
 from planemo import cli

@@ -1,12 +1,12 @@
-"""Planemo-specific wrappers around galaxy-lib tool functionality."""
+"""Planemo-specific wrappers around galaxy-tool-util tool functionality."""
 from __future__ import absolute_import
 
 import os
 import sys
 import traceback
 
-from galaxy.tools import loader_directory
-from galaxy.tools.fetcher import ToolLocationFetcher
+from galaxy.tool_util import loader_directory
+from galaxy.tool_util.fetcher import ToolLocationFetcher
 
 from planemo.io import error, info
 

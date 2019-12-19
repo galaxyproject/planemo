@@ -3,10 +3,11 @@ import copy
 import os
 import tempfile
 
-import planemo.lint
-from planemo.xml import XSDS_PATH
+import galaxy.tool_util
 
-TOOL_XSD = os.path.join(XSDS_PATH, "tool", "galaxy.xsd")
+import planemo.lint
+
+TOOL_XSD = os.path.join(os.path.dirname(galaxy.tool_util.__file__), 'xsd', "galaxy.xsd")
 
 
 def lint_tool_xsd(tool_xml, lint_ctx):

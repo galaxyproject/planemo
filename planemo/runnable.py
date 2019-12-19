@@ -9,15 +9,15 @@ import os
 import aenum
 import six
 import yaml
-from galaxy.tools.cwl.parser import workflow_proxy
-from galaxy.tools.loader_directory import (
+from galaxy.tool_util.cwl.parser import workflow_proxy
+from galaxy.tool_util.loader_directory import (
     is_a_yaml_with_class,
     looks_like_a_cwl_artifact,
     looks_like_a_data_manager_xml,
     looks_like_a_tool_cwl,
     looks_like_a_tool_xml,
 )
-from galaxy.tools.parser import get_tool_source
+from galaxy.tool_util.parser import get_tool_source
 
 from planemo.exit_codes import EXIT_CODE_UNKNOWN_FILE_TYPE, ExitCodeException
 from planemo.galaxy.workflows import describe_outputs
@@ -342,7 +342,7 @@ class ExternalGalaxyToolTestCase(AbstractTestCase):
         self.test_dict = test_dict
 
     def structured_test_data(self, run_response):
-        """Just return the structured_test_data generated from galaxy-lib for this test variant.
+        """Just return the structured_test_data generated from galaxy-tool-util for this test variant.
         """
         return run_response
 

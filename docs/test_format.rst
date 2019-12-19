@@ -256,7 +256,7 @@ reduce the load on the target Galaxy while checking for the status changes use t
 option where integer is the incremental increase in seconds for every request.
 
 To run tool tests against a running Galaxy, ``galaxy-tool-test`` is a script that gets installed with
-galaxy-lib and so may very well already be on your ``PATH``. Check out the options available with that
+galaxy-tool-util and so may very well already be on your ``PATH``. Check out the options available with that
 using ``galaxy-tool-test --help``.
 
 Galaxy Testing Template

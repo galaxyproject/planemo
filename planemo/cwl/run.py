@@ -7,7 +7,7 @@ It can be found at https://github.com/common-workflow-language/cwltool,
 import json
 import tempfile
 
-from galaxy.tools.cwl.cwltool_deps import (
+from galaxy.tool_util.cwl.cwltool_deps import (
     ensure_cwltool_available,
     main,
 )

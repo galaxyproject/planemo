@@ -6,7 +6,7 @@ import os
 import sys
 
 import virtualenv
-from galaxy.tools.deps.commands import which
+from galaxy.tool_util.deps.commands import which
 
 
 DEFAULT_PYTHON_VERSION = os.environ.get("PLANEMO_DEFAULT_PYTHON_VERSION", "2.7")
