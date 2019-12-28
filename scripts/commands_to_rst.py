@@ -92,6 +92,8 @@ for command in list_cmds():
         command_help="\n".join(new_lines),
     )
     commands += "\n.. include:: commands/%s.rst" % command
-    open(os.path.join(command_doc_dir, command + ".rst"), "w").write(text)
+    with open(os.path.join(command_doc_dir, command + ".rst"), "w") as fh:
+        fh.write(text)
 
-open(os.path.join("docs", "commands.rst"), "w").write(commands)
+with open(os.path.join("docs", "commands.rst"), "w") as fh:
+    fh.write(commands)

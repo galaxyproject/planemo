@@ -28,7 +28,8 @@ def main(argv):
     new_version = ".".join(map(str, new_version_tuple))
 
     history_path = os.path.join(PROJECT_DIRECTORY, "HISTORY.rst")
-    history = open(history_path, "r").read()
+    with open(history_path, "r") as fh:
+        history = fh.read()
 
     def extend(from_str, line):
         from_str += "\n"
@@ -40,14 +41,17 @@ def main(argv):
 ---------------------
 
     """ % new_version)
-    open(history_path, "w").write(history)
+    with open(history_path, "w") as fh:
+        fh.write(history)
 
     source_mod_path = os.path.join(PROJECT_DIRECTORY, source_dir, "__init__.py")
-    mod = open(source_mod_path, "r").read()
+    with open(source_mod_path, "r") as fh:
+        mod = fh.read()
     mod = re.sub(r"__version__ = '[\d\.]+'",
                  "__version__ = '%s.dev0'" % new_version,
                  mod, 1)
-    mod = open(source_mod_path, "w").write(mod)
+    with open(source_mod_path, "w") as fh:
+        mod = fh.write(mod)
     shell(["git", "commit", "-m", "Starting work on %s" % new_version,
            "HISTORY.rst", "%s/__init__.py" % source_dir])
 

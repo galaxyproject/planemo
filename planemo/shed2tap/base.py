@@ -373,14 +373,14 @@ class BaseAction(object):
 
 
 def _tar_folders(filename):
-    archive = tarfile.open(filename, "r", errorlevel=0)
-    folders = set()
-    for i in archive.getmembers():
-        if i.isdir():
-            folders.add(i.name.rstrip("/"))
-        else:
-            folders.add(os.path.split(i.name)[0])
-    return list(folders)
+    with tarfile.open(filename, "r", errorlevel=0) as archive:
+        folders = set()
+        for i in archive.getmembers():
+            if i.isdir():
+                folders.add(i.name.rstrip("/"))
+            else:
+                folders.add(os.path.split(i.name)[0])
+        return list(folders)
 
 
 def _zip_folders(filename):

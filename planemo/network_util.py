@@ -29,9 +29,9 @@ def wait_http_service(url, timeout=None):
                     return False
 
             kwds = {} if timeout is None else dict(timeout=next_timeout)
-            r = urlopen(url, **kwds)
-            if r.getcode() != 200:
-                continue
+            with urlopen(url, **kwds) as r:
+                if r.getcode() != 200:
+                    continue
             return True
         except socket.error:
             pass

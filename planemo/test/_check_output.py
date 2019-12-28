@@ -18,7 +18,8 @@ def check_output(runnable, output_properties, test_properties, **kwds):
     """
     get_filename = _test_filename_getter(runnable)
     path = output_properties["path"]
-    output_content = open(path, "rb").read()
+    with open(path, "rb") as fh:
+        output_content = fh.read()
     # Support Galaxy-like file location (using "file") or CWL-like ("path" or "location").
     expected_file = test_properties.get("file", None)
     if expected_file is None:

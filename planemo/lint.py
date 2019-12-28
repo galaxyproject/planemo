@@ -155,8 +155,8 @@ def lint_urls(root, lint_ctx):
                     lint_ctx.error("Error '%s' accessing %s" % (e, url))
         else:
             try:
-                handle = urlopen(url)
-                handle.read(100)
+                with urlopen(url) as handle:
+                    handle.read(100)
             except Exception as e:
                 is_valid = False
                 lint_ctx.error("Error '%s' accessing %s" % (e, url))

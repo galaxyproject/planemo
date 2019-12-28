@@ -84,12 +84,16 @@ PACKAGE_DIR = {
     'planemo_ext': 'planemo_ext'
 }
 
-readme = open('README.rst').read()
-history = open('HISTORY.rst').read().replace('.. :changelog:', '')
+with open('README.rst') as fh:
+    readme = fh.read()
+with open('HISTORY.rst') as fh:
+    history = fh.read().replace('.. :changelog:', '')
 
 if os.path.exists("requirements.txt"):
-    requirements = [r for r in open("requirements.txt").read().split("\n") if ";" not in r]
-    py27_requirements = [r.split(";", 1)[0].strip() for r in open("requirements.txt").read().split("\n") if ";" in r]
+    with open("requirements.txt") as fh:
+        requirements = [r for r in fh.read().split("\n") if ";" not in r]
+    with open("requirements.txt") as fh:
+        py27_requirements = [r.split(";", 1)[0].strip() for r in fh.read().split("\n") if ";" in r]
     if not PLANEMO_REQUIRE_LXML:
         requirements.remove("lxml")
 else:

@@ -361,11 +361,13 @@ def test_tutorial_prepare_data_library_from_zenodo():
     os.makedirs(tuto.wf_dir)
     tuto.prepare_data_library_from_zenodo()
     assert os.path.exists(tuto.data_lib_fp)
-    assert 'DOI' not in open(tuto.data_lib_fp, 'r').read()
+    with open(tuto.data_lib_fp, 'r') as fh:
+        assert 'DOI' not in fh.read()
     # with zenodo link
     tuto.zenodo_link = zenodo_link
     tuto.prepare_data_library_from_zenodo()
-    assert "DOI: 10.5281/zenodo" in open(tuto.data_lib_fp, 'r').read()
+    with open(tuto.data_lib_fp, 'r') as fh:
+        assert "DOI: 10.5281/zenodo" in fh.read()
     shutil.rmtree("topics")
 
 
@@ -447,5 +449,6 @@ def test_tutorial_create_tutorial():
     assert os.path.exists(tuto.data_lib_fp)
     assert os.path.exists(tuto.tuto_fp)
     assert os.path.exists(tuto.slide_fp)
-    assert 'layout: tutorial_slides' in open(tuto.slide_fp, 'r').read()
+    with open(tuto.slide_fp, 'r') as fh:
+        assert 'layout: tutorial_slides' in fh.read()
     shutil.rmtree("topics")

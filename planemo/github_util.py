@@ -154,7 +154,8 @@ def publish_as_gist_file(ctx, path, name="index"):
     """
     github_config = get_github_config(ctx, allow_anonymous=False)
     user = github_config._github.get_user()
-    content = open(path, "r").read()
+    with open(path, "r") as fh:
+        content = fh.read()
     content_file = github.InputFileContent(content)
     gist = user.create_gist(False, {name: content_file})
     return gist.files[name].raw_url
