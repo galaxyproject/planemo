@@ -3,7 +3,7 @@ BeautifulSoup4
 bioblend>=0.13.0
 Click
 configparser
-cwltool==1.0.20180820141117
+cwltool==1.0.20191225192155 
 docutils
 ephemeris>=0.10.3
 galaxy-containers
