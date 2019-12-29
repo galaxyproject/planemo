@@ -7,7 +7,7 @@ cwltool==1.0.20180820141117
 docutils
 ephemeris>=0.10.3
 galaxy-containers
-galaxy-tool-util>=19.9.0
+galaxy-tool-util>=19.9.1
 glob2
 gxformat2>=0.8.0
 jinja2
