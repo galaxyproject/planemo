@@ -183,7 +183,8 @@ def lint_readme(realized_repository, lint_ctx):
         return
 
     if readme_found.endswith(".rst"):
-        readme_text = open(readme_found, "r").read()
+        with open(readme_found, "r") as fh:
+            readme_text = fh.read()
         invalid_rst = rst_invalid(readme_text)
         if invalid_rst:
             template = "Invalid restructured text found in README [%s]."

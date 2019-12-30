@@ -1346,7 +1346,8 @@ def _handle_container_resolution(ctx, kwds, galaxy_properties):
 
 def _handle_job_metrics(config_directory, kwds):
     metrics_conf = os.path.join(config_directory, "job_metrics_conf.xml")
-    open(metrics_conf, "w").write(EMPTY_JOB_METRICS_TEMPLATE)
+    with open(metrics_conf, "w") as fh:
+        fh.write(EMPTY_JOB_METRICS_TEMPLATE)
     kwds["job_metrics_config_file"] = metrics_conf
 
 

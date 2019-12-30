@@ -11,21 +11,20 @@ words = {}
 mainfile = sys.argv[1]
 indexfile = sys.argv[1] + ".idx1"
 
-main = open(mainfile)
-index = open(indexfile, "w")
+with open(mainfile) as main:
+    linenum = 0
+    for line in main:
+        linenum += 1
+        line = line.rstrip().lower().replace(".", "").replace(",", "").replace(";", "").replace("-", " ")
+        for w in line.split(" "):
+            if w:
+                if w not in words:
+                    words[w] = set()
+                words[w].add(linenum)
 
-linenum = 0
-for line in main:
-    linenum += 1
-    line = line.rstrip().lower().replace(".", "").replace(",", "").replace(";", "").replace("-", " ")
-    for w in line.split(" "):
-        if w:
-            if w not in words:
-                words[w] = set()
-            words[w].add(linenum)
-
-for w in sorted(words.keys()):
-    index.write("%s: %s" % (w, ", ".join((str(i) for i in words[w]))) + "\n")
+with open(indexfile, "w") as index:
+    for w in sorted(words.keys()):
+        index.write("%s: %s" % (w, ", ".join((str(i) for i in words[w]))) + "\n")
 
 open(os.path.splitext(sys.argv[1])[0] + ".idx2", "w")
 open(sys.argv[1] + ".idx3", "w")

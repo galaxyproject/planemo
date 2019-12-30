@@ -45,7 +45,8 @@ class ShedTestCase(CliTestCase):
             )
             io.write_file(".shed.yml", shed_yml_contents)
             test_path = os.path.join(TEST_DIR, "tool_dependencies_good_1.xml")
-            contents = open(test_path).read()
+            with open(test_path) as fh:
+                contents = fh.read()
             io.write_file("tool_dependencies.xml", contents)
             init_cmd = [
                 "shed_create",

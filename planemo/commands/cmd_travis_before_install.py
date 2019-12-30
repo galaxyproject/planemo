@@ -45,7 +45,8 @@ def cli(ctx):
     build_env = string.Template(BUILD_ENVIRONMENT_TEMPLATE).safe_substitute(
         **template_vars
     )
-    open(build_env_path, "a").write(build_env)
+    with open(build_env_path, "a") as fh:
+        fh.write(build_env)
 
     eggs_dir = os.path.join(os.getenv('HOME'), '.python-eggs')
     if not os.path.exists(eggs_dir):

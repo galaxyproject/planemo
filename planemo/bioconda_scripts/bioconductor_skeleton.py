@@ -184,8 +184,8 @@ class BioCProjectPage(object):
     @property
     def description(self):
         """Extract the DESCRIPTION file from the tarball and parse it."""
-        t = tarfile.open(self.cached_tarball)
-        d = t.extractfile(os.path.join(self.package, 'DESCRIPTION')).read()
+        with tarfile.open(self.cached_tarball) as t:
+            d = t.extractfile(os.path.join(self.package, 'DESCRIPTION')).read()
         self._contents = d
         c = configparser.ConfigParser()
 
@@ -332,8 +332,8 @@ class BioCProjectPage(object):
         the meta.yaml.
         """
         if self._md5 is None:
-            self._md5 = hashlib.md5(
-                open(self.cached_tarball, 'rb').read()).hexdigest()
+            with open(self.cached_tarball, 'rb') as fh:
+                self._md5 = hashlib.md5(fh.read()).hexdigest()
         return self._md5
 
     @property
@@ -433,7 +433,8 @@ def write_recipe(package, recipe_dir, force=False):
     meta_file = os.path.join(recipe_dir, 'meta.yaml')
     if os.path.exists(meta_file):
         updated_meta = pyaml.yaml.load(proj.meta_yaml)
-        current_meta = pyaml.yaml.load(open(meta_file))
+        with open(meta_file) as fh:
+            current_meta = pyaml.yaml.load(fh)
 
         # pop off the version and build numbers so we can compare the rest of
         # the dicts

@@ -180,7 +180,8 @@ def kill_pid_file(pid_file):
         if e.errno == errno.ENOENT:
             return False
 
-    pid = int(open(pid_file, "r").read())
+    with open(pid_file, "r") as fh:
+        pid = int(fh.read())
     kill_posix(pid)
     try:
         os.unlink(pid_file)
