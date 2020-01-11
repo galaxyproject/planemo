@@ -3,6 +3,10 @@ import os
 import string
 
 import click
+from galaxy.tool_util.deps.mulled.mulled_build import (
+    base_image_for_targets,
+    DEFAULT_BASE_IMAGE,
+)
 from galaxy.tool_util.deps.mulled.util import (
     conda_build_target_str,
     quay_repository,
@@ -23,7 +27,9 @@ from planemo.mulled import conda_to_mulled_targets
 REGISTERY_TARGET_NAME = "multi-package-containers"
 REGISTERY_TARGET_PATH = "combinations"
 REGISTERY_REPOSITORY = "BioContainers/multi-package-containers"
-DEFAULT_MESSAGE = "Add container $hash.\n**Hash**: $hash\n\n**Packages**:\n$packages\n\n**For** :\n$tools\n\nGenerated with Planemo."
+DEFAULT_MESSAGE = "Add container $hash.\n**Hash**: $hash\n\n**Packages**:\n$packages\nBase Image:$base_image\n\n"
+DEFAULT_MESSAGE += "**For** :\n$tools\n\nGenerated with Planemo."
+CONTENTS = "#targets\tbase_image\timage_build\n$targets\t$base_image\t$image_build\n"
 
 
 @click.command('container_register')
@@ -92,6 +98,13 @@ def cli(ctx, paths, **kwds):
         if not best_practice_requirements:
             continue
 
+        base_image = DEFAULT_BASE_IMAGE
+        for conda_target in conda_targets:
+            base_image = base_image_for_targets([conda_target], conda_context=conda_context)
+            if base_image != DEFAULT_BASE_IMAGE:
+                ctx.log("%s requires '%s' as base image" % (conda_target, base_image))
+                break
+
         if len(mulled_targets) < 1:
             ctx.log("Skipping registration, no targets discovered.")
             continue
@@ -114,14 +127,14 @@ def cli(ctx, paths, **kwds):
             ctx.vlog("Found matching open pull request for [%s], skipping" % name)
             continue
 
-        registry_target.write_targets(ctx, target_filename, mulled_targets)
+        registry_target.write_targets(ctx, target_filename, mulled_targets, tag, base_image)
         tools_str = "\n".join(map(lambda p: "- " + os.path.basename(p), tool_paths))
-        registry_target.handle_pull_request(ctx, name, target_filename, mulled_targets_str, tools_str, **kwds)
+        registry_target.handle_pull_request(ctx, name, target_filename, mulled_targets_str, tools_str, base_image, **kwds)
         combinations_added += 1
 
 
 class RegistryTarget(object):
-    """Abstraction around mulled container registery (both directory and Github repo)."""
+    """Abstraction around mulled container registry (both directory and Github repo)."""
 
     def __init__(self, ctx, **kwds):
         output_directory = kwds["output_directory"]
@@ -152,13 +165,14 @@ class RegistryTarget(object):
 
         return has_pr
 
-    def handle_pull_request(self, ctx, name, target_filename, packages_str, tools_str, **kwds):
+    def handle_pull_request(self, ctx, name, target_filename, packages_str, tools_str, base_image, **kwds):
         if self.do_pull_request:
             message = kwds["message"]
             message = string.Template(message).safe_substitute({
                 "hash": name,
                 "packages": packages_str,
                 "tools": tools_str,
+                "base_image": base_image,
             })
             branch_name = name.replace(":", "-")
             branch(ctx, self.target_repository, branch_name, from_branch="master")
@@ -168,11 +182,16 @@ class RegistryTarget(object):
             push(ctx, self.target_repository, os.environ.get("GITHUB_USER"), branch_name, force=force_push)
             pull_request(ctx, self.target_repository, message=message)
 
-    def write_targets(self, ctx, target_filename, mulled_targets):
+    def write_targets(self, ctx, target_filename, mulled_targets, tag, base_image):
         with open(target_filename, "w") as f:
-            contents = to_target_str(mulled_targets)
-            f.write("%s\n" % contents)
-            ctx.log("Wrote requirements [%s] to file [%s]" % (contents, target_filename))
+            targets = to_target_str(mulled_targets)
+            f.write(string.Template(CONTENTS).safe_substitute(
+                targets=targets,
+                base_image=base_image,
+                image_build=tag
+                )
+            )
+            ctx.log("Wrote requirements [%s] to file [%s]" % (targets, target_filename))
 
 
 def to_target_str(targets):
