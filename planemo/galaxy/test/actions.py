@@ -5,7 +5,7 @@ import json
 import os
 
 import click
-from galaxy.tools.deps.commands import shell
+from galaxy.tool_util.deps.commands import shell
 from galaxy.util import unicodify
 
 from planemo.exit_codes import (

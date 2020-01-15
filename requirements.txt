@@ -3,10 +3,11 @@ BeautifulSoup4
 bioblend>=0.13.0
 Click
 configparser
-cwltool==1.0.20180820141117
+cwltool==1.0.20191225192155 
 docutils
-ephemeris>=0.10.0
-galaxy-lib>=18.9.2
+ephemeris>=0.10.3
+galaxy-containers
+galaxy-tool-util>=20.1.0.dev0
 glob2
 gxformat2>=0.8.0
 jinja2

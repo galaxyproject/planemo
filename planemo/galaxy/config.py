@@ -11,8 +11,8 @@ from string import Template
 from tempfile import mkdtemp
 
 from galaxy.containers.docker_model import DockerVolume
-from galaxy.tools.deps import docker_util
-from galaxy.tools.deps.commands import argv_to_str
+from galaxy.tool_util.deps import docker_util
+from galaxy.tool_util.deps.commands import argv_to_str
 from pkg_resources import parse_version
 from six import (
     add_metaclass,

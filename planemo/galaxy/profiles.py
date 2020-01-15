@@ -7,7 +7,7 @@ import json
 import os
 import shutil
 
-from galaxy.tools.deps.commands import which
+from galaxy.tool_util.deps.commands import which
 
 from planemo.config import (
     OptionSource,

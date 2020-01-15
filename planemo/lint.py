@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import os
 
 import requests
-from galaxy.tools.lint import LintContext
+from galaxy.tool_util.lint import LintContext
 from six.moves.urllib.request import urlopen
 
 import planemo.linters.biocontainer_registered

@@ -1,9 +1,11 @@
 """Module describes a :class:`DatabaseSource` for managed, dockerized postgres databases."""
 import time
 
-from galaxy.tools.deps import docker_util
-from galaxy.tools.deps import dockerfiles
-from galaxy.tools.deps.commands import execute
+from galaxy.tool_util.deps import (
+    docker_util,
+    dockerfiles,
+)
+from galaxy.tool_util.deps.commands import execute
 from galaxy.util import unicodify
 
 from .interface import DatabaseSource

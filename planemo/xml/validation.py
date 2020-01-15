@@ -3,7 +3,7 @@ import abc
 import subprocess
 from collections import namedtuple
 
-from galaxy.tools.deps.commands import which
+from galaxy.tool_util.deps.commands import which
 from galaxy.util import unicodify
 try:
     from lxml import etree

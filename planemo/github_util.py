@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 import os
 
-from galaxy.tools.deps.commands import which
+from galaxy.tool_util.deps.commands import which
 
 from planemo import git
 from planemo.io import (

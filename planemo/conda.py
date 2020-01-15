@@ -1,6 +1,6 @@
 """Planemo specific utilities for dealing with conda.
 
-The extend Galaxy/galaxy-lib's features with planemo specific idioms.
+The extend galaxy-tool-util's features with planemo specific idioms.
 """
 
 from __future__ import absolute_import
@@ -9,7 +9,7 @@ import collections
 import os
 import threading
 
-from galaxy.tools.deps import conda_util
+from galaxy.tool_util.deps import conda_util
 
 from planemo.exit_codes import EXIT_CODE_FAILED_DEPENDENCIES, ExitCodeException
 from planemo.io import error, shell
@@ -23,7 +23,7 @@ BEST_PRACTICE_CHANNELS = ["conda-forge", "bioconda", "defaults"]
 
 
 def build_conda_context(ctx, **kwds):
-    """Build a galaxy-lib CondaContext tailored to planemo use.
+    """Build a galaxy-tool-util CondaContext tailored to planemo use.
 
     Using planemo's common command-line/global config options.
     """

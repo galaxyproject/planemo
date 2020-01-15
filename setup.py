@@ -74,7 +74,6 @@ PACKAGE_DATA = {
     'planemo': [
         'xml/xsd/repository_dependencies.xsd',
         'xml/xsd/tool_dependencies.xsd',
-        'xml/xsd/tool/galaxy.xsd',
         'reports/*',
         'scripts/*',
     ],

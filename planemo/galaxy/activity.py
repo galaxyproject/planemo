@@ -10,7 +10,7 @@ import requests
 import yaml
 from bioblend.galaxy.client import Client
 from bioblend.util import attach_file
-from galaxy.tools.cwl.util import (
+from galaxy.tool_util.cwl.util import (
     DirectoryUploadTarget,
     FileUploadTarget,
     galactic_job_json,
@@ -20,7 +20,7 @@ from galaxy.tools.cwl.util import (
     path_or_uri_to_uri,
     tool_response_to_output,
 )
-from galaxy.tools.parser import get_tool_source
+from galaxy.tool_util.parser import get_tool_source
 from galaxy.util import (
     safe_makedirs,
     unicodify,
