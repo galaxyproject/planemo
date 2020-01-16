@@ -140,7 +140,7 @@ def tool_source_conda_targets(tool_source):
 best_practice_search_first = threading.local()
 
 
-def best_practice_search(conda_target, conda_context=None):
+def best_practice_search(conda_target, conda_context=None, platform=None):
     # Call it in offline mode after the first time.
     try:
         best_practice_search_first.previously_called
@@ -152,7 +152,13 @@ def best_practice_search(conda_target, conda_context=None):
 
     if not conda_context:
         conda_context = conda_util.CondaContext()
-    return conda_util.best_search_result(conda_target, conda_context=conda_context, channels_override=BEST_PRACTICE_CHANNELS, offline=offline)
+    return conda_util.best_search_result(
+        conda_target,
+        conda_context=conda_context,
+        channels_override=BEST_PRACTICE_CHANNELS,
+        offline=offline,
+        platform=platform,
+    )
 
 
 __all__ = (
