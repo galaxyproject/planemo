@@ -30,6 +30,7 @@ REGISTERY_REPOSITORY = "BioContainers/multi-package-containers"
 DEFAULT_MESSAGE = "Add container $hash.\n**Hash**: $hash\n\n**Packages**:\n$packages\nBase Image:$base_image\n\n"
 DEFAULT_MESSAGE += "**For** :\n$tools\n\nGenerated with Planemo."
 CONTENTS = "#targets\tbase_image\timage_build\n$targets\t$base_image\t$image_build\n"
+BIOCONTAINERS_PLATFORM = 'linux-64'
 
 
 @click.command('container_register')
@@ -86,7 +87,7 @@ def cli(ctx, paths, **kwds):
         mulled_targets_str = "- " + "\n- ".join(map(conda_build_target_str, mulled_targets))
         best_practice_requirements = True
         for conda_target in conda_targets:
-            best_hit, exact = best_practice_search(conda_target, conda_context=conda_context)
+            best_hit, exact = best_practice_search(conda_target, conda_context=conda_context, platform=BIOCONTAINERS_PLATFORM)
             if not best_hit:
                 ctx.log("Target [%s] is not available in best practice channels - skipping" % conda_target)
                 best_practice_requirements = False
