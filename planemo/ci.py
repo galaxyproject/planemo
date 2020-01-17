@@ -6,6 +6,8 @@ import copy
 import math
 import os
 
+import yaml
+
 from planemo import git
 from planemo import io
 from planemo.shed import SHED_CONFIG_NAME
@@ -63,3 +65,8 @@ def print_path_list(paths, **kwds):
     with io.open_file_or_standard_output(kwds["output"], "w") as f:
         for path in paths:
             print(path, file=f)
+
+
+def print_as_yaml(item, **kwds):
+    with io.open_file_or_standard_output(kwds["output"], "w") as f:
+        f.write(yaml.safe_dump(item))
