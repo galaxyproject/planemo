@@ -1,4 +1,4 @@
-"""Module describing the planemo ``ci_find_repos`` command."""
+"""Module describing the planemo ``list_repos`` command."""
 from __future__ import print_function
 
 import click
@@ -12,7 +12,7 @@ from planemo.shed import (
 )
 
 
-@click.command('ci_list_repos')
+@click.command('list_repos')
 @options.shed_project_arg()
 @options.ci_find_options()
 @command_function
