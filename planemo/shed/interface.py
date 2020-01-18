@@ -105,10 +105,10 @@ def download_tar(tsi, repo_id, destination, to_directory):
         base_url += "/"
     download_url = REPOSITORY_DOWNLOAD_TEMPLATE % (base_url, repo_id)
     if to_directory:
-        untar_args = "-xzf - -C %s --strip-components 1" % destination
+        tar_args = ['-xzf', '-', '--strip-components=1']
+        untar_to(download_url, tar_args=tar_args, dest_dir=destination)
     else:
-        untar_args = None
-    untar_to(download_url, destination, untar_args)
+        untar_to(download_url, path=destination)
 
 
 def _user(tsi):

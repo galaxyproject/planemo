@@ -6,6 +6,7 @@ import errno
 import fnmatch
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import time
@@ -96,17 +97,28 @@ def write_file(path, content, force=True):
         f.write(content)
 
 
-def untar_to(url, path=None, tar_args=None):
-    download_cmd = " ".join(download_command(url, quote_url=True))
+def untar_to(url, tar_args=None, path=None, dest_dir=None):
     if tar_args:
+        assert not (path and dest_dir)
+        if dest_dir:
+            if not os.path.exists(dest_dir):
+                os.makedirs(dest_dir)
+            tar_args.extend(['-C', dest_dir])
         if path:
-            if not os.path.exists(path):
-                os.makedirs(path)
+            tar_args.append('-O')
 
-        untar_cmd = "tar %s" % tar_args
-        shell("%s | %s" % (download_cmd, untar_cmd))
+        download_cmd = download_command(url)
+        download_p = commands.shell_process(download_cmd, stdout=subprocess.PIPE)
+        untar_cmd = ['tar'] + tar_args
+        if path:
+            with open(path, 'wb') as fh:
+                shell(untar_cmd, stdin=download_p.stdout, stdout=fh)
+        else:
+            shell(untar_cmd, stdin=download_p.stdout)
+        download_p.wait()
     else:
-        shell("%s > '%s'" % (download_cmd, path))
+        cmd = download_command(url, to=path)
+        shell(cmd)
 
 
 def find_matching_directories(path, pattern, recursive):
