@@ -462,8 +462,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         ))
         _handle_container_resolution(ctx, kwds, properties)
         write_file(config_join("logging.ini"), _sub(LOGGING_TEMPLATE, template_args))
-        if not for_tests:
-            properties["database_connection"] = _database_connection(database_location, **kwds)
+        properties["database_connection"] = _database_connection(database_location, **kwds)
 
         _handle_kwd_overrides(properties, kwds)
 
@@ -482,6 +481,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         env.update(install_env)
         _build_test_env(properties, env)
         env['GALAXY_TEST_SHED_TOOL_CONF'] = shed_tool_conf
+        env['GALAXY_TEST_DBURI'] = properties["database_connection"]
 
         # No need to download twice - would GALAXY_TEST_DATABASE_CONNECTION
         # work?
