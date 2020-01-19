@@ -70,7 +70,6 @@ KWDS = {
     'file_path': None,
     'galaxy_api_key': None,
     'galaxy_branch': None,
-    'galaxy_database_seed': None,
     'galaxy_email': 'planemo@galaxyproject.org',
     'galaxy_root': None,
     'galaxy_single_user': True,

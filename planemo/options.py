@@ -150,17 +150,6 @@ def galaxy_root_option():
     )
 
 
-def galaxy_database_seed_option():
-    return planemo_option(
-        "--galaxy_database_seed",
-        default=None,
-        use_global_config=True,
-        use_env_var=True,
-        type=click.Path(exists=True, file_okay=True, resolve_path=True),
-        help="Preseeded Galaxy sqlite database to target.",
-    )
-
-
 def galaxy_cwl_root_option():
     return planemo_option(
         "--cwl_galaxy_root",
@@ -1070,7 +1059,6 @@ def galaxy_target_options():
     return _compose(
         galaxy_root_option(),
         galaxy_python_version(),
-        galaxy_database_seed_option(),
         extra_tools_option(),
         install_galaxy_option(),
         galaxy_branch_option(),
