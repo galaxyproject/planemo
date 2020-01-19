@@ -190,21 +190,6 @@ DOWNLOAD_GALAXY = (
     "wget -q https://codeload.github.com/galaxyproject/galaxy/tar.gz/"
 )
 
-DOWNLOADS_URL = ("https://raw.githubusercontent.com/"
-                 "jmchilton/galaxy-downloads/master/")
-DOWNLOADABLE_MIGRATION_VERSIONS = [141, 127, 120, 117]
-MIGRATION_PER_VERSION = {
-    "dev": 145,
-    "master": 142,
-    "18.09": 142,
-    "18.05": 141,
-    "18.01": 140,
-    "17.09": 135,
-    "17.05": 134,
-    "17.01": 133,
-}
-OLDEST_SUPPORTED_VERSION = 127
-
 DATABASE_LOCATION_TEMPLATE = "sqlite:///%s?isolation_level=IMMEDIATE"
 
 COMMAND_STARTUP_COMMAND = "./scripts/common_startup.sh ${COMMON_STARTUP_ARGS}"
