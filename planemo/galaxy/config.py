@@ -190,21 +190,6 @@ DOWNLOAD_GALAXY = (
     "wget -q https://codeload.github.com/galaxyproject/galaxy/tar.gz/"
 )
 
-DOWNLOADS_URL = ("https://raw.githubusercontent.com/"
-                 "jmchilton/galaxy-downloads/master/")
-DOWNLOADABLE_MIGRATION_VERSIONS = [141, 127, 120, 117]
-MIGRATION_PER_VERSION = {
-    "dev": 145,
-    "master": 142,
-    "18.09": 142,
-    "18.05": 141,
-    "18.01": 140,
-    "17.09": 135,
-    "17.05": 134,
-    "17.01": 133,
-}
-OLDEST_SUPPORTED_VERSION = 127
-
 DATABASE_LOCATION_TEMPLATE = "sqlite:///%s?isolation_level=IMMEDIATE"
 
 COMMAND_STARTUP_COMMAND = "./scripts/common_startup.sh ${COMMON_STARTUP_ARGS}"
@@ -403,12 +388,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         database_location = config_join("galaxy.sqlite")
         master_api_key = _get_master_api_key(kwds)
         dependency_dir = os.path.join(config_directory, "deps")
-        preseeded_database = attempt_database_preseed(
-            ctx,
-            galaxy_root,
-            database_location,
-            **kwds
-        )
         _ensure_directory(shed_tool_path)
         port = _get_port(kwds)
         template_args = dict(
@@ -483,10 +462,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         env['GALAXY_TEST_SHED_TOOL_CONF'] = shed_tool_conf
         env['GALAXY_TEST_DBURI'] = properties["database_connection"]
 
-        # No need to download twice - would GALAXY_TEST_DATABASE_CONNECTION
-        # work?
-        if preseeded_database:
-            env["GALAXY_TEST_DB_TEMPLATE"] = os.path.abspath(database_location)
         env["GALAXY_TEST_UPLOAD_ASYNC"] = "false"
         env["GALAXY_TEST_LOGGING_CONFIG"] = config_join("logging.ini")
         env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
@@ -1003,84 +978,6 @@ def _database_connection(database_location, **kwds):
     return database_connection
 
 
-def attempt_database_preseed(
-    ctx, effective_galaxy_root, database_location, **kwds
-):
-    """If database location is unset, attempt to seed the database."""
-    if os.path.exists(database_location):
-        # Can't seed an existing database.
-        return False
-
-    if not _database_connection(database_location, **kwds).startswith("sqlite"):
-        # Not going to use an sqlite database, don't preseed.
-        return False
-
-    preseeded_database = True
-    galaxy_sqlite_database = kwds.get("galaxy_database_seed", None)
-    galaxy_branch = kwds.get("galaxy_branch", None)
-    try:
-        _download_database_template(
-            ctx,
-            effective_galaxy_root,
-            database_location,
-            galaxy_sqlite_database=galaxy_sqlite_database,
-            galaxy_branch=galaxy_branch
-        )
-    except Exception as e:
-        print(e)
-        # No network access - just roll forward from null.
-        preseeded_database = False
-    return preseeded_database
-
-
-def _download_database_template(
-    ctx,
-    galaxy_root,
-    database_location,
-    galaxy_sqlite_database=None,
-    galaxy_branch=None,
-):
-
-    if galaxy_sqlite_database is not None:
-        shutil.copyfile(galaxy_sqlite_database, database_location)
-        return True
-
-    download_migration = None
-    newest_migration = _newest_migration_version(galaxy_root, galaxy_branch)
-    for migration in DOWNLOADABLE_MIGRATION_VERSIONS:
-        if newest_migration >= migration:
-            download_migration = migration
-            break
-
-    if download_migration:
-        download_name = "db_gx_rev_0%d.sqlite" % download_migration
-        download_url = DOWNLOADS_URL + download_name
-        ctx.cache_download(download_url, database_location)
-        return True
-    else:
-        return False
-
-
-def _newest_migration_version(galaxy_root, galaxy_branch):
-    versions_dir = galaxy_root and os.path.join(galaxy_root, "lib/galaxy/model/migrate/versions")
-    if versions_dir and os.path.exists(versions_dir):
-        version = max(map(_file_name_to_migration_version, os.listdir(versions_dir)))
-    elif galaxy_branch:
-        for branch in MIGRATION_PER_VERSION:
-            if branch in galaxy_branch:
-                version = MIGRATION_PER_VERSION[branch]
-    else:
-        version = OLDEST_SUPPORTED_VERSION
-    return version
-
-
-def _file_name_to_migration_version(name):
-    try:
-        return int(name[0:4])
-    except ValueError:
-        return -1
-
-
 def _find_galaxy_root(ctx, **kwds):
     root_prop = "galaxy_root"
     cwl = kwds.get("cwl", False)
@@ -1375,7 +1272,6 @@ def _ensure_directory(path):
 
 
 __all__ = (
-    "attempt_database_preseed",
     "DATABASE_LOCATION_TEMPLATE",
     "galaxy_config",
 )
