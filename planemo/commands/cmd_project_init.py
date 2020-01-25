@@ -14,8 +14,6 @@ from planemo.io import (
 
 SOURCE_HOST = "https://codeload.github.com"
 DOWNLOAD_URL = "%s/galaxyproject/planemo/tar.gz/master" % SOURCE_HOST
-UNTAR_FILTER = "--strip-components=2"
-UNTAR_ARGS = " -C %s -zxf - " + UNTAR_FILTER
 
 
 @click.command("project_init")
@@ -38,9 +36,9 @@ def cli(ctx, path, template=None, **kwds):
         return
 
     tempdir = tempfile.mkdtemp()
+    tar_args = ['-zxf', '-', '--strip-components=2']
     try:
-        untar_args = UNTAR_ARGS % (tempdir)
-        untar_to(DOWNLOAD_URL, tempdir, untar_args)
+        untar_to(DOWNLOAD_URL, tar_args=tar_args, dest_dir=tempdir)
         template_dir = os.path.join(tempdir, template)
         for entry in os.listdir(template_dir):
             shutil.move(os.path.join(template_dir, entry), path)
