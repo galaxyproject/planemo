@@ -167,8 +167,14 @@ def real_io():
 
 
 @contextlib.contextmanager
-def temp_directory(prefix="planemo_tmp_"):
-    temp_dir = tempfile.mkdtemp(prefix=prefix)
+def temp_directory(prefix="planemo_tmp_", dir=None, **kwds):
+    if dir is not None:
+        try:
+            os.makedirs(dir)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+    temp_dir = tempfile.mkdtemp(prefix=prefix, dir=dir, **kwds)
     try:
         yield temp_dir
     finally:

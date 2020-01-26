@@ -1,4 +1,6 @@
 """Module describing the planemo ``test`` command."""
+from distutils.dir_util import copy_tree
+
 import click
 
 from planemo import options
@@ -7,10 +9,12 @@ from planemo.engine import (
     engine_context,
 )
 from planemo.galaxy import galaxy_config
+from planemo.galaxy.config import _find_test_data
 from planemo.galaxy.test import (
     handle_reports_and_summary,
     run_in_config,
 )
+from planemo.io import temp_directory
 from planemo.runnable import (
     for_paths,
     RunnableType,
@@ -73,23 +77,32 @@ def cli(ctx, paths, **kwds):
     against that same Galaxy root - but this may not be bullet proof yet so
     please careful and do not try this against production Galaxy instances.
     """
-    runnables = for_paths(paths)
-    is_cwl = all([r.type in [RunnableType.cwl_tool, RunnableType.cwl_workflow] for r in runnables])
-    if kwds.get("engine", None) is None:
-        kwds["engine"] = "galaxy" if not is_cwl else "cwltool"
+    with temp_directory(dir=ctx.planemo_directory) as temp_path:
+        # Create temp dir(s) outside of temp, docker can't mount $TEMPDIR on OSX
+        runnables = for_paths(paths, temp_path=temp_path)
+        is_cwl = all([r.type in [RunnableType.cwl_tool, RunnableType.cwl_workflow] for r in runnables])
+        if kwds.get("engine", None) is None:
+            kwds["engine"] = "galaxy" if not is_cwl else "cwltool"
 
-    engine_type = kwds["engine"]
-    enable_test_engines = any([r.type not in [RunnableType.galaxy_tool, RunnableType.galaxy_datamanager, RunnableType.directory] for r in runnables])
-    enable_test_engines = enable_test_engines or engine_type != "galaxy"
-    if enable_test_engines:
-        ctx.vlog("Using test engine type %s" % engine_type)
-        with engine_context(ctx, **kwds) as engine:
-            test_data = engine.test(runnables)
-            return_value = handle_reports_and_summary(ctx, test_data.structured_data, kwds=kwds)
-    else:
-        ctx.vlog("Running traditional Galaxy tool tests using run_tests.sh in Galaxy root %s" % engine_type)
-        kwds["for_tests"] = True
-        with galaxy_config(ctx, runnables, **kwds) as config:
-            return_value = run_in_config(ctx, config, **kwds)
+        engine_type = kwds["engine"]
+        test_engine_testable = (RunnableType.galaxy_tool, RunnableType.galaxy_datamanager, RunnableType.directory)
+        enable_test_engines = any(r.type not in test_engine_testable for r in runnables)
+        enable_test_engines = enable_test_engines or engine_type != "galaxy"
+        if enable_test_engines:
+            ctx.vlog("Using test engine type %s" % engine_type)
+            with engine_context(ctx, **kwds) as engine:
+                test_data = engine.test(runnables)
+                return_value = handle_reports_and_summary(ctx, test_data.structured_data, kwds=kwds)
+        else:
+            ctx.vlog("Running traditional Galaxy tool tests using run_tests.sh in Galaxy root %s" % engine_type)
+            kwds["for_tests"] = True
+            with galaxy_config(ctx, runnables, **kwds) as config:
+                return_value = run_in_config(ctx, config, **kwds)
+                if kwds.get('update_test_data'):
+                    non_copied_runnables = for_paths(paths)
+                    target = _find_test_data(non_copied_runnables, **kwds)
+                    if config.test_data_dir != target:
+                        ctx.vlog("Copying %s to %s" % (config.test_data_dir, target))
+                        copy_tree(config.test_data_dir, target)
 
     ctx.exit(return_value)

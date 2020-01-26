@@ -5,6 +5,7 @@ from __future__ import absolute_import
 import abc
 import collections
 import os
+from distutils.dir_util import copy_tree
 
 import aenum
 import six
@@ -98,7 +99,24 @@ def _runnable_delegate_attribute(attribute):
     return getter
 
 
-def for_path(path):
+def _copy_runnable_tree(path, runnable_type, temp_path):
+    dir_to_copy = None
+    if runnable_type in (RunnableType.galaxy_tool, RunnableType.cwl_tool):
+        dir_to_copy = os.path.dirname(path)
+        path = os.path.join(temp_path, os.path.basename(path))
+    elif runnable_type == RunnableType.directory:
+        dir_to_copy = path
+        path = temp_path
+    elif runnable_type == RunnableType.galaxy_datamanager:
+        dir_to_copy = os.path.join(os.path.dirname(path), os.pardir)
+        path_to_data_manager_tool = os.path.relpath(path, dir_to_copy)
+        path = os.path.join(temp_path, path_to_data_manager_tool)
+    if dir_to_copy:
+        copy_tree(dir_to_copy, temp_path)
+    return path
+
+
+def for_path(path, temp_path=None):
     """Produce a class:`Runnable` for supplied path."""
     runnable_type = None
     if os.path.isdir(path):
@@ -120,12 +138,15 @@ def for_path(path):
         error("Unable to determine runnable type for path [%s]" % path)
         raise ExitCodeException(EXIT_CODE_UNKNOWN_FILE_TYPE)
 
+    if temp_path:
+        path = _copy_runnable_tree(path, runnable_type, temp_path)
+
     return Runnable(path, runnable_type)
 
 
-def for_paths(paths):
+def for_paths(paths, temp_path=None):
     """Return a specialized list of Runnable objects for paths."""
-    return list(map(for_path, paths))
+    return [for_path(path, temp_path=temp_path) for path in paths]
 
 
 def cases(runnable):
