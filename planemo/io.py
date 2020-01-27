@@ -103,9 +103,9 @@ def untar_to(url, tar_args=None, path=None, dest_dir=None):
         if dest_dir:
             if not os.path.exists(dest_dir):
                 os.makedirs(dest_dir)
-            tar_args.extend(['-C', dest_dir])
+            tar_args[0:0] = ['-C', dest_dir]
         if path:
-            tar_args.append('-O')
+            tar_args.insert(0, '-O')
 
         download_cmd = download_command(url)
         download_p = commands.shell_process(download_cmd, stdout=subprocess.PIPE)
