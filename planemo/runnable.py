@@ -101,7 +101,7 @@ def _runnable_delegate_attribute(attribute):
 
 def _copy_runnable_tree(path, runnable_type, temp_path):
     dir_to_copy = None
-    if runnable_type in (RunnableType.galaxy_tool, RunnableType.cwl_tool):
+    if runnable_type in {RunnableType.galaxy_tool, RunnableType.cwl_tool}:
         dir_to_copy = os.path.dirname(path)
         path = os.path.join(temp_path, os.path.basename(path))
     elif runnable_type == RunnableType.directory:

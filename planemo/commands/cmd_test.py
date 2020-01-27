@@ -80,12 +80,12 @@ def cli(ctx, paths, **kwds):
     with temp_directory(dir=ctx.planemo_directory) as temp_path:
         # Create temp dir(s) outside of temp, docker can't mount $TEMPDIR on OSX
         runnables = for_paths(paths, temp_path=temp_path)
-        is_cwl = all([r.type in [RunnableType.cwl_tool, RunnableType.cwl_workflow] for r in runnables])
-        if kwds.get("engine", None) is None:
+        is_cwl = all(r.type in {RunnableType.cwl_tool, RunnableType.cwl_workflow} for r in runnables)
+        if kwds.get("engine") is None:
             kwds["engine"] = "galaxy" if not is_cwl else "cwltool"
 
         engine_type = kwds["engine"]
-        test_engine_testable = (RunnableType.galaxy_tool, RunnableType.galaxy_datamanager, RunnableType.directory)
+        test_engine_testable = {RunnableType.galaxy_tool, RunnableType.galaxy_datamanager, RunnableType.directory}
         enable_test_engines = any(r.type not in test_engine_testable for r in runnables)
         enable_test_engines = enable_test_engines or engine_type != "galaxy"
         if enable_test_engines:
