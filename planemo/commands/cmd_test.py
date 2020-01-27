@@ -1,6 +1,4 @@
 """Module describing the planemo ``test`` command."""
-from distutils.dir_util import copy_tree
-
 import click
 
 from planemo import options
@@ -96,13 +94,10 @@ def cli(ctx, paths, **kwds):
         else:
             ctx.vlog("Running traditional Galaxy tool tests using run_tests.sh in Galaxy root %s" % engine_type)
             kwds["for_tests"] = True
+            if kwds.get('update_test_data'):
+                non_copied_runnables = for_paths(paths)
+                kwds['test_data_target_dir'] = _find_test_data(non_copied_runnables, **kwds)
             with galaxy_config(ctx, runnables, **kwds) as config:
                 return_value = run_in_config(ctx, config, **kwds)
-                if kwds.get('update_test_data'):
-                    non_copied_runnables = for_paths(paths)
-                    target = _find_test_data(non_copied_runnables, **kwds)
-                    if config.test_data_dir != target:
-                        ctx.vlog("Copying %s to %s" % (config.test_data_dir, target))
-                        copy_tree(config.test_data_dir, target)
 
     ctx.exit(return_value)
