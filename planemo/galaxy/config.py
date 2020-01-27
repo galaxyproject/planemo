@@ -29,6 +29,7 @@ from planemo.io import (
     kill_pid_file,
     shell,
     shell_join,
+    untar_to,
     wait_on,
     warn,
     write_file,
@@ -184,11 +185,6 @@ EMPTY_TOOL_CONF_TEMPLATE = """<toolbox></toolbox>"""
 DEFAULT_GALAXY_BRANCH = "master"
 DEFAULT_GALAXY_SOURCE = "https://github.com/galaxyproject/galaxy"
 CWL_GALAXY_SOURCE = "https://github.com/common-workflow-language/galaxy"
-
-# TODO: Mac-y curl variant of this.
-DOWNLOAD_GALAXY = (
-    "wget -q https://codeload.github.com/galaxyproject/galaxy/tar.gz/"
-)
 
 DATABASE_LOCATION_TEMPLATE = "sqlite:///%s?isolation_level=IMMEDIATE"
 
@@ -1082,18 +1078,17 @@ def _install_galaxy(ctx, galaxy_root, env, kwds):
 
 
 def _install_galaxy_via_download(ctx, galaxy_root, env, kwds):
-    tmpdir = mkdtemp()
     branch = _galaxy_branch(kwds)
-    command = DOWNLOAD_GALAXY + "%s -O - | tar -C '%s' -xvz | tail && mv '%s' '%s'" % \
-        (branch, tmpdir, os.path.join(tmpdir, 'galaxy-' + branch), galaxy_root)
-    _install_with_command(ctx, command, galaxy_root, env, kwds)
+    untar_to("https://codeload.github.com/galaxyproject/galaxy/tar.gz/" + branch, tar_args=['-xvzf', '-', 'galaxy-' + branch], dest_dir=galaxy_root)
+    _install_with_command(ctx, galaxy_root, env, kwds)
 
 
 def _install_galaxy_via_git(ctx, galaxy_root, env, kwds):
     gx_repo = _ensure_galaxy_repository_available(ctx, kwds)
     branch = _galaxy_branch(kwds)
     command = git.command_clone(ctx, gx_repo, galaxy_root, branch=branch)
-    _install_with_command(ctx, command, galaxy_root, env, kwds)
+    shell(command, env=env)
+    _install_with_command(ctx, galaxy_root, env, kwds)
 
 
 def _build_eggs_cache(ctx, env, kwds):
@@ -1128,17 +1123,15 @@ def _galaxy_source(kwds):
     return source
 
 
-def _install_with_command(ctx, command, galaxy_root, env, kwds):
+def _install_with_command(ctx, galaxy_root, env, kwds):
     setup_venv_command = setup_venv(ctx, kwds)
     env['__PYVENV_LAUNCHER__'] = ''
     install_cmd = shell_join(
-        command,
-        ['cd', galaxy_root],
         setup_venv_command,
         setup_common_startup_args(),
         COMMAND_STARTUP_COMMAND,
     )
-    shell(install_cmd, env=env)
+    shell(install_cmd, cwd=galaxy_root, env=env)
 
 
 def _ensure_galaxy_repository_available(ctx, kwds):

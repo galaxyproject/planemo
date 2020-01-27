@@ -109,9 +109,7 @@ def rev(ctx, directory):
 
 def is_rev_dirty(ctx, directory):
     """Check if specified git repository has uncommitted changes."""
-    # TODO: Use ENV instead of cd.
-    cmd = "cd '%s' && git diff --quiet" % directory
-    return io.shell(cmd) != 0
+    return io.shell(['git', 'diff', '--quiet'], cwd=directory) != 0
 
 
 def rev_if_git(ctx, directory):

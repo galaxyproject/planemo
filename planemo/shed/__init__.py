@@ -415,10 +415,12 @@ def _diff_in(ctx, working, realized_repository, **kwds):
         else:
             xml_diff = diff_and_remove(working, label_a, label_b, sys.stdout)
 
-    cmd = 'cd "%s"; diff -r %s %s' % (working, label_a, label_b)
+    cmd = ['diff', '-r', label_a, label_b]
     if output:
-        cmd += " >> '%s'" % output
-    raw_diff = shell(cmd)
+        with open(output, 'ab') as fh:
+            raw_diff = shell(cmd, cwd=working, stdout=fh)
+    else:
+        raw_diff = shell(cmd, cwd=working)
     exit = raw_diff or xml_diff
     if not raw:
         if xml_diff:
