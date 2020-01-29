@@ -11,16 +11,16 @@ History
 
 * Temporarily add galaxy-util requirement `Pull Request 991`_
 * Make symlinks in tool tree work for planemo test `Pull Request 988`_
-* Reduce use of `shell=True` in subprocesses `Pull Request 989`_
+* Reduce use of ``shell=True`` in subprocesses `Pull Request 989`_
 * Drop planemo database seed option `Pull Request 985`_
-* Don't execute `untar_to()` subprocesses through the shell `Pull Request  984`_
+* Don't execute ``untar_to()`` subprocesses through the shell `Pull Request  984`_
 * Allow setting database_connection for planemo test runs `Pull Request 986`_
 * Fix copy-paste mistakes `Pull Request 983`_
 * Add planemo list_repos command `Pull Request 982`_
 * Make container_register build files with headers and include base_image `Pull Request 980`_
 * Replace deprecated galaxy-lib requirement with galaxy-tool-util `Pull  Request 978`_
-* close all opended files (thanks to `@bernt-matthias`_). `Pull Request 979`_
-* Build single requirement container, log if requirement not in best-pr… `Pull Request 977`_
+* Close all opened files (thanks to `@bernt-matthias`_). `Pull Request 979`_
+* Build single requirement container, log if requirement not in best-practice channels `Pull Request 977`_
 * Use tojson jinja2 filter instead of json.dumps `Pull Request 975`_
 * Add merge_test_reports command `Pull Request 974`_
 * Implement github workflow and fix profile commands if psql unavailable `Pull Request 976`_
