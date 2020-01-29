@@ -212,6 +212,22 @@ planemo.commands.cmd\_lint module
    :undoc-members:
    :show-inheritance:
 
+planemo.commands.cmd\_list\_repos module
+----------------------------------------
+
+.. automodule:: planemo.commands.cmd_list_repos
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+planemo.commands.cmd\_merge\_test\_reports module
+-------------------------------------------------
+
+.. automodule:: planemo.commands.cmd_merge_test_reports
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 planemo.commands.cmd\_mull module
 ---------------------------------
 
