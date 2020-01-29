@@ -8,6 +8,7 @@ docutils
 ephemeris>=0.10.3
 galaxy-containers
 galaxy-tool-util>=20.1.0.dev2
+galaxy-util>=20.1.0.dev0  # temporarily needed because this is a pre-release and https://github.com/pypa/pip/issues/988
 glob2
 gxformat2>=0.8.0
 jinja2
