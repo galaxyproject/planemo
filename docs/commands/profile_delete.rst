@@ -36,5 +36,13 @@ Delete a profile.
                                       databases.
       --postgres_database_port TEXT   Postgres port for managed development
                                       databases.
+      --docker_cmd TEXT               Command used to launch docker (defaults to
+                                      docker).
+      --docker_sudo / --no_docker_sudo
+                                      Flag to use sudo when running docker.
+      --docker_host TEXT              Docker host to target when executing docker
+                                      commands (defaults to localhost).
+      --docker_sudo_cmd TEXT          sudo command to use when --docker_sudo is
+                                      enabled (defaults to sudo).
       --help                          Show this message and exit.
     

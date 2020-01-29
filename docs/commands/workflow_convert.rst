@@ -12,7 +12,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-Convert Format 2 workflow to a native Galaxy workflow.
+Convert Format 2 workflows to native Galaxy workflows, and vice-versa.
 
 **Options**::
 
