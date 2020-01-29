@@ -205,7 +205,7 @@ History
   (thanks to `@mvdbeek`_). `Pull Request 874`_
 * Change the channel priority of conda (again). (thanks to `@bgruening`_).
   `Pull Request 867`_
-* Some small english corrections (thanks to `@erasche`_). `Pull Request 868`_
+* Some small english corrections (thanks to `@hexylena`_). `Pull Request 868`_
 * Print the list of excluded paths when running ``ci_find_repos``
   (thanks to `@nsoranzo`_). `Pull Request 877`_
 * Improved XSD lint reporting. `Pull Request 871`_
@@ -224,9 +224,9 @@ History
 * Fix `planemo test` when TEMP env variable contain spaces (thanks to
   `@nsoranzo`_).
   `Pull Request 851`_
-* Support testing a completely remote galaxy instance (thanks to `@erasche`_).
+* Support testing a completely remote galaxy instance (thanks to `@hexylena`_).
   `Pull Request 856`_
-* Allow naming history from command line (thanks to `@erasche`_).
+* Allow naming history from command line (thanks to `@hexylena`_).
   `Pull Request 860`_
 * Sync galaxy.xsd from galaxy repo (thanks to `@nsoranzo`_).
   `Pull Request 866`_
@@ -252,7 +252,7 @@ History
   `Pull Request 842`_
 * Add ``--no_shed_install`` option, to prevent shed installs as part of workflow testing.
   `Pull Request 841`_
-* Small docs fix (thanks to `@erasche`_). `Pull Request 848`_
+* Small docs fix (thanks to `@hexylena`_). `Pull Request 848`_
 
 ---------------------
 0.53.0 (2018-05-22)
@@ -703,7 +703,7 @@ History
 ---------------------
 
 * Fix ``lint --urls`` false positives by being more restrictive with what is considered a URL
-  (fixed by `@erasche`_ after detailed report from `@peterjc`_).
+  (fixed by `@hexylena`_ after detailed report from `@peterjc`_).
   `Issue 573`_, `Pull Request 579`_
 
 ---------------------
@@ -1003,8 +1003,8 @@ History
 * Fix document issues thanks to `@einon`_.
   `Pull Request 390`_
 * Improve client for shed publishing to support newer shed backend
-  being developed by `@erasche`_. `Pull Request 394`_
-* Tool Shed ``repo_id`` change, `@erasche`_. `Pull Request 398`_
+  being developed by `@hexylena`_. `Pull Request 394`_
+* Tool Shed ``repo_id`` change, `@hexylena`_. `Pull Request 398`_
 * Various other small changes to testing, project structure, and
   Python 3 support.
 
@@ -1072,11 +1072,11 @@ History
   `Pull Request 339`_
 * Implement highly experimental ``cwl_script`` command to convert
   a CWL job to a bash script. 508dce7_
-* Add name to all XUnit reports (thanks to `@erasche`_).
+* Add name to all XUnit reports (thanks to `@hexylena`_).
   `Pull Request 343`_
 * Capture stdout and stderr for ``shed_diff`` and ``shed_update``
   XUnit reports. `Pull Request 344`_
-* More tool linting (conditionals) thanks to `@erasche`_.
+* More tool linting (conditionals) thanks to `@hexylena`_.
   `Pull Request 350`_
 * UTF-8 fixes when handling XUnit reports. `Pull Request 345`_
 * Add `Epigenetics` as Tool Shed category. `Pull Request 351`_
@@ -1102,7 +1102,7 @@ History
   `Pull Request 334`_
 * Add docker pull attempt when missing Dockerfile (thanks to `@kellrott`_).
   `Pull Request 333`_
-* Fix bug inferring which files are tool files (thanks to `@erasche`_).
+* Fix bug inferring which files are tool files (thanks to `@hexylena`_).
   `Pull Request 335`_, `Issue 313`_
 * Initial work toward automating brew recipe update. 4d6f7d9_, `Issue 329`_
 
@@ -1113,16 +1113,16 @@ History
 * Implement basic XUnit report option for ``shed_update`` (thanks to `@martenson`_).
   `Pull Request 322`_
 * Fix issues with producing test outputs. 572e754_
-* Xunit reporting improvements - refactoring, times, diff output (thanks to `@erasche`_).
+* Xunit reporting improvements - refactoring, times, diff output (thanks to `@hexylena`_).
   `Pull Request 330`_
 * Implement project governance policy and update developer code of conduct to
   match that of the Galaxy project. `Pull Request 316`_
 * Update filters for account for new ``.txt`` and ``.md`` test outputs
-  (thanks to `@erasche`_). `Pull Request 327`_
+  (thanks to `@hexylena`_). `Pull Request 327`_
 * Add verbose logging to galaxy test output handling problems. 5d7db92_
 * Flake8 fixes (thanks to `@martenson`_). 949a36d_
 * Remove uses of deprecated ``mktemp`` Python standard library function
-  (thanks to `@erasche`_). `Pull Request 330`_
+  (thanks to `@hexylena`_). `Pull Request 330`_
 
 ---------------------
 0.16.0 (2015-10-07)
@@ -1139,10 +1139,10 @@ History
 ---------------------
 
 * Template framework for reporting including new markdown and plain
-  text reporting options for testing - thanks to `@erasche`_.
+  text reporting options for testing - thanks to `@hexylena`_.
   `Pull Request 304`_
 * XUnit style reporting for ``shed_diff`` command - thanks to
-  `@erasche`_. `Pull Request 305`_
+  `@hexylena`_. `Pull Request 305`_
 * Add new ``shed_build`` command for building repository tarballs -
   thanks to `@kellrott`_. `Pull Request 297`_
 * Fix exit code handling for ``lint`` commands - thanks to `@mvdbeek`_.
@@ -2215,7 +2215,7 @@ History
 .. _quay.io: https://quay.io/
 .. _galaxy-lib: https://github.com/galaxyproject/galaxy-lib
 .. _@abretaud: https://github.com/abretaud
-.. _@erasche: https://github.com/erasche
+.. _@hexylena: https://github.com/hexylena
 .. _@peterjc: https://github.com/peterjc
 .. _@mr-c: https://github.com/mr-c
 .. _@martenson: https://github.com/martenson
