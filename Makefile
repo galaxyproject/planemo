@@ -76,7 +76,7 @@ flake8: ## check style using flake8 for current Python (faster than lint)
 lint: ## check style using tox and flake8 for Python 2 and Python 3
 	$(IN_VENV) tox -e py27-lint && tox -e py37-lint
 
-lint-readme: ## check README formatting for PyPI
+check-sdist: ## check README formatting for PyPI
 	$(IN_VENV) python setup.py sdist && twine check dist/*.tar.gz
 
 test: ## run tests with the default Python (faster than tox)
