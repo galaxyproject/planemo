@@ -4,33 +4,6 @@ History
 -------
 
 .. to_doc
-* Temporarily add galaxy-util requirement `Pull Request 991`_
-* Make symlinks in tool tree work for planemo test `Pull Request 988`_
-* Reduce use of `shell=True` in subprocesses `Pull Request 989`_
-* Drop planemo database seed option `Pull Request 985`_
-* Don't execute `untar_to()` subprocesses through the shell `Pull Request
-  984`_
-* Allow setting database_connection for planemo test runs `Pull Request 986`_
-* Fix copy-paste mistakes `Pull Request 983`_
-* Add planemo list_repos command `Pull Request 982`_
-* Make container_register build files with headers and include base_image
-  `Pull Request 980`_
-* Replace deprecated galaxy-lib requirement with galaxy-tool-util `Pull
-  Request 978`_
-* close all opended files (thanks to `@bernt-matthias`_). `Pull Request 979`_
-* Build single requirement container, log if requirement not in best-pr… `Pull
-  Request 977`_
-* Use tojson jinja2 filter instead of json.dumps `Pull Request 975`_
-* Add merge_test_reports command `Pull Request 974`_
-* Implement github workflow and fix profile commands if psql unavailable
-  `Pull Request 976`_
-* Fix planemo lint --biocontainers if no build number in container `Pull
-  Request 972`_
-* Update a training command (thanks to `@hexylena`_). `Pull Request 973`_
-* Allow passing through GALAXY_VIRTUAL_ENV variable to venv setup `Pull
-  Request 971`_
-* Correct help text (thanks to `@hexylena`_). `Pull Request 970`_
-* Remove unneeded html5lib requirement `Pull Request 968`_
 
 ---------------------
 0.70.0 (2020-01-29)
@@ -40,30 +13,22 @@ History
 * Make symlinks in tool tree work for planemo test `Pull Request 988`_
 * Reduce use of `shell=True` in subprocesses `Pull Request 989`_
 * Drop planemo database seed option `Pull Request 985`_
-* Don't execute `untar_to()` subprocesses through the shell `Pull Request
-  984`_
+* Don't execute `untar_to()` subprocesses through the shell `Pull Request  984`_
 * Allow setting database_connection for planemo test runs `Pull Request 986`_
 * Fix copy-paste mistakes `Pull Request 983`_
 * Add planemo list_repos command `Pull Request 982`_
-* Make container_register build files with headers and include base_image
-  `Pull Request 980`_
-* Replace deprecated galaxy-lib requirement with galaxy-tool-util `Pull
-  Request 978`_
+* Make container_register build files with headers and include base_image `Pull Request 980`_
+* Replace deprecated galaxy-lib requirement with galaxy-tool-util `Pull  Request 978`_
 * close all opended files (thanks to `@bernt-matthias`_). `Pull Request 979`_
-* Build single requirement container, log if requirement not in best-pr… `Pull
-  Request 977`_
+* Build single requirement container, log if requirement not in best-pr… `Pull Request 977`_
 * Use tojson jinja2 filter instead of json.dumps `Pull Request 975`_
 * Add merge_test_reports command `Pull Request 974`_
-* Implement github workflow and fix profile commands if psql unavailable
-  `Pull Request 976`_
-* Fix planemo lint --biocontainers if no build number in container `Pull
-  Request 972`_
+* Implement github workflow and fix profile commands if psql unavailable `Pull Request 976`_
+* Fix planemo lint --biocontainers if no build number in container `Pull Request 972`_
 * Update a training command (thanks to `@hexylena`_). `Pull Request 973`_
-* Allow passing through GALAXY_VIRTUAL_ENV variable to venv setup `Pull
-  Request 971`_
+* Allow passing through GALAXY_VIRTUAL_ENV variable to venv setup `Pull Request 971`_
 * Correct help text (thanks to `@hexylena`_). `Pull Request 970`_
 * Remove unneeded html5lib requirement `Pull Request 968`_
-
 
 ---------------------
 0.62.1 (2019-10-14)
