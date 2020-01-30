@@ -119,10 +119,18 @@ def cli(ctx, paths, **kwds):
             continue
 
         namespace = kwds["mulled_namespace"]
-        repo_data = quay_repository(namespace, name)
-        if "tags" in repo_data:
-            ctx.vlog("quay repository already exists, skipping")
-            continue
+        repo_name = name.split(":", 1)[0]
+        repo_data = quay_repository(namespace, repo_name)
+        tags = repo_data.get("tags", [])
+        target_tag = None
+        if ":" in name:
+            image_name_parts = name.split(":")
+            assert len(image_name_parts) == 2, ": not allowed in image name [%s]" % name
+            target_tag = image_name_parts[1]
+        if tags:
+            if target_tag is None or any(t for t in tags if t.startswith(target_tag)):
+                ctx.vlog("quay repository already exists, skipping")
+                continue
 
         if registry_target.has_pull_request_for(name):
             ctx.vlog("Found matching open pull request for [%s], skipping" % name)
