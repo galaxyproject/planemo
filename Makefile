@@ -71,13 +71,10 @@ setup-git-hook-lint-and-test: ## setup precommit hook for linting and testing pr
 	cp $(BUILD_SCRIPTS_DIR)/pre-commit-lint-and-test .git/hooks/pre-commit
 
 flake8: ## check style using flake8 for current Python (faster than lint)
-	$(IN_VENV) flake8 $(SOURCE_DIR)  $(TEST_DIR)
+	$(IN_VENV) flake8 $(SOURCE_DIR) $(TEST_DIR)
 
 lint: ## check style using tox and flake8 for Python 2 and Python 3
 	$(IN_VENV) tox -e py27-lint && tox -e py37-lint
-
-check-sdist: ## check README formatting for PyPI
-	$(IN_VENV) python setup.py sdist && twine check dist/*.tar.gz
 
 test: ## run tests with the default Python (faster than tox)
 	$(IN_VENV) nosetests $(NOSE_TESTS)
@@ -140,8 +137,9 @@ open-rtd: docs ## open docs on readthedocs.org
 open-project: ## open project on github
 	$(OPEN_RESOURCE) $(PROJECT_URL)
 
-dist: clean submodule ## package
+dist: clean submodule ## create and check packages
 	$(IN_VENV) python setup.py sdist bdist_wheel
+	$(IN_VENV) twine check dist/*
 	ls -l dist
 
 release-test-artifacts: dist
