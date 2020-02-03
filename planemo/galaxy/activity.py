@@ -78,7 +78,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):
 
     history_id = _history_id(user_gi, **kwds)
 
-    job_dict, _ = stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds)  # noqa C901
+    job_dict, _ = stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds)
 
     if runnable.type in [RunnableType.galaxy_tool, RunnableType.cwl_tool]:
         response_class = GalaxyToolRunResponse
@@ -177,7 +177,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):
     return run_response
 
 
-def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
+def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):  # noqa C901
     files_attached = [False]
 
     def upload_func(upload_target):
@@ -198,10 +198,7 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
                 history_id,
                 file_type=upload_target.properties.get('filetype', None) or "auto",
             )
-            if file_path is not None:
-                name = os.path.basename(file_path)
-            else:
-                name = "defaultname"
+            name = _file_path_to_name(file_path)
             upload_payload["inputs"]["files_0|auto_decompress"] = False
             upload_payload["inputs"]["auto_decompress"] = False
             if file_path is not None:
@@ -213,6 +210,10 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
                 upload_payload["inputs"]["files_1|auto_decompress"] = True
                 upload_payload["inputs"]["file_count"] = "2"
                 upload_payload["inputs"]["force_composite"] = "True"
+            # galaxy.exceptions.RequestParameterInvalidException: Not input source type
+            # defined for input '{'class': 'File', 'filetype': 'imzml', 'composite_data':
+            # ['Example_Continuous.imzML', 'Example_Continuous.ibd']}'.\n"}]]
+
             if upload_target.composite_data:
                 for i, composite_data in enumerate(upload_target.composite_data):
                     upload_payload["inputs"]["files_%s|type" % i] = "upload_dataset"
@@ -293,6 +294,14 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
         raise Exception(msg)
 
     return job_dict, datasets
+
+
+def _file_path_to_name(file_path):
+    if file_path is not None:
+        name = os.path.basename(file_path)
+    else:
+        name = "defaultname"
+    return name
 
 
 class GalaxyBaseRunResponse(SuccessfulRunResponse):
