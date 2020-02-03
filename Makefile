@@ -154,13 +154,13 @@ release-artifacts: release-test-artifacts ## Package and Upload to PyPi
 	@echo "Releasing"
 	$(IN_VENV) twine upload dist/*
 
-commit-version: ## Update version and history, commit.
+commit-version: ## Update version and history, commit and add tag
 	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/commit_version.py $(SOURCE_DIR) $(VERSION)
 
 new-version: ## Mint a new version
 	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/new_version.py $(SOURCE_DIR) $(VERSION)
 
-release-local: commit-version release-artifacts new-version
+release-local: commit-version new-version
 
 release-brew: ## Mint a new homebrew release
 	bash $(BUILD_SCRIPTS_DIR)/update_planemo_recipe.bash $(VERSION)
