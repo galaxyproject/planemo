@@ -3,13 +3,13 @@ import os
 import string
 
 import click
+from galaxy.tool_util.deps.container_resolvers.mulled import targets_to_mulled_name
 from galaxy.tool_util.deps.mulled.mulled_build import (
     base_image_for_targets,
     DEFAULT_BASE_IMAGE,
 )
 from galaxy.tool_util.deps.mulled.util import (
     conda_build_target_str,
-    quay_repository,
     v2_image_name,
 )
 
@@ -118,9 +118,7 @@ def cli(ctx, paths, **kwds):
             ctx.log("Target file '%s' already exists, skipping" % target_filename)
             continue
 
-        namespace = kwds["mulled_namespace"]
-        repo_data = quay_repository(namespace, name)
-        if "tags" in repo_data:
+        if targets_to_mulled_name(mulled_targets, hash_func='v2', namespace=kwds["mulled_namespace"]):
             ctx.vlog("quay repository already exists, skipping")
             continue
 
