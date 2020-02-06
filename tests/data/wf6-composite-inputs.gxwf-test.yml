@@ -4,7 +4,9 @@
       class: File
       filetype: imzml
       composite_data:
-        - Example_Continuous.imzML
+        # Can use location/path keys or just specify an array of files - only
+        # order is used.
+        - path: Example_Continuous.imzML
         - Example_Continuous.ibd
   outputs:
     wf_output_1:
