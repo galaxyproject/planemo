@@ -2,8 +2,10 @@
 
 import json
 import os
+import sys
 import tempfile
 import time
+import traceback
 
 import bioblend
 import requests
@@ -44,6 +46,9 @@ def execute(ctx, config, runnable, job_path, **kwds):
     try:
         return _execute(ctx, config, runnable, job_path, **kwds)
     except Exception as e:
+        if ctx.verbose:
+            ctx.vlog("Problem executing Galaxy activity")
+            traceback.print_exc(file=sys.stdout)
         return ErrorRunResponse(unicodify(e))
 
 
@@ -404,6 +409,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                 else:
                     output_dict_value = output_properties(**dataset_dict)
             else:
+                output_dataset_id = output_src["id"]
                 galaxy_output = self.to_galaxy_output(runnable_output)
                 cwl_output = output_to_cwl_json(
                     galaxy_output,
@@ -412,7 +418,24 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                     self._get_extra_files,
                     pseduo_location=True,
                 )
-                output_dict_value = cwl_output
+                if is_cwl:
+                    output_dict_value = cwl_output
+                else:
+
+                    def attach_file_properties(collection, cwl_output):
+                        elements = collection["elements"]
+                        print(elements)
+                        print(cwl_output)
+                        assert len(elements) == len(cwl_output)
+                        for element, cwl_output_element in zip(elements, cwl_output):
+                            element["_output_object"] = cwl_output_element
+                            if isinstance(cwl_output_element, list):
+                                assert "elements" in element["object"]
+                                attach_file_properties(element["object"], cwl_output_element)
+
+                    output_metadata = self._get_metadata("dataset_collection", output_dataset_id)
+                    attach_file_properties(output_metadata, cwl_output)
+                    output_dict_value = output_metadata
 
             outputs_dict[output_id] = output_dict_value
 
