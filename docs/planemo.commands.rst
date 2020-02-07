@@ -508,6 +508,14 @@ planemo.commands.cmd\_workflow\_edit module
    :undoc-members:
    :show-inheritance:
 
+planemo.commands.cmd\_workflow\_lint module
+----------------------------------------------
+
+.. automodule:: planemo.commands.cmd_workflow_lint
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 Module contents
 ---------------
