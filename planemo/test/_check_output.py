@@ -2,23 +2,24 @@
 
 import os
 
-from galaxy.tools.verify import verify
+from galaxy.tool_util.verify import verify
 from galaxy.util import unicodify
 
 
 def check_output(runnable, output_properties, test_properties, **kwds):
-    """Use galaxy-lib to check a test output.
+    """Use galaxy-tool-util to check a test output.
 
     Return a list of strings describing the problems encountered,
     and empty list indicates no problems were detected.
 
     Currently this will only ever return at most one detected problem because
-    of the way galaxy-lib throws exceptions instead of returning individual
+    of the way galaxy-tool-util throws exceptions instead of returning individual
     descriptions - but this may be enhanced in the future.
     """
     get_filename = _test_filename_getter(runnable)
     path = output_properties["path"]
-    output_content = open(path, "rb").read()
+    with open(path, "rb") as fh:
+        output_content = fh.read()
     # Support Galaxy-like file location (using "file") or CWL-like ("path" or "location").
     expected_file = test_properties.get("file", None)
     if expected_file is None:
@@ -31,7 +32,7 @@ def check_output(runnable, output_properties, test_properties, **kwds):
     problems = []
     if "asserts" in test_properties:
         # TODO: break fewer abstractions here...
-        from galaxy.tools.parser.yaml import __to_test_assert_list
+        from galaxy.tool_util.parser.yaml import __to_test_assert_list
         test_properties["assert_list"] = __to_test_assert_list(test_properties["asserts"])
     try:
         verify(

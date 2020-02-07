@@ -1,7 +1,7 @@
 """Module describing the planemo ``docker_build`` command."""
 
 import click
-from galaxy.tools.deps import dockerfiles
+from galaxy.tool_util.deps import dockerfiles
 
 from planemo import options
 from planemo.cli import command_function

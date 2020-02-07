@@ -6,6 +6,7 @@ import errno
 import fnmatch
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import time
@@ -13,8 +14,8 @@ from sys import platform as _platform
 from xml.sax.saxutils import escape
 
 import click
-from galaxy.tools.deps import commands
-from galaxy.tools.deps.commands import download_command
+from galaxy.tool_util.deps import commands
+from galaxy.tool_util.deps.commands import download_command
 from six import (
     string_types,
     StringIO
@@ -96,17 +97,28 @@ def write_file(path, content, force=True):
         f.write(content)
 
 
-def untar_to(url, path=None, tar_args=None):
-    download_cmd = " ".join(download_command(url, quote_url=True))
+def untar_to(url, tar_args=None, path=None, dest_dir=None):
     if tar_args:
+        assert not (path and dest_dir)
+        if dest_dir:
+            if not os.path.exists(dest_dir):
+                os.makedirs(dest_dir)
+            tar_args[0:0] = ['-C', dest_dir]
         if path:
-            if not os.path.exists(path):
-                os.makedirs(path)
+            tar_args.insert(0, '-O')
 
-        untar_cmd = "tar %s" % tar_args
-        shell("%s | %s" % (download_cmd, untar_cmd))
+        download_cmd = download_command(url)
+        download_p = commands.shell_process(download_cmd, stdout=subprocess.PIPE)
+        untar_cmd = ['tar'] + tar_args
+        if path:
+            with open(path, 'wb') as fh:
+                shell(untar_cmd, stdin=download_p.stdout, stdout=fh)
+        else:
+            shell(untar_cmd, stdin=download_p.stdout)
+        download_p.wait()
     else:
-        shell("%s > '%s'" % (download_cmd, path))
+        cmd = download_command(url, to=path)
+        shell(cmd)
 
 
 def find_matching_directories(path, pattern, recursive):
@@ -155,8 +167,14 @@ def real_io():
 
 
 @contextlib.contextmanager
-def temp_directory(prefix="planemo_tmp_"):
-    temp_dir = tempfile.mkdtemp(prefix=prefix)
+def temp_directory(prefix="planemo_tmp_", dir=None, **kwds):
+    if dir is not None:
+        try:
+            os.makedirs(dir)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+    temp_dir = tempfile.mkdtemp(prefix=prefix, dir=dir, **kwds)
     try:
         yield temp_dir
     finally:
@@ -180,7 +198,8 @@ def kill_pid_file(pid_file):
         if e.errno == errno.ENOENT:
             return False
 
-    pid = int(open(pid_file, "r").read())
+    with open(pid_file, "r") as fh:
+        pid = int(fh.read())
     kill_posix(pid)
     try:
         os.unlink(pid_file)

@@ -35,7 +35,8 @@ class CmdTestTestCase(CliTestCase):
                 test_artifact,
             ]
             self._check_exit_code(test_command, exit_code=0)
-            assert json.load(open(json_out.name, 'r'))['summary']['num_tests'] == 1
+            with open(json_out.name, 'r') as fh:
+                assert json.load(fh)['summary']['num_tests'] == 1
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_workflow_test_simple_yaml(self):

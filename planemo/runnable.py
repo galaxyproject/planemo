@@ -5,19 +5,20 @@ from __future__ import absolute_import
 import abc
 import collections
 import os
+from distutils.dir_util import copy_tree
 
 import aenum
 import six
 import yaml
-from galaxy.tools.cwl.parser import workflow_proxy
-from galaxy.tools.loader_directory import (
+from galaxy.tool_util.cwl.parser import workflow_proxy
+from galaxy.tool_util.loader_directory import (
     is_a_yaml_with_class,
     looks_like_a_cwl_artifact,
     looks_like_a_data_manager_xml,
     looks_like_a_tool_cwl,
     looks_like_a_tool_xml,
 )
-from galaxy.tools.parser import get_tool_source
+from galaxy.tool_util.parser import get_tool_source
 
 from planemo.exit_codes import EXIT_CODE_UNKNOWN_FILE_TYPE, ExitCodeException
 from planemo.galaxy.workflows import describe_outputs
@@ -98,7 +99,24 @@ def _runnable_delegate_attribute(attribute):
     return getter
 
 
-def for_path(path):
+def _copy_runnable_tree(path, runnable_type, temp_path):
+    dir_to_copy = None
+    if runnable_type in {RunnableType.galaxy_tool, RunnableType.cwl_tool}:
+        dir_to_copy = os.path.dirname(path)
+        path = os.path.join(temp_path, os.path.basename(path))
+    elif runnable_type == RunnableType.directory:
+        dir_to_copy = path
+        path = temp_path
+    elif runnable_type == RunnableType.galaxy_datamanager:
+        dir_to_copy = os.path.join(os.path.dirname(path), os.pardir)
+        path_to_data_manager_tool = os.path.relpath(path, dir_to_copy)
+        path = os.path.join(temp_path, path_to_data_manager_tool)
+    if dir_to_copy:
+        copy_tree(dir_to_copy, temp_path)
+    return path
+
+
+def for_path(path, temp_path=None):
     """Produce a class:`Runnable` for supplied path."""
     runnable_type = None
     if os.path.isdir(path):
@@ -120,12 +138,15 @@ def for_path(path):
         error("Unable to determine runnable type for path [%s]" % path)
         raise ExitCodeException(EXIT_CODE_UNKNOWN_FILE_TYPE)
 
+    if temp_path:
+        path = _copy_runnable_tree(path, runnable_type, temp_path)
+
     return Runnable(path, runnable_type)
 
 
-def for_paths(paths):
+def for_paths(paths, temp_path=None):
     """Return a specialized list of Runnable objects for paths."""
-    return list(map(for_path, paths))
+    return [for_path(path, temp_path=temp_path) for path in paths]
 
 
 def cases(runnable):
@@ -342,7 +363,7 @@ class ExternalGalaxyToolTestCase(AbstractTestCase):
         self.test_dict = test_dict
 
     def structured_test_data(self, run_response):
-        """Just return the structured_test_data generated from galaxy-lib for this test variant.
+        """Just return the structured_test_data generated from galaxy-tool-util for this test variant.
         """
         return run_response
 

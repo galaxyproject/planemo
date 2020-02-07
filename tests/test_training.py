@@ -70,7 +70,6 @@ KWDS = {
     'file_path': None,
     'galaxy_api_key': None,
     'galaxy_branch': None,
-    'galaxy_database_seed': None,
     'galaxy_email': 'planemo@galaxyproject.org',
     'galaxy_root': None,
     'galaxy_single_user': True,
@@ -147,7 +146,8 @@ def test_training_init_training():
     train.init_training(CTX)
     assert os.path.exists(train.tuto.dir)
     assert os.path.exists(train.tuto.tuto_fp)
-    assert train.kwds['tutorial_title'] in open(train.tuto.tuto_fp, 'r').read()
+    with open(train.tuto.tuto_fp, 'r') as fh:
+        assert train.kwds['tutorial_title'] in fh.read()
     # clean after
     shutil.rmtree(train.topics_dir)
     shutil.rmtree("metadata")
@@ -200,20 +200,26 @@ def test_fill_data_library():
     # with a given Zenodo link and no Zenodo in metadata
     train.kwds['zenodo_link'] = zenodo_link
     train.fill_data_library(CTX)
-    assert 'DOI: 10.5281/zenodo.1321885' in open(train.tuto.data_lib_fp, 'r').read()
-    assert 'zenodo_link: %s' % zenodo_link in open(train.tuto.tuto_fp, 'r').read()
+    with open(train.tuto.data_lib_fp, 'r') as fh:
+        assert 'DOI: 10.5281/zenodo.1321885' in fh.read()
+    with open(train.tuto.tuto_fp, 'r') as fh:
+        assert 'zenodo_link: %s' % zenodo_link in fh.read()
     # with a given Zenodo link and Zenodo in metadata
     new_z_link = 'https://zenodo.org/record/1324204'
     train.kwds['zenodo_link'] = new_z_link
     train.tuto = None
     train.fill_data_library(CTX)
-    assert 'DOI: 10.5281/zenodo.1324204' in open(train.tuto.data_lib_fp, 'r').read()
-    assert 'zenodo_link: %s' % new_z_link in open(train.tuto.tuto_fp, 'r').read()
+    with open(train.tuto.data_lib_fp, 'r') as fh:
+        assert 'DOI: 10.5281/zenodo.1324204' in fh.read()
+    with open(train.tuto.tuto_fp, 'r') as fh:
+        assert 'zenodo_link: %s' % new_z_link in fh.read()
     # with no given Zenodo link
     train.kwds['zenodo_link'] = None
     train.fill_data_library(CTX)
-    assert 'DOI: 10.5281/zenodo.1324204' in open(train.tuto.data_lib_fp, 'r').read()
-    assert 'zenodo_link: %s' % new_z_link in open(train.tuto.tuto_fp, 'r').read()
+    with open(train.tuto.data_lib_fp, 'r') as fh:
+        assert 'DOI: 10.5281/zenodo.1324204' in fh.read()
+    with open(train.tuto.tuto_fp, 'r') as fh:
+        assert 'zenodo_link: %s' % new_z_link in fh.read()
     # clean after
     shutil.rmtree(train.topics_dir)
     shutil.rmtree("metadata")
@@ -236,7 +242,8 @@ def test_generate_tuto_from_wf():
     # with workflow
     train.kwds['workflow'] = WF_FP
     train.generate_tuto_from_wf(CTX)
-    assert '**FastQC** {% icon tool %} with the following parameters:' in open(train.tuto.tuto_fp, 'r').read()
+    with open(train.tuto.tuto_fp, 'r') as fh:
+        assert '**FastQC** {% icon tool %} with the following parameters:' in fh.read()
     assert os.path.exists(train.tuto.wf_fp)
     # clean after
     shutil.rmtree(train.topics_dir)

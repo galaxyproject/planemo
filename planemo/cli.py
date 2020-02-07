@@ -118,7 +118,8 @@ class Context(object):
         filename = os.path.basename(url)
         cache_destination = os.path.join(cache, filename)
         if not os.path.exists(cache_destination):
-            content = urlopen(url).read()
+            with urlopen(url) as fh:
+                content = fh.read()
             if len(content) == 0:
                 raise Exception("Failed to download [%s]." % url)
             with open(cache_destination, "wb") as f:

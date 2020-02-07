@@ -6,7 +6,7 @@ import functools
 import os
 
 import click
-from galaxy.tools.deps import docker_util
+from galaxy.tool_util.deps import docker_util
 
 from .config import planemo_option
 
@@ -134,7 +134,7 @@ def galaxy_python_version():
         '--galaxy_python_version',
         use_global_config=True,
         default=None,
-        type=click.Choice(['2', '2.7', '3', '3.3', '3.4', '3.5', '3.6', '3.7']),
+        type=click.Choice(['2', '2.7', '3', '3.5', '3.6', '3.7', '3.8']),
         help="Python version to start Galaxy under",
     )
 
@@ -147,17 +147,6 @@ def galaxy_root_option():
         use_env_var=True,
         type=click.Path(file_okay=False, dir_okay=True, resolve_path=True),
         help="Root of development galaxy directory to execute command with.",
-    )
-
-
-def galaxy_database_seed_option():
-    return planemo_option(
-        "--galaxy_database_seed",
-        default=None,
-        use_global_config=True,
-        use_env_var=True,
-        type=click.Path(exists=True, file_okay=True, resolve_path=True),
-        help="Preseeded Galaxy sqlite database to target.",
     )
 
 
@@ -1070,7 +1059,6 @@ def galaxy_target_options():
     return _compose(
         galaxy_root_option(),
         galaxy_python_version(),
-        galaxy_database_seed_option(),
         extra_tools_option(),
         install_galaxy_option(),
         galaxy_branch_option(),
@@ -1328,14 +1316,28 @@ def recursive_option(help="Recursively perform command for subdirectories."):
     )
 
 
-def tool_test_json():
+def merge_test_json():
     target_path = click.Path(
         file_okay=True,
         dir_okay=False,
         resolve_path=True,
     )
     return click.argument(
-        'path',
+        'input_paths',
+        metavar="INPUT_PATHS",
+        type=target_path,
+        nargs=-1,
+    )
+
+
+def tool_test_json(var="path"):
+    target_path = click.Path(
+        file_okay=True,
+        dir_okay=False,
+        resolve_path=True,
+    )
+    return click.argument(
+        var,
         metavar="FILE_PATH",
         type=target_path,
         default="tool_test_output.json",

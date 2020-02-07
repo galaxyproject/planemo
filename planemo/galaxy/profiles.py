@@ -7,16 +7,13 @@ import json
 import os
 import shutil
 
-from galaxy.tools.deps.commands import which
+from galaxy.tool_util.deps.commands import which
 
 from planemo.config import (
     OptionSource,
 )
 from planemo.database import create_database_source
-from .config import (
-    attempt_database_preseed,
-    DATABASE_LOCATION_TEMPLATE,
-)
+from .config import DATABASE_LOCATION_TEMPLATE
 
 PROFILE_OPTIONS_JSON_NAME = "planemo_profile_options.json"
 ALREADY_EXISTS_EXCEPTION = "Cannot create profile with name [%s], directory [%s] already exists."
@@ -93,7 +90,6 @@ def _create_profile_local(ctx, profile_directory, profile_name, kwds):
         database_connection = database_source.sqlalchemy_url(database_identifier)
     else:
         database_location = os.path.join(profile_directory, "galaxy.sqlite")
-        attempt_database_preseed(ctx, None, database_location, **kwds)
         database_connection = DATABASE_LOCATION_TEMPLATE % database_location
 
     return {

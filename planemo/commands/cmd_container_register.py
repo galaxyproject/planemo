@@ -3,7 +3,15 @@ import os
 import string
 
 import click
-from galaxy.tools.deps.mulled.util import conda_build_target_str, quay_repository, v2_image_name
+from galaxy.tool_util.deps.container_resolvers.mulled import targets_to_mulled_name
+from galaxy.tool_util.deps.mulled.mulled_build import (
+    base_image_for_targets,
+    DEFAULT_BASE_IMAGE,
+)
+from galaxy.tool_util.deps.mulled.util import (
+    conda_build_target_str,
+    v2_image_name,
+)
 
 from planemo import options
 from planemo.cli import command_function
@@ -19,7 +27,10 @@ from planemo.mulled import conda_to_mulled_targets
 REGISTERY_TARGET_NAME = "multi-package-containers"
 REGISTERY_TARGET_PATH = "combinations"
 REGISTERY_REPOSITORY = "BioContainers/multi-package-containers"
-DEFAULT_MESSAGE = "Add container $hash.\n**Hash**: $hash\n\n**Packages**:\n$packages\n\n**For** :\n$tools\n\nGenerated with Planemo."
+DEFAULT_MESSAGE = "Add container $hash.\n**Hash**: $hash\n\n**Packages**:\n$packages\nBase Image:$base_image\n\n"
+DEFAULT_MESSAGE += "**For** :\n$tools\n\nGenerated with Planemo."
+CONTENTS = "#targets\tbase_image\timage_build\n$targets\t$base_image\t$image_build\n"
+BIOCONTAINERS_PLATFORM = 'linux-64'
 
 
 @click.command('container_register')
@@ -74,33 +85,40 @@ def cli(ctx, paths, **kwds):
         ctx.vlog("Handling conda_targets [%s]" % conda_targets)
         mulled_targets = conda_to_mulled_targets(conda_targets)
         mulled_targets_str = "- " + "\n- ".join(map(conda_build_target_str, mulled_targets))
-        if len(mulled_targets) < 2:
-            ctx.vlog("Skipping registeration, fewer than 2 targets discovered.")
-            # Skip these for now, we will want to revisit this for conda-forge dependencies and such.
-            continue
-
         best_practice_requirements = True
         for conda_target in conda_targets:
-            best_hit, exact = best_practice_search(conda_target, conda_context=conda_context)
-            if not best_hit or not exact:
-                ctx.vlog("Target [%s] is not available in best practice channels - skipping" % conda_target)
+            best_hit, exact = best_practice_search(conda_target, conda_context=conda_context, platform=BIOCONTAINERS_PLATFORM)
+            if not best_hit:
+                ctx.log("Target [%s] is not available in best practice channels - skipping" % conda_target)
                 best_practice_requirements = False
+            if not exact:
+                ctx.log("Target version [%s] for package [%s] is not available in best practice channels - please specify the full version",
+                        conda_target.version,
+                        conda_target.package)
 
         if not best_practice_requirements:
+            continue
+
+        base_image = DEFAULT_BASE_IMAGE
+        for conda_target in conda_targets:
+            base_image = base_image_for_targets([conda_target], conda_context=conda_context)
+            if base_image != DEFAULT_BASE_IMAGE:
+                ctx.log("%s requires '%s' as base image" % (conda_target, base_image))
+                break
+
+        if len(mulled_targets) < 1:
+            ctx.log("Skipping registration, no targets discovered.")
             continue
 
         name = v2_image_name(mulled_targets)
         tag = "0"
         name_and_tag = "%s-%s" % (name, tag)
         target_filename = os.path.join(registry_target.output_directory, "%s.tsv" % name_and_tag)
-        ctx.vlog("Target filename for registeration is [%s]" % target_filename)
         if os.path.exists(target_filename):
-            ctx.vlog("Target file already exists, skipping")
+            ctx.log("Target file '%s' already exists, skipping" % target_filename)
             continue
 
-        namespace = kwds["mulled_namespace"]
-        repo_data = quay_repository(namespace, name)
-        if "tags" in repo_data:
+        if targets_to_mulled_name(mulled_targets, hash_func='v2', namespace=kwds["mulled_namespace"]):
             ctx.vlog("quay repository already exists, skipping")
             continue
 
@@ -108,14 +126,14 @@ def cli(ctx, paths, **kwds):
             ctx.vlog("Found matching open pull request for [%s], skipping" % name)
             continue
 
-        registry_target.write_targets(ctx, target_filename, mulled_targets)
+        registry_target.write_targets(ctx, target_filename, mulled_targets, tag, base_image)
         tools_str = "\n".join(map(lambda p: "- " + os.path.basename(p), tool_paths))
-        registry_target.handle_pull_request(ctx, name, target_filename, mulled_targets_str, tools_str, **kwds)
+        registry_target.handle_pull_request(ctx, name, target_filename, mulled_targets_str, tools_str, base_image, **kwds)
         combinations_added += 1
 
 
 class RegistryTarget(object):
-    """Abstraction around mulled container registery (both directory and Github repo)."""
+    """Abstraction around mulled container registry (both directory and Github repo)."""
 
     def __init__(self, ctx, **kwds):
         output_directory = kwds["output_directory"]
@@ -146,13 +164,14 @@ class RegistryTarget(object):
 
         return has_pr
 
-    def handle_pull_request(self, ctx, name, target_filename, packages_str, tools_str, **kwds):
+    def handle_pull_request(self, ctx, name, target_filename, packages_str, tools_str, base_image, **kwds):
         if self.do_pull_request:
             message = kwds["message"]
             message = string.Template(message).safe_substitute({
                 "hash": name,
                 "packages": packages_str,
                 "tools": tools_str,
+                "base_image": base_image,
             })
             branch_name = name.replace(":", "-")
             branch(ctx, self.target_repository, branch_name, from_branch="master")
@@ -162,18 +181,27 @@ class RegistryTarget(object):
             push(ctx, self.target_repository, os.environ.get("GITHUB_USER"), branch_name, force=force_push)
             pull_request(ctx, self.target_repository, message=message)
 
-    def write_targets(self, ctx, target_filename, mulled_targets):
+    def write_targets(self, ctx, target_filename, mulled_targets, tag, base_image):
         with open(target_filename, "w") as f:
-            target_strings = list()
-            for target in mulled_targets:
-                if target.version:
-                    target_str = "%s=%s" % (target.package_name, target.version)
-                else:
-                    target_str = target.package_name
-                target_strings.append(target_str)
-            contents = ",".join(target_strings)
-            f.write(contents)
-            ctx.vlog("Wrote requirements [%s] to file [%s]" % (contents, target_filename))
+            targets = to_target_str(mulled_targets)
+            f.write(string.Template(CONTENTS).safe_substitute(
+                targets=targets,
+                base_image=base_image,
+                image_build=tag
+                )
+            )
+            ctx.log("Wrote requirements [%s] to file [%s]" % (targets, target_filename))
+
+
+def to_target_str(targets):
+    target_strings = []
+    for target in targets:
+        if target.version:
+            target_str = "%s=%s" % (target.package_name, target.version)
+        else:
+            target_str = target.package_name
+        target_strings.append(target_str)
+    return ",".join(target_strings)
 
 
 def open_prs(ctx):

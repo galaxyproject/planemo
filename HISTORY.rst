@@ -6,10 +6,60 @@ History
 .. to_doc
 
 ---------------------
-0.62.0.dev0
+0.71.0.dev0
 ---------------------
 
     
+
+---------------------
+0.70.0 (2020-01-29)
+---------------------
+
+* Temporarily add galaxy-util requirement `Pull Request 991`_
+* Make symlinks in tool tree work for planemo test `Pull Request 988`_
+* Reduce use of ``shell=True`` in subprocesses `Pull Request 989`_
+* Drop planemo database seed option `Pull Request 985`_
+* Don't execute ``untar_to()`` subprocesses through the shell `Pull Request  984`_
+* Allow setting database_connection for planemo test runs `Pull Request 986`_
+* Fix copy-paste mistakes `Pull Request 983`_
+* Add planemo list_repos command `Pull Request 982`_
+* Make container_register build files with headers and include base_image `Pull Request 980`_
+* Replace deprecated galaxy-lib requirement with galaxy-tool-util `Pull  Request 978`_
+* Close all opened files (thanks to `@bernt-matthias`_). `Pull Request 979`_
+* Build single requirement container, log if requirement not in best-practice channels `Pull Request 977`_
+* Use tojson jinja2 filter instead of json.dumps `Pull Request 975`_
+* Add merge_test_reports command `Pull Request 974`_
+* Implement github workflow and fix profile commands if psql unavailable `Pull Request 976`_
+* Fix planemo lint --biocontainers if no build number in container `Pull Request 972`_
+* Update a training command (thanks to `@hexylena`_). `Pull Request 973`_
+* Allow passing through GALAXY_VIRTUAL_ENV variable to venv setup `Pull Request 971`_
+* Correct help text (thanks to `@hexylena`_). `Pull Request 970`_
+* Remove unneeded html5lib requirement `Pull Request 968`_
+
+---------------------
+0.62.1 (2019-10-14)
+---------------------
+
+* Init & update submodules when installing and creating packages. Stop
+  distributing eggs (thanks to `@nsoranzo`_). 1ab8530_
+
+---------------------
+0.62.0 (2019-10-11)
+---------------------
+
+* Use ``unicodify()`` on exceptions and subprocess outputs (thanks to
+  `@nsoranzo`_) `Pull Request 944`_
+* Do not override ``None`` with empty string (thanks to `@ic4f`_). `Pull Request
+  950`_
+* Update Docker template for training material generation (thanks to
+  `@bedroesb`_). `Pull Request 958`_
+* Add support for suite of repos with different owners (thanks to `@nsoranzo`_).
+  `Pull Request 959`_
+* Link for collection details updated in the docs (thanks to `@martin-raden`_).
+  `Pull Request 963`_
+* Move most tests to Python 3.7, drop Python 3.4 (thanks to `@nsoranzo`_).
+  `Pull Request 964`_
+* Remove confusing warning `Pull Request 966`_
 
 ---------------------
 0.61.0 (2019-07-08)
@@ -41,7 +91,7 @@ History
 0.59.0 (2019-05-09)
 ---------------------
 
-* Add ability to test data manager tools (thanks to `@mvdbeek`_). 
+* Add ability to test data manager tools (thanks to `@mvdbeek`_).
   `Pull Request 912`_
 * Update Training for new requirement definition (thanks to `@bebatut`_).
   `Pull Request 913`_
@@ -126,7 +176,7 @@ History
   (thanks to `@mvdbeek`_). `Pull Request 874`_
 * Change the channel priority of conda (again). (thanks to `@bgruening`_).
   `Pull Request 867`_
-* Some small english corrections (thanks to `@erasche`_). `Pull Request 868`_
+* Some small english corrections (thanks to `@hexylena`_). `Pull Request 868`_
 * Print the list of excluded paths when running ``ci_find_repos``
   (thanks to `@nsoranzo`_). `Pull Request 877`_
 * Improved XSD lint reporting. `Pull Request 871`_
@@ -145,9 +195,9 @@ History
 * Fix `planemo test` when TEMP env variable contain spaces (thanks to
   `@nsoranzo`_).
   `Pull Request 851`_
-* Support testing a completely remote galaxy instance (thanks to `@erasche`_).
+* Support testing a completely remote galaxy instance (thanks to `@hexylena`_).
   `Pull Request 856`_
-* Allow naming history from command line (thanks to `@erasche`_).
+* Allow naming history from command line (thanks to `@hexylena`_).
   `Pull Request 860`_
 * Sync galaxy.xsd from galaxy repo (thanks to `@nsoranzo`_).
   `Pull Request 866`_
@@ -173,7 +223,7 @@ History
   `Pull Request 842`_
 * Add ``--no_shed_install`` option, to prevent shed installs as part of workflow testing.
   `Pull Request 841`_
-* Small docs fix (thanks to `@erasche`_). `Pull Request 848`_
+* Small docs fix (thanks to `@hexylena`_). `Pull Request 848`_
 
 ---------------------
 0.53.0 (2018-05-22)
@@ -399,7 +449,7 @@ History
 
 * Fix Readme typos (thanks to `@manabuishii`_) 904d77a_
 * Fix `container_register` to create pull requests against the newly finalized home of the
-  multi-package-containers registry repository. 
+  multi-package-containers registry repository.
   9636682_
 * Fix `use_global_config` and `use_env_var` for options with unspecified defaults.
   475104c_
@@ -568,7 +618,7 @@ History
 
 * Bring in latest tool XSD file from Galaxy (thanks to `@peterjc`_).
   `Pull Request 605`_
-* PEP8 fixes for various linting problems 
+* PEP8 fixes for various linting problems
   (thanks to `@peterjc`_).
   `Pull Request 606`_
 * Update tool syntax URL to new URL (thanks to `@mvdbeek`_).
@@ -624,7 +674,7 @@ History
 ---------------------
 
 * Fix ``lint --urls`` false positives by being more restrictive with what is considered a URL
-  (fixed by `@erasche`_ after detailed report from `@peterjc`_).
+  (fixed by `@hexylena`_ after detailed report from `@peterjc`_).
   `Issue 573`_, `Pull Request 579`_
 
 ---------------------
@@ -640,16 +690,15 @@ History
   e925ba1_, ea5324f_
 * Update `galaxy.xsd`_ to allow version_command's to have an interpreter
   attribute. 7cca2e4_
-* Apply improvement from `@nsoranzo`_ for Planemo's use of git_ 
-  `diff <https://git-scm.com/docs/git-diff>`__.
+* Apply improvement from `@nsoranzo`_ for Planemo's use of
+  `git diff <https://git-scm.com/docs/git-diff>`__.
   6f91719_
-* Pull in downstream refactoring of ``tool_init`` code from `@nturaga`_'s 
+* Pull in downstream refactoring of ``tool_init`` code from `@nturaga`_'s
   Bioconductor_ work. ccdd2d5_
 * Update to latest `Tool Factory`_ code from `tools-iuc`_. ca88b0c_
 * Small code cleanups. b6d8294_, d6da3a8_
 * Fixup docs in ``planemo.xml.validation``.
 * Allow skipping newly required lxml_ dependency in `setup.py`_. 34538de_
-    
 
 ---------------------
 0.32.0 (2016-09-16)
@@ -657,7 +706,7 @@ History
 
 * Enhance ``planemo lint --xsd`` to use a fairly complete and newly official XSD
   definition. `Pull Request 566`_
-* Migrate and update documentation related to tool XML macros and handling 
+* Migrate and update documentation related to tool XML macros and handling
   multiple outputs from the Galaxy wiki (with help from `@bgruening`_, `@mvdbeek`_,
   and `@nsoranzo`_). `Pull Request 559`_
 * Documentation fixes (thanks to `@ramezrawas`_). `Pull Request 561`_
@@ -671,7 +720,6 @@ History
 * Implement new commands to ``ci_find_repos`` and ``ci_find_tools`` to ease
   CI scripting.
   `Pull Request 555`_
-    
 
 ---------------------
 0.30.2 (2016-09-01)
@@ -687,8 +735,8 @@ History
 * Fix a problem with Conda_ prefix handling when using
   ``--conda_dependency_resolution``. f7b6c7e_
 * Fix for quote problem in ``update_planemo_recipe.bash``. 6c03de8_
-* Fix to restore linting of ``tests/`` directory and fix import order 
-  throughout module. ef4b9f4_
+* Fix to restore linting of ``tests/`` directory and fix import order throughout
+  module. ef4b9f4_
 
 ---------------------
 0.30.0 (2016-09-01)
@@ -725,13 +773,13 @@ History
   (thanks to `@peterjc`_). `Pull Request 541`_, `Pull Request 545`_
 * Fix shed_build to respect exclude: in .shed.yml (thanks to `@nsoranzo`_).
   `Pull Request 540`_
-* Fix linting of tool URLs (thanks to `@nsoranzo`_). `Pull Request 546`_ 
+* Fix linting of tool URLs (thanks to `@nsoranzo`_). `Pull Request 546`_
 
 ---------------------
 0.28.0 (2016-08-17)
 ---------------------
 
-* Fixes for bioblend_ v0.8.0 (thanks to `@nsoranzo`_). 9fdf490_ 
+* Fixes for bioblend_ v0.8.0 (thanks to `@nsoranzo`_). 9fdf490_
 * Enable shed repo type update (thanks to `@nsoranzo`_). 3ceaa40_
 * Create suite repositories with repository_suite_definition type by default
   (thanks to `@nsoranzo`_).
@@ -755,7 +803,7 @@ History
 * Fix serve command doc (thanks to `@nsoranzo`_). 8c088c6_
 * Fix `make lint-readme` (RST link errors) (thanks to `@peterjc`_).
   `Pull Request 525`_
-* Add union bedgraph example to project templates (for GCC demo example). 
+* Add union bedgraph example to project templates (for GCC demo example).
   d53bcd6_
 * Add Flow Cytometry Analysis, Data Export, and Constructive Solid Geometry as
   shed categories (thanks to `@bgruening`_, `@gregvonkuster`_, and `@nsoranzo`_).
@@ -795,7 +843,7 @@ History
 * Rework Galaxy test reporting to use structured data instead of XUnit
   data. 4d29bf1_
 * Refactor Galaxy configuration toward support for running Galaxy in
-  docker-galaxy-stable. `Pull Request 479`_    
+  docker-galaxy-stable. `Pull Request 479`_
 
 ---------------------
 0.25.1 (2016-05-11)
@@ -808,21 +856,21 @@ History
 0.25.0 (2016-05-11)
 ---------------------
 
-* Implement Galaxy "profiles" - the ability to configure 
+* Implement Galaxy "profiles" - the ability to configure
   perisistent, named environments for ``serve`` and ``test``.
   5d08b67_
 * Greatly improved ``serve`` command - make ``test-data``
   available as an FTP folder, (on 16.07) automatically log
-  in an admin user, and many more options (such as those 
+  in an admin user, and many more options (such as those
   required for "profiles" and a ``--daemon`` mode).
 * Two fixes to ensure more consistent, dependable ``test`` output.
   `Pull Request 472`_, f3c6917_
 * Add code and documentation for linting (``lint``) and
   building (``tool_init``) CWL_ tools. a4e6958_, b0b867e_,
   4cd571c_
-* If needed for Conda_ workaround, shorten ``config_directory`` 
+* If needed for Conda_ workaround, shorten ``config_directory``
   path (thanks to `@mvdbeek`_). efc5f30_
-* Fix ``--no_cache_galaxy`` option (thanks to Gildas Le 
+* Fix ``--no_cache_galaxy`` option (thanks to Gildas Le
   Corguillé). d8f2038_
 * Target draft 3 of CWL_ instead of draft 2. 775bf49_
 * Fix ``cwltool`` dependency version - upstream changes broke
@@ -836,7 +884,7 @@ History
 * Add documentation on ``GALAXY_SLOTS`` and running planemo
   on a cluster. 45135ff_, e0acf91_
 * Revise command-line handling framework for consistency and
-  extension - allow extra options to be configured as 
+  extension - allow extra options to be configured as
   defaults ``~/.planemo.yml`` including ``--job_config_file``
   and Conda_ configuration options. e769118_, 26e378e_
 * Fix ``tool_init`` commans options typos (thanks to
@@ -846,7 +894,7 @@ History
 * Fix error message typo (thanks to `@blankenberg`_). b1c8f1d_
 * Update documentation for recent command additions. 3f4ab44_
 * Rename option ``--galaxy_sqlite_database`` option to
-  ``--galaxy_database_seed`` and fix it so it actually works. 
+  ``--galaxy_database_seed`` and fix it so it actually works.
   f7554d1_
 * Add ``--extra_tools`` option to ``serve`` command. 02a08a0_
 * Update project testing to include linting documentation
@@ -876,7 +924,7 @@ History
 ---------------------
 0.24.0 (2016-03-29)
 ---------------------
-    
+
 * Drop support for Python 2.6. 93b7bda_
 * A variety of fixes for ``shed_update``.
   `Pull Request 428`_, `Issue 416`_
@@ -926,8 +974,8 @@ History
 * Fix document issues thanks to `@einon`_.
   `Pull Request 390`_
 * Improve client for shed publishing to support newer shed backend
-  being developed by `@erasche`_. `Pull Request 394`_
-* Tool Shed ``repo_id`` change, `@erasche`_. `Pull Request 398`_
+  being developed by `@hexylena`_. `Pull Request 394`_
+* Tool Shed ``repo_id`` change, `@hexylena`_. `Pull Request 398`_
 * Various other small changes to testing, project structure, and
   Python 3 support.
 
@@ -969,8 +1017,6 @@ History
 * Various fixes for Python 3. 2f66fc3_, 7572e99_, 8eda729_, 764ce01_
 * Use newer travis container infrastructure for testing. 6d81a94_
 * Test case fixes. 98fdc8c_, 0e4f70a_
-    
-
 
 ---------------------
 0.20.0 (2015-11-11)
@@ -985,7 +1031,6 @@ History
 * Fix to update planemo for Galaxy wheels. 25ef0d5_
 * Various fixes for Python 2.6 and Python 3.
   c1713d2_, 916f610_, c444855_
-    
 
 ---------------------
 0.19.0 (2015-11-03)
@@ -998,11 +1043,11 @@ History
   `Pull Request 339`_
 * Implement highly experimental ``cwl_script`` command to convert
   a CWL job to a bash script. 508dce7_
-* Add name to all XUnit reports (thanks to `@erasche`_).
+* Add name to all XUnit reports (thanks to `@hexylena`_).
   `Pull Request 343`_
-* Capture stdout and stderr for ``shed_diff`` and ``shed_update`` 
+* Capture stdout and stderr for ``shed_diff`` and ``shed_update``
   XUnit reports. `Pull Request 344`_
-* More tool linting (conditionals) thanks to `@erasche`_.
+* More tool linting (conditionals) thanks to `@hexylena`_.
   `Pull Request 350`_
 * UTF-8 fixes when handling XUnit reports. `Pull Request 345`_
 * Add `Epigenetics` as Tool Shed category. `Pull Request 351`_
@@ -1028,7 +1073,7 @@ History
   `Pull Request 334`_
 * Add docker pull attempt when missing Dockerfile (thanks to `@kellrott`_).
   `Pull Request 333`_
-* Fix bug inferring which files are tool files (thanks to `@erasche`_).
+* Fix bug inferring which files are tool files (thanks to `@hexylena`_).
   `Pull Request 335`_, `Issue 313`_
 * Initial work toward automating brew recipe update. 4d6f7d9_, `Issue 329`_
 
@@ -1039,17 +1084,16 @@ History
 * Implement basic XUnit report option for ``shed_update`` (thanks to `@martenson`_).
   `Pull Request 322`_
 * Fix issues with producing test outputs. 572e754_
-* Xunit reporting improvements - refactoring, times, diff output (thanks to `@erasche`_).
+* Xunit reporting improvements - refactoring, times, diff output (thanks to `@hexylena`_).
   `Pull Request 330`_
 * Implement project governance policy and update developer code of conduct to
   match that of the Galaxy project. `Pull Request 316`_
 * Update filters for account for new ``.txt`` and ``.md`` test outputs
-  (thanks to `@erasche`_). `Pull Request 327`_
+  (thanks to `@hexylena`_). `Pull Request 327`_
 * Add verbose logging to galaxy test output handling problems. 5d7db92_
 * Flake8 fixes (thanks to `@martenson`_). 949a36d_
 * Remove uses of deprecated ``mktemp`` Python standard library function
-  (thanks to `@erasche`_). `Pull Request 330`_
-    
+  (thanks to `@hexylena`_). `Pull Request 330`_
 
 ---------------------
 0.16.0 (2015-10-07)
@@ -1066,14 +1110,14 @@ History
 ---------------------
 
 * Template framework for reporting including new markdown and plain
-  text reporting options for testing - thanks to `@erasche`_.
+  text reporting options for testing - thanks to `@hexylena`_.
   `Pull Request 304`_
 * XUnit style reporting for ``shed_diff`` command - thanks to
-  `@erasche`_. `Pull Request 305`_
+  `@hexylena`_. `Pull Request 305`_
 * Add new ``shed_build`` command for building repository tarballs -
   thanks to `@kellrott`_. `Pull Request 297`_
 * Fix exit code handling for ``lint`` commands - thanks to `@mvdbeek`_.
-  `Pull Request 292`_    
+  `Pull Request 292`_
 * Improved documentation for ``serve`` command - thanks to `@lparsons`_.
   `Pull Request 312`_
 * Tiny backward compatible Python 3 tweaks for `Tool Factory`_ - thanks
@@ -1102,7 +1146,7 @@ History
   (thanks to bug report and initial fix outline by Gildas Le Corguillé).
   `Pull Request 277`_
 * Various documentation fixes (thanks in part to Peter Cock and Daniel
-  Blankenberg). `Pull Request 256`_, `Pull Request 253`_, `Pull Request 254`_, 
+  Blankenberg). `Pull Request 256`_, `Pull Request 253`_, `Pull Request 254`_,
   `Pull Request 255`_, `Pull Request 251`_, `Issue 272`_
 
 ---------------------
@@ -1110,7 +1154,7 @@ History
 ---------------------
 
 * Fix project_init for missing files. cb5b906_
-* Various documentation improvements.    
+* Various documentation improvements.
 
 ---------------------
 0.13.1 (2015-07-01)
@@ -1246,10 +1290,10 @@ History
 * Allow ``shed_`` operations to operate on git URLs directly. `Issue 169`_
 * Fail if missing file inclusion statements encountered during ``.shed.yml``
   repository resolution - bug reported by `@peterjc`_. `Issue 158`_
-* Improved exception handling for tool shed operations including new 
+* Improved exception handling for tool shed operations including new
   ``--fail_fast`` command-line option. * `Issue 114`_, `Pull Request 173`_
 * Implement more validation when using the ``shed_init`` command. 1cd0e2d_
-* Add ``-r/--recursive`` option to ``shed_download`` and ``shed_diff`` 
+* Add ``-r/--recursive`` option to ``shed_download`` and ``shed_diff``
   commands and allow these commands to work with ``.shed.yml`` files defining
   multipe repositories. 40a1f57_
 * Add ``--port`` option to the ``serve`` and ``tool_factory`` commands.
@@ -1499,6 +1543,34 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 991: https://github.com/galaxyproject/planemo/pull/991
+.. _Pull Request 988: https://github.com/galaxyproject/planemo/pull/988
+.. _Pull Request 989: https://github.com/galaxyproject/planemo/pull/989
+.. _Pull Request 985: https://github.com/galaxyproject/planemo/pull/985
+.. _Pull Request 984: https://github.com/galaxyproject/planemo/pull/984
+.. _Pull Request 986: https://github.com/galaxyproject/planemo/pull/986
+.. _Pull Request 983: https://github.com/galaxyproject/planemo/pull/983
+.. _Pull Request 982: https://github.com/galaxyproject/planemo/pull/982
+.. _Pull Request 980: https://github.com/galaxyproject/planemo/pull/980
+.. _Pull Request 978: https://github.com/galaxyproject/planemo/pull/978
+.. _Pull Request 979: https://github.com/galaxyproject/planemo/pull/979
+.. _Pull Request 977: https://github.com/galaxyproject/planemo/pull/977
+.. _Pull Request 975: https://github.com/galaxyproject/planemo/pull/975
+.. _Pull Request 974: https://github.com/galaxyproject/planemo/pull/974
+.. _Pull Request 976: https://github.com/galaxyproject/planemo/pull/976
+.. _Pull Request 972: https://github.com/galaxyproject/planemo/pull/972
+.. _Pull Request 973: https://github.com/galaxyproject/planemo/pull/973
+.. _Pull Request 971: https://github.com/galaxyproject/planemo/pull/971
+.. _Pull Request 970: https://github.com/galaxyproject/planemo/pull/970
+.. _Pull Request 968: https://github.com/galaxyproject/planemo/pull/968
+.. _1ab8530: https://github.com/galaxyproject/planemo/commit/1ab8530
+.. _Pull Request 966: https://github.com/galaxyproject/planemo/pull/966
+.. _Pull Request 964: https://github.com/galaxyproject/planemo/pull/964
+.. _Pull Request 963: https://github.com/galaxyproject/planemo/pull/963
+.. _Pull Request 959: https://github.com/galaxyproject/planemo/pull/959
+.. _Pull Request 958: https://github.com/galaxyproject/planemo/pull/958
+.. _Pull Request 950: https://github.com/galaxyproject/planemo/pull/950
+.. _Pull Request 944: https://github.com/galaxyproject/planemo/pull/944
 .. _Pull Request 926: https://github.com/galaxyproject/planemo/pull/926
 .. _Pull Request 937: https://github.com/galaxyproject/planemo/pull/937
 .. _Pull Request 938: https://github.com/galaxyproject/planemo/pull/938
@@ -2114,7 +2186,7 @@ History
 .. _quay.io: https://quay.io/
 .. _galaxy-lib: https://github.com/galaxyproject/galaxy-lib
 .. _@abretaud: https://github.com/abretaud
-.. _@erasche: https://github.com/erasche
+.. _@hexylena: https://github.com/hexylena
 .. _@peterjc: https://github.com/peterjc
 .. _@mr-c: https://github.com/mr-c
 .. _@martenson: https://github.com/martenson
@@ -2146,3 +2218,6 @@ History
 .. _@bebatut: https://github.com/bebatut
 .. _@selten: https://github.com/selten
 .. _@shiltemann: https://github.com/shiltemann
+.. _@bedroesb: https://github.com/bedroesb
+.. _@ic4f: https://github.com/ic4f
+.. _@martin-raden: https://github.com/martin-raden

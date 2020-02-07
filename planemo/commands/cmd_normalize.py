@@ -2,8 +2,8 @@
 from xml.etree import ElementTree
 
 import click
-from galaxy.tools.linters.xml_order import TAG_ORDER
-from galaxy.tools.loader import (
+from galaxy.tool_util.linters.xml_order import TAG_ORDER
+from galaxy.tool_util.loader import (
     load_tool,
     raw_tool_xml_tree,
 )

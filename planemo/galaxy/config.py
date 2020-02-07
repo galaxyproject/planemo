@@ -11,8 +11,8 @@ from string import Template
 from tempfile import mkdtemp
 
 from galaxy.containers.docker_model import DockerVolume
-from galaxy.tools.deps import docker_util
-from galaxy.tools.deps.commands import argv_to_str
+from galaxy.tool_util.deps import docker_util
+from galaxy.tool_util.deps.commands import argv_to_str
 from pkg_resources import parse_version
 from six import (
     add_metaclass,
@@ -29,6 +29,7 @@ from planemo.io import (
     kill_pid_file,
     shell,
     shell_join,
+    untar_to,
     wait_on,
     warn,
     write_file,
@@ -184,26 +185,6 @@ EMPTY_TOOL_CONF_TEMPLATE = """<toolbox></toolbox>"""
 DEFAULT_GALAXY_BRANCH = "master"
 DEFAULT_GALAXY_SOURCE = "https://github.com/galaxyproject/galaxy"
 CWL_GALAXY_SOURCE = "https://github.com/common-workflow-language/galaxy"
-
-# TODO: Mac-y curl variant of this.
-DOWNLOAD_GALAXY = (
-    "wget -q https://codeload.github.com/galaxyproject/galaxy/tar.gz/"
-)
-
-DOWNLOADS_URL = ("https://raw.githubusercontent.com/"
-                 "jmchilton/galaxy-downloads/master/")
-DOWNLOADABLE_MIGRATION_VERSIONS = [141, 127, 120, 117]
-MIGRATION_PER_VERSION = {
-    "dev": 145,
-    "master": 142,
-    "18.09": 142,
-    "18.05": 141,
-    "18.01": 140,
-    "17.09": 135,
-    "17.05": 134,
-    "17.01": 133,
-}
-OLDEST_SUPPORTED_VERSION = 127
 
 DATABASE_LOCATION_TEMPLATE = "sqlite:///%s?isolation_level=IMMEDIATE"
 
@@ -403,12 +384,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         database_location = config_join("galaxy.sqlite")
         master_api_key = _get_master_api_key(kwds)
         dependency_dir = os.path.join(config_directory, "deps")
-        preseeded_database = attempt_database_preseed(
-            ctx,
-            galaxy_root,
-            database_location,
-            **kwds
-        )
         _ensure_directory(shed_tool_path)
         port = _get_port(kwds)
         template_args = dict(
@@ -462,8 +437,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         ))
         _handle_container_resolution(ctx, kwds, properties)
         write_file(config_join("logging.ini"), _sub(LOGGING_TEMPLATE, template_args))
-        if not for_tests:
-            properties["database_connection"] = _database_connection(database_location, **kwds)
+        properties["database_connection"] = _database_connection(database_location, **kwds)
 
         _handle_kwd_overrides(properties, kwds)
 
@@ -482,11 +456,8 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         env.update(install_env)
         _build_test_env(properties, env)
         env['GALAXY_TEST_SHED_TOOL_CONF'] = shed_tool_conf
+        env['GALAXY_TEST_DBURI'] = properties["database_connection"]
 
-        # No need to download twice - would GALAXY_TEST_DATABASE_CONNECTION
-        # work?
-        if preseeded_database:
-            env["GALAXY_TEST_DB_TEMPLATE"] = os.path.abspath(database_location)
         env["GALAXY_TEST_UPLOAD_ASYNC"] = "false"
         env["GALAXY_TEST_LOGGING_CONFIG"] = config_join("logging.ini")
         env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
@@ -1003,84 +974,6 @@ def _database_connection(database_location, **kwds):
     return database_connection
 
 
-def attempt_database_preseed(
-    ctx, effective_galaxy_root, database_location, **kwds
-):
-    """If database location is unset, attempt to seed the database."""
-    if os.path.exists(database_location):
-        # Can't seed an existing database.
-        return False
-
-    if not _database_connection(database_location, **kwds).startswith("sqlite"):
-        # Not going to use an sqlite database, don't preseed.
-        return False
-
-    preseeded_database = True
-    galaxy_sqlite_database = kwds.get("galaxy_database_seed", None)
-    galaxy_branch = kwds.get("galaxy_branch", None)
-    try:
-        _download_database_template(
-            ctx,
-            effective_galaxy_root,
-            database_location,
-            galaxy_sqlite_database=galaxy_sqlite_database,
-            galaxy_branch=galaxy_branch
-        )
-    except Exception as e:
-        print(e)
-        # No network access - just roll forward from null.
-        preseeded_database = False
-    return preseeded_database
-
-
-def _download_database_template(
-    ctx,
-    galaxy_root,
-    database_location,
-    galaxy_sqlite_database=None,
-    galaxy_branch=None,
-):
-
-    if galaxy_sqlite_database is not None:
-        shutil.copyfile(galaxy_sqlite_database, database_location)
-        return True
-
-    download_migration = None
-    newest_migration = _newest_migration_version(galaxy_root, galaxy_branch)
-    for migration in DOWNLOADABLE_MIGRATION_VERSIONS:
-        if newest_migration >= migration:
-            download_migration = migration
-            break
-
-    if download_migration:
-        download_name = "db_gx_rev_0%d.sqlite" % download_migration
-        download_url = DOWNLOADS_URL + download_name
-        ctx.cache_download(download_url, database_location)
-        return True
-    else:
-        return False
-
-
-def _newest_migration_version(galaxy_root, galaxy_branch):
-    versions_dir = galaxy_root and os.path.join(galaxy_root, "lib/galaxy/model/migrate/versions")
-    if versions_dir and os.path.exists(versions_dir):
-        version = max(map(_file_name_to_migration_version, os.listdir(versions_dir)))
-    elif galaxy_branch:
-        for branch in MIGRATION_PER_VERSION:
-            if branch in galaxy_branch:
-                version = MIGRATION_PER_VERSION[branch]
-    else:
-        version = OLDEST_SUPPORTED_VERSION
-    return version
-
-
-def _file_name_to_migration_version(name):
-    try:
-        return int(name[0:4])
-    except ValueError:
-        return -1
-
-
 def _find_galaxy_root(ctx, **kwds):
     root_prop = "galaxy_root"
     cwl = kwds.get("cwl", False)
@@ -1185,18 +1078,17 @@ def _install_galaxy(ctx, galaxy_root, env, kwds):
 
 
 def _install_galaxy_via_download(ctx, galaxy_root, env, kwds):
-    tmpdir = mkdtemp()
     branch = _galaxy_branch(kwds)
-    command = DOWNLOAD_GALAXY + "%s -O - | tar -C '%s' -xvz | tail && mv '%s' '%s'" % \
-        (branch, tmpdir, os.path.join(tmpdir, 'galaxy-' + branch), galaxy_root)
-    _install_with_command(ctx, command, galaxy_root, env, kwds)
+    untar_to("https://codeload.github.com/galaxyproject/galaxy/tar.gz/" + branch, tar_args=['-xvzf', '-', 'galaxy-' + branch], dest_dir=galaxy_root)
+    _install_with_command(ctx, galaxy_root, env, kwds)
 
 
 def _install_galaxy_via_git(ctx, galaxy_root, env, kwds):
     gx_repo = _ensure_galaxy_repository_available(ctx, kwds)
     branch = _galaxy_branch(kwds)
     command = git.command_clone(ctx, gx_repo, galaxy_root, branch=branch)
-    _install_with_command(ctx, command, galaxy_root, env, kwds)
+    shell(command, env=env)
+    _install_with_command(ctx, galaxy_root, env, kwds)
 
 
 def _build_eggs_cache(ctx, env, kwds):
@@ -1231,17 +1123,15 @@ def _galaxy_source(kwds):
     return source
 
 
-def _install_with_command(ctx, command, galaxy_root, env, kwds):
+def _install_with_command(ctx, galaxy_root, env, kwds):
     setup_venv_command = setup_venv(ctx, kwds)
     env['__PYVENV_LAUNCHER__'] = ''
     install_cmd = shell_join(
-        command,
-        ['cd', galaxy_root],
         setup_venv_command,
         setup_common_startup_args(),
         COMMAND_STARTUP_COMMAND,
     )
-    shell(install_cmd, env=env)
+    shell(install_cmd, cwd=galaxy_root, env=env)
 
 
 def _ensure_galaxy_repository_available(ctx, kwds):
@@ -1346,7 +1236,8 @@ def _handle_container_resolution(ctx, kwds, galaxy_properties):
 
 def _handle_job_metrics(config_directory, kwds):
     metrics_conf = os.path.join(config_directory, "job_metrics_conf.xml")
-    open(metrics_conf, "w").write(EMPTY_JOB_METRICS_TEMPLATE)
+    with open(metrics_conf, "w") as fh:
+        fh.write(EMPTY_JOB_METRICS_TEMPLATE)
     kwds["job_metrics_config_file"] = metrics_conf
 
 
@@ -1374,7 +1265,6 @@ def _ensure_directory(path):
 
 
 __all__ = (
-    "attempt_database_preseed",
     "DATABASE_LOCATION_TEMPLATE",
     "galaxy_config",
 )

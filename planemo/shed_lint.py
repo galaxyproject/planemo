@@ -5,8 +5,8 @@ import os
 import xml.etree.ElementTree as ET
 
 import yaml
-from galaxy.tools.lint import lint_tool_source_with
-from galaxy.tools.linters.help import rst_invalid
+from galaxy.tool_util.lint import lint_tool_source_with
+from galaxy.tool_util.linters.help import rst_invalid
 from galaxy.util import unicodify
 
 from planemo.io import info
@@ -183,7 +183,8 @@ def lint_readme(realized_repository, lint_ctx):
         return
 
     if readme_found.endswith(".rst"):
-        readme_text = open(readme_found, "r").read()
+        with open(readme_found, "r") as fh:
+            readme_text = fh.read()
         invalid_rst = rst_invalid(readme_text)
         if invalid_rst:
             template = "Invalid restructured text found in README [%s]."

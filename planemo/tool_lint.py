@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from os.path import basename
 
-from galaxy.tools.lint import lint_tool_source
+from galaxy.tool_util.lint import lint_tool_source
 
 from planemo.exit_codes import (
     EXIT_CODE_GENERIC_FAILURE,

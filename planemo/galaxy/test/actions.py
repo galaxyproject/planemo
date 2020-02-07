@@ -3,9 +3,9 @@
 import io
 import json
 import os
+from distutils.dir_util import copy_tree
 
 import click
-from galaxy.tools.deps.commands import shell
 from galaxy.util import unicodify
 
 from planemo.exit_codes import (
@@ -41,7 +41,7 @@ GENERIC_PROBLEMS_MESSAGE = ("One or more tests failed. See %s for detailed "
 GENERIC_TESTS_PASSED_MESSAGE = "No failing tests encountered."
 
 
-def run_in_config(ctx, config, run=run_galaxy_command, **kwds):
+def run_in_config(ctx, config, run=run_galaxy_command, test_data_target_dir=None, **kwds):
     """Run Galaxy tests with the run_tests.sh command.
 
     The specified `config` object describes the context for tool
@@ -96,8 +96,7 @@ def run_in_config(ctx, config, run=run_galaxy_command, **kwds):
         action
     )
     if kwds.get('update_test_data', False):
-        update_cp_args = (job_output_files, config.test_data_dir)
-        shell('cp -r "%s"/* "%s"' % update_cp_args)
+        copy_tree(job_output_files, test_data_target_dir or config.test_data_dir)
 
     _check_test_outputs(xunit_report_file_tracker, structured_report_file_tracker)
     test_results = test_structures.GalaxyTestResults(
@@ -129,6 +128,19 @@ def handle_reports_and_summary(ctx, structured_data, exit_code=None, kwds={}):
         **kwds
     )
     return exit_code if exit_code is not None else summary_exit_code
+
+
+def merge_reports(input_paths, output_path):
+    reports = []
+    for path in input_paths:
+        with io.open(path, encoding='utf-8') as f:
+            reports.append(json.load(f))
+    tests = []
+    for report in reports:
+        tests.extend(report["tests"])
+    merged_report = {"tests": tests}
+    with io.open(output_path, mode="w", encoding='utf-8') as out:
+        out.write(unicodify(json.dumps(merged_report)))
 
 
 def handle_reports(ctx, structured_data, kwds):

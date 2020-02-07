@@ -74,7 +74,6 @@ PACKAGE_DATA = {
     'planemo': [
         'xml/xsd/repository_dependencies.xsd',
         'xml/xsd/tool_dependencies.xsd',
-        'xml/xsd/tool/galaxy.xsd',
         'reports/*',
         'scripts/*',
     ],
@@ -84,12 +83,16 @@ PACKAGE_DIR = {
     'planemo_ext': 'planemo_ext'
 }
 
-readme = open('README.rst').read()
-history = open('HISTORY.rst').read().replace('.. :changelog:', '')
+with open('README.rst') as fh:
+    readme = fh.read()
+with open('HISTORY.rst') as fh:
+    history = fh.read().replace('.. :changelog:', '')
 
 if os.path.exists("requirements.txt"):
-    requirements = [r for r in open("requirements.txt").read().split("\n") if ";" not in r]
-    py27_requirements = [r.split(";", 1)[0].strip() for r in open("requirements.txt").read().split("\n") if ";" in r]
+    with open("requirements.txt") as fh:
+        requirements = [r for r in fh.read().split("\n") if ";" not in r]
+    with open("requirements.txt") as fh:
+        py27_requirements = [r.split(";", 1)[0].strip() for r in fh.read().split("\n") if ";" in r]
     if not PLANEMO_REQUIRE_LXML:
         requirements.remove("lxml")
 else:
@@ -107,6 +110,7 @@ setup(
     version=version,
     description=PROJECT_DESCRIPTION,
     long_description=readme + '\n\n' + history,
+    long_description_content_type="text/x-rst",
     author=PROJECT_AUTHOR,
     author_email=PROJECT_EMAIL,
     url=PROJECT_URL,
@@ -135,10 +139,10 @@ setup(
         "Programming Language :: Python :: 2",
         'Programming Language :: Python :: 2.7',
         "Programming Language :: Python :: 3",
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
     test_suite=TEST_DIR,
     tests_require=test_requirements

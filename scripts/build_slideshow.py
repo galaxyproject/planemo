@@ -5,7 +5,9 @@ import sys
 
 SCRIPTS_DIRECTORY = os.path.dirname(__file__)
 TEMPLATE_PATH = os.path.join(SCRIPTS_DIRECTORY, "slideshow_template.html")
-TEMPLATE = string.Template(open(TEMPLATE_PATH, "r").read())
+
+with open(TEMPLATE_PATH, "r") as tfh:
+    TEMPLATE = string.Template(tfh.read())
 
 
 def main(argv=None):
@@ -24,7 +26,8 @@ def main(argv=None):
         'content': content,
     })
     print(html)
-    open(output, "w").write(html)
+    with open(output, "w") as ofh:
+        ofh.write(html)
 
 
 if __name__ == "__main__":

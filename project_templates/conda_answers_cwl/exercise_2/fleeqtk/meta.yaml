@@ -12,8 +12,8 @@ build:
 
 requirements:
   build:
-    - gcc   # [not osx]
-    - llvm  # [osx]
+    - {{ compiler('c') }}
+  host:
     - zlib
   run:
     - zlib
@@ -25,4 +25,4 @@ about:
 
 test:
   commands:
-    - sh -c 'fleeqtk 2>&1 | grep -q seq'
+    - fleeqtk 2>&1 | grep -q subseq

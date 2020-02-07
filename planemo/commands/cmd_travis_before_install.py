@@ -21,7 +21,7 @@ export PATH=$PATH:${BUILD_BIN_DIR}
 def cli(ctx):
     """Internal command for GitHub/TravisCI testing.
 
-    This command is used internally by planemo to assist in contineous testing
+    This command is used internally by planemo to assist in continuous testing
     of tools with Travis CI (https://travis-ci.org/).
     """
     build_dir = os.environ.get("TRAVIS_BUILD_DIR", None)
@@ -45,7 +45,8 @@ def cli(ctx):
     build_env = string.Template(BUILD_ENVIRONMENT_TEMPLATE).safe_substitute(
         **template_vars
     )
-    open(build_env_path, "a").write(build_env)
+    with open(build_env_path, "a") as fh:
+        fh.write(build_env)
 
     eggs_dir = os.path.join(os.getenv('HOME'), '.python-eggs')
     if not os.path.exists(eggs_dir):
@@ -57,7 +58,6 @@ def cli(ctx):
     shell(['sudo', 'dpkg', '-i', SAMTOOLS_DEB])
     setup_file = os.path.join(build_travis_dir, SETUP_FILE_NAME)
     if os.path.exists(setup_file):
-        shell(
-            ". %s && bash -x %s" % (build_env_path, setup_file),
-            env=template_vars
-        )
+        env = template_vars
+        env['PATH'] = build_bin_dir
+        shell(['bash', '-x', setup_file], env=env)

@@ -78,3 +78,13 @@ def test_create_simple():
             owner="iuc"
         )
         assert repo_id == create_response["id"]
+
+
+def test_suite_repositories_different_owners():
+    with mock_shed_context() as shed_context:
+        path = os.path.join(TEST_REPOS_DIR, "multi_repos_flat_configured_owners")
+        repo_config = shed.shed_repo_config(shed_context, path)
+        assert '<repository owner="iuc" name="cs-cat1" />' in \
+            repo_config["repositories"]["suite_cat"]["_files"]["repository_dependencies.xml"], repo_config
+        assert '<repository owner="devteam" name="cs-cat2" />' in \
+            repo_config["repositories"]["suite_cat"]["_files"]["repository_dependencies.xml"], repo_config

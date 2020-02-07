@@ -76,11 +76,13 @@ def cli(ctx, path):
     travis_yml = os.path.join(path, ".travis.yml")
     setup_sh = os.path.join(dot_travis_dir, "setup_custom_dependencies.bash")
     if not os.path.exists(travis_yml):
-        open(travis_yml, "w").write(TRAVIS_YML)
+        with open(travis_yml, "w") as fh:
+            fh.write(TRAVIS_YML)
     else:
         warn(".travis.yml file already exists, not overwriting.")
     if not os.path.exists(setup_sh):
-        open(setup_sh, "w").write(TRAVIS_SETUP)
+        with open(setup_sh, "w") as fh:
+            fh.write(TRAVIS_SETUP)
     else:
         warn("%s already exists, not overwriting." % setup_sh)
     info(PREPARE_MESSAGE)

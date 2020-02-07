@@ -410,6 +410,9 @@ class Tutorial(object):
         """Copy or extract workflow file and add it to the tutorial directory."""
         if not os.path.exists(self.wf_dir):
             os.makedirs(self.wf_dir)
+        if not os.path.exists(os.path.join(self.wf_dir, 'index.md')):
+            with open(os.path.join(self.wf_dir, 'index.md'), 'w') as handle:
+                handle.write('---\nlayout: workflow-list\n---\n')
         if self.init_wf_fp:
             shutil.copy(self.init_wf_fp, self.wf_fp)
         elif self.init_wf_id:

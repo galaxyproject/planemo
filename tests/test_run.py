@@ -99,4 +99,5 @@ class RunTestCase(CliTestCase):
             self._check_exit_code(test_cmd)
             output_path = os.path.join(f, "output")
             assert os.path.exists(output_path)
-            assert open(output_path, "r").read().startswith("  16  198 1111")
+            with open(output_path, "r") as fh:
+                assert fh.read().startswith("  16  198 1111")

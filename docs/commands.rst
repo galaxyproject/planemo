@@ -32,6 +32,8 @@ documentation describes these commands.
 .. include:: commands/docker_shell.rst
 .. include:: commands/docs.rst
 .. include:: commands/lint.rst
+.. include:: commands/list_repos.rst
+.. include:: commands/merge_test_reports.rst
 .. include:: commands/mull.rst
 .. include:: commands/mulled_init.rst
 .. include:: commands/normalize.rst
