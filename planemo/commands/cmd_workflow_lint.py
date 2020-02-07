@@ -35,7 +35,6 @@ from planemo.runnable import (
 def cli(ctx, workflow_path, output=None, force=False, **kwds):
     """Lint workflows.
     """
-    assert is_galaxy_engine(**kwds)
 
     kwds["no_dependency_resolution"] = True
 
