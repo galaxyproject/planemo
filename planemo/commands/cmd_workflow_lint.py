@@ -1,6 +1,5 @@
 """Module describing the planemo ``workflow_lint`` command."""
 import json
-import os
 import sys
 
 import click
