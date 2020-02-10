@@ -2,19 +2,12 @@
 import json
 import os
 import sys
+
 import click
 
 from planemo import options
 from planemo.cli import command_function
 from planemo.config import planemo_option
-from planemo.engine import (
-    engine_context,
-    is_galaxy_engine,
-)
-from planemo.io import write_file
-from planemo.runnable import (
-    for_path,
-)
 
 
 @click.command('workflow_lint')
@@ -39,9 +32,6 @@ def cli(ctx, workflow_path, output=None, force=False, **kwds):
     kwds["no_dependency_resolution"] = True
 
     if workflow_path.endswith(".ga"):
-        import sys 
-        import json 
-
         with open(workflow_path) as json_file:
             data = json.load(json_file)
             # Checking for 'tags' in workflow
@@ -65,5 +55,3 @@ def cli(ctx, workflow_path, output=None, force=False, **kwds):
                             data['name'], str(stepnr)))
                         sys.exit(False)
                 print('Workflow is ok')
-
-        
