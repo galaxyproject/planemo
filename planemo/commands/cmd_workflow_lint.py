@@ -11,24 +11,13 @@ from planemo.config import planemo_option
 
 @click.command('workflow_lint')
 @options.required_workflow_arg()
-@options.force_option()
-@planemo_option(
-    "-o", "--output",
-    default=None,
-    type=click.Path(
-        file_okay=True,
-        dir_okay=False,
-        readable=True,
-        resolve_path=True,
-    )
-)
 @options.galaxy_serve_options()
 @command_function
-def cli(ctx, workflow_path, output=None, force=False, **kwds):
+def cli(ctx, workflow_path, output=None, **kwds):
     """Lint workflows.
     """
-
-    kwds["no_dependency_resolution"] = True
+    print (str(topic_name), str(title_tutorial), str(output))
+    kwds["workflows_from_path"] = True
 
     if workflow_path.endswith(".ga"):
         with open(workflow_path) as json_file:
