@@ -16,7 +16,6 @@ from planemo.config import planemo_option
 def cli(ctx, workflow_path, output=None, **kwds):
     """Lint workflows.
     """
-    print (str(topic_name), str(title_tutorial), str(output))
     kwds["workflows_from_path"] = True
 
     if workflow_path.endswith(".ga"):
