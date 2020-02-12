@@ -31,7 +31,7 @@ def cli(ctx, workflow_path, **kwds):
         with open(workflow_path) as json_file:
             data = json.load(json_file)
             # Checking for 'tags' in workflow if topic is known
-            if kwds.get("topic_name") and kwds["topic_name"] not in data['tags']:
+            if 'tags' in data and kwds.get("topic_name") and kwds["topic_name"] not in data['tags']:
                 problems += 1
                 output.append(
                     "{}. The 'tags' attribute is missing. Please add:".format(str(problems), data['name']))
@@ -58,10 +58,10 @@ def cli(ctx, workflow_path, **kwds):
                     output.append("{}. Step {} has a tool from the testtoolshed.".format(str(problems), str(stepnr)))
 
             if problems:
-                output.insert(1, "Workflow '{}' has {} problems because:".format(data['name'], str(problems)))
+                output.insert(1, "Workflow '{}' has {} problem(s) because:".format(data['name'], str(problems)))
                 output.append("---------------------------------------------------------\n")
                 sys.stderr.write("\n".join(output))
                 sys.exit(False)
 
-            print('Workflow is ok')
+            sys.stderr.write("Workflow is ok\n")
             sys.exit(True)
