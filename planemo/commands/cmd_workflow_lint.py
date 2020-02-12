@@ -24,7 +24,6 @@ def cli(ctx, workflow_path, **kwds):
         - tools in testtoolshed
     """
     kwds["workflows_from_path"] = True
-    topic_name = None
     problems = 0
     output = ["---------------------------------------------------------"]
 
@@ -44,20 +43,19 @@ def cli(ctx, workflow_path, **kwds):
                 output.append(
                     "{}. The 'tags' attribute is missing. Please add:".format(str(problems), data['name']))
                 output.append('"tags": [' + "\n\t" + '"' + "<topic_name>" + '"' + "\n]")
-                
+
             # Checking for 'annotation' in workflow
             if 'annotation' not in data or not data['annotation']:
                 problems += 1
                 output.append(
                     "{}. The 'annotation' attribute is missing. Please add:".format(str(problems)))
                 output.append('"annotation": "<title of tutorial>"')
-                
 
             # Checking if there are tools used from the testtoolshed
             for stepnr, step in data['steps'].items():
                 if step['tool_id'] and step['type'] == 'tool' and 'testtoolshed.g2.bx.psu.edu' in step['tool_id']:
                     problems += 1
-                    output.append("{}. Step {} has a tool from the testtoolshed.".format(str(problems), str(stepnr)))     
+                    output.append("{}. Step {} has a tool from the testtoolshed.".format(str(problems), str(stepnr)))
 
             if problems:
                 output.insert(1, "Workflow '{}' has {} problems because:".format(data['name'], str(problems)))
