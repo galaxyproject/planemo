@@ -15,4 +15,4 @@ This section is auto-generated from the help text for the planemo command
     Lint workflows.
 
 **Options**::
-    -o, --output FILE
+    --topic_name NAME OF TOPIC

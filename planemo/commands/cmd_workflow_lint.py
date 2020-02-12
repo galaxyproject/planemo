@@ -6,39 +6,64 @@ import click
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.config import planemo_option
 
 
 @click.command('workflow_lint')
 @options.required_workflow_arg()
-@options.galaxy_serve_options()
+@click.option(
+    "--topic_name",
+    default=None,
+    prompt=False,
+    help=("Topic of the tutorial where this workflow belongs to.")
+)
 @command_function
-def cli(ctx, workflow_path, output=None, **kwds):
-    """Lint workflows.
+def cli(ctx, workflow_path, **kwds):
+    """Lint workflows based on:\n
+        - tags attribute\n
+        - annotation attribute\n
+        - tools in testtoolshed
     """
     kwds["workflows_from_path"] = True
+    topic_name = None
+    problems = 0
+    output = ["---------------------------------------------------------"]
 
     if workflow_path.endswith(".ga"):
         with open(workflow_path) as json_file:
             data = json.load(json_file)
-            # Checking for 'tags' in workflow
-            if 'tags' not in data:
-                sys.stderr.write(
-                    "Workflow {} has no corresponding 'tags' attribute.")
-                sys.exit(False)
+            # Checking for 'tags' in workflow if topic is known
+            if kwds.get("topic_name") and kwds["topic_name"] not in data['tags']:
+                problems += 1
+                output.append(
+                    "{}. The 'tags' attribute is missing. Please add:".format(str(problems), data['name']))
+                output.append('"tags": [' + "\n\t" + '"' + kwds["topic_name"] + '"' + "\n]")
 
+            # Checking for 'tags' in workflow
+            elif 'tags' not in data or not data['tags']:
+                problems += 1
+                output.append(
+                    "{}. The 'tags' attribute is missing. Please add:".format(str(problems), data['name']))
+                output.append('"tags": [' + "\n\t" + '"' + "<topic_name>" + '"' + "\n]")
+                
             # Checking for 'annotation' in workflow
-            elif 'annotation' not in data or not data['annotation']:
-                sys.stderr.write(
-                    "Workflow {} has no corresponding 'annotation' attribute. Please add: \n".format(data['name']))
-                sys.stderr.write('"annotation": "<title of tutorial>"' + "\n")
-                sys.exit(False)
+            if 'annotation' not in data or not data['annotation']:
+                problems += 1
+                output.append(
+                    "{}. The 'annotation' attribute is missing. Please add:".format(str(problems)))
+                output.append('"annotation": "<title of tutorial>"')
+                
 
             # Checking if there are tools used from the testtoolshed
-            else:
-                for stepnr, step in data['steps'].items():
-                    if step['tool_id'] and step['type'] == 'tool' and 'testtoolshed.g2.bx.psu.edu' in step['tool_id']:
-                        sys.stderr.write("Workflow {} has a tool from the testtoolshed in step {}.\n".format(
-                            data['name'], str(stepnr)))
-                        sys.exit(False)
-                print('Workflow is ok')
+            for stepnr, step in data['steps'].items():
+                if step['tool_id'] and step['type'] == 'tool' and 'testtoolshed.g2.bx.psu.edu' in step['tool_id']:
+                    problems += 1
+                    output.append("{}. Step {} has a tool from the testtoolshed.".format(str(problems), str(stepnr)))     
+
+            if problems:
+                output.insert(1, "Workflow '{}' has {} problems because:".format(data['name'], str(problems)))
+                output.append("---------------------------------------------------------\n")
+                sys.stderr.write("\n".join(output))
+                sys.exit(False)
+
+            print('Workflow is ok')
+            sys.exit(True)
