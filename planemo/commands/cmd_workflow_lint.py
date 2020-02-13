@@ -63,5 +63,5 @@ def cli(ctx, workflow_path, **kwds):
                 sys.stderr.write("\n".join(output))
                 sys.exit(False)
 
-            sys.stderr.write("Workflow is ok\n")
+            print("Workflow is ok.")
             sys.exit(True)
