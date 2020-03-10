@@ -617,6 +617,33 @@ def shed_install_option():
     )
 
 
+def install_tool_dependencies_option():
+    return planemo_option(
+        "--install_tool_dependencies/--no_install_tool_dependencies",
+        is_flag=True,
+        default=False,
+        help=("Turn on installation of tool dependencies using classic toolshed packages.")
+    )
+
+
+def install_resolver_dependencies_option():
+    return planemo_option(
+        "--install_resolver_dependencies/--no_install_resolver_dependencies",
+        is_flag=True,
+        default=True,
+        help=("Skip installing tool dependencies through resolver (e.g. conda).")
+    )
+
+
+def install_repository_dependencies_option():
+    return planemo_option(
+        "--install_repository_dependencies/--no_install_repository_dependencies",
+        is_flag=True,
+        default=True,
+        help=("Skip installing the repository dependencies.")
+    )
+
+
 def single_user_mode_option():
     return planemo_option(
         "galaxy_single_user",
@@ -1353,6 +1380,9 @@ def engine_options():
         docker_extra_volume_option(),
         ignore_dependency_problems_option(),
         shed_install_option(),
+        install_tool_dependencies_option(),
+        install_resolver_dependencies_option(),
+        install_repository_dependencies_option(),
         galaxy_url_option(),
         galaxy_admin_key_option(),
         galaxy_user_key_option(),
