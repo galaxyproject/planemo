@@ -726,7 +726,12 @@ class BaseGalaxyConfig(GalaxyInterface):
 
     def _install_workflow(self, runnable):
         if self._kwds["shed_install"]:
-            install_shed_repos(runnable, self.gi, self._kwds.get("ignore_dependency_problems", False))
+            install_shed_repos(runnable,
+                               self.gi,
+                               self._kwds.get("ignore_dependency_problems", False),
+                               self._kwds.get("install_tool_dependencies", False),
+                               self._kwds.get("install_resolver_dependencies", True),
+                               self._kwds.get("install_repository_dependencies", True))
 
         default_from_path = self._kwds.get("workflows_from_path", False)
         # TODO: Allow serialization so this doesn't need to assume a

@@ -37,11 +37,18 @@ def load_shed_repos(runnable):
     return tools
 
 
-def install_shed_repos(runnable, admin_gi, ignore_dependency_problems):
+def install_shed_repos(runnable, admin_gi,
+                       ignore_dependency_problems,
+                       install_tool_dependencies=False,
+                       install_resolver_dependencies=True,
+                       install_repository_dependencies=True):
     tools_info = load_shed_repos(runnable)
     if tools_info:
         install_tool_manager = shed_tools.InstallRepositoryManager(admin_gi)
-        install_results = install_tool_manager.install_repositories(tools_info)
+        install_results = install_tool_manager.install_repositories(tools_info,
+                                                                    default_install_tool_dependencies=install_tool_dependencies,
+                                                                    default_install_resolver_dependencies=install_resolver_dependencies,
+                                                                    default_install_repository_dependencies=install_repository_dependencies)
         if install_results.errored_repositories:
             if ignore_dependency_problems:
                 warn(FAILED_REPOSITORIES_MESSAGE)
