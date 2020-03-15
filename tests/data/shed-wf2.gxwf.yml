@@ -7,7 +7,7 @@ inputs:
   - id: input1
 outputs:
   - id: wf_output_1
-    source: sed#output
+    outputSource: sed/output
 steps:
   - tool_id: tp_sed_tool
     label: sed

@@ -4,10 +4,9 @@ inputs:
   - id: input1
 outputs:
   - id: wf_output_1
-    source: first_cat#out_file1
+    outputSource: first_cat/out_file1
 steps:
   - tool_id: cat
     label: first_cat
-    state:
-      input1:
-        $link: input1
+    in:
+      input1: input1
