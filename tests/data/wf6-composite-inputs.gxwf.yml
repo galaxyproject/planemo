@@ -6,7 +6,7 @@ inputs:
 
 outputs:
   - id: wf_output_1
-    source: composite_input_imzml#output1
+    outputSource: composite_input_imzml/output1
 
 steps:
   - tool_id: composite_input_imzml
