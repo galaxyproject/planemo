@@ -35,6 +35,7 @@ def delete_profile(ctx, profile_name, **kwds):
     profile_directory = _profile_directory(ctx, profile_name)
     profile_options = _read_profile_options(profile_directory)
     database_type = profile_options.get("database_type")
+    kwds["database_type"] = database_type
     if database_type != "sqlite":
         database_source = create_database_source(**kwds)
         database_identifier = _profile_to_database_identifier(profile_name)

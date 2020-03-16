@@ -11,13 +11,13 @@ class DatabaseCommandsTestCase(CliTestCase):
     @skip_unless_environ("PLANEMO_ENABLE_POSTGRES_TESTS")
     def _database_commands(self, database_type="postgres"):
         with self._isolate():
-            result = self._check_exit_code(["database_list"])
+            result = self._check_exit_code(["database_list", "--database_type", database_type])
             assert "test1234" not in result.output
             self._check_exit_code(["database_create", "test1234", "--database_type", database_type])
-            result = self._check_exit_code(["database_list"])
+            result = self._check_exit_code(["database_list", "--database_type", database_type])
             assert "test1234" in result.output
-            self._check_exit_code(["database_delete", "test1234"])
-            result = self._check_exit_code(["database_list"])
+            self._check_exit_code(["database_delete", "test1234", "--database_type", database_type])
+            result = self._check_exit_code(["database_list", "--database_type", database_type])
             assert "test1234" not in result.output
 
     @skip_unless_environ("PLANEMO_ENABLE_POSTGRES_TESTS")

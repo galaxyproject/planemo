@@ -8,7 +8,7 @@ from .test_utils import (
 
 class ProfileCommandsTestCase(CliTestCase):
 
-    def _profile_commands(self, database_type="postgresql"):
+    def _profile_commands(self, database_type="postgres"):
         with self._isolate():
             result = self._check_exit_code(["profile_list"])
             assert "profile1234" not in result.output
