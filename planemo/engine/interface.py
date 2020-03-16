@@ -128,10 +128,6 @@ class BaseEngine(Engine):
                 os.remove(tmp_path)
         return run_response
 
-    def _process_test_results(self, test_results):
-        for (test_case, run_response) in test_results:
-            pass
-
 
 __all__ = (
     "Engine",
