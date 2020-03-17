@@ -2,13 +2,13 @@ class: GalaxyWorkflow
 name: "Test Workflow - Collection Outputs"
 
 inputs:
-  - id: input1
+  input1:
     type: collection
     collection_type: list
 
 outputs:
-  - id: wf_output_1
-    source: collection_creates_pair_2#paired_output
+  wf_output_1:
+    outputSource: collection_creates_pair_2/paired_output
 
 steps:
   - tool_id: collection_creates_pair_2
