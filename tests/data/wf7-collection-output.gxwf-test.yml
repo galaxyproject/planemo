@@ -8,7 +8,7 @@
           class: File
           path: hello.txt
   outputs:
-    - name: wf_output_1
+    wf_output_1:
       attributes: {}
       element_tests:
         el1:

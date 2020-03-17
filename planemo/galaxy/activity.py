@@ -406,7 +406,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                         output_dict_value = json.load(f)
                 else:
                     output_dict_value = output_properties(**dataset_dict)
-            else:
+            elif is_cwl:
                 galaxy_output = self.to_galaxy_output(runnable_output)
                 cwl_output = output_to_cwl_json(
                     galaxy_output,
@@ -416,6 +416,11 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                     pseduo_location=True,
                 )
                 output_dict_value = cwl_output
+            else:
+                output_dataset_id = output_src["id"]
+                galaxy_output = self.to_galaxy_output(runnable_output)
+                output_metadata = self._get_metadata("dataset_collection", output_dataset_id)
+                output_dict_value = output_metadata
 
             outputs_dict[output_id] = output_dict_value
 
