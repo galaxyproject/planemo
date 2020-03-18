@@ -45,7 +45,8 @@ def execute(ctx, config, runnable, job_path, **kwds):
     try:
         return _execute(ctx, config, runnable, job_path, **kwds)
     except Exception as e:
-        import traceback, sys
+        import sys
+        import traceback
         traceback.print_exc(file=sys.stdout)
         print("\n\n\n\n\n")
         print(e)
