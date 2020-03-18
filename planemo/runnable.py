@@ -333,6 +333,8 @@ class TestCase(AbstractTestCase):
                     output_problems.append(message)
                     print(message)
                     return output_problems
+            else:
+                output_test["name"] = output_id
 
             output_problems.extend(
                 check_output(

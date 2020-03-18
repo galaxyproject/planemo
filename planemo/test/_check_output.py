@@ -2,6 +2,7 @@
 
 import os
 
+from galaxy.tool_util.parser.interface import TestCollectionOutputDef
 from galaxy.tool_util.verify import verify
 from galaxy.tool_util.verify.interactor import verify_collection
 from galaxy.util import unicodify
@@ -28,10 +29,18 @@ def is_collection_test(test_properties):
 def _check_output_collection(runnable, output_properties, test_properties, **kwds):
     data_collection = output_properties
 
+    output_def = TestCollectionOutputDef.from_dict(test_properties)
     def verify_dataset(element, element_attrib, element_outfile):
+        print("in verify_dataset - need to implement...")
         pass
 
-    verify_collection(test_properties, data_collection, verify_dataset)
+    problems = []
+    try:
+        verify_collection(output_def, data_collection, verify_dataset)
+    except AssertionError as e:
+        problems.append(unicodify(e))
+
+    return problems
 
 
 def _check_output_file(runnable, output_properties, test_properties, **kwds):
