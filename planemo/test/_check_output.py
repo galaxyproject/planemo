@@ -33,7 +33,7 @@ def _check_output_collection(runnable, output_properties, test_properties, **kwd
     def verify_dataset(element, element_attrib, element_outfile):
         if element_outfile:
             element_attrib["path"] = element_outfile
-        _check_output_file(runnable, element["_output_object"], element_attrib)
+        _verify_output_file(runnable, element["_output_object"], element_attrib)
 
     problems = []
     try:
@@ -44,7 +44,7 @@ def _check_output_collection(runnable, output_properties, test_properties, **kwd
     return problems
 
 
-def _check_output_file(runnable, output_properties, test_properties, **kwds):
+def _verify_output_file(runnable, output_properties, test_properties, **kwds):
     get_filename = _test_filename_getter(runnable)
     path = output_properties["path"]
     with open(path, "rb") as fh:
@@ -63,6 +63,19 @@ def _check_output_file(runnable, output_properties, test_properties, **kwds):
         # TODO: break fewer abstractions here...
         from galaxy.tool_util.parser.yaml import __to_test_assert_list
         test_properties["assert_list"] = __to_test_assert_list(test_properties["asserts"])
+    verify(
+        item_label,
+        output_content,
+        attributes=test_properties,
+        filename=expected_file,
+        get_filename=get_filename,
+        keep_outputs_dir=job_output_files,
+        verify_extra_files=None,
+    )
+
+
+def _check_output_file(runnable, output_properties, test_properties, **kwds):
+    prolems = []
     try:
         verify(
             item_label,
