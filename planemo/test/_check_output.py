@@ -31,8 +31,9 @@ def _check_output_collection(runnable, output_properties, test_properties, **kwd
 
     output_def = TestCollectionOutputDef.from_dict(test_properties)
     def verify_dataset(element, element_attrib, element_outfile):
-        print("in verify_dataset - need to implement...")
-        pass
+        if element_outfile:
+            element_attrib["path"] = element_outfile
+        _check_output_file(runnable, element["_output_object"], element_attrib)
 
     problems = []
     try:

@@ -407,7 +407,8 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                         output_dict_value = json.load(f)
                 else:
                     output_dict_value = output_properties(**dataset_dict)
-            elif is_cwl:
+            else:
+                output_dataset_id = output_src["id"]
                 galaxy_output = self.to_galaxy_output(runnable_output)
                 cwl_output = output_to_cwl_json(
                     galaxy_output,
@@ -416,12 +417,24 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                     self._get_extra_files,
                     pseduo_location=True,
                 )
-                output_dict_value = cwl_output
-            else:
-                output_dataset_id = output_src["id"]
-                galaxy_output = self.to_galaxy_output(runnable_output)
-                output_metadata = self._get_metadata("dataset_collection", output_dataset_id)
-                output_dict_value = output_metadata
+                if is_cwl:
+                    output_dict_value = cwl_output
+                else:
+
+                    def attach_file_properties(collection, cwl_output):
+                        elements = collection["elements"]
+                        print(elements)
+                        print(cwl_output)
+                        assert len(elements) == len(cwl_output)
+                        for element, cwl_output_element in zip(elements, cwl_output):
+                            element["_output_object"] = cwl_output_element
+                            if isinstance(cwl_output_element, list):
+                                assert "elements" in element["object"]
+                                attach_file_properties(element["object"], cwl_output_element)
+
+                    output_metadata = self._get_metadata("dataset_collection", output_dataset_id)
+                    attach_file_properties(output_metadata, cwl_output)
+                    output_dict_value = output_metadata
 
             outputs_dict[output_id] = output_dict_value
 
