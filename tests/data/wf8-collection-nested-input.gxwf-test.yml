@@ -1,0 +1,19 @@
+- doc: Test Explicit Collection Creation.
+  job:
+    input1:
+      class: Collection
+      collection_type: 'list:paired'
+      elements:
+        - class: Collection
+          type: paired
+          identifier: el1
+          elements:
+          - identifier: forward
+            class: File
+            path: hello.txt
+          - identifier: reverse
+            class: File
+            path: hello.txt
+  outputs:
+    wf_output_1:
+      checksum: "sha1$a0b65939670bc2c010f4d5d6a0b3e4e4590fb92b"
