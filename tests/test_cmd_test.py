@@ -121,9 +121,18 @@ class CmdTestTestCase(CliTestCase):
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_workflow_test_collection_output(self):
-        """Test testing a workflow that uses composite inputs."""
+        """Test testing a workflow that tests collection outputs."""
+        test_artifact = os.path.join(TEST_DATA_DIR, "wf7-collection-output.gxwf.yml")
+        self._test_with_creates_pair_artifact(test_artifact, 0)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_test_collection_output_fail(self):
+        """Test testing a workflow that tests collection outputs (fails)."""
+        test_artifact = os.path.join(TEST_DATA_DIR, "wf7-collection-output-fail.gxwf.yml")
+        self._test_with_creates_pair_artifact(test_artifact, 1)
+
+    def _test_with_creates_pair_artifact(self, test_artifact, expected_exit_code):
         with self._isolate():
-            test_artifact = os.path.join(TEST_DATA_DIR, "wf7-collection-output.gxwf.yml")
             collection_creates_pair = os.path.join(TEST_DATA_DIR, "collection_creates_pair_2.xml")
             test_command = [
                 "test"
@@ -134,7 +143,7 @@ class CmdTestTestCase(CliTestCase):
                 "--extra_tools", collection_creates_pair,
                 test_artifact,
             ]
-            self._check_exit_code(test_command, exit_code=0)
+            self._check_exit_code(test_command, exit_code=expected_exit_code)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_workflow_test_collection_inputs(self):
