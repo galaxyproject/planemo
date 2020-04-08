@@ -68,7 +68,7 @@ def group_paths(paths):
         if repo not in repos:
             repos[repo] = []
         repos[repo].append(path)
-    return [" ".join(repos[repo]) for repo in repos]
+    return [" ".join(repos[_]) for _ in repos]
 
 
 def print_path_list(paths, **kwds):
