@@ -183,9 +183,7 @@ def case_id(testcase_el=None, raw_id=None):
         tool_and_num = raw_id.split("TestForTool_")[-1]
         if ".test_tool_" in tool_and_num:
             name, num_str = tool_and_num.split(".test_tool_", 1)
-            num = _parse_num(num_str)
-            # Tempted to but something human friendly in here like
-            # num + 1 - but then it doesn't match HTML report.
+            num = _parse_num(num_str) + 1
         else:
             name = tool_and_num
     else:
