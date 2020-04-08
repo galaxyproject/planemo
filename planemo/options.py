@@ -1609,6 +1609,7 @@ def ci_group_tools_option():
         help="Group tools of the same repository on a single line."
     )
 
+
 def ci_chunk_option():
     return planemo_option(
         "--chunk",

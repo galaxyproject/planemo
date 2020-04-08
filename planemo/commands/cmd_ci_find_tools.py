@@ -27,4 +27,6 @@ def cli(ctx, paths, **kwds):
         tool_paths.append(tool_path)
 
     paths = filter_paths(ctx, tool_paths, path_type="file", **kwds)
+    if kwds.get('group_tools', False):
+        paths = group_paths(paths)
     print_path_list(paths, **kwds)

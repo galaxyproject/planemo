@@ -58,16 +58,17 @@ def filter_paths(ctx, raw_paths, path_type="repo", **kwds):
         if int(math.floor(i / chunk_size)) == chunk:
             chunked_paths.append(path)
 
-    if kwds.get('group_tools', False):
-        repos = {}
-        for path in chunked_paths:
-            repo = os.path.split(path)[0]
-            if repo not in repos:
-                repos[repo] = []
-            repos[repo].append(path)
-        chunked_paths = [ " ".join(repos[repo]) for repo in repos ]
-
     return chunked_paths
+
+
+def group_paths(paths):
+    repos = {}
+    for path in paths:
+        repo = os.path.split(path)[0]
+        if repo not in repos:
+            repos[repo] = []
+        repos[repo].append(path)
+    return [" ".join(repos[repo]) for repo in repos]
 
 
 def print_path_list(paths, **kwds):
