@@ -12,6 +12,7 @@ from planemo.tools import is_tool_load_error, yield_tool_sources_on_paths
 @click.command('ci_find_tools')
 @options.shed_project_arg()
 @options.ci_find_options()
+@options.ci_group_tools_option()
 @command_function
 def cli(ctx, paths, **kwds):
     """Find all tools in one or more directories.
