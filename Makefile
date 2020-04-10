@@ -53,7 +53,7 @@ submodule:
 	git submodule init
 	git submodule update
 
-install: submodule ## install into Python envirnoment
+install: submodule ## install into Python environment
 	python setup.py install && cd cwl-runner && python setup.py install
 
 setup-venv: ## setup a development virtualenv in current directory
