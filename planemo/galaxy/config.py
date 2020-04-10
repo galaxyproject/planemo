@@ -543,6 +543,7 @@ def external_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         galaxy_url=kwds.get("galaxy_url", None),
         master_api_key=_get_master_api_key(kwds),
         user_api_key=kwds.get("galaxy_user_key", None),
+        trust=kwds.get("trust", None),
         runnables=runnables,
         kwds=kwds
     )
@@ -659,6 +660,7 @@ class BaseGalaxyConfig(GalaxyInterface):
         galaxy_url,
         master_api_key,
         user_api_key,
+        trust,
         runnables,
         kwds,
     ):
@@ -666,6 +668,7 @@ class BaseGalaxyConfig(GalaxyInterface):
         self.galaxy_url = galaxy_url
         self.master_api_key = master_api_key
         self._user_api_key = user_api_key
+        self.trust = trust,
         self.runnables = runnables
         self._kwds = kwds
         self._workflow_ids = {}

@@ -42,6 +42,13 @@ from planemo.runnable import (
     "--history_name",
     help="Name for history (if a history is generated as part of testing.)"
 )
+@click.option(
+    "--trust",
+    is_flag=True,
+    help="When set, Requests will trust SSL certificates for HTTPS requests. "
+         "It sets verify=False in requests call",
+    default=False,
+)
 @options.galaxy_target_options()
 @options.galaxy_config_options()
 @options.test_options()
