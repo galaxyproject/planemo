@@ -543,7 +543,7 @@ def external_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         galaxy_url=kwds.get("galaxy_url", None),
         master_api_key=_get_master_api_key(kwds),
         user_api_key=kwds.get("galaxy_user_key", None),
-        trust=kwds.get("trust", None),
+        trust=kwds.get("trust", False),
         runnables=runnables,
         kwds=kwds
     )
