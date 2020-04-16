@@ -16,13 +16,14 @@ REPOSITORY_DOWNLOAD_TEMPLATE = (
 )
 
 
-def tool_shed_instance(url, key, email, password):
+def tool_shed_instance(url, key, email, password, verify):
     ensure_module()
     tsi = toolshed.ToolShedInstance(
         url=url,
         key=key,
         email=email,
-        password=password
+        password=password,
+        verify=verify
     )
     return tsi
 
