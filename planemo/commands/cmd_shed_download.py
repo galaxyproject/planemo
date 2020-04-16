@@ -27,6 +27,13 @@ target_path = click.Path(
          "created as shed_download_<name>.tar.gz by default for instance, "
          "simpler repositories will just be downloaded to the specified file."
 )
+@click.option(
+    "--noverify",
+    is_flag=True,
+    help="When set, Requests will trust SSL certificates for HTTPS requests. "
+         "It sets verify=False in requests call",
+    default=False,
+)
 @command_function
 def cli(ctx, paths, **kwds):
     """Download tool from Tool Shed into directory.
