@@ -457,9 +457,7 @@ def get_shed_context(ctx=None, **kwds):
         return kwds.get("shed_%s" % key) or shed_config.get(key)
 
     url = _shed_config_to_url(shed_config)
-    verify = True
-    if kwds.get("noverify", False):
-        verify = False
+    verify = not kwds.get("noverify", False)
     if read_only:
         key = None
         email = None
