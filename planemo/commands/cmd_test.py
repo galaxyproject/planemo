@@ -43,7 +43,7 @@ from planemo.runnable import (
     help="Name for history (if a history is generated as part of testing.)"
 )
 @click.option(
-    "--trust",
+    "--noverify",
     is_flag=True,
     help="When set, Requests will trust SSL certificates for HTTPS requests. "
          "It sets verify=False in requests call",
