@@ -457,6 +457,9 @@ def get_shed_context(ctx=None, **kwds):
         return kwds.get("shed_%s" % key) or shed_config.get(key)
 
     url = _shed_config_to_url(shed_config)
+    verify = True
+    if kwds.get("noverify", False):
+        verify = False
     if read_only:
         key = None
         email = None
@@ -466,7 +469,7 @@ def get_shed_context(ctx=None, **kwds):
         email = prop("email")
         password = prop("password")
 
-    tsi = tool_shed_instance(url, key, email, password)
+    tsi = tool_shed_instance(url, key, email, password, verify)
     owner = username
     return ShedContext(tsi, shed_config, owner)
 
