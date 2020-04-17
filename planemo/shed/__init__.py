@@ -460,6 +460,12 @@ def get_shed_context(ctx=None, **kwds):
     verify = True
     if kwds.get("noverify", False):
         verify = False
+        # disable the following warning:
+        # Unverified HTTPS request is being made.
+        # Adding certificate verification is strongly advised.
+        # See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
+        import urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     if read_only:
         key = None
         email = None
