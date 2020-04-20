@@ -668,7 +668,7 @@ class BaseGalaxyConfig(GalaxyInterface):
         self.galaxy_url = galaxy_url
         self.master_api_key = master_api_key
         self._user_api_key = user_api_key
-        self.noverify = noverify,
+        self.verify = not noverify,
         self.runnables = runnables
         self._kwds = kwds
         self._workflow_ids = {}
@@ -676,7 +676,7 @@ class BaseGalaxyConfig(GalaxyInterface):
     @property
     def gi(self):
         assert self.galaxy_url
-        return gi(url=self.galaxy_url, key=self.master_api_key)
+        return gi(url=self.galaxy_url, key=self.master_api_key, verify=self.verify)
 
     @property
     def user_gi(self):
@@ -695,7 +695,7 @@ class BaseGalaxyConfig(GalaxyInterface):
 
     def _gi_for_key(self, key):
         assert self.galaxy_url
-        return gi(url=self.galaxy_url, key=key)
+        return gi(url=self.galaxy_url, key=key, verify=self.verify)
 
     def install_repo(self, *args, **kwds):
         self.tool_shed_client.install_repository_revision(
