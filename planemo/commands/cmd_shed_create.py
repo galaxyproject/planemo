@@ -14,13 +14,6 @@ from planemo.io import info
 @options.shed_message_option()
 @options.shed_skip_upload()
 @command_function
-@click.option(
-    "--noverify",
-    is_flag=True,
-    help="When set, Requests will trust SSL certificates for HTTPS requests. "
-         "It sets verify=False in requests call",
-    default=False,
-)
 def cli(ctx, paths, **kwds):
     """Create a repository in a Galaxy Tool Shed.
 

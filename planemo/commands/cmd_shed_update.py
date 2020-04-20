@@ -21,13 +21,6 @@ from planemo.reports.xunit_handler import handle_report_xunit_kwd
 @options.shed_skip_upload()
 @options.shed_skip_metadata()
 @command_function
-@click.option(
-    "--noverify",
-    is_flag=True,
-    help="When set, Requests will trust SSL certificates for HTTPS requests. "
-         "It sets verify=False in requests call",
-    default=False,
-)
 def cli(ctx, paths, **kwds):
     """Update Tool Shed repository.
 

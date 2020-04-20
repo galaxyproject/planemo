@@ -34,13 +34,6 @@ from planemo.reports.xunit_handler import handle_report_xunit_kwd
     help="Do not attempt smart diff of XML to filter out attributes "
          "populated by the Tool Shed.",
 )
-@click.option(
-    "--noverify",
-    is_flag=True,
-    help="When set, Requests will trust SSL certificates for HTTPS requests. "
-         "It sets verify=False in requests call",
-    default=False,
-)
 @options.report_xunit()
 @command_function
 def cli(ctx, paths, **kwds):
