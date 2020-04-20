@@ -575,6 +575,16 @@ def conda_global_option():
     )
 
 
+def noverify_option():
+    return planemo_option(
+        "--noverify",
+        is_flag=True,
+        default=False,
+        help="When set, Requests will trust SSL certificates for HTTPS requests. "
+             "It sets verify=False in requests call",
+    )
+
+
 def required_tool_arg(allow_uris=False):
     """ Decorate click method as requiring the path to a single tool.
     """
@@ -1037,6 +1047,7 @@ def shed_target_options():
         shed_key_from_env_option(),
         shed_password_option(),
         shed_target_option(),
+        noverify_option(),
     )
 
 
@@ -1386,6 +1397,7 @@ def engine_options():
         galaxy_url_option(),
         galaxy_admin_key_option(),
         galaxy_user_key_option(),
+        noverify_option(),
     )
 
 
