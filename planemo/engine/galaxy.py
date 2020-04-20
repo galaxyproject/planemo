@@ -52,6 +52,7 @@ class GalaxyEngine(BaseEngine):
                     "galaxy_url": config.galaxy_url,
                     "master_api_key": config.master_api_key,
                     "api_key": config.user_api_key,
+                    "verify": config.verify,
                     "keep_outputs_dir": "",  # TODO: this...
                 }
                 tool_id = test_case.tool_id
