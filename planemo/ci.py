@@ -61,6 +61,16 @@ def filter_paths(ctx, raw_paths, path_type="repo", **kwds):
     return chunked_paths
 
 
+def group_paths(paths):
+    repos = {}
+    for path in paths:
+        repo = os.path.split(path)[0]
+        if repo not in repos:
+            repos[repo] = []
+        repos[repo].append(path)
+    return [" ".join(repos[_]) for _ in repos]
+
+
 def print_path_list(paths, **kwds):
     with io.open_file_or_standard_output(kwds["output"], "w") as f:
         for path in paths:

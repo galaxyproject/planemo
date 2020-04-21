@@ -4,14 +4,22 @@ from __future__ import print_function
 import click
 
 from planemo import options
-from planemo.ci import filter_paths, print_path_list
+from planemo.ci import (
+    filter_paths,
+    group_paths,
+    print_path_list
+)
 from planemo.cli import command_function
-from planemo.tools import is_tool_load_error, yield_tool_sources_on_paths
+from planemo.tools import (
+    is_tool_load_error,
+    yield_tool_sources_on_paths
+)
 
 
 @click.command('ci_find_tools')
 @options.shed_project_arg()
 @options.ci_find_options()
+@options.ci_group_tools_option()
 @command_function
 def cli(ctx, paths, **kwds):
     """Find all tools in one or more directories.
@@ -26,4 +34,6 @@ def cli(ctx, paths, **kwds):
         tool_paths.append(tool_path)
 
     paths = filter_paths(ctx, tool_paths, path_type="file", **kwds)
+    if kwds.get('group_tools', False):
+        paths = group_paths(paths)
     print_path_list(paths, **kwds)
