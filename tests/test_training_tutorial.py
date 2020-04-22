@@ -117,18 +117,18 @@ def test_format_wf_steps():
             workflow_id = config.workflow_id(WF_FP)
             wf = config.gi.workflows.export_workflow_dict(workflow_id)
             body = format_wf_steps(wf, config.gi)
-    assert '## Sub-step with **FastQC**' in body
-    assert '## Sub-step with **Query Tabular**' in body
-    assert '## Sub-step with **Select first**' in body
+    assert_body_contains(body, '## Sub-step with **FastQC**')
+    assert_body_contains(body, '## Sub-step with **Query Tabular**')
+    assert_body_contains(body, '## Sub-step with **Select first**')
 
 
 @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
 def test_get_hands_on_boxes_from_local_galaxy():
     """Test :func:`planemo.training.tutorial.get_hands_on_boxes_from_local_galaxy`."""
     tuto_body = get_hands_on_boxes_from_local_galaxy(KWDS, WF_FP, CTX)
-    assert '## Sub-step with **FastQC**' in tuto_body
-    assert '## Sub-step with **Query Tabular**' in tuto_body
-    assert '## Sub-step with **Select first**' in tuto_body
+    assert_body_contains(tuto_body, '## Sub-step with **FastQC**')
+    assert_body_contains(tuto_body, '## Sub-step with **Query Tabular**')
+    assert_body_contains(tuto_body, '## Sub-step with **Select first**')
 
 
 @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
@@ -140,9 +140,10 @@ def test_get_hands_on_boxes_from_running_galaxy():
         with galaxy_engine.ensure_runnables_served([RUNNABLE]) as config:
             wf_id = config.workflow_id(WF_FP)
             tuto_body = get_hands_on_boxes_from_running_galaxy(wf_id, galaxy_url, config.user_api_key)
-    assert '## Sub-step with **FastQC**' in tuto_body
-    assert '## Sub-step with **Query Tabular**' in tuto_body
-    assert '## Sub-step with **Select first**' in tuto_body
+
+    assert_body_contains(tuto_body, '## Sub-step with **FastQC**')
+    assert_body_contains(tuto_body, '## Sub-step with **Query Tabular**')
+    assert_body_contains(tuto_body, '## Sub-step with **Select first**')
 
 
 def test_tutorial_init():
@@ -452,3 +453,9 @@ def test_tutorial_create_tutorial():
     with open(tuto.slide_fp, 'r') as fh:
         assert 'layout: tutorial_slides' in fh.read()
     shutil.rmtree("topics")
+
+
+def assert_body_contains(body, contents):
+    if contents not in body:
+        message = "Expected to find contents [%s] in body [%s]" % (body, contents)
+        raise AssertionError(message)
