@@ -23,7 +23,7 @@ from galaxy.tool_util.parser import get_tool_source
 from planemo.exit_codes import EXIT_CODE_UNKNOWN_FILE_TYPE, ExitCodeException
 from planemo.galaxy.workflows import describe_outputs
 from planemo.io import error
-from planemo.test import check_output, is_collection_test
+from planemo.test import check_output, for_collections
 
 TEST_SUFFIXES = [
     "-tests", "_tests", "-test", "_test"
@@ -318,7 +318,7 @@ class TestCase(AbstractTestCase):
                 message = template % (output_id, output_value, output_test)
                 output_problems.append(message)
         else:
-            if not is_collection_test(output_test):
+            if not for_collections(output_test):
                 if not isinstance(output_value, dict):
                     message = "Expected file properties for output [%s]" % output_id
                     print(message)

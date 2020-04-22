@@ -18,11 +18,11 @@ def check_output(runnable, output_properties, test_properties, **kwds):
     of the way galaxy-tool-util throws exceptions instead of returning individual
     descriptions - but this may be enhanced in the future.
     """
-    checker = _check_output_collection if is_collection_test(test_properties) else _check_output_file
+    checker = _check_output_collection if for_collections(test_properties) else _check_output_file
     return checker(runnable, output_properties, test_properties, **kwds)
 
 
-def is_collection_test(test_properties):
+def for_collections(test_properties):
     return "element_tests" in test_properties
 
 
