@@ -30,6 +30,7 @@ def _check_output_collection(runnable, output_properties, test_properties, **kwd
     data_collection = output_properties
 
     output_def = TestCollectionOutputDef.from_dict(test_properties)
+
     def verify_dataset(element, element_attrib, element_outfile):
         if element_outfile:
             element_attrib["path"] = element_outfile
@@ -58,7 +59,6 @@ def _verify_output_file(runnable, output_properties, test_properties, **kwds):
 
     job_output_files = kwds.get("job_output_files", None)
     item_label = "Output with path %s" % path
-    problems = []
     if "asserts" in test_properties:
         # TODO: break fewer abstractions here...
         from galaxy.tool_util.parser.yaml import __to_test_assert_list
@@ -75,17 +75,9 @@ def _verify_output_file(runnable, output_properties, test_properties, **kwds):
 
 
 def _check_output_file(runnable, output_properties, test_properties, **kwds):
-    prolems = []
+    problems = []
     try:
-        verify(
-            item_label,
-            output_content,
-            attributes=test_properties,
-            filename=expected_file,
-            get_filename=get_filename,
-            keep_outputs_dir=job_output_files,
-            verify_extra_files=None,
-        )
+        _verify_output_file(runnable, output_properties, test_properties, **kwds)
     except AssertionError as e:
         problems.append(unicodify(e))
 
