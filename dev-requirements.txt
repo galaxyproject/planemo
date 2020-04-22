@@ -1,6 +1,3 @@
-# Optional dependencies.
-toil
-
 # For tests
 flask
 
