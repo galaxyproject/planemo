@@ -725,7 +725,7 @@ class BaseGalaxyConfig(GalaxyInterface):
                 self._install_workflow(runnable)
 
     def _install_workflow(self, runnable):
-        if self._kwds["shed_install"]:
+        if self._kwds.get("shed_install"):
             install_shed_repos(runnable,
                                self.gi,
                                self._kwds.get("ignore_dependency_problems", False),
