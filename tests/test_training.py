@@ -242,9 +242,17 @@ def test_generate_tuto_from_wf():
     # with workflow
     train.kwds['workflow'] = WF_FP
     train.generate_tuto_from_wf(CTX)
-    with open(train.tuto.tuto_fp, 'r') as fh:
-        assert '**FastQC** {% icon tool %} with the following parameters:' in fh.read()
+    assert_file_contains(train.tuto.tuto_fp, '**FastQC** {% icon tool %} with the following parameters:')
     assert os.path.exists(train.tuto.wf_fp)
     # clean after
     shutil.rmtree(train.topics_dir)
     shutil.rmtree("metadata")
+
+
+def assert_file_contains(file, text):
+    with open(file, 'r') as fh:
+        contents = fh.read()
+    if text not in contents:
+        template = "Expected file [%s] to contain [%s], it did not - contents [%s]"
+        message = template % (file, text, contents)
+        raise AssertionError(message)
