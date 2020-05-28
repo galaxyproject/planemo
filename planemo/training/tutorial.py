@@ -183,7 +183,7 @@ have fun!
 > ### {{ '{%' }} icon hands_on {{ '%}' }} Hands-on: Data upload
 >
 > 1. Create a new history for this tutorial
-> 2. Import the files from [Zenodo]({{ zenodo_link }}) or from the shared data library
+> 2. Import the files from [Zenodo]({{ zenodo_link }}) or from the shared data library (`GTN - material -> {{ page.topic_name }} -> {{ page.title }}`):
 >
 >    ```
 >    {{ z_file_links }}
