@@ -16,7 +16,10 @@ from planemo.engine import (
     engine_context,
     is_galaxy_engine,
 )
-from planemo.io import info
+from planemo.io import (
+    error,
+    info,
+)
 from planemo.runnable import for_path
 from .tool_input import (
     get_empty_input,
@@ -559,11 +562,12 @@ def get_zenodo_record(zenodo_link):
         z_record = zenodo_link.split('/')[-1]
     # get JSON corresponding to the record from Zenodo API
     req = "https://zenodo.org/api/records/%s" % (z_record)
-    r = requests.get(req)
-    if r:
+    try:
+        r = requests.get(req)
+        r.raise_for_status()
         req_res = r.json()
-    else:
-        info("The Zenodo link (%s) seems invalid" % (zenodo_link))
+    except Exception as e:
+        error("The Zenodo link (%s) seems invalid: %s" % (zenodo_link, e))
         req_res = {'files': []}
         z_record = None
     return(z_record, req_res)

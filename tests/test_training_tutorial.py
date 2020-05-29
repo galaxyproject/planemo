@@ -457,5 +457,5 @@ def test_tutorial_create_tutorial():
 
 def assert_body_contains(body, contents):
     if contents not in body:
-        message = "Expected to find contents [%s] in body [%s]" % (body, contents)
+        message = "Expected to find contents [%s] in body [%s]" % (contents, body)
         raise AssertionError(message)
