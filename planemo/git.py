@@ -82,7 +82,7 @@ def diff(ctx, directory, range):
         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         universal_newlines=True
     )
-    return [l.strip() for l in unicodify(stdout).splitlines() if l]
+    return [line.strip() for line in unicodify(stdout).splitlines() if line]
 
 
 def clone(*args, **kwds):
