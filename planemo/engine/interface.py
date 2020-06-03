@@ -5,6 +5,8 @@ import json
 import os
 import tempfile
 
+from six import add_metaclass
+
 from planemo.exit_codes import EXIT_CODE_UNSUPPORTED_FILE_TYPE
 from planemo.io import error
 from planemo.runnable import (
@@ -14,11 +16,10 @@ from planemo.runnable import (
 from planemo.test.results import StructuredData
 
 
+@add_metaclass(abc.ABCMeta)
 class Engine(object):
     """Abstract description of an external process for running tools or workflows.
     """
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def run(self, path, job_path):

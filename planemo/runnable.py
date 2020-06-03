@@ -8,7 +8,6 @@ import os
 from distutils.dir_util import copy_tree
 
 import aenum
-import six
 import yaml
 from galaxy.tool_util.cwl.parser import workflow_proxy
 from galaxy.tool_util.loader_directory import (
@@ -19,6 +18,10 @@ from galaxy.tool_util.loader_directory import (
     looks_like_a_tool_xml,
 )
 from galaxy.tool_util.parser import get_tool_source
+from six import (
+    add_metaclass,
+    python_2_unicode_compatible,
+)
 
 from planemo.exit_codes import EXIT_CODE_UNKNOWN_FILE_TYPE, ExitCodeException
 from planemo.galaxy.workflows import describe_outputs
@@ -210,11 +213,10 @@ def cases(runnable):
     return cases
 
 
+@add_metaclass(abc.ABCMeta)
 class AbstractTestCase(object):
     """Description of a test case for a runnable.
     """
-
-    __metaclass__ = abc.ABCMeta
 
     def structured_test_data(self, run_response):
         """Result of executing this test case - a "structured_data" dict.
@@ -404,10 +406,9 @@ def get_outputs(runnable):
         raise NotImplementedError("Getting outputs for this artifact type is not yet supported.")
 
 
+@add_metaclass(abc.ABCMeta)
 class RunnableOutput(object):
     """Description of a single output of an execution of a Runnable."""
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractproperty
     def get_id(self):
@@ -445,10 +446,9 @@ class CwlWorkflowOutput(RunnableOutput):
         return self._label
 
 
+@add_metaclass(abc.ABCMeta)
 class RunResponse(object):
     """Description of an attempt for an engine to execute a Runnable."""
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractproperty
     def was_successful(self):
@@ -467,10 +467,9 @@ class RunResponse(object):
         """If engine related log is available, return as text data."""
 
 
+@add_metaclass(abc.ABCMeta)
 class SuccessfulRunResponse(RunResponse):
     """Description of the results of an engine executing a Runnable."""
-
-    __metaclass__ = abc.ABCMeta
 
     def was_successful(self):
         """Return `True` to indicate this run was successful."""
@@ -481,7 +480,7 @@ class SuccessfulRunResponse(RunResponse):
         """Return a dict of output descriptions."""
 
 
-@six.python_2_unicode_compatible
+@python_2_unicode_compatible
 class ErrorRunResponse(RunResponse):
     """Description of an error while attempting to execute a Runnable."""
 
