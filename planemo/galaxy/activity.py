@@ -8,7 +8,6 @@ import time
 import bioblend
 import requests
 import yaml
-from bioblend.galaxy.client import Client
 from bioblend.util import attach_file
 from galaxy.tool_util.cwl.util import (
     DirectoryUploadTarget,
@@ -119,11 +118,13 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         response_class = GalaxyWorkflowRunResponse
         workflow_id = config.workflow_id(runnable.path)
         ctx.vlog("Found Galaxy workflow ID [%s] for path [%s]" % (workflow_id, runnable.path))
-        # TODO: update bioblend to allow inputs_by.
+        # TODO: Use the following when BioBlend 0.14 is released
         # invocation = user_gi.worklfows.invoke_workflow(
         #    workflow_id,
-        #    history_id=history_id,
         #    inputs=job_dict,
+        #    history_id=history_id,
+        #    allow_tool_state_corrections=True,
+        #    inputs_by="name",
         # )
         payload = dict(
             workflow_id=workflow_id,
@@ -132,11 +133,11 @@ def _execute(ctx, config, runnable, job_path, **kwds):
             inputs_by="name",
             allow_tool_state_corrections=True,
         )
-        invocations_url = "%s/%s/invocations" % (
-            user_gi._make_url(user_gi.workflows),
+        invocations_url = "%s/workflows/%s/invocations" % (
+            user_gi.url,
             workflow_id,
         )
-        invocation = Client._post(user_gi.workflows, payload, url=invocations_url)
+        invocation = user_gi.workflows._post(payload, url=invocations_url)
         invocation_id = invocation["id"]
         ctx.vlog("Waiting for invocation [%s]" % invocation_id)
         polling_backoff = kwds.get("polling_backoff", 0)
@@ -256,7 +257,7 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):  # n
             "fields": None if collection_type != "record" else "auto",
         }
         dataset_collections_url = user_gi.url + "/dataset_collections"
-        dataset_collection = Client._post(user_gi.histories, payload, url=dataset_collections_url)
+        dataset_collection = user_gi.histories._post(payload, url=dataset_collections_url)
         return dataset_collection
 
     with open(job_path, "r") as f:
@@ -332,10 +333,10 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         raise NotImplementedError()
 
     def _get_extra_files(self, dataset_details):
-        extra_files_url = "%s/%s/contents/%s/extra_files" % (
-            self._user_gi._make_url(self._user_gi.histories), self._history_id, dataset_details["id"]
+        extra_files_url = "%s/histories/%s/contents/%s/extra_files" % (
+            self._user_gi.url, self._history_id, dataset_details["id"]
         )
-        extra_files = Client._get(self._user_gi.jobs, url=extra_files_url)
+        extra_files = self._user_gi.jobs._get(url=extra_files_url)
         return extra_files
 
     def _get_metadata(self, history_content_type, content_id):
@@ -607,8 +608,8 @@ def _retry_on_timeouts(ctx, gi, f):
 
 def has_jobs_in_states(gi, history_id, states):
     params = {"history_id": history_id}
-    jobs_url = gi._make_url(gi.jobs)
-    jobs = Client._get(gi.jobs, params=params, url=jobs_url)
+    jobs_url = gi.url + '/jobs'
+    jobs = gi.jobs._get(url=jobs_url, params=params)
 
     target_jobs = [j for j in jobs if j["state"] in states]
 
