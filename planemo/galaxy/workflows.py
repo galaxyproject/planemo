@@ -4,7 +4,6 @@ import os
 from collections import namedtuple
 
 import yaml
-from bioblend.galaxy.client import Client
 from ephemeris import generate_tool_list_from_ga_workflow_files
 from ephemeris import shed_tools
 from gxformat2.converter import python_to_workflow
@@ -64,15 +63,15 @@ def import_workflow(path, admin_gi, user_gi, from_path=False):
             user_gi=user_gi
         )
         workflow = _raw_dict(path, importer)
-        return importer.import_workflow(workflow)
+        return user_gi.workflows.import_workflow_dict(workflow)
     else:
         # TODO: Update bioblend to allow from_path.
         path = os.path.abspath(path)
         payload = dict(
             from_path=path
         )
-        workflows_url = user_gi._make_url(user_gi.workflows)
-        workflow = Client._post(user_gi.workflows, payload, url=workflows_url)
+        workflows_url = user_gi.url + '/workflows'
+        workflow = user_gi.workflows._post(payload, url=workflows_url)
         return workflow
 
 
@@ -96,7 +95,7 @@ def _raw_dict(path, importer=None):
 def find_tool_ids(path):
     tool_ids = []
     workflow = _raw_dict(path)
-    for (order_index, step) in workflow["steps"].items():
+    for step in workflow["steps"].values():
         tool_id = step.get("tool_id")
         tool_ids.append(tool_id)
 

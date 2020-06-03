@@ -1040,8 +1040,10 @@ def _find_tool_data_table(runnables, test_data_dir, **kwds):
         )
 
 
-def _search_tool_path_for(path, target, extra_paths=[]):
+def _search_tool_path_for(path, target, extra_paths=None):
     """Check for presence of a target in different artifact directories."""
+    if extra_paths is None:
+        extra_paths = []
     if not os.path.isdir(path):
         tool_dir = os.path.dirname(path)
     else:
