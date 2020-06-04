@@ -657,6 +657,7 @@ def get_hands_on_boxes_from_local_galaxy(kwds, wf_filepath, ctx):
     tuto_body = ''
     with engine_context(ctx, **kwds) as galaxy_engine:
         with galaxy_engine.ensure_runnables_served([runnable]) as config:
+            info("Status of installed repositories: %s" % config.gi.toolshed.get_repositories())
             workflow_id = config.workflow_id(wf_filepath)
             wf = config.gi.workflows.export_workflow_dict(workflow_id)
             tuto_body = format_wf_steps(wf, config.gi)
