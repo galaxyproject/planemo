@@ -14,7 +14,6 @@ from planemo.training import (
 )
 from planemo.training.topic import Topic
 from planemo.training.tutorial import (
-    format_wf_steps,
     get_galaxy_datatype,
     get_hands_on_boxes_from_local_galaxy,
     get_hands_on_boxes_from_running_galaxy,
@@ -106,20 +105,6 @@ def test_get_wf_param_values():
     assert isinstance(wf_param_value_tests, dict)
     for k in wf_param_values:
         assert k in wf_param_value_tests
-
-
-@skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-def test_format_wf_steps():
-    """Test :func:`planemo.training.tutorial.format_wf_steps`."""
-    assert is_galaxy_engine(**KWDS)
-    with engine_context(CTX, **KWDS) as galaxy_engine:
-        with galaxy_engine.ensure_runnables_served([RUNNABLE]) as config:
-            workflow_id = config.workflow_id(WF_FP)
-            wf = config.gi.workflows.export_workflow_dict(workflow_id)
-            body = format_wf_steps(wf, config.gi)
-    assert_body_contains(body, '## Sub-step with **FastQC**')
-    assert_body_contains(body, '## Sub-step with **Query Tabular**')
-    assert_body_contains(body, '## Sub-step with **Select first**')
 
 
 @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
@@ -457,5 +442,5 @@ def test_tutorial_create_tutorial():
 
 def assert_body_contains(body, contents):
     if contents not in body:
-        message = "Expected to find contents [%s] in body [%s]" % (body, contents)
+        message = "Expected to find contents [%s] in body [%s]" % (contents, body)
         raise AssertionError(message)

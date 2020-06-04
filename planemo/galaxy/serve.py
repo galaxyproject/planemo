@@ -16,7 +16,9 @@ from .run import (
 )
 
 
-def serve(ctx, runnables=[], **kwds):
+def serve(ctx, runnables=None, **kwds):
+    if runnables is None:
+        runnables = []
     """Serve a Galaxy instance with artifacts defined by paths."""
     try:
         return _serve(ctx, runnables, **kwds)
@@ -87,8 +89,10 @@ def shed_serve(ctx, install_args_list, **kwds):
 
 
 @contextlib.contextmanager
-def serve_daemon(ctx, runnables=[], **kwds):
+def serve_daemon(ctx, runnables=None, **kwds):
     """Serve a daemonized Galaxy instance with artifacts defined by paths."""
+    if runnables is None:
+        runnables = []
     config = None
     try:
         kwds["daemon"] = True

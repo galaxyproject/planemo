@@ -16,7 +16,10 @@ from planemo.engine import (
     engine_context,
     is_galaxy_engine,
 )
-from planemo.io import info
+from planemo.io import (
+    error,
+    info,
+)
 from planemo.runnable import for_path
 from .tool_input import (
     get_empty_input,
@@ -183,7 +186,9 @@ have fun!
 > ### {{ '{%' }} icon hands_on {{ '%}' }} Hands-on: Data upload
 >
 > 1. Create a new history for this tutorial
-> 2. Import the files from [Zenodo]({{ zenodo_link }}) or from the shared data library
+> 2. Import the files from [Zenodo]({{ '{{' }} page.zenodo_link {{ '}}' }}) or from
+>    the shared data library (`GTN - Material` -> `{{ '{{' }} page.topic_name {{ '}}' }}`
+>     -> `{{ '{{' }} page.title {{ '}}' }}`):
 >
 >    ```
 >    {{ z_file_links }}
@@ -557,11 +562,12 @@ def get_zenodo_record(zenodo_link):
         z_record = zenodo_link.split('/')[-1]
     # get JSON corresponding to the record from Zenodo API
     req = "https://zenodo.org/api/records/%s" % (z_record)
-    r = requests.get(req)
-    if r:
+    try:
+        r = requests.get(req)
+        r.raise_for_status()
         req_res = r.json()
-    else:
-        info("The Zenodo link (%s) seems invalid" % (zenodo_link))
+    except Exception as e:
+        error("The Zenodo link (%s) seems invalid: %s" % (zenodo_link, e))
         req_res = {'files': []}
         z_record = None
     return(z_record, req_res)
@@ -651,6 +657,7 @@ def get_hands_on_boxes_from_local_galaxy(kwds, wf_filepath, ctx):
     tuto_body = ''
     with engine_context(ctx, **kwds) as galaxy_engine:
         with galaxy_engine.ensure_runnables_served([runnable]) as config:
+            info("Status of installed repositories: %s" % config.gi.toolshed.get_repositories())
             workflow_id = config.workflow_id(wf_filepath)
             wf = config.gi.workflows.export_workflow_dict(workflow_id)
             tuto_body = format_wf_steps(wf, config.gi)

@@ -5,6 +5,7 @@ import abc
 import contextlib
 
 from galaxy.tool_util.verify import interactor
+from six import add_metaclass
 
 from planemo.galaxy.activity import execute
 from planemo.galaxy.config import external_galaxy_config
@@ -13,13 +14,12 @@ from planemo.runnable import RunnableType
 from .interface import BaseEngine
 
 
+@add_metaclass(abc.ABCMeta)
 class GalaxyEngine(BaseEngine):
     """An :class:`Engine` implementation backed by a managed Galaxy.
 
     More information on Galaxy can be found at http://galaxyproject.org/.
     """
-
-    __metaclass__ = abc.ABCMeta
 
     handled_runnable_types = [
         RunnableType.cwl_tool,
