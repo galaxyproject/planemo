@@ -1,9 +1,5 @@
-"""Module describing the planemo ``lint`` command."""
+"""Module describing the planemo ``autoupdate`` command."""
 import click
-
-# from os.path import basename
-
-# from galaxy.tool_util.lint import lint_tool_source
 
 from planemo.exit_codes import (
     EXIT_CODE_GENERIC_FAILURE,
@@ -18,13 +14,12 @@ from planemo.tools import (
     yield_tool_sources_on_paths
 )
 
-from planemo import options
+from planemo import options, autoupdate
 from planemo.cli import command_function
-from autoupdate import autoupdate
 
 
 @click.command('autoupdate')
-@options.optional_tools_arg(multiple=True, allow_uris=True)
+@options.optional_tools_arg(multiple=True)
 @options.report_level_option()
 @options.report_xunit()
 @options.fail_level_option()
@@ -32,13 +27,13 @@ from autoupdate import autoupdate
 @options.recursive_option()
 @command_function
 def cli(ctx, paths, **kwds):
-    """Check for common errors and best practices."""
+    """Auto-update requirements section if necessary"""
     assert_tools = kwds.get("assert_tools", True)
     recursive = kwds.get("recursive", False)
     exit_codes = []
     for (tool_path, tool_xml) in yield_tool_sources_on_paths(ctx, paths, recursive):
         info("Auto-updating tool %s" % tool_path)
-        autoupdate(tool_xml)
+        autoupdate.autoupdate(tool_xml)
         if handle_tool_load_error(tool_path, tool_xml):
             exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
             continue

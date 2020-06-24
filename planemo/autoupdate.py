@@ -15,6 +15,8 @@ def find_packages_in_requirements(tool_xml):
     packages = {}
     main_req_dict = {}
     main_req = None
+    print("fas")
+    print(tool_xml)
     for element in tool_xml.getroot().findall("requirements"):
         for requirement in list(element):
             if requirement.tag == 'requirement' and requirement.attrib.get('type', '') == 'package':
