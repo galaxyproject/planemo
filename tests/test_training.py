@@ -3,12 +3,11 @@ import json
 import os
 import shutil
 
-from nose.tools import assert_raises_regexp
-
 from planemo import cli
 from planemo.runnable import for_path
 from planemo.training import Training
 from .test_utils import (
+    assert_raises_regexp,
     skip_if_environ,
     TEST_DATA_DIR,
 )
@@ -95,6 +94,7 @@ KWDS = {
     'shed_install': True,
     'shed_tool_conf': None,
     'shed_tool_path': None,
+    'skip_client_build': True,
     'skip_venv': False,
     'test_data': None,
     'tool_data_table': None,

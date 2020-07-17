@@ -15,5 +15,8 @@ from planemo.training import Training
 def cli(ctx, uris, **kwds):
     """Create tutorial skeleton from workflow."""
     kwds["no_dependency_resolution"] = True
+    # Ugh rather than override this - it just needs to not be in the serve options
+    # for this command.
+    kwds["skip_client_build"] = True
     training = Training(kwds)
     training.generate_tuto_from_wf(ctx)

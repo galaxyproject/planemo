@@ -11,10 +11,7 @@ from planemo.galaxy.serve import sleep_for_serve
 
 @click.command("shed_serve")
 @options.shed_read_options()
-@options.galaxy_run_options()
-@options.galaxy_config_options()
-@options.pid_file_option()
-@options.daemon_option()
+@options.galaxy_serve_options()
 @click.option(
     "--skip_dependencies",
     is_flag=True,
@@ -30,7 +27,7 @@ def cli(ctx, paths, **kwds):
     install these artifacts, and serve a Galaxy instances that can be
     logged into and explored interactively.
     """
-    kwds['galaxy_skip_client_build'] = False
+    kwds['galaxy_skip_client_build'] = kwds.pop("skip_client_build", False)
     install_args_list = shed.install_arg_lists(ctx, paths, **kwds)
     with shed_serve(ctx, install_args_list, **kwds) as config:
         io.info("Galaxy running with tools installed at %s" % config.galaxy_url)

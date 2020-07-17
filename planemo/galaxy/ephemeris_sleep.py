@@ -20,6 +20,8 @@ except ImportError:
     # This won't stay in Planemo long, main no longer functional.
     get_common_args = None
 
+DEFAULT_SLEEP_WAIT = 1
+
 
 def _parser():
     '''Constructs the parser object'''
@@ -40,15 +42,28 @@ def _parse_cli_options():
     return parser.parse_args()
 
 
-def sleep(galaxy_url, verbose=False, timeout=0):
+class SleepCondition(object):
+
+    def __init__(self):
+        self.sleep = True
+
+    def cancel(self):
+        self.sleep = False
+
+
+def sleep(galaxy_url, verbose=False, timeout=0, sleep_condition=None):
+    if sleep_condition is None:
+        sleep_condition = SleepCondition()
+
     count = 0
-    while True:
+    while sleep_condition.sleep:
         try:
             result = requests.get(galaxy_url + '/api/version')
             try:
                 result = result.json()
                 if verbose:
                     sys.stdout.write("Galaxy Version: %s\n" % result['version_major'])
+                    sys.stdout.flush()
                 break
             except ValueError:
                 if verbose:
@@ -65,7 +80,7 @@ def sleep(galaxy_url, verbose=False, timeout=0):
             sys.stderr.write("Failed to contact Galaxy\n")
             return False
 
-        time.sleep(1)
+        time.sleep(DEFAULT_SLEEP_WAIT)
 
     return True
 

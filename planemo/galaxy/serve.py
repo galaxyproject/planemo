@@ -14,6 +14,7 @@ from .ephemeris_sleep import sleep
 from .run import (
     run_galaxy_command,
 )
+INSTALLING_MESSAGE = "Installing repositories - this may take some time..."
 
 
 def serve(ctx, runnables=None, **kwds):
@@ -76,7 +77,8 @@ def shed_serve(ctx, install_args_list, **kwds):
     """Serve a daemon instance of Galaxy with specified repositories installed."""
     with serve_daemon(ctx, **kwds) as config:
         install_deps = not kwds.get("skip_dependencies", False)
-        io.info("Installing repositories - this may take some time...")
+        print(INSTALLING_MESSAGE)
+        io.info(INSTALLING_MESSAGE)
         for install_args in install_args_list:
             install_args["install_tool_dependencies"] = install_deps
             install_args["install_repository_dependencies"] = True
@@ -84,7 +86,15 @@ def shed_serve(ctx, install_args_list, **kwds):
             config.install_repo(
                 **install_args
             )
-        config.wait_for_all_installed()
+        try:
+            config.wait_for_all_installed()
+        except Exception:
+            if ctx.verbose:
+                print("Failed to install tool repositories, Galaxy log:")
+                print(config.log_contents)
+                print("Galaxy root:")
+                io.shell(['ls', config.galaxy_root])
+            raise
         yield config
 
 

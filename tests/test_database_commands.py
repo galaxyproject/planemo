@@ -25,6 +25,7 @@ class DatabaseCommandsTestCase(CliTestCase):
     def test_database_commands(self):
         self._database_commands()
 
+    @skip_unless_environ("PLANEMO_ENABLE_POSTGRES_TESTS")
     @skip_unless_executable("docker")
     def test_database_commands_docker(self):
         try:

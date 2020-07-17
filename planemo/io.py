@@ -14,8 +14,8 @@ from sys import platform as _platform
 from xml.sax.saxutils import escape
 
 import click
-from galaxy.tool_util.deps import commands
-from galaxy.tool_util.deps.commands import download_command
+from galaxy.util import commands
+from galaxy.util.commands import download_command
 from six import (
     string_types,
     StringIO
@@ -218,7 +218,9 @@ def kill_posix(pid):
     if _check_pid():
         for sig in [15, 9]:
             try:
-                os.kill(pid, sig)
+                # gunicorn (unlike paste), seem to require killing process
+                # group
+                os.killpg(os.getpgid(pid), sig)
             except OSError:
                 return
             time.sleep(1)
