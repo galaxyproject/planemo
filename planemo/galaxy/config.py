@@ -179,6 +179,12 @@ formatter = generic
 format = %(asctime)s %(levelname)-5.5s [%(name)s] %(message)s
 """
 
+REFGENIE_CONFIG_TEMPLATE = """
+config_version: 0.3
+genome_folder: '%s'
+genome_servers: ['http://refgenomes.databio.org']
+genomes: null
+"""
 
 EMPTY_TOOL_CONF_TEMPLATE = """<toolbox></toolbox>"""
 
@@ -223,6 +229,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
         ensure_dependency_resolvers_conf_configured(ctx, kwds, os.path.join(config_directory, "resolvers_conf.xml"))
         _handle_job_metrics(config_directory, kwds)
+        _handle_refgenie_config(config_directory, kwds)
 
         shed_tool_conf = "config/shed_tool_conf.xml"
         all_tool_paths = _all_tool_paths(runnables, **kwds)
@@ -360,6 +367,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         ensure_dependency_resolvers_conf_configured(ctx, kwds, os.path.join(config_directory, "resolvers_conf.xml"))
         _handle_job_config_file(config_directory, server_name, kwds)
         _handle_job_metrics(config_directory, kwds)
+        _handle_refgenie_config(config_directory, kwds)
         file_path = kwds.get("file_path") or config_join("files")
         _ensure_directory(file_path)
 
@@ -533,6 +541,7 @@ def _shared_galaxy_properties(config_directory, kwds, for_tests):
         properties["tour_config_dir"] = empty_dir
         properties["interactive_environment_plugins_directory"] = empty_dir
         properties["visualization_plugins_directory"] = empty_dir
+        properties["refgenie_config_file"] = kwds.get('refgenie_config_file', '')
     return properties
 
 
@@ -1246,6 +1255,15 @@ def _handle_job_metrics(config_directory, kwds):
     with open(metrics_conf, "w") as fh:
         fh.write(EMPTY_JOB_METRICS_TEMPLATE)
     kwds["job_metrics_config_file"] = metrics_conf
+
+
+def _handle_refgenie_config(config_directory, kwds):
+    refgenie_dir = os.path.join(config_directory, 'refgenie')
+    _ensure_directory(refgenie_dir)
+    refgenie_config = os.path.join(refgenie_dir, "genome_config.yaml")
+    with open(refgenie_config, "w") as fh:
+        fh.write(REFGENIE_CONFIG_TEMPLATE % (refgenie_dir))
+    kwds["refgenie_config_file"] = refgenie_config
 
 
 def _handle_kwd_overrides(properties, kwds):
