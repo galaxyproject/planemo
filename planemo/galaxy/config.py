@@ -1256,6 +1256,7 @@ def _handle_job_metrics(config_directory, kwds):
         fh.write(EMPTY_JOB_METRICS_TEMPLATE)
     kwds["job_metrics_config_file"] = metrics_conf
 
+
 def _handle_refgenie_config(config_directory, kwds):
     refgenie_dir = os.path.join(config_directory, 'refgenie')
     _ensure_directory(refgenie_dir)
@@ -1263,6 +1264,7 @@ def _handle_refgenie_config(config_directory, kwds):
     with open(refgenie_config, "w") as fh:
         fh.write(REFGENIE_CONFIG_TEMPLATE % (refgenie_dir))
     kwds["refgenie_config_file"] = refgenie_config
+
 
 def _handle_kwd_overrides(properties, kwds):
     kwds_gx_properties = [
