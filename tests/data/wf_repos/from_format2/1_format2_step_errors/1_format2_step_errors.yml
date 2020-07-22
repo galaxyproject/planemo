@@ -1,0 +1,18 @@
+class: GalaxyWorkflow
+doc: 'Simple workflow that no-op cats a file and then selects 10 random lines.
+
+  '
+inputs:
+  the_input:
+    type: File
+    doc: input doc
+outputs:
+  the_output:
+    outputSource: cat/out_file1
+steps:
+  cat:
+    tool_id: cat1
+    doc: cat doc
+    in:
+      input1: the_input
+    errors: Tool is not installed.

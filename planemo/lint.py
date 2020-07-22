@@ -7,11 +7,6 @@ import requests
 from galaxy.tool_util.lint import LintContext
 from six.moves.urllib.request import urlopen
 
-import planemo.linters.biocontainer_registered
-import planemo.linters.conda_requirements
-import planemo.linters.doi
-import planemo.linters.urls
-import planemo.linters.xsd
 from planemo.io import error
 from planemo.shed import find_urls_for_xml
 from planemo.xml import validation
@@ -31,36 +26,14 @@ def build_lint_args(ctx, **kwds):
     lint_args = dict(
         level=report_level,
         fail_level=fail_level,
-        extra_modules=_lint_extra_modules(**kwds),
         skip_types=skip_types,
     )
     return lint_args
 
 
-# TODO: Move this back to tool_lint.
-def _lint_extra_modules(**kwds):
-    linters = []
-    if kwds.get("xsd", True):
-        linters.append(planemo.linters.xsd)
-
-    if kwds.get("doi", False):
-        linters.append(planemo.linters.doi)
-
-    if kwds.get("urls", False):
-        linters.append(planemo.linters.urls)
-
-    if kwds.get("conda_requirements", False):
-        linters.append(planemo.linters.conda_requirements)
-
-    if kwds.get("biocontainer", False):
-        linters.append(planemo.linters.biocontainer_registered)
-
-    return linters
-
-
 def setup_lint(ctx, **kwds):
     """Prepare lint_args and lint_ctx to begin linting a target."""
-    lint_args = build_lint_args(ctx, **kwds)
+    lint_args = kwds.get("lint_args", None) or build_lint_args(ctx, **kwds)
     lint_ctx = LintContext(lint_args["level"])
     return lint_args, lint_ctx
 
