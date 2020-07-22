@@ -1,0 +1,8 @@
+- doc: Simple test
+  job:
+    the_input_wrong:
+      class: File
+      path: hello.txt
+  outputs:
+    the_output:
+      checksum: 'sha1$7bd92c6cd84285e4fc7215d506bbabfe328acb8f'

@@ -145,6 +145,15 @@ def for_path(path, temp_path=None):
         runnable_type = RunnableType.galaxy_workflow
     elif looks_like_a_cwl_artifact(path, ["Workflow"]):
         runnable_type = RunnableType.cwl_workflow
+    else:
+        # Check to see if it is a Galaxy workflow with a different extension
+        try:
+            with open(path, "r") as f:
+                as_dict = yaml.safe_load(f)
+            if as_dict.get("a_galaxy_workflow", False):
+                runnable_type = RunnableType.galaxy_workflow
+        except Exception:
+            pass
 
     if runnable_type is None:
         error("Unable to determine runnable type for path [%s]" % path)
@@ -318,6 +327,14 @@ class TestCase(AbstractTestCase):
                 return f.read()
         else:
             return self.job
+
+    @property
+    def input_ids(self):
+        return list(self._job.keys())
+
+    @property
+    def tested_output_ids(self):
+        return list(self.output_expectations.keys())
 
     def _check_output(self, output_id, output_value, output_test):
         output_problems = []

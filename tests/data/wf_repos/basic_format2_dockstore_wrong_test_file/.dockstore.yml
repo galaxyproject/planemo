@@ -1,0 +1,6 @@
+version: 1.2
+workflows:
+- subclass: Galaxy
+  primaryDescriptorPath: /basic_format2.gxwf.yml
+  testParameterFiles:
+  - /basic_format2.gxwf-testing.yml

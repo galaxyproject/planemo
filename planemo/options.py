@@ -1665,6 +1665,19 @@ def ci_find_options():
     )
 
 
+def workflow_output_artifact():
+    return planemo_option(
+        "-o", "--output",
+        default=None,
+        type=click.Path(
+            file_okay=True,
+            dir_okay=False,
+            readable=True,
+            resolve_path=True,
+        )
+    )
+
+
 def tool_init_id_option(prompt=True):
     return planemo_option(
         "-i",
