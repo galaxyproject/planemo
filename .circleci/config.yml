@@ -1,0 +1,16 @@
+version: 2
+jobs:
+  toxify:
+      docker:
+        - image: python:3.5
+      steps:
+        - checkout
+        - run: pip install tox && tox -e << parameters.tox-env >>
+workflows:
+  version: 2
+  myproj:
+    jobs:
+    - toxify:
+        matrix:
+          parameters:
+            tox-env: ["py35-diagnostic-unit-servebasic-gx-dev"]
