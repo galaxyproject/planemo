@@ -59,7 +59,7 @@ def _lint_extra_modules(**kwds):
 
 
 def setup_lint(ctx, **kwds):
-    """Setup lint_args and lint_ctx to begin linting a target."""
+    """Prepare lint_args and lint_ctx to begin linting a target."""
     lint_args = build_lint_args(ctx, **kwds)
     lint_ctx = LintContext(lint_args["level"])
     return lint_args, lint_ctx

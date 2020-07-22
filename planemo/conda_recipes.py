@@ -1,7 +1,4 @@
-"""Planemo specific utilities for dealing with conda recipe generation.
-"""
-
-from __future__ import absolute_import
+"""Planemo specific utilities for dealing with conda recipe generation."""
 
 import os
 

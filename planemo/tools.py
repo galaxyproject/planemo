@@ -17,11 +17,13 @@ LOAD_ERROR_MESSAGE = "Error loading tool with path %s"
 
 
 def uri_to_path(ctx, uri):
+    """Fetch URI to a local path."""
     fetcher = ToolLocationFetcher()
     return fetcher.to_tool_path(uri)
 
 
 def uris_to_paths(ctx, uris):
+    """Fetch multiple URIs to a local path."""
     fetcher = ToolLocationFetcher()
     paths = []
     for uri in uris:
@@ -31,6 +33,7 @@ def uris_to_paths(ctx, uris):
 
 
 def yield_tool_sources_on_paths(ctx, paths, recursive=False, yield_load_errors=True, exclude_deprecated=False):
+    """Walk paths and yield ToolSource objects discovered."""
     for path in paths:
         for (tool_path, tool_source) in yield_tool_sources(ctx, path, recursive, yield_load_errors):
             if exclude_deprecated and 'deprecated' in tool_path:
@@ -39,6 +42,7 @@ def yield_tool_sources_on_paths(ctx, paths, recursive=False, yield_load_errors=T
 
 
 def yield_tool_sources(ctx, path, recursive=False, yield_load_errors=True):
+    """Walk single path and yield ToolSource objects discovered."""
     tools = load_tool_sources_from_path(
         path,
         recursive,
@@ -58,7 +62,7 @@ def yield_tool_sources(ctx, path, recursive=False, yield_load_errors=True):
 
 
 def load_tool_sources_from_path(path, recursive, register_load_errors=False):
-    """Generator for tool sources on a path."""
+    """Generate a list for tool sources found down specified path."""
     return loader_directory.load_tool_sources_from_path(
         path,
         _load_exception_handler,
