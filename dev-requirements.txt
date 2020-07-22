@@ -4,7 +4,7 @@ Werkzeug
 
 # For testing
 tox
-nose
+pytest
 coverage
 
 #Building Docs

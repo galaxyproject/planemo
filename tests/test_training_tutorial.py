@@ -2,9 +2,6 @@
 import os
 import shutil
 
-from nose.tools import assert_raises_regexp
-
-
 from planemo.engine import (
     engine_context,
     is_galaxy_engine,
@@ -36,6 +33,7 @@ from .test_training import (
     zenodo_link
 )
 from .test_utils import (
+    assert_raises_regexp,
     skip_if_environ,
 )
 

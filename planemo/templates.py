@@ -1,3 +1,4 @@
+"""Templating abstraction around jinja2 for Planemo."""
 try:
     from jinja2 import Template
 except ImportError:
@@ -8,8 +9,7 @@ NO_JINJA2_MESSAGE = ("This functionality requires Jinja2 but this library is "
 
 
 def render(template_str, **kwds):
-    """ Use jinja2 to render a template
-    """
+    """Use jinja2 to render specified template."""
     if Template is None:
         raise Exception(NO_JINJA2_MESSAGE)
     template = Template(template_str)

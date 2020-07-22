@@ -12,7 +12,7 @@ from tempfile import mkdtemp
 
 from galaxy.containers.docker_model import DockerVolume
 from galaxy.tool_util.deps import docker_util
-from galaxy.tool_util.deps.commands import argv_to_str
+from galaxy.util.commands import argv_to_str
 from pkg_resources import parse_version
 from six import (
     add_metaclass,
@@ -70,6 +70,7 @@ use_threadpool = True
 threadpool_kill_thread_limit = 10800
 [app:main]
 paste.app_factory = galaxy.web.buildapp:app_factory
+static_dir = static/
 """
 
 TOOL_CONF_TEMPLATE = """<toolbox>
@@ -194,10 +195,11 @@ CWL_GALAXY_SOURCE = "https://github.com/common-workflow-language/galaxy"
 
 DATABASE_LOCATION_TEMPLATE = "sqlite:///%s?isolation_level=IMMEDIATE"
 
-COMMAND_STARTUP_COMMAND = "./scripts/common_startup.sh ${COMMON_STARTUP_ARGS}"
+COMMAND_STARTUP_COMMAND = './scripts/common_startup.sh ${COMMON_STARTUP_ARGS}'
 
 CLEANUP_IGNORE_ERRORS = True
 DEFAULT_GALAXY_BRAND = 'Configured by Planemo'
+DEFAULT_TOOL_INSTALL_TIMEOUT = 60 * 60 * 1
 
 
 @contextlib.contextmanager
@@ -726,7 +728,7 @@ class BaseGalaxyConfig(GalaxyInterface):
             ready = all(map(status_ready, repos))
             return ready or None
 
-        wait_on(ready, "galaxy tool installation", timeout=60 * 60 * 1)
+        wait_on(ready, "galaxy tool installation", timeout=DEFAULT_TOOL_INSTALL_TIMEOUT)
 
     def install_workflows(self):
         for runnable in self.runnables:
@@ -919,6 +921,13 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         self.galaxy_root = galaxy_root
 
     def kill(self):
+        if self._ctx.verbose:
+            shell(["ps", "ax"])
+            exists = os.path.exists(self.pid_file)
+            print("Killing pid file [%s]" % self.pid_file)
+            print("pid_file exists? [%s]" % exists)
+            if exists:
+                print("pid_file contents are [%s]" % open(self.pid_file, "r").read())
         kill_pid_file(self.pid_file)
 
     def startup_command(self, ctx, **kwds):
@@ -941,7 +950,8 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         if parse_version(kwds.get('galaxy_python_version') or DEFAULT_PYTHON_VERSION) >= parse_version('3'):
             # We need to start under gunicorn
             self.env['APP_WEBSERVER'] = 'gunicorn'
-            self.env['GUNICORN_CMD_ARGS'] = "--bind={host}:{port} --name={server_name}".format(
+            self.env['GUNICORN_CMD_ARGS'] = "--timeout={timeout} --capture-output --bind={host}:{port} --name={server_name}".format(
+                timeout=DEFAULT_TOOL_INSTALL_TIMEOUT,
                 host=kwds.get('host', '127.0.0.1'),
                 port=kwds['port'],
                 server_name=self.server_name,
@@ -1103,7 +1113,9 @@ def _install_galaxy_via_git(ctx, galaxy_root, env, kwds):
     gx_repo = _ensure_galaxy_repository_available(ctx, kwds)
     branch = _galaxy_branch(kwds)
     command = git.command_clone(ctx, gx_repo, galaxy_root, branch=branch)
-    shell(command, env=env)
+    exit_code = shell(command, env=env)
+    if exit_code != 0:
+        raise Exception("Failed to glone Galaxy via git")
     _install_with_command(ctx, galaxy_root, env, kwds)
 
 
@@ -1147,7 +1159,13 @@ def _install_with_command(ctx, galaxy_root, env, kwds):
         setup_common_startup_args(),
         COMMAND_STARTUP_COMMAND,
     )
-    shell(install_cmd, cwd=galaxy_root, env=env)
+    exit_code = shell(install_cmd, cwd=galaxy_root, env=env)
+    if exit_code != 0:
+        raise Exception("Failed to install Galaxy via command [%s]" % install_cmd)
+    if not os.path.exists(galaxy_root):
+        raise Exception("Failed to create Galaxy directory [%s]" % galaxy_root)
+    if not os.path.exists(os.path.join(galaxy_root, "lib")):
+        raise Exception("Failed to create Galaxy directory [%s], lib missing" % galaxy_root)
 
 
 def _ensure_galaxy_repository_available(ctx, kwds):

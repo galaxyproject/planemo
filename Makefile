@@ -1,5 +1,5 @@
 # Default tests run with make test and make quick-tests
-NOSE_TESTS?=tests planemo
+TESTS?=tests planemo
 # Default environment for make tox
 ENV?=py27
 # Extra arguments supplied to tox command
@@ -74,13 +74,13 @@ flake8: ## check style using flake8 for current Python (faster than lint)
 	$(IN_VENV) flake8 $(SOURCE_DIR) $(TEST_DIR)
 
 lint: ## check style using tox and flake8 for Python 2 and Python 3
-	$(IN_VENV) tox -e py27-lint && tox -e py37-lint
+	$(IN_VENV) tox -e py36-lint
 
 test: ## run tests with the default Python (faster than tox)
-	$(IN_VENV) nosetests $(NOSE_TESTS)
+	$(IN_VENV) pytest $(TESTS)
 
 quick-test: ## run quickest tests with the default Python
-	$(IN_VENV) PLANEMO_SKIP_SLOW_TESTS=1 PLANEMO_SKIP_GALAXY_TESTS=1 nosetests $(NOSE_TESTS)
+	$(IN_VENV) PLANEMO_SKIP_SLOW_TESTS=1 PLANEMO_SKIP_GALAXY_TESTS=1 pytest $(TESTS)
 
 tox: ## run tests with tox in the specified ENV, defaults to py27
 	$(IN_VENV) tox -e $(ENV) -- $(ARGS)

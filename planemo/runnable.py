@@ -67,9 +67,11 @@ _Runnable = collections.namedtuple("Runnable", ["path", "type"])
 
 
 class Runnable(_Runnable):
+    """Abstraction describing tools and workflows."""
 
     @property
     def test_data_search_path(self):
+        """During testing, path to search for test data files."""
         if self.type.name in ['galaxy_datamanager']:
             return os.path.join(os.path.dirname(self.path), os.path.pardir)
         else:
@@ -77,19 +79,26 @@ class Runnable(_Runnable):
 
     @property
     def tool_data_search_path(self):
+        """During testing, path to search for Galaxy tool data tables."""
         return self.test_data_search_path
 
     @property
     def data_manager_conf_path(self):
+        """Path of a Galaxy data manager configuration for runnable or None."""
         if self.type.name in ['galaxy_datamanager']:
             return os.path.join(os.path.dirname(self.path), os.pardir, 'data_manager_conf.xml')
 
     @property
     def has_tools(self):
+        """Boolean indicating if this runnable corresponds to one or more tools."""
         return _runnable_delegate_attribute('has_tools')
 
     @property
     def is_single_artifact(self):
+        """Boolean indicating if this runnable is a single artifact.
+
+        Currently only directories are considered not a single artifact.
+        """
         return _runnable_delegate_attribute('is_single_artifact')
 
 
@@ -215,8 +224,7 @@ def cases(runnable):
 
 @add_metaclass(abc.ABCMeta)
 class AbstractTestCase(object):
-    """Description of a test case for a runnable.
-    """
+    """Description of a test case for a runnable."""
 
     def structured_test_data(self, run_response):
         """Result of executing this test case - a "structured_data" dict.
@@ -262,8 +270,7 @@ class TestCase(AbstractTestCase):
             (self.doc, self.runnable, self.job, self.output_expectations, self.tests_directory, self.index)
 
     def structured_test_data(self, run_response):
-        """Check a test case against outputs dictionary.
-        """
+        """Check a test case against outputs dictionary."""
         output_problems = []
         if run_response.was_successful:
             outputs_dict = run_response.outputs_dict
@@ -353,8 +360,7 @@ class TestCase(AbstractTestCase):
 
 
 class ExternalGalaxyToolTestCase(AbstractTestCase):
-    """Special class of AbstractCase that doesn't use job_path but uses test data from a Galaxy server.
-    """
+    """Special class of AbstractCase that doesn't use job_path but uses test data from a Galaxy server."""
 
     def __init__(self, runnable, tool_id, tool_version, test_index, test_dict):
         """Construct TestCase object from required attributes."""
@@ -365,8 +371,7 @@ class ExternalGalaxyToolTestCase(AbstractTestCase):
         self.test_dict = test_dict
 
     def structured_test_data(self, run_response):
-        """Just return the structured_test_data generated from galaxy-tool-util for this test variant.
-        """
+        """Just return the structured_test_data generated from galaxy-tool-util for this test variant."""
         return run_response
 
 
@@ -416,6 +421,7 @@ class RunnableOutput(object):
 
 
 class ToolOutput(RunnableOutput):
+    """Implementation of RunnableOutput corresponding to Galaxy tool outputs."""
 
     def __init__(self, tool_output):
         self._tool_output = tool_output
@@ -425,6 +431,7 @@ class ToolOutput(RunnableOutput):
 
 
 class GalaxyWorkflowOutput(RunnableOutput):
+    """Implementation of RunnableOutput corresponding to Galaxy workflow outputs."""
 
     def __init__(self, workflow_output):
         self._workflow_output = workflow_output
@@ -438,6 +445,7 @@ class GalaxyWorkflowOutput(RunnableOutput):
 
 
 class CwlWorkflowOutput(RunnableOutput):
+    """Implementation of RunnableOutput corresponding to CWL outputs."""
 
     def __init__(self, label):
         self._label = label
@@ -452,7 +460,7 @@ class RunResponse(object):
 
     @abc.abstractproperty
     def was_successful(self):
-        """Indicate whether an error was encountered while executing this runnble.
+        """Indicate whether an error was encountered while executing this runnable.
 
         If successful, response should conform to the SuccessfulRunResponse interface,
         otherwise it will conform to the ErrorRunResponse interface.

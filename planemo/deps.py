@@ -1,3 +1,4 @@
+"""Abstractions for building dependency resolution configurations."""
 import tempfile
 from string import Template
 
