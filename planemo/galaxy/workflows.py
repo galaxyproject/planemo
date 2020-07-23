@@ -93,13 +93,19 @@ def _raw_dict(path, importer=None):
 
 
 def find_tool_ids(path):
-    tool_ids = []
+    tool_ids = set()
     workflow = _raw_dict(path)
-    for step in workflow["steps"].values():
-        tool_id = step.get("tool_id")
-        tool_ids.append(tool_id)
 
-    return tool_ids
+    def register_tool_ids(tool_ids, workflow):
+        for step in workflow["steps"].values():
+            if step.get('subworkflow'):
+                register_tool_ids(tool_ids, step['subworkflow'])
+            elif step.get("tool_id"):
+                tool_ids.add(step['tool_id'])
+
+    register_tool_ids(tool_ids, workflow)
+
+    return list(tool_ids)
 
 
 WorkflowOutput = namedtuple("WorkflowOutput", ["order_index", "output_name", "label"])
