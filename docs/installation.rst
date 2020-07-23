@@ -12,7 +12,7 @@ install with ``pip``. Planemo requires pip 7.0 or newer.
 ::
 
     $ python3 -m venv planemo
-    $ source planemo/bin/activate
+    $ . planemo/bin/activate
     $ pip install planemo
 
 When installed this way, planemo can be upgraded as follows:
