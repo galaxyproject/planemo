@@ -1,6 +1,9 @@
 version: 2
 jobs:
   toxify:
+      parameters:
+        tox-env:
+          type: string
       docker:
         - image: python:3.5
       steps:
