@@ -159,7 +159,7 @@ def galaxy_python_version():
         '--galaxy_python_version',
         use_global_config=True,
         default=None,
-        type=click.Choice(['2', '2.7', '3', '3.5', '3.6', '3.7', '3.8']),
+        type=click.Choice(['3', '3.5', '3.6', '3.7', '3.8']),
         help="Python version to start Galaxy under",
     )
 

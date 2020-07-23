@@ -45,7 +45,6 @@ class ServeTestCase(CliTestCase):
         self._serve_artifact = os.path.join(TEST_REPOS_DIR, "single_tool", "cat.xml")
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-    @skip_if_environ("PLANEMO_SKIP_PYTHON2")
     @mark.tests_galaxy_branch
     def test_serve(self):
         extra_args = [
@@ -54,7 +53,6 @@ class ServeTestCase(CliTestCase):
         self._launch_thread_and_wait(self._run, extra_args)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-    @skip_if_environ("PLANEMO_SKIP_PYTHON3")
     @skip_if_environ("PLANEMO_SKIP_GALAXY_CLIENT_TESTS")
     @skip_unless_executable("python3")
     def test_serve_client_python3(self):
