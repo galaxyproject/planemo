@@ -10,6 +10,7 @@ jobs:
         - checkout
         - run: git submodule sync
         - run: git submodule update --init
+        - run: pip install tox && tox -e << parameters.tox-env >>
 workflows:
   version: 2
   myproj:
