@@ -5,6 +5,7 @@ Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
    planemo.bioconda_scripts
    planemo.commands
@@ -236,6 +237,14 @@ planemo.virtualenv module
 -------------------------
 
 .. automodule:: planemo.virtualenv
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+planemo.workflow\_lint module
+-----------------------------
+
+.. automodule:: planemo.workflow_lint
    :members:
    :undoc-members:
    :show-inheritance:

@@ -196,6 +196,14 @@ planemo.commands.cmd\_docker\_shell module
    :undoc-members:
    :show-inheritance:
 
+planemo.commands.cmd\_dockstore\_init module
+--------------------------------------------
+
+.. automodule:: planemo.commands.cmd_dockstore_init
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 planemo.commands.cmd\_docs module
 ---------------------------------
 
@@ -504,6 +512,14 @@ planemo.commands.cmd\_workflow\_edit module
 -------------------------------------------
 
 .. automodule:: planemo.commands.cmd_workflow_edit
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+planemo.commands.cmd\_workflow\_lint module
+-------------------------------------------
+
+.. automodule:: planemo.commands.cmd_workflow_lint
    :members:
    :undoc-members:
    :show-inheritance:
