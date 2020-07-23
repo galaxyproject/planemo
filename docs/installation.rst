@@ -19,7 +19,7 @@ When installed this way, planemo can be upgraded as follows:
 
 ::
 
-    $ source planemo/bin/activate
+    $ . planemo/bin/activate
     $ pip install -U planemo
 
 To install or update to the latest development branch of planemo with ``pip``, 
