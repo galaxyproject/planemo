@@ -13,7 +13,7 @@ except (ImportError, SyntaxError):
     cwltool = None
 
 try:
-    from cwltool.main import load_tool
+    from cwltool.load_tool import load_tool
 except (ImportError, SyntaxError):
     load_tool = None
 
@@ -46,7 +46,7 @@ def to_script(ctx, path, job_path, **kwds):
 
     job, _ = loader.resolve_ref(uri)
 
-    t = load_tool(path, False, False, cwltool.workflow.defaultMakeTool, True)
+    t = load_tool(path)
 
     if type(t) == int:
         return t
