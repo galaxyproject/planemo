@@ -286,8 +286,11 @@ def assert_exists(path):
 def check_exit_code(runner, command_list, exit_code=0):
     expected_exit_code = exit_code
     planemo_cli = cli.planemo
+    if run_verbosely():
+        print("Invoking command [%s]" % command_list)
     result = runner.invoke(planemo_cli, command_list)
-    print("Command list output is [%s]" % result.output)
+    if run_verbosely():
+        print("Command list output is [%s]" % result.output)
     result_exit_code = result.exit_code
     if expected_exit_code is NON_ZERO_EXIT_CODE:
         matches_expectation = result_exit_code != 0
@@ -306,6 +309,8 @@ def check_exit_code(runner, command_list, exit_code=0):
             tb = traceback.format_exception(exc_type, exc_value,
                                             exc_traceback)
             message += "Traceback [%s]" % tb
+        if run_verbosely():
+            print("Raising assertion error for unexpected exit code [%s]" % message)
         raise AssertionError(message)
     return result
 
