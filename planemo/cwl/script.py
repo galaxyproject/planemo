@@ -4,7 +4,6 @@ import os
 try:
     import schema_salad
 except (ImportError, SyntaxError):
-    # TODO: implement support for Python 2.6 and 3.X
     schema_salad = None
 
 try:
@@ -13,7 +12,7 @@ except (ImportError, SyntaxError):
     cwltool = None
 
 try:
-    from cwltool.main import load_tool
+    from cwltool.load_tool import load_tool
 except (ImportError, SyntaxError):
     load_tool = None
 
@@ -30,10 +29,10 @@ except (ImportError, SyntaxError):
 
 def to_script(ctx, path, job_path, **kwds):
     if schema_salad is None:
-        raise Exception("This functionality requires schema_salad and Python 2.7.")
+        raise Exception("This functionality requires schema_salad.")
 
     if cwltool is None:
-        raise Exception("This functionality requires cwltool and Python 2.7.")
+        raise Exception("This functionality requires cwltool.")
 
     uri = "file://" + os.path.abspath(job_path)
 
@@ -46,7 +45,7 @@ def to_script(ctx, path, job_path, **kwds):
 
     job, _ = loader.resolve_ref(uri)
 
-    t = load_tool(path, False, False, cwltool.workflow.defaultMakeTool, True)
+    t = load_tool(path)
 
     if type(t) == int:
         return t
