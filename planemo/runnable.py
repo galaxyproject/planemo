@@ -124,7 +124,7 @@ def _copy_runnable_tree(path, runnable_type, temp_path):
         path_to_data_manager_tool = os.path.relpath(path, dir_to_copy)
         path = os.path.join(temp_path, path_to_data_manager_tool)
     if dir_to_copy:
-        copy_tree(dir_to_copy, temp_path)
+        copy_tree(dir_to_copy, temp_path, update=True)
     return path
 
 
