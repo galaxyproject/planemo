@@ -1,6 +1,6 @@
 aenum
 BeautifulSoup4
-bioblend>=0.13.0
+bioblend>=0.14.0
 Click
 configparser
 cwltool>=1.0.20191225192155
