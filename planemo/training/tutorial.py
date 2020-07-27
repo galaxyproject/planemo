@@ -59,7 +59,7 @@ HANDS_ON_TOOL_BOX_TEMPLATE = """
 
 > ### {{ '{%' }} icon hands_on {{ '%}' }} Hands-on: Task description
 >
-> 1. **{{tool_name}}** {{ '{%' }} icon tool {{ '%}' }} with the following parameters:{{inputlist}}{{paramlist}}
+> 1. {{ '{%' }} tool [{{tool_name}}]({{tool_id}}) {{ '%}' }} with the following parameters:{{inputlist}}{{paramlist}}
 >
 >    ***TODO***: *Check parameter descriptions*
 >
@@ -627,6 +627,7 @@ def format_wf_steps(wf, gi):
 
     for s in range(len(steps)):
         wf_step = steps[str(s)]
+
         # get params in workflow
         wf_param_values = {}
         if wf_step['tool_state'] and wf_step['input_connections']:
@@ -646,6 +647,7 @@ def format_wf_steps(wf, gi):
         # format the hands-on box
         body += templates.render(HANDS_ON_TOOL_BOX_TEMPLATE, **{
             "tool_name": wf_step['name'],
+            "tool_id": wf_step['tool_id'],
             "paramlist": paramlist})
     return body
 

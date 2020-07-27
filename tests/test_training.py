@@ -242,7 +242,10 @@ def test_generate_tuto_from_wf():
     # with workflow
     train.kwds['workflow'] = WF_FP
     train.generate_tuto_from_wf(CTX)
-    assert_file_contains(train.tuto.tuto_fp, '**FastQC** {% icon tool %} with the following parameters:')
+    assert_file_contains(
+        train.tuto.tuto_fp,
+        "{% tool [FastQC](toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.71) %} with the following parameters:",
+    )
     assert os.path.exists(train.tuto.wf_fp)
     # clean after
     shutil.rmtree(train.topics_dir)
