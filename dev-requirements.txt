@@ -1,3 +1,6 @@
+# Optional Requirements
+toil
+
 # For tests
 flask
 Werkzeug
