@@ -7,11 +7,6 @@ implemented as a subcommand of the ``planemo`` executable. This section of the
 documentation describes these commands.
 
 
-.. include:: commands/bioc_conda_recipe_init.rst
-.. include:: commands/bioc_tool_init.rst
-.. include:: commands/brew.rst
-.. include:: commands/brew_env.rst
-.. include:: commands/brew_init.rst
 .. include:: commands/ci_find_repos.rst
 .. include:: commands/ci_find_tools.rst
 .. include:: commands/clone.rst
@@ -23,11 +18,9 @@ documentation describes these commands.
 .. include:: commands/conda_search.rst
 .. include:: commands/config_init.rst
 .. include:: commands/container_register.rst
-.. include:: commands/cwl_script.rst
 .. include:: commands/database_create.rst
 .. include:: commands/database_delete.rst
 .. include:: commands/database_list.rst
-.. include:: commands/dependency_script.rst
 .. include:: commands/docker_build.rst
 .. include:: commands/docker_shell.rst
 .. include:: commands/docs.rst
@@ -58,7 +51,6 @@ documentation describes these commands.
 .. include:: commands/syntax.rst
 .. include:: commands/test.rst
 .. include:: commands/test_reports.rst
-.. include:: commands/tool_factory.rst
 .. include:: commands/tool_init.rst
 .. include:: commands/training_fill_data_library.rst
 .. include:: commands/training_generate_from_wf.rst

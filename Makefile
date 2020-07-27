@@ -101,11 +101,9 @@ open-history:  # view HISTORY.rst as HTML.
 
 ready-docs:  ## rebuild docs folder ahead of running docs or lint-docs
 	rm -f $(DOCS_DIR)/$(SOURCE_DIR).rst
-	rm -f $(DOCS_DIR)/planemo_ext.rst
 	rm -f $(DOCS_DIR)/modules.rst
 	$(BUILD_SLIDESHOW) 'Galaxy Tool Framework Changes' $(DOCS_DIR)/galaxy_changelog.md
 	$(BUILD_SLIDESHOW) 'Planemo: A Scientific Workflow SDK' $(DOCS_DIR)/presentations/2016_workflows.md
-	$(IN_VENV) sphinx-apidoc -f -o $(DOCS_DIR)/ planemo_ext
 	$(IN_VENV) sphinx-apidoc -f -o $(DOCS_DIR)/ $(SOURCE_DIR) $(SOURCE_DOC_EXCLUDE)
 	$(IN_VENV) python scripts/commands_to_rst.py
 

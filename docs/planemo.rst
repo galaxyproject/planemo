@@ -6,7 +6,6 @@ Subpackages
 
 .. toctree::
 
-   planemo.bioconda_scripts
    planemo.commands
    planemo.conda_verify
    planemo.cwl

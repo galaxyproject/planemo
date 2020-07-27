@@ -44,9 +44,7 @@ TEST_DIR = 'tests'
 PROJECT_DESCRIPTION = 'Command-line utilities to assist in building tools for the Galaxy project (http://galaxyproject.org/).'
 PACKAGES = [
     'planemo',
-    'planemo.bioconda_scripts',
     'planemo.cwl',
-    'planemo.cwl.cwl2script',
     'planemo.commands',
     'planemo.conda_verify',
     'planemo.database',
@@ -66,11 +64,6 @@ ENTRY_POINTS = '''
     planemo=planemo.cli:planemo
 '''
 PACKAGE_DATA = {
-    'planemo_ext': [
-        'tool_factory_2/rgToolFactory2.xml',
-        'tool_factory_2/rgToolFactory2.py',
-        'tool_factory_2/getlocalrpackages.py',
-    ],
     'planemo': [
         'xml/xsd/repository_dependencies.xsd',
         'xml/xsd/tool_dependencies.xsd',
@@ -80,7 +73,6 @@ PACKAGE_DATA = {
 }
 PACKAGE_DIR = {
     SOURCE_DIR: SOURCE_DIR,
-    'planemo_ext': 'planemo_ext'
 }
 
 with open('README.rst') as fh:
