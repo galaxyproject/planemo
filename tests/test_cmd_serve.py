@@ -163,7 +163,8 @@ class ServeTestCase(CliTestCase):
 
     def _launch_thread_and_wait(self, func, args=[], **kwd):
         future = launch_and_wait_for_galaxy(self._port, func, [args], **kwd)
-        self._futures.append(future)
+        if future is not None:
+            self._futures.append(future)
 
     def _run_shed(self, serve_args=[]):
         return self._run(serve_args=serve_args, serve_cmd="shed_serve")

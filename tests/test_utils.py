@@ -374,6 +374,7 @@ def launch_and_wait_for_galaxy(port, func, args=[], timeout=600, timeout_multipl
             else:
                 # Otherwise, daemon started properly. Just wait on wait.
                 wait_future.result()
+                return target_future
     finally:
         executor.shutdown(wait=False)
 
