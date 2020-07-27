@@ -277,10 +277,16 @@ def _print_command_line(test, test_id):
         click.echo("| command: *could not execute job, no command generated* ")
         return
 
+    job = None
     try:
-        command = test["job"]["command_line"]
+        job = test["job"]
     except (KeyError, IndexError):
-        click.echo("| command: *failed to determine command for job* ")
+        click.echo("| command: *failed to find job for test object [%s]" % test)
+        return
+    try:
+        command = job["command_line"]
+    except (KeyError, IndexError):
+        click.echo("| command: *failed to find command_line for job object [%s]" % job)
         return
 
     click.echo("| command: %s" % command)
