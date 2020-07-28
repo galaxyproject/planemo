@@ -4,46 +4,6 @@ planemo.commands package
 Submodules
 ----------
 
-planemo.commands.cmd\_bioc\_conda\_recipe\_init module
-------------------------------------------------------
-
-.. automodule:: planemo.commands.cmd_bioc_conda_recipe_init
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-planemo.commands.cmd\_bioc\_tool\_init module
----------------------------------------------
-
-.. automodule:: planemo.commands.cmd_bioc_tool_init
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-planemo.commands.cmd\_brew module
----------------------------------
-
-.. automodule:: planemo.commands.cmd_brew
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-planemo.commands.cmd\_brew\_env module
---------------------------------------
-
-.. automodule:: planemo.commands.cmd_brew_env
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-planemo.commands.cmd\_brew\_init module
----------------------------------------
-
-.. automodule:: planemo.commands.cmd_brew_init
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 planemo.commands.cmd\_ci\_find\_repos module
 --------------------------------------------
 
@@ -140,14 +100,6 @@ planemo.commands.cmd\_create\_gist module
    :undoc-members:
    :show-inheritance:
 
-planemo.commands.cmd\_cwl\_script module
-----------------------------------------
-
-.. automodule:: planemo.commands.cmd_cwl_script
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 planemo.commands.cmd\_database\_create module
 ---------------------------------------------
 
@@ -168,14 +120,6 @@ planemo.commands.cmd\_database\_list module
 -------------------------------------------
 
 .. automodule:: planemo.commands.cmd_database_list
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-planemo.commands.cmd\_dependency\_script module
------------------------------------------------
-
-.. automodule:: planemo.commands.cmd_dependency_script
    :members:
    :undoc-members:
    :show-inheritance:
@@ -436,14 +380,6 @@ planemo.commands.cmd\_test\_reports module
    :undoc-members:
    :show-inheritance:
 
-planemo.commands.cmd\_tool\_factory module
-------------------------------------------
-
-.. automodule:: planemo.commands.cmd_tool_factory
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 planemo.commands.cmd\_tool\_init module
 ---------------------------------------
 
@@ -520,6 +456,14 @@ planemo.commands.cmd\_workflow\_lint module
 -------------------------------------------
 
 .. automodule:: planemo.commands.cmd_workflow_lint
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+planemo.commands.cmd\_workflow\_test\_init module
+-------------------------------------------------
+
+.. automodule:: planemo.commands.cmd_workflow_test_init
    :members:
    :undoc-members:
    :show-inheritance:

@@ -32,14 +32,6 @@ planemo.bioblend module
    :undoc-members:
    :show-inheritance:
 
-planemo.bioc\_tool\_builder module
-----------------------------------
-
-.. automodule:: planemo.bioc_tool_builder
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 planemo.ci module
 -----------------
 
@@ -68,14 +60,6 @@ planemo.conda\_lint module
 --------------------------
 
 .. automodule:: planemo.conda_lint
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-planemo.conda\_recipes module
------------------------------
-
-.. automodule:: planemo.conda_recipes
    :members:
    :undoc-members:
    :show-inheritance:
@@ -172,14 +156,6 @@ planemo.options module
 ----------------------
 
 .. automodule:: planemo.options
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-planemo.rscript\_parse module
------------------------------
-
-.. automodule:: planemo.rscript_parse
    :members:
    :undoc-members:
    :show-inheritance:
