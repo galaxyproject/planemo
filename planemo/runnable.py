@@ -26,7 +26,7 @@ from six import (
 from planemo.exit_codes import EXIT_CODE_UNKNOWN_FILE_TYPE, ExitCodeException
 from planemo.galaxy.workflows import describe_outputs
 from planemo.io import error
-from planemo.test import check_output
+from planemo.test import check_output, for_collections
 
 TEST_SUFFIXES = [
     "-tests", "_tests", "-test", "_test"
@@ -344,15 +344,23 @@ class TestCase(AbstractTestCase):
                 message = template % (output_id, output_value, output_test)
                 output_problems.append(message)
         else:
-            if not isinstance(output_value, dict):
-                output_problems.append("Expected file properties for output [%s]" % output_id)
-                return
-            if "path" not in output_value and "location" in output_value:
-                assert output_value["location"].startswith("file://")
-                output_value["path"] = output_value["location"][len("file://"):]
-            if "path" not in output_value:
-                output_problems.append("No path specified for expected output file [%s]" % output_id)
-                return
+            if not for_collections(output_test):
+                if not isinstance(output_value, dict):
+                    message = "Expected file properties for output [%s]" % output_id
+                    print(message)
+                    print(output_value)
+                    output_problems.append(message)
+                    return output_problems
+                if "path" not in output_value and "location" in output_value:
+                    assert output_value["location"].startswith("file://")
+                    output_value["path"] = output_value["location"][len("file://"):]
+                if "path" not in output_value:
+                    message = "No path specified for expected output file [%s]" % output_id
+                    output_problems.append(message)
+                    print(message)
+                    return output_problems
+            else:
+                output_test["name"] = output_id
 
             output_problems.extend(
                 check_output(

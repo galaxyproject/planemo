@@ -105,12 +105,7 @@ class CmdTestTestCase(CliTestCase):
                 "--extra_tools", composite_input_imzml,
                 test_artifact,
             ]
-            # try:
             self._check_exit_code(test_command, exit_code=0)
-            # except Exception:
-            #    with open(os.path.join(f, "tool_test_output.json"), "r") as o:
-            #        print(o.read())
-            #    raise
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_workflow_test_collection_inputs(self):
