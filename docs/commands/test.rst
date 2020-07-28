@@ -23,7 +23,7 @@ will search parent directories to see if any is a Galaxy instance
 option or force planemo to download a disposable instance with the
 ``--install_galaxy`` flag.
 
-In additon to to quick summary printed to the console - various detailed
+In addition to to quick summary printed to the console - various detailed
 output summaries can be configured. ``tool_test_output.html`` (settable
 via ``--test_output``) will contain a human consumable HTML report
 describing the test run. A JSON file (settable via ``--test_output_json``

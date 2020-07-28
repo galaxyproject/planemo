@@ -3,12 +3,19 @@ Best Practices for Maintaining Galaxy Workflows
 
 There are a number of things the user interface of Galaxy will allow that are not
 considered best practices because they make the workflow harder to test, use within
-subworkflows and invocation reports, and consume via the API. These best practices
-can be checking with:
+subworkflows and invocation reports, and consume via the API. It is easier to use
+workflows in all of these contexts if they stick to the best practices discussed
+in this document.
+
+Many of these best practices can be checked with Planemo using the follow command:
 
 ::
 
     $ planemo workflow_lint path/to/workflow.ga
+
+If ``workflow_lint`` is sent a directory, it will scan the directory for workflow
+artifacts - including Galaxy workflows and Dockstore ``.dockstore.yml`` files that
+register Galaxy workflows.
 
 Workflow Structure
 ------------------
@@ -22,18 +29,32 @@ A workflow with declared, labelled outputs specifies and explicit interface that
 much easier to consume when building a report for the workflow, testing the workflow,
 using the workflow via the API, and using the workflow as a subworkflow in Galaxy.
 
-TODO: picture of this in the UI.
+.. image:: images/workflow_outputs.png
+   :alt: Screenshot of using workflow outputs in Galaxy workflow editor
+
+The above screenshot demonstrates a MultiQC node with its stats output marked as an
+output and labelled as ``qc_stats``.
+
+.. note:: The Galaxy workflow editor will help you ensure that workflow output labels
+   are unique across a workflow. Also be sure to add labels to your outputs before
+   using a workflow as a subworkflow in another workflow so less stable and less
+   contextualized step indicies and tool output names don't need to be used.
 
 Inputs
 ~~~~~~
 
 Similarly to outputs and for similar reasons, all inputs should be explicit (with
 labelled input nodes) and tool steps should not have disconnected data inputs (even
-though the GUI can handle this) or consume workflow parameters. Runtime parameters
-should only be used for post job actions and newer type workflow parameter inputs
-should be used to manipulate tool logic.
+though the GUI can handle this) or consume workflow parameters. Older style "runtime
+parameters" should only be used for post job actions and newer type workflow parameter
+inputs should be used to manipulate tool logic.
 
-TODO: picture of new input parameters
+.. figure:: https://training.galaxyproject.org/training-material/topics/galaxy-interface/images/workflow_integer_param.gif
+   :alt: Screenshot of using workflow inputs in Galaxy workflow editor
+
+A `full tutorial <https://training.galaxyproject.org/training-material/topics/galaxy-interface/tutorials/workflow-parameters/tutorial.html>`__
+on building Galaxy workflows with newer explicit workflow parameters can be found as
+part of the Galaxy Training Network.
 
 In addition to making the interface easier to use in the context of subworkflows,
 the API, testing, etc.. future enhancements to Galaxy will allow a much simpler
@@ -47,6 +68,13 @@ Tools
 The tools used within a workflow should be packaged with Galaxy by default or published
 to the main Galaxy ToolShed. Using private tool sheds or the test tool shed limits the
 ability of other Galaxy's to use the workflow.
+
+Syntax
+~~~~~~
+
+Planemo ``workflow_lint`` also checks if workflows have the correct JSON or YAML syntax.
+This may be less of a problem for workflows exported from a Galaxy instance but can assist
+with workflows hand-edited for implemented using the newer YAML gxformat2 syntax.
 
 Tests
 -----
@@ -100,7 +128,8 @@ the root of your workflow repository
 Planemo's ``workflow_lint`` will check the contents of your ``.dockstore.yml`` file during
 execution if this file is present.
 
-WorkFlow Hub
+Workflow Hub
 ~~~~~~~~~~~~
 
-Coming soon.
+Information on uploading workflows to `workflowhub.eu <https://workflowhub.eu/>`__ can be found 
+`here <https://about.workflowhub.eu/How-to-register-your-workflow(s)-in-WorkflowHub/>`__.
