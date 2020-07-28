@@ -26,6 +26,7 @@ from planemo.shed import (
 )
 from planemo.shed2tap import base
 from planemo.tool_lint import (
+    build_tool_lint_args,
     handle_tool_load_error,
 )
 from planemo.tools import yield_tool_sources
@@ -60,7 +61,8 @@ def lint_repository(ctx, realized_repository, **kwds):
     failed = False
     path = realized_repository.real_path
     info("Linting repository %s" % path)
-    lint_args, lint_ctx = setup_lint(ctx, **kwds)
+    lint_args = build_tool_lint_args(ctx, **kwds)
+    lint_args, lint_ctx = setup_lint(ctx, lint_args=lint_args, **kwds)
     lint_ctx.lint(
         "lint_expansion",
         lint_expansion,

@@ -21,6 +21,7 @@ Contents:
    test_format
    commands
    standards/docs/best_practices
+   best_practices_workflows
    galaxy_changelog
    conduct
    contributing

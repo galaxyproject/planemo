@@ -104,9 +104,19 @@ class CliTestCase(TestCase):
             self._copy_repo(name, f)
             yield f
 
+    @contextlib.contextmanager
+    def _isolate_with_test_data(self, relative_path):
+        with self._isolate() as f:
+            repo = os.path.join(TEST_DATA_DIR, relative_path)
+            self._copy_directory(repo, f)
+            yield f
+
     def _copy_repo(self, name, dest):
         repo = os.path.join(TEST_REPOS_DIR, name)
-        io.shell(['cp', '-r', "%s/." % repo, dest])
+        self._copy_directory(repo, dest)
+
+    def _copy_directory(self, path, dest):
+        io.shell(['cp', '-r', "%s/." % path, dest])
 
     @property
     def test_context(self):

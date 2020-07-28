@@ -23,6 +23,7 @@ documentation describes these commands.
 .. include:: commands/database_list.rst
 .. include:: commands/docker_build.rst
 .. include:: commands/docker_shell.rst
+.. include:: commands/dockstore_init.rst
 .. include:: commands/docs.rst
 .. include:: commands/lint.rst
 .. include:: commands/list_repos.rst
@@ -59,3 +60,5 @@ documentation describes these commands.
 .. include:: commands/virtualenv.rst
 .. include:: commands/workflow_convert.rst
 .. include:: commands/workflow_edit.rst
+.. include:: commands/workflow_lint.rst
+.. include:: commands/workflow_test_init.rst

@@ -29,5 +29,7 @@ operations over for continuous integration operations.
                                       groups, output the group 0-indexedby this
                                       option.
       --output TEXT                   File to output to, or - for standard output.
+      --group_tools                   Group tools of the same repository on a single
+                                      line.
       --help                          Show this message and exit.
     
