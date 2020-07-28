@@ -31,7 +31,7 @@ and defaulting to ``tool_test_output.json``) will also be created. These
 files can can be disabled by passing in empty arguments or globally by
 setting the values ``default_test_output`` and/or
 ``default_test_output_json`` in ``~/.planemo.yml`` to ``null``. For
-continuous integration testing a xUnit-style report can be confiured using
+continuous integration testing a xUnit-style report can be configured using
 the ``--test_output_xunit``.
 
 planemo uses temporarily generated config files and environment variables

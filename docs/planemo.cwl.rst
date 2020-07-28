@@ -12,14 +12,6 @@ planemo.cwl.run module
    :undoc-members:
    :show-inheritance:
 
-planemo.cwl.script module
--------------------------
-
-.. automodule:: planemo.cwl.script
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 planemo.cwl.toil module
 -----------------------
 
