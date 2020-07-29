@@ -3,8 +3,11 @@
 import os
 
 from planemo.engine import engine_context
-from planemo.runnable import for_path
-from planemo.runnable import get_outputs
+from planemo.runnable import (
+    for_path,
+    get_outputs,
+    RunnableType,
+)
 from .test_utils import test_context, TEST_DATA_DIR
 
 A_CWL_TOOL = os.path.join(TEST_DATA_DIR, "tools", "ok-cat1-tool.cwl")
@@ -45,3 +48,10 @@ def test_outputs():
     assert len(outputs) == 1
     output_id = outputs[0].get_id()
     assert output_id == "count_output"
+
+
+def test_runnable_types():
+    assert RunnableType.galaxy_tool.is_galaxy_artifact
+    assert RunnableType.galaxy_workflow.is_galaxy_artifact
+    assert not RunnableType.cwl_tool.is_galaxy_artifact
+    assert not RunnableType.cwl_workflow.is_galaxy_artifact
