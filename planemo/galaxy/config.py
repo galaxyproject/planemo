@@ -200,6 +200,7 @@ COMMAND_STARTUP_COMMAND = './scripts/common_startup.sh ${COMMON_STARTUP_ARGS}'
 CLEANUP_IGNORE_ERRORS = True
 DEFAULT_GALAXY_BRAND = 'Configured by Planemo'
 DEFAULT_TOOL_INSTALL_TIMEOUT = 60 * 60 * 1
+UNINITIALIZED = object()
 
 
 @contextlib.contextmanager
@@ -627,6 +628,23 @@ class GalaxyInterface(object):
     def workflow_id(self, path):
         """Get installed workflow API ID for input path."""
 
+    @abc.abstractproperty
+    def version_major(self):
+        """Return target Galaxy version."""
+
+    @abc.abstractproperty
+    def user_api_config(self):
+        """Return the API indicated configuration for user session.
+
+        Calling .config.get_config() with admin GI session would yield
+        a different object (admins have different view of Galaxy's
+        configuration).
+        """
+
+    @property
+    def user_is_admin(self):
+        return self.user_api_config["is_admin_user"]
+
 
 @add_metaclass(abc.ABCMeta)
 class GalaxyConfig(GalaxyInterface):
@@ -659,7 +677,11 @@ class GalaxyConfig(GalaxyInterface):
 
     @abc.abstractproperty
     def use_path_paste(self):
-        """Use path paste to upload data."""
+        """Use path paste to upload data.
+
+        This will only be an option if the target user key is an
+        admin user key.
+        """
 
 
 class BaseGalaxyConfig(GalaxyInterface):
@@ -680,6 +702,9 @@ class BaseGalaxyConfig(GalaxyInterface):
         self.runnables = runnables
         self._kwds = kwds
         self._workflow_ids = {}
+
+        self._target_version = UNINITIALIZED
+        self._target_user_config = UNINITIALIZED
 
     @property
     def gi(self):
@@ -767,6 +792,20 @@ class BaseGalaxyConfig(GalaxyInterface):
     @property
     def default_use_path_paste(self):
         return False
+
+    @property
+    def version_major(self):
+        """Return target Galaxy version."""
+        if self._target_version is UNINITIALIZED:
+            self._target_version = self.user_gi.config.get_version()["version_major"]
+        return self._target_version
+
+    @property
+    def user_api_config(self):
+        """Return the API indicated configuration for user session."""
+        if self._target_user_config is UNINITIALIZED:
+            self._target_user_config = self.user_gi.config.get_config()
+        return self._target_user_config
 
 
 class BaseManagedGalaxyConfig(BaseGalaxyConfig):
@@ -989,7 +1028,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
     def default_use_path_paste(self):
         # If Planemo started a local, native Galaxy instance assume files URLs can be
         # pasted.
-        return True
+        return self.user_is_admin
 
 
 def _database_connection(database_location, **kwds):

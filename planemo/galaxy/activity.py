@@ -47,7 +47,7 @@ def execute(ctx, config, runnable, job_path, **kwds):
         return _execute(ctx, config, runnable, job_path, **kwds)
     except Exception as e:
         if ctx.verbose:
-            ctx.vlog("Problem executing Galaxy activity")
+            ctx.vlog("Failed to execute Galaxy activity, throwing ErrorRunResponse")
             traceback.print_exc(file=sys.stdout)
         return ErrorRunResponse(unicodify(e))
 

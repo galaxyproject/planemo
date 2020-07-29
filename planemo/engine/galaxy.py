@@ -34,6 +34,8 @@ class GalaxyEngine(BaseEngine):
         self._ctx.vlog("Serving artifact [%s] with Galaxy." % (runnable,))
         with self.ensure_runnables_served([runnable]) as config:
             self._ctx.vlog("Running job path [%s]" % job_path)
+            if self._ctx.verbose:
+                self._ctx.log("Running Galaxy with API configuration [%s]" % config.user_api_config)
             run_response = execute(self._ctx, config, runnable, job_path, **self._kwds)
 
         return run_response
