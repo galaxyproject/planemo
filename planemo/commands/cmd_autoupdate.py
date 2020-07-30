@@ -33,7 +33,7 @@ def cli(ctx, paths, **kwds):
     exit_codes = []
     for (tool_path, tool_xml) in yield_tool_sources_on_paths(ctx, paths, recursive):
         info("Auto-updating tool %s" % tool_path)
-        tool_xml = autoupdate.begin_update(tool_path, tool_xml)
+        tool_xml = autoupdate.autoupdate(tool_path)
         if handle_tool_load_error(tool_path, tool_xml):
             exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
             continue
