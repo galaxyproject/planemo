@@ -1,5 +1,5 @@
 name: Python CI
-on: [push, pull_request]
+on: [push]
 env:
   PLANEMO_ENABLE_POSTGRES_TESTS: 1
   PLANEMO_SKIP_GALAXY_CWL_TESTS: 1
