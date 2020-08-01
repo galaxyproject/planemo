@@ -103,9 +103,6 @@
   <command interpreter="python"><![CDATA[
 #import os
 #set dev_env = os.environ.get('GALAXY_DEVELOPMENT_ENVIRONMENT', '0') == '1'
-#if not $dev_env and ( $__user_email__ not in $__admin_users__ ):
-$__tool_directory__/rgToolFactory2.py --bad_user $__user_email__
- #else:
 $__tool_directory__/rgToolFactory2.py --script_path "$runme" 
    #if str($interexe.interpreter)=="Executable":
 --exe_package="$interexe.exe_package" --exe_package_version="$interexe.exe_package_version"
@@ -141,7 +138,7 @@ $__tool_directory__/rgToolFactory2.py --script_path "$runme"
 --input_files="$intab.input_files~~~$intab.CL~~~$intab.input_formats~~~$intab.param_label~~~$intab.param_help"
      #end for
    #end if
-#end if 
+
 ]]></command>
   <configfiles>
      <configfile name="runme">
