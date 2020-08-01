@@ -1,0 +1,449 @@
+<tool id="rgTF2" name="toolfactory" version="2.00">
+  <description>Scripts into tools</description>
+  <macros>
+     <xml name="addpar">
+        <param name="edit_params" type="select" display="radio" label="Add all additional parameters to the generated tool form so they are user editable?" 
+             help="If no (default), users will NOT be able to alter any additional parameters. If yes, these will appear on the tool form as text fields with no validation or sanitizing">
+            <option value="yes">Yes, allow user to edit all additional parameters on the generated tool form</option>
+            <option value="no" selected="true">No - use the fixed values for all additional parameters - no user editing</option>
+        </param>
+        <repeat name="additional_history_inputs" title="Additional Current history data files to pass in to the script - Use the '+' button to add as many as needed"
+             help="Each of these will become a history item selector as input for users of the new tool you are making">
+            <param name="input_files" type="data" format="data" label="Select an input file from your history" optional="true" size="120" multiple="false"
+               help=""/>
+            <param name="input_formats" type="select" multiple="true" label="Select the datatype(s) that your tool/script accepts as input"
+              help="If your datatype is not listed here, it has to be added in galaxy's datatypes_conf.xml" value="tabular">
+               <options from_parameter="tool.app.datatypes_registry.upload_file_formats">
+                <column name="value" index="0"/>
+               </options>
+            </param>
+            <param name="param_label" type="text" value="" label="This will become the user prompt for the form so please make it informative" size="60" 
+             help="Note that '~~~' is an internal delimiter so must not appear in this text field - please work around this technical limitation" >
+            <sanitizer invalid_char="">
+              <valid initial="string.printable"> <remove value='~~~'/> </valid>
+              <mapping initial="none"/>
+            </sanitizer>
+            </param>
+            <param name="param_help" type="text" value="parameter_help" label="This will become help text on the form."
+             help="Note that three consecutive ~ cannot be used in this text field - please work around this technical limitation" size="60">
+            <sanitizer invalid_char="">
+              <valid initial="string.printable"> <remove value='~~~'/> </valid>
+              <mapping initial="none"/>
+            </sanitizer>
+            </param>
+            <param name="CL" type="text" size="60" label="Positional: ordinal integer. Argparse: argument name."
+              help="If you will pass positional parameters, enter the integer ordinal for this parameter. If Argparse style, '--' will be prepended or '-' if single character" value="">          
+            </param>
+        </repeat>
+        <repeat name="additional_parameters" title="Pass additional parameters to the script"
+             help="See examples below to see how these can be parsed by scripts in the various languages">
+          <param name="param_name" type="text" value="parameter_name" label="Choose the name for this parameter" size="60">
+            <sanitizer invalid_char="">
+              <valid initial="string.letters,string.digits"/>
+              <mapping initial="none"/> 
+            </sanitizer>
+          </param>
+          <param name="param_type" type="select" label="Select the type for this parameter">
+            <option value="text" selected="true">text</option>
+            <option value="integer">integer</option>
+            <option value="float">float</option>
+          </param>
+          <param name="param_value" type="text" value="parameter_value" label="Enter this parameter's default value" size="60"
+            help="Note that '~~~' is an internal delimiter must not appear in this text field - please work around this technical limitation" >
+            <sanitizer invalid_char="">
+              <valid initial="string.printable"> <remove value='~~~'/> </valid>
+              <mapping initial="none"/>
+            </sanitizer>
+          </param>
+          <param name="param_label" type="text" value="parameter_label" label="Enter this parameter's label for the form" size="60" 
+             help="Note that '~~~' is an internal delimiter so must not appear in this text field - please work around this technical limitation" >
+            <sanitizer invalid_char="">
+              <valid initial="string.printable"> <remove value='~~~'/> </valid>
+              <mapping initial="none"/>
+            </sanitizer>
+          </param>
+          <param name="param_help" type="text" value="parameter_help" label="Help for this parameter"
+             help="Note that three consecutive ~ cannot be used in this text field - please work around this technical limitation" size="60">
+            <sanitizer invalid_char="">
+              <valid initial="string.printable"> <remove value='~~~'/> </valid>
+              <mapping initial="none"/>
+            </sanitizer>
+          </param>
+          <param name="CL" type="text" size="60" label="Positional order (must be integer > 1) or Argument name to be prefixed with '--' or '-' if single letter"
+              help="Using positional parameters, enter the integer ordinal for this parameter on the command line. Using Argparse style, '--' will be prepended on the CL" value="">           
+          </param>
+        </repeat>
+     </xml>
+     <xml name="builtin_dynpar">
+          <param name="dynScript" label="Cut and paste the script to be executed here" type="text" value="" area="True" size="20x120"  
+              help="If there are parameters, either positional or argparse style, the script must parse and use them appropriately">
+              <sanitizer>
+                 <valid initial="string.printable">
+                 </valid>
+                 <mapping initial="none"/>
+              </sanitizer>
+          </param>
+    </xml>
+    <xml name="dynpar">
+          <param name="interpreter_version" type="text" value="" label="Specific script interpreter version to match dependency (Conda) repositories - e.g. for python '3.8.5' Latest if empty" size="60"/>
+          <param name="dynScript" label="Cut and paste the script to be executed here" type="text" value="" area="True" size="20x120"  
+              help="If there are parameters, either positional or argparse style, the script must parse and use them appropriately">
+              <sanitizer>
+                 <valid initial="string.printable">
+                 </valid>
+                 <mapping initial="none"/>
+              </sanitizer>
+          </param>
+    </xml>
+  </macros>
+   <requirements>
+      <requirement type="package">python</requirement>
+      <requirement type="package">galaxyxml</requirement>
+  </requirements>
+  <command interpreter="python"><![CDATA[
+#import os
+#set dev_env = os.environ.get('GALAXY_DEVELOPMENT_ENVIRONMENT', '0') == '1'
+#if not $dev_env and ( $__user_email__ not in $__admin_users__ ):
+$__tool_directory__/rgToolFactory2.py --bad_user $__user_email__
+ #else:
+$__tool_directory__/rgToolFactory2.py --script_path "$runme" 
+   #if str($interexe.interpreter)=="Executable":
+--exe_package="$interexe.exe_package" --exe_package_version="$interexe.exe_package_version"
+   #else:
+--interpreter_name="$interexe.interpreter"
+     #if not str($interexe.interpreter) in ['bash','sh']:
+--interpreter_version="$interexe.interpreter_version"
+     #end if
+   #end if
+--tool_name="$tool_name"  --user_email="$__user_email__" --citations="$citeme"  --parampass="$ppass.parampass"
+--output_tab="$output1" --output_format="$output_format" --output_cl="$output_CL"
+   #if str($makeMode.make_Tool)=="yes":
+--make_Tool="$makeMode.make_Tool"
+--tool_desc="$makeMode.tool_desc"
+--tool_version="$makeMode.tool_version"
+--new_tool="$new_tool"
+--help_text="$helpme"
+   #end if
+   #if $ppass.parampass != '0':
+     #if str($ppass.edit_params) == "yes":
+--edit_additional_parameters
+     #end if
+     #for i in $ppass.additional_parameters:
+--additional_parameters="$i.param_name~~~$i.param_value~~~$i.param_label~~~$i.param_help~~~$i.param_type~~~$i.CL"
+     #end for
+   #end if
+--output_dir="."
+   #if str($input_files) != '':
+--input_files="$input_files~~~$input_CL~~~$input_formats~~~$input_label~~~$input_help"
+   #end if
+   #if $ppass.parampass != '0' and $ppass.additional_history_inputs:
+     #for $intab in $ppass.additional_history_inputs:
+--input_files="$intab.input_files~~~$intab.CL~~~$intab.input_formats~~~$intab.param_label~~~$intab.param_help"
+     #end for
+   #end if
+#end if 
+]]></command>
+  <configfiles>
+     <configfile name="runme">
+         #if $interexe.interpreter != "Executable":
+${interexe.dynScript}
+         #else
+"Not used"
+         #end if
+         </configfile>
+         <configfile name="helpme">
+            #if $makeMode.make_Tool == "yes":
+             ${makeMode.help_text}
+            #end if
+         </configfile>
+         <configfile name="citeme">
+            #if $makeMode.make_Tool == "yes":
+                #for $citation in $makeMode.citations:
+                    #if $citation.citation_type.type == "bibtex":
+                        **ENTRY**bibtex
+                        ${citation.citation_type.bibtex}
+                    #else
+                        **ENTRY**doi
+                        ${citation.citation_type.doi}
+                    #end if
+                #end for
+            #end if
+         </configfile>
+  </configfiles>
+  <inputs>
+
+   <param name="tool_name" type="text" value="My dynamic script"   label="New tool ID and title for outputs" size="60"
+         help="This will become the toolshed repository name so please choose thoughtfully to avoid namespace clashes with other tool writers">
+        <sanitizer invalid_char="">
+            <valid initial="string.letters,string.digits">
+                <add value="_"/>
+            </valid>
+        </sanitizer>
+    </param>
+    <param name="input_files"  format="data" type="data" label="Select a small test input file" optional="true" size="120" multiple="false"
+       help="This will be used to test the new tool to generate a built in test for the generated tool"/>
+    <param name="input_formats" type="select" multiple="true" label="Select the datatype(s) that your tool/script accepts for this input"
+      help="If not listed here, datatypes can be added in galaxy's datatypes_conf.xml." value="tabular">
+       <options from_parameter="tool.app.datatypes_registry.upload_file_formats">
+        <column name="value" index="0"/>
+       </options>
+     </param>
+    <param name="input_label" type="text" value="parameter_label" label="Data input user prompt on the generated tool form" size="60" 
+     help="Describe the input file so the user can understand how it will be used" >
+    <sanitizer invalid_char="">
+      <valid initial="string.printable"> <remove value='~~~'/> </valid>
+      <mapping initial="none"/>
+    </sanitizer>
+    </param>
+    <param name="input_help" type="text" value="parameter_help" label="Data input user help on the generated tool form"
+     help="Enter text to appear as help for the user on the generated tool form" size="60">
+    <sanitizer invalid_char="">
+      <valid initial="string.printable"> <remove value='~~~'/> </valid>
+      <mapping initial="none"/>
+    </sanitizer>
+    </param>
+    <param name="input_CL" type="text" size="60" label="Positional order (must be integer > 1) or Argument name to be prefixed with '--'. Use 'STDIN' if your script reads from STDIN"
+      help="If you will pass positional parameters, enter the integer index for this parameter on the command line. If Argparse style, '--' will be prepended on the CL" value="">         
+    </param>
+    <param name="output_format" type="select" multiple="false" label="Select the Galaxy datatype that your tool/script emits as output for the new history item"
+      help="If your datatype is not listed here, it has to be added in galaxy's datatypes_conf.xml" value="tabular">
+     <options from_parameter="tool.app.datatypes_registry.upload_file_formats">
+        <column name="value" index="0"/>
+     </options>
+    </param>
+    <param name="output_CL" type="text" size="60" label="Positional order (must be integer > 1) or Argument name to be prefixed with '--'. Use 'STDOUT' if your script writes to stdout"
+      help="If you will pass positional parameters, enter the integer index for this parameter on the command line. If Argparse style, '--' will be prepended on the CL" value="">
+     </param>          
+    <conditional name="interexe">
+        <param name="interpreter" type="select" label="For binaries, choose 'Executable'. Otherwise choose the interpreter for your code"
+        help = "If executable, the supplied package will become a requirement so must match the tool dependency resolver package name - conda is the default.">
+            <option value="Executable" selected="true">An executable binary to be provided and managed by the Conda dependency management subsystem</option>
+            <option value="python">python</option>
+            <option value="r-base">Rscript</option>
+            <option value="perl">perl</option>
+            <option value="bash">bash</option>
+            <option value="sh">sh</option>
+        </param>
+        <when value="Executable">
+            <param name="exe_package" type="text" value="" label="Executable package name in dependency (Conda) repositories - e.g. 'bwa'" size="60" optional="false"/>
+            <param name="exe_package_version" type="text" value="" label="Executable package version to match dependency (Conda) repositories - e.g. for bwa='0.7.17'. Latest if empty" size="60"/>
+        </when>
+        <when value = "python">
+           <expand macro="dynpar" />
+        </when>
+        <when value = "r-base">
+           <expand macro="dynpar" />
+        </when>
+        <when value = "perl">
+           <expand macro="dynpar" />
+        </when>
+        <when value = "bash">
+           <expand macro="builtin_dynpar" />
+        </when>
+        <when value = "sh">
+           <expand macro="builtin_dynpar" />
+        </when>
+    </conditional>
+    <conditional name="ppass">
+        <param name="parampass"  type="select" display="radio" label="Command line parameter passing method to use">
+            <option value="argparse" selected="true">Argparse style: on CL in the form of --inputbam="foo.bam" if label below is "inputbam"</option>
+            <option value="positional">Positional: on CL in the order defined on this screen -> "... foo.bam bar.idx zot.xls"</option>
+            <option value="0">No parameters needed because tool reads selected history file from STDIN and writes to STDOUT for history"</option>
+        </param>
+        <when value="0">
+        </when>
+        <when value = "argparse">
+            <expand macro="addpar" />
+        </when>
+        <when value = "positional">
+            <expand macro="addpar" />
+        </when>
+    </conditional>
+    <conditional name="makeMode">
+        <param name="make_Tool" type="select" display="radio" label="Generate new tool as  a tar.gz file ready to upload to a toolshed repository" 
+          help="Generate a toolshed archive - upload to a toolshed from where it can be auto-installed via the Galaxy admin functions" 
+          size="60">
+        <option value="yes">Generate a Galaxy ToolShed compatible toolshed.gz</option>
+        <option value="" selected="true">No. Just run the script please</option>
+        </param>
+        <when value = "yes">
+            <param name="tool_version" label="Tool Version - bump this to warn users trying to redo old analyses" type="text" value="0.01"
+            help="If you change your script and regenerate the 'same' tool, you should inform Galaxy (and users) by changing (bumping is traditional) this number"/>
+            <param name="tool_desc" label="Tool Description" type="text" value="" size="40" 
+             help="Supply a brief tool description for the Galaxy tool menu entry (optional - appears after the tool name)" />
+            <param name="help_text" label="Tool form documentation and help text for users" type="text" area="true" 
+             size="8x120" value="**What it Does**" 
+             help="Supply the brief user documentation to appear on the new tool form as reStructured text - http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html" >           
+                <sanitizer>
+                    <valid initial="string.printable">
+                    </valid>
+                    <mapping initial="none"/>
+                </sanitizer>
+            </param>
+            <repeat name="citations" title="Citation">
+                <conditional name="citation_type">
+                    <param name="type" type="select" display="radio" label="Citation Type">
+                        <option value="doi">DOI</option>
+                        <option value="bibtex">BibTeX</option>
+                    </param>
+                    <when value="doi">
+                        <param name="doi" label="DOI" type="text" value="" 
+                        help="Supply a DOI (e.g. doi: 10.1111/j.1740-9713.2007.00258.x) that should be cited when this tool is used in published research." />
+                    </when>
+                    <when value="bibtex">
+                        <param name="bibtex" label="BibTex" type="text" area="true" size="8x120"
+                            help="Supply a BibTex entry that should be cited when this tool is used in published research." value="" >
+                            <sanitizer>
+                                <valid initial="string.printable">
+                                </valid>
+                                <mapping initial="none"/>
+                            </sanitizer>
+                        </param>
+                    </when>
+                </conditional>
+            </repeat>
+        </when>
+        <when value = "">
+        </when>
+    </conditional> 
+  </inputs>
+  <outputs>
+    <data name="output1" label="${tool_name}.${output_format}" format="tabular" metadata_source="input_file">
+        <actions>
+          <action type="format">
+                <option type="from_param" name="output_format" />
+          </action>
+        </actions>
+    </data>
+    <data format="toolshed.gz" name="new_tool" label="${tool_name}.toolshed.gz">
+        <filter>makeMode['make_Tool'] == "yes"</filter>
+    </data>
+  </outputs>
+
+<tests>
+<test>
+    <param name='input_files' value='infile.tabular' ftype='tabular' />
+    <param name='script_path' value='runme.py' />
+    <param name='tool_name' value='reverseargp2_test1' />
+    <param name='make_Tool' value='yes' />
+    <param name='tool_version' value='0.01' />
+    <param name="tool_desc" value='testing_tf2' />
+    <param name="help_text" value='help text goes here' />
+    <param name="output_format" value="tabular" />
+    <param name="input_formats" value="tabular" />
+    <param name="interpreter" value='python' />
+    <output name='output1' file='reverseargp2_test1_output.xls' compare='diff' lines_diff = '10'/>
+    <output name='new_tool' file="reverseargp2.toolshed.gz" compare="sim_size" delta="600" />
+</test>
+</tests>
+<help>
+    
+.. class:: warningmark
+
+**Details and attribution** 
+(see GTF_)
+
+**Local Admins ONLY** 
+Only users whose IDs found in the local admin_user configuration setting in universe_wsgi.ini can run this tool.
+
+**If you find a bug** 
+Please raise an issue at the bitbucket repository GTFI_
+
+**What it does** 
+This tool optionally generates normal workflow compatible first class Galaxy tools
+
+Generated tools can run existing binary packages that become requirements, existing scripts, or new scripts pasted into this tool form.
+Pasted scripts are written so they are part of the new tool and cannot be adjusted by the downstream user.
+Binary packages are managed by the dependency subsystem - conda usually, so anything in bioconda or conda_forge is available for example.
+
+Any number of parameters can be built into the new tool form for passing in to the script or executable at runtime.
+These can be editable by the downstream user or baked in.
+
+When you run this tool, your executable or script and supplied parameter values will be run to produce a canonical
+set of outputs - these are used to construct a test for the new tool.
+
+If tool generation is required, a new tarball compatible with any Galaxy toolshed is created.
+It can be unpacked in your galaxy/tools directory and manually added to tool_conf.xml, or
+installed into any toolshed from where it can be installed into your Galaxy.
+
+
+.. class:: warningmark
+
+**Note to system administrators** 
+This tool offers *NO* built in protection against malicious scripts. It should only be installed on private/personnal Galaxy instances.
+Admin_users will have the power to do anything they want as the Galaxy user if you install this tool.
+
+.. class:: warningmark
+
+**Use on public servers**  is STRONGLY discouraged for obvious reasons
+
+The tools generated by this tool will run just as securely as any other normal installed Galaxy tool but like any other new tools, should always be checked carefully before installation.
+We recommend that you follow the good code hygiene practices associated with safe toolshed practices.
+
+Here's a sample python script that can be cut and pasted into the tool form, suitable for positional parameter passing:
+
+::
+
+    # reverse order of text by row
+    import sys
+    inp = sys.argv[1]
+    outp = sys.argv[2]
+    i = open(inp,'r').readlines()
+    o = open(outp,'w')
+    for row in i:
+      rs = row.rstrip()
+      rs = list(rs)
+      rs.reverse()
+      o.write(''.join(rs))
+      o.write('\n')
+    o.close()
+
+With argparse style parameters:
+    
+::
+
+    # reverse order of text by row
+    import argparse
+    parser = argparse.ArgumentParser()
+    a = parser.add_argument
+    a('--infile',default='')
+    a('--outfile',default=None)
+    args = parser.parse_args()
+    inp = args.infile
+    outp = args.outfile
+    i = open(inp,'r').readlines()
+    o = open(outp,'w')
+    for row in i:
+      rs = row.rstrip()
+      rs = list(rs)
+      rs.reverse()
+      o.write(''.join(rs))
+      o.write('\n')
+    o.close()
+     
+
+Paper_ :
+
+Creating re-usable tools from scripts: The Galaxy Tool Factory
+Ross Lazarus; Antony Kaspi; Mark Ziemann; The Galaxy Team
+Bioinformatics 2012; doi: 10.1093/bioinformatics/bts573
+
+**Licensing** 
+
+Copyright Ross Lazarus (ross period lazarus at gmail period com) May 2012
+All rights reserved.
+Licensed under the LGPL_
+
+.. _LGPL: http://www.gnu.org/copyleft/lesser.html
+.. _GTF:  https://bitbucket.org/fubar/galaxytoolfactory
+.. _GTFI:  https://bitbucket.org/fubar/galaxytoolfactory/issues
+.. _Paper: http://bioinformatics.oxfordjournals.org/cgi/reprint/bts573
+
+
+</help>
+<citations>
+    <citation type="doi">10.1093/bioinformatics/bts573</citation>
+</citations>
+</tool>
+
+
