@@ -21,7 +21,7 @@ def cli(ctx, **kwds):
     http://www.ncbi.nlm.nih.gov/pubmed/23024011.
     """
     mod_dir = os.path.dirname(__file__)
-    ntf_dir = os.path.join(mod_dir, '..','planemo_ext', 'tool_factory_2','rgToolFactory2.xml')
+    ntf_dir = os.path.join(mod_dir, '..','planemo_ext', 'tool_factory_2')
     tf_dir = os.path.normpath(ntf_dir)
     runnables = for_paths([tf_dir])
     galaxy_serve(ctx, runnables, **kwds)
