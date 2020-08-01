@@ -59,18 +59,25 @@ PACKAGES = [
     'planemo.shed2tap',
     'planemo.test',
     'planemo.training',
-    'planemo.xml',
+    'planemo.xml'
 ]
 ENTRY_POINTS = '''
     [console_scripts]
     planemo=planemo.cli:planemo
 '''
+
+DATA_FILES=[('planemo/planemo_ext/tool_factory_2', [ 
+       'planemo/planemo_ext/tool_factory_2/rgToolFactory2.py',
+       'planemo/planemo_ext/tool_factory_2/rgToolFactory2.xml']),
+       ('planemo/planemo_ext/tool_factory_2/test-data', [
+       'planemo/planemo_ext/tool_factory_2/test-data/infile.tabular',
+       'planemo/planemo_ext/tool_factory_2/test-data/reverseargp2_test1_output.xls',
+       'planemo/planemo_ext/tool_factory_2/test-data/runme.py',
+       'planemo/planemo_ext/tool_factory_2/test-data/reverseargp2.toolshed.gz'
+       ])
+       ]
+
 PACKAGE_DATA = {
-    'planemo_ext': [
-        'tool_factory_2/rgToolFactory2.xml',
-        'tool_factory_2/rgToolFactory2.py',
-        'tool_factory_2/getlocalrpackages.py',
-    ],
     'planemo': [
         'xml/xsd/repository_dependencies.xsd',
         'xml/xsd/tool_dependencies.xsd',
@@ -80,7 +87,7 @@ PACKAGE_DATA = {
 }
 PACKAGE_DIR = {
     SOURCE_DIR: SOURCE_DIR,
-    'planemo_ext': 'planemo_ext'
+    'planemo.planemo_ext': 'planemo.planemo_ext'
 }
 
 with open('README.rst') as fh:
@@ -115,6 +122,7 @@ setup(
     entry_points=ENTRY_POINTS,
     package_data=PACKAGE_DATA,
     package_dir=PACKAGE_DIR,
+    data_files=DATA_FILES,
     include_package_data=True,
     install_requires=requirements,
     license="AFL",
