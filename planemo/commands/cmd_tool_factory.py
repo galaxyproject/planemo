@@ -24,4 +24,4 @@ def cli(ctx, **kwds):
     ntf_dir = os.path.join(mod_dir, '..','planemo_ext', 'tool_factory_2','rgToolFactory.xml')
     tf_dir = os.path.normpath(ntf_dir)
     runnables = for_paths([tf_dir])
-    galaxy_serve(ctx, runnables, **kwds)
+    serve(ctx, runnables, **kwds)
