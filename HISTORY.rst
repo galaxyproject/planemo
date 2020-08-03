@@ -10,14 +10,24 @@ History
 ---------------------
 
 * Drop Python 2 support. `Pull Request 1026`_
+* Rev Galaxy dependencies - including bumping bioblend to 0.14.0, galaxy-tool-util,
+  and unpinning cwltool (last of these thanks to thanks to `@TMiguelT`_).
+  `Pull Request 1038`_, `Pull Request 1034`_
+* Workflow linting, best practices, and tooling to assist in following them.
+  `Pull Request 1028`_, `Pull Request 1049`_, `Pull Request 1051`_
+  `Pull Request 1044`_
+* Substantial rewrites to Galaxy workflow input staging - including allow nested
+  collection and composite inputs to Galaxy for ``run`` and ``test``.
+  `Pull Request 900`_, `Pull Request 1029`_
+* Remove assorted older, likely unused commands. `Pull Request 1043`_
+* Update installation.rst (thanks to `@mblue9`_). `Pull Request 1032`_
 * Automatic PyPI upload on tag using GitHub Actions.
   `Pull Request 994`_
 * Fix quay repository presence check for single target builds.
   `Pull Request 993`_
 * More fine grained options for ``--shed_install`` (thanks to `@AndreasSko`_).
   `Pull Request 1001`_
-* Allow composite inputs to workflows. `Pull Request 900`_
-* Change default python version (thanks to `@bernt-matthias`_).
+* Change default Python version for Galaxy (thanks to `@bernt-matthias`_).
   `Pull Request 1021`_
 * Sort tests by id when merging (thanks to `@bernt-matthias`_).
   `Pull Request 1022`_
@@ -27,23 +37,28 @@ History
 * Add shared data library path to the data upload box for training material
   (thanks to `@shiltemann`_).
   `Pull Request 1013`_
+* Add support for tool versions to tutorial template generator (thanks to
+  `@shiltemann`_). `Pull Request 1041`_
+* Only copy test files if they don't exist. `Pull Request 1037`_
 * Improvements to loading stock tools for workflow testing and serving (
   add new stock tools to list and check subworkflows).
   `Pull Request 1031`_
 * Fix link for composite data type docs (thanks to `@bernt-matthias`_).
   `Pull Request 1020`_
 * Do not use ``gi._make_url()`` internal BioBlend method.
-  `Pull Request 1017`_
 * Switch CWL examples to use https://schema.org/version/latest/schema.rdf
   (thanks to `@mr-c`_).
   `Pull Request 1015`_
 * Fix docs not to claim Galaxy can't run on Python 3.
   `Pull Request 1023`_
+* Improved abstractions around target Galaxy instance. `Pull Request 1046`_
 * Add empty refgenie config for tests (thanks to `@blankenberg`_).
   `Pull Request 1025`_
 * Substantial reworking of testing infrastructure.
   `Pull Request 1024`_, `Pull Request 1003`_,
-  `Pull Request 1011`_, `Pull Request 1006`_
+  `Pull Request 1011`_, `Pull Request 1006`_,
+  `Pull Request 1040`_, `Pull Request 1036`_,
+  `Pull Request 1042`_
 
 ---------------------
 0.70.0 (2020-01-29)
@@ -1577,6 +1592,21 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1051: https://github.com/galaxyproject/planemo/pull/1051
+.. _Pull Request 1049: https://github.com/galaxyproject/planemo/pull/1049
+.. _Pull Request 1046: https://github.com/galaxyproject/planemo/pull/1046
+.. _Pull Request 1044: https://github.com/galaxyproject/planemo/pull/1044
+.. _Pull Request 1043: https://github.com/galaxyproject/planemo/pull/1043
+.. _Pull Request 1042: https://github.com/galaxyproject/planemo/pull/1042
+.. _Pull Request 1041: https://github.com/galaxyproject/planemo/pull/1041
+.. _Pull Request 1040: https://github.com/galaxyproject/planemo/pull/1040
+.. _Pull Request 1038: https://github.com/galaxyproject/planemo/pull/1038
+.. _Pull Request 1037: https://github.com/galaxyproject/planemo/pull/1037
+.. _Pull Request 1036: https://github.com/galaxyproject/planemo/pull/1036
+.. _Pull Request 1034: https://github.com/galaxyproject/planemo/pull/1034
+.. _Pull Request 1032: https://github.com/galaxyproject/planemo/pull/1032
+.. _Pull Request 1029: https://github.com/galaxyproject/planemo/pull/1029
+.. _Pull Request 1028: https://github.com/galaxyproject/planemo/pull/1028
 .. _Pull Request 1031: https://github.com/galaxyproject/planemo/pull/1031
 .. _Pull Request 1026: https://github.com/galaxyproject/planemo/pull/1026
 .. _Pull Request 994: https://github.com/galaxyproject/planemo/pull/994
@@ -2275,3 +2305,5 @@ History
 .. _@ic4f: https://github.com/ic4f
 .. _@martin-raden: https://github.com/martin-raden
 .. _@andreassko: https://github.com/andreassko
+.. _@mblue9: https://github.com/mblue9
+.. _@TMiguelT: https://github.com/TMiguelT
