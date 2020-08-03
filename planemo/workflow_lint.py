@@ -225,10 +225,13 @@ def find_potential_workflow_files(directory):
         raise ValueError("Directory not found {}".format(directory))
 
     matches = []
-    for root, dirnames, filenames in os.walk(directory):
-        # exclude some directories (like .hg) from traversing
-        dirnames[:] = [dir for dir in dirnames if dir not in EXCLUDE_WALK_DIRS]
-        for filename in filenames:
-            if POTENTIAL_WORKFLOW_FILES.match(filename):
-                matches.append(os.path.join(root, filename))
+    if os.path.isdir(directory):
+        for root, dirnames, filenames in os.walk(directory):
+            # exclude some directories (like .hg) from traversing
+            dirnames[:] = [dir for dir in dirnames if dir not in EXCLUDE_WALK_DIRS]
+            for filename in filenames:
+                if POTENTIAL_WORKFLOW_FILES.match(filename):
+                    matches.append(os.path.join(root, filename))
+    else:
+        matches.append(directory)
     return matches
