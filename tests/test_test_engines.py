@@ -100,6 +100,28 @@ def test_galaxy_workflow_collection_output_fail():
 
 @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
 @mark.tests_galaxy_branch
+def test_galaxy_workflow_tags():
+    ctx = t_context()
+    test_artifact = os.path.join(TEST_DATA_DIR, "wf10-tags-and-rules.gxwf.yml")
+    collection_cat_list = os.path.join(TEST_DATA_DIR, "cat_list.xml")
+    runnables = for_paths([test_artifact])
+    kwds = {
+        "engine": "galaxy",
+        "no_dependency_resolution": True,
+        "paste_test_data_paths": False,
+        "galaxy_branch": target_galaxy_branch(),
+        "extra_tools": [collection_cat_list],
+    }
+    exit_code = t_runnables(
+        ctx,
+        runnables,
+        **kwds
+    )
+    assert exit_code == 0
+
+
+@skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+@mark.tests_galaxy_branch
 def test_galaxy_workflow_nested_collection_inputs():
     ctx = t_context()
     test_artifact = os.path.join(TEST_DATA_DIR, "wf8-collection-nested-input.gxwf.yml")
