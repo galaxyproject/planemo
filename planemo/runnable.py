@@ -59,9 +59,15 @@ def _runnable_type_test_data_in_parent_dir(runnable_type):
     return runnable_type.name in ["galaxy_datamanager"]
 
 
+@property
+def _runnable_type_is_galaxy_artifact(runnable_type):
+    return "galaxy" in runnable_type.name
+
+
 RunnableType.has_tools = _runnable_type_has_tools
 RunnableType.is_single_artifact = _runnable_type_is_single_artifact
 RunnableType.test_data_in_parent_dir = _runnable_type_test_data_in_parent_dir
+RunnableType.is_galaxy_artifact = _runnable_type_is_galaxy_artifact
 
 _Runnable = collections.namedtuple("Runnable", ["path", "type"])
 
