@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.71.0.dev0
+0.71.0 (2020-08-03)
 ---------------------
 
 * Drop Python 2 support. `Pull Request 1026`_
