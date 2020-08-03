@@ -147,6 +147,16 @@ be ``File`` and URIs aren't yet tested.
 .. literalinclude:: test_example_composite_input.yml
    :language: yaml
 
+Galaxy Tags
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Tags and group tags play important roles in many Galaxy workflows. These can be tested
+by simply add a list of ``tags:`` to the YAML corresponding to the dataset in the
+collection. The following example demonstrates this:
+
+.. literalinclude:: test_example_tagged_input.yml
+   :language: yaml
+
 ``outputs``
 --------------
 
