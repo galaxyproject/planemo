@@ -14,18 +14,20 @@ def autoupdate(tool_path):
 
     for macro_import in requirements['imports']:
         # recursively check macros
-        macro_requirements = autoupdate(macro_import)
+        macro_requirements = autoupdate('/'.join(tool_path.split('/')[:-1] + [macro_import]))
         for requirement in macro_requirements:
             if requirement not in requirements:
                 requirements[requirement] = macro_requirements[requirement]
 
+    if not requirements.get('@TOOL_VERSION@'):
+        return requirements
     # check main_req is up-to-date; if so, finish without changes
-    updated_main_req = get_latest_versions({requirements['main_req']: requirements['@TOOL_VERSION@']})
-    if updated_main_req[requirements['main_req']] == requirements['@TOOL_VERSION@']:
+    updated_main_req = get_latest_versions({requirements.get('main_req'): requirements.get('@TOOL_VERSION@')})
+    if updated_main_req[requirements.get('main_req')] == requirements.get('@TOOL_VERSION@'):
         return requirements
 
     # if main_req is not up-to-date, update everything
-    updated_version_dict = get_latest_versions(requirements['other_reqs'])
+    updated_version_dict = get_latest_versions(requirements.get('other_reqs'))
     update_requirements(tool_path, xml_tree, updated_version_dict, updated_main_req)
     return requirements
 
