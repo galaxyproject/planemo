@@ -6,7 +6,11 @@ import yaml
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.galaxy.workflows import job_template, new_workflow_associated_path
+from planemo.galaxy.workflows import (
+    job_template,
+    new_workflow_associated_path,
+    output_stubs_for_workflow,
+)
 
 
 @click.command('workflow_test_init')
@@ -30,7 +34,7 @@ def cli(ctx, workflow_path, output=None, force=False, **kwds):
     test_description = [{
          'doc': 'Test outline for %s' % path_basename,
          'job': os.path.basename(job_output),
-         'outputs': {}
+         'outputs': output_stubs_for_workflow(workflow_path)
     }]
     with open(output, "w") as f:
         yaml.dump(test_description, f)
