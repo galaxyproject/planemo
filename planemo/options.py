@@ -692,6 +692,10 @@ def required_workflow_arg():
     return click.argument("workflow_path", metavar="WORKFLOW_PATH", type=arg_type)
 
 
+def split_job_and_test():
+    return click.option("--split_test/--no_split_test", default=False, help="Write workflow job and test definitions to separate files.")
+
+
 def required_job_arg():
     """Decorate click method as requiring the path to a single tool.
     """

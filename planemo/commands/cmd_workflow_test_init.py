@@ -17,8 +17,9 @@ from planemo.galaxy.workflows import (
 @options.required_workflow_arg()
 @options.force_option()
 @options.workflow_output_artifact()
+@options.split_job_and_test()
 @command_function
-def cli(ctx, workflow_path, output=None, force=False, **kwds):
+def cli(ctx, workflow_path, output=None, force=False, split_test=False, **kwds):
     """Initialize a Galaxy workflow test description for supplied workflow.
 
     Be sure to your lint your workflow with ``workflow_lint`` before calling this
@@ -30,13 +31,15 @@ def cli(ctx, workflow_path, output=None, force=False, **kwds):
     job = job_template(workflow_path)
     if output is None:
         output = new_workflow_associated_path(workflow_path)
-    job_output = new_workflow_associated_path(workflow_path, suffix="job1")
     test_description = [{
          'doc': 'Test outline for %s' % path_basename,
-         'job': os.path.basename(job_output),
-         'outputs': output_stubs_for_workflow(workflow_path)
+         'job': job,
+         'outputs': output_stubs_for_workflow(workflow_path),
     }]
+    if split_test:
+        job_output = new_workflow_associated_path(workflow_path, suffix="job1")
+        test_description[0]['job'] = os.path.basename(job_output)
+        with open(job_output, "w") as f_job:
+            yaml.dump(job, f_job)
     with open(output, "w") as f:
         yaml.dump(test_description, f)
-    with open(job_output, "w") as f_job:
-        yaml.dump(job, f_job)
