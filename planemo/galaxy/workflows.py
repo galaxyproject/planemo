@@ -170,6 +170,17 @@ def output_labels(workflow_path):
     return [o["id"] for o in outputs]
 
 
+def output_stubs_for_workflow(workflow_path):
+    """
+    Return output labels and class.
+    """
+    outputs = {}
+    for label in output_labels(workflow_path):
+        if not label.startswith('_anonymous_'):
+            outputs[label] = {'class': ''}
+    return outputs
+
+
 def job_template(workflow_path):
     """Return a job template for specified workflow.
 
