@@ -25,7 +25,7 @@ Outputs
 
 Workflows should define explicit, labelled outputs. Galaxy doesn't require you to
 declare outputs explicitly or label them - but doing so provides a lot of advantages.
-A workflow with declared, labelled outputs specifies and explicit interface that is
+A workflow with declared, labelled outputs specifies an explicit interface that is
 much easier to consume when building a report for the workflow, testing the workflow,
 using the workflow via the API, and using the workflow as a subworkflow in Galaxy.
 
@@ -74,7 +74,7 @@ Syntax
 
 Planemo ``workflow_lint`` also checks if workflows have the correct JSON or YAML syntax.
 This may be less of a problem for workflows exported from a Galaxy instance but can assist
-with workflows hand-edited for implemented using the newer YAML gxformat2 syntax.
+with workflows hand-edited or implemented using the newer YAML gxformat2 syntax.
 
 Tests
 -----
@@ -91,7 +91,7 @@ with the ``workflow_test_init`` command.
 
     $ planemo workflow_test_init path/to/workflow.ga
 
-Publishing 
+Publishing
 ----------
 
 Unlike with Galaxy tools - the Galaxy team doesn't endorse a specific registry for
@@ -131,5 +131,5 @@ execution if this file is present.
 Workflow Hub
 ~~~~~~~~~~~~
 
-Information on uploading workflows to `workflowhub.eu <https://workflowhub.eu/>`__ can be found 
+Information on uploading workflows to `workflowhub.eu <https://workflowhub.eu/>`__ can be found
 `here <https://about.workflowhub.eu/How-to-register-your-workflow(s)-in-WorkflowHub/>`__.
