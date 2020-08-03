@@ -183,6 +183,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         polling_backoff = kwds.get("polling_backoff", 0)
         try:
             final_invocation_state = _wait_for_invocation(ctx, user_gi, history_id, workflow_id, invocation_id, polling_backoff)
+            assert final_invocation_state == 'scheduled'
         except Exception:
             ctx.vlog("Problem waiting on invocation...")
             summarize_history(ctx, user_gi, history_id)
@@ -191,14 +192,17 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         final_state = _wait_for_history(ctx, user_gi, history_id, polling_backoff)
         if final_state != "ok":
             msg = "Failed to run workflow final history state is [%s]." % final_state
+            ctx.vlog(msg)
             summarize_history(ctx, user_gi, history_id)
             with open("errored_galaxy.log", "w") as f:
                 f.write(log_contents_str(config))
-            raise Exception(msg)
-        ctx.vlog("Final history state is 'ok'")
+        else:
+            ctx.vlog("Final history state is 'ok'")
         response_kwds = {
             'workflow_id': workflow_id,
             'invocation_id': invocation_id,
+            'history_state': final_state,
+            'invocation_state': final_invocation_state
         }
     else:
         raise NotImplementedError()
@@ -408,6 +412,10 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         return None
 
     @property
+    def invocation_details(self):
+        return None
+
+    @property
     def outputs_dict(self):
         return self._outputs_dict
 
@@ -500,6 +508,8 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         log,
         workflow_id,
         invocation_id,
+        history_state='ok',
+        invocation_state='ok'
     ):
         super(GalaxyWorkflowRunResponse, self).__init__(
             ctx=ctx,
@@ -510,6 +520,10 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         )
         self._workflow_id = workflow_id
         self._invocation_id = invocation_id
+        self._invocation_details = {}
+        self.history_state = history_state
+        self.invocation_state = invocation_state
+        self.collect_invocation_details()
 
     def to_galaxy_output(self, runnable_output):
         output_id = runnable_output.get_id()
@@ -528,13 +542,31 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         else:
             raise Exception("Failed to find output [%s] in invocation outputs [%s]" % (output_name, invocation["outputs"]))
 
+    def collect_invocation_details(self):
+        gi = self._user_gi
+        invocation_steps = {}
+        for step in self._invocation['steps']:
+            step_label_or_index = "{}. {}".format(step['order_index'], step['workflow_step_label'] or 'Unnamed step')
+            workflow_step = gi.invocations.show_invocation_step(self._invocation_id, step['id'])
+            workflow_step_job_details = [self._user_gi.jobs.show_job(j['id'], full_details=True) for j in workflow_step['jobs']]
+            workflow_step['jobs'] = workflow_step_job_details
+            invocation_steps[step_label_or_index] = workflow_step
+        self._invocation_details = invocation_steps
+
+    @property
+    def invocation_details(self):
+        return self._invocation_details
+
     @property
     def _invocation(self):
-        invocation = self._user_gi.workflows.show_invocation(
-            self._workflow_id,
+        invocation = self._user_gi.invocations.show_invocation(
             self._invocation_id,
         )
         return invocation
+
+    @property
+    def was_successful(self):
+        return self.history_state == 'ok' and self.invocation_state == 'scheduled'
 
 
 def _tool_id(tool_path):
