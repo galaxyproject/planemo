@@ -1,0 +1,20 @@
+class: GalaxyWorkflow
+name: "Test Workflow with integer parameter"
+
+inputs:
+  lines:
+    type: integer
+
+  input1:
+    type: File
+
+outputs:
+  out:
+    outputSource: head/out_file1
+
+steps:
+  head:
+    tool_id: 'Show beginning1'
+    in:
+      input: input1
+      lineNum: lines
