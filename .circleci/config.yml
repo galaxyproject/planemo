@@ -5,7 +5,7 @@ jobs:
         tox-env:
           type: string
       docker:
-        - image: python:3.5
+        - image: python:3.5.9-node
       steps:
         - checkout
         - run: git submodule sync
