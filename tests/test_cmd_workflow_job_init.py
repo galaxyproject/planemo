@@ -8,18 +8,13 @@ from .test_utils import (
 )
 
 
-class CmdWorkflowTestInitTestCase(CliTestCase):
+class CmdWorkflowJobInitTestCase(CliTestCase):
 
     def test_plain_init(self):
         with self._isolate_with_test_data("wf_repos/from_format2/0_basic_native") as f:
-            init_cmd = ["workflow_test_init", "0_basic_native.yml"]
+            init_cmd = ["workflow_job_init", "0_basic_native.yml"]
             self._check_exit_code(init_cmd)
-            test_path = os.path.join(f, "0_basic_native_tests.yml")
-            assert os.path.exists(test_path)
-            with open(test_path, "r") as stream:
-                test_config = yaml.safe_load(stream)
-            assert isinstance(test_config, list)
-            job_path = os.path.join(f, "0_basic_native_job1.yml")
+            job_path = os.path.join(f, "0_basic_native_job.yml")
             assert os.path.exists(job_path)
             with open(job_path, "r") as stream:
                 job = yaml.safe_load(stream)
@@ -28,16 +23,20 @@ class CmdWorkflowTestInitTestCase(CliTestCase):
 
     def test_cannot_overwrite(self):
         with self._isolate_with_test_data("wf_repos/from_format2/0_basic_native") as f:
-            init_cmd = ["workflow_test_init", "0_basic_native.yml"]
-            test_path = os.path.join(f, "0_basic_native_tests.yml")
-            with open(test_path, "w") as f:
+            init_cmd = ["workflow_job_init", "0_basic_native.yml"]
+            job_path = os.path.join(f, "0_basic_native_job.yml")
+            with open(job_path, "w") as f:
                 f.write("already exists")
             self._check_exit_code(init_cmd, exit_code=1)
 
     def test_force(self):
         with self._isolate_with_test_data("wf_repos/from_format2/0_basic_native") as f:
-            init_cmd = ["workflow_test_init", "--force", "0_basic_native.yml"]
-            test_path = os.path.join(f, "0_basic_native_tests.yml")
-            with open(test_path, "w") as f:
+            init_cmd = ["workflow_job_init", "--force", "0_basic_native.yml"]
+            job_path = os.path.join(f, "0_basic_native_job.yml")
+            with open(job_path, "w") as f:
                 f.write("already exists")
-            self._check_exit_code(init_cmd)
+            self._check_exit_code(init_cmd, exit_code=0)
+            with open(job_path, "r") as stream:
+                job = yaml.safe_load(stream)
+            assert isinstance(job, dict)
+            assert "the_input" in job

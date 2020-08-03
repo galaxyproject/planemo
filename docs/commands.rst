@@ -60,5 +60,6 @@ documentation describes these commands.
 .. include:: commands/virtualenv.rst
 .. include:: commands/workflow_convert.rst
 .. include:: commands/workflow_edit.rst
+.. include:: commands/workflow_job_init.rst
 .. include:: commands/workflow_lint.rst
 .. include:: commands/workflow_test_init.rst
