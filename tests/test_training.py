@@ -26,7 +26,7 @@ with open(os.path.join(TEST_DATA_DIR, "training_wf_param_values.json"), "r") as 
     wf_param_values = json.load(wf_param_values_f)
 # configuration
 RUNNABLE = for_path(WF_FP)
-CTX = cli.Context()
+CTX = cli.PlanemoCliContext()
 CTX.planemo_directory = "/tmp/planemo-test-workspace"
 KWDS = {
     'topic_name': 'my_new_topic',
