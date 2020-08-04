@@ -6,6 +6,7 @@ import sys
 import tarfile
 import zipfile
 from ftplib import all_errors as FTPErrors  # tuple of exceptions
+from typing import List
 from xml.etree import ElementTree
 
 from galaxy.util import unicodify
@@ -329,6 +330,8 @@ class ActionPackage(object):
 
 
 class BaseAction(object):
+    _keys = []  # type: List[str]
+    action_type = None  # type: str
 
     def __repr__(self):
         return "Action[type=%s]" % self.action_type
@@ -686,7 +689,7 @@ class ChmodAction(BaseAction):
 
 class MakeInstallAction(BaseAction):
     action_type = "make_install"
-    _keys = []
+    _keys = []  # type: List[str]
 
     def __init__(self, elem):
         pass

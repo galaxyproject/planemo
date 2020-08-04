@@ -94,46 +94,12 @@ def command_function(f):
             )
             _setup_profile_options(ctx, profile_defaults, kwds)
 
-        _setup_galaxy_source_options(args[0], kwds)
-
         try:
             return f(*args, **kwds)
         except ExitCodeException as e:
             sys.exit(e.exit_code)
 
     return pass_context(handle_blended_options)
-
-
-EXCLUSIVE_OPTIONS_LIST = [
-]
-
-
-def _setup_galaxy_source_options(ctx, kwds):
-    for exclusive_options in EXCLUSIVE_OPTIONS_LIST:
-        option_source = {}
-        for option in exclusive_options:
-            if option in kwds:
-                option_source[option] = ctx.get_option_source(option)
-            else:
-                option_source[option] = None
-
-        most_authoratative_source = None
-        most_authoratative_source_options = []
-        for key, value in option_source.items():
-            if value is None:
-                continue
-            if most_authoratative_source is None or value.value < most_authoratative_source.value:
-                most_authoratative_source = value
-                most_authoratative_source_options = [key]
-            elif value == most_authoratative_source:
-                most_authoratative_source_options.append(key)
-
-        if most_authoratative_source != OptionSource.default and len(most_authoratative_source_options) > 1:
-            raise click.UsageError("Cannot specify multiple of %s" % most_authoratative_source_options)
-
-        for option in exclusive_options:
-            if option in kwds and option not in most_authoratative_source_options:
-                del kwds[option]
 
 
 def _setup_profile_options(ctx, profile_defaults, kwds):

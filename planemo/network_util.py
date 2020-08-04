@@ -1,8 +1,5 @@
 import socket
-try:
-    from http.client import BadStatusLine
-except ImportError:
-    from httplib import BadStatusLine
+from http.client import BadStatusLine
 from time import time as now
 
 from six.moves.urllib.error import URLError

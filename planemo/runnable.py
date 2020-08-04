@@ -6,7 +6,7 @@ import abc
 import collections
 import os
 from distutils.dir_util import copy_tree
-from enum import Enum
+from enum import auto, Enum
 
 import yaml
 from galaxy.tool_util.cwl.parser import workflow_proxy
@@ -39,35 +39,30 @@ TEST_FIELD_MISSING_MESSAGE = ("Invalid test definition [test #%d in %s] -"
                               "defintion must field [%s].")
 
 
-RunnableType = Enum(
-    "RunnableType", 'galaxy_tool galaxy_datamanager galaxy_workflow cwl_tool cwl_workflow directory'
-)
+class RunnableType(Enum):
+    galaxy_tool = auto()
+    galaxy_datamanager = auto()
+    galaxy_workflow = auto()
+    cwl_tool = auto()
+    cwl_workflow = auto()
+    directory = auto()
 
+    @property
+    def has_tools(runnable_type):
+        return runnable_type.name in ["galaxy_tool", "galaxy_datamanager", "cwl_tool", "directory"]
 
-@property
-def _runnable_type_has_tools(runnable_type):
-    return runnable_type.name in ["galaxy_tool", "galaxy_datamanager", "cwl_tool", "directory"]
+    @property
+    def is_single_artifact(runnable_type):
+        return runnable_type.name not in ["directory"]
 
+    @property
+    def test_data_in_parent_dir(runnable_type):
+        return runnable_type.name in ["galaxy_datamanager"]
 
-@property
-def _runnable_type_is_single_artifact(runnable_type):
-    return runnable_type.name not in ["directory"]
+    @property
+    def is_galaxy_artifact(runnable_type):
+        return "galaxy" in runnable_type.name
 
-
-@property
-def _runnable_type_test_data_in_parent_dir(runnable_type):
-    return runnable_type.name in ["galaxy_datamanager"]
-
-
-@property
-def _runnable_type_is_galaxy_artifact(runnable_type):
-    return "galaxy" in runnable_type.name
-
-
-RunnableType.has_tools = _runnable_type_has_tools
-RunnableType.is_single_artifact = _runnable_type_is_single_artifact
-RunnableType.test_data_in_parent_dir = _runnable_type_test_data_in_parent_dir
-RunnableType.is_galaxy_artifact = _runnable_type_is_galaxy_artifact
 
 _Runnable = collections.namedtuple("Runnable", ["path", "type"])
 
