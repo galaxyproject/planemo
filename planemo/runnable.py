@@ -336,10 +336,12 @@ class TestCase(AbstractTestCase):
 
     @property
     def input_ids(self):
+        """Labels of inputs specified in test description."""
         return list(self._job.keys())
 
     @property
     def tested_output_ids(self):
+        """Labels of outputs checked in test description."""
         return list(self.output_expectations.keys())
 
     def _check_output(self, output_id, output_value, output_test):

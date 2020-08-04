@@ -32,6 +32,7 @@ IS_OS_X = _platform == "darwin"
 
 
 def args_to_str(args):
+    """Collapse list of arguments in a commmand-line string."""
     if args is None or isinstance(args, string_types):
         return args
     else:
@@ -39,6 +40,11 @@ def args_to_str(args):
 
 
 def communicate(cmds, **kwds):
+    """Execute shell command and wait for output.
+
+    With click-aware I/O handling, pretty display of the command being executed,
+    and formatted exception if the exit code is not 0.
+    """
     cmd_string = args_to_str(cmds)
     info(cmd_string)
     p = commands.shell_process(cmds, **kwds)
@@ -55,34 +61,43 @@ def communicate(cmds, **kwds):
 
 
 def shell(cmds, **kwds):
+    """Print and execute shell command."""
     cmd_string = args_to_str(cmds)
     info(cmd_string)
     return commands.shell(cmds, **kwds)
 
 
 def info(message, *args):
+    """Print stylized info message to the screen."""
     if args:
         message = message % args
     click.echo(click.style(message, bold=True, fg='green'))
 
 
-def can_write_to_path(path, **kwds):
-    if not kwds["force"] and os.path.exists(path):
-        error("%s already exists, exiting." % path)
-        return False
-    return True
-
-
 def error(message, *args):
+    """Print stylized error message to the screen."""
     if args:
         message = message % args
     click.echo(click.style(message, bold=True, fg='red'), err=True)
 
 
 def warn(message, *args):
+    """Print stylized warning message to the screen."""
     if args:
         message = message % args
     click.echo(click.style(message, fg='red'), err=True)
+
+
+def can_write_to_path(path: str, **kwds):
+    """Implement -f/--force logic.
+
+    If supplied path exists, print an error message and return False
+    unless --force caused the 'force' keyword argument to be True.
+    """
+    if not kwds["force"] and os.path.exists(path):
+        error("%s already exists, exiting." % path)
+        return False
+    return True
 
 
 def shell_join(*args):
@@ -192,7 +207,8 @@ def ps1_for_path(path, base="PS1"):
     return ps1
 
 
-def kill_pid_file(pid_file):
+def kill_pid_file(pid_file: str):
+    """Kill process group corresponding to specified pid file."""
     try:
         os.stat(pid_file)
     except OSError as e:
@@ -208,7 +224,8 @@ def kill_pid_file(pid_file):
         pass
 
 
-def kill_posix(pid):
+def kill_posix(pid: int):
+    """Kill process group corresponding to specified pid."""
     def _check_pid():
         try:
             os.kill(pid, 0)
@@ -231,9 +248,10 @@ def kill_posix(pid):
 
 @contextlib.contextmanager
 def conditionally_captured_io(capture, tee=False):
+    """If capture is True, capture stdout and stderr for logging."""
     captured_std = []
     if capture:
-        with Capturing() as captured_std:
+        with _Capturing() as captured_std:
             yield captured_std
         if tee:
             tee_captured_output(captured_std)
@@ -243,6 +261,7 @@ def conditionally_captured_io(capture, tee=False):
 
 @contextlib.contextmanager
 def captured_io_for_xunit(kwds, captured_io):
+    """Capture Planemo I/O and timing for outputting to an xUnit report."""
     captured_std = []
     with_xunit = kwds.get('report_xunit', False)
     with conditionally_captured_io(with_xunit, tee=True):
@@ -264,7 +283,7 @@ def captured_io_for_xunit(kwds, captured_io):
         captured_io["time"] = None
 
 
-class Capturing(list):
+class _Capturing(list):
     """Function context which captures stdout/stderr
 
     This keeps planemo's codebase clean without requiring planemo to hold onto
@@ -295,7 +314,9 @@ class Capturing(list):
 
 
 def tee_captured_output(output):
-    """For messages captured with Capturing, send them to their correct
+    """tee captured standard output and standard error if needed.
+
+    For messages captured with Capturing, send them to their correct
     locations so as to not interfere with normal user experience.
     """
     for message in output:
@@ -307,8 +328,10 @@ def tee_captured_output(output):
 
 
 def wait_on(function, desc, timeout=5, polling_backoff=0):
-    """Wait on given function's readiness. Grow the polling
-    interval incrementally by the polling_backoff."""
+    """Wait on given function's readiness.
+
+    Grow the polling interval incrementally by the polling_backoff.
+    """
     delta = .25
     timing = 0
     while True:
@@ -325,6 +348,7 @@ def wait_on(function, desc, timeout=5, polling_backoff=0):
 
 @contextlib.contextmanager
 def open_file_or_standard_output(path, *args, **kwds):
+    """Open file but respect '-' as referring to stdout."""
     if path == "-":
         yield sys.stdout
     else:
