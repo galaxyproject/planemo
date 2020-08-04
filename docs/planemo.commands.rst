@@ -452,6 +452,14 @@ planemo.commands.cmd\_workflow\_edit module
    :undoc-members:
    :show-inheritance:
 
+planemo.commands.cmd\_workflow\_job\_init module
+------------------------------------------------
+
+.. automodule:: planemo.commands.cmd_workflow_job_init
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 planemo.commands.cmd\_workflow\_lint module
 -------------------------------------------
 
