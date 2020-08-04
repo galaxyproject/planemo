@@ -72,6 +72,14 @@ planemo.config module
    :undoc-members:
    :show-inheritance:
 
+planemo.context module
+----------------------
+
+.. automodule:: planemo.context
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 planemo.deps module
 -------------------
 

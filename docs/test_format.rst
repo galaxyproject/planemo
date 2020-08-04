@@ -148,7 +148,9 @@ be ``File`` and URIs aren't yet tested.
    :language: yaml
 
 Galaxy Tags
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Requires Galaxy 20.09 or newer.**
 
 Tags and group tags play important roles in many Galaxy workflows. These can be tested
 by simply add a list of ``tags:`` to the YAML corresponding to the dataset in the
