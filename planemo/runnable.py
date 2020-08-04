@@ -6,8 +6,8 @@ import abc
 import collections
 import os
 from distutils.dir_util import copy_tree
+from enum import Enum
 
-import aenum
 import yaml
 from galaxy.tool_util.cwl.parser import workflow_proxy
 from galaxy.tool_util.loader_directory import (
@@ -39,7 +39,7 @@ TEST_FIELD_MISSING_MESSAGE = ("Invalid test definition [test #%d in %s] -"
                               "defintion must field [%s].")
 
 
-RunnableType = aenum.Enum(
+RunnableType = Enum(
     "RunnableType", 'galaxy_tool galaxy_datamanager galaxy_workflow cwl_tool cwl_workflow directory'
 )
 

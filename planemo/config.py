@@ -127,7 +127,7 @@ def global_config_path(config_path=None):
     return config_path
 
 
-def read_global_config(config_path):
+def read_global_config(config_path: str):
     config_path = global_config_path(config_path)
     if not os.path.exists(config_path):
         return DEFAULT_CONFIG
