@@ -9,7 +9,16 @@ History
 0.72.0.dev0
 ---------------------
 
-    
+* More documentation/support around running workflows including new command
+  to initialize workflow jobs ``workflow_init_job``.
+  `Pull Request 1052`_
+* Workflow tests and documentation for tagging inputs. `Pull Request 1058`_
+* Various documentation improvements.
+  `Pull Request 1061`_, `Pull Request 1062`_
+* Add mypy type checking. `Pull Request 1060`_
+* Progress decoupling Planemo's core from click & CLI interactions.
+  `Pull Request 1059`_
+* Tests for workflow testing script. `Pull Request 821`_
 
 ---------------------
 0.71.0 (2020-08-03)
@@ -1598,6 +1607,13 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 821: https://github.com/galaxyproject/planemo/pull/821
+.. _Pull Request 1052: https://github.com/galaxyproject/planemo/pull/1052
+.. _Pull Request 1061: https://github.com/galaxyproject/planemo/pull/1061
+.. _Pull Request 1062: https://github.com/galaxyproject/planemo/pull/1062
+.. _Pull Request 1060: https://github.com/galaxyproject/planemo/pull/1060
+.. _Pull Request 1059: https://github.com/galaxyproject/planemo/pull/1059
+.. _Pull Request 1058: https://github.com/galaxyproject/planemo/pull/1058
 .. _Pull Request 1051: https://github.com/galaxyproject/planemo/pull/1051
 .. _Pull Request 1049: https://github.com/galaxyproject/planemo/pull/1049
 .. _Pull Request 1046: https://github.com/galaxyproject/planemo/pull/1046
