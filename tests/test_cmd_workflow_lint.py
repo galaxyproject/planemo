@@ -128,6 +128,11 @@ class CmdWorkflowLintTestCase(CliTestCase):
         lint_cmd = ["workflow_lint", "--skip", "dockstore", repo]
         self._check_exit_code(lint_cmd, exit_code=0)
 
+    def test_lint_test_examples(self):
+        tags_wf = os.path.join(TEST_DATA_DIR, "wf10-tags-and-rules.gxwf.yml")
+        lint_cmd = ["workflow_lint", tags_wf]
+        self._check_exit_code(lint_cmd, exit_code=0)
+
 
 def _wf_repo(rel_path):
     return os.path.join(TEST_DATA_DIR, "wf_repos", rel_path)
