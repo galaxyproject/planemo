@@ -264,7 +264,7 @@ def run_verbosely():
 
 
 def test_context():
-    context = cli.Context()
+    context = cli.PlanemoCliContext()
     context.planemo_directory = "/tmp/planemo-test-workspace"
     context.verbose = run_verbosely()
     return context
