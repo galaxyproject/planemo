@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.72.0.dev0
+0.72.0 (2020-08-04)
 ---------------------
 
 * More documentation/support around running workflows including new command
