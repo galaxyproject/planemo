@@ -1,4 +1,3 @@
-aenum
 BeautifulSoup4
 bioblend>=0.14.0
 Click

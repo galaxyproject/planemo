@@ -17,6 +17,7 @@ jobs:
         tox-action:
           - lint
           - lint_docs
+          - mypy
           - unit-quick
           #- unit-diagnostic-servebasic
           #- unit-diagnostic-servebasic-gx-2005
