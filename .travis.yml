@@ -1,4 +1,5 @@
 language: python
+sudo: true
 matrix:
   include:
     - python: 3.7
@@ -13,11 +14,17 @@ matrix:
       env: TOX_ENV=py37-unit-nonredundant-noclientbuild-noshed-gx-master
     - python: 3.7
       env: TOX_ENV=py37-unit-diagnostic-serveshedcmd-gx-master
+    - python: 3.7
+      env: TOX_ENV=py37-gxwf_test_test
   allow_failures:
     - env: TOX_ENV=py37-lint_docstrings
     - env: TOX_ENV=py37-unit-diagnostic-serveshedcmd-gx-master
+    - env: TOX_ENV=py37-gxwf_test_test PLANEMO_TEST_STYLE=docker_test
 
 install:
   - pip install tox
 
 script: tox -e $TOX_ENV
+services:
+  - postgresql
+  - docker
