@@ -5,8 +5,8 @@ Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
-   planemo.bioconda_scripts
    planemo.commands
    planemo.conda_verify
    planemo.cwl
@@ -28,14 +28,6 @@ planemo.bioblend module
 -----------------------
 
 .. automodule:: planemo.bioblend
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-planemo.bioc\_tool\_builder module
-----------------------------------
-
-.. automodule:: planemo.bioc_tool_builder
    :members:
    :undoc-members:
    :show-inheritance:
@@ -72,18 +64,18 @@ planemo.conda\_lint module
    :undoc-members:
    :show-inheritance:
 
-planemo.conda\_recipes module
------------------------------
-
-.. automodule:: planemo.conda_recipes
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 planemo.config module
 ---------------------
 
 .. automodule:: planemo.config
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+planemo.context module
+----------------------
+
+.. automodule:: planemo.context
    :members:
    :undoc-members:
    :show-inheritance:
@@ -176,14 +168,6 @@ planemo.options module
    :undoc-members:
    :show-inheritance:
 
-planemo.rscript\_parse module
------------------------------
-
-.. automodule:: planemo.rscript_parse
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 planemo.runnable module
 -----------------------
 
@@ -236,6 +220,14 @@ planemo.virtualenv module
 -------------------------
 
 .. automodule:: planemo.virtualenv
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+planemo.workflow\_lint module
+-----------------------------
+
+.. automodule:: planemo.workflow_lint
    :members:
    :undoc-members:
    :show-inheritance:

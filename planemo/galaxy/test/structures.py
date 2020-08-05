@@ -202,15 +202,14 @@ def _parse_num(num_str):
     return num
 
 
-TestId = namedtuple("TestId", ["name", "num", "id"])
+_TestId = namedtuple("TestId", ["name", "num", "id"])
 
 
-@property
-def _label(self):
-    if self.num is not None:
-        return "{0}[{1}]".format(self.name, self.num)
-    else:
-        return self.id
+class TestId(_TestId):
 
-
-TestId.label = _label
+    @property
+    def label(self):
+        if self.num is not None:
+            return "{0}[{1}]".format(self.name, self.num)
+        else:
+            return self.id

@@ -1,0 +1,30 @@
+class: GalaxyWorkflow
+inputs:
+  input_c: collection
+outputs:
+  wf_output_1:
+    outputSource: cat/out_file1
+steps:
+  apply:
+    tool_id: __APPLY_RULES__
+    in:
+      input: input_c
+    state:
+      rules:
+        rules:
+          - type: add_column_metadata
+            value: identifier0
+          - type: add_column_group_tag_value
+            value: which
+            default_value: ''
+          - type: add_filter_matches
+            value: moo
+            target_column: 1
+            invert: false
+        mapping:
+          - type: list_identifiers
+            columns: [0]
+  cat:
+    tool_id: cat_list
+    in:
+      input1: apply/output

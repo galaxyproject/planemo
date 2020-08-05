@@ -10,8 +10,8 @@ try:
 except ImportError:
     from distutils.core import setup
 
-if sys.version_info < (2, 7):
-    sys.stderr.write("ERROR: planemo requires at least Python Version 2.7\n")
+if sys.version_info < (3, 5):
+    sys.stderr.write("ERROR: planemo requires at least Python Version 3.5\n")
     sys.exit(1)
 
 # Allow installer to turn off dependency on lxml by setting the environment variable
@@ -44,9 +44,7 @@ TEST_DIR = 'tests'
 PROJECT_DESCRIPTION = 'Command-line utilities to assist in building tools for the Galaxy project (http://galaxyproject.org/).'
 PACKAGES = [
     'planemo',
-    'planemo.bioconda_scripts',
     'planemo.cwl',
-    'planemo.cwl.cwl2script',
     'planemo.commands',
     'planemo.conda_verify',
     'planemo.database',
@@ -66,11 +64,6 @@ ENTRY_POINTS = '''
     planemo=planemo.cli:planemo
 '''
 PACKAGE_DATA = {
-    'planemo_ext': [
-        'tool_factory_2/rgToolFactory2.xml',
-        'tool_factory_2/rgToolFactory2.py',
-        'tool_factory_2/getlocalrpackages.py',
-    ],
     'planemo': [
         'xml/xsd/repository_dependencies.xsd',
         'xml/xsd/tool_dependencies.xsd',
@@ -80,7 +73,6 @@ PACKAGE_DATA = {
 }
 PACKAGE_DIR = {
     SOURCE_DIR: SOURCE_DIR,
-    'planemo_ext': 'planemo_ext'
 }
 
 with open('README.rst') as fh:
@@ -91,14 +83,11 @@ with open('HISTORY.rst') as fh:
 if os.path.exists("requirements.txt"):
     with open("requirements.txt") as fh:
         requirements = [r for r in fh.read().split("\n") if ";" not in r]
-    with open("requirements.txt") as fh:
-        py27_requirements = [r.split(";", 1)[0].strip() for r in fh.read().split("\n") if ";" in r]
     if not PLANEMO_REQUIRE_LXML:
         requirements.remove("lxml")
 else:
     # In tox, it will cover them anyway.
     requirements = []
-    py27_requirements = []
 
 test_requirements = [
     # TODO: put package test requirements here
@@ -120,9 +109,6 @@ setup(
     package_dir=PACKAGE_DIR,
     include_package_data=True,
     install_requires=requirements,
-    extras_require={
-        ':python_version=="2.7"': py27_requirements,
-    },
     license="AFL",
     zip_safe=False,
     keywords='planemo',
@@ -136,8 +122,6 @@ setup(
         'Topic :: Software Development :: Code Generators',
         'Topic :: Software Development :: Testing',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.7',
         "Programming Language :: Python :: 3",
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',

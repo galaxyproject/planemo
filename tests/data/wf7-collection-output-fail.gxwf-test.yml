@@ -1,0 +1,17 @@
+- doc: Test Explicit Collection Creation.
+  job:
+    input1:
+      class: Collection
+      collection_type: list
+      elements:
+        - identifier: el1
+          class: File
+          path: hello.txt
+  outputs:
+    wf_output_1:
+      attributes: {}
+      element_tests:
+        el1:
+          elements:
+            forward:
+              checksum: "sha1$da39a3ee5e6b4b0d3255bfef95601890afd80708"

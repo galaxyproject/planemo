@@ -175,27 +175,24 @@ yaml.Loader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
 yaml.SafeLoader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
 
 
-ShedContext = namedtuple("ShedContext", ["tsi", "shed_config", "config_owner"])
+_ShedContext = namedtuple("ShedContext", ["tsi", "shed_config", "config_owner"])
 
 
-def _shed_context_owner(self):
-    owner = self.config_owner
-    if owner is None:
-        owner = username(self.tsi)
-    return owner
+class ShedContext(_ShedContext):
 
+    def owner(self):
+        owner = self.config_owner
+        if owner is None:
+            owner = username(self.tsi)
+        return owner
 
-@property
-def _shed_context_label(self):
-    return self.shed_config.get("label") or "tool shed"
-
-
-ShedContext.owner = _shed_context_owner
-ShedContext.label = _shed_context_label
+    @property
+    def label(self):
+        return self.shed_config.get("label") or "tool shed"
 
 
 def shed_init(ctx, path, **kwds):
-    """Intialize a new shed repository."""
+    """Initialize a new shed repository."""
     if not os.path.exists(path):
         os.makedirs(path)
     shed_config_path = os.path.join(path, SHED_CONFIG_NAME)

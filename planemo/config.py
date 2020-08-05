@@ -1,19 +1,20 @@
 """Module defines abstractions for configuring Planemo."""
 
 import os
+from enum import Enum
+from typing import Any, Dict
 
-import aenum
 import click
 import yaml
 
 PLANEMO_CONFIG_ENV_PROP = "PLANEMO_GLOBAL_CONFIG_PATH"
 DEFAULT_CONFIG = {
-}
+}  # type: Dict[str, Any]
 
 VALUE_UNSET = object()
 
 
-OptionSource = aenum.Enum(
+OptionSource = Enum(
     "OptionSource", 'cli profile global_config default'
 )
 
@@ -126,7 +127,7 @@ def global_config_path(config_path=None):
     return config_path
 
 
-def read_global_config(config_path):
+def read_global_config(config_path: str):
     config_path = global_config_path(config_path)
     if not os.path.exists(config_path):
         return DEFAULT_CONFIG

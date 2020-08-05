@@ -4,8 +4,8 @@
       class: File
       filetype: imzml
       composite_data:
-        - Example_Continuous.imzML
-        - Example_Continuous.ibd
+        - path: Example_Continuous.imzML
+        - path: Example_Continuous.ibd
   outputs:
     wf_output_1:
-      file: Example_Continuous.imzML
+      checksum: "sha1$0d2ad51f69d7b5df0f4d2b2a47b17478f2fca509"

@@ -5,21 +5,21 @@ Installation
 pip_
 ============
 
-For a traditional Python 2 installation of Planemo, first set up a virtualenv
-for ``planemo`` (this example creates a new one in ``.venv``) and then
+For a traditional Python installation of Planemo, first set up a virtual environment
+for ``planemo`` (this example creates a new one in ``planemo``) and then
 install with ``pip``. Planemo requires pip 7.0 or newer.
 
 ::
 
-    $ virtualenv .venv; . .venv/bin/activate
-    $ pip install "pip>=7" # Upgrade pip if needed.
+    $ python3 -m venv planemo
+    $ . planemo/bin/activate
     $ pip install planemo
 
 When installed this way, planemo can be upgraded as follows:
 
 ::
 
-    $ . .venv/bin/activate
+    $ . planemo/bin/activate
     $ pip install -U planemo
 
 To install or update to the latest development branch of planemo with ``pip``, 
@@ -34,8 +34,8 @@ consider using the ``virtualenv`` argument ``-p`` to point at a non-Conda Python
 natively on your system or using a tool such pyenv_. ``virtualenv`` can be installed via Conda, pyenv_,
 or a package manager - it should make no difference.
 
-Planemo in theory runs under Python 3 but Galaxy does not, so it is best to use a Python 2 with Planemo
-for now.
+Planemo runs on Python 2.7 and Python 3.5 or newer. Planemo can be used to run multiple versions of Galaxy,
+but please note that the last Galaxy release that fully supports Python 2.7 is 19.09.
 
 Conda_ (Experimental)
 =======================

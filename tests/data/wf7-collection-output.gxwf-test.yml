@@ -7,10 +7,11 @@
         - identifier: el1
           class: File
           path: hello.txt
-  output_collections:
-    - name: wf_output_1
+  outputs:
+    wf_output_1:
       attributes: {}
       element_tests:
         el1:
-          checksum: "sha1$a0b65939670bc2c010f4d5d6a0b3e4e4590fb92b"
-
+          elements:
+            forward:
+              checksum: "sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709"

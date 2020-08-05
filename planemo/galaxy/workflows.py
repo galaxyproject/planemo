@@ -9,6 +9,7 @@ from ephemeris import shed_tools
 from gxformat2.converter import python_to_workflow
 from gxformat2.interface import BioBlendImporterGalaxyInterface
 from gxformat2.interface import ImporterGalaxyInterface
+from gxformat2.normalize import inputs_normalized, outputs_normalized
 
 from planemo.io import warn
 
@@ -93,13 +94,19 @@ def _raw_dict(path, importer=None):
 
 
 def find_tool_ids(path):
-    tool_ids = []
+    tool_ids = set()
     workflow = _raw_dict(path)
-    for step in workflow["steps"].values():
-        tool_id = step.get("tool_id")
-        tool_ids.append(tool_id)
 
-    return tool_ids
+    def register_tool_ids(tool_ids, workflow):
+        for step in workflow["steps"].values():
+            if step.get('subworkflow'):
+                register_tool_ids(tool_ids, step['subworkflow'])
+            elif step.get("tool_id"):
+                tool_ids.add(step['tool_id'])
+
+    register_tool_ids(tool_ids, workflow)
+
+    return list(tool_ids)
 
 
 WorkflowOutput = namedtuple("WorkflowOutput", ["order_index", "output_name", "label"])
@@ -125,6 +132,100 @@ class DummyImporterGalaxyInterface(ImporterGalaxyInterface):
 
     def import_workflow(self, workflow, **kwds):
         return None
+
+
+def input_labels(workflow_path):
+    """Get normalized labels for workflow artifact regardless of format."""
+    steps = inputs_normalized(workflow_path=workflow_path)
+    labels = []
+    for step in steps:
+        step_id = input_label(step)
+        if step_id:
+            labels.append(step_id)
+    return labels
+
+
+def required_input_steps(workflow_path):
+    steps = inputs_normalized(workflow_path=workflow_path)
+    required_steps = []
+    for input_step in steps:
+        if input_step.get("optional", False) or input_step.get("default"):
+            continue
+        required_steps.append(input_step)
+    return required_steps
+
+
+def required_input_labels(workflow_path):
+    return map(input_label, required_input_steps(workflow_path))
+
+
+def input_label(input_step):
+    """Get the normalized label of a step returned from inputs_normalized."""
+    step_id = input_step.get("id") or input_step.get("label")
+    return step_id
+
+
+def output_labels(workflow_path):
+    outputs = outputs_normalized(workflow_path=workflow_path)
+    return [o["id"] for o in outputs]
+
+
+def output_stubs_for_workflow(workflow_path):
+    """
+    Return output labels and class.
+    """
+    outputs = {}
+    for label in output_labels(workflow_path):
+        if not label.startswith('_anonymous_'):
+            outputs[label] = {'class': ''}
+    return outputs
+
+
+def job_template(workflow_path):
+    """Return a job template for specified workflow.
+
+    A dictionary describing non-optional inputs that must be specified to
+    run the workflow.
+    """
+    template = {}
+    for required_input_step in required_input_steps(workflow_path):
+        i_label = input_label(required_input_step)
+        input_type = required_input_step["type"]
+        if input_type == "data_input":
+            template[i_label] = {
+                "class": "File",
+                "path": "todo_test_data_path.ext",
+            }
+        elif input_type == "data_collection_input":
+            template[i_label] = {
+                "class": "Collection",
+                "collection_type": "list",
+                "elements": [
+                    {
+                        "class": "File",
+                        "identifier": "todo_element_name",
+                        "path": "todo_test_data_path.ext",
+                    }
+                ],
+            }
+        else:
+            template[i_label] = {
+                "TODO",  # Does this work yet?
+            }
+    return template
+
+
+def new_workflow_associated_path(workflow_path, suffix="tests"):
+    """Generate path for test or job YAML file next to workflow."""
+    base, input_ext = os.path.splitext(workflow_path)
+    # prefer -tests.yml but if the author uses underscores or .yaml respect that.
+    sep = "-"
+    if "_" in base and "-" not in base:
+        sep = "_"
+    ext = "yml"
+    if "yaml" in input_ext:
+        ext = "yaml"
+    return base + sep + suffix + "." + ext
 
 
 __all__ = (

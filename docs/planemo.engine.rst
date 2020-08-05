@@ -36,6 +36,14 @@ planemo.engine.interface module
    :undoc-members:
    :show-inheritance:
 
+planemo.engine.test module
+--------------------------
+
+.. automodule:: planemo.engine.test
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 planemo.engine.toil module
 --------------------------
 

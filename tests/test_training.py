@@ -3,12 +3,11 @@ import json
 import os
 import shutil
 
-from nose.tools import assert_raises_regexp
-
 from planemo import cli
 from planemo.runnable import for_path
 from planemo.training import Training
 from .test_utils import (
+    assert_raises_regexp,
     skip_if_environ,
     TEST_DATA_DIR,
 )
@@ -27,7 +26,7 @@ with open(os.path.join(TEST_DATA_DIR, "training_wf_param_values.json"), "r") as 
     wf_param_values = json.load(wf_param_values_f)
 # configuration
 RUNNABLE = for_path(WF_FP)
-CTX = cli.Context()
+CTX = cli.PlanemoCliContext()
 CTX.planemo_directory = "/tmp/planemo-test-workspace"
 KWDS = {
     'topic_name': 'my_new_topic',
@@ -95,6 +94,7 @@ KWDS = {
     'shed_install': True,
     'shed_tool_conf': None,
     'shed_tool_path': None,
+    'skip_client_build': True,
     'skip_venv': False,
     'test_data': None,
     'tool_data_table': None,
@@ -242,7 +242,10 @@ def test_generate_tuto_from_wf():
     # with workflow
     train.kwds['workflow'] = WF_FP
     train.generate_tuto_from_wf(CTX)
-    assert_file_contains(train.tuto.tuto_fp, '**FastQC** {% icon tool %} with the following parameters:')
+    assert_file_contains(
+        train.tuto.tuto_fp,
+        "{% tool [FastQC](toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.71) %} with the following parameters:",
+    )
     assert os.path.exists(train.tuto.wf_fp)
     # clean after
     shutil.rmtree(train.topics_dir)

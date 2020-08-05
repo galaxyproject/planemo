@@ -28,7 +28,7 @@ Create tutorial skeleton from workflow.
       --workflow_id TEXT              ID of the workflow on the Galaxy instance
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
-      --galaxy_python_version [2|2.7|3|3.5|3.6|3.7|3.8]
+      --galaxy_python_version [3|3.5|3.6|3.7|3.8]
                                       Python version to start Galaxy under
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be
@@ -162,6 +162,8 @@ Create tutorial skeleton from workflow.
                                       likely indicate a problem but in some cases
                                       may not prevent a workflow from successfully
                                       executing.
+      --skip_client_build             Do not build Galaxy client when serving
+                                      Galaxy.
       --shed_install / --no_shed_install
                                       By default Planemo will attempt to install
                                       repositories needed for workflow testing. This

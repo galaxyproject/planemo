@@ -1,10 +1,13 @@
+# Optional Requirements
+toil
+
 # For tests
 flask
 Werkzeug
 
 # For testing
 tox
-nose
+pytest
 coverage
 
 #Building Docs

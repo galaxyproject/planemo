@@ -4,6 +4,7 @@ import abc
 import json
 import os
 import tempfile
+from typing import List
 
 from six import add_metaclass
 
@@ -12,6 +13,7 @@ from planemo.io import error
 from planemo.runnable import (
     cases,
     for_path,
+    RunnableType,
 )
 from planemo.test.results import StructuredData
 
@@ -37,7 +39,7 @@ class Engine(object):
 class BaseEngine(Engine):
     """Base class providing context and keywords for Engine implementations."""
 
-    handled_runnable_types = []
+    handled_runnable_types = []  # type: List[RunnableType]
 
     def __init__(self, ctx, **kwds):
         """Store context and kwds."""

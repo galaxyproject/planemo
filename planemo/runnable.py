@@ -6,8 +6,8 @@ import abc
 import collections
 import os
 from distutils.dir_util import copy_tree
+from enum import auto, Enum
 
-import aenum
 import yaml
 from galaxy.tool_util.cwl.parser import workflow_proxy
 from galaxy.tool_util.loader_directory import (
@@ -26,7 +26,7 @@ from six import (
 from planemo.exit_codes import EXIT_CODE_UNKNOWN_FILE_TYPE, ExitCodeException
 from planemo.galaxy.workflows import describe_outputs
 from planemo.io import error
-from planemo.test import check_output
+from planemo.test import check_output, for_collections
 
 TEST_SUFFIXES = [
     "-tests", "_tests", "-test", "_test"
@@ -39,37 +39,40 @@ TEST_FIELD_MISSING_MESSAGE = ("Invalid test definition [test #%d in %s] -"
                               "defintion must field [%s].")
 
 
-RunnableType = aenum.Enum(
-    "RunnableType", 'galaxy_tool galaxy_datamanager galaxy_workflow cwl_tool cwl_workflow directory'
-)
+class RunnableType(Enum):
+    galaxy_tool = auto()
+    galaxy_datamanager = auto()
+    galaxy_workflow = auto()
+    cwl_tool = auto()
+    cwl_workflow = auto()
+    directory = auto()
 
+    @property
+    def has_tools(runnable_type):
+        return runnable_type.name in ["galaxy_tool", "galaxy_datamanager", "cwl_tool", "directory"]
 
-@property
-def _runnable_type_has_tools(runnable_type):
-    return runnable_type.name in ["galaxy_tool", "galaxy_datamanager", "cwl_tool", "directory"]
+    @property
+    def is_single_artifact(runnable_type):
+        return runnable_type.name not in ["directory"]
 
+    @property
+    def test_data_in_parent_dir(runnable_type):
+        return runnable_type.name in ["galaxy_datamanager"]
 
-@property
-def _runnable_type_is_single_artifact(runnable_type):
-    return runnable_type.name not in ["directory"]
+    @property
+    def is_galaxy_artifact(runnable_type):
+        return "galaxy" in runnable_type.name
 
-
-@property
-def _runnable_type_test_data_in_parent_dir(runnable_type):
-    return runnable_type.name in ["galaxy_datamanager"]
-
-
-RunnableType.has_tools = _runnable_type_has_tools
-RunnableType.is_single_artifact = _runnable_type_is_single_artifact
-RunnableType.test_data_in_parent_dir = _runnable_type_test_data_in_parent_dir
 
 _Runnable = collections.namedtuple("Runnable", ["path", "type"])
 
 
 class Runnable(_Runnable):
+    """Abstraction describing tools and workflows."""
 
     @property
     def test_data_search_path(self):
+        """During testing, path to search for test data files."""
         if self.type.name in ['galaxy_datamanager']:
             return os.path.join(os.path.dirname(self.path), os.path.pardir)
         else:
@@ -77,19 +80,26 @@ class Runnable(_Runnable):
 
     @property
     def tool_data_search_path(self):
+        """During testing, path to search for Galaxy tool data tables."""
         return self.test_data_search_path
 
     @property
     def data_manager_conf_path(self):
+        """Path of a Galaxy data manager configuration for runnable or None."""
         if self.type.name in ['galaxy_datamanager']:
             return os.path.join(os.path.dirname(self.path), os.pardir, 'data_manager_conf.xml')
 
     @property
     def has_tools(self):
+        """Boolean indicating if this runnable corresponds to one or more tools."""
         return _runnable_delegate_attribute('has_tools')
 
     @property
     def is_single_artifact(self):
+        """Boolean indicating if this runnable is a single artifact.
+
+        Currently only directories are considered not a single artifact.
+        """
         return _runnable_delegate_attribute('is_single_artifact')
 
 
@@ -115,7 +125,7 @@ def _copy_runnable_tree(path, runnable_type, temp_path):
         path_to_data_manager_tool = os.path.relpath(path, dir_to_copy)
         path = os.path.join(temp_path, path_to_data_manager_tool)
     if dir_to_copy:
-        copy_tree(dir_to_copy, temp_path)
+        copy_tree(dir_to_copy, temp_path, update=True)
     return path
 
 
@@ -136,6 +146,15 @@ def for_path(path, temp_path=None):
         runnable_type = RunnableType.galaxy_workflow
     elif looks_like_a_cwl_artifact(path, ["Workflow"]):
         runnable_type = RunnableType.cwl_workflow
+    else:
+        # Check to see if it is a Galaxy workflow with a different extension
+        try:
+            with open(path, "r") as f:
+                as_dict = yaml.safe_load(f)
+            if as_dict.get("a_galaxy_workflow", False):
+                runnable_type = RunnableType.galaxy_workflow
+        except Exception:
+            pass
 
     if runnable_type is None:
         error("Unable to determine runnable type for path [%s]" % path)
@@ -215,8 +234,7 @@ def cases(runnable):
 
 @add_metaclass(abc.ABCMeta)
 class AbstractTestCase(object):
-    """Description of a test case for a runnable.
-    """
+    """Description of a test case for a runnable."""
 
     def structured_test_data(self, run_response):
         """Result of executing this test case - a "structured_data" dict.
@@ -262,8 +280,7 @@ class TestCase(AbstractTestCase):
             (self.doc, self.runnable, self.job, self.output_expectations, self.tests_directory, self.index)
 
     def structured_test_data(self, run_response):
-        """Check a test case against outputs dictionary.
-        """
+        """Check a test case against outputs dictionary."""
         output_problems = []
         if run_response.was_successful:
             outputs_dict = run_response.outputs_dict
@@ -312,6 +329,16 @@ class TestCase(AbstractTestCase):
         else:
             return self.job
 
+    @property
+    def input_ids(self):
+        """Labels of inputs specified in test description."""
+        return list(self._job.keys())
+
+    @property
+    def tested_output_ids(self):
+        """Labels of outputs checked in test description."""
+        return list(self.output_expectations.keys())
+
     def _check_output(self, output_id, output_value, output_test):
         output_problems = []
         if not isinstance(output_test, dict):
@@ -320,15 +347,23 @@ class TestCase(AbstractTestCase):
                 message = template % (output_id, output_value, output_test)
                 output_problems.append(message)
         else:
-            if not isinstance(output_value, dict):
-                output_problems.append("Expected file properties for output [%s]" % output_id)
-                return
-            if "path" not in output_value and "location" in output_value:
-                assert output_value["location"].startswith("file://")
-                output_value["path"] = output_value["location"][len("file://"):]
-            if "path" not in output_value:
-                output_problems.append("No path specified for expected output file [%s]" % output_id)
-                return
+            if not for_collections(output_test):
+                if not isinstance(output_value, dict):
+                    message = "Expected file properties for output [%s]" % output_id
+                    print(message)
+                    print(output_value)
+                    output_problems.append(message)
+                    return output_problems
+                if "path" not in output_value and "location" in output_value:
+                    assert output_value["location"].startswith("file://")
+                    output_value["path"] = output_value["location"][len("file://"):]
+                if "path" not in output_value:
+                    message = "No path specified for expected output file [%s]" % output_id
+                    output_problems.append(message)
+                    print(message)
+                    return output_problems
+            else:
+                output_test["name"] = output_id
 
             output_problems.extend(
                 check_output(
@@ -353,8 +388,7 @@ class TestCase(AbstractTestCase):
 
 
 class ExternalGalaxyToolTestCase(AbstractTestCase):
-    """Special class of AbstractCase that doesn't use job_path but uses test data from a Galaxy server.
-    """
+    """Special class of AbstractCase that doesn't use job_path but uses test data from a Galaxy server."""
 
     def __init__(self, runnable, tool_id, tool_version, test_index, test_dict):
         """Construct TestCase object from required attributes."""
@@ -365,8 +399,7 @@ class ExternalGalaxyToolTestCase(AbstractTestCase):
         self.test_dict = test_dict
 
     def structured_test_data(self, run_response):
-        """Just return the structured_test_data generated from galaxy-tool-util for this test variant.
-        """
+        """Just return the structured_test_data generated from galaxy-tool-util for this test variant."""
         return run_response
 
 
@@ -416,6 +449,7 @@ class RunnableOutput(object):
 
 
 class ToolOutput(RunnableOutput):
+    """Implementation of RunnableOutput corresponding to Galaxy tool outputs."""
 
     def __init__(self, tool_output):
         self._tool_output = tool_output
@@ -425,6 +459,7 @@ class ToolOutput(RunnableOutput):
 
 
 class GalaxyWorkflowOutput(RunnableOutput):
+    """Implementation of RunnableOutput corresponding to Galaxy workflow outputs."""
 
     def __init__(self, workflow_output):
         self._workflow_output = workflow_output
@@ -438,6 +473,7 @@ class GalaxyWorkflowOutput(RunnableOutput):
 
 
 class CwlWorkflowOutput(RunnableOutput):
+    """Implementation of RunnableOutput corresponding to CWL outputs."""
 
     def __init__(self, label):
         self._label = label
@@ -452,7 +488,7 @@ class RunResponse(object):
 
     @abc.abstractproperty
     def was_successful(self):
-        """Indicate whether an error was encountered while executing this runnble.
+        """Indicate whether an error was encountered while executing this runnable.
 
         If successful, response should conform to the SuccessfulRunResponse interface,
         otherwise it will conform to the ErrorRunResponse interface.

@@ -6,10 +6,10 @@ import os
 import sys
 
 import virtualenv
-from galaxy.tool_util.deps.commands import which
+from galaxy.util.commands import which
 
 
-DEFAULT_PYTHON_VERSION = os.environ.get("PLANEMO_DEFAULT_PYTHON_VERSION", "2.7")
+DEFAULT_PYTHON_VERSION = os.environ.get("PLANEMO_DEFAULT_PYTHON_VERSION", "3")
 
 
 def create_and_exit(virtualenv_path, **kwds):

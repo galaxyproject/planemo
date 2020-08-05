@@ -4,7 +4,8 @@
    :figwidth: 100%
    :target: https://github.com/galaxyproject/planemo
 
-Command-line utilities to assist in developing Galaxy_ and `Common Workflow Language`_ tools.
+Command-line utilities to assist in developing Galaxy_ and `Common Workflow Language`_ artifacts -
+including tools, workflows, and training materials.
 
 .. image:: https://readthedocs.org/projects/planemo/badge/?version=latest
    :target: http://planemo.readthedocs.io/en/latest/?badge=latest
@@ -14,22 +15,16 @@ Command-line utilities to assist in developing Galaxy_ and `Common Workflow Lang
    :target: https://pypi.python.org/pypi/planemo/
    :alt: Planemo on the Python Package Index (PyPI)
 
+.. image:: https://github.com/galaxyproject/gxformat2/workflows/Python%20CI/badge.svg
+   :target: https://github.com/galaxyproject/gxformat2/actions?query=workflow%3A%22Python+CI%22
+
 .. image:: https://travis-ci.org/galaxyproject/planemo.png?branch=master
    :target: https://travis-ci.org/galaxyproject/planemo
    :alt: Build Status
 
-.. image:: https://travis-ci.org/jmchilton/planemo-extended-tests.svg?branch=master
-    :target: https://travis-ci.org/jmchilton/planemo-extended-tests
-    :alt: Build Status of Extended Tests
-
-.. image:: https://coveralls.io/repos/galaxyproject/planemo/badge.svg?branch=master
-   :target: https://coveralls.io/r/galaxyproject/planemo?branch=master
-   :alt: Coverage Status
-
 * Free software: Academic Free License version 3.0
 * Documentation: https://planemo.readthedocs.io.
 * Code: https://github.com/galaxyproject/planemo
-
 
 Quick Start
 -----------
@@ -125,6 +120,12 @@ with ``--install_galaxy``.
 For more information on building Galaxy tools in general please check out
 `Building Galaxy Tools Using Planemo`_.
 
+For more information on developing Galaxy workflows with Planemo checkout
+`best practices for Galaxy Workflows`_ and the description of Planemo's
+`test format`_. For information on developing Galaxy training materials
+checkout the `contributing documentation <https://training.galaxyproject.org/training-material/topics/contributing/>`__
+on training.galaxyproject.org.
+
 ----------------------------------
 Basics - Common Workflow Language
 ----------------------------------
@@ -214,4 +215,5 @@ scientific workflows. Check out the `Galaxy <http://planemo.readthedocs.io/en/la
 .. _Commmon Workflow User Guide: http://www.commonwl.org/user_guide/
 .. _Building Common Workflow Language Tools: http://planemo.readthedocs.io/en/latest/writing_cwl_standalone.html
 .. _OVA: https://en.wikipedia.org/wiki/Open_Virtualization_Format
-
+.. _test format: https://planemo.readthedocs.io/en/latest/test_format.html
+.. _best practices for Galaxy Workflows: https://planemo.readthedocs.io/en/latest/best_practices_workflows.html

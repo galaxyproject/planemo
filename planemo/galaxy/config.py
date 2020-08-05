@@ -12,7 +12,7 @@ from tempfile import mkdtemp
 
 from galaxy.containers.docker_model import DockerVolume
 from galaxy.tool_util.deps import docker_util
-from galaxy.tool_util.deps.commands import argv_to_str
+from galaxy.util.commands import argv_to_str
 from pkg_resources import parse_version
 from six import (
     add_metaclass,
@@ -70,6 +70,7 @@ use_threadpool = True
 threadpool_kill_thread_limit = 10800
 [app:main]
 paste.app_factory = galaxy.web.buildapp:app_factory
+static_dir = static/
 """
 
 TOOL_CONF_TEMPLATE = """<toolbox>
@@ -179,6 +180,12 @@ formatter = generic
 format = %(asctime)s %(levelname)-5.5s [%(name)s] %(message)s
 """
 
+REFGENIE_CONFIG_TEMPLATE = """
+config_version: 0.3
+genome_folder: '%s'
+genome_servers: ['http://refgenomes.databio.org']
+genomes: null
+"""
 
 EMPTY_TOOL_CONF_TEMPLATE = """<toolbox></toolbox>"""
 
@@ -188,10 +195,12 @@ CWL_GALAXY_SOURCE = "https://github.com/common-workflow-language/galaxy"
 
 DATABASE_LOCATION_TEMPLATE = "sqlite:///%s?isolation_level=IMMEDIATE"
 
-COMMAND_STARTUP_COMMAND = "./scripts/common_startup.sh ${COMMON_STARTUP_ARGS}"
+COMMAND_STARTUP_COMMAND = './scripts/common_startup.sh ${COMMON_STARTUP_ARGS}'
 
 CLEANUP_IGNORE_ERRORS = True
 DEFAULT_GALAXY_BRAND = 'Configured by Planemo'
+DEFAULT_TOOL_INSTALL_TIMEOUT = 60 * 60 * 1
+UNINITIALIZED = object()
 
 
 @contextlib.contextmanager
@@ -223,6 +232,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
         ensure_dependency_resolvers_conf_configured(ctx, kwds, os.path.join(config_directory, "resolvers_conf.xml"))
         _handle_job_metrics(config_directory, kwds)
+        _handle_refgenie_config(config_directory, kwds)
 
         shed_tool_conf = "config/shed_tool_conf.xml"
         all_tool_paths = _all_tool_paths(runnables, **kwds)
@@ -360,6 +370,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         ensure_dependency_resolvers_conf_configured(ctx, kwds, os.path.join(config_directory, "resolvers_conf.xml"))
         _handle_job_config_file(config_directory, server_name, kwds)
         _handle_job_metrics(config_directory, kwds)
+        _handle_refgenie_config(config_directory, kwds)
         file_path = kwds.get("file_path") or config_join("files")
         _ensure_directory(file_path)
 
@@ -533,6 +544,7 @@ def _shared_galaxy_properties(config_directory, kwds, for_tests):
         properties["tour_config_dir"] = empty_dir
         properties["interactive_environment_plugins_directory"] = empty_dir
         properties["visualization_plugins_directory"] = empty_dir
+        properties["refgenie_config_file"] = kwds.get('refgenie_config_file', '')
     return properties
 
 
@@ -616,6 +628,23 @@ class GalaxyInterface(object):
     def workflow_id(self, path):
         """Get installed workflow API ID for input path."""
 
+    @abc.abstractproperty
+    def version_major(self):
+        """Return target Galaxy version."""
+
+    @abc.abstractproperty
+    def user_api_config(self):
+        """Return the API indicated configuration for user session.
+
+        Calling .config.get_config() with admin GI session would yield
+        a different object (admins have different view of Galaxy's
+        configuration).
+        """
+
+    @property
+    def user_is_admin(self):
+        return self.user_api_config["is_admin_user"]
+
 
 @add_metaclass(abc.ABCMeta)
 class GalaxyConfig(GalaxyInterface):
@@ -648,7 +677,11 @@ class GalaxyConfig(GalaxyInterface):
 
     @abc.abstractproperty
     def use_path_paste(self):
-        """Use path paste to upload data."""
+        """Use path paste to upload data.
+
+        This will only be an option if the target user key is an
+        admin user key.
+        """
 
 
 class BaseGalaxyConfig(GalaxyInterface):
@@ -669,6 +702,9 @@ class BaseGalaxyConfig(GalaxyInterface):
         self.runnables = runnables
         self._kwds = kwds
         self._workflow_ids = {}
+
+        self._target_version = UNINITIALIZED
+        self._target_user_config = UNINITIALIZED
 
     @property
     def gi(self):
@@ -717,7 +753,7 @@ class BaseGalaxyConfig(GalaxyInterface):
             ready = all(map(status_ready, repos))
             return ready or None
 
-        wait_on(ready, "galaxy tool installation", timeout=60 * 60 * 1)
+        wait_on(ready, "galaxy tool installation", timeout=DEFAULT_TOOL_INSTALL_TIMEOUT)
 
     def install_workflows(self):
         for runnable in self.runnables:
@@ -756,6 +792,20 @@ class BaseGalaxyConfig(GalaxyInterface):
     @property
     def default_use_path_paste(self):
         return False
+
+    @property
+    def version_major(self):
+        """Return target Galaxy version."""
+        if self._target_version is UNINITIALIZED:
+            self._target_version = self.user_gi.config.get_version()["version_major"]
+        return self._target_version
+
+    @property
+    def user_api_config(self):
+        """Return the API indicated configuration for user session."""
+        if self._target_user_config is UNINITIALIZED:
+            self._target_user_config = self.user_gi.config.get_config()
+        return self._target_user_config
 
 
 class BaseManagedGalaxyConfig(BaseGalaxyConfig):
@@ -910,6 +960,13 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         self.galaxy_root = galaxy_root
 
     def kill(self):
+        if self._ctx.verbose:
+            shell(["ps", "ax"])
+            exists = os.path.exists(self.pid_file)
+            print("Killing pid file [%s]" % self.pid_file)
+            print("pid_file exists? [%s]" % exists)
+            if exists:
+                print("pid_file contents are [%s]" % open(self.pid_file, "r").read())
         kill_pid_file(self.pid_file)
 
     def startup_command(self, ctx, **kwds):
@@ -932,7 +989,8 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         if parse_version(kwds.get('galaxy_python_version') or DEFAULT_PYTHON_VERSION) >= parse_version('3'):
             # We need to start under gunicorn
             self.env['APP_WEBSERVER'] = 'gunicorn'
-            self.env['GUNICORN_CMD_ARGS'] = "--bind={host}:{port} --name={server_name}".format(
+            self.env['GUNICORN_CMD_ARGS'] = "--timeout={timeout} --capture-output --bind={host}:{port} --name={server_name}".format(
+                timeout=DEFAULT_TOOL_INSTALL_TIMEOUT,
                 host=kwds.get('host', '127.0.0.1'),
                 port=kwds['port'],
                 server_name=self.server_name,
@@ -970,7 +1028,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
     def default_use_path_paste(self):
         # If Planemo started a local, native Galaxy instance assume files URLs can be
         # pasted.
-        return True
+        return self.user_is_admin
 
 
 def _database_connection(database_location, **kwds):
@@ -1094,7 +1152,9 @@ def _install_galaxy_via_git(ctx, galaxy_root, env, kwds):
     gx_repo = _ensure_galaxy_repository_available(ctx, kwds)
     branch = _galaxy_branch(kwds)
     command = git.command_clone(ctx, gx_repo, galaxy_root, branch=branch)
-    shell(command, env=env)
+    exit_code = shell(command, env=env)
+    if exit_code != 0:
+        raise Exception("Failed to glone Galaxy via git")
     _install_with_command(ctx, galaxy_root, env, kwds)
 
 
@@ -1138,7 +1198,13 @@ def _install_with_command(ctx, galaxy_root, env, kwds):
         setup_common_startup_args(),
         COMMAND_STARTUP_COMMAND,
     )
-    shell(install_cmd, cwd=galaxy_root, env=env)
+    exit_code = shell(install_cmd, cwd=galaxy_root, env=env)
+    if exit_code != 0:
+        raise Exception("Failed to install Galaxy via command [%s]" % install_cmd)
+    if not os.path.exists(galaxy_root):
+        raise Exception("Failed to create Galaxy directory [%s]" % galaxy_root)
+    if not os.path.exists(os.path.join(galaxy_root, "lib")):
+        raise Exception("Failed to create Galaxy directory [%s], lib missing" % galaxy_root)
 
 
 def _ensure_galaxy_repository_available(ctx, kwds):
@@ -1246,6 +1312,15 @@ def _handle_job_metrics(config_directory, kwds):
     with open(metrics_conf, "w") as fh:
         fh.write(EMPTY_JOB_METRICS_TEMPLATE)
     kwds["job_metrics_config_file"] = metrics_conf
+
+
+def _handle_refgenie_config(config_directory, kwds):
+    refgenie_dir = os.path.join(config_directory, 'refgenie')
+    _ensure_directory(refgenie_dir)
+    refgenie_config = os.path.join(refgenie_dir, "genome_config.yaml")
+    with open(refgenie_config, "w") as fh:
+        fh.write(REFGENIE_CONFIG_TEMPLATE % (refgenie_dir))
+    kwds["refgenie_config_file"] = refgenie_config
 
 
 def _handle_kwd_overrides(properties, kwds):

@@ -71,24 +71,29 @@ same testing file format is used for both kinds of artifacts.
             has_n_columns:
               n: 2
 
+The above examples illustrate that each test file is broken into a list of test
+cases. Each test case should have a ``doc`` describing the test, a ``job`` description
+the describes the inputs for an execution of the target artifact, and an ``outputs``
+mapping that describes assertions about outputs to test.
 
-The above examples hopefully make it clear that each test file is broken into a list of test
-cases. Each test case should have a ``doc`` describing the test, a ``job`` description the describes
-the inputs for an execution of the target artifact, and an ``outputs`` mapping that describes assertions
-about outputs to test.
 
 ``job``
 --------
 
-The ``job`` object can be a mapping embedded right in the file or a reference to a "job" input file.
-The job input file is a proper CWL_ job document - which is fairly straight forward as demonstrated in
-the above examples. Planemo adapts the CWL_ job document to Galaxy_ workflows and tools - using input
-names for Galaxy_ tools and input node labels for workflows.
+The ``job`` object can be a mapping embedded right in the test file or a reference to a
+an external "job" input file. The job input file is a proper CWL_ job document - which
+is fairly straight forward as demonstrated in the above examples. Planemo adapts the
+CWL_ job document to Galaxy_ workflows and tools - using input names for Galaxy_ tools
+and input node labels for workflows.
 
 Input files can be specified using either ``path`` attributes (which should generally be file
 paths relative to the artifact and test directory) or ``location`` (which should be a URI). The
 examples above demonstrate using both paths relative to the tool file and test data published
 to `Zenodo <https://zenodo.org/>`__.
+
+Embedded job objects result in cleaner test suites that are simpler to read. One advantage of
+instead using external job input files is that the job object can be reused to invoke the
+runnable artifact outside the context of testing with ``planemo run``.
 
 .. note::
 
@@ -103,6 +108,56 @@ to `Zenodo <https://zenodo.org/>`__.
     CLI invocation if ``--engine=galaxy`` (for a Planemo managed Galaxy instance), ``--engine=docker_galaxy``
     (for a Docker instance of Galaxy launched by Planemo), or ``--engine=external_galaxy`` (for a running
     remote Galaxy instance).
+
+Certain Galaxy objects don't map cleanly to CWL_ job objects so Planemo attempts to extend
+the format with new constructs for running and testing Galaxy objects - such as describing 
+collections and composite inputs.
+
+Galaxy Collection Inputs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example demonstrates two ways to create input lists for Galaxy tests.
+
+.. literalinclude:: test_example_collection_input.yml
+   :language: yaml
+
+Simply specifying files in YAML lists in the input job (like vanilla CWL_
+job descriptions) will result in a simple Galaxy list. This is simple but the downside is you
+have no control of the list identifiers - which are often important in Galaxy workflows. When
+more control is desired, you may describe an explicit Galaxy collection with an input object of
+``class: Collection``. This variant (also shown in the above example) allows creating collections
+of type other than ``list`` and allows specifying element identifiers with the ``identifier``
+declaration under the list of collection ``elements``.
+
+The explicit Galaxy collection creation syntax also makes describing nested collections such as
+lists of pairs very natural. The following example is used in Planemo's test suite to illustrate
+this:
+
+.. literalinclude:: test_example_nested_collection_input.yml
+   :language: yaml
+
+Galaxy Composite Inputs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The syntax for specifying composite inputs is a little more basic still and simply must be specified
+as a list of local files (mirroring Galaxy Tool XML test syntax). While ``class`` is assumed to
+be ``File`` and URIs aren't yet tested.
+
+
+.. literalinclude:: test_example_composite_input.yml
+   :language: yaml
+
+Galaxy Tags
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Requires Galaxy 20.09 or newer.**
+
+Tags and group tags play important roles in many Galaxy workflows. These can be tested
+by simply add a list of ``tags:`` to the YAML corresponding to the dataset in the
+collection. The following example demonstrates this:
+
+.. literalinclude:: test_example_tagged_input.yml
+   :language: yaml
 
 ``outputs``
 --------------

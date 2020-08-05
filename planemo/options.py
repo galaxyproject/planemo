@@ -12,6 +12,7 @@ from .config import planemo_option
 
 
 def force_option(what="files"):
+    """Annotate click command as consume the -f/--force option."""
     return planemo_option(
         "-f",
         "--force",
@@ -21,6 +22,7 @@ def force_option(what="files"):
 
 
 def skip_venv_option():
+    """Annotate click command as consume the --skip_venv option."""
     return planemo_option(
         "--skip_venv",
         is_flag=True,
@@ -30,7 +32,18 @@ def skip_venv_option():
     )
 
 
+def skip_client_build_option():
+    """Annotate click command as consume the --skip_client_build option."""
+    return planemo_option(
+        "--skip_client_build",
+        is_flag=True,
+        default=False,
+        help=("Do not build Galaxy client when serving Galaxy.")
+    )
+
+
 def run_engine_option():
+    """Annotate click command as consume the --engine option."""
     return planemo_option(
         "--engine",
         type=click.Choice(["galaxy", "docker_galaxy", "cwltool", "toil", "external_galaxy"]),
@@ -44,6 +57,7 @@ def run_engine_option():
 
 
 def non_strict_cwl_option():
+    """Annotate click command as consume the --non_strict_cwl option."""
     return planemo_option(
         "--non_strict_cwl",
         default=False,
@@ -53,6 +67,11 @@ def non_strict_cwl_option():
 
 
 def serve_engine_option():
+    """Annotate click command as consume the --engine option.
+
+    This variant of the engine command is restricted to engines that can serve Galaxy
+    servers.
+    """
     return planemo_option(
         "--engine",
         type=click.Choice(["galaxy", "docker_galaxy", "external_galaxy"]),
@@ -66,6 +85,7 @@ def serve_engine_option():
 
 
 def ignore_dependency_problems_option():
+    """Annotate click command as consume the --ignore_dependency_problems option."""
     return planemo_option(
         "--ignore_dependency_problems",
         is_flag=True,
@@ -78,6 +98,10 @@ def ignore_dependency_problems_option():
 
 
 def cwltool_no_container_option():
+    """Annotate click command as consume the --no_container option.
+
+    This option is for the CWL CLI runner interface.
+    """
     return planemo_option(
         "--no-container",
         "--no_container",
@@ -89,6 +113,7 @@ def cwltool_no_container_option():
 
 
 def test_data_option():
+    """Annotate click command as consume the --test_data option."""
     return planemo_option(
         "--test_data",
         type=click.Path(exists=True, file_okay=False, resolve_path=True),
@@ -134,7 +159,7 @@ def galaxy_python_version():
         '--galaxy_python_version',
         use_global_config=True,
         default=None,
-        type=click.Choice(['2', '2.7', '3', '3.5', '3.6', '3.7', '3.8']),
+        type=click.Choice(['3', '3.5', '3.6', '3.7', '3.8']),
         help="Python version to start Galaxy under",
     )
 
@@ -1145,6 +1170,7 @@ def galaxy_serve_options():
         daemon_option(),
         pid_file_option(),
         ignore_dependency_problems_option(),
+        skip_client_build_option(),
         shed_install_option()
     )
 
@@ -1636,6 +1662,19 @@ def ci_find_options():
         ci_chunk_count_option(),
         ci_chunk_option(),
         ci_output_option(),
+    )
+
+
+def workflow_output_artifact():
+    return planemo_option(
+        "-o", "--output",
+        default=None,
+        type=click.Path(
+            file_okay=True,
+            dir_okay=False,
+            readable=True,
+            resolve_path=True,
+        )
     )
 
 
