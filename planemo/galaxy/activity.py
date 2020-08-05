@@ -219,7 +219,8 @@ def _execute(ctx, config, runnable, job_path, **kwds):
 
 
 def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):  # noqa C901
-    tool_or_workflow = "tool" if runnable.type in [RunnableType.cwl_tool, RunnableType.galaxy_tool] else "workflow"
+    # only upload objects as files/collections for CWL workflows...
+    tool_or_workflow = "tool" if runnable.type != RunnableType.cwl_workflow else "workflow"
     to_posix_lines = runnable.type.is_galaxy_artifact
     job_dict, datasets = PlanemoStagingInterface(ctx, runnable, user_gi, config.version_major).stage(
         tool_or_workflow,
