@@ -4,9 +4,7 @@ from galaxy.util import strip_control_characters
 from jinja2 import Environment, PackageLoader
 from pkg_resources import resource_string
 
-TITLE = "Tool Test Results (powered by Planemo)"
-env = Environment(loader=PackageLoader('planemo', 'reports'))
-env.filters['strip_control_characters'] = lambda x: strip_control_characters(x) if x else x
+TITLE = "Test Results (powered by Planemo)"
 
 
 def build_report(structured_data, report_type="html", **kwds):
@@ -31,12 +29,15 @@ def build_report(structured_data, report_type="html", **kwds):
 
     environment = __inject_summary(environment)
 
-    return template_data(environment, 'report_%s.tpl' % report_type)
+    return template_data(environment, report_type)
 
 
-def template_data(environment, template_name="report_html.tpl", **kwds):
+def template_data(environment, report_type, **kwds):
     """Build an arbitrary templated page.
     """
+    template_name = 'report_%s.tpl' % report_type
+    env = Environment(loader=PackageLoader('planemo', 'reports'), keep_trailing_newline=report_type == 'markdown')
+    env.filters['strip_control_characters'] = lambda x: strip_control_characters(x) if x else x
     template = env.get_template(template_name)
     return template.render(**environment)
 
