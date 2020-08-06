@@ -5,7 +5,9 @@ import re
 import xml.etree.ElementTree as ET
 import planemo.conda
 
-def autoupdate(tool_path):
+from planemo.io import error, info
+
+def autoupdate(tool_path, dry_run=False):
     """
     Autoupdate an XML file
     """
@@ -14,21 +16,29 @@ def autoupdate(tool_path):
 
     for macro_import in requirements['imports']:
         # recursively check macros
-        macro_requirements = autoupdate('/'.join(tool_path.split('/')[:-1] + [macro_import]))
+        macro_requirements = autoupdate('/'.join(tool_path.split('/')[:-1] + [macro_import]), dry_run)
         for requirement in macro_requirements:
             if requirement not in requirements:
                 requirements[requirement] = macro_requirements[requirement]
 
     if not requirements.get('@TOOL_VERSION@'):
+        # if tool_version is not specified, finish without changes
+        error("The @TOOL_VERSION@ token is not specified. This is required for autoupdating.")
         return requirements
-    # check main_req is up-to-date; if so, finish without changes
     updated_main_req = get_latest_versions({requirements.get('main_req'): requirements.get('@TOOL_VERSION@')})
     if updated_main_req[requirements.get('main_req')] == requirements.get('@TOOL_VERSION@'):
+        # check main_req is up-to-date; if so, finish without changes
+        info("No updates required or made.")        
         return requirements
 
+    if dry_run:
+        error("Update required! Tool main requirement has version {}, newest conda version is {}".format(requirements.get('@TOOL_VERSION@'), updated_main_req[requirements.get('main_req')]))
+        return requirements
+    
     # if main_req is not up-to-date, update everything
     updated_version_dict = get_latest_versions(requirements.get('other_reqs'))
     update_requirements(tool_path, xml_tree, updated_version_dict, updated_main_req)
+    info("Tool updated.")   
     return requirements
 
 def find_requirements(xml_tree):
@@ -76,17 +86,21 @@ def update_requirements(tool_path, xml_tree, updated_version_dict, updated_main_
 
     for token in xml_tree.iter("token"):
         if token.attrib.get('name') == '@TOOL_VERSION@':
-            token.text = updated_main_req.values()[0]
+            #  check this
+            token.text = list(updated_main_req.values())[0]
         elif token.attrib.get('name') == '@GALAXY_VERSION@':
             token.text = '0'
         else:
             continue
-        tags_to_update['tokens'].append(ET.tostring(token).strip())
+        tags_to_update['tokens'].append(ET.tostring(token, encoding="unicode").strip())
+
+    if '@GALAXY_VERSION@' not in [n.attrib.get('name') for n in xml_tree.iter('token')]:
+        tags_to_update['update_tool'] = True
 
     for requirement in xml_tree.iter("requirement"):
         if requirement.text not in updated_main_req:
             requirement.set('version', updated_version_dict[requirement.text])
-        tags_to_update['requirements'].append(ET.tostring(requirement).strip())
+        tags_to_update['requirements'].append(ET.tostring(requirement, encoding="unicode").strip())
     write_to_xml(tool_path, xml_tree, tags_to_update)
     return xml_tree
 
@@ -97,17 +111,21 @@ def write_to_xml(tool_path, xml_tree, tags_to_update):
     """
     with open(tool_path, 'r+') as f:
         xml_text = f.read()
-
+        print(tags_to_update)
         for token in tags_to_update['tokens']:
             xml_text = re.sub('{}>.*<{}'.format(*re.split('>.*<', token)), token, xml_text)
 
         for requirement in tags_to_update['requirements']:
             xml_text = re.sub('{}version=".*"{}'.format(*re.split('version=".*"', requirement)), requirement, xml_text)
 
+        # if '@GALAXY_VERSION@' not in tags_to_update['tokens']:
+        if tags_to_update.get('update_tool'):
+            # update the version directly in the tool tag
+            xml_text = re.sub('version="@TOOL_VERSION@\+galaxy.*"', 'version="@TOOL_VERSION@+galaxy0"', xml_text)
+
         f.seek(0)
         f.truncate()
         f.write(xml_text)
-
 
 __all__ = (
     "autoupdate"

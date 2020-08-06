@@ -16,7 +16,16 @@ from planemo.tools import (
 
 from planemo import options, autoupdate
 from planemo.cli import command_function
+from planemo.config import planemo_option
 
+
+def dry_run_option():
+    """Perform a dry run autoupdate without modifying the XML files"""
+    return planemo_option(
+        "--dry-run",
+        is_flag=True,
+        help="Perform a dry run autoupdate without modifying the XML files."
+    )
 
 @click.command('autoupdate')
 @options.optional_tools_arg(multiple=True)
@@ -25,6 +34,7 @@ from planemo.cli import command_function
 @options.fail_level_option()
 @options.skip_option()
 @options.recursive_option()
+@dry_run_option()
 @command_function
 def cli(ctx, paths, **kwds):
     """Auto-update requirements section if necessary"""
@@ -33,7 +43,7 @@ def cli(ctx, paths, **kwds):
     exit_codes = []
     for (tool_path, tool_xml) in yield_tool_sources_on_paths(ctx, paths, recursive):
         info("Auto-updating tool %s" % tool_path)
-        tool_xml = autoupdate.autoupdate(tool_path)
+        tool_xml = autoupdate.autoupdate(tool_path, kwds['dry_run'])
         if handle_tool_load_error(tool_path, tool_xml):
             exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
             continue
