@@ -15,6 +15,7 @@ def build_report(structured_data, report_type="html", **kwds):
         title=TITLE,
         raw_data=structured_data,
     )
+    environment = __inject_summary(environment)
 
     if report_type == 'html':
         # The HTML report format needs a lot of extra, custom data.
@@ -30,8 +31,6 @@ def build_report(structured_data, report_type="html", **kwds):
             'json': json,
         })
 
-    # environment = __inject_summary(environment)
-
     return template_data(environment, report_type)
 
 
@@ -46,24 +45,27 @@ def template_data(environment, report_type, **kwds):
 
 
 def __inject_summary(environment):
-    if 'results' not in environment['raw_data']:
-        total = 0
-        errors = 0
-        failures = 0
-        skips = 0
-        for test in environment['raw_data']['tests']:
-            total += 1
-            test_data = test.get('data')
-            if test_data:
-                status = test_data.get('status')
-                if status != 'ok':
-                    errors += 1
-        environment['raw_data']['results'] = {
-            'total': total,
-            'errors': errors,
-            'failures': failures,
-            'skips': skips,
-        }
+    total = 0
+    errors = 0
+    failures = 0
+    skips = 0
+    for test in environment['raw_data']['tests']:
+        total += 1
+        test_data = test.get('data')
+        if test_data:
+            status = test_data.get('status')
+            if status == 'error':
+                errors += 1
+            elif status == 'failure':
+                failures += 1
+            elif status == 'skipped':
+                skips += 1
+    environment['raw_data']['results'] = {
+        'total': total,
+        'errors': errors,
+        'failures': failures,
+        'skips': skips,
+    }
     if 'suitename' not in environment:
         environment['raw_data']['suitename'] = TITLE
     return environment

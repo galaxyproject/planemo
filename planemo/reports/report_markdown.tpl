@@ -1,21 +1,23 @@
+
 # {{ title }}
 
-## Executive Summary
+## Test Summary
 
 | Test State | Count |
 | ---------- | ----- |
-| Total      | {{ raw_data.summary.num_tests | default(0)  }} |
-| Passed     | {{ raw_data.summary.num_tests - raw_data.summary.num_errors - raw_data.summary.num_failures - raw_data.summary.num_skips | default(0)  }} |
-| Error      | {{ raw_data.summary.num_errror | default(0) }} |
-| Failure    | {{ raw_data.summary.num_failure | default(0) }} |
-| Skipped    | {{ raw_data.summary.num_skipped | default(0) }} |
+| Total      | {{ raw_data.results.total | default(0)  }} |
+| Passed     | {{ raw_data.results.total - raw_data.results.errors - raw_data.results.failures - raw_data.results.skips | default(0)  }} |
+| Error      | {{ raw_data.results.errors | default(0) }} |
+| Failure    | {{ raw_data.results.failures | default(0) }} |
+| Skipped    | {{ raw_data.results.skipped | default(0) }} |
 
 
 <details>
-  <summary>
-    <h2>Detailed Results</h2>
-  </summary>
+  <summary>Detailed Results</summary>
+{% for state, desc in {'error': 'Errored', 'failure': 'Failed', 'success': 'Passed'}.items() %}
+<details><summary>{{ desc }} Tests</summary>
 {% for test in raw_data.tests %}
+{% if test.data.status == state %}
 {% if test.data.status == 'success' %}
 ### :white_check_mark: {{ test.id }}
 {% else %}
@@ -61,7 +63,7 @@ exited with code {{ test.data.job.exit_code }}.
 
 #### Workflow invocation details
 
-<details><summary><h2>Steps</h2></summary>
+<details><summary>Steps</summary>
 {%for step_data in test.data.invocation_details.values() %}
 {{step_data.order_index}}. **{{step_data.workflow_step_label or (step_data.jobs[0].tool_id if step_data.jobs[0] else 'Unlabelled step')}}**:
   step_state: {{step_data.state}}
@@ -82,5 +84,8 @@ exited with code {{ test.data.job.exit_code }}.
 {%- endfor -%}
 </details>
 {%- endif -%}
+{%- endif -%}
+{%- endfor %}
+</details>
 {%- endfor %}
 </details>
