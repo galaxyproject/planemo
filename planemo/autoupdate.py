@@ -23,22 +23,22 @@ def autoupdate(tool_path, dry_run=False):
 
     if not requirements.get('@TOOL_VERSION@'):
         # if tool_version is not specified, finish without changes
-        error("The @TOOL_VERSION@ token is not specified. This is required for autoupdating.")
+        error("The @TOOL_VERSION@ token is not specified in {}. This is required for autoupdating.".format(tool_path))
         return requirements
     updated_main_req = get_latest_versions({requirements.get('main_req'): requirements.get('@TOOL_VERSION@')})
     if updated_main_req[requirements.get('main_req')] == requirements.get('@TOOL_VERSION@'):
         # check main_req is up-to-date; if so, finish without changes
-        info("No updates required or made.")        
+        info("No updates required or madeto {}.".format(tool_path))
         return requirements
 
     if dry_run:
-        error("Update required! Tool main requirement has version {}, newest conda version is {}".format(requirements.get('@TOOL_VERSION@'), updated_main_req[requirements.get('main_req')]))
+        error("Update required to {}! Tool main requirement has version {}, newest conda version is {}".format(tool_path, requirements.get('@TOOL_VERSION@'), updated_main_req[requirements.get('main_req')]))
         return requirements
-    
+
     # if main_req is not up-to-date, update everything
     updated_version_dict = get_latest_versions(requirements.get('other_reqs'))
     update_requirements(tool_path, xml_tree, updated_version_dict, updated_main_req)
-    info("Tool updated.")   
+    info("Tool {} updated.".format(tool_path))
     return requirements
 
 def find_requirements(xml_tree):
@@ -111,7 +111,6 @@ def write_to_xml(tool_path, xml_tree, tags_to_update):
     """
     with open(tool_path, 'r+') as f:
         xml_text = f.read()
-        print(tags_to_update)
         for token in tags_to_update['tokens']:
             xml_text = re.sub('{}>.*<{}'.format(*re.split('>.*<', token)), token, xml_text)
 
