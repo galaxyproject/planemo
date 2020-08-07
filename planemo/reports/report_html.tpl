@@ -10,13 +10,6 @@
     {{ bootstrap_style }}
     {{ custom_style }}
 
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
-
   </head>
   <body>
 
@@ -44,43 +37,26 @@
     </nav>
 
     <div class="container-fluid">
-      <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar">
-          <ul class="nav nav-sidebar">
-            <li><a href="#overview" class="text-success"><strong>Overview</strong></a></li>
-          </ul>
-          <ul class="nav nav-sidebar" id="nav-sidebar-tests">
-          </ul>
-        </div>
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          <!-- <h1 class="page-header">Tests</h1> -->
-          <h2 id="overview">Overview</h2>
-          <div id="overview-content"></div>
-          <div class="progress">
-          </div>
-          <h2 id="tests">Tests</h2>
-          <p>The remainder of this contains a description for each test executed to run these jobs.</p>
-        </div>
+      <div id="overview-content" class="row col-md-offset-1">
       </div>
     </div>
 
     {{ jquery_script }}
     {{ bootstrap_script }}
-    {{ custom_script }}
+    <style>
+details > summary {
+  vertical-align: text-top;
+}
+     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js" integrity="sha512-L03kznCrNOfVxOUovR6ESfCz9Gfny7gihUX/huVbQB9zjODtYpxaVtIaAkpetoiyV2eqWbvxMH9fiSv5enX7bw==" crossorigin="anonymous"></script>
     <script>
-      var testDataUrl = getUrlParameter("test_data_url");
-      if(testDataUrl) {
-      $.ajax(
-        {'url': testDataUrl,
-         'type': 'GET',
-        }
-        )
-        .success(function(content) { renderTestResults( $.parseJSON(content) ); })
-        .failure(function() { alert("Failed to load test data.")} );
-      } else {
-        var test_data = {{ raw_data|tojson }};
-        renderTestResults(test_data);
-      }
+        showdown.setFlavor('github');
+        showdown.setOption('emoji', true);
+        var converter = new showdown.Converter();
+        var test_data = '{{ raw_data }}';
+        var html = converter.makeHtml(atob(test_data));
+        var target = document.getElementById('overview-content');
+        target.innerHTML = html;
     </script>
   </body>
 </html>

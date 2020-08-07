@@ -1,3 +1,4 @@
+import base64
 import json
 
 from galaxy.util import strip_control_characters
@@ -18,6 +19,8 @@ def build_report(structured_data, report_type="html", **kwds):
     if report_type == 'html':
         # The HTML report format needs a lot of extra, custom data.
         # IMO, this seems to suggest it should be embedded.
+        markdown = template_data(environment, 'markdown')
+        environment['raw_data'] = base64.b64encode(markdown.encode('utf-8')).decode('utf-8')
         environment.update({
             'custom_style': __style("custom.css"),
             'custom_script': __script("custom"),
@@ -27,7 +30,7 @@ def build_report(structured_data, report_type="html", **kwds):
             'json': json,
         })
 
-    environment = __inject_summary(environment)
+    # environment = __inject_summary(environment)
 
     return template_data(environment, report_type)
 

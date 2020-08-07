@@ -11,23 +11,16 @@
 | Skipped    | {{ raw_data.summary.num_skipped | default(0) }} |
 
 
-## Detailed Results
+<details>
+  <summary>
+    <h2>Detailed Results</h2>
+  </summary>
 {% for test in raw_data.tests %}
-### {{ test.id }}
 {% if test.data.status == 'success' %}
-✅Test Passed
+### :white_check_mark: {{ test.id }}
 {% else %}
-❌Test Error! (State: {{ test.data.status }})
-
-
-Command Line:
-
-```console
-{{ test.data.job.command_line}}
-```
-
-exited with code {{ test.data.job.exit_code }}.
-
+### :x: {{ test.id }}
+Test Error! (State: {{ test.data.status }})
 #### Problems
 
 {% for problem in test.data.output_problems %}
@@ -35,6 +28,15 @@ exited with code {{ test.data.job.exit_code }}.
 {{problem}}
 ```
 {% endfor %}
+
+{%if test.data.job %}
+Command Line:
+
+```console
+{{ test.data.job.command_line}}
+```
+
+exited with code {{ test.data.job.exit_code }}.
 
 {% if test.data.job.stdout %}
 #### `stderr`
@@ -53,11 +55,13 @@ exited with code {{ test.data.job.exit_code }}.
 
 {%- endif -%}
 {%- endif -%}
+{%- endif -%}
+
 {%if test.data.invocation_details %}
 
 #### Workflow invocation details
 
-<details><summary>Steps</summary>
+<details><summary><h2>Steps</h2></summary>
 {%for step_data in test.data.invocation_details.values() %}
 {{step_data.order_index}}. **{{step_data.workflow_step_label or (step_data.jobs[0].tool_id if step_data.jobs[0] else 'Unlabelled step')}}**:
   step_state: {{step_data.state}}
@@ -79,3 +83,4 @@ exited with code {{ test.data.job.exit_code }}.
 </details>
 {%- endif -%}
 {%- endfor %}
+</details>
