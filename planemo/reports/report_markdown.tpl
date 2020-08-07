@@ -15,9 +15,9 @@
 {% for test in raw_data.tests %}
 ### {{ test.id }}
 {% if test.data.status == 'success' %}
-Test Passed
+✅Test Passed
 {% else %}
-Test Error! (State: {{ test.data.status }})
+❌Test Error! (State: {{ test.data.status }})
 
 
 Command Line:
@@ -66,8 +66,8 @@ exited with code {{ test.data.job.exit_code }}.
   {% for job in step_data.jobs %}
     - job {{loop.index}}:
 
-     | | |
-     | - | - |
+     | Job property | Value |
+     | ------------ | ----- |
      {% for key, value in job.items() %}
      {%- if value %}| {{key}} | `{{value}}` |
      {% endif -%}
