@@ -43,20 +43,18 @@
 
     {{ jquery_script }}
     {{ bootstrap_script }}
+    {{ markdown_it_script }}
     <style>
 details > summary {
   vertical-align: text-top;
 }
      </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js" integrity="sha512-L03kznCrNOfVxOUovR6ESfCz9Gfny7gihUX/huVbQB9zjODtYpxaVtIaAkpetoiyV2eqWbvxMH9fiSv5enX7bw==" crossorigin="anonymous"></script>
     <script>
-        showdown.setFlavor('github');
-        showdown.setOption('emoji', true);
-        var converter = new showdown.Converter();
-        var test_data = '{{ raw_data }}';
-        var html = converter.makeHtml(atob(test_data));
         var target = document.getElementById('overview-content');
-        target.innerHTML = html;
+        var md = window.markdownit({
+          html: true,
+        });
+        target.innerHTML = md.render(atob('{{ raw_data }}'));
     </script>
   </body>
 </html>

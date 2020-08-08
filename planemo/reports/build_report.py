@@ -29,7 +29,7 @@ def build_report(structured_data, report_type="html", **kwds):
             'bootstrap_style': __style("bootstrap.min.css"),
             'jquery_script': __script("jquery.min"),
             'bootstrap_script': __script("bootstrap.min"),
-            'json': json,
+            'markdown_it_script': __script('markdown-it.min'),
         })
 
     return template_data(environment, report_type)
