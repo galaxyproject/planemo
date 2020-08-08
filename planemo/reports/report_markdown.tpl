@@ -12,16 +12,14 @@
 | Skipped    | {{ raw_data.results.skipped | default(0) }} |
 
 
-<details>
-  <summary>Detailed Results</summary>
 {% for state, desc in {'error': 'Errored', 'failure': 'Failed', 'success': 'Passed'}.items() %}
 <details><summary>{{ desc }} Tests</summary>
 {% for test in raw_data.tests %}
 {% if test.data.status == state %}
 {% if test.data.status == 'success' %}
-### :white_check_mark: {{ test.id }}
+#### :white_check_mark: {{ test.id }}
 {% else %}
-### :x: {{ test.id }}
+#### :x: {{ test.id }}
 Test Error! (State: {{ test.data.status }})
 #### Problems
 
@@ -88,4 +86,3 @@ exited with code {{ test.data.job.exit_code }}.
 {%- endfor %}
 </details>
 {%- endfor %}
-</details>
