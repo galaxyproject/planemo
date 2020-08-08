@@ -37,7 +37,7 @@
     </nav>
 
     <div class="container-fluid">
-      <div id="overview-content" class="row col-md-offset-1">
+      <div id="overview-content" class="row col-md-offset-1 col-md-10">
       </div>
     </div>
 
