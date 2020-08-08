@@ -14,50 +14,48 @@
 
 {% for state, desc in {'error': 'Errored', 'failure': 'Failed', 'success': 'Passed'}.items() %}
 <details><summary>{{ desc }} Tests</summary>
-{% for test in raw_data.tests %}
-{% if test.data.status == state %}
+{% for test in raw_data.tests -%}
+{% if test.data.status == state -%}
 {% if test.data.status == 'success' %}
 * <details><summary>:white_check_mark: {{ test.id }}</summary>
 {% else %}
 * <details><summary>:x: {{ test.id }}</summary>
-    Test Error! (State: {{ test.data.status }})
-    #### Problems
 
-    {% for problem in test.data.output_problems %}
+    #### Problems
+    {% for problem in test.data.output_problems -%}
     ```console
     {{problem|indent}}
     ```
-    {% endfor %}
+    {% endfor -%}
+    {%- if test.data.job -%}
 
-    {%if test.data.job %}
-    Command Line:
+    #### Command Line:
 
     ```console
     {{ test.data.job.command_line|indent}}
     ```
-
     exited with code {{ test.data.job.exit_code }}.
 
-    {% if test.data.job.stdout %}
+    {% if test.data.job.stdout -%}
+
     #### `stderr`
 
-    ````
+    ```
     {{ test.data.job.stderr|indent }}
-    ````
+    ```
 
-    {% endif %}
-    {% if test.data.job.stdout %}
+    {%- endif %}
+    {% if test.data.job.stdout -%}
+
     #### `stdout`
 
-    ````console
+    ```console
     {{ test.data.job.stdout|indent }}
-    ````
-
+    ```
     {%- endif -%}
     {%- endif -%}
     {%- endif -%}
-
-    {%if test.data.invocation_details %}
+    {%- if test.data.invocation_details -%}
 
     #### Workflow invocation details
 
