@@ -24,10 +24,11 @@
 * <details><summary>&#10060; {{ test.id }}</summary>
 
 {%       endif %}
-
+{%       if test.data.output_problems %}
     #### Problems
+{%       endif %}
 {%       for problem in test.data.output_problems %}
-    ```console
+    ```
     {{problem|indent}}
     ```
 {%       endfor %}
@@ -53,7 +54,7 @@
 
     #### `stdout`
 
-    ```console
+    ```
     {{ test.data.job.stdout|indent }}
     ```
 {%     endif %}
