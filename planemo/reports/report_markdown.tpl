@@ -17,11 +17,11 @@
 {%     if test.data.status == state %}
 {%       if test.data.status == 'success' %}
 
-* <details><summary>:white_check_mark: {{ test.id }}</summary>
+* <details><summary>&#9989; {{ test.id }}</summary>
 
 {%       else %}
 
-* <details><summary>:x: {{ test.id }}</summary>
+* <details><summary>&#10060; {{ test.id }}</summary>
 
 {%       endif %}
 
