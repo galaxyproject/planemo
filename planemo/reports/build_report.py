@@ -16,6 +16,7 @@ def build_report(structured_data, report_type="html", **kwds):
         raw_data=structured_data,
     )
     environment = __inject_summary(environment)
+    __fix_test_ids(environment)
 
     if report_type == 'html':
         # The HTML report format needs a lot of extra, custom data.
@@ -42,6 +43,13 @@ def template_data(environment, report_type, **kwds):
     env.filters['strip_control_characters'] = lambda x: strip_control_characters(x) if x else x
     template = env.get_template(template_name)
     return template.render(**environment)
+
+
+def __fix_test_ids(environment):
+    for test in environment['raw_data']['tests']:
+        test_data = test.get('data')
+        if test_data and test_data.get('tool_id'):
+            test['id'] = "%s - Test %s" % (test_data['tool_id'], test_data['test_index'] + 1)
 
 
 def __inject_summary(environment):
