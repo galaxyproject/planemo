@@ -17,69 +17,70 @@
 {% for test in raw_data.tests %}
 {% if test.data.status == state %}
 {% if test.data.status == 'success' %}
-#### :white_check_mark: {{ test.id }}
+* <details><summary>:white_check_mark: {{ test.id }}</summary>
 {% else %}
-#### :x: {{ test.id }}
-Test Error! (State: {{ test.data.status }})
-#### Problems
+* <details><summary>:x: {{ test.id }}</summary>
+    Test Error! (State: {{ test.data.status }})
+    #### Problems
 
-{% for problem in test.data.output_problems %}
-```console
-{{problem}}
-```
-{% endfor %}
+    {% for problem in test.data.output_problems %}
+    ```console
+    {{problem|indent}}
+    ```
+    {% endfor %}
 
-{%if test.data.job %}
-Command Line:
+    {%if test.data.job %}
+    Command Line:
 
-```console
-{{ test.data.job.command_line}}
-```
+    ```console
+    {{ test.data.job.command_line|indent}}
+    ```
 
-exited with code {{ test.data.job.exit_code }}.
+    exited with code {{ test.data.job.exit_code }}.
 
-{% if test.data.job.stdout %}
-#### `stderr`
+    {% if test.data.job.stdout %}
+    #### `stderr`
 
-```console
-{{ test.data.job.stderr}}
-```
+    ````
+    {{ test.data.job.stderr|indent }}
+    ````
 
-{% endif %}
-{% if test.data.job.stdout %}
-#### `stdout`
+    {% endif %}
+    {% if test.data.job.stdout %}
+    #### `stdout`
 
-```console
-{{ test.data.job.stdout}}
-```
+    ````console
+    {{ test.data.job.stdout|indent }}
+    ````
 
-{%- endif -%}
-{%- endif -%}
-{%- endif -%}
+    {%- endif -%}
+    {%- endif -%}
+    {%- endif -%}
 
-{%if test.data.invocation_details %}
+    {%if test.data.invocation_details %}
 
-#### Workflow invocation details
+    #### Workflow invocation details
 
-<details><summary>Steps</summary>
-{%for step_data in test.data.invocation_details.values() %}
-{{step_data.order_index}}. **{{step_data.workflow_step_label or (step_data.jobs[0].tool_id if step_data.jobs[0] else 'Unlabelled step')}}**:
-  step_state: {{step_data.state}}
-  {% if step_data.jobs %}
-    <details><summary>jobs:</summary>
-  {% for job in step_data.jobs %}
-    - job {{loop.index}}:
+    <details><summary>Steps</summary>
+    {%for step_data in test.data.invocation_details.values() %}
+    {{step_data.order_index}}. **{{step_data.workflow_step_label or (step_data.jobs[0].tool_id if step_data.jobs[0] else 'Unlabelled step')}}**:
+      step_state: {{step_data.state}}
+      {% if step_data.jobs %}
+        <details><summary>jobs:</summary>
+      {% for job in step_data.jobs %}
+        - job {{loop.index}}:
 
-     | Job property | Value |
-     | ------------ | ----- |
-     {% for key, value in job.items() %}
-     {%- if value %}| {{key}} | `{{value}}` |
-     {% endif -%}
-     {%- endfor -%}
-  {% endfor %}
-    </details>
-  {% endif %}
-{%- endfor -%}
+         | Job property | Value |
+         | ------------ | ----- |
+         {% for key, value in job.items() %}
+         {%- if value %}| {{key}} | `{{value}}` |
+         {% endif -%}
+         {%- endfor -%}
+      {% endfor %}
+        </details>
+      {% endif %}
+    {%- endfor -%}
+  </details>
 </details>
 {%- endif -%}
 {%- endif -%}
