@@ -23,6 +23,8 @@
 
 * <details><summary>:x: {{ test.id }}</summary>
 
+{%       endif %}
+
     #### Problems
 {%       for problem in test.data.output_problems %}
     ```console
@@ -54,7 +56,6 @@
     ```console
     {{ test.data.job.stdout|indent }}
     ```
-{%     endif %}
 {%     endif %}
 {%     endif %}
 {%     if test.data.invocation_details %}
