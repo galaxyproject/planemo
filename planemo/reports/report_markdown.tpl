@@ -68,30 +68,32 @@
 
     #### Workflow invocation details
 
-    <details><summary>Steps</summary>
-
+   <details><summary>Steps</summary>
 {%    for step_data in test.data.invocation_details.values() %}
-    {{step_data.order_index}}. **{{step_data.workflow_step_label or (step_data.jobs[0].tool_id if step_data.jobs[0] else 'Unlabelled step')}}**:
-      step_state: {{step_data.state}}
-{%       if step_data.jobs %}
-        <details><summary>jobs:</summary>
-{%       for job in step_data.jobs %}
-        - job {{loop.index}}:
 
-         | Job property | Value |
-         | ------------ | ----- |
-{%          for key, value in job.items() %}
-{%          if value %}
-         | {{key}} | `{{value}}` |
-{%          endif %}
-{%          endfor %}
-{%       endfor %}
+     {{step_data.order_index}}. **{{step_data.workflow_step_label or (step_data.jobs[0].tool_id if step_data.jobs[0] else 'Unlabelled step')}}**:
+
+        step_state: {{step_data.state}}
+
+{%      if step_data.jobs %}
+        <details><summary>jobs:</summary>
+
+{%        for job in step_data.jobs %}
+           - job {{loop.index}}:
+
+             | Job property | Value |
+             | ------------ | ----- |
+{%            for key, value in job.items() %}
+{%              if value %}
+             | {{key}} | `{{value}}` |
+{%              endif %}
+{%            endfor %}
+
+{%        endfor %}
         </details>
-{%       endif %}
+{%      endif %}
+{%    endfor %}
   </details>
-{%       endfor %}
-  </details>
-</details>
 {% endif %}
 {% endif %}
 {% endfor %}
