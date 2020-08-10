@@ -1,5 +1,4 @@
 import base64
-import json
 
 from galaxy.util import strip_control_characters
 from jinja2 import Environment, PackageLoader
