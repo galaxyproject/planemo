@@ -1,20 +1,25 @@
 # {{ title }}
 
 ## Test Summary
+{% set state = namespace(found=false) %}
+{% set state.success = raw_data.results.total - raw_data.results.errors - raw_data.results.failures - raw_data.results.skips | default(0) %}
+{% set state.error = raw_data.results.errors | default(0) %}
+{% set state.failure = raw_data.results.failures | default(0) %}
+{% set state.skipped = raw_data.results.skipped | default(0) %}
 
 | Test State | Count |
 | ---------- | ----- |
 | Total      | {{ raw_data.results.total | default(0)  }} |
-| Passed     | {{ raw_data.results.total - raw_data.results.errors - raw_data.results.failures - raw_data.results.skips | default(0)  }} |
-| Error      | {{ raw_data.results.errors | default(0) }} |
-| Failure    | {{ raw_data.results.failures | default(0) }} |
-| Skipped    | {{ raw_data.results.skipped | default(0) }} |
+| Passed     | {{ state.success }} |
+| Error      | {{ state.error }} |
+| Failure    | {{ state.failure }} |
+| Skipped    | {{ state.skipped }} |
 
 
-{% for state, desc in {'error': 'Errored', 'failure': 'Failed', 'success': 'Passed'}.items() %}
+{% for status, desc in {'error': 'Errored', 'failure': 'Failed', 'success': 'Passed'}.items() if state[status]%}
 <details><summary>{{ desc }} Tests</summary>
 {%   for test in raw_data.tests %}
-{%     if test.data.status == state %}
+{%     if test.data.status == status %}
 {%       if test.data.status == 'success' %}
 
 * <details><summary>&#9989; {{ test.id }}</summary>
