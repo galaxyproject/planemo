@@ -39,7 +39,7 @@ def template_data(environment, report_type, **kwds):
     """Build an arbitrary templated page.
     """
     template_name = 'report_%s.tpl' % report_type
-    env = Environment(loader=PackageLoader('planemo', 'reports'), keep_trailing_newline=report_type == 'markdown', trim_blocks=True)
+    env = Environment(loader=PackageLoader('planemo', 'reports'), keep_trailing_newline=report_type == 'markdown', trim_blocks= == 'markdown')
     env.filters['strip_control_characters'] = lambda x: strip_control_characters(x) if x else x
     template = env.get_template(template_name)
     return template.render(**environment)
