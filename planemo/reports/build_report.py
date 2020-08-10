@@ -33,14 +33,17 @@ def build_report(structured_data, report_type="html", **kwds):
             'markdown_it_script': __script('markdown-it.min'),
         })
 
-    return template_data(environment, report_type)
+    return template_data(environment, 'report_%s.tpl' % report_type)
 
 
-def template_data(environment, report_type, **kwds):
+def template_data(environment, template_name, **kwds):
     """Build an arbitrary templated page.
     """
-    template_name = 'report_%s.tpl' % report_type
-    env = Environment(loader=PackageLoader('planemo', 'reports'), keep_trailing_newline=report_type == 'markdown', trim_blocks= == 'markdown')
+    env_kwargs = {}
+    if template_name == 'report_markdown.tpl':
+        env_kwargs['keep_trailing_newline'] = True
+        env_kwargs['trim_blocks'] = True
+    env = Environment(loader=PackageLoader('planemo', 'reports'), **env_kwargs)
     env.filters['strip_control_characters'] = lambda x: strip_control_characters(x) if x else x
     template = env.get_template(template_name)
     return template.render(**environment)
