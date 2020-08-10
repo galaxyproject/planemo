@@ -1,5 +1,7 @@
+{% if title %}
 # {{ title }}
 
+{% endif %}
 ## Test Summary
 {% set state = namespace(found=false) %}
 {% set state.success = raw_data.results.total - raw_data.results.errors - raw_data.results.failures - raw_data.results.skips | default(0) %}

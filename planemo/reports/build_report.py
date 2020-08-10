@@ -20,7 +20,9 @@ def build_report(structured_data, report_type="html", **kwds):
     if report_type == 'html':
         # The HTML report format needs a lot of extra, custom data.
         # IMO, this seems to suggest it should be embedded.
-        markdown = template_data(environment, 'markdown')
+        environment['title'] = None
+        markdown = template_data(environment, 'report_markdown.tpl')
+        environment['title'] = TITLE
         environment['raw_data'] = base64.b64encode(markdown.encode('utf-8')).decode('utf-8')
         environment.update({
             'custom_style': __style("custom.css"),
