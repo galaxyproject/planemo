@@ -3,10 +3,12 @@ from __future__ import absolute_import
 
 import re
 import xml.etree.ElementTree as ET
-import planemo.conda
 
 from galaxy.tool_util.deps import conda_util
+
+import planemo.conda
 from planemo.io import error, info
+
 
 def autoupdate(ctx, tool_path, **kwds):
     """
@@ -17,7 +19,7 @@ def autoupdate(ctx, tool_path, **kwds):
 
     for macro_import in requirements['imports']:
         # recursively check macros
-        macro_requirements = autoupdate('/'.join(tool_path.split('/')[:-1] + [macro_import]), dry_run)
+        macro_requirements = autoupdate('/'.join(tool_path.split('/')[:-1] + [macro_import]), kwds.get('dry_run'))
         for requirement in macro_requirements:
             if requirement not in requirements:
                 requirements[requirement] = macro_requirements[requirement]
@@ -33,7 +35,8 @@ def autoupdate(ctx, tool_path, **kwds):
         return requirements
 
     if kwds.get('dry_run'):
-        error("Update required to {}! Tool main requirement has version {}, newest conda version is {}".format(tool_path, requirements.get('@TOOL_VERSION@'), updated_main_req[requirements.get('main_req')]))
+        error("Update required to {}! Tool main requirement has version {}, newest conda version is {}".format(
+              tool_path, requirements.get('@TOOL_VERSION@'), updated_main_req[requirements.get('main_req')]))
         return requirements
 
     # if main_req is not up-to-date, update everything
@@ -127,11 +130,12 @@ def write_to_xml(tool_path, xml_tree, tags_to_update):
         # if '@GALAXY_VERSION@' not in tags_to_update['tokens']:
         if tags_to_update.get('update_tool'):
             # update the version directly in the tool tag
-            xml_text = re.sub('version="@TOOL_VERSION@\+galaxy.*"', 'version="@TOOL_VERSION@+galaxy0"', xml_text)
+            xml_text = re.sub(r'version="@TOOL_VERSION@\+galaxy.*"', 'version="@TOOL_VERSION@+galaxy0"', xml_text)
 
         f.seek(0)
         f.truncate()
         f.write(xml_text)
+
 
 __all__ = (
     "autoupdate"

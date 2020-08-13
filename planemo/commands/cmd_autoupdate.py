@@ -1,6 +1,9 @@
 """Module describing the planemo ``autoupdate`` command."""
 import click
 
+from planemo import autoupdate, options
+from planemo.cli import command_function
+from planemo.config import planemo_option
 from planemo.exit_codes import (
     EXIT_CODE_GENERIC_FAILURE,
     EXIT_CODE_OK
@@ -14,10 +17,6 @@ from planemo.tools import (
     yield_tool_sources_on_paths
 )
 
-from planemo import options, autoupdate
-from planemo.cli import command_function
-from planemo.config import planemo_option
-
 
 def dry_run_option():
     """Perform a dry run autoupdate without modifying the XML files"""
@@ -26,6 +25,7 @@ def dry_run_option():
         is_flag=True,
         help="Perform a dry run autoupdate without modifying the XML files."
     )
+
 
 @click.command('autoupdate')
 @options.optional_tools_arg(multiple=True)
