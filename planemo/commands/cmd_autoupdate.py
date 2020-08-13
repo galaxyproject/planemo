@@ -29,6 +29,7 @@ def dry_run_option():
 
 @click.command('autoupdate')
 @options.optional_tools_arg(multiple=True)
+@options.conda_target_options()
 @options.report_level_option()
 @options.report_xunit()
 @options.fail_level_option()
@@ -43,7 +44,7 @@ def cli(ctx, paths, **kwds):
     exit_codes = []
     for (tool_path, tool_xml) in yield_tool_sources_on_paths(ctx, paths, recursive):
         info("Auto-updating tool %s" % tool_path)
-        tool_xml = autoupdate.autoupdate(tool_path, kwds['dry_run'])
+        tool_xml = autoupdate.autoupdate(ctx, tool_path, **kwds)
         if handle_tool_load_error(tool_path, tool_xml):
             exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
             continue

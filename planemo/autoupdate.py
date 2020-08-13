@@ -5,9 +5,10 @@ import re
 import xml.etree.ElementTree as ET
 import planemo.conda
 
+from galaxy.tool_util.deps import conda_util
 from planemo.io import error, info
 
-def autoupdate(tool_path, dry_run=False):
+def autoupdate(ctx, tool_path, **kwds):
     """
     Autoupdate an XML file
     """
@@ -25,21 +26,22 @@ def autoupdate(tool_path, dry_run=False):
         # if tool_version is not specified, finish without changes
         error("The @TOOL_VERSION@ token is not specified in {}. This is required for autoupdating.".format(tool_path))
         return requirements
-    updated_main_req = get_latest_versions({requirements.get('main_req'): requirements.get('@TOOL_VERSION@')})
+    updated_main_req = get_latest_versions(ctx, {requirements.get('main_req'): requirements.get('@TOOL_VERSION@')}, **kwds)
     if updated_main_req[requirements.get('main_req')] == requirements.get('@TOOL_VERSION@'):
         # check main_req is up-to-date; if so, finish without changes
-        info("No updates required or madeto {}.".format(tool_path))
+        info("No updates required or made to {}.".format(tool_path))
         return requirements
 
-    if dry_run:
+    if kwds.get('dry_run'):
         error("Update required to {}! Tool main requirement has version {}, newest conda version is {}".format(tool_path, requirements.get('@TOOL_VERSION@'), updated_main_req[requirements.get('main_req')]))
         return requirements
 
     # if main_req is not up-to-date, update everything
-    updated_version_dict = get_latest_versions(requirements.get('other_reqs'))
+    updated_version_dict = get_latest_versions(ctx, requirements.get('other_reqs'), **kwds)
     update_requirements(tool_path, xml_tree, updated_version_dict, updated_main_req)
     info("Tool {} updated.".format(tool_path))
     return requirements
+
 
 def find_requirements(xml_tree):
     """
@@ -65,14 +67,19 @@ def find_requirements(xml_tree):
     return requirements
 
 
-def get_latest_versions(version_dict):
+def get_latest_versions(ctx, version_dict, **kwds):
     """
     Update a dict with current conda versions for tool requirements
     """
     for package in version_dict.keys():
+        conda_context = planemo.conda.build_conda_context(ctx, **kwds)
         target = planemo.conda.conda_util.CondaTarget(package)
-        search_results = planemo.conda.best_practice_search(target)
-        version_dict[package] = search_results[0]['version']
+        search_results = conda_util.best_search_result(target, conda_context=conda_context)
+        if search_results[1]:
+            version_dict[package] = search_results[0]['version']
+        else:
+            error('Requirements could not be found!')
+            exit()
     return version_dict
 
 
