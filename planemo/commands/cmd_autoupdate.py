@@ -38,7 +38,7 @@ def dry_run_option():
 @dry_run_option()
 @command_function
 def cli(ctx, paths, **kwds):
-    """Auto-update requirements section if necessary"""
+    """Auto-update tool requirements by checking against Conda and updating if newer versions are available"""
     assert_tools = kwds.get("assert_tools", True)
     recursive = kwds.get("recursive", False)
     exit_codes = []

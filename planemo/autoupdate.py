@@ -50,7 +50,7 @@ def find_requirements(xml_tree):
     """
     Get all requirements with versions as a dictionary of the form
     {'main_req': main requirement, 'other_reqs': {req1: version, ... },
-        'imports: ['macros.xml'], '*VERSION@': '...'}
+    'imports: ['macros.xml'], '*VERSION@': '...'}
     """
     requirements = {'other_reqs': {}, 'imports': []}
 
