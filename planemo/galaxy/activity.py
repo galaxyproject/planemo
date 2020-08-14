@@ -179,17 +179,20 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         invocation_id = invocation["id"]
         ctx.vlog("Waiting for invocation [%s]" % invocation_id)
         polling_backoff = kwds.get("polling_backoff", 0)
+        final_invocation_state = 'new'
+        error_message = ""
         try:
             final_invocation_state = _wait_for_invocation(ctx, user_gi, history_id, workflow_id, invocation_id, polling_backoff)
             assert final_invocation_state == 'scheduled'
         except Exception:
             ctx.vlog("Problem waiting on invocation...")
             summarize_history(ctx, user_gi, history_id)
-            raise
+            error_message = "Final invocation state is [%s]" % final_invocation_state
         ctx.vlog("Final invocation state is [%s]" % final_invocation_state)
         final_state = _wait_for_history(ctx, user_gi, history_id, polling_backoff)
         if final_state != "ok":
             msg = "Failed to run workflow final history state is [%s]." % final_state
+            error_message = msg if not error_message else "%s. %s" % (error_message, msg)
             ctx.vlog(msg)
             summarize_history(ctx, user_gi, history_id)
         else:
@@ -198,7 +201,8 @@ def _execute(ctx, config, runnable, job_path, **kwds):
             'workflow_id': workflow_id,
             'invocation_id': invocation_id,
             'history_state': final_state,
-            'invocation_state': final_invocation_state
+            'invocation_state': final_invocation_state,
+            'error_message': error_message,
         }
     else:
         raise NotImplementedError()
@@ -503,7 +507,8 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         workflow_id,
         invocation_id,
         history_state='ok',
-        invocation_state='ok'
+        invocation_state='ok',
+        error_message=None,
     ):
         super(GalaxyWorkflowRunResponse, self).__init__(
             ctx=ctx,
@@ -517,6 +522,7 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         self._invocation_details = {}
         self.history_state = history_state
         self.invocation_state = invocation_state
+        self.error_message = error_message
         self.collect_invocation_details()
 
     def to_galaxy_output(self, runnable_output):
@@ -579,9 +585,6 @@ def _history_id(gi, **kwds):
 def _wait_for_invocation(ctx, gi, history_id, workflow_id, invocation_id, polling_backoff=0):
 
     def state_func():
-        if _retry_on_timeouts(ctx, gi, lambda gi: has_jobs_in_states(ctx, gi, history_id, ["error", "deleted", "deleted_new"])):
-            raise Exception("Problem running workflow, one or more jobs failed.")
-
         return _retry_on_timeouts(ctx, gi, lambda gi: gi.workflows.show_invocation(workflow_id, invocation_id))
 
     return _wait_on_state(state_func, polling_backoff)
