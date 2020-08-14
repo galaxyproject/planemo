@@ -10,6 +10,7 @@ from planemo.exit_codes import (
 )
 from planemo.io import (
     coalesce_return_codes,
+    error,
     info
 )
 from planemo.tools import (
@@ -38,13 +39,17 @@ def dry_run_option():
 @dry_run_option()
 @command_function
 def cli(ctx, paths, **kwds):
-    """Auto-update tool requirements by checking against Conda and updating if newer versions are available"""
+    """Auto-update tool requirements by checking against Conda and updating if newer versions are available."""
     assert_tools = kwds.get("assert_tools", True)
     recursive = kwds.get("recursive", False)
     exit_codes = []
+    # print([t for t in yield_tool_sources_on_paths(ctx, paths, recursive)])
     for (tool_path, tool_xml) in yield_tool_sources_on_paths(ctx, paths, recursive):
         info("Auto-updating tool %s" % tool_path)
-        tool_xml = autoupdate.autoupdate(ctx, tool_path, **kwds)
+        try:
+            tool_xml = autoupdate.autoupdate(ctx, tool_path, **kwds)
+        except Exception as e:
+            error("{} could not be updated - the following error was raised: {}".format(tool_path, e.__str__()))
         if handle_tool_load_error(tool_path, tool_xml):
             exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
             continue

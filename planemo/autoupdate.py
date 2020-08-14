@@ -16,14 +16,12 @@ def autoupdate(ctx, tool_path, **kwds):
     """
     xml_tree = ET.parse(tool_path)
     requirements = find_requirements(xml_tree)
-
     for macro_import in requirements['imports']:
         # recursively check macros
-        macro_requirements = autoupdate('/'.join(tool_path.split('/')[:-1] + [macro_import]), kwds.get('dry_run'))
+        macro_requirements = autoupdate(ctx, '/'.join(tool_path.split('/')[:-1] + [macro_import]), **kwds)  #kwds.get('dry_run'))
         for requirement in macro_requirements:
             if requirement not in requirements:
                 requirements[requirement] = macro_requirements[requirement]
-
     if not requirements.get('@TOOL_VERSION@'):
         # if tool_version is not specified, finish without changes
         error("The @TOOL_VERSION@ token is not specified in {}. This is required for autoupdating.".format(tool_path))
@@ -94,23 +92,43 @@ def update_requirements(tool_path, xml_tree, updated_version_dict, updated_main_
 
     tags_to_update = {'tokens': [], 'requirements': []}
 
+    # get name of token which defines the wrapper version; if just an integer, None
+    versions = xml_tree.getroot().attrib.get('version')#.split('+galaxy')
+    if versions:
+        versions = versions.split('+galaxy')
+        if len(versions) == 1:
+            error('Tool version is not specified as two parts separated by +galaxy as required by autoupdate.')
+            exit()
+        elif versions[0] != '@TOOL_VERSION@':
+            error('Tool version does not contain @TOOL_VERSION@ as required by autoupdate.')
+            exit()
+        else:
+            if versions[1][0] == versions[1][-1] == '@':
+                wrapper_token = versions[1]
+            else:
+                wrapper_token = None
+    else:
+        wrapper_token = None
+    print(wrapper_token)
+
     for token in xml_tree.iter("token"):
         if token.attrib.get('name') == '@TOOL_VERSION@':
             #  check this
             token.text = list(updated_main_req.values())[0]
-        elif token.attrib.get('name') == '@GALAXY_VERSION@':
+        elif token.attrib.get('name') == wrapper_token:
             token.text = '0'
         else:
             continue
         tags_to_update['tokens'].append(ET.tostring(token, encoding="unicode").strip())
 
-    if '@GALAXY_VERSION@' not in [n.attrib.get('name') for n in xml_tree.iter('token')]:
+    if wrapper_token not in [n.attrib.get('name') for n in xml_tree.iter('token')]:
         tags_to_update['update_tool'] = True
 
     for requirement in xml_tree.iter("requirement"):
         if requirement.text not in updated_main_req:
             requirement.set('version', updated_version_dict[requirement.text])
         tags_to_update['requirements'].append(ET.tostring(requirement, encoding="unicode").strip())
+    print(tags_to_update)
     write_to_xml(tool_path, xml_tree, tags_to_update)
     return xml_tree
 
@@ -119,6 +137,7 @@ def write_to_xml(tool_path, xml_tree, tags_to_update):
     """
     Write modified XML to tool_path
     """
+    print(tags_to_update)
     with open(tool_path, 'r+') as f:
         xml_text = f.read()
         for token in tags_to_update['tokens']:
@@ -130,7 +149,7 @@ def write_to_xml(tool_path, xml_tree, tags_to_update):
         # if '@GALAXY_VERSION@' not in tags_to_update['tokens']:
         if tags_to_update.get('update_tool'):
             # update the version directly in the tool tag
-            xml_text = re.sub(r'version="@TOOL_VERSION@\+galaxy.*"', 'version="@TOOL_VERSION@+galaxy0"', xml_text)
+            xml_text = re.sub(r'version="@TOOL_VERSION@\+galaxy.*?"', 'version="@TOOL_VERSION@+galaxy0"', xml_text)
 
         f.seek(0)
         f.truncate()
