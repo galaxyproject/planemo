@@ -48,7 +48,7 @@
 {%       endfor %}
 {%     if test.data.job %}
 {%       for key, description in display_job_attributes.items() %}
-{%         if test.data.job[key] %}
+{%         if test.data.job[key] not in ("", None) %}
     #### {{ description }}:
 
     ```console
@@ -56,6 +56,16 @@
     ```
 {%         endif %}
 {%       endfor %}
+{%       if test.data.job.params %}
+   #### Job Parameters:
+
+     | Job parameter | Parameter value |
+     | ------------- | --------------- |
+{%         for key, value in test.data.job.params.items() %}
+     | {{ key }} | ` {{ value }} ` |
+{%         endfor %}
+{%       endif %}
+
 {%     endif %}
 {%     if test.data.invocation_details %}
 
@@ -64,7 +74,7 @@
    <details><summary>Steps</summary>
 {%    for step_data in test.data.invocation_details.values() %}
 
-     {{step_data.order_index}}. **{{step_data.workflow_step_label or (step_data.jobs[0].tool_id if step_data.jobs[0] else 'Unlabelled step')}}**:
+     - **{{step_data.order_index + 1}} - {{step_data.workflow_step_label or (step_data.jobs[0].tool_id if step_data.jobs[0] else 'Unlabelled step')}}**:
 
         step_state: {{step_data.state}}
 
@@ -72,17 +82,28 @@
         <details><summary>jobs:</summary>
 
 {%        for job in step_data.jobs %}
-           - job {{loop.index}}:
+          - job {{loop.index}}:
 
-             | Job property | Value |
-             | ------------ | ----- |
-{%            for key, value in job.items() %}
-{%              if value %}
-             | {{key}} | `{{value}}` |
-{%              endif %}
+{%          for key, description in display_job_attributes.items() %}
+{%            if job[key] not in ("", None) %}
+            #### {{ description }}:
+
+            ```console
+            {{ job[key]|string|indent(width=12) }}
+            ```
+{%            endif %}
+{%          endfor %}
+{%          if job.params %}
+            #### Job Parameters:
+
+            | Job parameter | Parameter value |
+            | ------------- | --------------- |
+{%            for key, value in job.params.items() %}
+            | `{{ key }}` | ` {{ value }} ` |
 {%            endfor %}
-
+{%          endif %}
 {%        endfor %}
+
         </details>
 {%      endif %}
 {%    endfor %}
