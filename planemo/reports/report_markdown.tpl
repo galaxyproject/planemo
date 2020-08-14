@@ -84,6 +84,8 @@
 {%        for job in step_data.jobs %}
           - job {{loop.index}}:
 
+            Job state is {{ job.state }}
+
 {%          for key, description in display_job_attributes.items() %}
 {%            if job[key] not in ("", None) %}
             #### {{ description }}:
