@@ -18,6 +18,7 @@
 | Skipped    | {{ state.skipped }} |
 
 
+{% set display_job_attributes = {'command_line': 'Command Line', 'exit_code': 'Exit Code', 'stderr': 'Standard Error', 'stdout': 'Standard Output'} %}
 {% for status, desc in {'error': 'Errored', 'failure': 'Failed', 'success': 'Passed'}.items() if state[status]%}
 <details><summary>{{ desc }} Tests</summary>
 {%   for test in raw_data.tests %}
@@ -34,37 +35,27 @@
 {%       if test.data.output_problems %}
     #### Problems
 {%       endif %}
+{% if test.data.execution_problem %}
+    ##### Execution Problem
+    ```
+    {{test.data.execution_problem|indent}}
+    ```
+{% endif %}
 {%       for problem in test.data.output_problems %}
     ```
     {{problem|indent}}
     ```
 {%       endfor %}
 {%     if test.data.job %}
-
-    #### Command Line:
+{%       for key, description in display_job_attributes.items() %}
+{%         if test.data.job[key] %}
+    #### {{ description }}:
 
     ```console
-    {{ test.data.job.command_line|indent}}
+    {{ test.data.job[key]|string|indent}}
     ```
-    exited with code {{ test.data.job.exit_code }}.
-
- {%    if test.data.job.stdout %}
-
-    #### `stderr`
-
-    ```
-    {{ test.data.job.stderr|indent }}
-    ```
-
-{%     endif %}
-{%     if test.data.job.stdout %}
-
-    #### `stdout`
-
-    ```
-    {{ test.data.job.stdout|indent }}
-    ```
-{%     endif %}
+{%         endif %}
+{%       endfor %}
 {%     endif %}
 {%     if test.data.invocation_details %}
 
