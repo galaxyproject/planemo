@@ -142,8 +142,6 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         if final_state != "ok":
             msg = "Failed to run CWL tool job final job state is [%s]." % final_state
             summarize_history(ctx, user_gi, history_id)
-            with open("errored_galaxy.log", "w") as f:
-                f.write(log_contents_str(config))
             raise Exception(msg)
 
         ctx.vlog("Final job state was ok, fetching details for job [%s]" % job_id)
@@ -194,8 +192,6 @@ def _execute(ctx, config, runnable, job_path, **kwds):
             msg = "Failed to run workflow final history state is [%s]." % final_state
             ctx.vlog(msg)
             summarize_history(ctx, user_gi, history_id)
-            with open("errored_galaxy.log", "w") as f:
-                f.write(log_contents_str(config))
         else:
             ctx.vlog("Final history state is 'ok'")
         response_kwds = {
@@ -252,8 +248,6 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):  # n
     if final_state != "ok":
         msg = "Failed to run job final job state is [%s]." % final_state
         summarize_history(ctx, user_gi, history_id)
-        with open("errored_galaxy.log", "w") as f:
-            f.write(log_contents_str(config))
         raise Exception(msg)
 
     return job_dict, datasets
