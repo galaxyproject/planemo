@@ -520,10 +520,11 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         self._workflow_id = workflow_id
         self._invocation_id = invocation_id
         self._invocation_details = {}
+        self._cached_invocation = None
         self.history_state = history_state
         self.invocation_state = invocation_state
         self.error_message = error_message
-        self.collect_invocation_details()
+        self._invocation_details = self.collect_invocation_details(invocation_id)
 
     def to_galaxy_output(self, runnable_output):
         output_id = runnable_output.get_id()
@@ -542,27 +543,34 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         else:
             raise Exception("Failed to find output [%s] in invocation outputs [%s]" % (output_name, invocation["outputs"]))
 
-    def collect_invocation_details(self):
+    def collect_invocation_details(self, invocation_id=None):
         gi = self._user_gi
         invocation_steps = {}
-        for step in self._invocation['steps']:
+        invocation = self.get_invocation(invocation_id)
+        for step in invocation['steps']:
             step_label_or_index = "{}. {}".format(step['order_index'], step['workflow_step_label'] or 'Unnamed step')
             workflow_step = gi.invocations.show_invocation_step(self._invocation_id, step['id'])
+            workflow_step['subworkflow'] = None
+            subworkflow_invocation_id = workflow_step.get('subworkflow_invocation_id')
+            if subworkflow_invocation_id:
+                workflow_step['subworkflow'] = self.collect_invocation_details(subworkflow_invocation_id)
             workflow_step_job_details = [self._user_gi.jobs.show_job(j['id'], full_details=True) for j in workflow_step['jobs']]
             workflow_step['jobs'] = workflow_step_job_details
             invocation_steps[step_label_or_index] = workflow_step
-        self._invocation_details = invocation_steps
+        return invocation_steps
 
     @property
     def invocation_details(self):
         return self._invocation_details
 
+    def get_invocation(self, invocation_id):
+        return self._user_gi.invocations.show_invocation(invocation_id)
+
     @property
     def _invocation(self):
-        invocation = self._user_gi.invocations.show_invocation(
-            self._invocation_id,
-        )
-        return invocation
+        if self._cached_invocation is None:
+            self._cached_invocation = self.get_invocation(self._invocation_id)
+        return self._cached_invocation
 
     @property
     def was_successful(self):
