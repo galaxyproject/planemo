@@ -1,3 +1,4 @@
+{% from 'macros.tmpl' import render_steps %}
 {% if title %}
 # {{ title }}
 
@@ -71,45 +72,8 @@
 
     #### Workflow invocation details
 
-   <details><summary>Steps</summary>
-{%    for step_data in test.data.invocation_details.values() %}
+{{render_steps(test.data.invocation_details.values(), display_job_attributes)}}
 
-     - **{{step_data.order_index + 1}} - {{step_data.workflow_step_label or (step_data.jobs[0].tool_id if step_data.jobs[0] else 'Unlabelled step')}}**:
-
-        step_state: {{step_data.state}}
-
-{%      if step_data.jobs %}
-        <details><summary>jobs:</summary>
-
-{%        for job in step_data.jobs %}
-          - job {{loop.index}}:
-
-            Job state is {{ job.state }}
-
-{%          for key, description in display_job_attributes.items() %}
-{%            if job[key] not in ("", None) %}
-            #### {{ description }}:
-
-            ```console
-            {{ job[key]|string|indent(width=12) }}
-            ```
-{%            endif %}
-{%          endfor %}
-{%          if job.params %}
-            #### Job Parameters:
-
-            | Job parameter | Parameter value |
-            | ------------- | --------------- |
-{%            for key, value in job.params.items() %}
-            | `{{ key }}` | ` {{ value }} ` |
-{%            endfor %}
-{%          endif %}
-{%        endfor %}
-
-        </details>
-{%      endif %}
-{%    endfor %}
-  </details>
 {% endif %}
 {% endif %}
 {% endfor %}
