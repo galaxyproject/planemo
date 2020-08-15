@@ -2,7 +2,7 @@
    * <details><summary>{{summary_label}}</summary>
 {%    for step_data in steps %}
 
-     - **Step {{step_data.order_index + 1}}: {{step_data.workflow_step_label or (step_data.jobs[0].tool_id if step_data.jobs[0] else 'Unlabelled step')}}**:
+     - **Step {{step_data.order_index + 1}}: {{step_data.workflow_step_label or (step_data.jobs[0].tool_id if step_data.jobs[0] else 'Unlabelled step')|replace("_", "\_")}}**:
 
         * step_state: {{step_data.state}}
 
@@ -32,7 +32,7 @@
             **{{ description }}:**
 
              * ```console
-               {{ job[key]|string|indent(width=12) }}
+               {{ job[key]|string|indent(width=15) }}
                ```
 {%            endif %}
 {%          endfor %}
@@ -48,7 +48,7 @@
    *   | Job parameter | Parameter value |
        | ------------- | --------------- |
 {%         for key, value in job.params.items() %}
-       | {{ key }} | ` {{ value }} ` |
+       | {{ key|replace('_', '\_') }} | ` {{ value }} ` |
 {%         endfor %}
 {%       endif %}
 {% endmacro %}
