@@ -53,7 +53,7 @@ def __fix_test_ids(environment):
     for test in environment['raw_data']['tests']:
         test_data = test.get('data')
         if test_data and test_data.get('tool_id'):
-            test['id'] = "%s - Test %s" % (test_data['tool_id'], test_data['test_index'] + 1)
+            test['id'] = "%s (Test #%s)" % (test_data['tool_id'], test_data['test_index'] + 1)
 
 
 def __inject_summary(environment):

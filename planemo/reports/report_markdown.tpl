@@ -26,44 +26,44 @@
 {%     if test.data.status == status %}
 {%       if test.data.status == 'success' %}
 
-* <details><summary>&#9989; {{ test.id }}</summary>
+* <details class="rcorners light-green"><summary class="light-green">&#9989; {{ test.id }}</summary><div class="padded">
 
 {%       else %}
 
-* <details><summary>&#10060; {{ test.id }}</summary>
+* <details class="rcorners light-red"><summary class="light-red">&#10060; {{ test.id }}</summary><div class="padded">
 
 {%       endif %}
 {%       if test.data.output_problems %}
-    #### Problems
+    **Problems**:
 {%       endif %}
-{% if test.data.execution_problem %}
-    ##### Execution Problem
-    ```
-    {{test.data.execution_problem|indent}}
-    ```
-{% endif %}
 {%       for problem in test.data.output_problems %}
-    ```
-    {{problem|indent}}
-    ```
+    * ```
+      {{problem|indent(6)}}
+      ```
 {%       endfor %}
+{%       if test.data.execution_problem %}
+    **Execution Problem:**
+    * ```
+      {{test.data.execution_problem|indent(6)}}
+      ```
+{%       endif %}
 {%     if test.data.job %}
 {%       for key, description in display_job_attributes.items() %}
 {%         if test.data.job[key] not in ("", None) %}
-    #### {{ description }}:
+    **{{ description }}:**
 
-    ```console
-    {{ test.data.job[key]|string|indent}}
-    ```
+    * ```console
+      {{ test.data.job[key]|string|indent(6)}}
+      ```
 {%         endif %}
 {%       endfor %}
 {%       if test.data.job.params %}
-   #### Job Parameters:
+   **Job Parameters:**
 
-     | Job parameter | Parameter value |
-     | ------------- | --------------- |
+   *   | Job parameter | Parameter value |
+       | ------------- | --------------- |
 {%         for key, value in test.data.job.params.items() %}
-     | {{ key }} | ` {{ value }} ` |
+       | {{ key }} | ` {{ value }} ` |
 {%         endfor %}
 {%       endif %}
 
@@ -73,6 +73,7 @@
     #### Workflow invocation details
 
 {{render_steps(test.data.invocation_details.values(), display_job_attributes)}}
+  </div></details>
 
 {% endif %}
 {% endif %}

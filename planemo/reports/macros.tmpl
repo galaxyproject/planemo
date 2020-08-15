@@ -18,13 +18,12 @@
 
 {%      endif %}
 {%    endfor %}
-  </details>
 {% endmacro %}
 
 
 {% macro render_step_jobs(step_data, display_job_attributes) %}
 {%        for job in step_data.jobs %}
-          - job {{loop.index}}:
+          - Job {{loop.index}}:
 
             Job state is {{ job.state }}
 

@@ -111,6 +111,49 @@ table {
   margin-top: 0;
 }
 
+ul {
+  padding-left: 10px;
+}
+
+li {
+  list-style-type: none;
+  padding: 2px;
+}
+
+pre {
+  max-height: 500px;
+  overflow: auto
+}
+
+.rcorners {
+  border-radius: 10px;
+  padding: 0px;
+  border-style: solid;
+}
+
+.light-green {
+  border: 2px transparent #73AD21;
+  border-color: #dff0d8;
+}
+
+summary.light-green {
+  background-color: #dff0d8
+}
+
+.light-red {
+  /*  */
+  border: 2px transparent #f2dede;
+  border-color: #f2dede;
+}
+
+summary.light-red {
+  background-color: #f2dede;
+}
+
+.padded {
+  background-color: #fff;
+  margin: 10px;
+}
 
 /*
  * Placeholder dashboard ideas
