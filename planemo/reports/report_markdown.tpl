@@ -1,4 +1,4 @@
-{% from 'macros.tmpl' import render_steps %}
+{% from 'macros.tmpl' import render_job_parameters, render_steps %}
 {% if title %}
 # {{ title }}
 
@@ -57,15 +57,7 @@
       ```
 {%         endif %}
 {%       endfor %}
-{%       if test.data.job.params %}
-   **Job Parameters:**
-
-   *   | Job parameter | Parameter value |
-       | ------------- | --------------- |
-{%         for key, value in test.data.job.params.items() %}
-       | {{ key }} | ` {{ value }} ` |
-{%         endfor %}
-{%       endif %}
+{{render_job_parameters(test.data.job)}}
 
 {%     endif %}
 {%     if test.data.invocation_details %}
