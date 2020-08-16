@@ -44,11 +44,6 @@
     {{ jquery_script }}
     {{ bootstrap_script }}
     {{ markdown_it_script }}
-    <style>
-details > summary {
-  vertical-align: text-top;
-}
-     </style>
     <script>
         var target = document.getElementById('overview-content');
         var md = window.markdownit({
