@@ -63,6 +63,7 @@ class MockRunResponse(object):
             "stdout": "Cat output",
             "stderr": "Cat problems..."
         }
+        self.invocation_details = None
         self.log = "My Log"
 
 

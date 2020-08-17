@@ -142,8 +142,6 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         if final_state != "ok":
             msg = "Failed to run CWL tool job final job state is [%s]." % final_state
             summarize_history(ctx, user_gi, history_id)
-            with open("errored_galaxy.log", "w") as f:
-                f.write(log_contents_str(config))
             raise Exception(msg)
 
         ctx.vlog("Final job state was ok, fetching details for job [%s]" % job_id)
@@ -181,24 +179,30 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         invocation_id = invocation["id"]
         ctx.vlog("Waiting for invocation [%s]" % invocation_id)
         polling_backoff = kwds.get("polling_backoff", 0)
+        final_invocation_state = 'new'
+        error_message = ""
         try:
             final_invocation_state = _wait_for_invocation(ctx, user_gi, history_id, workflow_id, invocation_id, polling_backoff)
+            assert final_invocation_state == 'scheduled'
         except Exception:
             ctx.vlog("Problem waiting on invocation...")
             summarize_history(ctx, user_gi, history_id)
-            raise
+            error_message = "Final invocation state is [%s]" % final_invocation_state
         ctx.vlog("Final invocation state is [%s]" % final_invocation_state)
         final_state = _wait_for_history(ctx, user_gi, history_id, polling_backoff)
         if final_state != "ok":
             msg = "Failed to run workflow final history state is [%s]." % final_state
+            error_message = msg if not error_message else "%s. %s" % (error_message, msg)
+            ctx.vlog(msg)
             summarize_history(ctx, user_gi, history_id)
-            with open("errored_galaxy.log", "w") as f:
-                f.write(log_contents_str(config))
-            raise Exception(msg)
-        ctx.vlog("Final history state is 'ok'")
+        else:
+            ctx.vlog("Final history state is 'ok'")
         response_kwds = {
             'workflow_id': workflow_id,
             'invocation_id': invocation_id,
+            'history_state': final_state,
+            'invocation_state': final_invocation_state,
+            'error_message': error_message,
         }
     else:
         raise NotImplementedError()
@@ -248,8 +252,6 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):  # n
     if final_state != "ok":
         msg = "Failed to run job final job state is [%s]." % final_state
         summarize_history(ctx, user_gi, history_id)
-        with open("errored_galaxy.log", "w") as f:
-            f.write(log_contents_str(config))
         raise Exception(msg)
 
     return job_dict, datasets
@@ -408,6 +410,10 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         return None
 
     @property
+    def invocation_details(self):
+        return None
+
+    @property
     def outputs_dict(self):
         return self._outputs_dict
 
@@ -500,6 +506,9 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         log,
         workflow_id,
         invocation_id,
+        history_state='ok',
+        invocation_state='ok',
+        error_message=None,
     ):
         super(GalaxyWorkflowRunResponse, self).__init__(
             ctx=ctx,
@@ -510,6 +519,12 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         )
         self._workflow_id = workflow_id
         self._invocation_id = invocation_id
+        self._invocation_details = {}
+        self._cached_invocation = None
+        self.history_state = history_state
+        self.invocation_state = invocation_state
+        self.error_message = error_message
+        self._invocation_details = self.collect_invocation_details(invocation_id)
 
     def to_galaxy_output(self, runnable_output):
         output_id = runnable_output.get_id()
@@ -528,13 +543,38 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         else:
             raise Exception("Failed to find output [%s] in invocation outputs [%s]" % (output_name, invocation["outputs"]))
 
+    def collect_invocation_details(self, invocation_id=None):
+        gi = self._user_gi
+        invocation_steps = {}
+        invocation = self.get_invocation(invocation_id)
+        for step in invocation['steps']:
+            step_label_or_index = "{}. {}".format(step['order_index'], step['workflow_step_label'] or 'Unnamed step')
+            workflow_step = gi.invocations.show_invocation_step(self._invocation_id, step['id'])
+            workflow_step['subworkflow'] = None
+            subworkflow_invocation_id = workflow_step.get('subworkflow_invocation_id')
+            if subworkflow_invocation_id:
+                workflow_step['subworkflow'] = self.collect_invocation_details(subworkflow_invocation_id)
+            workflow_step_job_details = [self._user_gi.jobs.show_job(j['id'], full_details=True) for j in workflow_step['jobs']]
+            workflow_step['jobs'] = workflow_step_job_details
+            invocation_steps[step_label_or_index] = workflow_step
+        return invocation_steps
+
+    @property
+    def invocation_details(self):
+        return self._invocation_details
+
+    def get_invocation(self, invocation_id):
+        return self._user_gi.invocations.show_invocation(invocation_id)
+
     @property
     def _invocation(self):
-        invocation = self._user_gi.workflows.show_invocation(
-            self._workflow_id,
-            self._invocation_id,
-        )
-        return invocation
+        if self._cached_invocation is None:
+            self._cached_invocation = self.get_invocation(self._invocation_id)
+        return self._cached_invocation
+
+    @property
+    def was_successful(self):
+        return self.history_state == 'ok' and self.invocation_state == 'scheduled'
 
 
 def _tool_id(tool_path):
@@ -553,9 +593,6 @@ def _history_id(gi, **kwds):
 def _wait_for_invocation(ctx, gi, history_id, workflow_id, invocation_id, polling_backoff=0):
 
     def state_func():
-        if _retry_on_timeouts(ctx, gi, lambda gi: has_jobs_in_states(ctx, gi, history_id, ["error", "deleted", "deleted_new"])):
-            raise Exception("Problem running workflow, one or more jobs failed.")
-
         return _retry_on_timeouts(ctx, gi, lambda gi: gi.workflows.show_invocation(workflow_id, invocation_id))
 
     return _wait_on_state(state_func, polling_backoff)
