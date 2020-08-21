@@ -12,7 +12,11 @@ Planemo provides a ``autoupdate`` subcommand which can be used to perform this t
 
     planemo autoupdate tool_wrapper.xml
 
-There are various flags which can be applied; two of the most important are ``--recursive``, which performs the autoupdate recursively on subdirectories, and ``--dry-run``, which checks if tool requirements are up-to-date without making the necessary change automatically.
+There are various flags which can be applied; these are some of the most important:
+  - ``--recursive``, which performs the autoupdate recursively on subdirectories
+  - ``--dry-run``, which checks if tool requirements are up-to-date without making the necessary change automatically
+  - ``--test``, which runs tests on all autoupdated tools
+  - ``--update_test_data`` (if ``--test`` is also selected) which will update test data for failed tests
 
 One of the most efficient ways to use it is by implementing a CI cron job which runs the command on an entire GitHub repository of tools.
 

@@ -1,9 +1,14 @@
 """Module describing the planemo ``autoupdate`` command."""
+import os.path
+
 import click
 
 from planemo import autoupdate, options
 from planemo.cli import command_function
 from planemo.config import planemo_option
+from planemo.engine.test import (
+    test_runnables,
+)
 from planemo.exit_codes import (
     EXIT_CODE_GENERIC_FAILURE,
     EXIT_CODE_OK
@@ -11,7 +16,11 @@ from planemo.exit_codes import (
 from planemo.io import (
     coalesce_return_codes,
     error,
-    info
+    info,
+    temp_directory
+)
+from planemo.runnable import (
+    for_paths,
 )
 from planemo.tools import (
     is_tool_load_error,
@@ -28,15 +37,37 @@ def dry_run_option():
     )
 
 
+def force_update_option():
+    """Update all requirements, even if main requirement has not changed"""
+    return planemo_option(
+        "--force-update",
+        is_flag=True,
+        help="Update all requirements, even if main requirement has not changed."
+    )
+
+
+def test_option():
+    """Test updated XML files"""
+    return planemo_option(
+        "--test",
+        is_flag=True,
+        help="Test updated XML files."
+    )
+
+
 @click.command('autoupdate')
 @options.optional_tools_arg(multiple=True)
-@options.conda_target_options()
+@dry_run_option()
+@options.recursive_option()
+@force_update_option()
+@test_option()
+@options.test_options()
+@options.galaxy_target_options()
+@options.galaxy_config_options()
 @options.report_level_option()
 @options.report_xunit()
 @options.fail_level_option()
 @options.skip_option()
-@options.recursive_option()
-@dry_run_option()
 @command_function
 def cli(ctx, paths, **kwds):
     """Auto-update tool requirements by checking against Conda and updating if newer versions are available."""
@@ -44,10 +75,14 @@ def cli(ctx, paths, **kwds):
     recursive = kwds.get("recursive", False)
     exit_codes = []
     # print([t for t in yield_tool_sources_on_paths(ctx, paths, recursive)])
+    dirs_updated = set()
     for (tool_path, tool_xml) in yield_tool_sources_on_paths(ctx, paths, recursive):
         info("Auto-updating tool %s" % tool_path)
         try:
+            kwds['force_update'] = (os.path.split(tool_path)[0] in dirs_updated) or kwds.get('force_update')
             tool_xml = autoupdate.autoupdate(ctx, tool_path, **kwds)
+            if tool_xml == 0:
+                dirs_updated.add(os.path.split(tool_path)[0])
         except Exception as e:
             error("{} could not be updated - the following error was raised: {}".format(tool_path, e.__str__()))
         if handle_tool_load_error(tool_path, tool_xml):
@@ -55,8 +90,21 @@ def cli(ctx, paths, **kwds):
             continue
         else:
             exit_codes.append(EXIT_CODE_OK)
+
+    if kwds['test']:
+        info("Running tests for auto-updated tools...")
+        if not dirs_updated:
+            info("No tools were updated, so no tests were run.")
+        else:
+            with temp_directory(dir=ctx.planemo_directory) as temp_path:
+                # only test tools in updated directories
+                paths = [path for path in paths if os.path.split(tool_path)[0] in dirs_updated]
+                runnables = for_paths(paths, temp_path=temp_path)
+                kwds["engine"] = "galaxy"
+                return_value = test_runnables(ctx, runnables, original_paths=paths, **kwds)
+
     return coalesce_return_codes(exit_codes, assert_at_least_one=assert_tools)
-    ctx.exit()
+    ctx.exit(return_value)
 
 
 def handle_tool_load_error(tool_path, tool_xml):
