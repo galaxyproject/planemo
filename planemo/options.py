@@ -27,8 +27,8 @@ def skip_venv_option():
         "--skip_venv",
         is_flag=True,
         help=("Do not create or source a virtualenv environment for Galaxy, "
-              "this should be used or instance to preserve an externally "
-              "configured virtual environment or conda environment.")
+              "this should be used to preserve an externally configured "
+              "virtual environment or conda environment.")
     )
 
 
