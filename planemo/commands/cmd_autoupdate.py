@@ -70,7 +70,8 @@ def cli(ctx, paths, **kwds):
         try:
             updated = autoupdate.autoupdate(ctx, tool_path, modified_files=modified_files, **kwds)
             if updated:
-                modified_files += updated
+                # modified_files += updated
+                modified_files.update(updated)
         except Exception as e:
             error("{} could not be updated - the following error was raised: {}".format(tool_path, e.__str__()))
         if handle_tool_load_error(tool_path, tool_xml):

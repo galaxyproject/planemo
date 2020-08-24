@@ -168,4 +168,4 @@ def autoupdate(ctx, tool_path, modified_files=set(), **kwds):
         update_xml(k, v, xml_to_update[k], wrapper_version_token, is_macro=(k != tool_path))
 
     info("Tool {} updated.".format(tool_path))
-    return list(xml_files)
+    return set(xml_files)
