@@ -87,7 +87,7 @@ def update_xml(tool_path, xml_tree, tags_to_update, wrapper_version_token, is_ma
         f.write(xml_text)
 
 
-def autoupdate(ctx, tool_path, force_update=False, **kwds):
+def autoupdate(ctx, tool_path, modified_files=set(), **kwds):
     """
     Autoupdate an XML file
     """
@@ -141,7 +141,7 @@ def autoupdate(ctx, tool_path, force_update=False, **kwds):
             if check_main_req:
                 xml_to_update[k].append({'type': 'token', 'tag': tokens[k]['@TOOL_VERSION@']['tag'], 'value': check_main_req})
                 need_to_update = True
-    if not need_to_update and not force_update:
+    if not need_to_update and not (modified_files & set(xml_files)):
         info("No updates required or made to {}.".format(tool_path))
         return  # end here if no update needed
 
@@ -168,4 +168,4 @@ def autoupdate(ctx, tool_path, force_update=False, **kwds):
         update_xml(k, v, xml_to_update[k], wrapper_version_token, is_macro=(k != tool_path))
 
     info("Tool {} updated.".format(tool_path))
-    return 0
+    return list(xml_files)
