@@ -77,7 +77,7 @@ def update_xml(tool_path, xml_tree, tags_to_update, wrapper_version_token, is_ma
                 xml_text = update_token(xml_text, tag_to_update['tag'], tag_to_update['value'])
             if tag_to_update['type'] == 'requirement':
                 xml_text = update_requirement(xml_text, tag_to_update['tag'], tag_to_update['value'])
-        if not wrapper_version_token and not is_macro:
+        if wrapper_version_token is not None and not is_macro:
             # i.e. @GALAXY_VERSION@ not specified so update the version directly in the tool tag
             tool_tag = re.sub('version="@TOOL_VERSION@.*?"', 'version="@TOOL_VERSION@+galaxy0"',
                               re.findall('<tool .*version="@TOOL_VERSION@.*">', xml_text)[0])
@@ -107,7 +107,7 @@ def autoupdate(ctx, tool_path, modified_files=set(), **kwds):
             if versions[1][0] == versions[1][-1] == '@':
                 wrapper_version_token = versions[1]
             else:
-                wrapper_version_token = None
+                wrapper_version_token = 0  # assume an int
     else:
         wrapper_version_token = None
 
