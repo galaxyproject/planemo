@@ -35,7 +35,12 @@ def cli(ctx, uri, job_path, **kwds):
     is_cwl = path.endswith(".cwl")
     kwds["cwl"] = is_cwl
     if kwds.get("engine", None) is None:
-        kwds["engine"] = "galaxy" if not is_cwl else "cwltool"
+        if is_cwl:
+            kwds["engine"] = "cwltool"
+        elif kwds.get('galaxy_url', None):
+            kwds["engine"] = "external_galaxy"
+        else:
+            kwds["engine"] = "galaxy"
 
     with engine_context(ctx, **kwds) as engine:
         run_result = engine.run(path, job_path)
