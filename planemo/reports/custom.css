@@ -67,6 +67,40 @@ body {
   background-color: #428bca;
 }
 
+/* Table in github markdown style (https://gist.github.com/andyferra/2554919#file-github-css-L154) */
+table {
+  padding: 0;
+  margin-bottom: 10px;
+}
+table tr {
+  border-top: 1px solid #cccccc;
+  background-color: white;
+  margin: 0;
+  padding: 0;
+}
+table tr:nth-child(2n) {
+  background-color: #f8f8f8;
+}
+table tr th {
+  font-weight: bold;
+  border: 1px solid #cccccc;
+  text-align: left;
+  margin: 0;
+  padding: 6px 13px;
+}
+table tr td {
+  border: 1px solid #cccccc;
+  text-align: left;
+  margin: 0;
+  padding: 6px 13px;
+}
+table tr th :first-child, table tr td :first-child {
+  margin-top: 0;
+}
+table tr th :last-child, table tr td :last-child {
+  margin-bottom: 1;
+}
+
 
 /*
  * Main content
@@ -85,6 +119,67 @@ body {
   margin-top: 0;
 }
 
+ul {
+  padding-left: 10px;
+}
+
+li {
+  list-style-type: none;
+  padding: 2px;
+}
+
+pre {
+  max-height: 500px;
+  overflow: auto
+}
+
+.rcorners {
+  border-radius: 10px;
+  padding: 0px;
+  border-style: solid;
+}
+
+.light-green {
+  border: 2px transparent #73AD21;
+  border-color: #dff0d8;
+}
+
+summary.light-green {
+  background-color: #dff0d8
+}
+
+.light-red {
+  /*  */
+  border: 2px transparent #f2dede;
+  border-color: #f2dede;
+}
+
+summary.light-red {
+  background-color: #f2dede;
+}
+
+.padded {
+  background-color: #fff;
+  margin: 10px;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
 
 /*
  * Placeholder dashboard ideas
