@@ -34,9 +34,16 @@ sys.path.insert(0, project_root)
 from recommonmark.parser import CommonMarkParser
 import sphinx_rtd_theme
 
-source_parsers = {
-    '.md': CommonMarkParser,
-}
+sphinx_version = __import__("sphinx").__version__
+
+extensions = []
+if sphinx_version < '3.0.0':
+    source_parsers = {
+        '.md': CommonMarkParser,
+    }
+else:
+    extensions += ['recommonmark']
+
 
 import planemo as project_module
 
@@ -47,7 +54,7 @@ import planemo as project_module
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
+extensions += ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

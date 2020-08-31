@@ -2,8 +2,6 @@
 import json
 import os
 
-from nose.tools import assert_raises_regexp
-
 from planemo.training.tool_input import (
     get_empty_input,
     get_empty_param,
@@ -15,6 +13,7 @@ from .test_training import (
     wf_param_values
 )
 from .test_utils import (
+    assert_raises_regexp,
     TEST_DATA_DIR
 )
 

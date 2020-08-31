@@ -2,7 +2,7 @@
 from __future__ import print_function
 
 import click
-from galaxy.tools.deps import conda_util
+from galaxy.tool_util.deps import conda_util
 
 from planemo import options
 from planemo.cli import command_function

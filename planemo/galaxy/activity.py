@@ -2,29 +2,31 @@
 
 import json
 import os
+import sys
 import tempfile
 import time
+import traceback
 
 import bioblend
 import requests
-import yaml
-from bioblend.galaxy.client import Client
 from bioblend.util import attach_file
-from galaxy.tools.cwl.util import (
-    DirectoryUploadTarget,
-    FileUploadTarget,
-    galactic_job_json,
+from galaxy.tool_util.client.staging import (
+    StagingInterace,
+)
+from galaxy.tool_util.cwl.util import (
     invocation_to_output,
     output_properties,
     output_to_cwl_json,
-    path_or_uri_to_uri,
     tool_response_to_output,
 )
-from galaxy.tools.parser import get_tool_source
+from galaxy.tool_util.parser import get_tool_source
+from galaxy.tool_util.verify.interactor import galaxy_requests_post
 from galaxy.util import (
     safe_makedirs,
     unicodify,
 )
+from requests.exceptions import RequestException
+from six.moves.urllib.parse import urljoin
 
 from planemo.galaxy.api import summarize_history
 from planemo.io import wait_on
@@ -45,6 +47,9 @@ def execute(ctx, config, runnable, job_path, **kwds):
     try:
         return _execute(ctx, config, runnable, job_path, **kwds)
     except Exception as e:
+        if ctx.verbose:
+            ctx.vlog("Failed to execute Galaxy activity, throwing ErrorRunResponse")
+            traceback.print_exc(file=sys.stdout)
         return ErrorRunResponse(unicodify(e))
 
 
@@ -72,13 +77,47 @@ def log_contents_str(config):
         return "No log for this engine type."
 
 
+class PlanemoStagingInterface(StagingInterace):
+
+    def __init__(self, ctx, runnable, user_gi, version_major):
+        self._ctx = ctx
+        self._user_gi = user_gi
+        self._runnable = runnable
+        self._version_major = version_major
+
+    def _post(self, api_path, payload, files_attached=False):
+        params = dict(key=self._user_gi.key)
+        url = urljoin(self._user_gi.url, "api/" + api_path)
+        return galaxy_requests_post(url, data=payload, params=params, as_json=True).json()
+
+    def _attach_file(self, path):
+        return attach_file(path)
+
+    def _handle_job(self, job_response):
+        job_id = job_response["id"]
+        _wait_for_job(self._user_gi, job_id)
+
+    @property
+    def use_fetch_api(self):
+        # hack around this not working for galaxy_tools - why is that :(
+        return self._runnable.type != RunnableType.galaxy_tool and self._version_major >= "20.09"
+
+    # extension point for planemo to override logging
+    def _log(self, message):
+        self._ctx.vlog(message)
+
+
 def _execute(ctx, config, runnable, job_path, **kwds):
     user_gi = config.user_gi
     admin_gi = config.gi
 
     history_id = _history_id(user_gi, **kwds)
 
-    job_dict, _ = stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds)
+    try:
+        job_dict, _ = stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds)
+    except Exception:
+        ctx.vlog("Problem with staging in data for Galaxy activities...")
+        raise
 
     if runnable.type in [RunnableType.galaxy_tool, RunnableType.cwl_tool]:
         response_class = GalaxyToolRunResponse
@@ -91,7 +130,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):
             inputs_representation=inputs_representation,
         )
         ctx.vlog("Post to Galaxy tool API with payload [%s]" % run_tool_payload)
-        tool_run_response = user_gi.tools._tool_post(run_tool_payload)
+        tool_run_response = user_gi.tools._post(run_tool_payload)
 
         job = tool_run_response["jobs"][0]
         job_id = job["id"]
@@ -103,8 +142,6 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         if final_state != "ok":
             msg = "Failed to run CWL tool job final job state is [%s]." % final_state
             summarize_history(ctx, user_gi, history_id)
-            with open("errored_galaxy.log", "w") as f:
-                f.write(log_contents_str(config))
             raise Exception(msg)
 
         ctx.vlog("Final job state was ok, fetching details for job [%s]" % job_id)
@@ -119,11 +156,13 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         response_class = GalaxyWorkflowRunResponse
         workflow_id = config.workflow_id(runnable.path)
         ctx.vlog("Found Galaxy workflow ID [%s] for path [%s]" % (workflow_id, runnable.path))
-        # TODO: update bioblend to allow inputs_by.
+        # TODO: Use the following when BioBlend 0.14 is released
         # invocation = user_gi.worklfows.invoke_workflow(
         #    workflow_id,
-        #    history_id=history_id,
         #    inputs=job_dict,
+        #    history_id=history_id,
+        #    allow_tool_state_corrections=True,
+        #    inputs_by="name",
         # )
         payload = dict(
             workflow_id=workflow_id,
@@ -132,32 +171,38 @@ def _execute(ctx, config, runnable, job_path, **kwds):
             inputs_by="name",
             allow_tool_state_corrections=True,
         )
-        invocations_url = "%s/%s/invocations" % (
-            user_gi._make_url(user_gi.workflows),
+        invocations_url = "%s/workflows/%s/invocations" % (
+            user_gi.url,
             workflow_id,
         )
-        invocation = Client._post(user_gi.workflows, payload, url=invocations_url)
+        invocation = user_gi.workflows._post(payload, url=invocations_url)
         invocation_id = invocation["id"]
         ctx.vlog("Waiting for invocation [%s]" % invocation_id)
         polling_backoff = kwds.get("polling_backoff", 0)
+        final_invocation_state = 'new'
+        error_message = ""
         try:
             final_invocation_state = _wait_for_invocation(ctx, user_gi, history_id, workflow_id, invocation_id, polling_backoff)
+            assert final_invocation_state == 'scheduled'
         except Exception:
             ctx.vlog("Problem waiting on invocation...")
             summarize_history(ctx, user_gi, history_id)
-            raise
+            error_message = "Final invocation state is [%s]" % final_invocation_state
         ctx.vlog("Final invocation state is [%s]" % final_invocation_state)
         final_state = _wait_for_history(ctx, user_gi, history_id, polling_backoff)
         if final_state != "ok":
             msg = "Failed to run workflow final history state is [%s]." % final_state
+            error_message = msg if not error_message else "%s. %s" % (error_message, msg)
+            ctx.vlog(msg)
             summarize_history(ctx, user_gi, history_id)
-            with open("errored_galaxy.log", "w") as f:
-                f.write(log_contents_str(config))
-            raise Exception(msg)
-        ctx.vlog("Final history state is 'ok'")
+        else:
+            ctx.vlog("Final history state is 'ok'")
         response_kwds = {
             'workflow_id': workflow_id,
             'invocation_id': invocation_id,
+            'history_state': final_state,
+            'invocation_state': final_invocation_state,
+            'error_message': error_message,
         }
     else:
         raise NotImplementedError()
@@ -177,93 +222,20 @@ def _execute(ctx, config, runnable, job_path, **kwds):
     return run_response
 
 
-def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
-    files_attached = [False]
-
-    def upload_func(upload_target):
-
-        def _attach_file(upload_payload, uri, index=0):
-            uri = path_or_uri_to_uri(uri)
-            is_path = uri.startswith("file://")
-            if not is_path or config.use_path_paste:
-                upload_payload["inputs"]["files_%d|url_paste" % index] = uri
-            else:
-                files_attached[0] = True
-                path = uri[len("file://"):]
-                upload_payload["files_%d|file_data" % index] = attach_file(path)
-
-        if isinstance(upload_target, FileUploadTarget):
-            file_path = upload_target.path
-            upload_payload = user_gi.tools._upload_payload(
-                history_id,
-                file_type=upload_target.properties.get('filetype', None) or "auto",
-            )
-            name = os.path.basename(file_path)
-            upload_payload["inputs"]["files_0|auto_decompress"] = False
-            upload_payload["inputs"]["auto_decompress"] = False
-            _attach_file(upload_payload, file_path)
-            upload_payload["inputs"]["files_0|NAME"] = name
-            if upload_target.secondary_files:
-                _attach_file(upload_payload, upload_target.secondary_files, index=1)
-                upload_payload["inputs"]["files_1|type"] = "upload_dataset"
-                upload_payload["inputs"]["files_1|auto_decompress"] = True
-                upload_payload["inputs"]["file_count"] = "2"
-                upload_payload["inputs"]["force_composite"] = "True"
-
-            ctx.vlog("upload_payload is %s" % upload_payload)
-            return user_gi.tools._tool_post(upload_payload, files_attached=files_attached[0])
-        elif isinstance(upload_target, DirectoryUploadTarget):
-            tar_path = upload_target.tar_path
-
-            upload_payload = user_gi.tools._upload_payload(
-                history_id,
-                file_type="tar",
-            )
-            upload_payload["inputs"]["files_0|auto_decompress"] = False
-            _attach_file(upload_payload, tar_path)
-            tar_upload_response = user_gi.tools._tool_post(upload_payload, files_attached=files_attached[0])
-            convert_response = user_gi.tools.run_tool(
-                tool_id="CONVERTER_tar_to_directory",
-                tool_inputs={"input1": {"src": "hda", "id": tar_upload_response["outputs"][0]["id"]}},
-                history_id=history_id,
-            )
-            assert "outputs" in convert_response, convert_response
-            return convert_response
-        else:
-            content = json.dumps(upload_target.object)
-            return user_gi.tools.paste_content(
-                content,
-                history_id,
-                file_type="expression.json",
-            )
-
-    def create_collection_func(element_identifiers, collection_type):
-        payload = {
-            "name": "dataset collection",
-            "instance_type": "history",
-            "history_id": history_id,
-            "element_identifiers": element_identifiers,
-            "collection_type": collection_type,
-            "fields": None if collection_type != "record" else "auto",
-        }
-        dataset_collections_url = user_gi.url + "/dataset_collections"
-        dataset_collection = Client._post(user_gi.histories, payload, url=dataset_collections_url)
-        return dataset_collection
-
-    with open(job_path, "r") as f:
-        job = yaml.safe_load(f)
-
-    # Figure out what "." should be here instead.
-    job_dir = os.path.dirname(job_path)
-    job_dict, datasets = galactic_job_json(
-        job,
-        job_dir,
-        upload_func,
-        create_collection_func,
-        tool_or_workflow="tool" if runnable.type in [RunnableType.cwl_tool, RunnableType.galaxy_tool] else "workflow",
+def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):  # noqa C901
+    # only upload objects as files/collections for CWL workflows...
+    tool_or_workflow = "tool" if runnable.type != RunnableType.cwl_workflow else "workflow"
+    to_posix_lines = runnable.type.is_galaxy_artifact
+    job_dict, datasets = PlanemoStagingInterface(ctx, runnable, user_gi, config.version_major).stage(
+        tool_or_workflow,
+        history_id=history_id,
+        job_path=job_path,
+        use_path_paste=config.use_path_paste,
+        to_posix_lines=to_posix_lines,
     )
 
     if datasets:
+        ctx.vlog("uploaded datasets [%s] for activity, checking history state" % datasets)
         final_state = _wait_for_history(ctx, user_gi, history_id)
 
         for (dataset, path) in datasets:
@@ -280,11 +252,17 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):
     if final_state != "ok":
         msg = "Failed to run job final job state is [%s]." % final_state
         summarize_history(ctx, user_gi, history_id)
-        with open("errored_galaxy.log", "w") as f:
-            f.write(log_contents_str(config))
         raise Exception(msg)
 
     return job_dict, datasets
+
+
+def _file_path_to_name(file_path):
+    if file_path is not None:
+        name = os.path.basename(file_path)
+    else:
+        name = "defaultname"
+    return name
 
 
 class GalaxyBaseRunResponse(SuccessfulRunResponse):
@@ -315,10 +293,10 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         raise NotImplementedError()
 
     def _get_extra_files(self, dataset_details):
-        extra_files_url = "%s/%s/contents/%s/extra_files" % (
-            self._user_gi._make_url(self._user_gi.histories), self._history_id, dataset_details["id"]
+        extra_files_url = "%s/histories/%s/contents/%s/extra_files" % (
+            self._user_gi.url, self._history_id, dataset_details["id"]
         )
-        extra_files = Client._get(self._user_gi.jobs, url=extra_files_url)
+        extra_files = self._user_gi.jobs._get(url=extra_files_url)
         return extra_files
 
     def _get_metadata(self, history_content_type, content_id):
@@ -372,20 +350,10 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                 ctx.vlog("Workflow output identified without an ID (label), skipping")
                 continue
             output_dict_value = None
-            if self._runnable.type in [RunnableType.cwl_workflow, RunnableType.cwl_tool]:
-                galaxy_output = self.to_galaxy_output(runnable_output)
-                cwl_output = output_to_cwl_json(
-                    galaxy_output,
-                    self._get_metadata,
-                    get_dataset,
-                    self._get_extra_files,
-                    pseduo_location=True,
-                )
-                output_dict_value = cwl_output
-            else:
-                # TODO: deprecate this route for finding workflow outputs,
-                # it is a brittle and bad approach...
-                output_dataset_id = self.output_dataset_id(runnable_output)
+            is_cwl = self._runnable.type in [RunnableType.cwl_workflow, RunnableType.cwl_tool]
+            output_src = self.output_src(runnable_output)
+            if not is_cwl and output_src["src"] == "hda":
+                output_dataset_id = output_src["id"]
                 dataset = self._get_metadata("dataset", output_dataset_id)
                 dataset_dict = get_dataset(dataset)
                 ctx.vlog("populated destination [%s]" % dataset_dict["path"])
@@ -395,6 +363,32 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                         output_dict_value = json.load(f)
                 else:
                     output_dict_value = output_properties(**dataset_dict)
+            else:
+                output_dataset_id = output_src["id"]
+                galaxy_output = self.to_galaxy_output(runnable_output)
+                cwl_output = output_to_cwl_json(
+                    galaxy_output,
+                    self._get_metadata,
+                    get_dataset,
+                    self._get_extra_files,
+                    pseduo_location=True,
+                )
+                if is_cwl:
+                    output_dict_value = cwl_output
+                else:
+
+                    def attach_file_properties(collection, cwl_output):
+                        elements = collection["elements"]
+                        assert len(elements) == len(cwl_output)
+                        for element, cwl_output_element in zip(elements, cwl_output):
+                            element["_output_object"] = cwl_output_element
+                            if isinstance(cwl_output_element, list):
+                                assert "elements" in element["object"]
+                                attach_file_properties(element["object"], cwl_output_element)
+
+                    output_metadata = self._get_metadata("dataset_collection", output_dataset_id)
+                    attach_file_properties(output_metadata, cwl_output)
+                    output_dict_value = output_metadata
 
             outputs_dict[output_id] = output_dict_value
 
@@ -413,6 +407,10 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                 stderr=self._job_info["stderr"],
                 command_line=self._job_info["command_line"],
             )
+        return None
+
+    @property
+    def invocation_details(self):
         return None
 
     @property
@@ -476,22 +474,25 @@ class GalaxyToolRunResponse(GalaxyBaseRunResponse):
         # TODO: Make this more rigorous - search both output and output
         # collections - throw an exception if not found in either place instead
         # of just assuming all non-datasets are collections.
-        return self.output_dataset_id(output) is None
+        return self.output_src(output)["src"] == "hdca"
 
     def to_galaxy_output(self, runnable_output):
         output_id = runnable_output.get_id()
         return tool_response_to_output(self.api_run_response, self._history_id, output_id)
 
-    def output_dataset_id(self, output):
+    def output_src(self, output):
         outputs = self.api_run_response["outputs"]
+        output_collections = self.api_run_response["output_collections"]
         output_id = output.get_id()
-        output_dataset_id = None
+        output_src = None
         self._ctx.vlog("Looking for id [%s] in outputs [%s]" % (output_id, outputs))
         for output in outputs:
             if output["output_name"] == output_id:
-                output_dataset_id = output["id"]
-
-        return output_dataset_id
+                output_src = {"src": "hda", "id": output["id"]}
+        for output_collection in output_collections:
+            if output_collection["output_name"] == output_id:
+                output_src = {"src": "hdca", "id": output_collection["id"]}
+        return output_src
 
 
 class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
@@ -505,6 +506,9 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         log,
         workflow_id,
         invocation_id,
+        history_state='ok',
+        invocation_state='ok',
+        error_message=None,
     ):
         super(GalaxyWorkflowRunResponse, self).__init__(
             ctx=ctx,
@@ -515,49 +519,62 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         )
         self._workflow_id = workflow_id
         self._invocation_id = invocation_id
+        self._invocation_details = {}
+        self._cached_invocation = None
+        self.history_state = history_state
+        self.invocation_state = invocation_state
+        self.error_message = error_message
+        self._invocation_details = self.collect_invocation_details(invocation_id)
 
     def to_galaxy_output(self, runnable_output):
         output_id = runnable_output.get_id()
         self._ctx.vlog("checking for output in invocation [%s]" % self._invocation)
         return invocation_to_output(self._invocation, self._history_id, output_id)
 
-    def output_dataset_id(self, output):
+    def output_src(self, output):
         invocation = self._invocation
-        if "outputs" in invocation:
-            # Use newer workflow outputs API.
+        # Use newer workflow outputs API.
 
-            output_name = output.get_id()
-            if output_name in invocation["outputs"]:
-                return invocation["outputs"][output.get_id()]["id"]
-            else:
-                raise Exception("Failed to find output [%s] in invocation outputs [%s]" % (output_name, invocation["outputs"]))
+        output_name = output.get_id()
+        if output_name in invocation["outputs"]:
+            return invocation["outputs"][output.get_id()]
+        elif output_name in invocation["output_collections"]:
+            return invocation["output_collections"][output.get_id()]
         else:
-            # Assume the output knows its order_index and such - older line of
-            # development not worth persuing.
-            workflow_output = output.workflow_output
-            order_index = workflow_output.order_index
+            raise Exception("Failed to find output [%s] in invocation outputs [%s]" % (output_name, invocation["outputs"]))
 
-            invocation_steps = invocation["steps"]
-            output_steps = [s for s in invocation_steps if s["order_index"] == order_index]
-            assert len(output_steps) == 1, "More than one step matching outputs, behavior undefined."
-            output_step = output_steps[0]
-            job_id = output_step["job_id"]
-            assert job_id, "Output doesn't define a job_id, behavior undefined."
-            job_info = self._user_gi.jobs.show_job(job_id, full_details=True)
-            job_outputs = job_info["outputs"]
-            output_name = workflow_output.output_name
-            assert output_name in job_outputs, "No output [%s] found for output job."
-            job_output = job_outputs[output_name]
-            assert "id" in job_output, "Job output [%s] does not contain 'id'." % job_output
-            return job_output["id"]
+    def collect_invocation_details(self, invocation_id=None):
+        gi = self._user_gi
+        invocation_steps = {}
+        invocation = self.get_invocation(invocation_id)
+        for step in invocation['steps']:
+            step_label_or_index = "{}. {}".format(step['order_index'], step['workflow_step_label'] or 'Unnamed step')
+            workflow_step = gi.invocations.show_invocation_step(self._invocation_id, step['id'])
+            workflow_step['subworkflow'] = None
+            subworkflow_invocation_id = workflow_step.get('subworkflow_invocation_id')
+            if subworkflow_invocation_id:
+                workflow_step['subworkflow'] = self.collect_invocation_details(subworkflow_invocation_id)
+            workflow_step_job_details = [self._user_gi.jobs.show_job(j['id'], full_details=True) for j in workflow_step['jobs']]
+            workflow_step['jobs'] = workflow_step_job_details
+            invocation_steps[step_label_or_index] = workflow_step
+        return invocation_steps
+
+    @property
+    def invocation_details(self):
+        return self._invocation_details
+
+    def get_invocation(self, invocation_id):
+        return self._user_gi.invocations.show_invocation(invocation_id)
 
     @property
     def _invocation(self):
-        invocation = self._user_gi.workflows.show_invocation(
-            self._workflow_id,
-            self._invocation_id,
-        )
-        return invocation
+        if self._cached_invocation is None:
+            self._cached_invocation = self.get_invocation(self._invocation_id)
+        return self._cached_invocation
+
+    @property
+    def was_successful(self):
+        return self.history_state == 'ok' and self.invocation_state == 'scheduled'
 
 
 def _tool_id(tool_path):
@@ -576,9 +593,6 @@ def _history_id(gi, **kwds):
 def _wait_for_invocation(ctx, gi, history_id, workflow_id, invocation_id, polling_backoff=0):
 
     def state_func():
-        if _retry_on_timeouts(ctx, gi, lambda gi: has_jobs_in_states(gi, history_id, ["error", "deleted", "deleted_new"])):
-            raise Exception("Problem running workflow, one or more jobs failed.")
-
         return _retry_on_timeouts(ctx, gi, lambda gi: gi.workflows.show_invocation(workflow_id, invocation_id))
 
     return _wait_on_state(state_func, polling_backoff)
@@ -592,7 +606,7 @@ def _retry_on_timeouts(ctx, gi, f):
             start_time = time.time()
             try:
                 return f(gi)
-            except Exception:
+            except RequestException:
                 end_time = time.time()
                 if end_time - start_time > 45 and (try_num + 1) < try_count:
                     ctx.vlog("Galaxy seems to have timedout, retrying to fetch status.")
@@ -603,26 +617,18 @@ def _retry_on_timeouts(ctx, gi, f):
         gi.timeout = None
 
 
-def has_jobs_in_states(gi, history_id, states):
+def has_jobs_in_states(ctx, gi, history_id, states):
     params = {"history_id": history_id}
-    jobs_url = gi._make_url(gi.jobs)
-    jobs = Client._get(gi.jobs, params=params, url=jobs_url)
-
+    jobs_url = gi.url + '/jobs'
+    jobs = gi.jobs._get(url=jobs_url, params=params)
     target_jobs = [j for j in jobs if j["state"] in states]
-
     return len(target_jobs) > 0
 
 
 def _wait_for_history(ctx, gi, history_id, polling_backoff=0):
-
-    def has_active_jobs(gi):
-        if has_jobs_in_states(gi, history_id, ["new", "upload", "waiting", "queued", "running"]):
-            return True
-        else:
-            return None
-
-    timeout = 60 * 60 * 24
-    wait_on(lambda: _retry_on_timeouts(ctx, gi, has_active_jobs), "active jobs", timeout, polling_backoff)
+    # Used to wait for active jobs and then wait for history, but now this is called
+    # after upload is complete and after the invocation has been done scheduling - so
+    # no need to wait for active jobs anymore I think.
 
     def state_func():
         return _retry_on_timeouts(ctx, gi, lambda gi: gi.histories.show_history(history_id))

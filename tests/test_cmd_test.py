@@ -7,6 +7,7 @@ from .test_utils import (
     assert_exists,
     CliTestCase,
     PROJECT_TEMPLATES_DIR,
+    run_verbosely,
     skip_if_environ,
     skip_unless_module,
     TEST_DATA_DIR,
@@ -23,19 +24,18 @@ class CmdTestTestCase(CliTestCase):
         """Test testing a data manager test."""
         with self._isolate(), NamedTemporaryFile(prefix="data_manager_test_json") as json_out:
             test_artifact = os.path.join(TEST_DATA_DIR, DATA_MANAGER_TEST_PATH)
-            test_command = [
-                "--verbose",
-                "test",
+            test_command = self._test_command(
                 "--test_output_json",
                 json_out.name
-            ]
+            )
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
                 "--no_dependency_resolution",
                 test_artifact,
             ]
             self._check_exit_code(test_command, exit_code=0)
-            assert json.load(open(json_out.name, 'r'))['summary']['num_tests'] == 1
+            with open(json_out.name, 'r') as fh:
+                assert json.load(fh)['summary']['num_tests'] == 1
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_workflow_test_simple_yaml(self):
@@ -44,10 +44,7 @@ class CmdTestTestCase(CliTestCase):
             random_lines = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "randomlines.xml")
             cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
             test_artifact = os.path.join(TEST_DATA_DIR, "wf1.gxwf.yml")
-            test_command = [
-                "--verbose",
-                "test",
-            ]
+            test_command = self._test_command()
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
                 "--no_dependency_resolution",
@@ -63,10 +60,7 @@ class CmdTestTestCase(CliTestCase):
         with self._isolate():
             cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
             test_artifact = os.path.join(TEST_DATA_DIR, "wf2.ga")
-            test_command = [
-                "--verbose",
-                "test"
-            ]
+            test_command = self._test_command()
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
                 "--no_dependency_resolution",
@@ -85,10 +79,7 @@ class CmdTestTestCase(CliTestCase):
         """Test testing a workflow that uses distro tools."""
         with self._isolate():
             test_artifact = os.path.join(TEST_DATA_DIR, "wf4-distro-tools.gxwf.yml")
-            test_command = [
-                "--verbose",
-                "test"
-            ]
+            test_command = self._test_command()
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
                 "--no_dependency_resolution",
@@ -102,15 +93,27 @@ class CmdTestTestCase(CliTestCase):
             #    raise
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_test_composite(self):
+        """Test testing a workflow that uses composite inputs."""
+        with self._isolate():
+            test_artifact = os.path.join(TEST_DATA_DIR, "wf6-composite-inputs.gxwf.yml")
+            composite_input_imzml = os.path.join(TEST_DATA_DIR, "composite_input_imzml.xml")
+            test_command = self._test_command()
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command += [
+                "--no_dependency_resolution",
+                "--extra_tools", composite_input_imzml,
+                test_artifact,
+            ]
+            self._check_exit_code(test_command, exit_code=0)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_workflow_test_collection_inputs(self):
         """Test testing a workflow with collection inputs Galaxy."""
         with self._isolate():
             test_artifact = os.path.join(TEST_DATA_DIR, "wf5-collection-input.gxwf.yml")
             cat_list = os.path.join(TEST_DATA_DIR, "cat_list.xml")
-            test_command = [
-                "--verbose",
-                "test"
-            ]
+            test_command = self._test_command()
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
                 "--no_dependency_resolution",
@@ -129,10 +132,7 @@ class CmdTestTestCase(CliTestCase):
         """Test testing a CWL tool with cwltool."""
         with self._isolate() as f:
             test_artifact = os.path.join(TEST_DATA_DIR, "int_tool.cwl")
-            test_command = [
-                "test",
-                test_artifact,
-            ]
+            test_command = self._test_command(test_artifact)
             self._check_exit_code(test_command, exit_code=0)
             assert_exists(os.path.join(f, "tool_test_output.json"))
 
@@ -141,11 +141,10 @@ class CmdTestTestCase(CliTestCase):
         """Test testing a CWL tool with cwltool."""
         with self._isolate() as f:
             test_artifact = os.path.join(TEST_DATA_DIR, "cat_tool_url.cwl")
-            test_command = [
-                "test",
+            test_command = self._test_command(
                 "--no-container",
                 test_artifact,
-            ]
+            )
             self._check_exit_code(test_command, exit_code=0)
             assert_exists(os.path.join(f, "tool_test_output.json"))
 
@@ -155,11 +154,10 @@ class CmdTestTestCase(CliTestCase):
         """Test testing a CWL tool with cwltool."""
         with self._isolate() as f:
             test_artifact = os.path.join(TEST_DATA_DIR, "int_tool.cwl")
-            test_command = [
-                "test",
+            test_command = self._test_command(
                 "--engine", "toil",
                 test_artifact,
-            ]
+            )
             self._check_exit_code(test_command, exit_code=0)
             assert_exists(os.path.join(f, "tool_test_output.json"))
 
@@ -174,6 +172,12 @@ class CmdTestTestCase(CliTestCase):
     def test_output_checks_toil(self):
         """Test output assertions with a CWL tool with toil."""
         self._output_checks(["--engine", "toil"])
+
+    def _test_command(self, *args):
+        test_cmd = ["--verbose"] if run_verbosely() else []
+        test_cmd.append("test")
+        test_cmd.extend(args)
+        return test_cmd
 
     def _output_checks(self, extra_args):
         with self._isolate() as f:

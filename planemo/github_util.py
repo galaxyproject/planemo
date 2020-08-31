@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 import os
 
-from galaxy.tools.deps.commands import which
+from galaxy.tool_util.deps.commands import which
 
 from planemo import git
 from planemo.io import (
@@ -104,7 +104,7 @@ def _try_download_hub(planemo_hub_path):
     link = _hub_link()
     # Strip URL base and .tgz at the end.
     basename = link.split("/")[-1].rsplit(".", 1)[0]
-    untar_to(link, tar_args="-Ozxvf - %s/bin/hub > '%s'" % (basename, planemo_hub_path))
+    untar_to(link, tar_args=['-zxvf', '-', "%s/bin/hub" % basename], path=planemo_hub_path)
     communicate(["chmod", "+x", planemo_hub_path])
 
 
@@ -116,6 +116,8 @@ def _get_raw_github_config(ctx):
                 "username": os.environ["GITHUB_USER"],
                 "password": os.environ["GITHUB_PASSWORD"],
             }
+    if "github" not in ctx.global_config:
+        raise Exception("github account not found in planemo config and GITHUB_USER / GITHUB_PASSWORD environment variables unset")
     return ctx.global_config["github"]
 
 
@@ -152,7 +154,8 @@ def publish_as_gist_file(ctx, path, name="index"):
     """
     github_config = get_github_config(ctx, allow_anonymous=False)
     user = github_config._github.get_user()
-    content = open(path, "r").read()
+    with open(path, "r") as fh:
+        content = fh.read()
     content_file = github.InputFileContent(content)
     gist = user.create_gist(False, {name: content_file})
     return gist.files[name].raw_url

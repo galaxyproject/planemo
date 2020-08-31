@@ -23,7 +23,7 @@ will search parent directories to see if any is a Galaxy instance
 option or force planemo to download a disposable instance with the
 ``--install_galaxy`` flag.
 
-In additon to to quick summary printed to the console - various detailed
+In addition to to quick summary printed to the console - various detailed
 output summaries can be configured. ``tool_test_output.html`` (settable
 via ``--test_output``) will contain a human consumable HTML report
 describing the test run. A JSON file (settable via ``--test_output_json``
@@ -31,7 +31,7 @@ and defaulting to ``tool_test_output.json``) will also be created. These
 files can can be disabled by passing in empty arguments or globally by
 setting the values ``default_test_output`` and/or
 ``default_test_output_json`` in ``~/.planemo.yml`` to ``null``. For
-continuous integration testing a xUnit-style report can be confiured using
+continuous integration testing a xUnit-style report can be configured using
 the ``--test_output_xunit``.
 
 planemo uses temporarily generated config files and environment variables
@@ -55,9 +55,8 @@ please careful and do not try this against production Galaxy instances.
                                       part of testing.)
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
-      --galaxy_python_version [2|2.7|3|3.3|3.4|3.5|3.6|3.7]
+      --galaxy_python_version [3|3.5|3.6|3.7|3.8]
                                       Python version to start Galaxy under
-      --galaxy_database_seed PATH     Preseeded Galaxy sqlite database to target.
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be
                                       linted/tested/etc... but they will be
@@ -216,6 +215,14 @@ please careful and do not try this against production Galaxy instances.
                                       may not be appropriate for production servers
                                       and so this can disabled by calling planemo
                                       with --no_shed_install.
+      --install_tool_dependencies / --no_install_tool_dependencies
+                                      Turn on installation of tool dependencies
+                                      using classic toolshed packages.
+      --install_resolver_dependencies / --no_install_resolver_dependencies
+                                      Skip installing tool dependencies through
+                                      resolver (e.g. conda).
+      --install_repository_dependencies / --no_install_repository_dependencies
+                                      Skip installing the repository dependencies.
       --galaxy_url TEXT               Remote Galaxy URL to use with external Galaxy
                                       engine.
       --galaxy_admin_key TEXT         Admin key to use with external Galaxy engine.

@@ -24,9 +24,6 @@ class TestPlanemo(CliTestCase):
         def assert_responds_to(command):
             assert command in commands, "No command %s" % command
 
-        assert_responds_to("brew_init")
-        assert_responds_to("brew")
-        assert_responds_to("brew_env")
         assert_responds_to("config_init")
         assert_responds_to("create_gist")
         assert_responds_to("docker_build")
@@ -40,7 +37,6 @@ class TestPlanemo(CliTestCase):
         assert_responds_to("shed_upload")
         assert_responds_to("syntax")
         assert_responds_to("test")
-        assert_responds_to("tool_factory")
         assert_responds_to("tool_init")
         assert_responds_to("travis_before_install")
         assert_responds_to("travis_init")

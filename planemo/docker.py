@@ -5,7 +5,7 @@ Built on Galaxy abstractions in :mod:`galaxy.tools.deps.dockerfiles` and
 """
 from __future__ import absolute_import
 
-from galaxy.tools.deps.dockerfiles import docker_host_args
+from galaxy.tool_util.deps.dockerfiles import docker_host_args
 
 
 __all__ = (

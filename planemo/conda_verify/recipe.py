@@ -1,16 +1,35 @@
-from __future__ import print_function, division, absolute_import
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+)
 
 import os
 import re
-from os.path import basename, isfile, getsize, join
+from os.path import (
+    basename,
+    getsize,
+    isfile,
+    join,
+)
 
 import yaml
 
-from planemo.conda_verify.const import LICENSE_FAMILIES, FIELDS
-from planemo.conda_verify.utils import all_ascii, get_bad_seq, memoized
-
+from planemo.conda_verify.const import (
+    FIELDS,
+    LICENSE_FAMILIES,
+)
+from planemo.conda_verify.utils import (
+    all_ascii,
+    get_bad_seq,
+    memoized,
+)
 
 PEDANTIC = True
+sel_pat = re.compile(r'(.+?)\s*\[(.+)\]$')
+name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
+version_pat = re.compile(r'[\w\.]+$')
+url_pat = re.compile(r'(ftp|http(s)?)://')
 
 
 class RecipeError(Exception):
@@ -24,34 +43,33 @@ def ns_cfg(cfg):
     for x in py, np:
         assert isinstance(x, int), x
     return dict(
-        nomkl = False,
-        debug = False,
-        linux = plat.startswith('linux-'),
-        linux32 = bool(plat == 'linux-32'),
-        linux64 = bool(plat == 'linux-64'),
-        armv7l = False,
-        arm = False,
-        ppc64le = False,
-        osx = plat.startswith('osx-'),
-        unix = plat.startswith(('linux-', 'osx-')),
-        win = plat.startswith('win-'),
-        win32 = bool(plat == 'win-32'),
-        win64 = bool(plat == 'win-64'),
-        x86 = plat.endswith(('-32', '-64')),
-        x86_64 = plat.endswith('-64'),
-        py = py,
-        py3k = bool(30 <= py < 40),
-        py2k = bool(20 <= py < 30),
-        py26 = bool(py == 26),
-        py27 = bool(py == 27),
-        py33 = bool(py == 33),
-        py34 = bool(py == 34),
-        py35 = bool(py == 35),
-        np = np,
+        nomkl=False,
+        debug=False,
+        linux=plat.startswith('linux-'),
+        linux32=bool(plat == 'linux-32'),
+        linux64=bool(plat == 'linux-64'),
+        armv7l=False,
+        arm=False,
+        ppc64le=False,
+        osx=plat.startswith('osx-'),
+        unix=plat.startswith(('linux-', 'osx-')),
+        win=plat.startswith('win-'),
+        win32=bool(plat == 'win-32'),
+        win64=bool(plat == 'win-64'),
+        x86=plat.endswith(('-32', '-64')),
+        x86_64=plat.endswith('-64'),
+        py=py,
+        py3k=bool(30 <= py < 40),
+        py2k=bool(20 <= py < 30),
+        py26=bool(py == 26),
+        py27=bool(py == 27),
+        py33=bool(py == 33),
+        py34=bool(py == 34),
+        py35=bool(py == 35),
+        np=np,
     )
 
 
-sel_pat = re.compile(r'(.+?)\s*\[(.+)\]$')
 def select_lines(data, namespace):
     lines = []
     for line in data.splitlines():
@@ -98,7 +116,6 @@ def get_field(meta, field, default=None):
     return res
 
 
-name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
 def check_name(name):
     if name:
         name = str(name)
@@ -112,7 +129,6 @@ def check_name(name):
                           "package name: '%s'" % (seq, name))
 
 
-version_pat = re.compile(r'[\w\.]+$')
 def check_version(ver):
     if ver:
         ver = str(ver)
@@ -155,7 +171,6 @@ Allowed license families are:""" % lf)
         raise RecipeError("wrong license family")
 
 
-url_pat = re.compile(r'(ftp|http(s)?)://')
 def check_url(url):
     if not url_pat.match(url):
         raise RecipeError("not a valid URL: %s" % url)
@@ -182,6 +197,8 @@ def check_about(meta):
 hash_pat = {'md5': re.compile(r'[a-f0-9]{32}$'),
             'sha1': re.compile(r'[a-f0-9]{40}$'),
             'sha256': re.compile(r'[a-f0-9]{64}$')}
+
+
 def check_source(meta):
     src = meta.get('source')
     if not src:
@@ -231,7 +248,7 @@ def validate_files(recipe_dir, meta):
                 raise RecipeError("path outsite recipe: %s" % fn)
             path = join(recipe_dir, fn)
             if isfile(path):
-               continue
+                continue
             raise RecipeError("no such file '%s'" % path)
 
 
@@ -261,8 +278,7 @@ def check_dir_content(recipe_dir):
                     print("Warning: found: %s" % fn)
             path = join(root, fn)
             # only allow small archives for testing
-            if (PEDANTIC and fn_lower.endswith(('.bz2', '.gz')) and
-                         getsize(path) > 512):
+            if (PEDANTIC and fn_lower.endswith(('.bz2', '.gz')) and getsize(path) > 512):
                 raise RecipeError("found: %s (too large)" % fn)
 
     if basename(recipe_dir) == 'icu':

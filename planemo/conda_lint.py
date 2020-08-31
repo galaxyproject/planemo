@@ -4,7 +4,7 @@ from __future__ import absolute_import
 
 from functools import wraps
 
-from galaxy.tools.deps.conda_compat import raw_metadata
+from galaxy.tool_util.deps.conda_compat import raw_metadata
 from galaxy.util import unicodify
 
 from planemo.conda_verify.recipe import (

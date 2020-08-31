@@ -1,0 +1,24 @@
+class: GalaxyWorkflow
+name: "Test Workflow - Nested Collection Inputs"
+
+inputs:
+  - id: input1
+    type: collection
+    collection_type: list:paired
+
+outputs:
+  - id: wf_output_1
+    outputSource: second_cat/out_file1
+
+steps:
+  - tool_id: cat_pair
+    label: first_cat
+    state:
+      input1:
+        $link: input1
+
+  - tool_id: cat_list
+    label: second_cat
+    state:
+      input1:
+        $link: first_cat/out_file1

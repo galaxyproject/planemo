@@ -2,8 +2,13 @@ from __future__ import absolute_import
 
 from os.path import basename
 
-from galaxy.tools.lint import lint_tool_source
+from galaxy.tool_util.lint import lint_tool_source
 
+import planemo.linters.biocontainer_registered
+import planemo.linters.conda_requirements
+import planemo.linters.doi
+import planemo.linters.urls
+import planemo.linters.xsd
 from planemo.exit_codes import (
     EXIT_CODE_GENERIC_FAILURE,
     EXIT_CODE_OK,
@@ -13,12 +18,20 @@ from planemo.io import (
     error,
     info,
 )
+from planemo.lint import build_lint_args
 from planemo.tools import (
     is_tool_load_error,
     yield_tool_sources_on_paths,
 )
 
 LINTING_TOOL_MESSAGE = "Linting tool %s"
+
+
+def build_tool_lint_args(ctx, **kwds):
+    lint_args = build_lint_args(ctx, **kwds)
+    extra_modules = _lint_extra_modules(**kwds)
+    lint_args["extra_modules"] = extra_modules
+    return lint_args
 
 
 def lint_tools_on_path(ctx, paths, lint_args, **kwds):
@@ -36,6 +49,26 @@ def lint_tools_on_path(ctx, paths, lint_args, **kwds):
         else:
             exit_codes.append(EXIT_CODE_OK)
     return coalesce_return_codes(exit_codes, assert_at_least_one=assert_tools)
+
+
+def _lint_extra_modules(**kwds):
+    linters = []
+    if kwds.get("xsd", True):
+        linters.append(planemo.linters.xsd)
+
+    if kwds.get("doi", False):
+        linters.append(planemo.linters.doi)
+
+    if kwds.get("urls", False):
+        linters.append(planemo.linters.urls)
+
+    if kwds.get("conda_requirements", False):
+        linters.append(planemo.linters.conda_requirements)
+
+    if kwds.get("biocontainer", False):
+        linters.append(planemo.linters.biocontainer_registered)
+
+    return linters
 
 
 def handle_tool_load_error(tool_path, tool_xml):

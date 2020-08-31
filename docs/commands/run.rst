@@ -23,9 +23,8 @@ Planemo command for running tools and jobs.
 
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
-      --galaxy_python_version [2|2.7|3|3.3|3.4|3.5|3.6|3.7]
+      --galaxy_python_version [3|3.5|3.6|3.7|3.8]
                                       Python version to start Galaxy under
-      --galaxy_database_seed PATH     Preseeded Galaxy sqlite database to target.
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be
                                       linted/tested/etc... but they will be
@@ -177,6 +176,14 @@ Planemo command for running tools and jobs.
                                       may not be appropriate for production servers
                                       and so this can disabled by calling planemo
                                       with --no_shed_install.
+      --install_tool_dependencies / --no_install_tool_dependencies
+                                      Turn on installation of tool dependencies
+                                      using classic toolshed packages.
+      --install_resolver_dependencies / --no_install_resolver_dependencies
+                                      Skip installing tool dependencies through
+                                      resolver (e.g. conda).
+      --install_repository_dependencies / --no_install_repository_dependencies
+                                      Skip installing the repository dependencies.
       --galaxy_url TEXT               Remote Galaxy URL to use with external Galaxy
                                       engine.
       --galaxy_admin_key TEXT         Admin key to use with external Galaxy engine.

@@ -4,7 +4,8 @@ from __future__ import absolute_import
 import abc
 import contextlib
 
-from galaxy.tools.verify import interactor
+from galaxy.tool_util.verify import interactor
+from six import add_metaclass
 
 from planemo.galaxy.activity import execute
 from planemo.galaxy.config import external_galaxy_config
@@ -13,13 +14,12 @@ from planemo.runnable import RunnableType
 from .interface import BaseEngine
 
 
+@add_metaclass(abc.ABCMeta)
 class GalaxyEngine(BaseEngine):
     """An :class:`Engine` implementation backed by a managed Galaxy.
 
     More information on Galaxy can be found at http://galaxyproject.org/.
     """
-
-    __metaclass__ = abc.ABCMeta
 
     handled_runnable_types = [
         RunnableType.cwl_tool,
@@ -34,6 +34,8 @@ class GalaxyEngine(BaseEngine):
         self._ctx.vlog("Serving artifact [%s] with Galaxy." % (runnable,))
         with self.ensure_runnables_served([runnable]) as config:
             self._ctx.vlog("Running job path [%s]" % job_path)
+            if self._ctx.verbose:
+                self._ctx.log("Running Galaxy with API configuration [%s]" % config.user_api_config)
             run_response = execute(self._ctx, config, runnable, job_path, **self._kwds)
 
         return run_response

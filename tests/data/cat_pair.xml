@@ -1,0 +1,16 @@
+<tool id="cat_pair" name="Concatenate paired dataset (for test workflows)">
+    <description>tail-to-head</description>
+    <command>
+        cat '$input1.forward' '$input1.reverse' > $out_file1
+    </command>
+    <inputs>
+        <param name="input1" type="data_collection" collection_type="paired" label="Concatenate Dataset" />
+    </inputs>
+    <outputs>
+        <data name="out_file1" format="input" metadata_source="input1"/>
+    </outputs>
+    <tests>
+    </tests>
+    <help>
+    </help>
+</tool>

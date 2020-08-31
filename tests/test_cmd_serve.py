@@ -1,5 +1,4 @@
 import os
-import shutil
 import tempfile
 import time
 import uuid
@@ -15,6 +14,8 @@ from .test_utils import (
     launch_and_wait_for_galaxy,
     mark,
     PROJECT_TEMPLATES_DIR,
+    run_verbosely,
+    safe_rmtree,
     skip_if_environ,
     skip_unless_environ,
     skip_unless_executable,
@@ -24,6 +25,7 @@ from .test_utils import (
 )
 
 TEST_HISTORY_NAME = "Cool History 42"
+SERVE_TEST_VERBOSE = True
 
 
 class ServeTestCase(CliTestCase):
@@ -34,7 +36,7 @@ class ServeTestCase(CliTestCase):
 
     @classmethod
     def tearDownClass(cls):
-        shutil.rmtree(cls.galaxy_root)
+        safe_rmtree(cls.galaxy_root)
 
     def setUp(self):
         super(ServeTestCase, self).setUp()
@@ -43,20 +45,25 @@ class ServeTestCase(CliTestCase):
         self._serve_artifact = os.path.join(TEST_REPOS_DIR, "single_tool", "cat.xml")
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-    @skip_if_environ("PLANEMO_SKIP_PYTHON2")
     @mark.tests_galaxy_branch
     def test_serve(self):
-        self._launch_thread_and_wait(self._run)
+        extra_args = [
+            "--skip_client_build",
+        ]
+        self._launch_thread_and_wait(self._run, extra_args)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-    @skip_if_environ("PLANEMO_SKIP_PYTHON3")
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_CLIENT_TESTS")
     @skip_unless_executable("python3")
-    def test_serve_python3(self):
+    def test_serve_client_python3(self):
         extra_args = [
-            "--galaxy_python_version", "3"]
-        self._launch_thread_and_wait(self._run, extra_args)
+            "--galaxy_python_version", "3"
+        ]
+        # Given the client build - give this more time.
+        timeout_multiplier = 3
+        self._launch_thread_and_wait(self._run, extra_args, timeout_multiplier=timeout_multiplier)
         # Check that the client was correctly built
-        url = "http://localhost:%d/static/scripts/bundled/analysis.bundled.js" % int(self._port)
+        url = "http://localhost:%d/static/dist/analysis.bundled.js" % int(self._port)
         r = requests.get(url)
         assert r.status_code == 200
 
@@ -65,6 +72,7 @@ class ServeTestCase(CliTestCase):
     def test_serve_daemon(self):
         extra_args = [
             "--daemon",
+            "--skip_client_build",
             "--pid_file", self._pid_file]
         self._launch_thread_and_wait(self._run, extra_args)
         user_gi = self._user_gi
@@ -80,6 +88,7 @@ class ServeTestCase(CliTestCase):
         self._serve_artifact = os.path.join(TEST_DATA_DIR, "wf1.gxwf.yml")
         extra_args = [
             "--daemon",
+            "--skip_client_build",
             "--pid_file", self._pid_file,
             "--extra_tools", random_lines,
             "--extra_tools", cat,
@@ -93,10 +102,12 @@ class ServeTestCase(CliTestCase):
         assert len(user_gi.workflows.get_workflows()) == 1
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_if_environ("PLANEMO_SKIP_SHED_TESTS")
     @mark.tests_galaxy_branch
     def test_shed_serve(self):
         extra_args = [
             "--daemon",
+            "--skip_client_build",
             "--pid_file", self._pid_file,
             "--shed_target", "toolshed"]
         fastqc_path = os.path.join(TEST_REPOS_DIR, "fastqc")
@@ -121,6 +132,7 @@ class ServeTestCase(CliTestCase):
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @skip_unless_environ("PLANEMO_ENABLE_POSTGRES_TESTS")
+    @skip_unless_executable("psql")
     def test_serve_postgres_profile(self):
         self._test_serve_profile("--database_type", "postgres")
 
@@ -128,6 +140,7 @@ class ServeTestCase(CliTestCase):
         new_profile = "planemo_test_profile_%s" % uuid.uuid4()
         extra_args = [
             "--daemon",
+            "--skip_client_build",
             "--pid_file", self._pid_file,
             "--profile", new_profile,
         ]
@@ -148,25 +161,29 @@ class ServeTestCase(CliTestCase):
         user_gi = api.gi(self._port, key=user_api_key)
         return user_gi
 
-    def _launch_thread_and_wait(self, func, args=[]):
-        t = launch_and_wait_for_galaxy(self._port, func, [args])
-        self._threads.append(t)
+    def _launch_thread_and_wait(self, func, args=[], **kwd):
+        future = launch_and_wait_for_galaxy(self._port, func, [args], **kwd)
+        if future is not None:
+            self._futures.append(future)
 
     def _run_shed(self, serve_args=[]):
         return self._run(serve_args=serve_args, serve_cmd="shed_serve")
 
     def _run(self, serve_args=[], serve_cmd="serve"):
         serve_cmd = self._serve_command_list(serve_args, serve_cmd)
+        if run_verbosely():
+            print("Running command for test [%s]" % serve_cmd)
         self._check_exit_code(serve_cmd)
 
     def _serve_command_list(self, serve_args=[], serve_cmd="serve"):
-        test_cmd = [
+        test_cmd = ["--verbose"] if run_verbosely() else []
+        test_cmd.extend([
             serve_cmd,
             "--galaxy_root", self.galaxy_root,
             "--galaxy_branch", target_galaxy_branch(),
             "--no_dependency_resolution",
             "--port", str(self._port),
             self._serve_artifact,
-        ]
+        ])
         test_cmd.extend(serve_args)
         return test_cmd

@@ -131,7 +131,7 @@ The application must create and write valid html to setup the page ``$html_file`
 
 The (now unmaintained) Galaxy Tool Factory includes code to gather all output files and create a page with links and clickable PDF thumbnail images which may be useful as a starting point (e.g. see `rgToolFactory2.py <https://github.com/galaxyproject/tools-iuc/blob/master/tools/tool_factory_2/rgToolFactory2.py#L741>`__.
 
-``galaxy.datatypes.text.Html`` (the ``html`` datatype) is a subclass of composite datasets so new subclasses of composite can be used to implement even more specific structured outputs but this requires adding the new definition to Galaxy - whereas Html files require no extension of the core framework. For more information visit `Composite Datatypes <https://wiki.galaxyproject.org/Admin/Datatypes/Composite%20Datatypes>`__. 
+``galaxy.datatypes.text.Html`` (the ``html`` datatype) is a subclass of composite datasets so new subclasses of composite can be used to implement even more specific structured outputs but this requires adding the new definition to Galaxy - whereas Html files require no extension of the core framework. For more information visit `Composite Datatypes <https://docs.galaxyproject.org/en/master/dev/data_types.html#composite-datatypes>`__. 
 
 
 ---------------------------------------------------------

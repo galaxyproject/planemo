@@ -7,7 +7,6 @@ from gxformat2 import from_galaxy_native
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.config import planemo_option
 from planemo.engine import (
     engine_context,
     is_galaxy_engine,
@@ -21,20 +20,11 @@ from planemo.runnable import (
 @click.command('workflow_convert')
 @options.required_workflow_arg()
 @options.force_option()
-@planemo_option(
-    "-o", "--output",
-    default=None,
-    type=click.Path(
-        file_okay=True,
-        dir_okay=False,
-        readable=True,
-        resolve_path=True,
-    )
-)
+@options.workflow_output_artifact()
 @options.galaxy_serve_options()
 @command_function
 def cli(ctx, workflow_path, output=None, force=False, **kwds):
-    """Convert Format 2 workflow to a native Galaxy workflow.
+    """Convert Format 2 workflows to native Galaxy workflows, and vice-versa.
     """
     assert is_galaxy_engine(**kwds)
 

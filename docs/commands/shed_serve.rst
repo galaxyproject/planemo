@@ -47,9 +47,8 @@ logged into and explored interactively.
                                       mappings defined ~/.planemo.yml.
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
-      --galaxy_python_version [2|2.7|3|3.3|3.4|3.5|3.6|3.7]
+      --galaxy_python_version [3|3.5|3.6|3.7|3.8]
                                       Python version to start Galaxy under
-      --galaxy_database_seed PATH     Preseeded Galaxy sqlite database to target.
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be
                                       linted/tested/etc... but they will be
@@ -96,6 +95,17 @@ logged into and explored interactively.
                                       for security reasons set to 0.0.0.0 to bind
                                       Galaxy to all ports including potentially
                                       publicly accessible ones.
+      --engine [galaxy|docker_galaxy|external_galaxy]
+                                      Select an engine to serve artifacts such as
+                                      tools and workflows. Defaults to a local
+                                      Galaxy, but running Galaxy within a Docker
+                                      container.
+      --non_strict_cwl                Disable strict validation of CWL.
+      --docker_galaxy_image TEXT      Docker image identifier for docker-galaxy-
+                                      flavor used if engine type is specified as
+                                      ``docker-galaxy``. Defaults to
+                                      quay.io/bgruening/galaxy.
+      --docker_extra_volume PATH      Extra path to mount if --engine docker.
       --test_data DIRECTORY           test-data directory to for specified tool(s).
       --tool_data_table PATH          tool_data_table_conf.xml file to for specified
                                       tool(s).
@@ -163,9 +173,22 @@ logged into and explored interactively.
                                       one user and this user is automatically logged
                                       it. Use --no_galaxy_single_user to prevent
                                       Galaxy from running this way.
+      --daemon                        Serve Galaxy process as a daemon.
       --pid_file FILE                 Location of pid file is executed with
                                       --daemon.
-      --daemon                        Serve Galaxy process as a daemon.
+      --ignore_dependency_problems    When installing shed repositories for
+                                      workflows, ignore dependency issues. These
+                                      likely indicate a problem but in some cases
+                                      may not prevent a workflow from successfully
+                                      executing.
+      --skip_client_build             Do not build Galaxy client when serving
+                                      Galaxy.
+      --shed_install / --no_shed_install
+                                      By default Planemo will attempt to install
+                                      repositories needed for workflow testing. This
+                                      may not be appropriate for production servers
+                                      and so this can disabled by calling planemo
+                                      with --no_shed_install.
       --skip_dependencies             Do not install shed dependencies as part of
                                       repository installation.
       --help                          Show this message and exit.

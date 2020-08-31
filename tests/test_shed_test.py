@@ -14,11 +14,13 @@ class ShedTestTestCase(CliTestCase):
 
     @skip  # Skip for now since toolshed has invalid test data for 0.11.4
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_if_environ("PLANEMO_SKIP_SHED_TESTS")
     def test_shed_test_fastqc(self):
         self.__run_shed_test("fastqc")
 
     @skip  # Skip for now since toolshed has problem with op column.
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_if_environ("PLANEMO_SKIP_SHED_TESTS")
     def test_shed_test_datamash(self):
         self.__run_shed_test("datamash")
 

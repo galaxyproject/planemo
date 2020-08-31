@@ -1,20 +1,20 @@
 """Planemo specific utilities for dealing with mulled containers.
 
-The extend Galaxy/galaxy-lib's features with planemo specific idioms.
+The extend galaxy-tool-util's features with planemo specific idioms.
 """
 from __future__ import absolute_import
 
 import os
 
-from galaxy.tools.deps.mulled.mulled_build import (
+from galaxy.tool_util.deps.mulled.mulled_build import (
     DEFAULT_CHANNELS,
     ensure_installed,
     InvolucroContext,
 )
-from galaxy.tools.deps.mulled.util import build_target
+from galaxy.tool_util.deps.mulled.util import build_target
 
 from planemo.conda import collect_conda_target_lists
-from planemo.io import IS_OS_X, shell
+from planemo.io import shell
 
 
 def conda_to_mulled_targets(conda_targets):
@@ -26,7 +26,7 @@ def collect_mulled_target_lists(ctx, paths, recursive=False):
 
 
 def build_involucro_context(ctx, **kwds):
-    """Build a galaxy-lib CondaContext tailored to planemo use.
+    """Build a galaxy-tool-util InvolucroContext tailored to planemo use.
 
     Using planemo's common command-line/global config options.
     """
@@ -42,7 +42,7 @@ def build_involucro_context(ctx, **kwds):
 
 
 def build_mull_target_kwds(ctx, **kwds):
-    """Adapt Planemo's CLI and workspace configuration to galaxy-lib's mulled_build options."""
+    """Adapt Planemo's CLI and workspace configuration to galaxy-tool-util's mulled_build options."""
     involucro_context = build_involucro_context(ctx, **kwds)
     channels = kwds.get("conda_ensure_channels", ",".join(DEFAULT_CHANNELS))
     namespace = kwds.get("mulled_namespace", "biocontainers")
@@ -56,11 +56,6 @@ def build_mull_target_kwds(ctx, **kwds):
     conda_version = kwds.get("mulled_conda_version", None)
     if conda_version is not None:
         target_kwds["conda_version"] = conda_version
-    else:
-        # Hack to workaround a bug with osxfs + Conda 4.2 - remove
-        # when container gets upgraded to 4.3
-        if IS_OS_X:
-            target_kwds["conda_version"] = "4.3"
     return target_kwds
 
 

@@ -1,0 +1,50 @@
+inputs:
+  the_input:
+    type: File
+    doc: input doc
+    id: the_input
+outputs:
+  the_output:
+    outputSource: cat/out_file1
+steps:
+  '0':
+    type: data_input
+    label: the_input
+    id: 0
+    position:
+      left: 0
+      top: 0
+    annotation: input doc
+    input_connections: {}
+    inputs:
+    - description: ''
+      name: the_input
+    tool_state: '{"name": "the_input"}'
+  '1':
+    tool_id: cat1
+    label: cat
+    id: 1
+    position:
+      left: 10
+      top: 10
+    type: tool
+    name: cat1
+    post_job_actions: {}
+    tool_version: null
+    annotation: cat doc
+    input_connections:
+      input1:
+      - id: 0
+        output_name: output
+    tool_state: '{"__page__": 0}'
+    workflow_outputs:
+    - label: null
+      output_name: out_file1
+      uuid: null
+a_galaxy_workflow: 'true'
+format-version: '0.1'
+name: Workflow
+uuid: e3c1b7c0-f365-44bb-99af-8a3a1b4a6894
+annotation: 'Simple workflow that no-op cats a file and then selects 10 random lines.
+
+  '

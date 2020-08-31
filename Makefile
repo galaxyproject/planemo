@@ -1,5 +1,5 @@
 # Default tests run with make test and make quick-tests
-NOSE_TESTS?=tests planemo
+TESTS?=tests planemo
 # Default environment for make tox
 ENV?=py27
 # Extra arguments supplied to tox command
@@ -49,7 +49,11 @@ clean-test: ## remove test and coverage artifacts
 	rm -f .coverage
 	rm -fr htmlcov/
 
-install: ## install into Python envirnoment
+submodule:
+	git submodule init
+	git submodule update
+
+install: submodule ## install into Python envirnoment
 	python setup.py install && cd cwl-runner && python setup.py install
 
 setup-venv: ## setup a development virtualenv in current directory
@@ -67,19 +71,19 @@ setup-git-hook-lint-and-test: ## setup precommit hook for linting and testing pr
 	cp $(BUILD_SCRIPTS_DIR)/pre-commit-lint-and-test .git/hooks/pre-commit
 
 flake8: ## check style using flake8 for current Python (faster than lint)
-	$(IN_VENV) flake8 $(SOURCE_DIR)  $(TEST_DIR)
+	$(IN_VENV) flake8 $(SOURCE_DIR) $(TEST_DIR)
 
 lint: ## check style using tox and flake8 for Python 2 and Python 3
-	$(IN_VENV) tox -e py27-lint && tox -e py34-lint
-
-lint-readme: ## check README formatting for PyPI
-	$(IN_VENV) python setup.py check -r -s
+	$(IN_VENV) tox -e py36-lint
 
 test: ## run tests with the default Python (faster than tox)
-	$(IN_VENV) nosetests $(NOSE_TESTS)
+	$(IN_VENV) pytest $(TESTS)
 
 quick-test: ## run quickest tests with the default Python
-	$(IN_VENV) PLANEMO_SKIP_SLOW_TESTS=1 PLANEMO_SKIP_GALAXY_TESTS=1 nosetests $(NOSE_TESTS)
+	$(IN_VENV) PLANEMO_SKIP_SLOW_TESTS=1 PLANEMO_SKIP_GALAXY_TESTS=1 pytest $(TESTS)
+
+gxwf-test-test:  ## run test of workflow testing script
+	bash $(BUILD_SCRIPTS_DIR)/test_workflow_tests.sh
 
 tox: ## run tests with tox in the specified ENV, defaults to py27
 	$(IN_VENV) tox -e $(ENV) -- $(ARGS)
@@ -100,11 +104,9 @@ open-history:  # view HISTORY.rst as HTML.
 
 ready-docs:  ## rebuild docs folder ahead of running docs or lint-docs
 	rm -f $(DOCS_DIR)/$(SOURCE_DIR).rst
-	rm -f $(DOCS_DIR)/planemo_ext.rst
 	rm -f $(DOCS_DIR)/modules.rst
 	$(BUILD_SLIDESHOW) 'Galaxy Tool Framework Changes' $(DOCS_DIR)/galaxy_changelog.md
 	$(BUILD_SLIDESHOW) 'Planemo: A Scientific Workflow SDK' $(DOCS_DIR)/presentations/2016_workflows.md
-	$(IN_VENV) sphinx-apidoc -f -o $(DOCS_DIR)/ planemo_ext
 	$(IN_VENV) sphinx-apidoc -f -o $(DOCS_DIR)/ $(SOURCE_DIR) $(SOURCE_DOC_EXCLUDE)
 	$(IN_VENV) python scripts/commands_to_rst.py
 
@@ -136,8 +138,9 @@ open-rtd: docs ## open docs on readthedocs.org
 open-project: ## open project on github
 	$(OPEN_RESOURCE) $(PROJECT_URL)
 
-dist: clean ## package
-	$(IN_VENV) python setup.py sdist bdist_egg bdist_wheel
+dist: clean submodule ## create and check packages
+	$(IN_VENV) python setup.py sdist bdist_wheel
+	$(IN_VENV) twine check dist/*
 	ls -l dist
 
 release-test-artifacts: dist
@@ -152,13 +155,13 @@ release-artifacts: release-test-artifacts ## Package and Upload to PyPi
 	@echo "Releasing"
 	$(IN_VENV) twine upload dist/*
 
-commit-version: ## Update version and history, commit.
+commit-version: ## Update version and history, commit and add tag
 	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/commit_version.py $(SOURCE_DIR) $(VERSION)
 
 new-version: ## Mint a new version
 	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/new_version.py $(SOURCE_DIR) $(VERSION)
 
-release-local: commit-version release-artifacts new-version
+release-local: commit-version new-version
 
 release-brew: ## Mint a new homebrew release
 	bash $(BUILD_SCRIPTS_DIR)/update_planemo_recipe.bash $(VERSION)

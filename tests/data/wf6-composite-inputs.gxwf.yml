@@ -1,0 +1,15 @@
+class: GalaxyWorkflow
+name: "Test Workflow - Composite Inputs"
+
+inputs:
+  - id: input1
+
+outputs:
+  - id: wf_output_1
+    outputSource: composite_input_imzml/output1
+
+steps:
+  - tool_id: composite_input_imzml
+    label: composite_input_imzml
+    in:
+      input1: input1

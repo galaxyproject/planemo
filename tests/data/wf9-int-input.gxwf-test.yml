@@ -1,0 +1,26 @@
+- doc: Test integer input (supply 1)
+  job:
+    input1:
+      class: File
+      path: 1.bed
+    lines: 1
+  outputs:
+    out:
+      asserts:
+        has_text:
+          text: 'chr1	147962192	147962580	CCDS989.1_cds_0_0_chr1_147962193_r	0	-'
+        not_has_text:
+          text: 'chr1	147984545	147984630	CCDS990.1_cds_0_0_chr1_147984546_f	0	+'
+- doc: Test integer input (supply 2)
+  job:
+    input1:
+      class: File
+      path: 1.bed
+    lines: 2
+  outputs:
+    out:
+      asserts:
+        has_text:
+          text: 'chr1	147984545	147984630	CCDS990.1_cds_0_0_chr1_147984546_f	0	+'
+        not_has_text:
+          text: 'chr10	55251623	55253124	CCDS7248.1_cds_0_0_chr10_55251624_r	0	-'

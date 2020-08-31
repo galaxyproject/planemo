@@ -2,9 +2,6 @@
 import os
 import shutil
 
-from nose.tools import assert_raises_regexp
-
-
 from planemo.engine import (
     engine_context,
     is_galaxy_engine,
@@ -14,7 +11,6 @@ from planemo.training import (
 )
 from planemo.training.topic import Topic
 from planemo.training.tutorial import (
-    format_wf_steps,
     get_galaxy_datatype,
     get_hands_on_boxes_from_local_galaxy,
     get_hands_on_boxes_from_running_galaxy,
@@ -37,6 +33,7 @@ from .test_training import (
     zenodo_link
 )
 from .test_utils import (
+    assert_raises_regexp,
     skip_if_environ,
 )
 
@@ -109,26 +106,12 @@ def test_get_wf_param_values():
 
 
 @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-def test_format_wf_steps():
-    """Test :func:`planemo.training.tutorial.format_wf_steps`."""
-    assert is_galaxy_engine(**KWDS)
-    with engine_context(CTX, **KWDS) as galaxy_engine:
-        with galaxy_engine.ensure_runnables_served([RUNNABLE]) as config:
-            workflow_id = config.workflow_id(WF_FP)
-            wf = config.gi.workflows.export_workflow_dict(workflow_id)
-            body = format_wf_steps(wf, config.gi)
-    assert '## Sub-step with **FastQC**' in body
-    assert '## Sub-step with **Query Tabular**' in body
-    assert '## Sub-step with **Select first**' in body
-
-
-@skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
 def test_get_hands_on_boxes_from_local_galaxy():
     """Test :func:`planemo.training.tutorial.get_hands_on_boxes_from_local_galaxy`."""
     tuto_body = get_hands_on_boxes_from_local_galaxy(KWDS, WF_FP, CTX)
-    assert '## Sub-step with **FastQC**' in tuto_body
-    assert '## Sub-step with **Query Tabular**' in tuto_body
-    assert '## Sub-step with **Select first**' in tuto_body
+    assert_body_contains(tuto_body, '## Sub-step with **FastQC**')
+    assert_body_contains(tuto_body, '## Sub-step with **Query Tabular**')
+    assert_body_contains(tuto_body, '## Sub-step with **Select first**')
 
 
 @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
@@ -140,9 +123,10 @@ def test_get_hands_on_boxes_from_running_galaxy():
         with galaxy_engine.ensure_runnables_served([RUNNABLE]) as config:
             wf_id = config.workflow_id(WF_FP)
             tuto_body = get_hands_on_boxes_from_running_galaxy(wf_id, galaxy_url, config.user_api_key)
-    assert '## Sub-step with **FastQC**' in tuto_body
-    assert '## Sub-step with **Query Tabular**' in tuto_body
-    assert '## Sub-step with **Select first**' in tuto_body
+
+    assert_body_contains(tuto_body, '## Sub-step with **FastQC**')
+    assert_body_contains(tuto_body, '## Sub-step with **Query Tabular**')
+    assert_body_contains(tuto_body, '## Sub-step with **Select first**')
 
 
 def test_tutorial_init():
@@ -361,11 +345,13 @@ def test_tutorial_prepare_data_library_from_zenodo():
     os.makedirs(tuto.wf_dir)
     tuto.prepare_data_library_from_zenodo()
     assert os.path.exists(tuto.data_lib_fp)
-    assert 'DOI' not in open(tuto.data_lib_fp, 'r').read()
+    with open(tuto.data_lib_fp, 'r') as fh:
+        assert 'DOI' not in fh.read()
     # with zenodo link
     tuto.zenodo_link = zenodo_link
     tuto.prepare_data_library_from_zenodo()
-    assert "DOI: 10.5281/zenodo" in open(tuto.data_lib_fp, 'r').read()
+    with open(tuto.data_lib_fp, 'r') as fh:
+        assert "DOI: 10.5281/zenodo" in fh.read()
     shutil.rmtree("topics")
 
 
@@ -447,5 +433,12 @@ def test_tutorial_create_tutorial():
     assert os.path.exists(tuto.data_lib_fp)
     assert os.path.exists(tuto.tuto_fp)
     assert os.path.exists(tuto.slide_fp)
-    assert 'layout: tutorial_slides' in open(tuto.slide_fp, 'r').read()
+    with open(tuto.slide_fp, 'r') as fh:
+        assert 'layout: tutorial_slides' in fh.read()
     shutil.rmtree("topics")
+
+
+def assert_body_contains(body, contents):
+    if contents not in body:
+        message = "Expected to find contents [%s] in body [%s]" % (contents, body)
+        raise AssertionError(message)

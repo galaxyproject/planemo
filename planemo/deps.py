@@ -1,3 +1,4 @@
+"""Abstractions for building dependency resolution configurations."""
 import tempfile
 from string import Template
 
@@ -103,7 +104,8 @@ def ensure_dependency_resolvers_conf_configured(ctx, kwds, resolvers_conf=None):
         })
         if resolvers_conf is None:
             resolvers_conf = tempfile.NamedTemporaryFile(delete=False).name
-        open(resolvers_conf, "w").write(conf_contents)
+        with open(resolvers_conf, "w") as fh:
+            fh.write(conf_contents)
         ctx.vlog(
             "Writing dependency_resolvers_config_file to path %s with contents [%s]",
             resolvers_conf,

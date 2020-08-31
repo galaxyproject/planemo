@@ -39,9 +39,8 @@ Galaxy instance.
 
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
-      --galaxy_python_version [2|2.7|3|3.3|3.4|3.5|3.6|3.7]
+      --galaxy_python_version [3|3.5|3.6|3.7|3.8]
                                       Python version to start Galaxy under
-      --galaxy_database_seed PATH     Preseeded Galaxy sqlite database to target.
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be
                                       linted/tested/etc... but they will be
@@ -174,6 +173,8 @@ Galaxy instance.
                                       likely indicate a problem but in some cases
                                       may not prevent a workflow from successfully
                                       executing.
+      --skip_client_build             Do not build Galaxy client when serving
+                                      Galaxy.
       --shed_install / --no_shed_install
                                       By default Planemo will attempt to install
                                       repositories needed for workflow testing. This

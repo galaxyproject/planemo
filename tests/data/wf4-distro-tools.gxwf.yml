@@ -4,7 +4,7 @@ inputs:
   - id: input1
 outputs:
   - id: wf_output_1
-    source: grouping#out_file1
+    outputSource: grouping/out_file1
 steps:
   - tool_id: Grouping1
     label: grouping

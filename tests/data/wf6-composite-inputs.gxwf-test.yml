@@ -1,0 +1,11 @@
+- doc: Test Composite Inputs
+  job:
+    input1:
+      class: File
+      filetype: imzml
+      composite_data:
+        - path: Example_Continuous.imzML
+        - path: Example_Continuous.ibd
+  outputs:
+    wf_output_1:
+      checksum: "sha1$0d2ad51f69d7b5df0f4d2b2a47b17478f2fca509"

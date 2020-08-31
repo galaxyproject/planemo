@@ -11,8 +11,8 @@ from string import Template
 from tempfile import mkdtemp
 
 from galaxy.containers.docker_model import DockerVolume
-from galaxy.tools.deps import docker_util
-from galaxy.tools.deps.commands import argv_to_str
+from galaxy.tool_util.deps import docker_util
+from galaxy.util.commands import argv_to_str
 from pkg_resources import parse_version
 from six import (
     add_metaclass,
@@ -29,6 +29,7 @@ from planemo.io import (
     kill_pid_file,
     shell,
     shell_join,
+    untar_to,
     wait_on,
     warn,
     write_file,
@@ -69,6 +70,7 @@ use_threadpool = True
 threadpool_kill_thread_limit = 10800
 [app:main]
 paste.app_factory = galaxy.web.buildapp:app_factory
+static_dir = static/
 """
 
 TOOL_CONF_TEMPLATE = """<toolbox>
@@ -178,6 +180,12 @@ formatter = generic
 format = %(asctime)s %(levelname)-5.5s [%(name)s] %(message)s
 """
 
+REFGENIE_CONFIG_TEMPLATE = """
+config_version: 0.3
+genome_folder: '%s'
+genome_servers: ['http://refgenomes.databio.org']
+genomes: null
+"""
 
 EMPTY_TOOL_CONF_TEMPLATE = """<toolbox></toolbox>"""
 
@@ -185,32 +193,14 @@ DEFAULT_GALAXY_BRANCH = "master"
 DEFAULT_GALAXY_SOURCE = "https://github.com/galaxyproject/galaxy"
 CWL_GALAXY_SOURCE = "https://github.com/common-workflow-language/galaxy"
 
-# TODO: Mac-y curl variant of this.
-DOWNLOAD_GALAXY = (
-    "wget -q https://codeload.github.com/galaxyproject/galaxy/tar.gz/"
-)
-
-DOWNLOADS_URL = ("https://raw.githubusercontent.com/"
-                 "jmchilton/galaxy-downloads/master/")
-DOWNLOADABLE_MIGRATION_VERSIONS = [141, 127, 120, 117]
-MIGRATION_PER_VERSION = {
-    "dev": 145,
-    "master": 142,
-    "18.09": 142,
-    "18.05": 141,
-    "18.01": 140,
-    "17.09": 135,
-    "17.05": 134,
-    "17.01": 133,
-}
-OLDEST_SUPPORTED_VERSION = 127
-
 DATABASE_LOCATION_TEMPLATE = "sqlite:///%s?isolation_level=IMMEDIATE"
 
-COMMAND_STARTUP_COMMAND = "./scripts/common_startup.sh ${COMMON_STARTUP_ARGS}"
+COMMAND_STARTUP_COMMAND = './scripts/common_startup.sh ${COMMON_STARTUP_ARGS}'
 
 CLEANUP_IGNORE_ERRORS = True
 DEFAULT_GALAXY_BRAND = 'Configured by Planemo'
+DEFAULT_TOOL_INSTALL_TIMEOUT = 60 * 60 * 1
+UNINITIALIZED = object()
 
 
 @contextlib.contextmanager
@@ -242,6 +232,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
         ensure_dependency_resolvers_conf_configured(ctx, kwds, os.path.join(config_directory, "resolvers_conf.xml"))
         _handle_job_metrics(config_directory, kwds)
+        _handle_refgenie_config(config_directory, kwds)
 
         shed_tool_conf = "config/shed_tool_conf.xml"
         all_tool_paths = _all_tool_paths(runnables, **kwds)
@@ -379,6 +370,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         ensure_dependency_resolvers_conf_configured(ctx, kwds, os.path.join(config_directory, "resolvers_conf.xml"))
         _handle_job_config_file(config_directory, server_name, kwds)
         _handle_job_metrics(config_directory, kwds)
+        _handle_refgenie_config(config_directory, kwds)
         file_path = kwds.get("file_path") or config_join("files")
         _ensure_directory(file_path)
 
@@ -403,12 +395,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         database_location = config_join("galaxy.sqlite")
         master_api_key = _get_master_api_key(kwds)
         dependency_dir = os.path.join(config_directory, "deps")
-        preseeded_database = attempt_database_preseed(
-            ctx,
-            galaxy_root,
-            database_location,
-            **kwds
-        )
         _ensure_directory(shed_tool_path)
         port = _get_port(kwds)
         template_args = dict(
@@ -462,8 +448,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         ))
         _handle_container_resolution(ctx, kwds, properties)
         write_file(config_join("logging.ini"), _sub(LOGGING_TEMPLATE, template_args))
-        if not for_tests:
-            properties["database_connection"] = _database_connection(database_location, **kwds)
+        properties["database_connection"] = _database_connection(database_location, **kwds)
 
         _handle_kwd_overrides(properties, kwds)
 
@@ -482,11 +467,8 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         env.update(install_env)
         _build_test_env(properties, env)
         env['GALAXY_TEST_SHED_TOOL_CONF'] = shed_tool_conf
+        env['GALAXY_TEST_DBURI'] = properties["database_connection"]
 
-        # No need to download twice - would GALAXY_TEST_DATABASE_CONNECTION
-        # work?
-        if preseeded_database:
-            env["GALAXY_TEST_DB_TEMPLATE"] = os.path.abspath(database_location)
         env["GALAXY_TEST_UPLOAD_ASYNC"] = "false"
         env["GALAXY_TEST_LOGGING_CONFIG"] = config_join("logging.ini")
         env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
@@ -562,6 +544,7 @@ def _shared_galaxy_properties(config_directory, kwds, for_tests):
         properties["tour_config_dir"] = empty_dir
         properties["interactive_environment_plugins_directory"] = empty_dir
         properties["visualization_plugins_directory"] = empty_dir
+        properties["refgenie_config_file"] = kwds.get('refgenie_config_file', '')
     return properties
 
 
@@ -645,6 +628,23 @@ class GalaxyInterface(object):
     def workflow_id(self, path):
         """Get installed workflow API ID for input path."""
 
+    @abc.abstractproperty
+    def version_major(self):
+        """Return target Galaxy version."""
+
+    @abc.abstractproperty
+    def user_api_config(self):
+        """Return the API indicated configuration for user session.
+
+        Calling .config.get_config() with admin GI session would yield
+        a different object (admins have different view of Galaxy's
+        configuration).
+        """
+
+    @property
+    def user_is_admin(self):
+        return self.user_api_config["is_admin_user"]
+
 
 @add_metaclass(abc.ABCMeta)
 class GalaxyConfig(GalaxyInterface):
@@ -677,7 +677,11 @@ class GalaxyConfig(GalaxyInterface):
 
     @abc.abstractproperty
     def use_path_paste(self):
-        """Use path paste to upload data."""
+        """Use path paste to upload data.
+
+        This will only be an option if the target user key is an
+        admin user key.
+        """
 
 
 class BaseGalaxyConfig(GalaxyInterface):
@@ -698,6 +702,9 @@ class BaseGalaxyConfig(GalaxyInterface):
         self.runnables = runnables
         self._kwds = kwds
         self._workflow_ids = {}
+
+        self._target_version = UNINITIALIZED
+        self._target_user_config = UNINITIALIZED
 
     @property
     def gi(self):
@@ -746,7 +753,7 @@ class BaseGalaxyConfig(GalaxyInterface):
             ready = all(map(status_ready, repos))
             return ready or None
 
-        wait_on(ready, "galaxy tool installation", timeout=60 * 60 * 1)
+        wait_on(ready, "galaxy tool installation", timeout=DEFAULT_TOOL_INSTALL_TIMEOUT)
 
     def install_workflows(self):
         for runnable in self.runnables:
@@ -754,8 +761,13 @@ class BaseGalaxyConfig(GalaxyInterface):
                 self._install_workflow(runnable)
 
     def _install_workflow(self, runnable):
-        if self._kwds["shed_install"]:
-            install_shed_repos(runnable, self.gi, self._kwds.get("ignore_dependency_problems", False))
+        if self._kwds.get("shed_install"):
+            install_shed_repos(runnable,
+                               self.gi,
+                               self._kwds.get("ignore_dependency_problems", False),
+                               self._kwds.get("install_tool_dependencies", False),
+                               self._kwds.get("install_resolver_dependencies", True),
+                               self._kwds.get("install_repository_dependencies", True))
 
         default_from_path = self._kwds.get("workflows_from_path", False)
         # TODO: Allow serialization so this doesn't need to assume a
@@ -780,6 +792,20 @@ class BaseGalaxyConfig(GalaxyInterface):
     @property
     def default_use_path_paste(self):
         return False
+
+    @property
+    def version_major(self):
+        """Return target Galaxy version."""
+        if self._target_version is UNINITIALIZED:
+            self._target_version = self.user_gi.config.get_version()["version_major"]
+        return self._target_version
+
+    @property
+    def user_api_config(self):
+        """Return the API indicated configuration for user session."""
+        if self._target_user_config is UNINITIALIZED:
+            self._target_user_config = self.user_gi.config.get_config()
+        return self._target_user_config
 
 
 class BaseManagedGalaxyConfig(BaseGalaxyConfig):
@@ -934,6 +960,13 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         self.galaxy_root = galaxy_root
 
     def kill(self):
+        if self._ctx.verbose:
+            shell(["ps", "ax"])
+            exists = os.path.exists(self.pid_file)
+            print("Killing pid file [%s]" % self.pid_file)
+            print("pid_file exists? [%s]" % exists)
+            if exists:
+                print("pid_file contents are [%s]" % open(self.pid_file, "r").read())
         kill_pid_file(self.pid_file)
 
     def startup_command(self, ctx, **kwds):
@@ -956,7 +989,8 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         if parse_version(kwds.get('galaxy_python_version') or DEFAULT_PYTHON_VERSION) >= parse_version('3'):
             # We need to start under gunicorn
             self.env['APP_WEBSERVER'] = 'gunicorn'
-            self.env['GUNICORN_CMD_ARGS'] = "--bind={host}:{port} --name={server_name}".format(
+            self.env['GUNICORN_CMD_ARGS'] = "--timeout={timeout} --capture-output --bind={host}:{port} --name={server_name}".format(
+                timeout=DEFAULT_TOOL_INSTALL_TIMEOUT,
                 host=kwds.get('host', '127.0.0.1'),
                 port=kwds['port'],
                 server_name=self.server_name,
@@ -994,91 +1028,13 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
     def default_use_path_paste(self):
         # If Planemo started a local, native Galaxy instance assume files URLs can be
         # pasted.
-        return True
+        return self.user_is_admin
 
 
 def _database_connection(database_location, **kwds):
     default_connection = DATABASE_LOCATION_TEMPLATE % database_location
     database_connection = kwds.get("database_connection") or default_connection
     return database_connection
-
-
-def attempt_database_preseed(
-    ctx, effective_galaxy_root, database_location, **kwds
-):
-    """If database location is unset, attempt to seed the database."""
-    if os.path.exists(database_location):
-        # Can't seed an existing database.
-        return False
-
-    if not _database_connection(database_location, **kwds).startswith("sqlite"):
-        # Not going to use an sqlite database, don't preseed.
-        return False
-
-    preseeded_database = True
-    galaxy_sqlite_database = kwds.get("galaxy_database_seed", None)
-    galaxy_branch = kwds.get("galaxy_branch", None)
-    try:
-        _download_database_template(
-            ctx,
-            effective_galaxy_root,
-            database_location,
-            galaxy_sqlite_database=galaxy_sqlite_database,
-            galaxy_branch=galaxy_branch
-        )
-    except Exception as e:
-        print(e)
-        # No network access - just roll forward from null.
-        preseeded_database = False
-    return preseeded_database
-
-
-def _download_database_template(
-    ctx,
-    galaxy_root,
-    database_location,
-    galaxy_sqlite_database=None,
-    galaxy_branch=None,
-):
-
-    if galaxy_sqlite_database is not None:
-        shutil.copyfile(galaxy_sqlite_database, database_location)
-        return True
-
-    download_migration = None
-    newest_migration = _newest_migration_version(galaxy_root, galaxy_branch)
-    for migration in DOWNLOADABLE_MIGRATION_VERSIONS:
-        if newest_migration >= migration:
-            download_migration = migration
-            break
-
-    if download_migration:
-        download_name = "db_gx_rev_0%d.sqlite" % download_migration
-        download_url = DOWNLOADS_URL + download_name
-        ctx.cache_download(download_url, database_location)
-        return True
-    else:
-        return False
-
-
-def _newest_migration_version(galaxy_root, galaxy_branch):
-    versions_dir = galaxy_root and os.path.join(galaxy_root, "lib/galaxy/model/migrate/versions")
-    if versions_dir and os.path.exists(versions_dir):
-        version = max(map(_file_name_to_migration_version, os.listdir(versions_dir)))
-    elif galaxy_branch:
-        for branch in MIGRATION_PER_VERSION:
-            if branch in galaxy_branch:
-                version = MIGRATION_PER_VERSION[branch]
-    else:
-        version = OLDEST_SUPPORTED_VERSION
-    return version
-
-
-def _file_name_to_migration_version(name):
-    try:
-        return int(name[0:4])
-    except ValueError:
-        return -1
 
 
 def _find_galaxy_root(ctx, **kwds):
@@ -1142,8 +1098,10 @@ def _find_tool_data_table(runnables, test_data_dir, **kwds):
         )
 
 
-def _search_tool_path_for(path, target, extra_paths=[]):
+def _search_tool_path_for(path, target, extra_paths=None):
     """Check for presence of a target in different artifact directories."""
+    if extra_paths is None:
+        extra_paths = []
     if not os.path.isdir(path):
         tool_dir = os.path.dirname(path)
     else:
@@ -1185,18 +1143,19 @@ def _install_galaxy(ctx, galaxy_root, env, kwds):
 
 
 def _install_galaxy_via_download(ctx, galaxy_root, env, kwds):
-    tmpdir = mkdtemp()
     branch = _galaxy_branch(kwds)
-    command = DOWNLOAD_GALAXY + "%s -O - | tar -C '%s' -xvz | tail && mv '%s' '%s'" % \
-        (branch, tmpdir, os.path.join(tmpdir, 'galaxy-' + branch), galaxy_root)
-    _install_with_command(ctx, command, galaxy_root, env, kwds)
+    untar_to("https://codeload.github.com/galaxyproject/galaxy/tar.gz/" + branch, tar_args=['-xvzf', '-', 'galaxy-' + branch], dest_dir=galaxy_root)
+    _install_with_command(ctx, galaxy_root, env, kwds)
 
 
 def _install_galaxy_via_git(ctx, galaxy_root, env, kwds):
     gx_repo = _ensure_galaxy_repository_available(ctx, kwds)
     branch = _galaxy_branch(kwds)
     command = git.command_clone(ctx, gx_repo, galaxy_root, branch=branch)
-    _install_with_command(ctx, command, galaxy_root, env, kwds)
+    exit_code = shell(command, env=env)
+    if exit_code != 0:
+        raise Exception("Failed to glone Galaxy via git")
+    _install_with_command(ctx, galaxy_root, env, kwds)
 
 
 def _build_eggs_cache(ctx, env, kwds):
@@ -1231,17 +1190,21 @@ def _galaxy_source(kwds):
     return source
 
 
-def _install_with_command(ctx, command, galaxy_root, env, kwds):
+def _install_with_command(ctx, galaxy_root, env, kwds):
     setup_venv_command = setup_venv(ctx, kwds)
     env['__PYVENV_LAUNCHER__'] = ''
     install_cmd = shell_join(
-        command,
-        ['cd', galaxy_root],
         setup_venv_command,
         setup_common_startup_args(),
         COMMAND_STARTUP_COMMAND,
     )
-    shell(install_cmd, env=env)
+    exit_code = shell(install_cmd, cwd=galaxy_root, env=env)
+    if exit_code != 0:
+        raise Exception("Failed to install Galaxy via command [%s]" % install_cmd)
+    if not os.path.exists(galaxy_root):
+        raise Exception("Failed to create Galaxy directory [%s]" % galaxy_root)
+    if not os.path.exists(os.path.join(galaxy_root, "lib")):
+        raise Exception("Failed to create Galaxy directory [%s], lib missing" % galaxy_root)
 
 
 def _ensure_galaxy_repository_available(ctx, kwds):
@@ -1346,8 +1309,18 @@ def _handle_container_resolution(ctx, kwds, galaxy_properties):
 
 def _handle_job_metrics(config_directory, kwds):
     metrics_conf = os.path.join(config_directory, "job_metrics_conf.xml")
-    open(metrics_conf, "w").write(EMPTY_JOB_METRICS_TEMPLATE)
+    with open(metrics_conf, "w") as fh:
+        fh.write(EMPTY_JOB_METRICS_TEMPLATE)
     kwds["job_metrics_config_file"] = metrics_conf
+
+
+def _handle_refgenie_config(config_directory, kwds):
+    refgenie_dir = os.path.join(config_directory, 'refgenie')
+    _ensure_directory(refgenie_dir)
+    refgenie_config = os.path.join(refgenie_dir, "genome_config.yaml")
+    with open(refgenie_config, "w") as fh:
+        fh.write(REFGENIE_CONFIG_TEMPLATE % (refgenie_dir))
+    kwds["refgenie_config_file"] = refgenie_config
 
 
 def _handle_kwd_overrides(properties, kwds):
@@ -1374,7 +1347,6 @@ def _ensure_directory(path):
 
 
 __all__ = (
-    "attempt_database_preseed",
     "DATABASE_LOCATION_TEMPLATE",
     "galaxy_config",
 )

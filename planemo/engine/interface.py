@@ -4,21 +4,24 @@ import abc
 import json
 import os
 import tempfile
+from typing import List
+
+from six import add_metaclass
 
 from planemo.exit_codes import EXIT_CODE_UNSUPPORTED_FILE_TYPE
 from planemo.io import error
 from planemo.runnable import (
     cases,
     for_path,
+    RunnableType,
 )
 from planemo.test.results import StructuredData
 
 
+@add_metaclass(abc.ABCMeta)
 class Engine(object):
     """Abstract description of an external process for running tools or workflows.
     """
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def run(self, path, job_path):
@@ -36,7 +39,7 @@ class Engine(object):
 class BaseEngine(Engine):
     """Base class providing context and keywords for Engine implementations."""
 
-    handled_runnable_types = []
+    handled_runnable_types = []  # type: List[RunnableType]
 
     def __init__(self, ctx, **kwds):
         """Store context and kwds."""
@@ -127,10 +130,6 @@ class BaseEngine(Engine):
             if tmp_path:
                 os.remove(tmp_path)
         return run_response
-
-    def _process_test_results(self, test_results):
-        for (test_case, run_response) in test_results:
-            pass
 
 
 __all__ = (

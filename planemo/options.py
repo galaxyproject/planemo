@@ -6,12 +6,13 @@ import functools
 import os
 
 import click
-from galaxy.tools.deps import docker_util
+from galaxy.tool_util.deps import docker_util
 
 from .config import planemo_option
 
 
 def force_option(what="files"):
+    """Annotate click command as consume the -f/--force option."""
     return planemo_option(
         "-f",
         "--force",
@@ -21,16 +22,28 @@ def force_option(what="files"):
 
 
 def skip_venv_option():
+    """Annotate click command as consume the --skip_venv option."""
     return planemo_option(
         "--skip_venv",
         is_flag=True,
         help=("Do not create or source a virtualenv environment for Galaxy, "
-              "this should be used or instance to preserve an externally "
-              "configured virtual environment or conda environment.")
+              "this should be used to preserve an externally configured "
+              "virtual environment or conda environment.")
+    )
+
+
+def skip_client_build_option():
+    """Annotate click command as consume the --skip_client_build option."""
+    return planemo_option(
+        "--skip_client_build",
+        is_flag=True,
+        default=False,
+        help=("Do not build Galaxy client when serving Galaxy.")
     )
 
 
 def run_engine_option():
+    """Annotate click command as consume the --engine option."""
     return planemo_option(
         "--engine",
         type=click.Choice(["galaxy", "docker_galaxy", "cwltool", "toil", "external_galaxy"]),
@@ -44,6 +57,7 @@ def run_engine_option():
 
 
 def non_strict_cwl_option():
+    """Annotate click command as consume the --non_strict_cwl option."""
     return planemo_option(
         "--non_strict_cwl",
         default=False,
@@ -53,6 +67,11 @@ def non_strict_cwl_option():
 
 
 def serve_engine_option():
+    """Annotate click command as consume the --engine option.
+
+    This variant of the engine command is restricted to engines that can serve Galaxy
+    servers.
+    """
     return planemo_option(
         "--engine",
         type=click.Choice(["galaxy", "docker_galaxy", "external_galaxy"]),
@@ -66,6 +85,7 @@ def serve_engine_option():
 
 
 def ignore_dependency_problems_option():
+    """Annotate click command as consume the --ignore_dependency_problems option."""
     return planemo_option(
         "--ignore_dependency_problems",
         is_flag=True,
@@ -78,6 +98,10 @@ def ignore_dependency_problems_option():
 
 
 def cwltool_no_container_option():
+    """Annotate click command as consume the --no_container option.
+
+    This option is for the CWL CLI runner interface.
+    """
     return planemo_option(
         "--no-container",
         "--no_container",
@@ -89,6 +113,7 @@ def cwltool_no_container_option():
 
 
 def test_data_option():
+    """Annotate click command as consume the --test_data option."""
     return planemo_option(
         "--test_data",
         type=click.Path(exists=True, file_okay=False, resolve_path=True),
@@ -134,7 +159,7 @@ def galaxy_python_version():
         '--galaxy_python_version',
         use_global_config=True,
         default=None,
-        type=click.Choice(['2', '2.7', '3', '3.3', '3.4', '3.5', '3.6', '3.7']),
+        type=click.Choice(['3', '3.5', '3.6', '3.7', '3.8']),
         help="Python version to start Galaxy under",
     )
 
@@ -147,17 +172,6 @@ def galaxy_root_option():
         use_env_var=True,
         type=click.Path(file_okay=False, dir_okay=True, resolve_path=True),
         help="Root of development galaxy directory to execute command with.",
-    )
-
-
-def galaxy_database_seed_option():
-    return planemo_option(
-        "--galaxy_database_seed",
-        default=None,
-        use_global_config=True,
-        use_env_var=True,
-        type=click.Path(exists=True, file_okay=True, resolve_path=True),
-        help="Preseeded Galaxy sqlite database to target.",
     )
 
 
@@ -628,6 +642,33 @@ def shed_install_option():
     )
 
 
+def install_tool_dependencies_option():
+    return planemo_option(
+        "--install_tool_dependencies/--no_install_tool_dependencies",
+        is_flag=True,
+        default=False,
+        help=("Turn on installation of tool dependencies using classic toolshed packages.")
+    )
+
+
+def install_resolver_dependencies_option():
+    return planemo_option(
+        "--install_resolver_dependencies/--no_install_resolver_dependencies",
+        is_flag=True,
+        default=True,
+        help=("Skip installing tool dependencies through resolver (e.g. conda).")
+    )
+
+
+def install_repository_dependencies_option():
+    return planemo_option(
+        "--install_repository_dependencies/--no_install_repository_dependencies",
+        is_flag=True,
+        default=True,
+        help=("Skip installing the repository dependencies.")
+    )
+
+
 def single_user_mode_option():
     return planemo_option(
         "galaxy_single_user",
@@ -649,6 +690,10 @@ def required_workflow_arg():
         resolve_path=False,
     )
     return click.argument("workflow_path", metavar="WORKFLOW_PATH", type=arg_type)
+
+
+def split_job_and_test():
+    return click.option("--split_test/--no_split_test", default=False, help="Write workflow job and test definitions to separate files.")
 
 
 def required_job_arg():
@@ -1070,7 +1115,6 @@ def galaxy_target_options():
     return _compose(
         galaxy_root_option(),
         galaxy_python_version(),
-        galaxy_database_seed_option(),
         extra_tools_option(),
         install_galaxy_option(),
         galaxy_branch_option(),
@@ -1130,6 +1174,7 @@ def galaxy_serve_options():
         daemon_option(),
         pid_file_option(),
         ignore_dependency_problems_option(),
+        skip_client_build_option(),
         shed_install_option()
     )
 
@@ -1328,14 +1373,28 @@ def recursive_option(help="Recursively perform command for subdirectories."):
     )
 
 
-def tool_test_json():
+def merge_test_json():
     target_path = click.Path(
         file_okay=True,
         dir_okay=False,
         resolve_path=True,
     )
     return click.argument(
-        'path',
+        'input_paths',
+        metavar="INPUT_PATHS",
+        type=target_path,
+        nargs=-1,
+    )
+
+
+def tool_test_json(var="path"):
+    target_path = click.Path(
+        file_okay=True,
+        dir_okay=False,
+        resolve_path=True,
+    )
+    return click.argument(
+        var,
         metavar="FILE_PATH",
         type=target_path,
         default="tool_test_output.json",
@@ -1351,6 +1410,9 @@ def engine_options():
         docker_extra_volume_option(),
         ignore_dependency_problems_option(),
         shed_install_option(),
+        install_tool_dependencies_option(),
+        install_resolver_dependencies_option(),
+        install_repository_dependencies_option(),
         galaxy_url_option(),
         galaxy_admin_key_option(),
         galaxy_user_key_option(),
@@ -1570,6 +1632,14 @@ def ci_chunk_count_option():
     )
 
 
+def ci_group_tools_option():
+    return planemo_option(
+        "--group_tools",
+        is_flag=True,
+        help="Group tools of the same repository on a single line."
+    )
+
+
 def ci_chunk_option():
     return planemo_option(
         "--chunk",
@@ -1596,6 +1666,19 @@ def ci_find_options():
         ci_chunk_count_option(),
         ci_chunk_option(),
         ci_output_option(),
+    )
+
+
+def workflow_output_artifact():
+    return planemo_option(
+        "-o", "--output",
+        default=None,
+        type=click.Path(
+            file_okay=True,
+            dir_okay=False,
+            readable=True,
+            resolve_path=True,
+        )
     )
 
 

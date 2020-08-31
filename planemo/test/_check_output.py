@@ -2,23 +2,54 @@
 
 import os
 
-from galaxy.tools.verify import verify
+from galaxy.tool_util.parser.interface import TestCollectionOutputDef
+from galaxy.tool_util.verify import verify
+from galaxy.tool_util.verify.interactor import verify_collection
 from galaxy.util import unicodify
 
 
 def check_output(runnable, output_properties, test_properties, **kwds):
-    """Use galaxy-lib to check a test output.
+    """Use galaxy-tool-util to check a test output.
 
     Return a list of strings describing the problems encountered,
     and empty list indicates no problems were detected.
 
     Currently this will only ever return at most one detected problem because
-    of the way galaxy-lib throws exceptions instead of returning individual
+    of the way galaxy-tool-util throws exceptions instead of returning individual
     descriptions - but this may be enhanced in the future.
     """
+    checker = _check_output_collection if for_collections(test_properties) else _check_output_file
+    return checker(runnable, output_properties, test_properties, **kwds)
+
+
+def for_collections(test_properties):
+    return "element_tests" in test_properties
+
+
+def _check_output_collection(runnable, output_properties, test_properties, **kwds):
+    data_collection = output_properties
+
+    output_def = TestCollectionOutputDef.from_dict(test_properties)
+
+    def verify_dataset(element, element_attrib, element_outfile):
+        if element_outfile:
+            element_attrib["path"] = element_outfile
+        _verify_output_file(runnable, element["_output_object"], element_attrib)
+
+    problems = []
+    try:
+        verify_collection(output_def, data_collection, verify_dataset)
+    except AssertionError as e:
+        problems.append(unicodify(e))
+
+    return problems
+
+
+def _verify_output_file(runnable, output_properties, test_properties, **kwds):
     get_filename = _test_filename_getter(runnable)
     path = output_properties["path"]
-    output_content = open(path, "rb").read()
+    with open(path, "rb") as fh:
+        output_content = fh.read()
     # Support Galaxy-like file location (using "file") or CWL-like ("path" or "location").
     expected_file = test_properties.get("file", None)
     if expected_file is None:
@@ -28,21 +59,25 @@ def check_output(runnable, output_properties, test_properties, **kwds):
 
     job_output_files = kwds.get("job_output_files", None)
     item_label = "Output with path %s" % path
-    problems = []
     if "asserts" in test_properties:
         # TODO: break fewer abstractions here...
-        from galaxy.tools.parser.yaml import __to_test_assert_list
+        from galaxy.tool_util.parser.yaml import __to_test_assert_list
         test_properties["assert_list"] = __to_test_assert_list(test_properties["asserts"])
+    verify(
+        item_label,
+        output_content,
+        attributes=test_properties,
+        filename=expected_file,
+        get_filename=get_filename,
+        keep_outputs_dir=job_output_files,
+        verify_extra_files=None,
+    )
+
+
+def _check_output_file(runnable, output_properties, test_properties, **kwds):
+    problems = []
     try:
-        verify(
-            item_label,
-            output_content,
-            attributes=test_properties,
-            filename=expected_file,
-            get_filename=get_filename,
-            keep_outputs_dir=job_output_files,
-            verify_extra_files=None,
-        )
+        _verify_output_file(runnable, output_properties, test_properties, **kwds)
     except AssertionError as e:
         problems.append(unicodify(e))
 

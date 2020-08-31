@@ -2,11 +2,12 @@
 
 import abc
 
+from six import add_metaclass
 
+
+@add_metaclass(abc.ABCMeta)
 class DatabaseSource(object):
     """Interface describing a source of profile databases."""
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def create_database(self, identifier):

@@ -243,7 +243,6 @@ tool can be found `here <https://github.com/jmchilton/picard/commit/4df897438408
 These tests can then be run with the Planemo `test command
 <http://planemo.readthedocs.org/en/latest/commands.html#test-command>`__.
 
-.. warning:: This idiom does not work with the Tool Shed test automated framework at this time and so these tests will largely only pass with Planemo_.
 
 ------------------------------------------
 \.\.\. test exit codes?

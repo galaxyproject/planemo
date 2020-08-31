@@ -457,7 +457,7 @@ class CommandIO(object):
         for position, (prefix, value) in enumerate(prefixed_parts):
             if value in self.example_input_names():
                 input_count += 1
-                input = CwlInput(
+                input = _CwlInput(
                     "input%d" % input_count,
                     position,
                     prefix,
@@ -466,7 +466,7 @@ class CommandIO(object):
                 parse_list.append(input)
             elif value in self.example_output_names():
                 output_count += 1
-                output = CwlOutput(
+                output = _CwlOutput(
                     "output%d" % output_count,
                     position,
                     prefix,
@@ -476,7 +476,7 @@ class CommandIO(object):
             elif prefix:
                 param_id = prefix.prefix.lower().rstrip("=")
                 type_ = param_type(value)
-                input = CwlInput(
+                input = _CwlInput(
                     param_id,
                     position,
                     prefix,
@@ -485,7 +485,7 @@ class CommandIO(object):
                 )
                 parse_list.append(input)
             else:
-                part = CwlCommandPart(value, position, prefix)
+                part = _CwlCommandPart(value, position, prefix)
                 parse_list.append(part)
         return parse_list
 
@@ -500,7 +500,7 @@ class CommandIO(object):
         index = 0
         while index < len(lex_list):
             token = lex_list[index]
-            if isinstance(token, CwlCommandPart):
+            if isinstance(token, _CwlCommandPart):
                 base_command.append(token.value)
             else:
                 break
@@ -511,11 +511,11 @@ class CommandIO(object):
             if token.is_token(">"):
                 break
             token.position = index - len(base_command) + 1
-            if isinstance(token, CwlCommandPart):
+            if isinstance(token, _CwlCommandPart):
                 arguments.append(token)
-            elif isinstance(token, CwlInput):
+            elif isinstance(token, _CwlInput):
                 inputs.append(token)
-            elif isinstance(token, CwlOutput):
+            elif isinstance(token, _CwlOutput):
                 token.glob = "$(inputs.%s)" % token.id
                 outputs.append(token)
 
@@ -526,8 +526,8 @@ class CommandIO(object):
             token = lex_list[index]
             if token.is_token(">") and (index + 1) < len(lex_list):
                 output_token = lex_list[index + 1]
-                if not isinstance(output_token, CwlOutput):
-                    output_token = CwlOutput("std_out", None)
+                if not isinstance(output_token, _CwlOutput):
+                    output_token = _CwlOutput("std_out", None)
 
                 output_token.glob = "out"
                 output_token.require_filename = False
@@ -572,7 +572,7 @@ def _looks_like_start_of_prefix(index, parts):
 Prefix = namedtuple("Prefix", ["prefix", "separated"])
 
 
-class CwlCommandPart(object):
+class _CwlCommandPart(object):
 
     def __init__(self, value, position, prefix):
         self.value = value
@@ -583,7 +583,7 @@ class CwlCommandPart(object):
         return self.value == value
 
 
-class CwlInput(object):
+class _CwlInput(object):
 
     def __init__(self, id, position, prefix, example_value, type_="File"):
         self.id = id
@@ -596,7 +596,7 @@ class CwlInput(object):
         return False
 
 
-class CwlOutput(object):
+class _CwlOutput(object):
 
     def __init__(self, id, position, prefix, example_value):
         self.id = id
@@ -611,15 +611,14 @@ class CwlOutput(object):
 
 
 def _render(kwds, template_str=TOOL_TEMPLATE):
-    """ Apply supplied template variables to TOOL_TEMPLATE to generate
-    the final tool.
-    """
+    """Render template variables to generate the final tool."""
     return templates.render(template_str, **kwds)
 
 
 def _replace_file_in_command(command, specified_file, name):
-    """ Replace example file with cheetah variable name in supplied command
-    or command template. Be sure to single quote the name.
+    """Replace example file with cheetah variable name.
+
+    Be sure to single quote the name.
     """
     # TODO: check if the supplied variant was single quoted already.
     if '"%s"' % specified_file in command:
@@ -634,7 +633,8 @@ def _replace_file_in_command(command, specified_file, name):
 
 
 def _handle_help(kwds):
-    """ Convert supplied help parameters into a help variable for template.
+    """Convert supplied help parameters into a help variable for template.
+
     If help_text is supplied, use as is. If help is specified from a command,
     run the command and use that help text.
     """
@@ -658,7 +658,9 @@ def _handle_help(kwds):
 
 
 def _handle_tests(kwds, test_case):
-    """ Given state built up from handling rest of arguments (test_case) and
+    """Build tool test abstractions.
+
+    Given state built up from handling rest of arguments (test_case) and
     supplied kwds - build tests for template and corresponding test files.
     """
     test_files = []
@@ -672,7 +674,9 @@ def _handle_tests(kwds, test_case):
 
 
 def _handle_requirements(kwds):
-    """ Convert requirements and containers specified from the command-line
+    """Build tool requirement abstractions.
+
+    Convert requirements and containers specified from the command-line
     into abstract format for consumption by the template.
     """
     requirements = kwds["requirement"]
@@ -688,7 +692,7 @@ def _handle_requirements(kwds):
 
 
 def _find_command(kwds):
-    """Find base command from supplied arguments or just return None.
+    """Find base command from supplied arguments or just return `None`.
 
     If no such command was supplied (template will just replace this
     with a TODO item).
@@ -702,6 +706,7 @@ def _find_command(kwds):
 
 
 class UrlCitation(object):
+    """Describe citation for tool."""
 
     def __init__(self, url):
         self.url = url

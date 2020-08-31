@@ -4,40 +4,32 @@ from __future__ import print_function
 import contextlib
 import functools
 import os
+import re
 import shutil
 import signal
-import threading
 import traceback
+from concurrent.futures import as_completed, ThreadPoolExecutor
 from sys import version_info
 from tempfile import mkdtemp
+from unittest import skip, TestCase
 
 import psutil
+import py.code
+import pytest
 from click.testing import CliRunner
-from galaxy.tools.deps.commands import which
-from galaxy.util import unicodify
+from galaxy.util import asbool, unicodify, which
 
 from planemo import cli
 from planemo import io
 from planemo import shed
 from planemo.config import PLANEMO_CONFIG_ENV_PROP
-from planemo.galaxy.ephemeris_sleep import sleep
+from planemo.galaxy.ephemeris_sleep import sleep, SleepCondition
 from .shed_app_test_utils import (
     mock_shed,
     setup_mock_shed,
 )
 
-try:
-    import pytest
-except ImportError:
-    pytest = None
-    from nose.plugins.attrib import attr
-
-if version_info < (2, 7):
-    from unittest2 import TestCase, skip
-    PRE_PYTHON_27 = True
-else:
-    from unittest import TestCase, skip
-    PRE_PYTHON_27 = False
+PRE_PYTHON_27 = False
 if version_info[0] == 2 and version_info[1] >= 7:
     PYTHON_27 = True
 else:
@@ -58,10 +50,7 @@ NON_ZERO_EXIT_CODE = object()
 class MarkGenerator(object):
 
     def __getattr__(self, name):
-        if pytest:
-            return getattr(pytest.mark, name)
-        else:
-            return attr(name)
+        return getattr(pytest.mark, name)
 
 
 mark = MarkGenerator()
@@ -76,20 +65,24 @@ class CliTestCase(TestCase):
         self._runner = CliRunner()
         self._home = mkdtemp()
         self._old_config = os.environ.get(PLANEMO_CONFIG_ENV_PROP, None)
-        self._threads = []
+        self._futures = []
         self._port = None
         os.environ[PLANEMO_CONFIG_ENV_PROP] = self.planemo_yaml_path
 
     def tearDown(self):  # noqa
-        for t in self._threads:
-            t.join(timeout=10)
+        for future in self._futures:
+            future.cancel()
+            try:
+                future.result(timeout=10)
+            except Exception as e:
+                print("Failed to dispose of future driven resource [%s]" % e)
         if self._port:
             kill_process_on_port(self._port)
         if self._old_config:
             os.environ[PLANEMO_CONFIG_ENV_PROP] = self._old_config
         else:
             del os.environ[PLANEMO_CONFIG_ENV_PROP]
-        shutil.rmtree(self._home)
+        safe_rmtree(self._home)
 
     @property
     def planemo_yaml_path(self):
@@ -111,9 +104,19 @@ class CliTestCase(TestCase):
             self._copy_repo(name, f)
             yield f
 
+    @contextlib.contextmanager
+    def _isolate_with_test_data(self, relative_path):
+        with self._isolate() as f:
+            repo = os.path.join(TEST_DATA_DIR, relative_path)
+            self._copy_directory(repo, f)
+            yield f
+
     def _copy_repo(self, name, dest):
         repo = os.path.join(TEST_REPOS_DIR, name)
-        io.shell(['cp', '-r', "%s/." % repo, dest])
+        self._copy_directory(repo, dest)
+
+    def _copy_directory(self, path, dest):
+        io.shell(['cp', '-r', "%s/." % path, dest])
 
     @property
     def test_context(self):
@@ -177,7 +180,7 @@ class TempDirectoryTestCase(TestCase):
         self.temp_directory = mkdtemp()
 
     def tearDown(self):  # noqa
-        shutil.rmtree(self.temp_directory)
+        safe_rmtree(self.temp_directory)
 
 
 class TempDirectoryContext(object):
@@ -188,7 +191,7 @@ class TempDirectoryContext(object):
         return self
 
     def __exit__(self, type, value, tb):
-        shutil.rmtree(self.temp_directory)
+        safe_rmtree(self.temp_directory)
 
 
 def skip_unless_environ(var):
@@ -256,9 +259,14 @@ def modify_environ(values, remove=[]):
             del os.environ[key]
 
 
+def run_verbosely():
+    return asbool(os.environ.get("PLANEMO_TEST_VERBOSE", "false"))
+
+
 def test_context():
-    context = cli.Context()
+    context = cli.PlanemoCliContext()
     context.planemo_directory = "/tmp/planemo-test-workspace"
+    context.verbose = run_verbosely()
     return context
 
 
@@ -288,8 +296,11 @@ def assert_exists(path):
 def check_exit_code(runner, command_list, exit_code=0):
     expected_exit_code = exit_code
     planemo_cli = cli.planemo
+    if run_verbosely():
+        print("Invoking command [%s]" % command_list)
     result = runner.invoke(planemo_cli, command_list)
-    print("Command list output is [%s]" % result.output)
+    if run_verbosely():
+        print("Command list output is [%s]" % result.output)
     result_exit_code = result.exit_code
     if expected_exit_code is NON_ZERO_EXIT_CODE:
         matches_expectation = result_exit_code != 0
@@ -308,6 +319,8 @@ def check_exit_code(runner, command_list, exit_code=0):
             tb = traceback.format_exception(exc_type, exc_value,
                                             exc_traceback)
             message += "Traceback [%s]" % tb
+        if run_verbosely():
+            print("Raising assertion error for unexpected exit code [%s]" % message)
         raise AssertionError(message)
     return result
 
@@ -328,13 +341,13 @@ def kill_process_on_port(port):
 
 @contextlib.contextmanager
 def cli_daemon_galaxy(runner, pid_file, port, command_list, exit_code=0):
-    t = launch_and_wait_for_galaxy(port, check_exit_code, args=[runner, command_list, exit_code])
+    future = launch_and_wait_for_galaxy(port, check_exit_code, args=[runner, command_list, exit_code])
     yield
     io.kill_pid_file(pid_file)
-    t.join(timeout=60)
+    _wait_on_future_suppress_exception(future)
 
 
-def launch_and_wait_for_galaxy(port, func, args=[]):
+def launch_and_wait_for_galaxy(port, func, args=[], timeout=600, timeout_multiplier=1):
     """Run func(args) in a thread and wait on port for service.
 
     Service should remain up so check network a few times, this prevents
@@ -342,12 +355,87 @@ def launch_and_wait_for_galaxy(port, func, args=[]):
     detecting that the port is bound to.
     """
     target = functools.partial(func, *args)
-    t = threading.Thread(target=target)
-    t.daemon = True
-    t.start()
-    if not sleep("http://localhost:%d" % port, timeout=600):
-        raise Exception('Galaxy failed to start')
-    return t
+
+    wait_sleep_condition = SleepCondition()
+
+    def wait():
+        effective_timeout = timeout * timeout_multiplier
+        if not sleep("http://localhost:%d" % port, verbose=True, timeout=effective_timeout, sleep_condition=wait_sleep_condition):
+            raise Exception('Galaxy failed to start on port %d' % port)
+
+    executor = ThreadPoolExecutor(max_workers=2)
+    try:
+        target_future = executor.submit(target)
+        wait_future = executor.submit(wait)
+        for first in as_completed([target_future, wait_future]):
+            break
+
+        if target_future.running():
+            # If wait timed out re-throw.
+            wait_future.result()
+            return target_future
+        else:
+            if target_future.exception() is not None:
+                wait_future.cancel()
+                wait_sleep_condition.cancel()
+                _wait_on_future_suppress_exception(wait_future)
+                # If the target threw an exception, rethrow.
+                target_future.result()
+            else:
+                # Otherwise, daemon started properly. Just wait on wait.
+                wait_future.result()
+                return target_future
+    finally:
+        executor.shutdown(wait=False)
+
+
+def _wait_on_future_suppress_exception(future):
+    try:
+        future.result(timeout=30)
+    except Exception as e:
+        print("Problem waiting on future %s" % e)
+
+
+# From pytest-raisesregexp
+class assert_raises_regexp(object):
+    def __init__(self, expected_exception, regexp, *args, **kwargs):
+        __tracebackhide__ = True
+        self.exception = expected_exception
+        self.regexp = regexp
+        self.excinfo = None
+
+        if args:
+            with self:
+                args[0](*args[1:], **kwargs)
+
+    def __enter__(self):
+        self.excinfo = object.__new__(py.code.ExceptionInfo)
+        return self.excinfo
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        __tracebackhide__ = True
+
+        if exc_type is None:
+            pytest.fail('DID NOT RAISE {0}'.format(self.exception))
+
+        self.excinfo.__init__((exc_type, exc_val, exc_tb))
+
+        if not issubclass(exc_type, self.exception):
+            pytest.fail('{0} RAISED instead of {1}\n{2!r}'
+                        .format(exc_type, self.exception, exc_val))
+
+        if not re.search(self.regexp, str(exc_val)):
+            pytest.fail('Pattern "{0}" not found in "{1!s}"'
+                        .format(self.regexp, exc_val))
+
+        return True
+
+
+def safe_rmtree(path):
+    try:
+        shutil.rmtree(path)
+    except Exception as e:
+        print("Failed to cleanup test directory [%s]: [%s]" % (path, e))
 
 
 # TODO: everything should be considered "exported".

@@ -1,55 +1,84 @@
+{% from 'macros.tmpl' import render_job_parameters, render_steps %}
+{% if title %}
 # {{ title }}
 
-## Executive Summary
+{% endif %}
+## Test Summary
+{% set state = namespace(found=false) %}
+{% set state.success = raw_data.results.total - raw_data.results.errors - raw_data.results.failures - raw_data.results.skips | default(0) %}
+{% set state.error = raw_data.results.errors | default(0) %}
+{% set state.failure = raw_data.results.failures | default(0) %}
+{% set state.skipped = raw_data.results.skipped | default(0) %}
+
+<div class="progress">
+  <div class="progress-bar progress-bar-success" style="width: {{ (state.success / raw_data.results.total) * 100 }}%" aria-valuenow="{{ state.success }}" aria-valuemin="0" aria-valuemax="{{ raw_data.results.total }}" data-toggle="tooltip" title="{{state.success}} Passed">
+  </div>
+  <div class="progress-bar progress-bar-warning" style="width: {{ (state.skipped / raw_data.results.total) * 100 }}%" aria-valuenow="{{ state.skipped }}" aria-valuemin="0" aria-valuemax="{{ raw_data.results.total }}" data-toggle="tooltip" title="{{state.skipped}} Skipped">
+  </div>
+  <div class="progress-bar progress-bar-danger" style="width: {{ ((state.error + state.failure) / raw_data.results.total) * 100 }}%" aria-valuenow="{{ state.error + state.failure }}" aria-valuemin="0" aria-valuemax="{{ raw_data.results.total }}" title="{{state.error + state.failure}} Failed or Errored">
+  </div>
+</div>
 
 | Test State | Count |
 | ---------- | ----- |
-| Total      | {{ raw_data.summary.num_tests | default(0)  }} |
-| Passed     | {{ raw_data.summary.num_tests - raw_data.summary.num_errors - raw_data.summary.num_failures - raw_data.summary.num_skips | default(0)  }} |
-| Error      | {{ raw_data.summary.num_errror | default(0) }} |
-| Failure    | {{ raw_data.summary.num_failure | default(0) }} |
-| Skipped    | {{ raw_data.summary.num_skipped | default(0) }} |
+| Total      | {{ raw_data.results.total | default(0)  }} |
+| Passed     | {{ state.success }} |
+| Error      | {{ state.error }} |
+| Failure    | {{ state.failure }} |
+| Skipped    | {{ state.skipped }} |
 
 
-## Detailed Results
-{% for test in raw_data.tests %}
-### {{ test.id }}
-{% if test.data.status == 'success' %}
-Job Passed
-{% else %}
-Job Error! (State: {{ test.data.status }})
+{% set display_job_attributes = {'command_line': 'Command Line', 'exit_code': 'Exit Code', 'stderr': 'Standard Error', 'stdout': 'Standard Output'} %}
+{% for status, desc in {'error': 'Errored', 'failure': 'Failed', 'success': 'Passed'}.items() if state[status]%}
+<details><summary>{{ desc }} Tests</summary>
+{%   for test in raw_data.tests %}
+{%     if test.data.status == status %}
+{%       if test.data.status == 'success' %}
 
-Command Line:
+* <details class="rcorners light-green"><summary class="light-green">&#9989; {{ test.id }}</summary><div class="padded">
 
-```console
-{{ test.data.job.command_line}}
-```
+{%       else %}
 
-exited with code {{ test.data.job.exit_code }}.
+* <details class="rcorners light-red"><summary class="light-red">&#10060; {{ test.id }}</summary><div class="padded">
 
-#### Problems
+{%       endif %}
+{%       if test.data.output_problems %}
+    **Problems**:
+{%       endif %}
+{%       for problem in test.data.output_problems %}
+    * ```
+      {{problem|indent(6)}}
+      ```
+{%       endfor %}
+{%       if test.data.execution_problem %}
+    **Execution Problem:**
+    * ```
+      {{test.data.execution_problem|indent(6)}}
+      ```
+{%       endif %}
+{%     if test.data.job %}
+{%       for key, description in display_job_attributes.items() %}
+{%         if test.data.job[key] not in ("", None) %}
+    **{{ description }}:**
 
-{% for problem in test.data.output_problems %}
-```console
-{{problem}}
-```
+    * ```console
+      {{ test.data.job[key]|string|indent(6)}}
+      ```
+{%         endif %}
+{%       endfor %}
+{{render_job_parameters(test.data.job)}}
+
+{%     endif %}
+{%     if test.data.invocation_details %}
+
+    #### Workflow invocation details
+
+{{render_steps(test.data.invocation_details.values(), display_job_attributes)}}
+  </div></details>
+
+{% endif %}
+{% endif %}
 {% endfor %}
 
-{% if test.data.job.stdout %}
-#### `stderr`
-
-```console
-{{ test.data.job.stderr}}
-```
-
-{% endif %}
-{% if test.data.job.stdout %}
-#### `stdout`
-
-```console
-{{ test.data.job.stdout}}
-```
-
-{% endif %}
-{% endif %}
+</details>
 {% endfor %}

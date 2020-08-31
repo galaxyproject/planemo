@@ -106,7 +106,7 @@ Before you submit a pull request, check that it meets these guidelines:
 
 1. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring.
-2. The pull request should work for Python 2.7 and 3.4. Check
+2. The pull request should work for Python >=3.5. Check
    https://travis-ci.org/galaxyproject/planemo/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
@@ -115,15 +115,15 @@ Tips
 
 To run a subset of tests::
 
-    % make tox ENV=py27 ARGS='--tests tests/test_shed_upload.py'
+    % make tox ENV=py37-unit ARGS='--tests tests/test_shed_upload.py'
 
-This will use Tox_ to run the specified tests using Python 2.7. ``ENV`` here
-can be used to specify different Python version (e.g. ``py27`` and
-``py34``). Python 3.4 is a work in progress. 
+This will use Tox_ to run the specified tests using Python 3.7. ``ENV`` here
+can be used to specify different Python version (e.g. ``py35`` or
+``py37``).
 
 Even more granularity is also possible by specifying specific test methods.::
 
-    make tox ENV=py27 ARGS='--tests tests/test_shed_upload.py:ShedUploadTestCase.test_tar_from_git'
+    make tox ENV=py37-unit ARGS='--tests tests/test_shed_upload.py:ShedUploadTestCase.test_tar_from_git'
 
 
 ``tox`` can be used to run tests directly also (use ``. .venv/bin/activate``
@@ -131,14 +131,14 @@ to ensure it is on your ``PATH``).
 
 ::
 
-    tox -e py27 -- --tests tests/test_shed_upload.py
+    tox -e py37-unit -- --tests tests/test_shed_upload.py
 
 Tox_ itself is configured to wrap nose_. One can skip Tox_ and run
 ``nosetests`` directly.
 
 ::
 
-    nosetests tests/test_shed_upload.py
+    pytest tests/test_shed_upload.py
 
 Tox_
 ~~~~~~~~~~~
@@ -147,22 +147,24 @@ Tox_ is a tool to automate testing across different Python versions. The
 ``tox`` executable can be supplied with a ``-e`` argument to specify a
 testing environment. Planemo defines the following environments:
 
-``py27-lint``
-    Lint the planemo code using Python 2.7.
+``py37-lint``
+    Lint the planemo code using Python 3.7..
 
-``py34-lint``
-    Lint the planemo code using Python 3.4 (also ensures valid Python 3
-    syntax).
+``py37-lint_docs``
+    Lint the docs reStructuredText.
 
-``py27-lint-readme``
-    Lint the README reStructuredText.
+``py37-lint_docstrings``
+    Lint the project Python docstrings (doesn't pass currently).
 
-``py27``
-    Run planemo tests in Python 2.7.
+``py35-unit-quick``
+    Run the fastest unit tests (with least external dependencies) on Python 3.5.
 
-``py34``
-    Run planemo tests in Python 3.4 (not currently working).
+``py36-unit-nonredundant-noclientbuild-gx-2005``
+    Run tests that are marked as targeting a Galaxy branch and test against Galaxy 20.05.
+    Skip tests that are marked as redundant or that require a Galaxy client build.
 
+``py37-unit-gx-dev``
+    Run tests that are marked as targeting a Galaxy branch and test against Galaxy's dev branch.
 
 Pre-commit Hooks
 ~~~~~~~~~~~~~~~~~~~~~

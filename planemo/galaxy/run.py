@@ -2,7 +2,7 @@
 import os
 import string
 
-from galaxy.tools.deps.commands import shell
+from galaxy.tool_util.deps.commands import shell
 from six.moves import shlex_quote
 
 from planemo.io import info, shell_join
@@ -14,9 +14,13 @@ from planemo.virtualenv import (
 
 # Activate galaxy's virtualenv if present (needed for tests say but not for
 # server because run.sh does this).
-ACTIVATE_COMMAND = 'if [ -e "$GALAXY_VIRTUAL_ENV" ]; then . "$GALAXY_VIRTUAL_ENV"/bin/activate; fi'
+ACTIVATE_COMMAND = (
+    'if [ -e "$GALAXY_VIRTUAL_ENV" ]; then . "$GALAXY_VIRTUAL_ENV"/bin/activate; '
+    'echo "Activated a virtualenv for Galaxy"; echo "$VIRTUAL_ENV"; '
+    'else echo "Failed to activate virtualenv."; fi'
+)
 CREATE_COMMAND_TEMPLATE = string.Template(
-    'if [ ! -e "$GALAXY_VIRTUAL_ENV" ]; then $create_virtualenv; fi',
+    'if [ ! -e "$GALAXY_VIRTUAL_ENV" ]; then $create_virtualenv; echo "Created virtualenv"; fi',
 )
 PRINT_VENV_COMMAND = shell_join(
     r'echo "Set \$GALAXY_VIRTUAL_ENV to $GALAXY_VIRTUAL_ENV"',
@@ -45,17 +49,24 @@ def setup_venv(ctx, kwds):
         CREATE_COMMAND_TEMPLATE.safe_substitute(create_template_params),
         PRINT_VENV_COMMAND if ctx.verbose else None,
         ACTIVATE_COMMAND,
+        "bash -c 'pwd'" if ctx.verbose else None,
+        "bash -c 'which python'" if ctx.verbose else None,
+        "bash -c 'which pip'" if ctx.verbose else None,
+        "bash -c 'echo $GALAXY_VIRTUAL_ENV'" if ctx.verbose else None,
+        "bash -c 'echo $VIRTUAL_ENV'" if ctx.verbose else None,
+        "bash -c 'ls -a'" if ctx.verbose else None,
     )
 
 
 def locate_galaxy_virtualenv(ctx, kwds):
-    if not kwds.get("no_cache_galaxy", False):
+    if os.environ.get("GALAXY_VIRTUAL_ENV"):
+        venv_command = ""
+    elif not kwds.get("no_cache_galaxy", False):
         workspace = ctx.workspace
         galaxy_branch = kwds.get("galaxy_branch") or "master"
         shared_venv_path = os.path.join(workspace, "gx_venv")
         galaxy_python_version = kwds.get('galaxy_python_version') or DEFAULT_PYTHON_VERSION
-        if galaxy_python_version != DEFAULT_PYTHON_VERSION:
-            shared_venv_path = "%s_%s" % (shared_venv_path, galaxy_python_version)
+        shared_venv_path = "%s_%s" % (shared_venv_path, galaxy_python_version)
         if galaxy_branch != "master":
             shared_venv_path = "%s_%s" % (shared_venv_path, galaxy_branch)
         venv_command = CACHED_VIRTUAL_ENV_COMMAND % shlex_quote(shared_venv_path)
@@ -97,6 +108,7 @@ def _set_variable_if_wheels(var, if_wheels_val, else_val=""):
 def run_galaxy_command(ctx, command, env, action):
     """Run Galaxy command with informative verbose logging."""
     message = "%s with command [%s]" % (action, command)
+    # info not working in pytest+Github actions the way it did in nose?
     info(message)
     ctx.vlog("With environment variables:")
     ctx.vlog("============================")

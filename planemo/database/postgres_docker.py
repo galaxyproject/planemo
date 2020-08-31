@@ -1,9 +1,12 @@
 """Module describes a :class:`DatabaseSource` for managed, dockerized postgres databases."""
 import time
 
-from galaxy.tools.deps import docker_util
-from galaxy.tools.deps import dockerfiles
-from galaxy.tools.deps.commands import execute
+from galaxy.tool_util.deps import (
+    docker_util,
+    dockerfiles,
+)
+from galaxy.tool_util.deps.commands import execute
+from galaxy.util import unicodify
 
 from .interface import DatabaseSource
 from .postgres import _CommandBuilder, ExecutesPostgresSqlMixin
@@ -23,7 +26,7 @@ def docker_exec(name, commands=[], **kwds):
 
 def is_running_container(name=DEFAULT_CONTAINER_NAME, **kwds):
     ps_command = docker_ps(["--format", "{{.Names}}"], **kwds)
-    running_containers = execute(ps_command)
+    running_containers = unicodify(execute(ps_command))
     containers = running_containers.splitlines()
     return name in containers
 
@@ -35,6 +38,15 @@ def start_postgres_docker(name=DEFAULT_CONTAINER_NAME, password=DEFAULT_POSTGRES
         **kwds
     )
     execute(run_command)
+
+
+def stop_postgres_docker(name=DEFAULT_CONTAINER_NAME, **kwds):
+    stop_command = docker_util.command_list(
+        "stop",
+        [name],
+        **kwds
+    )
+    execute(stop_command)
 
 
 class DockerPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource):
