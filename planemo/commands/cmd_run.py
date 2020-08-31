@@ -9,7 +9,7 @@ from galaxy.util import unicodify
 from planemo import options
 from planemo.cli import command_function
 from planemo.engine import engine_context
-from planemo.io import warn, info
+from planemo.io import info, warn
 from planemo.tools import uri_to_path
 
 

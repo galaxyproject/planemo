@@ -179,7 +179,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         )
         invocation = user_gi.workflows._post(payload, url=invocations_url)
         invocation_id = invocation["id"]
-        
+
         response_kwds = {
             'workflow_id': workflow_id,
             'invocation_id': invocation_id,

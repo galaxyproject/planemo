@@ -1486,6 +1486,7 @@ def postgres_datatype_type_option():
         help=("Use postgres database type."),
     )
 
+
 def no_wait_option():
     return planemo_option(
         "--no_wait",
@@ -1494,6 +1495,7 @@ def no_wait_option():
         prompt=False,
         help="After invoking a job or workflow, do not wait for completion.",
     )
+
 
 def database_type_option():
     return planemo_option(
