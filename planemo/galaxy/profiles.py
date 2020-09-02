@@ -13,6 +13,7 @@ from planemo.config import (
     OptionSource,
 )
 from planemo.database import create_database_source
+from planemo.galaxy.api import test_credentials_valid
 from .config import DATABASE_LOCATION_TEMPLATE
 
 PROFILE_OPTIONS_JSON_NAME = "planemo_profile_options.json"
@@ -56,7 +57,14 @@ def create_profile(ctx, profile_name, **kwds):
         raise Exception(message)
 
     os.makedirs(profile_directory)
-    create_for_engine = _create_profile_docker if engine_type == "docker_galaxy" else _create_profile_local
+
+    if engine_type == "docker_galaxy":
+        create_for_engine = _create_profile_docker
+    elif engine_type == "external_galaxy" or kwds.get("galaxy_url"):
+        create_for_engine = _create_profile_external
+    else:
+        create_for_engine = _create_profile_local
+
     stored_profile_options = create_for_engine(ctx, profile_directory, profile_name, kwds)
 
     profile_options_path = _stored_profile_options_path(profile_directory)
@@ -98,6 +106,20 @@ def _create_profile_local(ctx, profile_directory, profile_name, kwds):
         "database_connection": database_connection,
         "engine": "galaxy",
     }
+
+
+def _create_profile_external(ctx, profile_directory, profile_name, kwds):
+    url = kwds.get("galaxy_url")
+    api_key = kwds.get("galaxy_admin_key") or kwds.get("galaxy_user_key")
+    if test_credentials_valid(url=url, key=api_key, is_admin=kwds.get("galaxy_admin_key")):
+        return {
+            "galaxy_url": url,
+            "galaxy_user_key": kwds.get("galaxy_user_key"),
+            "galaxy_admin_key": kwds.get("galaxy_admin_key"),
+            "engine": "external_galaxy",
+        }
+    else:
+        raise ConnectionError('The credentials provided for an external Galaxy instance are not valid.')
 
 
 def ensure_profile(ctx, profile_name, **kwds):

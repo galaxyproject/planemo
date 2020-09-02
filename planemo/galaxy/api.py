@@ -23,6 +23,19 @@ def gi(port=None, url=None, key=None):
     )
 
 
+def test_credentials_valid(port=None, url=None, key=None, is_admin=False):
+    """Test if provided API credentials are valid"""
+    test_gi = gi(port, url, key)
+    try:
+        test_gi.datasets.get_datasets(limit=0)
+        if is_admin:
+            test_gi.groups.get_groups()
+    except Exception:
+        return False
+    else:
+        return True
+
+
 def user_api_key(admin_gi):
     """Use an admin authenticated account to generate a user API key."""
     ensure_module()
