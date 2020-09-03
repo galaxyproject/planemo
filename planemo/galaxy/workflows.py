@@ -19,7 +19,6 @@ FAILED_REPOSITORIES_MESSAGE = "Failed to install one or more repositories."
 def load_shed_repos(runnable):
     if runnable.type.name != "galaxy_workflow":
         return []
-
     path = runnable.path
     if path.endswith(".ga"):
         generate_tool_list_from_ga_workflow_files.generate_tool_list_from_workflow([path], "Tools from workflows", "tools.yml")
@@ -112,9 +111,13 @@ def find_tool_ids(path):
 WorkflowOutput = namedtuple("WorkflowOutput", ["order_index", "output_name", "label"])
 
 
-def describe_outputs(path):
+def describe_outputs(runnable):
     """Return a list of :class:`WorkflowOutput` objects for target workflow."""
-    workflow = _raw_dict(path)
+    if runnable.workflow_dict:
+        workflow = runnable.workflow_dict
+    else:
+        workflow = _raw_dict(runnable.path)
+
     outputs = []
     for (order_index, step) in workflow["steps"].items():
         step_outputs = step.get("workflow_outputs", [])

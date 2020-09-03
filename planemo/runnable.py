@@ -70,6 +70,10 @@ _Runnable = collections.namedtuple("Runnable", ["path", "type"])
 class Runnable(_Runnable):
     """Abstraction describing tools and workflows."""
 
+    def __init__(self, path, type):
+        self.workflow_id = None
+        self.workflow_dict = None
+
     @property
     def test_data_search_path(self):
         """During testing, path to search for test data files."""
@@ -169,6 +173,13 @@ def for_path(path, temp_path=None):
 def for_paths(paths, temp_path=None):
     """Return a specialized list of Runnable objects for paths."""
     return [for_path(path, temp_path=temp_path) for path in paths]
+
+
+def for_id(runnable_id):
+    """Produce a class:`Runnable` for supplied Galaxy workflow ID."""
+    runnable = Runnable(None, RunnableType.galaxy_workflow)
+    runnable.workflow_id = runnable_id
+    return runnable
 
 
 def cases(runnable):
@@ -435,7 +446,7 @@ def get_outputs(runnable):
         outputs = [ToolOutput(o) for o in output_datasets.values()]
         return outputs
     elif runnable.type == RunnableType.galaxy_workflow:
-        workflow_outputs = describe_outputs(runnable.path)
+        workflow_outputs = describe_outputs(runnable)
         return [GalaxyWorkflowOutput(o) for o in workflow_outputs]
     elif runnable.type == RunnableType.cwl_workflow:
         workflow = workflow_proxy(runnable.path, strict_cwl_validation=False)

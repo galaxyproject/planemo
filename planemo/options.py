@@ -460,6 +460,14 @@ def galaxy_user_key_option():
     )
 
 
+def history_name():
+    return planemo_option(
+        "--history_name",
+        type=str,
+        help="Name to give a Galaxy history, if one is created.",
+    )
+
+
 def no_cache_galaxy_option():
     return planemo_option(
         "--no_cache_galaxy",
@@ -707,6 +715,14 @@ def required_job_arg():
         resolve_path=False,
     )
     return click.argument("job_path", metavar="JOB_PATH", type=arg_type)
+
+
+def required_runnable_arg():
+    return click.argument(
+        'runnable_identifier',
+        metavar="RUNNABLE_PATH_OR_ID",
+        type=str,
+    )
 
 
 def _optional_tools_default(ctx, param, value):
@@ -1416,6 +1432,7 @@ def engine_options():
         galaxy_url_option(),
         galaxy_admin_key_option(),
         galaxy_user_key_option(),
+        history_name()
     )
 
 

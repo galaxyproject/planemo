@@ -757,7 +757,7 @@ class BaseGalaxyConfig(GalaxyInterface):
 
     def install_workflows(self):
         for runnable in self.runnables:
-            if runnable.type.name in ["galaxy_workflow", "cwl_workflow"]:
+            if runnable.type.name in ["galaxy_workflow", "cwl_workflow"] and not runnable.workflow_id:
                 self._install_workflow(runnable)
 
     def _install_workflow(self, runnable):

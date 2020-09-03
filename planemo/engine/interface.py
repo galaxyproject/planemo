@@ -53,9 +53,8 @@ class BaseEngine(Engine):
     def cleanup(self):
         """Default no-op cleanup method."""
 
-    def run(self, path, job_path):
+    def run(self, runnable, job_path):
         """Run a job using a compatible artifact (workflow or tool)."""
-        runnable = for_path(path)
         self._check_can_run(runnable)
         run_response = self._run(runnable, job_path)
         return run_response

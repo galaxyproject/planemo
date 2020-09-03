@@ -118,7 +118,6 @@ def _execute(ctx, config, runnable, job_path, **kwds):
     except Exception:
         ctx.vlog("Problem with staging in data for Galaxy activities...")
         raise
-
     if runnable.type in [RunnableType.galaxy_tool, RunnableType.cwl_tool]:
         response_class = GalaxyToolRunResponse
         tool_id = _verified_tool_id(runnable, user_gi)
@@ -154,7 +153,11 @@ def _execute(ctx, config, runnable, job_path, **kwds):
             summarize_history(ctx, user_gi, history_id)
     elif runnable.type in [RunnableType.galaxy_workflow, RunnableType.cwl_workflow]:
         response_class = GalaxyWorkflowRunResponse
-        workflow_id = config.workflow_id(runnable.path)
+        if runnable.workflow_id:
+            runnable.workflow_dict = get_dict_from_workflow(user_gi, runnable.workflow_id)
+            workflow_id = runnable.workflow_id
+        else:
+            workflow_id = config.workflow_id(runnable.path)
         ctx.vlog("Found Galaxy workflow ID [%s] for path [%s]" % (workflow_id, runnable.path))
         # TODO: Use the following when BioBlend 0.14 is released
         # invocation = user_gi.worklfows.invoke_workflow(
@@ -344,6 +347,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             return {"path": destination, "basename": basename}
 
         ctx.vlog("collecting outputs to directory %s" % output_directory)
+
         for runnable_output in get_outputs(self._runnable):
             output_id = runnable_output.get_id()
             if not output_id:
@@ -588,6 +592,10 @@ def _history_id(gi, **kwds):
         history_name = kwds.get("history_name", DEFAULT_HISTORY_NAME)
         history_id = gi.histories.create_history(history_name)["id"]
     return history_id
+
+
+def get_dict_from_workflow(gi, workflow_id):
+    return gi.workflows.export_workflow_dict(workflow_id)
 
 
 def _wait_for_invocation(ctx, gi, history_id, workflow_id, invocation_id, polling_backoff=0):
