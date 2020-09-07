@@ -1,5 +1,3 @@
-.. _shed:
-
 =============================
 Autoupdating tools
 =============================
@@ -33,7 +31,7 @@ Formatting tools
 
 
 Implementing an autoupdate CI job
-=============================
+=================================
 
 WIP
 
