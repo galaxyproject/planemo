@@ -12,7 +12,6 @@ from planemo.exit_codes import EXIT_CODE_UNSUPPORTED_FILE_TYPE
 from planemo.io import error
 from planemo.runnable import (
     cases,
-    for_path,
     RunnableType,
 )
 from planemo.test.results import StructuredData
