@@ -82,12 +82,12 @@ def cli(ctx, paths, **kwds):
 
     if kwds['test']:
         info("Running tests for auto-updated tools...")
-        if not dirs_updated:
+        if not modified_files:
             info("No tools were updated, so no tests were run.")
         else:
             with temp_directory(dir=ctx.planemo_directory) as temp_path:
                 # only test tools in updated directories
-                paths = [path for path in paths if os.path.split(tool_path)[0] in dirs_updated]
+                paths = [path for path in paths if os.path.split(tool_path)[0] in modified_files]
                 runnables = for_paths(paths, temp_path=temp_path)
                 kwds["engine"] = "galaxy"
                 return_value = test_runnables(ctx, runnables, original_paths=paths, **kwds)
