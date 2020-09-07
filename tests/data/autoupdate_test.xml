@@ -1,0 +1,10 @@
+<tool id="autoupdate_test" version="@TOOL_VERSION@+galaxy@GALAXY_VERSION@">
+    <macros>
+        <token name="@TOOL_VERSION@">0.6.0</token>
+        <token name="@GALAXY_VERSION@">1</token>
+    </macros>
+    <requirements>
+        <requirement type="package" version="@TOOL_VERSION@">xopen</requirement>
+        <requirement type="package" version="3.7.0">zeroc-ice</requirement>
+    </requirements>
+</tool>
