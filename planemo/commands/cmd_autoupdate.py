@@ -46,11 +46,21 @@ def test_option():
     )
 
 
+def skiplist_option():
+    """List of XML files to skip"""
+    return planemo_option(
+        "--skiplist",
+        default=None,
+        help="Skiplist file, containing a list of tools for which autoupdate should be skipped."
+    )
+
+
 @click.command('autoupdate')
 @options.optional_tools_arg(multiple=True)
 @dry_run_option()
 @options.recursive_option()
 @test_option()
+@skiplist_option()
 @options.test_options()
 @options.galaxy_target_options()
 @options.galaxy_config_options()
@@ -65,7 +75,11 @@ def cli(ctx, paths, **kwds):
     recursive = kwds.get("recursive", False)
     exit_codes = []
     modified_files = set()
+    tools_to_skip = [line.rstrip() for line in open(kwds['skiplist'])] if kwds['skiplist'] else []
     for (tool_path, tool_xml) in yield_tool_sources_on_paths(ctx, paths, recursive):
+        if tool_path.split('/')[-1] in tools_to_skip:
+            info("Skipping tool %s" % tool_path)
+            continue
         info("Auto-updating tool %s" % tool_path)
         try:
             updated = autoupdate.autoupdate(ctx, tool_path, modified_files=modified_files, **kwds)
