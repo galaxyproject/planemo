@@ -1172,7 +1172,7 @@ def daemon_option():
 def profile_option():
     return planemo_option(
         "--profile",
-        type=str,
+        type=click.STRING,
         default=None,
         help=("Name of profile (created with the profile_create command) to use "
               "with this command.")

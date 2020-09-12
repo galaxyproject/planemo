@@ -130,16 +130,37 @@ def ensure_profile(ctx, profile_name, **kwds):
     return _profile_options(ctx, profile_name, **kwds)
 
 
+def create_alias(ctx, alias, obj, profile_name, **kwds):
+    if not profile_exists(ctx, profile_name, **kwds):
+        raise Exception("That profile does not exist. Create it with `planemo profile_create`")
+    profile_directory = _profile_directory(ctx, profile_name)
+    # profile_options = _read_profile_options(profile_directory)
+    profile_options_path = _stored_profile_options_path(profile_directory)
+    with open(profile_options_path) as f:
+        profile_options = json.load(f)
+    
+    if profile_options.get('aliases'):
+        profile_options['aliases'][alias] = obj
+    else:  # no aliases yet defined
+        profile_options['aliases'] = {alias: obj}
+    
+    with open(profile_options_path, 'w') as f:
+        json.dump(profile_options, f)
+
+    # aliases = profile_options['aliases']
+    return 0
+
+
 def _profile_options(ctx, profile_name, **kwds):
     profile_directory = _profile_directory(ctx, profile_name)
     profile_options = _read_profile_options(profile_directory)
-    specified_engine_type = kwds.get("engine", "galaxy")
-    profile_engine_type = profile_options["engine"]
-    if specified_engine_type != profile_engine_type:
-        if ctx.get_option_source("engine") == OptionSource.cli:
-            raise Exception("Configured profile engine type [%s] does not match specified engine type [%s].")
+    # specified_engine_type = kwds.get("engine", "galaxy")
+    # profile_engine_type = profile_options["engine"]
+    # if specified_engine_type != profile_engine_type:
+    #     if ctx.get_option_source("engine") == OptionSource.cli:
+    #         raise Exception("Configured profile engine type [%s] does not match specified engine type [%s].")
 
-    if profile_engine_type == "docker_galaxy":
+    if profile_options["engine"] == "docker_galaxy":
         engine_options = dict(
             export_directory=os.path.join(profile_directory, "export")
         )
@@ -158,6 +179,7 @@ def _profile_options(ctx, profile_name, **kwds):
         )
     profile_options.update(engine_options)
     profile_options["galaxy_brand"] = profile_name
+    print(profile_options)
     return profile_options
 
 

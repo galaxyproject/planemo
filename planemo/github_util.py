@@ -64,6 +64,7 @@ def pull_request(ctx, path, message=None, **kwds):
     cmd = [hub_path, "pull-request"]
     if message is not None:
         cmd.extend(["-m", message])
+    print(cmd)
     communicate(cmd, env=hub_env)
 
 
