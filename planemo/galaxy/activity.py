@@ -589,7 +589,7 @@ def _tool_id(tool_path):
 def _history_id(gi, **kwds):
     history_id = kwds.get("history_id", None)
     if history_id is None:
-        history_name = kwds.get("history_name", DEFAULT_HISTORY_NAME)
+        history_name = kwds.get("history_name", DEFAULT_HISTORY_NAME) or DEFAULT_HISTORY_NAME
         history_id = gi.histories.create_history(history_name)["id"]
     return history_id
 
