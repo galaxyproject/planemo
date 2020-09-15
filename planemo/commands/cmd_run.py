@@ -13,7 +13,7 @@ from planemo.engine import engine_context
 from planemo.io import warn
 from planemo.runnable import for_id, for_path
 from planemo.tools import uri_to_path
-
+from planemo.galaxy.profiles import translate_alias
 
 @click.command('run')
 @options.required_runnable_arg()
@@ -32,6 +32,7 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
     \b
         % planemo run cat1-tool.cwl cat-job.json
     """
+    runnable_identifier = translate_alias(ctx, runnable_identifier, kwds.get('profile'))
     path = uri_to_path(ctx, runnable_identifier)
     if os.path.exists(path):
         runnable = for_path(path)
@@ -50,12 +51,10 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
             kwds["engine"] = "galaxy"
     with engine_context(ctx, **kwds) as engine:
         run_result = engine.run(runnable, job_path)
-
     if not run_result.was_successful:
         warn("Run failed [%s]" % unicodify(run_result))
         ctx.exit(1)
     outputs_dict = run_result.outputs_dict
-    print(outputs_dict)
     output_json = kwds.get("output_json", None)
     if output_json:
         with open(output_json, "w") as f:

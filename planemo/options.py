@@ -1169,13 +1169,24 @@ def daemon_option():
     )
 
 
-def profile_option():
+def profile_option(required=False):
     return planemo_option(
         "--profile",
         type=click.STRING,
+        required=required,
         default=None,
         help=("Name of profile (created with the profile_create command) to use "
               "with this command.")
+    )
+
+
+def alias_option(required=False):
+    return planemo_option(
+        "--alias",
+        type=click.STRING,
+        required=required,
+        default=None,
+        help=("Name of an alias.")
     )
 
 

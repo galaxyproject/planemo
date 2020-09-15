@@ -131,13 +131,7 @@ def ensure_profile(ctx, profile_name, **kwds):
 
 
 def create_alias(ctx, alias, obj, profile_name, **kwds):
-    if not profile_exists(ctx, profile_name, **kwds):
-        raise Exception("That profile does not exist. Create it with `planemo profile_create`")
-    profile_directory = _profile_directory(ctx, profile_name)
-    # profile_options = _read_profile_options(profile_directory)
-    profile_options_path = _stored_profile_options_path(profile_directory)
-    with open(profile_options_path) as f:
-        profile_options = json.load(f)
+    profile_options, profile_options_path = _load_profile_to_json(ctx, profile_name)
     
     if profile_options.get('aliases'):
         profile_options['aliases'][alias] = obj
@@ -147,8 +141,43 @@ def create_alias(ctx, alias, obj, profile_name, **kwds):
     with open(profile_options_path, 'w') as f:
         json.dump(profile_options, f)
 
-    # aliases = profile_options['aliases']
     return 0
+
+
+def list_alias(ctx, profile_name, **kwds):
+    profile_options, _ = _load_profile_to_json(ctx, profile_name)
+    return profile_options.get('aliases', {})
+
+
+def delete_alias(ctx, alias, profile_name, **kwds):
+    profile_options, profile_options_path = _load_profile_to_json(ctx, profile_name)
+    if alias not in profile_options.get('aliases', {}):
+        return 1
+    else:
+        del profile_options['aliases'][alias]
+
+    with open(profile_options_path, 'w') as f:
+        json.dump(profile_options, f)
+
+    return 0
+
+
+def translate_alias(ctx, alias, profile_name):
+    if not profile_name:
+        return alias
+    # print(_load_profile_to_json(ctx, profile_name))
+    aliases = _load_profile_to_json(ctx, profile_name)[0].get('aliases', {})
+    return aliases.get(alias, alias)
+
+
+def _load_profile_to_json(ctx, profile_name):
+    if not profile_exists(ctx, profile_name):
+        raise Exception("That profile does not exist. Create it with `planemo profile_create`")
+    profile_directory = _profile_directory(ctx, profile_name)
+    profile_options_path = _stored_profile_options_path(profile_directory)
+    with open(profile_options_path) as f:
+        profile_options = json.load(f)
+    return profile_options, profile_options_path
 
 
 def _profile_options(ctx, profile_name, **kwds):
@@ -179,7 +208,7 @@ def _profile_options(ctx, profile_name, **kwds):
         )
     profile_options.update(engine_options)
     profile_options["galaxy_brand"] = profile_name
-    print(profile_options)
+    # print(profile_options)
     return profile_options
 
 
