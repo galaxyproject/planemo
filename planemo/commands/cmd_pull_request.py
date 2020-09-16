@@ -31,7 +31,7 @@ def cli(ctx, path, message=None, **kwds):
         $ git commit -m "Fix bwa problem."
         $ planemo pull_request -m "Fix bwa problem."
 
-    These changes do require that a github username and password are
+    These changes do require that a github access token is
     specified in ~/.planemo.yml.
     """
     github_util.pull_request(ctx, path, message=message, **kwds)
