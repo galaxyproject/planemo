@@ -73,7 +73,7 @@ def get_hub_env(ctx, path, **kwds):
     github_config = _get_raw_github_config(ctx)
     if github_config is not None:
         if "access_token" in github_config:
-            env["GITHUB_ACCESS_TOKEN"] = github_config["access_token"]
+            env["GITHUB_TOKEN"] = github_config["access_token"]
 
     return env
 
@@ -109,9 +109,9 @@ def _try_download_hub(planemo_hub_path):
 def _get_raw_github_config(ctx):
     """Return a :class:`planemo.github_util.GithubConfig` for given configuration."""
     if "github" not in ctx.global_config:
-        if "GITHUB_ACCESS_TOKEN" in os.environ:
+        if "GITHUB_TOKEN" in os.environ:
             return {
-                "access_token": os.environ["GITHUB_ACCESS_TOKEN"],
+                "access_token": os.environ["GITHUB_TOKEN"],
             }
     if "github" not in ctx.global_config:
         raise Exception("github account not found in planemo config and GITHUB_USER / GITHUB_PASSWORD environment variables unset")
