@@ -50,6 +50,8 @@ def check_conda(tool_name, ctx, **kwds):
     Get the most up-to-date conda version for a tool requirement
     """
     conda_context = planemo.conda.build_conda_context(ctx, **kwds)
+    if not conda_context.is_conda_installed():
+        error("Conda is not installed! Try running planemo conda_init.")
     target = planemo.conda.conda_util.CondaTarget(tool_name)
     search_results = conda_util.best_search_result(target, conda_context=conda_context)
     # if search_results[0]['version'] == tool_version:

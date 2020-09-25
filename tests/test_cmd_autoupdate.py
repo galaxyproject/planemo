@@ -1,6 +1,8 @@
 """Tests for the ``autoupdate`` command."""
 import tempfile
 
+from planemo.commands.cmd_conda_init import cli as conda_init
+
 from .test_utils import (
     CliTestCase
 )
@@ -24,6 +26,11 @@ def create_tmp_test_tool_file(tool_version):
 
 class CmdAutoupdateTestCase(CliTestCase):
     """Container class defining test cases for the ``autoupdate`` command."""
+
+    def setUp(self):
+        super(CmdAutoupdateTestCase, self).setUp()
+        r = self._runner.invoke(self._cli.planemo, ['conda_init'])
+        # assert r.output == ''
 
     def test_autoupdate_dry_run(self):
         """Test autoupdate command with dry run flag."""
