@@ -9,7 +9,7 @@
 : ${PLANEMO_GALAXY_BRANCH:="master"}
 : ${PLANEMO_TEST_STYLE:="serve_and_test"}  # profile_serve_and_test, serve_and_test, docker_serve_and_test, test, docker_test, docker_test_path_paste
 : ${PLANEMO_SERVE_DATABASE_TYPE:="postgres"}  # used if not using Docker with PLANEMO_TEST_STYLE
-: ${PLANEMO_DOCKER_GALAXY_IMAGE:="quay.io/bgruening/galaxy:18.01"}  # used if used Docker with PLANEMO_TEST_STYLE
+: ${PLANEMO_DOCKER_GALAXY_IMAGE:="quay.io/bgruening/galaxy:20.05"}  # used if used Docker with PLANEMO_TEST_STYLE
 : ${PLANEMO_VIRTUAL_ENV:=".venv"}
 : ${GALAXY_URL:="http://localhost:$PLANEMO_SERVE_PORT"}
 

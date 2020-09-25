@@ -73,8 +73,13 @@ def cli(ctx, paths, **kwds):
         # Create temp dir(s) outside of temp, docker can't mount $TEMPDIR on OSX
         runnables = for_paths(paths, temp_path=temp_path)
         is_cwl = all(r.type in {RunnableType.cwl_tool, RunnableType.cwl_workflow} for r in runnables)
-        if kwds.get("engine") is None:
-            kwds["engine"] = "galaxy" if not is_cwl else "cwltool"
+        if kwds.get("engine", None) is None:
+            if is_cwl:
+                kwds["engine"] = "cwltool"
+            elif kwds.get('galaxy_url', None):
+                kwds["engine"] = "external_galaxy"
+            else:
+                kwds["engine"] = "galaxy"
 
         return_value = test_runnables(ctx, runnables, original_paths=paths, **kwds)
 

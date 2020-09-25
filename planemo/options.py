@@ -27,8 +27,8 @@ def skip_venv_option():
         "--skip_venv",
         is_flag=True,
         help=("Do not create or source a virtualenv environment for Galaxy, "
-              "this should be used or instance to preserve an externally "
-              "configured virtual environment or conda environment.")
+              "this should be used to preserve an externally configured "
+              "virtual environment or conda environment.")
     )
 
 
@@ -690,6 +690,10 @@ def required_workflow_arg():
         resolve_path=False,
     )
     return click.argument("workflow_path", metavar="WORKFLOW_PATH", type=arg_type)
+
+
+def split_job_and_test():
+    return click.option("--split_test/--no_split_test", default=False, help="Write workflow job and test definitions to separate files.")
 
 
 def required_job_arg():

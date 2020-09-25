@@ -84,7 +84,7 @@ def summarize_history(ctx, gi, history_id):
             print("| Dataset Info:")
             print(_format_for_summary(dataset_info.get("misc_info", ""), "Dataset info is empty."))
             print("| Peek:")
-            print(_format_for_summary(dataset_info.get("peek", ""), "Peek unavilable."))
+            print(_format_for_summary(dataset_info.get("peek", ""), "Peek unavailable."))
         except Exception:
             print("| *PLANEMO ERROR FETCHING DATASET DETAILS*")
         try:

@@ -1,12 +1,10 @@
-import json
+import base64
 
 from galaxy.util import strip_control_characters
 from jinja2 import Environment, PackageLoader
 from pkg_resources import resource_string
 
-TITLE = "Tool Test Results (powered by Planemo)"
-env = Environment(loader=PackageLoader('planemo', 'reports'))
-env.filters['strip_control_characters'] = lambda x: strip_control_characters(x) if x else x
+TITLE = "Test Results (powered by Planemo)"
 
 
 def build_report(structured_data, report_type="html", **kwds):
@@ -16,50 +14,70 @@ def build_report(structured_data, report_type="html", **kwds):
         title=TITLE,
         raw_data=structured_data,
     )
+    environment = __inject_summary(environment)
+    __fix_test_ids(environment)
 
     if report_type == 'html':
         # The HTML report format needs a lot of extra, custom data.
         # IMO, this seems to suggest it should be embedded.
+        environment['title'] = None
+        markdown = template_data(environment, 'report_markdown.tpl')
+        environment['title'] = TITLE
+        environment['raw_data'] = base64.b64encode(markdown.encode('utf-8')).decode('utf-8')
         environment.update({
             'custom_style': __style("custom.css"),
             'custom_script': __script("custom"),
             'bootstrap_style': __style("bootstrap.min.css"),
             'jquery_script': __script("jquery.min"),
             'bootstrap_script': __script("bootstrap.min"),
-            'json': json,
+            'markdown_it_script': __script('markdown-it.min'),
         })
-
-    environment = __inject_summary(environment)
 
     return template_data(environment, 'report_%s.tpl' % report_type)
 
 
-def template_data(environment, template_name="report_html.tpl", **kwds):
+def template_data(environment, template_name, **kwds):
     """Build an arbitrary templated page.
     """
+    env_kwargs = {}
+    if template_name == 'report_markdown.tpl':
+        env_kwargs['keep_trailing_newline'] = True
+        env_kwargs['trim_blocks'] = True
+    env = Environment(loader=PackageLoader('planemo', 'reports'), **env_kwargs)
+    env.filters['strip_control_characters'] = lambda x: strip_control_characters(x) if x else x
     template = env.get_template(template_name)
     return template.render(**environment)
 
 
+def __fix_test_ids(environment):
+    for test in environment['raw_data']['tests']:
+        test_data = test.get('data')
+        if test_data and test_data.get('tool_id'):
+            test['id'] = "%s (Test #%s)" % (test_data['tool_id'], test_data['test_index'] + 1)
+
+
 def __inject_summary(environment):
-    if 'results' not in environment['raw_data']:
-        total = 0
-        errors = 0
-        failures = 0
-        skips = 0
-        for test in environment['raw_data']['tests']:
-            total += 1
-            test_data = test.get('data')
-            if test_data:
-                status = test_data.get('status')
-                if status != 'ok':
-                    errors += 1
-        environment['raw_data']['results'] = {
-            'total': total,
-            'errors': errors,
-            'failures': failures,
-            'skips': skips,
-        }
+    total = 0
+    errors = 0
+    failures = 0
+    skips = 0
+    for test in environment['raw_data']['tests']:
+        total += 1
+        test_data = test.get('data')
+        if test_data:
+            status = test_data.get('status')
+            if status == 'error':
+                errors += 1
+            elif status == 'failure':
+                failures += 1
+            elif status == 'skipped':
+                skips += 1
+    environment['raw_data']['results'] = {
+        'total': total,
+        'errors': errors,
+        'failures': failures,
+        'skips': skips,
+    }
     if 'suitename' not in environment:
         environment['raw_data']['suitename'] = TITLE
     return environment

@@ -314,11 +314,16 @@ class TestCase(AbstractTestCase):
         job_info = run_response.job_info
         if job_info is not None:
             data_dict["job"] = job_info
+        invocation_details = run_response.invocation_details
+        if invocation_details is not None:
+            data_dict["invocation_details"] = invocation_details
         data_dict["inputs"] = self._job
         return dict(
             id=("%s_%s" % (self._test_id, self.index)),
             has_data=True,
             data=data_dict,
+            doc=self.doc,
+            test_type=self.runnable.type.name,
         )
 
     @property
@@ -499,6 +504,10 @@ class RunResponse(object):
         """If job information is available, return as dictionary."""
 
     @abc.abstractproperty
+    def invocation_details(self):
+        """If workflow invocation details are available, return as dictionary."""
+
+    @abc.abstractproperty
     def log(self):
         """If engine related log is available, return as text data."""
 
@@ -520,10 +529,11 @@ class SuccessfulRunResponse(RunResponse):
 class ErrorRunResponse(RunResponse):
     """Description of an error while attempting to execute a Runnable."""
 
-    def __init__(self, error_message, job_info=None, log=None):
+    def __init__(self, error_message, job_info=None, invocation_details=None, log=None):
         """Create an ErrorRunResponse with specified error message."""
         self._error_message = error_message
         self._job_info = job_info
+        self._invocation_details = invocation_details
         self._log = log
 
     @property
@@ -540,6 +550,10 @@ class ErrorRunResponse(RunResponse):
     def job_info(self):
         """Return potentially null stored `job_info` dict."""
         return self._job_info
+
+    @property
+    def invocation_details(self):
+        return self._invocation_details
 
     @property
     def log(self):

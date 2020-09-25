@@ -72,10 +72,8 @@ def get_hub_env(ctx, path, **kwds):
     env = git.git_env_for(path).copy()
     github_config = _get_raw_github_config(ctx)
     if github_config is not None:
-        if "username" in github_config:
-            env["GITHUB_USER"] = github_config["username"]
-        if "password" in github_config:
-            env["GITHUB_PASSWORD"] = github_config["password"]
+        if "access_token" in github_config:
+            env["GITHUB_TOKEN"] = github_config["access_token"]
 
     return env
 
@@ -111,10 +109,9 @@ def _try_download_hub(planemo_hub_path):
 def _get_raw_github_config(ctx):
     """Return a :class:`planemo.github_util.GithubConfig` for given configuration."""
     if "github" not in ctx.global_config:
-        if "GITHUB_USER" in os.environ and "GITHUB_PASSWORD" in os.environ:
+        if "GITHUB_TOKEN" in os.environ:
             return {
-                "username": os.environ["GITHUB_USER"],
-                "password": os.environ["GITHUB_PASSWORD"],
+                "access_token": os.environ["GITHUB_TOKEN"],
             }
     if "github" not in ctx.global_config:
         raise Exception("github account not found in planemo config and GITHUB_USER / GITHUB_PASSWORD environment variables unset")
@@ -130,12 +127,12 @@ class GithubConfig(object):
     def __init__(self, config, allow_anonymous=False):
         if not has_github_lib:
             raise Exception(NO_GITHUB_DEP_ERROR)
-        if "username" not in config or "password" not in config:
+        if "access_token" not in config:
             if not allow_anonymous:
                 raise Exception("github authentication unavailable")
             github_object = github.Github()
         else:
-            github_object = github.Github(config["username"], config["password"])
+            github_object = github.Github(config["access_token"])
         self._github = github_object
 
 
