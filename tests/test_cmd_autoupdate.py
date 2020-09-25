@@ -6,19 +6,18 @@ from .test_utils import (
 )
 
 
-def create_tmp_test_tool_file():
-    xml_str = b"""<tool id="autoupdate_test" version="@TOOL_VERSION@+galaxy@VERSION_SUFFIX@">
+def create_tmp_test_tool_file(tool_version):
+    xml_str = """<tool id="autoupdate_test" version="@TOOL_VERSION@+galaxy@VERSION_SUFFIX@">
     <macros>
-        <token name="@TOOL_VERSION@">0.6.0</token>
+        <token name="@TOOL_VERSION@">{}</token>
         <token name="@VERSION_SUFFIX@">1</token>
     </macros>
     <requirements>
         <requirement type="package" version="@TOOL_VERSION@">xopen</requirement>
-        <requirement type="package" version="3.7.0">zeroc-ice</requirement>
     </requirements>
 </tool>
-    """
-    t = tempfile.NamedTemporaryFile(suffix='.xml', delete=False)
+    """.format(tool_version)
+    t = tempfile.NamedTemporaryFile(suffix='.xml', delete=False, mode='w')
     t.write(xml_str)
     return t.name
 
@@ -29,27 +28,37 @@ class CmdAutoupdateTestCase(CliTestCase):
     def test_autoupdate_dry_run(self):
         """Test autoupdate command with dry run flag."""
         with self._isolate():
-            xmlfile = create_tmp_test_tool_file()
+            xmlfile = create_tmp_test_tool_file('0.6.0')
             autoupdate_command = [
                 "autoupdate",
                 xmlfile,
                 "--conda_channels", "bioconda",
                 "--dry-run"
             ]
-            self._check_exit_code(autoupdate_command, exit_code=0)
+            result = self._runner.invoke(self._cli.planemo, autoupdate_command)
+            assert "Update required to {}!".format(xmlfile) in result.output
+            assert "Tool main requirement has version 0.6.0, newest conda version is 0.7.3" in result.output
 
     def test_autoupdate(self):
         """Test autoupdate command."""
         with self._isolate():
-            xmlfile = create_tmp_test_tool_file()
+            xmlfile = create_tmp_test_tool_file('0.6.0')
             autoupdate_command = [
                 "autoupdate",
                 xmlfile,
                 "--conda_channels", "bioconda"
             ]
-            self._check_exit_code(autoupdate_command, exit_code=0)
-            with open(xmlfile) as stream:
-                updated_tool = stream.readlines()
-                assert updated_tool[2].strip() == '<token name="@TOOL_VERSION@">0.7.3</token>'
-                assert updated_tool[3].strip() == '<token name="@VERSION_SUFFIX@">0</token>'
-                assert updated_tool[7].strip() == '<requirement type="package" version="3.7.1">zeroc-ice</requirement>'
+            result = self._runner.invoke(self._cli.planemo, autoupdate_command)
+            assert 'Tool {} updated.'.format(xmlfile) in result.output
+
+    def test_autoupdate_no_update_needed(self):
+        """Test autoupdate command when no update is needed."""
+        with self._isolate():
+            xmlfile = create_tmp_test_tool_file('0.7.3')
+            autoupdate_command = [
+                "autoupdate",
+                xmlfile,
+                "--conda_channels", "bioconda"
+            ]
+            result = self._runner.invoke(self._cli.planemo, autoupdate_command)
+            assert 'No updates required or made to {}.'.format(xmlfile) in result.output
