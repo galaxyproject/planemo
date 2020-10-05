@@ -16,8 +16,8 @@ from planemo.shed import find_raw_repositories
 def cli(ctx, paths, **kwds):
     """Find all shed repositories in one or more directories.
 
-    Currently, a shed repository is considered a directory with a .shed.yml
-    file.
+    Currently, a repository is considered any directory with a .shed.yml
+    or .dockstore.yml file.
     """
     kwds["recursive"] = True
     kwds["fail_fast"] = True

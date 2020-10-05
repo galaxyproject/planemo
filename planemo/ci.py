@@ -11,6 +11,9 @@ import yaml
 from planemo import git
 from planemo import io
 from planemo.shed import SHED_CONFIG_NAME
+from planemo.workflow_lint import DOCKSTORE_REGISTRY_CONF
+
+REPO_METADATA_FILES = (SHED_CONFIG_NAME, DOCKSTORE_REGISTRY_CONF)
 
 
 def filter_paths(ctx, raw_paths, path_type="repo", **kwds):
@@ -29,21 +32,16 @@ def filter_paths(ctx, raw_paths, path_type="repo", **kwds):
             diff_dirs = set(os.path.dirname(p) for p in diff_files)
             diff_paths = set()
             for diff_dir in diff_dirs:
-                while diff_dir:
-                    if os.path.isfile(os.path.join(diff_dir, SHED_CONFIG_NAME)):
-                        diff_paths.add(diff_dir)
-                        break
-                    diff_dir = os.path.dirname(diff_dir)
+                diff_path = metadata_file_in_path(diff_dir)
+                if diff_path:
+                    diff_paths.add(diff_path)
+                    break
         else:
             diff_paths = diff_files
 
     unique_paths = set(os.path.relpath(p, cwd) for p in raw_paths)
     if diff_paths is not None:
-        new_unique_paths = []
-        for path in unique_paths:
-            if path in diff_paths:
-                new_unique_paths.append(path)
-        unique_paths = new_unique_paths
+        unique_paths = list(diff_paths)
     filtered_paths = sorted(io.filter_paths(unique_paths, cwd=cwd, **filter_kwds))
     excluded_paths = sorted(set(unique_paths) - set(filtered_paths))
     if excluded_paths:
@@ -59,6 +57,14 @@ def filter_paths(ctx, raw_paths, path_type="repo", **kwds):
             chunked_paths.append(path)
 
     return chunked_paths
+
+
+def metadata_file_in_path(diff_dir):
+    while diff_dir:
+        for metadata_file in REPO_METADATA_FILES:
+            if os.path.isfile(os.path.join(diff_dir, metadata_file)):
+                return diff_dir
+        diff_dir = os.path.dirname(diff_dir)
 
 
 def group_paths(paths):
