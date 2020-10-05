@@ -27,13 +27,13 @@ def test_credentials_valid(port=None, url=None, key=None, is_admin=False):
     """Test if provided API credentials are valid"""
     test_gi = gi(port, url, key)
     try:
-        test_gi.datasets.get_datasets(limit=0)
+        current_user = test_gi.users.get_current_user()
         if is_admin:
-            test_gi.groups.get_groups()
+            return current_user['is_admin']
+        else:
+            return True
     except Exception:
         return False
-    else:
-        return True
 
 
 def user_api_key(admin_gi):
