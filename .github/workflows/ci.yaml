@@ -6,6 +6,10 @@ env:
   PLANEMO_TEST_WORKFLOW_RUN_PROFILE: 1
   PGPASSWORD: postgres
   PGHOST: localhost
+  GIT_AUTHOR_NAME: planemo
+  GIT_AUTHOR_EMAIL: planemo@galaxyproject.org
+  GIT_COMMITTER_NAME: planemo
+  GIT_COMMITTER_EMAIL: planemo@galaxyproject.org
 jobs:
   test:
     runs-on: ubuntu-latest

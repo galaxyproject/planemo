@@ -2,6 +2,9 @@
 from __future__ import absolute_import
 
 import os
+import shlex
+import tempfile
+from distutils.dir_util import copy_tree
 
 from galaxy.tool_util.deps.commands import which
 
@@ -57,12 +60,64 @@ def fork(ctx, path, **kwds):
     communicate(cmd, env=gh_env)
 
 
-def get_or_create_repository(ctx, organization, name, **kwds):
-    pass
+def get_or_create_repository(ctx, owner, repo, dry_run=True, **kwds):
+    """Clones or creates a repository and returns path on disk"""
+    target = os.path.realpath(tempfile.mkdtemp())
+    remote_repo = "https://github.com/{owner}/{repo}".format(owner=owner, repo=repo)
+    try:
+        ctx.log('Cloning {}'.format(remote_repo))
+        git.clone(ctx, src=remote_repo, dest=target)
+    except Exception:
+        ctx.log('Creating repository {}'.format(remote_repo))
+        target = create_repository(ctx, owner=owner, repo=repo, dest=target, dry_run=dry_run)
+    return target
 
 
-def create_release(ctx, repository, version, **kwds):
-    repository = get_or_create_repository()
+def create_repository(ctx, owner, repo, dest, dry_run, **kwds):
+    gh_path = ensure_gh(ctx, **kwds)
+    gh_env = get_gh_env(ctx, dry_run=dry_run, **kwds)
+    cmd = [gh_path, 'repo', 'create', '-y', '--public', "{owner}/{repo}".format(owner=owner, repo=repo)]
+    if dry_run:
+        "Would run command '{}'".format(shlex.join(cmd))
+        git.init(ctx, dest)
+        return dest
+    communicate(cmd, env=gh_env, cwd=dest)
+    return os.path.join(dest, repo)
+
+
+def add_dir_contents_to_repo(ctx, from_dir, target_dir, target_repository_path, version, dry_run, notes=""):
+    ctx.log("From {} to {}".format(from_dir, target_repository_path))
+    copy_tree(from_dir, target_repository_path)
+    git.add(ctx, target_repository_path, target_repository_path)
+    message = "Update for version {version}".format(version=version)
+    if notes:
+        message += "\n{notes}".format(notes=notes)
+    git.commit(ctx, repo_path=target_repository_path, message=message)
+    if not dry_run:
+        git.push(ctx, target_repository_path)
+
+
+def create_release(ctx, from_dir, target_dir, owner, repo, version, dry_run, notes="", **kwds):
+    target_repository_path = get_or_create_repository(ctx, owner=owner, repo=repo, dry_run=dry_run)
+    add_dir_contents_to_repo(ctx, from_dir, target_dir, target_repository_path, version=version, dry_run=dry_run, notes=notes)
+    gh_path = ensure_gh(ctx, **kwds)
+    gh_env = get_gh_env(ctx, dry_run=dry_run, **kwds)
+    cmd = [
+        gh_path,
+        'release',
+        '-R',
+        "{owner}/{repo}".format(owner=owner, repo=repo),
+        'create',
+        "v{version}".format(version=version),
+        '--title',
+        str(version),
+    ]
+    if notes:
+        cmd.extend(['--notes', notes])
+    if not dry_run:
+        communicate(cmd, env=gh_env)
+    else:
+        ctx.log("Would run command '{}'".format(shlex.join(cmd)))
 
 
 def pull_request(ctx, path, message=None, **kwds):
@@ -80,13 +135,17 @@ def pull_request(ctx, path, message=None, **kwds):
     communicate(cmd, env=gh_env)
 
 
-def get_gh_env(ctx, path, **kwds):
+def get_gh_env(ctx, path=None, dry_run=False, **kwds):
     """Return a environment dictionary to run hub with given user and repository target."""
-    env = git.git_env_for(path).copy()
-    github_config = _get_raw_github_config(ctx)
-    if github_config is not None:
-        if "access_token" in github_config:
-            env["GITHUB_TOKEN"] = github_config["access_token"]
+    if path is None:
+        env = {}
+    else:
+        env = git.git_env_for(path).copy()
+    if not dry_run:
+        github_config = _get_raw_github_config(ctx)
+        if github_config is not None:
+            if "access_token" in github_config:
+                env["GITHUB_TOKEN"] = github_config["access_token"]
 
     return env
 
@@ -102,7 +161,7 @@ def ensure_gh(ctx, **kwds):
     if not gh_path:
         planemo_gh_path = os.path.join(ctx.workspace, "gh")
         if not os.path.exists(planemo_gh_path):
-            _try_download_hub(planemo_gh_path)
+            _try_download_gh(planemo_gh_path)
 
         if not os.path.exists(planemo_gh_path):
             raise Exception(FAILED_TO_DOWNLOAD_GH)
@@ -177,10 +236,13 @@ def get_repository_object(ctx, name):
 
 
 __all__ = (
+    "add_dir_contents_to_repo",
     "clone_fork_branch",
+    "create_release",
     "ensure_gh",
     "fork",
     "get_github_config",
     "get_gh_env",
+    "get_or_create_repository",
     "publish_as_gist_file",
 )
