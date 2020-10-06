@@ -19,11 +19,11 @@ except ImportError:
     github = None
     has_github_lib = False
 
-HUB_VERSION = "2.2.8"
+GH_VERSION = "1.0.0"
 
 NO_GITHUB_DEP_ERROR = ("Cannot use github functionality - "
                        "PyGithub library not available.")
-FAILED_TO_DOWNLOAD_HUB = "No hub executable available and it could not be installed."
+FAILED_TO_DOWNLOAD_GH = "No gh executable available and it could not be installed."
 
 
 def get_github_config(ctx, allow_anonymous=False):
@@ -51,23 +51,36 @@ def clone_fork_branch(ctx, target, path, **kwds):
 
 def fork(ctx, path, **kwds):
     """Fork the target repository using ``hub``."""
-    hub_path = ensure_hub(ctx, **kwds)
-    hub_env = get_hub_env(ctx, path, **kwds)
-    cmd = [hub_path, "fork"]
-    communicate(cmd, env=hub_env)
+    gh_path = ensure_gh(ctx, **kwds)
+    gh_env = get_gh_env(ctx, path, **kwds)
+    cmd = [gh_path, "repo", "fork"]
+    communicate(cmd, env=gh_env)
+
+
+def get_or_create_repository(ctx, organization, name, **kwds):
+    pass
+
+
+def create_release(ctx, repository, version, **kwds):
+    repository = get_or_create_repository()
 
 
 def pull_request(ctx, path, message=None, **kwds):
-    """Create a pull request against the origin of the path using ``hub``."""
-    hub_path = ensure_hub(ctx, **kwds)
-    hub_env = get_hub_env(ctx, path, **kwds)
-    cmd = [hub_path, "pull-request"]
-    if message is not None:
-        cmd.extend(["-m", message])
-    communicate(cmd, env=hub_env)
+    """Create a pull request against the origin of the path using ``gh``."""
+    gh_path = ensure_gh(ctx, **kwds)
+    gh_env = get_gh_env(ctx, path, **kwds)
+    cmd = [gh_path, "pr", "create"]
+    if message is None:
+        cmd.append('--fill')
+    else:
+        lines = message.splitlines()
+        cmd.extend(['--title', lines[0]])
+        if len(lines) > 1:
+            cmd.extend(["--body", "\n".join(lines[1:])])
+    communicate(cmd, env=gh_env)
 
 
-def get_hub_env(ctx, path, **kwds):
+def get_gh_env(ctx, path, **kwds):
     """Return a environment dictionary to run hub with given user and repository target."""
     env = git.git_env_for(path).copy()
     github_config = _get_raw_github_config(ctx)
@@ -78,32 +91,32 @@ def get_hub_env(ctx, path, **kwds):
     return env
 
 
-def ensure_hub(ctx, **kwds):
+def ensure_gh(ctx, **kwds):
     """Ensure ``hub`` is on the system ``PATH``.
 
     This method will ensure ``hub`` is installed if it isn't available.
 
     For more information on ``hub`` checkout ...
     """
-    hub_path = which("hub")
-    if not hub_path:
-        planemo_hub_path = os.path.join(ctx.workspace, "hub")
-        if not os.path.exists(planemo_hub_path):
-            _try_download_hub(planemo_hub_path)
+    gh_path = which("gh")
+    if not gh_path:
+        planemo_gh_path = os.path.join(ctx.workspace, "gh")
+        if not os.path.exists(planemo_gh_path):
+            _try_download_hub(planemo_gh_path)
 
-        if not os.path.exists(planemo_hub_path):
-            raise Exception(FAILED_TO_DOWNLOAD_HUB)
+        if not os.path.exists(planemo_gh_path):
+            raise Exception(FAILED_TO_DOWNLOAD_GH)
 
-        hub_path = planemo_hub_path
-    return hub_path
+        gh_path = planemo_gh_path
+    return gh_path
 
 
-def _try_download_hub(planemo_hub_path):
-    link = _hub_link()
+def _try_download_gh(planemo_gh_path):
+    link = _gh_link()
     # Strip URL base and .tgz at the end.
     basename = link.split("/")[-1].rsplit(".", 1)[0]
-    untar_to(link, tar_args=['-zxvf', '-', "%s/bin/hub" % basename], path=planemo_hub_path)
-    communicate(["chmod", "+x", planemo_hub_path])
+    untar_to(link, tar_args=['-zxvf', '-', "%s/bin/gh" % basename], path=planemo_gh_path)
+    communicate(["chmod", "+x", planemo_gh_path])
 
 
 def _get_raw_github_config(ctx):
@@ -136,12 +149,12 @@ class GithubConfig(object):
         self._github = github_object
 
 
-def _hub_link():
+def _gh_link():
     if IS_OS_X:
-        template_link = "https://github.com/github/hub/releases/download/v%s/hub-darwin-amd64-%s.tgz"
+        template_link = "https://github.com/cli/cli/releases/download/v%s/gh_%s_macOS_amd64.tgz"
     else:
-        template_link = "https://github.com/github/hub/releases/download/v%s/hub-linux-amd64-%s.tgz"
-    return template_link % (HUB_VERSION, HUB_VERSION)
+        template_link = "https://github.com/cli/cli/releases/download/v%s/gh_%s_linux_amd64.tgz"
+    return template_link % (GH_VERSION, GH_VERSION)
 
 
 def publish_as_gist_file(ctx, path, name="index"):
@@ -165,9 +178,9 @@ def get_repository_object(ctx, name):
 
 __all__ = (
     "clone_fork_branch",
-    "ensure_hub",
+    "ensure_gh",
     "fork",
     "get_github_config",
-    "get_hub_env",
+    "get_gh_env",
     "publish_as_gist_file",
 )
