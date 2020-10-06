@@ -127,7 +127,7 @@ def _get_raw_github_config(ctx):
                 "access_token": os.environ["GITHUB_TOKEN"],
             }
     if "github" not in ctx.global_config:
-        raise Exception("github account not found in planemo config and GITHUB_USER / GITHUB_PASSWORD environment variables unset")
+        raise Exception("github account not found in planemo config and GITHUB_TOKEN environment variables unset")
     return ctx.global_config["github"]
 
 
