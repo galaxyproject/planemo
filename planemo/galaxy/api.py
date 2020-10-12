@@ -111,6 +111,12 @@ def summarize_history(ctx, gi, history_id):
         print("|")
 
 
+def get_invocations(url, key, workflow_id):
+    inv_gi = gi(None, url, key)
+    invocations = inv_gi.workflows.get_invocations(workflow_id)
+    return {invocation['id']: inv_gi.invocations.get_invocation_summary(invocation['id'])['states'] for invocation in invocations}
+
+
 def _format_for_summary(blob, empty_message, prefix="|  "):
     contents = "\n".join(["%s%s" % (prefix, line.strip()) for line in StringIO(blob).readlines() if line.rstrip("\n\r")])
     return contents or "%s*%s*" % (prefix, empty_message)

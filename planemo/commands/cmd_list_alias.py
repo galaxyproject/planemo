@@ -13,11 +13,6 @@ try:
 except ImportError:
     tabulate = None
 
-# try:
-#     import namesgenerator
-# except ImportError:
-#     namesgenerator = None
-
 
 @click.command('list_alias')
 @options.profile_option(required=True)
