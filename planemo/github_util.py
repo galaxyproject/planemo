@@ -1,18 +1,22 @@
 """Utilities for interacting with Github."""
 from __future__ import absolute_import
 
+import io
 import os
 import shlex
+import stat
+import tarfile
 import tempfile
 from distutils.dir_util import copy_tree
+from pathlib import Path
 
+import requests
 from galaxy.tool_util.deps.commands import which
 
 from planemo import git
 from planemo.io import (
     communicate,
     IS_OS_X,
-    untar_to,
 )
 
 try:
@@ -22,7 +26,7 @@ except ImportError:
     github = None
     has_github_lib = False
 
-GH_VERSION = "1.0.0"
+GH_VERSION = "1.1.0"
 
 NO_GITHUB_DEP_ERROR = ("Cannot use github functionality - "
                        "PyGithub library not available.")
@@ -172,10 +176,13 @@ def ensure_gh(ctx, **kwds):
 
 def _try_download_gh(planemo_gh_path):
     link = _gh_link()
-    # Strip URL base and .tgz at the end.
-    basename = link.split("/")[-1].rsplit(".", 1)[0]
-    untar_to(link, tar_args=['-zxvf', '-', "%s/bin/gh" % basename], path=planemo_gh_path)
-    communicate(["chmod", "+x", planemo_gh_path])
+    path = Path(planemo_gh_path)
+    resp = requests.get(link)
+    with tarfile.open(fileobj=io.BytesIO(resp.content)) as tf, path.open('wb') as outfile:
+        for member in tf.getmembers():
+            if member.name.endswith('bin/gh'):
+                outfile.write(tf.extractfile(member).read())
+    path.chmod(path.stat().st_mode | stat.S_IEXEC)
 
 
 def _get_raw_github_config(ctx):
@@ -210,9 +217,9 @@ class GithubConfig(object):
 
 def _gh_link():
     if IS_OS_X:
-        template_link = "https://github.com/cli/cli/releases/download/v%s/gh_%s_macOS_amd64.tgz"
+        template_link = "https://github.com/cli/cli/releases/download/v%s/gh_%s_macOS_amd64.tar.gz"
     else:
-        template_link = "https://github.com/cli/cli/releases/download/v%s/gh_%s_linux_amd64.tgz"
+        template_link = "https://github.com/cli/cli/releases/download/v%s/gh_%s_linux_amd64.tar.gz"
     return template_link % (GH_VERSION, GH_VERSION)
 
 
