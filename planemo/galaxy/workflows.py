@@ -65,13 +65,8 @@ def import_workflow(path, admin_gi, user_gi, from_path=False):
         workflow = _raw_dict(path, importer)
         return user_gi.workflows.import_workflow_dict(workflow)
     else:
-        # TODO: Update bioblend to allow from_path.
         path = os.path.abspath(path)
-        payload = dict(
-            from_path=path
-        )
-        workflows_url = user_gi.url + '/workflows'
-        workflow = user_gi.workflows._post(payload, url=workflows_url)
+        workflow = user_gi.workflows.import_workflow_from_local_path(path)
         return workflow
 
 

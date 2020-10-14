@@ -40,7 +40,7 @@ def cli(ctx, workflow_id, **kwds):
             'deleted': '\033[95m',      # magenta
             'deleted_new': '\033[95m',  # magenta
             'new': '\033[96m',          # cyan
-            'queued': '\033[93m',      # yellow
+            'queued': '\033[93m',       # yellow
         }
         print(tabulate({
                 "Invocation ID": invocations.keys(),

@@ -690,14 +690,11 @@ def single_user_mode_option():
 
 
 def required_workflow_arg():
-    arg_type = click.Path(
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-        readable=True,
-        resolve_path=False,
+    return click.argument(
+        'workflow_identifier',
+        metavar="WORKFLOW_PATH_OR_ID",
+        type=str,
     )
-    return click.argument("workflow_path", metavar="WORKFLOW_PATH", type=arg_type)
 
 
 def split_job_and_test():
