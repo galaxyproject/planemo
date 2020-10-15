@@ -91,7 +91,7 @@ def create_repository(ctx, owner, repo, dest, dry_run, **kwds):
 def rm_dir_contents(directory, ignore_dirs=(".git")):
     directory = Path(directory)
     for item in directory.iterdir():
-        if not item.name in ignore_dirs:
+        if item.name not in ignore_dirs:
             if item.is_dir():
                 rm_dir_contents(item)
             else:
@@ -122,6 +122,22 @@ def assert_new_version(ctx, version, owner, repo):
         pass
 
 
+def changelog_in_repo(target_repository_path):
+    changelog = []
+    for path in os.listdir(target_repository_path):
+        if 'changelog.md' in path.lower():
+            header_seen = False
+            header_chars = ('---', '===', '~~~')
+            with(open(os.path.join(target_repository_path, path))) as changelog_fh:
+                for line in changelog_fh:
+                    if line.startswith(header_chars):
+                        if header_seen:
+                            return "\n".join(changelog[:-1])
+                        else:
+                            header_seen = True
+    return "\n".join(changelog)
+
+
 def create_release(ctx, from_dir, target_dir, owner, repo, version, dry_run, notes="", **kwds):
     assert_new_version(ctx, version, owner=owner, repo=repo)
     target_repository_path = get_or_create_repository(ctx, owner=owner, repo=repo, dry_run=dry_run)
@@ -138,8 +154,7 @@ def create_release(ctx, from_dir, target_dir, owner, repo, version, dry_run, not
         '--title',
         str(version),
     ]
-    if notes:
-        cmd.extend(['--notes', notes])
+    cmd.extend(['--notes', notes or changelog_in_repo(target_repository_path)])
     if not dry_run:
         communicate(cmd, env=gh_env)
     else:
