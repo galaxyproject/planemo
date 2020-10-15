@@ -88,8 +88,19 @@ def create_repository(ctx, owner, repo, dest, dry_run, **kwds):
     return os.path.join(dest, repo)
 
 
+def rm_dir_contents(directory, ignore_dirs=(".git")):
+    directory = Path(directory)
+    for item in directory.iterdir():
+        if not item.name in ignore_dirs:
+            if item.is_dir():
+                rm_dir_contents(item)
+            else:
+                item.unlink()
+
+
 def add_dir_contents_to_repo(ctx, from_dir, target_dir, target_repository_path, version, dry_run, notes=""):
     ctx.log("From {} to {}".format(from_dir, target_repository_path))
+    rm_dir_contents(target_repository_path)
     copy_tree(from_dir, target_repository_path)
     git.add(ctx, target_repository_path, target_repository_path)
     message = "Update for version {version}".format(version=version)
