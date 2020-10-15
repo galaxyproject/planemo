@@ -3,7 +3,6 @@ from __future__ import absolute_import
 
 import io
 import os
-import shlex
 import stat
 import tarfile
 import tempfile
@@ -82,7 +81,7 @@ def create_repository(ctx, owner, repo, dest, dry_run, **kwds):
     gh_env = get_gh_env(ctx, dry_run=dry_run, **kwds)
     cmd = [gh_path, 'repo', 'create', '-y', '--public', "{owner}/{repo}".format(owner=owner, repo=repo)]
     if dry_run:
-        "Would run command '{}'".format(shlex.join(cmd))
+        "Would run command '{}'".format(" ".join(cmd))
         git.init(ctx, dest)
         return dest
     communicate(cmd, env=gh_env, cwd=dest)
@@ -101,7 +100,19 @@ def add_dir_contents_to_repo(ctx, from_dir, target_dir, target_repository_path, 
         git.push(ctx, target_repository_path)
 
 
+def assert_new_version(ctx, version, owner, repo):
+    remote_repo = "https://github.com/{owner}/{repo}".format(owner=owner, repo=repo)
+    try:
+        tags_and_versions = git.ls_remote(ctx, remote_repo=remote_repo)
+        if "refs/tags/v{}".format(version) in tags_and_versions or "refs/tags/{}".format(version) in tags_and_versions:
+            raise Exception("Version '{}' for {}/{} exists already. Please change the version.".format(version, owner, repo))
+    except RuntimeError:
+        # repo doesn't exist
+        pass
+
+
 def create_release(ctx, from_dir, target_dir, owner, repo, version, dry_run, notes="", **kwds):
+    assert_new_version(ctx, version, owner=owner, repo=repo)
     target_repository_path = get_or_create_repository(ctx, owner=owner, repo=repo, dry_run=dry_run)
     add_dir_contents_to_repo(ctx, from_dir, target_dir, target_repository_path, version=version, dry_run=dry_run, notes=notes)
     gh_path = ensure_gh(ctx, **kwds)
@@ -110,7 +121,7 @@ def create_release(ctx, from_dir, target_dir, owner, repo, version, dry_run, not
         gh_path,
         'release',
         '-R',
-        "{owner}/{repo}".format(owner=owner, repo=repo),
+        "{}/{}".format(owner, repo),
         'create',
         "v{version}".format(version=version),
         '--title',
@@ -121,7 +132,7 @@ def create_release(ctx, from_dir, target_dir, owner, repo, version, dry_run, not
     if not dry_run:
         communicate(cmd, env=gh_env)
     else:
-        ctx.log("Would run command '{}'".format(shlex.join(cmd)))
+        ctx.log("Would run command '{}'".format(" ".join(cmd)))
 
 
 def pull_request(ctx, path, message=None, **kwds):

@@ -19,6 +19,15 @@ def git_env_for(path):
     return env
 
 
+def ls_remote(ctx, remote_repo):
+    """Return a dictionary with refs as key and commits as value."""
+    commits_and_refs = io.communicate(
+        ["git", "ls-remote", remote_repo],
+        stdout=subprocess.PIPE,
+    )[0]
+    return dict(line.split()[::-1] for line in commits_and_refs.decode('utf-8').splitlines())
+
+
 def init(ctx, repo_path):
     env = git_env_for(repo_path)
     io.communicate(["git", "init"], env=env)
@@ -41,7 +50,7 @@ def push(ctx, repo_path, to=None, branch=None, force=False):
         cmd += ["--force"]
     if to and branch:
         cmd += [to, branch]
-    io.communicate(cmd, env=env)
+    io.communicate(cmd, env=env, cwd=repo_path)
 
 
 def branch(ctx, repo_path, branch, from_branch=None):

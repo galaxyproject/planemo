@@ -6,6 +6,7 @@ import pytest
 from planemo import git
 from planemo.github_util import (
     add_dir_contents_to_repo,
+    assert_new_version,
     get_or_create_repository,
 )
 from planemo.io import temp_directory
@@ -68,3 +69,19 @@ def test_add_dir_contents_to_repo_dry_run():
             notes='The big release!',
             dry_run=True
         )
+
+
+def test_git_ls_remote():
+    ctx = test_context()
+    tags_and_commits = git.ls_remote(ctx, 'https://github.com/galaxyproject/galaxy')
+    assert 'refs/heads/release_20.09' in tags_and_commits
+
+
+def test_assert_is_new_version_raises_exception():
+    with pytest.raises(Exception) as excinfo:
+        assert_new_version(None, version='v20.05', owner='galaxyproject', repo='galaxy')
+    assert "Please change the version" in str(excinfo)
+
+
+def test_assert_is_new_version():
+    assert_new_version(None, version='v20.06', owner='galaxyproject', repo='galaxy')
