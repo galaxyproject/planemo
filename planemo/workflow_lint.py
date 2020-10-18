@@ -14,9 +14,9 @@ from planemo.exit_codes import (
 )
 from planemo.galaxy.workflows import input_labels, output_labels, required_input_labels
 from planemo.runnable import cases, for_path
+from planemo.shed import DOCKSTORE_REGISTRY_CONF
 
 POTENTIAL_WORKFLOW_FILES = re.compile(r'^.*(\.yml|\.yaml|\.ga)$')
-DOCKSTORE_REGISTRY_CONF = ".dockstore.yml"
 DOCKSTORE_REGISTRY_CONF_VERSION = "1.2"
 
 

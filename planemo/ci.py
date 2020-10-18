@@ -10,10 +10,7 @@ import yaml
 
 from planemo import git
 from planemo import io
-from planemo.shed import SHED_CONFIG_NAME
-from planemo.workflow_lint import DOCKSTORE_REGISTRY_CONF
-
-REPO_METADATA_FILES = (SHED_CONFIG_NAME, DOCKSTORE_REGISTRY_CONF)
+from planemo.shed import REPO_METADATA_FILES
 
 
 def filter_paths(ctx, raw_paths, path_type="repo", **kwds):

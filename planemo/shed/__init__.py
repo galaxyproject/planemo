@@ -49,6 +49,8 @@ from .interface import (
 )
 
 SHED_CONFIG_NAME = '.shed.yml'
+DOCKSTORE_REGISTRY_CONF = ".dockstore.yml"
+REPO_METADATA_FILES = (SHED_CONFIG_NAME, DOCKSTORE_REGISTRY_CONF)
 REPO_DEPENDENCIES_CONFIG_NAME = "repository_dependencies.xml"
 TOOL_DEPENDENCIES_CONFIG_NAME = "tool_dependencies.xml"
 
@@ -913,10 +915,11 @@ def _find_raw_repositories(ctx, path, **kwds):
     name = kwds.get("name")
     recursive = kwds.get("recursive", False)
 
-    shed_file_dirs = find_matching_directories(
-        path, SHED_CONFIG_NAME, recursive=recursive
-    )
-
+    shed_file_dirs = []
+    for pattern in REPO_METADATA_FILES:
+        shed_file_dirs.extend(find_matching_directories(
+            path, pattern, recursive=recursive
+        ))
     config_name = None
     if len(shed_file_dirs) == 1:
         shed_file_dir = shed_file_dirs[0]
