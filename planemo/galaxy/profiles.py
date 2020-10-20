@@ -162,7 +162,6 @@ def delete_alias(ctx, alias, profile_name, **kwds):
 def translate_alias(ctx, alias, profile_name):
     if not profile_name:
         return alias
-    # print(_load_profile_to_json(ctx, profile_name))
     aliases = _load_profile_to_json(ctx, profile_name)[0].get('aliases', {})
     return aliases.get(alias, alias)
 
@@ -180,11 +179,6 @@ def _load_profile_to_json(ctx, profile_name):
 def _profile_options(ctx, profile_name, **kwds):
     profile_directory = _profile_directory(ctx, profile_name)
     profile_options = _read_profile_options(profile_directory)
-    # specified_engine_type = kwds.get("engine", "galaxy")
-    # profile_engine_type = profile_options["engine"]
-    # if specified_engine_type != profile_engine_type:
-    #     if ctx.get_option_source("engine") == OptionSource.cli:
-    #         raise Exception("Configured profile engine type [%s] does not match specified engine type [%s].")
 
     if profile_options["engine"] == "docker_galaxy":
         engine_options = dict(
@@ -205,7 +199,6 @@ def _profile_options(ctx, profile_name, **kwds):
         )
     profile_options.update(engine_options)
     profile_options["galaxy_brand"] = profile_name
-    # print(profile_options)
     return profile_options
 
 
