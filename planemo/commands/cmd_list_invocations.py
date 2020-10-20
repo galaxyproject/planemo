@@ -1,10 +1,9 @@
 """Module describing the planemo ``create_alias`` command."""
 import click
 
-from planemo.galaxy import profiles
 from planemo import options
 from planemo.cli import command_function
-from planemo.config import planemo_option
+from planemo.galaxy import profiles
 from planemo.galaxy.api import get_invocations
 from planemo.io import error, info
 
@@ -30,7 +29,7 @@ def cli(ctx, workflow_id, **kwds):
     profile = profiles.ensure_profile(ctx, kwds.get('profile'))
 
     invocations = get_invocations(url=profile['galaxy_url'], key=profile['galaxy_admin_key'] or profile['galaxy_user_key'], workflow_id=workflow_id)
-    
+
     if tabulate:
         state_colors = {
             'ok': '\033[92m',           # green
@@ -44,8 +43,10 @@ def cli(ctx, workflow_id, **kwds):
         }
         print(tabulate({
                 "Invocation ID": invocations.keys(),
-                "Jobs status": [', '.join(['{}{} jobs {}\033[0m'.format(state_colors[k], v, k) for k, v in inv_states.items()]) for inv_states in invocations.values()],
-                "Invocation report URL": ['{}/api/invocations/{}/report.pdf'.format(profile['galaxy_url'].strip('/'), inv_id) for inv_id in invocations]
+                "Jobs status": [', '.join(['{}{} jobs {}\033[0m'.format(state_colors[k], v, k) for k, v in inv_states.items()]
+                                          ) for inv_states in invocations.values()],
+                "Invocation report URL": ['{}/api/invocations/{}/report.pdf'.format(profile['galaxy_url'].strip('/'
+                                          ), inv_id) for inv_id in invocations]
             }, headers="keys"))
     else:
         error("The tabulate package is not installed, invocations could not be listed correctly.")

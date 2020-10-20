@@ -9,9 +9,6 @@ import shutil
 
 from galaxy.util.commands import which
 
-from planemo.config import (
-    OptionSource,
-)
 from planemo.database import create_database_source
 from planemo.galaxy.api import test_credentials_valid
 from .config import DATABASE_LOCATION_TEMPLATE
@@ -132,12 +129,12 @@ def ensure_profile(ctx, profile_name, **kwds):
 
 def create_alias(ctx, alias, obj, profile_name, **kwds):
     profile_options, profile_options_path = _load_profile_to_json(ctx, profile_name)
-    
+
     if profile_options.get('aliases'):
         profile_options['aliases'][alias] = obj
     else:  # no aliases yet defined
         profile_options['aliases'] = {alias: obj}
-    
+
     with open(profile_options_path, 'w') as f:
         json.dump(profile_options, f)
 

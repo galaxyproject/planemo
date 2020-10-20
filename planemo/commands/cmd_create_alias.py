@@ -1,10 +1,9 @@
 """Module describing the planemo ``create_alias`` command."""
 import click
 
-from planemo.galaxy import profiles
 from planemo import options
 from planemo.cli import command_function
-from planemo.config import planemo_option
+from planemo.galaxy import profiles
 
 try:
     import namesgenerator
@@ -27,9 +26,10 @@ def cli(ctx, alias, obj, profile, **kwds):
     """
     if not alias:
         if not namesgenerator:
-            raise ImportError('Random generation of aliases requires installation of the namesgenerator package. Either install this, or specify the alias name with --alias.')
+            raise ImportError(("Random generation of aliases requires installation of the namesgenerator package."
+                               "Either install this, or specify the alias name with --alias."))
         alias = namesgenerator.get_random_name()
-    
+
     exit_code = profiles.create_alias(ctx, alias, obj, profile)
     ctx.exit(exit_code)
     return
