@@ -10,7 +10,7 @@ from planemo.io import error, info
 try:
     from tabulate import tabulate
 except ImportError:
-    tabulate = None
+    tabulate = None  # type: ignore
 
 
 @click.command('list_invocations')

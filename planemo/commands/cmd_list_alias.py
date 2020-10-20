@@ -11,7 +11,7 @@ from planemo.io import info
 try:
     from tabulate import tabulate
 except ImportError:
-    tabulate = None
+    tabulate = None  # type: ignore
 
 
 @click.command('list_alias')
