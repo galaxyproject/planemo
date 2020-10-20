@@ -10,10 +10,11 @@ from galaxy.util import unicodify
 from planemo import options
 from planemo.cli import command_function
 from planemo.engine import engine_context
+from planemo.galaxy.profiles import translate_alias
 from planemo.io import warn
 from planemo.runnable import for_id, for_path
 from planemo.tools import uri_to_path
-from planemo.galaxy.profiles import translate_alias
+
 
 @click.command('run')
 @options.required_runnable_arg()
