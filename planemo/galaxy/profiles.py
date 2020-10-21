@@ -32,14 +32,16 @@ def delete_profile(ctx, profile_name, **kwds):
     """Delete profile with the specified name."""
     profile_directory = _profile_directory(ctx, profile_name)
     profile_options = _read_profile_options(profile_directory)
-    database_type = profile_options.get("database_type")
-    kwds["database_type"] = database_type
-    if database_type != "sqlite":
-        database_source = create_database_source(**kwds)
-        database_identifier = _profile_to_database_identifier(profile_name)
-        database_source.delete_database(
-            database_identifier,
-        )
+    profile_options, profile_options_path = _load_profile_to_json(ctx, profile_name)
+    if profile_options["engine"] != 'external_galaxy':
+        database_type = profile_options.get("database_type")
+        kwds["database_type"] = database_type
+        if database_type != "sqlite":
+            database_source = create_database_source(**kwds)
+            database_identifier = _profile_to_database_identifier(profile_name)
+            database_source.delete_database(
+                database_identifier,
+            )
     shutil.rmtree(profile_directory)
 
 

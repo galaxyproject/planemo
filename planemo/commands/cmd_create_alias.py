@@ -4,6 +4,7 @@ import click
 from planemo import options
 from planemo.cli import command_function
 from planemo.galaxy import profiles
+from planemo.io import info
 
 try:
     import namesgenerator
@@ -31,5 +32,6 @@ def cli(ctx, alias, obj, profile, **kwds):
         alias = namesgenerator.get_random_name()
 
     exit_code = profiles.create_alias(ctx, alias, obj, profile)
+    info("Alias {} created.".format(alias))
     ctx.exit(exit_code)
     return

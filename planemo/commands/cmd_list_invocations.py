@@ -5,6 +5,7 @@ from planemo import options
 from planemo.cli import command_function
 from planemo.galaxy import profiles
 from planemo.galaxy.api import get_invocations
+from planemo.galaxy.profiles import translate_alias
 from planemo.io import error, info
 
 try:
@@ -24,6 +25,7 @@ def cli(ctx, workflow_id, **kwds):
     """
     Get a list of invocations for a particular workflow ID or alias.
     """
+    workflow_id = translate_alias(ctx, workflow_id, kwds.get('profile'))
     info("Looking for invocations for workflow {}...".format(workflow_id))
     workflow_id = profiles.translate_alias(ctx, workflow_id, kwds.get('profile'))
     profile = profiles.ensure_profile(ctx, kwds.get('profile'))
