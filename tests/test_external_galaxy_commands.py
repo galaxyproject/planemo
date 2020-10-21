@@ -53,7 +53,7 @@ class ExternalGalaxyCommandsTestCase(CliTestCase):
                 assert 'Run failed' not in result.output
                 result = self._check_exit_code(list_invocs_cmd)
                 assert '1 invocations found.' in result.output
-                assert '1 jobs ok' in result.output or "{'ok': 1}" in result.output  # so it passes regardless if tabulate is installed or not
+                assert '1 jobs ok' in result.output or '"ok": 1' in result.output  # so it passes regardless if tabulate is installed or not
 
                 # test alias and profile deletion
                 result = self._check_exit_code(alias_delete_cmd)
