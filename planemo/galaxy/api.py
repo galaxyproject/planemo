@@ -114,7 +114,10 @@ def summarize_history(ctx, gi, history_id):
 def get_invocations(url, key, workflow_id):
     inv_gi = gi(None, url, key)
     invocations = inv_gi.workflows.get_invocations(workflow_id)
-    return {invocation['id']: inv_gi.invocations.get_invocation_summary(invocation['id'])['states'] for invocation in invocations}
+    return {invocation['id']: {
+            'states': inv_gi.invocations.get_invocation_summary(invocation['id'])['states'],
+            'history_id': invocation['history_id']}
+            for invocation in invocations}
 
 
 def _format_for_summary(blob, empty_message, prefix="|  "):

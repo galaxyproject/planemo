@@ -1,4 +1,6 @@
-"""Module describing the planemo ``create_alias`` command."""
+"""Module describing the planemo ``list_invocations`` command."""
+import json
+
 import click
 
 from planemo import options
@@ -31,7 +33,6 @@ def cli(ctx, workflow_id, **kwds):
     profile = profiles.ensure_profile(ctx, kwds.get('profile'))
 
     invocations = get_invocations(url=profile['galaxy_url'], key=profile['galaxy_admin_key'] or profile['galaxy_user_key'], workflow_id=workflow_id)
-
     if tabulate:
         state_colors = {
             'ok': '\033[92m',           # green
@@ -45,14 +46,16 @@ def cli(ctx, workflow_id, **kwds):
         }
         print(tabulate({
                 "Invocation ID": invocations.keys(),
-                "Jobs status": [', '.join(['{}{} jobs {}\033[0m'.format(state_colors[k], v, k) for k, v in inv_states.items()]
-                                          ) for inv_states in invocations.values()],
-                "Invocation report URL": ['{}/api/invocations/{}/report.pdf'.format(profile['galaxy_url'].strip('/'), inv_id
-                                                                                    ) for inv_id in invocations]
+                "Jobs status": [', '.join(['{}{} jobs {}\033[0m'.format(state_colors[k], v, k) for k, v in inv['states'].items()]
+                                          ) for inv in invocations.values()],
+                "Invocation report URL": ['{}/workflows/invocations/report?id={}'.format(profile['galaxy_url'].strip('/'), inv_id
+                                                                                         ) for inv_id in invocations],
+                "History URL": ['{}/histories/view?id={}'.format(profile['galaxy_url'].strip('/'), invocations[inv_id]['history_id']
+                                                                 ) for inv_id in invocations]
             }, headers="keys"))
     else:
         error("The tabulate package is not installed, invocations could not be listed correctly.")
-        print(invocations)
+        print(json.dumps(invocations, indent=4, sort_keys=True))
     info("{} invocations found.".format(len(invocations)))
 
     return
