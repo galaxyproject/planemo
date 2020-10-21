@@ -36,7 +36,7 @@ class ExternalGalaxyCommandsTestCase(CliTestCase):
 
                 # test alias and profile creation
                 result = self._check_exit_code(profile_list_cmd)
-                assert '0 configured profiles are available.' in result.output
+                assert 'test_ext_profile' not in result.output
                 result = self._check_exit_code(profile_create_cmd)
                 assert 'Profile [test_ext_profile] created' in result.output
                 result = self._check_exit_code(profile_list_cmd)
@@ -63,4 +63,4 @@ class ExternalGalaxyCommandsTestCase(CliTestCase):
                 result = self._check_exit_code(profile_delete_cmd)
                 assert 'Profile deleted.' in result.output
                 result = self._check_exit_code(profile_list_cmd)
-                assert '0 configured profiles are available.' in result.output
+                assert 'test_ext_profile' not in result.output
