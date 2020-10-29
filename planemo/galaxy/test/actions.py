@@ -39,6 +39,8 @@ PROBLEM_COUNT_MESSAGE = ("There were problems with %d test(s) - out of %d "
 GENERIC_PROBLEMS_MESSAGE = ("One or more tests failed. See %s for detailed "
                             "breakdown.")
 GENERIC_TESTS_PASSED_MESSAGE = "No failing tests encountered."
+TEST_DATA_UPDATED_MESSAGE = "Test data were updated and tests were rerun."
+TEST_DATA_NOT_UPDATED_MESSAGE = "%s Therefore, no test data were updated." % ALL_TESTS_PASSED_MESSAGE
 
 
 def run_in_config(ctx, config, run=run_galaxy_command, test_data_target_dir=None, **kwds):
@@ -95,8 +97,18 @@ def run_in_config(ctx, config, run=run_galaxy_command, test_data_target_dir=None
         config.env,
         action
     )
-    if kwds.get('update_test_data', False):
-        copy_tree(job_output_files, test_data_target_dir or config.test_data_dir)
+    if return_code != 0 and kwds.get('update_test_data', False):
+        for test_data_dir in [config.test_data_dir, test_data_target_dir]:
+            if test_data_dir:
+                copy_tree(job_output_files, test_data_dir)
+        kwds['test_data_updated'] = True
+        info('Test data updated. Rerunning...')
+        return_code = run(
+                ctx,
+                cmd,
+                config.env,
+                action
+            )
 
     _check_test_outputs(xunit_report_file_tracker, structured_report_file_tracker)
     test_results = test_structures.GalaxyTestResults(
@@ -217,11 +229,16 @@ def _handle_summary(
         summary_exit_code = EXIT_CODE_NO_SUCH_TARGET
 
     summary_style = kwds.get("summary")
+    if kwds.get('test_data_updated'):
+        info(TEST_DATA_UPDATED_MESSAGE)
     if summary_style != "none":
         if num_tests == 0:
             warn(NO_TESTS_MESSAGE)
         elif num_problems == 0:
-            info(ALL_TESTS_PASSED_MESSAGE % num_tests)
+            if kwds.get('update_test_data') and not kwds.get('test_data_updated'):
+                info(TEST_DATA_NOT_UPDATED_MESSAGE % num_tests)
+            else:
+                info(ALL_TESTS_PASSED_MESSAGE % num_tests)
         elif num_problems:
             html_report_file = kwds.get("test_output")
             message_args = (num_problems, num_tests, html_report_file)

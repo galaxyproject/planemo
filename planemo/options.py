@@ -1092,6 +1092,25 @@ def conda_target_options(include_local=True):
     )
 
 
+def github_namespace():
+    return planemo_option(
+        '--namespace',
+        use_env_var=True,
+        help=('Organization or username under which to create or update workflow repository. '
+              'Must be a valid github username or organization'),
+        default="iwc-workflows"
+    )
+
+
+def dry_run():
+    return planemo_option(
+        '--dry_run',
+        help="Don't execute action, show preview of action.",
+        is_flag=True,
+        default=False,
+    )
+
+
 def galaxy_run_options():
     return _compose(
         galaxy_target_options(),

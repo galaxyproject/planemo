@@ -116,7 +116,7 @@ JOB_CONFIG_LOCAL = """<job_conf>
             ${docker_host_param}
         </destination>
         <destination id="upload_dest" runner="planemo_runner">
-            <param id="docker_enable">false</param>
+            <param id="docker_enabled">false</param>
         </destination>
     </destinations>
     <tools>
@@ -1269,7 +1269,7 @@ def _handle_job_config_file(config_directory, server_name, kwds):
             "job_conf.xml",
         )
         docker_enable = str(kwds.get("docker", False))
-        docker_host = str(kwds.get("docker_host", docker_util.DEFAULT_HOST))
+        docker_host = kwds.get("docker_host", docker_util.DEFAULT_HOST)
         docker_host_param = ""
         if docker_host:
             docker_host_param = """<param id="docker_host">%s</param>""" % docker_host
@@ -1281,7 +1281,7 @@ def _handle_job_config_file(config_directory, server_name, kwds):
             "docker_sudo": str(kwds.get("docker_sudo", False)),
             "docker_sudo_cmd": str(kwds.get("docker_sudo_cmd", docker_util.DEFAULT_SUDO_COMMAND)),
             "docker_cmd": str(kwds.get("docker_cmd", docker_util.DEFAULT_DOCKER_COMMAND)),
-            "docker_host": docker_host_param,
+            "docker_host_param": docker_host_param,
         })
         write_file(job_config_file, conf_contents)
     kwds["job_config_file"] = job_config_file
