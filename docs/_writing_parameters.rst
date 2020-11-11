@@ -72,7 +72,7 @@ We can mark this ``data`` type ``param`` as optional by adding the attribute
 
 Then instead of just using ``$mask_regions`` directly in the ``command``
 block, one can wrap it in an ``if`` statement (because tool XML files
-support `Cheetah <http://www.cheetahtemplate.org/docs/users_guide_html/users_guide.html#SECTION0001040000000000000000>`_).
+support `Cheetah <https://cheetahtemplate.org/users_guide/index.html>`_).
 
 ::
 
