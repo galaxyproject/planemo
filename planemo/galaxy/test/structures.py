@@ -39,7 +39,7 @@ class GalaxyTestCommand(object):
     def build(self):
         xunit_report_file = self.xunit_report_file
         sd_report_file = self.structured_report_file
-        cmd = "sh run_tests.sh $COMMON_STARTUP_ARGS --report_file %s" % shlex_quote(self.html_report_file)
+        cmd = "./run_tests.sh $COMMON_STARTUP_ARGS --report_file %s" % shlex_quote(self.html_report_file)
         if xunit_report_file:
             cmd += " --xunit_report_file %s" % shlex_quote(xunit_report_file)
         if sd_report_file:
