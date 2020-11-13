@@ -127,13 +127,15 @@ def run_in_config(ctx, config, run=run_galaxy_command, test_data_target_dir=None
     )
 
 
-def handle_reports_and_summary(ctx, structured_data, exit_code=None, kwds={}):
+def handle_reports_and_summary(ctx, structured_data, exit_code=None, kwds=None):
     """Produce reports and print summary, return 0 if tests passed.
 
     If ``exit_code`` is set - use underlying test source for return
     code and test success determination, otherwise infer from supplied
     test data.
     """
+    if kwds is None:
+        kwds = {}
     handle_reports(ctx, structured_data, kwds)
     summary_exit_code = _handle_summary(
         structured_data,
