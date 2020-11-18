@@ -36,7 +36,7 @@ def cli(ctx, workflow_identifier, output=None, force=False, **kwds):
 
     with engine_context(ctx, **kwds) as galaxy_engine:
         with galaxy_engine.ensure_runnables_served([runnable]) as config:
-            workflow_id = runnable.workflow_id or config.workflow_id(runnable.path)
+            workflow_id = config.workflow_id_for_runnable(runnable)
             url = "%s/workflow/editor?id=%s" % (config.galaxy_url, workflow_id)
             click.launch(url)
             if kwds["engine"] != "external_galaxy":

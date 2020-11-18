@@ -29,6 +29,7 @@ from requests.exceptions import RequestException
 from six.moves.urllib.parse import urljoin
 
 from planemo.galaxy.api import summarize_history
+from planemo.galaxy.workflows import remote_runnable_to_workflow_id
 from planemo.io import wait_on
 from planemo.runnable import (
     ErrorRunResponse,
@@ -153,12 +154,8 @@ def _execute(ctx, config, runnable, job_path, **kwds):
             summarize_history(ctx, user_gi, history_id)
     elif runnable.type in [RunnableType.galaxy_workflow, RunnableType.cwl_workflow]:
         response_class = GalaxyWorkflowRunResponse
-        if runnable.workflow_id:
-            runnable.workflow_dict = get_dict_from_workflow(user_gi, runnable.workflow_id)
-            workflow_id = runnable.workflow_id
-        else:
-            workflow_id = config.workflow_id(runnable.path)
-        ctx.vlog("Found Galaxy workflow ID [%s] for path [%s]" % (workflow_id, runnable.path))
+        workflow_id = config.workflow_id_for_runnable(runnable)
+        ctx.vlog("Found Galaxy workflow ID [%s] for URI [%s]" % (workflow_id, runnable.uri))
         # TODO: Use the following when BioBlend 0.14 is released
         # invocation = user_gi.worklfows.invoke_workflow(
         #    workflow_id,
@@ -348,7 +345,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
 
         ctx.vlog("collecting outputs to directory %s" % output_directory)
 
-        for runnable_output in get_outputs(self._runnable):
+        for runnable_output in get_outputs(self._runnable, gi=self._user_gi):
             output_id = runnable_output.get_id()
             if not output_id:
                 ctx.vlog("Workflow output identified without an ID (label), skipping")

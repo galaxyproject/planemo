@@ -14,6 +14,7 @@ from gxformat2.normalize import inputs_normalized, outputs_normalized
 from planemo.io import warn
 
 FAILED_REPOSITORIES_MESSAGE = "Failed to install one or more repositories."
+GALAXY_WORKFLOWS_PREFIX = "gxprofile://workflows/"
 
 
 def load_shed_repos(runnable):
@@ -106,10 +107,18 @@ def find_tool_ids(path):
 WorkflowOutput = namedtuple("WorkflowOutput", ["order_index", "output_name", "label"])
 
 
-def describe_outputs(runnable):
+def remote_runnable_to_workflow_id(runnable):
+    assert runnable.is_remote_workflow_uri
+    workflow_id = runnable.uri[len("GALAXY_WORKFLOWS_PREFIX"):]
+    return workflow_id
+
+
+def describe_outputs(runnable, gi=None):
     """Return a list of :class:`WorkflowOutput` objects for target workflow."""
-    if runnable.workflow_dict:
-        workflow = runnable.workflow_dict
+    if runnable.path.startswith(GALAXY_WORKFLOWS_PREFIX):
+        workflow_id = remote_runnable_to_workflow_id(runnable)
+        assert gi is not None
+        workflow = get_dict_from_workflow(gi, workflow_id)
     else:
         workflow = _raw_dict(runnable.path)
 
@@ -224,6 +233,10 @@ def new_workflow_associated_path(workflow_path, suffix="tests"):
     if "yaml" in input_ext:
         ext = "yaml"
     return base + sep + suffix + "." + ext
+
+
+def get_dict_from_workflow(gi, workflow_id):
+    return gi.workflows.export_workflow_dict(workflow_id)
 
 
 __all__ = (

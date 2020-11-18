@@ -757,7 +757,7 @@ class BaseGalaxyConfig(GalaxyInterface):
 
     def install_workflows(self):
         for runnable in self.runnables:
-            if runnable.type.name in ["galaxy_workflow", "cwl_workflow"] and not runnable.workflow_id:
+            if runnable.type.name in ["galaxy_workflow", "cwl_workflow"] and not runnable.is_remote_workflow_uri:
                 self._install_workflow(runnable)
 
     def _install_workflow(self, runnable):
@@ -777,6 +777,13 @@ class BaseGalaxyConfig(GalaxyInterface):
             runnable.path, admin_gi=self.gi, user_gi=self.user_gi, from_path=from_path
         )
         self._workflow_ids[runnable.path] = workflow["id"]
+
+    def workflow_id_for_runnable(self, runnable):
+        if runnable.is_remote_workflow_uri:
+            workflow_id = remote_runnable_to_workflow_id(runnable)
+        else:
+            workflow_id = self.workflow_id(runnable.path)
+        return workflow_id
 
     def workflow_id(self, path):
         return self._workflow_ids[path]
