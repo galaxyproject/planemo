@@ -109,13 +109,13 @@ WorkflowOutput = namedtuple("WorkflowOutput", ["order_index", "output_name", "la
 
 def remote_runnable_to_workflow_id(runnable):
     assert runnable.is_remote_workflow_uri
-    workflow_id = runnable.uri[len("GALAXY_WORKFLOWS_PREFIX"):]
+    workflow_id = runnable.uri[len(GALAXY_WORKFLOWS_PREFIX):]
     return workflow_id
 
 
 def describe_outputs(runnable, gi=None):
     """Return a list of :class:`WorkflowOutput` objects for target workflow."""
-    if runnable.path.startswith(GALAXY_WORKFLOWS_PREFIX):
+    if runnable.uri.startswith(GALAXY_WORKFLOWS_PREFIX):
         workflow_id = remote_runnable_to_workflow_id(runnable)
         assert gi is not None
         workflow = get_dict_from_workflow(gi, workflow_id)

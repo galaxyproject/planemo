@@ -29,7 +29,6 @@ from requests.exceptions import RequestException
 from six.moves.urllib.parse import urljoin
 
 from planemo.galaxy.api import summarize_history
-from planemo.galaxy.workflows import remote_runnable_to_workflow_id
 from planemo.io import wait_on
 from planemo.runnable import (
     ErrorRunResponse,

@@ -24,6 +24,7 @@ from planemo import git
 from planemo.config import OptionSource
 from planemo.deps import ensure_dependency_resolvers_conf_configured
 from planemo.docker import docker_host_args
+from planemo.galaxy.workflows import remote_runnable_to_workflow_id
 from planemo.io import (
     communicate,
     kill_pid_file,
