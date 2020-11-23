@@ -18,14 +18,18 @@ documentation describes these commands.
 .. include:: commands/conda_search.rst
 .. include:: commands/config_init.rst
 .. include:: commands/container_register.rst
+.. include:: commands/create_alias.rst
 .. include:: commands/database_create.rst
 .. include:: commands/database_delete.rst
 .. include:: commands/database_list.rst
+.. include:: commands/delete_alias.rst
 .. include:: commands/docker_build.rst
 .. include:: commands/docker_shell.rst
 .. include:: commands/dockstore_init.rst
 .. include:: commands/docs.rst
 .. include:: commands/lint.rst
+.. include:: commands/list_alias.rst
+.. include:: commands/list_invocations.rst
 .. include:: commands/list_repos.rst
 .. include:: commands/merge_test_reports.rst
 .. include:: commands/mull.rst
@@ -63,3 +67,4 @@ documentation describes these commands.
 .. include:: commands/workflow_job_init.rst
 .. include:: commands/workflow_lint.rst
 .. include:: commands/workflow_test_init.rst
+.. include:: commands/workflow_upload.rst

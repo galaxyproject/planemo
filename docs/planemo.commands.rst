@@ -92,6 +92,14 @@ planemo.commands.cmd\_container\_register module
    :undoc-members:
    :show-inheritance:
 
+planemo.commands.cmd\_create\_alias module
+------------------------------------------
+
+.. automodule:: planemo.commands.cmd_create_alias
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 planemo.commands.cmd\_create\_gist module
 -----------------------------------------
 
@@ -120,6 +128,14 @@ planemo.commands.cmd\_database\_list module
 -------------------------------------------
 
 .. automodule:: planemo.commands.cmd_database_list
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+planemo.commands.cmd\_delete\_alias module
+------------------------------------------
+
+.. automodule:: planemo.commands.cmd_delete_alias
    :members:
    :undoc-members:
    :show-inheritance:
@@ -160,6 +176,22 @@ planemo.commands.cmd\_lint module
 ---------------------------------
 
 .. automodule:: planemo.commands.cmd_lint
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+planemo.commands.cmd\_list\_alias module
+----------------------------------------
+
+.. automodule:: planemo.commands.cmd_list_alias
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+planemo.commands.cmd\_list\_invocations module
+----------------------------------------------
+
+.. automodule:: planemo.commands.cmd_list_invocations
    :members:
    :undoc-members:
    :show-inheritance:
@@ -476,6 +508,13 @@ planemo.commands.cmd\_workflow\_test\_init module
    :undoc-members:
    :show-inheritance:
 
+planemo.commands.cmd\_workflow\_upload module
+---------------------------------------------
+
+.. automodule:: planemo.commands.cmd_workflow_upload
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
