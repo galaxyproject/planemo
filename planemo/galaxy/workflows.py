@@ -14,12 +14,12 @@ from gxformat2.normalize import inputs_normalized, outputs_normalized
 from planemo.io import warn
 
 FAILED_REPOSITORIES_MESSAGE = "Failed to install one or more repositories."
+GALAXY_WORKFLOWS_PREFIX = "gxprofile://workflows/"
 
 
 def load_shed_repos(runnable):
     if runnable.type.name != "galaxy_workflow":
         return []
-
     path = runnable.path
     if path.endswith(".ga"):
         generate_tool_list_from_ga_workflow_files.generate_tool_list_from_workflow([path], "Tools from workflows", "tools.yml")
@@ -66,13 +66,8 @@ def import_workflow(path, admin_gi, user_gi, from_path=False):
         workflow = _raw_dict(path, importer)
         return user_gi.workflows.import_workflow_dict(workflow)
     else:
-        # TODO: Update bioblend to allow from_path.
         path = os.path.abspath(path)
-        payload = dict(
-            from_path=path
-        )
-        workflows_url = user_gi.url + '/workflows'
-        workflow = user_gi.workflows._post(payload, url=workflows_url)
+        workflow = user_gi.workflows.import_workflow_from_local_path(path)
         return workflow
 
 
@@ -112,9 +107,21 @@ def find_tool_ids(path):
 WorkflowOutput = namedtuple("WorkflowOutput", ["order_index", "output_name", "label"])
 
 
-def describe_outputs(path):
+def remote_runnable_to_workflow_id(runnable):
+    assert runnable.is_remote_workflow_uri
+    workflow_id = runnable.uri[len(GALAXY_WORKFLOWS_PREFIX):]
+    return workflow_id
+
+
+def describe_outputs(runnable, gi=None):
     """Return a list of :class:`WorkflowOutput` objects for target workflow."""
-    workflow = _raw_dict(path)
+    if runnable.uri.startswith(GALAXY_WORKFLOWS_PREFIX):
+        workflow_id = remote_runnable_to_workflow_id(runnable)
+        assert gi is not None
+        workflow = get_dict_from_workflow(gi, workflow_id)
+    else:
+        workflow = _raw_dict(runnable.path)
+
     outputs = []
     for (order_index, step) in workflow["steps"].items():
         step_outputs = step.get("workflow_outputs", [])
@@ -226,6 +233,10 @@ def new_workflow_associated_path(workflow_path, suffix="tests"):
     if "yaml" in input_ext:
         ext = "yaml"
     return base + sep + suffix + "." + ext
+
+
+def get_dict_from_workflow(gi, workflow_id):
+    return gi.workflows.export_workflow_dict(workflow_id)
 
 
 __all__ = (

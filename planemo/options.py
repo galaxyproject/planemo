@@ -460,6 +460,14 @@ def galaxy_user_key_option():
     )
 
 
+def history_name():
+    return planemo_option(
+        "--history_name",
+        type=str,
+        help="Name to give a Galaxy history, if one is created.",
+    )
+
+
 def no_cache_galaxy_option():
     return planemo_option(
         "--no_cache_galaxy",
@@ -682,14 +690,11 @@ def single_user_mode_option():
 
 
 def required_workflow_arg():
-    arg_type = click.Path(
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-        readable=True,
-        resolve_path=False,
+    return click.argument(
+        'workflow_identifier',
+        metavar="WORKFLOW_PATH_OR_ID",
+        type=str,
     )
-    return click.argument("workflow_path", metavar="WORKFLOW_PATH", type=arg_type)
 
 
 def split_job_and_test():
@@ -707,6 +712,14 @@ def required_job_arg():
         resolve_path=False,
     )
     return click.argument("job_path", metavar="JOB_PATH", type=arg_type)
+
+
+def required_runnable_arg():
+    return click.argument(
+        'runnable_identifier',
+        metavar="RUNNABLE_PATH_OR_ID",
+        type=str,
+    )
 
 
 def _optional_tools_default(ctx, param, value):
@@ -1172,13 +1185,24 @@ def daemon_option():
     )
 
 
-def profile_option():
+def profile_option(required=False):
     return planemo_option(
         "--profile",
-        type=str,
+        type=click.STRING,
+        required=required,
         default=None,
         help=("Name of profile (created with the profile_create command) to use "
               "with this command.")
+    )
+
+
+def alias_option(required=False):
+    return planemo_option(
+        "--alias",
+        type=click.STRING,
+        required=required,
+        default=None,
+        help=("Name of an alias.")
     )
 
 
@@ -1435,6 +1459,7 @@ def engine_options():
         galaxy_url_option(),
         galaxy_admin_key_option(),
         galaxy_user_key_option(),
+        history_name()
     )
 
 

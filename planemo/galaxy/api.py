@@ -23,6 +23,19 @@ def gi(port=None, url=None, key=None):
     )
 
 
+def test_credentials_valid(port=None, url=None, key=None, is_admin=False):
+    """Test if provided API credentials are valid"""
+    test_gi = gi(port, url, key)
+    try:
+        current_user = test_gi.users.get_current_user()
+        if is_admin:
+            return current_user['is_admin']
+        else:
+            return True
+    except Exception:
+        return False
+
+
 def user_api_key(admin_gi):
     """Use an admin authenticated account to generate a user API key."""
     ensure_module()
@@ -96,6 +109,15 @@ def summarize_history(ctx, gi, history_id):
         except Exception:
             print("| *PLANEMO ERROR FETCHING JOB DETAILS*")
         print("|")
+
+
+def get_invocations(url, key, workflow_id):
+    inv_gi = gi(None, url, key)
+    invocations = inv_gi.workflows.get_invocations(workflow_id)
+    return {invocation['id']: {
+            'states': inv_gi.invocations.get_invocation_summary(invocation['id'])['states'],
+            'history_id': invocation['history_id']}
+            for invocation in invocations}
 
 
 def _format_for_summary(blob, empty_message, prefix="|  "):
