@@ -20,7 +20,6 @@ planemo.reports.xunit\_handler module
    :undoc-members:
    :show-inheritance:
 
-
 Module contents
 ---------------
 

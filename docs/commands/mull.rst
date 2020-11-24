@@ -29,20 +29,25 @@ target tool(s).
 
       -r, --recursive                 Recursively perform command for
                                       subdirectories.
+    
       --mulled_conda_version TEXT     Install a specific version of Conda before
                                       running the command, by default the version
                                       that comes with the continuumio miniconda3
                                       image will be used under Linux and under Mac
                                       OS X Conda will be upgraded to to work around
                                       a bug in 4.2.
+    
       --mulled_namespace TEXT         Build a mulled image with the specified
                                       namespace - defaults to biocontainers. Galaxy
                                       currently only recognizes images with the
                                       namespace biocontainers.
+    
       --mulled_command TEXT           Mulled action to perform for targets - this
                                       defaults to 'build-and-test'.
+    
       --conda_channels, --conda_ensure_channels TEXT
                                       Ensure conda is configured with specified
                                       comma separated list of channels.
+    
       --help                          Show this message and exit.
     
