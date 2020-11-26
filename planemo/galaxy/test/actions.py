@@ -152,7 +152,7 @@ def merge_reports(input_paths, output_path):
     tests = []
     for report in reports:
         tests.extend(report["tests"])
-    tests = sorted(tests, key=lambda k: k['id'])
+    tests = sorted(tests, key=lambda k: (k['data']['status'], k['id']))
     merged_report = {"tests": tests}
     with io.open(output_path, mode="w", encoding='utf-8') as out:
         out.write(unicodify(json.dumps(merged_report)))
