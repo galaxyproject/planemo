@@ -22,6 +22,7 @@ Contents:
    commands
    standards/docs/best_practices
    best_practices_workflows
+   running
    galaxy_changelog
    conduct
    contributing
