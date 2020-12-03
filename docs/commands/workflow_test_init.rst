@@ -8,7 +8,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Usage**::
 
-    planemo workflow_test_init [OPTIONS] WORKFLOW_PATH
+    planemo workflow_test_init [OPTIONS] WORKFLOW_PATH_OR_ID
 
 **Help**
 
@@ -21,7 +21,10 @@ testing easier.
 **Options**::
 
 
-      -f, --force        Overwrite existing files if present.
+      -f, --force                     Overwrite existing files if present.
       -o, --output FILE
-      --help             Show this message and exit.
+      --split_test / --no_split_test  Write workflow job and test definitions to
+                                      separate files.
+    
+      --help                          Show this message and exit.
     

@@ -48,32 +48,42 @@ uploaded to the repository.
 
       -r, --recursive            Recursively perform command for nested repository
                                  directories.
+    
       --fail_fast                If multiple repositories are specified and an error
                                  occurs stop immediately instead of processing
                                  remaining repositories.
+    
       --owner TEXT               Tool Shed repository owner (username).
       --name TEXT                Tool Shed repository name (defaults to the inferred
                                  tool directory name).
+    
       --shed_email TEXT          E-mail for Tool Shed auth (required unless shed_key
                                  is specified).
+    
       --shed_key TEXT            API key for Tool Shed access. An API key is
                                  required unless e-mail and password is specified.
                                  This key can be specified with either --shed_key or
                                  --shed_key_from_env.
+    
       --shed_key_from_env TEXT   Environment variable to read API key for Tool Shed
                                  access from.
+    
       --shed_password TEXT       Password for Tool Shed auth (required unless
                                  shed_key is specified).
+    
       -t, --shed_target TEXT     Tool Shed to target (this can be 'toolshed',
                                  'testtoolshed', 'local' (alias for
                                  http://localhost:9009/), an arbitrary url or
                                  mappings defined ~/.planemo.yml.
+    
       -o, --output PATH          Send diff output to specified file.
       --shed_target_source TEXT  Source Tool Shed to diff against (will ignore local
                                  project info specified). To compare the main Tool
                                  Shed against the test, set this to testtoolshed.
+    
       --raw                      Do not attempt smart diff of XML to filter out
                                  attributes populated by the Tool Shed.
+    
       --report_xunit PATH        Output an XUnit report, useful for CI testing
       --help                     Show this message and exit.
     

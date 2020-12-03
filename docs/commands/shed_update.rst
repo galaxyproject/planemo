@@ -50,36 +50,48 @@ the repository doesn't define complete metadata in a ``.shed.yml``.
       --report_xunit PATH          Output an XUnit report, useful for CI testing
       -r, --recursive              Recursively perform command for nested repository
                                    directories.
+    
       --fail_fast                  If multiple repositories are specified and an
                                    error occurs stop immediately instead of
                                    processing remaining repositories.
+    
       --owner TEXT                 Tool Shed repository owner (username).
       --name TEXT                  Tool Shed repository name (defaults to the
                                    inferred tool directory name).
+    
       --shed_email TEXT            E-mail for Tool Shed auth (required unless
                                    shed_key is specified).
+    
       --shed_key TEXT              API key for Tool Shed access. An API key is
                                    required unless e-mail and password is specified.
                                    This key can be specified with either --shed_key
                                    or --shed_key_from_env.
+    
       --shed_key_from_env TEXT     Environment variable to read API key for Tool
                                    Shed access from.
+    
       --shed_password TEXT         Password for Tool Shed auth (required unless
                                    shed_key is specified).
+    
       -t, --shed_target TEXT       Tool Shed to target (this can be 'toolshed',
                                    'testtoolshed', 'local' (alias for
                                    http://localhost:9009/), an arbitrary url or
                                    mappings defined ~/.planemo.yml.
+    
       -m, --message TEXT           Commit message for tool shed upload.
       --force_repository_creation  If a repository cannot be found for the specified
                                    user/repo name pair, then automatically create
                                    the repository in the toolshed.
+    
       --check_diff                 Skip uploading if the shed_diff detects there
                                    would be no 'difference' (only attributes
                                    populated by the shed would be updated.)
+    
       --skip_upload                Skip upload contents as part of operation, only
                                    update metadata.
+    
       --skip_metadata              Skip metadata update as part of operation, only
                                    upload new contents.
+    
       --help                       Show this message and exit.
     

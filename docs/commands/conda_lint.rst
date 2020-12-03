@@ -25,5 +25,6 @@ https://github.com/ContinuumIO/anaconda-verify.
       --fail_level [warn|error]
       -r, --recursive                 Recursively perform command for nested conda
                                       directories.
+    
       --help                          Show this message and exit.
     
