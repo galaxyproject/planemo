@@ -8,8 +8,8 @@ for this tutorial.
 
 Assuming you have selected a server for this tutorial and have an account, you
 need to retrieve the API key associated with that account. This can be found at
-{server_url}/user/api_key, or by going to the User dropdown menu, selecting
-Preferences and then clicking on Manage API key.
+``{server_url}/user/api_key``, or by going to the User dropdown menu, selecting
+'Preferences' and then clicking on 'Manage API key'.
 
 Now you can run the workflow with:
 
@@ -79,7 +79,7 @@ Opening ``test-job-file.yml`` should show the following:
       path: todo_test_data_path.ext
 
 
-For each of the specified inputs in the workflow, a entry is created in the
+For each of the specified inputs in the workflow, an entry is created in the
 output YAML file. In this case, both inputs are datasets rather than collections
 or parameters, so they are both classified as ``class: File``. A placeholder
 path is also included, which you should change to the paths of your chosen
@@ -97,6 +97,9 @@ input, might look like the following:
       class: Collection
       collection_type: list
       elements:
+      - class: File
+        identifier: todo_element_name
+        path: todo_test_data_path.ext
       - class: File
         identifier: todo_element_name
         path: todo_test_data_path.ext
@@ -147,7 +150,7 @@ work:
 
 ::
 
-    input_collection2:
+    input_collection1:
       class: Collection
       galaxy_id: "9d362c51f575db89"
     input_collection2:
@@ -159,8 +162,8 @@ work:
         galaxy_id: "457d46215431cc37baf96108ad87f351"
 
 
-In the first example, an existing collection will be used (by specifying its
-collection ID), whereas in the second, a new collection will be created from an
+For ``input_collection1``, an existing collection will be used (by specifying its
+collection ID), whereas for ``input_collection2``, a new collection will be created from an
 existing dataset.
 
 Once the job file has been modified, run ``planemo run`` as before. The result
@@ -183,7 +186,7 @@ Once you are dealing with a large number of workflows and datasets, you may
 find that it becomes difficult to keep track of the file paths or IDs
 which you are using for execution, particularly if you are executing workflows
 based on their ID. Planemo offers the option to create aliases, or easily
-remembrable mnemonics, for Galaxy workflows, with the following command:
+memorable mnemonics, for Galaxy workflows, with the following command:
 
 ::
 
@@ -221,3 +224,32 @@ all created invocations with:
 This indicates the number of datasets created, as well as the state they are in
 (running, errored, paused, etc.)
 
+
+Profile configuration files
+===============================================
+
+Information about each of the files is located in a configuration file, located
+at ``~/.planemo/profiles/{profile_name}/planemo_profile_options.json``.
+
+If you ran all the commands in this tutorial, the contents should be similar to
+the following:
+
+::
+
+    $ cat ~/.planemo/profiles/tutorial_profile/planemo_profile_options.json
+    {
+      "galaxy_url": "SERVER_URL",
+      "galaxy_user_key": "YOUR_API_KEY",
+      "galaxy_admin_key": null,
+      "engine": "external_galaxy",
+      "aliases": {
+        "my_favorite_workflow": "501da2f0ba775fd0"
+      }
+}
+
+You can also delete unwanted profiles or aliases with these commands:
+
+::
+
+    $ planemo delete_alias --alias my_favorite_workflow --profile tutorial_profile
+    $ planemo profile_delete tutorial_profile
