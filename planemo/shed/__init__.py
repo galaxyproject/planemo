@@ -289,7 +289,7 @@ def report_non_existent_repository(realized_repository):
 def upload_repository(ctx, realized_repository, **kwds):
     """Upload a tool directory as a tarball to a tool shed."""
     path = realized_repository.path
-    exclude = realized_repository.config.get("exclude", [])
+    exclude = _shed_config_excludes(realized_repository.config)
     tar_path = kwds.get("tar")
     if not tar_path:
         tar_path = build_tarball(path, exclude, **kwds)
@@ -707,7 +707,7 @@ def create_repository_for(ctx, tsi, name, repo_config):
 
 
 def download_tarball(ctx, shed_context, realized_repository, **kwds):
-    exclude = realized_repository.config.get("exclude", [])
+    exclude = _shed_config_excludes(realized_repository.config)
     repo_id = realized_repository.find_repository_id(ctx, shed_context)
     if repo_id is None:
         message = "Unable to find repository id, cannot download."
