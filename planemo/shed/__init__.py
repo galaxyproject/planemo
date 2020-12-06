@@ -1065,6 +1065,7 @@ class RawRepositoryDirectory(object):
 
     def _realized_files(self, name):
         config = self._realize_config(name)
+        exclude = _shed_config_excludes(config)
         realized_files = []
         missing = []
         for include_info in config["include"]:
@@ -1078,7 +1079,7 @@ class RawRepositoryDirectory(object):
             for source in source_list:
                 include = include_info.copy()
                 include["source"] = source
-                included = RealizedFile.realized_files_for(self.path, include)
+                included = RealizedFile.realized_files_for(self.path, include, exclude)
                 if not included:
                     missing.append(include)
                 else:
@@ -1160,7 +1161,7 @@ class RealizedFile(object):
                 os.symlink(source_path, target_path)
 
     @staticmethod
-    def realized_files_for(path, include_info):
+    def realized_files_for(path, include_info, exclude):
         if not isinstance(include_info, dict):
             include_info = {"source": include_info}
         source = include_info.get("source")
@@ -1175,7 +1176,7 @@ class RealizedFile(object):
             if "*" in source or "?" in source or os.path.isdir(abs_source):
                 raise ValueError("destination must be a directory (with trailing slash) if source is a folder or uses wildcards")
         realized_files = []
-        for globbed_file in _glob(path, source):
+        for globbed_file in _glob(path, source, exclude):
             src = os.path.relpath(globbed_file, path)
             if not destination.endswith("/"):
                 # Given a filename, just use it!
@@ -1342,11 +1343,14 @@ class RealizedRepositry(object):
         )
 
 
-def _glob(path, pattern):
+def _glob(path, pattern, exclude=None):
     pattern = os.path.join(path, pattern)
     if os.path.isdir(pattern):
         pattern = "%s/**" % pattern
-    return glob.glob(pattern)
+    if exclude is None:
+        return glob.glob(pattern)
+    else:
+        return [_ for _ in glob.glob(pattern) if _ not in exclude]
 
 
 def _shed_config_excludes(config):
