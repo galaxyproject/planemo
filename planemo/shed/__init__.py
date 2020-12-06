@@ -289,9 +289,10 @@ def report_non_existent_repository(realized_repository):
 def upload_repository(ctx, realized_repository, **kwds):
     """Upload a tool directory as a tarball to a tool shed."""
     path = realized_repository.path
+    exclude = realized_repository.config.get("exclude", [])
     tar_path = kwds.get("tar")
     if not tar_path:
-        tar_path = build_tarball(path, **kwds)
+        tar_path = build_tarball(path, exclude, **kwds)
     if kwds.get("tar_only", False):
         name = realized_repository.pattern_to_file_name("shed_upload.tar.gz")
         shutil.copy(tar_path, name)
@@ -355,6 +356,7 @@ def diff_repo(ctx, realized_repository, **kwds):
 
 def _diff_in(ctx, working, realized_repository, **kwds):
     path = realized_repository.path
+    exclude = realized_repository.config.get("exclude", [])
     shed_target_source = kwds.get("shed_target_source")
 
     label_a = "_%s_" % (shed_target_source if shed_target_source else "workingdir")
@@ -399,7 +401,7 @@ def _diff_in(ctx, working, realized_repository, **kwds):
             **new_kwds
         )
     else:
-        tar_path = build_tarball(path)
+        tar_path = build_tarball(path, exclude)
         os.mkdir(mine)
         shell(['tar', '-xzf', tar_path, '-C', mine])
         shutil.rmtree(tar_path, ignore_errors=True)
@@ -415,6 +417,8 @@ def _diff_in(ctx, working, realized_repository, **kwds):
             xml_diff = diff_and_remove(working, label_a, label_b, sys.stdout)
 
     cmd = ['diff', '-r', label_a, label_b]
+    for e in exclude:
+        cmd.extend(['--exclude', e])
     if output:
         with open(output, 'ab') as fh:
             raw_diff = shell(cmd, cwd=working, stdout=fh)
@@ -703,6 +707,7 @@ def create_repository_for(ctx, tsi, name, repo_config):
 
 
 def download_tarball(ctx, shed_context, realized_repository, **kwds):
+    exclude = realized_repository.config.get("exclude", [])
     repo_id = realized_repository.find_repository_id(ctx, shed_context)
     if repo_id is None:
         message = "Unable to find repository id, cannot download."
@@ -714,7 +719,7 @@ def download_tarball(ctx, shed_context, realized_repository, **kwds):
     else:
         destination = destination_pattern
     to_directory = not destination.endswith("gz")
-    download_tar(shed_context.tsi, repo_id, destination, to_directory=to_directory)
+    download_tar(shed_context.tsi, repo_id, destination, to_directory=to_directory, exclude=exclude)
     if to_directory:
         clean = kwds.get("clean", False)
         if clean:
@@ -723,7 +728,7 @@ def download_tarball(ctx, shed_context, realized_repository, **kwds):
                 os.remove(archival_file)
 
 
-def build_tarball(realized_path, **kwds):
+def build_tarball(realized_path, exclude, **kwds):
     """Build a tool-shed tar ball for the specified path, caller is
     responsible for deleting this file.
     """
@@ -731,6 +736,8 @@ def build_tarball(realized_path, **kwds):
     # Simplest solution to sorting the files is to use a list,
     files = []
     for dirpath, dirnames, filenames in os.walk(realized_path):
+        dirnames[:] = [d for d in dirnames if d not in exclude]
+        filenames[:] = [f for f in filenames if f not in exclude]
         for f in filenames:
             files.append(os.path.join(dirpath, f))
     files.sort()

@@ -99,13 +99,15 @@ def find_category_ids(tsi, categories):
     return category_ids
 
 
-def download_tar(tsi, repo_id, destination, to_directory):
+def download_tar(tsi, repo_id, destination, to_directory, exclude):
     base_url = tsi.base_url
     if not base_url.endswith("/"):
         base_url += "/"
     download_url = REPOSITORY_DOWNLOAD_TEMPLATE % (base_url, repo_id)
     if to_directory:
         tar_args = ['-xzf', '-', '--strip-components=1']
+        for e in exclude:
+            tar_args.extend(["--exclude", e])
         untar_to(download_url, tar_args=tar_args, dest_dir=destination)
     else:
         untar_to(download_url, path=destination)
