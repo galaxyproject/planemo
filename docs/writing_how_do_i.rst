@@ -369,9 +369,9 @@ files and directories of interest:
 
 - `tool_script.sh` the bash script generated from the tool's `command` and `version_command`
   tags plus some boiler plate code
-- `galaxy_3.sh` (note that the number may be different) a scell script setting up the environment
+- `galaxy_3.sh` (note that the number may be different) a schell script setting up the environment
   (e.g. paths and environment variables), starting the `tool_script.sh`, and postprocessing
-  (error handling setting metadata)
+  (e.g. error handling and setting metadata)
 - `working` the jobs working dir
 - `outputs` a dir containing the jobs stderr and stdout
 
@@ -388,5 +388,5 @@ Afterwards one can execute individual commands, e.g. those found in `tool_script
 For a tool test that uses a docker to to resolve the requirements one needs to execute 
 `../galaxy_3.sh`, because it executes `docker run ... tool_script.sh` in order to rerun the job
 (with a possible edited version of the tool script). In order to run the docker container 
-interactively execute the `docker run .... /bin/bash` (i.e. ommitting the call of the `tool_script.sh`)
-with added parameter `-it`. 
+interactively execute the `docker run .... /bin/bash` that you find in `../galaxy_3.sh`
+(i.e. ommitting the call of the `tool_script.sh`) with added parameter `-it`. 
