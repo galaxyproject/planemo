@@ -332,7 +332,7 @@ file.
 \.\.\. test tools against a package or container in a bioconda pull request?
 ----------------------------------------------------------------------------
 
-First, obtain the artifacts of the PR by sending the following message
+First, obtain the artifacts of the PR by adding this comment:
 ``@BiocondaBot please fetch artifacts``. In the reply one finds the links to the
 built package and docker image. 
 
@@ -353,21 +353,21 @@ A planemo test will then simply use this image::
 --------------------------------------
 
 It can be desirable to interactively debug a tool test. In order to do so, start ``planemo test``
-with the option ``--no_cleanup``. Inspect the output: After starting galaxy tests start. At the
-start of each test one finds a message: ``( TOOL_ID ) > Test-X``. After a some upload jobs the
-actual tool job is started (its the last before the next test is executed). There you will find
+with the option ``--no_cleanup``. Inspect the output: After Galaxy starts up, the tests commence. At the
+start of each test one finds a message: ``( <TOOL_ID> ) > Test-N``. After some upload jobs, the
+actual tool job is started (it is the last before the next test is executed). There you will find
 a message like ``Built script [/tmp/tmp1zixgse3/job_working_directory/000/3/tool_script.sh]``
 
 In this case ``/tmp/tmp1zixgse3/job_working_directory/000/3/`` is the job dir. It contains some
 files and directories of interest: 
 
-- ``tool_script.sh`` the bash script generated from the tool's ``command`` and ``version_command``
+- ``tool_script.sh``: the bash script generated from the tool's ``command`` and ``version_command``
   tags plus some boiler plate code
-- ``galaxy_3.sh`` (note that the number may be different) a schell script setting up the environment
+- ``galaxy_3.sh`` (note that the number may be different): a shell script setting up the environment
   (e.g. paths and environment variables), starting the ``tool_script.sh``, and postprocessing
   (e.g. error handling and setting metadata)
-- ``working`` the jobs working dir
-- ``outputs`` a dir containing the jobs stderr and stdout
+- ``working``: the job working directory
+- ``outputs``: a directory containing the job stderr and stdout
 
 For a tool test that uses a conda environment to resolve the requirements one can simply change
 into ``working`` and execute ``../tool_script.sh`` (works as long as no special environment variables
@@ -377,9 +377,9 @@ rerunning ``planemo test`` over and over again.
 
 Alternatively one can change into the ``working`` dir and load the conda environment
 (the code to do so can be found in ``tool_script.sh``: ``. PATH_TO_CONDA_ENV activate``). 
-Afterwards one can execute individual commands, e.g. those found in ``tool_script.sh`` or varaints.
+Afterwards one can execute individual commands, e.g. those found in ``tool_script.sh`` or variants.
 
-For a tool test that uses a docker to to resolve the requirements one needs to execute 
+For a tool test that uses Docker to to resolve the requirements one needs to execute 
 ``../galaxy_3.sh``, because it executes ``docker run ... tool_script.sh`` in order to rerun the job
 (with a possible edited version of the tool script). In order to run the docker container 
 interactively execute the ``docker run .... /bin/bash`` that you find in ``../galaxy_3.sh``
