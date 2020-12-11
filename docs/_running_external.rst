@@ -271,7 +271,8 @@ the following:
       "aliases": {
         "my_favorite_workflow": "501da2f0ba775fd0"
       }
-}
+    }
+
 
 You can also delete unwanted profiles or aliases with these commands:
 
