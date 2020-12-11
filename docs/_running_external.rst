@@ -2,36 +2,39 @@ Workflow execution against an external Galaxy
 ===============================================
 
 The first requirement for executing workflows on an external Galaxy server is
-a user account for that server. If you don't already have one, usegalaxy.org,
-usegalaxy.eu and usegalaxy.org.au all provide free accounts which can be used
-for this tutorial.
+a user account for that server. If you don't already have one, `<https://usegalaxy.org>`_,
+`<https://usegalaxy.eu>`_ and `<https://usegalaxy.org.au>`_ all provide free accounts which
+can be used for this tutorial.
 
 Assuming you have selected a server for this tutorial and have an account, you
 need to retrieve the API key associated with that account. This can be found at
-``{server_url}/user/api_key``, or by going to the User dropdown menu, selecting
+``{server_url}/user/api_key``, or by going to the 'User' dropdown menu, selecting
 'Preferences' and then clicking on 'Manage API key'.
 
 Now you can run the workflow with:
 
 ::
 
-    $ planemo run wf3-shed-tools.ga wf3-shed-tools-job.yml --engine external --url SERVER_URL --api_key YOUR_API_KEY
+    $ planemo run tutorial.ga tutorial-job.yml --engine external_galaxy --galaxy_url SERVER_URL --galaxy_user_key YOUR_API_KEY
 
 
 If you want to set the name of the history in which the workflow executes, add
 ``--history_name NAME`` to the command. You should be able to see the workflow
 executing in the web browser, if you navigate to the 'List all histories' view. 
+If you prefer to download data without interacting with the web interface at all,
+you can add ``--output_directory`` and ``--output_json`` to the command as
+before.
 
-Typing ``--engine external --url SERVER_URL --api_key YOUR_API_KEY`` each time
-you want to execute a workflow is a bit annoying. Fortunately, Planemo provides
-the option to create 'profiles' which save this information for you. To create
-a new profile called ``tutorial_profile``, you can run a command like the
-following:
+Typing ``--engine external_galaxy --galaxy_url SERVER_URL --galaxy_user_key YOUR_API_KEY``
+each time you want to execute a workflow is a bit annoying. Fortunately, Planemo
+provides the option to create 'profiles' which save this information for you.
+To create a new profile called ``tutorial_profile``, you can run a command like
+the following:
 
 ::
 
     $ planemo profile_create tutorial_profile --galaxy_url SERVER_URL --galaxy_user_key YOUR_API_KEY --engine external_galaxy
-
+    Profile [tutorial_profile] created.
 
 
 This allows creation of multiple profiles (e.g. for different Galaxy servers).
@@ -51,7 +54,7 @@ Once the new ``tutorial_profile`` is created, a workflow can be executed with:
 
 ::
 
-    $ planemo run wf3-shed-tools.ga wf3-shed-tools-job.yml --profile tutorial_profile
+    $ planemo run tutorial.ga tutorial-job.yml --profile tutorial_profile
 
 
 Generating the job file
@@ -64,29 +67,32 @@ handy command which provides a template for this:
 
 ::
 
-    $ planemo workflow_job_init wf3-shed-tools.ga -o test-job-file.yml
+    $ planemo workflow_job_init tutorial.ga -o tutorial-init-job.yml
 
 
-Opening ``test-job-file.yml`` should show the following:
+Opening ``tutorial-init-job.yml`` should show the following:
 
 ::
 
-    GSE37268_mof3:
+    $ cat tutorial-init-job.yml
+    Dataset 1:
       class: File
       path: todo_test_data_path.ext
-    Genes:
+    Dataset 2:
       class: File
       path: todo_test_data_path.ext
+    Number of lines: todo_param_value
 
 
 For each of the specified inputs in the workflow, an entry is created in the
-output YAML file. In this case, both inputs are datasets rather than collections
-or parameters, so they are both classified as ``class: File``. A placeholder
-path is also included, which you should change to the paths of your chosen
-input files.
+output YAML file. The two dataset inputs are classified as ``class: File``,
+with a placeholder path included, which you should change to the paths of your
+chosen input files (you can also use a URL of a file available online). The
+placeholder value for the ``Number of lines`` parameter should also be replaced,
+ensuring it is of the correct type, e.g. in this case an integer.
 
-Another more complex example, also including a collection and parameter as
-input, might look like the following:
+Another more complex example, also including a collection as input, might look
+like the following:
 
 ::
 
@@ -103,12 +109,31 @@ input, might look like the following:
       - class: File
         identifier: todo_element_name
         path: todo_test_data_path.ext
-    input_parameter: param_todo
+    input_parameter: todo_param_value
 
 
 For the collection, each dataset is listed, with a path and identifier specified.
-For the parameter, only a single value has to be specified, but ensure it is of
-the correct type, e.g. float, if that is what the workflow requires. 
+
+You might also want to test your workflow with ``planemo test``. An equivalent
+planemo command for creating a template for workflow tests also exists:
+
+::
+
+    $ planemo workflow_test_init tutorial.ga -o tutorial-init-test.yml
+    $ cat tutorial-init-test.yml
+    - doc: Test outline for tutorial.ga
+      job:
+        Dataset 1:
+          class: File
+          path: todo_test_data_path.ext
+        Dataset 2:
+          class: File
+          path: todo_test_data_path.ext
+        Number of lines: todo_param_value
+      outputs:
+        output:
+          class: ''
+
 
 Using workflow and dataset IDs
 ===============================================
@@ -135,12 +160,13 @@ and paste it into the workflow job file so it looks something like the following
 
 ::
 
-    GSE37268_mof3:
+    Dataset 1:
       class: File
       galaxy_id: "457d46215431cc37baf96108ad87f351"
-    Genes:
+    Dataset 2:
       class: File
       galaxy_id: "55f30adf41ae36455431abeaa185ed89"
+    Number of lines: 3
 
 
 i.e. just replace the ``path`` line with ``galaxy_id``.
@@ -158,13 +184,13 @@ work:
       collection_type: list
       elements:
       - class: File
-        identifier: todo_element_name
+        identifier: element 1
         galaxy_id: "457d46215431cc37baf96108ad87f351"
 
 
 For ``input_collection1``, an existing collection will be used (by specifying its
-collection ID), whereas for ``input_collection2``, a new collection will be created from an
-existing dataset.
+collection ID), whereas for ``input_collection2``, a new collection will be created
+from a list of existing datasets.
 
 Once the job file has been modified, run ``planemo run`` as before. The result
 should be the same, though it should be a bit faster, since the upload step was
@@ -176,7 +202,7 @@ the workflow ID from the Galaxy server:
 
 ::
 
-    $ planemo run 501da2f0ba775fd0 wf3-shed-tools-job.yml --profile tutorial_profile
+    $ planemo run 501da2f0ba775fd0 tutorial-job.yml --profile tutorial_profile
 
 
 Using aliases
@@ -197,7 +223,7 @@ You can then execute the workflow with:
 
 ::
 
-    $ planemo run my_favorite_workflow wf3-shed-tools-job.yml --profile tutorial_profile
+    $ planemo run my_favorite_workflow tutorial-job.yml --profile tutorial_profile
 
 
 Note that aliases are associated with a particular profile, so if you want to
