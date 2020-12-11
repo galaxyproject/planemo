@@ -20,6 +20,7 @@ class CmdWorkflowJobInitTestCase(CliTestCase):
                 job = yaml.safe_load(stream)
             assert isinstance(job, dict)
             assert "the_input" in job
+            assert job.get("the_input").get("path") == "todo_test_data_path.ext"
 
     def test_cannot_overwrite(self):
         with self._isolate_with_test_data("wf_repos/from_format2/0_basic_native") as f:
