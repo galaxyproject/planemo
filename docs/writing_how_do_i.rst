@@ -332,25 +332,19 @@ file.
 \.\.\. test tools against a package or container in a bioconda pull request?
 ----------------------------------------------------------------------------
 
-First, obtain the atrifacts of the PR by sending the following message
+First, obtain the artifacts of the PR by sending the following message
 ``@BiocondaBot please fetch artifacts``. In the reply one finds the links to the
 built package and docker image. 
 
-In order to test the tool with the package add the following to the planemo call:
+In order to test the tool with the package add the following to the planemo call::
 
-::
+     $ planemo test ... --conda_channels LINK_TO_PACKAGE,conda-forge,bioconda,defaults ...
 
-     $ planemo test ... --conda_channels LINK_TO_PACKAGE,bioconda,conda-forge ...
-
-For containerized testing the docker image needs to be loaded
-
-::
+For containerized testing the docker image needs to be loaded::
 
      $ curl  -L "LINK_TO_DOCKER_IMAGE.tar.gz" | gzip -dc | docker load
 
-A planemo test will then simply use this image: 
-
-::
+A planemo test will then simply use this image::
 
      $ planemo test ... --biocontainers --no_conda_auto_init ...
 
@@ -358,7 +352,7 @@ A planemo test will then simply use this image:
 \.\.\. interactively debug tool tests?
 --------------------------------------
 
-It can be desirable to interactively debug a tool test. In order to do so start ``planemo test``
+It can be desirable to interactively debug a tool test. In order to do so, start ``planemo test``
 with the option ``--no_cleanup``. Inspect the output: After starting galaxy tests start. At the
 start of each test one finds a message: ``( TOOL_ID ) > Test-X``. After a some upload jobs the
 actual tool job is started (its the last before the next test is executed). There you will find
