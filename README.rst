@@ -95,7 +95,7 @@ can be used to test a tool or a directory of tools.
 
 ::
 
-	$ planemo test --galaxy_root=../galaxy randomlines.xml
+    $ planemo test --galaxy_root=../galaxy randomlines.xml
 
 If no ``--galaxy_root`` is defined, Planemo will download and configure
 a disposable Galaxy instance for testing.
@@ -111,7 +111,7 @@ Galaxy interface using the ``serve`` (``s``) `command
 
 ::
 
-	$ planemo serve
+    $ planemo serve
 
 Like ``test``, ``serve`` requires a Galaxy root and one can be
 explicitly specified with ``--galaxy_root`` or installed dynamically
@@ -176,6 +176,24 @@ jobs (with input descriptions) and corresponding output assertions.
 Checkout the `Commmon Workflow User Guide`_ for more information on developing
 CWL tools in general and  `Building Common Workflow Language Tools`_ for more
 information on using Planemo to develop CWL tools.
+
+
+---------
+ToolFactory
+---------
+
+Planemo will load and run the `ToolFactory <https://github.com/fubar2/toolfactory>`__ if you would like to try using the
+Galaxy GUI to fill in forms that will generate new Galaxy tools and test them with Planemo.
+
+::
+
+  $ planemo tool_factory --galaxy_root /galaxy_central --extra_tools ./mytools
+
+The optional `--galaxy_root` pointing to a Galaxy source code directory will save time downloading a new copy
+each time it is run. The optional `--extra_tools` can be a path containing any tools you have previously built if you
+download the [toolname].toolshed.tar.gz file and unarchive it into that extra tools path. These tools will appear
+in the Galaxy served by planemo along with the ToolFactory tool itself.
+
 
 ---------
 Tool Shed
