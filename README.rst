@@ -194,6 +194,10 @@ each time it is run. The optional `--extra_tools` can be a path containing any t
 download the [toolname].toolshed.tar.gz file and unarchive it into that extra tools path. These tools will appear
 in the Galaxy served by planemo along with the ToolFactory tool itself.
 
+For dedicated ToolFactory access, the `ToolFactory Docker <https://github.com/fubar2/toolfactory-galaxy-docker>`__ container offers persistence
+and has an inbuilt toolshed so new tools can be installed back to the Galaxy for additional testing once they pass the inbuilt test.
+It is based on `the stable Galaxy docker <https://github.com/bgruening/docker-galaxy-stable>`__ and also uses Planemo under the
+hood.
 
 ---------
 Tool Shed
