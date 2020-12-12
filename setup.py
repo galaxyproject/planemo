@@ -6,10 +6,9 @@ import os
 import re
 import sys
 try:
-    from setuptools import setup
+    from setuptools import setup, find_packages
 except ImportError:
-    from distutils.core import setup
-
+    from distutils.core import setup, find_packages
 if sys.version_info < (3, 6):
     sys.stderr.write("ERROR: planemo requires at least Python Version 3.6\n")
     sys.exit(1)
@@ -42,24 +41,8 @@ with open('%s/__init__.py' % SOURCE_DIR, 'rb') as f:
 
 TEST_DIR = 'tests'
 PROJECT_DESCRIPTION = 'Command-line utilities to assist in building tools for the Galaxy project (http://galaxyproject.org/).'
-PACKAGES = [
-    'planemo',
-    'planemo_ext',
-    'planemo.cwl',
-    'planemo.commands',
-    'planemo.conda_verify',
-    'planemo.database',
-    'planemo.engine',
-    'planemo.galaxy',
-    'planemo.galaxy.test',
-    'planemo.linters',
-    'planemo.reports',
-    'planemo.shed',
-    'planemo.shed2tap',
-    'planemo.test',
-    'planemo.training',
-    'planemo.xml',
-]
+PACKAGES = find_packages()
+
 ENTRY_POINTS = '''
     [console_scripts]
     planemo=planemo.cli:planemo
