@@ -27,9 +27,7 @@ def cli(ctx, **kwds):
     mod_dir = os.path.dirname(__file__)
     tf_dir = os.path.join(mod_dir, '..','..', 'planemo_ext', 'tool_factory_2')
     tf_dir = os.path.abspath(tf_dir)
-    wf_dir = os.path.join(mod_dir, '..','..', 'planemo_ext', 'tool_factory_2','TFsample.ga')
-    wf_dir = os.path.abspath(wf_dir)
-    runnables = for_paths([tf_dir,wf_dir])
+    runnables = for_paths([tf_dir])
     print(f"## tf_dir = {tf_dir}, runnables={runnables}")
     galaxy_serve(ctx, runnables, **kwds)
 

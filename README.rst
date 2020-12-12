@@ -55,6 +55,11 @@ with a preconfigured Galaxy server and set up for Galaxy_ and
 You can choose from open virtualization format (OVA_, .ova) or Docker_
 appliances.
 
+To obtain the source code use
+`git clone --recursive git@github.com:fubar2/planemo.git`
+
+The `--recursive` flag is needed to ensure that the ToolFactory git submodule is installed.
+
 -----------------
 Basics - Galaxy
 -----------------
