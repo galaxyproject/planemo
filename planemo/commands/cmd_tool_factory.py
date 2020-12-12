@@ -29,7 +29,8 @@ def cli(ctx,  **kwds):
     tf_dir = os.path.abspath(tf_dir)
     print(f"tf_dir = {tf_dir}")
     #paths.append(tf_dir)
-    runnables = for_paths(os.path.join(tf_dir,'rgToolFactory2.xml'))
+    tf = os.path.join(tf_dir,'rgToolFactory2.xml')
+    runnables = for_paths([tf])
     print(f"tf_dir = {tf_dir}, runnables={runnables}")
     galaxy_serve(ctx, runnables, **kwds)
 

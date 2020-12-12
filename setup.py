@@ -44,12 +44,12 @@ TEST_DIR = 'tests'
 PROJECT_DESCRIPTION = 'Command-line utilities to assist in building tools for the Galaxy project (http://galaxyproject.org/).'
 PACKAGES = [
     'planemo',
+    'planemo_ext',
     'planemo.cwl',
     'planemo.commands',
     'planemo.conda_verify',
     'planemo.database',
     'planemo.engine',
-    'planemo_ext',
     'planemo.galaxy',
     'planemo.galaxy.test',
     'planemo.linters',
@@ -70,6 +70,7 @@ PACKAGE_DATA = {
         'xml/xsd/tool_dependencies.xsd',
         'reports/*',
         'scripts/*',
+        'planemo_ext/*',
     ],
 }
 PACKAGE_DIR = {
