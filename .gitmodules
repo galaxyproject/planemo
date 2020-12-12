@@ -1,3 +1,6 @@
 [submodule "docs/standards"]
 	path = docs/standards
 	url = https://github.com/galaxy-iuc/standards.git
+[submodule "planemo_ext/tool_factory_2"]
+	path = planemo_ext/tool_factory_2
+	url = https://github.com/fubar2/toolfactory

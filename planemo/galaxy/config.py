@@ -446,6 +446,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             migrated_tools_config=empty_tool_conf,
             test_data_dir=test_data_dir,  # TODO: make gx respect this
             shed_data_manager_config_file=shed_data_manager_config_file,
+            sanitize_all_html="False",
         ))
         _handle_container_resolution(ctx, kwds, properties)
         write_file(config_join("logging.ini"), _sub(LOGGING_TEMPLATE, template_args))

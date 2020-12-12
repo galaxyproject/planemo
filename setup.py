@@ -44,6 +44,7 @@ TEST_DIR = 'tests'
 PROJECT_DESCRIPTION = 'Command-line utilities to assist in building tools for the Galaxy project (http://galaxyproject.org/).'
 PACKAGES = [
     'planemo',
+    'planemo_ext',
     'planemo.cwl',
     'planemo.commands',
     'planemo.conda_verify',
