@@ -16,21 +16,20 @@ from planemo.tools import uris_to_paths
 @options.enable_cwl_option()
 @options.galaxy_cwl_root_option()
 @command_function
-def cli(ctx,  **kwds):
+def cli(ctx, **kwds):
     """(Experimental) Launch Galaxy with Tool Factory 2.
     For more information about the Galaxy Tool Factory see the publication
     Creating reusable tools from scripts: the Galaxy Tool Factory by Lazarus
     et. al. (10.1093/bioinformatics/bts573). Available at
     http://www.ncbi.nlm.nih.gov/pubmed/23024011.
+    workflow isn't working - not sure how to get it loaded - planemo tries to load it as a tool :(
     """
-    #paths = uris_to_paths(ctx, uris)
     mod_dir = os.path.dirname(__file__)
     tf_dir = os.path.join(mod_dir, '..','..', 'planemo_ext', 'tool_factory_2')
     tf_dir = os.path.abspath(tf_dir)
-    print(f"tf_dir = {tf_dir}")
-    #paths.append(tf_dir)
-    tf = os.path.join(tf_dir,'rgToolFactory2.xml')
-    runnables = for_paths([tf])
-    print(f"tf_dir = {tf_dir}, runnables={runnables}")
+    wf_dir = os.path.join(mod_dir, '..','..', 'planemo_ext', 'tool_factory_2','TFsample.ga')
+    wf_dir = os.path.abspath(wf_dir)
+    runnables = for_paths([tf_dir,wf_dir])
+    print(f"## tf_dir = {tf_dir}, runnables={runnables}")
     galaxy_serve(ctx, runnables, **kwds)
 

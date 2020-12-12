@@ -53,7 +53,8 @@ PACKAGE_DATA = {
         'xml/xsd/tool_dependencies.xsd',
         'reports/*',
         'scripts/*',
-        'planemo_ext/*',
+        'planemo_ext/tool_factory_2/*',
+
     ],
 }
 PACKAGE_DIR = {
