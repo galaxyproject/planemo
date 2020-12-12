@@ -182,12 +182,20 @@ information on using Planemo to develop CWL tools.
 ToolFactory
 ---------
 
-Planemo will load and run the `ToolFactory <https://github.com/fubar2/toolfactory>`__ if you would like to try using the
-Galaxy GUI to fill in forms that will generate new Galaxy tools and test them with Planemo.
+Planemo can serve the `ToolFactory <https://github.com/fubar2/toolfactory>`__ on `http://localhost:9090`
 
 ::
 
   $ planemo tool_factory --galaxy_root /galaxy_central --extra_tools ./mytools
+
+The ToolFactory works like other Galaxy tools, using the Galaxy GUI to fill in a form that will generate a new Galaxy tool and test
+it with Planemo. Sample data file inputs should be uploaded to the working history before starting the ToolFactory. These are needed to create a
+test as part of the new generated tool archive. Galaxy as an integrated development environment is possible but clumsy for anything other than relatively simple tools.
+Conda packages can be used or a script can be provided for a scripting language interpreter. The command line for the package or script is made up from
+the input files needed and the output files generated, plus any number of other command line parameters with argparse or positional style
+formatting. The number of files and parameters is limited only by your patience with the GUI. A toolshed ready archive is produced in the history containing a test
+based on the sample inputs and parameter settings provided on the form. Note that tools are normal Galaxy tools and are provided as archives ready to upload to
+a toolshed.
 
 The optional `--galaxy_root` pointing to a Galaxy source code directory will save time downloading a new copy
 each time it is run. The optional `--extra_tools` can be a path containing any tools you have previously built if you
