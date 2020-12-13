@@ -7,7 +7,7 @@ from planemo import options
 from planemo.cli import command_function
 from planemo.galaxy import galaxy_serve
 from planemo.runnable import for_paths
-from planemo.tools import uris_to_paths
+
 
 
 @click.command('tool_factory')
@@ -25,9 +25,8 @@ def cli(ctx, **kwds):
     workflow isn't working - not sure how to get it loaded - planemo tries to load it as a tool :(
     """
     mod_dir = os.path.dirname(__file__)
-    tf_dir = os.path.join(mod_dir, '..','..', 'planemo_ext', 'tool_factory_2')
+    tf_dir = os.path.join(mod_dir, '..', '..', 'planemo_ext', 'tool_factory_2')
     tf_dir = os.path.abspath(tf_dir)
     runnables = for_paths([tf_dir])
     print(f"## tf_dir = {tf_dir}, runnables={runnables}")
     galaxy_serve(ctx, runnables, **kwds)
-
