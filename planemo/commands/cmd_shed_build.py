@@ -20,7 +20,8 @@ def cli(ctx, path, **kwds):
     (which you could upload to the Tool Shed manually).
     """
     def build(realized_repository):
-        tarpath = shed.build_tarball(realized_repository.path)
+        exclude = shed._shed_config_excludes(realized_repository.config)
+        tarpath = shed.build_tarball(realized_repository.path, exclude)
         outpath = realized_repository.real_path + ".tar.gz"
         shutil.move(tarpath, outpath)
         print("Created: %s" % (outpath))
