@@ -183,9 +183,9 @@ CWL tools in general and  `Building Common Workflow Language Tools`_ for more
 information on using Planemo to develop CWL tools.
 
 
----------
+------------
 ToolFactory
----------
+------------
 
 Planemo can serve the `Galaxy ToolFactory tool <https://github.com/fubar2/toolfactory>`__ on `http://localhost:9090`
 
