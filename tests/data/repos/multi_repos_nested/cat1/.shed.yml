@@ -1,3 +1,5 @@
 name: cat1
 owner: iuc
 description: cat1 tool
+categories:
+- Text Processing
