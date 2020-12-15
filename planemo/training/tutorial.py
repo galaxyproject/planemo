@@ -99,7 +99,7 @@ TUTO_BIBLIOGRAPHY_TEMPLATE = """
 #  3) Copy the resulting bibtex entry into this file
 #
 # To cite the example below, in your tutorial.md file
-# use {{ '{%' }} Batut2018 {{ '%}' }}
+# use {{ '{%' }} cite Batut2018 {{ '%}' }}
 
 @article{Batut2018,
   doi = {10.1016/j.cels.2018.05.012},
