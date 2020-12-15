@@ -312,13 +312,16 @@ def _lint_shed_contents(lint_ctx, realized_repository):
             msg = func(value, *args)
             if msg:
                 lint_ctx.error(msg)
-        else:
+        return value
+
+    def _lint(key, func, *args):
+        if _lint_if_present(key, func, *args) is None:
             lint_ctx.error("Repository does not define: %s" % key)
 
-    _lint_if_present("owner", validate_repo_owner)
-    _lint_if_present("name", validate_repo_name)
+    _lint("owner", validate_repo_owner)
+    _lint("name", validate_repo_name)
     _lint_if_present("type", _validate_repo_type, config["name"])
-    _lint_if_present("categories", _validate_categories, realized_repository)
+    _lint("categories", _validate_categories, realized_repository)
 
 
 def _validate_repo_type(repo_type, name):
