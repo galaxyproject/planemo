@@ -1,5 +1,6 @@
 name: cat
 owner: iuc
 description: cat1 tool
+type: unrestricted
 categories:
 - Text Manipulation
