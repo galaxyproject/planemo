@@ -145,6 +145,19 @@ def handle_reports_and_summary(ctx, structured_data, exit_code=None, kwds=None):
 
 
 def merge_reports(input_paths, output_path):
+    def sort_key(v):
+        if v is None or 'data' not in v:
+            tstatus = 'missing_test_data'
+        elif v['data'] is None or 'status' not in v['data']:
+            tstatus = 'missing_test_status'
+        else:
+            tstatus = v['data']['status']
+        if v is None or 'id' not in v:
+            tid = 'missing_test_id'
+        else:
+            tid = v['id']
+        return (tstatus, tid)
+
     reports = []
     for path in input_paths:
         with io.open(path, encoding='utf-8') as f:
@@ -152,7 +165,7 @@ def merge_reports(input_paths, output_path):
     tests = []
     for report in reports:
         tests.extend(report["tests"])
-    tests = sorted(tests, key=lambda k: (k['data']['status'], k['id']))
+    tests = sorted(tests, key=sort_key)
     merged_report = {"tests": tests}
     with io.open(output_path, mode="w", encoding='utf-8') as out:
         out.write(unicodify(json.dumps(merged_report)))
