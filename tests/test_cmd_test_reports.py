@@ -3,7 +3,7 @@ import os
 from .test_utils import CliTestCase, TEST_DATA_DIR
 
 
-class TestReportsTestCase(CliTestCase):
+class CmdTestReportsTestCase(CliTestCase):
 
     def test_build_reports(self):
         with self._isolate():
