@@ -290,7 +290,7 @@ def lint_repository_dependencies(realized_repository, lint_ctx):
 def lint_shed_yaml(realized_repository, lint_ctx):
     path = realized_repository.real_path
     shed_yaml = os.path.join(path, ".shed.yml")
-    if not os.path.exists(shed_yaml):
+    if not os.path.exists(shed_yaml) and realized_repository.repository_type != REPO_TYPE_UNRESTRICTED:
         lint_ctx.error("No .shed.yml file found, skipping.")
         return
     try:
