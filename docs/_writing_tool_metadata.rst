@@ -9,7 +9,7 @@ be used to collect metadata.
 
 If an arbitrary number of outputs is needed but no special metadata must be set,
 file name patterns can be used to allow Galaxy to discover these datasets.
-More information on this can be found in the dedicated `section <https://planemo.readthedocs.io/en/latest/writing_advanced.html#multiple-output-files>`__.
+More information on this can be found in the :ref:`dedicated section <multiple-output-files>`.
 
 The file name patterns described in the above link are nice because they don't
 need special instrumenting in the tool wrapper to adapt to Galaxy in general and
