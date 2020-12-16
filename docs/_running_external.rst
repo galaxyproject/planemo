@@ -62,15 +62,29 @@ Generating the job file
 
 The example workflow used so far provides not only the workflow, but also the
 job file which specifies the inputs to be used. If you have created and downloaded
-your own workflow, you need to create this job file yourself. Planemo provides a
-handy command which provides a template for this:
+your own workflow, you need to create this job file yourself. As a first step,
+ensure that your workflow is linted correctly:
+
+::
+
+    $ planemo workflow_lint tutorial.ga
+    Applying linter tests... CHECK
+    .. CHECK: Tests appear structurally correct
+
+
+In this case, linting completes successfully, but you might see a message such as
+``WARNING: Workflow contained output without a label`` or ``WARNING: Test referenced
+File path not found``.
+
+To generate the job file, you can now run:
 
 ::
 
     $ planemo workflow_job_init tutorial.ga -o tutorial-init-job.yml
 
 
-Opening ``tutorial-init-job.yml`` should show the following:
+This generates a template for the job file which you can modify yourself. Opening
+``tutorial-init-job.yml`` should show the following:
 
 ::
 
@@ -87,9 +101,10 @@ Opening ``tutorial-init-job.yml`` should show the following:
 For each of the specified inputs in the workflow, an entry is created in the
 output YAML file. The two dataset inputs are classified as ``class: File``,
 with a placeholder path included, which you should change to the paths of your
-chosen input files (you can also use a URL of a file available online). The
-placeholder value for the ``Number of lines`` parameter should also be replaced,
-ensuring it is of the correct type, e.g. in this case an integer.
+chosen input files. You can also specify the URL of a file available online,
+by replacing the ``path`` attribute with ``location`` (e.g. ``location: https://website.org/file.txt``).
+The placeholder value for the ``Number of lines`` parameter should also be replaced,
+ensuring it is of the correct type, i.e. in this case an integer.
 
 Another more complex example, also including a collection as input, might look
 like the following:
