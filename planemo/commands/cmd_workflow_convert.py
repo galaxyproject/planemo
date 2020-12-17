@@ -23,31 +23,31 @@ from planemo.runnable import (
 @options.workflow_output_artifact()
 @options.galaxy_serve_options()
 @command_function
-def cli(ctx, workflow_path, output=None, force=False, **kwds):
+def cli(ctx, workflow_identifier, output=None, force=False, **kwds):
     """Convert Format 2 workflows to native Galaxy workflows, and vice-versa.
     """
     assert is_galaxy_engine(**kwds)
 
     kwds["no_dependency_resolution"] = True
 
-    if workflow_path.endswith(".ga"):
+    if workflow_identifier.endswith(".ga"):
         if output is None:
-            output = os.path.splitext(workflow_path)[0] + ".gxwf.yml"
+            output = os.path.splitext(workflow_identifier)[0] + ".gxwf.yml"
 
-        with open(workflow_path, "r") as f:
+        with open(workflow_identifier, "r") as f:
             workflow_dict = json.load(f)
         format2_wrapper = from_galaxy_native(workflow_dict, json_wrapper=True)
         with open(output, "w") as f:
             f.write(format2_wrapper["yaml_content"])
     else:
         if output is None:
-            output = os.path.splitext(workflow_path)[0] + ".ga"
+            output = os.path.splitext(workflow_identifier)[0] + ".ga"
 
-        runnable = for_path(workflow_path)
+        runnable = for_path(workflow_identifier)
         with engine_context(ctx, **kwds) as galaxy_engine:
             with galaxy_engine.ensure_runnables_served([runnable]) as config:
-                workflow_id = config.workflow_id(workflow_path)
+                workflow_id = config.workflow_id(workflow_identifier)
                 output_dict = config.gi.workflows.export_workflow_dict(workflow_id)
 
-                output_contents = json.dumps(output_dict)
+                output_contents = json.dumps(output_dict, indent=4, sort_keys=True)
                 write_file(output, output_contents, force=force)
