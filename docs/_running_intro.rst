@@ -1,3 +1,17 @@
+.. note::
+
+    Some features described in this tutorial are currently available only in
+    the development version of Planemo and may not work correctly when installing
+    the latest version from PyPI or bioconda. To install the development versions
+    of Planemo and galaxy-tool-util required, run the following commands:
+
+    ::
+
+        $ # install latest galaxy-tool-util pre-release
+        $ pip install --pre galaxy-tool-util
+        $ # install dev version of planemo
+        $ pip install https://github.com/galaxyproject/planemo/archive/master.tar.gz
+
 The Basics
 ================================
 

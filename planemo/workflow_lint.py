@@ -133,16 +133,22 @@ def _lint_case(path, test_case, lint_context):
 
 
 def _tst_input_valid(test_case, input_id, input_def, lint_context):
-    clazz = input_def.get("class")
-    if clazz == "File":
-        input_path = input_def.get("path")
-        if input_path:
-            if not os.path.isabs(input_path):
-                input_path = os.path.join(test_case.tests_directory, input_path)
-            if not os.path.exists(input_path):
-                message = "Test referenced File path [%s] not found" % input_path
-                lint_context.warn(message)
-                return False
+    if type(input_def) == dict:  # else assume it is a parameter
+        clazz = input_def.get("class")
+        if clazz == "File":
+            input_path = input_def.get("path")
+            if input_path:
+                if not os.path.isabs(input_path):
+                    input_path = os.path.join(test_case.tests_directory, input_path)
+                if not os.path.exists(input_path):
+                    message = "Test referenced File path [%s] not found" % input_path
+                    lint_context.warn(message)
+                    return False
+        elif clazz == "Collection":
+            for elem in input_def.get('elements', []):
+                elem_valid = _tst_input_valid(test_case, input_id, elem, lint_context)
+                if not elem_valid:
+                    return False
     return True
 
 
