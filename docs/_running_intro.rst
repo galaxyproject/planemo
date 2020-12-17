@@ -7,12 +7,10 @@
 
     ::
 
+        $ # install latest galaxy-tool-util pre-release
+        $ pip install --pre galaxy-tool-util
         $ # install dev version of planemo
         $ pip install https://github.com/galaxyproject/planemo/archive/master.tar.gz
-        $ # install dev version of galaxy-tool-util
-        $ git clone https://github.com/galaxyproject/galaxy.git
-        $ pip install -e galaxy/packages/tool_util
-
 
 The Basics
 ================================
