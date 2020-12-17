@@ -1,6 +1,7 @@
 """Tests for the ``workflow_test_init`` command."""
-import os
 import json
+import os
+
 import yaml
 
 from .test_utils import (
@@ -11,7 +12,7 @@ from .test_utils import (
 
 class CmdWorkflowConvertTestCase(CliTestCase):
     def test_gxwf_to_ga(self):
-        with self._isolate() as f:
+        with self._isolate():
             gx2_wf_path = os.path.join(TEST_DATA_DIR, "wf1.gxwf.yml")
             init_cmd = ["workflow_convert", gx2_wf_path]
             self._check_exit_code(init_cmd)
@@ -24,7 +25,7 @@ class CmdWorkflowConvertTestCase(CliTestCase):
             assert wf["steps"]["1"]["tool_id"] == "cat"
 
     def test_ga_to_gxwf(self):
-        with self._isolate() as f:
+        with self._isolate():
             ga_wf_path = os.path.join(TEST_DATA_DIR, "wf1.gxwf.ga")
             init_cmd = ["workflow_convert", ga_wf_path]
             self._check_exit_code(init_cmd)
