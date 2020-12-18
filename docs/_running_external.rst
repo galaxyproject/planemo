@@ -129,8 +129,13 @@ like the following:
 
 For the collection, each dataset is listed, with a path and identifier specified.
 
-You might also want to test your workflow with ``planemo test``. An equivalent
-planemo command for creating a template for workflow tests also exists:
+If you are creating a workflow for the first time, you should include tests to
+ensure it works in the way intended. These tests can be run using the ``planemo test``,
+command, just like Galaxy tool testing (for more information, see `here <best_practices_workflows.html#tests>`_).
+These tests require a test file, similar to the job file used so far, which also
+specifies expected outputs which can be used to validate the workflow. An
+equivalent planemo command for creating a template for these test files is also
+available:
 
 ::
 
