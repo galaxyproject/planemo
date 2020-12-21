@@ -153,7 +153,10 @@ def input_labels(workflow_path):
 
 
 def required_input_steps(workflow_path):
-    steps = inputs_normalized(workflow_path=workflow_path)
+    try:
+        steps = inputs_normalized(workflow_path=workflow_path)
+    except Exception:
+        raise Exception("Input workflow could not be successfully normalized - try linting with planemo workflow_lint.")
     required_steps = []
     for input_step in steps:
         if input_step.get("optional", False) or input_step.get("default"):
@@ -198,12 +201,12 @@ def job_template(workflow_path):
     for required_input_step in required_input_steps(workflow_path):
         i_label = input_label(required_input_step)
         input_type = required_input_step["type"]
-        if input_type == "data_input":
+        if input_type == "data":
             template[i_label] = {
                 "class": "File",
                 "path": "todo_test_data_path.ext",
             }
-        elif input_type == "data_collection_input":
+        elif input_type == "collection":
             template[i_label] = {
                 "class": "Collection",
                 "collection_type": "list",
@@ -215,6 +218,8 @@ def job_template(workflow_path):
                     }
                 ],
             }
+        elif input_type in ['string', 'int', 'float', 'boolean', 'color']:
+            template[i_label] = "todo_param_value"
         else:
             template[i_label] = {
                 "TODO",  # Does this work yet?
