@@ -18,7 +18,6 @@ from planemo.runnable import for_paths
 @options.galaxy_serve_options()
 @options.enable_cwl_option()
 @options.galaxy_cwl_root_option()
-
 @command_function
 def cli(ctx, **kwds):
     """(Experimental) Launch Galaxy with Tool Factory 2.
