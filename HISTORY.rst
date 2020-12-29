@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.73.0.dev0
+0.73.0 (2020-12-28)
 ---------------------
 
 * Integrate important features from gxwf_ for running workflows - including
