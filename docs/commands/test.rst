@@ -222,6 +222,7 @@ please careful and do not try this against production Galaxy instances.
       --test_output_junit PATH        Output test report (jUnit style - for CI
                                       systems
     
+      --test_output_allure DIRECTORY  Output test allure2 framework resutls
       --test_output_json PATH         Output test report (planemo json) defaults to
                                       tool_test_output.json.
     
