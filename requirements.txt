@@ -18,3 +18,4 @@ pyaml
 pyyaml
 six>=1.7.0
 virtualenv
+tabulate
