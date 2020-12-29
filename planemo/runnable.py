@@ -63,6 +63,10 @@ class RunnableType(Enum):
     def is_galaxy_artifact(runnable_type):
         return "galaxy" in runnable_type.name
 
+    @property
+    def is_cwl_artifact(runnable_type):
+        return "cwl" in runnable_type.name
+
 
 _Runnable = collections.namedtuple("Runnable", ["uri", "type"])
 

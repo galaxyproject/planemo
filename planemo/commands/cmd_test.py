@@ -8,9 +8,9 @@ from planemo.engine.test import (
 )
 from planemo.io import temp_directory
 from planemo.runnable import (
-    for_paths,
     RunnableType,
 )
+from planemo.runnable_resolve import for_runnable_identifiers
 
 
 @click.command('test')
@@ -67,7 +67,9 @@ def cli(ctx, paths, **kwds):
     """
     with temp_directory(dir=ctx.planemo_directory) as temp_path:
         # Create temp dir(s) outside of temp, docker can't mount $TEMPDIR on OSX
-        runnables = for_paths(paths, temp_path=temp_path)
+        runnables = for_runnable_identifiers(ctx, paths, kwds, temp_path=temp_path)
+
+        # pick a default engine type if needed
         is_cwl = all(r.type in {RunnableType.cwl_tool, RunnableType.cwl_workflow} for r in runnables)
         if kwds.get("engine", None) is None:
             if is_cwl:

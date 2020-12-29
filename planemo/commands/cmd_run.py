@@ -2,7 +2,6 @@
 from __future__ import print_function
 
 import json
-import os
 
 import click
 from galaxy.util import unicodify
@@ -10,10 +9,8 @@ from galaxy.util import unicodify
 from planemo import options
 from planemo.cli import command_function
 from planemo.engine import engine_context
-from planemo.galaxy.profiles import translate_alias
 from planemo.io import warn
-from planemo.runnable import for_id, for_path
-from planemo.tools import uri_to_path
+from planemo.runnable_resolve import for_runnable_identifier
 
 
 @click.command('run')
@@ -33,15 +30,9 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
     \b
         % planemo run cat1-tool.cwl cat-job.json
     """
-    runnable_identifier = translate_alias(ctx, runnable_identifier, kwds.get('profile'))
-    path = uri_to_path(ctx, runnable_identifier)
-    if os.path.exists(path):
-        runnable = for_path(path)
-    else:  # assume galaxy workflow id
-        runnable = for_id(runnable_identifier)
+    runnable = for_runnable_identifier(ctx, runnable_identifier, kwds)
 
-    # TODO: do a better test of cwl.
-    is_cwl = path.endswith(".cwl")
+    is_cwl = runnable.type.is_cwl_artifact
     kwds["cwl"] = is_cwl
     if kwds.get("engine", None) is None:
         if is_cwl:
