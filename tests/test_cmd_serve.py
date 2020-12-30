@@ -28,7 +28,41 @@ TEST_HISTORY_NAME = "Cool History 42"
 SERVE_TEST_VERBOSE = True
 
 
-class ServeTestCase(CliTestCase):
+class UsesServeCommand:
+
+    def _run(self, serve_args=[], serve_cmd="serve"):
+        serve_cmd = self._serve_command_list(serve_args, serve_cmd)
+        if run_verbosely():
+            print("Running command for test [%s]" % serve_cmd)
+        self._check_exit_code(serve_cmd)
+
+    def _serve_command_list(self, serve_args=[], serve_cmd="serve"):
+        test_cmd = ["--verbose"] if run_verbosely() else []
+        test_cmd.extend([
+            serve_cmd,
+            "--galaxy_root", self.galaxy_root,
+            "--galaxy_branch", target_galaxy_branch(),
+            "--no_dependency_resolution",
+            "--port", str(self._port),
+            self._serve_artifact,
+        ])
+        test_cmd.extend(serve_args)
+        return test_cmd
+
+    def _launch_thread_and_wait(self, func, args=[], **kwd):
+        future = launch_and_wait_for_galaxy(self._port, func, [args], **kwd)
+        if future is not None:
+            self._futures.append(future)
+
+    @property
+    def _user_gi(self):
+        admin_gi = api.gi(self._port)
+        user_api_key = api.user_api_key(admin_gi)
+        user_gi = api.gi(self._port, key=user_api_key)
+        return user_gi
+
+
+class ServeTestCase(CliTestCase, UsesServeCommand):
 
     @classmethod
     def setUpClass(cls):
@@ -99,7 +133,11 @@ class ServeTestCase(CliTestCase):
         assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0
         user_gi.histories.create_history(TEST_HISTORY_NAME)
         assert user_gi.tools.get_tools(tool_id="random_lines1")
-        assert len(user_gi.workflows.get_workflows()) == 1
+        workflows = user_gi.workflows.get_workflows()
+        assert len(workflows) == 1
+        workflow = workflows[0]
+        workflow_id = workflow[0]
+        assert workflow_id
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @skip_if_environ("PLANEMO_SKIP_SHED_TESTS")
@@ -154,36 +192,5 @@ class ServeTestCase(CliTestCase):
         with cli_daemon_galaxy(self._runner, self._pid_file, self._port, serve_cmd):
             assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 1
 
-    @property
-    def _user_gi(self):
-        admin_gi = api.gi(self._port)
-        user_api_key = api.user_api_key(admin_gi)
-        user_gi = api.gi(self._port, key=user_api_key)
-        return user_gi
-
-    def _launch_thread_and_wait(self, func, args=[], **kwd):
-        future = launch_and_wait_for_galaxy(self._port, func, [args], **kwd)
-        if future is not None:
-            self._futures.append(future)
-
     def _run_shed(self, serve_args=[]):
         return self._run(serve_args=serve_args, serve_cmd="shed_serve")
-
-    def _run(self, serve_args=[], serve_cmd="serve"):
-        serve_cmd = self._serve_command_list(serve_args, serve_cmd)
-        if run_verbosely():
-            print("Running command for test [%s]" % serve_cmd)
-        self._check_exit_code(serve_cmd)
-
-    def _serve_command_list(self, serve_args=[], serve_cmd="serve"):
-        test_cmd = ["--verbose"] if run_verbosely() else []
-        test_cmd.extend([
-            serve_cmd,
-            "--galaxy_root", self.galaxy_root,
-            "--galaxy_branch", target_galaxy_branch(),
-            "--no_dependency_resolution",
-            "--port", str(self._port),
-            self._serve_artifact,
-        ])
-        test_cmd.extend(serve_args)
-        return test_cmd

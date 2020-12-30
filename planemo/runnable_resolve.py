@@ -1,10 +1,11 @@
 import os
 
 from planemo.galaxy.profiles import translate_alias
+from planemo.galaxy.workflows import GALAXY_WORKFLOWS_PREFIX
 from planemo.tools import uri_to_path
 from .runnable import (
-    for_id,
     for_path,
+    for_uri,
 )
 
 
@@ -13,11 +14,14 @@ def for_runnable_identifier(ctx, runnable_identifier, kwds, temp_path=None):
     # could be a URI, path, or alias
     current_profile = kwds.get('profile')
     runnable_identifier = translate_alias(ctx, runnable_identifier, current_profile)
-    runnable_identifier = uri_to_path(ctx, runnable_identifier)
+    if not runnable_identifier.startswith(GALAXY_WORKFLOWS_PREFIX):
+        runnable_identifier = uri_to_path(ctx, runnable_identifier)
     if os.path.exists(runnable_identifier):
         runnable = for_path(runnable_identifier, temp_path=temp_path)
     else:  # assume galaxy workflow id
-        runnable = for_id(runnable_identifier)
+        if not runnable_identifier.startswith(GALAXY_WORKFLOWS_PREFIX):
+            runnable_identifier = f"{GALAXY_WORKFLOWS_PREFIX}{runnable_identifier}"
+        runnable = for_uri(runnable_identifier)
     return runnable
 
 
