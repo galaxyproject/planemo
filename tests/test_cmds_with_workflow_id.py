@@ -59,6 +59,8 @@ class CmdsWithWorkflowIdTestCase(CliTestCase, UsesServeCommand):
             workflow = workflows[0]
             workflow_id = workflow["id"]
 
+            pseudo_path = os.path.join(TEST_DATA_DIR, "wf11-remote.gxwf.yml")
+            remote_uri = f"gxid://workflows/{workflow_id}?runnable_path={pseudo_path}"
             test_command = [
                 "test",
                 "--engine",
@@ -67,7 +69,7 @@ class CmdsWithWorkflowIdTestCase(CliTestCase, UsesServeCommand):
                 f"http://localhost:{self._port}",
                 "--galaxy_admin_key",
                 api.DEFAULT_ADMIN_API_KEY,
-                f"gxid://workflows/{workflow_id}?runnable_path={self._serve_artifact}",
+                remote_uri,
             ]
             self._check_exit_code(test_command, exit_code=0)
             output_json_path = os.path.join(f, "tool_test_output.json")

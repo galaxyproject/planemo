@@ -8,7 +8,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Usage**::
 
-    planemo list_invocations [OPTIONS] WORKFLOW_ID
+    planemo list_invocations [OPTIONS] WORKFLOW_IDENTIFIER
 
 **Help**
 
