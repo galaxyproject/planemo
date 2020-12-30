@@ -14,7 +14,7 @@ from planemo.runnable_resolve import for_runnable_identifiers
 
 
 @click.command('test')
-@options.optional_tools_arg(multiple=True)
+@options.optional_tools_arg(multiple=True, allow_uris=True)
 @click.option(
     "--failed",
     is_flag=True,
@@ -37,7 +37,7 @@ from planemo.runnable_resolve import for_runnable_identifiers
 @options.test_options()
 @options.engine_options()
 @command_function
-def cli(ctx, paths, **kwds):
+def cli(ctx, uris, **kwds):
     """Run specified tool's tests within Galaxy.
 
     All referenced tools (by default all the tools in the current working
@@ -67,7 +67,7 @@ def cli(ctx, paths, **kwds):
     """
     with temp_directory(dir=ctx.planemo_directory) as temp_path:
         # Create temp dir(s) outside of temp, docker can't mount $TEMPDIR on OSX
-        runnables = for_runnable_identifiers(ctx, paths, kwds, temp_path=temp_path)
+        runnables = for_runnable_identifiers(ctx, uris, kwds, temp_path=temp_path)
 
         # pick a default engine type if needed
         is_cwl = all(r.type in {RunnableType.cwl_tool, RunnableType.cwl_workflow} for r in runnables)
@@ -79,6 +79,6 @@ def cli(ctx, paths, **kwds):
             else:
                 kwds["engine"] = "galaxy"
 
-        return_value = test_runnables(ctx, runnables, original_paths=paths, **kwds)
+        return_value = test_runnables(ctx, runnables, original_paths=uris, **kwds)
 
     ctx.exit(return_value)
