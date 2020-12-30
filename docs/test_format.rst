@@ -213,7 +213,7 @@ Engines for Testing
 Below are descriptions of various testing engines that can be used with Planemo (both with the
 `test command`_ and the `run command`_) as well as some command-line options of particular interest for testing.
 The first two types ``cwltool`` and ``toil`` can be used to test CWL artifacts (tools and workflows).
-The remaining engine types are varations on engines that target Galaxy and are useful for testing
+The remaining engine types are variations on engines that target Galaxy and are useful for testing
 workflows (and tools with newer style tests or job documents).
 
 ``cwltool``
@@ -301,7 +301,7 @@ option to mount test data into the testing container.
 ``external_galaxy``
 ~~~~~~~~~~~~~~~~~~~~
 
-    $ planemo test --engine external_galaxy --galaxy_admin_key <admin_key> --galaxy_user_key <user_key> [--no_shed_install] [--polling_backoff <integer>] <url>
+    $ planemo test --engine external_galaxy --galaxy_admin_key <admin_key> --galaxy_user_key <user_key> [--no_shed_install] [--polling_backoff <integer>] --galaxy_url <url>
 
 This is primarily useful for testing workflows against already running Galaxy instances. An admin or
 master API key should be supplied to install missing tool repositories for the workflow and a user API
@@ -312,7 +312,21 @@ option where integer is the incremental increase in seconds for every request.
 
 To run tool tests against a running Galaxy, ``galaxy-tool-test`` is a script that gets installed with
 galaxy-tool-util and so may very well already be on your ``PATH``. Check out the options available with that
-using ``galaxy-tool-test --help``.
+using ``galaxy-tool-test --help``. If you're interested in running all the tool tests corresponding to
+a workflow on a running server, check out the galaxy-workflow-tool-tests_ project that is a wrapper around
+galaxy-tool-test that has all the same options but that filters to the tool tests to just run those
+from a specific workflow.
+
+This engine can also be used to test workflows already available in the running Galaxy instance.
+While you don't need to download and synchronize the target workflow on your local filesystem, you
+do need to provide a path to find the test definition and test data paths.
+
+An example of doing this is included in Planemo's `test data <https://github.com/galaxyproject/planemo/tree/master/tests/data>`__.
+The workflow test definition ``wf11-remote.gxwf-test.yml`` exists but no corresponding workflow file ``wf11-remote.gxwf.yml`` exists.
+The workflow is assumed to already exist in some Galaxy server. For instance, it might exist somewhere with id ``99113b2b119318e1``.
+Then ``planemo test`` could be run with ``gxid://workflows/99113b2b119318e1?runnable_path=/path/to/wf11-remote.gxwf.yml``
+as the last argument to test this workflow with that test data. Note this path ``/path/to/wf11-remote.gxwf.yml``
+doesn't need to exist, but it is used to find ``wf11-remote.gxwf-test.yml``.
 
 Galaxy Testing Template
 -------------------------
@@ -349,3 +363,4 @@ configuration:
 .. _Galaxy: http://galaxyproject.org/
 .. _Toil: https://github.com/BD2KGenomics/toil
 .. _BioContainers: http://biocontainers.pro/
+.. _galaxy-workflow-tool-tests: https://github.com/galaxy-works/galaxy-workflow-tool-tests
