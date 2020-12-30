@@ -39,7 +39,7 @@ from planemo.mulled import build_involucro_context
 from planemo.shed import tool_shed_url
 from planemo.virtualenv import DEFAULT_PYTHON_VERSION
 from .api import (
-    DEFAULT_MASTER_API_KEY,
+    DEFAULT_ADMIN_API_KEY,
     gi,
     user_api_key,
 )
@@ -562,7 +562,7 @@ def external_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
 
 def _get_master_api_key(kwds):
-    master_api_key = kwds.get("galaxy_admin_key") or DEFAULT_MASTER_API_KEY
+    master_api_key = kwds.get("galaxy_admin_key") or DEFAULT_ADMIN_API_KEY
     return master_api_key
 
 

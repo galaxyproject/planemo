@@ -2,6 +2,7 @@
 import json
 import os
 from collections import namedtuple
+from urllib.parse import urlparse
 
 import yaml
 from ephemeris import generate_tool_list_from_ga_workflow_files
@@ -14,7 +15,7 @@ from gxformat2.normalize import inputs_normalized, outputs_normalized
 from planemo.io import warn
 
 FAILED_REPOSITORIES_MESSAGE = "Failed to install one or more repositories."
-GALAXY_WORKFLOWS_PREFIX = "gxprofile://workflows/"
+GALAXY_WORKFLOWS_PREFIX = "gxid://workflows/"
 
 
 def load_shed_repos(runnable):
@@ -109,8 +110,8 @@ WorkflowOutput = namedtuple("WorkflowOutput", ["order_index", "output_name", "la
 
 def remote_runnable_to_workflow_id(runnable):
     assert runnable.is_remote_workflow_uri
-    workflow_id = runnable.uri[len(GALAXY_WORKFLOWS_PREFIX):]
-    return workflow_id
+    parse_result = urlparse(runnable.uri)
+    return parse_result.path[1:]
 
 
 def describe_outputs(runnable, gi=None):

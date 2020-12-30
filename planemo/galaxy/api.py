@@ -4,14 +4,14 @@ from six import StringIO
 from planemo.bioblend import ensure_module
 from planemo.bioblend import galaxy
 
-DEFAULT_MASTER_API_KEY = "test_key"
+DEFAULT_ADMIN_API_KEY = "test_key"
 
 
 def gi(port=None, url=None, key=None):
     """Return a bioblend ``GalaxyInstance`` for Galaxy on this port."""
     ensure_module()
     if key is None:
-        key = DEFAULT_MASTER_API_KEY
+        key = DEFAULT_ADMIN_API_KEY
     if port is None:
         url = url
     else:
@@ -131,7 +131,7 @@ def _dataset_provenance(gi, history_id, id):
 
 
 __all__ = (
-    "DEFAULT_MASTER_API_KEY",
+    "DEFAULT_ADMIN_API_KEY",
     "gi",
     "user_api_key",
 )
