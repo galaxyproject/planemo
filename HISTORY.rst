@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.74.0.dev0
+0.74.0 (2020-12-30)
 ---------------------
 
 * Allow running Galaxy workflow tests against externally defined workflows.
