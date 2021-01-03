@@ -6,10 +6,10 @@ History
 .. to_doc
 
 ---------------------
-0.75.0.dev0
+0.74.1 (2020-01-03)
 ---------------------
 
-    
+* Fix ``ci_find_tools`` and ``ci_find_repos`` commands. `Pull Request 1127`_
 
 ---------------------
 0.74.0 (2020-12-30)
@@ -20,7 +20,6 @@ History
   `Pull Request 1123`_
 * Require Python ``tabulate`` package for the ``list_invocations`` command.
   `Pull Request 1124`_
-
 
 ---------------------
 0.73.0 (2020-12-28)
@@ -1675,6 +1674,7 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1127: https://github.com/galaxyproject/planemo/pull/1127
 .. _Pull Request 1126: https://github.com/galaxyproject/planemo/pull/1126
 .. _Pull Request 1125: https://github.com/galaxyproject/planemo/pull/1125
 .. _Pull Request 1124: https://github.com/galaxyproject/planemo/pull/1124
