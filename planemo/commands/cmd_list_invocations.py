@@ -7,8 +7,9 @@ from planemo import options
 from planemo.cli import command_function
 from planemo.galaxy import profiles
 from planemo.galaxy.api import get_invocations
-from planemo.galaxy.profiles import translate_alias
+from planemo.galaxy.workflows import remote_runnable_to_workflow_id
 from planemo.io import error, info
+from planemo.runnable_resolve import for_runnable_identifier
 
 try:
     from tabulate import tabulate
@@ -18,19 +19,20 @@ except ImportError:
 
 @click.command('list_invocations')
 @click.argument(
-    "workflow_id",
+    "workflow_identifier",
     type=click.STRING,
 )
 @options.profile_option(required=True)
 @command_function
-def cli(ctx, workflow_id, **kwds):
+def cli(ctx, workflow_identifier, **kwds):
     """
     Get a list of invocations for a particular workflow ID or alias.
     """
-    workflow_id = translate_alias(ctx, workflow_id, kwds.get('profile'))
-    info("Looking for invocations for workflow {}...".format(workflow_id))
-    workflow_id = profiles.translate_alias(ctx, workflow_id, kwds.get('profile'))
+    info("Looking for invocations for workflow {}...".format(workflow_identifier))
+    runnable = for_runnable_identifier(ctx, workflow_identifier, kwds)
     profile = profiles.ensure_profile(ctx, kwds.get('profile'))
+    assert runnable.is_remote_workflow_uri
+    workflow_id = remote_runnable_to_workflow_id(runnable)
 
     invocations = get_invocations(url=profile['galaxy_url'], key=profile['galaxy_admin_key'] or profile['galaxy_user_key'], workflow_id=workflow_id)
     if tabulate:
@@ -57,5 +59,4 @@ def cli(ctx, workflow_id, **kwds):
         error("The tabulate package is not installed, invocations could not be listed correctly.")
         print(json.dumps(invocations, indent=4, sort_keys=True))
     info("{} invocations found.".format(len(invocations)))
-
     return

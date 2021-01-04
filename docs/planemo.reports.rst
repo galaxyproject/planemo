@@ -4,6 +4,14 @@ planemo.reports package
 Submodules
 ----------
 
+planemo.reports.allure module
+-----------------------------
+
+.. automodule:: planemo.reports.allure
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 planemo.reports.build\_report module
 ------------------------------------
 

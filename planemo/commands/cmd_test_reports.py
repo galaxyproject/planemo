@@ -1,5 +1,6 @@
 """Module describing the planemo ``test_reports`` command."""
-import os
+import datetime
+import pathlib
 
 import click
 
@@ -19,10 +20,13 @@ def cli(ctx, path, **kwds):
     Creates reports in various formats  (HTML, text, markdown)
     from the structured test output (tool_test_output.json).
     """
-    if not os.path.exists(path):
+    fname = pathlib.Path(path)
+    if not fname.exists():
         io.error("Failed to tool test json file at %s" % path)
         return 1
 
     test_data = StructuredData(path)
     test_data.calculate_summary_data_if_needed()
+    file_modication_datatime = datetime.datetime.fromtimestamp(fname.stat().st_mtime)
+    kwds["file_modication_datatime"] = file_modication_datatime
     handle_reports(ctx, test_data.structured_data, kwds)

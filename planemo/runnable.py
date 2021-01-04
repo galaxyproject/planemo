@@ -7,6 +7,7 @@ import collections
 import os
 from distutils.dir_util import copy_tree
 from enum import auto, Enum
+from urllib.parse import urlparse
 
 import yaml
 from galaxy.tool_util.cwl.parser import workflow_proxy
@@ -63,6 +64,10 @@ class RunnableType(Enum):
     def is_galaxy_artifact(runnable_type):
         return "galaxy" in runnable_type.name
 
+    @property
+    def is_cwl_artifact(runnable_type):
+        return "cwl" in runnable_type.name
+
 
 _Runnable = collections.namedtuple("Runnable", ["uri", "type"])
 
@@ -72,8 +77,25 @@ class Runnable(_Runnable):
 
     @property
     def path(self):
-        assert not self.is_remote_workflow_uri
-        return self.uri
+        uri = self.uri
+        if self.is_remote_workflow_uri:
+            parse_result = urlparse(uri)
+            query = parse_result.query
+            if query:
+                assert query.startswith("runnable_path=")
+                return query[len("runnable_path="):]
+            else:
+                raise ValueError(f"Runnable with URI {uri} is remote resource without local path")
+        else:
+            return uri
+
+    @property
+    def has_path(self):
+        try:
+            self.path
+            return True
+        except ValueError:
+            return False
 
     @property
     def is_remote_workflow_uri(self):
@@ -180,9 +202,9 @@ def for_paths(paths, temp_path=None):
     return [for_path(path, temp_path=temp_path) for path in paths]
 
 
-def for_id(runnable_id):
+def for_uri(uri):
     """Produce a class:`Runnable` for supplied Galaxy workflow ID."""
-    uri = GALAXY_WORKFLOWS_PREFIX + runnable_id
+    # TODO: allow galaxy_tool also, this trick would work fine for running tools
     runnable = Runnable(uri, RunnableType.galaxy_workflow)
     return runnable
 

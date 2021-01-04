@@ -32,13 +32,12 @@ def filter_paths(ctx, raw_paths, path_type="repo", **kwds):
                 diff_path = metadata_file_in_path(diff_dir)
                 if diff_path:
                     diff_paths.add(diff_path)
-                    break
         else:
             diff_paths = diff_files
 
     unique_paths = set(os.path.relpath(p, cwd) for p in raw_paths)
     if diff_paths is not None:
-        unique_paths = list(diff_paths)
+        unique_paths = unique_paths.intersection(diff_paths)
     filtered_paths = sorted(io.filter_paths(unique_paths, cwd=cwd, **filter_kwds))
     excluded_paths = sorted(set(unique_paths) - set(filtered_paths))
     if excluded_paths:

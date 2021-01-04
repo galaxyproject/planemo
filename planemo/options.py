@@ -1502,6 +1502,13 @@ def test_report_options():
             help=("Output test report (jUnit style - for CI systems"),
             default=None,
         ),
+        planemo_option(
+            "--test_output_allure",
+            type=click.Path(file_okay=False, resolve_path=True),
+            use_global_config=True,
+            help=("Output test allure2 framework resutls"),
+            default=None,
+        )
     )
 
 

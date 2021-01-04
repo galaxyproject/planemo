@@ -6,10 +6,71 @@ History
 .. to_doc
 
 ---------------------
-0.73.0.dev0
+0.74.1 (2020-01-03)
 ---------------------
 
-    
+* Fix ``ci_find_tools`` and ``ci_find_repos`` commands. `Pull Request 1127`_
+
+---------------------
+0.74.0 (2020-12-30)
+---------------------
+
+* Allow running Galaxy workflow tests against externally defined workflows.
+  `Pull Request 1126`_, `Pull Request 1125`_,
+  `Pull Request 1123`_
+* Require Python ``tabulate`` package for the ``list_invocations`` command.
+  `Pull Request 1124`_
+
+---------------------
+0.73.0 (2020-12-28)
+---------------------
+
+* Integrate important features from gxwf_ for running workflows - including
+  building up profile commands for creating aliases, allowing referencing workflows
+  by external IDs, and listing invocations (thanks to `@simonbray`_).
+  `Pull Request 1076`_
+* Documentation for using ``planemo run`` to execute workflows (thanks to `@simonbray`_).
+  `Pull Request 1102`_
+* Add ``workflow_upload`` command for publishing each workflow of a repository with many
+  workflows to their own standalone repository.
+  `Pull Request 1091`_
+* Update github commands to authenticate with a token rather than
+  username/password (thanks to `@simonbray`_).
+  `Pull Request 1083`_
+* Document "advanced" tool test debugging (thanks to `@bernt-matthias`_).
+  `Pull Request 1108`_
+* Various fixes for workflow commands - including ``workflow_convert``, 
+  ``workflow_lint``, ``workflow_job_init``, and ``workflow_test_init``
+  (thanks to `@simonbray`_).
+  `Pull Request 1101`_, `Pull Request 1118`_, `Pull Request 1121`_,
+  `Pull Request 1116`_, `Pull Request 1064`_
+* Allow outputting test results as Allure_ framework results.
+  `Pull Request 1115`_
+* Fix ``run_tests.sh`` invocation `Pull Request 1099`_
+* Tiny typo in debugging output (thanks to `@abretaud`_). `Pull Request 1066`_
+* Fix typo in 'planemo test' help text for --skip_venv (thanks to
+  `@peterjc`_).
+  `Pull Request 1068`_
+* Fixes for CLI when ``external_galaxy`` is used as the engine (thanks to
+  `@simonbray`_).
+  `Pull Request 1072`_
+* Updating base image to 20.05 for training topics
+  (thanks to `@bedroesb`_).
+  `Pull Request 1074`_
+* Changes to update_test_data testing mode (thanks to `@simonbray`_).
+  `Pull Request 1079`_
+* Fix docker options when filling ``job_conf.xml`` template.
+  `Pull Request 1086`_
+* Explicit tests for Galaxy 20.09. `Pull Request 1093`_
+* Minor fix for ``ci_find_repos`` command. `Pull Request 1094`_
+* Fix a couple of Cheetah_ urls in Galaxy tool documentation (thanks to `@martenson`_).
+  `Pull Request 1096`_
+* Fix doc link from a redirect loop to a section (thanks to `@martenson`_).
+  `Pull Request 1110`_
+* Clarify ``tutorial.md`` usage of citations (thanks to `@blankenberg`_).
+  `Pull Request 1114`_
+* Fix ``ZeroDivisionError`` when no tests are executed (thanks to `@simonbray`_).
+  `Pull Request 1120`_
 
 ---------------------
 0.72.0 (2020-08-04)
@@ -1613,6 +1674,35 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1127: https://github.com/galaxyproject/planemo/pull/1127
+.. _Pull Request 1126: https://github.com/galaxyproject/planemo/pull/1126
+.. _Pull Request 1125: https://github.com/galaxyproject/planemo/pull/1125
+.. _Pull Request 1124: https://github.com/galaxyproject/planemo/pull/1124
+.. _Pull Request 1123: https://github.com/galaxyproject/planemo/pull/1123
+.. _Pull Request 1064: https://github.com/galaxyproject/planemo/pull/1064
+.. _Pull Request 1066: https://github.com/galaxyproject/planemo/pull/1066
+.. _Pull Request 1068: https://github.com/galaxyproject/planemo/pull/1068
+.. _Pull Request 1072: https://github.com/galaxyproject/planemo/pull/1072
+.. _Pull Request 1074: https://github.com/galaxyproject/planemo/pull/1074
+.. _Pull Request 1076: https://github.com/galaxyproject/planemo/pull/1076
+.. _Pull Request 1079: https://github.com/galaxyproject/planemo/pull/1079
+.. _Pull Request 1083: https://github.com/galaxyproject/planemo/pull/1083
+.. _Pull Request 1086: https://github.com/galaxyproject/planemo/pull/1086
+.. _Pull Request 1091: https://github.com/galaxyproject/planemo/pull/1091
+.. _Pull Request 1093: https://github.com/galaxyproject/planemo/pull/1093
+.. _Pull Request 1094: https://github.com/galaxyproject/planemo/pull/1094
+.. _Pull Request 1096: https://github.com/galaxyproject/planemo/pull/1096
+.. _Pull Request 1099: https://github.com/galaxyproject/planemo/pull/1099
+.. _Pull Request 1101: https://github.com/galaxyproject/planemo/pull/1101
+.. _Pull Request 1102: https://github.com/galaxyproject/planemo/pull/1102
+.. _Pull Request 1108: https://github.com/galaxyproject/planemo/pull/1108
+.. _Pull Request 1110: https://github.com/galaxyproject/planemo/pull/1110
+.. _Pull Request 1114: https://github.com/galaxyproject/planemo/pull/1114
+.. _Pull Request 1115: https://github.com/galaxyproject/planemo/pull/1115
+.. _Pull Request 1116: https://github.com/galaxyproject/planemo/pull/1116
+.. _Pull Request 1118: https://github.com/galaxyproject/planemo/pull/1118
+.. _Pull Request 1120: https://github.com/galaxyproject/planemo/pull/1120
+.. _Pull Request 1121: https://github.com/galaxyproject/planemo/pull/1121
 .. _Pull Request 821: https://github.com/galaxyproject/planemo/pull/821
 .. _Pull Request 1052: https://github.com/galaxyproject/planemo/pull/1052
 .. _Pull Request 1061: https://github.com/galaxyproject/planemo/pull/1061
@@ -2296,6 +2386,9 @@ History
 .. _Toil: https://github.com/BD2KGenomics/toil
 .. _quay.io: https://quay.io/
 .. _galaxy-lib: https://github.com/galaxyproject/galaxy-lib
+.. _gxwf: https://github.com/simonbray/gxwf
+.. _Cheetah: https://cheetahtemplate.org/users_guide/intro.html
+.. _Allure: http://allure.qatools.ru/
 .. _@abretaud: https://github.com/abretaud
 .. _@hexylena: https://github.com/hexylena
 .. _@peterjc: https://github.com/peterjc
@@ -2335,3 +2428,5 @@ History
 .. _@andreassko: https://github.com/andreassko
 .. _@mblue9: https://github.com/mblue9
 .. _@TMiguelT: https://github.com/TMiguelT
+.. _@bedroesb: https://github.com/bedroesb
+.. _@simonbray: https://github.com/simonbray
