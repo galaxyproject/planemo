@@ -3,7 +3,7 @@ import os
 from .test_utils import CliTestCase, TEST_DATA_DIR
 
 
-class TestReportsTestCase(CliTestCase):
+class CmdMergeReportsTestCase(CliTestCase):
 
     def test_merge_reports(self):
         with self._isolate():

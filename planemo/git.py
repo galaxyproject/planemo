@@ -11,16 +11,31 @@ from planemo import io
 
 def git_env_for(path):
     """Setup env dictionary to target specified git repo with git commands."""
-    env = {
+    env = os.environ.copy()
+    env.update({
         "GIT_WORK_DIR": path,
         "GIT_DIR": os.path.join(path, ".git")
-    }
+    })
     return env
+
+
+def ls_remote(ctx, remote_repo):
+    """Return a dictionary with refs as key and commits as value."""
+    commits_and_refs = io.communicate(
+        ["git", "ls-remote", remote_repo],
+        stdout=subprocess.PIPE,
+    )[0]
+    return dict(line.split()[::-1] for line in commits_and_refs.decode('utf-8').splitlines())
+
+
+def init(ctx, repo_path):
+    env = git_env_for(repo_path)
+    io.communicate(["git", "init"], env=env)
 
 
 def add(ctx, repo_path, file_path):
     env = git_env_for(repo_path)
-    io.communicate("cd '%s' && git add '%s'" % (repo_path, os.path.abspath(file_path)), env=env)
+    io.communicate(["git", "add", os.path.relpath(file_path, repo_path)], env=env, cwd=repo_path)
 
 
 def commit(ctx, repo_path, message=""):
@@ -28,13 +43,14 @@ def commit(ctx, repo_path, message=""):
     io.communicate(["git", "commit", "-m", message], env=env)
 
 
-def push(ctx, repo_path, to, branch, force=False):
+def push(ctx, repo_path, to=None, branch=None, force=False):
     env = git_env_for(repo_path)
     cmd = ["git", "push"]
     if force:
         cmd += ["--force"]
-    cmd += [to, branch]
-    io.communicate(cmd, env=env)
+    if to and branch:
+        cmd += [to, branch]
+    io.communicate(cmd, env=env, cwd=repo_path)
 
 
 def branch(ctx, repo_path, branch, from_branch=None):

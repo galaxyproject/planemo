@@ -10,6 +10,7 @@
 {% set state.failure = raw_data.results.failures | default(0) %}
 {% set state.skipped = raw_data.results.skipped | default(0) %}
 
+{% if raw_data.results.total %}
 <div class="progress">
   <div class="progress-bar progress-bar-success" style="width: {{ (state.success / raw_data.results.total) * 100 }}%" aria-valuenow="{{ state.success }}" aria-valuemin="0" aria-valuemax="{{ raw_data.results.total }}" data-toggle="tooltip" title="{{state.success}} Passed">
   </div>
@@ -18,6 +19,7 @@
   <div class="progress-bar progress-bar-danger" style="width: {{ ((state.error + state.failure) / raw_data.results.total) * 100 }}%" aria-valuenow="{{ state.error + state.failure }}" aria-valuemin="0" aria-valuemax="{{ raw_data.results.total }}" title="{{state.error + state.failure}} Failed or Errored">
   </div>
 </div>
+{% endif %}
 
 | Test State | Count |
 | ---------- | ----- |

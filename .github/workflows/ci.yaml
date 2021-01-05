@@ -6,6 +6,10 @@ env:
   PLANEMO_TEST_WORKFLOW_RUN_PROFILE: 1
   PGPASSWORD: postgres
   PGHOST: localhost
+  GIT_AUTHOR_NAME: planemo
+  GIT_AUTHOR_EMAIL: planemo@galaxyproject.org
+  GIT_COMMITTER_NAME: planemo
+  GIT_COMMITTER_EMAIL: planemo@galaxyproject.org
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -27,6 +31,7 @@ jobs:
           #- unit-diagnostic-servecmd
           #- unit-diagnostic-trainingwfcmd
           - unit-nonredundant-noclientbuild-noshed-gx-2005
+          - unit-nonredundant-noclientbuild-noshed-gx-2009
           - unit-nonredundant-noclientbuild-noshed-gx-dev
           - unit-nonredundant-noclientbuild-noshed
           - unit-diagnostic-serveclientcmd
@@ -82,7 +87,7 @@ jobs:
         run: |
           make dist
       - name: Publish to PyPI
-        if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@v1.0.0a0
         with:
           password: ${{ secrets.pypi_password }}

@@ -34,7 +34,7 @@ consider using the ``virtualenv`` argument ``-p`` to point at a non-Conda Python
 natively on your system or using a tool such pyenv_. ``virtualenv`` can be installed via Conda, pyenv_,
 or a package manager - it should make no difference.
 
-Planemo runs on Python 2.7 and Python 3.5 or newer. Planemo can be used to run multiple versions of Galaxy,
+Planemo runs on Python 3.6 or newer. Planemo can be used to run multiple versions of Galaxy,
 but please note that the last Galaxy release that fully supports Python 2.7 is 19.09.
 
 Conda_ (Experimental)

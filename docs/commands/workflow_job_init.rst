@@ -8,7 +8,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Usage**::
 
-    planemo workflow_job_init [OPTIONS] WORKFLOW_PATH
+    planemo workflow_job_init [OPTIONS] WORKFLOW_PATH_OR_ID
 
 **Help**
 

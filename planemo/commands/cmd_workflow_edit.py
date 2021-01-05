@@ -8,26 +8,25 @@ from planemo.engine import (
     is_galaxy_engine,
 )
 from planemo.galaxy.serve import sleep_for_serve
-from planemo.runnable import (
-    for_path,
-)
+from planemo.runnable_resolve import for_runnable_identifier
 
 
 @click.command('workflow_edit')
 @options.required_workflow_arg()
 @options.galaxy_serve_options()
 @command_function
-def cli(ctx, workflow_path, output=None, force=False, **kwds):
+def cli(ctx, workflow_identifier, output=None, force=False, **kwds):
     """Open a synchronized Galaxy workflow editor.
     """
     assert is_galaxy_engine(**kwds)
+    runnable = for_runnable_identifier(ctx, workflow_identifier, kwds.get("profile"))
 
     kwds["workflows_from_path"] = True
 
-    runnable = for_path(workflow_path)
     with engine_context(ctx, **kwds) as galaxy_engine:
         with galaxy_engine.ensure_runnables_served([runnable]) as config:
-            workflow_id = config.workflow_id(workflow_path)
+            workflow_id = config.workflow_id_for_runnable(runnable)
             url = "%s/workflow/editor?id=%s" % (config.galaxy_url, workflow_id)
             click.launch(url)
-            sleep_for_serve()
+            if kwds["engine"] != "external_galaxy":
+                sleep_for_serve()

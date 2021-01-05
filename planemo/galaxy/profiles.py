@@ -9,10 +9,8 @@ import shutil
 
 from galaxy.util.commands import which
 
-from planemo.config import (
-    OptionSource,
-)
 from planemo.database import create_database_source
+from planemo.galaxy.api import test_credentials_valid
 from .config import DATABASE_LOCATION_TEMPLATE
 
 PROFILE_OPTIONS_JSON_NAME = "planemo_profile_options.json"
@@ -34,14 +32,16 @@ def delete_profile(ctx, profile_name, **kwds):
     """Delete profile with the specified name."""
     profile_directory = _profile_directory(ctx, profile_name)
     profile_options = _read_profile_options(profile_directory)
-    database_type = profile_options.get("database_type")
-    kwds["database_type"] = database_type
-    if database_type != "sqlite":
-        database_source = create_database_source(**kwds)
-        database_identifier = _profile_to_database_identifier(profile_name)
-        database_source.delete_database(
-            database_identifier,
-        )
+    profile_options, profile_options_path = _load_profile_to_json(ctx, profile_name)
+    if profile_options["engine"] != 'external_galaxy':
+        database_type = profile_options.get("database_type")
+        kwds["database_type"] = database_type
+        if database_type != "sqlite":
+            database_source = create_database_source(**kwds)
+            database_identifier = _profile_to_database_identifier(profile_name)
+            database_source.delete_database(
+                database_identifier,
+            )
     shutil.rmtree(profile_directory)
 
 
@@ -56,7 +56,14 @@ def create_profile(ctx, profile_name, **kwds):
         raise Exception(message)
 
     os.makedirs(profile_directory)
-    create_for_engine = _create_profile_docker if engine_type == "docker_galaxy" else _create_profile_local
+
+    if engine_type == "docker_galaxy":
+        create_for_engine = _create_profile_docker
+    elif engine_type == "external_galaxy" or kwds.get("galaxy_url"):
+        create_for_engine = _create_profile_external
+    else:
+        create_for_engine = _create_profile_local
+
     stored_profile_options = create_for_engine(ctx, profile_directory, profile_name, kwds)
 
     profile_options_path = _stored_profile_options_path(profile_directory)
@@ -100,6 +107,20 @@ def _create_profile_local(ctx, profile_directory, profile_name, kwds):
     }
 
 
+def _create_profile_external(ctx, profile_directory, profile_name, kwds):
+    url = kwds.get("galaxy_url")
+    api_key = kwds.get("galaxy_admin_key") or kwds.get("galaxy_user_key")
+    if test_credentials_valid(url=url, key=api_key, is_admin=kwds.get("galaxy_admin_key")):
+        return {
+            "galaxy_url": url,
+            "galaxy_user_key": kwds.get("galaxy_user_key"),
+            "galaxy_admin_key": kwds.get("galaxy_admin_key"),
+            "engine": "external_galaxy",
+        }
+    else:
+        raise ConnectionError('The credentials provided for an external Galaxy instance are not valid.')
+
+
 def ensure_profile(ctx, profile_name, **kwds):
     """Ensure a Galaxy profile exists and return profile defaults."""
     if not profile_exists(ctx, profile_name, **kwds):
@@ -108,16 +129,60 @@ def ensure_profile(ctx, profile_name, **kwds):
     return _profile_options(ctx, profile_name, **kwds)
 
 
+def create_alias(ctx, alias, obj, profile_name, **kwds):
+    profile_options, profile_options_path = _load_profile_to_json(ctx, profile_name)
+
+    if profile_options.get('aliases'):
+        profile_options['aliases'][alias] = obj
+    else:  # no aliases yet defined
+        profile_options['aliases'] = {alias: obj}
+
+    with open(profile_options_path, 'w') as f:
+        json.dump(profile_options, f)
+
+    return 0
+
+
+def list_alias(ctx, profile_name, **kwds):
+    profile_options, _ = _load_profile_to_json(ctx, profile_name)
+    return profile_options.get('aliases', {})
+
+
+def delete_alias(ctx, alias, profile_name, **kwds):
+    profile_options, profile_options_path = _load_profile_to_json(ctx, profile_name)
+    if alias not in profile_options.get('aliases', {}):
+        return 1
+    else:
+        del profile_options['aliases'][alias]
+
+    with open(profile_options_path, 'w') as f:
+        json.dump(profile_options, f)
+
+    return 0
+
+
+def translate_alias(ctx, alias, profile_name):
+    if not profile_name:
+        return alias
+    aliases = _load_profile_to_json(ctx, profile_name)[0].get('aliases', {})
+    return aliases.get(alias, alias)
+
+
+def _load_profile_to_json(ctx, profile_name):
+    if not profile_exists(ctx, profile_name):
+        raise Exception("That profile does not exist. Create it with `planemo profile_create`")
+    profile_directory = _profile_directory(ctx, profile_name)
+    profile_options_path = _stored_profile_options_path(profile_directory)
+    with open(profile_options_path) as f:
+        profile_options = json.load(f)
+    return profile_options, profile_options_path
+
+
 def _profile_options(ctx, profile_name, **kwds):
     profile_directory = _profile_directory(ctx, profile_name)
     profile_options = _read_profile_options(profile_directory)
-    specified_engine_type = kwds.get("engine", "galaxy")
-    profile_engine_type = profile_options["engine"]
-    if specified_engine_type != profile_engine_type:
-        if ctx.get_option_source("engine") == OptionSource.cli:
-            raise Exception("Configured profile engine type [%s] does not match specified engine type [%s].")
 
-    if profile_engine_type == "docker_galaxy":
+    if profile_options["engine"] == "docker_galaxy":
         engine_options = dict(
             export_directory=os.path.join(profile_directory, "export")
         )

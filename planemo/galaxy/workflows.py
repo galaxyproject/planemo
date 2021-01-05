@@ -2,6 +2,7 @@
 import json
 import os
 from collections import namedtuple
+from urllib.parse import urlparse
 
 import yaml
 from ephemeris import generate_tool_list_from_ga_workflow_files
@@ -14,12 +15,12 @@ from gxformat2.normalize import inputs_normalized, outputs_normalized
 from planemo.io import warn
 
 FAILED_REPOSITORIES_MESSAGE = "Failed to install one or more repositories."
+GALAXY_WORKFLOWS_PREFIX = "gxid://workflows/"
 
 
 def load_shed_repos(runnable):
     if runnable.type.name != "galaxy_workflow":
         return []
-
     path = runnable.path
     if path.endswith(".ga"):
         generate_tool_list_from_ga_workflow_files.generate_tool_list_from_workflow([path], "Tools from workflows", "tools.yml")
@@ -66,13 +67,8 @@ def import_workflow(path, admin_gi, user_gi, from_path=False):
         workflow = _raw_dict(path, importer)
         return user_gi.workflows.import_workflow_dict(workflow)
     else:
-        # TODO: Update bioblend to allow from_path.
         path = os.path.abspath(path)
-        payload = dict(
-            from_path=path
-        )
-        workflows_url = user_gi.url + '/workflows'
-        workflow = user_gi.workflows._post(payload, url=workflows_url)
+        workflow = user_gi.workflows.import_workflow_from_local_path(path)
         return workflow
 
 
@@ -112,9 +108,21 @@ def find_tool_ids(path):
 WorkflowOutput = namedtuple("WorkflowOutput", ["order_index", "output_name", "label"])
 
 
-def describe_outputs(path):
+def remote_runnable_to_workflow_id(runnable):
+    assert runnable.is_remote_workflow_uri
+    parse_result = urlparse(runnable.uri)
+    return parse_result.path[1:]
+
+
+def describe_outputs(runnable, gi=None):
     """Return a list of :class:`WorkflowOutput` objects for target workflow."""
-    workflow = _raw_dict(path)
+    if runnable.uri.startswith(GALAXY_WORKFLOWS_PREFIX):
+        workflow_id = remote_runnable_to_workflow_id(runnable)
+        assert gi is not None
+        workflow = get_dict_from_workflow(gi, workflow_id)
+    else:
+        workflow = _raw_dict(runnable.path)
+
     outputs = []
     for (order_index, step) in workflow["steps"].items():
         step_outputs = step.get("workflow_outputs", [])
@@ -146,7 +154,10 @@ def input_labels(workflow_path):
 
 
 def required_input_steps(workflow_path):
-    steps = inputs_normalized(workflow_path=workflow_path)
+    try:
+        steps = inputs_normalized(workflow_path=workflow_path)
+    except Exception:
+        raise Exception("Input workflow could not be successfully normalized - try linting with planemo workflow_lint.")
     required_steps = []
     for input_step in steps:
         if input_step.get("optional", False) or input_step.get("default"):
@@ -191,12 +202,12 @@ def job_template(workflow_path):
     for required_input_step in required_input_steps(workflow_path):
         i_label = input_label(required_input_step)
         input_type = required_input_step["type"]
-        if input_type == "data_input":
+        if input_type == "data":
             template[i_label] = {
                 "class": "File",
                 "path": "todo_test_data_path.ext",
             }
-        elif input_type == "data_collection_input":
+        elif input_type == "collection":
             template[i_label] = {
                 "class": "Collection",
                 "collection_type": "list",
@@ -208,6 +219,8 @@ def job_template(workflow_path):
                     }
                 ],
             }
+        elif input_type in ['string', 'int', 'float', 'boolean', 'color']:
+            template[i_label] = "todo_param_value"
         else:
             template[i_label] = {
                 "TODO",  # Does this work yet?
@@ -226,6 +239,10 @@ def new_workflow_associated_path(workflow_path, suffix="tests"):
     if "yaml" in input_ext:
         ext = "yaml"
     return base + sep + suffix + "." + ext
+
+
+def get_dict_from_workflow(gi, workflow_id):
+    return gi.workflows.export_workflow_dict(workflow_id)
 
 
 __all__ = (

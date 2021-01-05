@@ -13,7 +13,7 @@ from planemo.io import can_write_to_path
 @options.force_option()
 @options.workflow_output_artifact()
 @command_function
-def cli(ctx, workflow_path, output=None, **kwds):
+def cli(ctx, workflow_identifier, output=None, **kwds):
     """Initialize a Galaxy workflow job description for supplied workflow.
 
     Be sure to your lint your workflow with ``workflow_lint`` before calling this
@@ -25,9 +25,9 @@ def cli(ctx, workflow_path, output=None, **kwds):
     as well so this command may be renamed to to job_init at something along those
     lines at some point.
     """
-    job = job_template(workflow_path)
+    job = job_template(workflow_identifier)
     if output is None:
-        output = new_workflow_associated_path(workflow_path, suffix="job")
+        output = new_workflow_associated_path(workflow_identifier, suffix="job")
     if not can_write_to_path(output, **kwds):
         ctx.exit(1)
     with open(output, "w") as f_job:

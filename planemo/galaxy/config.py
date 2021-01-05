@@ -24,6 +24,7 @@ from planemo import git
 from planemo.config import OptionSource
 from planemo.deps import ensure_dependency_resolvers_conf_configured
 from planemo.docker import docker_host_args
+from planemo.galaxy.workflows import remote_runnable_to_workflow_id
 from planemo.io import (
     communicate,
     kill_pid_file,
@@ -38,7 +39,7 @@ from planemo.mulled import build_involucro_context
 from planemo.shed import tool_shed_url
 from planemo.virtualenv import DEFAULT_PYTHON_VERSION
 from .api import (
-    DEFAULT_MASTER_API_KEY,
+    DEFAULT_ADMIN_API_KEY,
     gi,
     user_api_key,
 )
@@ -116,7 +117,7 @@ JOB_CONFIG_LOCAL = """<job_conf>
             ${docker_host_param}
         </destination>
         <destination id="upload_dest" runner="planemo_runner">
-            <param id="docker_enable">false</param>
+            <param id="docker_enabled">false</param>
         </destination>
     </destinations>
     <tools>
@@ -561,7 +562,7 @@ def external_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
 
 def _get_master_api_key(kwds):
-    master_api_key = kwds.get("galaxy_admin_key") or DEFAULT_MASTER_API_KEY
+    master_api_key = kwds.get("galaxy_admin_key") or DEFAULT_ADMIN_API_KEY
     return master_api_key
 
 
@@ -757,7 +758,7 @@ class BaseGalaxyConfig(GalaxyInterface):
 
     def install_workflows(self):
         for runnable in self.runnables:
-            if runnable.type.name in ["galaxy_workflow", "cwl_workflow"]:
+            if runnable.type.name in ["galaxy_workflow", "cwl_workflow"] and not runnable.is_remote_workflow_uri:
                 self._install_workflow(runnable)
 
     def _install_workflow(self, runnable):
@@ -777,6 +778,13 @@ class BaseGalaxyConfig(GalaxyInterface):
             runnable.path, admin_gi=self.gi, user_gi=self.user_gi, from_path=from_path
         )
         self._workflow_ids[runnable.path] = workflow["id"]
+
+    def workflow_id_for_runnable(self, runnable):
+        if runnable.is_remote_workflow_uri:
+            workflow_id = remote_runnable_to_workflow_id(runnable)
+        else:
+            workflow_id = self.workflow_id(runnable.path)
+        return workflow_id
 
     def workflow_id(self, path):
         return self._workflow_ids[path]
@@ -1269,7 +1277,7 @@ def _handle_job_config_file(config_directory, server_name, kwds):
             "job_conf.xml",
         )
         docker_enable = str(kwds.get("docker", False))
-        docker_host = str(kwds.get("docker_host", docker_util.DEFAULT_HOST))
+        docker_host = kwds.get("docker_host", docker_util.DEFAULT_HOST)
         docker_host_param = ""
         if docker_host:
             docker_host_param = """<param id="docker_host">%s</param>""" % docker_host
@@ -1281,7 +1289,7 @@ def _handle_job_config_file(config_directory, server_name, kwds):
             "docker_sudo": str(kwds.get("docker_sudo", False)),
             "docker_sudo_cmd": str(kwds.get("docker_sudo_cmd", docker_util.DEFAULT_SUDO_COMMAND)),
             "docker_cmd": str(kwds.get("docker_cmd", docker_util.DEFAULT_DOCKER_COMMAND)),
-            "docker_host": docker_host_param,
+            "docker_host_param": docker_host_param,
         })
         write_file(job_config_file, conf_contents)
     kwds["job_config_file"] = job_config_file

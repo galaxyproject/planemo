@@ -15,8 +15,8 @@ including tools, workflows, and training materials.
    :target: https://pypi.python.org/pypi/planemo/
    :alt: Planemo on the Python Package Index (PyPI)
 
-.. image:: https://github.com/galaxyproject/gxformat2/workflows/Python%20CI/badge.svg
-   :target: https://github.com/galaxyproject/gxformat2/actions?query=workflow%3A%22Python+CI%22
+.. image:: https://github.com/galaxyproject/planemo/workflows/Python%20CI/badge.svg
+   :target: https://github.com/galaxyproject/planemo/actions?query=workflow%3A%22Python+CI%22
 
 .. image:: https://travis-ci.org/galaxyproject/planemo.png?branch=master
    :target: https://travis-ci.org/galaxyproject/planemo

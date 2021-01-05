@@ -9,7 +9,7 @@ be used to collect metadata.
 
 If an arbitrary number of outputs is needed but no special metadata must be set,
 file name patterns can be used to allow Galaxy to discover these datasets.
-More information on this can be found on the `Galaxy wiki <https://wiki.galaxyproject.org/Admin/Tools/MultipleOutputFiles#Number_of_Output_datasets_cannot_be_determined_until_tool_run>`__.
+More information on this can be found in the :ref:`dedicated section <multiple-output-files>`.
 
 The file name patterns described in the above link are nice because they don't
 need special instrumenting in the tool wrapper to adapt to Galaxy in general and

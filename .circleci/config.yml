@@ -5,7 +5,7 @@ jobs:
         tox-env:
           type: string
       docker:
-        - image: circleci/python:3.5-node
+        - image: circleci/python:3.6-node
       steps:
         - checkout
         - run: git submodule sync
@@ -19,7 +19,7 @@ workflows:
         matrix:
           parameters:
             tox-env:
-              - "py35-diagnostic-unit-servebasic-gx-dev"
-              - "py35-unit-nonredundant-noclientbuild-noshed-gx-2005"
-              - "py35-unit-nonredundant-noclientbuild-noshed-gx-dev"
-              - "py35-unit-nonredundant-noclientbuild-noshed"
+              - "py36-diagnostic-unit-servebasic-gx-dev"
+              - "py36-unit-nonredundant-noclientbuild-noshed-gx-2005"
+              - "py36-unit-nonredundant-noclientbuild-noshed-gx-dev"
+              - "py36-unit-nonredundant-noclientbuild-noshed"

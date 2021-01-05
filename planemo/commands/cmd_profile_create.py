@@ -13,6 +13,9 @@ from planemo.galaxy import profiles
 @options.profile_database_options()
 @options.serve_engine_option()
 @options.docker_config_options()
+@options.galaxy_url_option()
+@options.galaxy_user_key_option()
+@options.galaxy_admin_key_option()
 @command_function
 def cli(ctx, profile_name, **kwds):
     """Create a profile."""

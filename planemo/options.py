@@ -159,7 +159,7 @@ def galaxy_python_version():
         '--galaxy_python_version',
         use_global_config=True,
         default=None,
-        type=click.Choice(['3', '3.5', '3.6', '3.7', '3.8']),
+        type=click.Choice(['3', '3.6', '3.7', '3.8', '3.9']),
         help="Python version to start Galaxy under",
     )
 
@@ -460,6 +460,14 @@ def galaxy_user_key_option():
     )
 
 
+def history_name():
+    return planemo_option(
+        "--history_name",
+        type=str,
+        help="Name to give a Galaxy history, if one is created.",
+    )
+
+
 def no_cache_galaxy_option():
     return planemo_option(
         "--no_cache_galaxy",
@@ -682,14 +690,11 @@ def single_user_mode_option():
 
 
 def required_workflow_arg():
-    arg_type = click.Path(
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-        readable=True,
-        resolve_path=False,
+    return click.argument(
+        'workflow_identifier',
+        metavar="WORKFLOW_PATH_OR_ID",
+        type=str,
     )
-    return click.argument("workflow_path", metavar="WORKFLOW_PATH", type=arg_type)
 
 
 def split_job_and_test():
@@ -707,6 +712,14 @@ def required_job_arg():
         resolve_path=False,
     )
     return click.argument("job_path", metavar="JOB_PATH", type=arg_type)
+
+
+def required_runnable_arg():
+    return click.argument(
+        'runnable_identifier',
+        metavar="RUNNABLE_PATH_OR_ID",
+        type=str,
+    )
 
 
 def _optional_tools_default(ctx, param, value):
@@ -1079,6 +1092,25 @@ def conda_target_options(include_local=True):
     )
 
 
+def github_namespace():
+    return planemo_option(
+        '--namespace',
+        use_env_var=True,
+        help=('Organization or username under which to create or update workflow repository. '
+              'Must be a valid github username or organization'),
+        default="iwc-workflows"
+    )
+
+
+def dry_run():
+    return planemo_option(
+        '--dry_run',
+        help="Don't execute action, show preview of action.",
+        is_flag=True,
+        default=False,
+    )
+
+
 def galaxy_run_options():
     return _compose(
         galaxy_target_options(),
@@ -1153,13 +1185,24 @@ def daemon_option():
     )
 
 
-def profile_option():
+def profile_option(required=False):
     return planemo_option(
         "--profile",
-        type=str,
+        type=click.STRING,
+        required=required,
         default=None,
         help=("Name of profile (created with the profile_create command) to use "
               "with this command.")
+    )
+
+
+def alias_option(required=False):
+    return planemo_option(
+        "--alias",
+        type=click.STRING,
+        required=required,
+        default=None,
+        help=("Name of an alias.")
     )
 
 
@@ -1416,6 +1459,7 @@ def engine_options():
         galaxy_url_option(),
         galaxy_admin_key_option(),
         galaxy_user_key_option(),
+        history_name()
     )
 
 
@@ -1458,6 +1502,13 @@ def test_report_options():
             help=("Output test report (jUnit style - for CI systems"),
             default=None,
         ),
+        planemo_option(
+            "--test_output_allure",
+            type=click.Path(file_okay=False, resolve_path=True),
+            use_global_config=True,
+            help=("Output test allure2 framework resutls"),
+            default=None,
+        )
     )
 
 

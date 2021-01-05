@@ -19,9 +19,10 @@ Contents:
    writing_cwl
    publishing
    test_format
-   commands
    standards/docs/best_practices
    best_practices_workflows
+   running
+   commands
    galaxy_changelog
    conduct
    contributing

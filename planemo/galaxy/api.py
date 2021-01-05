@@ -4,14 +4,14 @@ from six import StringIO
 from planemo.bioblend import ensure_module
 from planemo.bioblend import galaxy
 
-DEFAULT_MASTER_API_KEY = "test_key"
+DEFAULT_ADMIN_API_KEY = "test_key"
 
 
 def gi(port=None, url=None, key=None):
     """Return a bioblend ``GalaxyInstance`` for Galaxy on this port."""
     ensure_module()
     if key is None:
-        key = DEFAULT_MASTER_API_KEY
+        key = DEFAULT_ADMIN_API_KEY
     if port is None:
         url = url
     else:
@@ -21,6 +21,19 @@ def gi(port=None, url=None, key=None):
         url=url,
         key=key
     )
+
+
+def test_credentials_valid(port=None, url=None, key=None, is_admin=False):
+    """Test if provided API credentials are valid"""
+    test_gi = gi(port, url, key)
+    try:
+        current_user = test_gi.users.get_current_user()
+        if is_admin:
+            return current_user['is_admin']
+        else:
+            return True
+    except Exception:
+        return False
 
 
 def user_api_key(admin_gi):
@@ -98,6 +111,15 @@ def summarize_history(ctx, gi, history_id):
         print("|")
 
 
+def get_invocations(url, key, workflow_id):
+    inv_gi = gi(None, url, key)
+    invocations = inv_gi.workflows.get_invocations(workflow_id)
+    return {invocation['id']: {
+            'states': inv_gi.invocations.get_invocation_summary(invocation['id'])['states'],
+            'history_id': invocation['history_id']}
+            for invocation in invocations}
+
+
 def _format_for_summary(blob, empty_message, prefix="|  "):
     contents = "\n".join(["%s%s" % (prefix, line.strip()) for line in StringIO(blob).readlines() if line.rstrip("\n\r")])
     return contents or "%s*%s*" % (prefix, empty_message)
@@ -109,7 +131,7 @@ def _dataset_provenance(gi, history_id, id):
 
 
 __all__ = (
-    "DEFAULT_MASTER_API_KEY",
+    "DEFAULT_ADMIN_API_KEY",
     "gi",
     "user_api_key",
 )

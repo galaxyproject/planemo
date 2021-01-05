@@ -118,7 +118,6 @@ def _execute(ctx, config, runnable, job_path, **kwds):
     except Exception:
         ctx.vlog("Problem with staging in data for Galaxy activities...")
         raise
-
     if runnable.type in [RunnableType.galaxy_tool, RunnableType.cwl_tool]:
         response_class = GalaxyToolRunResponse
         tool_id = _verified_tool_id(runnable, user_gi)
@@ -154,8 +153,8 @@ def _execute(ctx, config, runnable, job_path, **kwds):
             summarize_history(ctx, user_gi, history_id)
     elif runnable.type in [RunnableType.galaxy_workflow, RunnableType.cwl_workflow]:
         response_class = GalaxyWorkflowRunResponse
-        workflow_id = config.workflow_id(runnable.path)
-        ctx.vlog("Found Galaxy workflow ID [%s] for path [%s]" % (workflow_id, runnable.path))
+        workflow_id = config.workflow_id_for_runnable(runnable)
+        ctx.vlog("Found Galaxy workflow ID [%s] for URI [%s]" % (workflow_id, runnable.uri))
         # TODO: Use the following when BioBlend 0.14 is released
         # invocation = user_gi.worklfows.invoke_workflow(
         #    workflow_id,
@@ -344,7 +343,8 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             return {"path": destination, "basename": basename}
 
         ctx.vlog("collecting outputs to directory %s" % output_directory)
-        for runnable_output in get_outputs(self._runnable):
+
+        for runnable_output in get_outputs(self._runnable, gi=self._user_gi):
             output_id = runnable_output.get_id()
             if not output_id:
                 ctx.vlog("Workflow output identified without an ID (label), skipping")
@@ -585,9 +585,13 @@ def _tool_id(tool_path):
 def _history_id(gi, **kwds):
     history_id = kwds.get("history_id", None)
     if history_id is None:
-        history_name = kwds.get("history_name", DEFAULT_HISTORY_NAME)
+        history_name = kwds.get("history_name", DEFAULT_HISTORY_NAME) or DEFAULT_HISTORY_NAME
         history_id = gi.histories.create_history(history_name)["id"]
     return history_id
+
+
+def get_dict_from_workflow(gi, workflow_id):
+    return gi.workflows.export_workflow_dict(workflow_id)
 
 
 def _wait_for_invocation(ctx, gi, history_id, workflow_id, invocation_id, polling_backoff=0):

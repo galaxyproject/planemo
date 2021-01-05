@@ -1,3 +1,5 @@
+.. _multiple-output-files:
+
 Multiple Output Files
 ===========================================
 

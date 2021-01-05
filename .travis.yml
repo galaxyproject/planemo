@@ -7,10 +7,6 @@ matrix:
     - python: 3.7
       env: TOX_ENV=py37-unit-diagnostic-serveshed
     - python: 3.7
-      env: TOX_ENV=py37-unit-quick
-    - python: 3.7
-      env: TOX_ENV=py37-unit-nonredundant-noclientbuild-noshed-gx-2005
-    - python: 3.7
       env: TOX_ENV=py37-unit-nonredundant-noclientbuild-noshed-gx-master
     - python: 3.7
       env: TOX_ENV=py37-unit-diagnostic-serveshedcmd-gx-master
