@@ -54,7 +54,6 @@ PACKAGE_DATA = {
         'reports/*',
         'scripts/*',
         'planemo_ext/tool_factory_2/*',
-
     ],
 }
 PACKAGE_DIR = {

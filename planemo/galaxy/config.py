@@ -392,7 +392,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         sheds_config_path = _configure_sheds_config_file(
             ctx, config_directory, **kwds
         )
-
         database_location = config_join("galaxy.sqlite")
         master_api_key = _get_master_api_key(kwds)
         dependency_dir = os.path.join(config_directory, "deps")
