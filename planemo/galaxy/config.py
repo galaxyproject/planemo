@@ -534,6 +534,7 @@ def _shared_galaxy_properties(config_directory, kwds, for_tests):
         'check_migrate_tools': "False",
         'use_cached_dependency_manager': str(kwds.get("conda_auto_install", False)),
         'brand': kwds.get("galaxy_brand", DEFAULT_GALAXY_BRAND),
+        'display_galaxy_brand': str(kwds.get("display_galaxy_brand",False)),
         'strict_cwl_validation': str(not kwds.get("non_strict_cwl", False)),
     }
     if kwds.get("galaxy_single_user", True):
