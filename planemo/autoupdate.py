@@ -89,7 +89,7 @@ def update_xml(tool_path, xml_tree, tags_to_update, wrapper_version_token, is_ma
         f.write(xml_text)
 
 
-def create_requirement_dict(xml_files):
+def create_requirement_dict(xml_files, skip_reqs):
     """
     Create dict with requirements and find main requirement
     """
@@ -99,7 +99,7 @@ def create_requirement_dict(xml_files):
         # print(k, v)
         file_reqs, file_main_req = get_requirements(v)
         # print(file_reqs, file_main_req)
-        requirements[k] = file_reqs
+        requirements[k] = [file_req for file_req in file_reqs if file_req not in skip_reqs]
         if file_main_req:
             if main_req:
                 error('Multiple requirements use the token @TOOL_VERSION@!')
@@ -184,9 +184,7 @@ def autoupdate(ctx, tool_path, modified_files=set(), **kwds):
         macro_path = '/'.join(tool_path.split('/')[:-1] + [macro])
         xml_files[macro_path] = ET.parse(macro_path)
 
-    # print(xml_files)
-    requirements, main_req = create_requirement_dict(xml_files)
-    # print(requirements)
+    requirements, main_req = create_requirement_dict(xml_files, kwds.get('skip_requirements', '').split(','))
     tokens, xml_to_update, current_main_req, updated_main_req = create_token_dict(ctx, xml_files, main_req, **kwds)
 
     if current_main_req == updated_main_req and not (modified_files & set(xml_files)):
