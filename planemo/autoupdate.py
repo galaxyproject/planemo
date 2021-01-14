@@ -72,7 +72,7 @@ def update_xml(tool_path, xml_tree, tags_to_update, wrapper_version_token, is_ma
         new_tag = 'version="{}"'.format(requirement_value).join(re.split('version=".*"', tag))
         return re.sub(tag, new_tag, xml_text)
 
-    with open(tool_path, 'r+') as f:
+    with open(tool_path, 'r+', newline='') as f:
         xml_text = f.read()
         for tag_to_update in tags_to_update:
             if tag_to_update['type'] == 'token':
