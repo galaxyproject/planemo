@@ -1670,7 +1670,8 @@ def filter_exclude_from_option():
 def filter_changed_in_commit_option():
     return planemo_option(
         "--changed_in_commit_range",
-        help="Exclude paths unchanged in git commit range.",
+        help="Include only tools (resp. repositories) contained in (non-root)"
+             "directories that include a file that changed in the given commit range.",
     )
 
 
