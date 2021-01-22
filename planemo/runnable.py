@@ -3,10 +3,10 @@
 from __future__ import absolute_import
 
 import abc
-import collections
 import os
 from distutils.dir_util import copy_tree
 from enum import auto, Enum
+from typing import NamedTuple
 from urllib.parse import urlparse
 
 import yaml
@@ -69,11 +69,10 @@ class RunnableType(Enum):
         return "cwl" in runnable_type.name
 
 
-_Runnable = collections.namedtuple("Runnable", ["uri", "type"])
-
-
-class Runnable(_Runnable):
+class Runnable(NamedTuple):
     """Abstraction describing tools and workflows."""
+    uri: str
+    type: RunnableType
 
     @property
     def path(self):
