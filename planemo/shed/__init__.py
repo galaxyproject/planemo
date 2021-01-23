@@ -289,9 +289,10 @@ def report_non_existent_repository(realized_repository):
 def upload_repository(ctx, realized_repository, **kwds):
     """Upload a tool directory as a tarball to a tool shed."""
     path = realized_repository.path
+    exclude = _shed_config_excludes(realized_repository.config)
     tar_path = kwds.get("tar")
     if not tar_path:
-        tar_path = build_tarball(path, **kwds)
+        tar_path = build_tarball(path, exclude, **kwds)
     if kwds.get("tar_only", False):
         name = realized_repository.pattern_to_file_name("shed_upload.tar.gz")
         shutil.copy(tar_path, name)
@@ -355,6 +356,7 @@ def diff_repo(ctx, realized_repository, **kwds):
 
 def _diff_in(ctx, working, realized_repository, **kwds):
     path = realized_repository.path
+    exclude = realized_repository.config.get("exclude", [])
     shed_target_source = kwds.get("shed_target_source")
 
     label_a = "_%s_" % (shed_target_source if shed_target_source else "workingdir")
@@ -399,7 +401,7 @@ def _diff_in(ctx, working, realized_repository, **kwds):
             **new_kwds
         )
     else:
-        tar_path = build_tarball(path)
+        tar_path = build_tarball(path, exclude)
         os.mkdir(mine)
         shell(['tar', '-xzf', tar_path, '-C', mine])
         shutil.rmtree(tar_path, ignore_errors=True)
@@ -415,6 +417,8 @@ def _diff_in(ctx, working, realized_repository, **kwds):
             xml_diff = diff_and_remove(working, label_a, label_b, sys.stdout)
 
     cmd = ['diff', '-r', label_a, label_b]
+    for e in exclude:
+        cmd.extend(['--exclude', e])
     if output:
         with open(output, 'ab') as fh:
             raw_diff = shell(cmd, cwd=working, stdout=fh)
@@ -703,6 +707,7 @@ def create_repository_for(ctx, tsi, name, repo_config):
 
 
 def download_tarball(ctx, shed_context, realized_repository, **kwds):
+    exclude = _shed_config_excludes(realized_repository.config)
     repo_id = realized_repository.find_repository_id(ctx, shed_context)
     if repo_id is None:
         message = "Unable to find repository id, cannot download."
@@ -714,7 +719,7 @@ def download_tarball(ctx, shed_context, realized_repository, **kwds):
     else:
         destination = destination_pattern
     to_directory = not destination.endswith("gz")
-    download_tar(shed_context.tsi, repo_id, destination, to_directory=to_directory)
+    download_tar(shed_context.tsi, repo_id, destination, to_directory=to_directory, exclude=exclude)
     if to_directory:
         clean = kwds.get("clean", False)
         if clean:
@@ -723,7 +728,7 @@ def download_tarball(ctx, shed_context, realized_repository, **kwds):
                 os.remove(archival_file)
 
 
-def build_tarball(realized_path, **kwds):
+def build_tarball(realized_path, exclude, **kwds):
     """Build a tool-shed tar ball for the specified path, caller is
     responsible for deleting this file.
     """
@@ -731,6 +736,8 @@ def build_tarball(realized_path, **kwds):
     # Simplest solution to sorting the files is to use a list,
     files = []
     for dirpath, dirnames, filenames in os.walk(realized_path):
+        dirnames[:] = [d for d in dirnames if d not in exclude]
+        filenames[:] = [f for f in filenames if f not in exclude]
         for f in filenames:
             files.append(os.path.join(dirpath, f))
     files.sort()
@@ -1058,6 +1065,7 @@ class RawRepositoryDirectory(object):
 
     def _realized_files(self, name):
         config = self._realize_config(name)
+        exclude = _shed_config_excludes(config)
         realized_files = []
         missing = []
         for include_info in config["include"]:
@@ -1071,7 +1079,7 @@ class RawRepositoryDirectory(object):
             for source in source_list:
                 include = include_info.copy()
                 include["source"] = source
-                included = RealizedFile.realized_files_for(self.path, include)
+                included = RealizedFile.realized_files_for(self.path, include, exclude)
                 if not included:
                     missing.append(include)
                 else:
@@ -1153,7 +1161,7 @@ class RealizedFile(object):
                 os.symlink(source_path, target_path)
 
     @staticmethod
-    def realized_files_for(path, include_info):
+    def realized_files_for(path, include_info, exclude):
         if not isinstance(include_info, dict):
             include_info = {"source": include_info}
         source = include_info.get("source")
@@ -1168,7 +1176,7 @@ class RealizedFile(object):
             if "*" in source or "?" in source or os.path.isdir(abs_source):
                 raise ValueError("destination must be a directory (with trailing slash) if source is a folder or uses wildcards")
         realized_files = []
-        for globbed_file in _glob(path, source):
+        for globbed_file in _glob(path, source, exclude):
             src = os.path.relpath(globbed_file, path)
             if not destination.endswith("/"):
                 # Given a filename, just use it!
@@ -1335,11 +1343,14 @@ class RealizedRepositry(object):
         )
 
 
-def _glob(path, pattern):
+def _glob(path, pattern, exclude=None):
     pattern = os.path.join(path, pattern)
     if os.path.isdir(pattern):
         pattern = "%s/**" % pattern
-    return glob.glob(pattern)
+    if exclude is None:
+        return glob.glob(pattern)
+    else:
+        return [_ for _ in glob.glob(pattern) if _ not in exclude]
 
 
 def _shed_config_excludes(config):
