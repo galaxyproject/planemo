@@ -25,7 +25,7 @@ except ImportError:
     github = None
     has_github_lib = False
 
-GH_VERSION = "1.1.0"
+GH_VERSION = "1.5.0"
 
 NO_GITHUB_DEP_ERROR = ("Cannot use github functionality - "
                        "PyGithub library not available.")
