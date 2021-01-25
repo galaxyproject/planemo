@@ -90,6 +90,28 @@ def cli(ctx, paths, **kwds):
         ctx.vlog("Handling conda_targets [%s]" % conda_targets)
         mulled_targets = conda_to_mulled_targets(conda_targets)
         mulled_targets_str = "- " + "\n- ".join(map(conda_build_target_str, mulled_targets))
+
+
+        if len(mulled_targets) < 1:
+            ctx.log("Skipping registration, no targets discovered.")
+            continue
+
+        name = v2_image_name(mulled_targets)
+        tag = "0"
+        name_and_tag = "%s-%s" % (name, tag)
+        target_filename = os.path.join(registry_target.output_directory, "%s.tsv" % name_and_tag)
+        if os.path.exists(target_filename):
+            ctx.log("Target file '%s' already exists, skipping" % target_filename)
+            continue
+
+        if targets_to_mulled_name(mulled_targets, hash_func='v2', namespace=kwds["mulled_namespace"]):
+            ctx.vlog("quay repository already exists, skipping")
+            continue
+
+        if registry_target.has_pull_request_for(name):
+            ctx.vlog("Found matching open pull request for [%s], skipping" % name)
+            continue
+
         best_practice_requirements = True
         for conda_target in conda_targets:
             best_hit, exact = best_practice_search(conda_target, conda_context=conda_context, platform=BIOCONTAINERS_PLATFORM)
@@ -111,25 +133,6 @@ def cli(ctx, paths, **kwds):
                 ctx.log("%s requires '%s' as base image" % (conda_target, base_image))
                 break
 
-        if len(mulled_targets) < 1:
-            ctx.log("Skipping registration, no targets discovered.")
-            continue
-
-        name = v2_image_name(mulled_targets)
-        tag = "0"
-        name_and_tag = "%s-%s" % (name, tag)
-        target_filename = os.path.join(registry_target.output_directory, "%s.tsv" % name_and_tag)
-        if os.path.exists(target_filename):
-            ctx.log("Target file '%s' already exists, skipping" % target_filename)
-            continue
-
-        if targets_to_mulled_name(mulled_targets, hash_func='v2', namespace=kwds["mulled_namespace"]):
-            ctx.vlog("quay repository already exists, skipping")
-            continue
-
-        if registry_target.has_pull_request_for(name):
-            ctx.vlog("Found matching open pull request for [%s], skipping" % name)
-            continue
 
         registry_target.write_targets(ctx, target_filename, mulled_targets, tag, base_image)
         tools_str = "\n".join(map(lambda p: "- " + os.path.basename(p), tool_paths))
