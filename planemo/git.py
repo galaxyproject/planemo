@@ -45,6 +45,7 @@ def commit(ctx, repo_path, message=""):
 
 def push(ctx, repo_path, to=None, branch=None, force=False):
     env = git_env_for(repo_path)
+    io.communicate(['git', 'remote', '-v'], env=env, repo_path=repo_path)
     cmd = ["git", "push"]
     if force:
         cmd += ["--force"]

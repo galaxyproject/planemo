@@ -178,7 +178,7 @@ def pull_request(ctx, path, message=None, **kwds):
 
 
 def get_gh_env(ctx, path=None, dry_run=False, **kwds):
-    """Return a environment dictionary to run hub with given user and repository target."""
+    """Return a environment dictionary to run gh with given user and repository target."""
     if path is None:
         env = {}
     else:
