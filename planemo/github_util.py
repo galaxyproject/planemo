@@ -10,7 +10,6 @@ from distutils.dir_util import copy_tree
 from pathlib import Path
 
 import requests
-from galaxy.tool_util.deps.commands import which
 
 from planemo import git
 from planemo.io import (
@@ -194,23 +193,20 @@ def get_gh_env(ctx, path=None, dry_run=False, **kwds):
 
 
 def ensure_gh(ctx, **kwds):
-    """Ensure ``hub`` is on the system ``PATH``.
+    """Ensure gh is available for planemo
 
-    This method will ensure ``hub`` is installed if it isn't available.
+    This method will ensure ``gh`` is installed at the correct version.
 
-    For more information on ``hub`` checkout ...
+    For more information on ``gh`` checkout https://cli.github.com/
     """
-    gh_path = which("gh")
-    if not gh_path:
-        planemo_gh_path = os.path.join(ctx.workspace, "gh")
-        if not os.path.exists(planemo_gh_path):
-            _try_download_gh(planemo_gh_path)
+    planemo_gh_path = os.path.join(ctx.workspace, f"gh-{GH_VERSION}")
+    if not os.path.exists(planemo_gh_path):
+        _try_download_gh(planemo_gh_path)
 
-        if not os.path.exists(planemo_gh_path):
-            raise Exception(FAILED_TO_DOWNLOAD_GH)
+    if not os.path.exists(planemo_gh_path):
+        raise Exception(FAILED_TO_DOWNLOAD_GH)
 
-        gh_path = planemo_gh_path
-    return gh_path
+    return planemo_gh_path
 
 
 def _try_download_gh(planemo_gh_path):
