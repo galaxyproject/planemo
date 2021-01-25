@@ -154,7 +154,7 @@ class RegistryTarget(object):
                 "https://github.com/%s" % REGISTERY_REPOSITORY,
                 target_repository,
                 fork=do_pull_request,
-            )
+            ) or self.remote_name
             pr_titles = [pr.title for pr in open_prs(ctx)]
 
         self.do_pull_request = do_pull_request
