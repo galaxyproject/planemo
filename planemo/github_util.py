@@ -59,7 +59,7 @@ def fork(ctx, path, **kwds):
     """Fork the target repository using ``hub``."""
     gh_path = ensure_gh(ctx, **kwds)
     gh_env = get_gh_env(ctx, path, **kwds)
-    cmd = [gh_path, "repo", "fork"]
+    cmd = [gh_path, "repo", "fork", '--remote']
     communicate(cmd, env=gh_env)
 
 
