@@ -21,7 +21,12 @@ from planemo.conda import (
     collect_conda_target_lists_and_tool_paths
 )
 from planemo.git import add, branch, commit, push
-from planemo.github_util import clone_fork_branch, get_repository_object, pull_request
+from planemo.github_util import (
+    clone_fork_branch,
+    DEFAULT_REMOTE_NAME,
+    get_repository_object,
+    pull_request,
+)
 from planemo.mulled import conda_to_mulled_targets
 
 REGISTERY_TARGET_NAME = "multi-package-containers"
@@ -139,11 +144,12 @@ class RegistryTarget(object):
         output_directory = kwds["output_directory"]
         pr_titles = []
         target_repository = None
+        self.remote_name = DEFAULT_REMOTE_NAME
         do_pull_request = kwds.get("pull_request", True)
         if output_directory is None:
             target_repository = os.path.join(ctx.workspace, REGISTERY_TARGET_NAME)
             output_directory = os.path.join(target_repository, REGISTERY_TARGET_PATH)
-            clone_fork_branch(
+            self.remote_name = clone_fork_branch(
                 ctx,
                 "https://github.com/%s" % REGISTERY_REPOSITORY,
                 target_repository,
@@ -178,7 +184,7 @@ class RegistryTarget(object):
             add(ctx, self.target_repository, target_filename)
             commit(ctx, self.target_repository, message=message)
             force_push = kwds.get("force_push", False)
-            push(ctx, self.target_repository, 'origin', branch_name, force=force_push)
+            push(ctx, self.target_repository, self.remote_name, branch_name, force=force_push)
             pull_request(ctx, self.target_repository, message=message)
 
     def write_targets(self, ctx, target_filename, mulled_targets, tag, base_image):

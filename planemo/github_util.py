@@ -30,6 +30,7 @@ GH_VERSION = "1.5.0"
 NO_GITHUB_DEP_ERROR = ("Cannot use github functionality - "
                        "PyGithub library not available.")
 FAILED_TO_DOWNLOAD_GH = "No gh executable available and it could not be installed."
+DEFAULT_REMOTE_NAME = 'planemo-remote'
 
 
 def get_github_config(ctx, allow_anonymous=False):
@@ -50,17 +51,18 @@ def clone_fork_branch(ctx, target, path, **kwds):
     )
     if kwds.get("fork"):
         try:
-            fork(ctx, path, **kwds)
+            return fork(ctx, path, **kwds)
         except Exception:
             pass
 
 
-def fork(ctx, path, **kwds):
-    """Fork the target repository using ``hub``."""
+def fork(ctx, path, remote_name=DEFAULT_REMOTE_NAME, **kwds):
+    """Fork the target repository using ``gh``."""
     gh_path = ensure_gh(ctx, **kwds)
     gh_env = get_gh_env(ctx, path, **kwds)
-    cmd = [gh_path, "repo", "fork", '--remote']
+    cmd = [gh_path, "repo", "fork", '--remote', '--remote-name', remote_name]
     communicate(cmd, env=gh_env)
+    return remote_name
 
 
 def get_or_create_repository(ctx, owner, repo, dry_run=True, **kwds):
