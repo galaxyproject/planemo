@@ -105,7 +105,7 @@ def lint_urls(root, lint_ctx):
     urls, docs = find_urls_for_xml(root)
 
     # This is from Google Chome on macOS, current at time of writing:
-    BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.75 Safari/537.36"
+    BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36"
 
     def validate_url(url, lint_ctx, user_agent=None):
         is_valid = True
@@ -120,8 +120,11 @@ def lint_urls(root, lint_ctx):
                 r.raise_for_status()
                 next(r.iter_content(1000))
             except Exception as e:
-                if r and r.status_code == 429:
+                if r is not None and r.status_code == 429:
                     # too many requests
+                    pass
+                if r is not None and r.status_code == 403 and 'cloudflare' in r.text:
+                    # CloudFlare protection block
                     pass
                 else:
                     is_valid = False

@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import os
-from collections import namedtuple
+from typing import NamedTuple
 from xml.etree import ElementTree as ET
 
 from six.moves import shlex_quote
@@ -202,10 +202,10 @@ def _parse_num(num_str):
     return num
 
 
-_TestId = namedtuple("TestId", ["name", "num", "id"])
-
-
-class TestId(_TestId):
+class TestId(NamedTuple):
+    name: str
+    num: int
+    id: str
 
     @property
     def label(self):
