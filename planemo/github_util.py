@@ -162,7 +162,7 @@ def create_release(ctx, from_dir, target_dir, owner, repo, version, dry_run, not
         ctx.log("Would run command '{}'".format(" ".join(cmd)))
 
 
-def pull_request(ctx, path, message=None, **kwds):
+def pull_request(ctx, path, message=None, repo=None, **kwds):
     """Create a pull request against the origin of the path using ``gh``."""
     gh_path = ensure_gh(ctx, **kwds)
     gh_env = get_gh_env(ctx, path, **kwds)
@@ -174,6 +174,8 @@ def pull_request(ctx, path, message=None, **kwds):
         cmd.extend(['--title', lines[0]])
         if len(lines) > 1:
             cmd.extend(["--body", "\n".join(lines[1:])])
+    if repo:
+        cmd.extend(['--repo', repo])
     communicate(cmd, env=gh_env)
 
 
