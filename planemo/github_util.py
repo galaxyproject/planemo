@@ -61,7 +61,7 @@ def fork(ctx, path, remote_name=DEFAULT_REMOTE_NAME, **kwds):
     gh_path = ensure_gh(ctx, **kwds)
     gh_env = get_gh_env(ctx, path, **kwds)
     cmd = [gh_path, "repo", "fork", '--remote=true', '--remote-name', remote_name]
-    subprocess.run(cmd, cwd=path, env={'GITHUB_TOKEN': gh_env["GITHUB_TOKEN"]})
+    subprocess.run(cmd, cwd=path, env={'GITHUB_TOKEN': gh_env["GITHUB_TOKEN"], 'PATH': os.environ['PATH']})
     return remote_name
 
 
