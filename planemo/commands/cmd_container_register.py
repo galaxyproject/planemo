@@ -91,7 +91,6 @@ def cli(ctx, paths, **kwds):
         mulled_targets = conda_to_mulled_targets(conda_targets)
         mulled_targets_str = "- " + "\n- ".join(map(conda_build_target_str, mulled_targets))
 
-
         if len(mulled_targets) < 1:
             ctx.log("Skipping registration, no targets discovered.")
             continue
@@ -132,7 +131,6 @@ def cli(ctx, paths, **kwds):
             if base_image != DEFAULT_BASE_IMAGE:
                 ctx.log("%s requires '%s' as base image" % (conda_target, base_image))
                 break
-
 
         registry_target.write_targets(ctx, target_filename, mulled_targets, tag, base_image)
         tools_str = "\n".join(map(lambda p: "- " + os.path.basename(p), tool_paths))
