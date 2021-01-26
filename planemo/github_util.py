@@ -56,8 +56,9 @@ def clone_fork_branch(ctx, target, path, remote_name=DEFAULT_REMOTE_NAME, **kwds
     if 'GITHUB_USER' in os.environ:
         # On CI systems fork doesn't add a local remote under circumstances I don't quite understand,
         # but that's probably linked to https://github.com/cli/cli/issues/2722
+        cmd = ['git', 'remote', 'add', remote_name, f"https://github.com/{os.environ['GITHUB_USER']}/{os.path.basename(target)}"]
         try:
-            communicate(['git', 'remote', 'add', remote_name, f"https://github.com/{os.environ['GITHUB_USER']}/{os.path.basename(target)}"])
+            communicate(cmd, cwd=path)
         except RuntimeError:
             # Can add the remote only once
             pass
