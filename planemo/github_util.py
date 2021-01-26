@@ -58,9 +58,8 @@ def clone_fork_branch(ctx, target, path, **kwds):
 def fork(ctx, path, remote_name=DEFAULT_REMOTE_NAME, **kwds):
     """Fork the target repository using ``gh``."""
     gh_path = ensure_gh(ctx, **kwds)
-    gh_env = get_gh_env(ctx, path, **kwds)
-    cmd = [gh_path, "repo", "fork", '--remote-name', remote_name]
-    communicate(cmd, env=gh_env)
+    cmd = [gh_path, "repo", "fork", '--remote', '--remote-name', remote_name]
+    communicate(cmd, cwd=path)
     return remote_name
 
 
