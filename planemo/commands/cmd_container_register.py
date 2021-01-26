@@ -187,7 +187,7 @@ class RegistryTarget(object):
             add(ctx, self.target_repository, target_filename)
             commit(ctx, self.target_repository, message=message)
             force_push = kwds.get("force_push", False)
-            push(ctx, self.target_repository, self.remote_name, branch_name, force=force_push)
+            push(ctx, repo_path=self.target_repository, to=self.remote_name, branch=branch_name, force=force_push)
             pull_request(ctx, self.target_repository, message=message, repo=REGISTERY_REPOSITORY)
 
     def write_targets(self, ctx, target_filename, mulled_targets, tag, base_image):
