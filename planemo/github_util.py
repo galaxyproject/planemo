@@ -4,6 +4,7 @@ from __future__ import absolute_import
 import io
 import os
 import stat
+import subprocess
 import tarfile
 import tempfile
 from distutils.dir_util import copy_tree
@@ -60,7 +61,7 @@ def fork(ctx, path, remote_name=DEFAULT_REMOTE_NAME, **kwds):
     gh_path = ensure_gh(ctx, **kwds)
     gh_env = get_gh_env(ctx, path, **kwds)
     cmd = [gh_path, "repo", "fork", '--remote=true', '--remote-name', remote_name]
-    communicate(cmd, cwd=path, env={'GITHUB_TOKEN': gh_env["GITHUB_TOKEN"]})
+    subprocess.run(cmd, cwd=path, env={'GITHUB_TOKEN': gh_env["GITHUB_TOKEN"]})
     return remote_name
 
 
