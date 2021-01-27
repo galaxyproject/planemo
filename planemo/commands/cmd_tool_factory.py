@@ -29,4 +29,5 @@ def cli(ctx, **kwds):
     runnables = for_paths([tf_dir])
     kwds['galaxy_brand'] = 'Planemo ToolFactory'
     kwds['display_galaxy_brand'] = 'false'
+    kwds['galaxy_skip_client_build'] = kwds.pop("skip_client_build", False)
     galaxy_serve(ctx, runnables, **kwds)
