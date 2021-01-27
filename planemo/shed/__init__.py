@@ -9,10 +9,10 @@ import re
 import shutil
 import sys
 import tarfile
-from collections import namedtuple
 from tempfile import (
     mkstemp,
 )
+from typing import NamedTuple
 
 import bioblend
 import six
@@ -25,6 +25,7 @@ from galaxy.util import (
 from planemo import git
 from planemo import glob
 from planemo import templates
+from planemo.bioblend import toolshed
 from planemo.io import (
     can_write_to_path,
     coalesce_return_codes,
@@ -177,10 +178,10 @@ yaml.Loader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
 yaml.SafeLoader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
 
 
-_ShedContext = namedtuple("ShedContext", ["tsi", "shed_config", "config_owner"])
-
-
-class ShedContext(_ShedContext):
+class ShedContext(NamedTuple):
+    tsi: toolshed.ToolShedInstance
+    shed_config: dict
+    config_owner: str
 
     def owner(self):
         owner = self.config_owner
@@ -730,7 +731,7 @@ def build_tarball(realized_path, **kwds):
 
     # Simplest solution to sorting the files is to use a list,
     files = []
-    for dirpath, dirnames, filenames in os.walk(realized_path):
+    for dirpath, _dirnames, filenames in os.walk(realized_path):
         for f in filenames:
             files.append(os.path.join(dirpath, f))
     files.sort()
@@ -1112,7 +1113,9 @@ class RawRepositoryDirectory(object):
         return False
 
 
-RealizedFiles = namedtuple("RealizedFiles", ["files", "include_failures"])
+class RealizedFiles(NamedTuple):
+    files: list
+    include_failures: list
 
 
 class RealizedFile(object):
