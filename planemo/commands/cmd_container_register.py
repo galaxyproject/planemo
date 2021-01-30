@@ -29,9 +29,9 @@ from planemo.github_util import (
 )
 from planemo.mulled import conda_to_mulled_targets
 
-REGISTERY_TARGET_NAME = "multi-package-containers"
-REGISTERY_TARGET_PATH = "combinations"
-REGISTERY_REPOSITORY = "BioContainers/multi-package-containers"
+REGISTRY_TARGET_NAME = "multi-package-containers"
+REGISTRY_TARGET_PATH = "combinations"
+REGISTRY_REPOSITORY = "BioContainers/multi-package-containers"
 DEFAULT_MESSAGE = "Add container $hash.\n**Hash**: $hash\n\n**Packages**:\n$packages\nBase Image:$base_image\n\n"
 DEFAULT_MESSAGE += "**For** :\n$tools\n\nGenerated with Planemo."
 CONTENTS = "#targets\tbase_image\timage_build\n$targets\t$base_image\t$image_build\n"
@@ -64,7 +64,7 @@ BIOCONTAINERS_PLATFORM = 'linux-64'
     "--pull_request/--no_pull_request",
     is_flag=True,
     default=True,
-    help="Fork and create a pull request against %s for these changes." % REGISTERY_REPOSITORY
+    help="Fork and create a pull request against %s for these changes." % REGISTRY_REPOSITORY
 )
 @click.option(
     "--force_push/--no_force_push",
@@ -148,11 +148,11 @@ class RegistryTarget(object):
         self.remote_name = DEFAULT_REMOTE_NAME
         do_pull_request = kwds.get("pull_request", True)
         if output_directory is None:
-            target_repository = os.path.join(ctx.workspace, REGISTERY_TARGET_NAME)
-            output_directory = os.path.join(target_repository, REGISTERY_TARGET_PATH)
+            target_repository = os.path.join(ctx.workspace, REGISTRY_TARGET_NAME)
+            output_directory = os.path.join(target_repository, REGISTRY_TARGET_PATH)
             self.remote_name = clone_fork_branch(
                 ctx,
-                "https://github.com/%s" % REGISTERY_REPOSITORY,
+                "https://github.com/%s" % REGISTRY_REPOSITORY,
                 target_repository,
                 fork=do_pull_request,
             ) or self.remote_name
@@ -186,7 +186,7 @@ class RegistryTarget(object):
             commit(ctx, self.target_repository, message=message)
             force_push = kwds.get("force_push", False)
             push(ctx, repo_path=self.target_repository, to=self.remote_name, branch=branch_name, force=force_push)
-            pull_request(ctx, self.target_repository, message=message, repo=REGISTERY_REPOSITORY)
+            pull_request(ctx, self.target_repository, message=message, repo=REGISTRY_REPOSITORY)
 
     def write_targets(self, ctx, target_filename, mulled_targets, tag, base_image):
         with open(target_filename, "w") as f:
@@ -212,6 +212,6 @@ def to_target_str(targets):
 
 
 def open_prs(ctx):
-    repo = get_repository_object(ctx, REGISTERY_REPOSITORY)
+    repo = get_repository_object(ctx, REGISTRY_REPOSITORY)
     prs = [pr for pr in repo.get_pulls()]
     return prs
