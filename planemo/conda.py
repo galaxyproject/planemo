@@ -10,6 +10,7 @@ import os
 import threading
 
 from galaxy.tool_util.deps import conda_util
+from galaxy.util import unicodify
 
 from planemo.exit_codes import EXIT_CODE_FAILED_DEPENDENCIES, ExitCodeException
 from planemo.io import error, shell
@@ -118,11 +119,14 @@ def collect_conda_target_lists_and_tool_paths(ctx, paths, recursive=False, found
     conda_target_lists = set([])
     tool_paths = collections.defaultdict(list)
     for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, paths, recursive=recursive, yield_load_errors=False):
-        if found_tool_callback:
-            found_tool_callback(tool_path)
-        targets = frozenset(tool_source_conda_targets(tool_source))
-        conda_target_lists.add(targets)
-        tool_paths[targets].append(tool_path)
+        try:
+            if found_tool_callback:
+                found_tool_callback(tool_path)
+            targets = frozenset(tool_source_conda_targets(tool_source))
+            conda_target_lists.add(targets)
+            tool_paths[targets].append(tool_path)
+        except Exception as e:
+            ctx.log(f"Error while collecting list of conda targets for '{tool_path}': {unicodify(e)}")
 
     # Turn them into lists so the order matches before returning...
     conda_target_lists = list(conda_target_lists)

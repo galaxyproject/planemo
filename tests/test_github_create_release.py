@@ -29,7 +29,7 @@ def test_get_or_create_repo_with_new_repo():
         # Token isn't valid, so this errors out while running gh create
         get_or_create_repository(ctx, owner=str(uuid.uuid4()), repo='some-repo', dry_run=False)
     assert "Problem executing commands" in str(excinfo.value)
-    assert "gh repo create -y" in str(excinfo.value)
+    assert "repo create -y" in str(excinfo.value)
 
 
 def test_add_dir_contents_to_repo():
