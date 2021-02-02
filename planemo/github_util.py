@@ -10,7 +10,6 @@ from distutils.dir_util import copy_tree
 from pathlib import Path
 
 import requests
-from galaxy.tool_util.deps.commands import which
 
 from planemo import git
 from planemo.io import (
@@ -25,11 +24,12 @@ except ImportError:
     github = None
     has_github_lib = False
 
-GH_VERSION = "1.1.0"
+GH_VERSION = "1.5.0"
 
 NO_GITHUB_DEP_ERROR = ("Cannot use github functionality - "
                        "PyGithub library not available.")
 FAILED_TO_DOWNLOAD_GH = "No gh executable available and it could not be installed."
+DEFAULT_REMOTE_NAME = 'planemo-remote'
 
 
 def get_github_config(ctx, allow_anonymous=False):
@@ -38,7 +38,7 @@ def get_github_config(ctx, allow_anonymous=False):
     return GithubConfig(global_github_config, allow_anonymous=allow_anonymous)
 
 
-def clone_fork_branch(ctx, target, path, **kwds):
+def clone_fork_branch(ctx, target, path, remote_name=DEFAULT_REMOTE_NAME, **kwds):
     """Clone, fork, and branch a repository ahead of building a pull request."""
     git.checkout(
         ctx,
@@ -50,17 +50,28 @@ def clone_fork_branch(ctx, target, path, **kwds):
     )
     if kwds.get("fork"):
         try:
-            fork(ctx, path, **kwds)
+            fork(ctx, path, remote_name=remote_name, **kwds)
         except Exception:
             pass
+    if 'GITHUB_USER' in os.environ:
+        # On CI systems fork doesn't add a local remote under circumstances I don't quite understand,
+        # but that's probably linked to https://github.com/cli/cli/issues/2722
+        cmd = ['git', 'remote', 'add', remote_name, f"https://github.com/{os.environ['GITHUB_USER']}/{os.path.basename(target)}"]
+        try:
+            communicate(cmd, cwd=path)
+        except RuntimeError:
+            # Can add the remote only once
+            pass
+    return remote_name
 
 
-def fork(ctx, path, **kwds):
-    """Fork the target repository using ``hub``."""
+def fork(ctx, path, remote_name=DEFAULT_REMOTE_NAME, **kwds):
+    """Fork the target repository using ``gh``."""
     gh_path = ensure_gh(ctx, **kwds)
     gh_env = get_gh_env(ctx, path, **kwds)
-    cmd = [gh_path, "repo", "fork"]
-    communicate(cmd, env=gh_env)
+    cmd = [gh_path, "repo", "fork", '--remote=true', '--remote-name', remote_name]
+    communicate(cmd, cwd=path, env=gh_env)
+    return remote_name
 
 
 def get_or_create_repository(ctx, owner, repo, dry_run=True, **kwds):
@@ -161,7 +172,7 @@ def create_release(ctx, from_dir, target_dir, owner, repo, version, dry_run, not
         ctx.log("Would run command '{}'".format(" ".join(cmd)))
 
 
-def pull_request(ctx, path, message=None, **kwds):
+def pull_request(ctx, path, message=None, repo=None, **kwds):
     """Create a pull request against the origin of the path using ``gh``."""
     gh_path = ensure_gh(ctx, **kwds)
     gh_env = get_gh_env(ctx, path, **kwds)
@@ -173,11 +184,13 @@ def pull_request(ctx, path, message=None, **kwds):
         cmd.extend(['--title', lines[0]])
         if len(lines) > 1:
             cmd.extend(["--body", "\n".join(lines[1:])])
+    if repo:
+        cmd.extend(['--repo', repo])
     communicate(cmd, env=gh_env)
 
 
 def get_gh_env(ctx, path=None, dry_run=False, **kwds):
-    """Return a environment dictionary to run hub with given user and repository target."""
+    """Return a environment dictionary to run gh with given user and repository target."""
     if path is None:
         env = {}
     else:
@@ -192,23 +205,20 @@ def get_gh_env(ctx, path=None, dry_run=False, **kwds):
 
 
 def ensure_gh(ctx, **kwds):
-    """Ensure ``hub`` is on the system ``PATH``.
+    """Ensure gh is available for planemo
 
-    This method will ensure ``hub`` is installed if it isn't available.
+    This method will ensure ``gh`` is installed at the correct version.
 
-    For more information on ``hub`` checkout ...
+    For more information on ``gh`` checkout https://cli.github.com/
     """
-    gh_path = which("gh")
-    if not gh_path:
-        planemo_gh_path = os.path.join(ctx.workspace, "gh")
-        if not os.path.exists(planemo_gh_path):
-            _try_download_gh(planemo_gh_path)
+    planemo_gh_path = os.path.join(ctx.workspace, f"gh-{GH_VERSION}")
+    if not os.path.exists(planemo_gh_path):
+        _try_download_gh(planemo_gh_path)
 
-        if not os.path.exists(planemo_gh_path):
-            raise Exception(FAILED_TO_DOWNLOAD_GH)
+    if not os.path.exists(planemo_gh_path):
+        raise Exception(FAILED_TO_DOWNLOAD_GH)
 
-        gh_path = planemo_gh_path
-    return gh_path
+    return planemo_gh_path
 
 
 def _try_download_gh(planemo_gh_path):

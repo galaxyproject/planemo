@@ -21,12 +21,17 @@ from planemo.conda import (
     collect_conda_target_lists_and_tool_paths
 )
 from planemo.git import add, branch, commit, push
-from planemo.github_util import clone_fork_branch, get_repository_object, pull_request
+from planemo.github_util import (
+    clone_fork_branch,
+    DEFAULT_REMOTE_NAME,
+    get_repository_object,
+    pull_request,
+)
 from planemo.mulled import conda_to_mulled_targets
 
-REGISTERY_TARGET_NAME = "multi-package-containers"
-REGISTERY_TARGET_PATH = "combinations"
-REGISTERY_REPOSITORY = "BioContainers/multi-package-containers"
+REGISTRY_TARGET_NAME = "multi-package-containers"
+REGISTRY_TARGET_PATH = "combinations"
+REGISTRY_REPOSITORY = "BioContainers/multi-package-containers"
 DEFAULT_MESSAGE = "Add container $hash.\n**Hash**: $hash\n\n**Packages**:\n$packages\nBase Image:$base_image\n\n"
 DEFAULT_MESSAGE += "**For** :\n$tools\n\nGenerated with Planemo."
 CONTENTS = "#targets\tbase_image\timage_build\n$targets\t$base_image\t$image_build\n"
@@ -59,7 +64,7 @@ BIOCONTAINERS_PLATFORM = 'linux-64'
     "--pull_request/--no_pull_request",
     is_flag=True,
     default=True,
-    help="Fork and create a pull request against %s for these changes." % REGISTERY_REPOSITORY
+    help="Fork and create a pull request against %s for these changes." % REGISTRY_REPOSITORY
 )
 @click.option(
     "--force_push/--no_force_push",
@@ -85,26 +90,6 @@ def cli(ctx, paths, **kwds):
         ctx.vlog("Handling conda_targets [%s]" % conda_targets)
         mulled_targets = conda_to_mulled_targets(conda_targets)
         mulled_targets_str = "- " + "\n- ".join(map(conda_build_target_str, mulled_targets))
-        best_practice_requirements = True
-        for conda_target in conda_targets:
-            best_hit, exact = best_practice_search(conda_target, conda_context=conda_context, platform=BIOCONTAINERS_PLATFORM)
-            if not best_hit:
-                ctx.log("Target [%s] is not available in best practice channels - skipping" % conda_target)
-                best_practice_requirements = False
-            if not exact:
-                ctx.log("Target version [%s] for package [%s] is not available in best practice channels - please specify the full version",
-                        conda_target.version,
-                        conda_target.package)
-
-        if not best_practice_requirements:
-            continue
-
-        base_image = DEFAULT_BASE_IMAGE
-        for conda_target in conda_targets:
-            base_image = base_image_for_targets([conda_target], conda_context=conda_context)
-            if base_image != DEFAULT_BASE_IMAGE:
-                ctx.log("%s requires '%s' as base image" % (conda_target, base_image))
-                break
 
         if len(mulled_targets) < 1:
             ctx.log("Skipping registration, no targets discovered.")
@@ -126,6 +111,27 @@ def cli(ctx, paths, **kwds):
             ctx.vlog("Found matching open pull request for [%s], skipping" % name)
             continue
 
+        best_practice_requirements = True
+        for conda_target in conda_targets:
+            best_hit, exact = best_practice_search(conda_target, conda_context=conda_context, platform=BIOCONTAINERS_PLATFORM)
+            if not best_hit:
+                ctx.log("Target [%s] is not available in best practice channels - skipping" % conda_target)
+                best_practice_requirements = False
+            if not exact:
+                ctx.log("Target version [%s] for package [%s] is not available in best practice channels - please specify the full version",
+                        conda_target.version,
+                        conda_target.package)
+
+        if not best_practice_requirements:
+            continue
+
+        base_image = DEFAULT_BASE_IMAGE
+        for conda_target in conda_targets:
+            base_image = base_image_for_targets([conda_target], conda_context=conda_context)
+            if base_image != DEFAULT_BASE_IMAGE:
+                ctx.log("%s requires '%s' as base image" % (conda_target, base_image))
+                break
+
         registry_target.write_targets(ctx, target_filename, mulled_targets, tag, base_image)
         tools_str = "\n".join(map(lambda p: "- " + os.path.basename(p), tool_paths))
         registry_target.handle_pull_request(ctx, name, target_filename, mulled_targets_str, tools_str, base_image, **kwds)
@@ -139,16 +145,17 @@ class RegistryTarget(object):
         output_directory = kwds["output_directory"]
         pr_titles = []
         target_repository = None
+        self.remote_name = DEFAULT_REMOTE_NAME
         do_pull_request = kwds.get("pull_request", True)
         if output_directory is None:
-            target_repository = os.path.join(ctx.workspace, REGISTERY_TARGET_NAME)
-            output_directory = os.path.join(target_repository, REGISTERY_TARGET_PATH)
-            clone_fork_branch(
+            target_repository = os.path.join(ctx.workspace, REGISTRY_TARGET_NAME)
+            output_directory = os.path.join(target_repository, REGISTRY_TARGET_PATH)
+            self.remote_name = clone_fork_branch(
                 ctx,
-                "https://github.com/%s" % REGISTERY_REPOSITORY,
+                "https://github.com/%s" % REGISTRY_REPOSITORY,
                 target_repository,
                 fork=do_pull_request,
-            )
+            ) or self.remote_name
             pr_titles = [pr.title for pr in open_prs(ctx)]
 
         self.do_pull_request = do_pull_request
@@ -178,8 +185,8 @@ class RegistryTarget(object):
             add(ctx, self.target_repository, target_filename)
             commit(ctx, self.target_repository, message=message)
             force_push = kwds.get("force_push", False)
-            push(ctx, self.target_repository, 'origin', branch_name, force=force_push)
-            pull_request(ctx, self.target_repository, message=message)
+            push(ctx, repo_path=self.target_repository, to=self.remote_name, branch=branch_name, force=force_push)
+            pull_request(ctx, self.target_repository, message=message, repo=REGISTRY_REPOSITORY)
 
     def write_targets(self, ctx, target_filename, mulled_targets, tag, base_image):
         with open(target_filename, "w") as f:
@@ -205,6 +212,6 @@ def to_target_str(targets):
 
 
 def open_prs(ctx):
-    repo = get_repository_object(ctx, REGISTERY_REPOSITORY)
+    repo = get_repository_object(ctx, REGISTRY_REPOSITORY)
     prs = [pr for pr in repo.get_pulls()]
     return prs

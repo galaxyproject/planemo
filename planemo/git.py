@@ -49,7 +49,7 @@ def push(ctx, repo_path, to=None, branch=None, force=False):
     if force:
         cmd += ["--force"]
     if to and branch:
-        cmd += [to, branch]
+        cmd += ['-u', to, branch]
     io.communicate(cmd, env=env, cwd=repo_path)
 
 
