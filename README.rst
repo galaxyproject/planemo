@@ -100,7 +100,7 @@ can be used to test a tool or a directory of tools.
 
 ::
 
-    $ planemo test --galaxy_root=../galaxy randomlines.xml
+   $ planemo test --galaxy_root=../galaxy randomlines.xml
 
 If no ``--galaxy_root`` is defined, Planemo will download and configure
 a disposable Galaxy instance for testing.
@@ -116,7 +116,7 @@ Galaxy interface using the ``serve`` (``s``) `command
 
 ::
 
-    $ planemo serve
+   $ planemo serve
 
 Like ``test``, ``serve`` requires a Galaxy root and one can be
 explicitly specified with ``--galaxy_root`` or installed dynamically
