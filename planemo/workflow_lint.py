@@ -91,7 +91,7 @@ def _lint_tsts(path, lint_context):
                 all_tests_valid = False
 
         if all_tests_valid:
-            lint_context.valid("Tests appear structurally correct")
+            lint_context.valid(f"Tests appear structurally correct for {runnable.path}")
 
 
 def _lint_case(path, test_case, lint_context):
