@@ -6,6 +6,7 @@ import abc
 import os
 from distutils.dir_util import copy_tree
 from enum import auto, Enum
+from pathlib import Path
 from typing import NamedTuple
 from urllib.parse import urlparse
 
@@ -27,6 +28,7 @@ from six import (
 from planemo.exit_codes import EXIT_CODE_UNKNOWN_FILE_TYPE, ExitCodeException
 from planemo.galaxy.workflows import describe_outputs, GALAXY_WORKFLOWS_PREFIX
 from planemo.io import error
+from planemo.shed import DOCKSTORE_REGISTRY_CONF
 from planemo.test import check_output, for_collections
 
 TEST_SUFFIXES = [
@@ -159,10 +161,36 @@ def _copy_runnable_tree(path, runnable_type, temp_path):
     return path
 
 
-def for_path(path, temp_path=None):
+def workflows_from_dockstore_yaml(path):
+    workflows = []
+    parent_dir = Path(path).absolute().parent
+    with open(path) as y:
+        for workflow in yaml.safe_load(y).get('workflows', []):
+            workflow_path = workflow.get('primaryDescriptorPath')
+            if workflow_path:
+                if workflow_path.startswith('/'):
+                    workflow_path = workflow_path[1:]
+            workflows.append(parent_dir.joinpath(workflow_path))
+    return workflows
+
+
+def workfow_dir_runnables(path, return_all=False):
+    dockstore_path = os.path.join(path, DOCKSTORE_REGISTRY_CONF)
+    if os.path.exists(dockstore_path):
+        runnables = [Runnable(str(path), RunnableType.galaxy_workflow) for path in workflows_from_dockstore_yaml(dockstore_path)]
+        if return_all:
+            return runnables
+        else:
+            return runnables[0]
+
+
+def for_path(path, temp_path=None, return_all=False):
     """Produce a class:`Runnable` for supplied path."""
     runnable_type = None
     if os.path.isdir(path):
+        runnable = workfow_dir_runnables(path, return_all=return_all)
+        if runnable:
+            return runnable
         runnable_type = RunnableType.directory
     elif looks_like_a_tool_cwl(path):
         runnable_type = RunnableType.cwl_tool
