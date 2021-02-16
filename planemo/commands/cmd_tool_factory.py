@@ -7,6 +7,7 @@ from planemo import options
 from planemo.cli import command_function
 from planemo.galaxy import galaxy_serve
 from planemo.runnable import for_paths
+from planemo.tools import uris_to_paths
 
 
 @click.command('tool_factory')
@@ -15,7 +16,7 @@ from planemo.runnable import for_paths
 @options.enable_cwl_option()
 @options.galaxy_cwl_root_option()
 @command_function
-def cli(ctx, **kwds):
+def cli(ctx, uris, **kwds):
     """(Experimental) Launch Galaxy with Tool Factory 2.
     For more information about the Galaxy Tool Factory see the publication
     Creating reusable tools from scripts: the Galaxy Tool Factory by Lazarus
@@ -26,8 +27,10 @@ def cli(ctx, **kwds):
     mod_dir = os.path.dirname(__file__)
     tf_dir = os.path.join(mod_dir, '..', '..', 'planemo_ext', 'tool_factory_2')
     tf_dir = os.path.abspath(tf_dir)
-    runnables = for_paths([tf_dir])
-    kwds['galaxy_brand'] = 'Planemo ToolFactory'
+    paths = uris_to_paths(ctx, uris)
+    paths.append(tf_dir)
+    runnables = for_paths(paths)
+    kwds['galaxy_brand'] = 'ToolFactory in Planemo'
     kwds['display_galaxy_brand'] = 'false'
     kwds['galaxy_skip_client_build'] = kwds.pop("skip_client_build", False)
     galaxy_serve(ctx, runnables, **kwds)
