@@ -8,6 +8,7 @@ from planemo.cli import command_function
 from planemo.galaxy import galaxy_serve
 from planemo.runnable import for_paths
 
+
 @click.command('tool_factory')
 @options.optional_tools_arg(multiple=True, allow_uris=False)
 @options.galaxy_serve_options()
