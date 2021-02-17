@@ -10,13 +10,14 @@ from planemo.runnable import for_paths
 
 
 
+
 @click.command('tool_factory')
 @options.optional_tools_arg(multiple=True, allow_uris=False)
 @options.galaxy_serve_options()
 @options.enable_cwl_option()
 @options.galaxy_cwl_root_option()
 @command_function
-def cli(ctx, uris, **kwds):
+def cli(ctx,  **kwds):
     """(Experimental) Launch Galaxy with Tool Factory 2.
     For more information about the Galaxy Tool Factory see the publication
     Creating reusable tools from scripts: the Galaxy Tool Factory by Lazarus
