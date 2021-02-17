@@ -133,6 +133,13 @@ class Runnable(NamedTuple):
         return _runnable_delegate_attribute('is_single_artifact')
 
 
+class Rerunnable(NamedTuple):
+    """Abstraction describing previously executed runs of tools (jobs) and workflows (invocations) on external Galaxy instances."""
+    rerunnable_id: str
+    rerunnable_type: str
+    server_url: str
+
+
 def _runnable_delegate_attribute(attribute):
 
     @property

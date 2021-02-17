@@ -29,7 +29,7 @@ from requests.exceptions import RequestException
 from six.moves.urllib.parse import urljoin
 
 from planemo.galaxy.api import summarize_history
-from planemo.io import wait_on
+from planemo.io import error, wait_on
 from planemo.runnable import (
     ErrorRunResponse,
     get_outputs,
@@ -262,6 +262,46 @@ def _file_path_to_name(file_path):
     else:
         name = "defaultname"
     return name
+
+
+def execute_rerun(ctx, config, rerunnable, **kwds):
+    user_gi = config.user_gi
+    if rerunnable.rerunnable_type == 'invocation':
+        invocation_id = rerunnable.rerunnable_id
+        response_class = GalaxyToolRunResponse
+        if kwds.get('failed'):
+            inv = user_gi.invocations.show_invocation(invocation_id)
+            inv_steps = inv['steps']
+            for step in inv_steps:
+                if step['job_id']:
+                    job_id = step['job_id']
+                    if user_gi.jobs.show_job(job_id)['state'] == 'error':
+                        try:
+                            user_gi.jobs.rerun_job(job_id, remap=True)
+                        except ValueError:
+                            error(f"Job {job_id} could not be rerun with dataset remapping.")
+            response_kwds = {
+                'job_info': None,
+                'api_run_response': None,
+            }
+        else:
+            raise NotImplementedError('Rerunning an entire invocation is not currently implemented.')
+
+    if rerunnable.rerunnable_type == 'job':
+        job_id = rerunnable.rerunnable_id
+        response_class = GalaxyToolRunResponse
+        user_gi.jobs.rerun_job(job_id)
+
+    run_response = response_class(
+        ctx=ctx,
+        runnable=rerunnable,
+        user_gi=user_gi,
+        history_id=inv['history_id'],
+        log=log_contents_str(config),
+        **response_kwds
+    )
+
+    return run_response
 
 
 class GalaxyBaseRunResponse(SuccessfulRunResponse):

@@ -722,6 +722,14 @@ def required_runnable_arg():
     )
 
 
+def required_rerunnable_arg():
+    return click.argument(
+        'rerunnable_identifier',
+        metavar="RERUNNABLE_PATH_OR_ID",
+        type=str,
+    )
+
+
 def _optional_tools_default(ctx, param, value):
     if param.name in ["paths", "uris"] and len(value) == 0:
         return [os.path.abspath(os.getcwd())]
