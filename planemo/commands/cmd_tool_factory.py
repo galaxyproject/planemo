@@ -27,9 +27,7 @@ def cli(ctx, uris, **kwds):
     mod_dir = os.path.dirname(__file__)
     tf_dir = os.path.join(mod_dir, '..', '..', 'planemo_ext', 'tool_factory_2')
     tf_dir = os.path.abspath(tf_dir)
-    paths = uris_to_paths(ctx, uris)
-    paths.append(tf_dir)
-    runnables = for_paths(paths)
+    runnables = for_paths(tf_dir)
     kwds['galaxy_brand'] = 'ToolFactory in Planemo'
     kwds['display_galaxy_brand'] = 'false'
     kwds['galaxy_skip_client_build'] = kwds.pop("skip_client_build", False)
