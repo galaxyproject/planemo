@@ -11,7 +11,7 @@ from planemo.runnable import for_paths
 
 
 @click.command('tool_factory')
-@options.optional_tools_arg(multiple=True)
+@options.optional_tools_arg(multiple=True, allow_uris=False)
 @options.galaxy_serve_options()
 @options.enable_cwl_option()
 @options.galaxy_cwl_root_option()
