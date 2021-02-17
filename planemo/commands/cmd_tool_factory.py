@@ -8,9 +8,6 @@ from planemo.cli import command_function
 from planemo.galaxy import galaxy_serve
 from planemo.runnable import for_paths
 
-
-
-
 @click.command('tool_factory')
 @options.optional_tools_arg(multiple=True, allow_uris=False)
 @options.galaxy_serve_options()
@@ -28,7 +25,7 @@ def cli(ctx,  **kwds):
     mod_dir = os.path.dirname(__file__)
     tf_dir = os.path.join(mod_dir, '..', '..', 'planemo_ext', 'tool_factory_2')
     tf_dir = os.path.abspath(tf_dir)
-    runnables = for_paths([tf_dir,])
+    runnables = for_paths([tf_dir, ])
     kwds['galaxy_brand'] = 'ToolFactory in Planemo'
     kwds['display_galaxy_brand'] = 'false'
     kwds['galaxy_skip_client_build'] = kwds.pop("skip_client_build", False)
