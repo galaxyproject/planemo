@@ -7,6 +7,7 @@ import contextlib
 import os
 import random
 import shutil
+import threading
 from string import Template
 from tempfile import mkdtemp
 
@@ -212,9 +213,35 @@ def galaxy_config(ctx, runnables, **kwds):
         c = docker_galaxy_config
     elif kwds.get("external", False):
         c = external_galaxy_config
+    log_thread = None
+    try:
+        with c(ctx, runnables, **kwds) as config:
+            if kwds.get('daemon'):
+                log_thread = threading.Thread(target=read_log, args=(ctx, config.log_file))
+                log_thread.daemon = True
+                log_thread.start()
+            yield config
+    finally:
+        if log_thread:
+            log_thread.join(1)
 
-    with c(ctx, runnables, **kwds) as config:
-        yield config
+
+def read_log(ctx, log_path):
+    log_fh = None
+    e = threading.Event()
+    try:
+        while e:
+            if os.path.exists(log_path):
+                if not log_fh:
+                    # Open in append so we start at the end of the log file
+                    log_fh = open(log_path, 'a+')
+                log_lines = log_fh.read()
+                if log_lines:
+                    ctx.log(log_lines)
+            e.wait(1)
+    finally:
+        if log_fh:
+            log_fh.close()
 
 
 def simple_docker_volume(path):
