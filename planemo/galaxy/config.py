@@ -536,8 +536,11 @@ def _all_tool_paths(runnables, **kwds):
         if runnable.type.name == "galaxy_workflow":
             tool_ids = find_tool_ids(runnable.path)
             for tool_id in tool_ids:
-                if tool_id in DISTRO_TOOLS_ID_TO_PATH:
-                    all_tool_paths.append(DISTRO_TOOLS_ID_TO_PATH[tool_id])
+                tool_paths = DISTRO_TOOLS_ID_TO_PATH.get(tool_id)
+                if tool_paths:
+                    if isinstance(tool_paths, str):
+                        tool_paths = [tool_paths]
+                    all_tool_paths.extend(tool_paths)
 
     return all_tool_paths
 
