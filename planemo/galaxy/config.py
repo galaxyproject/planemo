@@ -1227,7 +1227,6 @@ def _galaxy_source(kwds):
 
 def _install_with_command(ctx, galaxy_root, env, kwds):
     setup_venv_command = setup_venv(ctx, kwds)
-    env['__PYVENV_LAUNCHER__'] = ''
     install_cmd = shell_join(
         setup_venv_command,
         setup_common_startup_args(),
