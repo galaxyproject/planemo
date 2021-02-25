@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 import os
+import sys
 
 from galaxy.util.commands import which
 
@@ -14,17 +15,12 @@ def create_command(virtualenv_path, galaxy_python_version=None):
     subcommand virtualenv to create the virtualenv.
     """
     # Create a virtualenv with the selected python version.
-    # default to 2.7
     if galaxy_python_version is None:
         galaxy_python_version = DEFAULT_PYTHON_VERSION
-    pyvenv = which('pyvenv')
     python = which("python%s" % galaxy_python_version)
     if python:
         python = os.path.abspath(python)
     else:
-        python = 'python'
-    if pyvenv:
-        command = ['pyvenv', virtualenv_path]
-    else:
-        command = [python, '-m', 'venv', virtualenv_path]
+        python = sys.executable or 'python'
+    command = [python, '-m', 'venv', virtualenv_path]
     return " ".join(command)
