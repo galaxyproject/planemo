@@ -6,6 +6,15 @@ History
 .. to_doc
 
 ---------------------
+0.74.3 2020-02-25)
+---------------------
+
+* Load both cat1 versions when testing workflows `Pull Request 1146`_
+* Fix isolated virtualenv not getting activated `Pull Request 1145`_
+* Use bioblend's make_get_request for authenticated request `Pull Request 1144`_
+* Display live logs when Galaxy is run in background `Pull Request 1142`_
+
+---------------------
 0.74.2 (2020-02-21)
 ---------------------
 
@@ -1685,6 +1694,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1146: https://github.com/galaxyproject/planemo/pull/1146
+.. _Pull Request 1145: https://github.com/galaxyproject/planemo/pull/1145
+.. _Pull Request 1144: https://github.com/galaxyproject/planemo/pull/1144
+.. _Pull Request 1142: https://github.com/galaxyproject/planemo/pull/1142
 .. _Pull Request 1095: https://github.com/galaxyproject/planemo/pull/1095
 .. _Pull Request 1135: https://github.com/galaxyproject/planemo/pull/1135
 .. _Pull Request 1134: https://github.com/galaxyproject/planemo/pull/1134
