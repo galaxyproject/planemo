@@ -10,8 +10,7 @@ History
 ---------------------
 
 * Allow testing dir of workflows `Pull Request 1095`_
-* Fix container register for gh workflow `Pull Request 1135`_, `Pull Request
-  1133`_
+* Fix container register for gh workflow `Pull Request 1135`_, `Pull Request 1133`_
 * Don't fail URL linting if blocked by CloudFlare `Pull Request 1134`_
   1133`_
 * Allow planemo run to stage exisiting datasets and relative paths (thanks to `@simonbray`_).
