@@ -7,6 +7,7 @@ import contextlib
 import os
 import random
 import shutil
+import threading
 from string import Template
 from tempfile import mkdtemp
 
@@ -212,9 +213,35 @@ def galaxy_config(ctx, runnables, **kwds):
         c = docker_galaxy_config
     elif kwds.get("external", False):
         c = external_galaxy_config
+    log_thread = None
+    try:
+        with c(ctx, runnables, **kwds) as config:
+            if kwds.get('daemon'):
+                log_thread = threading.Thread(target=read_log, args=(ctx, config.log_file))
+                log_thread.daemon = True
+                log_thread.start()
+            yield config
+    finally:
+        if log_thread:
+            log_thread.join(1)
 
-    with c(ctx, runnables, **kwds) as config:
-        yield config
+
+def read_log(ctx, log_path):
+    log_fh = None
+    e = threading.Event()
+    try:
+        while e:
+            if os.path.exists(log_path):
+                if not log_fh:
+                    # Open in append so we start at the end of the log file
+                    log_fh = open(log_path, 'a+')
+                log_lines = log_fh.read()
+                if log_lines:
+                    ctx.log(log_lines)
+            e.wait(1)
+    finally:
+        if log_fh:
+            log_fh.close()
 
 
 def simple_docker_volume(path):
@@ -509,8 +536,11 @@ def _all_tool_paths(runnables, **kwds):
         if runnable.type.name == "galaxy_workflow":
             tool_ids = find_tool_ids(runnable.path)
             for tool_id in tool_ids:
-                if tool_id in DISTRO_TOOLS_ID_TO_PATH:
-                    all_tool_paths.append(DISTRO_TOOLS_ID_TO_PATH[tool_id])
+                tool_paths = DISTRO_TOOLS_ID_TO_PATH.get(tool_id)
+                if tool_paths:
+                    if isinstance(tool_paths, str):
+                        tool_paths = [tool_paths]
+                    all_tool_paths.extend(tool_paths)
 
     return all_tool_paths
 
@@ -1201,7 +1231,6 @@ def _galaxy_source(kwds):
 
 def _install_with_command(ctx, galaxy_root, env, kwds):
     setup_venv_command = setup_venv(ctx, kwds)
-    env['__PYVENV_LAUNCHER__'] = ''
     install_cmd = shell_join(
         setup_venv_command,
         setup_common_startup_args(),

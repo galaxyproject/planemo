@@ -8,7 +8,6 @@ import time
 import traceback
 
 import bioblend
-import requests
 from bioblend.util import attach_file
 from galaxy.tool_util.client.staging import (
     StagingInterace,
@@ -439,7 +438,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         if filename:
             data["filename"] = filename
 
-        r = requests.get(url, params=data, verify=user_gi.verify, stream=True, timeout=user_gi.timeout)
+        r = user_gi.make_get_request(url, params=data, stream=True, timeout=user_gi.timeout)
         r.raise_for_status()
 
         with open(to_path, 'wb') as fp:

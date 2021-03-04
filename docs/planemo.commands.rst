@@ -460,14 +460,6 @@ planemo.commands.cmd\_travis\_init module
    :undoc-members:
    :show-inheritance:
 
-planemo.commands.cmd\_virtualenv module
----------------------------------------
-
-.. automodule:: planemo.commands.cmd_virtualenv
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 planemo.commands.cmd\_workflow\_convert module
 ----------------------------------------------
 
@@ -515,6 +507,7 @@ planemo.commands.cmd\_workflow\_upload module
    :members:
    :undoc-members:
    :show-inheritance:
+
 
 Module contents
 ---------------
