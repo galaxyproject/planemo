@@ -6,6 +6,18 @@ History
 .. to_doc
 
 ---------------------
+0.74.2 (2020-02-21)
+---------------------
+
+* Allow testing dir of workflows `Pull Request 1095`_
+* Fix container register for gh workflow `Pull Request 1135`_, `Pull Request
+  1133`_
+* Don't fail URL linting if blocked by CloudFlare `Pull Request 1134`_
+  1133`_
+* Allow planemo run to stage exisiting datasets and relative paths (thanks to `@simonbray`_).
+  `Pull Request 1128`_
+
+---------------------
 0.74.1 (2020-01-03)
 ---------------------
 
@@ -1674,6 +1686,11 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1095: https://github.com/galaxyproject/planemo/pull/1095
+.. _Pull Request 1135: https://github.com/galaxyproject/planemo/pull/1135
+.. _Pull Request 1134: https://github.com/galaxyproject/planemo/pull/1134
+.. _Pull Request 1133: https://github.com/galaxyproject/planemo/pull/1133
+.. _Pull Request 1128: https://github.com/galaxyproject/planemo/pull/1128
 .. _Pull Request 1127: https://github.com/galaxyproject/planemo/pull/1127
 .. _Pull Request 1126: https://github.com/galaxyproject/planemo/pull/1126
 .. _Pull Request 1125: https://github.com/galaxyproject/planemo/pull/1125
