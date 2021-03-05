@@ -87,8 +87,7 @@ def shell_if_wheels(command):
 
 def setup_common_startup_args():
     return _set_variable_if_wheels(
-        # "COMMON_STARTUP_ARGS", "--dev-wheels"
-        "COMMON_STARTUP_ARGS", ""
+        "COMMON_STARTUP_ARGS", "--dev-wheels"
     )
 
 
