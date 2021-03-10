@@ -86,6 +86,12 @@ def run_in_config(ctx, config, run=run_galaxy_command, test_data_target_dir=None
             'export COMMON_STARTUP_ARGS',
             'echo "Set COMMON_STARTUP_ARGS to ${COMMON_STARTUP_ARGS}"',
         )
+    else:
+        setup_common_startup_args = shell_join(
+            'COMMON_STARTUP_ARGS=',
+            'export COMMON_STARTUP_ARGS',
+            'echo "Set COMMON_STARTUP_ARGS to ${COMMON_STARTUP_ARGS}"',
+        )
     setup_venv_command = setup_venv(ctx, kwds)
     cmd = shell_join(
         cd_to_galaxy_command,
