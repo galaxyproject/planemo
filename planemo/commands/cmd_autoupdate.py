@@ -110,8 +110,8 @@ def cli(ctx, paths, **kwds):
         else:
             with temp_directory(dir=ctx.planemo_directory) as temp_path:
                 # only test tools in updated directories
-                paths = [path for path in paths if os.path.split(tool_path)[0] in modified_files]
-                runnables = for_paths(paths, temp_path=temp_path)
+                modified_paths = [path for path in paths if path in modified_files]
+                runnables = for_paths(modified_paths, temp_path=temp_path)
                 kwds["engine"] = "galaxy"
                 return_value = test_runnables(ctx, runnables, original_paths=paths, **kwds)
 

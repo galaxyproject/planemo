@@ -33,6 +33,8 @@ Formatting tools
 Implementing an autoupdate CI job
 =================================
 
-WIP
+  A useful way to use the autoupdate command is to implement it as a CI job, so that tools in a repo can be updated on a regular basis (e.g. weekly). An example implementation is the `planemo-autoupdate`_ GitHub bot.
+
+<https://github.com/planemo-autoupdate/autoupdate/>`__
 
 .. _IUC best practices: https://galaxy-iuc-standards.readthedocs.io/en/latest/best_practices/tool_xml.html
