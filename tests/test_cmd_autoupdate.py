@@ -7,6 +7,11 @@ from .test_utils import (
 
 
 def create_tmp_test_tool_file(tool_version):
+    """
+    Note that to ensure this test is stable, we use packages that have
+    been migrated from bioconda to conda-forge and test with --conda_channels bioconda
+    so that the versions are guaranteed not to increase in future.
+    """
     xml_str = """<tool id="autoupdate_test" version="@TOOL_VERSION@+galaxy@VERSION_SUFFIX@">
     <macros>
         <token name="@TOOL_VERSION@">{}</token>
@@ -14,6 +19,7 @@ def create_tmp_test_tool_file(tool_version):
     </macros>
     <requirements>
         <requirement type="package" version="@TOOL_VERSION@">xopen</requirement>
+        <requirement type="package" version="2015">smina</requirement>
     </requirements>
 </tool>
     """.format(tool_version)
@@ -54,6 +60,9 @@ class CmdAutoupdateTestCase(CliTestCase):
             ]
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
             assert 'Tool {} updated.'.format(xmlfile) in result.output
+            with open(xmlfile) as f:
+                xmlfile_contents = f.read()
+            assert "2017.11.9" in xmlfile_contents
 
     def test_autoupdate_no_update_needed(self):
         """Test autoupdate command when no update is needed."""

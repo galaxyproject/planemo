@@ -96,10 +96,8 @@ def create_requirement_dict(xml_files, skip_reqs):
     requirements = {}
     main_req = None
     for k, v in xml_files.items():
-        # print(k, v)
         file_reqs, file_main_req = get_requirements(v)
-        # print(file_reqs, file_main_req)
-        requirements[k] = [file_req for file_req in file_reqs if file_req not in skip_reqs]
+        requirements[k] = {k: v for k, v in file_reqs.items() if k not in skip_reqs}
         if file_main_req:
             if main_req:
                 error('Multiple requirements use the token @TOOL_VERSION@!')
