@@ -1,6 +1,4 @@
 """Module describing the planemo ``autoupdate`` command."""
-import os.path
-
 import click
 
 from planemo import autoupdate, options
@@ -59,7 +57,7 @@ def skip_requirements_option():
     """List of requirements to skip"""
     return planemo_option(
         "--skip_requirements",
-        default=None,
+        default='python,r-base,perl',
         help="Comma-separated list of requirements which should be not be updated. Default is python,r-base,perl."
     )
 
