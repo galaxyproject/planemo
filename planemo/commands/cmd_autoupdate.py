@@ -91,7 +91,6 @@ def cli(ctx, paths, **kwds):
         try:
             updated = autoupdate.autoupdate(ctx, tool_path, modified_files=modified_files, **kwds)
             if updated:
-                # modified_files += updated
                 modified_files.update(updated)
         except Exception as e:
             error("{} could not be updated - the following error was raised: {}".format(tool_path, e.__str__()))
@@ -102,13 +101,13 @@ def cli(ctx, paths, **kwds):
             exit_codes.append(EXIT_CODE_OK)
 
     if kwds['test']:
-        info("Running tests for auto-updated tools...")
         if not modified_files:
             info("No tools were updated, so no tests were run.")
         else:
             with temp_directory(dir=ctx.planemo_directory) as temp_path:
                 # only test tools in updated directories
-                modified_paths = [path for path in paths if path in modified_files]
+                modified_paths = [tool_path for tool_path, tool_xml in yield_tool_sources_on_paths(ctx, paths, recursive) if tool_path in modified_files]
+                info(f"Running tests for the following auto-updated tools: {', '.join(modified_paths)}")
                 runnables = for_paths(modified_paths, temp_path=temp_path)
                 kwds["engine"] = "galaxy"
                 return_value = test_runnables(ctx, runnables, original_paths=paths, **kwds)
