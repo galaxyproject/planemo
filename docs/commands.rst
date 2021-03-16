@@ -7,6 +7,7 @@ implemented as a subcommand of the ``planemo`` executable. This section of the
 documentation describes these commands.
 
 
+.. include:: commands/autoupdate.rst
 .. include:: commands/ci_find_repos.rst
 .. include:: commands/ci_find_tools.rst
 .. include:: commands/clone.rst

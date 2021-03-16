@@ -26,6 +26,10 @@ Auto-update tool requirements by checking against Conda and updating if newer ve
       --skiplist TEXT                 Skiplist file, containing a list of tools for
                                       which autoupdate should be skipped.
     
+      --skip_requirements TEXT        Comma-separated list of requirements which
+                                      should be not be updated. Default is
+                                      python,r-base,perl.
+    
       --update_test_data              Update test-data directory with job outputs
                                       (normally written to directory
                                       --job_output_files if specified.)
@@ -52,6 +56,7 @@ Auto-update tool requirements by checking against Conda and updating if newer ve
       --test_output_junit PATH        Output test report (jUnit style - for CI
                                       systems
     
+      --test_output_allure DIRECTORY  Output test allure2 framework resutls
       --test_output_json PATH         Output test report (planemo json) defaults to
                                       tool_test_output.json.
     
@@ -64,7 +69,7 @@ Auto-update tool requirements by checking against Conda and updating if newer ve
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
     
-      --galaxy_python_version [3|3.5|3.6|3.7|3.8]
+      --galaxy_python_version [3|3.6|3.7|3.8|3.9]
                                       Python version to start Galaxy under
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be

@@ -68,13 +68,13 @@ def skip_requirements_option():
 @options.recursive_option()
 @test_option()
 @skiplist_option()
+@skip_requirements_option()
 @options.test_options()
 @options.galaxy_target_options()
 @options.galaxy_config_options()
 @options.report_level_option()
 @options.report_xunit()
 @options.fail_level_option()
-@options.skip_option()
 @command_function
 def cli(ctx, paths, **kwds):
     """Auto-update tool requirements by checking against Conda and updating if newer versions are available."""
@@ -89,7 +89,7 @@ def cli(ctx, paths, **kwds):
             continue
         info("Auto-updating tool %s" % tool_path)
         try:
-            updated = autoupdate.autoupdate(ctx, tool_path, modified_files=modified_files, **kwds)
+            updated = autoupdate.autoupdate_tool(ctx, tool_path, modified_files=modified_files, **kwds)
             if updated:
                 modified_files.update(updated)
         except Exception as e:
@@ -106,14 +106,13 @@ def cli(ctx, paths, **kwds):
         else:
             with temp_directory(dir=ctx.planemo_directory) as temp_path:
                 # only test tools in updated directories
-                modified_paths = [tool_path for tool_path, tool_xml in yield_tool_sources_on_paths(ctx, paths, recursive) if tool_path in modified_files]
+                modified_paths = [path for path, tool_xml in yield_tool_sources_on_paths(ctx, paths, recursive) if path in modified_files]
                 info(f"Running tests for the following auto-updated tools: {', '.join(modified_paths)}")
                 runnables = for_paths(modified_paths, temp_path=temp_path)
                 kwds["engine"] = "galaxy"
                 return_value = test_runnables(ctx, runnables, original_paths=paths, **kwds)
-
+                exit_codes.append(return_value)
     return coalesce_return_codes(exit_codes, assert_at_least_one=assert_tools)
-    ctx.exit(return_value)
 
 
 def handle_tool_load_error(tool_path, tool_xml):

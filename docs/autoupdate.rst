@@ -13,17 +13,17 @@ Planemo provides a ``autoupdate`` subcommand which can be used to perform this t
 There are various flags which can be applied; these are some of the most important:
   - ``--recursive``, which performs the autoupdate recursively on subdirectories
   - ``--dry-run``, which checks if tool requirements are up-to-date without making the necessary change automatically
-  - ``--test``, which runs tests on all autoupdated tools
+  - ``--test``, which runs tests on all autoupdated tools. If this flag is used, all options available for ``planemo test`` are also available.
   - ``--update_test_data`` (if ``--test`` is also selected) which will update test data for failed tests
+  - ``--skiplist``, pointing to a list of tool wrappers for which updates should be skipped
+  - ``--skip_requirements`` with a comma-separated list of packages not to update.  ``python``, ``perl``, ``r-base`` are skipped by default.
 
-One of the most efficient ways to use it is by implementing a CI cron job which runs the command on an entire GitHub repository of tools.
+One of the most efficient ways to use it is by implementing a CI cron job which runs the command on an entire GitHub repository of tool wrappers.
 
 Formatting tools
 =============================
 
- ``autoupdate`` assumes that XML tools are formatted in a certain way - in accordance with the `IUC best practices`_
-
-<https://planemo.readthedocs.io/en/latest/standards/docs/best_practices/tool_xml.html/>`__. In particular:
+``autoupdate`` assumes that XML tools are formatted in a certain way - in accordance with the `IUC best practices`_. In particular:
 
   - the tool ``version`` attribute must be set to ``@TOOL_VERSION@+galaxy0`` or ``@TOOL_VERSION@+galaxy@GALAXY_VERSION``
   - A token ``@TOOL_VERSION@`` should be created which corresponds to the version number of the main requirement.
@@ -33,8 +33,8 @@ Formatting tools
 Implementing an autoupdate CI job
 =================================
 
-  A useful way to use the autoupdate command is to implement it as a CI job, so that tools in a repo can be updated on a regular basis (e.g. weekly). An example implementation is the `planemo-autoupdate`_ GitHub bot.
+ A useful way to use the autoupdate command is to implement it as a CI job, so that tools in a repo can be updated on a regular basis (e.g. weekly). An example implementation is the `planemo-autoupdate`_ GitHub bot.
 
-<https://github.com/planemo-autoupdate/autoupdate/>`__
 
 .. _IUC best practices: https://galaxy-iuc-standards.readthedocs.io/en/latest/best_practices/tool_xml.html
+.. _planemo-autoupdate: https://github.com/planemo-autoupdate/autoupdate

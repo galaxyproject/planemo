@@ -54,9 +54,6 @@ def check_conda(tool_name, ctx, **kwds):
         error("Conda is not installed! Try running planemo conda_init.")
     target = planemo.conda.conda_util.CondaTarget(tool_name)
     search_results = conda_util.best_search_result(target, conda_context=conda_context)
-    # if search_results[0]['version'] == tool_version:
-    #     return None
-    # else:
     return search_results[0]['version']
 
 
@@ -144,7 +141,6 @@ def perform_required_update(ctx, xml_files, tool_path, requirements, tokens, xml
             if wrapper_version_token in v:
                 xml_to_update[k].append({'type': 'token', 'tag': v[wrapper_version_token]['tag'], 'value': 0})
 
-    # print(xml_to_update)
     # finally, update each file separately
     for k, v in xml_files.items():
         update_xml(k, v, xml_to_update[k], wrapper_version_token, is_macro=(k != tool_path))
@@ -153,7 +149,7 @@ def perform_required_update(ctx, xml_files, tool_path, requirements, tokens, xml
     return set(xml_files)
 
 
-def autoupdate(ctx, tool_path, modified_files=set(), **kwds):
+def autoupdate_tool(ctx, tool_path, modified_files=set(), **kwds):
     """
     Autoupdate an XML file
     """
