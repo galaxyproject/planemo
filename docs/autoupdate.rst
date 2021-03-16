@@ -25,9 +25,9 @@ Formatting tools
 
 ``autoupdate`` assumes that XML tools are formatted in a certain way - in accordance with the `IUC best practices`_. In particular:
 
-  - the tool ``version`` attribute must be set to ``@TOOL_VERSION@+galaxy0`` or ``@TOOL_VERSION@+galaxy@GALAXY_VERSION``
+  - the tool ``version`` attribute must be set to ``@TOOL_VERSION@+galaxy0`` or ``@TOOL_VERSION@+galaxy@VERSION_SUFFIX@``
   - A token ``@TOOL_VERSION@`` should be created which corresponds to the version number of the main requirement.
-  - Optionally, a token ``@GALAXY_VERSION@`` should be created, which should be an integer representing the number of times the XML wrapper has been updated since ``@TOOL_VERSION@`` was updated.
+  - Optionally, a token ``@VERSION_SUFFIX@`` should be created, which should be an integer representing the number of times the XML wrapper has been updated since ``@TOOL_VERSION@`` was updated.
 
 
 Implementing an autoupdate CI job

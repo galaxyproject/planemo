@@ -77,7 +77,7 @@ def update_xml(tool_path, xml_tree, tags_to_update, wrapper_version_token, is_ma
             if tag_to_update['type'] == 'requirement':
                 xml_text = update_requirement(xml_text, tag_to_update['tag'], tag_to_update['value'])
         if wrapper_version_token == 0 and not is_macro:
-            # i.e. @GALAXY_VERSION@ not specified so update the version directly in the tool tag
+            # i.e. @VERSION_SUFFIX@ not specified so update the version directly in the tool tag
             tool_tag = re.sub('version="@TOOL_VERSION@.*?"', 'version="@TOOL_VERSION@+galaxy0"',
                               re.findall('<tool .*version="@TOOL_VERSION@.*">', xml_text)[0])
             xml_text = re.sub('<tool .*version="@TOOL_VERSION@.*">', tool_tag, xml_text)
