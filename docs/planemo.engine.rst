@@ -4,6 +4,14 @@ planemo.engine package
 Submodules
 ----------
 
+planemo.engine.autoupdate module
+--------------------------------
+
+.. automodule:: planemo.engine.autoupdate
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 planemo.engine.cwltool module
 -----------------------------
 
