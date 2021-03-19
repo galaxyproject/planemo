@@ -192,3 +192,11 @@ def autoupdate_tool(ctx, tool_path, modified_files=set(), **kwds):
 
     else:
         return perform_required_update(ctx, xml_files, tool_path, requirements, tokens, xml_to_update, wrapper_version_token, **kwds)
+
+
+def autoupdate_wf(ctx, config, wf):
+    workflow_id = config.workflow_id_for_runnable(wf)
+    # TODO: use fullowing after bioblend 0.16 release
+    # config.user_gi.workflows.refactor_workflow(workflow, actions=[{"action_type": "upgrade_all_steps"}])
+    config.user_gi.workflows._put(id=f'{workflow_id}/refactor', payload={'actions': [{"action_type": "upgrade_all_steps"}]})
+    return config.user_gi.workflows.export_workflow_dict(workflow_id)
