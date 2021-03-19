@@ -1,0 +1,53 @@
+class: GalaxyWorkflow
+label: diff-refactor-test
+uuid: 32db1729-9735-40f6-bd32-69b09cc03acc
+tools:
+- name: diff
+  owner: bgruening
+  revisions:
+  - 8a18547725cf
+  tool_panel_section_label: Tools from workflows
+  tool_shed_url: https://toolshed.g2.bx.psu.edu/
+inputs:
+  inp:
+    optional: false
+    position:
+      bottom: 331.8000030517578
+      height: 61.80000305175781
+      left: 576
+      right: 776
+      top: 270
+      width: 200
+      x: 576
+      y: 270
+    type: data
+outputs:
+  outp:
+    outputSource: 1/output1
+steps:
+- tool_shed_repository:
+    changeset_revision: 8a18547725cf
+    name: diff
+    owner: bgruening
+    tool_shed: toolshed.g2.bx.psu.edu
+  tool_id: toolshed.g2.bx.psu.edu/repos/bgruening/diff/diff/3.6+galaxy0
+  tool_version: 3.6+galaxy0
+  position:
+    bottom: 362.6000061035156
+    height: 123.60000610351562
+    left: 854
+    right: 1054
+    top: 239
+    width: 200
+    x: 854
+    y: 239
+  tool_state:
+    input1:
+      __class__: RuntimeValue
+    input2:
+      __class__: RuntimeValue
+  in:
+    input1:
+      source: '0'
+    input2:
+      source: '0'
