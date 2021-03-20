@@ -54,6 +54,8 @@ def test_file_case_checker():
 
 
 class MockRunResponse(object):
+    start_datetime = None
+    end_datetime = None
 
     def __init__(self, outputs_dict):
         self.outputs_dict = outputs_dict
@@ -71,6 +73,8 @@ class MockErrorRunResponse(object):
     was_successful = False
     error_message = "Problem running job."
     log = "Error log"
+    start_datetime = None
+    end_datetime = None
 
 
 __all__ = (
