@@ -244,6 +244,16 @@ def build_cwl_option():
     )
 
 
+def run_history_tags_option():
+    return planemo_option(
+        "tags",
+        "--tags",
+        type=str,
+        default=None,
+        help="Comma-separated list of tags to add to the created history.",
+    )
+
+
 def run_output_directory_option():
     return planemo_option(
         "output_directory",

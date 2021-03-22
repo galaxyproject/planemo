@@ -586,6 +586,9 @@ def _history_id(gi, **kwds):
     if history_id is None:
         history_name = kwds.get("history_name", DEFAULT_HISTORY_NAME) or DEFAULT_HISTORY_NAME
         history_id = gi.histories.create_history(history_name)["id"]
+    if kwds.get('tags'):
+        tags = kwds.get('tags').split(',')
+        gi.histories.update_history(history_id, tags=tags)
     return history_id
 
 
