@@ -274,6 +274,21 @@ def run_output_json_option():
     )
 
 
+def run_invocation_report_option():
+    return planemo_option(
+        "invocation_report",
+        "--invocation_report",
+        type=click.Path(
+            file_okay=True,
+            dir_okay=False,
+            resolve_path=True,
+        ),
+        default=None,
+        help=("Where to store JSON report with data on"
+              "a 'run' task."),
+    )
+
+
 def no_dependency_resolution():
     return planemo_option(
         "--no_dependency_resolution",

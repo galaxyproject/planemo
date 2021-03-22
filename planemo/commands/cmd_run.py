@@ -22,6 +22,7 @@ from planemo.runnable_resolve import for_runnable_identifier
 @options.galaxy_cwl_root_option()
 @options.run_output_directory_option()
 @options.run_output_json_option()
+@options.run_invocation_report_option()
 @options.engine_options()
 @command_function
 def cli(ctx, runnable_identifier, job_path, **kwds):
@@ -51,5 +52,16 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
     if output_json:
         with open(output_json, "w") as f:
             json.dump(outputs_dict, f)
-
+    invocation_report = kwds.get("invocation_report", None)
+    if invocation_report:
+        invocation_details = {
+            'invocation_id': run_result._invocation_id,
+            'history_id': run_result._history_id,
+            'workflow_id': run_result._workflow_id,
+            'invocation_state': run_result.invocation_state,
+            'history_state': run_result.history_state,
+            'error_message': run_result.error_message,
+        }
+        with open(invocation_report, "w") as f:
+            json.dump(invocation_details, f, indent=4, sort_keys=True)
     return 0
