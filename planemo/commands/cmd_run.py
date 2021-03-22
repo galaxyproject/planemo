@@ -20,6 +20,7 @@ from planemo.runnable_resolve import for_runnable_identifier
 @options.galaxy_config_options()
 @options.enable_cwl_option()
 @options.galaxy_cwl_root_option()
+@options.run_history_tags_option()
 @options.run_output_directory_option()
 @options.run_output_json_option()
 @options.run_invocation_report_option()
