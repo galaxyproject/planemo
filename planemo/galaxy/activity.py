@@ -6,6 +6,7 @@ import sys
 import tempfile
 import time
 import traceback
+from datetime import datetime
 
 import bioblend
 from bioblend.util import attach_file
@@ -44,12 +45,14 @@ ERR_NO_SUCH_TOOL = ("Failed to find tool with ID [%s] in Galaxy - cannot execute
 def execute(ctx, config, runnable, job_path, **kwds):
     """Execute a Galaxy activity."""
     try:
+        start_datetime = datetime.now()
         return _execute(ctx, config, runnable, job_path, **kwds)
     except Exception as e:
+        end_datetime = datetime.now()
         if ctx.verbose:
             ctx.vlog("Failed to execute Galaxy activity, throwing ErrorRunResponse")
             traceback.print_exc(file=sys.stdout)
-        return ErrorRunResponse(unicodify(e))
+        return ErrorRunResponse(unicodify(e), start_datetime=start_datetime, end_datetime=end_datetime)
 
 
 def _verified_tool_id(runnable, user_gi):
@@ -111,7 +114,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):
     admin_gi = config.gi
 
     history_id = _history_id(user_gi, **kwds)
-
+    start_datetime = datetime.now()
     try:
         job_dict, _ = stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds)
     except Exception:
@@ -211,6 +214,8 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         user_gi=user_gi,
         history_id=history_id,
         log=log_contents_str(config),
+        start_datetime=start_datetime,
+        end_datetime=datetime.now(),
         **response_kwds
     )
     output_directory = kwds.get("output_directory", None)
@@ -272,6 +277,8 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         user_gi,
         history_id,
         log,
+        start_datetime=None,
+        end_datetime=None,
     ):
         self._ctx = ctx
         self._runnable = runnable
@@ -282,6 +289,8 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         self._job_info = None
 
         self._outputs_dict = None
+        self._start_datetime = start_datetime
+        self._end_datetime = end_datetime
 
     def to_galaxy_output(self, output):
         """Convert runnable output to a GalaxyOutput object.
@@ -289,6 +298,16 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         Subclasses for workflow and tool execution override this.
         """
         raise NotImplementedError()
+
+    @property
+    def start_datetime(self):
+        """Start datetime of run."""
+        return self._start_datetime
+
+    @property
+    def end_datetime(self):
+        """End datetime of run."""
+        return self._end_datetime
 
     def _get_extra_files(self, dataset_details):
         extra_files_url = "%s/histories/%s/contents/%s/extra_files" % (
@@ -458,6 +477,8 @@ class GalaxyToolRunResponse(GalaxyBaseRunResponse):
         log,
         job_info,
         api_run_response,
+        start_datetime=None,
+        end_datetime=None,
     ):
         super(GalaxyToolRunResponse, self).__init__(
             ctx=ctx,
@@ -465,6 +486,8 @@ class GalaxyToolRunResponse(GalaxyBaseRunResponse):
             user_gi=user_gi,
             history_id=history_id,
             log=log,
+            start_datetime=start_datetime,
+            end_datetime=end_datetime,
         )
         self._job_info = job_info
         self.api_run_response = api_run_response
@@ -508,6 +531,8 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         history_state='ok',
         invocation_state='ok',
         error_message=None,
+        start_datetime=None,
+        end_datetime=None,
     ):
         super(GalaxyWorkflowRunResponse, self).__init__(
             ctx=ctx,
@@ -515,6 +540,8 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
             user_gi=user_gi,
             history_id=history_id,
             log=log,
+            start_datetime=start_datetime,
+            end_datetime=end_datetime,
         )
         self._workflow_id = workflow_id
         self._invocation_id = invocation_id

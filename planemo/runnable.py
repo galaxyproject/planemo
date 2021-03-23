@@ -383,6 +383,10 @@ class TestCase(AbstractTestCase):
         if invocation_details is not None:
             data_dict["invocation_details"] = invocation_details
         data_dict["inputs"] = self._job
+        if run_response.start_datetime is not None:
+            data_dict["start_datetime"] = run_response.start_datetime.isoformat()
+        if run_response.end_datetime is not None:
+            data_dict["end_datetime"] = run_response.end_datetime.isoformat()
         return dict(
             id=("%s_%s" % (self._test_id, self.index)),
             has_data=True,
@@ -560,6 +564,16 @@ class CwlWorkflowOutput(RunnableOutput):
 class RunResponse(object):
     """Description of an attempt for an engine to execute a Runnable."""
 
+    @property
+    def start_datetime(self):
+        """Start datetime of run."""
+        return None
+
+    @property
+    def end_datetime(self):
+        """End datetime of run."""
+        return None
+
     @abc.abstractproperty
     def was_successful(self):
         """Indicate whether an error was encountered while executing this runnable.
@@ -598,12 +612,24 @@ class SuccessfulRunResponse(RunResponse):
 class ErrorRunResponse(RunResponse):
     """Description of an error while attempting to execute a Runnable."""
 
-    def __init__(self, error_message, job_info=None, invocation_details=None, log=None):
+    def __init__(self, error_message, job_info=None, invocation_details=None, log=None, start_datetime=None, end_datetime=None):
         """Create an ErrorRunResponse with specified error message."""
         self._error_message = error_message
         self._job_info = job_info
         self._invocation_details = invocation_details
         self._log = log
+        self._start_datetime = start_datetime
+        self._end_datetime = end_datetime
+
+    @property
+    def start_datetime(self):
+        """Start datetime of run."""
+        return self._start_datetime
+
+    @property
+    def end_datetime(self):
+        """End datetime of run."""
+        return self._end_datetime
 
     @property
     def error_message(self):
