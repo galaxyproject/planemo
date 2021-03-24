@@ -346,50 +346,7 @@ class TestCase(AbstractTestCase):
 
     def structured_test_data(self, run_response):
         """Check a test case against outputs dictionary."""
-        output_problems = []
-        if run_response.was_successful:
-            outputs_dict = run_response.outputs_dict
-            execution_problem = None
-            for output_id, output_test in self.output_expectations.items():
-                if output_id not in outputs_dict:
-                    message = "Expected output [%s] not found in results." % output_id
-                    output_problems.append(message)
-                    continue
-
-                output_value = outputs_dict[output_id]
-                output_problems.extend(
-                    self._check_output(output_id, output_value, output_test)
-                )
-            if output_problems:
-                status = "failure"
-            else:
-                status = "success"
-        else:
-            execution_problem = run_response.error_message
-            status = "error"
-        data_dict = dict(
-            status=status
-        )
-        if status != "success":
-            data_dict["output_problems"] = output_problems
-            data_dict["execution_problem"] = execution_problem
-        log = run_response.log
-        if log is not None:
-            data_dict["problem_log"] = log
-        job_info = run_response.job_info
-        if job_info is not None:
-            data_dict["job"] = job_info
-        invocation_details = run_response.invocation_details
-        if invocation_details is not None:
-            data_dict["invocation_details"] = invocation_details
-        data_dict["inputs"] = self._job
-        return dict(
-            id=("%s_%s" % (self._test_id, self.index)),
-            has_data=True,
-            data=data_dict,
-            doc=self.doc,
-            test_type=self.runnable.type.name,
-        )
+        return run_response.structured_data(self)
 
     @property
     def _job(self):
@@ -579,6 +536,62 @@ class RunResponse(object):
     @abc.abstractproperty
     def log(self):
         """If engine related log is available, return as text data."""
+
+    def structured_data(self, test_case=None):
+        output_problems = []
+        if self.was_successful:
+            outputs_dict = self.outputs_dict
+            execution_problem = None
+            if test_case:
+                for output_id, output_test in test_case.output_expectations.items():
+                    if output_id not in outputs_dict:
+                        message = "Expected output [%s] not found in results." % output_id
+                        output_problems.append(message)
+                        continue
+
+                    output_value = outputs_dict[output_id]
+                    output_problems.extend(
+                        test_case._check_output(output_id, output_value, output_test)
+                    )
+            if output_problems:
+                status = "failure"
+            else:
+                status = "success"
+        else:
+            execution_problem = self.error_message
+            status = "error"
+        data_dict = dict(
+            status=status
+        )
+        if status != "success":
+            data_dict["output_problems"] = output_problems
+            data_dict["execution_problem"] = execution_problem
+        log = self.log
+        if log is not None:
+            data_dict["problem_log"] = log
+        job_info = self.job_info
+        if job_info is not None:
+            data_dict["job"] = job_info
+        invocation_details = self.invocation_details
+        if invocation_details is not None:
+            data_dict["invocation_details"] = invocation_details
+        if test_case:
+            data_dict["inputs"] = test_case._job
+            return dict(
+                id=("%s_%s" % (test_case._test_id, test_case.index)),
+                has_data=True,
+                data=data_dict,
+                doc=test_case.doc,
+                test_type=test_case.runnable.type.name,
+            )
+        else:
+            return dict(
+                id=self._runnable.uri,
+                has_data=True,
+                data=data_dict,
+                doc=None,
+                test_type=self._runnable.type.name,
+            )
 
 
 @add_metaclass(abc.ABCMeta)

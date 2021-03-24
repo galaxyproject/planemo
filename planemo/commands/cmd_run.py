@@ -9,8 +9,10 @@ from galaxy.util import unicodify
 from planemo import options
 from planemo.cli import command_function
 from planemo.engine import engine_context
+from planemo.galaxy.test import handle_reports_and_summary
 from planemo.io import warn
 from planemo.runnable_resolve import for_runnable_identifier
+from planemo.test.results import StructuredData
 
 
 @click.command('run')
@@ -25,6 +27,7 @@ from planemo.runnable_resolve import for_runnable_identifier
 @options.run_output_json_option()
 @options.run_invocation_report_option()
 @options.engine_options()
+@options.test_options()
 @command_function
 def cli(ctx, runnable_identifier, job_path, **kwds):
     """Planemo command for running tools and jobs.
@@ -33,7 +36,6 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
         % planemo run cat1-tool.cwl cat-job.json
     """
     runnable = for_runnable_identifier(ctx, runnable_identifier, kwds)
-
     is_cwl = runnable.type.is_cwl_artifact
     kwds["cwl"] = is_cwl
     if kwds.get("engine", None) is None:
@@ -53,16 +55,9 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
     if output_json:
         with open(output_json, "w") as f:
             json.dump(outputs_dict, f)
-    invocation_report = kwds.get("invocation_report", None)
-    if invocation_report:
-        invocation_details = {
-            'invocation_id': run_result._invocation_id,
-            'history_id': run_result._history_id,
-            'workflow_id': run_result._workflow_id,
-            'invocation_state': run_result.invocation_state,
-            'history_state': run_result.history_state,
-            'error_message': run_result.error_message,
-        }
-        with open(invocation_report, "w") as f:
-            json.dump(invocation_details, f, indent=4, sort_keys=True)
-    return 0
+
+    report_data = StructuredData(data={'tests': [run_result.structured_data()]})
+    report_data.calculate_summary_data()
+    kwds["summary"] = 'minimal'
+    return_value = handle_reports_and_summary(ctx, report_data.structured_data, kwds=kwds)
+    ctx.exit(return_value)
