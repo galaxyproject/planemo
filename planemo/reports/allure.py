@@ -1,4 +1,6 @@
 import json
+import re
+import uuid
 
 from allure_commons import plugin_manager
 from allure_commons.lifecycle import AllureLifecycle
@@ -22,6 +24,7 @@ from galaxy.util import (
 )
 
 JSON_INDENT = 2
+WORKFLOW_INDEX_MATCH = re.compile(r"(.*)\_([\d+])")
 
 
 class AllureListener(object):
@@ -54,12 +57,15 @@ class AllureWriter:
             test_data = test_case.get("data") or {}
             job = test_data.get("job") or {}
             test_result.name = test_index
-            self._record_start_stop(test_result, file_modication_datetime, job)
+            self._record_start_stop(test_result, file_modication_datetime, job, test_data)
 
             test_result.fullName = test_index
             test_result.testCaseId = md5(test_index)
-            test_result.historyId = md5(test_index)
-            tool_id = self._record_suite_labels(test_result, test_data, job)
+            # Maybe an option to swap this - seems like it is causing all runs to seem like
+            # retries instead of history proper?
+            # test_result.historyId = md5(test_index)
+            test_result.historyId = md5(str(uuid.uuid4()))
+            tool_id = self._record_suite_labels(test_result, test_index, test_data, job)
 
             self._attach_data("test_data", json.dumps(test_data, indent=JSON_INDENT), attachment_type=AttachmentType.JSON)
             for key in ["stderr", "stdout", "command_line", "external_id", "job_messages"]:
@@ -116,12 +122,16 @@ class AllureWriter:
 
         self.lifecycle.write_test_case()
 
-    def _record_start_stop(self, test_result, file_modication_datetime, job):
+    def _record_start_stop(self, test_result, file_modication_datetime, job, test_data):
         start_datetime = file_modication_datetime
         end_datetime = file_modication_datetime
-        if "create_time" in job:
+        if "start_datetime" in test_data:
+            start_datetime = parser.parse(test_data["start_datetime"])
+        elif "create_time" in job:
             start_datetime = parser.parse(job["create_time"])
 
+        if "end_datetime" in test_data:
+            end_datetime = parser.parse(test_data["end_datetime"])
         if "update_time" in job:
             end_datetime = parser.parse(job["update_time"])
 
@@ -130,14 +140,17 @@ class AllureWriter:
         if end_datetime is not None:
             test_result.stop = int(round(end_datetime.timestamp() * 1000))
 
-    def _record_suite_labels(self, test_result, test_data, job):
+    def _record_suite_labels(self, test_result, test_index, test_data, job):
         tool_id = None
+        index_match = WORKFLOW_INDEX_MATCH.match(test_index)
         if "tool_id" in test_data:
             tool_id = test_data["tool_id"]
             test_result.labels.append(Label(name=LabelType.PARENT_SUITE, value=tool_id))
         elif "tool_id" in job:
             tool_id = job["tool_id"]
             test_result.labels.append(Label(name=LabelType.PARENT_SUITE, value=tool_id))
+        elif index_match:
+            test_result.labels.append(Label(name=LabelType.PARENT_SUITE, value=index_match.group(1)))
 
         if "tool_version" in test_data:
             test_result.labels.append(Label(name=LabelType.SUITE, value=test_data["tool_version"]))
@@ -146,6 +159,9 @@ class AllureWriter:
 
         if "test_index" in test_data:
             test_result.labels.append(Label(name=LabelType.SUB_SUITE, value=str(test_data["test_index"])))
+        elif index_match:
+            test_result.labels.append(Label(name=LabelType.SUB_SUITE, value=index_match.group(2)))
+
         return tool_id
 
     def _record_tool_link(self, test_result, tool_id):
