@@ -158,7 +158,7 @@
         },
         "4": {
             "annotation": "",
-            "content_id": "rgtf2",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "errors": null,
             "id": 4,
             "input_connections": {},
@@ -186,7 +186,7 @@
                 "y": 651.5625
             },
             "post_job_actions": {},
-            "tool_id": "rgtf2",
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "tool_state": "{\"__input_ext\": \"input\", \"chromInfo\": \"/home/ross/galaxy-dev/tool-data/shared/ucsc/chrom/?.len\", \"cl_prefix\": \"\", \"cover\": {\"commover\": \"no\", \"__current_case__\": 0, \"command_override\": \"\", \"test_override\": \"\"}, \"deps\": {\"packages\": \"planemo\", \"usescript\": {\"choosescript\": \"yes\", \"__current_case__\": 1, \"scriptrunner\": \"bash\", \"dynScript\": \"cp $1 foo.tar.gz\\ntar -xvf foo.tar.gz\\nTOOLNAME=`find . -name \\\"*.xml\\\"`\\necho \\\"TOOLNAME = $TOOLNAME\\\"\\nplanemo test  --test_output $2 $TOOLNAME\"}}, \"io_param\": {\"ppass\": {\"parampass\": \"positional\", \"__current_case__\": 1, \"io\": {\"history_inputs\": [{\"__index__\": 0, \"input_files\": null, \"input_formats\": [\"tgz\"], \"input_label\": \"ToolFactory toolshed archive from the history to test\", \"input_help\": \"\", \"input_CL\": \"1\", \"input_repeat\": \"false\"}], \"history_outputs\": [{\"__index__\": 0, \"history_name\": \"planemo_test_output\", \"history_format\": \"txt\", \"history_CL\": \"2\", \"history_test\": \"sim_size:0.05\"}], \"collection_outputs\": []}, \"addparam\": {\"edit_params\": \"yes\", \"additional_parameters\": []}}}, \"make\": {\"makeMode\": {\"make_Tool\": \"gentest\", \"__current_case__\": 1, \"galaxy_apikey\": \"\", \"toolshed_apikey\": \"\", \"galaxy_url\": \"\", \"toolshed_url\": \"\", \"tool_version\": \"0.01\", \"tool_desc\": \"Tests a ToolFactory tool\", \"help_text\": \"**What it Does**\\n\\nRuns planemo test on a ToolFactory or other toolshed archive\", \"citations\": []}}, \"tool_name\": \"planemo_test\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
             "tool_version": "2.00",
             "type": "tool",
@@ -206,7 +206,7 @@
         },
         "5": {
             "annotation": "",
-            "content_id": "rgtf2",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "errors": null,
             "id": 5,
             "input_connections": {},
@@ -234,7 +234,7 @@
                 "y": 771.5625
             },
             "post_job_actions": {},
-            "tool_id": "rgtf2",
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "tool_state": "{\"__input_ext\": \"input\", \"__workflow_invocation_uuid__\": \"f1d43bed5d0811ebac99cda6b6778595\", \"chromInfo\": \"/home/ross/galaxy-dev/tool-data/shared/ucsc/chrom/?.len\", \"cl_prefix\": \"\", \"cover\": {\"commover\": \"yes\", \"__current_case__\": 1, \"command_override\": \"\", \"test_override\": \"  <tests>\\n    <test>\\n      <param name=\\\"nplot\\\" value=\\\"3\\\" />\\n      <output_collection name=\\\"plots\\\" type=\\\"list\\\">\\n     <element file=\\\"yet_1_anotherplot_sample\\\" name=\\\"yet_1_anotherplot\\\" ftype=\\\"pdf\\\" compare=\\\"sim_size\\\" delta_frac=\\\"0.05\\\"/>\\n    <\/output_collection>\\n <\/test>\\n  <\/tests>\\n\"}, \"deps\": {\"packages\": \"r-base\", \"usescript\": {\"choosescript\": \"yes\", \"__current_case__\": 1, \"scriptrunner\": \"Rscript\", \"dynScript\": \"# demo\\nargs = commandArgs(trailingOnly=TRUE)\\nif (length(args)==0) {\\n   n_plots = 3 \\n} else {\\n   n_plots = as.integer(args[1]) }\\ndir.create('plots')\\nfor (i in 1:n_plots) {\\n    foo = runif(100)\\n    bar = rnorm(100)\\n    bar = foo + 0.05*bar\\n    pdf(paste('plots/yet',i,\\\"anotherplot.pdf\\\",sep='_'))\\n    plot(foo,bar,main=paste(\\\"Foo by Bar plot #\\\",i),col=\\\"maroon\\\", pch=3,cex=0.6)\\n    dev.off()\\n    foo = data.frame(a=runif(100),b=runif(100),c=runif(100),d=runif(100),e=runif(100),f=runif(100))\\n    bar = as.matrix(foo)\\n    pdf(paste('plots/yet',i,\\\"anotherheatmap.pdf\\\",sep='_'))\\n    heatmap(bar,main='Random Heatmap')\\n    dev.off()\\n}\\n\"}}, \"io_param\": {\"ppass\": {\"parampass\": \"positional\", \"__current_case__\": 1, \"io\": {\"history_inputs\": [], \"history_outputs\": [], \"collection_outputs\": [{\"__index__\": 0, \"name\": \"plots\", \"kind\": \"list\", \"label\": \"Plots\", \"discover\": \"__name_and_ext__\"}]}, \"addparam\": {\"edit_params\": \"yes\", \"additional_parameters\": [{\"__index__\": 0, \"param_name\": \"nplot\", \"ap_type\": {\"param_type\": \"text\", \"__current_case__\": 0, \"param_value\": \"3\"}, \"param_label\": \"Number of random plots pairs to draw\", \"param_help\": \"\", \"param_CL\": \"1\", \"param_CLprefixed\": \"\"}]}}}, \"make\": {\"makeMode\": {\"make_Tool\": \"gentest\", \"__current_case__\": 1, \"galaxy_apikey\": \"\", \"toolshed_apikey\": \"\", \"galaxy_url\": \"\", \"toolshed_url\": \"\", \"tool_version\": \"0.01\", \"tool_desc\": \"Makes random plots\", \"help_text\": \"**What it Does**\\nMakes plots into a collection demonstration\", \"citations\": []}}, \"tool_name\": \"plotter\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
             "tool_version": "2.00",
             "type": "tool",
@@ -254,7 +254,7 @@
         },
         "6": {
             "annotation": "",
-            "content_id": "rgtf2",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "errors": null,
             "id": 6,
             "input_connections": {},
@@ -282,7 +282,7 @@
                 "y": 737.8125
             },
             "post_job_actions": {},
-            "tool_id": "rgtf2",
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "tool_state": "{\"__input_ext\": \"input\", \"__workflow_invocation_uuid__\": \"f1d43bed5d0811ebac99cda6b6778595\", \"chromInfo\": \"/home/ross/galaxy-dev/tool-data/shared/ucsc/chrom/?.len\", \"cl_prefix\": \"\", \"cover\": {\"commover\": \"no\", \"__current_case__\": 0, \"command_override\": \"\", \"test_override\": \"\"}, \"deps\": {\"packages\": \"\", \"usescript\": {\"choosescript\": \"yes\", \"__current_case__\": 1, \"scriptrunner\": \"bash\", \"dynScript\": \"echo \\\"You chose $1\\\"\"}}, \"io_param\": {\"ppass\": {\"parampass\": \"positional\", \"__current_case__\": 1, \"io\": {\"history_inputs\": [], \"history_outputs\": [{\"__index__\": 0, \"history_name\": \"select_out\", \"history_format\": \"txt\", \"history_CL\": \"STDOUT\", \"history_test\": \"diff:0\"}], \"collection_outputs\": []}, \"addparam\": {\"edit_params\": \"yes\", \"additional_parameters\": [{\"__index__\": 0, \"param_name\": \"choose\", \"ap_type\": {\"param_type\": \"selecttext\", \"__current_case__\": 4, \"selectTexts\": [{\"__index__\": 0, \"select_text\": \"one\", \"select_value\": \"won\"}, {\"__index__\": 1, \"select_text\": \"two\", \"select_value\": \"too\"}, {\"__index__\": 2, \"select_text\": \"three\", \"select_value\": \"free\"}]}, \"param_label\": \"Choose\", \"param_help\": \"\", \"param_CL\": \"1\", \"param_CLprefixed\": \"\"}]}}}, \"make\": {\"makeMode\": {\"make_Tool\": \"gentest\", \"__current_case__\": 1, \"galaxy_apikey\": \"\", \"toolshed_apikey\": \"\", \"galaxy_url\": \"\", \"toolshed_url\": \"\", \"tool_version\": \"0.01\", \"tool_desc\": \"Test select\", \"help_text\": \"**What it Does**\\nToolFactory select tester\", \"citations\": []}}, \"tool_name\": \"select_test\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
             "tool_version": "2.00",
             "type": "tool",
@@ -302,7 +302,7 @@
         },
         "7": {
             "annotation": "",
-            "content_id": "rgtf2",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "errors": null,
             "id": 7,
             "input_connections": {},
@@ -330,7 +330,7 @@
                 "y": 862.8125
             },
             "post_job_actions": {},
-            "tool_id": "rgtf2",
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "tool_state": "{\"__input_ext\": \"input\", \"__workflow_invocation_uuid__\": \"f1d43bed5d0811ebac99cda6b6778595\", \"chromInfo\": \"/home/ross/galaxy-dev/tool-data/shared/ucsc/chrom/?.len\", \"cl_prefix\": \"\", \"cover\": {\"commover\": \"no\", \"__current_case__\": 0, \"command_override\": \"\", \"test_override\": \"\"}, \"deps\": {\"packages\": \"\", \"usescript\": {\"choosescript\": \"yes\", \"__current_case__\": 1, \"scriptrunner\": \"bash\", \"dynScript\": \"echo \\\"Hello $1\\\"\"}}, \"io_param\": {\"ppass\": {\"parampass\": \"positional\", \"__current_case__\": 1, \"io\": {\"history_inputs\": [], \"history_outputs\": [{\"__index__\": 0, \"history_name\": \"Hello_output\", \"history_format\": \"txt\", \"history_CL\": \"STDOUT\", \"history_test\": \"diff:0\"}], \"collection_outputs\": []}, \"addparam\": {\"edit_params\": \"yes\", \"additional_parameters\": [{\"__index__\": 0, \"param_name\": \"say_hello_to\", \"ap_type\": {\"param_type\": \"text\", \"__current_case__\": 0, \"param_value\": \"\"}, \"param_label\": \"Say hello to\", \"param_help\": \"\", \"param_CL\": \"1\", \"param_CLprefixed\": \"\"}]}}}, \"make\": {\"makeMode\": {\"make_Tool\": \"gentest\", \"__current_case__\": 1, \"galaxy_apikey\": \"fakekey\", \"toolshed_apikey\": \"fakekey\", \"galaxy_url\": \"http://localhost:8080\", \"toolshed_url\": \"http://localhost:9009\", \"tool_version\": \"0.01\", \"tool_desc\": \"Says hello\", \"help_text\": \"**What it Does**\\nToolFactory demonstration - hello world in Galaxy\", \"citations\": []}}, \"tool_name\": \"hello_toolshed\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
             "tool_version": "2.00",
             "type": "tool",
@@ -350,7 +350,7 @@
         },
         "8": {
             "annotation": "",
-            "content_id": "rgtf2",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "errors": null,
             "id": 8,
             "input_connections": {},
@@ -378,7 +378,7 @@
                 "y": 727.8125
             },
             "post_job_actions": {},
-            "tool_id": "rgtf2",
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "tool_state": "{\"__input_ext\": \"input\", \"__workflow_invocation_uuid__\": \"f1d43bed5d0811ebac99cda6b6778595\", \"chromInfo\": \"/home/ross/galaxy-dev/tool-data/shared/ucsc/chrom/?.len\", \"cl_prefix\": \"\", \"cover\": {\"commover\": \"no\", \"__current_case__\": 0, \"command_override\": \"\", \"test_override\": \"\"}, \"deps\": {\"packages\": \"\", \"usescript\": {\"choosescript\": \"yes\", \"__current_case__\": 1, \"scriptrunner\": \"bash\", \"dynScript\": \"# pathetic attempt at a malicious script in Galaxy\\n# it fails because the job execution environment gives write access to few places\\necho \\\"ls -la\\\"\\nls -la\\ncd /\\necho \\\"ls -la after changing to /\\\"\\nls -la\\ntouch \\\"foo_was.here\\\"\\necho \\\"ls -la in root after touch foo_was.here - foo_was_not.here more like it\\\"\\nls -la\\n\"}}, \"io_param\": {\"ppass\": {\"parampass\": \"positional\", \"__current_case__\": 1, \"io\": {\"history_inputs\": [], \"history_outputs\": [{\"__index__\": 0, \"history_name\": \"evil_script_output\", \"history_format\": \"txt\", \"history_CL\": \"STDOUT\", \"history_test\": \"sim_size:0.05\"}], \"collection_outputs\": []}, \"addparam\": {\"edit_params\": \"yes\", \"additional_parameters\": []}}}, \"make\": {\"makeMode\": {\"make_Tool\": \"gentest\", \"__current_case__\": 1, \"galaxy_apikey\": \"fakekey\", \"toolshed_apikey\": \"fakekey\", \"galaxy_url\": \"http://localhost:8080\", \"toolshed_url\": \"http://localhost:9009\", \"tool_version\": \"0.01\", \"tool_desc\": \"Pathetic attempt at malicious scripting with the ToolFactory\", \"help_text\": \"**What it Does**\\n\\nFails to write outside the job working directory and lists /etc/passwd inside the biodocker container because, well, you can.\\nAFAIK it's not possible to actually do much real mischief...\", \"citations\": []}}, \"tool_name\": \"evil_script_that_fails\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
             "tool_version": "2.00",
             "type": "tool",
@@ -398,7 +398,7 @@
         },
         "9": {
             "annotation": "",
-            "content_id": "rgtf2",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "errors": null,
             "id": 9,
             "input_connections": {
@@ -431,7 +431,7 @@
                 "y": 147.8125
             },
             "post_job_actions": {},
-            "tool_id": "rgtf2",
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "tool_state": "{\"__input_ext\": \"input\", \"__workflow_invocation_uuid__\": \"f1d43bed5d0811ebac99cda6b6778595\", \"chromInfo\": \"/home/ross/galaxy-dev/tool-data/shared/ucsc/chrom/?.len\", \"cl_prefix\": \"\", \"cover\": {\"commover\": \"no\", \"__current_case__\": 0, \"command_override\": \"\", \"test_override\": \"\"}, \"deps\": {\"packages\": \"python\", \"usescript\": {\"choosescript\": \"yes\", \"__current_case__\": 1, \"scriptrunner\": \"python\", \"dynScript\": \"## reverse order of text by row\\n## ToolFactory demonstration\\n## positional parameters\\nimport sys\\ninp = sys.argv[1]\\noutp = sys.argv[2]\\ni = open(inp,'r').readlines()\\no = open(outp,'w')\\nfor row in i:\\n  rs = row.rstrip()\\n  rs = list(rs)\\n  rs.reverse()\\n  o.write(''.join(rs))\\n  o.write('\\\\n')\\no.close()\"}}, \"io_param\": {\"ppass\": {\"parampass\": \"positional\", \"__current_case__\": 1, \"io\": {\"history_inputs\": [{\"__index__\": 0, \"input_files\": {\"__class__\": \"ConnectedValue\"}, \"input_formats\": [\"txt\"], \"input_label\": \"Input text file to be reversed\", \"input_help\": \"\", \"input_CL\": \"1\", \"input_repeat\": \"false\"}], \"history_outputs\": [{\"__index__\": 0, \"history_name\": \"pyrev_positionalparse_output\", \"history_format\": \"txt\", \"history_CL\": \"2\", \"history_test\": \"diff:0\"}], \"collection_outputs\": []}, \"addparam\": {\"edit_params\": \"yes\", \"additional_parameters\": []}}}, \"make\": {\"makeMode\": {\"make_Tool\": \"gentest\", \"__current_case__\": 1, \"galaxy_apikey\": \"fakekey\", \"toolshed_apikey\": \"fakekey\", \"galaxy_url\": \"http://localhost:8080\", \"toolshed_url\": \"http://localhost:9009\", \"tool_version\": \"0.01\", \"tool_desc\": \"ToolFactory demonstration python script with positional parameters\", \"help_text\": \"**What it Does**\\nReverse lines in a text file\\nToolFactory positional parameter python script example\", \"citations\": []}}, \"tool_name\": \"pyrev_pos_test\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
             "tool_version": "2.00",
             "type": "tool",
@@ -451,7 +451,7 @@
         },
         "10": {
             "annotation": "",
-            "content_id": "rgtf2",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "errors": null,
             "id": 10,
             "input_connections": {
@@ -484,7 +484,7 @@
                 "y": 164.0625
             },
             "post_job_actions": {},
-            "tool_id": "rgtf2",
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "tool_state": "{\"__input_ext\": \"input\", \"__workflow_invocation_uuid__\": \"f1d43bed5d0811ebac99cda6b6778595\", \"chromInfo\": \"/home/ross/galaxy-dev/tool-data/shared/ucsc/chrom/?.len\", \"cl_prefix\": \"\", \"cover\": {\"commover\": \"no\", \"__current_case__\": 0, \"command_override\": \"\", \"test_override\": \"\"}, \"deps\": {\"packages\": \"python\", \"usescript\": {\"choosescript\": \"yes\", \"__current_case__\": 1, \"scriptrunner\": \"python\", \"dynScript\": \"# reverse order of text by row\\nimport argparse\\nparser = argparse.ArgumentParser()\\na = parser.add_argument\\na('--infile',default='')\\na('--pyrevargparse_outfile',default=None)\\nargs = parser.parse_args()\\ninp = args.infile\\noutp = args.pyrevargparse_outfile\\ni = open(inp,'r').readlines()\\no = open(outp,'w')\\nfor row in i:\\n  rs = row.rstrip()\\n  rs = list(rs)\\n  rs.reverse()\\n  o.write(''.join(rs))\\n  o.write('\\\\n')\\no.close()\"}}, \"io_param\": {\"ppass\": {\"parampass\": \"argparse\", \"__current_case__\": 0, \"io\": {\"history_inputs\": [{\"__index__\": 0, \"input_files\": {\"__class__\": \"ConnectedValue\"}, \"input_formats\": [\"txt\"], \"input_label\": \"input file to be reversed\", \"input_help\": \"\", \"input_CL\": \"infile\", \"input_repeat\": \"false\"}], \"history_outputs\": [{\"__index__\": 0, \"history_name\": \"pyrevargparse_outfile\", \"history_format\": \"txt\", \"history_CL\": \"pyrevargparse_outfile\", \"history_test\": \"diff:0\"}], \"collection_outputs\": []}, \"addparam\": {\"edit_params\": \"yes\", \"additional_parameters\": []}}}, \"make\": {\"makeMode\": {\"make_Tool\": \"gentest\", \"__current_case__\": 1, \"galaxy_apikey\": \"fakekey\", \"toolshed_apikey\": \"fakekey\", \"galaxy_url\": \"http://localhost:8080\", \"toolshed_url\": \"http://localhost:9009\", \"tool_version\": \"0.01\", \"tool_desc\": \"Toolshed demonstration python script with argparse style parameters\", \"help_text\": \"**What it Does**\\nReverses lines in a text file.\\nToolFactory demonstration of argparse/python script\", \"citations\": []}}, \"tool_name\": \"pyrev_argparse_test\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
             "tool_version": "2.00",
             "type": "tool",
@@ -504,7 +504,7 @@
         },
         "11": {
             "annotation": "",
-            "content_id": "rgtf2",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "errors": null,
             "id": 11,
             "input_connections": {
@@ -537,7 +537,7 @@
                 "y": 181.5625
             },
             "post_job_actions": {},
-            "tool_id": "rgtf2",
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "tool_state": "{\"__input_ext\": \"input\", \"__workflow_invocation_uuid__\": \"f1d43bed5d0811ebac99cda6b6778595\", \"chromInfo\": \"/home/ross/galaxy-dev/tool-data/shared/ucsc/chrom/?.len\", \"cl_prefix\": \"\", \"cover\": {\"commover\": \"no\", \"__current_case__\": 0, \"command_override\": \"\", \"test_override\": \"\"}, \"deps\": {\"packages\": \"\", \"usescript\": {\"choosescript\": \"yes\", \"__current_case__\": 1, \"scriptrunner\": \"bash\", \"dynScript\": \"tac | rev\"}}, \"io_param\": {\"ppass\": {\"parampass\": \"0\", \"__current_case__\": 2, \"io\": {\"history_inputs\": [{\"__index__\": 0, \"input_files\": {\"__class__\": \"ConnectedValue\"}, \"input_formats\": [\"txt\"], \"input_label\": \"Input text file to be reversed\", \"input_help\": \"\", \"input_CL\": \"STDIN\", \"input_repeat\": \"false\"}], \"history_outputs\": [{\"__index__\": 0, \"history_name\": \"tacrev_reversed_output\", \"history_format\": \"txt\", \"history_CL\": \"STDOUT\", \"history_test\": \"diff:0\"}], \"collection_outputs\": []}}}, \"make\": {\"makeMode\": {\"make_Tool\": \"gentest\", \"__current_case__\": 1, \"galaxy_apikey\": \"fakekey\", \"toolshed_apikey\": \"fakekey\", \"galaxy_url\": \"http://localhost:8080\", \"toolshed_url\": \"http://localhost:9009\", \"tool_version\": \"0.01\", \"tool_desc\": \"ToolFactory demonstration bash script STDIN/STDOUT\", \"help_text\": \"**What it Does**\\ntac | rev\", \"citations\": []}}, \"tool_name\": \"tacrev\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
             "tool_version": "2.00",
             "type": "tool",
@@ -557,7 +557,7 @@
         },
         "12": {
             "annotation": "",
-            "content_id": "rgtf2",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "errors": null,
             "id": 12,
             "input_connections": {
@@ -590,7 +590,7 @@
                 "y": 432.8125
             },
             "post_job_actions": {},
-            "tool_id": "rgtf2",
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "tool_state": "{\"__input_ext\": \"input\", \"__workflow_invocation_uuid__\": \"f1d43bed5d0811ebac99cda6b6778595\", \"chromInfo\": \"/home/ross/galaxy-dev/tool-data/shared/ucsc/chrom/?.len\", \"cl_prefix\": \"\", \"cover\": {\"commover\": \"no\", \"__current_case__\": 0, \"command_override\": \"\", \"test_override\": \"\"}, \"deps\": {\"packages\": \"perl\", \"usescript\": {\"choosescript\": \"yes\", \"__current_case__\": 1, \"scriptrunner\": \"perl\", \"dynScript\": \"#!/usr/bin/perl -w\\n\\n# usage : perl toolExample.pl <FASTA file> <output file>\\n\\nopen (IN, \\\"<$ARGV[0]\\\");\\nopen (OUT, \\\">$ARGV[1]\\\");\\nwhile (<IN>) {\\n    chop;\\n    if (m/^>/) {\\n        s/^>//;\\n        if ($. > 1) {\\n            print OUT sprintf(\\\"%.3f\\\", $gc/$length) . \\\"\\\\n\\\";\\n        }\\n        $gc = 0;\\n        $length = 0;\\n    } else {\\n        ++$gc while m/[gc]/ig;\\n        $length += length $_;\\n    }\\n}\\nprint OUT sprintf(\\\"%.3f\\\", $gc/$length) . \\\"\\\\n\\\";\\nclose( IN );\\nclose( OUT );\"}}, \"io_param\": {\"ppass\": {\"parampass\": \"positional\", \"__current_case__\": 1, \"io\": {\"history_inputs\": [{\"__index__\": 0, \"input_files\": {\"__class__\": \"ConnectedValue\"}, \"input_formats\": [\"fasta\"], \"input_label\": \"Input fasta for GC estimate\", \"input_help\": \"\", \"input_CL\": \"1\", \"input_repeat\": \"false\"}], \"history_outputs\": [{\"__index__\": 0, \"history_name\": \"perl_gc_output\", \"history_format\": \"txt\", \"history_CL\": \"2\", \"history_test\": \"diff:0\"}], \"collection_outputs\": []}, \"addparam\": {\"edit_params\": \"yes\", \"additional_parameters\": []}}}, \"make\": {\"makeMode\": {\"make_Tool\": \"gentest\", \"__current_case__\": 1, \"galaxy_apikey\": \"fakekey\", \"toolshed_apikey\": \"fakekey\", \"galaxy_url\": \"http://localhost:8080\", \"toolshed_url\": \"http://localhost:9009\", \"tool_version\": \"0.01\", \"tool_desc\": \"ToolFactory demonstration of a perl script with positional parameters \", \"help_text\": \"**What it Does**\\n\\nGC calculation simple tool example from Planemo documentation.\", \"citations\": []}}, \"tool_name\": \"perl_gc_counter\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
             "tool_version": "2.00",
             "type": "tool",
@@ -610,7 +610,7 @@
         },
         "13": {
             "annotation": "",
-            "content_id": "rgtf2",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "errors": null,
             "id": 13,
             "input_connections": {
@@ -647,7 +647,7 @@
                 "y": 119.0625
             },
             "post_job_actions": {},
-            "tool_id": "rgtf2",
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "tool_state": "{\"__input_ext\": \"input\", \"__workflow_invocation_uuid__\": \"491d7ad65c4211ebac99cda6b6778595\", \"chromInfo\": \"/home/ross/galaxy-dev/tool-data/shared/ucsc/chrom/?.len\", \"cl_prefix\": \"\", \"cover\": {\"commover\": \"no\", \"__current_case__\": 0, \"command_override\": \"\", \"test_override\": \"\"}, \"deps\": {\"packages\": \"bwa=0.7.15, samtools=1.3\", \"usescript\": {\"choosescript\": \"yes\", \"__current_case__\": 1, \"scriptrunner\": \"bash\", \"dynScript\": \"REFFILE=$1\\nFASTQ=$2\\nBAMOUT=$3\\nrm -f \\\"refalias\\\"\\nln -s \\\"$REFFILE\\\" \\\"refalias\\\"\\nbwa index -a is \\\"refalias\\\"\\nbwa mem -t \\\"2\\\"  -v 1 \\\"refalias\\\" \\\"$FASTQ\\\"  > tempsam\\nsamtools view -Sb tempsam > temporary_bam_file.bam\\nsamtools sort -o \\\"$BAMOUT\\\" temporary_bam_file.bam\\n\"}}, \"io_param\": {\"ppass\": {\"parampass\": \"positional\", \"__current_case__\": 1, \"io\": {\"history_inputs\": [{\"__index__\": 0, \"input_files\": {\"__class__\": \"ConnectedValue\"}, \"input_formats\": [\"fasta\"], \"input_label\": \"Reference sequence to map reads against\", \"input_help\": \"\", \"input_CL\": \"1\", \"input_repeat\": \"false\"}, {\"__index__\": 1, \"input_files\": {\"__class__\": \"ConnectedValue\"}, \"input_formats\": [\"fastq\"], \"input_label\": \"Reads to map\", \"input_help\": \"\", \"input_CL\": \"2\", \"input_repeat\": \"false\"}], \"history_outputs\": [{\"__index__\": 0, \"history_name\": \"bwa_test_bash_output\", \"history_format\": \"bam\", \"history_CL\": \"3\", \"history_test\": \"sim_size:0.01\"}], \"collection_outputs\": []}, \"addparam\": {\"edit_params\": \"yes\", \"additional_parameters\": []}}}, \"make\": {\"makeMode\": {\"make_Tool\": \"gentest\", \"__current_case__\": 1, \"galaxy_apikey\": \"fakekey\", \"toolshed_apikey\": \"fakekey\", \"galaxy_url\": \"http://localhost:8080\", \"toolshed_url\": \"http://localhost:9009\", \"tool_version\": \"0.01\", \"tool_desc\": \"bwa mem example as a ToolFactory positional parameter bash script\", \"help_text\": \"**What it Does**\\n\\nbwa mem Planemo example as a bash script ToolFactory tool.\", \"citations\": []}}, \"tool_name\": \"bwa_test_toolfactory_positional_bash\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
             "tool_version": "2.00",
             "type": "tool",
@@ -667,7 +667,7 @@
         },
         "14": {
             "annotation": "",
-            "content_id": "rgtf2",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "errors": null,
             "id": 14,
             "input_connections": {
@@ -700,7 +700,7 @@
                 "y": 105.3125
             },
             "post_job_actions": {},
-            "tool_id": "rgtf2",
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "tool_state": "{\"__input_ext\": \"input\", \"__workflow_invocation_uuid__\": \"f1d43bed5d0811ebac99cda6b6778595\", \"chromInfo\": \"/home/ross/galaxy-dev/tool-data/shared/ucsc/chrom/?.len\", \"cl_prefix\": \"\", \"cover\": {\"commover\": \"no\", \"__current_case__\": 0, \"command_override\": \"\", \"test_override\": \"\"}, \"deps\": {\"packages\": \"sed\", \"usescript\": {\"choosescript\": \"no\", \"__current_case__\": 0, \"dynScript\": \"\", \"scriptrunner\": \"\"}}, \"io_param\": {\"ppass\": {\"parampass\": \"positional\", \"__current_case__\": 1, \"io\": {\"history_inputs\": [{\"__index__\": 0, \"input_files\": {\"__class__\": \"ConnectedValue\"}, \"input_formats\": [\"txt\"], \"input_label\": \"Input text to be edited\", \"input_help\": \"\", \"input_CL\": \"2\", \"input_repeat\": \"false\"}], \"history_outputs\": [{\"__index__\": 0, \"history_name\": \"sedtest_edited_output\", \"history_format\": \"txt\", \"history_CL\": \"STDOUT\", \"history_test\": \"diff:0\"}], \"collection_outputs\": []}, \"addparam\": {\"edit_params\": \"yes\", \"additional_parameters\": [{\"__index__\": 0, \"param_name\": \"sedstring\", \"ap_type\": {\"param_type\": \"text\", \"__current_case__\": 0, \"param_value\": \"s/A/Abjork!/g\"}, \"param_label\": \"sed edit string - subsitute some text for some other text globally\", \"param_help\": \"\", \"param_CL\": \"1\", \"param_CLprefixed\": \"\"}]}}}, \"make\": {\"makeMode\": {\"make_Tool\": \"gentest\", \"__current_case__\": 1, \"galaxy_apikey\": \"fakekey\", \"toolshed_apikey\": \"fakekey\", \"galaxy_url\": \"http://localhost:8080\", \"toolshed_url\": \"http://localhost:9009\", \"tool_version\": \"0.01\", \"tool_desc\": \"ToolFactory sed example\", \"help_text\": \"**What it Does**\\nEdits a text file using a sed string\", \"citations\": []}}, \"tool_name\": \"sedtest_toolshed\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
             "tool_version": "2.00",
             "type": "tool",
@@ -720,7 +720,7 @@
         },
         "15": {
             "annotation": "",
-            "content_id": "rgtf2",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "errors": null,
             "id": 15,
             "input_connections": {
@@ -757,7 +757,7 @@
                 "y": 395.3125
             },
             "post_job_actions": {},
-            "tool_id": "rgtf2",
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "tool_state": "{\"__input_ext\": \"input\", \"__workflow_invocation_uuid__\": \"f1d43bed5d0811ebac99cda6b6778595\", \"chromInfo\": \"/home/ross/galaxy-dev/tool-data/shared/ucsc/chrom/?.len\", \"cl_prefix\": \"\", \"cover\": {\"commover\": \"no\", \"__current_case__\": 0, \"command_override\": \"\", \"test_override\": \"\"}, \"deps\": {\"packages\": \"bwa=0.7.15, samtools=1.3\", \"usescript\": {\"choosescript\": \"yes\", \"__current_case__\": 1, \"scriptrunner\": \"bash\", \"dynScript\": \"REFFILE=$1\\nFASTQ=$2\\nBAMOUT=$3\\nrm -f \\\"refalias\\\"\\nln -s \\\"$REFFILE\\\" \\\"refalias\\\"\\nbwa index -a is \\\"refalias\\\"\\nbwa mem -t \\\"2\\\"  -v 1 \\\"refalias\\\" \\\"$FASTQ\\\"  > tempsam\\nsamtools view -Sb tempsam > temporary_bam_file.bam\\nsamtools sort -o \\\"$BAMOUT\\\" temporary_bam_file.bam\\n\"}}, \"io_param\": {\"ppass\": {\"parampass\": \"positional\", \"__current_case__\": 1, \"io\": {\"history_inputs\": [{\"__index__\": 0, \"input_files\": {\"__class__\": \"ConnectedValue\"}, \"input_formats\": [\"fasta\"], \"input_label\": \"Reference sequence to map reads against\", \"input_help\": \"\", \"input_CL\": \"1\", \"input_repeat\": \"false\"}, {\"__index__\": 1, \"input_files\": {\"__class__\": \"ConnectedValue\"}, \"input_formats\": [\"fastq\"], \"input_label\": \"Reads to map\", \"input_help\": \"\", \"input_CL\": \"2\", \"input_repeat\": \"false\"}], \"history_outputs\": [{\"__index__\": 0, \"history_name\": \"bwa_test_bash_output\", \"history_format\": \"bam\", \"history_CL\": \"3\", \"history_test\": \"sim_size:0.01\"}], \"collection_outputs\": []}, \"addparam\": {\"edit_params\": \"yes\", \"additional_parameters\": []}}}, \"make\": {\"makeMode\": {\"make_Tool\": \"gentest\", \"__current_case__\": 1, \"galaxy_apikey\": \"fakekey\", \"toolshed_apikey\": \"fakekey\", \"galaxy_url\": \"http://localhost:8080\", \"toolshed_url\": \"http://localhost:9009\", \"tool_version\": \"0.01\", \"tool_desc\": \"bwa mem example as a ToolFactory positional parameter bash script\", \"help_text\": \"**What it Does**\\n\\nbwa mem Planemo example as a bash script ToolFactory tool.\", \"citations\": []}}, \"tool_name\": \"bwa_test_toolfactory_positional_bash\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
             "tool_version": "2.00",
             "type": "tool",
@@ -777,7 +777,7 @@
         },
         "16": {
             "annotation": "",
-            "content_id": "rgtf2",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "errors": null,
             "id": 16,
             "input_connections": {
@@ -814,7 +814,7 @@
                 "y": 320.3125
             },
             "post_job_actions": {},
-            "tool_id": "rgtf2",
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "tool_state": "{\"__input_ext\": \"input\", \"__workflow_invocation_uuid__\": \"f1d43bed5d0811ebac99cda6b6778595\", \"chromInfo\": \"/home/ross/galaxy-dev/tool-data/shared/ucsc/chrom/?.len\", \"cl_prefix\": \"\", \"cover\": {\"commover\": \"yes\", \"__current_case__\": 1, \"command_override\": \"## Build reference\\n#set $reference_fasta_filename = \\\"localref.fa\\\"\\nln -s \\\"${ref_file}\\\" \\\"${reference_fasta_filename}\\\" ;\\nbwa index -a is \\\"${reference_fasta_filename}\\\" ;\\nbwa mem -t \\\"\\\\${GALAXY_SLOTS:-4}\\\" -v 1 \\\"${reference_fasta_filename}\\\" \\\"${fastq_input1}\\\"  | samtools view -Sb - > temporary_bam_file.bam ;\\nsamtools sort -o \\\"${bwa_test_commover_bam_output}\\\" temporary_bam_file.bam\", \"test_override\": \"\"}, \"deps\": {\"packages\": \"bwa=0.7.15, samtools=1.3\", \"usescript\": {\"choosescript\": \"no\", \"__current_case__\": 0, \"dynScript\": \"\", \"scriptrunner\": \"\"}}, \"io_param\": {\"ppass\": {\"parampass\": \"argparse\", \"__current_case__\": 0, \"io\": {\"history_inputs\": [{\"__index__\": 0, \"input_files\": {\"__class__\": \"ConnectedValue\"}, \"input_formats\": [\"fasta\"], \"input_label\": \"Reference sequence to align reads\", \"input_help\": \"\", \"input_CL\": \"ref_file\", \"input_repeat\": \"false\"}, {\"__index__\": 1, \"input_files\": {\"__class__\": \"ConnectedValue\"}, \"input_formats\": [\"fastqsanger\"], \"input_label\": \"Fastqsanger file containing reads to be mapped against reference\", \"input_help\": \"\", \"input_CL\": \"fastq_input1\", \"input_repeat\": \"false\"}], \"history_outputs\": [{\"__index__\": 0, \"history_name\": \"bwa_test_commover_bam_output\", \"history_format\": \"bam\", \"history_CL\": \"\", \"history_test\": \"sim_size:0.01\"}], \"collection_outputs\": []}, \"addparam\": {\"edit_params\": \"yes\", \"additional_parameters\": []}}}, \"make\": {\"makeMode\": {\"make_Tool\": \"gentest\", \"__current_case__\": 1, \"galaxy_apikey\": \"fakekey\", \"toolshed_apikey\": \"fakekey\", \"galaxy_url\": \"http://localhost:8080\", \"toolshed_url\": \"http://localhost:9009\", \"tool_version\": \"0.01\", \"tool_desc\": \"bwa mem example ToolFactory implementation\", \"help_text\": \"**What it Does**\\n\\nbwa mem Planemo example reproduced with command over-ride in the ToolFactory\", \"citations\": []}}, \"tool_name\": \"bwa_test_command_override\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
             "tool_version": "2.00",
             "type": "tool",
@@ -834,7 +834,7 @@
         },
         "17": {
             "annotation": "",
-            "content_id": "rgtf2",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "errors": null,
             "id": 17,
             "input_connections": {
@@ -867,7 +867,7 @@
                 "y": 729.0625
             },
             "post_job_actions": {},
-            "tool_id": "rgtf2",
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/fubar/tool_factory_2/rgtf2/2.00",
             "tool_state": "{\"__input_ext\": \"input\", \"__workflow_invocation_uuid__\": \"f1d43bed5d0811ebac99cda6b6778595\", \"chromInfo\": \"/home/ross/galaxy-dev/tool-data/shared/ucsc/chrom/?.len\", \"cl_prefix\": \"\", \"cover\": {\"commover\": \"no\", \"__current_case__\": 0, \"command_override\": \"\", \"test_override\": \"\"}, \"deps\": {\"packages\": \"planemo=0.74.1\", \"usescript\": {\"choosescript\": \"yes\", \"__current_case__\": 1, \"scriptrunner\": \"bash\", \"dynScript\": \"cp $1 foo.tar \\ntar -xvf foo.tar\\nTOOLNAME=`find . -name \\\"*.xml\\\"`\\necho \\\"$$$$$TOOLNAME = $TOOLNAME\\\" > $2\\nplanemo lint $TOOLNAME >> $2\"}}, \"io_param\": {\"ppass\": {\"parampass\": \"positional\", \"__current_case__\": 1, \"io\": {\"history_inputs\": [{\"__index__\": 0, \"input_files\": {\"__class__\": \"ConnectedValue\"}, \"input_formats\": [\"tgz\"], \"input_label\": \"Toolshed archive to be linted\", \"input_help\": \"\", \"input_CL\": \"1\", \"input_repeat\": \"false\"}], \"history_outputs\": [{\"__index__\": 0, \"history_name\": \"lint_output\", \"history_format\": \"txt\", \"history_CL\": \"2\", \"history_test\": \"diff:5\"}], \"collection_outputs\": []}, \"addparam\": {\"edit_params\": \"yes\", \"additional_parameters\": []}}}, \"make\": {\"makeMode\": {\"make_Tool\": \"gentest\", \"__current_case__\": 1, \"galaxy_apikey\": \"\", \"toolshed_apikey\": \"\", \"galaxy_url\": \"\", \"toolshed_url\": \"\", \"tool_version\": \"0.01\", \"tool_desc\": \"Lints a ToolFactory or other xml using planemo\", \"help_text\": \"**What it Does**\\nPlanemo lint\", \"citations\": []}}, \"tool_name\": \"planemo_lint\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
             "tool_version": "2.00",
             "type": "tool",

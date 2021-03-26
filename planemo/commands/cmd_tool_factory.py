@@ -6,14 +6,20 @@ import click
 from planemo import options
 from planemo.cli import command_function
 from planemo.galaxy import galaxy_serve
+from planemo.io import temp_directory
 from planemo.runnable import for_paths
 
 
 @click.command('tool_factory')
+@click.option('--directory',
+              default="./planemo_global",
+              envvar="PLANEMO_GLOBAL_WORKSPACE",
+              help="Workspace for planemo.")
 @options.optional_tools_arg(multiple=True, allow_uris=False)
 @options.galaxy_serve_options()
 @options.enable_cwl_option()
 @options.galaxy_cwl_root_option()
+
 @command_function
 def cli(ctx, **kwds):
     """(Experimental) Launch Galaxy with Tool Factory 2.
