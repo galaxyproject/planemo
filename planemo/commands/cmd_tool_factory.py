@@ -6,6 +6,7 @@ import click
 from planemo import options
 from planemo.cli import command_function
 from planemo.runnable import for_paths
+from planemo.galaxy import galaxy_serve
 
 
 @click.command('tool_factory')
