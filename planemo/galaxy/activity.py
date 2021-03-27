@@ -81,11 +81,12 @@ def log_contents_str(config):
 
 class PlanemoStagingInterface(StagingInterace):
 
-    def __init__(self, ctx, runnable, user_gi, version_major):
+    def __init__(self, ctx, runnable, user_gi, version_major, simultaneous_uploads):
         self._ctx = ctx
         self._user_gi = user_gi
         self._runnable = runnable
         self._version_major = version_major
+        self._simultaneous_uploads = simultaneous_uploads
 
     def _post(self, api_path, payload, files_attached=False):
         params = dict(key=self._user_gi.key)
@@ -96,8 +97,9 @@ class PlanemoStagingInterface(StagingInterace):
         return attach_file(path)
 
     def _handle_job(self, job_response):
-        job_id = job_response["id"]
-        _wait_for_job(self._user_gi, job_id)
+        if not self._simultaneous_uploads:
+            job_id = job_response["id"]
+            _wait_for_job(self._user_gi, job_id)
 
     @property
     def use_fetch_api(self):
@@ -229,7 +231,8 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):  # n
     # only upload objects as files/collections for CWL workflows...
     tool_or_workflow = "tool" if runnable.type != RunnableType.cwl_workflow else "workflow"
     to_posix_lines = runnable.type.is_galaxy_artifact
-    job_dict, datasets = PlanemoStagingInterface(ctx, runnable, user_gi, config.version_major).stage(
+    simultaneous_uploads = kwds.get("simultaneous_uploads", False)
+    job_dict, datasets = PlanemoStagingInterface(ctx, runnable, user_gi, config.version_major, simultaneous_uploads).stage(
         tool_or_workflow,
         history_id=history_id,
         job_path=job_path,
