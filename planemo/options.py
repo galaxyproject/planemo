@@ -629,6 +629,17 @@ def conda_global_option():
     )
 
 
+def simultaneous_upload_option():
+    return planemo_option(
+        "--simultaneous_uploads/--no_simultaneous_uploads",
+        is_flag=True,
+        default=False,
+        help=("When uploading files to Galaxy for tool or workflow tests or runs, "
+              "upload multiple files simultaneously without waiting for the previous "
+              "file upload to complete.")
+    )
+
+
 def required_tool_arg(allow_uris=False):
     """ Decorate click method as requiring the path to a single tool.
     """
@@ -1153,6 +1164,7 @@ def galaxy_config_options():
         conda_copy_dependencies_option(),
         conda_auto_install_option(),
         conda_auto_init_option(),
+        simultaneous_upload_option(),
         # Profile options...
         profile_option(),
         profile_database_options(),
