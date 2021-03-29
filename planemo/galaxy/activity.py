@@ -218,10 +218,11 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         end_datetime=datetime.now(),
         **response_kwds
     )
-    output_directory = kwds.get("output_directory", None)
-    ctx.vlog("collecting outputs from run...")
-    run_response.collect_outputs(ctx, output_directory)
-    ctx.vlog("collecting outputs complete")
+    if kwds.get("download_outputs", True):
+        output_directory = kwds.get("output_directory", None)
+        ctx.vlog("collecting outputs from run...")
+        run_response.collect_outputs(ctx, output_directory)
+        ctx.vlog("collecting outputs complete")
     return run_response
 
 

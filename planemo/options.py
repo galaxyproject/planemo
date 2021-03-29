@@ -284,6 +284,17 @@ def run_output_json_option():
     )
 
 
+def run_download_outputs_option():
+    return planemo_option(
+        "--download_outputs/--no_download_outputs",
+        is_flag=True,
+        default=False,
+        help=("After tool or workflow runs are complete, download "
+              "the output files to the location specified by --output_directory. "
+              )
+    )
+
+
 def no_dependency_resolution():
     return planemo_option(
         "--no_dependency_resolution",
