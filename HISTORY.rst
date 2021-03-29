@@ -6,7 +6,21 @@ History
 .. to_doc
 
 ---------------------
-0.74.3 2020-02-25)
+0.74.4 (2020-03-29)
+---------------------
+
+* Create ``--download_outputs`` flag for the ``run`` command
+  (thanks to `@simonbray`_).
+  `Pull Request 1157`_
+* Make simultaneous file upload configurable for the run and test commands
+  (thanks to `@simonbray`_).
+  `Pull Request 1156`_
+* Add option to add tags to a history with the ``run`` command
+  (thanks to `@simonbray`_). `Pull Request 1154`_
+* Revise Allure_ reporting experience for workflows. `Pull Request 1152`_
+
+---------------------
+0.74.3 (2020-02-25)
 ---------------------
 
 * Load both cat1 versions when testing workflows `Pull Request 1146`_
@@ -1694,6 +1708,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1157: https://github.com/galaxyproject/planemo/pull/1157
+.. _Pull Request 1156: https://github.com/galaxyproject/planemo/pull/1156
+.. _Pull Request 1154: https://github.com/galaxyproject/planemo/pull/1154
+.. _Pull Request 1152: https://github.com/galaxyproject/planemo/pull/1152
 .. _Pull Request 1146: https://github.com/galaxyproject/planemo/pull/1146
 .. _Pull Request 1145: https://github.com/galaxyproject/planemo/pull/1145
 .. _Pull Request 1144: https://github.com/galaxyproject/planemo/pull/1144
