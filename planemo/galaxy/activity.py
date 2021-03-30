@@ -256,7 +256,7 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):  # n
         final_state = "ok"
 
     ctx.vlog("final state is %s" % final_state)
-    if final_state != "ok":
+    if final_state != "ok" and kwds['check_uploads_ok']:
         msg = "Failed to run job final job state is [%s]." % final_state
         summarize_history(ctx, user_gi, history_id)
         raise Exception(msg)
