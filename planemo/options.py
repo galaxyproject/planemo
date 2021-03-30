@@ -640,6 +640,17 @@ def simultaneous_upload_option():
     )
 
 
+def check_uploads_ok_option():
+    return planemo_option(
+        "--check_uploads_ok_option/--no_check_uploads_ok_option",
+        is_flag=True,
+        default=True,
+        help=("When uploading files to Galaxy for tool or workflow tests or runs, "
+              "check that the history is in an 'ok' state before beginning tool "
+              "or workflow execution.")
+    )
+
+
 def required_tool_arg(allow_uris=False):
     """ Decorate click method as requiring the path to a single tool.
     """
@@ -1165,6 +1176,7 @@ def galaxy_config_options():
         conda_auto_install_option(),
         conda_auto_init_option(),
         simultaneous_upload_option(),
+        check_uploads_ok_option(),
         # Profile options...
         profile_option(),
         profile_database_options(),
