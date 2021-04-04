@@ -4,6 +4,14 @@ planemo.commands package
 Submodules
 ----------
 
+planemo.commands.cmd\_autoupdate module
+---------------------------------------
+
+.. automodule:: planemo.commands.cmd_autoupdate
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 planemo.commands.cmd\_ci\_find\_repos module
 --------------------------------------------
 

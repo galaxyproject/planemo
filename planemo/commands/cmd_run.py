@@ -20,8 +20,10 @@ from planemo.runnable_resolve import for_runnable_identifier
 @options.galaxy_config_options()
 @options.enable_cwl_option()
 @options.galaxy_cwl_root_option()
+@options.run_history_tags_option()
 @options.run_output_directory_option()
 @options.run_output_json_option()
+@options.run_download_outputs_option()
 @options.engine_options()
 @command_function
 def cli(ctx, runnable_identifier, job_path, **kwds):
