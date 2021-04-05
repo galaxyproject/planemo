@@ -419,11 +419,12 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
 
     @property
     def job_info(self):
+        print(self._job_info)
         if self._job_info is not None:
             return dict(
-                stdout=self._job_info["stdout"],
-                stderr=self._job_info["stderr"],
-                command_line=self._job_info["command_line"],
+                stdout=self._job_info.get("stdout"),
+                stderr=self._job_info.get("stderr"),
+                command_line=self._job_info.get("command_line"),
             )
         return None
 

@@ -547,6 +547,19 @@ class RunResponse(object):
     def log(self):
         """If engine related log is available, return as text data."""
 
+
+@add_metaclass(abc.ABCMeta)
+class SuccessfulRunResponse(RunResponse):
+    """Description of the results of an engine executing a Runnable."""
+
+    def was_successful(self):
+        """Return `True` to indicate this run was successful."""
+        return True
+
+    @abc.abstractproperty
+    def outputs_dict(self):
+        """Return a dict of output descriptions."""
+
     def structured_data(self, test_case=None):
         output_problems = []
         if self.was_successful:
@@ -606,19 +619,6 @@ class RunResponse(object):
                 doc=None,
                 test_type=self._runnable.type.name,
             )
-
-
-@add_metaclass(abc.ABCMeta)
-class SuccessfulRunResponse(RunResponse):
-    """Description of the results of an engine executing a Runnable."""
-
-    def was_successful(self):
-        """Return `True` to indicate this run was successful."""
-        return True
-
-    @abc.abstractproperty
-    def outputs_dict(self):
-        """Return a dict of output descriptions."""
 
 
 @python_2_unicode_compatible
