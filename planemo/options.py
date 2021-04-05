@@ -299,6 +299,17 @@ def run_invocation_report_option():
     )
 
 
+def run_download_outputs_option():
+    return planemo_option(
+        "--download_outputs/--no_download_outputs",
+        is_flag=True,
+        default=False,
+        help=("After tool or workflow runs are complete, download "
+              "the output files to the location specified by --output_directory. "
+              ),
+    )
+
+
 def no_dependency_resolution():
     return planemo_option(
         "--no_dependency_resolution",
@@ -630,6 +641,28 @@ def conda_global_option():
               "environments packaged for tools. If the Conda bin directory is on your "
               "PATH, tools may still use binaries but this is more designed for "
               "interactive testing and debugging.")
+    )
+
+
+def simultaneous_upload_option():
+    return planemo_option(
+        "--simultaneous_uploads/--no_simultaneous_uploads",
+        is_flag=True,
+        default=False,
+        help=("When uploading files to Galaxy for tool or workflow tests or runs, "
+              "upload multiple files simultaneously without waiting for the previous "
+              "file upload to complete.")
+    )
+
+
+def check_uploads_ok_option():
+    return planemo_option(
+        "--check_uploads_ok_option/--no_check_uploads_ok_option",
+        is_flag=True,
+        default=True,
+        help=("When uploading files to Galaxy for tool or workflow tests or runs, "
+              "check that the history is in an 'ok' state before beginning tool "
+              "or workflow execution.")
     )
 
 
@@ -1157,6 +1190,8 @@ def galaxy_config_options():
         conda_copy_dependencies_option(),
         conda_auto_install_option(),
         conda_auto_init_option(),
+        simultaneous_upload_option(),
+        check_uploads_ok_option(),
         # Profile options...
         profile_option(),
         profile_database_options(),
