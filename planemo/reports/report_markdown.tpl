@@ -1,4 +1,4 @@
-{% from 'macros.tmpl' import render_job_parameters, render_steps %}
+{% from 'macros.tmpl' import render_invocation_details, render_job_parameters, render_steps %}
 {% if title %}
 # {{ title }}
 
@@ -75,7 +75,11 @@
 
     #### Workflow invocation details
 
-{{render_steps(test.data.invocation_details.values(), display_job_attributes)}}
+{{render_steps(test.data.invocation_details.steps.values(), display_job_attributes)}}
+
+{{render_invocation_details(test.data.invocation_details.details)}}
+
+
   </div></details>
 
 {% endif %}

@@ -588,7 +588,18 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
             workflow_step_job_details = [self._user_gi.jobs.show_job(j['id'], full_details=True) for j in workflow_step['jobs']]
             workflow_step['jobs'] = workflow_step_job_details
             invocation_steps[step_label_or_index] = workflow_step
-        return invocation_steps
+        invocation_details = {
+                'steps': invocation_steps,
+                'details': {
+                    'invocation_id': self._invocation_id,
+                    'history_id': self._history_id,
+                    'workflow_id': self._workflow_id,
+                    'invocation_state': self.invocation_state,
+                    'history_state': self.history_state,
+                    'error_message': self.error_message,
+                }
+            }
+        return invocation_details
 
     @property
     def invocation_details(self):

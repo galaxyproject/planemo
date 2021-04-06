@@ -52,3 +52,17 @@
 {%         endfor %}
 {%       endif %}
 {% endmacro %}
+
+
+{% macro render_invocation_details(details, summary_label='Other invocation details') %}
+   * <details><summary>{{summary_label}}</summary>
+{%    for key, value in details.items() %}
+   {% if value %}
+
+     - **{{ key }}**
+
+        * {{value}}
+   {% endif %}
+{%    endfor %}
+      </details>
+{% endmacro %}
