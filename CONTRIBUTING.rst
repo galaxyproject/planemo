@@ -2,7 +2,7 @@
 Contributing
 ============
 
-Please note that this project is released with a `Contributor Code of Conduct
+Please note that this project is released with a `Contributor Code of Conduct 
 <https://planemo.readthedocs.org/en/latest/conduct.html>`__. By participating
 in this project you agree to abide by its terms.
 
@@ -21,7 +21,7 @@ Report bugs at https://github.com/galaxyproject/planemo/issues.
 
 If you are reporting a bug, please include:
 
-* Your operating system name and version, versions of other relevant software
+* Your operating system name and version, versions of other relevant software 
   such as Galaxy or Docker.
 * Links to relevant tools.
 * Any details about your local setup that might be helpful in troubleshooting.
@@ -80,13 +80,13 @@ Ready to contribute? Here's how to set up `planemo` for local development.
 
 5. When you're done making changes, check that your changes pass ``flake8``
    and the tests
-
+   
    ::
 
        $ make lint
        $ make test
-
-   If the modification doesn't affect code that configures and runs Galaxy -
+   
+   If the modification doesn't affect code that configures and runs Galaxy - 
    skipping a couple tests that will cause Galaxy and its dependencies to be
    downloaded results in a significant speed up. This subset of tests can be
    run with ``make quick-test``.
@@ -180,7 +180,7 @@ code::
 
     make setup-git-hook-lint
 
-To also run the faster planemo tests, the following command can be used to
+To also run the faster planemo tests, the following command can be used to 
 setup a more rigorous pre-commit hook::
 
     make setup-git-hook-lint-and-test

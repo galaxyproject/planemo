@@ -55,11 +55,6 @@ with a preconfigured Galaxy server and set up for Galaxy_ and
 You can choose from open virtualization format (OVA_, .ova) or Docker_
 appliances.
 
-To obtain the source code use
-``git clone --recursive git@github.com:galaxyproject/planemo.git``
-
-The ``--recursive`` flag is needed to ensure that the ToolFactory git submodule is installed.
-
 -----------------
 Basics - Galaxy
 -----------------
@@ -100,7 +95,7 @@ can be used to test a tool or a directory of tools.
 
 ::
 
-   $ planemo test --galaxy_root=../galaxy randomlines.xml
+	$ planemo test --galaxy_root=../galaxy randomlines.xml
 
 If no ``--galaxy_root`` is defined, Planemo will download and configure
 a disposable Galaxy instance for testing.
@@ -116,7 +111,7 @@ Galaxy interface using the ``serve`` (``s``) `command
 
 ::
 
-   $ planemo serve
+	$ planemo serve
 
 Like ``test``, ``serve`` requires a Galaxy root and one can be
 explicitly specified with ``--galaxy_root`` or installed dynamically
@@ -130,6 +125,36 @@ For more information on developing Galaxy workflows with Planemo checkout
 `test format`_. For information on developing Galaxy training materials
 checkout the `contributing documentation <https://training.galaxyproject.org/training-material/topics/contributing/>`__
 on training.galaxyproject.org.
+
+
+------------
+ToolFactory
+------------
+
+Planemo can serve the `Galaxy ToolFactory tool <https://github.com/fubar2/toolfactory>`__ on `http://localhost:9090`
+
+::
+
+  $ planemo tool_factory --galaxy_root /galaxy_central --extra_tools ./mytools
+
+The ToolFactory works like other Galaxy tools through the Galaxy GUI to fill in a form, but it can generate a new Galaxy tool and test
+it with Planemo. Sample data file inputs should be uploaded to the working history before starting the ToolFactory. These are needed to create a
+test as part of the new generated tool archive. Galaxy as an integrated development environment is possible but clumsy for anything other than relatively simple tools.
+Conda packages can be used or a script can be provided for a scripting language interpreter. The command line for the package or script is made up from
+the input files needed and the output files generated, plus any number of other command line parameters with argparse or positional style
+formatting. The number of files and parameters is limited only by your patience with the GUI. A toolshed ready archive is produced in the history containing a test
+based on the sample inputs and parameter settings provided on the form. Note that tools are normal Galaxy tools and are provided as archives ready to upload to
+a toolshed.
+
+The optional `--galaxy_root` pointing to a Galaxy source code directory will save time downloading a new copy
+each time it is run. The optional `--extra_tools` can be a path containing any tools you have previously built if you
+download the [toolname].toolshed.tar.gz file and unarchive it into that extra tools path. These tools will appear
+in the Galaxy served by planemo along with the ToolFactory tool itself.
+
+For dedicated ToolFactory access, the `ToolFactory Docker <https://github.com/fubar2/toolfactory-galaxy-docker>`__ container offers persistence
+and has an inbuilt toolshed so new tools can be installed back to the Galaxy for additional testing once they pass the inbuilt test.
+It is based on `the stable Galaxy docker <https://github.com/bgruening/docker-galaxy-stable>`__ and also uses Planemo under the
+hood.
 
 ----------------------------------
 Basics - Common Workflow Language
@@ -181,36 +206,6 @@ jobs (with input descriptions) and corresponding output assertions.
 Checkout the `Commmon Workflow User Guide`_ for more information on developing
 CWL tools in general and  `Building Common Workflow Language Tools`_ for more
 information on using Planemo to develop CWL tools.
-
-
-------------
-ToolFactory
-------------
-
-Planemo can serve the `Galaxy ToolFactory tool <https://github.com/fubar2/toolfactory>`__ on `http://localhost:9090`
-
-::
-
-  $ planemo tool_factory --galaxy_root /galaxy_central --extra_tools ./mytools
-
-The ToolFactory works like other Galaxy tools through the Galaxy GUI to fill in a form, but it can generate a new Galaxy tool and test
-it with Planemo. Sample data file inputs should be uploaded to the working history before starting the ToolFactory. These are needed to create a
-test as part of the new generated tool archive. Galaxy as an integrated development environment is possible but clumsy for anything other than relatively simple tools.
-Conda packages can be used or a script can be provided for a scripting language interpreter. The command line for the package or script is made up from
-the input files needed and the output files generated, plus any number of other command line parameters with argparse or positional style
-formatting. The number of files and parameters is limited only by your patience with the GUI. A toolshed ready archive is produced in the history containing a test
-based on the sample inputs and parameter settings provided on the form. Note that tools are normal Galaxy tools and are provided as archives ready to upload to
-a toolshed.
-
-The optional `--galaxy_root` pointing to a Galaxy source code directory will save time downloading a new copy
-each time it is run. The optional `--extra_tools` can be a path containing any tools you have previously built if you
-download the [toolname].toolshed.tar.gz file and unarchive it into that extra tools path. These tools will appear
-in the Galaxy served by planemo along with the ToolFactory tool itself.
-
-For dedicated ToolFactory access, the `ToolFactory Docker <https://github.com/fubar2/toolfactory-galaxy-docker>`__ container offers persistence
-and has an inbuilt toolshed so new tools can be installed back to the Galaxy for additional testing once they pass the inbuilt test.
-It is based on `the stable Galaxy docker <https://github.com/bgruening/docker-galaxy-stable>`__ and also uses Planemo under the
-hood.
 
 ---------
 Tool Shed
