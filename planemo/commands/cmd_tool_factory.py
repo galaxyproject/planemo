@@ -22,6 +22,8 @@ def cli(ctx, **kwds):
     et. al. (10.1093/bioinformatics/bts573). Available at
     http://www.ncbi.nlm.nih.gov/pubmed/23024011.
     needs history loaded and an explanatory welcome.html
+    cli.py sets ctx.planemo_directory = os.path.expanduser(directory)
+    so planemo ALWAYS tries to write stuff there and that ends badly in a biocontainer
     """
     mod_dir = os.path.dirname(__file__)
     tf_dir = os.path.join(mod_dir, '..', '..', 'planemo_ext', 'tool_factory_2')
