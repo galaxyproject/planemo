@@ -1,4 +1,4 @@
-"""Module describing the planemo ``cwl_run`` command."""
+"""Module describing the planemo ``upload_data`` command."""
 from __future__ import print_function
 
 import click
@@ -25,6 +25,16 @@ def cli(ctx, runnable_identifier, job_path, new_job_path, **kwds):
 
     \b
         % planemo upload_data wf.ga wf-job.yml new-wf-job.yml --profile profile
+
+    Running this subcommand requires a workflow file or identifier
+    and a job file, just as for ``planemo run``. In addition, a third
+    argument is required, for the location of a new job file which
+    Planemo will write. The data will be uploaded to the specified
+    external Galaxy server and the job file will be recreated at the
+    specified location, with all instances of ``path`` or ``location``
+    for input datasets and collections replaced by ``galaxy_id``. The
+    new job file can then be used to run the workflow separately from
+    the already completed data upload.
     """
     kwds["engine"] = "external_galaxy"  # to only upload data to a local Galaxy does not make sense
     runnable = for_runnable_identifier(ctx, runnable_identifier, kwds)
