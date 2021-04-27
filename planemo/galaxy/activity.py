@@ -115,10 +115,9 @@ def _execute(ctx, config, runnable, job_path, **kwds):
     user_gi = config.user_gi
     admin_gi = config.gi
 
-    history_id = _history_id(user_gi, **kwds)
     start_datetime = datetime.now()
     try:
-        job_dict, _ = stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds)
+        job_dict, _, history_id = stage_in(ctx, runnable, config, job_path, **kwds)
     except Exception:
         ctx.vlog("Problem with staging in data for Galaxy activities...")
         raise
@@ -228,11 +227,13 @@ def _execute(ctx, config, runnable, job_path, **kwds):
     return run_response
 
 
-def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):  # noqa C901
+def stage_in(ctx, runnable, config, job_path, **kwds):  # noqa C901
     # only upload objects as files/collections for CWL workflows...
     tool_or_workflow = "tool" if runnable.type != RunnableType.cwl_workflow else "workflow"
     to_posix_lines = runnable.type.is_galaxy_artifact
     simultaneous_uploads = kwds.get("simultaneous_uploads", False)
+    user_gi = config.user_gi
+    history_id = _history_id(user_gi, **kwds)
     job_dict, datasets = PlanemoStagingInterface(ctx, runnable, user_gi, config.version_major, simultaneous_uploads).stage(
         tool_or_workflow,
         history_id=history_id,
@@ -241,7 +242,7 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):  # n
         to_posix_lines=to_posix_lines,
     )
 
-    if datasets:
+    if datasets and kwds['check_uploads_ok']:
         ctx.vlog("uploaded datasets [%s] for activity, checking history state" % datasets)
         final_state = _wait_for_history(ctx, user_gi, history_id)
 
@@ -256,12 +257,11 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):  # n
         final_state = "ok"
 
     ctx.vlog("final state is %s" % final_state)
-    if final_state != "ok" and kwds['check_uploads_ok']:
+    if final_state != "ok":
         msg = "Failed to run job final job state is [%s]." % final_state
         summarize_history(ctx, user_gi, history_id)
         raise Exception(msg)
-
-    return job_dict, datasets
+    return job_dict, datasets, history_id
 
 
 def _file_path_to_name(file_path):
