@@ -61,8 +61,10 @@ class ExternalGalaxyCommandsTestCase(CliTestCase):
                 # test WF execution (from wfid) using created profile and alias
                 result = self._check_exit_code(run_cmd)
                 assert 'Run failed' not in result.output
+                result = self._check_exit_code(run_cmd + ["--no_wait"])
+                assert 'Run successfully executed' in result.output
                 result = self._check_exit_code(list_invocs_cmd)
-                assert '1 invocations found.' in result.output
+                assert '2 invocations found.' in result.output
                 assert '1 jobs ok' in result.output or '"ok": 1' in result.output  # so it passes regardless if tabulate is installed or not
 
                 # test alias and profile deletion
