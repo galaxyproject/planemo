@@ -242,7 +242,7 @@ def stage_in(ctx, runnable, config, job_path, **kwds):  # noqa C901
         to_posix_lines=to_posix_lines,
     )
 
-    if datasets and kwds['check_uploads_ok']:
+    if datasets and kwds.get('check_uploads_ok', True):
         ctx.vlog("uploaded datasets [%s] for activity, checking history state" % datasets)
         final_state = _wait_for_history(ctx, user_gi, history_id)
 
