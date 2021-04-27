@@ -111,7 +111,7 @@ class PlanemoStagingInterface(StagingInterace):
         self._ctx.vlog(message)
 
 
-def _execute(ctx, config, runnable, job_path, **kwds):
+def _execute(ctx, config, runnable, job_path, **kwds):  # noqa C901
     user_gi = config.user_gi
     admin_gi = config.gi
 
@@ -135,26 +135,28 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         ctx.vlog("Post to Galaxy tool API with payload [%s]" % run_tool_payload)
         tool_run_response = user_gi.tools._post(run_tool_payload)
 
-        job = tool_run_response["jobs"][0]
-        job_id = job["id"]
-        try:
-            final_state = _wait_for_job(user_gi, job_id)
-        except Exception:
-            summarize_history(ctx, user_gi, history_id)
-            raise
-        if final_state != "ok":
-            msg = "Failed to run CWL tool job final job state is [%s]." % final_state
-            summarize_history(ctx, user_gi, history_id)
-            raise Exception(msg)
+        if not kwds.get('no_wait'):
+            job = tool_run_response["jobs"][0]
+            job_id = job["id"]
+            try:
+                final_state = _wait_for_job(user_gi, job_id)
+            except Exception:
+                summarize_history(ctx, user_gi, history_id)
+                raise
+            if final_state != "ok":
+                msg = "Failed to run CWL tool job final job state is [%s]." % final_state
+                summarize_history(ctx, user_gi, history_id)
+                raise Exception(msg)
 
-        ctx.vlog("Final job state was ok, fetching details for job [%s]" % job_id)
-        job_info = admin_gi.jobs.show_job(job_id)
-        response_kwds = {
-            'job_info': job_info,
-            'api_run_response': tool_run_response,
-        }
-        if ctx.verbose:
-            summarize_history(ctx, user_gi, history_id)
+            ctx.vlog("Final job state was ok, fetching details for job [%s]" % job_id)
+            job_info = admin_gi.jobs.show_job(job_id)
+            response_kwds = {
+                'job_info': job_info,
+                'api_run_response': tool_run_response,
+            }
+            if ctx.verbose:
+                summarize_history(ctx, user_gi, history_id)
+
     elif runnable.type in [RunnableType.galaxy_workflow, RunnableType.cwl_workflow]:
         response_class = GalaxyWorkflowRunResponse
         workflow_id = config.workflow_id_for_runnable(runnable)
@@ -180,6 +182,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         )
         invocation = user_gi.workflows._post(payload, url=invocations_url)
         invocation_id = invocation["id"]
+
         ctx.vlog("Waiting for invocation [%s]" % invocation_id)
         polling_backoff = kwds.get("polling_backoff", 0)
         final_invocation_state = 'new'
@@ -192,21 +195,25 @@ def _execute(ctx, config, runnable, job_path, **kwds):
             summarize_history(ctx, user_gi, history_id)
             error_message = "Final invocation state is [%s]" % final_invocation_state
         ctx.vlog("Final invocation state is [%s]" % final_invocation_state)
-        final_state = _wait_for_history(ctx, user_gi, history_id, polling_backoff)
-        if final_state != "ok":
-            msg = "Failed to run workflow final history state is [%s]." % final_state
-            error_message = msg if not error_message else "%s. %s" % (error_message, msg)
-            ctx.vlog(msg)
-            summarize_history(ctx, user_gi, history_id)
-        else:
-            ctx.vlog("Final history state is 'ok'")
+
+        if not kwds.get('no_wait'):
+            final_state = _wait_for_history(ctx, user_gi, history_id, polling_backoff)
+            if final_state != "ok":
+                msg = "Failed to run workflow final history state is [%s]." % final_state
+                error_message = msg if not error_message else "%s. %s" % (error_message, msg)
+                ctx.vlog(msg)
+                summarize_history(ctx, user_gi, history_id)
+            else:
+                ctx.vlog("Final history state is 'ok'")
+
         response_kwds = {
             'workflow_id': workflow_id,
             'invocation_id': invocation_id,
-            'history_state': final_state,
+            'history_state': final_state if not kwds.get('no_wait') else None,
             'invocation_state': final_invocation_state,
             'error_message': error_message,
         }
+
     else:
         raise NotImplementedError()
 
@@ -260,7 +267,6 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):  # n
         msg = "Failed to run job final job state is [%s]." % final_state
         summarize_history(ctx, user_gi, history_id)
         raise Exception(msg)
-
     return job_dict, datasets
 
 
@@ -604,7 +610,7 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
 
     @property
     def was_successful(self):
-        return self.history_state == 'ok' and self.invocation_state == 'scheduled'
+        return self.history_state in ['ok', None] and self.invocation_state == 'scheduled'
 
 
 def _tool_id(tool_path):
