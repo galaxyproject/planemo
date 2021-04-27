@@ -1,4 +1,4 @@
-"""Module describing the planemo ``conda_init`` command."""
+"""Module describing the planemo ``mulled_init`` command."""
 import click
 
 from planemo import options
