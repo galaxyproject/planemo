@@ -130,7 +130,7 @@ JOB_CONFIG_LOCAL = """<job_conf>
 LOGGING_TEMPLATE = """
 ## Configure Python loggers.
 [loggers]
-keys = root,paste,displayapperrors,galaxydeps,galaxymasterapikey,galaxy
+keys = root,paste,urllib,displayapperrors,galaxydeps,galaxytoolsactions,galaxymasterapikey,galaxy
 
 [handlers]
 keys = console
@@ -148,10 +148,22 @@ handlers = console
 qualname = paste
 propagate = 0
 
+[logger_urllib]
+level = WARN
+handlers = console
+qualname = urllib3
+propagate = 0
+
 [logger_galaxydeps]
 level = DEBUG
 handlers = console
 qualname = galaxy.tools.deps
+propagate = 0
+
+[logger_galaxytoolsactions]
+level = DEBUG
+handlers = console
+qualname = galaxy.tools.actions
 propagate = 0
 
 [logger_galaxymasterapikey]
