@@ -267,7 +267,7 @@ def _summarize_tests_full(
     structured_data,
     **kwds
 ):
-    tests = get_dict_value("tests", structured_data)
+    tests = get_dict_value("executions", structured_data)
     for test_case_data in tests:
         _summarize_test_case(test_case_data, **kwds)
 

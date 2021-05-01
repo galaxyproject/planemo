@@ -57,8 +57,7 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
         with open(output_json, "w") as f:
             json.dump(outputs_dict, f)
 
-    report_data = StructuredData(data={'tests': [run_result.structured_data()]})
+    report_data = StructuredData(data={'executions': [run_result.structured_data()], 'version': '0.1'})
     report_data.calculate_summary_data()
-    kwds["summary"] = 'minimal'
     return_value = handle_reports_and_summary(ctx, report_data.structured_data, kwds=kwds)
     ctx.exit(return_value)

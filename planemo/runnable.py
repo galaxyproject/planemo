@@ -547,6 +547,9 @@ class RunResponse(object):
     def log(self):
         """If engine related log is available, return as text data."""
 
+    def structured_data(self):
+        return None
+
 
 @add_metaclass(abc.ABCMeta)
 class SuccessfulRunResponse(RunResponse):

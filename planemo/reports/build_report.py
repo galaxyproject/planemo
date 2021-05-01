@@ -4,7 +4,7 @@ from galaxy.util import strip_control_characters
 from jinja2 import Environment, PackageLoader
 from pkg_resources import resource_string
 
-TITLE = "Test Results (powered by Planemo)"
+TITLE = "Results (powered by Planemo)"
 
 
 def build_report(structured_data, report_type="html", **kwds):
@@ -14,15 +14,19 @@ def build_report(structured_data, report_type="html", **kwds):
         title=TITLE,
         raw_data=structured_data,
     )
+
+    if environment['raw_data'].get('tests'):
+        environment['raw_data']['executions'] = environment['raw_data']['tests']
+        __fix_test_ids(environment)
     environment = __inject_summary(environment)
-    __fix_test_ids(environment)
 
     if report_type == 'html':
         # The HTML report format needs a lot of extra, custom data.
         # IMO, this seems to suggest it should be embedded.
         environment['title'] = None
+        environment['execution_type'] = 'Test' if environment['raw_data'].get('tests') else 'Run'
         markdown = template_data(environment, 'report_markdown.tpl')
-        environment['title'] = TITLE
+        environment['title'] = ' '.join((environment['execution_type'], TITLE))
         environment['raw_data'] = base64.b64encode(markdown.encode('utf-8')).decode('utf-8')
         environment.update({
             'custom_style': __style("custom.css"),
@@ -50,7 +54,7 @@ def template_data(environment, template_name, **kwds):
 
 
 def __fix_test_ids(environment):
-    for test in environment['raw_data']['tests']:
+    for test in environment['raw_data']['executions']:
         test_data = test.get('data')
         if test_data and test_data.get('tool_id'):
             test['id'] = "%s (Test #%s)" % (test_data['tool_id'], test_data['test_index'] + 1)
@@ -61,9 +65,9 @@ def __inject_summary(environment):
     errors = 0
     failures = 0
     skips = 0
-    for test in environment['raw_data']['tests']:
+    for execution in environment['raw_data']['executions']:
         total += 1
-        test_data = test.get('data')
+        test_data = execution.get('data')
         if test_data:
             status = test_data.get('status')
             if status == 'error':

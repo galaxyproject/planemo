@@ -115,7 +115,7 @@ class GalaxyTestResults(object):
         sd = StructuredData(output_json_path)
         self.sd = sd
         self.structured_data = sd.structured_data
-        self.structured_data_tests = sd.structured_data_tests
+        self.structured_data_executions = sd.structured_data_executions
         self.structured_data_by_id = sd.structured_data_by_id
 
         self.xunit_tree = parse_xunit_report(output_xml_path)
