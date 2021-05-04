@@ -42,10 +42,11 @@ Examples of tools using ``new_primary_dataset`` entries:
 
 The ``type`` of an entry may also be ``dataset``. In this case the metadata 
 descriptions describe an explicit output (one with its own corresponding ``output``
-element definition). In this case, an entry called ``dataset`` should appear in
+element definition). In this case, an entry called ``dataset_id`` should appear in
 the dictionary (in lieu of ``filename`` above) and should be the database id of the 
 output dataset. Such entries may contain all of the other fields described above except
-``metadata``.
+``metadata``. Note that the output needs to set ``format="auto"`` in order to set the
+format.
 
 Example tool using a ``dataset`` entry:
 
