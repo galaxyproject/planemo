@@ -1519,7 +1519,8 @@ def engine_options():
         galaxy_url_option(),
         galaxy_admin_key_option(),
         galaxy_user_key_option(),
-        history_name()
+        history_name(),
+        no_wait_option(),
     )
 
 
@@ -1594,6 +1595,16 @@ def postgres_datatype_type_option():
         "database_type",
         flag_value="postgres",
         help=("Use postgres database type."),
+    )
+
+
+def no_wait_option():
+    return planemo_option(
+        "--no_wait",
+        is_flag=True,
+        default=False,
+        prompt=False,
+        help="After invoking a job or workflow, do not wait for completion.",
     )
 
 

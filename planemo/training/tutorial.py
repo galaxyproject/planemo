@@ -100,6 +100,11 @@ TUTO_BIBLIOGRAPHY_TEMPLATE = """
 #
 # To cite the example below, in your tutorial.md file
 # use {{ '{%' }} cite Batut2018 {{ '%}' }}
+#
+# If you want to cite an online resourse (website etc)
+# you can use the 'online' format (see below)
+#
+# You can remove the examples below
 
 @article{Batut2018,
   doi = {10.1016/j.cels.2018.05.012},
@@ -120,6 +125,14 @@ TUTO_BIBLIOGRAPHY_TEMPLATE = """
   title = {Community-Driven Data Analysis Training for Biology},
   journal = {Cell Systems}
 }
+
+@online{gtn-website,
+  author = {GTN community},
+  title = {GTN Training Materials: Collection of tutorials developed and maintained by the worldwide Galaxy community},
+  url = {https://training.galaxyproject.org},
+  urldate = {2021-03-24}
+}
+
 """
 
 TUTO_HAND_ON_BODY_TEMPLATE = """
@@ -197,17 +210,18 @@ have fun!
 >
 >    ***TODO***: *Remove the useless files (if added)*
 >
->    {{ '{%' }} include snippets/import_via_link.md {{ '%}' }}
->    {{ '{%' }} include snippets/import_from_data_library.md {{ '%}' }}
+>    {{ '{%' }} snippet faqs/galaxy/datasets_import_via_link.md {{ '%}' }}
+>
+>    {{ '{%' }} snippet faqs/galaxy/datasets_import_from_data_library.md {{ '%}' }}
 >
 > 3. Rename the datasets
 > 4. Check that the datatype
 >
->    {{ '{%' }} include snippets/change_datatype.md datatype="datatypes" {{ '%}' }}
+>    {{ '{%' }} snippet faqs/galaxy/datasets_change_datatype.md datatype="datatypes" {{ '%}' }}
 >
 > 5. Add to each database a tag corresponding to ...
 >
->    {{ '{%' }} include snippets/add_tag.md {{ '%}' }}
+>    {{ '{%' }} snippet faqs/galaxy/datasets_add_tag.md {{ '%}' }}
 >
 {: .hands_on}
 
