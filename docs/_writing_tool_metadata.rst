@@ -19,7 +19,20 @@ to build a manifest file.
 
 A tool may also produce a file called ``galaxy.json`` during execution. If 
 upon a job's completion this file is populated, Galaxy will expect to find metadata
-about outputs in it.
+about outputs in it. 
+
+The current format of the metadata file -- which has been introduced in release 17.09 -- 
+is described in the following. The legacy format is described at the end of this section.
+
+----------------------------------------------------------------
+Metadata format
+----------------------------------------------------------------
+
+NEED INPUT HERE
+
+----------------------------------------------------------------
+Legacy metadata format
+----------------------------------------------------------------
 
 The format of this file is a bit quirky - each line of this file should be a JSON
 dictionary. Each such dictionary should contain a ``type`` attribute - this type
