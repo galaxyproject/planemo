@@ -39,6 +39,7 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
     runnable = for_runnable_identifier(ctx, runnable_identifier, kwds)
     is_cwl = runnable.type.is_cwl_artifact
     kwds["cwl"] = is_cwl
+    kwds["execution_type"] = "Run"
     if kwds.get("engine", None) is None:
         if is_cwl:
             kwds["engine"] = "cwltool"
@@ -61,7 +62,7 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
     else:
         info('Run successfully executed - exiting without waiting for results.')
 
-    report_data = StructuredData(data={'executions': [run_result.structured_data()], 'version': '0.1'})
+    report_data = StructuredData(data={'tests': [run_result.structured_data()], 'version': '0.1'})
     report_data.calculate_summary_data()
     return_value = handle_reports_and_summary(ctx, report_data.structured_data, kwds=kwds)
     ctx.exit(return_value)

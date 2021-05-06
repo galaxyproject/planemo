@@ -200,9 +200,10 @@ def _handle_test_output_file(ctx, report_type, test_data, kwds):
         allure.write_results(path, test_data, file_modication_datatime=file_modication_datatime)
         return
 
+    execution_type = kwds.get('execution_type', 'Test')
     try:
         contents = build_report.build_report(
-            test_data, report_type=report_type
+            test_data, report_type=report_type, execution_type=execution_type
         )
     except Exception:
         message = "Problem producing report file %s for %s" % (
@@ -267,7 +268,7 @@ def _summarize_tests_full(
     structured_data,
     **kwds
 ):
-    tests = get_dict_value("executions", structured_data)
+    tests = get_dict_value("tests", structured_data)
     for test_case_data in tests:
         _summarize_test_case(test_case_data, **kwds)
 

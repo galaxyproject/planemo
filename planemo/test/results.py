@@ -20,7 +20,7 @@ class StructuredData(object):
 
         self.json_path = json_path
         structured_data = {}
-        structured_data_executions = {}
+        structured_data_tests = {}
         if json_path and os.path.exists(json_path) and data is None:
             try:
                 with open(json_path, "r") as output_json_f:
@@ -30,14 +30,14 @@ class StructuredData(object):
 
         try:
             structured_data = data
-            structured_data_executions = structured_data["executions"]
+            structured_data_tests = structured_data["tests"]
         except Exception:
             data_error()
 
         self.structured_data = structured_data
-        self.structured_data_executions = structured_data_executions
+        self.structured_data_tests = structured_data_tests
         structured_data_by_id = {}
-        for test in self.structured_data_executions:
+        for test in self.structured_data_tests:
             structured_data_by_id[test["id"]] = test["data"]
         self.structured_data_by_id = structured_data_by_id
         self.has_details = "summary" in structured_data
@@ -64,7 +64,7 @@ class StructuredData(object):
         num_skips = 0
         num_errors = 0
 
-        for test in self.structured_data_executions:
+        for test in self.structured_data_tests:
             test_data = get_dict_value("data", test)
             status = get_dict_value("status", test_data)
             num_tests += 1
@@ -102,7 +102,7 @@ class StructuredData(object):
     def failed_ids(self):
         """Find set of IDs for failed tests."""
         ids = set([])
-        for test_data in self.structured_data_executions:
+        for test_data in self.structured_data_tests:
             if test_data["data"]["status"] == "success":
                 continue
             test_case = test_data["id"].replace(".test_toolbox.", ".test_toolbox:")

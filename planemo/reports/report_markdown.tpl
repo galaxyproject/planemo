@@ -33,51 +33,51 @@
 {% set display_job_attributes = {'command_line': 'Command Line', 'exit_code': 'Exit Code', 'stderr': 'Standard Error', 'stdout': 'Standard Output'} %}
 {% for status, desc in {'error': 'Errored', 'failure': 'Failed', 'success': 'Passed'}.items() if state[status]%}
 <details><summary>{{ desc }} {{ execution_type }}s</summary>
-{%   for execution in raw_data.executions %}
-{%     if execution.data.status == status %}
-{%       if execution.data.status == 'success' %}
+{%   for test in raw_data.tests %}
+{%     if test.data.status == status %}
+{%       if test.data.status == 'success' %}
 
-* <details class="rcorners light-green"><summary class="light-green">&#9989; {{ execution.id }}</summary><div class="padded">
+* <details class="rcorners light-green"><summary class="light-green">&#9989; {{ test.id }}</summary><div class="padded">
 
 {%       else %}
 
-* <details class="rcorners light-red"><summary class="light-red">&#10060; {{ execution.id }}</summary><div class="padded">
+* <details class="rcorners light-red"><summary class="light-red">&#10060; {{ test.id }}</summary><div class="padded">
 
 {%       endif %}
-{%       if execution.data.output_problems %}
+{%       if test.data.output_problems %}
     **Problems**:
 {%       endif %}
-{%       for problem in execution.data.output_problems %}
+{%       for problem in test.data.output_problems %}
     * ```
       {{problem|indent(6)}}
       ```
 {%       endfor %}
-{%       if execution.data.execution_problem %}
+{%       if test.data.test_problem %}
     **Execution Problem:**
     * ```
-      {{execution.data.execution_problem|indent(6)}}
+      {{test.data.test_problem|indent(6)}}
       ```
 {%       endif %}
-{%     if execution.data.job %}
+{%     if test.data.job %}
 {%       for key, description in display_job_attributes.items() %}
-{%         if execution.data.job[key] not in ("", None) %}
+{%         if test.data.job[key] not in ("", None) %}
     **{{ description }}:**
 
     * ```console
-      {{ execution.data.job[key]|string|indent(6)}}
+      {{ test.data.job[key]|string|indent(6)}}
       ```
 {%         endif %}
 {%       endfor %}
-{{render_job_parameters(execution.data.job)}}
+{{render_job_parameters(test.data.job)}}
 
 {%     endif %}
-{%     if execution.data.invocation_details %}
+{%     if test.data.invocation_details %}
 
     #### Workflow invocation details
 
-{{render_steps(execution.data.invocation_details.steps.values(), display_job_attributes)}}
+{{render_steps(test.data.invocation_details.steps.values(), display_job_attributes)}}
 
-{{render_invocation_details(execution.data.invocation_details.details)}}
+{{render_invocation_details(test.data.invocation_details.details)}}
 
 
   </div></details>
