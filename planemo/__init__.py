@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__version__ = '0.74.4.dev0'
+__version__ = '0.74.4'
 
 
 PROJECT_NAME = "planemo"
