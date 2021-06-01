@@ -468,6 +468,14 @@ planemo.commands.cmd\_travis\_init module
    :undoc-members:
    :show-inheritance:
 
+planemo.commands.cmd\_upload\_data module
+-----------------------------------------
+
+.. automodule:: planemo.commands.cmd_upload_data
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 planemo.commands.cmd\_workflow\_convert module
 ----------------------------------------------
 

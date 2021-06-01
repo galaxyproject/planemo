@@ -129,6 +129,18 @@ Planemo command for running tools and jobs.
                                       auto install conda itself using miniconda if
                                       not availabe on conda_prefix.
     
+      --simultaneous_uploads / --no_simultaneous_uploads
+                                      When uploading files to Galaxy for tool or
+                                      workflow tests or runs, upload multiple files
+                                      simultaneously without waiting for the
+                                      previous file upload to complete.
+
+      --check_uploads_ok / --no_check_uploads_ok
+                                      When uploading files to Galaxy for tool or
+                                      workflow tests or runs, check that the history
+                                      is in an 'ok' state before beginning tool or
+                                      workflow execution.
+
       --profile TEXT                  Name of profile (created with the
                                       profile_create command) to use with this
                                       command.
@@ -182,11 +194,19 @@ Planemo command for running tools and jobs.
                                       and will be replaced with --galaxy_root when
                                       and if CWL support is merged into Galaxy.
     
+      --tags TEXT                     Comma-separated list of tags to add to the
+                                      created history.
+
       --output_directory, --outdir DIRECTORY
                                       Where to store outputs of a 'run' task.
       --output_json FILE              Where to store JSON dictionary describing
                                       outputs of a 'run' task.
     
+      --download_outputs / --no_download_outputs
+                                      After tool or workflow runs are complete,
+                                      download the output files to the location
+                                      specified by --output_directory.
+
       --engine [galaxy|docker_galaxy|cwltool|toil|external_galaxy]
                                       Select an engine to run or test artifacts such
                                       as tools and workflows. Defaults to a local
@@ -235,5 +255,8 @@ Planemo command for running tools and jobs.
       --history_name TEXT             Name to give a Galaxy history, if one is
                                       created.
     
+      --no_wait                       After invoking a job or workflow, do not wait
+                                      for completion.
+
       --help                          Show this message and exit.
     
