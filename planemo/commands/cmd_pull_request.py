@@ -1,4 +1,4 @@
-"""Module describing the planemo ``recipe_init`` command."""
+"""Module describing the planemo ``pull_request`` command."""
 import click
 
 from planemo import github_util

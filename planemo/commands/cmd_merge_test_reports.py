@@ -1,4 +1,4 @@
-"""Module describing the planemo ``test_reports`` command."""
+"""Module describing the planemo ``merge_test_reports`` command."""
 import os
 
 import click

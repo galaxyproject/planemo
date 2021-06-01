@@ -1,4 +1,4 @@
-"""Module describing the planemo ``database_create`` command."""
+"""Module describing the planemo ``database_delete`` command."""
 
 import click
 
