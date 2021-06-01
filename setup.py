@@ -116,7 +116,7 @@ setup(
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Environment :: Console',
-        'License :: OSI Approved :: Academic Free License (AFL)',
+        'License :: OSI Approved :: MIT License',
         'Operating System :: POSIX',
         'Topic :: Software Development',
         'Topic :: Software Development :: Code Generators',
