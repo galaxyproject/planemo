@@ -134,19 +134,33 @@ def assert_new_version(ctx, version, owner, repo):
 
 
 def changelog_in_repo(target_repository_path):
+    """
+    Parse the changelog for the current version.
+
+    The changelog should be written following the conventions in https://keepachangelog.com/en/0.3.0/.
+    This means we will assume that individual versions are announced using `##`.
+    """
     changelog = []
     for path in os.listdir(target_repository_path):
         if 'changelog.md' in path.lower():
-            header_seen = False
-            header_chars = ('---', '===', '~~~')
+            version_header_seen = False
+            version_header_prefix = '## '
+            top_level_header_seen = False
+            top_level_header_prefix = '# '
             with(open(os.path.join(target_repository_path, path))) as changelog_fh:
                 for line in changelog_fh:
-                    if line.startswith(header_chars):
-                        if header_seen:
+                    if line.startswith(top_level_header_prefix):
+                        top_level_header_seen = True
+                        continue
+                    if line.startswith(version_header_prefix):
+                        if version_header_seen:
                             return "\n".join(changelog[:-1])
                         else:
-                            header_seen = True
-    return "\n".join(changelog)
+                            version_header_seen = True
+                    if top_level_header_seen and not line or not version_header_seen:
+                        continue
+                    changelog.append(line.rstrip())
+    return "\n".join(changelog).rstrip()
 
 
 def create_release(ctx, from_dir, target_dir, owner, repo, version, dry_run, notes="", **kwds):
