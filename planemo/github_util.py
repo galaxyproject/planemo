@@ -147,7 +147,7 @@ def changelog_in_repo(target_repository_path):
             version_header_prefix = '## '
             top_level_header_seen = False
             top_level_header_prefix = '# '
-            with(open(os.path.join(target_repository_path, path))) as changelog_fh:
+            with open(os.path.join(target_repository_path, path)) as changelog_fh:
                 for line in changelog_fh:
                     if line.startswith(top_level_header_prefix):
                         top_level_header_seen = True
