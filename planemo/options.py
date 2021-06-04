@@ -599,7 +599,7 @@ def conda_ensure_channels_option():
         use_env_var=True,
         help=("Ensure conda is configured with specified comma separated "
               "list of channels."),
-        default="iuc,conda-forge,bioconda,defaults",
+        default="conda-forge,bioconda,defaults",
     )
 
 
@@ -657,7 +657,7 @@ def simultaneous_upload_option():
 
 def check_uploads_ok_option():
     return planemo_option(
-        "--check_uploads_ok_option/--no_check_uploads_ok_option",
+        "--check_uploads_ok/--no_check_uploads_ok",
         is_flag=True,
         default=True,
         help=("When uploading files to Galaxy for tool or workflow tests or runs, "
@@ -778,6 +778,11 @@ def required_runnable_arg():
         metavar="RUNNABLE_PATH_OR_ID",
         type=str,
     )
+
+
+def required_new_job_arg():
+    arg_type = click.Path()
+    return click.argument("new_job_path", metavar="NEW_JOB_PATH", type=arg_type)
 
 
 def _optional_tools_default(ctx, param, value):

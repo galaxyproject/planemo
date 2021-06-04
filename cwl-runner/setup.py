@@ -20,7 +20,7 @@ setup(name='cwl_runner',
       author_email='jmchilton@gmail.com',
       url="https://github.com/galaxyproject/planemo",
       download_url="https://github.com/galaxyproject/planemo",
-      license="AFL",
+      license="MIT",
       install_requires=[
           'planemo'
         ],

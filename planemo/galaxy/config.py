@@ -130,7 +130,7 @@ JOB_CONFIG_LOCAL = """<job_conf>
 LOGGING_TEMPLATE = """
 ## Configure Python loggers.
 [loggers]
-keys = root,paste,displayapperrors,galaxydeps,galaxymasterapikey,galaxy
+keys = root,paste,urllib,displayapperrors,galaxydeps,galaxytoolsactions,galaxymasterapikey,galaxy
 
 [handlers]
 keys = console
@@ -148,10 +148,22 @@ handlers = console
 qualname = paste
 propagate = 0
 
+[logger_urllib]
+level = WARN
+handlers = console
+qualname = urllib3
+propagate = 0
+
 [logger_galaxydeps]
 level = DEBUG
 handlers = console
 qualname = galaxy.tools.deps
+propagate = 0
+
+[logger_galaxytoolsactions]
+level = DEBUG
+handlers = console
+qualname = galaxy.tools.actions
 propagate = 0
 
 [logger_galaxymasterapikey]
@@ -500,6 +512,8 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         env["GALAXY_TEST_UPLOAD_ASYNC"] = "false"
         env["GALAXY_TEST_LOGGING_CONFIG"] = config_join("logging.ini")
         env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
+        # disable all access log messages from uvicorn
+        env["GALAXY_TEST_DISABLE_ACCESS_LOG"] = "False"
         # Following are needed in 18.01 to prevent Galaxy from changing log and pid.
         # https://github.com/galaxyproject/planemo/issues/788
         env["GALAXY_LOG"] = log_file

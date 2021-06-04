@@ -6,9 +6,19 @@ History
 .. to_doc
 
 ---------------------
-0.74.4 (2020-03-29)
+0.75.0.dev0
 ---------------------
 
+    
+
+---------------------
+0.74.4 (2021-03-29)
+---------------------
+
+* Relicense under the MIT license `Pull Request 1169`_
+* Revise log levels (thanks to `@bernt-matthias`_). `Pull Request 1165`_
+* Create upload_data subcommand (thanks to `@simonbray`_). `Pull Request
+  1164`_
 * Create ``--download_outputs`` flag for the ``run`` command
   (thanks to `@simonbray`_).
   `Pull Request 1157`_
@@ -20,7 +30,7 @@ History
 * Revise Allure_ reporting experience for workflows. `Pull Request 1152`_
 
 ---------------------
-0.74.3 (2020-02-25)
+0.74.3 (2021-02-25)
 ---------------------
 
 * Load both cat1 versions when testing workflows `Pull Request 1146`_
@@ -29,7 +39,7 @@ History
 * Display live logs when Galaxy is run in background `Pull Request 1142`_
 
 ---------------------
-0.74.2 (2020-02-21)
+0.74.2 (2021-02-21)
 ---------------------
 
 * Allow testing dir of workflows `Pull Request 1095`_
@@ -40,7 +50,7 @@ History
   `Pull Request 1128`_
 
 ---------------------
-0.74.1 (2020-01-03)
+0.74.1 (2021-01-03)
 ---------------------
 
 * Fix ``ci_find_tools`` and ``ci_find_repos`` commands. `Pull Request 1127`_
@@ -1708,6 +1718,9 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1169: https://github.com/galaxyproject/planemo/pull/1169
+.. _Pull Request 1165: https://github.com/galaxyproject/planemo/pull/1165
+.. _Pull Request 1164: https://github.com/galaxyproject/planemo/pull/1164
 .. _Pull Request 1157: https://github.com/galaxyproject/planemo/pull/1157
 .. _Pull Request 1156: https://github.com/galaxyproject/planemo/pull/1156
 .. _Pull Request 1154: https://github.com/galaxyproject/planemo/pull/1154

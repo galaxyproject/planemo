@@ -1,4 +1,4 @@
-"""Module describing the planemo ``database_create`` command."""
+"""Module describing the planemo ``database_list`` command."""
 from __future__ import print_function
 
 import click
