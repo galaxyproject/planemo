@@ -394,7 +394,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         if galaxy_root is None:
             galaxy_root = config_join("galaxy-dev")
         if not os.path.isdir(galaxy_root):
-            _build_eggs_cache(ctx, install_env, kwds)
             _install_galaxy(ctx, galaxy_root, install_env, kwds)
 
         if parse_version(kwds.get('galaxy_python_version') or DEFAULT_PYTHON_VERSION) >= parse_version('3'):
@@ -1208,16 +1207,6 @@ def _install_galaxy_via_git(ctx, galaxy_root, env, kwds):
     if exit_code != 0:
         raise Exception("Failed to glone Galaxy via git")
     _install_with_command(ctx, galaxy_root, env, kwds)
-
-
-def _build_eggs_cache(ctx, env, kwds):
-    if kwds.get("no_cache_galaxy", False):
-        return None
-    workspace = ctx.workspace
-    eggs_path = os.path.join(workspace, "gx_eggs")
-    if not os.path.exists(eggs_path):
-        os.makedirs(eggs_path)
-    env["GALAXY_EGGS_PATH"] = eggs_path
 
 
 def _galaxy_branch(kwds):
