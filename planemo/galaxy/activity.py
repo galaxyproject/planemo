@@ -160,26 +160,13 @@ def _execute(ctx, config, runnable, job_path, **kwds):  # noqa C901
         response_class = GalaxyWorkflowRunResponse
         workflow_id = config.workflow_id_for_runnable(runnable)
         ctx.vlog("Found Galaxy workflow ID [%s] for URI [%s]" % (workflow_id, runnable.uri))
-        # TODO: Use the following when BioBlend 0.14 is released
-        # invocation = user_gi.worklfows.invoke_workflow(
-        #    workflow_id,
-        #    inputs=job_dict,
-        #    history_id=history_id,
-        #    allow_tool_state_corrections=True,
-        #    inputs_by="name",
-        # )
-        payload = dict(
-            workflow_id=workflow_id,
-            history_id=history_id,
-            inputs=job_dict,
-            inputs_by="name",
-            allow_tool_state_corrections=True,
-        )
-        invocations_url = "%s/workflows/%s/invocations" % (
-            user_gi.url,
+        invocation = user_gi.workflows.invoke_workflow(
             workflow_id,
+            inputs=job_dict,
+            history_id=history_id,
+            allow_tool_state_corrections=True,
+            inputs_by="name",
         )
-        invocation = user_gi.workflows._post(payload, url=invocations_url)
         invocation_id = invocation["id"]
 
         ctx.vlog("Waiting for invocation [%s]" % invocation_id)
