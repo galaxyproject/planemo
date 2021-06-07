@@ -61,7 +61,6 @@ documentation describes these commands.
 .. include:: commands/training_fill_data_library.rst
 .. include:: commands/training_generate_from_wf.rst
 .. include:: commands/training_init.rst
-.. include:: commands/travis_init.rst
 .. include:: commands/upload_data.rst
 .. include:: commands/workflow_convert.rst
 .. include:: commands/workflow_edit.rst
