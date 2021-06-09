@@ -165,7 +165,7 @@ def handle_reports(ctx, structured_data, kwds):
     """Write reports based on user specified kwds."""
     exceptions = []
     structured_report_file = kwds.get("test_output_json", None)
-    if structured_report_file and not os.path.exists(structured_report_file):
+    if structured_report_file:
         try:
             with io.open(structured_report_file, mode="w", encoding='utf-8') as f:
                 f.write(unicodify(json.dumps(structured_data)))

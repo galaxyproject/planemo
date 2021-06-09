@@ -49,9 +49,8 @@ def execute(ctx, config, runnable, job_path, **kwds):
         return _execute(ctx, config, runnable, job_path, **kwds)
     except Exception as e:
         end_datetime = datetime.now()
-        if ctx.verbose:
-            ctx.vlog("Failed to execute Galaxy activity, throwing ErrorRunResponse")
-            traceback.print_exc(file=sys.stdout)
+        ctx.log("Failed to execute Galaxy activity, throwing ErrorRunResponse")
+        traceback.print_exc(file=sys.stdout)
         return ErrorRunResponse(unicodify(e), start_datetime=start_datetime, end_datetime=end_datetime)
 
 
@@ -160,26 +159,13 @@ def _execute(ctx, config, runnable, job_path, **kwds):  # noqa C901
         response_class = GalaxyWorkflowRunResponse
         workflow_id = config.workflow_id_for_runnable(runnable)
         ctx.vlog("Found Galaxy workflow ID [%s] for URI [%s]" % (workflow_id, runnable.uri))
-        # TODO: Use the following when BioBlend 0.14 is released
-        # invocation = user_gi.worklfows.invoke_workflow(
-        #    workflow_id,
-        #    inputs=job_dict,
-        #    history_id=history_id,
-        #    allow_tool_state_corrections=True,
-        #    inputs_by="name",
-        # )
-        payload = dict(
-            workflow_id=workflow_id,
-            history_id=history_id,
-            inputs=job_dict,
-            inputs_by="name",
-            allow_tool_state_corrections=True,
-        )
-        invocations_url = "%s/workflows/%s/invocations" % (
-            user_gi.url,
+        invocation = user_gi.workflows.invoke_workflow(
             workflow_id,
+            inputs=job_dict,
+            history_id=history_id,
+            allow_tool_state_corrections=True,
+            inputs_by="name",
         )
-        invocation = user_gi.workflows._post(payload, url=invocations_url)
         invocation_id = invocation["id"]
 
         ctx.vlog("Waiting for invocation [%s]" % invocation_id)
@@ -342,19 +328,15 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             raise Exception("Unknown history content type encountered [%s]" % history_content_type)
 
     def collect_outputs(self, ctx, output_directory):
-        assert self._outputs_dict is None, "collect_outputs pre-condition violated"
 
         outputs_dict = {}
-        if not output_directory:
-            # TODO: rather than creating a directory just use
-            # Galaxy paths if they are available in this
-            # configuration.
-            output_directory = tempfile.mkdtemp()
+        # TODO: rather than creating a directory just use
+        # Galaxy paths if they are available in this
+        # configuration.
+        output_directory = output_directory or tempfile.mkdtemp()
 
         def get_dataset(dataset_details, filename=None):
-            parent_basename = dataset_details.get("cwl_file_name")
-            if not parent_basename:
-                parent_basename = dataset_details.get("name")
+            parent_basename = dataset_details.get("cwl_file_name") or dataset_details.get("name")
             file_ext = dataset_details["file_ext"]
             if file_ext == "directory":
                 # TODO: rename output_directory to outputs_directory because we can have output directories
@@ -395,13 +377,18 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             else:
                 output_dataset_id = output_src["id"]
                 galaxy_output = self.to_galaxy_output(runnable_output)
-                cwl_output = output_to_cwl_json(
-                    galaxy_output,
-                    self._get_metadata,
-                    get_dataset,
-                    self._get_extra_files,
-                    pseduo_location=True,
-                )
+                try:
+                    cwl_output = output_to_cwl_json(
+                        galaxy_output,
+                        self._get_metadata,
+                        get_dataset,
+                        self._get_extra_files,
+                        pseduo_location=True,
+                    )
+                except AssertionError:
+                    # In galaxy-tool-util < 21.05 output_to_cwl_json will raise an AssertionError when the output state is not OK
+                    # Remove with new galaxy-tool-util release.
+                    continue
                 if is_cwl:
                     output_dict_value = cwl_output
                 else:
