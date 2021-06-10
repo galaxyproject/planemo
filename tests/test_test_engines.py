@@ -197,9 +197,9 @@ def test_galaxy_workflow_step_failed():
     data = report['tests'][0]['data']
     assert data['status'] == 'error'
     assert data['execution_problem']
-    invocation_details = data['invocation_details']
-    assert len(invocation_details) == 2
-    first_step, second_step = invocation_details.values()
+    invocation_steps = data['invocation_details']['steps']
+    assert len(invocation_steps) == 2
+    first_step, second_step = invocation_steps.values()
     assert first_step['state'] == 'scheduled'
     job = first_step['jobs'][0]
     assert job['exit_code'] == 127
