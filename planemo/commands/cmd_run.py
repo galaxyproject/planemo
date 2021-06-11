@@ -25,7 +25,6 @@ from planemo.test.results import StructuredData
 @options.run_history_tags_option()
 @options.run_output_directory_option()
 @options.run_output_json_option()
-@options.run_invocation_report_option()
 @options.run_download_outputs_option()
 @options.engine_options()
 @options.test_options()
@@ -50,17 +49,17 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
     with engine_context(ctx, **kwds) as engine:
         run_result = engine.run(runnable, job_path)
 
-    if not kwds.get('no_wait'):
-        if not run_result.was_successful:
-            warn("Run failed [%s]" % unicodify(run_result))
-            ctx.exit(1)
-        outputs_dict = run_result.outputs_dict
-        output_json = kwds.get("output_json", None)
+    if not run_result.was_successful:
+        warn("Run failed [%s]" % unicodify(run_result))
+    elif kwds.get('no_wait'):
+        info('Run successfully executed - exiting without waiting for results.')
+    else:
         if output_json:
+            outputs_dict = run_result.outputs_dict
+            output_json = kwds.get("output_json", None)
             with open(output_json, "w") as f:
                 json.dump(outputs_dict, f)
-    else:
-        info('Run successfully executed - exiting without waiting for results.')
+        info('Run completed successfully.')
 
     report_data = StructuredData(data={'tests': [run_result.structured_data()], 'version': '0.1'})
     report_data.calculate_summary_data()
