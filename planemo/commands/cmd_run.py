@@ -54,9 +54,9 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
     elif kwds.get('no_wait'):
         info('Run successfully executed - exiting without waiting for results.')
     else:
+        output_json = kwds.get("output_json", None)
+        outputs_dict = run_result.outputs_dict
         if output_json:
-            outputs_dict = run_result.outputs_dict
-            output_json = kwds.get("output_json", None)
             with open(output_json, "w") as f:
                 json.dump(outputs_dict, f)
         info('Run completed successfully.')
