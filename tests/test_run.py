@@ -22,7 +22,7 @@ class RunTestCase(CliTestCase):
 
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_run_cat_cwltool(self):
-        with self._isolate():
+        with self._isolate() as f:
             tool_path = _cwl_file("cat1-tool.cwl")
             job_path = _cwl_file("cat-job.json")
             test_cmd = [
@@ -33,10 +33,12 @@ class RunTestCase(CliTestCase):
                 job_path,
             ]
             self._check_exit_code(test_cmd)
+            assert os.path.exists(os.path.join(f, 'tool_test_output.html'))
+            assert os.path.exists(os.path.join(f, 'tool_test_output.json'))
 
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_run_cat_cwltool_more_options(self):
-        with self._isolate():
+        with self._isolate() as f:
             tool_path = _cwl_file("cat1-tool.cwl")
             job_path = _cwl_file("cat-job.json")
             test_cmd = [
@@ -48,11 +50,13 @@ class RunTestCase(CliTestCase):
                 job_path,
             ]
             self._check_exit_code(test_cmd)
+            assert os.path.exists(os.path.join(f, 'tool_test_output.html'))
+            assert os.path.exists(os.path.join(f, 'tool_test_output.json'))
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch
     def test_run_gxtool_randomlines(self):
-        with self._isolate():
+        with self._isolate() as f:
             tool_path = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "randomlines.xml")
             job_path = os.path.join(TEST_DATA_DIR, "randomlines_job_1.json")
             test_cmd = [
@@ -64,12 +68,14 @@ class RunTestCase(CliTestCase):
                 job_path,
             ]
             self._check_exit_code(test_cmd)
+            assert os.path.exists(os.path.join(f, 'tool_test_output.html'))
+            assert os.path.exists(os.path.join(f, 'tool_test_output.json'))
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     @skip_if_environ("PLANEMO_SKIP_GALAXY_CWL_TESTS")
     def test_run_cat(self):
-        with self._isolate():
+        with self._isolate() as f:
             tool_path = _cwl_file("cat1-tool.cwl")
             job_path = _cwl_file("cat-job.json")
             test_cmd = [
@@ -79,6 +85,8 @@ class RunTestCase(CliTestCase):
                 job_path,
             ]
             self._check_exit_code(test_cmd)
+            assert os.path.exists(os.path.join(f, 'tool_test_output.html'))
+            assert os.path.exists(os.path.join(f, 'tool_test_output.json'))
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
@@ -97,6 +105,8 @@ class RunTestCase(CliTestCase):
                 job_path,
             ]
             self._check_exit_code(test_cmd)
+            assert os.path.exists(os.path.join(f, 'tool_test_output.html'))
+            assert os.path.exists(os.path.join(f, 'tool_test_output.json'))
             output_path = os.path.join(f, "output")
             assert os.path.exists(output_path)
             with open(output_path, "r") as fh:
