@@ -5,14 +5,19 @@ History
 
 .. to_doc
 
----------------------
-0.75.0.dev0
+---------------------    
+0.74.5 (2021-06-25)
 ---------------------
 
-    
+* Remove iuc from default channels `Pull Request 1170`_
+* Fix parsing of changelog for git release `Pull Request 1171`_
+* Remove legacy commands, egg handling `Pull Request 1172`_
+* Use bioblend's invoke_workflow `Pull Request 1173`_
+* Create more useful output for failed invocations `Pull Request 1174`_
+* Improve dockstore_init `Pull Request 1177`_
 
 ---------------------
-0.74.4 (2021-03-29)
+0.74.4 (2021-06-01)
 ---------------------
 
 * Relicense under the MIT license `Pull Request 1169`_
@@ -1718,6 +1723,12 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1170: https://github.com/galaxyproject/planemo/pull/1170
+.. _Pull Request 1171: https://github.com/galaxyproject/planemo/pull/1171
+.. _Pull Request 1172: https://github.com/galaxyproject/planemo/pull/1172
+.. _Pull Request 1173: https://github.com/galaxyproject/planemo/pull/1173
+.. _Pull Request 1174: https://github.com/galaxyproject/planemo/pull/1174
+.. _Pull Request 1177: https://github.com/galaxyproject/planemo/pull/1177
 .. _Pull Request 1169: https://github.com/galaxyproject/planemo/pull/1169
 .. _Pull Request 1165: https://github.com/galaxyproject/planemo/pull/1165
 .. _Pull Request 1164: https://github.com/galaxyproject/planemo/pull/1164
