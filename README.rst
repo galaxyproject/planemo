@@ -22,7 +22,7 @@ including tools, workflows, and training materials.
    :target: https://travis-ci.org/galaxyproject/planemo
    :alt: Build Status
 
-* Free software: Academic Free License version 3.0
+* Free software: MIT License
 * Documentation: https://planemo.readthedocs.io.
 * Code: https://github.com/galaxyproject/planemo
 

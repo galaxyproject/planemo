@@ -38,8 +38,6 @@ class TestPlanemo(CliTestCase):
         assert_responds_to("syntax")
         assert_responds_to("test")
         assert_responds_to("tool_init")
-        assert_responds_to("travis_before_install")
-        assert_responds_to("travis_init")
 
     def test_planemo_version_command(self):
         self._check_exit_code(["--version"])

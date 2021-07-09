@@ -167,6 +167,18 @@ Auto-update tool requirements by checking against Conda and updating if newer ve
                                       auto install conda itself using miniconda if
                                       not availabe on conda_prefix.
     
+      --simultaneous_uploads / --no_simultaneous_uploads
+                                      When uploading files to Galaxy for tool or
+                                      workflow tests or runs, upload multiple files
+                                      simultaneously without waiting for the
+                                      previous file upload to complete.
+
+      --check_uploads_ok / --no_check_uploads_ok
+                                      When uploading files to Galaxy for tool or
+                                      workflow tests or runs, check that the history
+                                      is in an 'ok' state before beginning tool or
+                                      workflow execution.
+
       --profile TEXT                  Name of profile (created with the
                                       profile_create command) to use with this
                                       command.
@@ -212,10 +224,5 @@ Auto-update tool requirements by checking against Conda and updating if newer ve
       --report_level [all|warn|error]
       --report_xunit PATH             Output an XUnit report, useful for CI testing
       --fail_level [warn|error]
-      -s, --skip TEXT                 Comma-separated list of lint tests to skip
-                                      (e.g. passing --skip 'citations,xml_order'
-                                      would skip linting of citations and best-
-                                      practice XML ordering.
-    
       --help                          Show this message and exit.
     

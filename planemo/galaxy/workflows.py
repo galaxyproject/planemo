@@ -245,6 +245,21 @@ def get_dict_from_workflow(gi, workflow_id):
     return gi.workflows.export_workflow_dict(workflow_id)
 
 
+def rewrite_job_file(input_file, output_file, job):
+    """Rewrite a job file with galaxy_ids for upload_data subcommand"""
+    with open(input_file, "r") as f:
+        job_contents = yaml.safe_load(f)
+        for job_input, job_input_name in job_contents.items():
+            if type(job[job_input]) == dict:  # dataset or collection
+                job_contents[job_input] = {
+                    "class": job_input_name["class"],
+                    "galaxy_id": job[job_input]["id"]
+                }
+            # else: presumably a parameter, no need to modify
+    with open(output_file, "w") as f:
+        yaml.dump(job_contents, f)
+
+
 __all__ = (
     "import_workflow",
     "describe_outputs",
