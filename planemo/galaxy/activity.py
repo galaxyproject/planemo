@@ -1,6 +1,5 @@
 """Module provides generic interface to running Galaxy tools and workflows."""
 
-import json
 import os
 import sys
 import tempfile
@@ -15,7 +14,6 @@ from galaxy.tool_util.client.staging import (
 )
 from galaxy.tool_util.cwl.util import (
     invocation_to_output,
-    output_properties,
     output_to_cwl_json,
     tool_response_to_output,
 )
@@ -25,7 +23,10 @@ from galaxy.util import (
     safe_makedirs,
     unicodify,
 )
-from requests.exceptions import RequestException
+from requests.exceptions import (
+    HTTPError,
+    RequestException,
+)
 from six.moves.urllib.parse import urljoin
 
 from planemo.galaxy.api import summarize_history
@@ -343,9 +344,9 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                 # and this is confusing...
                 the_output_directory = os.path.join(output_directory, parent_basename)
                 safe_makedirs(the_output_directory)
-                destination = self.download_output_to(dataset_details, the_output_directory, filename=filename)
+                destination = self.download_output_to(ctx, dataset_details, the_output_directory, filename=filename)
             else:
-                destination = self.download_output_to(dataset_details, output_directory, filename=filename)
+                destination = self.download_output_to(ctx, dataset_details, output_directory, filename=filename)
             if filename is None:
                 basename = parent_basename
             else:
@@ -363,48 +364,36 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             output_dict_value = None
             is_cwl = self._runnable.type in [RunnableType.cwl_workflow, RunnableType.cwl_tool]
             output_src = self.output_src(runnable_output)
-            if not is_cwl and output_src["src"] == "hda":
-                output_dataset_id = output_src["id"]
-                dataset = self._get_metadata("dataset", output_dataset_id)
-                dataset_dict = get_dataset(dataset)
-                ctx.vlog("populated destination [%s]" % dataset_dict["path"])
-
-                if dataset["file_ext"] == "expression.json":
-                    with open(dataset_dict["path"], "r") as f:
-                        output_dict_value = json.load(f)
-                else:
-                    output_dict_value = output_properties(**dataset_dict)
+            output_dataset_id = output_src["id"]
+            galaxy_output = self.to_galaxy_output(runnable_output)
+            try:
+                cwl_output = output_to_cwl_json(
+                    galaxy_output,
+                    self._get_metadata,
+                    get_dataset,
+                    self._get_extra_files,
+                    pseduo_location=True,
+                )
+            except AssertionError:
+                # In galaxy-tool-util < 21.05 output_to_cwl_json will raise an AssertionError when the output state is not OK
+                # Remove with new galaxy-tool-util release.
+                continue
+            if is_cwl or output_src["src"] == "hda":
+                output_dict_value = cwl_output
             else:
-                output_dataset_id = output_src["id"]
-                galaxy_output = self.to_galaxy_output(runnable_output)
-                try:
-                    cwl_output = output_to_cwl_json(
-                        galaxy_output,
-                        self._get_metadata,
-                        get_dataset,
-                        self._get_extra_files,
-                        pseduo_location=True,
-                    )
-                except AssertionError:
-                    # In galaxy-tool-util < 21.05 output_to_cwl_json will raise an AssertionError when the output state is not OK
-                    # Remove with new galaxy-tool-util release.
-                    continue
-                if is_cwl:
-                    output_dict_value = cwl_output
-                else:
 
-                    def attach_file_properties(collection, cwl_output):
-                        elements = collection["elements"]
-                        assert len(elements) == len(cwl_output)
-                        for element, cwl_output_element in zip(elements, cwl_output):
-                            element["_output_object"] = cwl_output_element
-                            if isinstance(cwl_output_element, list):
-                                assert "elements" in element["object"]
-                                attach_file_properties(element["object"], cwl_output_element)
+                def attach_file_properties(collection, cwl_output):
+                    elements = collection["elements"]
+                    assert len(elements) == len(cwl_output)
+                    for element, cwl_output_element in zip(elements, cwl_output):
+                        element["_output_object"] = cwl_output_element
+                        if isinstance(cwl_output_element, list):
+                            assert "elements" in element["object"]
+                            attach_file_properties(element["object"], cwl_output_element)
 
-                    output_metadata = self._get_metadata("dataset_collection", output_dataset_id)
-                    attach_file_properties(output_metadata, cwl_output)
-                    output_dict_value = output_metadata
+                output_metadata = self._get_metadata("dataset_collection", output_dataset_id)
+                attach_file_properties(output_metadata, cwl_output)
+                output_dict_value = output_metadata
 
             outputs_dict[output_id] = output_dict_value
 
@@ -433,13 +422,14 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
     def outputs_dict(self):
         return self._outputs_dict
 
-    def download_output_to(self, dataset_details, output_directory, filename=None):
+    def download_output_to(self, ctx, dataset_details, output_directory, filename=None):
         if filename is None:
             local_filename = dataset_details.get("cwl_file_name") or dataset_details.get("name")
         else:
             local_filename = filename
         destination = os.path.join(output_directory, local_filename)
         self._history_content_download(
+            ctx,
             self._history_id,
             dataset_details["id"],
             to_path=destination,
@@ -447,7 +437,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         )
         return destination
 
-    def _history_content_download(self, history_id, dataset_id, to_path, filename=None):
+    def _history_content_download(self, ctx, history_id, dataset_id, to_path, filename=None):
         user_gi = self._user_gi
         url = user_gi.url + "/histories/%s/contents/%s/display" % (history_id, dataset_id)
 
@@ -456,7 +446,15 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             data["filename"] = filename
 
         r = user_gi.make_get_request(url, params=data, stream=True, timeout=user_gi.timeout)
-        r.raise_for_status()
+        try:
+            r.raise_for_status()
+        except HTTPError as e:
+            # When a job fails abruptly the object store may not contain a dataset,
+            # and that results in an internal server error on the Galaxy side.
+            # We don't want this to break the rest of the test report.
+            # Should probably find a way to propagate this back into the report.
+            ctx.vlog(f"Failed to download history content at URL {url}, exception: {e}")
+            return
 
         with open(to_path, 'wb') as fp:
             for chunk in r.iter_content(chunk_size=bioblend.CHUNK_SIZE):
