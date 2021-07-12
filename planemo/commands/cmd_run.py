@@ -9,8 +9,10 @@ from galaxy.util import unicodify
 from planemo import options
 from planemo.cli import command_function
 from planemo.engine import engine_context
+from planemo.galaxy.test import handle_reports_and_summary
 from planemo.io import info, warn
 from planemo.runnable_resolve import for_runnable_identifier
+from planemo.test.results import StructuredData
 
 
 @click.command('run')
@@ -25,6 +27,7 @@ from planemo.runnable_resolve import for_runnable_identifier
 @options.run_output_json_option()
 @options.run_download_outputs_option()
 @options.engine_options()
+@options.test_options()
 @command_function
 def cli(ctx, runnable_identifier, job_path, **kwds):
     """Planemo command for running tools and jobs.
@@ -33,9 +36,9 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
         % planemo run cat1-tool.cwl cat-job.json
     """
     runnable = for_runnable_identifier(ctx, runnable_identifier, kwds)
-
     is_cwl = runnable.type.is_cwl_artifact
     kwds["cwl"] = is_cwl
+    kwds["execution_type"] = "Run"
     if kwds.get("engine", None) is None:
         if is_cwl:
             kwds["engine"] = "cwltool"
@@ -46,16 +49,19 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
     with engine_context(ctx, **kwds) as engine:
         run_result = engine.run(runnable, job_path)
 
-    if not kwds.get('no_wait'):
-        if not run_result.was_successful:
-            warn("Run failed [%s]" % unicodify(run_result))
-            ctx.exit(1)
-        outputs_dict = run_result.outputs_dict
+    if not run_result.was_successful:
+        warn("Run failed [%s]" % unicodify(run_result))
+    elif kwds.get('no_wait'):
+        info('Run successfully executed - exiting without waiting for results.')
+    else:
         output_json = kwds.get("output_json", None)
+        outputs_dict = run_result.outputs_dict
         if output_json:
             with open(output_json, "w") as f:
                 json.dump(outputs_dict, f)
-    else:
-        info('Run successfully executed - exiting without waiting for results.')
+        info('Run completed successfully.')
 
-    return 0
+    report_data = StructuredData(data={'tests': [run_result.structured_data()], 'version': '0.1'})
+    report_data.calculate_summary_data()
+    return_value = handle_reports_and_summary(ctx, report_data.structured_data, kwds=kwds)
+    ctx.exit(return_value)

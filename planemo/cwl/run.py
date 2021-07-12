@@ -26,7 +26,8 @@ JSON_PARSE_ERROR_MESSAGE = ("Failed to parse JSON from cwltool output [%s] "
 class CwlToolRunResponse(SuccessfulRunResponse):
     """Describe the resut of a cwltool invocation."""
 
-    def __init__(self, log, outputs=None):
+    def __init__(self, runnable, log, outputs=None):
+        self._runnable = runnable
         self._log = log
         self._outputs = outputs
 
@@ -47,7 +48,7 @@ class CwlToolRunResponse(SuccessfulRunResponse):
         return self._outputs
 
 
-def run_cwltool(ctx, path, job_path, **kwds):
+def run_cwltool(ctx, runnable, job_path, **kwds):
     """Translate planemo kwds to cwltool kwds and run cwltool main function."""
     ensure_cwltool_available()
 
@@ -69,7 +70,7 @@ def run_cwltool(ctx, path, job_path, **kwds):
     if kwds.get("non_strict_cwl", False):
         args.append("--non-strict")
 
-    args.extend([path, job_path])
+    args.extend([runnable.path, job_path])
     ctx.vlog("Calling cwltool with arguments %s" % args)
     with tempfile.NamedTemporaryFile("w") as tmp_stdout, \
             tempfile.NamedTemporaryFile("w") as tmp_stderr:
@@ -102,6 +103,7 @@ def run_cwltool(ctx, path, job_path, **kwds):
             return ErrorRunResponse("Error running cwltool", log=log)
         outputs = result
     return CwlToolRunResponse(
+        runnable,
         log,
         outputs=outputs,
     )

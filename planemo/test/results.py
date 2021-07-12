@@ -27,6 +27,7 @@ class StructuredData(object):
                     data = json.load(output_json_f)
             except Exception:
                 data_error()
+
         try:
             structured_data = data
             structured_data_tests = structured_data["tests"]

@@ -291,7 +291,7 @@ def run_download_outputs_option():
         default=False,
         help=("After tool or workflow runs are complete, download "
               "the output files to the location specified by --output_directory. "
-              )
+              ),
     )
 
 
