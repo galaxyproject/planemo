@@ -7,6 +7,7 @@ implemented as a subcommand of the ``planemo`` executable. This section of the
 documentation describes these commands.
 
 
+.. include:: commands/autoupdate.rst
 .. include:: commands/ci_find_repos.rst
 .. include:: commands/ci_find_tools.rst
 .. include:: commands/clone.rst
@@ -60,8 +61,7 @@ documentation describes these commands.
 .. include:: commands/training_fill_data_library.rst
 .. include:: commands/training_generate_from_wf.rst
 .. include:: commands/training_init.rst
-.. include:: commands/travis_init.rst
-.. include:: commands/virtualenv.rst
+.. include:: commands/upload_data.rst
 .. include:: commands/workflow_convert.rst
 .. include:: commands/workflow_edit.rst
 .. include:: commands/workflow_job_init.rst

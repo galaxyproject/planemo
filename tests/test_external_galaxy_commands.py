@@ -2,6 +2,8 @@
 """
 import os
 
+import yaml
+
 from planemo import cli
 from planemo.engine import engine_context
 from planemo.runnable import for_path
@@ -34,6 +36,8 @@ class ExternalGalaxyCommandsTestCase(CliTestCase):
                 run_cmd = ["run", "test_wf_alias", os.path.join(TEST_DATA_DIR, "wf2-job.yml"), "--profile", "test_ext_profile"]
                 list_invocs_cmd = ["list_invocations", "test_wf_alias", "--profile", "test_ext_profile"]
                 rerun_cmd = ["rerun", "invocation_id", "--failed", "--profile", "test_ext_profile"]
+                upload_data_cmd = ["upload_data", "test_wf_alias", os.path.join(TEST_DATA_DIR, "wf2-job.yml"), "new-job.yml",
+                                   "--profile", "test_ext_profile"]
 
                 # test alias and profile creation
                 result = self._check_exit_code(profile_list_cmd)
@@ -49,11 +53,19 @@ class ExternalGalaxyCommandsTestCase(CliTestCase):
                 assert wfid in result.output
                 assert '1 aliases were found for profile test_ext_profile.' in result.output
 
+                # test upload_data command
+                self._check_exit_code(upload_data_cmd)
+                with open("new-job.yml") as f:
+                    new_job = yaml.safe_load(f)
+                assert list(new_job['WorkflowInput1']) == list(new_job['WorkflowInput2']) == ["class", "galaxy_id"]
+
                 # test WF execution (from wfid) using created profile and alias
                 result = self._check_exit_code(run_cmd)
                 assert 'Run failed' not in result.output
+                result = self._check_exit_code(run_cmd + ["--no_wait"])
+                assert 'Run successfully executed' in result.output
                 result = self._check_exit_code(list_invocs_cmd)
-                assert '1 invocations found.' in result.output
+                assert '2 invocations found.' in result.output
                 assert '1 jobs ok' in result.output or '"ok": 1' in result.output  # so it passes regardless if tabulate is installed or not
 
                 # test rerun

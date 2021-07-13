@@ -7,6 +7,7 @@ import contextlib
 import os
 import random
 import shutil
+import threading
 from string import Template
 from tempfile import mkdtemp
 
@@ -129,7 +130,7 @@ JOB_CONFIG_LOCAL = """<job_conf>
 LOGGING_TEMPLATE = """
 ## Configure Python loggers.
 [loggers]
-keys = root,paste,displayapperrors,galaxydeps,galaxymasterapikey,galaxy
+keys = root,paste,urllib,displayapperrors,galaxydeps,galaxytoolsactions,galaxymasterapikey,galaxy
 
 [handlers]
 keys = console
@@ -147,10 +148,22 @@ handlers = console
 qualname = paste
 propagate = 0
 
+[logger_urllib]
+level = WARN
+handlers = console
+qualname = urllib3
+propagate = 0
+
 [logger_galaxydeps]
 level = DEBUG
 handlers = console
 qualname = galaxy.tools.deps
+propagate = 0
+
+[logger_galaxytoolsactions]
+level = DEBUG
+handlers = console
+qualname = galaxy.tools.actions
 propagate = 0
 
 [logger_galaxymasterapikey]
@@ -189,6 +202,7 @@ genomes: null
 """
 
 EMPTY_TOOL_CONF_TEMPLATE = """<toolbox></toolbox>"""
+GX_TEST_TOOL_PATH = "$GALAXY_FUNCTIONAL_TEST_TOOLS"
 
 DEFAULT_GALAXY_BRANCH = "master"
 DEFAULT_GALAXY_SOURCE = "https://github.com/galaxyproject/galaxy"
@@ -212,9 +226,35 @@ def galaxy_config(ctx, runnables, **kwds):
         c = docker_galaxy_config
     elif kwds.get("external", False):
         c = external_galaxy_config
+    log_thread = None
+    try:
+        with c(ctx, runnables, **kwds) as config:
+            if kwds.get('daemon'):
+                log_thread = threading.Thread(target=read_log, args=(ctx, config.log_file))
+                log_thread.daemon = True
+                log_thread.start()
+            yield config
+    finally:
+        if log_thread:
+            log_thread.join(1)
 
-    with c(ctx, runnables, **kwds) as config:
-        yield config
+
+def read_log(ctx, log_path):
+    log_fh = None
+    e = threading.Event()
+    try:
+        while e:
+            if os.path.exists(log_path):
+                if not log_fh:
+                    # Open in append so we start at the end of the log file
+                    log_fh = open(log_path, 'a+')
+                log_lines = log_fh.read()
+                if log_lines:
+                    ctx.log(log_lines)
+            e.wait(1)
+    finally:
+        if log_fh:
+            log_fh.close()
 
 
 def simple_docker_volume(path):
@@ -236,7 +276,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         _handle_refgenie_config(config_directory, kwds)
 
         shed_tool_conf = "config/shed_tool_conf.xml"
-        all_tool_paths = _all_tool_paths(runnables, **kwds)
+        all_tool_paths = _all_tool_paths(runnables, kwds.get('galaxy_root'), kwds.get('extra_tools'))
 
         tool_directories = set([])  # Things to mount...
         for tool_path in all_tool_paths:
@@ -355,7 +395,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         if galaxy_root is None:
             galaxy_root = config_join("galaxy-dev")
         if not os.path.isdir(galaxy_root):
-            _build_eggs_cache(ctx, install_env, kwds)
             _install_galaxy(ctx, galaxy_root, install_env, kwds)
 
         if parse_version(kwds.get('galaxy_python_version') or DEFAULT_PYTHON_VERSION) >= parse_version('3'):
@@ -379,7 +418,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         _ensure_directory(tool_dependency_dir)
 
         shed_tool_conf = kwds.get("shed_tool_conf") or config_join("shed_tools_conf.xml")
-        all_tool_paths = _all_tool_paths(runnables, **kwds)
+        all_tool_paths = _all_tool_paths(runnables, galaxy_root=galaxy_root, extra_tools=kwds.get('extra_tools'))
         empty_tool_conf = config_join("empty_tool_conf.xml")
 
         tool_conf = config_join("tool_conf.xml")
@@ -473,6 +512,8 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         env["GALAXY_TEST_UPLOAD_ASYNC"] = "false"
         env["GALAXY_TEST_LOGGING_CONFIG"] = config_join("logging.ini")
         env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
+        # disable all access log messages from uvicorn
+        env["GALAXY_TEST_DISABLE_ACCESS_LOG"] = "False"
         # Following are needed in 18.01 to prevent Galaxy from changing log and pid.
         # https://github.com/galaxyproject/planemo/issues/788
         env["GALAXY_LOG"] = log_file
@@ -502,15 +543,27 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         )
 
 
-def _all_tool_paths(runnables, **kwds):
-    tool_paths = [r.path for r in runnables if r.has_tools and not r.data_manager_conf_path]
-    all_tool_paths = list(tool_paths) + list(kwds.get("extra_tools", []))
+def _expand_paths(galaxy_root, extra_tools):
+    """Replace $GALAXY_FUNCTION_TEST_TOOLS with actual path."""
+    if galaxy_root:
+        extra_tools = [path if path != GX_TEST_TOOL_PATH else os.path.join(galaxy_root, 'test/functional/tools') for path in extra_tools]
+    return extra_tools
+
+
+def _all_tool_paths(runnables, galaxy_root=None, extra_tools=None):
+    extra_tools = extra_tools or []
+    all_tool_paths = [r.path for r in runnables if r.has_tools and not r.data_manager_conf_path]
+    extra_tools = _expand_paths(galaxy_root, extra_tools=extra_tools)
+    all_tool_paths.extend(extra_tools)
     for runnable in runnables:
         if runnable.type.name == "galaxy_workflow":
             tool_ids = find_tool_ids(runnable.path)
             for tool_id in tool_ids:
-                if tool_id in DISTRO_TOOLS_ID_TO_PATH:
-                    all_tool_paths.append(DISTRO_TOOLS_ID_TO_PATH[tool_id])
+                tool_paths = DISTRO_TOOLS_ID_TO_PATH.get(tool_id)
+                if tool_paths:
+                    if isinstance(tool_paths, str):
+                        tool_paths = [tool_paths]
+                    all_tool_paths.extend(tool_paths)
 
     return all_tool_paths
 
@@ -1166,16 +1219,6 @@ def _install_galaxy_via_git(ctx, galaxy_root, env, kwds):
     _install_with_command(ctx, galaxy_root, env, kwds)
 
 
-def _build_eggs_cache(ctx, env, kwds):
-    if kwds.get("no_cache_galaxy", False):
-        return None
-    workspace = ctx.workspace
-    eggs_path = os.path.join(workspace, "gx_eggs")
-    if not os.path.exists(eggs_path):
-        os.makedirs(eggs_path)
-    env["GALAXY_EGGS_PATH"] = eggs_path
-
-
 def _galaxy_branch(kwds):
     branch = kwds.get("galaxy_branch", None)
     if branch is None:
@@ -1200,7 +1243,6 @@ def _galaxy_source(kwds):
 
 def _install_with_command(ctx, galaxy_root, env, kwds):
     setup_venv_command = setup_venv(ctx, kwds)
-    env['__PYVENV_LAUNCHER__'] = ''
     install_cmd = shell_join(
         setup_venv_command,
         setup_common_startup_args(),

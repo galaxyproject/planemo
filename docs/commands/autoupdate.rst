@@ -1,34 +1,71 @@
 
-``training_generate_from_wf`` command
+``autoupdate`` command
 ======================================
 
 This section is auto-generated from the help text for the planemo command
-``training_generate_from_wf``. This help message can be generated with ``planemo training_generate_from_wf
+``autoupdate``. This help message can be generated with ``planemo autoupdate
 --help``.
 
 **Usage**::
 
-    planemo training_generate_from_wf [OPTIONS] TOOL_PATH
+    planemo autoupdate [OPTIONS] TOOL_PATH
 
 **Help**
 
-Create tutorial skeleton from workflow.
+Auto-update tool requirements by checking against Conda and updating if newer versions are available.
 **Options**::
 
 
-      --topic_name TEXT               Name (directory name) of the topic to create
-                                      or in which a tutorial should be created or
-                                      updates  [required]
+      --dry-run                       Perform a dry run autoupdate without modifying
+                                      the XML files.
     
-      --tutorial_name TEXT            Name (directory name) of the tutorial to
-                                      modify  [required]
+      -r, --recursive                 Recursively perform command for
+                                      subdirectories.
     
-      --workflow PATH                 Workflow of the tutorial (locally)
-      --galaxy_url TEXT               URL of a Galaxy instance with the workflow
-      --galaxy_api_key TEXT           API key on the Galaxy instance with the
-                                      workflow
+      --test                          Test updated XML files.
+      --skiplist TEXT                 Skiplist file, containing a list of tools for
+                                      which autoupdate should be skipped.
     
-      --workflow_id TEXT              ID of the workflow on the Galaxy instance
+      --skip_requirements TEXT        Comma-separated list of requirements which
+                                      should be not be updated. Default is
+                                      python,r-base,perl.
+    
+      --update_test_data              Update test-data directory with job outputs
+                                      (normally written to directory
+                                      --job_output_files if specified.)
+    
+      --paste_test_data_paths / --no_paste_test_data_paths
+                                      By default Planemo will use or not use
+                                      Galaxy's path paste option to load test data
+                                      into a history based on the engine type it is
+                                      targeting. This can override the logic to
+                                      explicitly enable or disable path pasting.
+    
+      --test_output PATH              Output test report (HTML - for humans)
+                                      defaults to tool_test_output.html.
+    
+      --test_output_text PATH         Output test report (Basic text - for display
+                                      in CI)
+    
+      --test_output_markdown PATH     Output test report (Markdown style - for
+                                      humans & computers)
+    
+      --test_output_xunit PATH        Output test report (xunit style - for CI
+                                      systems
+    
+      --test_output_junit PATH        Output test report (jUnit style - for CI
+                                      systems
+    
+      --test_output_allure DIRECTORY  Output test allure2 framework resutls
+      --test_output_json PATH         Output test report (planemo json) defaults to
+                                      tool_test_output.json.
+    
+      --job_output_files DIRECTORY    Write job outputs to specified directory.
+      --summary [none|minimal|compact]
+                                      Summary style printed to planemo's standard
+                                      output (see output reports for more complete
+                                      summary). Set to 'none' to disable completely.
+    
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
     
@@ -86,26 +123,6 @@ Create tutorial skeleton from workflow.
       --job_config_file FILE          Job configuration file for Galaxy to target.
       --tool_dependency_dir DIRECTORY
                                       Tool dependency dir for Galaxy to target.
-      --port INTEGER                  Port to serve Galaxy on (default is 9090).
-      --host TEXT                     Host to bind Galaxy to. Default is 127.0.0.1
-                                      that is restricted to localhost connections
-                                      for security reasons set to 0.0.0.0 to bind
-                                      Galaxy to all ports including potentially
-                                      publicly accessible ones.
-    
-      --engine [galaxy|docker_galaxy|external_galaxy]
-                                      Select an engine to serve artifacts such as
-                                      tools and workflows. Defaults to a local
-                                      Galaxy, but running Galaxy within a Docker
-                                      container.
-    
-      --non_strict_cwl                Disable strict validation of CWL.
-      --docker_galaxy_image TEXT      Docker image identifier for docker-galaxy-
-                                      flavor used if engine type is specified as
-                                      ``docker-galaxy``. Defaults to
-                                      quay.io/bgruening/galaxy.
-    
-      --docker_extra_volume PATH      Extra path to mount if --engine docker.
       --test_data DIRECTORY           test-data directory to for specified tool(s).
       --tool_data_table PATH          tool_data_table_conf.xml file to for specified
                                       tool(s).
@@ -204,25 +221,8 @@ Create tutorial skeleton from workflow.
                                       it. Use --no_galaxy_single_user to prevent
                                       Galaxy from running this way.
     
-      --daemon                        Serve Galaxy process as a daemon.
-      --pid_file FILE                 Location of pid file is executed with
-                                      --daemon.
-    
-      --ignore_dependency_problems    When installing shed repositories for
-                                      workflows, ignore dependency issues. These
-                                      likely indicate a problem but in some cases
-                                      may not prevent a workflow from successfully
-                                      executing.
-    
-      --skip_client_build             Do not build Galaxy client when serving
-                                      Galaxy.
-    
-      --shed_install / --no_shed_install
-                                      By default Planemo will attempt to install
-                                      repositories needed for workflow testing. This
-                                      may not be appropriate for production servers
-                                      and so this can disabled by calling planemo
-                                      with --no_shed_install.
-    
+      --report_level [all|warn|error]
+      --report_xunit PATH             Output an XUnit report, useful for CI testing
+      --fail_level [warn|error]
       --help                          Show this message and exit.
     

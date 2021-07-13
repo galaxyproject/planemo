@@ -6,7 +6,62 @@ History
 .. to_doc
 
 ---------------------
-0.74.1 (2020-01-03)
+0.75.0.dev0
+---------------------
+
+    
+
+---------------------    
+0.74.5 (2021-06-25)
+---------------------
+
+* Remove iuc from default channels `Pull Request 1170`_
+* Fix parsing of changelog for git release `Pull Request 1171`_
+* Remove legacy commands, egg handling `Pull Request 1172`_
+* Use bioblend's invoke_workflow `Pull Request 1173`_
+* Create more useful output for failed invocations `Pull Request 1174`_
+* Improve dockstore_init `Pull Request 1177`_
+
+---------------------
+0.74.4 (2021-06-01)
+---------------------
+
+* Relicense under the MIT license `Pull Request 1169`_
+* Revise log levels (thanks to `@bernt-matthias`_). `Pull Request 1165`_
+* Create upload_data subcommand (thanks to `@simonbray`_). `Pull Request
+  1164`_
+* Create ``--download_outputs`` flag for the ``run`` command
+  (thanks to `@simonbray`_).
+  `Pull Request 1157`_
+* Make simultaneous file upload configurable for the run and test commands
+  (thanks to `@simonbray`_).
+  `Pull Request 1156`_
+* Add option to add tags to a history with the ``run`` command
+  (thanks to `@simonbray`_). `Pull Request 1154`_
+* Revise Allure_ reporting experience for workflows. `Pull Request 1152`_
+
+---------------------
+0.74.3 (2021-02-25)
+---------------------
+
+* Load both cat1 versions when testing workflows `Pull Request 1146`_
+* Fix isolated virtualenv not getting activated `Pull Request 1145`_
+* Use bioblend's make_get_request for authenticated request `Pull Request 1144`_
+* Display live logs when Galaxy is run in background `Pull Request 1142`_
+
+---------------------
+0.74.2 (2021-02-21)
+---------------------
+
+* Allow testing dir of workflows `Pull Request 1095`_
+* Fix container register for gh workflow `Pull Request 1135`_, `Pull Request 1133`_
+* Don't fail URL linting if blocked by CloudFlare `Pull Request 1134`_
+  1133`_
+* Allow planemo run to stage exisiting datasets and relative paths (thanks to `@simonbray`_).
+  `Pull Request 1128`_
+
+---------------------
+0.74.1 (2021-01-03)
 ---------------------
 
 * Fix ``ci_find_tools`` and ``ci_find_repos`` commands. `Pull Request 1127`_
@@ -1674,6 +1729,28 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1170: https://github.com/galaxyproject/planemo/pull/1170
+.. _Pull Request 1171: https://github.com/galaxyproject/planemo/pull/1171
+.. _Pull Request 1172: https://github.com/galaxyproject/planemo/pull/1172
+.. _Pull Request 1173: https://github.com/galaxyproject/planemo/pull/1173
+.. _Pull Request 1174: https://github.com/galaxyproject/planemo/pull/1174
+.. _Pull Request 1177: https://github.com/galaxyproject/planemo/pull/1177
+.. _Pull Request 1169: https://github.com/galaxyproject/planemo/pull/1169
+.. _Pull Request 1165: https://github.com/galaxyproject/planemo/pull/1165
+.. _Pull Request 1164: https://github.com/galaxyproject/planemo/pull/1164
+.. _Pull Request 1157: https://github.com/galaxyproject/planemo/pull/1157
+.. _Pull Request 1156: https://github.com/galaxyproject/planemo/pull/1156
+.. _Pull Request 1154: https://github.com/galaxyproject/planemo/pull/1154
+.. _Pull Request 1152: https://github.com/galaxyproject/planemo/pull/1152
+.. _Pull Request 1146: https://github.com/galaxyproject/planemo/pull/1146
+.. _Pull Request 1145: https://github.com/galaxyproject/planemo/pull/1145
+.. _Pull Request 1144: https://github.com/galaxyproject/planemo/pull/1144
+.. _Pull Request 1142: https://github.com/galaxyproject/planemo/pull/1142
+.. _Pull Request 1095: https://github.com/galaxyproject/planemo/pull/1095
+.. _Pull Request 1135: https://github.com/galaxyproject/planemo/pull/1135
+.. _Pull Request 1134: https://github.com/galaxyproject/planemo/pull/1134
+.. _Pull Request 1133: https://github.com/galaxyproject/planemo/pull/1133
+.. _Pull Request 1128: https://github.com/galaxyproject/planemo/pull/1128
 .. _Pull Request 1127: https://github.com/galaxyproject/planemo/pull/1127
 .. _Pull Request 1126: https://github.com/galaxyproject/planemo/pull/1126
 .. _Pull Request 1125: https://github.com/galaxyproject/planemo/pull/1125

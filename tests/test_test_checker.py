@@ -4,6 +4,7 @@ import os
 from planemo.runnable import (
     cases,
     for_path,
+    SuccessfulRunResponse
 )
 from .test_utils import TEST_DATA_DIR
 
@@ -53,24 +54,32 @@ def test_file_case_checker():
     assert sd["data"]["status"] == "failure"
 
 
-class MockRunResponse(object):
+class MockRunResponse(SuccessfulRunResponse):
+    start_datetime = None
+    end_datetime = None
 
     def __init__(self, outputs_dict):
-        self.outputs_dict = outputs_dict
-        self.was_successful = True
-        self.job_info = {
+        self._outputs_dict = outputs_dict
+
+    @property
+    def log(self):
+        return "My Log"
+
+    @property
+    def job_info(self):
+        return {
             "command_line": "cat /tmp/1.txt > /tmp/2.out",
             "stdout": "Cat output",
             "stderr": "Cat problems..."
         }
-        self.invocation_details = None
-        self.log = "My Log"
 
+    @property
+    def outputs_dict(self):
+        return self._outputs_dict
 
-class MockErrorRunResponse(object):
-    was_successful = False
-    error_message = "Problem running job."
-    log = "Error log"
+    @property
+    def invocation_details(self):
+        return None
 
 
 __all__ = (

@@ -29,11 +29,16 @@ class WorkflowLintContext(LintContext):
 def generate_dockstore_yaml(directory):
     workflows = []
     for workflow_path in find_workflow_descriptions(directory):
-        workflows.append({
+        test_parameter_path = f"{workflow_path.rsplit('.', 1)[0]}-tests.yml"
+        workflow_entry = {
             # TODO: support CWL
             "subclass": "Galaxy",
-            "primaryDescriptorPath": os.path.relpath(workflow_path, directory)
-        })
+            "name": "main",
+            "primaryDescriptorPath": f"/{os.path.relpath(workflow_path, directory)}"
+        }
+        if os.path.exists(test_parameter_path):
+            workflow_entry['testParameterFiles'] = [f"/{os.path.relpath(test_parameter_path, directory)}"]
+        workflows.append(workflow_entry)
     # Force version to the top of file but serializing rest of config seprately
     contents = "version: %s\n" % DOCKSTORE_REGISTRY_CONF_VERSION
     contents += yaml.dump({"workflows": workflows})
@@ -76,19 +81,22 @@ def _lint_workflow_artifacts_on_path(lint_context, path, lint_args):
 
 # misspell for pytest
 def _lint_tsts(path, lint_context):
-    runnable = for_path(path)
-    test_cases = cases(runnable)
-    all_tests_valid = False
-    if len(test_cases) == 0:
-        lint_context.warn("Workflow missing test cases.")
-    else:
-        all_tests_valid = True
-    for test_case in test_cases:
-        if not _lint_case(path, test_case, lint_context):
-            all_tests_valid = False
+    runnables = for_path(path, return_all=True)
+    if not isinstance(runnables, list):
+        runnables = [runnables]
+    for runnable in runnables:
+        test_cases = cases(runnable)
+        all_tests_valid = False
+        if len(test_cases) == 0:
+            lint_context.warn("Workflow missing test cases.")
+        else:
+            all_tests_valid = True
+        for test_case in test_cases:
+            if not _lint_case(path, test_case, lint_context):
+                all_tests_valid = False
 
-    if all_tests_valid:
-        lint_context.valid("Tests appear structurally correct")
+        if all_tests_valid:
+            lint_context.valid(f"Tests appear structurally correct for {runnable.path}")
 
 
 def _lint_case(path, test_case, lint_context):

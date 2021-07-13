@@ -244,6 +244,16 @@ def build_cwl_option():
     )
 
 
+def run_history_tags_option():
+    return planemo_option(
+        "tags",
+        "--tags",
+        type=str,
+        default=None,
+        help="Comma-separated list of tags to add to the created history.",
+    )
+
+
 def run_output_directory_option():
     return planemo_option(
         "output_directory",
@@ -271,6 +281,17 @@ def run_output_json_option():
         default=None,
         help=("Where to store JSON dictionary describing outputs of "
               "a 'run' task."),
+    )
+
+
+def run_download_outputs_option():
+    return planemo_option(
+        "--download_outputs/--no_download_outputs",
+        is_flag=True,
+        default=False,
+        help=("After tool or workflow runs are complete, download "
+              "the output files to the location specified by --output_directory. "
+              ),
     )
 
 
@@ -563,7 +584,7 @@ def conda_ensure_channels_option():
         use_env_var=True,
         help=("Ensure conda is configured with specified comma separated "
               "list of channels."),
-        default="iuc,conda-forge,bioconda,defaults",
+        default="conda-forge,bioconda,defaults",
     )
 
 
@@ -605,6 +626,28 @@ def conda_global_option():
               "environments packaged for tools. If the Conda bin directory is on your "
               "PATH, tools may still use binaries but this is more designed for "
               "interactive testing and debugging.")
+    )
+
+
+def simultaneous_upload_option():
+    return planemo_option(
+        "--simultaneous_uploads/--no_simultaneous_uploads",
+        is_flag=True,
+        default=False,
+        help=("When uploading files to Galaxy for tool or workflow tests or runs, "
+              "upload multiple files simultaneously without waiting for the previous "
+              "file upload to complete.")
+    )
+
+
+def check_uploads_ok_option():
+    return planemo_option(
+        "--check_uploads_ok/--no_check_uploads_ok",
+        is_flag=True,
+        default=True,
+        help=("When uploading files to Galaxy for tool or workflow tests or runs, "
+              "check that the history is in an 'ok' state before beginning tool "
+              "or workflow execution.")
     )
 
 
@@ -728,6 +771,11 @@ def required_rerunnable_arg():
         metavar="RERUNNABLE_PATH_OR_ID",
         type=str,
     )
+
+
+def required_new_job_arg():
+    arg_type = click.Path()
+    return click.argument("new_job_path", metavar="NEW_JOB_PATH", type=arg_type)
 
 
 def _optional_tools_default(ctx, param, value):
@@ -1140,6 +1188,8 @@ def galaxy_config_options():
         conda_copy_dependencies_option(),
         conda_auto_install_option(),
         conda_auto_init_option(),
+        simultaneous_upload_option(),
+        check_uploads_ok_option(),
         # Profile options...
         profile_option(),
         profile_database_options(),
@@ -1467,7 +1517,8 @@ def engine_options():
         galaxy_url_option(),
         galaxy_admin_key_option(),
         galaxy_user_key_option(),
-        history_name()
+        history_name(),
+        no_wait_option(),
     )
 
 
@@ -1542,6 +1593,16 @@ def postgres_datatype_type_option():
         "database_type",
         flag_value="postgres",
         help=("Use postgres database type."),
+    )
+
+
+def no_wait_option():
+    return planemo_option(
+        "--no_wait",
+        is_flag=True,
+        default=False,
+        prompt=False,
+        help="After invoking a job or workflow, do not wait for completion.",
     )
 
 

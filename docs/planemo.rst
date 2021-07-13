@@ -24,6 +24,14 @@ Subpackages
 Submodules
 ----------
 
+planemo.autoupdate module
+-------------------------
+
+.. automodule:: planemo.autoupdate
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 planemo.bioblend module
 -----------------------
 
@@ -239,6 +247,7 @@ planemo.workflow\_lint module
    :members:
    :undoc-members:
    :show-inheritance:
+
 
 Module contents
 ---------------

@@ -15,8 +15,7 @@ class CwlToolEngine(BaseEngine):
 
     def _run(self, runnable, job_path):
         """Run CWL job using cwltool."""
-        path = runnable.path
-        return cwl.run_cwltool(self._ctx, path, job_path, **self._kwds)
+        return cwl.run_cwltool(self._ctx, runnable, job_path, **self._kwds)
 
 
 __all__ = (

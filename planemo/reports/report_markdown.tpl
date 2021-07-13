@@ -1,9 +1,9 @@
-{% from 'macros.tmpl' import render_job_parameters, render_steps %}
+{% from 'macros.tmpl' import render_invocation_details, render_job_parameters, render_steps %}
 {% if title %}
-# {{ title }}
+# {{ execution_type }} {{ title }}
 
 {% endif %}
-## Test Summary
+## {{ execution_type }} Summary
 {% set state = namespace(found=false) %}
 {% set state.success = raw_data.results.total - raw_data.results.errors - raw_data.results.failures - raw_data.results.skips | default(0) %}
 {% set state.error = raw_data.results.errors | default(0) %}
@@ -21,7 +21,7 @@
 </div>
 {% endif %}
 
-| Test State | Count |
+| {{ execution_type }} State | Count |
 | ---------- | ----- |
 | Total      | {{ raw_data.results.total | default(0)  }} |
 | Passed     | {{ state.success }} |
@@ -32,7 +32,7 @@
 
 {% set display_job_attributes = {'command_line': 'Command Line', 'exit_code': 'Exit Code', 'stderr': 'Standard Error', 'stdout': 'Standard Output'} %}
 {% for status, desc in {'error': 'Errored', 'failure': 'Failed', 'success': 'Passed'}.items() if state[status]%}
-<details><summary>{{ desc }} Tests</summary>
+<details><summary>{{ desc }} {{ execution_type }}s</summary>
 {%   for test in raw_data.tests %}
 {%     if test.data.status == status %}
 {%       if test.data.status == 'success' %}
@@ -52,10 +52,10 @@
       {{problem|indent(6)}}
       ```
 {%       endfor %}
-{%       if test.data.execution_problem %}
+{%       if test.data.test_problem %}
     **Execution Problem:**
     * ```
-      {{test.data.execution_problem|indent(6)}}
+      {{test.data.test_problem|indent(6)}}
       ```
 {%       endif %}
 {%     if test.data.job %}
@@ -75,7 +75,11 @@
 
     #### Workflow invocation details
 
-{{render_steps(test.data.invocation_details.values(), display_job_attributes)}}
+{{render_steps(test.data.invocation_details.steps.values(), display_job_attributes)}}
+
+{{render_invocation_details(test.data.invocation_details.details)}}
+
+
   </div></details>
 
 {% endif %}

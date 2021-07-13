@@ -19,7 +19,6 @@ runner = CliRunner()
 # of the planemo API.
 INTERNAL_COMMANDS = [
     'create_gist',
-    'travis_before_install',
     'shed_download',
 ]
 

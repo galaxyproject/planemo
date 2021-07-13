@@ -165,7 +165,7 @@ def handle_reports(ctx, structured_data, kwds):
     """Write reports based on user specified kwds."""
     exceptions = []
     structured_report_file = kwds.get("test_output_json", None)
-    if structured_report_file and not os.path.exists(structured_report_file):
+    if structured_report_file:
         try:
             with io.open(structured_report_file, mode="w", encoding='utf-8') as f:
                 f.write(unicodify(json.dumps(structured_data)))
@@ -200,9 +200,10 @@ def _handle_test_output_file(ctx, report_type, test_data, kwds):
         allure.write_results(path, test_data, file_modication_datatime=file_modication_datatime)
         return
 
+    execution_type = kwds.get('execution_type', 'Test')
     try:
         contents = build_report.build_report(
-            test_data, report_type=report_type
+            test_data, report_type=report_type, execution_type=execution_type
         )
     except Exception:
         message = "Problem producing report file %s for %s" % (
