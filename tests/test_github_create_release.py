@@ -7,12 +7,40 @@ from planemo import git
 from planemo.github_util import (
     add_dir_contents_to_repo,
     assert_new_version,
+    changelog_in_repo,
     get_or_create_repository,
 )
 from planemo.io import temp_directory
 from .test_utils import (
     test_context,
 )
+
+
+def test_changelog_in_repo():
+    CHANGELOG = """
+# Changelog
+
+## [0.2]
+
+### Changed
+
+- Turn the AmpliconRemoval variant FILTER into an AmpliconBias INFO flag
+
+
+## [0.1]
+
+- Initial version of COVID-19: variation analysis on ARTIC PE data workflow
+    """
+    EXPECTED_FRAGMENT = """## [0.2]
+
+### Changed
+
+- Turn the AmpliconRemoval variant FILTER into an AmpliconBias INFO flag
+"""
+    with temp_directory() as test_dir:
+        with open(os.path.join(test_dir, "CHANGELOG.md"), 'w') as changelog:
+            changelog.write(CHANGELOG)
+        assert changelog_in_repo(test_dir) == EXPECTED_FRAGMENT
 
 
 def test_get_or_create_repo_with_existing_repo():

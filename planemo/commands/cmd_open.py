@@ -1,4 +1,4 @@
-"""Module describing the planemo ``docs`` command."""
+"""Module describing the planemo ``open`` command."""
 import click
 
 from planemo.cli import command_function

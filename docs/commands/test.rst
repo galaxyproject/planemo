@@ -154,6 +154,18 @@ please careful and do not try this against production Galaxy instances.
                                       auto install conda itself using miniconda if
                                       not availabe on conda_prefix.
     
+      --simultaneous_uploads / --no_simultaneous_uploads
+                                      When uploading files to Galaxy for tool or
+                                      workflow tests or runs, upload multiple files
+                                      simultaneously without waiting for the
+                                      previous file upload to complete.
+
+      --check_uploads_ok / --no_check_uploads_ok
+                                      When uploading files to Galaxy for tool or
+                                      workflow tests or runs, check that the history
+                                      is in an 'ok' state before beginning tool or
+                                      workflow execution.
+
       --profile TEXT                  Name of profile (created with the
                                       profile_create command) to use with this
                                       command.
@@ -280,5 +292,8 @@ please careful and do not try this against production Galaxy instances.
       --history_name TEXT             Name to give a Galaxy history, if one is
                                       created.
     
+      --no_wait                       After invoking a job or workflow, do not wait
+                                      for completion.
+
       --help                          Show this message and exit.
     

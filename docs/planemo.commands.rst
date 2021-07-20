@@ -452,18 +452,10 @@ planemo.commands.cmd\_training\_init module
    :undoc-members:
    :show-inheritance:
 
-planemo.commands.cmd\_travis\_before\_install module
-----------------------------------------------------
-
-.. automodule:: planemo.commands.cmd_travis_before_install
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-planemo.commands.cmd\_travis\_init module
+planemo.commands.cmd\_upload\_data module
 -----------------------------------------
 
-.. automodule:: planemo.commands.cmd_travis_init
+.. automodule:: planemo.commands.cmd_upload_data
    :members:
    :undoc-members:
    :show-inheritance:

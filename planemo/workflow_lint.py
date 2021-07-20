@@ -29,11 +29,16 @@ class WorkflowLintContext(LintContext):
 def generate_dockstore_yaml(directory):
     workflows = []
     for workflow_path in find_workflow_descriptions(directory):
-        workflows.append({
+        test_parameter_path = f"{workflow_path.rsplit('.', 1)[0]}-tests.yml"
+        workflow_entry = {
             # TODO: support CWL
             "subclass": "Galaxy",
-            "primaryDescriptorPath": os.path.relpath(workflow_path, directory)
-        })
+            "name": "main",
+            "primaryDescriptorPath": f"/{os.path.relpath(workflow_path, directory)}"
+        }
+        if os.path.exists(test_parameter_path):
+            workflow_entry['testParameterFiles'] = [f"/{os.path.relpath(test_parameter_path, directory)}"]
+        workflows.append(workflow_entry)
     # Force version to the top of file but serializing rest of config seprately
     contents = "version: %s\n" % DOCKSTORE_REGISTRY_CONF_VERSION
     contents += yaml.dump({"workflows": workflows})

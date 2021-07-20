@@ -1,0 +1,108 @@
+{
+    "a_galaxy_workflow": "true",
+    "annotation": "",
+    "format-version": "0.1",
+    "name": "fail scheduling",
+    "steps": {
+        "0": {
+            "annotation": "",
+            "content_id": "job_properties",
+            "errors": null,
+            "id": 0,
+            "input_connections": {},
+            "inputs": [],
+            "label": null,
+            "name": "Test Job Properties",
+            "outputs": [
+                {
+                    "name": "list_output",
+                    "type": "input"
+                },
+                {
+                    "name": "out_file1",
+                    "type": "txt"
+                }
+            ],
+            "position": {
+                "bottom": 413.43749237060547,
+                "height": 110.96590423583984,
+                "left": 774.4744262695312,
+                "right": 974.4744262695312,
+                "top": 302.4715881347656,
+                "width": 200,
+                "x": 774.4744262695312,
+                "y": 302.4715881347656
+            },
+            "post_job_actions": {},
+            "tool_id": "job_properties",
+            "tool_state": "{\"failbool\": \"true\", \"thebool\": \"false\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+            "tool_version": "1.0.0",
+            "type": "tool",
+            "uuid": "2deee78b-961c-42b7-8663-033ffcbc81ce",
+            "workflow_outputs": [
+                {
+                    "label": null,
+                    "output_name": "out_file1",
+                    "uuid": "f46e5881-080d-4907-8632-2e8abca38f31"
+                },
+                {
+                    "label": "A list output",
+                    "output_name": "list_output",
+                    "uuid": "327dcce1-2b73-4d76-a5ca-4a7e192e1d57"
+                }
+            ]
+        },
+        "1": {
+            "annotation": "",
+            "content_id": "cat",
+            "errors": null,
+            "id": 1,
+            "input_connections": {
+                "input1": {
+                    "id": 0,
+                    "output_name": "out_file1"
+                }
+            },
+            "inputs": [
+                {
+                    "description": "runtime parameter for tool Concatenate datasets (for test workflows)",
+                    "name": "input1"
+                }
+            ],
+            "label": null,
+            "name": "Concatenate datasets (for test workflows)",
+            "outputs": [
+                {
+                    "name": "out_file1",
+                    "type": "input"
+                }
+            ],
+            "position": {
+                "bottom": 640.4545440673828,
+                "height": 111.96022033691406,
+                "left": 830.4971313476562,
+                "right": 1030.4971313476562,
+                "top": 528.4943237304688,
+                "width": 200,
+                "x": 830.4971313476562,
+                "y": 528.4943237304688
+            },
+            "post_job_actions": {},
+            "tool_id": "cat",
+            "tool_state": "{\"input1\": {\"__class__\": \"RuntimeValue\"}, \"queries\": [], \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+            "tool_version": "1.0.0",
+            "type": "tool",
+            "uuid": "a355109c-a224-47d6-b5bd-a89c97de0090",
+            "workflow_outputs": [
+                {
+                    "label": null,
+                    "output_name": "out_file1",
+                    "uuid": "c982f987-9b42-48a1-aaf3-58609a8db7ea"
+                }
+            ]
+        }
+    },
+    "tags": [],
+    "uuid": "43c451be-11d4-4a07-b658-93b962426afa",
+    "version": 1
+}

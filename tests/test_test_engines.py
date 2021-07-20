@@ -1,3 +1,4 @@
+import json
 import os
 from tempfile import NamedTemporaryFile
 
@@ -169,3 +170,39 @@ def test_galaxy_workflow_non_data_inputs():
         **kwds
     )
     assert exit_code == 0
+
+
+@skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+@mark.tests_galaxy_branch
+def test_galaxy_workflow_step_failed():
+    ctx = t_context()
+    test_artifact = os.path.join(TEST_DATA_DIR, "wf_failed_step.ga")
+    runnables = for_paths([test_artifact])
+    with NamedTemporaryFile(prefix="result_json") as json_out:
+        kwds = {
+            "engine": "galaxy",
+            "no_dependency_resolution": True,
+            "paste_test_data_paths": False,
+            "extra_tools": ['$GALAXY_FUNCTIONAL_TEST_TOOLS'],
+            "test_output_json": json_out.name,
+            "galaxy_branch": target_galaxy_branch(),
+        }
+        exit_code = t_runnables(
+            ctx,
+            runnables,
+            **kwds
+        )
+        assert exit_code == 1
+        report = json.load(json_out)
+    data = report['tests'][0]['data']
+    assert data['status'] == 'error'
+    assert data['execution_problem']
+    invocation_steps = data['invocation_details']['steps']
+    assert len(invocation_steps) == 2
+    first_step, second_step = invocation_steps.values()
+    assert first_step['state'] == 'scheduled'
+    job = first_step['jobs'][0]
+    assert job['exit_code'] == 127
+    assert job['state'] == 'error'
+    assert second_step['state'] == 'scheduled'
+    assert second_step['jobs'][0]['state'] == 'paused'

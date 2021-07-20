@@ -346,50 +346,7 @@ class TestCase(AbstractTestCase):
 
     def structured_test_data(self, run_response):
         """Check a test case against outputs dictionary."""
-        output_problems = []
-        if run_response.was_successful:
-            outputs_dict = run_response.outputs_dict
-            execution_problem = None
-            for output_id, output_test in self.output_expectations.items():
-                if output_id not in outputs_dict:
-                    message = "Expected output [%s] not found in results." % output_id
-                    output_problems.append(message)
-                    continue
-
-                output_value = outputs_dict[output_id]
-                output_problems.extend(
-                    self._check_output(output_id, output_value, output_test)
-                )
-            if output_problems:
-                status = "failure"
-            else:
-                status = "success"
-        else:
-            execution_problem = run_response.error_message
-            status = "error"
-        data_dict = dict(
-            status=status
-        )
-        if status != "success":
-            data_dict["output_problems"] = output_problems
-            data_dict["execution_problem"] = execution_problem
-        log = run_response.log
-        if log is not None:
-            data_dict["problem_log"] = log
-        job_info = run_response.job_info
-        if job_info is not None:
-            data_dict["job"] = job_info
-        invocation_details = run_response.invocation_details
-        if invocation_details is not None:
-            data_dict["invocation_details"] = invocation_details
-        data_dict["inputs"] = self._job
-        return dict(
-            id=("%s_%s" % (self._test_id, self.index)),
-            has_data=True,
-            data=data_dict,
-            doc=self.doc,
-            test_type=self.runnable.type.name,
-        )
+        return run_response.structured_data(self)
 
     @property
     def _job(self):
@@ -560,6 +517,16 @@ class CwlWorkflowOutput(RunnableOutput):
 class RunResponse(object):
     """Description of an attempt for an engine to execute a Runnable."""
 
+    @property
+    def start_datetime(self):
+        """Start datetime of run."""
+        return None
+
+    @property
+    def end_datetime(self):
+        """End datetime of run."""
+        return None
+
     @abc.abstractproperty
     def was_successful(self):
         """Indicate whether an error was encountered while executing this runnable.
@@ -580,6 +547,66 @@ class RunResponse(object):
     def log(self):
         """If engine related log is available, return as text data."""
 
+    def structured_data(self, test_case=None):
+        output_problems = []
+        if self.was_successful:
+            outputs_dict = self.outputs_dict
+            execution_problem = None
+            if test_case:
+                for output_id, output_test in test_case.output_expectations.items():
+                    if output_id not in outputs_dict:
+                        message = "Expected output [%s] not found in results." % output_id
+                        output_problems.append(message)
+                        continue
+
+                    output_value = outputs_dict[output_id]
+                    output_problems.extend(
+                        test_case._check_output(output_id, output_value, output_test)
+                    )
+            if output_problems:
+                status = "failure"
+            else:
+                status = "success"
+        else:
+            execution_problem = self.error_message
+            status = "error"
+        data_dict = dict(
+            status=status
+        )
+        if status != "success":
+            data_dict["output_problems"] = output_problems
+            data_dict["execution_problem"] = execution_problem
+        log = self.log
+        if log is not None:
+            data_dict["problem_log"] = log
+        job_info = self.job_info
+        if job_info is not None:
+            data_dict["job"] = job_info
+        invocation_details = self.invocation_details
+        if invocation_details is not None:
+            data_dict["invocation_details"] = invocation_details
+        if self.start_datetime is not None:
+            data_dict["start_datetime"] = self.start_datetime.isoformat()
+        if self.end_datetime is not None:
+            data_dict["end_datetime"] = self.end_datetime.isoformat()
+        if test_case:
+            data_dict["inputs"] = test_case._job
+            return dict(
+                id=("%s_%s" % (test_case._test_id, test_case.index)),
+                has_data=True,
+                data=data_dict,
+                doc=test_case.doc,
+                test_type=test_case.runnable.type.name,
+            )
+        else:
+            return dict(
+                id=self._runnable.uri,
+                has_data=True,
+                data=data_dict,
+                doc=None,
+                test_type=self._runnable.type.name,
+            )
+
 
 @add_metaclass(abc.ABCMeta)
 class SuccessfulRunResponse(RunResponse):
@@ -598,12 +625,24 @@ class SuccessfulRunResponse(RunResponse):
 class ErrorRunResponse(RunResponse):
     """Description of an error while attempting to execute a Runnable."""
 
-    def __init__(self, error_message, job_info=None, invocation_details=None, log=None):
+    def __init__(self, error_message, job_info=None, invocation_details=None, log=None, start_datetime=None, end_datetime=None):
         """Create an ErrorRunResponse with specified error message."""
         self._error_message = error_message
         self._job_info = job_info
         self._invocation_details = invocation_details
         self._log = log
+        self._start_datetime = start_datetime
+        self._end_datetime = end_datetime
+
+    @property
+    def start_datetime(self):
+        """Start datetime of run."""
+        return self._start_datetime
+
+    @property
+    def end_datetime(self):
+        """End datetime of run."""
+        return self._end_datetime
 
     @property
     def error_message(self):

@@ -1,11 +1,11 @@
 """Module provides generic interface to running Galaxy tools and workflows."""
 
-import json
 import os
 import sys
 import tempfile
 import time
 import traceback
+from datetime import datetime
 
 import bioblend
 from bioblend.util import attach_file
@@ -14,7 +14,6 @@ from galaxy.tool_util.client.staging import (
 )
 from galaxy.tool_util.cwl.util import (
     invocation_to_output,
-    output_properties,
     output_to_cwl_json,
     tool_response_to_output,
 )
@@ -24,7 +23,10 @@ from galaxy.util import (
     safe_makedirs,
     unicodify,
 )
-from requests.exceptions import RequestException
+from requests.exceptions import (
+    HTTPError,
+    RequestException,
+)
 from six.moves.urllib.parse import urljoin
 
 from planemo.galaxy.api import summarize_history
@@ -44,12 +46,13 @@ ERR_NO_SUCH_TOOL = ("Failed to find tool with ID [%s] in Galaxy - cannot execute
 def execute(ctx, config, runnable, job_path, **kwds):
     """Execute a Galaxy activity."""
     try:
+        start_datetime = datetime.now()
         return _execute(ctx, config, runnable, job_path, **kwds)
     except Exception as e:
-        if ctx.verbose:
-            ctx.vlog("Failed to execute Galaxy activity, throwing ErrorRunResponse")
-            traceback.print_exc(file=sys.stdout)
-        return ErrorRunResponse(unicodify(e))
+        end_datetime = datetime.now()
+        ctx.log("Failed to execute Galaxy activity, throwing ErrorRunResponse")
+        traceback.print_exc(file=sys.stdout)
+        return ErrorRunResponse(unicodify(e), start_datetime=start_datetime, end_datetime=end_datetime)
 
 
 def _verified_tool_id(runnable, user_gi):
@@ -78,11 +81,12 @@ def log_contents_str(config):
 
 class PlanemoStagingInterface(StagingInterace):
 
-    def __init__(self, ctx, runnable, user_gi, version_major):
+    def __init__(self, ctx, runnable, user_gi, version_major, simultaneous_uploads):
         self._ctx = ctx
         self._user_gi = user_gi
         self._runnable = runnable
         self._version_major = version_major
+        self._simultaneous_uploads = simultaneous_uploads
 
     def _post(self, api_path, payload, files_attached=False):
         params = dict(key=self._user_gi.key)
@@ -93,8 +97,9 @@ class PlanemoStagingInterface(StagingInterace):
         return attach_file(path)
 
     def _handle_job(self, job_response):
-        job_id = job_response["id"]
-        _wait_for_job(self._user_gi, job_id)
+        if not self._simultaneous_uploads:
+            job_id = job_response["id"]
+            _wait_for_job(self._user_gi, job_id)
 
     @property
     def use_fetch_api(self):
@@ -106,14 +111,13 @@ class PlanemoStagingInterface(StagingInterace):
         self._ctx.vlog(message)
 
 
-def _execute(ctx, config, runnable, job_path, **kwds):
+def _execute(ctx, config, runnable, job_path, **kwds):  # noqa C901
     user_gi = config.user_gi
     admin_gi = config.gi
 
-    history_id = _history_id(user_gi, **kwds)
-
+    start_datetime = datetime.now()
     try:
-        job_dict, _ = stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds)
+        job_dict, _, history_id = stage_in(ctx, runnable, config, job_path, **kwds)
     except Exception:
         ctx.vlog("Problem with staging in data for Galaxy activities...")
         raise
@@ -130,51 +134,41 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         ctx.vlog("Post to Galaxy tool API with payload [%s]" % run_tool_payload)
         tool_run_response = user_gi.tools._post(run_tool_payload)
 
-        job = tool_run_response["jobs"][0]
-        job_id = job["id"]
-        try:
-            final_state = _wait_for_job(user_gi, job_id)
-        except Exception:
-            summarize_history(ctx, user_gi, history_id)
-            raise
-        if final_state != "ok":
-            msg = "Failed to run CWL tool job final job state is [%s]." % final_state
-            summarize_history(ctx, user_gi, history_id)
-            raise Exception(msg)
+        if not kwds.get('no_wait'):
+            job = tool_run_response["jobs"][0]
+            job_id = job["id"]
+            try:
+                final_state = _wait_for_job(user_gi, job_id)
+            except Exception:
+                summarize_history(ctx, user_gi, history_id)
+                raise
+            if final_state != "ok":
+                msg = "Failed to run CWL tool job final job state is [%s]." % final_state
+                summarize_history(ctx, user_gi, history_id)
+                raise Exception(msg)
 
-        ctx.vlog("Final job state was ok, fetching details for job [%s]" % job_id)
-        job_info = admin_gi.jobs.show_job(job_id)
-        response_kwds = {
-            'job_info': job_info,
-            'api_run_response': tool_run_response,
-        }
-        if ctx.verbose:
-            summarize_history(ctx, user_gi, history_id)
+            ctx.vlog("Final job state was ok, fetching details for job [%s]" % job_id)
+            job_info = admin_gi.jobs.show_job(job_id)
+            response_kwds = {
+                'job_info': job_info,
+                'api_run_response': tool_run_response,
+            }
+            if ctx.verbose:
+                summarize_history(ctx, user_gi, history_id)
+
     elif runnable.type in [RunnableType.galaxy_workflow, RunnableType.cwl_workflow]:
         response_class = GalaxyWorkflowRunResponse
         workflow_id = config.workflow_id_for_runnable(runnable)
         ctx.vlog("Found Galaxy workflow ID [%s] for URI [%s]" % (workflow_id, runnable.uri))
-        # TODO: Use the following when BioBlend 0.14 is released
-        # invocation = user_gi.worklfows.invoke_workflow(
-        #    workflow_id,
-        #    inputs=job_dict,
-        #    history_id=history_id,
-        #    allow_tool_state_corrections=True,
-        #    inputs_by="name",
-        # )
-        payload = dict(
-            workflow_id=workflow_id,
-            history_id=history_id,
-            inputs=job_dict,
-            inputs_by="name",
-            allow_tool_state_corrections=True,
-        )
-        invocations_url = "%s/workflows/%s/invocations" % (
-            user_gi.url,
+        invocation = user_gi.workflows.invoke_workflow(
             workflow_id,
+            inputs=job_dict,
+            history_id=history_id,
+            allow_tool_state_corrections=True,
+            inputs_by="name",
         )
-        invocation = user_gi.workflows._post(payload, url=invocations_url)
         invocation_id = invocation["id"]
+
         ctx.vlog("Waiting for invocation [%s]" % invocation_id)
         polling_backoff = kwds.get("polling_backoff", 0)
         final_invocation_state = 'new'
@@ -187,21 +181,25 @@ def _execute(ctx, config, runnable, job_path, **kwds):
             summarize_history(ctx, user_gi, history_id)
             error_message = "Final invocation state is [%s]" % final_invocation_state
         ctx.vlog("Final invocation state is [%s]" % final_invocation_state)
-        final_state = _wait_for_history(ctx, user_gi, history_id, polling_backoff)
-        if final_state != "ok":
-            msg = "Failed to run workflow final history state is [%s]." % final_state
-            error_message = msg if not error_message else "%s. %s" % (error_message, msg)
-            ctx.vlog(msg)
-            summarize_history(ctx, user_gi, history_id)
-        else:
-            ctx.vlog("Final history state is 'ok'")
+
+        if not kwds.get('no_wait'):
+            final_state = _wait_for_history(ctx, user_gi, history_id, polling_backoff)
+            if final_state != "ok":
+                msg = "Failed to run workflow final history state is [%s]." % final_state
+                error_message = msg if not error_message else "%s. %s" % (error_message, msg)
+                ctx.vlog(msg)
+                summarize_history(ctx, user_gi, history_id)
+            else:
+                ctx.vlog("Final history state is 'ok'")
+
         response_kwds = {
             'workflow_id': workflow_id,
             'invocation_id': invocation_id,
-            'history_state': final_state,
+            'history_state': final_state if not kwds.get('no_wait') else None,
             'invocation_state': final_invocation_state,
             'error_message': error_message,
         }
+
     else:
         raise NotImplementedError()
 
@@ -211,20 +209,26 @@ def _execute(ctx, config, runnable, job_path, **kwds):
         user_gi=user_gi,
         history_id=history_id,
         log=log_contents_str(config),
+        start_datetime=start_datetime,
+        end_datetime=datetime.now(),
         **response_kwds
     )
-    output_directory = kwds.get("output_directory", None)
-    ctx.vlog("collecting outputs from run...")
-    run_response.collect_outputs(ctx, output_directory)
-    ctx.vlog("collecting outputs complete")
+    if kwds.get("download_outputs", True):
+        output_directory = kwds.get("output_directory", None)
+        ctx.vlog("collecting outputs from run...")
+        run_response.collect_outputs(ctx, output_directory)
+        ctx.vlog("collecting outputs complete")
     return run_response
 
 
-def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):  # noqa C901
+def stage_in(ctx, runnable, config, job_path, **kwds):  # noqa C901
     # only upload objects as files/collections for CWL workflows...
     tool_or_workflow = "tool" if runnable.type != RunnableType.cwl_workflow else "workflow"
     to_posix_lines = runnable.type.is_galaxy_artifact
-    job_dict, datasets = PlanemoStagingInterface(ctx, runnable, user_gi, config.version_major).stage(
+    simultaneous_uploads = kwds.get("simultaneous_uploads", False)
+    user_gi = config.user_gi
+    history_id = _history_id(user_gi, **kwds)
+    job_dict, datasets = PlanemoStagingInterface(ctx, runnable, user_gi, config.version_major, simultaneous_uploads).stage(
         tool_or_workflow,
         history_id=history_id,
         job_path=job_path,
@@ -232,7 +236,7 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):  # n
         to_posix_lines=to_posix_lines,
     )
 
-    if datasets:
+    if datasets and kwds.get('check_uploads_ok', True):
         ctx.vlog("uploaded datasets [%s] for activity, checking history state" % datasets)
         final_state = _wait_for_history(ctx, user_gi, history_id)
 
@@ -251,8 +255,7 @@ def stage_in(ctx, runnable, config, user_gi, history_id, job_path, **kwds):  # n
         msg = "Failed to run job final job state is [%s]." % final_state
         summarize_history(ctx, user_gi, history_id)
         raise Exception(msg)
-
-    return job_dict, datasets
+    return job_dict, datasets, history_id
 
 
 def _file_path_to_name(file_path):
@@ -272,6 +275,8 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         user_gi,
         history_id,
         log,
+        start_datetime=None,
+        end_datetime=None,
     ):
         self._ctx = ctx
         self._runnable = runnable
@@ -282,6 +287,8 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         self._job_info = None
 
         self._outputs_dict = None
+        self._start_datetime = start_datetime
+        self._end_datetime = end_datetime
 
     def to_galaxy_output(self, output):
         """Convert runnable output to a GalaxyOutput object.
@@ -289,6 +296,16 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         Subclasses for workflow and tool execution override this.
         """
         raise NotImplementedError()
+
+    @property
+    def start_datetime(self):
+        """Start datetime of run."""
+        return self._start_datetime
+
+    @property
+    def end_datetime(self):
+        """End datetime of run."""
+        return self._end_datetime
 
     def _get_extra_files(self, dataset_details):
         extra_files_url = "%s/histories/%s/contents/%s/extra_files" % (
@@ -312,28 +329,24 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             raise Exception("Unknown history content type encountered [%s]" % history_content_type)
 
     def collect_outputs(self, ctx, output_directory):
-        assert self._outputs_dict is None, "collect_outputs pre-condition violated"
 
         outputs_dict = {}
-        if not output_directory:
-            # TODO: rather than creating a directory just use
-            # Galaxy paths if they are available in this
-            # configuration.
-            output_directory = tempfile.mkdtemp()
+        # TODO: rather than creating a directory just use
+        # Galaxy paths if they are available in this
+        # configuration.
+        output_directory = output_directory or tempfile.mkdtemp()
 
         def get_dataset(dataset_details, filename=None):
-            parent_basename = dataset_details.get("cwl_file_name")
-            if not parent_basename:
-                parent_basename = dataset_details.get("name")
+            parent_basename = dataset_details.get("cwl_file_name") or dataset_details.get("name")
             file_ext = dataset_details["file_ext"]
             if file_ext == "directory":
                 # TODO: rename output_directory to outputs_directory because we can have output directories
                 # and this is confusing...
                 the_output_directory = os.path.join(output_directory, parent_basename)
                 safe_makedirs(the_output_directory)
-                destination = self.download_output_to(dataset_details, the_output_directory, filename=filename)
+                destination = self.download_output_to(ctx, dataset_details, the_output_directory, filename=filename)
             else:
-                destination = self.download_output_to(dataset_details, output_directory, filename=filename)
+                destination = self.download_output_to(ctx, dataset_details, output_directory, filename=filename)
             if filename is None:
                 basename = parent_basename
             else:
@@ -351,20 +364,9 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             output_dict_value = None
             is_cwl = self._runnable.type in [RunnableType.cwl_workflow, RunnableType.cwl_tool]
             output_src = self.output_src(runnable_output)
-            if not is_cwl and output_src["src"] == "hda":
-                output_dataset_id = output_src["id"]
-                dataset = self._get_metadata("dataset", output_dataset_id)
-                dataset_dict = get_dataset(dataset)
-                ctx.vlog("populated destination [%s]" % dataset_dict["path"])
-
-                if dataset["file_ext"] == "expression.json":
-                    with open(dataset_dict["path"], "r") as f:
-                        output_dict_value = json.load(f)
-                else:
-                    output_dict_value = output_properties(**dataset_dict)
-            else:
-                output_dataset_id = output_src["id"]
-                galaxy_output = self.to_galaxy_output(runnable_output)
+            output_dataset_id = output_src["id"]
+            galaxy_output = self.to_galaxy_output(runnable_output)
+            try:
                 cwl_output = output_to_cwl_json(
                     galaxy_output,
                     self._get_metadata,
@@ -372,22 +374,26 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                     self._get_extra_files,
                     pseduo_location=True,
                 )
-                if is_cwl:
-                    output_dict_value = cwl_output
-                else:
+            except AssertionError:
+                # In galaxy-tool-util < 21.05 output_to_cwl_json will raise an AssertionError when the output state is not OK
+                # Remove with new galaxy-tool-util release.
+                continue
+            if is_cwl or output_src["src"] == "hda":
+                output_dict_value = cwl_output
+            else:
 
-                    def attach_file_properties(collection, cwl_output):
-                        elements = collection["elements"]
-                        assert len(elements) == len(cwl_output)
-                        for element, cwl_output_element in zip(elements, cwl_output):
-                            element["_output_object"] = cwl_output_element
-                            if isinstance(cwl_output_element, list):
-                                assert "elements" in element["object"]
-                                attach_file_properties(element["object"], cwl_output_element)
+                def attach_file_properties(collection, cwl_output):
+                    elements = collection["elements"]
+                    assert len(elements) == len(cwl_output)
+                    for element, cwl_output_element in zip(elements, cwl_output):
+                        element["_output_object"] = cwl_output_element
+                        if isinstance(cwl_output_element, list):
+                            assert "elements" in element["object"]
+                            attach_file_properties(element["object"], cwl_output_element)
 
-                    output_metadata = self._get_metadata("dataset_collection", output_dataset_id)
-                    attach_file_properties(output_metadata, cwl_output)
-                    output_dict_value = output_metadata
+                output_metadata = self._get_metadata("dataset_collection", output_dataset_id)
+                attach_file_properties(output_metadata, cwl_output)
+                output_dict_value = output_metadata
 
             outputs_dict[output_id] = output_dict_value
 
@@ -400,11 +406,12 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
 
     @property
     def job_info(self):
+        print(self._job_info)
         if self._job_info is not None:
             return dict(
-                stdout=self._job_info["stdout"],
-                stderr=self._job_info["stderr"],
-                command_line=self._job_info["command_line"],
+                stdout=self._job_info.get("stdout"),
+                stderr=self._job_info.get("stderr"),
+                command_line=self._job_info.get("command_line"),
             )
         return None
 
@@ -416,13 +423,14 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
     def outputs_dict(self):
         return self._outputs_dict
 
-    def download_output_to(self, dataset_details, output_directory, filename=None):
+    def download_output_to(self, ctx, dataset_details, output_directory, filename=None):
         if filename is None:
             local_filename = dataset_details.get("cwl_file_name") or dataset_details.get("name")
         else:
             local_filename = filename
         destination = os.path.join(output_directory, local_filename)
         self._history_content_download(
+            ctx,
             self._history_id,
             dataset_details["id"],
             to_path=destination,
@@ -430,7 +438,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         )
         return destination
 
-    def _history_content_download(self, history_id, dataset_id, to_path, filename=None):
+    def _history_content_download(self, ctx, history_id, dataset_id, to_path, filename=None):
         user_gi = self._user_gi
         url = user_gi.url + "/histories/%s/contents/%s/display" % (history_id, dataset_id)
 
@@ -439,7 +447,15 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             data["filename"] = filename
 
         r = user_gi.make_get_request(url, params=data, stream=True, timeout=user_gi.timeout)
-        r.raise_for_status()
+        try:
+            r.raise_for_status()
+        except HTTPError as e:
+            # When a job fails abruptly the object store may not contain a dataset,
+            # and that results in an internal server error on the Galaxy side.
+            # We don't want this to break the rest of the test report.
+            # Should probably find a way to propagate this back into the report.
+            ctx.vlog(f"Failed to download history content at URL {url}, exception: {e}")
+            return
 
         with open(to_path, 'wb') as fp:
             for chunk in r.iter_content(chunk_size=bioblend.CHUNK_SIZE):
@@ -458,6 +474,8 @@ class GalaxyToolRunResponse(GalaxyBaseRunResponse):
         log,
         job_info,
         api_run_response,
+        start_datetime=None,
+        end_datetime=None,
     ):
         super(GalaxyToolRunResponse, self).__init__(
             ctx=ctx,
@@ -465,6 +483,8 @@ class GalaxyToolRunResponse(GalaxyBaseRunResponse):
             user_gi=user_gi,
             history_id=history_id,
             log=log,
+            start_datetime=start_datetime,
+            end_datetime=end_datetime,
         )
         self._job_info = job_info
         self.api_run_response = api_run_response
@@ -508,6 +528,8 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         history_state='ok',
         invocation_state='ok',
         error_message=None,
+        start_datetime=None,
+        end_datetime=None,
     ):
         super(GalaxyWorkflowRunResponse, self).__init__(
             ctx=ctx,
@@ -515,6 +537,8 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
             user_gi=user_gi,
             history_id=history_id,
             log=log,
+            start_datetime=start_datetime,
+            end_datetime=end_datetime,
         )
         self._workflow_id = workflow_id
         self._invocation_id = invocation_id
@@ -556,7 +580,18 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
             workflow_step_job_details = [self._user_gi.jobs.show_job(j['id'], full_details=True) for j in workflow_step['jobs']]
             workflow_step['jobs'] = workflow_step_job_details
             invocation_steps[step_label_or_index] = workflow_step
-        return invocation_steps
+        invocation_details = {
+                'steps': invocation_steps,
+                'details': {
+                    'invocation_id': self._invocation_id,
+                    'history_id': self._history_id,
+                    'workflow_id': self._workflow_id,
+                    'invocation_state': self.invocation_state,
+                    'history_state': self.history_state,
+                    'error_message': self.error_message,
+                }
+            }
+        return invocation_details
 
     @property
     def invocation_details(self):
@@ -573,7 +608,7 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
 
     @property
     def was_successful(self):
-        return self.history_state == 'ok' and self.invocation_state == 'scheduled'
+        return self.history_state in ['ok', None] and self.invocation_state == 'scheduled'
 
 
 def _tool_id(tool_path):
@@ -586,6 +621,9 @@ def _history_id(gi, **kwds):
     if history_id is None:
         history_name = kwds.get("history_name", DEFAULT_HISTORY_NAME) or DEFAULT_HISTORY_NAME
         history_id = gi.histories.create_history(history_name)["id"]
+    if kwds.get('tags'):
+        tags = kwds.get('tags').split(',')
+        gi.histories.update_history(history_id, tags=tags)
     return history_id
 
 
