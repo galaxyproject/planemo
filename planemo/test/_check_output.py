@@ -1,7 +1,9 @@
 """Check an output file from a generalize artifact test."""
 
 import os
+import tempfile
 
+import requests
 from galaxy.tool_util.parser.interface import TestCollectionOutputDef
 from galaxy.tool_util.verify import verify
 from galaxy.tool_util.verify.interactor import verify_collection
@@ -55,7 +57,12 @@ def _verify_output_file(runnable, output_properties, test_properties, **kwds):
     if expected_file is None:
         expected_file = test_properties.get("path", None)
     if expected_file is None:
-        expected_file = test_properties.get("location", None)
+        location = test_properties.get("location")
+        if location:
+            if location.startswith(('http://', 'https://')):
+                expected_file = _get_location(location)
+            else:
+                expected_file = location.split('file://', 1)[-1]
 
     job_output_files = kwds.get("job_output_files", None)
     item_label = "Output with path %s" % path
@@ -82,6 +89,17 @@ def _check_output_file(runnable, output_properties, test_properties, **kwds):
         problems.append(unicodify(e))
 
     return problems
+
+
+def _get_location(location):
+    data_file = tempfile.NamedTemporaryFile(prefix='planemo_test_file_', delete=False)
+    with requests.get(location, stream=True) as r:
+        r.raise_for_status()
+
+        for chunk in r.iter_content():
+            if chunk:
+                data_file.write(chunk)
+        return data_file.name
 
 
 def _test_filename_getter(runnable):
