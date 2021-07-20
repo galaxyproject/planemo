@@ -8,5 +8,5 @@
   outputs:
     wf_output_1:
       class: File
-      location: https://raw.githubusercontent.com/galaxyproject/planemo/master/tests/data/hello.txt
+      location: https://raw.githubusercontent.com/galaxyproject/planemo/7be1bf5b3971a43eaa73f483125bfb8cabf1c440/tests/data/hello.txt
       compare: contains
