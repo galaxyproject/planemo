@@ -67,6 +67,8 @@ def install_shed_repos(runnable, admin_gi,
             else:
                 raise Exception(FAILED_REPOSITORIES_MESSAGE)
         return install_results.installed_repositories, updated_repos
+    else:
+        return None, None
 
 
 def import_workflow(path, admin_gi, user_gi, from_path=False):

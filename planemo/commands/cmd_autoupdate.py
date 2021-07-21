@@ -70,7 +70,7 @@ def skip_requirements_option():
     )
 
 
-@click.command('autoupdate')
+@click.command('autoupdate')  # noqa C901
 @options.optional_tools_arg(multiple=True)
 @dry_run_option()
 @options.recursive_option()
@@ -84,7 +84,7 @@ def skip_requirements_option():
 @options.report_xunit()
 @options.fail_level_option()
 @command_function
-def cli(ctx, paths, **kwds):  # noqa
+def cli(ctx, paths, **kwds):  # noqa C901
     """Auto-update tool requirements by checking against Conda and updating if newer versions are available."""
     assert_tools = kwds.get("assert_tools", True)
     recursive = kwds.get("recursive", False)
