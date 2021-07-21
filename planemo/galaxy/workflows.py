@@ -32,9 +32,15 @@ def load_shed_repos(runnable):
         # require explicit annotation like this... I think?
         with open(path, "r") as f:
             workflow = yaml.safe_load(f)
-
-        tools = workflow.get("tools", [])
-
+        steps = workflow['steps']
+        if isinstance(steps, dict):
+            steps = steps.values()
+        tools = []
+        for step in steps:
+            repository = step.get('tool_shed_repository')
+            if repository:
+                repository['tool_panel_section_label'] = 'Tools from workflows'
+                tools.append(repository)
     return tools
 
 
