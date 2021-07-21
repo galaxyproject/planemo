@@ -408,7 +408,7 @@ def mulled_containers_option():
         "--mulled_containers",
         "--biocontainers",
         is_flag=True,
-        help="Test tools against mulled containers (forces --docker).",
+        help="Test tools against mulled containers (forces --docker). Disables conda resolution unless any conda option has been set explicitly.",
     )
 
 
