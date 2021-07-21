@@ -1,0 +1,21 @@
+class: GalaxyWorkflow
+doc: Run fastqc
+inputs:
+  pe-fastq:
+    type: collection
+    collection_type: paired
+outputs:
+  FastQC txt:
+    outputSource: fastqc/text_file
+steps:
+- label: fastqc
+  tool_shed_repository:
+    changeset_revision: e7b2202befea
+    name: fastqc
+    owner: devteam
+    tool_shed: toolshed.g2.bx.psu.edu
+  tool_id: toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.72+galaxy1
+  tool_version: 0.72+galaxy1
+  in:
+    input_file:
+      source: pe-fastq
