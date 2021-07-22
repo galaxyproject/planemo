@@ -408,7 +408,7 @@ def mulled_containers_option():
         "--mulled_containers",
         "--biocontainers",
         is_flag=True,
-        help="Test tools against mulled containers (forces --docker).",
+        help="Test tools against mulled containers (forces --docker). Disables conda resolution unless any conda option has been set explicitly.",
     )
 
 
@@ -558,14 +558,6 @@ def conda_exec_option():
     )
 
 
-def conda_debug_option():
-    return planemo_option(
-        "--conda_debug",
-        is_flag=True,
-        help="Enable more verbose conda logging."
-    )
-
-
 def conda_use_local_option():
     return planemo_option(
         "--conda_use_local",
@@ -585,15 +577,6 @@ def conda_ensure_channels_option():
         help=("Ensure conda is configured with specified comma separated "
               "list of channels."),
         default="conda-forge,bioconda,defaults",
-    )
-
-
-def conda_copy_dependencies_option():
-    return planemo_option(
-        "--conda_copy_dependencies",
-        is_flag=True,
-        help=("Conda dependency resolution for Galaxy will copy dependencies "
-              "instead of attempting to link them.")
     )
 
 
@@ -1134,7 +1117,6 @@ def conda_target_options(include_local=True):
     return _compose(
         conda_prefix_option(),
         conda_exec_option(),
-        conda_debug_option(),
         conda_ensure_channels_option(),
         conda_use_local_option(),
     )
@@ -1177,7 +1159,6 @@ def galaxy_config_options():
         no_dependency_resolution(),
         conda_target_options(),
         conda_dependency_resolution(),
-        conda_copy_dependencies_option(),
         conda_auto_install_option(),
         conda_auto_init_option(),
         simultaneous_upload_option(),

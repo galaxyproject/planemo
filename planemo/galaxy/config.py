@@ -379,11 +379,17 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             raise Exception("%s is an existing non-empty directory, cannot install Galaxy again" % galaxy_root)
 
     # Duplicate block in docker variant above.
-    if kwds.get("mulled_containers", False) and not kwds.get("docker", False):
-        if ctx.get_option_source("docker") != OptionSource.cli:
-            kwds["docker"] = True
-        else:
-            raise Exception("Specified no docker and mulled containers together.")
+    if kwds.get("mulled_containers", False):
+        if not kwds.get("docker", False):
+            if ctx.get_option_source("docker") != OptionSource.cli:
+                kwds["docker"] = True
+            else:
+                raise Exception("Specified no docker and mulled containers together.")
+        conda_default_options = ('conda_auto_init', 'conda_auto_install')
+        use_conda_options = ('dependency_resolution', 'conda_use_local', 'conda_prefix', 'conda_exec')
+        if not any(kwds.get(_) for _ in use_conda_options) and all(ctx.get_option_source(_) == OptionSource.default for _ in conda_default_options):
+            # If using mulled_containers and default conda options disable conda resolution
+            kwds['no_dependency_resolution'] = kwds['no_conda_auto_init'] = True
 
     with _config_directory(ctx, **kwds) as config_directory:
         def config_join(*args):
