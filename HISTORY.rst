@@ -5,12 +5,17 @@ History
 
 .. to_doc
 
+
 ---------------------
-0.75.0.dev0
+0.74.6 (2021-07-23)
 ---------------------
 
+* Add JSON report for planemo run invocations (thanks to `@simonbray`_). `Pull
+  Request 1153`_
+* Ignore failure to download output datasets `Pull Request 1179`_
+* Allow location to point to url for outputs `Pull Request 1180`_
+* Fix --shed_install for gxformat2 workflows `Pull Request 1182`_
     
-
 ---------------------    
 0.74.5 (2021-06-25)
 ---------------------
@@ -1729,6 +1734,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1153: https://github.com/galaxyproject/planemo/pull/1153
+.. _Pull Request 1179: https://github.com/galaxyproject/planemo/pull/1179
+.. _Pull Request 1180: https://github.com/galaxyproject/planemo/pull/1180
+.. _Pull Request 1182: https://github.com/galaxyproject/planemo/pull/1182
 .. _Pull Request 1170: https://github.com/galaxyproject/planemo/pull/1170
 .. _Pull Request 1171: https://github.com/galaxyproject/planemo/pull/1171
 .. _Pull Request 1172: https://github.com/galaxyproject/planemo/pull/1172

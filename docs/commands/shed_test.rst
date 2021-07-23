@@ -106,7 +106,8 @@ This command requires the target to be version 15.07 or newer.
     
       --mulled_containers, --biocontainers
                                       Test tools against mulled containers (forces
-                                      --docker).
+                                      --docker). Disables conda resolution unless
+                                      any conda option has been set explicitly.
     
       --job_config_file FILE          Job configuration file for Galaxy to target.
       --tool_dependency_dir DIRECTORY

@@ -23,7 +23,6 @@ Implicitly adds channels Planemo is configured with.
                                       commands.
     
       --conda_exec FILE               Location of conda executable.
-      --conda_debug                   Enable more verbose conda logging.
       --conda_channels, --conda_ensure_channels TEXT
                                       Ensure conda is configured with specified
                                       comma separated list of channels.

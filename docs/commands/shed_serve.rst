@@ -105,7 +105,8 @@ logged into and explored interactively.
     
       --mulled_containers, --biocontainers
                                       Test tools against mulled containers (forces
-                                      --docker).
+                                      --docker). Disables conda resolution unless
+                                      any conda option has been set explicitly.
     
       --job_config_file FILE          Job configuration file for Galaxy to target.
       --tool_dependency_dir DIRECTORY
@@ -149,7 +150,6 @@ logged into and explored interactively.
                                       commands.
     
       --conda_exec FILE               Location of conda executable.
-      --conda_debug                   Enable more verbose conda logging.
       --conda_channels, --conda_ensure_channels TEXT
                                       Ensure conda is configured with specified
                                       comma separated list of channels.
@@ -159,10 +159,6 @@ logged into and explored interactively.
     
       --conda_dependency_resolution   Configure Galaxy to use only conda for
                                       dependency resolution.
-    
-      --conda_copy_dependencies       Conda dependency resolution for Galaxy will
-                                      copy dependencies instead of attempting to
-                                      link them.
     
       --conda_auto_install / --no_conda_auto_install
                                       Conda dependency resolution for Galaxy will
