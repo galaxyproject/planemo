@@ -49,7 +49,8 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
             # Simple file-based job path.
             return super()._run_test_case(test_case)
         else:
-            with self.ensure_runnables_served([test_case.runnable]) as config:
+            runnable = test_case.runnable
+            with self.ensure_runnables_served([runnable]) as config:
                 galaxy_interactor_kwds = {
                     "galaxy_url": config.galaxy_url,
                     "master_api_key": config.master_api_key,
