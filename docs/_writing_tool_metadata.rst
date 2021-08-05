@@ -28,7 +28,20 @@ is described in the following. The legacy format is described at the end of this
 Metadata format
 ----------------------------------------------------------------
 
-NEED INPUT HERE
+Original PR https://github.com/galaxyproject/galaxy/pull/4437
+
+Simple data sets:
+
+TODO
+
+Discovered data sets:
+
+TODO
+
+Collections:
+
+https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/collection_creates_dynamic_nested_from_json_elements.xml
+https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/collection_creates_dynamic_nested_from_json.xml
 
 ----------------------------------------------------------------
 Legacy metadata format
