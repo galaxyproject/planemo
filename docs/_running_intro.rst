@@ -48,16 +48,16 @@ achieved with the command
 
 ::
 
-    $ planemo run tutorial.ga tutorial-job.yml --output_directory . --output_json output.json
+    $ planemo run tutorial.ga tutorial-job.yml --download_outputs --output_directory . --output_json output.json
 
 
 You can optionally (and probably should) add the ``--galaxy_root`` flag with
 the location of a local copy of the Galaxy source code, which will allow the
 instance to be spun up considerably faster.
 
-Note that the ``--output_directory`` and ``--output_json`` flags are optional,
-but allow saving the output to a local file. The contents should be something
-like:
+Note that ``--download_outputs --output_directory . --output_json output.json``
+is optional, but allow saving the output to a local file. The contents should
+be something like:
 
 ::
 
@@ -76,7 +76,7 @@ significantly longer to complete than the previous command.
 
 ::
 
-    $ planemo run tutorial.ga tutorial-job.yml --output_directory . --output_json output.json --engine docker_galaxy --ignore_dependency_problems
+    $ planemo run tutorial.ga tutorial-job.yml --download_outputs --output_directory . --output_json output.json --engine docker_galaxy --ignore_dependency_problems
 
 
 This introduces the concept of an engine, which Planemo provides to allow

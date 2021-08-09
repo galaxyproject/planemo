@@ -22,8 +22,8 @@ If you want to set the name of the history in which the workflow executes, add
 ``--history_name NAME`` to the command. You should be able to see the workflow
 executing in the web browser, if you navigate to the 'List all histories' view. 
 If you prefer to download data without interacting with the web interface at all,
-you can add ``--output_directory`` and ``--output_json`` to the command as
-before.
+you can add ``--download_outputs --output_directory . --output_json output.json``
+to the command as before.
 
 Typing ``--engine external_galaxy --galaxy_url SERVER_URL --galaxy_user_key YOUR_API_KEY``
 each time you want to execute a workflow is a bit annoying. Fortunately, Planemo
