@@ -1,8 +1,15 @@
+import os
+
 from planemo.engine import (
     engine_context,
 )
 from planemo.galaxy import galaxy_config
+from planemo.galaxy import galaxy_serve
+from planemo.galaxy.api import (
+    DEFAULT_ADMIN_API_KEY
+)
 from planemo.galaxy.config import _find_test_data
+from planemo.galaxy.ephemeris_sleep import sleep
 from planemo.galaxy.test import (
     handle_reports_and_summary,
     run_in_config,
@@ -15,6 +22,17 @@ from planemo.runnable import (
 
 def test_runnables(ctx, runnables, original_paths=None, **kwds):
     """Return exit code indicating test or failure."""
+    if kwds.get("serve"):
+        kwds["engine"] = "external_galaxy"
+        kwds["galaxy_url"] = ''.join(("http://", kwds["host"], ":", kwds["port"]))
+        kwds["galaxy_admin_key"] = kwds["galaxy_admin_key"] or DEFAULT_ADMIN_API_KEY
+        pid = os.fork()
+        if pid == 0:
+            sleep(kwds["galaxy_url"], verbose=ctx.verbose, timeout=500)
+        else:
+            galaxy_serve(ctx, runnables, **kwds)
+            exit(1)
+
     engine_type = kwds["engine"]
     test_engine_testable = {RunnableType.galaxy_tool, RunnableType.galaxy_datamanager, RunnableType.directory}
     enable_test_engines = any(r.type not in test_engine_testable for r in runnables)

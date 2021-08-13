@@ -32,7 +32,8 @@ from planemo.runnable_resolve import for_runnable_identifiers
          "instances to limit generated traffic.",
     default="0",
 )
-@options.galaxy_target_options()
+@options.serve_option()
+@options.galaxy_run_options()
 @options.galaxy_config_options()
 @options.test_options()
 @options.engine_options()

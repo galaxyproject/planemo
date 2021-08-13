@@ -881,6 +881,15 @@ def no_cleanup_option():
     )
 
 
+def serve_option():
+    return planemo_option(
+        "--serve",
+        is_flag=True,
+        default=False,
+        help=("Continue serving Galaxy instance after testing.")
+    )
+
+
 def docker_enable_option():
     return planemo_option(
         "--docker/--no_docker",
