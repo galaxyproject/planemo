@@ -22,9 +22,9 @@ def cli(ctx, uris, **kwds):
     tool.
 
     planemo will search parent directories to see if any is a Galaxy instance
-    - but one can pick the Galaxy instance to use with the ``--galaxy_root``
-    option or force planemo to download a disposable instance with the
-    ``--install_galaxy`` flag.
+    - but one can pick the root of a development Galaxy directory to use with
+    the ``--galaxy_root`` option or force planemo to download a disposable
+    Galaxy with the ``--install_galaxy`` flag.
 
     ``planemo`` will run the Galaxy instance in an existing virtualenv if one
     exists in a ``.venv`` directory in the specified ``--galaxy_root``.
