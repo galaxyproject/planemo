@@ -23,13 +23,18 @@ from planemo.runnable import (
 def test_runnables(ctx, runnables, original_paths=None, **kwds):
     """Return exit code indicating test or failure."""
     if kwds.get("serve"):
-        kwds["engine"] = "external_galaxy"
-        kwds["galaxy_url"] = ''.join(("http://", kwds["host"], ":", kwds["port"]))
+        if "galaxy" not in kwds["engine"]:
+            raise ValueError("The serve option is only supported by Galaxy-based engines.")
+        kwds["galaxy_url"] = kwds["galaxy_url"] or ''.join(("http://", kwds["host"], ":", kwds["port"]))
         kwds["galaxy_admin_key"] = kwds["galaxy_admin_key"] or DEFAULT_ADMIN_API_KEY
         pid = os.fork()
         if pid == 0:
+            # wait for served Galaxy instance to start
             sleep(kwds["galaxy_url"], verbose=ctx.verbose, timeout=500)
+            # then proceed to test against it
+            kwds["engine"] = "external_galaxy"
         else:
+            # serve Galaxy instance
             galaxy_serve(ctx, runnables, **kwds)
             exit(1)
 

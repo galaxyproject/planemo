@@ -886,7 +886,7 @@ def serve_option():
         "--serve",
         is_flag=True,
         default=False,
-        help=("Continue serving Galaxy instance after testing.")
+        help=("Continue serving Galaxy instance after testing. Like the serve command itself, this is only compatible with Galaxy-based engines.")
     )
 
 
