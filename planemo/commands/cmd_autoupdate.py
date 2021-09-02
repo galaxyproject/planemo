@@ -118,6 +118,8 @@ def cli(ctx, paths, **kwds):  # noqa C901
         assert is_galaxy_engine(**kwds)
         if kwds.get("engine") != "external_galaxy":
             kwds["install_most_recent_revision"] = True
+            kwds["install_resolver_dependencies"] = False
+            kwds["install_repository_dependencies"] = False
             kwds['shed_install'] = True
 
         with engine_context(ctx, **kwds) as galaxy_engine:
