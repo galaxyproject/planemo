@@ -6,11 +6,14 @@ History
 .. to_doc
 
 ---------------------
-0.75.0 (2021-07-23)
+0.74.7 (2021-09-21)
 ---------------------
 
-    
-
+* Fix documentation to include `--download_outputs` flag (thanks to
+  `@simonbray`_). `Pull Request 1184`_
+* Select refgenie config based on Galaxy version `Pull Request 1187`_
+* Extend autoupdate subcommand to workflows (thanks to `@simonbray`_). `Pull
+  Request 1151`_
 
 ---------------------
 0.74.6 (2021-07-23)
@@ -1740,6 +1743,9 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1184: https://github.com/galaxyproject/planemo/pull/1184
+.. _Pull Request 1187: https://github.com/galaxyproject/planemo/pull/1187
+.. _Pull Request 1151: https://github.com/galaxyproject/planemo/pull/1151
 .. _Pull Request 1153: https://github.com/galaxyproject/planemo/pull/1153
 .. _Pull Request 1179: https://github.com/galaxyproject/planemo/pull/1179
 .. _Pull Request 1180: https://github.com/galaxyproject/planemo/pull/1180
