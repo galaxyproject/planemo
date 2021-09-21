@@ -780,6 +780,8 @@ class BaseGalaxyConfig(GalaxyInterface):
         self.runnables = runnables
         self._kwds = kwds
         self._workflow_ids = {}
+        self.installed_repos = {}
+        self.updated_repos = {}
 
         self._target_version = UNINITIALIZED
         self._target_user_config = UNINITIALIZED
@@ -840,13 +842,15 @@ class BaseGalaxyConfig(GalaxyInterface):
 
     def _install_workflow(self, runnable):
         if self._kwds.get("shed_install") and (self._kwds.get("engine") != "external_galaxy" or self._kwds.get("galaxy_admin_key")):
-            install_shed_repos(runnable,
-                               self.gi,
-                               self._kwds.get("ignore_dependency_problems", False),
-                               self._kwds.get("install_tool_dependencies", False),
-                               self._kwds.get("install_resolver_dependencies", True),
-                               self._kwds.get("install_repository_dependencies", True))
-
+            workflow_repos = install_shed_repos(runnable,
+                                                self.gi,
+                                                self._kwds.get("ignore_dependency_problems", False),
+                                                self._kwds.get("install_tool_dependencies", False),
+                                                self._kwds.get("install_resolver_dependencies", True),
+                                                self._kwds.get("install_repository_dependencies", True),
+                                                self._kwds.get("install_most_recent_revision", False)
+                                                )
+            self.installed_repos[runnable.path], self.updated_repos[runnable.path] = workflow_repos
         default_from_path = self._kwds.get("workflows_from_path", False)
         # TODO: Allow serialization so this doesn't need to assume a
         # shared filesystem with Galaxy server.

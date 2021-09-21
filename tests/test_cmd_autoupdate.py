@@ -1,5 +1,9 @@
 """Tests for the ``autoupdate`` command."""
+import json
+import os
 import tempfile
+
+import yaml
 
 from .test_utils import (
     CliTestCase
@@ -75,3 +79,37 @@ class CmdAutoupdateTestCase(CliTestCase):
             ]
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
             assert 'No updates required or made to {}.'.format(xmlfile) in result.output
+
+    def test_autoupdate_workflow(self):
+        """Test autoupdate command for a workflow is needed."""
+        with self._isolate_with_test_data("wf_repos/autoupdate_tests") as f:
+            wf_file = os.path.join(f, "diff-refactor-test.ga")
+            autoupdate_command = [
+                "autoupdate",
+                wf_file,
+                "--galaxy_branch",
+                "dev"  # need >= 21.05
+            ]
+            result = self._runner.invoke(self._cli.planemo, autoupdate_command)
+
+            assert 'Auto-updating workflow {}'.format(wf_file) in result.output
+            with open(wf_file) as g:
+                wf = json.load(g)
+            # check tool within parent wf has updated
+            assert wf["steps"]["1"]["tool_version"] == "3.7+galaxy0"
+            # check tool within subworkflow has updated
+            assert wf["steps"]["2"]["subworkflow"]["steps"]["1"]["tool_version"] == "3.7+galaxy0"
+            assert wf["version"] == 1
+
+            result = self._runner.invoke(self._cli.planemo, autoupdate_command)  # rerun on already updated WF
+            assert 'No newer tool versions were found, so the workflow was not updated.' in result.output
+
+            wf_file = os.path.join(f, "diff-refactor-test.gxwf.yml")
+            autoupdate_command[1] = wf_file
+            result = self._runner.invoke(self._cli.planemo, autoupdate_command)
+            assert 'Auto-updating workflow {}'.format(wf_file) in result.output
+
+            with open(wf_file) as f:
+                wf = yaml.safe_load(f)
+            assert wf["steps"][0]["tool_version"] == "3.7+galaxy0"
+            assert wf['steps'][1]['run']['steps'][0]['tool_version'] == "3.7+galaxy0"

@@ -1,9 +1,16 @@
 """Module describing the planemo ``autoupdate`` command."""
+import json
+
 import click
+from gxformat2 import from_galaxy_native
 
 from planemo import autoupdate, options
 from planemo.cli import command_function
 from planemo.config import planemo_option
+from planemo.engine import (
+    engine_context,
+    is_galaxy_engine,
+)
 from planemo.engine.test import (
     test_runnables,
 )
@@ -19,6 +26,7 @@ from planemo.io import (
 )
 from planemo.runnable import (
     for_paths,
+    RunnableType
 )
 from planemo.tools import (
     is_tool_load_error,
@@ -62,7 +70,7 @@ def skip_requirements_option():
     )
 
 
-@click.command('autoupdate')
+@click.command('autoupdate')  # noqa C901
 @options.optional_tools_arg(multiple=True)
 @dry_run_option()
 @options.recursive_option()
@@ -76,29 +84,60 @@ def skip_requirements_option():
 @options.report_xunit()
 @options.fail_level_option()
 @command_function
-def cli(ctx, paths, **kwds):
+def cli(ctx, paths, **kwds):  # noqa C901
     """Auto-update tool requirements by checking against Conda and updating if newer versions are available."""
     assert_tools = kwds.get("assert_tools", True)
     recursive = kwds.get("recursive", False)
     exit_codes = []
     modified_files = set()
     tools_to_skip = [line.rstrip() for line in open(kwds['skiplist'])] if kwds['skiplist'] else []
-    for (tool_path, tool_xml) in yield_tool_sources_on_paths(ctx, paths, recursive):
-        if tool_path.split('/')[-1] in tools_to_skip:
-            info("Skipping tool %s" % tool_path)
-            continue
-        info("Auto-updating tool %s" % tool_path)
-        try:
-            updated = autoupdate.autoupdate_tool(ctx, tool_path, modified_files=modified_files, **kwds)
-            if updated:
-                modified_files.update(updated)
-        except Exception as e:
-            error("{} could not be updated - the following error was raised: {}".format(tool_path, e.__str__()))
-        if handle_tool_load_error(tool_path, tool_xml):
-            exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
-            continue
-        else:
-            exit_codes.append(EXIT_CODE_OK)
+    runnables = for_paths(paths)
+
+    if any(r.type in {RunnableType.galaxy_tool, RunnableType.directory} for r in runnables):
+        # update Galaxy tools
+        for (tool_path, tool_xml) in yield_tool_sources_on_paths(ctx, paths, recursive):
+            if tool_path.split('/')[-1] in tools_to_skip:
+                info("Skipping tool %s" % tool_path)
+                continue
+            info("Auto-updating tool %s" % tool_path)
+            try:
+                updated = autoupdate.autoupdate_tool(ctx, tool_path, modified_files=modified_files, **kwds)
+                if updated:
+                    modified_files.update(updated)
+            except Exception as e:
+                error("{} could not be updated - the following error was raised: {}".format(tool_path, e.__str__()))
+            if handle_tool_load_error(tool_path, tool_xml):
+                exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
+                continue
+            else:
+                exit_codes.append(EXIT_CODE_OK)
+
+    workflows = [r for r in runnables if r.type == RunnableType.galaxy_workflow]
+    modified_workflows = []
+    if workflows:
+        assert is_galaxy_engine(**kwds)
+        if kwds.get("engine") != "external_galaxy":
+            kwds["install_most_recent_revision"] = True
+            kwds["install_resolver_dependencies"] = False
+            kwds["install_repository_dependencies"] = False
+            kwds['shed_install'] = True
+
+        with engine_context(ctx, **kwds) as galaxy_engine:
+            with galaxy_engine.ensure_runnables_served(workflows) as config:
+                for workflow in workflows:
+                    if config.updated_repos.get(workflow.path) or kwds.get("engine") == "external_galaxy":
+                        info("Auto-updating workflow %s" % workflow.path)
+                        updated_workflow = autoupdate.autoupdate_wf(ctx, config, workflow)
+                        if workflow.path.endswith(".ga"):
+                            with open(workflow.path, 'w') as f:
+                                json.dump(updated_workflow, f, indent=4, sort_keys=True)
+                        else:
+                            format2_wrapper = from_galaxy_native(updated_workflow, json_wrapper=True)
+                            with open(workflow.path, "w") as f:
+                                f.write(format2_wrapper["yaml_content"])
+                        modified_workflows.append(workflow.path)
+                    else:
+                        info("No newer tool versions were found, so the workflow was not updated.")
 
     if kwds['test']:
         if not modified_files:
@@ -108,7 +147,7 @@ def cli(ctx, paths, **kwds):
                 # only test tools in updated directories
                 modified_paths = [path for path, tool_xml in yield_tool_sources_on_paths(ctx, paths, recursive) if path in modified_files]
                 info(f"Running tests for the following auto-updated tools: {', '.join(modified_paths)}")
-                runnables = for_paths(modified_paths, temp_path=temp_path)
+                runnables = for_paths(modified_paths + modified_workflows, temp_path=temp_path)
                 kwds["engine"] = "galaxy"
                 return_value = test_runnables(ctx, runnables, original_paths=paths, **kwds)
                 exit_codes.append(return_value)

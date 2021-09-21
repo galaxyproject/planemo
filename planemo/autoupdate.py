@@ -192,3 +192,21 @@ def autoupdate_tool(ctx, tool_path, modified_files=set(), **kwds):
 
     else:
         return perform_required_update(ctx, xml_files, tool_path, requirements, tokens, xml_to_update, wrapper_version_token, **kwds)
+
+
+def _update_wf(config, workflow_id):
+    """
+    Recursively update a workflow, including subworkflows
+    """
+    wf = config.user_gi.workflows.show_workflow(workflow_id)
+    for step in wf['steps'].values():
+        if step['type'] == 'subworkflow':
+            # update subworkflows before the main workflow
+            _update_wf(config, step['workflow_id'])
+    config.user_gi.workflows.refactor_workflow(workflow_id, actions=[{"action_type": "upgrade_all_steps"}])
+
+
+def autoupdate_wf(ctx, config, wf):
+    workflow_id = config.workflow_id_for_runnable(wf)
+    _update_wf(config, workflow_id)
+    return config.user_gi.workflows.export_workflow_dict(workflow_id)
