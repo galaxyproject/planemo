@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import abc
 import contextlib
+import importlib.util
 import os
 import random
 import shutil
@@ -14,7 +15,7 @@ from tempfile import mkdtemp
 from galaxy.containers.docker_model import DockerVolume
 from galaxy.tool_util.deps import docker_util
 from galaxy.util.commands import argv_to_str
-from pkg_resources import parse_version
+from packaging.version import parse as parse_version
 from six import (
     add_metaclass,
     iteritems
@@ -195,7 +196,7 @@ format = %(asctime)s %(levelname)-5.5s [%(name)s] %(message)s
 """
 
 REFGENIE_CONFIG_TEMPLATE = """
-config_version: 0.3
+config_version: %s
 genome_folder: '%s'
 genome_servers: ['http://refgenomes.databio.org']
 genomes: null
@@ -273,10 +274,11 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
         ensure_dependency_resolvers_conf_configured(ctx, kwds, os.path.join(config_directory, "resolvers_conf.xml"))
         _handle_job_metrics(config_directory, kwds)
-        _handle_refgenie_config(config_directory, kwds)
+        galaxy_root = kwds.get('galaxy_root')
+        _handle_refgenie_config(config_directory, galaxy_root, kwds)
 
         shed_tool_conf = "config/shed_tool_conf.xml"
-        all_tool_paths = _all_tool_paths(runnables, kwds.get('galaxy_root'), kwds.get('extra_tools'))
+        all_tool_paths = _all_tool_paths(runnables, galaxy_root, kwds.get('extra_tools'))
 
         tool_directories = set([])  # Things to mount...
         for tool_path in all_tool_paths:
@@ -416,7 +418,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         ensure_dependency_resolvers_conf_configured(ctx, kwds, os.path.join(config_directory, "resolvers_conf.xml"))
         _handle_job_config_file(config_directory, server_name, kwds)
         _handle_job_metrics(config_directory, kwds)
-        _handle_refgenie_config(config_directory, kwds)
+        _handle_refgenie_config(config_directory, galaxy_root, kwds)
         file_path = kwds.get("file_path") or config_join("files")
         _ensure_directory(file_path)
 
@@ -554,6 +556,22 @@ def _expand_paths(galaxy_root, extra_tools):
     if galaxy_root:
         extra_tools = [path if path != GX_TEST_TOOL_PATH else os.path.join(galaxy_root, 'test/functional/tools') for path in extra_tools]
     return extra_tools
+
+
+def get_galaxy_major_version(galaxy_root):
+    spec = importlib.util.spec_from_file_location('__galaxy_version', os.path.join(galaxy_root, 'lib', 'galaxy', 'version.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return parse_version(module.VERSION_MAJOR)
+
+
+def get_refgenie_config(galaxy_root, refgenie_dir):
+    config_version = 0.4
+    if galaxy_root:
+        version_major = get_galaxy_major_version(galaxy_root=galaxy_root)
+        if version_major < parse_version('21.09'):
+            config_version = 0.3
+    return REFGENIE_CONFIG_TEMPLATE % (config_version, refgenie_dir)
 
 
 def _all_tool_paths(runnables, galaxy_root=None, extra_tools=None):
@@ -1370,13 +1388,14 @@ def _handle_job_metrics(config_directory, kwds):
     kwds["job_metrics_config_file"] = metrics_conf
 
 
-def _handle_refgenie_config(config_directory, kwds):
+def _handle_refgenie_config(config_directory, galaxy_root, kwds):
     refgenie_dir = os.path.join(config_directory, 'refgenie')
     _ensure_directory(refgenie_dir)
-    refgenie_config = os.path.join(refgenie_dir, "genome_config.yaml")
-    with open(refgenie_config, "w") as fh:
-        fh.write(REFGENIE_CONFIG_TEMPLATE % (refgenie_dir))
-    kwds["refgenie_config_file"] = refgenie_config
+    refgenie_config_file = os.path.join(refgenie_dir, "genome_config.yaml")
+    refgenie_config = get_refgenie_config(galaxy_root=galaxy_root, refgenie_dir=refgenie_dir)
+    with open(refgenie_config_file, "w") as fh:
+        fh.write(refgenie_config)
+    kwds["refgenie_config_file"] = refgenie_config_file
 
 
 def _handle_kwd_overrides(properties, kwds):
