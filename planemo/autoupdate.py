@@ -62,11 +62,11 @@ def update_xml(tool_path, xml_tree, tags_to_update, wrapper_version_token, is_ma
     Write modified XML to tool_path
     """
     def update_token(xml_text, tag, token_value):
-        new_tag = '>{}<'.format(token_value).join(re.split('>.*<', tag))
+        new_tag = f'>{token_value}<'.join(re.split('>.*<', tag))
         return re.sub(tag, new_tag, xml_text)
 
     def update_requirement(xml_text, tag, requirement_value):
-        new_tag = 'version="{}"'.format(requirement_value).join(re.split('version=".*"', tag))
+        new_tag = f'version="{requirement_value}"'.join(re.split('version=".*"', tag))
         return re.sub(tag, new_tag, xml_text)
 
     with open(tool_path, 'r+', newline='') as f:
@@ -144,8 +144,7 @@ def perform_required_update(ctx, xml_files, tool_path, requirements, tokens, xml
     # finally, update each file separately
     for k, v in xml_files.items():
         update_xml(k, v, xml_to_update[k], wrapper_version_token, is_macro=(k != tool_path))
-
-    info("Tool {} updated.".format(tool_path))
+    info(f"Tool {tool_path} successfully updated.")
     return set(xml_files)
 
 
@@ -182,15 +181,15 @@ def autoupdate_tool(ctx, tool_path, modified_files=set(), **kwds):
     tokens, xml_to_update, current_main_req, updated_main_req = create_token_dict(ctx, xml_files, main_req, **kwds)
 
     if current_main_req == updated_main_req and not (modified_files & set(xml_files)):
-        info("No updates required or made to {}.".format(tool_path))
+        info(f"No updates required or made to {tool_path}.")
         return  # end here if no update needed
 
     if kwds.get('dry_run'):
-        error("Update required to {}! Tool main requirement has version {}, newest conda version is {}".format(
-              tool_path, current_main_req, updated_main_req))
+        error(f"Update required to {tool_path}! Tool main requirement has version {current_main_req}, newest conda version is {updated_main_req}")
         return
 
     else:
+        info(f"Updating {tool_path.split('/')[-1]} from version {current_main_req} to {updated_main_req}")
         return perform_required_update(ctx, xml_files, tool_path, requirements, tokens, xml_to_update, wrapper_version_token, **kwds)
 
 

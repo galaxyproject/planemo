@@ -105,7 +105,7 @@ def cli(ctx, paths, **kwds):  # noqa C901
                 if updated:
                     modified_files.update(updated)
             except Exception as e:
-                error("{} could not be updated - the following error was raised: {}".format(tool_path, e.__str__()))
+                error(f"{tool_path} could not be updated - the following error was raised: {e.__str__()}")
             if handle_tool_load_error(tool_path, tool_xml):
                 exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
                 continue
