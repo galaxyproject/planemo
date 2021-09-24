@@ -16,9 +16,9 @@ def create_tmp_test_tool_file(tool_version):
     been migrated from bioconda to conda-forge and test with --conda_channels bioconda
     so that the versions are guaranteed not to increase in future.
     """
-    xml_str = """<tool id="autoupdate_test" version="@TOOL_VERSION@+galaxy@VERSION_SUFFIX@">
+    xml_str = f"""<tool id="autoupdate_test" version="@TOOL_VERSION@+galaxy@VERSION_SUFFIX@">
     <macros>
-        <token name="@TOOL_VERSION@">{}</token>
+        <token name="@TOOL_VERSION@">{tool_version}</token>
         <token name="@VERSION_SUFFIX@">1</token>
     </macros>
     <requirements>
@@ -26,7 +26,7 @@ def create_tmp_test_tool_file(tool_version):
         <requirement type="package" version="2015">smina</requirement>
     </requirements>
 </tool>
-    """.format(tool_version)
+    """
     t = tempfile.NamedTemporaryFile(suffix='.xml', delete=False, mode='w')
     t.write(xml_str)
     return t.name
@@ -50,7 +50,7 @@ class CmdAutoupdateTestCase(CliTestCase):
                 "--dry-run"
             ]
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
-            assert "Update required to {}!".format(xmlfile) in result.output
+            assert f"Update required to {xmlfile}!" in result.output
             assert "Tool main requirement has version 0.6.0, newest conda version is 0.7.3" in result.output
 
     def test_autoupdate(self):
@@ -63,7 +63,8 @@ class CmdAutoupdateTestCase(CliTestCase):
                 "--conda_channels", "bioconda"
             ]
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
-            assert 'Tool {} updated.'.format(xmlfile) in result.output
+            assert f'Updating {xmlfile.split("/")[-1]} from version 0.6.0 to 0.7.3' in result.output
+            assert f'Tool {xmlfile} successfully updated.' in result.output
             with open(xmlfile) as f:
                 xmlfile_contents = f.read()
             assert "2017.11.9" in xmlfile_contents
@@ -78,7 +79,7 @@ class CmdAutoupdateTestCase(CliTestCase):
                 "--conda_channels", "bioconda"
             ]
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
-            assert 'No updates required or made to {}.'.format(xmlfile) in result.output
+            assert f'No updates required or made to {xmlfile}.' in result.output
 
     def test_autoupdate_workflow(self):
         """Test autoupdate command for a workflow is needed."""
@@ -92,7 +93,7 @@ class CmdAutoupdateTestCase(CliTestCase):
             ]
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
 
-            assert 'Auto-updating workflow {}'.format(wf_file) in result.output
+            assert f'Auto-updating workflow {wf_file}' in result.output
             with open(wf_file) as g:
                 wf = json.load(g)
             # check tool within parent wf has updated
@@ -107,7 +108,7 @@ class CmdAutoupdateTestCase(CliTestCase):
             wf_file = os.path.join(f, "diff-refactor-test.gxwf.yml")
             autoupdate_command[1] = wf_file
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
-            assert 'Auto-updating workflow {}'.format(wf_file) in result.output
+            assert f'Auto-updating workflow {wf_file}' in result.output
 
             with open(wf_file) as f:
                 wf = yaml.safe_load(f)
