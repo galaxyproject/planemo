@@ -128,17 +128,18 @@ def run_in_config(ctx, config, run=run_galaxy_command, test_data_target_dir=None
     # check if tools created extra files in the file_path all files in the files path
     # - end with '.dat' or
     # - are contained in a directory `dataset_.*_files`
-    for (path, dirs, files) in os.walk(config.env["GALAXY_CONFIG_OVERRIDE_FILE_PATH"]):
-        for name in files:
-            if not (name.endswith(".dat") or re.match('.*/dataset_.*_files$', path)):
-                extra_files.append(os.path.join(path, name))
-    if len(extra_files) > 0:
-        msg = f"One of the tested tools wrote to Galaxy's files dir: {extra_files}"
-        for i in range(len(structured_data["tests"])):
-            structured_data["tests"][i]["data"]["status"] = "failure"
-            structured_data["tests"][i]["data"]["job"]["stderr"] += msg
-        error(msg)
-        ec = 1
+    if config.env.get("GALAXY_CONFIG_OVERRIDE_FILE_PATH"):
+        for (path, dirs, files) in os.walk(config.env.get("GALAXY_CONFIG_OVERRIDE_FILE_PATH")):
+            for name in files:
+                if not (name.endswith(".dat") or re.match('.*/dataset_.*_files$', path)):
+                    extra_files.append(os.path.join(path, name))
+        if len(extra_files) > 0:
+            msg = f"One of the tested tools wrote to Galaxy's files dir: {extra_files}"
+            for i in range(len(structured_data["tests"])):
+                structured_data["tests"][i]["data"]["status"] = "failure"
+                structured_data["tests"][i]["data"]["job"]["stderr"] += msg
+            error(msg)
+            ec = 1
     return handle_reports_and_summary(
         ctx,
         structured_data,
