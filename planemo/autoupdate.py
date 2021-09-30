@@ -5,6 +5,8 @@ import collections
 import re
 import xml.etree.ElementTree as ET
 
+import packaging.version
+import requests
 from galaxy.tool_util.deps import conda_util
 
 import planemo.conda
@@ -51,7 +53,11 @@ def check_conda(tool_name, ctx, **kwds):
     """
     conda_context = planemo.conda.build_conda_context(ctx, **kwds)
     if not conda_context.is_conda_installed():
-        error("Conda is not installed! Try running planemo conda_init.")
+        # check directly via Anaconda API
+        r = requests.get('https://api.anaconda.org/search', params={'name': tool_name})
+        search_results = sum([n['versions'] for n in r.json() if n['name'] == tool_name and n['owner'] in kwds['conda_ensure_channels']], [])
+        return sorted(search_results, key=lambda n: packaging.version.parse(n))[-1]
+
     target = planemo.conda.conda_util.CondaTarget(tool_name)
     search_results = conda_util.best_search_result(target, conda_context=conda_context)
     return search_results[0]['version']
