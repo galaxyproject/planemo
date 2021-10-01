@@ -37,7 +37,6 @@ class CmdAutoupdateTestCase(CliTestCase):
 
     def setUp(self):
         super(CmdAutoupdateTestCase, self).setUp()
-        self._runner.invoke(self._cli.planemo, ['conda_init'])
 
     def test_autoupdate_dry_run(self):
         """Test autoupdate command with dry run flag."""
