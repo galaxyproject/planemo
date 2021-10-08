@@ -77,6 +77,9 @@ class GalaxyEngine(BaseEngine):
                         # and capture the output information somehow.
                         interactor.VERBOSE_GALAXY_ERRORS = True
 
+                    # on an external Galaxy it makes sense to keep test histories
+                    no_history_cleanup = config._kwds.get('engine') == 'external_galaxy'
+
                     interactor.verify_tool(
                         tool_id,
                         galaxy_interactor,
@@ -84,6 +87,7 @@ class GalaxyEngine(BaseEngine):
                         tool_version=tool_version,
                         register_job_data=_register_job_data,
                         quiet=not verbose,
+                        no_history_cleanup=no_history_cleanup,
                     )
                 except Exception:
                     pass
