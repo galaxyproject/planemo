@@ -25,7 +25,7 @@ def test_runnables(ctx, runnables, original_paths=None, **kwds):
     if kwds.get("serve"):
         if "galaxy" not in kwds["engine"]:
             raise ValueError("The serve option is only supported by Galaxy-based engines.")
-        kwds["galaxy_url"] = kwds["galaxy_url"] or ''.join(("http://", kwds["host"], ":", kwds["port"]))
+        kwds["galaxy_url"] = kwds["galaxy_url"] or ''.join(("http://", kwds["host"], ":", str(kwds["port"])))
         kwds["galaxy_admin_key"] = kwds["galaxy_admin_key"] or DEFAULT_ADMIN_API_KEY
         pid = os.fork()
         if pid == 0:

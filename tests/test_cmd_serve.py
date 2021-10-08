@@ -165,6 +165,42 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         kill_pid_file(self._pid_file)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_test_with_serve(self):
+        """
+        Test testing a Galaxy workflow with the serve flag. Even though
+        this is technically using the test subcommand it is easier to test here
+        """
+        cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
+        test_artifact = os.path.join(TEST_DATA_DIR, "wf2.ga")
+        json_out = tempfile.NamedTemporaryFile(delete=False, suffix='.json')
+        extra_args = [
+            "--serve",
+            test_artifact,
+            "--port", str(self._port),
+            "--no_dependency_resolution",
+            "--extra_tools", cat,
+            "--test_output_json", json_out.name,
+        ]
+        self._launch_thread_and_wait(self._run_test, extra_args)
+        time.sleep(30)
+
+        # access the served instance to check everything worked
+        user_gi = self._user_gi
+        workflows = user_gi.workflows.get_workflows()
+        assert len(workflows) == 1
+        assert workflows[0]['name'] == 'TestWorkflow1'
+        histories = user_gi.histories.get_histories()
+        assert len(histories) == 1
+        for _ in range(60):
+            state_ids = user_gi.histories.show_history(histories[0]['id'])['state_ids']
+            if len(state_ids['ok']) == 3:
+                break
+            time.sleep(5)
+        datasets = user_gi.histories.show_history(histories[0]['id'], contents=True)
+        assert len(datasets) == 3
+        assert all([d['state'] == 'ok' for d in datasets])
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_serve_profile(self):
         self._test_serve_profile()
 
@@ -194,3 +230,6 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
 
     def _run_shed(self, serve_args=[]):
         return self._run(serve_args=serve_args, serve_cmd="shed_serve")
+
+    def _run_test(self, serve_args=[]):
+        return self._run(serve_args=serve_args, serve_cmd="test")
