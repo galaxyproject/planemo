@@ -169,6 +169,7 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         """
         Test testing a Galaxy workflow with the serve flag. Even though
         this is technically using the test subcommand it is easier to test here
+        so we can use the UsesServeCommand methods
         """
         cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
         test_artifact = os.path.join(TEST_DATA_DIR, "wf2.ga")
@@ -189,16 +190,16 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         workflows = user_gi.workflows.get_workflows()
         assert len(workflows) == 1
         assert workflows[0]['name'] == 'TestWorkflow1'
-        histories = user_gi.histories.get_histories()
+        histories = user_gi.histories.get_histories(name="CWL Target History")
         assert len(histories) == 1
         for _ in range(60):
-            state_ids = user_gi.histories.show_history(histories[0]['id'])['state_ids']
-            if len(state_ids['ok']) == 3:
+            state_ids = [d['state'] for d in user_gi.histories.show_history(histories[0]['id'], contents=True)]
+            if len(state_ids) == 3 and set(state_ids) == {'ok', }:
                 break
-            time.sleep(5)
-        datasets = user_gi.histories.show_history(histories[0]['id'], contents=True)
-        assert len(datasets) == 3
-        assert all([d['state'] == 'ok' for d in datasets])
+            else:
+                time.sleep(10)
+        else:
+            raise Exception("Datasets did not reach an ok state within 10 minutes.")
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_serve_profile(self):
