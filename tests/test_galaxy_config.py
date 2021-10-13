@@ -2,7 +2,12 @@
 import contextlib
 import os
 
-from planemo.galaxy.config import galaxy_config
+import yaml
+
+from planemo.galaxy.config import (
+    galaxy_config,
+    get_refgenie_config,
+)
 from .test_utils import (
     skip_if_environ,
     TempDirectoryContext,
@@ -34,6 +39,17 @@ def test_override_files_path():
     with TempDirectoryContext() as tdc:
         with _test_galaxy_config(file_path=tdc.temp_directory) as config:
             _assert_property_is(config, "file_path", tdc.temp_directory)
+
+
+def test_refgenie_config_version():
+    with TempDirectoryContext() as tdc:
+        galaxy_lib_path = os.path.join(tdc.temp_directory, 'lib', 'galaxy')
+        os.makedirs(galaxy_lib_path)
+        version_path = os.path.join(galaxy_lib_path, 'version.py')
+        with open(version_path, 'w') as version_fh:
+            version_fh.write('VERSION_MAJOR = "21.05"')
+        refgenie_config = get_refgenie_config(galaxy_root=tdc.temp_directory, refgenie_dir='/')
+    assert yaml.load(refgenie_config)['config_version'] == 0.3
 
 
 def _assert_property_is(config, prop, value):

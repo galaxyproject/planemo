@@ -29,6 +29,24 @@ Formatting tools
   - A token ``@TOOL_VERSION@`` should be created which corresponds to the version number of the main requirement.
   - Optionally, a token ``@VERSION_SUFFIX@`` should be created, which should be an integer representing the number of times the XML wrapper has been updated since ``@TOOL_VERSION@`` was updated.
 
+Updating workflows
+=============================
+
+The ``autoupdate`` subcommand can also be used to automatically update workflows so that they are using the most recent Galaxy tools available.
+
+::
+
+    planemo autoupdate workflow.ga
+
+In the basic usage, a local Galaxy instance will be spun up and the workflow uploaded, refactored to include the most recent tool versions, and re-downloaded.
+
+Workflows can also be updated against an external galaxy, for example:
+
+::
+
+    planemo autoupdate workflow.ga --profile usegalaxy-eu
+
+In this case, the workflow returned will contain the most recent tool and subworkflow versions available on that Galaxy server.
 
 Implementing an autoupdate CI job
 =================================

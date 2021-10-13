@@ -1,0 +1,234 @@
+{
+    "a_galaxy_workflow": "true",
+    "annotation": "",
+    "format-version": "0.1",
+    "name": "diff-refactor-test",
+    "steps": {
+        "0": {
+            "annotation": "",
+            "content_id": null,
+            "errors": null,
+            "id": 0,
+            "input_connections": {},
+            "inputs": [],
+            "label": null,
+            "name": "Input dataset",
+            "outputs": [],
+            "position": {
+                "bottom": 204.3000030517578,
+                "height": 61.30000305175781,
+                "left": 295,
+                "right": 495,
+                "top": 143,
+                "width": 200,
+                "x": 295,
+                "y": 143
+            },
+            "tool_id": null,
+            "tool_state": "{\"optional\": false}",
+            "tool_version": null,
+            "type": "data_input",
+            "uuid": "846bc252-170b-4908-9c32-777f631442b5",
+            "workflow_outputs": [
+                {
+                    "label": null,
+                    "output_name": "output",
+                    "uuid": "243af203-1c23-494d-94e9-c5105de01483"
+                }
+            ]
+        },
+        "1": {
+            "annotation": "",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/bgruening/diff/diff/3.6+galaxy1",
+            "errors": null,
+            "id": 1,
+            "input_connections": {
+                "input1": {
+                    "id": 0,
+                    "output_name": "output"
+                },
+                "input2": {
+                    "id": 0,
+                    "output_name": "output"
+                }
+            },
+            "inputs": [],
+            "label": null,
+            "name": "diff",
+            "outputs": [
+                {
+                    "name": "diff_file",
+                    "type": "txt"
+                },
+                {
+                    "name": "html_file",
+                    "type": "html"
+                }
+            ],
+            "position": {
+                "bottom": 306.1333312988281,
+                "height": 194.13333129882812,
+                "left": 573,
+                "right": 773,
+                "top": 112,
+                "width": 200,
+                "x": 573,
+                "y": 112
+            },
+            "post_job_actions": {},
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/bgruening/diff/diff/3.6+galaxy1",
+            "tool_shed_repository": {
+                "changeset_revision": "02dfbbf869d8",
+                "name": "diff",
+                "owner": "bgruening",
+                "tool_shed": "toolshed.g2.bx.psu.edu"
+            },
+            "tool_state": "{\"generate_report\": \"true\", \"input1\": {\"__class__\": \"ConnectedValue\"}, \"input2\": {\"__class__\": \"ConnectedValue\"}, \"output_format\": \"side-by-side\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+            "tool_version": "3.6+galaxy1",
+            "type": "tool",
+            "uuid": "6a1caf13-f1ca-40f5-80be-700eb70bbc00",
+            "workflow_outputs": [
+                {
+                    "label": null,
+                    "output_name": "diff_file",
+                    "uuid": "0a8616c9-16c6-4ee2-a506-e5e8730d627e"
+                },
+                {
+                    "label": null,
+                    "output_name": "html_file",
+                    "uuid": "f071579f-f7b8-4867-8057-00cc6a604c90"
+                }
+            ]
+        },
+        "2": {
+            "annotation": "",
+            "id": 2,
+            "input_connections": {
+                "0:Input dataset": {
+                    "id": 1,
+                    "input_subworkflow_step_id": 0,
+                    "output_name": "html_file"
+                }
+            },
+            "inputs": [],
+            "label": null,
+            "name": "diff-refactor-test (imported from uploaded file)",
+            "outputs": [],
+            "position": {
+                "bottom": 307.6999969482422,
+                "height": 81.69999694824219,
+                "left": 841,
+                "right": 1041,
+                "top": 226,
+                "width": 200,
+                "x": 841,
+                "y": 226
+            },
+            "subworkflow": {
+                "a_galaxy_workflow": "true",
+                "annotation": "",
+                "format-version": "0.1",
+                "name": "diff-refactor-test subworkflow",
+                "steps": {
+                    "0": {
+                        "annotation": "",
+                        "content_id": null,
+                        "errors": null,
+                        "id": 0,
+                        "input_connections": {},
+                        "inputs": [],
+                        "label": null,
+                        "name": "Input dataset",
+                        "outputs": [],
+                        "position": {
+                            "bottom": 229.3000030517578,
+                            "height": 61.30000305175781,
+                            "left": 301,
+                            "right": 501,
+                            "top": 168,
+                            "width": 200,
+                            "x": 301,
+                            "y": 168
+                        },
+                        "tool_id": null,
+                        "tool_state": "{\"optional\": false}",
+                        "tool_version": null,
+                        "type": "data_input",
+                        "uuid": "846bc252-170b-4908-9c32-777f631442b5",
+                        "workflow_outputs": []
+                    },
+                    "1": {
+                        "annotation": "",
+                        "content_id": "toolshed.g2.bx.psu.edu/repos/bgruening/diff/diff/3.6+galaxy1",
+                        "errors": null,
+                        "id": 1,
+                        "input_connections": {
+                            "input1": {
+                                "id": 0,
+                                "output_name": "output"
+                            },
+                            "input2": {
+                                "id": 0,
+                                "output_name": "output"
+                            }
+                        },
+                        "inputs": [
+                            {
+                                "description": "runtime parameter for tool diff",
+                                "name": "input1"
+                            },
+                            {
+                                "description": "runtime parameter for tool diff",
+                                "name": "input2"
+                            }
+                        ],
+                        "label": null,
+                        "name": "diff",
+                        "outputs": [
+                            {
+                                "name": "diff_file",
+                                "type": "txt"
+                            },
+                            {
+                                "name": "html_file",
+                                "type": "html"
+                            }
+                        ],
+                        "position": {
+                            "bottom": 331.1333312988281,
+                            "height": 194.13333129882812,
+                            "left": 579,
+                            "right": 779,
+                            "top": 137,
+                            "width": 200,
+                            "x": 579,
+                            "y": 137
+                        },
+                        "post_job_actions": {},
+                        "tool_id": "toolshed.g2.bx.psu.edu/repos/bgruening/diff/diff/3.6+galaxy1",
+                        "tool_shed_repository": {
+                            "changeset_revision": "02dfbbf869d8",
+                            "name": "diff",
+                            "owner": "bgruening",
+                            "tool_shed": "toolshed.g2.bx.psu.edu"
+                        },
+                        "tool_state": "{\"generate_report\": \"true\", \"input1\": {\"__class__\": \"RuntimeValue\"}, \"input2\": {\"__class__\": \"RuntimeValue\"}, \"output_format\": \"side-by-side\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+                        "tool_version": "3.6+galaxy1",
+                        "type": "tool",
+                        "uuid": "6d32f5c9-0e12-4e6b-b056-6ce4798853ef",
+                        "workflow_outputs": []
+                    }
+                },
+                "tags": "",
+                "uuid": "f0e1e4fa-2611-4c0b-a269-e159fef360b9"
+            },
+            "tool_id": "cc5e941c879f55fe",
+            "type": "subworkflow",
+            "uuid": "1c102a75-328b-4c76-ad83-f14e799b796f",
+            "workflow_outputs": []
+        }
+    },
+    "tags": [],
+    "uuid": "22ff99ac-147f-4e23-80cd-ef56f59eedae",
+    "version": 2
+}
