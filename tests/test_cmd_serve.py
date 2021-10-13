@@ -173,14 +173,12 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         """
         cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
         test_artifact = os.path.join(TEST_DATA_DIR, "wf2.ga")
-        json_out = tempfile.NamedTemporaryFile(delete=False, suffix='.json')
         extra_args = [
             "--serve",
             test_artifact,
             "--port", str(self._port),
             "--no_dependency_resolution",
             "--extra_tools", cat,
-            "--test_output_json", json_out.name,
         ]
         self._launch_thread_and_wait(self._run_test, extra_args)
         time.sleep(30)
@@ -192,14 +190,6 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         assert workflows[0]['name'] == 'TestWorkflow1'
         histories = user_gi.histories.get_histories(name="CWL Target History")
         assert len(histories) == 1
-        for _ in range(60):
-            state_ids = [d['state'] for d in user_gi.histories.show_history(histories[0]['id'], contents=True)]
-            if len(state_ids) == 3 and set(state_ids) == {'ok', }:
-                break
-            else:
-                time.sleep(10)
-        else:
-            raise Exception("Datasets did not reach an ok state within 10 minutes.")
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_serve_profile(self):
