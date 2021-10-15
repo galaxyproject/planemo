@@ -1,4 +1,6 @@
 """Module describing the planemo ``test`` command."""
+from contextlib import ExitStack
+
 import click
 
 from planemo import options
@@ -66,7 +68,11 @@ def cli(ctx, uris, **kwds):
     against that same Galaxy root - but this may not be bullet proof yet so
     please careful and do not try this against production Galaxy instances.
     """
-    with temp_directory(dir=ctx.planemo_directory) as temp_path:
+    with ExitStack() as stack:
+        if not kwds["serve"]:
+            temp_path = stack.enter_context(temp_directory(dir=ctx.planemo_directory))
+        else:
+            temp_path = None
         # Create temp dir(s) outside of temp, docker can't mount $TEMPDIR on OSX
         runnables = for_runnable_identifiers(ctx, uris, kwds, temp_path=temp_path)
 
