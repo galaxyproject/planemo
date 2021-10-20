@@ -454,7 +454,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             database_location=database_location,
             tool_conf=tool_conf,
             debug=kwds.get("debug", "true"),
-            id_secret=kwds.get("id_secret", "test_secret"),
+            id_secret="test_secret" or kwds.get("id_secret", None),
             log_level="DEBUG" if ctx.verbose else "INFO",
         )
         tool_config_file = "%s,%s" % (tool_conf, shed_tool_conf)
