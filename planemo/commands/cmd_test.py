@@ -1,7 +1,5 @@
 """Module describing the planemo ``test`` command."""
 import click
-import hashlib
-import time
 
 from planemo import options
 from planemo.cli import command_function
@@ -80,8 +78,7 @@ def cli(ctx, uris, **kwds):
                 kwds["engine"] = "external_galaxy"
             else:
                 kwds["engine"] = "galaxy"
-        if kwds.get("random_id_secret"):
-            kwds["id_secret"] = hashlib.md5(str(time.time()).encode('utf-8')).hexdigest()
+
         return_value = test_runnables(ctx, runnables, original_paths=uris, **kwds)
 
     ctx.exit(return_value)
