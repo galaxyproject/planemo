@@ -1671,10 +1671,9 @@ def test_options():
                   "to disable completely.")
         ),
         planemo_option(
-            "--id_secret",
-            default=None,
-            use_global_config=True,
-            help=("set Galaxy id_secret"),
+            "--random_id_secret",
+            is_flag=True,
+            help=("Set a random id_secret for Galaxy"),
         )
     )
 
