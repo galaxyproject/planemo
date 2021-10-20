@@ -81,7 +81,7 @@ def cli(ctx, uris, **kwds):
             else:
                 kwds["engine"] = "galaxy"
         if kwds.get("random_id_secret"):
-            hashlib.md5(str(time.time()).encode('utf-8')).hexdigest())
+            kwds["id_secret"] = hashlib.md5(str(time.time()).encode('utf-8')).hexdigest()
         return_value = test_runnables(ctx, runnables, original_paths=uris, **kwds)
 
     ctx.exit(return_value)
