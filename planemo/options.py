@@ -1669,6 +1669,12 @@ def test_options():
             help=("Summary style printed to planemo's standard output (see "
                   "output reports for more complete summary). Set to 'none' "
                   "to disable completely.")
+        ),
+        planemo_option(
+            "--id_secret",
+            default=None,
+            use_global_config=True,
+            help=("set Galaxy id_secret"),
         )
     )
 
