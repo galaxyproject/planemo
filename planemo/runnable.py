@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 import abc
+import glob
 import os
 from distutils.dir_util import copy_tree
 from enum import auto, Enum
@@ -184,7 +185,7 @@ def workfow_dir_runnables(path, return_all=False):
             return runnables[0]
 
 
-def for_path(path, temp_path=None, return_all=False):
+def for_path(path, temp_path=None, return_all=False, suppress_error=False):  # noqa C901
     """Produce a class:`Runnable` for supplied path."""
     runnable_type = None
     if os.path.isdir(path):
@@ -215,7 +216,8 @@ def for_path(path, temp_path=None, return_all=False):
             pass
 
     if runnable_type is None:
-        error("Unable to determine runnable type for path [%s]" % path)
+        if not suppress_error:
+            error("Unable to determine runnable type for path [%s]" % path)
         raise ExitCodeException(EXIT_CODE_UNKNOWN_FILE_TYPE)
 
     if temp_path:
@@ -468,6 +470,27 @@ def get_outputs(runnable, gi=None):
         return [CwlWorkflowOutput(label) for label in workflow.output_labels]
     else:
         raise NotImplementedError("Getting outputs for this artifact type is not yet supported.")
+
+
+def flatten_to_single_artifacts(runnables):
+    """
+    In a list of Runnables, replace non-single artifacts (currently
+    only directories) with child Runnables.
+    """
+    single_runnables = []
+    for runnable in runnables:
+        if runnable.type.is_single_artifact:
+            single_runnables.append(runnable)
+        else:
+            paths = glob.glob(f'{runnable.path}/*')
+            for path in paths:
+                if os.path.isdir(path):
+                    continue
+                try:
+                    single_runnables.append(for_path(path, suppress_error=True))
+                except ExitCodeException:  # just ignore any other files
+                    continue
+    return single_runnables
 
 
 @add_metaclass(abc.ABCMeta)
