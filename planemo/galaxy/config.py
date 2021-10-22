@@ -509,7 +509,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         # sanitize_all_html = True
         # serve_xss_vulnerable_mimetypes = False
         # track_jobs_in_database = None
-        # outputs_to_working_directory = False
         # retry_job_output_collection = 0
 
         env = _build_env_for_galaxy(properties, template_args)
