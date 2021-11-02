@@ -18,7 +18,6 @@ from galaxy.tool_util.cwl.util import (
     tool_response_to_output,
 )
 from galaxy.tool_util.parser import get_tool_source
-from galaxy.tool_util.verify.interactor import galaxy_requests_post
 from galaxy.util import (
     safe_makedirs,
     unicodify,
@@ -91,7 +90,7 @@ class PlanemoStagingInterface(StagingInterace):
     def _post(self, api_path, payload, files_attached=False):
         params = dict(key=self._user_gi.key)
         url = urljoin(self._user_gi.url, "api/" + api_path)
-        return galaxy_requests_post(url, data=payload, params=params, as_json=True).json()
+        return self._user_gi.make_post_request(url, payload=payload, params=params).json()
 
     def _attach_file(self, path):
         return attach_file(path)
