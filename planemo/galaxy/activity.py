@@ -88,9 +88,13 @@ class PlanemoStagingInterface(StagingInterace):
         self._simultaneous_uploads = simultaneous_uploads
 
     def _post(self, api_path, payload, files_attached=False):
-        params = dict(key=self._user_gi.key)
         url = urljoin(self._user_gi.url, "api/" + api_path)
-        return self._user_gi.make_post_request(url, payload=payload, params=params).json()
+        if payload.get("__files"):  # put attached files where BioBlend expects them
+            files_attached = True
+            for k, v in payload["__files"].items():
+                payload[k] = v
+            del payload["__files"]
+        return self._user_gi.make_post_request(url, payload=payload, files_attached=files_attached)
 
     def _attach_file(self, path):
         return attach_file(path)
