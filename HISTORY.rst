@@ -6,10 +6,12 @@ History
 .. to_doc
 
 ---------------------
-0.75.0.dev0
+0.74.9 (2021-11-03)
 ---------------------
-
-    
+* Fix rendering of subworkflow steps for workflow testing report (thanks to
+  `@simonbray`_). `Pull Request 1200`_
+* Replace Galaxy interactor galaxy_requests_post with make_post_request from
+  BioBlend (thanks to `@simonbray`_). `Pull Request 1201`_
 
 ---------------------
 0.74.8 (2021-10-10)
@@ -27,7 +29,7 @@ History
 0.74.7 (2021-09-21)
 ---------------------
 
-* Fix documentation to include `--download_outputs` flag (thanks to
+* Fix documentation to include ``--download_outputs`` flag (thanks to
   `@simonbray`_). `Pull Request 1184`_
 * Select refgenie config based on Galaxy version `Pull Request 1187`_
 * Extend autoupdate subcommand to workflows (thanks to `@simonbray`_). `Pull
@@ -1761,6 +1763,8 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1200: https://github.com/galaxyproject/planemo/pull/1200
+.. _Pull Request 1201: https://github.com/galaxyproject/planemo/pull/1201
 .. _Pull Request 1188: https://github.com/galaxyproject/planemo/pull/1188
 .. _Pull Request 1193: https://github.com/galaxyproject/planemo/pull/1193
 .. _Pull Request 1195: https://github.com/galaxyproject/planemo/pull/1195
