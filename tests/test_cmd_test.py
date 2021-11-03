@@ -127,6 +127,19 @@ class CmdTestTestCase(CliTestCase):
             #        print(o.read())
             #    raise
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_test_repository_installation_gxformat2(self):
+        """Test testing a workflow with collection inputs Galaxy."""
+        with self._isolate():
+            test_artifact = os.path.join(TEST_DATA_DIR, "wf13_tool_shed_repository_gxformat2.yml")
+            test_command = self._test_command()
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command += [
+                "--biocontainers",
+                test_artifact,
+            ]
+            self._check_exit_code(test_command, exit_code=0)
+
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_cwltool_tool_test(self):
         """Test testing a CWL tool with cwltool."""

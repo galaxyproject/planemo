@@ -32,9 +32,15 @@ def load_shed_repos(runnable):
         # require explicit annotation like this... I think?
         with open(path, "r") as f:
             workflow = yaml.safe_load(f)
-
-        tools = workflow.get("tools", [])
-
+        steps = workflow['steps']
+        if isinstance(steps, dict):
+            steps = steps.values()
+        tools = []
+        for step in steps:
+            repository = step.get('tool_shed_repository')
+            if repository:
+                repository['tool_panel_section_label'] = 'Tools from workflows'
+                tools.append(repository)
     return tools
 
 
@@ -42,7 +48,8 @@ def install_shed_repos(runnable, admin_gi,
                        ignore_dependency_problems,
                        install_tool_dependencies=False,
                        install_resolver_dependencies=True,
-                       install_repository_dependencies=True):
+                       install_repository_dependencies=True,
+                       install_most_recent_revision=False):
     tools_info = load_shed_repos(runnable)
     if tools_info:
         install_tool_manager = shed_tools.InstallRepositoryManager(admin_gi)
@@ -50,11 +57,24 @@ def install_shed_repos(runnable, admin_gi,
                                                                     default_install_tool_dependencies=install_tool_dependencies,
                                                                     default_install_resolver_dependencies=install_resolver_dependencies,
                                                                     default_install_repository_dependencies=install_repository_dependencies)
+        if install_most_recent_revision:  # for workflow autoupdates we also need the most recent tool versions
+            update_results = install_tool_manager.update_repositories(tools_info,
+                                                                      default_install_tool_dependencies=install_tool_dependencies,
+                                                                      default_install_resolver_dependencies=install_resolver_dependencies,
+                                                                      default_install_repository_dependencies=install_repository_dependencies)
+            install_results.errored_repositories.extend(update_results.errored_repositories)
+            updated_repos = update_results.installed_repositories
+        else:
+            updated_repos = None
+
         if install_results.errored_repositories:
             if ignore_dependency_problems:
                 warn(FAILED_REPOSITORIES_MESSAGE)
             else:
                 raise Exception(FAILED_REPOSITORIES_MESSAGE)
+        return install_results.installed_repositories, updated_repos
+    else:
+        return None, None
 
 
 def import_workflow(path, admin_gi, user_gi, from_path=False):

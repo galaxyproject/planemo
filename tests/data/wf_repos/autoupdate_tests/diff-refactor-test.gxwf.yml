@@ -1,0 +1,118 @@
+class: GalaxyWorkflow
+label: diff-refactor-test
+uuid: 22ff99ac-147f-4e23-80cd-ef56f59eedae
+inputs:
+  inp:
+    optional: false
+    position:
+      bottom: 204.3000030517578
+      height: 61.30000305175781
+      left: 295
+      right: 495
+      top: 143
+      width: 200
+      x: 295
+      y: 143
+    type: data
+outputs:
+  _anonymous_output_1:
+    outputSource: '0'
+  _anonymous_output_2:
+    outputSource: 1/diff_file
+  _anonymous_output_3:
+    outputSource: 1/html_file
+steps:
+- tool_shed_repository:
+    changeset_revision: 02dfbbf869d8
+    name: diff
+    owner: bgruening
+    tool_shed: toolshed.g2.bx.psu.edu
+  tool_id: toolshed.g2.bx.psu.edu/repos/bgruening/diff/diff/3.6+galaxy1
+  tool_version: 3.6+galaxy1
+  position:
+    bottom: 306.1333312988281
+    height: 194.13333129882812
+    left: 573
+    right: 773
+    top: 112
+    width: 200
+    x: 573
+    y: 112
+  tool_state:
+    generate_report: 'true'
+    input1:
+      __class__: ConnectedValue
+    input2:
+      __class__: ConnectedValue
+    output_format: side-by-side
+  in:
+    input1:
+      source: '0'
+    input2:
+      source: '0'
+- position:
+    bottom: 307.6999969482422
+    height: 81.69999694824219
+    left: 841
+    right: 1041
+    top: 226
+    width: 200
+    x: 841
+    y: 226
+  in:
+    sw_inp:
+      source: 1/html_file
+  run:
+    class: GalaxyWorkflow
+    label: diff-refactor-test subworkflow
+    uuid: f0e1e4fa-2611-4c0b-a269-e159fef360b9
+    inputs:
+      sw_inp:
+        optional: false
+        position:
+          bottom: 229.3000030517578
+          height: 61.30000305175781
+          left: 301
+          right: 501
+          top: 168
+          width: 200
+          x: 301
+          y: 168
+        type: data
+    outputs: {}
+    steps:
+    - tool_shed_repository:
+        changeset_revision: 02dfbbf869d8
+        name: diff
+        owner: bgruening
+        tool_shed: toolshed.g2.bx.psu.edu
+      tool_id: toolshed.g2.bx.psu.edu/repos/bgruening/diff/diff/3.6+galaxy1
+      tool_version: 3.6+galaxy1
+      position:
+        bottom: 331.1333312988281
+        height: 194.13333129882812
+        left: 579
+        right: 779
+        top: 137
+        width: 200
+        x: 579
+        y: 137
+      tool_state:
+        generate_report: 'true'
+        input1:
+          __class__: RuntimeValue
+        input2:
+          __class__: RuntimeValue
+        output_format: side-by-side
+      in:
+        input1:
+          source: '0'
+        input2:
+          source: '0'
+tools:
+- name: diff
+  owner: bgruening
+  revisions:
+  - 02dfbbf869d8
+  tool_panel_section_label: Tools from workflows
+  tool_shed_url: https://toolshed.g2.bx.psu.edu/

@@ -11,6 +11,38 @@ History
 
     
 
+---------------------
+0.74.8 (2021-10-10)
+---------------------
+
+* Exclude click 8.0.2. `Pull Request 1196`_
+* Add tool version numbers to autoupdate logging (thanks to `@simonbray`_).
+  `Pull Request 1188`_
+* Allow tool autoupdate without conda installation (thanks to `@simonbray`_).
+  `Pull Request 1193`_
+* use correct key execution_problem in template (thanks to `@bernt-matthias`_).
+  `Pull Request 1195`_
+
+---------------------
+0.74.7 (2021-09-21)
+---------------------
+
+* Fix documentation to include `--download_outputs` flag (thanks to
+  `@simonbray`_). `Pull Request 1184`_
+* Select refgenie config based on Galaxy version `Pull Request 1187`_
+* Extend autoupdate subcommand to workflows (thanks to `@simonbray`_). `Pull
+  Request 1151`_
+
+---------------------
+0.74.6 (2021-07-23)
+---------------------
+
+* Add JSON report for planemo run invocations (thanks to `@simonbray`_). `Pull
+  Request 1153`_
+* Ignore failure to download output datasets `Pull Request 1179`_
+* Allow location to point to url for outputs `Pull Request 1180`_
+* Fix --shed_install for gxformat2 workflows `Pull Request 1182`_
+    
 ---------------------    
 0.74.5 (2021-06-25)
 ---------------------
@@ -1729,6 +1761,17 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1188: https://github.com/galaxyproject/planemo/pull/1188
+.. _Pull Request 1193: https://github.com/galaxyproject/planemo/pull/1193
+.. _Pull Request 1195: https://github.com/galaxyproject/planemo/pull/1195
+.. _Pull Request 1196: https://github.com/galaxyproject/planemo/pull/1196
+.. _Pull Request 1184: https://github.com/galaxyproject/planemo/pull/1184
+.. _Pull Request 1187: https://github.com/galaxyproject/planemo/pull/1187
+.. _Pull Request 1151: https://github.com/galaxyproject/planemo/pull/1151
+.. _Pull Request 1153: https://github.com/galaxyproject/planemo/pull/1153
+.. _Pull Request 1179: https://github.com/galaxyproject/planemo/pull/1179
+.. _Pull Request 1180: https://github.com/galaxyproject/planemo/pull/1180
+.. _Pull Request 1182: https://github.com/galaxyproject/planemo/pull/1182
 .. _Pull Request 1170: https://github.com/galaxyproject/planemo/pull/1170
 .. _Pull Request 1171: https://github.com/galaxyproject/planemo/pull/1171
 .. _Pull Request 1172: https://github.com/galaxyproject/planemo/pull/1172

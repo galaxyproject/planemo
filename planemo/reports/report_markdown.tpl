@@ -52,26 +52,26 @@
       {{problem|indent(6)}}
       ```
 {%       endfor %}
-{%       if test.data.test_problem %}
+{%       if test.data.execution_problem %}
     **Execution Problem:**
     * ```
-      {{test.data.test_problem|indent(6)}}
+      {{test.data.execution_problem|indent(6)}}
       ```
 {%       endif %}
-{%     if test.data.job %}
-{%       for key, description in display_job_attributes.items() %}
-{%         if test.data.job[key] not in ("", None) %}
+{%       if test.data.job %}
+{%         for key, description in display_job_attributes.items() %}
+{%           if test.data.job[key] not in ("", None) %}
     **{{ description }}:**
 
     * ```console
       {{ test.data.job[key]|string|indent(6)}}
       ```
-{%         endif %}
-{%       endfor %}
+{%           endif %}
+{%         endfor %}
 {{render_job_parameters(test.data.job)}}
 
-{%     endif %}
-{%     if test.data.invocation_details %}
+{%       endif %}
+{%       if test.data.invocation_details %}
 
     #### Workflow invocation details
 
@@ -79,12 +79,12 @@
 
 {{render_invocation_details(test.data.invocation_details.details)}}
 
+{%       endif %}
 
   </div></details>
 
-{% endif %}
-{% endif %}
-{% endfor %}
+{%     endif %}
+{%   endfor %}
 
 </details>
 {% endfor %}

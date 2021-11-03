@@ -18,7 +18,6 @@ from galaxy.tool_util.cwl.util import (
     tool_response_to_output,
 )
 from galaxy.tool_util.parser import get_tool_source
-from galaxy.tool_util.verify.interactor import galaxy_requests_post
 from galaxy.util import (
     safe_makedirs,
     unicodify,
@@ -89,9 +88,13 @@ class PlanemoStagingInterface(StagingInterace):
         self._simultaneous_uploads = simultaneous_uploads
 
     def _post(self, api_path, payload, files_attached=False):
-        params = dict(key=self._user_gi.key)
         url = urljoin(self._user_gi.url, "api/" + api_path)
-        return galaxy_requests_post(url, data=payload, params=params, as_json=True).json()
+        if payload.get("__files"):  # put attached files where BioBlend expects them
+            files_attached = True
+            for k, v in payload["__files"].items():
+                payload[k] = v
+            del payload["__files"]
+        return self._user_gi.make_post_request(url, payload=payload, files_attached=files_attached)
 
     def _attach_file(self, path):
         return attach_file(path)

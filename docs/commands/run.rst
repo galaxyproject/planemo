@@ -73,7 +73,8 @@ Planemo command for running tools and jobs.
     
       --mulled_containers, --biocontainers
                                       Test tools against mulled containers (forces
-                                      --docker).
+                                      --docker). Disables conda resolution unless
+                                      any conda option has been set explicitly.
     
       --job_config_file FILE          Job configuration file for Galaxy to target.
       --tool_dependency_dir DIRECTORY
@@ -104,7 +105,6 @@ Planemo command for running tools and jobs.
                                       commands.
     
       --conda_exec FILE               Location of conda executable.
-      --conda_debug                   Enable more verbose conda logging.
       --conda_channels, --conda_ensure_channels TEXT
                                       Ensure conda is configured with specified
                                       comma separated list of channels.
@@ -114,10 +114,6 @@ Planemo command for running tools and jobs.
     
       --conda_dependency_resolution   Configure Galaxy to use only conda for
                                       dependency resolution.
-    
-      --conda_copy_dependencies       Conda dependency resolution for Galaxy will
-                                      copy dependencies instead of attempting to
-                                      link them.
     
       --conda_auto_install / --no_conda_auto_install
                                       Conda dependency resolution for Galaxy will
@@ -257,6 +253,42 @@ Planemo command for running tools and jobs.
     
       --no_wait                       After invoking a job or workflow, do not wait
                                       for completion.
+
+      --update_test_data              Update test-data directory with job outputs
+                                      (normally written to directory
+                                      --job_output_files if specified.)
+
+      --paste_test_data_paths / --no_paste_test_data_paths
+                                      By default Planemo will use or not use
+                                      Galaxy's path paste option to load test data
+                                      into a history based on the engine type it is
+                                      targeting. This can override the logic to
+                                      explicitly enable or disable path pasting.
+
+      --test_output PATH              Output test report (HTML - for humans)
+                                      defaults to tool_test_output.html.
+
+      --test_output_text PATH         Output test report (Basic text - for display
+                                      in CI)
+
+      --test_output_markdown PATH     Output test report (Markdown style - for
+                                      humans & computers)
+
+      --test_output_xunit PATH        Output test report (xunit style - for CI
+                                      systems
+
+      --test_output_junit PATH        Output test report (jUnit style - for CI
+                                      systems
+
+      --test_output_allure DIRECTORY  Output test allure2 framework resutls
+      --test_output_json PATH         Output test report (planemo json) defaults to
+                                      tool_test_output.json.
+
+      --job_output_files DIRECTORY    Write job outputs to specified directory.
+      --summary [none|minimal|compact]
+                                      Summary style printed to planemo's standard
+                                      output (see output reports for more complete
+                                      summary). Set to 'none' to disable completely.
 
       --help                          Show this message and exit.
     
