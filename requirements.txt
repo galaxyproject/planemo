@@ -17,7 +17,7 @@ cwltool==3.1.20211020155521; python_version >= "3.6" and python_version < "4"
 dataclasses==0.8; python_version >= "3.6" and python_version < "3.7"
 decorator==4.4.2; python_version >= "3.6" and python_full_version < "3.0.0" and python_version < "4" or python_version >= "3.6" and python_version < "4" and python_full_version >= "3.2.0"
 distlib==0.3.3; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
-docutils==0.18; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
+docutils==0.17.1; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
 ephemeris==0.10.7
 filelock==3.3.2; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.6"
 galaxy-containers==21.9.0
