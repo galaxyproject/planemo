@@ -56,3 +56,6 @@ tool_test_output.*
 
 # Used by build process to push updated brew formula.
 homebrew-tap
+
+# Don't track poetry lock file
+poetry.lock
