@@ -57,7 +57,9 @@ install: submodule ## install into Python envirnoment
 	python setup.py install && cd cwl-runner && python setup.py install
 
 dependencies-update:
-	poetry update && poetry export --without-hashes  -f requirements.txt  --output requirements.txt && poetry export --dev --without-hashes  -f requirements.txt  --output dev-requirements.txt
+	poetry update
+	poetry export --without-hashes -f requirements.txt --output requirements.txt
+	poetry export --dev --without-hashes -f requirements.txt --output dev-requirements.txt
 
 setup-venv: ## setup a development virtualenv in current directory
 	if [ ! -d $(VENV) ]; then virtualenv $(VENV); exit; fi;
