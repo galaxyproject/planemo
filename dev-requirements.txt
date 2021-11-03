@@ -8,7 +8,6 @@ attrs==21.2.0; python_version >= "3.6" and python_full_version < "3.0.0" or pyth
 babel==2.9.1; python_version >= "3.5" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.5"
 backports.entry-points-selectable==1.1.0; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "2.7"
 bagit==1.8.1; python_version >= "3.6" and python_version < "4"
-beautifulsoup4==4.10.0; python_full_version > "3.0.0"
 bioblend==0.16.0; python_version >= "3.6"
 bleach==4.1.0; python_version >= "3.6"
 blessed==1.19.0; python_version >= "3.6"
@@ -22,7 +21,6 @@ click==8.0.3; python_version >= "3.6"
 colorama==0.4.4; python_version >= "3.6" and python_full_version < "3.0.0" and platform_system == "Windows" and sys_platform == "win32" or platform_system == "Windows" and python_version >= "3.6" and python_full_version >= "3.5.0" and sys_platform == "win32"
 coloredlogs==15.0.1; python_version >= "3.6" and python_full_version < "3.0.0" and python_version < "4" or python_version >= "3.6" and python_version < "4" and python_full_version >= "3.5.0"
 commonmark==0.9.1
-configparser==5.0.2; python_version >= "3.6"
 coverage==6.1.1; python_version >= "3.6"
 cryptography==35.0.0; sys_platform == "linux" and python_version >= "3.6"
 cwltool==3.1.20211020155521; python_version >= "3.6" and python_version < "4"
@@ -31,12 +29,12 @@ decorator==4.4.2; python_version >= "3.6" and python_full_version < "3.0.0" and 
 dill==0.3.4; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.1.0" and python_version >= "3.6"
 distlib==0.3.3; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
 docker==4.3.1; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.6"
-docutils==0.18; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.5.0")
+docutils==0.18; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.6"
 enlighten==1.10.1; python_version >= "3.6"
 ephemeris==0.10.7
 filelock==3.3.2; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.6"
 flake8-import-order==0.18.1
-flake8==2.3.0
+flake8==2.5.5
 flask==2.0.2; python_version >= "3.6"
 galaxy-containers==21.9.0
 galaxy-tool-util==21.9.1
@@ -58,7 +56,7 @@ keyring==23.2.1; python_version >= "3.6"
 lockfile==0.12.2; python_version >= "3.6" and python_version < "4"
 lxml==4.6.4; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.5.0")
 markupsafe==2.0.1; python_version >= "3.6"
-mccabe==0.6.1
+mccabe==0.4.0
 mistune==0.8.4; python_version >= "3.6" and python_version < "4"
 msgpack==1.0.2; python_version >= "3.6" and python_version < "4"
 mypy-extensions==0.4.3; python_version >= "3.6" and python_version < "4"
@@ -73,14 +71,13 @@ prefixed==0.3.2; python_version >= "3.6"
 prov==1.5.1; python_version >= "3.6" and python_version < "4"
 psutil==5.8.0; python_version >= "3.6" and python_full_version < "3.0.0" and python_version < "4" or python_version >= "3.6" and python_version < "4" and python_full_version >= "3.4.0"
 py==1.10.0; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.6"
-pyaml==21.10.1
 pycodestyle==2.8.0; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
 pycparser==2.20; python_version >= "3.6" and python_full_version < "3.0.0" and sys_platform == "linux" or sys_platform == "linux" and python_version >= "3.6" and python_full_version >= "3.4.0"
 pycryptodome==3.11.0; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
 pydantic==1.7.4; python_version >= "3.6"
 pydot==1.4.2; python_version >= "3.6" and python_full_version < "3.0.0" and python_version < "4" or python_version >= "3.6" and python_version < "4" and python_full_version >= "3.4.0"
-pyflakes==2.4.0; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.4.0")
-pygments==2.10.0; python_version >= "3.5"
+pyflakes==1.0.0
+pygments==2.10.0; python_version >= "3.6"
 pyparsing==2.4.7; python_version >= "3.6" and python_full_version < "3.0.0" and python_version < "4" or python_version >= "3.6" and python_version < "4" and python_full_version >= "3.4.0"
 pyreadline3==3.3; sys_platform == "win32" and python_version >= "3.8" and (python_version >= "3.6" and python_full_version < "3.0.0" and python_version < "4" or python_version >= "3.6" and python_version < "4" and python_full_version >= "3.5.0")
 pyreadline==2.1; sys_platform == "win32" and python_version < "3.8" and (python_version >= "3.6" and python_full_version < "3.0.0" and python_version < "4" or python_version >= "3.6" and python_version < "4" and python_full_version >= "3.5.0")
@@ -94,7 +91,6 @@ pyyaml==6.0; python_version >= "3.6"
 rdflib-jsonld==0.6.1; python_version >= "3.6" and python_version <= "3.6"
 rdflib==5.0.0
 readme-renderer==30.0; python_version >= "3.6"
-readme==0.7.1
 recommonmark==0.7.1
 repoze.lru==0.7
 requests-toolbelt==0.9.1; python_version >= "3.6"
@@ -109,7 +105,6 @@ shellescape==3.8.1; python_version >= "3.6" and python_version < "4"
 six==1.16.0; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.3.0")
 snowballstemmer==2.1.0; python_version >= "3.5"
 sortedcontainers==2.4.0
-soupsieve==2.2.1; python_version >= "3.6" and python_full_version > "3.0.0"
 sphinx-rtd-theme==0.5.1
 sphinx==3.5.3; python_version >= "3.5"
 sphinxcontrib-applehelp==1.0.2; python_version >= "3.5"

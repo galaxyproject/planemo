@@ -3,7 +3,6 @@ argcomplete==1.12.3; python_version >= "3.6" and python_version < "4"
 attrs==21.2.0; python_version >= "3.5" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.5"
 backports.entry-points-selectable==1.1.0; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "2.7"
 bagit==1.8.1; python_version >= "3.6" and python_version < "4"
-beautifulsoup4==4.10.0; python_full_version > "3.0.0"
 bioblend==0.16.0; python_version >= "3.6"
 bleach==4.1.0; python_version >= "3.6"
 boltons==21.0.0
@@ -14,12 +13,11 @@ charset-normalizer==2.0.7; python_full_version >= "3.6.0" and python_version >= 
 click==8.0.3; python_version >= "3.6"
 colorama==0.4.4; python_version >= "3.6" and python_full_version < "3.0.0" and platform_system == "Windows" or platform_system == "Windows" and python_version >= "3.6" and python_full_version >= "3.5.0"
 coloredlogs==15.0.1; python_version >= "3.6" and python_full_version < "3.0.0" and python_version < "4" or python_version >= "3.6" and python_version < "4" and python_full_version >= "3.5.0"
-configparser==5.0.2; python_version >= "3.6"
 cwltool==3.1.20211020155521; python_version >= "3.6" and python_version < "4"
 dataclasses==0.8; python_version >= "3.6" and python_version < "3.7"
 decorator==4.4.2; python_version >= "3.6" and python_full_version < "3.0.0" and python_version < "4" or python_version >= "3.6" and python_version < "4" and python_full_version >= "3.2.0"
 distlib==0.3.3; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
-docutils==0.18; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.5.0")
+docutils==0.18; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
 ephemeris==0.10.7
 filelock==3.3.2; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.6"
 galaxy-containers==21.9.0
@@ -46,7 +44,6 @@ platformdirs==2.4.0; python_version >= "3.6" and python_full_version < "3.0.0" o
 pluggy==1.0.0; python_version >= "3.6"
 prov==1.5.1; python_version >= "3.6" and python_version < "4"
 psutil==5.8.0; python_version >= "3.6" and python_full_version < "3.0.0" and python_version < "4" or python_version >= "3.6" and python_version < "4" and python_full_version >= "3.4.0"
-pyaml==21.10.1
 pycryptodome==3.11.0; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
 pydantic==1.7.4; python_version >= "3.6"
 pydot==1.4.2; python_version >= "3.6" and python_full_version < "3.0.0" and python_version < "4" or python_version >= "3.6" and python_version < "4" and python_full_version >= "3.4.0"
@@ -68,7 +65,6 @@ schema-salad==8.2.20211029004247; python_version >= "3.6" and python_version < "
 shellescape==3.8.1; python_version >= "3.6" and python_version < "4"
 six==1.16.0; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.3.0")
 sortedcontainers==2.4.0
-soupsieve==2.2.1; python_version >= "3.6" and python_full_version > "3.0.0"
 tabulate==0.8.9
 typing-extensions==3.10.0.2; python_version >= "3.6" and python_version < "3.8"
 urllib3==1.26.7; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.6.0" and python_version < "4" and python_version >= "3.6"
