@@ -49,7 +49,7 @@ def test_refgenie_config_version():
         with open(version_path, 'w') as version_fh:
             version_fh.write('VERSION_MAJOR = "21.05"')
         refgenie_config = get_refgenie_config(galaxy_root=tdc.temp_directory, refgenie_dir='/')
-    assert yaml.load(refgenie_config)['config_version'] == 0.3
+    assert yaml.load(refgenie_config, Loader=yaml.SafeLoader)['config_version'] == 0.3
 
 
 def _assert_property_is(config, prop, value):
