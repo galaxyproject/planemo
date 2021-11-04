@@ -748,14 +748,6 @@ def required_runnable_arg():
     )
 
 
-def required_rerunnable_arg():
-    return click.argument(
-        'rerunnable_identifier',
-        metavar="RERUNNABLE_PATH_OR_ID",
-        type=str,
-    )
-
-
 def required_new_job_arg():
     arg_type = click.Path()
     return click.argument("new_job_path", metavar="NEW_JOB_PATH", type=arg_type)

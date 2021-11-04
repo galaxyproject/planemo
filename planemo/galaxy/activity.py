@@ -29,7 +29,7 @@ from requests.exceptions import (
 from six.moves.urllib.parse import urljoin
 
 from planemo.galaxy.api import summarize_history
-from planemo.io import error, wait_on
+from planemo.io import wait_on
 from planemo.runnable import (
     ErrorRunResponse,
     get_outputs,
@@ -270,42 +270,44 @@ def _file_path_to_name(file_path):
 
 
 def execute_rerun(ctx, config, rerunnable, **kwds):
+    rerun_successful = True
     user_gi = config.user_gi
-    if rerunnable.rerunnable_type == 'invocation':
-        invocation_id = rerunnable.rerunnable_id
-        response_class = GalaxyToolRunResponse
-        if kwds.get('failed'):
-            inv = user_gi.invocations.show_invocation(invocation_id)
-            inv_steps = inv['steps']
-            for step in inv_steps:
-                if step['job_id']:
-                    job_id = step['job_id']
-                    if user_gi.jobs.show_job(job_id)['state'] == 'error':
-                        try:
-                            user_gi.jobs.rerun_job(job_id, remap=True)
-                        except ValueError:
-                            error(f"Job {job_id} could not be rerun with dataset remapping.")
-            response_kwds = {
-                'job_info': None,
-                'api_run_response': None,
-            }
+    if rerunnable.rerunnable_type == 'history':
+        job_ids = [job['id'] for job in user_gi.jobs.get_jobs(history_id=rerunnable.rerunnable_id, state='error')]
+    elif rerunnable.rerunnable_type == 'invocation':
+        job_ids = [job['id'] for job in user_gi.jobs.get_jobs(invocation_id=rerunnable.rerunnable_id, state='error')]
+    elif rerunnable.rerunnable_type == 'job':
+        job_ids = [rerunnable.rerunnable_id]
+    # elif rerunnable.rerunnable_type = 'collection':
+    else:
+        raise Exception(f'Unknown Rerunnable type {rerunnable.rerunnable_type}')
+
+    for job_id in job_ids:
+        try:
+            user_gi.jobs.rerun_job(job_id, remap=True)
+        except (ValueError, bioblend.ConnectionError):
+            rerun_successful = False
+            if rerunnable.rerunnable_type == 'job':
+                ctx.log(f"Job {job_id} could not be rerun with dataset remapping.")
+            else:
+                ctx.log(f"Job {job_id} associated with {rerunnable.rerunnable_type} {rerunnable.rerunnable_id}"
+                        "could not be rerun with dataset remapping.")
         else:
-            raise NotImplementedError('Rerunning an entire invocation is not currently implemented.')
-
-    if rerunnable.rerunnable_type == 'job':
-        job_id = rerunnable.rerunnable_id
-        response_class = GalaxyToolRunResponse
-        user_gi.jobs.rerun_job(job_id)
-
-    run_response = response_class(
+            if rerunnable.rerunnable_type == 'job':
+                ctx.log(f"Job {job_id} was successfully rerun.")
+            else:
+                ctx.log(f"Job {job_id} associated with {rerunnable.rerunnable_type} {rerunnable.rerunnable_id} was successfully rerun.")
+    if not job_ids:
+        ctx.log(f"No jobs matching the specified {rerunnable.rerunnable_type} {rerunnable.rerunnable_id} were found.")
+    run_response = GalaxyBaseRunResponse(
         ctx=ctx,
         runnable=rerunnable,
         user_gi=user_gi,
-        history_id=inv['history_id'],
+        history_id=rerunnable.rerunnable_id if rerunnable.rerunnable_type == 'history_id' else None,
         log=log_contents_str(config),
-        **response_kwds
     )
 
+    run_response.was_successful = rerun_successful
     return run_response
 
 

@@ -136,7 +136,7 @@ class Runnable(NamedTuple):
 
 
 class Rerunnable(NamedTuple):
-    """Abstraction describing previously executed runs of tools (jobs) and workflows (invocations) on external Galaxy instances."""
+    """Abstraction describing artifacts (histories, invocation, jobs) on external Galaxy instances with associated rerunnable and remappable jobs."""
     rerunnable_id: str
     rerunnable_type: str
     server_url: str
