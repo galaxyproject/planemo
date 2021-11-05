@@ -1,10 +1,7 @@
 allure-python-commons
-BeautifulSoup4
 bioblend>=0.16.0
 click!=8.0.2
-configparser
 cwltool>=1.0.20191225192155
-docutils
 ephemeris>=0.10.3
 galaxy-containers
 galaxy-tool-util>=21.1.0.dev4
@@ -14,7 +11,6 @@ gxformat2>=0.12.0
 jinja2
 lxml
 oyaml
-pyaml
 pyyaml
 six>=1.7.0
 virtualenv
