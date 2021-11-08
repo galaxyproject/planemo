@@ -135,6 +135,13 @@ class Runnable(NamedTuple):
         return _runnable_delegate_attribute('is_single_artifact')
 
 
+class Rerunnable(NamedTuple):
+    """Abstraction describing artifacts (histories, invocation, jobs) on external Galaxy instances with associated rerunnable and remappable jobs."""
+    rerunnable_id: str
+    rerunnable_type: str
+    server_url: str
+
+
 def _runnable_delegate_attribute(attribute):
 
     @property

@@ -35,6 +35,7 @@ class ExternalGalaxyCommandsTestCase(CliTestCase):
                 profile_delete_cmd = ["profile_delete", "test_ext_profile"]
                 run_cmd = ["run", "test_wf_alias", os.path.join(TEST_DATA_DIR, "wf2-job.yml"), "--profile", "test_ext_profile"]
                 list_invocs_cmd = ["list_invocations", "test_wf_alias", "--profile", "test_ext_profile"]
+                rerun_cmd = ["rerun", "--invocation", "invocation_id", "--profile", "test_ext_profile"]
                 upload_data_cmd = ["upload_data", "test_wf_alias", os.path.join(TEST_DATA_DIR, "wf2-job.yml"), "new-job.yml",
                                    "--profile", "test_ext_profile"]
 
@@ -66,6 +67,11 @@ class ExternalGalaxyCommandsTestCase(CliTestCase):
                 result = self._check_exit_code(list_invocs_cmd)
                 assert '2 invocations found.' in result.output
                 assert '1 jobs ok' in result.output or '"ok": 1' in result.output  # so it passes regardless if tabulate is installed or not
+
+                # test rerun
+                rerun_cmd[2] = config.user_gi.workflows.get_invocations(wfid)[0]['id']
+                result = self._check_exit_code(rerun_cmd)
+                assert 'No jobs matching the specified invocation' in result.output
 
                 # test alias and profile deletion
                 result = self._check_exit_code(alias_delete_cmd)

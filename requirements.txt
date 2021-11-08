@@ -1,6 +1,6 @@
 allure-python-commons
 BeautifulSoup4
-bioblend>=0.14.0
+bioblend>=0.16.0
 click!=8.0.2
 configparser
 cwltool>=1.0.20191225192155

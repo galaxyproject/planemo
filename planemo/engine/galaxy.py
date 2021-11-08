@@ -7,7 +7,7 @@ import contextlib
 from galaxy.tool_util.verify import interactor
 from six import add_metaclass
 
-from planemo.galaxy.activity import execute
+from planemo.galaxy.activity import execute, execute_rerun
 from planemo.galaxy.config import external_galaxy_config
 from planemo.galaxy.serve import serve_daemon
 from planemo.runnable import RunnableType
@@ -130,6 +130,11 @@ class ExternalGalaxyEngine(GalaxyEngine):
         with external_galaxy_config(self._ctx, runnables, **self._kwds) as config:
             config.install_workflows()
             yield config
+
+    def rerun(self, ctx, rerunnable, **kwds):
+        with self.ensure_runnables_served([]) as config:
+            rerun_response = execute_rerun(ctx, config, rerunnable, **kwds)
+            return rerun_response
 
 
 __all__ = (
