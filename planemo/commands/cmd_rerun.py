@@ -42,15 +42,18 @@ from planemo.runnable import Rerunnable
 def cli(ctx, rerunnable_ids, **kwds):
     """Planemo command for rerunning and remapping failed jobs on an external Galaxy server.
     Supply a list of history, invocation or job IDs, identifying the ID type using the
-    --invocation_id, --history_id or --job_id flag, and all associated failed jobs will be
-    rerun. Note that when a history ID is specified, a maximum of 1000 errored jobs from
-    that history will be rerun.
+    --invocation, --history or --job flag, and all associated failed jobs will be rerun.
+
+    Please note: attempting to rerun non-remappable jobs will result in an exit code of 1. As
+    jobs cannot be remapped more than once, running this command two or more times with the same
+    history or job IDs will therefore return an exit code of 1. If avoiding this is important,
+    you should specify the invocation ID instead if possible.
 
     \b
         % planemo rerun --invocation / --history / --job RERUNNABLE_IDS
     """
     # Possible TODO: allow collection IDs to be specified as well
-    if not (kwds.get('rerunnable_type')):
+    if not kwds.get('rerunnable_type'):
         error("Please specify the type (invocation, history or job) of the IDs which should be rerun.")
         ctx.exit(1)
     kwds["engine"] = "external_galaxy"

@@ -273,24 +273,7 @@ def execute_rerun(ctx, config, rerunnable, **kwds):
     rerun_successful = True
     user_gi = config.user_gi
     if rerunnable.rerunnable_type == 'history':
-        # just searching for job_ids matching the history is suboptimal, we will also catch stale jobs which
-        # are were already rerun and therefore cannot be remapped. Therefore we search for datasets instead,
-        # relying on the fact that remapped datasets have the same hid, and take the creating jobs. Unfortunately
-        # that entails using a slow API endpoint once but we hopefully save time later by not pointlessly trying
-        # non-rerunnable jobs.
-        params = {
-            'history_id': rerunnable.rerunnable_id,
-            'view': 'detailed',
-            'limit': '1000',  # 1000 seems like a fair limit
-            'q': ['state-eq', 'deleted'],
-            'qv': ['error', 'False'],
-        }
-        remappable_datasets = {}
-        errored_datasets = user_gi.make_get_request(f'{user_gi.url}/datasets', params=params).json()
-        for errored_dataset in errored_datasets:  # pick only the first dataset (i.e. most recently created) for each hid
-            if errored_dataset['hid'] not in remappable_datasets and errored_dataset.get('rerunnable'):
-                remappable_datasets[errored_dataset['hid']] = errored_dataset['creating_job']
-        job_ids = set(remappable_datasets.values())
+        job_ids = [job['id'] for job in user_gi.jobs.get_jobs(history_id=rerunnable.rerunnable_id, state='error')]
     elif rerunnable.rerunnable_type == 'invocation':
         job_ids = [job['id'] for job in user_gi.jobs.get_jobs(invocation_id=rerunnable.rerunnable_id, state='error')]
     elif rerunnable.rerunnable_type == 'job':
