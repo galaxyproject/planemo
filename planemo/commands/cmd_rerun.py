@@ -15,43 +15,52 @@ from planemo.runnable import Rerunnable
 @options.galaxy_url_option()
 @options.galaxy_user_key_option()
 @click.option(
-    "--invocation_id",
-    multiple=True,
-    help=("Rerun failed jobs associated with this invocation ID.")
+    "--invocation",
+    "rerunnable_type",
+    flag_value="invocation",
+    help=("Rerun failed jobs associated by one or more invocation IDs.")
 )
 @click.option(
-    "--history_id",
-    multiple=True,
-    help=("Rerun failed jobs associated with this history ID.")
+    "--history",
+    "rerunnable_type",
+    flag_value="history",
+    help=("Rerun failed jobs associated by one or more history IDs.")
 )
 @click.option(
-    "--job_id",
-    multiple=True,
-    help=("Rerun failed jobs specified by this job ID.")
+    "--job",
+    "rerunnable_type",
+    flag_value="job",
+    help=("Rerun failed jobs specified by one or more job IDs.")
+)
+@click.argument(
+    "rerunnable_ids",
+    metavar="RERUNNABLE_IDS",
+    type=str,
+    nargs=-1,
 )
 @command_function
-def cli(ctx, **kwds):
+def cli(ctx, rerunnable_ids, **kwds):
     """Planemo command for rerunning and remapping failed jobs on an external Galaxy server.
-    One or more history, invocation or job IDs can be specified, and all associated failed
-    jobs will be rerun. Note that when specifying a history ID, a maximum of 1000 errored
-    jobs will be rerun.
+    Supply a list of history, invocation or job IDs, identifying the ID type using the
+    --invocation_id, --history_id or --job_id flag, and all associated failed jobs will be
+    rerun. Note that when a history ID is specified, a maximum of 1000 errored jobs from
+    that history will be rerun.
 
     \b
-        % planemo rerun --invocation_id ... --history_id ... --job_id ... --job_id ...
+        % planemo rerun --invocation / --history / --job RERUNNABLE_IDS
     """
-    if not (kwds.get('invocation_id') or kwds.get('history_id') or kwds.get('job_id')):
-        error("Please specify at least one history, invocation or job to rerun.")
-        ctx.exit(1)
     # Possible TODO: allow collection IDs to be specified as well
+    if not (kwds.get('rerunnable_type')):
+        error("Please specify the type (invocation, history or job) of the IDs which should be rerun.")
+        ctx.exit(1)
     kwds["engine"] = "external_galaxy"
     rerun_successful = True
     with engine_context(ctx, **kwds) as engine:
-        for rerunnable_type, rerunnable_ids in {'invocation': 'invocation_id', 'history': 'history_id', 'job': 'job_id'}.items():
-            for rerunnable_id in kwds[rerunnable_ids]:
-                rerunnable = Rerunnable(rerunnable_id, rerunnable_type, kwds["galaxy_url"])
-                rerun_result = engine.rerun(ctx, rerunnable, **kwds)
-                if not rerun_result.was_successful:
-                    rerun_successful = False
+        for rerunnable_id in rerunnable_ids:
+            rerunnable = Rerunnable(rerunnable_id, kwds['rerunnable_type'], kwds["galaxy_url"])
+            rerun_result = engine.rerun(ctx, rerunnable, **kwds)
+            if not rerun_result.was_successful:
+                rerun_successful = False
 
     if rerun_successful:
         info('All requested jobs were rerun successfully.')

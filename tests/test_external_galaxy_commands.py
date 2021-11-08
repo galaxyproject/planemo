@@ -35,7 +35,7 @@ class ExternalGalaxyCommandsTestCase(CliTestCase):
                 profile_delete_cmd = ["profile_delete", "test_ext_profile"]
                 run_cmd = ["run", "test_wf_alias", os.path.join(TEST_DATA_DIR, "wf2-job.yml"), "--profile", "test_ext_profile"]
                 list_invocs_cmd = ["list_invocations", "test_wf_alias", "--profile", "test_ext_profile"]
-                rerun_cmd = ["rerun", "--invocation_id", "invocation_id", "--profile", "test_ext_profile"]
+                rerun_cmd = ["rerun", "--invocation", "invocation_id", "--profile", "test_ext_profile"]
                 upload_data_cmd = ["upload_data", "test_wf_alias", os.path.join(TEST_DATA_DIR, "wf2-job.yml"), "new-job.yml",
                                    "--profile", "test_ext_profile"]
 
