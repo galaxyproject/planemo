@@ -23,8 +23,8 @@ Contents:
    best_practices_workflows
    running
    automating_workflows
-   commands
    autoupdate
+   commands
    galaxy_changelog
    conduct
    contributing
