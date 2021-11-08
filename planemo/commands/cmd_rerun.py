@@ -33,6 +33,7 @@ from planemo.runnable import Rerunnable
 def cli(ctx, **kwds):
     """Planemo command for rerunning and remapping failed jobs on an external Galaxy server.
     One or more history, invocation or job IDs can be specified, and all associated failed
+    jobs will be rerun. Note that when specifying a history ID, a maximum of 1000 errored
     jobs will be rerun.
 
     \b
