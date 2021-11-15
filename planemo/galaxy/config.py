@@ -4,11 +4,13 @@ from __future__ import print_function
 
 import abc
 import contextlib
+import hashlib
 import importlib.util
 import os
 import random
 import shutil
 import threading
+import time
 from string import Template
 from tempfile import mkdtemp
 
@@ -454,7 +456,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             database_location=database_location,
             tool_conf=tool_conf,
             debug=kwds.get("debug", "true"),
-            id_secret=kwds.get("id_secret", "test_secret"),
+            id_secret=kwds.get("id_secret", hashlib.md5(str(time.time()).encode('utf-8')).hexdigest()),
             log_level="DEBUG" if ctx.verbose else "INFO",
         )
         tool_config_file = "%s,%s" % (tool_conf, shed_tool_conf)
