@@ -198,8 +198,10 @@ using Planemo. *Tests shouldn't just be an extra step you have to do after devel
 guide development as well.*
 
 The workflow example all the way above demonstrates some assertions one can make about the contents of
-files. The full list of assertions available is only documented for the Galaxy XML format but it straight
-forward to adapt to the YAML format above - check out the `Galaxy XSD <https://docs.galaxyproject.org/en/latest/dev/schema.html#tool-tests-test-output-assert-contents>`__ for more information.
+files. The full list of assertions available is only documented for the Galaxy XML format but it is
+straightforward to adapt to the YAML format above - check out the
+`Galaxy XSD <https://docs.galaxyproject.org/en/latest/dev/schema.html#tool-tests-test-output-assert-contents>`__
+for more information.
 
 Some examples of inexact file comparisons derived from an artificial test case in the Planemo test suite is shown below,
 these are more options available for checking outputs that may change in small ways over time.
