@@ -38,6 +38,8 @@ class ExternalGalaxyCommandsTestCase(CliTestCase):
                 rerun_cmd = ["rerun", "--invocation", "invocation_id", "--profile", "test_ext_profile"]
                 upload_data_cmd = ["upload_data", "test_wf_alias", os.path.join(TEST_DATA_DIR, "wf2-job.yml"), "new-job.yml",
                                    "--profile", "test_ext_profile"]
+                workflow_test_init_cmd = ["workflow_test_init", "invocation_id", "--from_invocation", "--profile", "test_ext_profile"]
+                test_workflow_test_init_cmd = ["test", "TestWorkflow1.ga",  "--profile", "test_ext_profile"]
 
                 # test alias and profile creation
                 result = self._check_exit_code(profile_list_cmd)
@@ -69,9 +71,17 @@ class ExternalGalaxyCommandsTestCase(CliTestCase):
                 assert '1 jobs ok' in result.output or '"ok": 1' in result.output  # so it passes regardless if tabulate is installed or not
 
                 # test rerun
-                rerun_cmd[2] = config.user_gi.workflows.get_invocations(wfid)[0]['id']
+                invocation_id = config.user_gi.workflows.get_invocations(wfid)[0]['id']
+                rerun_cmd[2] = invocation_id
                 result = self._check_exit_code(rerun_cmd)
                 assert 'No jobs matching the specified invocation' in result.output
+
+                # test generating test case from invocation_id
+                workflow_test_init_cmd[2] = invocation_id
+                self._check_exit_code(workflow_test_init_cmd)
+                assert os.path.exists('TestWorkflow1.ga')
+                assert os.path.exists('TestWorkflow1-tests.yml')
+                self._check_exit_code(test_workflow_test_init_cmd)
 
                 # test alias and profile deletion
                 result = self._check_exit_code(alias_delete_cmd)

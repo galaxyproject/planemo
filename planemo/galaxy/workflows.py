@@ -329,7 +329,7 @@ def _job_inputs_template_from_invocation(invocation_id, galaxy_url, galaxy_api_k
             user_gi.datasets.download_dataset(input_step["id"], use_default_filename=False, file_path=f"test-data/{input_step['label']}.{ext}")
             template[input_step['label']] = {
                 "class": "File",
-                "path": f"{input_step['label']}.{ext}",
+                "path": f"test-data/{input_step['label']}.{ext}",
                 "filetype": ext
             }
         elif input_step["src"] == "hdca":
