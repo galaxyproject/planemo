@@ -727,6 +727,16 @@ def split_job_and_test():
     return click.option("--split_test/--no_split_test", default=False, help="Write workflow job and test definitions to separate files.")
 
 
+def from_invocation():
+    return planemo_option(
+        "--from_invocation/--not_from_invocation",
+        is_flag=True,
+        default=False,
+        help="Build a workflow test or job description from an invocation ID run on an external Galaxy."
+             "A Galaxy URL and API key must also be specified."
+    )
+
+
 def required_job_arg():
     """Decorate click method as requiring the path to a single tool.
     """
