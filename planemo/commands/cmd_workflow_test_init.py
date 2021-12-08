@@ -39,7 +39,6 @@ def cli(ctx, workflow_identifier, output=None, split_test=False, **kwds):
         path_basename = get_workflow_from_invocation_id(workflow_identifier, kwds["galaxy_url"], kwds["galaxy_user_key"])
     else:
         path_basename = os.path.basename(workflow_identifier)
-    print(path_basename)
     job = job_template(workflow_identifier, **kwds)
     if output is None:
         output = new_workflow_associated_path(path_basename if kwds["from_invocation"] else workflow_identifier)

@@ -291,7 +291,6 @@ def get_workflow_from_invocation_id(invocation_id, galaxy_url, galaxy_api_key):
     workflow_id = user_gi.invocations.show_invocation(invocation_id)['workflow_id']
     workflow = user_gi.workflows._get(workflow_id, params={'instance': 'true'})
     workflow_name = '-'.join(workflow["name"].split())
-    # user_gi.workflows.export_workflow_to_local_path(path=f'{workflow["name"]}.ga', workflow_id=workflow["id"])
     user_gi.workflows.export_workflow_to_local_path(use_default_filename=False, file_local_path=f'./{workflow_name}.ga', workflow_id=workflow["id"])
 
     return workflow_name
