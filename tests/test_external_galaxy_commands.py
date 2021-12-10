@@ -77,7 +77,7 @@ class ExternalGalaxyCommandsTestCase(CliTestCase):
                 assert 'No jobs matching the specified invocation' in result.output
 
                 # test generating test case from invocation_id
-                workflow_test_init_cmd[2] = invocation_id
+                workflow_test_init_cmd[1] = invocation_id
                 self._check_exit_code(workflow_test_init_cmd)
                 assert os.path.exists('TestWorkflow1.ga')
                 assert os.path.exists('TestWorkflow1-tests.yml')
