@@ -22,5 +22,9 @@ def create_command(virtualenv_path, galaxy_python_version=None):
         python = os.path.abspath(python)
     else:
         python = sys.executable or 'python'
-    command = [python, '-m', 'venv', virtualenv_path]
+    virtualenv_on_path = which('virtualenv')
+    if virtualenv_on_path:
+        command = [virtualenv_on_path, virtualenv_path, '-p', python]
+    else:
+        command = [python, '-m', 'venv', virtualenv_path]
     return " ".join(command)

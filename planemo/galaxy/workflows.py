@@ -12,6 +12,7 @@ from gxformat2.interface import BioBlendImporterGalaxyInterface
 from gxformat2.interface import ImporterGalaxyInterface
 from gxformat2.normalize import inputs_normalized, outputs_normalized
 
+from planemo.galaxy.api import gi
 from planemo.io import warn
 
 FAILED_REPOSITORIES_MESSAGE = "Failed to install one or more repositories."
@@ -201,10 +202,12 @@ def output_labels(workflow_path):
     return [o["id"] for o in outputs]
 
 
-def output_stubs_for_workflow(workflow_path):
+def output_stubs_for_workflow(workflow_path, **kwds):
     """
     Return output labels and class.
     """
+    if kwds.get("from_invocation"):
+        return _job_outputs_template_from_invocation(workflow_path, kwds["galaxy_url"], kwds["galaxy_user_key"])
     outputs = {}
     for label in output_labels(workflow_path):
         if not label.startswith('_anonymous_'):
@@ -212,12 +215,15 @@ def output_stubs_for_workflow(workflow_path):
     return outputs
 
 
-def job_template(workflow_path):
+def job_template(workflow_path, **kwds):
     """Return a job template for specified workflow.
 
     A dictionary describing non-optional inputs that must be specified to
     run the workflow.
     """
+    if kwds.get("from_invocation"):
+        return _job_inputs_template_from_invocation(workflow_path, kwds["galaxy_url"], kwds["galaxy_user_key"])
+
     template = {}
     for required_input_step in required_input_steps(workflow_path):
         i_label = input_label(required_input_step)
@@ -278,6 +284,86 @@ def rewrite_job_file(input_file, output_file, job):
             # else: presumably a parameter, no need to modify
     with open(output_file, "w") as f:
         yaml.dump(job_contents, f)
+
+
+def get_workflow_from_invocation_id(invocation_id, galaxy_url, galaxy_api_key):
+    user_gi = gi(url=galaxy_url, key=galaxy_api_key)
+    workflow_id = user_gi.invocations.show_invocation(invocation_id)['workflow_id']
+    workflow = user_gi.workflows._get(workflow_id, params={'instance': 'true'})
+    workflow_name = '-'.join(workflow["name"].split())
+    user_gi.workflows.export_workflow_to_local_path(use_default_filename=False, file_local_path=f'./{workflow_name}.ga', workflow_id=workflow["id"])
+
+    return workflow_name
+
+
+def _job_inputs_template_from_invocation(invocation_id, galaxy_url, galaxy_api_key):
+    def _template_from_collection(user_gi, collection_id):
+        collection = user_gi.dataset_collections.show_dataset_collection(collection_id)
+        template = {
+            "class": "Collection",
+            "collection_type": collection["collection_type"],
+            "elements": []
+        }
+        for element in collection["elements"]:
+            if element["element_type"] == "hdca":
+                template['elements'].append(_template_from_collection(element["object"]["id"]))
+            elif element["element_type"] == "hda":
+                user_gi.datasets.download_dataset(element["object"]["id"], use_default_filename=False,
+                                                  file_path=f"test-data/{input_step['label']}_{element['element_identifier']}.{ext}")
+                template['elements'].append(
+                    {
+                        "class": "File",
+                        "identifier": element['element_identifier'],
+                        "path": f"test-data/{input_step['label']}_{element['element_identifier']}.{ext}",
+                    }
+                )
+            return template
+
+    user_gi = gi(url=galaxy_url, key=galaxy_api_key)
+    invocation = user_gi.invocations.show_invocation(invocation_id)
+    template = {}
+    for input_step in invocation['inputs'].values():
+        if input_step["src"] == "hda":
+            ext = user_gi.datasets.show_dataset(input_step["id"])["extension"]
+            user_gi.datasets.download_dataset(input_step["id"], use_default_filename=False, file_path=f"test-data/{input_step['label']}.{ext}")
+            template[input_step['label']] = {
+                "class": "File",
+                "path": f"test-data/{input_step['label']}.{ext}",
+                "filetype": ext
+            }
+        elif input_step["src"] == "hdca":
+            template[input_step['label']] = _template_from_collection(user_gi, input_step["id"])
+    for param, param_step in invocation['input_step_parameters'].items():
+        template[param] = param_step["parameter_value"]
+
+    return template
+
+
+def _job_outputs_template_from_invocation(invocation_id, galaxy_url, galaxy_api_key):
+    user_gi = gi(url=galaxy_url, key=galaxy_api_key)
+    invocation = user_gi.invocations.show_invocation(invocation_id)
+    outputs = {}
+    for label, output in invocation["outputs"].items():
+        ext = user_gi.datasets.show_dataset(output["id"])["extension"]
+        user_gi.datasets.download_dataset(output["id"], use_default_filename=False, file_path=f"test-data/{label}.{ext}")
+        outputs[label] = {
+            'file': f"test-data/{label}.{ext}"
+        }
+    for label, output in invocation["output_collections"].items():
+        collection = user_gi.dataset_collections.show_dataset_collection(output['id'])
+        if ':' not in collection["collection_type"]:
+            user_gi.datasets.download_dataset(collection["elements"][0]["object"]["id"], use_default_filename=False,
+                                              file_path=f"test-data/{label}.{collection['elements'][0].get('extension', 'txt')}")
+            outputs[label] = {
+                'element_tests': {  # only check the first element
+                    collection["elements"][0]["element_identifier"]: f"test-data/{label}.{collection['elements'][0]['extension']}"
+                }
+            }
+        else:
+            outputs[label] = {
+                'element_tests': 'nested_collection_todo'
+            }
+    return outputs
 
 
 __all__ = (

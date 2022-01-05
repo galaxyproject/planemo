@@ -91,6 +91,19 @@ with the ``workflow_test_init`` command.
 
     $ planemo workflow_test_init path/to/workflow.ga
 
+This command creates a template test file, with inputs, parameters and expected outputs
+left blank for you to fill in. If you've already run the workflow on an external Galaxy
+server, you can generate a more complete test file directly from the invocation ID using
+the ``--from_invocation`` option.
+
+::
+
+    $ planemo workflow_test_init --from_invocation <INVOCATION ID> --galaxy_url <GALAXY SERVER URL> --galaxy_user_key" <GALAXY API KEY>
+
+You also need to specify the server URL and your API key, as Galaxy invocation IDs are
+only unique to a particular server. You can obtain the invocation ID from
+``<GALAXY SERVER URL>/workflows/invocations``.
+
 Publishing
 ----------
 
