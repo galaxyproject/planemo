@@ -253,13 +253,13 @@ Parameterizing XML Macros (with tokens)
 -----------------------------------------
 
 In addition to using ``yield`` blocks, there is another way to parameterize
-macros through the use of specifying 
+macros by specifying:
 
-- required parameters as comma separated list of parameter names using the
-``tokens`` attribute of the macro, e.g. ``tokens="foo,bar"`` and then using
-@FOO@ and @BAR@ anywhere in the macro 
-- optional parameters as ``token_xyz`` attributes on the macro 
-definition, and then using ``@XYZ@`` anywhere within the XML.
+- required parameters as comma-separated list of parameter names using the
+  ``tokens`` attribute (e.g. ``tokens="foo,bar"``) of the ``xml`` element and then using
+  ``@FOO@`` and ``@BAR@`` anywhere inside the macro definition;
+- optional parameters as ``token_xyz="default_value"`` attributes of the ``xml`` 
+  element, and then using ``@XYZ@`` anywhere inside the macro definition.
 
 .. code-block:: xml
 
