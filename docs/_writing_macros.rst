@@ -248,6 +248,60 @@ The following expand declarations have replaced the original conditional element
           </options>
         </expand>
 
+From Galaxy release 22.01 named yields are supported. That is, if the macro contains
+``<yield name="xyz"/>`` it is replaced by the content of the ``token` tag with the same name.
+Token tags need to be direct children of the ``expand`` element.
+
+.. code-block:: xml
+
+    <xml name="named_yields_example">
+      <conditional>
+        <param type="select">
+          <option value="a">A</option>
+          <option value="b">B</option>
+          <yield name="more_options"/>
+        </param>
+        <when value="a">
+          <param type="select">
+            <yield />
+          </param>
+        </when>
+        <when value="b">
+          <param ... />
+        </when>
+        <yield name="more_whens">
+      </conditional>
+    </xml>
+
+.. code-block:: xml
+
+        <expand macro="named_yields_example">
+          <token name="more_options">
+            <option value="c">C</option>
+          </token>
+          <token name="more_whens">
+            <when value="c">
+              <param type="select">
+                <yield />
+              </param>
+            </when>
+          </token>
+          <options from_data_table="tophat2_indexes">
+            <filter type="sort_by" column="2"/>
+            <validator type="no_options" message="No genomes are available for the selected input dataset"/>
+          </options>
+        </expand>
+
+Named yields are replaced in the order of the tokens defined in the ``expand``
+tag. Unamed yields are replaced after all named tokens have been replaced. 
+Note that, if there are named yields that have no corresponding token, then
+they are treated like unnamed yields.
+
+Further, note that the order of the replacements offers some possibilities
+to achieve recursion-like replacements, since a token may contain further named
+or unnamed ``yield`` tags.
+
+
 -----------------------------------------
 Parameterizing XML Macros (with tokens)
 -----------------------------------------
