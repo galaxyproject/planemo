@@ -253,27 +253,35 @@ Parameterizing XML Macros (with tokens)
 -----------------------------------------
 
 In addition to using ``yield`` blocks, there is another way to parameterize
-macros through the use of specifying ``token_xyz`` attributes on the macro
+macros through the use of specifying 
+
+- required parameters as comma separated list of parameter names using the
+``tokens`` attribute of the macro, e.g. ``tokens="foo,bar"`` and then using
+@FOO@ and @BAR@ anywhere in the macro 
+- optional parameters as ``token_xyz`` attributes on the macro 
 definition, and then using ``@XYZ@`` anywhere within the XML.
 
 .. code-block:: xml
 
     <macros>
-      <xml name="color" token_varname="myvar" token_default_color="#00ff00" token_label="Pick a color">
+      <xml name="color" tokens="varname" token_default_color="#00ff00" token_label="Pick a color">
           <param name="@VARNAME@" type="color" label="@LABEL@" value="@DEFAULT_COLOR@" />
       </xml>
     </macros>
 
-When invoking this macro, you can pass those values and produce varying results.
+This defines a macro with a required parameter ``varname`` and two optional
+parameters ``default_color`` and ``label``.  When invoking this macro, you can
+pass values for those parameters and produce varying results.
 
 .. code-block:: xml
 
     <inputs>
-        <expand macro="color" default_color="#ff0000" />
-        <expand macro="color" default_color="#0000ff" varname="c2" label="Choose a different color" />
+        <expand macro="color" varname="myvar" default_color="#ff0000" />
+        <expand macro="color" varname="c2" default_color="#0000ff" label="Choose a different color" />
     </inputs>
 
 The attributes passed to the macro definition will be filled in (or defaults used when not provided).
+Effectively this yields:
 
 .. code-block:: xml
 
