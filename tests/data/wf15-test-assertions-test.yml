@@ -1,0 +1,10 @@
+- doc: Test outline for Galaxy-Workflow-test_output_assertions(1).ga
+  job:
+    input:
+      class: File
+      path: todo_test_data_path.ext
+  outputs:
+    output:
+      asserts:
+        has_text:
+          non_existent_attribute: 0 

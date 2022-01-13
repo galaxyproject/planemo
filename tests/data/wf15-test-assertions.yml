@@ -1,0 +1,21 @@
+class: GalaxyWorkflow
+label: test output assertions
+uuid: 1819187f-a84d-4224-aec2-283bb6cd3cfc
+inputs:
+  input:
+    doc: input
+    optional: false
+    position:
+      bottom: 379.28334045410156
+      height: 62.15000915527344
+      left: 847
+      right: 1047
+      top: 317.1333312988281
+      width: 200
+      x: 847
+      y: 317.1333312988281
+    type: data
+outputs:
+  _anonymous_output_1:
+    outputSource: input
+steps: {}
