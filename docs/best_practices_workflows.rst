@@ -72,9 +72,35 @@ ability of other Galaxy's to use the workflow.
 Syntax
 ~~~~~~
 
-Planemo ``workflow_lint`` also checks if workflows have the correct JSON or YAML syntax.
-This may be less of a problem for workflows exported from a Galaxy instance but can assist
+Planemo's ``workflow_lint`` also checks if workflows have the correct JSON or YAML syntax,
+and ensures workflows follow certain 'best practices'. Best practices can also be checked
+in the 'Workflow Best Practices' panel of Galaxy's workflow editor and to some extent
+automatically fixed.
+
+.. image:: images/workflow_best_practices.png
+   :alt: Screenshot of Galaxy's best practices panel
+
+The ``workflow_lint`` subcommand allows the same checks to be made via the command line;
+this may be less of a problem for workflows exported from a Galaxy instance but can assist
 with workflows hand-edited or implemented using the newer YAML gxformat2 syntax.
+
+::
+
+    $ planemo workflow_lint path/to/workflow.ga
+
+Running this command makes the following checks:
+
+* The workflow is annotated
+* The workflow specifies a creator
+* The workflow specifies a license
+* All workflow steps are connected to formal input parameters
+* All workflow steps are annotated and labelled
+* No legacy 'untyped' parameters are used, e.g. a variable such as `${report_name}` in an input field
+* All outputs are labelled.
+
+In addition to checking the structure of the JSON or YAML file and workflow best practices,
+``workflow_lint`` also checks the workflow test file is formatted correctly and at least one
+valid test is specified.
 
 Tests
 -----
