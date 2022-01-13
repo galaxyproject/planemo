@@ -1,9 +1,12 @@
+import json
 import os
 import re
+from collections import OrderedDict
 
 import yaml
 from galaxy.tool_util.lint import LintContext
 from galaxy.tool_util.loader_directory import EXCLUDE_WALK_DIRS
+from galaxy.tool_util.verify import asserts
 from gxformat2._yaml import ordered_load
 from gxformat2.lint import lint_format2, lint_ga
 
@@ -72,7 +75,7 @@ def _lint_workflow_artifacts_on_path(lint_context, path, lint_args):
                 lint_func(lint_context, workflow_dict, path=path)
 
             lint_context.lint("lint_structure", structure, potential_workflow_artifact_path)
-
+            lint_context.lint("lint_best_practices", _lint_best_practices, potential_workflow_artifact_path)
             lint_context.lint("lint_tests", _lint_tsts, potential_workflow_artifact_path)
         else:
             # Allow linting ro crates and such also
@@ -97,6 +100,70 @@ def _lint_tsts(path, lint_context):
 
         if all_tests_valid:
             lint_context.valid(f"Tests appear structurally correct for {runnable.path}")
+
+
+def _lint_best_practices(path, lint_context):  # noqa: C901
+    """
+    This function duplicates the checks made by Galaxy's best practices panel:
+    https://github.com/galaxyproject/galaxy/blob/5396bb15fe8cfcf2e89d46c1d061c49b60e2f0b1/client/src/components/Workflow/Editor/Lint.vue
+    """
+    def check_json_for_untyped_params(j):
+        values = j if type(j) == list else j.values()
+        for value in values:
+            if type(value) in [list, dict, OrderedDict]:
+                if check_json_for_untyped_params(value):
+                    return True
+            elif type(value) == str:
+                if re.match(r'\$\{.+?\}', value):
+                    return True
+        return False
+
+    with open(path, "r") as f:
+        workflow_dict = ordered_load(f)
+
+    steps = workflow_dict.get("steps", {})
+
+    # annotation
+    if not workflow_dict.get("annotation"):
+        lint_context.warn("Workflow is not annotated.")
+
+    # creator
+    if not len(workflow_dict.get("creator", [])) > 0:
+        lint_context.warn("Workflow does not specify a creator.")
+
+    # license
+    if not workflow_dict.get("license"):
+        lint_context.warn("Workflow does not specify a license.")
+
+    # checks on individual steps
+    for step in steps.values():
+        print(step)
+        # disconnected inputs
+        for input in step.get("inputs", []):
+            if input.get("name") not in step.get("input_connections"):  # TODO: check optional
+                lint_context.warn(f"Input {input.get('name')} of workflow step {step.get('annotation') or step.get('id')} is disconnected.")
+
+        # missing metadata
+        if not step.get("annotation"):
+            lint_context.warn(f"Workflow step with ID {step.get('id')} has no annotation.")
+        if not step.get("label"):
+            lint_context.warn(f"Workflow step with ID {step.get('id')} has no label.")
+
+        # untyped parameters
+        if workflow_dict.get("class") == "GalaxyWorkflow":
+            tool_state = step.get('tool_state', {})
+            pjas = step.get('out', {})
+        else:
+            tool_state = json.loads(step.get('tool_state', '{}'))
+            pjas = step.get('post_job_actions', {})
+
+        if check_json_for_untyped_params(tool_state):
+            lint_context.warn(f"Workflow step with ID {step.get('id')} specifies an untyped parameter as an input.")
+
+        if check_json_for_untyped_params(pjas):
+            lint_context.warn(f"Workflow step with ID {step.get('id')} specifies an untyped parameter in the post-job actions.")
+
+        # unlabeled outputs are checked by gxformat2, no need to check here
 
 
 def _lint_case(path, test_case, lint_context):
@@ -133,11 +200,35 @@ def _lint_case(path, test_case, lint_context):
             found_valid_expectation = True
         # TODO: validate structure of test expectations
 
+        assertion_definitions = test_case.output_expectations[test_output_id].get("asserts")
+        if not _check_test_assertions(lint_context, assertion_definitions):
+            test_valid = False
+
     if not found_valid_expectation:
         lint_context.warn("Found no valid test expectations for workflow test")
         test_valid = False
 
     return test_valid
+
+
+def _check_test_assertions(lint_context, assertion_definitions):
+    # we are already in Python, not XML, so it is simpler to lint assertions by checking against the
+    # Python functions directly, rather than checking against galaxy.xsd as for tool linting
+    assertions_valid = True
+    if assertion_definitions:
+        for module in asserts.assertion_modules:
+            for function_name in dir(module):
+                if function_name.split('assert_')[-1] in assertion_definitions:
+                    f = module.__dict__[function_name]
+                    try:
+                        # try running the function with the attributes supplied and check for TypeError
+                        f('', **assertion_definitions[function_name.split('assert_')[-1]])
+                    except AssertionError:
+                        pass
+                    except TypeError as e:
+                        lint_context.error(f'Invalid assertion in tests: {str(e)}')
+                        assertions_valid = False
+    return assertions_valid
 
 
 def _tst_input_valid(test_case, input_id, input_def, lint_context):
