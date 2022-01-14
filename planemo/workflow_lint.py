@@ -1,3 +1,4 @@
+import inspect
 import json
 import os
 import re
@@ -219,14 +220,14 @@ def _check_test_assertions(lint_context, assertion_definitions):
         for module in asserts.assertion_modules:
             for function_name in dir(module):
                 if function_name.split('assert_')[-1] in assertion_definitions:
-                    f = module.__dict__[function_name]
+                    signature = inspect.signature(module.__dict__[function_name])
                     try:
-                        # try running the function with the attributes supplied and check for TypeError
-                        f('', **assertion_definitions[function_name.split('assert_')[-1]])
+                        # try mapping the function with the attributes supplied and check for TypeError
+                        signature.bind('', **assertion_definitions[function_name.split('assert_')[-1]])
                     except AssertionError:
                         pass
                     except TypeError as e:
-                        lint_context.error(f'Invalid assertion in tests: {str(e)}')
+                        lint_context.error(f'Invalid assertion in tests: {function_name} {str(e)}')
                         assertions_valid = False
     return assertions_valid
 

@@ -7,4 +7,5 @@
     output:
       asserts:
         has_text:
-          non_existent_attribute: 0 
+          non_existent_attribute: 0
+          text: 'text'

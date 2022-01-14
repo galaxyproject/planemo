@@ -175,7 +175,7 @@ class CmdWorkflowLintTestCase(CliTestCase):
         workflow_path = '/'.join((TEST_DATA_DIR, 'wf15-test-assertions.yml'))
         lint_cmd = ["workflow_lint", workflow_path]
         result = self._runner.invoke(self._cli.planemo, lint_cmd)
-        assert "ERROR: Invalid assertion in tests: assert_has_text() got an unexpected keyword argument 'non_existent_attribute'" in result.output
+        assert "Invalid assertion in tests: assert_has_text got an unexpected keyword argument 'non_existent_attribute'" in result.output
 
 
 def _wf_repo(rel_path):
