@@ -2,7 +2,7 @@
 import json
 
 import click
-from gxformat2 import from_galaxy_native
+import yaml
 
 from planemo import autoupdate, options
 from planemo.cli import command_function
@@ -57,7 +57,7 @@ def skiplist_option():
     return planemo_option(
         "--skiplist",
         default=None,
-        help="Skiplist file, containing a list of tools for which autoupdate should be skipped."
+        help="Skiplist file, containing a list of tools or workflows for which autoupdate should be skipped."
     )
 
 
@@ -112,9 +112,19 @@ def cli(ctx, paths, **kwds):  # noqa C901
             else:
                 exit_codes.append(EXIT_CODE_OK)
 
-    workflows = [r for r in runnables if r.type == RunnableType.galaxy_workflow]
+    workflows = [r for r in runnables if r.type == RunnableType.galaxy_workflow and r.path.split('/')[-1] not in tools_to_skip]
     modified_workflows = []
-    if workflows:
+    for workflow in workflows:
+        tools_to_update = autoupdate.get_tools_to_update(workflow, tools_to_skip)
+        if tools_to_update:
+            modified_workflows.append(workflow)
+            info("The following tools are outdated:")
+            for tool, versions in tools_to_update.items():
+                info(f"{tool}: {versions['current']} -> {versions['updated']}")
+        else:
+            info("No newer tool versions were found, so the workflow was not updated.")
+
+    if modified_workflows and not kwds.get('dry_run'):
         assert is_galaxy_engine(**kwds)
         if kwds.get("engine") != "external_galaxy":
             kwds["install_most_recent_revision"] = True
@@ -123,25 +133,31 @@ def cli(ctx, paths, **kwds):  # noqa C901
             kwds['shed_install'] = True
 
         with engine_context(ctx, **kwds) as galaxy_engine:
-            with galaxy_engine.ensure_runnables_served(workflows) as config:
-                for workflow in workflows:
+            with galaxy_engine.ensure_runnables_served(modified_workflows) as config:
+                for workflow in modified_workflows:
                     if config.updated_repos.get(workflow.path) or kwds.get("engine") == "external_galaxy":
                         info("Auto-updating workflow %s" % workflow.path)
                         updated_workflow = autoupdate.autoupdate_wf(ctx, config, workflow)
+
                         if workflow.path.endswith(".ga"):
+                            with open(workflow.path, 'r') as f:
+                                original_workflow = json.load(f)
+                            edited_workflow = autoupdate.fix_workflow_ga(original_workflow, updated_workflow)
                             with open(workflow.path, 'w') as f:
-                                json.dump(updated_workflow, f, indent=4, sort_keys=True)
+                                json.dump(edited_workflow, f, indent=4)
                         else:
-                            format2_wrapper = from_galaxy_native(updated_workflow, json_wrapper=True)
+                            with open(workflow.path, "r") as f:
+                                original_workflow = yaml.load(f, Loader=yaml.SafeLoader)
+                            edited_workflow = autoupdate.fix_workflow_gxformat2(original_workflow, updated_workflow)
                             with open(workflow.path, "w") as f:
-                                f.write(format2_wrapper["yaml_content"])
-                        modified_workflows.append(workflow.path)
-                    else:
-                        info("No newer tool versions were found, so the workflow was not updated.")
+                                yaml.dump(edited_workflow, f)
+                        if original_workflow.get('release'):
+                            info(f"The workflow release number has been updated from "
+                                 f"{original_workflow.get('release')} to {edited_workflow.get('release')}.")
 
     if kwds['test']:
-        if not modified_files:
-            info("No tools were updated, so no tests were run.")
+        if not modified_files and not modified_workflows:
+            info("No tools or workflows were updated, so no tests were run.")
         else:
             with temp_directory(dir=ctx.planemo_directory) as temp_path:
                 # only test tools in updated directories
