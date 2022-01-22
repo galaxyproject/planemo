@@ -55,6 +55,24 @@ class CmdTestTestCase(CliTestCase):
             self._check_exit_code(test_command, exit_code=0)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_test_simple_yaml_dockerized(self):
+        """Test testing a simple YAML workflow with Galaxy in Docker."""
+        with self._isolate():
+            random_lines = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "randomlines.xml")
+            cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
+            test_artifact = os.path.join(TEST_DATA_DIR, "wf1.gxwf.yml")
+            test_command = self._test_command()
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command += [
+                "--no_dependency_resolution",
+                "--engine", "docker_galaxy",
+                "--extra_tools", random_lines,
+                "--extra_tools", cat,
+                test_artifact,
+            ]
+            self._check_exit_code(test_command, exit_code=0)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_workflow_test_simple_ga(self):
         """Test testing a simple GA workflow with Galaxy."""
         with self._isolate():

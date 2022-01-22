@@ -928,6 +928,12 @@ class BaseManagedGalaxyConfig(BaseGalaxyConfig):
         self.port = port
         self.server_name = server_name
 
+    @property
+    def log_file(self):
+        """Log file used when planemo serves this Galaxy instance."""
+        file_name = "%s.log" % self.server_name
+        return file_name
+
 
 class DockerGalaxyConfig(BaseManagedGalaxyConfig):
     """A :class:`GalaxyConfig` description of a Dockerized Galaxy instance."""
