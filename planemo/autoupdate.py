@@ -208,11 +208,11 @@ def _update_wf(config, workflow_id, instance=False):
     Recursively update a workflow, including subworkflows
     """
     wf = config.user_gi.make_get_request(f'{config.user_gi.url}/workflows/{workflow_id}', params={'instance': instance}).json()
-    for step in wf['steps'].values():
+    for step in wf.get('steps', {}).values():
         if step['type'] == 'subworkflow':
             # update subworkflows before the main workflow
             _update_wf(config, step['workflow_id'], instance=True)
-    config.user_gi.workflows.refactor_workflow(workflow_id, actions=[{"action_type": "upgrade_all_steps"}])
+    config.user_gi.workflows.refactor_workflow(wf["id"], actions=[{"action_type": "upgrade_all_steps"}])
 
 
 def outdated_tools(ctx, wf_dict, ts):
@@ -238,9 +238,9 @@ def outdated_tools(ctx, wf_dict, ts):
         if step.get('type', 'tool') == 'tool' and not step.get('run', {}).get('class') == 'GalaxyWorkflow':
             outdated_tool_dict.update(check_tool_step(step, ts))
         elif step.get('type') == 'subworkflow':  # GA SWF
-            outdated_tool_dict.update(outdated_tools(step["subworkflow"], ts))
+            outdated_tool_dict.update(outdated_tools(ctx, step["subworkflow"], ts))
         elif step.get('run', {}).get('class') == 'GalaxyWorkflow':  # gxformat2 SWF
-            outdated_tool_dict.update(outdated_tools(step["run"], ts))
+            outdated_tool_dict.update(outdated_tools(ctx, step["run"], ts))
         else:
             continue
     return outdated_tool_dict
