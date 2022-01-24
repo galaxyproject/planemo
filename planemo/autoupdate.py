@@ -2,7 +2,6 @@
 from __future__ import absolute_import
 
 import collections
-import json
 import re
 import xml.etree.ElementTree as ET
 
@@ -216,14 +215,15 @@ def _update_wf(config, workflow_id, instance=False):
     config.user_gi.workflows.refactor_workflow(workflow_id, actions=[{"action_type": "upgrade_all_steps"}])
 
 
-def outdated_tools(wf_dict, ts):
+def outdated_tools(ctx, wf_dict, ts):
     def check_tool_step(step, ts):  # return a dict with current and newest tool version, in case they don't match
         if not step['tool_id'].startswith(AUTOUPDATE_TOOLSHED_URL[8:]):
             return {}  # assume a built in tool
         try:
             repos = ts.repositories._get(params={"tool_ids": step['tool_id']})
         except Exception:
-            return {}  # some ToolShed bugs - we just skip these
+            ctx.log(f"The ToolShed returned an error when searching for the most recent version of {step['tool_id']}")
+            return {}
         base_id = '/'.join((step['tool_id'].split('/')[:-1]))
         tool_ids_found = set(tool['guid'] for repo in repos.values() if type(repo) == dict for tool in repo.get('tools', []))
         updated_tool_id = sorted(set(tool_id for tool_id in tool_ids_found if f"{base_id}/" in tool_id), key=lambda n: packaging.version.parse(n))[-1]
@@ -246,19 +246,15 @@ def outdated_tools(wf_dict, ts):
     return outdated_tool_dict
 
 
-def get_tools_to_update(workflow, tools_to_skip):
+def get_tools_to_update(ctx, workflow, tools_to_skip):
     # before we run the autoupdate, we check the tools against the toolshed to see if there
     # are any new versions. This saves spinning up Galaxy and installing the tools if there
     # is nothing to do, and also allows us to collect a list of the tools which need updating
-    if workflow.path.endswith('ga'):
-        with open(workflow.path) as f:
-            wf_dict = json.load(f)
-    else:
-        with open(workflow.path) as f:
-            wf_dict = yaml.load(f, Loader=yaml.SafeLoader)
+    with open(workflow.path) as f:
+        wf_dict = yaml.load(f, Loader=yaml.SafeLoader)
 
     ts = toolshed.ToolShedInstance(url=AUTOUPDATE_TOOLSHED_URL)
-    tools_to_update = outdated_tools(wf_dict, ts)
+    tools_to_update = outdated_tools(ctx, wf_dict, ts)
     return {tool: versions for tool, versions in tools_to_update.items() if tool not in tools_to_skip}
 
 
@@ -271,7 +267,6 @@ def autoupdate_wf(ctx, config, wf):
 def fix_workflow_ga(original_wf, updated_wf):
     # the Galaxy refactor action can't do everything right now... some manual fixes here
     # * bump release number if present
-    # * update tool_ids ... refactor only updates tool_version
     # * order steps numerically, leave everything else sorted as in the original workflow
     # * recurse over subworkflows
     edited_wf = original_wf.copy()

@@ -115,7 +115,7 @@ def cli(ctx, paths, **kwds):  # noqa C901
     workflows = [r for r in runnables if r.type == RunnableType.galaxy_workflow and r.path.split('/')[-1] not in tools_to_skip]
     modified_workflows = []
     for workflow in workflows:
-        tools_to_update = autoupdate.get_tools_to_update(workflow, tools_to_skip)
+        tools_to_update = autoupdate.get_tools_to_update(ctx, workflow, tools_to_skip)
         if tools_to_update:
             modified_workflows.append(workflow)
             info("The following tools are outdated:")
