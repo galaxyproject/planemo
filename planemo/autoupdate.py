@@ -288,15 +288,6 @@ def fix_workflow_ga(original_wf, updated_wf):
         if edited_wf['steps'][step].get("type") == "subworkflow":
             edited_wf['steps'][step]["subworkflow"] = fix_workflow_ga(edited_wf['steps'][step]["subworkflow"],
                                                                       updated_wf['steps'][step]["subworkflow"])
-        # fix tool_id and content_id to march tool_version
-        elif edited_wf['steps'][step]['type'] == 'tool':
-            if edited_wf['steps'][step].get('tool_id', '').startswith(AUTOUPDATE_TOOLSHED_URL[8:]):
-                if edited_wf['steps'][step]["tool_id"].split('/')[-1] != edited_wf['steps'][step]["tool_version"]:
-                    tool_id = edited_wf['steps'][step]["tool_id"].split('/')
-                    tool_id[-1] = edited_wf['steps'][step]["tool_version"]
-                    edited_wf['steps'][step]["tool_id"] = '/'.join(tool_id)
-                    if edited_wf['steps'][step].get("content_id"):
-                        edited_wf['steps'][step]["content_id"] = '/'.join(tool_id)
     return edited_wf
 
 
@@ -317,10 +308,7 @@ def fix_workflow_gxformat2(original_wf, updated_wf):
         elif updated_wf['steps'][str(step_index + len(original_wf['inputs']))]['type'] == 'tool':
             if updated_wf['steps'][str(step_index + len(original_wf['inputs']))].get('tool_id', '').startswith(AUTOUPDATE_TOOLSHED_URL[8:]):
                 step['tool_version'] = updated_wf['steps'][str(step_index + len(original_wf['inputs']))]['tool_version']
-                if step["tool_id"].split('/')[-1] != step["tool_version"]:
-                    tool_id = step["tool_id"].split('/')
-                    tool_id[-1] = step["tool_version"]
-                    step["tool_id"] = '/'.join(tool_id)
-                    if step.get("content_id"):
-                        step["content_id"] = '/'.join(tool_id)
+                step['tool_id'] = updated_wf['steps'][str(step_index + len(original_wf['inputs']))]['tool_id']
+                step['content_id'] = updated_wf['steps'][str(step_index + len(original_wf['inputs']))]['content_id']
+
     return edited_wf

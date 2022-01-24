@@ -99,6 +99,7 @@ class CmdAutoupdateTestCase(CliTestCase):
             assert wf["steps"]["1"]["tool_version"] == "3.7+galaxy0"
             # check tool within subworkflow has updated
             assert wf["steps"]["2"]["subworkflow"]["steps"]["1"]["tool_version"] == "3.7+galaxy0"
+            assert wf["steps"]["2"]["subworkflow"]["steps"]["1"]["tool_id"] == "toolshed.g2.bx.psu.edu/repos/bgruening/diff/diff/3.7+galaxy0"
             assert wf["version"] == 2
             assert wf["release"] == "0.1.1"
 
@@ -113,5 +114,6 @@ class CmdAutoupdateTestCase(CliTestCase):
             with open(wf_file) as f:
                 wf = yaml.safe_load(f)
             assert wf["steps"][0]["tool_version"] == "3.7+galaxy0"
+            assert wf["steps"][0]["tool_version"] == "toolshed.g2.bx.psu.edu/repos/bgruening/diff/diff/3.7+galaxy0"
             assert wf['steps'][1]['run']['steps'][0]['tool_version'] == "3.7+galaxy0"
             assert wf["release"] == "0.1.1"
