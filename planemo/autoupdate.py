@@ -7,10 +7,14 @@ import xml.etree.ElementTree as ET
 
 import packaging.version
 import requests
+import yaml
+from bioblend import toolshed
 from galaxy.tool_util.deps import conda_util
 
 import planemo.conda
 from planemo.io import error, info
+
+AUTOUPDATE_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
 
 
 def find_macros(xml_tree):
@@ -204,14 +208,102 @@ def _update_wf(config, workflow_id, instance=False):
     Recursively update a workflow, including subworkflows
     """
     wf = config.user_gi.make_get_request(f'{config.user_gi.url}/workflows/{workflow_id}', params={'instance': instance}).json()
-    for step in wf['steps'].values():
+    for step in wf.get('steps', {}).values():
         if step['type'] == 'subworkflow':
             # update subworkflows before the main workflow
             _update_wf(config, step['workflow_id'], instance=True)
-    config.user_gi.workflows.refactor_workflow(workflow_id, actions=[{"action_type": "upgrade_all_steps"}])
+    config.user_gi.workflows.refactor_workflow(wf["id"], actions=[{"action_type": "upgrade_all_steps"}])
+
+
+def outdated_tools(ctx, wf_dict, ts):
+    def check_tool_step(step, ts):  # return a dict with current and newest tool version, in case they don't match
+        if not step['tool_id'].startswith(AUTOUPDATE_TOOLSHED_URL[8:]):
+            return {}  # assume a built in tool
+        try:
+            repos = ts.repositories._get(params={"tool_ids": step['tool_id']})
+        except Exception:
+            ctx.log(f"The ToolShed returned an error when searching for the most recent version of {step['tool_id']}")
+            return {}
+        base_id = '/'.join((step['tool_id'].split('/')[:-1]))
+        tool_ids_found = set(tool['guid'] for repo in repos.values() if type(repo) == dict for tool in repo.get('tools', []))
+        updated_tool_id = sorted(set(tool_id for tool_id in tool_ids_found if f"{base_id}/" in tool_id), key=lambda n: packaging.version.parse(n))[-1]
+        if step['tool_id'] != updated_tool_id:
+            return {base_id: {'current': step['tool_id'], 'updated': updated_tool_id}}
+        else:
+            return {}
+
+    outdated_tool_dict = {}
+    steps = wf_dict['steps'].values() if type(wf_dict['steps']) == dict else wf_dict['steps']
+    for step in steps:
+        if step.get('type', 'tool') == 'tool' and not step.get('run', {}).get('class') == 'GalaxyWorkflow':
+            outdated_tool_dict.update(check_tool_step(step, ts))
+        elif step.get('type') == 'subworkflow':  # GA SWF
+            outdated_tool_dict.update(outdated_tools(ctx, step["subworkflow"], ts))
+        elif step.get('run', {}).get('class') == 'GalaxyWorkflow':  # gxformat2 SWF
+            outdated_tool_dict.update(outdated_tools(ctx, step["run"], ts))
+        else:
+            continue
+    return outdated_tool_dict
+
+
+def get_tools_to_update(ctx, workflow, tools_to_skip):
+    # before we run the autoupdate, we check the tools against the toolshed to see if there
+    # are any new versions. This saves spinning up Galaxy and installing the tools if there
+    # is nothing to do, and also allows us to collect a list of the tools which need updating
+    with open(workflow.path) as f:
+        wf_dict = yaml.load(f, Loader=yaml.SafeLoader)
+
+    ts = toolshed.ToolShedInstance(url=AUTOUPDATE_TOOLSHED_URL)
+    tools_to_update = outdated_tools(ctx, wf_dict, ts)
+    return {tool: versions for tool, versions in tools_to_update.items() if tool not in tools_to_skip}
 
 
 def autoupdate_wf(ctx, config, wf):
     workflow_id = config.workflow_id_for_runnable(wf)
     _update_wf(config, workflow_id)
     return config.user_gi.workflows.export_workflow_dict(workflow_id)
+
+
+def fix_workflow_ga(original_wf, updated_wf):
+    # the Galaxy refactor action can't do everything right now... some manual fixes here
+    # * bump release number if present
+    # * order steps numerically, leave everything else sorted as in the original workflow
+    # * recurse over subworkflows
+    edited_wf = original_wf.copy()
+    updated_wf_steps = collections.OrderedDict(sorted(updated_wf["steps"].items(), key=lambda item: int(item[0])))
+    edited_wf['steps'] = updated_wf_steps
+    # check release; bump if it exists
+    if edited_wf.get('release'):
+        release = [int(n) for n in edited_wf['release'].split('.')]
+        release[-1] += 1
+        edited_wf['release'] = '.'.join([str(n) for n in release])
+    # iterate over the steps
+    for step in edited_wf['steps']:
+        # recurse over subworkflows
+        if edited_wf['steps'][step].get("type") == "subworkflow":
+            edited_wf['steps'][step]["subworkflow"] = fix_workflow_ga(edited_wf['steps'][step]["subworkflow"],
+                                                                      updated_wf['steps'][step]["subworkflow"])
+    return edited_wf
+
+
+def fix_workflow_gxformat2(original_wf, updated_wf):
+    # does the same as fix_workflow_ga for gxformat2
+    edited_wf = original_wf.copy()
+    # check release; bump if it exists
+    if edited_wf.get('release'):
+        release = [int(n) for n in edited_wf['release'].split('.')]
+        release[-1] += 1
+        edited_wf['release'] = '.'.join([str(n) for n in release])
+    # iterate over the steps
+    for step_index, step in enumerate(edited_wf['steps']):
+        # recurse over subworkflows
+        if step.get('run', {}).get('class') == 'GalaxyWorkflow':  # subworkflow
+            step["run"] = fix_workflow_gxformat2(step["run"], updated_wf['steps'][str(step_index + len(original_wf['inputs']))]["subworkflow"])
+        # fix tool_id and content_id to march tool_version
+        elif updated_wf['steps'][str(step_index + len(original_wf['inputs']))]['type'] == 'tool':
+            if updated_wf['steps'][str(step_index + len(original_wf['inputs']))].get('tool_id', '').startswith(AUTOUPDATE_TOOLSHED_URL[8:]):
+                step['tool_version'] = updated_wf['steps'][str(step_index + len(original_wf['inputs']))]['tool_version']
+                step['tool_id'] = updated_wf['steps'][str(step_index + len(original_wf['inputs']))]['tool_id']
+                step['content_id'] = updated_wf['steps'][str(step_index + len(original_wf['inputs']))]['content_id']
+
+    return edited_wf

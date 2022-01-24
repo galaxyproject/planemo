@@ -1,6 +1,7 @@
 class: GalaxyWorkflow
 label: diff-refactor-test
 uuid: 22ff99ac-147f-4e23-80cd-ef56f59eedae
+release: 0.1.0
 inputs:
   inp:
     optional: false

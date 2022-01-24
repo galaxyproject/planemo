@@ -3,6 +3,7 @@
     "annotation": "",
     "format-version": "0.1",
     "name": "diff-refactor-test",
+    "release": "0.1.0",
     "steps": {
         "0": {
             "annotation": "",
