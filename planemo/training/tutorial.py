@@ -352,7 +352,6 @@ class Tutorial(object):
             with open(os.path.join(self.faq_dir, 'index.md'), 'w') as handle:
                 handle.write('---\nlayout: faq-page\n---\n')
 
-
     def init_data_lib(self):
         """Init the data library dictionary."""
         if os.path.exists(self.data_lib_fp):
