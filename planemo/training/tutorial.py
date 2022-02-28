@@ -347,6 +347,12 @@ class Tutorial(object):
         # get the data library
         self.init_data_lib()
 
+        # create the FAQ page
+        if not os.path.exists(os.path.join(self.faq_dir, 'index.md')):
+            with open(os.path.join(self.faq_dir, 'index.md'), 'w') as handle:
+                handle.write('---\nlayout: faq-page\n---\n')
+
+
     def init_data_lib(self):
         """Init the data library dictionary."""
         if os.path.exists(self.data_lib_fp):
@@ -409,6 +415,7 @@ class Tutorial(object):
         self.data_lib_fp = os.path.join(self.dir, "data-library.yaml")
         self.wf_dir = os.path.join(self.dir, "workflows")
         self.wf_fp = os.path.join(self.wf_dir, "main_workflow.ga")
+        self.faq_dir = os.path.join(self.dir, "faqs")
         self.tour_dir = os.path.join(self.dir, "tours")
         # remove empty workflow file if there
         empty_wf_filepath = os.path.join(self.wf_dir, "empty_workflow.ga")
@@ -440,6 +447,7 @@ class Tutorial(object):
                 self.init_wf_id,
                 self.wf_fp,
                 use_default_filename=False)
+
 
     # OTHER METHODS
     def get_files_from_zenodo(self):
