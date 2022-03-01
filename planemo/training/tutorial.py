@@ -347,11 +347,6 @@ class Tutorial(object):
         # get the data library
         self.init_data_lib()
 
-        # create the FAQ page
-        if not os.path.exists(os.path.join(self.faq_dir, 'index.md')):
-            with open(os.path.join(self.faq_dir, 'index.md'), 'w') as handle:
-                handle.write('---\nlayout: faq-page\n---\n')
-
     def init_data_lib(self):
         """Init the data library dictionary."""
         if os.path.exists(self.data_lib_fp):
@@ -446,6 +441,7 @@ class Tutorial(object):
                 self.init_wf_id,
                 self.wf_fp,
                 use_default_filename=False)
+
 
     # OTHER METHODS
     def get_files_from_zenodo(self):
@@ -560,6 +556,10 @@ class Tutorial(object):
                 slide_f.write(
                     templates.render(TUTO_SLIDES_TEMPLATE, **{"metadata": self.get_tuto_metata()}))
 
+        # create the FAQ page
+        if not os.path.exists(os.path.join(self.faq_dir, 'index.md')):
+            with open(os.path.join(self.faq_dir, 'index.md'), 'w') as handle:
+                handle.write('---\nlayout: faq-page\n---\n')
 
 def get_galaxy_datatype(z_ext, datatype_fp):
     """Get the Galaxy datatype corresponding to a Zenodo file type."""
