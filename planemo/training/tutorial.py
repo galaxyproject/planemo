@@ -442,7 +442,6 @@ class Tutorial(object):
                 self.wf_fp,
                 use_default_filename=False)
 
-
     # OTHER METHODS
     def get_files_from_zenodo(self):
         """Extract a list of URLs and dictionary describing the files from the JSON output of the Zenodo API."""
