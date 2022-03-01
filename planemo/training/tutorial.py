@@ -561,6 +561,7 @@ class Tutorial(object):
             with open(os.path.join(self.faq_dir, 'index.md'), 'w') as handle:
                 handle.write('---\nlayout: faq-page\n---\n')
 
+
 def get_galaxy_datatype(z_ext, datatype_fp):
     """Get the Galaxy datatype corresponding to a Zenodo file type."""
     g_datatype = ''
