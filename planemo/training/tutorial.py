@@ -556,6 +556,7 @@ class Tutorial(object):
                     templates.render(TUTO_SLIDES_TEMPLATE, **{"metadata": self.get_tuto_metata()}))
 
         # create the FAQ page
+        os.makedirs(self.faq_dir)
         if not os.path.exists(os.path.join(self.faq_dir, 'index.md')):
             with open(os.path.join(self.faq_dir, 'index.md'), 'w') as handle:
                 handle.write('---\nlayout: faq-page\n---\n')
