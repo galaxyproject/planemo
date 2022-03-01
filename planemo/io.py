@@ -60,6 +60,26 @@ def communicate(cmds, **kwds):
     return output
 
 
+def copy(source, dest):
+    info("cp '%s' '%s'" % (source, dest))
+    shutil.copy(source, dest)
+
+
+def mkdir(path):
+    info("mkdir '%s'" % path)
+    os.mkdir(path)
+
+
+def makedirs(path):
+    info("mkdir -p '%s'" % path)
+    os.makedirs(path)
+
+
+def rm_rf_tree(path):
+    info("rm -rf '%s'" % path)
+    shutil.rmtree(path, ignore_errors=True)
+
+
 def shell(cmds, **kwds):
     """Print and execute shell command."""
     cmd_string = args_to_str(cmds)
