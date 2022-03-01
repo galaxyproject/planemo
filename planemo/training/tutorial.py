@@ -409,6 +409,7 @@ class Tutorial(object):
         self.data_lib_fp = os.path.join(self.dir, "data-library.yaml")
         self.wf_dir = os.path.join(self.dir, "workflows")
         self.wf_fp = os.path.join(self.wf_dir, "main_workflow.ga")
+        self.faq_dir = os.path.join(self.dir, "faqs")
         self.tour_dir = os.path.join(self.dir, "tours")
         # remove empty workflow file if there
         empty_wf_filepath = os.path.join(self.wf_dir, "empty_workflow.ga")
@@ -553,6 +554,12 @@ class Tutorial(object):
             with open(self.slide_fp, 'w') as slide_f:
                 slide_f.write(
                     templates.render(TUTO_SLIDES_TEMPLATE, **{"metadata": self.get_tuto_metata()}))
+
+        # create the FAQ page
+        os.makedirs(self.faq_dir)
+        if not os.path.exists(os.path.join(self.faq_dir, 'index.md')):
+            with open(os.path.join(self.faq_dir, 'index.md'), 'w') as handle:
+                handle.write('---\nlayout: faq-page\n---\n')
 
 
 def get_galaxy_datatype(z_ext, datatype_fp):
