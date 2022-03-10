@@ -19,7 +19,7 @@ REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
 DEFAULT_CWL_VERSION = "v1.0"
 
 
-TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}" python_template_version="3.5">
+TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}+galaxy0" python_template_version="3.5" profile="21.05">
 {%- if description %}
     <description>{{ description }}</description>
 {%- endif %}
