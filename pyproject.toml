@@ -8,7 +8,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.6"
 allure-python-commons = "*"
-bioblend = ">=0.14.0"
+bioblend = ">=0.16.0"
 click = "!=8.0.2"
 cwltool = ">=1.0.20191225192155"
 ephemeris = ">=0.10.3"
