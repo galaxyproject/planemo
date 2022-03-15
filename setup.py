@@ -21,6 +21,10 @@ if sys.version_info < (3, 6):
 DEFAULT_PLANEMO_REQUIRE_LXML = 1
 PLANEMO_REQUIRE_LXML = os.environ.get("PLANEMO_REQUIRE_LXML", "%d" % DEFAULT_PLANEMO_REQUIRE_LXML) != "0"
 
+# SET PLANEMO_LIB environment variable to 1 to build an unpinned planemo library
+PLANEMO_LIB = os.environ.get("PLANEMO_LIB") == "1"
+PROJECT_NAME = "planemo-lib" if PLANEMO_LIB else "planemo"
+
 SOURCE_DIR = "planemo"
 
 _version_re = re.compile(r'__version__\s+=\s+(.*)')
@@ -35,7 +39,6 @@ with open('%s/__init__.py' % SOURCE_DIR, 'rb') as f:
         return str(ast.literal_eval(match))
 
     version = get_var("__version__")
-    PROJECT_NAME = get_var("PROJECT_NAME")
     PROJECT_URL = get_var("PROJECT_URL")
     PROJECT_AUTHOR = get_var("PROJECT_AUTHOR")
     PROJECT_EMAIL = get_var("PROJECT_EMAIL")
@@ -80,8 +83,9 @@ with open('README.rst') as fh:
 with open('HISTORY.rst') as fh:
     history = fh.read().replace('.. :changelog:', '')
 
-if os.path.exists("requirements.txt"):
-    with open("requirements.txt") as fh:
+requirements_path = "requirements.txt" if PLANEMO_LIB else "pinned-requirements.txt"
+if os.path.exists(requirements_path):
+    with open(requirements_path) as fh:
         requirements = [r for r in fh.read().split("\n") if ";" not in r]
     if not PLANEMO_REQUIRE_LXML:
         requirements.remove("lxml")

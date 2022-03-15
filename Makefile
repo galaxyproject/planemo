@@ -58,8 +58,8 @@ install: submodule ## install into Python envirnoment
 
 dependencies-update:
 	poetry update
-	poetry export --without-hashes -f requirements.txt --output requirements.txt
-	poetry export --dev --without-hashes -f requirements.txt --output dev-requirements.txt
+	poetry export --without-hashes -f requirements.txt --output pinned-requirements.txt
+	poetry export --dev --without-hashes -f requirements.txt --output pinned-dev-requirements.txt
 
 setup-venv: ## setup a development virtualenv in current directory
 	if [ ! -d $(VENV) ]; then virtualenv $(VENV); exit; fi;
