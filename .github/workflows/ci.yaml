@@ -71,6 +71,11 @@ jobs:
           TOXENV: py${{ matrix.python-version }}-${{ matrix.tox-action }}
   deploy:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        lib: ["0", "1"]
+    env:
+      PLANEMO_LIB: ${{ matrix.lib }}
     steps:
       - uses: actions/checkout@v1
         with:
