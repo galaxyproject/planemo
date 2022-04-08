@@ -607,7 +607,6 @@ def _shared_galaxy_properties(config_directory, kwds, for_tests):
         'master_api_key': master_api_key,
         'admin_users': "%s,test@bx.psu.edu" % user_email,
         'expose_dataset_path': "True",
-        'cleanup_job': 'never',
         'collect_outputs_from': "job_working_directory",
         'allow_path_paste': "True",
         'check_migrate_tools': "False",
@@ -615,6 +614,11 @@ def _shared_galaxy_properties(config_directory, kwds, for_tests):
         'brand': kwds.get("galaxy_brand", DEFAULT_GALAXY_BRAND),
         'strict_cwl_validation': str(not kwds.get("non_strict_cwl", False)),
     }
+    if kwds.get("no_cleanup", False):
+        properties['cleanup_job'] = 'onsuccess'
+    else:
+        properties['cleanup_job'] = 'always'
+
     if kwds.get("galaxy_single_user", True):
         properties['single_user'] = user_email
 
