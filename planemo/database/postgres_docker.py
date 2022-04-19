@@ -5,8 +5,8 @@ from galaxy.tool_util.deps import (
     docker_util,
     dockerfiles,
 )
-from galaxy.tool_util.deps.commands import execute
 from galaxy.util import unicodify
+from galaxy.util.commands import execute
 
 from .interface import DatabaseSource
 from .postgres import _CommandBuilder, ExecutesPostgresSqlMixin
