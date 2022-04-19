@@ -9,9 +9,9 @@ from planemo.galaxy.config import (
     get_refgenie_config,
 )
 from .test_utils import (
+    create_test_context,
     skip_if_environ,
     TempDirectoryContext,
-    test_context,
 )
 
 
@@ -59,7 +59,7 @@ def _assert_property_is(config, prop, value):
 
 @contextlib.contextmanager
 def _test_galaxy_config(tool_paths=[], **kwargs):
-    ctx = test_context()
+    ctx = create_test_context()
     with TempDirectoryContext() as tdc:
         test_data = os.path.join(tdc.temp_directory, "test-data")
         os.makedirs(test_data)

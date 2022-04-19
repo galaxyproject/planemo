@@ -120,7 +120,7 @@ class CliTestCase(TestCase):
 
     @property
     def test_context(self):
-        return test_context()
+        return create_test_context()
 
 
 class CliShedTestCase(CliTestCase):
@@ -263,7 +263,7 @@ def run_verbosely():
     return asbool(os.environ.get("PLANEMO_TEST_VERBOSE", "false"))
 
 
-def test_context():
+def create_test_context():
     context = cli.PlanemoCliContext()
     context.planemo_directory = "/tmp/planemo-test-workspace"
     context.verbose = run_verbosely()

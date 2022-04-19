@@ -7,8 +7,8 @@ from planemo.galaxy.test import structures
 from planemo.galaxy.test.actions import passed
 from planemo.galaxy.test.actions import run_in_config
 from .test_utils import (
+    create_test_context,
     TempDirectoryTestCase,
-    test_context,
     TEST_DATA_DIR,
 )
 
@@ -25,7 +25,7 @@ class RunInConfigTestCase(TempDirectoryTestCase):
         """Setup mock keywords, context, and Galaxy config for tests."""
         super(RunInConfigTestCase, self).setUp()
         td = self.temp_directory
-        self.ctx = test_context()
+        self.ctx = create_test_context()
         self.config = _MockConfig(td)
         self.kwds = {
             "test_output": os.path.join(td, "tests.html"),
