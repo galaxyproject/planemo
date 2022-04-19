@@ -333,20 +333,31 @@ file.
 ----------------------------------------------------------------------------
 
 First, obtain the artifacts of the PR by adding this comment:
-``@BiocondaBot please fetch artifacts``. In the reply one finds the links to the
-built package and docker image. 
+``@BiocondaBot please fetch artifacts``. In the reply one finds the links a zip file containing
+the built package and docker image. Download this zip and extract it. For the following let
+``PACKAGES_DIR`` be the absolute path to the directory ``packages`` in the resulting unzipped directory
+and ``IMAGE_ZIP`` be the absolute path to the ``tar.gz`` file in the ``images`` directory in the unzipped directory.
 
 In order to test the tool with the package add the following to the planemo call::
 
-     $ planemo test ... --conda_channels LINK_TO_PACKAGE,conda-forge,bioconda,defaults ...
+     $ planemo test ... --conda_channels file://PACKAGES_DIR,conda-forge,bioconda,defaults ...
 
-For containerized testing the docker image needs to be loaded::
+For containerized testing we need to differentiate two cases:
 
-     $ curl  -L "LINK_TO_DOCKER_IMAGE.tar.gz" | gzip -dc | docker load
+1. the tool has a single requirement (that is fulfilled by the container)
+2. the tool has multiple requirements (in this case a docker image will be built on the fly using package)
 
-A planemo test will then simply use this image::
+For the former case the docker image that has been created by the bioconda CI needs to be loaded::
 
-     $ planemo test ... --biocontainers --no_conda_auto_init ...
+     $ gzip -dc IMAGE_ZIP | docker load
+
+and a planemo test can then simply use this image::
+
+     $ planemo test ... --biocontainers --no_dependency_resolution --no_conda_auto_init ...
+
+For the later case it suffices to call planemo as follows::
+
+     $ DEFAULT_MULLED_CONDA_CHANNELS="file://PACKAGES_DIR,conda-forge,bioconda" planemo test ... --biocontainers --no_dependency_resolution --no_conda_auto_init ...
 
 --------------------------------------
 \.\.\. interactively debug tool tests?
@@ -383,4 +394,8 @@ For a tool test that uses Docker to to resolve the requirements one needs to exe
 ``../galaxy_3.sh``, because it executes ``docker run ... tool_script.sh`` in order to rerun the job
 (with a possible edited version of the tool script). In order to run the docker container 
 interactively execute the ``docker run .... /bin/bash`` that you find in ``../galaxy_3.sh``
-(i.e. ommitting the call of the ``tool_script.sh``) with added parameter ``-it``. 
+(i.e. ommitting the call of the ``tool_script.sh``) with added parameter ``-it``. Note that the
+``docker run`` command contains some shell variables (``-v "$_GALAXY_JOB_TMP_DIR:$_GALAXY_JOB_TMP_DIR:rw" -v "$_GALAXY_JOB_HOME_DIR:$_GALAXY_JOB_HOME_DIR:rw"``)
+which ensure that the job's temporary and home directory are available within docker. Ideally
+these shell variables are set to the same values as in ``../galaxy_3.sh``, but often its sufficient
+to remove this part from the ``docker run`` call.
