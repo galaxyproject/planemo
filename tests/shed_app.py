@@ -47,7 +47,7 @@ def update_repository(id):
 def update_repository_contents(id):
     updated_tar = request.files['file']
     message = request.form["commit_message"]
-    repo_path = app.config["model"].repository_path_for_update(id, message)
+    repo_path = app.config["model"].repository_path(id)
     repo_tar_path = repo_path + ".tar.gz"
     if not os.path.exists(repo_path):
         os.makedirs(repo_path)
@@ -58,7 +58,7 @@ def update_repository_contents(id):
     finally:
         tar.close()
     _modify_repository(repo_path)
-    return json.dumps({"id": id})
+    return json.dumps({"message": message})
 
 
 @app.route("/api/categories")
@@ -94,23 +94,15 @@ def repository_download():
     return send_file(repo_tar_download_path)
 
 
-@app.route('/shutdown', methods=['POST'])
-def shutdown():
-    # Used to shutdown test server.
-    _shutdown_server()
-    return ''
-
-
 def _request_post_message():
     return json.loads(request.data.decode("utf-8"))
 
 
-class InMemoryShedDataModel(object):
+class InMemoryShedDataModel:
 
     def __init__(self, directory):
         self.directory = directory
         self._repositories = {}
-        self._repositories_msg = {}
         self._categories = []
 
     def add_category(self, id, name):
@@ -141,12 +133,6 @@ class InMemoryShedDataModel(object):
     def repository_path(self, id):
         return os.path.join(self.directory, id)
 
-    def repository_path_for_update(self, id, message):
-        if id not in self._repositories_msg:
-            self._repositories_msg[id] = []
-        self._repositories_msg[id].append(message)
-        return self.repository_path(id)
-
 
 def _modify_repository(path):
     arch = os.path.join(path, ".hg_archival.txt")
@@ -175,10 +161,3 @@ def _modify_attributes(xml_element):
 
     for child in xml_element:
         _modify_attributes(child)
-
-
-def _shutdown_server():
-    func = request.environ.get('werkzeug.server.shutdown')
-    if func is None:
-        raise RuntimeError('Not running with the Werkzeug Server')
-    func()

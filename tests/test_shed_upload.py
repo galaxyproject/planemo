@@ -11,7 +11,6 @@ from os.path import exists, join
 
 from galaxy.util import unicodify
 
-from planemo import git
 from planemo.io import shell
 from .test_utils import (
     assert_exists,
@@ -144,7 +143,6 @@ class ShedUploadTestCase(CliShedTestCase):
                     "git add .",
                     "git commit -m 'initial commit'"
                 ]))
-                rev = git.rev(None, "single_tool")
                 upload_command = [
                     "shed_update", "--force_repository_creation",
                     "git+single_tool/.git"
@@ -152,12 +150,6 @@ class ShedUploadTestCase(CliShedTestCase):
                 upload_command.extend(self._shed_args())
                 self._check_exit_code(upload_command)
                 self._verify_single_uploaded(f, ["single_tool"])
-                model = self.mock_shed.model
-                repo_id = self.repository_by_name("single_tool")["id"]
-                message = model._repositories_msg[repo_id][0]
-                assert "planemo upload for repository " in message
-                assert "repository https://github.com/galaxyproject" in message
-                assert rev in message
 
     @contextlib.contextmanager
     def _git_configured(self):
