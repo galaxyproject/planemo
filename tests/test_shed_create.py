@@ -16,7 +16,7 @@ class ShedCreateTestCase(CliShedTestCase):
             create_command.extend(self._shed_args())
             self._check_exit_code(create_command)
 
-    @skip
+    @skip("Broken, see https://github.com/galaxyproject/planemo/issues/437")
     def test_create_wrong_owner(self):
         with self._isolate_repo("single_tool_other_owner"):
             create_command = ["shed_create", "--skip_upload"]
