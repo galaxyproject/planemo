@@ -3,6 +3,7 @@
 import io
 import json
 import os
+import re
 from distutils.dir_util import copy_tree
 
 import click
@@ -121,11 +122,29 @@ def run_in_config(ctx, config, run=run_galaxy_command, test_data_target_dir=None
         return_code,
     )
 
+    ec = test_results.exit_code
     structured_data = test_results.structured_data
+    extra_files = []
+    # check if tools created extra files in the file_path all files in the files path
+    # - end with '.dat' or
+    # - are contained in a directory `dataset_.*_files`
+    if config.env.get("GALAXY_CONFIG_OVERRIDE_FILE_PATH"):
+        for (path, dirs, files) in os.walk(config.env.get("GALAXY_CONFIG_OVERRIDE_FILE_PATH")):
+            dirs[:] = [d for d in dirs if not re.match(r'^dataset_[^/]*_files$', d)]
+            for name in files:
+                if not name.endswith(".dat"):
+                    extra_files.append(os.path.join(path, name))
+        if len(extra_files) > 0:
+            msg = f"One of the tested tools wrote to Galaxy's files dir: {extra_files}"
+            for i in range(len(structured_data["tests"])):
+                structured_data["tests"][i]["data"]["status"] = "failure"
+                structured_data["tests"][i]["data"]["job"]["stderr"] += msg
+            error(msg)
+            ec = 1
     return handle_reports_and_summary(
         ctx,
         structured_data,
-        exit_code=test_results.exit_code,
+        exit_code=ec,
         kwds=kwds
     )
 
