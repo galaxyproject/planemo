@@ -367,6 +367,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 @contextlib.contextmanager
 def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
     """Set up a ``GalaxyConfig`` in an auto-cleaned context."""
+
     test_data_dir = _find_test_data(runnables, **kwds)
     tool_data_table = _find_tool_data_table(
         runnables,
@@ -499,6 +500,8 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         _handle_container_resolution(ctx, kwds, properties)
         write_file(config_join("logging.ini"), _sub(LOGGING_TEMPLATE, template_args))
         properties["database_connection"] = _database_connection(database_location, **kwds)
+        if kwds.get("mulled_containers", False):
+            properties["mulled_channels"] = kwds.get("conda_ensure_channels", "")
 
         _handle_kwd_overrides(properties, kwds)
 
