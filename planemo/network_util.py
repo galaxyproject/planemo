@@ -1,9 +1,8 @@
 import socket
 from http.client import BadStatusLine
 from time import time as now
-
-from six.moves.urllib.error import URLError
-from six.moves.urllib.request import urlopen
+from urllib.error import URLError
+from urllib.request import urlopen
 
 
 def get_free_port():
@@ -30,7 +29,7 @@ def wait_http_service(url, timeout=None):
                 if r.getcode() != 200:
                     continue
             return True
-        except socket.error:
+        except OSError:
             pass
         except BadStatusLine:
             pass
@@ -74,7 +73,7 @@ def wait_net_service(server, port, timeout=None):
             if timeout:
                 return False
 
-        except socket.error:
+        except OSError:
             # if getattr(e, "errno") == 61:
             #    refused_connections += 1
             s.close()

@@ -1,5 +1,4 @@
 """Utilities for interacting with Github."""
-from __future__ import absolute_import
 
 import io
 import os
@@ -77,12 +76,12 @@ def fork(ctx, path, remote_name=DEFAULT_REMOTE_NAME, **kwds):
 def get_or_create_repository(ctx, owner, repo, dry_run=True, **kwds):
     """Clones or creates a repository and returns path on disk"""
     target = os.path.realpath(tempfile.mkdtemp())
-    remote_repo = "https://github.com/{owner}/{repo}".format(owner=owner, repo=repo)
+    remote_repo = f"https://github.com/{owner}/{repo}"
     try:
-        ctx.log('Cloning {}'.format(remote_repo))
+        ctx.log(f'Cloning {remote_repo}')
         git.clone(ctx, src=remote_repo, dest=target)
     except Exception:
-        ctx.log('Creating repository {}'.format(remote_repo))
+        ctx.log(f'Creating repository {remote_repo}')
         target = create_repository(ctx, owner=owner, repo=repo, dest=target, dry_run=dry_run)
     return target
 
@@ -90,7 +89,7 @@ def get_or_create_repository(ctx, owner, repo, dry_run=True, **kwds):
 def create_repository(ctx, owner, repo, dest, dry_run, **kwds):
     gh_path = ensure_gh(ctx, **kwds)
     gh_env = get_gh_env(ctx, dry_run=dry_run, **kwds)
-    cmd = [gh_path, 'repo', 'create', '-y', '--public', "{owner}/{repo}".format(owner=owner, repo=repo)]
+    cmd = [gh_path, 'repo', 'create', '-y', '--public', f"{owner}/{repo}"]
     if dry_run:
         "Would run command '{}'".format(" ".join(cmd))
         git.init(ctx, dest)
@@ -110,24 +109,24 @@ def rm_dir_contents(directory, ignore_dirs=(".git")):
 
 
 def add_dir_contents_to_repo(ctx, from_dir, target_dir, target_repository_path, version, dry_run, notes=""):
-    ctx.log("From {} to {}".format(from_dir, target_repository_path))
+    ctx.log(f"From {from_dir} to {target_repository_path}")
     rm_dir_contents(target_repository_path)
     copy_tree(from_dir, target_repository_path)
     git.add(ctx, target_repository_path, target_repository_path)
-    message = "Update for version {version}".format(version=version)
+    message = f"Update for version {version}"
     if notes:
-        message += "\n{notes}".format(notes=notes)
+        message += f"\n{notes}"
     git.commit(ctx, repo_path=target_repository_path, message=message)
     if not dry_run:
         git.push(ctx, target_repository_path)
 
 
 def assert_new_version(ctx, version, owner, repo):
-    remote_repo = "https://github.com/{owner}/{repo}".format(owner=owner, repo=repo)
+    remote_repo = f"https://github.com/{owner}/{repo}"
     try:
         tags_and_versions = git.ls_remote(ctx, remote_repo=remote_repo)
-        if "refs/tags/v{}".format(version) in tags_and_versions or "refs/tags/{}".format(version) in tags_and_versions:
-            raise Exception("Version '{}' for {}/{} exists already. Please change the version.".format(version, owner, repo))
+        if f"refs/tags/v{version}" in tags_and_versions or f"refs/tags/{version}" in tags_and_versions:
+            raise Exception(f"Version '{version}' for {owner}/{repo} exists already. Please change the version.")
     except RuntimeError:
         # repo doesn't exist
         pass
@@ -173,9 +172,9 @@ def create_release(ctx, from_dir, target_dir, owner, repo, version, dry_run, not
         gh_path,
         'release',
         '-R',
-        "{}/{}".format(owner, repo),
+        f"{owner}/{repo}",
         'create',
-        "v{version}".format(version=version),
+        f"v{version}",
         '--title',
         str(version),
     ]
@@ -258,7 +257,7 @@ def _get_raw_github_config(ctx):
     return ctx.global_config["github"]
 
 
-class GithubConfig(object):
+class GithubConfig:
     """Abstraction around a Github account.
 
     Required to use ``github`` module methods that require authorization.
@@ -291,7 +290,7 @@ def publish_as_gist_file(ctx, path, name="index"):
     """
     github_config = get_github_config(ctx, allow_anonymous=False)
     user = github_config._github.get_user()
-    with open(path, "r") as fh:
+    with open(path) as fh:
         content = fh.read()
     content_file = github.InputFileContent(content)
     gist = user.create_gist(False, {name: content_file})

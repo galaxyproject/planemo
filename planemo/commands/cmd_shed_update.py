@@ -93,7 +93,7 @@ def cli(ctx, paths, **kwds):
         # Now that we've uploaded (or skipped appropriately), collect results.
         if upload_ret_code == 2:
             collected_data['results']['failures'] += 1
-            message = "Failed to update repository '%s' as it does not exist on the %s." % (realized_repository.name, shed_context.label)
+            message = f"Failed to update repository '{realized_repository.name}' as it does not exist on the {shed_context.label}."
             repo_result.update({
                 'errorType': 'FailedUpdate',
                 'errorMessage': message,
@@ -104,7 +104,7 @@ def cli(ctx, paths, **kwds):
 
         exit = 0
         metadata_ok = True
-        repository_destination_label = "repository '%s' on the %s" % (realized_repository.name, shed_context.label)
+        repository_destination_label = f"repository '{realized_repository.name}' on the {shed_context.label}"
         if not skip_metadata:
             repo_id = shed.handle_force_create(realized_repository, ctx, shed_context, **kwds)
             # failing to create the repo, give up

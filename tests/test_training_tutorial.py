@@ -118,7 +118,7 @@ def test_get_hands_on_boxes_from_local_galaxy():
 def test_get_hands_on_boxes_from_running_galaxy():
     """Test :func:`planemo.training.tutorial.get_hands_on_boxes_from_running_galaxy`."""
     assert is_galaxy_engine(**KWDS)
-    galaxy_url = 'http://%s:%s' % (KWDS['host'], KWDS['port'])
+    galaxy_url = f"http://{KWDS['host']}:{KWDS['port']}"
     with engine_context(CTX, **KWDS) as galaxy_engine:
         with galaxy_engine.ensure_runnables_served([RUNNABLE]) as config:
             wf_id = config.workflow_id(WF_FP)
@@ -304,7 +304,7 @@ def test_tutorial_export_workflow_file():
     tuto.init_wf_fp = None
     os.remove(tuto.wf_fp)
     assert is_galaxy_engine(**KWDS)
-    galaxy_url = 'http://%s:%s' % (KWDS['host'], KWDS['port'])
+    galaxy_url = f"http://{KWDS['host']}:{KWDS['port']}"
     with engine_context(CTX, **KWDS) as galaxy_engine:
         with galaxy_engine.ensure_runnables_served([RUNNABLE]) as config:
             tuto.init_wf_id = config.workflow_id(WF_FP)
@@ -345,12 +345,12 @@ def test_tutorial_prepare_data_library_from_zenodo():
     os.makedirs(tuto.wf_dir)
     tuto.prepare_data_library_from_zenodo()
     assert os.path.exists(tuto.data_lib_fp)
-    with open(tuto.data_lib_fp, 'r') as fh:
+    with open(tuto.data_lib_fp) as fh:
         assert 'DOI' not in fh.read()
     # with zenodo link
     tuto.zenodo_link = zenodo_link
     tuto.prepare_data_library_from_zenodo()
-    with open(tuto.data_lib_fp, 'r') as fh:
+    with open(tuto.data_lib_fp) as fh:
         assert "DOI: 10.5281/zenodo" in fh.read()
     shutil.rmtree("topics")
 
@@ -364,7 +364,7 @@ def test_tutorial_write_hands_on_tutorial():
     tuto.zenodo_file_links = ["URL1", "URL2"]
     tuto.write_hands_on_tutorial()
     assert os.path.exists(tuto.tuto_fp)
-    with open(tuto.tuto_fp, 'r') as tuto_f:
+    with open(tuto.tuto_fp) as tuto_f:
         tuto_c = tuto_f.read()
         assert 'layout: tutorial_hands_on' in tuto_c
         assert '# Introduction' in tuto_c
@@ -388,7 +388,7 @@ def test_tutorial_create_hands_on_tutorial():
         tuto.create_hands_on_tutorial(CTX)
     # with init_wf_id and no Galaxy API key
     tuto.init_wf_id = 'ID'
-    tuto.training.galaxy_url = 'http://%s:%s' % (KWDS['host'], KWDS['port'])
+    tuto.training.galaxy_url = f"http://{KWDS['host']}:{KWDS['port']}"
     tuto.training.galaxy_api_key = None
     exp_exception = "No API key to access the given Galaxy instance"
     with assert_raises_regexp(Exception, exp_exception):
@@ -433,12 +433,12 @@ def test_tutorial_create_tutorial():
     assert os.path.exists(tuto.data_lib_fp)
     assert os.path.exists(tuto.tuto_fp)
     assert os.path.exists(tuto.slide_fp)
-    with open(tuto.slide_fp, 'r') as fh:
+    with open(tuto.slide_fp) as fh:
         assert 'layout: tutorial_slides' in fh.read()
     shutil.rmtree("topics")
 
 
 def assert_body_contains(body, contents):
     if contents not in body:
-        message = "Expected to find contents [%s] in body [%s]" % (contents, body)
+        message = f"Expected to find contents [{contents}] in body [{body}]"
         raise AssertionError(message)

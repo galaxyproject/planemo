@@ -1,7 +1,7 @@
 """Autoupdate older conda dependencies in the requirements section."""
-from __future__ import absolute_import
 
 import collections
+import itertools
 import re
 import xml.etree.ElementTree as ET
 
@@ -59,8 +59,10 @@ def check_conda(tool_name, ctx, **kwds):
     if not conda_context.is_conda_installed():
         # check directly via Anaconda API
         r = requests.get('https://api.anaconda.org/search', params={'name': tool_name})
-        search_results = sum([n['versions'] for n in r.json() if n['name'] == tool_name and n['owner'] in kwds['conda_ensure_channels']], [])
-        return sorted(search_results, key=lambda n: packaging.version.parse(n))[-1]
+        search_results = itertools.chain.from_iterable(
+            n['versions'] for n in r.json() if n['name'] == tool_name and n['owner'] in kwds['conda_ensure_channels']
+        )
+        return sorted(search_results, key=packaging.version.parse, reverse=True)[0]
 
     target = planemo.conda.conda_util.CondaTarget(tool_name)
     search_results = conda_util.best_search_result(target, conda_context=conda_context)
@@ -158,10 +160,11 @@ def perform_required_update(ctx, xml_files, tool_path, requirements, tokens, xml
     return set(xml_files)
 
 
-def autoupdate_tool(ctx, tool_path, modified_files=set(), **kwds):
+def autoupdate_tool(ctx, tool_path, modified_files, **kwds):
     """
     Autoupdate an XML file
     """
+    modified_files = modified_files or set()
     # create a dict of all files that need editing - wrapper plus macros
     xml_files = {tool_path: ET.parse(tool_path)}
 
@@ -224,9 +227,9 @@ def outdated_tools(ctx, wf_dict, ts):
         except Exception:
             ctx.log(f"The ToolShed returned an error when searching for the most recent version of {step['tool_id']}")
             return {}
-        base_id = '/'.join((step['tool_id'].split('/')[:-1]))
-        tool_ids_found = set(tool['guid'] for repo in repos.values() if type(repo) == dict for tool in repo.get('tools', []))
-        updated_tool_id = sorted(set(tool_id for tool_id in tool_ids_found if f"{base_id}/" in tool_id), key=lambda n: packaging.version.parse(n))[-1]
+        base_id = '/'.join(step['tool_id'].split('/')[:-1])
+        tool_ids_found = {tool['guid'] for repo in repos.values() if type(repo) == dict for tool in repo.get('tools', [])}
+        updated_tool_id = sorted({tool_id for tool_id in tool_ids_found if f"{base_id}/" in tool_id}, key=lambda n: packaging.version.parse(n))[-1]
         if step['tool_id'] != updated_tool_id:
             return {base_id: {'current': step['tool_id'], 'updated': updated_tool_id}}
         else:

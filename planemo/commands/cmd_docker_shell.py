@@ -10,7 +10,6 @@ be not updated. So during development the --from_tag argument to used to treat
 the identifier as a locally cached tag. (Tip: Use the docker_build to populate
 such a tag from a Dockerfile located in the tool's directory.
 """
-from __future__ import print_function
 
 import os
 
@@ -73,16 +72,16 @@ def cli(ctx, path, **kwds):
     working_dir = os.path.abspath(os.getcwd())
     if tool_dir.startswith(working_dir):
         volumes = [
-            "%s:%s" % (working_dir, working_dir)
+            f"{working_dir}:{working_dir}"
         ]
     elif working_dir.startswith(tool_dir):
         volumes = [
-            "%s:%s" % (tool_dir, tool_dir)
+            f"{tool_dir}:{tool_dir}"
         ]
     else:
         volumes = [
-            "%s:%s" % (working_dir, working_dir),
-            "%s:%s" % (tool_dir, tool_dir)
+            f"{working_dir}:{working_dir}",
+            f"{tool_dir}:{tool_dir}"
         ]
 
     script = docker_util.build_docker_run_command(

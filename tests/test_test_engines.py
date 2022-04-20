@@ -124,7 +124,7 @@ def test_galaxy_workflow_tags():
             )
             assert exit_code == 0
         except Exception:
-            with open(json_out.name, "r") as f:
+            with open(json_out.name) as f:
                 print(f.read())
             raise
 

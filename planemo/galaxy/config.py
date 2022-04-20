@@ -1,6 +1,4 @@
 """Abstractions for setting up a Galaxy instance."""
-from __future__ import absolute_import
-from __future__ import print_function
 
 import abc
 import contextlib
@@ -8,6 +6,7 @@ import hashlib
 import importlib.util
 import os
 import random
+import shlex
 import shutil
 import threading
 import time
@@ -18,11 +17,6 @@ from galaxy.containers.docker_model import DockerVolume
 from galaxy.tool_util.deps import docker_util
 from galaxy.util.commands import argv_to_str
 from packaging.version import parse as parse_version
-from six import (
-    add_metaclass,
-    iteritems
-)
-from six.moves import shlex_quote
 
 from planemo import git
 from planemo.config import OptionSource
@@ -262,7 +256,7 @@ def read_log(ctx, log_path):
 
 def simple_docker_volume(path):
     path = os.path.abspath(path)
-    return DockerVolume("%s:%s:rw" % (path, path))
+    return DockerVolume(f"{path}:{path}:rw")
 
 
 @contextlib.contextmanager
@@ -282,7 +276,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         shed_tool_conf = "config/shed_tool_conf.xml"
         all_tool_paths = _all_tool_paths(runnables, galaxy_root, kwds.get('extra_tools'))
 
-        tool_directories = set([])  # Things to mount...
+        tool_directories = set()  # Things to mount...
         for tool_path in all_tool_paths:
             directory = os.path.dirname(os.path.normpath(tool_path))
             if os.path.exists(directory):
@@ -313,7 +307,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             shed_tool_path=shed_tool_path,
             tool_conf=tool_conf,
         )
-        tool_config_file = "%s,%s" % (tool_conf, shed_tool_conf)
+        tool_config_file = f"{tool_conf},{shed_tool_conf}"
 
         _write_tool_conf(ctx, all_tool_paths, tool_conf)
         write_file(empty_tool_conf, EMPTY_TOOL_CONF_TEMPLATE)
@@ -324,7 +318,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             migrated_tools_config=empty_tool_conf,
         ))
 
-        server_name = "planemo%d" % random.randint(0, 100000)
+        server_name = f"planemo{random.randint(0, 100000)}"
 
         # Value substitutions in Galaxy properties - for consistency with
         # non-Dockerized version.
@@ -342,7 +336,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         volumes = tool_volumes + [simple_docker_volume(config_directory)]
         export_directory = kwds.get("export_directory", None)
         if export_directory is not None:
-            volumes.append(DockerVolume("%s:/export:rw" % export_directory))
+            volumes.append(DockerVolume(f"{export_directory}:/export:rw"))
 
         # TODO: Allow this to real Docker volumes and allow multiple.
         extra_volume = kwds.get("docker_extra_volume")
@@ -380,7 +374,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         if os.path.isdir(galaxy_root) and not os.listdir(galaxy_root):
             os.rmdir(galaxy_root)
         if os.path.isdir(galaxy_root) and install_galaxy:
-            raise Exception("%s is an existing non-empty directory, cannot install Galaxy again" % galaxy_root)
+            raise Exception(f"{galaxy_root} is an existing non-empty directory, cannot install Galaxy again")
 
     # Duplicate block in docker variant above.
     if kwds.get("mulled_containers", False):
@@ -412,11 +406,11 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             # which requires 'main' as server name
             server_name = 'main'
         else:
-            server_name = "planemo%d" % random.randint(0, 100000)
+            server_name = f"planemo{random.randint(0, 100000)}"
         # Once we don't have to support earlier than 18.01 - try putting these files
         # somewhere better than with Galaxy.
-        log_file = "%s.log" % server_name
-        pid_file = "%s.pid" % server_name
+        log_file = f"{server_name}.log"
+        pid_file = f"{server_name}.pid"
         ensure_dependency_resolvers_conf_configured(ctx, kwds, os.path.join(config_directory, "resolvers_conf.xml"))
         _handle_job_config_file(config_directory, server_name, kwds)
         _handle_job_metrics(config_directory, kwds)
@@ -459,7 +453,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             id_secret=kwds.get("id_secret", hashlib.md5(str(time.time()).encode('utf-8')).hexdigest()),
             log_level="DEBUG" if ctx.verbose else "INFO",
         )
-        tool_config_file = "%s,%s" % (tool_conf, shed_tool_conf)
+        tool_config_file = f"{tool_conf},{shed_tool_conf}"
         # Setup both galaxy_email and older test user test@bx.psu.edu
         # as admins for command_line, etc...
         properties = _shared_galaxy_properties(config_directory, kwds, for_tests=for_tests)
@@ -605,7 +599,7 @@ def _shared_galaxy_properties(config_directory, kwds, for_tests):
     user_email = _user_email(kwds)
     properties = {
         'master_api_key': master_api_key,
-        'admin_users': "%s,test@bx.psu.edu" % user_email,
+        'admin_users': f"{user_email},test@bx.psu.edu",
         'expose_dataset_path': "True",
         'collect_outputs_from': "job_working_directory",
         'allow_path_paste': "True",
@@ -666,7 +660,7 @@ def _config_directory(ctx, **kwds):
     if not config_directory:
         created_config_directory = True
         config_directory = os.path.realpath(mkdtemp())
-        ctx.vlog("Created directory for Galaxy configuration [%s]" % config_directory)
+        ctx.vlog(f"Created directory for Galaxy configuration [{config_directory}]")
     try:
         yield config_directory
     finally:
@@ -675,8 +669,7 @@ def _config_directory(ctx, **kwds):
             shutil.rmtree(config_directory)
 
 
-@add_metaclass(abc.ABCMeta)
-class GalaxyInterface(object):
+class GalaxyInterface(metaclass=abc.ABCMeta):
     """Abstraction around a Galaxy instance.
 
     Description of a Galaxy instance and how to interact with it - this could
@@ -730,8 +723,7 @@ class GalaxyInterface(object):
         return self.user_api_config["is_admin_user"]
 
 
-@add_metaclass(abc.ABCMeta)
-class GalaxyConfig(GalaxyInterface):
+class GalaxyConfig(GalaxyInterface, metaclass=abc.ABCMeta):
     """Specialization of GalaxyInterface for Galaxy instances Planemo manages itself.
 
     This assumes more than an API connection is available - Planemo needs to be able to
@@ -832,7 +824,7 @@ class BaseGalaxyConfig(GalaxyInterface):
                 return None
             if status == "Installed":
                 return True
-            raise Exception("Error installing repo status is %s" % status)
+            raise Exception(f"Error installing repo status is {status}")
 
         def ready():
             repos = self.tool_shed_client.get_repositories()
@@ -917,8 +909,8 @@ class BaseManagedGalaxyConfig(BaseGalaxyConfig):
         runnables,
         kwds,
     ):
-        galaxy_url = "http://localhost:%d" % port
-        super(BaseManagedGalaxyConfig, self).__init__(
+        galaxy_url = f"http://localhost:{port}"
+        super().__init__(
             ctx=ctx,
             galaxy_url=galaxy_url,
             master_api_key=master_api_key,
@@ -935,7 +927,7 @@ class BaseManagedGalaxyConfig(BaseGalaxyConfig):
     @property
     def log_file(self):
         """Log file used when planemo serves this Galaxy instance."""
-        file_name = "%s.log" % self.server_name
+        file_name = f"{self.server_name}.log"
         return file_name
 
 
@@ -957,7 +949,7 @@ class DockerGalaxyConfig(BaseManagedGalaxyConfig):
         export_directory,
         kwds,
     ):
-        super(DockerGalaxyConfig, self).__init__(
+        super().__init__(
             ctx,
             config_directory,
             env,
@@ -988,8 +980,8 @@ class DockerGalaxyConfig(BaseManagedGalaxyConfig):
         """
         daemon = kwds.get("daemon", False)
         daemon_str = "" if not daemon else " -d"
-        docker_run_extras = "-p %s:80%s" % (self.port, daemon_str)
-        env_directives = ["%s='%s'" % item for item in self.env.items()]
+        docker_run_extras = f"-p {self.port}:80{daemon_str}"
+        env_directives = [f"{k}='{v}'" for k, v in self.env.items()]
         image = kwds.get("docker_galaxy_image", "bgruening/galaxy-stable")
         run_command = docker_util.build_docker_run_command(
             "", image,
@@ -1047,7 +1039,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         galaxy_root,
         kwds,
     ):
-        super(LocalGalaxyConfig, self).__init__(
+        super().__init__(
             ctx,
             config_directory,
             env,
@@ -1064,10 +1056,11 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         if self._ctx.verbose:
             shell(["ps", "ax"])
             exists = os.path.exists(self.pid_file)
-            print("Killing pid file [%s]" % self.pid_file)
-            print("pid_file exists? [%s]" % exists)
+            print(f"Killing pid file [{self.pid_file}]")
+            print(f"pid_file exists? [{exists}]")
             if exists:
-                print("pid_file contents are [%s]" % open(self.pid_file, "r").read())
+                with open(self.pid_file) as f:
+                    print(f"pid_file contents are [{f.read()}]")
         kill_pid_file(self.pid_file)
 
     def startup_command(self, ctx, **kwds):
@@ -1079,12 +1072,12 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         daemon = kwds.get("daemon", False)
         # TODO: Allow running dockerized Galaxy here instead.
         setup_venv_command = setup_venv(ctx, kwds)
-        run_script = "%s $COMMON_STARTUP_ARGS" % shlex_quote(os.path.join(self.galaxy_root, "run.sh"))
+        run_script = f"{shlex.quote(os.path.join(self.galaxy_root, 'run.sh'))} $COMMON_STARTUP_ARGS"
         if daemon:
             run_script += " --daemon"
             self.env["GALAXY_RUN_ALL"] = "1"
         else:
-            run_script += " --server-name %s" % shlex_quote(self.server_name)
+            run_script += f" --server-name {shlex.quote(self.server_name)}"
         server_ini = os.path.join(self.config_directory, "galaxy.ini")
         self.env["GALAXY_CONFIG_FILE"] = server_ini
         if parse_version(kwds.get('galaxy_python_version') or DEFAULT_PYTHON_VERSION) >= parse_version('3'):
@@ -1107,19 +1100,19 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
     @property
     def log_file(self):
         """Log file used when planemo serves this Galaxy instance."""
-        file_name = "%s.log" % self.server_name
+        file_name = f"{self.server_name}.log"
         return os.path.join(self.galaxy_root, file_name)
 
     @property
     def pid_file(self):
-        pid_file_name = "%s.pid" % self.server_name
+        pid_file_name = f"{self.server_name}.pid"
         return os.path.join(self.galaxy_root, pid_file_name)
 
     @property
     def log_contents(self):
         if not os.path.exists(self.log_file):
             return ""
-        with open(self.log_file, "r") as f:
+        with open(self.log_file) as f:
             return f.read()
 
     def cleanup(self):
@@ -1230,9 +1223,9 @@ def _tool_conf_entry_for(tool_paths):
     tool_definitions = ""
     for tool_path in tool_paths:
         if os.path.isdir(tool_path):
-            tool_definitions += '''<tool_dir dir="%s" />''' % tool_path
+            tool_definitions += f'''<tool_dir dir="{tool_path}" />'''
         else:
-            tool_definitions += '''<tool file="%s" />''' % tool_path
+            tool_definitions += f'''<tool file="{tool_path}" />'''
     return tool_definitions
 
 
@@ -1290,11 +1283,11 @@ def _install_with_command(ctx, galaxy_root, env, kwds):
     )
     exit_code = shell(install_cmd, cwd=galaxy_root, env=env)
     if exit_code != 0:
-        raise Exception("Failed to install Galaxy via command [%s]" % install_cmd)
+        raise Exception(f"Failed to install Galaxy via command [{install_cmd}]")
     if not os.path.exists(galaxy_root):
-        raise Exception("Failed to create Galaxy directory [%s]" % galaxy_root)
+        raise Exception(f"Failed to create Galaxy directory [{galaxy_root}]")
     if not os.path.exists(os.path.join(galaxy_root, "lib")):
-        raise Exception("Failed to create Galaxy directory [%s], lib missing" % galaxy_root)
+        raise Exception(f"Failed to create Galaxy directory [{galaxy_root}], lib missing")
 
 
 def _ensure_galaxy_repository_available(ctx, kwds):
@@ -1303,7 +1296,7 @@ def _ensure_galaxy_repository_available(ctx, kwds):
     galaxy_source = kwds.get('galaxy_source')
     if galaxy_source and galaxy_source != DEFAULT_GALAXY_SOURCE:
         sanitized_repo_name = "".join(c if c.isalnum() else '_' for c in kwds['galaxy_source']).rstrip()[:255]
-        gx_repo = os.path.join(workspace, "gx_repo_%s" % sanitized_repo_name)
+        gx_repo = os.path.join(workspace, f"gx_repo_{sanitized_repo_name}")
     else:
         gx_repo = os.path.join(workspace, "gx_repo")
     if cwl:
@@ -1313,7 +1306,7 @@ def _ensure_galaxy_repository_available(ctx, kwds):
         shell(['git', '--git-dir', gx_repo, 'config', 'remote.origin.fetch', '+refs/*:refs/*'])
         shell(['git', '--git-dir', gx_repo, 'config', 'remote.origin.mirror', 'true'])
         # Attempt remote update - but don't fail if not interweb, etc...
-        shell("git --git-dir %s remote update >/dev/null 2>&1" % gx_repo)
+        shell(f"git --git-dir {gx_repo} remote update >/dev/null 2>&1")
     else:
         remote_repo = _galaxy_source(kwds)
         command = git.command_clone(ctx, remote_repo, gx_repo, mirror=True)
@@ -1323,9 +1316,9 @@ def _ensure_galaxy_repository_available(ctx, kwds):
 
 def _build_env_for_galaxy(properties, template_args):
     env = {}
-    for key, value in iteritems(properties):
+    for key, value in properties.items():
         if value is not None:  # Do not override None with empty string
-            var = "GALAXY_CONFIG_OVERRIDE_%s" % key.upper()
+            var = f"GALAXY_CONFIG_OVERRIDE_{key.upper()}"
             value = _sub(value, template_args)
             env[var] = value
     return env
@@ -1362,7 +1355,7 @@ def _handle_job_config_file(config_directory, server_name, kwds):
         docker_host = kwds.get("docker_host", docker_util.DEFAULT_HOST)
         docker_host_param = ""
         if docker_host:
-            docker_host_param = """<param id="docker_host">%s</param>""" % docker_host
+            docker_host_param = f"""<param id="docker_host">{docker_host}</param>"""
 
         conf_contents = Template(template_str).safe_substitute({
             "server_name": server_name,

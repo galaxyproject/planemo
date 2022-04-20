@@ -1,12 +1,9 @@
 """Utilities for reasoning about Galaxy test results."""
-from __future__ import absolute_import
-from __future__ import print_function
 
 import os
+import shlex
 from typing import NamedTuple
 from xml.etree import ElementTree as ET
-
-from six.moves import shlex_quote
 
 from planemo.io import error
 from planemo.test.results import StructuredData as BaseStructuredData
@@ -19,7 +16,7 @@ NO_STRUCTURED_FILE = (
 )
 
 
-class GalaxyTestCommand(object):
+class GalaxyTestCommand:
     """Abstraction around building a ``run_tests.sh`` command for Galaxy tests."""
 
     def __init__(
@@ -39,11 +36,11 @@ class GalaxyTestCommand(object):
     def build(self):
         xunit_report_file = self.xunit_report_file
         sd_report_file = self.structured_report_file
-        cmd = "./run_tests.sh $COMMON_STARTUP_ARGS --report_file %s" % shlex_quote(self.html_report_file)
+        cmd = "./run_tests.sh $COMMON_STARTUP_ARGS --report_file %s" % shlex.quote(self.html_report_file)
         if xunit_report_file:
-            cmd += " --xunit_report_file %s" % shlex_quote(xunit_report_file)
+            cmd += " --xunit_report_file %s" % shlex.quote(xunit_report_file)
         if sd_report_file:
-            cmd += " --structured_data_report_file %s" % shlex_quote(sd_report_file)
+            cmd += " --structured_data_report_file %s" % shlex.quote(sd_report_file)
         if self.installed:
             cmd += ' -installed'
         elif self.failed:
@@ -61,7 +58,7 @@ class StructuredData(BaseStructuredData):
     def __init__(self, json_path):
         if not json_path or not os.path.exists(json_path):
             error(NO_STRUCTURED_FILE % json_path)
-        super(StructuredData, self).__init__(json_path)
+        super().__init__(json_path)
 
     def merge_xunit(self, xunit_root):
         self.has_details = True
@@ -98,7 +95,7 @@ class StructuredData(BaseStructuredData):
             test_data["status"] = status
 
 
-class GalaxyTestResults(object):
+class GalaxyTestResults:
     """ Class that combine the test-centric xunit output
     with the Galaxy centric structured data output - and
     abstracts away the difference (someday).
@@ -155,8 +152,7 @@ class GalaxyTestResults(object):
 
 
 def xunit_t_elements_from_root(xunit_root):
-    for testcase_el in find_cases(xunit_root):
-        yield testcase_el
+    yield from find_cases(xunit_root)
 
 
 def parse_xunit_report(xunit_report_path):
@@ -175,7 +171,7 @@ def case_id(testcase_el=None, raw_id=None):
             raw_id = name_raw
         else:
             class_name = testcase_el.attrib["classname"]
-            raw_id = "{0}.{1}".format(class_name, name_raw)
+            raw_id = f"{class_name}.{name_raw}"
 
     name = None
     num = None
@@ -210,6 +206,6 @@ class TestId(NamedTuple):
     @property
     def label(self):
         if self.num is not None:
-            return "{0}[{1}]".format(self.name, self.num)
+            return f"{self.name}[{self.num}]"
         else:
             return self.id

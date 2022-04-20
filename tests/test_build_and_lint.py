@@ -75,7 +75,7 @@ class BuildAndLintTestCase(CliTestCase):
         try:
             self._check_exit_code(lint_cmd, exit_code=exit_code)
         except Exception:
-            with open(filename, "r") as f:
+            with open(filename) as f:
                 print("Failing file contents are [%s]." % f.read())
             raise
 

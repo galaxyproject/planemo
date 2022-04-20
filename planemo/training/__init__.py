@@ -5,7 +5,7 @@ from .topic import Topic
 from .tutorial import Tutorial
 
 
-class Training(object):
+class Training:
     """Class to describe a training."""
 
     def __init__(self, kwds):
@@ -35,7 +35,7 @@ class Training(object):
             self.tuto = Tutorial(training=self, topic=self.topic)
             self.tuto.init_from_kwds(self.kwds)
             if not self.tuto.exists():
-                info("The tutorial %s in topic %s does not exist. It will be created." % (self.tuto.name, self.topic.name))
+                info(f"The tutorial {self.tuto.name} in topic {self.topic.name} does not exist. It will be created.")
                 self.tuto.create_tutorial(ctx)
         info("WARNING: Change the contributors/maintainers listed in the metadata of the new training ")
         info("before serving the website to fit the one listed in the CONTRIBUTORS.yaml file")

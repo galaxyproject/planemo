@@ -1,6 +1,5 @@
 """ Utilities for using virtualenv as library and planemo command.
 """
-from __future__ import absolute_import
 
 import os
 import sys

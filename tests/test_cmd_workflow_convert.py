@@ -19,7 +19,7 @@ class CmdWorkflowConvertTestCase(CliTestCase):
             ga_wf_path = os.path.join(f, "wf1-test.ga")
 
             assert os.path.exists(ga_wf_path)
-            with open(ga_wf_path, "r") as stream:
+            with open(ga_wf_path) as stream:
                 wf = json.load(stream)
             assert isinstance(wf, dict)
             assert wf["steps"]["1"]["tool_id"] == "cat"
@@ -32,7 +32,7 @@ class CmdWorkflowConvertTestCase(CliTestCase):
             gx2_wf_path = os.path.join(f, "wf1-test.yml")
 
             assert os.path.exists(gx2_wf_path)
-            with open(gx2_wf_path, "r") as stream:
+            with open(gx2_wf_path) as stream:
                 wf = yaml.safe_load(stream)
             assert isinstance(wf, dict)
             assert wf["steps"]["first_cat"]["tool_id"] == "cat"

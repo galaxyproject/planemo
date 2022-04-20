@@ -54,17 +54,13 @@ def _git_directory():
 
 def _add_and_commit(t, files, init=False):
     cmd = " && ".join([
-        "cd '{0}'",
+        f"cd '{t}'",
         "git init ." if init else "true",
-        "git add %s" % " ".join(files),
+        f"git add {' '.join(files)}",
         _commit_command(),
-    ]).format(t)
+    ])
     assert io.shell(cmd) == 0
 
 
 def _commit_command():
-    return "%s %s %s" % (
-        COMMITTER_DATE,
-        COMMITTER_NAME,
-        COMMIT
-    )
+    return f"{COMMITTER_DATE} {COMMITTER_NAME} {COMMIT}"

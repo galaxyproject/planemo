@@ -16,7 +16,7 @@ class CmdWorkflowJobInitTestCase(CliTestCase):
             self._check_exit_code(init_cmd)
             job_path = os.path.join(f, "0_basic_native_job.yml")
             assert os.path.exists(job_path)
-            with open(job_path, "r") as stream:
+            with open(job_path) as stream:
                 job = yaml.safe_load(stream)
             assert isinstance(job, dict)
             assert "the_input" in job
@@ -37,7 +37,7 @@ class CmdWorkflowJobInitTestCase(CliTestCase):
             with open(job_path, "w") as f:
                 f.write("already exists")
             self._check_exit_code(init_cmd, exit_code=0)
-            with open(job_path, "r") as stream:
+            with open(job_path) as stream:
                 job = yaml.safe_load(stream)
             assert isinstance(job, dict)
             assert "the_input" in job

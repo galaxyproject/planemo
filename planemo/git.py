@@ -1,5 +1,4 @@
 """Utilities for interacting with git using planemo abstractions."""
-from __future__ import absolute_import
 
 import os
 import subprocess
@@ -70,9 +69,9 @@ def checkout(ctx, remote_repo, local_path, branch=None, remote="origin", from_br
         io.communicate(["git", "fetch", remote], env=env)
 
     if branch:
-        io.communicate(["git", "checkout", "%s/%s" % (remote, from_branch), "-b", branch], env=env)
+        io.communicate(["git", "checkout", f"{remote}/{from_branch}", "-b", branch], env=env)
     else:
-        io.communicate(["git", "merge", "--ff-only", "%s/%s" % (remote, from_branch)], env=env)
+        io.communicate(["git", "merge", "--ff-only", f"{remote}/{from_branch}"], env=env)
 
 
 def command_clone(ctx, src, dest, mirror=False, branch=None):

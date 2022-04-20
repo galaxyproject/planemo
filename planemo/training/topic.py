@@ -71,7 +71,7 @@ Please follow our
 """
 
 
-class Topic(object):
+class Topic:
     """Class to describe a training topic."""
 
     def __init__(self, name="new_topic", target="use", title="The new topic", summary="Summary", parent_dir="topics"):

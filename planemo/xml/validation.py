@@ -9,7 +9,6 @@ try:
     from lxml import etree
 except ImportError:
     etree = None
-from six import add_metaclass
 
 XMLLINT_COMMAND = "xmllint --noout --schema {0} {1} 2>&1"
 INSTALL_VALIDATOR_MESSAGE = ("This feature requires an external dependency "
@@ -18,8 +17,7 @@ INSTALL_VALIDATOR_MESSAGE = ("This feature requires an external dependency "
                              "libxml2-utils'.")
 
 
-@add_metaclass(abc.ABCMeta)
-class XsdValidator(object):
+class XsdValidator(metaclass=abc.ABCMeta):
     """Class allowing validation of XML files against XSD schema."""
 
     @abc.abstractmethod

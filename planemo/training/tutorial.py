@@ -8,7 +8,6 @@ import shutil
 
 import oyaml as yaml
 import requests
-import six
 
 from planemo import templates
 from planemo.bioblend import galaxy
@@ -261,7 +260,7 @@ pipeline used.
 """
 
 
-class Tutorial(object):
+class Tutorial:
     """Class to describe a training tutorial."""
 
     def __init__(self, training, topic, name="new_tuto", title="The new tutorial", zenodo_link=""):
@@ -326,7 +325,7 @@ class Tutorial(object):
             raise Exception("The tutorial %s does not exists. It should be created" % self.name)
 
         # get the metadata information of the tutorial (from the top of the tutorial.md)
-        with open(self.tuto_fp, "r") as tuto_f:
+        with open(self.tuto_fp) as tuto_f:
             tuto_content = tuto_f.read()
         regex = r'^---\n(?P<metadata>[\s\S]*)\n---(?P<body>[\s\S]*)'
         tuto_split_regex = re.search(regex, tuto_content)
@@ -570,7 +569,7 @@ def get_galaxy_datatype(z_ext, datatype_fp):
         g_datatype = datatypes[z_ext]
     if g_datatype == '':
         g_datatype = '# Please add a Galaxy datatype or update the shared/datatypes.yaml file'
-    info("Get Galaxy datatypes: %s --> %s" % (z_ext, g_datatype))
+    info(f"Get Galaxy datatypes: {z_ext} --> {g_datatype}")
     return g_datatype
 
 
@@ -588,7 +587,7 @@ def get_zenodo_record(zenodo_link):
         r.raise_for_status()
         req_res = r.json()
     except Exception as e:
-        error("The Zenodo link (%s) seems invalid: %s" % (zenodo_link, e))
+        error(f"The Zenodo link ({zenodo_link}) seems invalid: {e}")
         req_res = {'files': []}
         z_record = None
     return(z_record, req_res)
@@ -619,7 +618,7 @@ def get_wf_inputs(step_inp):
 
 def get_wf_param_values(init_params, inp_connections):
     """Get the param values from a workflow step and format them into a hierarchical dictionary."""
-    if not isinstance(init_params, six.string_types) or '": ' not in init_params:
+    if not isinstance(init_params, str) or '": ' not in init_params:
         form_params = init_params
     else:
         form_params = json.loads(init_params)
@@ -636,7 +635,7 @@ def get_wf_param_values(init_params, inp_connections):
         for i, p in enumerate(json_params):
             inp = inp_connections[str(i)] if str(i) in inp_connections else {}
             form_params.append(get_wf_param_values(p, inp))
-    elif isinstance(form_params, six.string_types) and '"' in form_params:
+    elif isinstance(form_params, str) and '"' in form_params:
         form_params = form_params.replace('"', '')
     return form_params
 

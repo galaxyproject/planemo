@@ -211,7 +211,7 @@ def _profile_to_database_identifier(profile_name):
 
 def _read_profile_options(profile_directory):
     profile_options_path = _stored_profile_options_path(profile_directory)
-    with open(profile_options_path, "r") as f:
+    with open(profile_options_path) as f:
         profile_options = json.load(f)
     return profile_options
 

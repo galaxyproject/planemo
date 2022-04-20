@@ -1,5 +1,4 @@
 """Module describing the planemo ``profile_create`` command."""
-from __future__ import print_function
 
 import click
 

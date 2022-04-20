@@ -54,7 +54,7 @@ class ShedTestCase(CliTestCase):
                 "--shed_target", shed_url
             ]
             self._check_exit_code(init_cmd)
-            with open(".shed.yml", "r") as fh:
+            with open(".shed.yml") as fh:
                 contents_dict = yaml.safe_load(fh)
             contents_dict["description"] = "Update test repository."
             io.write_file(".shed.yml", yaml.dump(contents_dict))

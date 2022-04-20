@@ -5,7 +5,7 @@ import collections
 import oyaml as yaml
 
 
-class Requirement(object):
+class Requirement:
     """Class to describe a training requirement."""
 
     def __init__(self, req_type="internal", topic_name="introduction", title=None, tutorials=None, link=None):
@@ -45,7 +45,7 @@ class Requirement(object):
 
 def load_yaml(filepath):
     """Load the content of a YAML file to a dictionary."""
-    with open(filepath, "r") as m_file:
+    with open(filepath) as m_file:
         content = yaml.safe_load(m_file)
     return content
 

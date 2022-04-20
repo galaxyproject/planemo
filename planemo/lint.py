@@ -1,11 +1,10 @@
 """Utilities to help linting various targets."""
-from __future__ import absolute_import
 
 import os
+from urllib.request import urlopen
 
 import requests
 from galaxy.tool_util.lint import LintContext
-from six.moves.urllib.request import urlopen
 
 from planemo.io import error
 from planemo.shed import find_urls_for_xml
@@ -74,7 +73,7 @@ def is_doi(publication_id, lint_ctx):
     if not doiless_publication_id:
         lint_ctx.error('Empty DOI citation')
         return
-    url = "%s/%s" % (base_url, doiless_publication_id)
+    url = f"{base_url}/{doiless_publication_id}"
     r = requests.get(url)
     if r.status_code == 200:
         if publication_id != doiless_publication_id:
@@ -128,14 +127,14 @@ def lint_urls(root, lint_ctx):
                     pass
                 else:
                     is_valid = False
-                    lint_ctx.error("Error '%s' accessing %s" % (e, url))
+                    lint_ctx.error(f"Error '{e}' accessing {url}")
         else:
             try:
                 with urlopen(url) as handle:
                     handle.read(100)
             except Exception as e:
                 is_valid = False
-                lint_ctx.error("Error '%s' accessing %s" % (e, url))
+                lint_ctx.error(f"Error '{e}' accessing {url}")
         if is_valid:
             lint_ctx.info("URL OK %s" % url)
 

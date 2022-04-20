@@ -51,10 +51,7 @@ def latest_installable_revision(tsi, repository_id):
         name, owner
     )
     if len(revisions) == 0:
-        msg = "Failed to find installable revisions for [{0}, {1}].".format(
-            owner,
-            name,
-        )
+        msg = f"Failed to find installable revisions for [{owner}, {name}]."
         raise Exception(msg)
     else:
         return revisions[-1]

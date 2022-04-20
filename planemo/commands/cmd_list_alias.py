@@ -28,7 +28,7 @@ def cli(ctx, profile, **kwds):
     else:
         print(json.dumps(aliases, indent=4, sort_keys=True))
 
-    info("{} aliases were found for profile {}.".format(len(aliases), profile))
+    info(f"{len(aliases)} aliases were found for profile {profile}.")
 
     ctx.exit(0)
     return

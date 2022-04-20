@@ -1,5 +1,4 @@
 """Abstractions for serving out development Galaxy servers."""
-from __future__ import print_function
 
 import contextlib
 import os
@@ -58,7 +57,7 @@ def _serve(ctx, runnables, **kwds):
         host = kwds.get("host", "127.0.0.1")
 
         timeout = 500
-        galaxy_url = "http://%s:%s" % (host, port)
+        galaxy_url = f"http://{host}:{port}"
         galaxy_alive = sleep(galaxy_url, verbose=ctx.verbose, timeout=timeout)
         if not galaxy_alive:
             raise Exception("Attempted to serve Galaxy at %s, but it failed to start in %d seconds." % (galaxy_url, timeout))

@@ -122,11 +122,11 @@ def test_topic_create_topic_structure():
     assert os.path.exists(topic.tuto_folder)
     # create the index.md and the topic name
     assert os.path.exists(topic.index_fp)
-    with open(topic.index_fp, 'r') as fh:
+    with open(topic.index_fp) as fh:
         assert topic_name in fh.read()
     # create the README.md and the topic name
     assert os.path.exists(topic.readme_fp)
-    with open(topic.readme_fp, 'r') as fh:
+    with open(topic.readme_fp) as fh:
         assert topic_title in fh.read()
     # check metadata content
     assert os.path.exists(topic.metadata_fp)
@@ -134,13 +134,13 @@ def test_topic_create_topic_structure():
     assert metadata['name'] == topic_name
     # check dockerfile
     assert os.path.exists(topic.dockerfile_fp)
-    with open(topic.dockerfile_fp, 'r') as fh:
+    with open(topic.dockerfile_fp) as fh:
         assert topic_name in fh.read()
-    with open(topic.dockerfile_fp, 'r') as fh:
+    with open(topic.dockerfile_fp) as fh:
         assert topic_title in fh.read()
     # check introduction slide
     assert os.path.exists(topic.intro_slide_fp)
-    with open(topic.intro_slide_fp, 'r') as fh:
+    with open(topic.intro_slide_fp) as fh:
         assert topic_title in fh.read()
     # check in metadata directory
     assert os.path.exists(os.path.join("metadata", "%s.yaml" % topic_name))

@@ -1,9 +1,9 @@
 """Utilities for calling Galaxy scripts."""
 import os
+import shlex
 import string
 
 from galaxy.util.commands import shell
-from six.moves import shlex_quote
 
 from planemo.io import info, shell_join
 from planemo.virtualenv import (
@@ -66,10 +66,10 @@ def locate_galaxy_virtualenv(ctx, kwds):
         galaxy_branch = kwds.get("galaxy_branch") or "master"
         shared_venv_path = os.path.join(workspace, "gx_venv")
         galaxy_python_version = kwds.get('galaxy_python_version') or DEFAULT_PYTHON_VERSION
-        shared_venv_path = "%s_%s" % (shared_venv_path, galaxy_python_version)
+        shared_venv_path = f"{shared_venv_path}_{galaxy_python_version}"
         if galaxy_branch != "master":
-            shared_venv_path = "%s_%s" % (shared_venv_path, galaxy_branch)
-        venv_command = CACHED_VIRTUAL_ENV_COMMAND % shlex_quote(shared_venv_path)
+            shared_venv_path = f"{shared_venv_path}_{galaxy_branch}"
+        venv_command = CACHED_VIRTUAL_ENV_COMMAND % shlex.quote(shared_venv_path)
     else:
         venv_command = UNCACHED_VIRTUAL_ENV_COMMAND
     return shell_join(
@@ -107,13 +107,13 @@ def _set_variable_if_wheels(var, if_wheels_val, else_val=""):
 
 def run_galaxy_command(ctx, command, env, action):
     """Run Galaxy command with informative verbose logging."""
-    message = "%s with command [%s]" % (action, command)
+    message = f"{action} with command [{command}]"
     # info not working in pytest+Github actions the way it did in nose?
     info(message)
     ctx.vlog("With environment variables:")
     ctx.vlog("============================")
     for key, value in env.items():
-        ctx.vlog('%s="%s"' % (key, value))
+        ctx.vlog(f'{key}="{value}"')
     ctx.vlog("============================")
     exit_code = shell(command, env=env)
     ctx.vlog("run command exited with return code %s" % exit_code)

@@ -23,14 +23,14 @@ INPUT_ADD_REPEAT = """
 SPACE = '    '
 
 
-class ToolInput(object):
+class ToolInput:
     """Class to describe a tool input / parameter and its value from a workflow."""
 
     def __init__(self, tool_inp_desc, wf_param_values, wf_steps, level, should_be_there=False, force_default=False):
         """Init an instance of ToolInput."""
         self.name = tool_inp_desc['name']
         if 'type' not in tool_inp_desc:
-            raise ValueError("No type for the parameter %s" % tool_inp_desc['name'])
+            raise ValueError(f"No type for the parameter {tool_inp_desc['name']}")
         self.type = tool_inp_desc['type']
         self.tool_inp_desc = tool_inp_desc
         self.level = level
@@ -41,9 +41,9 @@ class ToolInput(object):
 
         if self.name not in self.wf_param_values:
             if not should_be_there:
-                info("%s not in workflow" % self.name)
+                info(f"{self.name} not in workflow")
             else:
-                raise ValueError("%s not in workflow" % (self.name))
+                raise ValueError(f"{self.name} not in workflow")
         else:
             self.wf_param_values = self.wf_param_values[self.name]
 
@@ -55,9 +55,7 @@ class ToolInput(object):
             # multiple input (not collection)
             icon = 'param-files'
             for i in self.wf_param_values:
-                inps.append('`%s` %s' % (
-                    i['output_name'],
-                    get_input_tool_name(i['id'], self.wf_steps)))
+                inps.append(f"`{i['output_name']}` {get_input_tool_name(i['id'], self.wf_steps)}")
         else:
             inp = self.wf_param_values
             if 'id' in inp:
@@ -67,9 +65,7 @@ class ToolInput(object):
                     icon = 'param-collection'
                 else:
                     icon = 'param-file'
-                inps = ['`%s` %s' % (
-                    inp['output_name'],
-                    get_input_tool_name(inp['id'], self.wf_steps))]
+                inps = [f"`{inp['output_name']}` {get_input_tool_name(inp['id'], self.wf_steps)}"]
         if len(inps) > 0:
             inputlist += templates.render(INPUT_FILE_TEMPLATE, **{
                 "icon": icon,
@@ -134,7 +130,7 @@ class ToolInput(object):
                 tool_inp.setdefault(inp['name'], inp)
             tmp_wf_param_values = self.wf_param_values
             cur_level = self.level
-            for ind, param in enumerate(tmp_wf_param_values):
+            for param in tmp_wf_param_values:
                 self.wf_param_values = param
                 self.level = cur_level + 1
                 paramlist_in_repeat = self.get_lower_param_desc()
@@ -171,7 +167,7 @@ class ToolInput(object):
                     param_values.append(opt[0])
             param_value = ', '.join(param_values)
         elif self.type == 'data_column':
-            param_value = "c%s" % self.wf_param_values
+            param_value = f"c{self.wf_param_values}"
         else:
             param_value = self.wf_param_values
 
@@ -206,9 +202,9 @@ def get_input_tool_name(step_id, steps):
     if inp_prov_id in steps:
         name = steps[inp_prov_id]['name']
         if 'Input dataset' in name:
-            inp_provenance = "(%s)" % name
+            inp_provenance = f"({name})"
         else:
-            inp_provenance = "(output of **%s** {%% icon tool %%})" % name
+            inp_provenance = f"(output of **{name}** {{% icon tool %}})"
     return inp_provenance
 
 

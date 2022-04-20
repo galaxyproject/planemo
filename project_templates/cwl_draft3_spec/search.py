@@ -2,7 +2,6 @@
 
 # Toy program to search inverted index and print out each line the term
 # appears.
-from __future__ import print_function
 
 import sys
 

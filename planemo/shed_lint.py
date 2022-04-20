@@ -1,5 +1,4 @@
 """Logic related to linting shed repositories."""
-from __future__ import absolute_import
 
 import os
 import xml.etree.ElementTree as ET
@@ -185,7 +184,7 @@ def lint_readme(realized_repository, lint_ctx):
         return
 
     if readme_found.endswith(".rst"):
-        with open(readme_found, "r") as fh:
+        with open(readme_found) as fh:
             readme_text = fh.read()
         invalid_rst = rst_invalid(readme_text)
         if invalid_rst:
@@ -227,7 +226,7 @@ def lint_tool_dependencies_sha256sum(realized_repository, lint_ctx):
         if not checksum:
             lint_ctx.warn("Missing checksum for %s" % url)
         elif len(checksum) != 64 or not set("0123456789abcdef").issuperset(checksum.lower()):
-            lint_ctx.error("Invalid checksum %r for %s" % (checksum, url))
+            lint_ctx.error(f"Invalid checksum {checksum!r} for {url}")
         else:
             # TODO - See planned --verify option to check it matches
             # lint_ctx.info("SHA256 checkum listed for %s" % url)
@@ -294,7 +293,7 @@ def lint_shed_yaml(realized_repository, lint_ctx):
         lint_ctx.info("No .shed.yml file found, skipping.")
         return
     try:
-        with open(shed_yaml, "r") as fh:
+        with open(shed_yaml) as fh:
             yaml.safe_load(fh)
     except Exception as e:
         lint_ctx.warn("Failed to parse .shed.yml file [%s]" % unicodify(e))

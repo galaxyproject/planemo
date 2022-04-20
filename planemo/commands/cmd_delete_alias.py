@@ -23,9 +23,9 @@ def cli(ctx, alias, profile, **kwds):
     info("Looking for profiles...")
     exit_code = profiles.delete_alias(ctx, alias, profile)
     if exit_code == 0:
-        info('Alias {} was successfully deleted from profile {}'.format(alias, profile))
+        info(f'Alias {alias} was successfully deleted from profile {profile}')
     else:
-        error('Alias {} does not exist, so was not deleted from profile {}'.format(alias, profile))
+        error(f'Alias {alias} does not exist, so was not deleted from profile {profile}')
 
     ctx.exit(exit_code)
     return

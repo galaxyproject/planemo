@@ -1,5 +1,4 @@
 """Module describing the planemo ``ci_find_tools`` command."""
-from __future__ import print_function
 
 import click
 

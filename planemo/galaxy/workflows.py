@@ -25,13 +25,13 @@ def load_shed_repos(runnable):
     path = runnable.path
     if path.endswith(".ga"):
         generate_tool_list_from_ga_workflow_files.generate_tool_list_from_workflow([path], "Tools from workflows", "tools.yml")
-        with open("tools.yml", "r") as f:
+        with open("tools.yml") as f:
             tools = yaml.safe_load(f)["tools"]
 
     else:
         # It'd be better to just infer this from the tool shed ID somehow than
         # require explicit annotation like this... I think?
-        with open(path, "r") as f:
+        with open(path) as f:
             workflow = yaml.safe_load(f)
         steps = workflow['steps']
         if isinstance(steps, dict):
@@ -95,7 +95,7 @@ def import_workflow(path, admin_gi, user_gi, from_path=False):
 
 def _raw_dict(path, importer=None):
     if path.endswith(".ga"):
-        with open(path, "r") as f:
+        with open(path) as f:
             workflow = json.load(f)
     else:
         if importer is None:
@@ -103,7 +103,7 @@ def _raw_dict(path, importer=None):
 
         workflow_directory = os.path.dirname(path)
         workflow_directory = os.path.abspath(workflow_directory)
-        with open(path, "r") as f:
+        with open(path) as f:
             workflow = yaml.safe_load(f)
             workflow = python_to_workflow(workflow, importer, workflow_directory)
 
@@ -273,7 +273,7 @@ def get_dict_from_workflow(gi, workflow_id):
 
 def rewrite_job_file(input_file, output_file, job):
     """Rewrite a job file with galaxy_ids for upload_data subcommand"""
-    with open(input_file, "r") as f:
+    with open(input_file) as f:
         job_contents = yaml.safe_load(f)
         for job_input, job_input_name in job_contents.items():
             if type(job[job_input]) == dict:  # dataset or collection

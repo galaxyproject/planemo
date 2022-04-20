@@ -30,7 +30,7 @@ class CmdsWithWorkflowIdTestCase(CliTestCase, UsesServeCommand):
         safe_rmtree(cls.galaxy_root)
 
     def setUp(self):
-        super(CmdsWithWorkflowIdTestCase, self).setUp()
+        super().setUp()
         self._port = network_util.get_free_port()
         self._pid_file = os.path.join(self._home, "test.pid")
 
@@ -73,6 +73,6 @@ class CmdsWithWorkflowIdTestCase(CliTestCase, UsesServeCommand):
             ]
             self._check_exit_code(test_command, exit_code=0)
             output_json_path = os.path.join(f, "tool_test_output.json")
-            with open(output_json_path, "r") as f:
+            with open(output_json_path) as f:
                 output = json.load(f)
             assert "tests" in output

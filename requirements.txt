@@ -12,6 +12,5 @@ jinja2
 lxml
 oyaml
 pyyaml
-six>=1.7.0
 virtualenv
 tabulate

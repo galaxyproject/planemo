@@ -1,6 +1,5 @@
 """Describe artifacts that can be run, tested, and linted."""
 
-from __future__ import absolute_import
 
 import abc
 import os
@@ -20,10 +19,6 @@ from galaxy.tool_util.loader_directory import (
     looks_like_a_tool_xml,
 )
 from galaxy.tool_util.parser import get_tool_source
-from six import (
-    add_metaclass,
-    python_2_unicode_compatible,
-)
 
 from planemo.exit_codes import EXIT_CODE_UNKNOWN_FILE_TYPE, ExitCodeException
 from planemo.galaxy.workflows import describe_outputs, GALAXY_WORKFLOWS_PREFIX
@@ -214,7 +209,7 @@ def for_path(path, temp_path=None, return_all=False):
     else:
         # Check to see if it is a Galaxy workflow with a different extension
         try:
-            with open(path, "r") as f:
+            with open(path) as f:
                 as_dict = yaml.safe_load(f)
             if as_dict.get("a_galaxy_workflow", False):
                 runnable_type = RunnableType.galaxy_workflow
@@ -267,7 +262,7 @@ def cases(runnable):
             absolute_path = path
         return os.path.normpath(absolute_path)
 
-    with open(tests_path, "r") as f:
+    with open(tests_path) as f:
         tests_def = yaml.safe_load(f)
 
     if not isinstance(tests_def, list):
@@ -304,8 +299,7 @@ def cases(runnable):
     return cases
 
 
-@add_metaclass(abc.ABCMeta)
-class AbstractTestCase(object):
+class AbstractTestCase(metaclass=abc.ABCMeta):
     """Description of a test case for a runnable."""
 
     def structured_test_data(self, run_response):
@@ -358,7 +352,7 @@ class TestCase(AbstractTestCase):
     @property
     def _job(self):
         if self.job_path is not None:
-            with open(self.job_path, "r") as f:
+            with open(self.job_path) as f:
                 return f.read()
         else:
             return self.job
@@ -477,8 +471,7 @@ def get_outputs(runnable, gi=None):
         raise NotImplementedError("Getting outputs for this artifact type is not yet supported.")
 
 
-@add_metaclass(abc.ABCMeta)
-class RunnableOutput(object):
+class RunnableOutput(metaclass=abc.ABCMeta):
     """Description of a single output of an execution of a Runnable."""
 
     @abc.abstractproperty
@@ -520,8 +513,7 @@ class CwlWorkflowOutput(RunnableOutput):
         return self._label
 
 
-@add_metaclass(abc.ABCMeta)
-class RunResponse(object):
+class RunResponse(metaclass=abc.ABCMeta):
     """Description of an attempt for an engine to execute a Runnable."""
 
     @property
@@ -599,7 +591,7 @@ class RunResponse(object):
         if test_case:
             data_dict["inputs"] = test_case._job
             return dict(
-                id=("%s_%s" % (test_case._test_id, test_case.index)),
+                id=(f"{test_case._test_id}_{test_case.index}"),
                 has_data=True,
                 data=data_dict,
                 doc=test_case.doc,
@@ -615,8 +607,7 @@ class RunResponse(object):
             )
 
 
-@add_metaclass(abc.ABCMeta)
-class SuccessfulRunResponse(RunResponse):
+class SuccessfulRunResponse(RunResponse, metaclass=abc.ABCMeta):
     """Description of the results of an engine executing a Runnable."""
 
     def was_successful(self):
@@ -628,7 +619,6 @@ class SuccessfulRunResponse(RunResponse):
         """Return a dict of output descriptions."""
 
 
-@python_2_unicode_compatible
 class ErrorRunResponse(RunResponse):
     """Description of an error while attempting to execute a Runnable."""
 

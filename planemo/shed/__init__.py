@@ -15,7 +15,6 @@ from tempfile import (
 from typing import NamedTuple
 
 import bioblend
-import six
 import yaml
 from galaxy.util import (
     odict,
@@ -181,8 +180,8 @@ def construct_yaml_str(self, node):
     return self.construct_scalar(node)
 
 
-yaml.Loader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
-yaml.SafeLoader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
+yaml.Loader.add_constructor('tag:yaml.org,2002:str', construct_yaml_str)
+yaml.SafeLoader.add_constructor('tag:yaml.org,2002:str', construct_yaml_str)
 
 
 class ShedContext(NamedTuple):
@@ -443,7 +442,7 @@ def shed_repo_config(ctx, path, name=None):
     shed_yaml_path = os.path.join(path, SHED_CONFIG_NAME)
     config = {}
     if os.path.exists(shed_yaml_path):
-        with open(shed_yaml_path, "r") as f:
+        with open(shed_yaml_path) as f:
             config = yaml.safe_load(f)
 
     if config is None:  # yaml may yield None
@@ -802,10 +801,7 @@ def shed_repo_type(config, name):
 def _shed_config_to_url(shed_config):
     url = shed_config["url"]
     if not url.startswith("http"):
-        message = (
-            "Invalid shed url specified [{0}]. Please specify a valid "
-            "HTTP address or one of {1}"
-        ).format(url, list(SHED_SHORT_NAMES.keys()))
+        message = f"Invalid shed url specified [{url}]. Please specify a valid HTTP address or one of {list(SHED_SHORT_NAMES.keys())}"
         raise ValueError(message)
     return url
 
@@ -881,7 +877,7 @@ def _create_shed_config(ctx, path, **kwds):
 
 
 def _parse_repos_from_workflow(path):
-    with open(path, "r") as f:
+    with open(path) as f:
         workflow_json = json.load(f)
     steps = workflow_json["steps"]
     tool_ids = set()
@@ -977,8 +973,7 @@ def _build_raw_repo_objects(ctx, raw_dirs, **kwds):
     return raw_repo_objects
 
 
-@six.python_2_unicode_compatible
-class RepositoryDependencies(object):
+class RepositoryDependencies:
     """ Abstraction for shed repository_dependencies.xml files.
     """
 
@@ -996,10 +991,10 @@ class RepositoryDependencies(object):
 
     def write_to_path(self, path):
         with open(path, "w") as f:
-            f.write(six.text_type(self))
+            f.write(str(self))
 
 
-class RawRepositoryDirectory(object):
+class RawRepositoryDirectory:
 
     def __init__(self, path, config, multiple):
         self.path = path
@@ -1048,7 +1043,7 @@ class RawRepositoryDirectory(object):
                 continue
             realized_file.realize_to(directory)
 
-        for (name, contents) in six.iteritems(config.get("_files", {})):
+        for (name, contents) in config.get("_files", {}).items():
             path = os.path.join(directory, name)
             with open(path, "w") as f:
                 f.write(contents)
@@ -1125,7 +1120,7 @@ class RealizedFiles(NamedTuple):
     include_failures: list
 
 
-class RealizedFile(object):
+class RealizedFile:
 
     def __init__(self, src_root, src, dest):
         """Create object mapping from file system to tar-ball.
@@ -1203,12 +1198,10 @@ class RealizedFile(object):
         return realized_files
 
     def __str__(self):
-        return "RealizedFile[src={},dest={},src_root={}]".format(
-            self.src, self.dest, self.src_root
-        )
+        return f"RealizedFile[src={self.src},dest={self.dest},src_root={self.src_root}]"
 
 
-class RealizedRepositry(object):
+class RealizedRepositry:
 
     def __init__(self, realized_path, real_path, config, multiple, missing):
         self.path = realized_path
@@ -1374,7 +1367,7 @@ def _ensure_shed_description(description):
 
 def validate_repo_name(name):
     def _build_error(descript):
-        return "Repository name [%s] invalid. %s" % (name, descript)
+        return f"Repository name [{name}] invalid. {descript}"
 
     msg = None
     if len(name) < 2:
@@ -1395,7 +1388,7 @@ def validate_repo_name(name):
 
 def validate_repo_owner(owner):
     def _build_error(descript):
-        return "Owner [%s] invalid. %s" % (owner, descript)
+        return f"Owner [{owner}] invalid. {descript}"
     msg = None
     if len(owner) < 3:
         msg = _build_error("Owner must be at least 3 characters in length")

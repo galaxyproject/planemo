@@ -36,7 +36,7 @@ class CmdAutoupdateTestCase(CliTestCase):
     """Container class defining test cases for the ``autoupdate`` command."""
 
     def setUp(self):
-        super(CmdAutoupdateTestCase, self).setUp()
+        super().setUp()
 
     def test_autoupdate_dry_run(self):
         """Test autoupdate command with dry run flag."""

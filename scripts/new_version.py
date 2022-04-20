@@ -28,7 +28,7 @@ def main(argv):
     new_version = ".".join(map(str, new_version_tuple))
 
     history_path = os.path.join(PROJECT_DIRECTORY, "HISTORY.rst")
-    with open(history_path, "r") as fh:
+    with open(history_path) as fh:
         history = fh.read()
 
     def extend(from_str, line):
@@ -45,7 +45,7 @@ def main(argv):
         fh.write(history)
 
     source_mod_path = os.path.join(PROJECT_DIRECTORY, source_dir, "__init__.py")
-    with open(source_mod_path, "r") as fh:
+    with open(source_mod_path) as fh:
         mod = fh.read()
     mod = re.sub(r"__version__ = '[\d\.]+'",
                  "__version__ = '%s.dev0'" % new_version,

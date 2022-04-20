@@ -3,7 +3,6 @@ import tempfile
 from string import Template
 
 import click
-from six import iteritems
 
 from planemo.conda import build_conda_context
 
@@ -70,10 +69,10 @@ def ensure_dependency_resolvers_conf_configured(ctx, kwds, resolvers_conf=None):
     attributes = []
 
     def add_attribute(key, value):
-        attributes.append('%s="%s"' % (key, value))
+        attributes.append(f'{key}="{value}"')
 
     conda_prefix_specified = False
-    for key, default_value in iteritems(dependency_attribute_kwds):
+    for key, default_value in dependency_attribute_kwds.items():
         value = kwds.get(key, default_value)
         if value != default_value:
             conda_prefix_specified = conda_prefix_specified or (key == "conda_prefix")
