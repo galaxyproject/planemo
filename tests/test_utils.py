@@ -226,37 +226,29 @@ def skip_unless_executable(executable):
     return skip("PATH doesn't contain executable %s" % executable)
 
 
-def skip_unless_python_2_7():
-    if PYTHON_27:
-        return lambda func: func
-    return skip("Python 2.7 required for test.")
-
-
 def target_galaxy_branch():
     return os.environ.get("PLANEMO_TEST_GALAXY_BRANCH", "master")
 
 
-# Taken from Galaxy's test/unit/tools/test_tool_deps.py
+# Taken from Galaxy's test/unit/tool_util/util.py
 @contextlib.contextmanager
-def modify_environ(values, remove=[]):
+def modify_environ(values, keys_to_remove=None):
     """
     Modify the environment for a test, adding/updating values in dict `values` and
     removing any environment variables mentioned in list `remove`.
     """
-    new_keys = set(values.keys()) - set(os.environ.keys())
     old_environ = os.environ.copy()
     try:
-        os.environ.update(values)
-        for to_remove in remove:
-            try:
-                del os.environ[remove]
-            except KeyError:
-                pass
+        if values:
+            os.environ.update(values)
+        if keys_to_remove:
+            for key in keys_to_remove:
+                if key in os.environ:
+                    del os.environ[key]
         yield
     finally:
+        os.environ.clear()
         os.environ.update(old_environ)
-        for key in new_keys:
-            del os.environ[key]
 
 
 def run_verbosely():
