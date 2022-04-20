@@ -1,5 +1,5 @@
 """Create a DatabaseSource from supplied planemo configuration."""
-from galaxy.tool_util.deps.commands import which
+from galaxy.util.commands import which
 
 from .postgres import LocalPostgresDatabaseSource
 from .postgres_docker import DockerPostgresDatabaseSource

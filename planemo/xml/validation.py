@@ -3,8 +3,8 @@ import abc
 import subprocess
 from collections import namedtuple
 
-from galaxy.tool_util.deps.commands import which
 from galaxy.util import unicodify
+from galaxy.util.commands import which
 try:
     from lxml import etree
 except ImportError:

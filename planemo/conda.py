@@ -8,6 +8,7 @@ from __future__ import absolute_import
 import collections
 import os
 import threading
+from copy import deepcopy
 
 from galaxy.tool_util.deps import conda_util
 from galaxy.util import unicodify
@@ -154,12 +155,15 @@ def best_practice_search(conda_target, conda_context=None, platform=None):
         best_practice_search_first.previously_called = True
         offline = False
 
-    if not conda_context:
-        conda_context = conda_util.CondaContext()
+    if conda_context:
+        if conda_context.ensure_channels != BEST_PRACTICE_CHANNELS:
+            conda_context = deepcopy(conda_context)
+            conda_context.ensure_channels = BEST_PRACTICE_CHANNELS
+    else:
+        conda_context = conda_util.CondaContext(ensure_channels=BEST_PRACTICE_CHANNELS)
     return conda_util.best_search_result(
         conda_target,
         conda_context=conda_context,
-        channels_override=BEST_PRACTICE_CHANNELS,
         offline=offline,
         platform=platform,
     )

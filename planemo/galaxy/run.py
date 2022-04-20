@@ -2,7 +2,7 @@
 import os
 import string
 
-from galaxy.tool_util.deps.commands import shell
+from galaxy.util.commands import shell
 from six.moves import shlex_quote
 
 from planemo.io import info, shell_join

@@ -12,7 +12,7 @@ from planemo.github_util import (
 )
 from planemo.io import temp_directory
 from .test_utils import (
-    test_context,
+    create_test_context,
 )
 
 
@@ -44,14 +44,14 @@ def test_changelog_in_repo():
 
 
 def test_get_or_create_repo_with_existing_repo():
-    ctx = test_context()
+    ctx = create_test_context()
     ctx._global_config = {"github": {"access_token": 'ABCDEFG'}}
     repository_path = get_or_create_repository(ctx, owner='galaxyproject', repo='planemo', dry_run=False)
     assert os.path.exists(os.path.join(repository_path, 'README.rst'))
 
 
 def test_get_or_create_repo_with_new_repo():
-    ctx = test_context()
+    ctx = create_test_context()
     ctx._global_config = {"github": {"access_token": 'ABCDEFG'}}
     with pytest.raises(RuntimeError) as excinfo:
         # Token isn't valid, so this errors out while running gh create
@@ -61,7 +61,7 @@ def test_get_or_create_repo_with_new_repo():
 
 
 def test_add_dir_contents_to_repo():
-    ctx = test_context()
+    ctx = create_test_context()
     ctx._global_config = {"github": {"access_token": 'ABCDEFG'}}
     with temp_directory() as test_dir, temp_directory() as repo_dir:
         with open(os.path.join(test_dir, 'Readme.md'), 'w') as readme:
@@ -82,7 +82,7 @@ def test_add_dir_contents_to_repo():
 
 
 def test_add_dir_contents_to_repo_dry_run():
-    ctx = test_context()
+    ctx = create_test_context()
     ctx._global_config = {"github": {"access_token": 'ABCDEFG'}}
     with temp_directory() as test_dir, temp_directory() as repo_dir:
         with open(os.path.join(test_dir, 'Readme.md'), 'w') as readme:
@@ -100,7 +100,7 @@ def test_add_dir_contents_to_repo_dry_run():
 
 
 def test_git_ls_remote():
-    ctx = test_context()
+    ctx = create_test_context()
     tags_and_commits = git.ls_remote(ctx, 'https://github.com/galaxyproject/galaxy')
     assert 'refs/heads/release_20.09' in tags_and_commits
 
