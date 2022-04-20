@@ -357,7 +357,7 @@ and a planemo test can then simply use this image::
 
 For the later case it suffices to call planemo as follows::
 
-     $ DEFAULT_MULLED_CONDA_CHANNELS="file://PACKAGES_DIR,conda-forge,bioconda" planemo test ... --biocontainers --no_dependency_resolution --no_conda_auto_init ...
+     $ planemo test ... --biocontainers --no_dependency_resolution --no_conda_auto_init --conda_channels file://PACKAGES_DIR,conda-forge,bioconda,defaults ...
 
 --------------------------------------
 \.\.\. interactively debug tool tests?
