@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import copy
+import glob
 import math
 import os
 
@@ -11,6 +12,10 @@ import yaml
 from planemo import git
 from planemo import io
 from planemo.shed import REPO_METADATA_FILES
+from planemo.tools import (
+    is_tool_load_error,
+    yield_tool_sources_on_paths
+)
 
 
 def filter_paths(ctx, raw_paths, path_type="repo", **kwds):
@@ -26,14 +31,9 @@ def filter_paths(ctx, raw_paths, path_type="repo", **kwds):
     if changed_in_commit_range is not None:
         diff_files = git.diff(ctx, cwd, changed_in_commit_range)
         if path_type == "repo":
-            diff_dirs = set(os.path.dirname(p) for p in diff_files)
-            diff_paths = set()
-            for diff_dir in diff_dirs:
-                diff_path = metadata_file_in_path(diff_dir)
-                if diff_path:
-                    diff_paths.add(diff_path)
+            diff_paths = changed_repos(diff_files)
         else:
-            diff_paths = diff_files
+            diff_paths = changed_tools(diff_files, ctx, cwd)
 
     unique_paths = set(os.path.relpath(p, cwd) for p in raw_paths)
     if diff_paths is not None:
@@ -53,6 +53,38 @@ def filter_paths(ctx, raw_paths, path_type="repo", **kwds):
             chunked_paths.append(path)
 
     return chunked_paths
+
+
+def changed_repos(diff_files):
+    diff_dirs = set(os.path.dirname(p) for p in diff_files)
+    diff_paths = set()
+    for diff_dir in diff_dirs:
+        new_diff_paths = set()
+        while diff_dir != "" and len(new_diff_paths) == 0:
+            for sub_dir in glob.glob(diff_dir + "/**/", recursive=True):
+                diff_path = metadata_file_in_path(sub_dir)
+                if diff_path:
+                    new_diff_paths.add(diff_path)
+            diff_dir = os.path.split(diff_dir)[0]
+        diff_paths |= new_diff_paths
+    return diff_paths
+
+
+def changed_tools(diff_files, ctx, cwd):
+    diff_paths = set()
+    for diff_file in diff_files:
+        diff_dir = os.path.dirname(diff_file)
+        # search for tool files in each non-root parent*
+        new_diff_paths = set()
+        while diff_dir != '' and len(new_diff_paths) == 0:
+            for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, [diff_dir], recursive=True):
+                if is_tool_load_error(tool_source):
+                    continue
+                new_diff_paths.add(tool_path)
+            diff_dir = os.path.split(diff_dir)[0]
+        diff_paths |= new_diff_paths
+    diff_paths = set(os.path.relpath(p, cwd) for p in diff_paths)
+    return diff_paths
 
 
 def metadata_file_in_path(diff_dir):
