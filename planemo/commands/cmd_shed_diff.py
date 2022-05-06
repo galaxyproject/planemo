@@ -103,7 +103,7 @@ def cli(ctx, paths, **kwds):
         if user_requested_output is not None:
             shutil.copy(diff_output.name, user_requested_output)
         else:
-            with open(diff_output.name, "r") as f:
+            with open(diff_output.name) as f:
                 sys.stdout.write(f.read())
         # Rewind to the start of the file and read it in its entirety
         diff_output.seek(0)

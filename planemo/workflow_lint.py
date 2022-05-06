@@ -69,7 +69,7 @@ def _lint_workflow_artifacts_on_path(lint_context, path, lint_args):
         elif looks_like_a_workflow(potential_workflow_artifact_path):
 
             def structure(path, lint_context):
-                with open(path, "r") as f:
+                with open(path) as f:
                     workflow_dict = ordered_load(f)
                 workflow_class = workflow_dict.get("class")
                 lint_func = lint_format2 if workflow_class == "GalaxyWorkflow" else lint_ga
@@ -119,7 +119,7 @@ def _lint_best_practices(path, lint_context):  # noqa: C901
                     return True
         return False
 
-    with open(path, "r") as f:
+    with open(path) as f:
         workflow_dict = ordered_load(f)
 
     steps = workflow_dict.get("steps", {})
@@ -175,7 +175,7 @@ def _lint_case(path, test_case, lint_context):
     for key in job_keys:
         if key not in i_labels:
             # consider an error instead?
-            lint_context.warn("Unknown workflow input in test job definition [%s], workflow inputs are [%s]" % (key, i_labels))
+            lint_context.warn(f"Unknown workflow input in test job definition [{key}], workflow inputs are [{i_labels}]")
             test_valid = False
 
     # check non-optional parameters are set
@@ -255,7 +255,7 @@ def _tst_input_valid(test_case, input_id, input_def, lint_context):
 def _lint_dockstore_config(path, lint_context):
     dockstore_yaml = None
     try:
-        with open(path, "r") as f:
+        with open(path) as f:
             dockstore_yaml = yaml.safe_load(f)
     except Exception:
         lint_context.error("Invalid YAML found in %s" % DOCKSTORE_REGISTRY_CONF)
@@ -286,12 +286,12 @@ def _lint_dockstore_workflow_entry(lint_context, directory, workflow_entry):
     found_errors = False
     for required_key in ["primaryDescriptorPath", "subclass"]:
         if required_key not in workflow_entry:
-            lint_context.error("%s workflow entry missing required key %s" % (DOCKSTORE_REGISTRY_CONF, required_key))
+            lint_context.error(f"{DOCKSTORE_REGISTRY_CONF} workflow entry missing required key {required_key}")
             found_errors = True
 
     for recommended_key in ["testParameterFiles"]:
         if recommended_key not in workflow_entry:
-            lint_context.warn("%s workflow entry missing recommended key %s" % (DOCKSTORE_REGISTRY_CONF, recommended_key))
+            lint_context.warn(f"{DOCKSTORE_REGISTRY_CONF} workflow entry missing recommended key {recommended_key}")
 
     if found_errors:
         # Don't do the rest of the validation for a broken file.
@@ -304,13 +304,13 @@ def _lint_dockstore_workflow_entry(lint_context, directory, workflow_entry):
     for referenced_file in [descriptor_path] + test_files:
         referenced_path = os.path.join(directory, referenced_file[1:])
         if not os.path.exists(referenced_path):
-            lint_context.error("%s workflow entry references absent file %s" % (DOCKSTORE_REGISTRY_CONF, referenced_file))
+            lint_context.error(f"{DOCKSTORE_REGISTRY_CONF} workflow entry references absent file {referenced_file}")
 
 
 def looks_like_a_workflow(path):
     """Return boolean indicating if this path looks like a workflow."""
     if POTENTIAL_WORKFLOW_FILES.match(os.path.basename(path)):
-        with open(path, "r") as f:
+        with open(path) as f:
             workflow_dict = ordered_load(f)
         if not isinstance(workflow_dict, dict):
             # Not exactly right - could have a #main def - do better and sync with Galaxy.
@@ -328,7 +328,7 @@ def find_workflow_descriptions(directory):
 def find_potential_workflow_files(directory):
     """Return a list of potential workflow files in a directory."""
     if not os.path.exists(directory):
-        raise ValueError("Directory not found {}".format(directory))
+        raise ValueError(f"Directory not found {directory}")
 
     matches = []
     if os.path.isdir(directory):

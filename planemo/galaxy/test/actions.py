@@ -1,6 +1,5 @@
 """Actions related to running and reporting on Galaxy-specific testing."""
 
-import io
 import json
 import os
 from distutils.dir_util import copy_tree
@@ -150,14 +149,14 @@ def handle_reports_and_summary(ctx, structured_data, exit_code=None, kwds=None):
 def merge_reports(input_paths, output_path):
     reports = []
     for path in input_paths:
-        with io.open(path, encoding='utf-8') as f:
+        with open(path, encoding='utf-8') as f:
             reports.append(json.load(f))
     tests = []
     for report in reports:
         tests.extend(report["tests"])
     tests = sorted(tests, key=lambda k: k['id'])
     merged_report = {"tests": tests}
-    with io.open(output_path, mode="w", encoding='utf-8') as out:
+    with open(output_path, mode="w", encoding='utf-8') as out:
         out.write(unicodify(json.dumps(merged_report)))
 
 
@@ -167,7 +166,7 @@ def handle_reports(ctx, structured_data, kwds):
     structured_report_file = kwds.get("test_output_json", None)
     if structured_report_file:
         try:
-            with io.open(structured_report_file, mode="w", encoding='utf-8') as f:
+            with open(structured_report_file, mode="w", encoding='utf-8') as f:
                 f.write(unicodify(json.dumps(structured_data)))
         except Exception as e:
             exceptions.append(e)
@@ -206,19 +205,15 @@ def _handle_test_output_file(ctx, report_type, test_data, kwds):
             test_data, report_type=report_type, execution_type=execution_type
         )
     except Exception:
-        message = "Problem producing report file %s for %s" % (
-            path, kwd_name
-        )
+        message = f"Problem producing report file {path} for {kwd_name}"
         ctx.vlog(message, exception=True)
         raise
 
     try:
-        with io.open(path, mode='w', encoding='utf-8') as handle:
+        with open(path, mode='w', encoding='utf-8') as handle:
             handle.write(unicodify(contents))
     except Exception:
-        message = "Problem writing output file %s for %s" % (
-            kwd_name, path
-        )
+        message = f"Problem writing output file {kwd_name} for {path}"
         ctx.vlog(message, exception=True)
         raise
 
@@ -375,7 +370,7 @@ def _structured_report_file(kwds, config):
     return structured_report_file
 
 
-class _FileChangeTracker(object):
+class _FileChangeTracker:
 
     def __init__(self, path):
         modification_time = None

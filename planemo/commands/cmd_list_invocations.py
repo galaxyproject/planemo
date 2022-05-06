@@ -28,7 +28,7 @@ def cli(ctx, workflow_identifier, **kwds):
     """
     Get a list of invocations for a particular workflow ID or alias.
     """
-    info("Looking for invocations for workflow {}...".format(workflow_identifier))
+    info(f"Looking for invocations for workflow {workflow_identifier}...")
     runnable = for_runnable_identifier(ctx, workflow_identifier, kwds)
     profile = profiles.ensure_profile(ctx, kwds.get('profile'))
     assert runnable.is_remote_workflow_uri
@@ -48,7 +48,7 @@ def cli(ctx, workflow_identifier, **kwds):
         }
         print(tabulate({
                 "Invocation ID": invocations.keys(),
-                "Jobs status": [', '.join(['{}{} jobs {}\033[0m'.format(state_colors[k], v, k) for k, v in inv['states'].items()]
+                "Jobs status": [', '.join([f'{state_colors[k]}{v} jobs {k}\033[0m' for k, v in inv['states'].items()]
                                           ) for inv in invocations.values()],
                 "Invocation report URL": ['{}/workflows/invocations/report?id={}'.format(profile['galaxy_url'].strip('/'), inv_id
                                                                                          ) for inv_id in invocations],
@@ -58,5 +58,5 @@ def cli(ctx, workflow_identifier, **kwds):
     else:
         error("The tabulate package is not installed, invocations could not be listed correctly.")
         print(json.dumps(invocations, indent=4, sort_keys=True))
-    info("{} invocations found.".format(len(invocations)))
+    info(f"{len(invocations)} invocations found.")
     return

@@ -34,7 +34,7 @@ class CmdTestTestCase(CliTestCase):
                 test_artifact,
             ]
             self._check_exit_code(test_command, exit_code=0)
-            with open(json_out.name, 'r') as fh:
+            with open(json_out.name) as fh:
                 assert json.load(fh)['summary']['num_tests'] == 1
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
@@ -221,7 +221,7 @@ class CmdTestTestCase(CliTestCase):
             test_command.append(test_artifact)
             self._check_exit_code(test_command, exit_code=1)
             output_json_path = os.path.join(f, "tool_test_output.json")
-            with open(output_json_path, "r") as f:
+            with open(output_json_path) as f:
                 output = json.load(f)
             assert "tests" in output
             tests = output["tests"]

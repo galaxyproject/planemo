@@ -1,5 +1,4 @@
 """Provide abstractions over click testing of the app and unittest."""
-from __future__ import print_function
 
 import contextlib
 import functools
@@ -41,13 +40,11 @@ TEST_REPOS_DIR = os.path.join(TEST_DATA_DIR, "repos")
 TEST_RECIPES_DIR = os.path.join(TEST_DATA_DIR, "recipes")
 TEST_TOOLS_DIR = os.path.join(TEST_DATA_DIR, "tools")
 PROJECT_TEMPLATES_DIR = os.path.join(TEST_DIR, os.path.pardir, "project_templates")
-EXIT_CODE_MESSAGE = ("Planemo command [%s] resulted in unexpected exit code "
-                     "[%s], expected exit code [%s]]. Command output [%s]")
 CWL_DRAFT3_DIR = os.path.join(PROJECT_TEMPLATES_DIR, "cwl_draft3_spec")
 NON_ZERO_EXIT_CODE = object()
 
 
-class MarkGenerator(object):
+class MarkGenerator:
 
     def __getattr__(self, name):
         return getattr(pytest.mark, name)
@@ -75,7 +72,7 @@ class CliTestCase(TestCase):
             try:
                 future.result(timeout=10)
             except Exception as e:
-                print("Failed to dispose of future driven resource [%s]" % e)
+                print(f"Failed to dispose of future driven resource [{e}]")
         if self._port:
             kill_process_on_port(self._port)
         if self._old_config:
@@ -116,7 +113,7 @@ class CliTestCase(TestCase):
         self._copy_directory(repo, dest)
 
     def _copy_directory(self, path, dest):
-        io.shell(['cp', '-r', "%s/." % path, dest])
+        io.shell(['cp', '-r', f"{path}/.", dest])
 
     @property
     def test_context(self):
@@ -126,11 +123,11 @@ class CliTestCase(TestCase):
 class CliShedTestCase(CliTestCase):
 
     def setUp(self):  # noqa
-        super(CliShedTestCase, self).setUp()
+        super().setUp()
         self.mock_shed = setup_mock_shed()
 
     def tearDown(self):  # noqa
-        super(CliShedTestCase, self).tearDown()
+        super().tearDown()
         self.mock_shed.shutdown()
 
     def _shed_create(self, recursive=False):
@@ -183,7 +180,7 @@ class TempDirectoryTestCase(TestCase):
         safe_rmtree(self.temp_directory)
 
 
-class TempDirectoryContext(object):
+class TempDirectoryContext:
     def __init__(self):
         self.temp_directory = mkdtemp()
 
@@ -197,15 +194,13 @@ class TempDirectoryContext(object):
 def skip_unless_environ(var):
     if var in os.environ:
         return lambda func: func
-    template = "Environment variable %s not found, dependent test skipped."
-    return skip(template % var)
+    return skip(f"Environment variable {var} not found, dependent test skipped.")
 
 
 def skip_if_environ(var):
     if var not in os.environ:
         return lambda func: func
-    template = "Environment variable %s set, dependent test skipped."
-    return skip(template % var)
+    return skip(f"Environment variable {var} set, dependent test skipped.")
 
 
 def skip_unless_module(module):
@@ -216,14 +211,13 @@ def skip_unless_module(module):
         available = False
     if available:
         return lambda func: func
-    template = "Module %s could not be loaded, dependent test skipped."
-    return skip(template % module)
+    return skip(f"Module {module} could not be loaded, dependent test skipped.")
 
 
 def skip_unless_executable(executable):
     if which(executable):
         return lambda func: func
-    return skip("PATH doesn't contain executable %s" % executable)
+    return skip(f"PATH doesn't contain executable {executable}")
 
 
 def target_galaxy_branch():
@@ -264,7 +258,7 @@ def create_test_context():
 
 def assert_equal(a, b):
     """Assert two things are equal."""
-    assert a == b, "%s != %s" % (a, b)
+    assert a == b, f"{a} != {b}"
 
 
 def assert_exists(path):
@@ -275,12 +269,10 @@ def assert_exists(path):
     dir_path = os.path.dirname(path)
     msg = None
     if not os.path.exists(dir_path):
-        template = "Expected path [%s] to exist, but parent absent."
-        msg = template % path
+        msg = f"Expected path [{path}] to exist, but parent absent."
     if not os.path.exists(path):
         contents = os.listdir(dir_path)
-        template = "Expected path [%s] to exist. Directory contents %s."
-        msg = template % (path, contents)
+        msg = f"Expected path [{path}] to exist. Directory contents {contents}."
     if msg is not None:
         raise AssertionError(msg)
 
@@ -289,30 +281,28 @@ def check_exit_code(runner, command_list, exit_code=0):
     expected_exit_code = exit_code
     planemo_cli = cli.planemo
     if run_verbosely():
-        print("Invoking command [%s]" % command_list)
+        print(f"Invoking command [{command_list}]")
     result = runner.invoke(planemo_cli, command_list)
     if run_verbosely():
-        print("Command list output is [%s]" % result.output)
+        print(f"Command list output is [{result.output}]")
     result_exit_code = result.exit_code
     if expected_exit_code is NON_ZERO_EXIT_CODE:
         matches_expectation = result_exit_code != 0
     else:
         matches_expectation = result_exit_code == expected_exit_code
     if not matches_expectation:
-        message = EXIT_CODE_MESSAGE % (
-            " ".join(command_list),
-            result_exit_code,
-            expected_exit_code,
-            result.output,
+        message = (
+            f"Planemo command [{' '.join(command_list)}] resulted in unexpected exit code [{result_exit_code}], "
+            f"expected exit code [{expected_exit_code}]]. Command output [{result.output}]"
         )
         if result.exception:
-            message += " Exception [%s], " % unicodify(result.exception)
+            message += f" Exception [{unicodify(result.exception)}], "
             exc_type, exc_value, exc_traceback = result.exc_info
             tb = traceback.format_exception(exc_type, exc_value,
                                             exc_traceback)
-            message += "Traceback [%s]" % tb
+            message += f"Traceback [{tb}]"
         if run_verbosely():
-            print("Raising assertion error for unexpected exit code [%s]" % message)
+            print(f"Raising assertion error for unexpected exit code [{message}]")
         raise AssertionError(message)
     return result
 
@@ -352,14 +342,14 @@ def launch_and_wait_for_galaxy(port, func, args=[], timeout=600, timeout_multipl
 
     def wait():
         effective_timeout = timeout * timeout_multiplier
-        if not sleep("http://localhost:%d" % port, verbose=True, timeout=effective_timeout, sleep_condition=wait_sleep_condition):
-            raise Exception('Galaxy failed to start on port %d' % port)
+        if not sleep(f"http://localhost:{port}", verbose=True, timeout=effective_timeout, sleep_condition=wait_sleep_condition):
+            raise Exception(f'Galaxy failed to start on port {port}')
 
     executor = ThreadPoolExecutor(max_workers=2)
     try:
         target_future = executor.submit(target)
         wait_future = executor.submit(wait)
-        for first in as_completed([target_future, wait_future]):
+        for _ in as_completed([target_future, wait_future]):
             break
 
         if target_future.running():
@@ -385,11 +375,11 @@ def _wait_on_future_suppress_exception(future):
     try:
         future.result(timeout=30)
     except Exception as e:
-        print("Problem waiting on future %s" % e)
+        print(f"Problem waiting on future {e}")
 
 
 # From pytest-raisesregexp
-class assert_raises_regexp(object):
+class assert_raises_regexp:
     def __init__(self, expected_exception, regexp, *args, **kwargs):
         __tracebackhide__ = True
         self.exception = expected_exception
@@ -408,17 +398,15 @@ class assert_raises_regexp(object):
         __tracebackhide__ = True
 
         if exc_type is None:
-            pytest.fail('DID NOT RAISE {0}'.format(self.exception))
+            pytest.fail(f'DID NOT RAISE {self.exception}')
 
         self.excinfo.__init__((exc_type, exc_val, exc_tb))
 
         if not issubclass(exc_type, self.exception):
-            pytest.fail('{0} RAISED instead of {1}\n{2!r}'
-                        .format(exc_type, self.exception, exc_val))
+            pytest.fail(f'{exc_type} RAISED instead of {self.exception}\n{exc_val!r}')
 
         if not re.search(self.regexp, str(exc_val)):
-            pytest.fail('Pattern "{0}" not found in "{1!s}"'
-                        .format(self.regexp, exc_val))
+            pytest.fail(f'Pattern "{self.regexp}" not found in "{exc_val!s}"')
 
         return True
 
@@ -427,7 +415,7 @@ def safe_rmtree(path):
     try:
         shutil.rmtree(path)
     except Exception as e:
-        print("Failed to cleanup test directory [%s]: [%s]" % (path, e))
+        print(f"Failed to cleanup test directory [{path}]: [{e}]")
 
 
 # TODO: everything should be considered "exported".

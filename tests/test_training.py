@@ -19,10 +19,10 @@ tuto_wo_zenodo_fp = os.path.join(TEST_DATA_DIR, "training_tutorial_wo_zenodo.md"
 zenodo_link = 'https://zenodo.org/record/1321885'
 # load a workflow generated from Galaxy
 WF_FP = os.path.join(TEST_DATA_DIR, "training_workflow.ga")
-with open(WF_FP, "r") as wf_f:
+with open(WF_FP) as wf_f:
     wf = json.load(wf_f)
 # load wf_param_values (output of tutorial.get_wf_param_values on wf['steps']['4'])
-with open(os.path.join(TEST_DATA_DIR, "training_wf_param_values.json"), "r") as wf_param_values_f:
+with open(os.path.join(TEST_DATA_DIR, "training_wf_param_values.json")) as wf_param_values_f:
     wf_param_values = json.load(wf_param_values_f)
 # configuration
 RUNNABLE = for_path(WF_FP)
@@ -146,7 +146,7 @@ def test_training_init_training():
     train.init_training(CTX)
     assert os.path.exists(train.tuto.dir)
     assert os.path.exists(train.tuto.tuto_fp)
-    with open(train.tuto.tuto_fp, 'r') as fh:
+    with open(train.tuto.tuto_fp) as fh:
         assert train.kwds['tutorial_title'] in fh.read()
     # clean after
     shutil.rmtree(train.topics_dir)
@@ -200,25 +200,25 @@ def test_fill_data_library():
     # with a given Zenodo link and no Zenodo in metadata
     train.kwds['zenodo_link'] = zenodo_link
     train.fill_data_library(CTX)
-    with open(train.tuto.data_lib_fp, 'r') as fh:
+    with open(train.tuto.data_lib_fp) as fh:
         assert 'DOI: 10.5281/zenodo.1321885' in fh.read()
-    with open(train.tuto.tuto_fp, 'r') as fh:
+    with open(train.tuto.tuto_fp) as fh:
         assert 'zenodo_link: %s' % zenodo_link in fh.read()
     # with a given Zenodo link and Zenodo in metadata
     new_z_link = 'https://zenodo.org/record/1324204'
     train.kwds['zenodo_link'] = new_z_link
     train.tuto = None
     train.fill_data_library(CTX)
-    with open(train.tuto.data_lib_fp, 'r') as fh:
+    with open(train.tuto.data_lib_fp) as fh:
         assert 'DOI: 10.5281/zenodo.1324204' in fh.read()
-    with open(train.tuto.tuto_fp, 'r') as fh:
+    with open(train.tuto.tuto_fp) as fh:
         assert 'zenodo_link: %s' % new_z_link in fh.read()
     # with no given Zenodo link
     train.kwds['zenodo_link'] = None
     train.fill_data_library(CTX)
-    with open(train.tuto.data_lib_fp, 'r') as fh:
+    with open(train.tuto.data_lib_fp) as fh:
         assert 'DOI: 10.5281/zenodo.1324204' in fh.read()
-    with open(train.tuto.tuto_fp, 'r') as fh:
+    with open(train.tuto.tuto_fp) as fh:
         assert 'zenodo_link: %s' % new_z_link in fh.read()
     # clean after
     shutil.rmtree(train.topics_dir)
@@ -253,7 +253,7 @@ def test_generate_tuto_from_wf():
 
 
 def assert_file_contains(file, text):
-    with open(file, 'r') as fh:
+    with open(file) as fh:
         contents = fh.read()
     if text not in contents:
         template = "Expected file [%s] to contain [%s], it did not - contents [%s]"

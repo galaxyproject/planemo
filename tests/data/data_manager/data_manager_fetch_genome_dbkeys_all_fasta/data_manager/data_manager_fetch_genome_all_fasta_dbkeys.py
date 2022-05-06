@@ -262,11 +262,11 @@ def _get_ucsc_download_address(params, dbkey):
 
     for ucsc_chrom_fa_filename in UCSC_CHROM_FA_FILENAMES:
         for ext in COMPRESSED_EXTENSIONS:
-            if "%s%s" % (ucsc_chrom_fa_filename, ext) in path_contents:
-                ucsc_file_name = "%s%s%s" % (ucsc_path, ucsc_chrom_fa_filename, ext)
-                return "ftp://%s%s" % (UCSC_FTP_SERVER, ucsc_file_name)
+            if f"{ucsc_chrom_fa_filename}{ext}" in path_contents:
+                ucsc_file_name = f"{ucsc_path}{ucsc_chrom_fa_filename}{ext}"
+                return f"ftp://{UCSC_FTP_SERVER}{ucsc_file_name}"
 
-    raise Exception('Unable to determine filename for UCSC Genome for %s: %s' % (ucsc_dbkey, path_contents))
+    raise Exception(f'Unable to determine filename for UCSC Genome for {ucsc_dbkey}: {path_contents}')
 
 
 def add_fasta_to_table(data_manager_dict, fasta_readers, target_directory, dbkey, dbkey_name, sequence_id, sequence_name, params, **kwds):

@@ -1,9 +1,3 @@
-from __future__ import (
-    absolute_import,
-    division,
-    print_function,
-)
-
 import os
 import re
 from os.path import (
@@ -141,7 +135,7 @@ def check_version(ver):
                           ver)
     seq = get_bad_seq(ver)
     if seq:
-        raise RecipeError("'%s' not allowed in version '%s'" % (seq, ver))
+        raise RecipeError(f"'{seq}' not allowed in version '{ver}'")
 
 
 def check_build_number(bn):
@@ -298,7 +292,7 @@ def check_dir_content(recipe_dir):
             if data and not data.decode('utf-8').startswith(('#!/bin/bash\n',
                                                              '#!/bin/sh\n')):
                 raise RecipeError("not a bash script: build.sh")
-        except IOError:
+        except OSError:
             pass
 
 

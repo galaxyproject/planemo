@@ -1,6 +1,5 @@
 """Click definitions for various shared options and arguments."""
 
-from __future__ import absolute_import
 
 import functools
 import os
@@ -792,7 +791,7 @@ class UriLike(click.Path):
         if "://" in value:
             return value
         else:
-            return super(UriLike, self).convert(value, param, ctx)
+            return super().convert(value, param, ctx)
 
 
 def optional_tools_arg(multiple=False, allow_uris=False):
@@ -825,13 +824,13 @@ def optional_tools_arg(multiple=False, allow_uris=False):
 class ProjectOrRepositry(click.Path):
 
     def __init__(self, **kwds):
-        super(ProjectOrRepositry, self).__init__(**kwds)
+        super().__init__(**kwds)
 
     def convert(self, value, param, ctx):
         if value and value.startswith("git:") or value.startswith("git+"):
             return value
         else:
-            return super(ProjectOrRepositry, self).convert(value, param, ctx)
+            return super().convert(value, param, ctx)
 
 
 def shed_project_arg(multiple=True):

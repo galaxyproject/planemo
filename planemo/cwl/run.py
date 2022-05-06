@@ -84,15 +84,15 @@ def run_cwltool(ctx, runnable, job_path, **kwds):
             )
         tmp_stdout.flush()
         tmp_stderr.flush()
-        with open(tmp_stderr.name, "r") as stderr_f:
+        with open(tmp_stderr.name) as stderr_f:
             log = stderr_f.read()
             ctx.vlog("cwltool log output [%s]" % log)
-        with open(tmp_stdout.name, "r") as stdout_f:
+        with open(tmp_stdout.name) as stdout_f:
             try:
                 result = json.load(stdout_f)
             except ValueError:
                 message = JSON_PARSE_ERROR_MESSAGE % (
-                    open(tmp_stdout.name, "r").read(),
+                    open(tmp_stdout.name).read(),
                     tmp_stdout.name,
                     log
                 )

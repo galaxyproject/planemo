@@ -1,5 +1,5 @@
 """A high-level interface to local Galaxy instances using bioblend."""
-from six import StringIO
+from io import StringIO
 
 from planemo.bioblend import ensure_module
 from planemo.bioblend import galaxy
@@ -121,8 +121,8 @@ def get_invocations(url, key, workflow_id):
 
 
 def _format_for_summary(blob, empty_message, prefix="|  "):
-    contents = "\n".join(["%s%s" % (prefix, line.strip()) for line in StringIO(blob).readlines() if line.rstrip("\n\r")])
-    return contents or "%s*%s*" % (prefix, empty_message)
+    contents = "\n".join([f"{prefix}{line.strip()}" for line in StringIO(blob).readlines() if line.rstrip("\n\r")])
+    return contents or f"{prefix}*{empty_message}*"
 
 
 def _dataset_provenance(gi, history_id, id):

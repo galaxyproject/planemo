@@ -31,12 +31,12 @@ def cli(ctx, paths, namespace, dry_run, **kwds):
             workflow = ordered_load_path(workflow_file)
             version = workflow.get('release')
             if not version:
-                raise Exception("Must set a release version in workflow file '{}'".format(workflow_file))
+                raise Exception(f"Must set a release version in workflow file '{workflow_file}'")
             versions[version].append(workflow_file)
             if len(versions) > 1:
                 msg = ""
                 for version, paths in versions.items():
                     msg = "{}version: {}\npaths: {}".format(msg, version, "\n".join(paths))
-                raise Exception("All workflows in repository must have same version.\n{}".format(msg))
+                raise Exception(f"All workflows in repository must have same version.\n{msg}")
         if versions:
             create_release(ctx, from_dir=path, target_dir=repo, owner=owner, repo=repo, version=version, dry_run=dry_run)

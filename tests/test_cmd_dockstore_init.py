@@ -15,7 +15,7 @@ class CmdDockstoreInitTestCase(CliTestCase):
             init_cmd = ["dockstore_init"]
             self._check_exit_code(init_cmd)
             assert os.path.exists(".dockstore.yml")
-            with open(".dockstore.yml", "r") as fh:
+            with open(".dockstore.yml") as fh:
                 dockstore_config = yaml.safe_load(fh)
             assert str(dockstore_config["version"]) == "1.2"
             assert "workflows" in dockstore_config

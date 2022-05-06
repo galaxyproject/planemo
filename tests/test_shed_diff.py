@@ -106,7 +106,7 @@ class ShedDiffTestCase(CliShedTestCase):
                                                   'multi_repos_nested.xunit-bad.xml')
             self._check_exit_code(diff_command, exit_code=0)
 
-            with open(xunit_report.name, 'r') as fh:
+            with open(xunit_report.name) as fh:
                 compare = fh.read()
             if diff(
                 self._make_deterministic(ElementTree.parse(known_good_xunit_report).getroot()),
@@ -122,7 +122,7 @@ class ShedDiffTestCase(CliShedTestCase):
             )
             self._check_exit_code(diff_command, exit_code=1)
 
-            with open(xunit_report.name, 'r') as fh:
+            with open(xunit_report.name) as fh:
                 compare = fh.read()
             if diff(
                 self._make_deterministic(ElementTree.parse(known_bad_xunit_report).getroot()),
@@ -141,7 +141,7 @@ class ShedDiffTestCase(CliShedTestCase):
         diff_command.extend(self._shed_args(read_only=True))
         self._check_exit_code(diff_command, exit_code=1)
         diff_path = join(f, "diff")
-        with open(diff_path, "r") as diff_f:
+        with open(diff_path) as diff_f:
             diff = diff_f.read()
         for diff_line in DIFF_LINES:
             assert diff_line in diff

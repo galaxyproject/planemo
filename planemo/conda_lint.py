@@ -1,6 +1,5 @@
 """Logic for linting conda recipes."""
 
-from __future__ import absolute_import
 
 from functools import wraps
 
@@ -200,8 +199,7 @@ def yield_recipes_on_paths(ctx, paths, recursive):
         recipe_dirs = find_matching_directories(
             path, "meta.yaml", recursive=recursive
         )
-        for recipe_dir in recipe_dirs:
-            yield recipe_dir
+        yield from recipe_dirs
 
 
 __all__ = (

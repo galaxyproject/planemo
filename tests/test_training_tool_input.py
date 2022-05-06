@@ -21,7 +21,7 @@ from .test_utils import (
 wf_steps = wf['steps']
 # load the output from
 # gi.tools.show_tool('toolshed.g2.bx.psu.edu/repos/iuc/query_tabular/query_tabular/2.0.0', io_details=True)
-with open(os.path.join(TEST_DATA_DIR, "training_query_tabular.json"), "r") as tool_desc_f:
+with open(os.path.join(TEST_DATA_DIR, "training_query_tabular.json")) as tool_desc_f:
     tool_desc = json.load(tool_desc_f)
 tool_inp_desc = tool_desc["inputs"]
 

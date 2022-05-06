@@ -27,7 +27,7 @@ JSON_INDENT = 2
 WORKFLOW_INDEX_MATCH = re.compile(r"(.*)\_([\d+])")
 
 
-class AllureListener(object):
+class AllureListener:
     def __init__(self, lifecycle):
         self.lifecycle = lifecycle
 

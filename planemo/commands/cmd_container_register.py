@@ -97,7 +97,7 @@ def cli(ctx, paths, **kwds):
 
         name = v2_image_name(mulled_targets)
         tag = "0"
-        name_and_tag = "%s-%s" % (name, tag)
+        name_and_tag = f"{name}-{tag}"
         target_filename = os.path.join(registry_target.output_directory, "%s.tsv" % name_and_tag)
         if os.path.exists(target_filename):
             ctx.log("Target file '%s' already exists, skipping" % target_filename)
@@ -129,7 +129,7 @@ def cli(ctx, paths, **kwds):
         for conda_target in conda_targets:
             base_image = base_image_for_targets([conda_target], conda_context=conda_context)
             if base_image != DEFAULT_BASE_IMAGE:
-                ctx.log("%s requires '%s' as base image" % (conda_target, base_image))
+                ctx.log(f"{conda_target} requires '{base_image}' as base image")
                 break
 
         registry_target.write_targets(ctx, target_filename, mulled_targets, tag, base_image)
@@ -138,7 +138,7 @@ def cli(ctx, paths, **kwds):
         combinations_added += 1
 
 
-class RegistryTarget(object):
+class RegistryTarget:
     """Abstraction around mulled container registry (both directory and Github repo)."""
 
     def __init__(self, ctx, **kwds):
@@ -197,14 +197,14 @@ class RegistryTarget(object):
                 image_build=tag
                 )
             )
-            ctx.log("Wrote requirements [%s] to file [%s]" % (targets, target_filename))
+            ctx.log(f"Wrote requirements [{targets}] to file [{target_filename}]")
 
 
 def to_target_str(targets):
     target_strings = []
     for target in targets:
         if target.version:
-            target_str = "%s=%s" % (target.package_name, target.version)
+            target_str = f"{target.package_name}={target.version}"
         else:
             target_str = target.package_name
         target_strings.append(target_str)

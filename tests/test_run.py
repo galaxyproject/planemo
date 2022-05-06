@@ -109,5 +109,5 @@ class RunTestCase(CliTestCase):
             assert os.path.exists(os.path.join(f, 'tool_test_output.json'))
             output_path = os.path.join(f, "output")
             assert os.path.exists(output_path)
-            with open(output_path, "r") as fh:
+            with open(output_path) as fh:
                 assert fh.read().startswith("  16  198 1111")

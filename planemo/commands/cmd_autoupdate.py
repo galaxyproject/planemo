@@ -140,13 +140,13 @@ def cli(ctx, paths, **kwds):  # noqa C901
                         updated_workflow = autoupdate.autoupdate_wf(ctx, config, workflow)
 
                         if workflow.path.endswith(".ga"):
-                            with open(workflow.path, 'r') as f:
+                            with open(workflow.path) as f:
                                 original_workflow = json.load(f)
                             edited_workflow = autoupdate.fix_workflow_ga(original_workflow, updated_workflow)
                             with open(workflow.path, 'w') as f:
                                 json.dump(edited_workflow, f, indent=4)
                         else:
-                            with open(workflow.path, "r") as f:
+                            with open(workflow.path) as f:
                                 original_workflow = yaml.load(f, Loader=yaml.SafeLoader)
                             edited_workflow = autoupdate.fix_workflow_gxformat2(original_workflow, updated_workflow)
                             with open(workflow.path, "w") as f:

@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import json
 import tempfile
 
@@ -55,12 +53,12 @@ def run_toil(ctx, path, job_path, **kwds):
                 stdout=tmp_stdout
             )
         tmp_stdout.flush()
-        with open(tmp_stdout.name, "r") as stdout_f:
+        with open(tmp_stdout.name) as stdout_f:
             try:
                 result = json.load(stdout_f)
             except ValueError:
                 message = JSON_PARSE_ERROR_MESSAGE % (
-                    open(tmp_stdout.name, "r").read(),
+                    open(tmp_stdout.name).read(),
                     tmp_stdout.name,
                 )
                 error(message)

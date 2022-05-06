@@ -1,11 +1,9 @@
 """Module contianing the :class:`GalaxyEngine` implementation of :class:`Engine`."""
-from __future__ import absolute_import
 
 import abc
 import contextlib
 
 from galaxy.tool_util.verify import interactor
-from six import add_metaclass
 
 from planemo.galaxy.activity import execute, execute_rerun
 from planemo.galaxy.config import external_galaxy_config
@@ -14,8 +12,7 @@ from planemo.runnable import RunnableType
 from .interface import BaseEngine
 
 
-@add_metaclass(abc.ABCMeta)
-class GalaxyEngine(BaseEngine):
+class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
     """An :class:`Engine` implementation backed by a managed Galaxy.
 
     More information on Galaxy can be found at http://galaxyproject.org/.
@@ -31,7 +28,7 @@ class GalaxyEngine(BaseEngine):
 
     def _run(self, runnable, job_path):
         """Run CWL job in Galaxy."""
-        self._ctx.vlog("Serving artifact [%s] with Galaxy." % (runnable,))
+        self._ctx.vlog(f"Serving artifact [{runnable}] with Galaxy.")
         with self.ensure_runnables_served([runnable]) as config:
             self._ctx.vlog("Running job path [%s]" % job_path)
             if self._ctx.verbose:
@@ -47,7 +44,7 @@ class GalaxyEngine(BaseEngine):
     def _run_test_case(self, test_case):
         if hasattr(test_case, "job_path"):
             # Simple file-based job path.
-            return super(GalaxyEngine, self)._run_test_case(test_case)
+            return super()._run_test_case(test_case)
         else:
             with self.ensure_runnables_served([test_case.runnable]) as config:
                 galaxy_interactor_kwds = {

@@ -6,6 +6,7 @@ import tempfile
 import time
 import traceback
 from datetime import datetime
+from urllib.parse import urljoin
 
 import bioblend
 from bioblend.util import attach_file
@@ -26,7 +27,6 @@ from requests.exceptions import (
     HTTPError,
     RequestException,
 )
-from six.moves.urllib.parse import urljoin
 
 from planemo.galaxy.api import summarize_history
 from planemo.io import wait_on
@@ -162,7 +162,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):  # noqa C901
     elif runnable.type in [RunnableType.galaxy_workflow, RunnableType.cwl_workflow]:
         response_class = GalaxyWorkflowRunResponse
         workflow_id = config.workflow_id_for_runnable(runnable)
-        ctx.vlog("Found Galaxy workflow ID [%s] for URI [%s]" % (workflow_id, runnable.uri))
+        ctx.vlog(f"Found Galaxy workflow ID [{workflow_id}] for URI [{runnable.uri}]")
         invocation = user_gi.workflows.invoke_workflow(
             workflow_id,
             inputs=job_dict,
@@ -189,7 +189,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):  # noqa C901
             final_state = _wait_for_history(ctx, user_gi, history_id, polling_backoff)
             if final_state != "ok":
                 msg = "Failed to run workflow final history state is [%s]." % final_state
-                error_message = msg if not error_message else "%s. %s" % (error_message, msg)
+                error_message = msg if not error_message else f"{error_message}. {msg}"
                 ctx.vlog(msg)
                 summarize_history(ctx, user_gi, history_id)
             else:
@@ -248,7 +248,7 @@ def stage_in(ctx, runnable, config, job_path, **kwds):  # noqa C901
                 history_id,
                 dataset["id"],
             )
-            ctx.vlog("Uploaded dataset for path [%s] with metadata [%s]" % (path, dataset_details))
+            ctx.vlog(f"Uploaded dataset for path [{path}] with metadata [{dataset_details}]")
     else:
         # Mark uploads as ok because nothing to do.
         final_state = "ok"
@@ -353,9 +353,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         return self._end_datetime
 
     def _get_extra_files(self, dataset_details):
-        extra_files_url = "%s/histories/%s/contents/%s/extra_files" % (
-            self._user_gi.url, self._history_id, dataset_details["id"]
-        )
+        extra_files_url = f"{self._user_gi.url}/histories/{self._history_id}/contents/{dataset_details['id']}/extra_files"
         extra_files = self._user_gi.jobs._get(url=extra_files_url)
         return extra_files
 
@@ -485,7 +483,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
 
     def _history_content_download(self, ctx, history_id, dataset_id, to_path, filename=None):
         user_gi = self._user_gi
-        url = user_gi.url + "/histories/%s/contents/%s/display" % (history_id, dataset_id)
+        url = f"{user_gi.url}/histories/{history_id}/contents/{dataset_id}/display"
 
         data = {}
         if filename:
@@ -522,7 +520,7 @@ class GalaxyToolRunResponse(GalaxyBaseRunResponse):
         start_datetime=None,
         end_datetime=None,
     ):
-        super(GalaxyToolRunResponse, self).__init__(
+        super().__init__(
             ctx=ctx,
             runnable=runnable,
             user_gi=user_gi,
@@ -549,7 +547,7 @@ class GalaxyToolRunResponse(GalaxyBaseRunResponse):
         output_collections = self.api_run_response["output_collections"]
         output_id = output.get_id()
         output_src = None
-        self._ctx.vlog("Looking for id [%s] in outputs [%s]" % (output_id, outputs))
+        self._ctx.vlog(f"Looking for id [{output_id}] in outputs [{outputs}]")
         for output in outputs:
             if output["output_name"] == output_id:
                 output_src = {"src": "hda", "id": output["id"]}
@@ -576,7 +574,7 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         start_datetime=None,
         end_datetime=None,
     ):
-        super(GalaxyWorkflowRunResponse, self).__init__(
+        super().__init__(
             ctx=ctx,
             runnable=runnable,
             user_gi=user_gi,
@@ -609,14 +607,14 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         elif output_name in invocation["output_collections"]:
             return invocation["output_collections"][output.get_id()]
         else:
-            raise Exception("Failed to find output [%s] in invocation outputs [%s]" % (output_name, invocation["outputs"]))
+            raise Exception(f"Failed to find output [{output_name}] in invocation outputs [{invocation['outputs']}]")
 
     def collect_invocation_details(self, invocation_id=None):
         gi = self._user_gi
         invocation_steps = {}
         invocation = self.get_invocation(invocation_id)
         for step in invocation['steps']:
-            step_label_or_index = "{}. {}".format(step['order_index'], step['workflow_step_label'] or 'Unnamed step')
+            step_label_or_index = f"{step['order_index']}. {step['workflow_step_label'] or 'Unnamed step'}"
             workflow_step = gi.invocations.show_invocation_step(self._invocation_id, step['id'])
             workflow_step['subworkflow'] = None
             subworkflow_invocation_id = workflow_step.get('subworkflow_invocation_id')

@@ -73,7 +73,7 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         safe_rmtree(cls.galaxy_root)
 
     def setUp(self):
-        super(ServeTestCase, self).setUp()
+        super().setUp()
         self._port = network_util.get_free_port()
         self._pid_file = os.path.join(self._home, "test.pid")
         self._serve_artifact = os.path.join(TEST_REPOS_DIR, "single_tool", "cat.xml")

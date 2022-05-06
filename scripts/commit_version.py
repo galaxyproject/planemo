@@ -14,7 +14,7 @@ def main(argv):
     source_dir = argv[1]
     version = argv[2]
     history_path = os.path.join(PROJECT_DIRECTORY, "HISTORY.rst")
-    with open(history_path, "r") as fh:
+    with open(history_path) as fh:
         history = fh.read()
     today = datetime.datetime.today()
     today_str = today.strftime('%Y-%m-%d')
@@ -23,7 +23,7 @@ def main(argv):
         fh.write(history)
 
     planemo_mod_path = os.path.join(PROJECT_DIRECTORY, source_dir, "__init__.py")
-    with open(planemo_mod_path, "r") as fh:
+    with open(planemo_mod_path) as fh:
         mod = fh.read()
     mod = re.sub(r"__version__ = '[\d\.]*\.dev0'",
                  "__version__ = '%s'" % version,

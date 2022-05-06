@@ -1,4 +1,3 @@
-
 def diff(x1, x2, reporter=None):
     """Return 0 if and only if the XML has the same content."""
     compare = xml_compare(x1, x2, reporter)
@@ -15,7 +14,7 @@ def xml_compare(x1, x2, reporter=None):
             return None
 
     if x1.tag != x2.tag:
-        reporter('Tags do not match: %s and %s\n' % (x1.tag, x2.tag))
+        reporter(f'Tags do not match: {x1.tag} and {x2.tag}\n')
         return False
     for name, value in x1.attrib.items():
         if x2.attrib.get(name) != value:
@@ -28,10 +27,10 @@ def xml_compare(x1, x2, reporter=None):
                      % name)
             return False
     if not text_compare(x1.text, x2.text):
-        reporter('text: %r != %r\n' % (x1.text, x2.text))
+        reporter(f'text: {x1.text!r} != {x2.text!r}\n')
         return False
     if not text_compare(x1.tail, x2.tail):
-        reporter('tail: %r != %r\n' % (x1.tail, x2.tail))
+        reporter(f'tail: {x1.tail!r} != {x2.tail!r}\n')
         return False
     return _compare_children(x1, x2, reporter)
 

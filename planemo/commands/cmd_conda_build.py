@@ -1,5 +1,4 @@
 """Module describing the planemo ``conda_build`` command."""
-from __future__ import print_function
 
 import click
 

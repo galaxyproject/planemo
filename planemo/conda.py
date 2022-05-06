@@ -3,7 +3,6 @@
 The extend galaxy-tool-util's features with planemo specific idioms.
 """
 
-from __future__ import absolute_import
 
 import collections
 import os
@@ -69,7 +68,7 @@ def collect_conda_targets(ctx, paths, recursive=False, found_tool_callback=None)
     If a tool contains more than one requirement, the requirements will each
     appear once in the output.
     """
-    conda_targets = set([])
+    conda_targets = set()
     real_paths = []
     for path in paths:
         if not os.path.exists(path):
@@ -117,7 +116,7 @@ def collect_conda_target_lists_and_tool_paths(ctx, paths, recursive=False, found
     If a tool contains more than one requirement, the requirements will all
     appear together as one list element of the output list.
     """
-    conda_target_lists = set([])
+    conda_target_lists = set()
     tool_paths = collections.defaultdict(list)
     for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, paths, recursive=recursive, yield_load_errors=False):
         try:

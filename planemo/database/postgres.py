@@ -62,11 +62,7 @@ class LocalPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource):
         hostname = self.database_host or "localhost"
         if self.database_port:
             hostname += ":%s" % self.database_port
-        return "postgresql://%s@%s/%s" % (
-            self.database_user,
-            hostname,
-            identifier
-        )
+        return f"postgresql://{self.database_user}@{hostname}/{identifier}"
 
     def _psql_command_builder(self, *args):
         command_builder = _CommandBuilder(self.psql_path)
@@ -85,7 +81,7 @@ class LocalPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource):
         return command_builder
 
 
-class _CommandBuilder(object):
+class _CommandBuilder:
 
     def __init__(self, *args):
         self.command = list(args)

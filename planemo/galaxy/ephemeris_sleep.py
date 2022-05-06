@@ -42,7 +42,7 @@ def _parse_cli_options():
     return parser.parse_args()
 
 
-class SleepCondition(object):
+class SleepCondition:
 
     def __init__(self):
         self.sleep = True

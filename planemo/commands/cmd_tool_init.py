@@ -47,7 +47,7 @@ def cli(ctx, **kwds):
 def _validate_kwds(kwds):
     def not_exclusive(x, y):
         if kwds.get(x) and kwds.get(y):
-            io.error("Can only specify one of --%s and --%s" % (x, y))
+            io.error(f"Can only specify one of --{x} and --{y}")
             return True
 
     def not_specifing_dependent_option(x, y):

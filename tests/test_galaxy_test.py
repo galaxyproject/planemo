@@ -23,7 +23,7 @@ class RunInConfigTestCase(TempDirectoryTestCase):
 
     def setUp(self):
         """Setup mock keywords, context, and Galaxy config for tests."""
-        super(RunInConfigTestCase, self).setUp()
+        super().setUp()
         td = self.temp_directory
         self.ctx = create_test_context()
         self.config = _MockConfig(td)
@@ -114,7 +114,7 @@ class RunInConfigTestCase(TempDirectoryTestCase):
 
     def _copy_artifacts(self, suffix, extensions):
         for extension in extensions:
-            source = os.path.join(TEST_DATA_DIR, "tt_%s.%s" % (suffix, extension))
+            source = os.path.join(TEST_DATA_DIR, f"tt_{suffix}.{extension}")
             destination = os.path.join(self.temp_directory, "tests.%s" % extension)
             shutil.copy(source, destination)
 
@@ -160,7 +160,7 @@ def test_passed():
     assert not passed(bad_testcase_el)
 
 
-class _MockConfig(object):
+class _MockConfig:
 
     def __init__(self, temp_directory):
         self.config_directory = temp_directory

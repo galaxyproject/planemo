@@ -1,6 +1,5 @@
 """Utilities for dealing with continous integration systems."""
 
-from __future__ import print_function
 
 import copy
 import math
@@ -26,7 +25,7 @@ def filter_paths(ctx, raw_paths, path_type="repo", **kwds):
     if changed_in_commit_range is not None:
         diff_files = git.diff(ctx, cwd, changed_in_commit_range)
         if path_type == "repo":
-            diff_dirs = set(os.path.dirname(p) for p in diff_files)
+            diff_dirs = {os.path.dirname(p) for p in diff_files}
             diff_paths = set()
             for diff_dir in diff_dirs:
                 diff_path = metadata_file_in_path(diff_dir)
@@ -35,7 +34,7 @@ def filter_paths(ctx, raw_paths, path_type="repo", **kwds):
         else:
             diff_paths = diff_files
 
-    unique_paths = set(os.path.relpath(p, cwd) for p in raw_paths)
+    unique_paths = {os.path.relpath(p, cwd) for p in raw_paths}
     if diff_paths is not None:
         unique_paths = unique_paths.intersection(diff_paths)
     filtered_paths = sorted(io.filter_paths(unique_paths, cwd=cwd, **filter_kwds))

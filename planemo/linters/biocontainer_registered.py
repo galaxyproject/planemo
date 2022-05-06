@@ -29,4 +29,4 @@ def lint_biocontainer_registered(tool_source, lint_ctx):
 def mulled_container_name(namespace, targets):
     name = targets_to_mulled_name(targets=targets, hash_func="v2", namespace=namespace)
     if name:
-        return "quay.io/%s/%s" % (namespace, name)
+        return f"quay.io/{namespace}/{name}"

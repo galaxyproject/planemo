@@ -1,6 +1,4 @@
 """Planemo I/O abstractions and utilities."""
-from __future__ import absolute_import
-from __future__ import print_function
 
 import contextlib
 import errno
@@ -11,16 +9,13 @@ import subprocess
 import sys
 import tempfile
 import time
+from io import StringIO
 from sys import platform as _platform
 from xml.sax.saxutils import escape
 
 import click
 from galaxy.util import commands
 from galaxy.util.commands import download_command
-from six import (
-    string_types,
-    StringIO
-)
 
 from .exit_codes import (
     EXIT_CODE_NO_SUCH_TARGET,
@@ -33,7 +28,7 @@ IS_OS_X = _platform == "darwin"
 
 def args_to_str(args):
     """Collapse list of arguments in a commmand-line string."""
-    if args is None or isinstance(args, string_types):
+    if args is None or isinstance(args, str):
         return args
     else:
         return commands.argv_to_str(args)
@@ -54,8 +49,7 @@ def communicate(cmds, **kwds):
         output = p.communicate()
 
     if p.returncode != 0:
-        template = "Problem executing commands {0} - ({1}, {2})"
-        msg = template.format(cmd_string, output[0], output[1])
+        msg = f"Problem executing commands {cmd_string} - ({output[0]}, {output[1]})"
         raise RuntimeError(msg)
     return output
 
@@ -95,7 +89,7 @@ def can_write_to_path(path: str, **kwds):
     unless --force caused the 'force' keyword argument to be True.
     """
     if not kwds["force"] and os.path.exists(path):
-        error("%s already exists, exiting." % path)
+        error(f"{path} already exists, exiting.")
         return False
     return True
 
@@ -146,8 +140,7 @@ def find_matching_directories(path, pattern, recursive):
     dirs = []
     if recursive:
         if not os.path.isdir(path):
-            template = "--recursive specified with non-directory path [%s]"
-            message = template % (path)
+            message = f"--recursive specified with non-directory path [{path}]"
             raise Exception(message)
 
         for base_path, dirnames, filenames in os.walk(path):
@@ -203,7 +196,7 @@ def ps1_for_path(path, base="PS1"):
     """
     file_name = os.path.basename(path)
     base_name = os.path.splitext(file_name)[0]
-    ps1 = "(%s)${%s}" % (base_name, base)
+    ps1 = f"({base_name})${{{base}}}"
     return ps1
 
 
@@ -215,7 +208,7 @@ def kill_pid_file(pid_file: str):
         if e.errno == errno.ENOENT:
             return False
 
-    with open(pid_file, "r") as fh:
+    with open(pid_file) as fh:
         pid = int(fh.read())
     kill_posix(pid)
     try:
@@ -336,7 +329,7 @@ def wait_on(function, desc, timeout=5, polling_backoff=0):
     timing = 0
     while True:
         if timing > timeout:
-            message = "Timed out waiting on %s." % desc
+            message = f"Timed out waiting on {desc}."
             raise Exception(message)
         timing += delta
         delta += polling_backoff
@@ -381,7 +374,7 @@ def filter_paths(paths, cwd=None, **kwds):
     filters_as_funcs.extend(map(exclude_func, kwds.get("exclude", [])))
 
     for exclude_paths_ins in kwds.get("exclude_from", []):
-        with open(exclude_paths_ins, "r") as f:
+        with open(exclude_paths_ins) as f:
             for line in f.readlines():
                 line = line.strip()
                 if not line or line.startswith("#"):

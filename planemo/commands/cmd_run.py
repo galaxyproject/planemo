@@ -1,5 +1,4 @@
 """Module describing the planemo ``run`` command."""
-from __future__ import print_function
 
 import json
 

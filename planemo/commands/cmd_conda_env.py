@@ -1,5 +1,4 @@
 """Module describing the planemo ``conda_env`` command."""
-from __future__ import print_function
 
 import click
 from galaxy.tool_util.deps import conda_util
@@ -61,9 +60,7 @@ def cli(ctx, path, **kwds):
         return 1
 
     ps1 = ps1_for_path(path, base="PRE_CONDA_PS1")
-    remove_env = "%s env remove -y --name '%s'" % (
-        conda_context.conda_exec, env_name
-    )
+    remove_env = f"{conda_context.conda_exec} env remove -y --name '{env_name}'"
     deactivate = conda_context.deactivate
     activate = conda_context.activate
     command = SOURCE_COMMAND % (
