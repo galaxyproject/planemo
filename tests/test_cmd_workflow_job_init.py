@@ -3,13 +3,10 @@ import os
 
 import yaml
 
-from .test_utils import (
-    CliTestCase,
-)
+from .test_utils import CliTestCase
 
 
 class CmdWorkflowJobInitTestCase(CliTestCase):
-
     def test_plain_init(self):
         with self._isolate_with_test_data("wf_repos/from_format2/0_basic_native") as f:
             init_cmd = ["workflow_job_init", "0_basic_native.yml"]

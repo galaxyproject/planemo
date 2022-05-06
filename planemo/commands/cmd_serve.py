@@ -8,7 +8,7 @@ from planemo.runnable import for_paths
 from planemo.tools import uris_to_paths
 
 
-@click.command('serve')
+@click.command("serve")
 @options.optional_tools_arg(multiple=True, allow_uris=True)
 @options.galaxy_serve_options()
 @options.enable_cwl_option()
@@ -39,5 +39,5 @@ def cli(ctx, uris, **kwds):
     """
     paths = uris_to_paths(ctx, uris)
     runnables = for_paths(paths)
-    kwds['galaxy_skip_client_build'] = kwds.pop("skip_client_build", False)
+    kwds["galaxy_skip_client_build"] = kwds.pop("skip_client_build", False)
     galaxy_serve(ctx, runnables, **kwds)

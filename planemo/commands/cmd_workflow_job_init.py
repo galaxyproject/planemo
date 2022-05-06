@@ -9,12 +9,12 @@ from planemo.cli import command_function
 from planemo.galaxy.workflows import (
     get_workflow_from_invocation_id,
     job_template,
-    new_workflow_associated_path
+    new_workflow_associated_path,
 )
 from planemo.io import can_write_to_path
 
 
-@click.command('workflow_job_init')
+@click.command("workflow_job_init")
 @options.required_workflow_arg()
 @options.force_option()
 @options.workflow_output_artifact()
@@ -36,15 +36,19 @@ def cli(ctx, workflow_identifier, output=None, **kwds):
     lines at some point.
     """
     if kwds["from_invocation"]:
-        if not os.path.isdir('test-data'):
+        if not os.path.isdir("test-data"):
             ctx.log("Creating test-data directory.")
             os.makedirs("test-data")
-        path_basename = get_workflow_from_invocation_id(workflow_identifier, kwds["galaxy_url"], kwds["galaxy_user_key"])
+        path_basename = get_workflow_from_invocation_id(
+            workflow_identifier, kwds["galaxy_url"], kwds["galaxy_user_key"]
+        )
 
     job = job_template(workflow_identifier, **kwds)
 
     if output is None:
-        output = new_workflow_associated_path(path_basename if kwds["from_invocation"] else workflow_identifier, suffix="job")
+        output = new_workflow_associated_path(
+            path_basename if kwds["from_invocation"] else workflow_identifier, suffix="job"
+        )
     if not can_write_to_path(output, **kwds):
         ctx.exit(1)
     with open(output, "w") as f_job:

@@ -6,7 +6,6 @@ from .test_utils import CliTestCase
 
 
 class ConfigInitTestCase(CliTestCase):
-
     def test_config(self):
         assert not os.path.exists(self.planemo_yaml_path)
         with self._isolate():

@@ -57,14 +57,14 @@ def ensure_dependency_resolvers_conf_configured(ctx, kwds, resolvers_conf=None):
     always_specify_attribute = object()
 
     dependency_attribute_kwds = {
-        'conda_prefix': None,
-        'conda_exec': None,
-        'conda_debug': False,
-        'conda_copy_dependencies': False,
-        'conda_auto_init': always_specify_attribute,
-        'conda_auto_install': always_specify_attribute,
-        'conda_ensure_channels': '',
-        'conda_use_local': False,
+        "conda_prefix": None,
+        "conda_exec": None,
+        "conda_debug": False,
+        "conda_copy_dependencies": False,
+        "conda_auto_init": always_specify_attribute,
+        "conda_auto_install": always_specify_attribute,
+        "conda_ensure_channels": "",
+        "conda_use_local": False,
     }
     attributes = []
 
@@ -98,9 +98,7 @@ def ensure_dependency_resolvers_conf_configured(ctx, kwds, resolvers_conf=None):
     if resolution_type != "__explicit__":
         # Planemo manages the dependency resolve conf file.
         template_str = STOCK_DEPENDENCY_RESOLUTION_STRATEGIES[resolution_type]
-        conf_contents = Template(template_str).safe_substitute({
-            'attributes': attribute_str
-        })
+        conf_contents = Template(template_str).safe_substitute({"attributes": attribute_str})
         if resolvers_conf is None:
             resolvers_conf = tempfile.NamedTemporaryFile(delete=False).name
         with open(resolvers_conf, "w") as fh:

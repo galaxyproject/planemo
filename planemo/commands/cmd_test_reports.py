@@ -4,13 +4,18 @@ import pathlib
 
 import click
 
-from planemo import io
-from planemo import options
+from planemo import (
+    io,
+    options,
+)
 from planemo.cli import command_function
-from planemo.galaxy.test import handle_reports, StructuredData
+from planemo.galaxy.test import (
+    handle_reports,
+    StructuredData,
+)
 
 
-@click.command('test_reports')
+@click.command("test_reports")
 @options.tool_test_json()
 @options.test_report_options()
 @command_function

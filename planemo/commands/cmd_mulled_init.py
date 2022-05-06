@@ -6,7 +6,7 @@ from planemo.cli import command_function
 from planemo.mulled import build_involucro_context
 
 
-@click.command('mulled_init')
+@click.command("mulled_init")
 @options.mulled_options()
 @command_function
 def cli(ctx, **kwds):

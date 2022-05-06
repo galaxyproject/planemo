@@ -20,7 +20,6 @@ SERVE_TEST_VERBOSE = True
 
 
 class CmdsWithWorkflowIdTestCase(CliTestCase, UsesServeCommand):
-
     @classmethod
     def setUpClass(cls):
         cls.galaxy_root = tempfile.mkdtemp()
@@ -44,9 +43,12 @@ class CmdsWithWorkflowIdTestCase(CliTestCase, UsesServeCommand):
             extra_args = [
                 "--daemon",
                 "--skip_client_build",
-                "--pid_file", self._pid_file,
-                "--extra_tools", random_lines,
-                "--extra_tools", cat,
+                "--pid_file",
+                self._pid_file,
+                "--extra_tools",
+                random_lines,
+                "--extra_tools",
+                cat,
             ]
             self._launch_thread_and_wait(self._run, extra_args)
             time.sleep(30)

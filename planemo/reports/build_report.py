@@ -1,15 +1,17 @@
 import base64
 
 from galaxy.util import strip_control_characters
-from jinja2 import Environment, PackageLoader
+from jinja2 import (
+    Environment,
+    PackageLoader,
+)
 from pkg_resources import resource_string
 
 TITLE = "Results (powered by Planemo)"
 
 
 def build_report(structured_data, report_type="html", execution_type="Test", **kwds):
-    """ Use report_{report_type}.tpl to build page for report.
-    """
+    """Use report_{report_type}.tpl to build page for report."""
     environment = dict(
         title=TITLE,
         raw_data=structured_data,
@@ -18,44 +20,45 @@ def build_report(structured_data, report_type="html", execution_type="Test", **k
     __fix_test_ids(environment)
     environment = __inject_summary(environment)
 
-    if report_type == 'html':
+    if report_type == "html":
         # The HTML report format needs a lot of extra, custom data.
         # IMO, this seems to suggest it should be embedded.
-        environment['title'] = None
-        environment['execution_type'] = execution_type
-        markdown = template_data(environment, 'report_markdown.tpl')
-        environment['title'] = ' '.join((environment['execution_type'], TITLE))
-        environment['raw_data'] = base64.b64encode(markdown.encode('utf-8')).decode('utf-8')
-        environment.update({
-            'custom_style': __style("custom.css"),
-            'custom_script': __script("custom"),
-            'bootstrap_style': __style("bootstrap.min.css"),
-            'jquery_script': __script("jquery.min"),
-            'bootstrap_script': __script("bootstrap.min"),
-            'markdown_it_script': __script('markdown-it.min'),
-        })
+        environment["title"] = None
+        environment["execution_type"] = execution_type
+        markdown = template_data(environment, "report_markdown.tpl")
+        environment["title"] = " ".join((environment["execution_type"], TITLE))
+        environment["raw_data"] = base64.b64encode(markdown.encode("utf-8")).decode("utf-8")
+        environment.update(
+            {
+                "custom_style": __style("custom.css"),
+                "custom_script": __script("custom"),
+                "bootstrap_style": __style("bootstrap.min.css"),
+                "jquery_script": __script("jquery.min"),
+                "bootstrap_script": __script("bootstrap.min"),
+                "markdown_it_script": __script("markdown-it.min"),
+            }
+        )
 
-    return template_data(environment, 'report_%s.tpl' % report_type)
+    return template_data(environment, "report_%s.tpl" % report_type)
 
 
 def template_data(environment, template_name, **kwds):
-    """Build an arbitrary templated page.
-    """
+    """Build an arbitrary templated page."""
     env_kwargs = {}
-    if template_name == 'report_markdown.tpl':
-        env_kwargs['keep_trailing_newline'] = True
-        env_kwargs['trim_blocks'] = True
-    env = Environment(loader=PackageLoader('planemo', 'reports'), **env_kwargs)
-    env.filters['strip_control_characters'] = lambda x: strip_control_characters(x) if x else x
+    if template_name == "report_markdown.tpl":
+        env_kwargs["keep_trailing_newline"] = True
+        env_kwargs["trim_blocks"] = True
+    env = Environment(loader=PackageLoader("planemo", "reports"), **env_kwargs)
+    env.filters["strip_control_characters"] = lambda x: strip_control_characters(x) if x else x
     template = env.get_template(template_name)
     return template.render(**environment)
 
 
 def __fix_test_ids(environment):
-    for test in environment['raw_data']['tests']:
-        test_data = test.get('data')
-        if test_data and test_data.get('tool_id'):
-            test['id'] = f"{test_data['tool_id']} (Test #{test_data['test_index'] + 1})"
+    for test in environment["raw_data"]["tests"]:
+        test_data = test.get("data")
+        if test_data and test_data.get("tool_id"):
+            test["id"] = f"{test_data['tool_id']} (Test #{test_data['test_index'] + 1})"
 
 
 def __inject_summary(environment):
@@ -63,25 +66,25 @@ def __inject_summary(environment):
     errors = 0
     failures = 0
     skips = 0
-    for execution in environment['raw_data']['tests']:
+    for execution in environment["raw_data"]["tests"]:
         total += 1
-        test_data = execution.get('data')
+        test_data = execution.get("data")
         if test_data:
-            status = test_data.get('status')
-            if status == 'error':
+            status = test_data.get("status")
+            if status == "error":
                 errors += 1
-            elif status == 'failure':
+            elif status == "failure":
                 failures += 1
-            elif status == 'skipped':
+            elif status == "skipped":
                 skips += 1
-    environment['raw_data']['results'] = {
-        'total': total,
-        'errors': errors,
-        'failures': failures,
-        'skips': skips,
+    environment["raw_data"]["results"] = {
+        "total": total,
+        "errors": errors,
+        "failures": failures,
+        "skips": skips,
     }
-    if 'suitename' not in environment:
-        environment['raw_data']['suitename'] = TITLE
+    if "suitename" not in environment:
+        environment["raw_data"]["suitename"] = TITLE
     return environment
 
 
@@ -96,6 +99,4 @@ def __script(short_name):
 
 
 def __load_resource(name):
-    return resource_string(
-        __name__, name
-    ).decode('UTF-8')
+    return resource_string(__name__, name).decode("UTF-8")

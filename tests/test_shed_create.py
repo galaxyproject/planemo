@@ -1,6 +1,8 @@
 from planemo import shed
-from .test_utils import CliShedTestCase
-from .test_utils import skip
+from .test_utils import (
+    CliShedTestCase,
+    skip,
+)
 
 CS1_DESCRIPTION = "The tool Cat 1 from the cat tool suite."
 CS2_DESCRIPTION = "The tool Cat 2 from the cat tool suite."
@@ -9,7 +11,6 @@ SUITE_DESCRIPTION_LONG = "A longer description of all the cat tools."
 
 
 class ShedCreateTestCase(CliShedTestCase):
-
     def test_create_single(self):
         with self._isolate_repo("single_tool"):
             create_command = ["shed_create", "--skip_upload"]

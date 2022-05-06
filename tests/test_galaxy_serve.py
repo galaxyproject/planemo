@@ -5,9 +5,14 @@ style tests are available in ``test_cmd_serve.py``.
 """
 import os
 
-from planemo import network_util
-from planemo import shed
-from planemo.galaxy import galaxy_serve, shed_serve
+from planemo import (
+    network_util,
+    shed,
+)
+from planemo.galaxy import (
+    galaxy_serve,
+    shed_serve,
+)
 from planemo.runnable import for_path
 from .test_utils import (
     CliTestCase,
@@ -80,11 +85,13 @@ class GalaxyServeTestCase(CliTestCase):
         fastqc_path = os.path.join(TEST_REPOS_DIR, "fastqc")
         ctx = self.test_context
         install_args_list = shed.install_arg_lists(
-            ctx, [fastqc_path],
+            ctx,
+            [fastqc_path],
             shed_target="toolshed",
         )
         with shed_serve(
-            ctx, install_args_list,
+            ctx,
+            install_args_list,
             port=port,
             skip_dependencies=True,
             install_galaxy=True,
@@ -98,7 +105,7 @@ def _assert_service_up(config):
     assert network_util.wait_net_service(
         "localhost",
         config.port,
-        timeout=.1,
+        timeout=0.1,
     )
     galaxy_config_api = config.gi.config
     config_dict = galaxy_config_api.get_config()
@@ -109,5 +116,5 @@ def _assert_service_down(config):
     assert not network_util.wait_net_service(
         "localhost",
         config.port,
-        timeout=.1,
+        timeout=0.1,
     )

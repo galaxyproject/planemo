@@ -7,22 +7,37 @@ import re
 import shutil
 import signal
 import traceback
-from concurrent.futures import as_completed, ThreadPoolExecutor
+from concurrent.futures import (
+    as_completed,
+    ThreadPoolExecutor,
+)
 from sys import version_info
 from tempfile import mkdtemp
-from unittest import skip, TestCase
+from unittest import (
+    skip,
+    TestCase,
+)
 
 import psutil
 import py.code
 import pytest
 from click.testing import CliRunner
-from galaxy.util import asbool, unicodify, which
+from galaxy.util import (
+    asbool,
+    unicodify,
+    which,
+)
 
-from planemo import cli
-from planemo import io
-from planemo import shed
+from planemo import (
+    cli,
+    io,
+    shed,
+)
 from planemo.config import PLANEMO_CONFIG_ENV_PROP
-from planemo.galaxy.ephemeris_sleep import sleep, SleepCondition
+from planemo.galaxy.ephemeris_sleep import (
+    sleep,
+    SleepCondition,
+)
 from .shed_app_test_utils import (
     mock_shed,
     setup_mock_shed,
@@ -45,7 +60,6 @@ NON_ZERO_EXIT_CODE = object()
 
 
 class MarkGenerator:
-
     def __getattr__(self, name):
         return getattr(pytest.mark, name)
 
@@ -113,7 +127,7 @@ class CliTestCase(TestCase):
         self._copy_directory(repo, dest)
 
     def _copy_directory(self, path, dest):
-        io.shell(['cp', '-r', f"{path}/.", dest])
+        io.shell(["cp", "-r", f"{path}/.", dest])
 
     @property
     def test_context(self):
@@ -121,7 +135,6 @@ class CliTestCase(TestCase):
 
 
 class CliShedTestCase(CliTestCase):
-
     def setUp(self):  # noqa
         super().setUp()
         self.mock_shed = setup_mock_shed()
@@ -139,7 +152,8 @@ class CliShedTestCase(CliTestCase):
 
     def _shed_args(self, read_only=False):
         args = [
-            "--shed_target", self.mock_shed.url,
+            "--shed_target",
+            self.mock_shed.url,
         ]
         if not read_only:
             args.extend(["--shed_key", "ignored"])
@@ -172,7 +186,6 @@ def mock_shed_context():
 
 
 class TempDirectoryTestCase(TestCase):
-
     def setUp(self):  # noqa
         self.temp_directory = mkdtemp()
 
@@ -298,8 +311,7 @@ def check_exit_code(runner, command_list, exit_code=0):
         if result.exception:
             message += f" Exception [{unicodify(result.exception)}], "
             exc_type, exc_value, exc_traceback = result.exc_info
-            tb = traceback.format_exception(exc_type, exc_value,
-                                            exc_traceback)
+            tb = traceback.format_exception(exc_type, exc_value, exc_traceback)
             message += f"Traceback [{tb}]"
         if run_verbosely():
             print(f"Raising assertion error for unexpected exit code [{message}]")
@@ -312,7 +324,7 @@ def kill_process_on_port(port):
     processes = []
     for proc in psutil.process_iter():
         try:
-            for conns in proc.connections(kind='inet'):
+            for conns in proc.connections(kind="inet"):
                 if conns.laddr.port == port:
                     proc.send_signal(signal.SIGINT)
                     processes.append(proc)
@@ -342,8 +354,10 @@ def launch_and_wait_for_galaxy(port, func, args=[], timeout=600, timeout_multipl
 
     def wait():
         effective_timeout = timeout * timeout_multiplier
-        if not sleep(f"http://localhost:{port}", verbose=True, timeout=effective_timeout, sleep_condition=wait_sleep_condition):
-            raise Exception(f'Galaxy failed to start on port {port}')
+        if not sleep(
+            f"http://localhost:{port}", verbose=True, timeout=effective_timeout, sleep_condition=wait_sleep_condition
+        ):
+            raise Exception(f"Galaxy failed to start on port {port}")
 
     executor = ThreadPoolExecutor(max_workers=2)
     try:
@@ -398,12 +412,12 @@ class assert_raises_regexp:
         __tracebackhide__ = True
 
         if exc_type is None:
-            pytest.fail(f'DID NOT RAISE {self.exception}')
+            pytest.fail(f"DID NOT RAISE {self.exception}")
 
         self.excinfo.__init__((exc_type, exc_val, exc_tb))
 
         if not issubclass(exc_type, self.exception):
-            pytest.fail(f'{exc_type} RAISED instead of {self.exception}\n{exc_val!r}')
+            pytest.fail(f"{exc_type} RAISED instead of {self.exception}\n{exc_val!r}")
 
         if not re.search(self.regexp, str(exc_val)):
             pytest.fail(f'Pattern "{self.regexp}" not found in "{exc_val!s}"')

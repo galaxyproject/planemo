@@ -9,7 +9,6 @@ from .interface import DatabaseSource
 
 
 class ExecutesPostgresSqlMixin:
-
     def list_databases(self):
         """Use `psql --list` to generate a list of identifiers."""
         command_builder = self._psql_command_builder("--list")
@@ -33,7 +32,7 @@ class ExecutesPostgresSqlMixin:
     def _run_sql_command(self, sql):
         # communicate is just joining commands so we need to modify the
         # sql as an argument - it shouldn't do this.
-        sql_arg = '%s' % sql
+        sql_arg = "%s" % sql
         command_builder = self._psql_command_builder("--command", sql_arg)
         self._communicate(command_builder)
 
@@ -51,7 +50,7 @@ class LocalPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource):
 
     def __init__(self, **kwds):
         """Construct a postgres database source from planemo configuration."""
-        self.psql_path = kwds.get("postgres_psql_path", None) or 'psql'
+        self.psql_path = kwds.get("postgres_psql_path", None) or "psql"
         self.database_user = kwds.get("postgres_database_user", None)
         self.database_host = kwds.get("postgres_database_host", None)
         self.database_port = kwds.get("postgres_database_port", None)
@@ -82,7 +81,6 @@ class LocalPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource):
 
 
 class _CommandBuilder:
-
     def __init__(self, *args):
         self.command = list(args)
 
@@ -93,10 +91,8 @@ class _CommandBuilder:
                 self.command.append(arg_or_none)
 
     def extend_command(self, args):
-        for arg in (args or []):
+        for arg in args or []:
             self.append_command(arg)
 
 
-__all__ = (
-    "LocalPostgresDatabaseSource",
-)
+__all__ = ("LocalPostgresDatabaseSource",)

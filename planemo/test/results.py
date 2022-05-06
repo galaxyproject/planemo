@@ -13,10 +13,13 @@ class StructuredData:
 
     def __init__(self, json_path=None, data=None):
         """Create a :class:`StructuredData` from a JSON file."""
+
         def data_error():
-            error("An invalid JSON for structured test result data - "
-                  "summary information and planemo reports will be "
-                  "incorrect.")
+            error(
+                "An invalid JSON for structured test result data - "
+                "summary information and planemo reports will be "
+                "incorrect."
+            )
 
         self.json_path = json_path
         structured_data = {}

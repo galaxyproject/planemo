@@ -2,12 +2,8 @@ import json
 import os
 from tempfile import NamedTemporaryFile
 
-from planemo.engine.test import (
-    test_runnables as t_runnables
-)
-from planemo.runnable import (
-    for_paths,
-)
+from planemo.engine.test import test_runnables as t_runnables
+from planemo.runnable import for_paths
 from .test_utils import (
     create_test_context,
     mark,
@@ -46,13 +42,9 @@ def test_galaxy_wf_tests():
         "no_dependency_resolution": True,
         "paste_test_data_paths": False,
         "galaxy_branch": target_galaxy_branch(),
-        "extra_tools": [random_lines, cat]
+        "extra_tools": [random_lines, cat],
     }
-    exit_code = t_runnables(
-        ctx,
-        runnables,
-        **kwds
-    )
+    exit_code = t_runnables(ctx, runnables, **kwds)
     assert exit_code == 0
 
 
@@ -70,11 +62,7 @@ def test_galaxy_workflow_collection_output():
         "galaxy_branch": target_galaxy_branch(),
         "extra_tools": [collection_creates_pair],
     }
-    exit_code = t_runnables(
-        ctx,
-        runnables,
-        **kwds
-    )
+    exit_code = t_runnables(ctx, runnables, **kwds)
     assert exit_code == 0
 
 
@@ -92,11 +80,7 @@ def test_galaxy_workflow_collection_output_fail():
         "galaxy_branch": target_galaxy_branch(),
         "extra_tools": [collection_creates_pair],
     }
-    exit_code = t_runnables(
-        ctx,
-        runnables,
-        **kwds
-    )
+    exit_code = t_runnables(ctx, runnables, **kwds)
     assert exit_code == 1
 
 
@@ -117,11 +101,7 @@ def test_galaxy_workflow_tags():
             "test_output_json": json_out.name,
         }
         try:
-            exit_code = t_runnables(
-                ctx,
-                runnables,
-                **kwds
-            )
+            exit_code = t_runnables(ctx, runnables, **kwds)
             assert exit_code == 0
         except Exception:
             with open(json_out.name) as f:
@@ -144,11 +124,7 @@ def test_galaxy_workflow_nested_collection_inputs():
         "galaxy_branch": target_galaxy_branch(),
         "extra_tools": [collection_cat_pair, collection_cat_list],
     }
-    exit_code = t_runnables(
-        ctx,
-        runnables,
-        **kwds
-    )
+    exit_code = t_runnables(ctx, runnables, **kwds)
     assert exit_code == 0
 
 
@@ -164,11 +140,7 @@ def test_galaxy_workflow_non_data_inputs():
         "paste_test_data_paths": False,
         "galaxy_branch": target_galaxy_branch(),
     }
-    exit_code = t_runnables(
-        ctx,
-        runnables,
-        **kwds
-    )
+    exit_code = t_runnables(ctx, runnables, **kwds)
     assert exit_code == 0
 
 
@@ -183,26 +155,22 @@ def test_galaxy_workflow_step_failed():
             "engine": "galaxy",
             "no_dependency_resolution": True,
             "paste_test_data_paths": False,
-            "extra_tools": ['$GALAXY_FUNCTIONAL_TEST_TOOLS'],
+            "extra_tools": ["$GALAXY_FUNCTIONAL_TEST_TOOLS"],
             "test_output_json": json_out.name,
             "galaxy_branch": target_galaxy_branch(),
         }
-        exit_code = t_runnables(
-            ctx,
-            runnables,
-            **kwds
-        )
+        exit_code = t_runnables(ctx, runnables, **kwds)
         assert exit_code == 1
         report = json.load(json_out)
-    data = report['tests'][0]['data']
-    assert data['status'] == 'error'
-    assert data['execution_problem']
-    invocation_steps = data['invocation_details']['steps']
+    data = report["tests"][0]["data"]
+    assert data["status"] == "error"
+    assert data["execution_problem"]
+    invocation_steps = data["invocation_details"]["steps"]
     assert len(invocation_steps) == 2
     first_step, second_step = invocation_steps.values()
-    assert first_step['state'] == 'scheduled'
-    job = first_step['jobs'][0]
-    assert job['exit_code'] == 127
-    assert job['state'] == 'error'
-    assert second_step['state'] == 'scheduled'
-    assert second_step['jobs'][0]['state'] == 'paused'
+    assert first_step["state"] == "scheduled"
+    job = first_step["jobs"][0]
+    assert job["exit_code"] == 127
+    assert job["state"] == "error"
+    assert second_step["state"] == "scheduled"
+    assert second_step["jobs"][0]["state"] == "paused"

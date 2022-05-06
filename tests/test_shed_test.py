@@ -11,7 +11,6 @@ SHED_TARGET = "toolshed"
 
 
 class ShedTestTestCase(CliTestCase):
-
     @skip  # Skip for now since toolshed has invalid test data for 0.11.4
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @skip_if_environ("PLANEMO_SKIP_SHED_TESTS")
@@ -28,7 +27,8 @@ class ShedTestTestCase(CliTestCase):
         repo_path = os.path.join(TEST_REPOS_DIR, "datamash")
         test_cmd = [
             "shed_test",
-            "--shed_target", target,
+            "--shed_target",
+            target,
             "--install_galaxy",
             repo_path,
         ]

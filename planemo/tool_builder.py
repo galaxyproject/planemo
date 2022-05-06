@@ -11,11 +11,14 @@ import shutil
 import subprocess
 from collections import namedtuple
 
-from planemo import io
-from planemo import templates
+from planemo import (
+    io,
+    templates,
+)
 
-REUSING_MACROS_MESSAGE = ("Macros file macros.xml already exists, assuming "
-                          " it has relevant planemo-generated definitions.")
+REUSING_MACROS_MESSAGE = (
+    "Macros file macros.xml already exists, assuming " " it has relevant planemo-generated definitions."
+)
 DEFAULT_CWL_VERSION = "v1.0"
 
 
@@ -311,11 +314,7 @@ def _build_cwl(**kwds):
             if cwl_output.example_value:
                 test_files.append(cwl_output.example_value)
 
-    return ToolDescription(
-        contents,
-        tool_files=tool_files,
-        test_files=test_files
-    )
+    return ToolDescription(contents, tool_files=tool_files, test_files=test_files)
 
 
 def _build_galaxy(**kwds):
@@ -350,11 +349,7 @@ def _build_galaxy(**kwds):
     tool_files = []
     append_macro_file(tool_files, kwds)
 
-    return ToolDescription(
-        contents,
-        tool_files=tool_files,
-        test_files=test_files
-    )
+    return ToolDescription(contents, tool_files=tool_files, test_files=test_files)
 
 
 def append_macro_file(tool_files, kwds):
@@ -370,7 +365,6 @@ def append_macro_file(tool_files, kwds):
 
 
 class CommandIO:
-
     def __init__(self, **kwds):
         command = _find_command(kwds)
         cheetah_template = command
@@ -391,7 +385,7 @@ class CommandIO:
         outputs = list(map(Output, outputs or []))
 
         named_outputs = kwds.pop("named_output", [])
-        for named_output in (named_outputs or []):
+        for named_output in named_outputs or []:
             outputs.append(Output(name=named_output, example=False))
 
         # handle example outputs
@@ -404,8 +398,7 @@ class CommandIO:
                 # Actually found the file in the command, assume it can
                 # be specified directly and skip from_work_dir.
                 use_from_path = False
-            output = Output(name=name, from_path=from_path,
-                            use_from_path=use_from_path, example=True)
+            output = Output(name=name, from_path=from_path, use_from_path=use_from_path, example=True)
             outputs.append(output)
             cheetah_template = _replace_file_in_command(cheetah_template, output_file, output.name)
 
@@ -573,7 +566,6 @@ Prefix = namedtuple("Prefix", ["prefix", "separated"])
 
 
 class _CwlCommandPart:
-
     def __init__(self, value, position, prefix):
         self.value = value
         self.position = position
@@ -584,7 +576,6 @@ class _CwlCommandPart:
 
 
 class _CwlInput:
-
     def __init__(self, id, position, prefix, example_value, type_="File"):
         self.id = id
         self.position = position
@@ -597,7 +588,6 @@ class _CwlInput:
 
 
 class _CwlOutput:
-
     def __init__(self, id, position, prefix, example_value):
         self.id = id
         self.position = position
@@ -628,7 +618,7 @@ def _replace_file_in_command(command, specified_file, name):
         # In case of spaces, best to wrap filename in double quotes
         command = command.replace(specified_file, f"'${name}'")
     else:
-        command = command.replace(specified_file, f'${name}')
+        command = command.replace(specified_file, f"${name}")
     return command
 
 
@@ -643,11 +633,7 @@ def _handle_help(kwds):
         help_from_command = kwds.get("help_from_command")
         if help_from_command:
             p = subprocess.Popen(
-                help_from_command,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                universal_newlines=True
+                help_from_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True
             )
             help_text = p.communicate()[0]
 
@@ -720,7 +706,7 @@ class UrlCitation:
     def _github_str(self):
         url = self.url
         title = url.split("/")[-1]
-        return f'''
+        return f"""
 @misc{{github{title},
   author = {{LastTODO, FirstTODO}},
   year = {{TODO}},
@@ -728,17 +714,17 @@ class UrlCitation:
   publisher = {{GitHub}},
   journal = {{GitHub repository}},
   url = {{{url}}},
-}}'''
+}}"""
 
     def _url_str(self):
         url = self.url
-        return f'''
+        return f"""
 @misc{{renameTODO,
   author = {{LastTODO, FirstTODO}},
   year = {{TODO}},
   title = {{TODO}},
   url = {{{url}}},
-}}'''
+}}"""
 
 
 class ToolDescription:
@@ -751,7 +737,6 @@ class ToolDescription:
 
 
 class ToolFile:
-
     def __init__(self, filename, contents, description):
         self.filename = filename
         self.contents = contents
@@ -759,7 +744,6 @@ class ToolFile:
 
 
 class Input:
-
     def __init__(self, input_description, name=None, example=False):
         parts = input_description.split(".")
         name = name or parts[0]
@@ -779,7 +763,6 @@ class Input:
 
 
 class Output:
-
     def __init__(self, from_path=None, name=None, use_from_path=False, example=False):
         if from_path:
             parts = from_path.split(".")
@@ -816,7 +799,6 @@ class Output:
 
 
 class Requirement:
-
     def __init__(self, requirement):
         parts = requirement.split("@", 1)
         if len(parts) > 1:
@@ -832,7 +814,7 @@ class Requirement:
         if self.version is not None:
             attrs = f' version="{self.version}"'
         else:
-            attrs = ''
+            attrs = ""
         return f'<requirement type="package"{attrs}>{self.name}</requirement>'
 
 
@@ -846,7 +828,6 @@ def param_type(value):
 
 
 class Container:
-
     def __init__(self, image_id):
         self.type = "docker"
         self.image_id = image_id
@@ -856,7 +837,6 @@ class Container:
 
 
 class TestCase:
-
     def __init__(self):
         self.params = []
         self.outputs = []
@@ -893,11 +873,11 @@ def write_tool_description(ctx, tool_description, **kwds):
     if tool_description.test_files:
         if not os.path.exists("test-data"):
             io.info("No test-data directory, creating one.")
-            os.makedirs('test-data')
+            os.makedirs("test-data")
         for test_file in tool_description.test_files:
             io.info(f"Copying test-file {test_file}")
             try:
-                shutil.copy(test_file, 'test-data')
+                shutil.copy(test_file, "test-data")
             except Exception as e:
                 io.info(f"Copy of {test_file} failed: {e}")
 

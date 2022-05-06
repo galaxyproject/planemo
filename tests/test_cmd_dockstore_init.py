@@ -3,13 +3,10 @@ import os
 
 import yaml
 
-from .test_utils import (
-    CliTestCase,
-)
+from .test_utils import CliTestCase
 
 
 class CmdDockstoreInitTestCase(CliTestCase):
-
     def test_plain_init(self):
         with self._isolate_with_test_data("wf_repos/from_format2/0_basic_native") as f:
             init_cmd = ["dockstore_init"]
@@ -20,5 +17,5 @@ class CmdDockstoreInitTestCase(CliTestCase):
             assert str(dockstore_config["version"]) == "1.2"
             assert "workflows" in dockstore_config
             assert len(dockstore_config["workflows"]) == 1
-            workflow_lint_cmd = ["workflow_lint", '--fail_level', 'error', f]
+            workflow_lint_cmd = ["workflow_lint", "--fail_level", "error", f]
             self._check_exit_code(workflow_lint_cmd)

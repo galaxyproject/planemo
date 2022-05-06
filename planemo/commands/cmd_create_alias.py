@@ -12,7 +12,7 @@ except ImportError:
     namesgenerator = None
 
 
-@click.command('create_alias')
+@click.command("create_alias")
 @click.argument(
     "obj",
     metavar="OBJ",
@@ -27,8 +27,10 @@ def cli(ctx, alias, obj, profile, **kwds):
     """
     if not alias:
         if not namesgenerator:
-            raise ImportError("Random generation of aliases requires installation of the namesgenerator package."
-                              "Either install this, or specify the alias name with --alias.")
+            raise ImportError(
+                "Random generation of aliases requires installation of the namesgenerator package."
+                "Either install this, or specify the alias name with --alias."
+            )
         alias = namesgenerator.get_random_name()
 
     exit_code = profiles.create_alias(ctx, alias, obj, profile)

@@ -16,8 +16,7 @@ from planemo.test.results import StructuredData
 
 
 class Engine(metaclass=abc.ABCMeta):
-    """Abstract description of an external process for running tools or workflows.
-    """
+    """Abstract description of an external process for running tools or workflows."""
 
     @abc.abstractmethod
     def run(self, path, job_path):
@@ -80,8 +79,8 @@ class BaseEngine(Engine):
             test_case_data = test_case.structured_test_data(run_response)
             tests.append(test_case_data)
         test_data = {
-            'version': '0.1',
-            'tests': tests,
+            "version": "0.1",
+            "tests": tests,
         }
         structured_results = StructuredData(data=test_data)
         structured_results.calculate_summary_data()
@@ -90,9 +89,7 @@ class BaseEngine(Engine):
     def _collect_test_results(self, test_cases):
         test_results = []
         for test_case in test_cases:
-            self._ctx.vlog(
-                "Running tests %s" % test_case
-            )
+            self._ctx.vlog("Running tests %s" % test_case)
             run_response = self._run_test_case(test_case)
             self._ctx.vlog(
                 "Test case [%s] resulted in run response [%s]",

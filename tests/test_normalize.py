@@ -3,12 +3,13 @@
 
 import os
 
-from .test_utils import CliTestCase
-from .test_utils import TEST_TOOLS_DIR
+from .test_utils import (
+    CliTestCase,
+    TEST_TOOLS_DIR,
+)
 
 
 class NormalizeTestCase(CliTestCase):
-
     def test_shed_diff(self):
         with self._isolate() as f:
             fail_order = os.path.join(TEST_TOOLS_DIR, "fail_order.xml")

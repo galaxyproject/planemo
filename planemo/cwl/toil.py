@@ -7,15 +7,15 @@ except ImportError:
     cwltoil = None
 
 from planemo.deps import ensure_dependency_resolvers_conf_configured
-from planemo.io import error, real_io
-from planemo.runnable import (
-    ErrorRunResponse,
+from planemo.io import (
+    error,
+    real_io,
 )
+from planemo.runnable import ErrorRunResponse
 from .run import (
     CwlToolRunResponse,
-    JSON_PARSE_ERROR_MESSAGE
+    JSON_PARSE_ERROR_MESSAGE,
 )
-
 
 TOIL_REQUIRED_MESSAGE = "This functionality requires Toil, please install with 'pip install toil'"
 
@@ -48,10 +48,7 @@ def run_toil(ctx, path, job_path, **kwds):
         # cwltool passes sys.stderr to subprocess.Popen - ensure it has
         # and actual fileno.
         with real_io():
-            ret_code = cwltoil.main(
-                args,
-                stdout=tmp_stdout
-            )
+            ret_code = cwltoil.main(args, stdout=tmp_stdout)
         tmp_stdout.flush()
         with open(tmp_stdout.name) as stdout_f:
             try:

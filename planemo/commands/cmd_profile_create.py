@@ -7,7 +7,7 @@ from planemo.cli import command_function
 from planemo.galaxy import profiles
 
 
-@click.command('profile_create')
+@click.command("profile_create")
 @options.profile_name_argument()
 @options.profile_database_options()
 @options.serve_engine_option()

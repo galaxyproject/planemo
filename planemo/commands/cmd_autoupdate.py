@@ -4,52 +4,47 @@ import json
 import click
 import yaml
 
-from planemo import autoupdate, options
+from planemo import (
+    autoupdate,
+    options,
+)
 from planemo.cli import command_function
 from planemo.config import planemo_option
 from planemo.engine import (
     engine_context,
     is_galaxy_engine,
 )
-from planemo.engine.test import (
-    test_runnables,
-)
+from planemo.engine.test import test_runnables
 from planemo.exit_codes import (
     EXIT_CODE_GENERIC_FAILURE,
-    EXIT_CODE_OK
+    EXIT_CODE_OK,
 )
 from planemo.io import (
     coalesce_return_codes,
     error,
     info,
-    temp_directory
+    temp_directory,
 )
 from planemo.runnable import (
     for_paths,
-    RunnableType
+    RunnableType,
 )
 from planemo.tools import (
     is_tool_load_error,
-    yield_tool_sources_on_paths
+    yield_tool_sources_on_paths,
 )
 
 
 def dry_run_option():
     """Perform a dry run autoupdate without modifying the XML files"""
     return planemo_option(
-        "--dry-run",
-        is_flag=True,
-        help="Perform a dry run autoupdate without modifying the XML files."
+        "--dry-run", is_flag=True, help="Perform a dry run autoupdate without modifying the XML files."
     )
 
 
 def test_option():
     """Test updated XML files"""
-    return planemo_option(
-        "--test",
-        is_flag=True,
-        help="Test updated XML files."
-    )
+    return planemo_option("--test", is_flag=True, help="Test updated XML files.")
 
 
 def skiplist_option():
@@ -57,7 +52,7 @@ def skiplist_option():
     return planemo_option(
         "--skiplist",
         default=None,
-        help="Skiplist file, containing a list of tools or workflows for which autoupdate should be skipped."
+        help="Skiplist file, containing a list of tools or workflows for which autoupdate should be skipped.",
     )
 
 
@@ -65,12 +60,12 @@ def skip_requirements_option():
     """List of requirements to skip"""
     return planemo_option(
         "--skip_requirements",
-        default='python,r-base,perl',
-        help="Comma-separated list of requirements which should be not be updated. Default is python,r-base,perl."
+        default="python,r-base,perl",
+        help="Comma-separated list of requirements which should be not be updated. Default is python,r-base,perl.",
     )
 
 
-@click.command('autoupdate')  # noqa C901
+@click.command("autoupdate")  # noqa C901
 @options.optional_tools_arg(multiple=True)
 @dry_run_option()
 @options.recursive_option()
@@ -90,13 +85,13 @@ def cli(ctx, paths, **kwds):  # noqa C901
     recursive = kwds.get("recursive", False)
     exit_codes = []
     modified_files = set()
-    tools_to_skip = [line.rstrip() for line in open(kwds['skiplist'])] if kwds['skiplist'] else []
+    tools_to_skip = [line.rstrip() for line in open(kwds["skiplist"])] if kwds["skiplist"] else []
     runnables = for_paths(paths)
 
     if any(r.type in {RunnableType.galaxy_tool, RunnableType.directory} for r in runnables):
         # update Galaxy tools
         for (tool_path, tool_xml) in yield_tool_sources_on_paths(ctx, paths, recursive):
-            if tool_path.split('/')[-1] in tools_to_skip:
+            if tool_path.split("/")[-1] in tools_to_skip:
                 info("Skipping tool %s" % tool_path)
                 continue
             info("Auto-updating tool %s" % tool_path)
@@ -112,7 +107,9 @@ def cli(ctx, paths, **kwds):  # noqa C901
             else:
                 exit_codes.append(EXIT_CODE_OK)
 
-    workflows = [r for r in runnables if r.type == RunnableType.galaxy_workflow and r.path.split('/')[-1] not in tools_to_skip]
+    workflows = [
+        r for r in runnables if r.type == RunnableType.galaxy_workflow and r.path.split("/")[-1] not in tools_to_skip
+    ]
     modified_workflows = []
     for workflow in workflows:
         tools_to_update = autoupdate.get_tools_to_update(ctx, workflow, tools_to_skip)
@@ -124,13 +121,13 @@ def cli(ctx, paths, **kwds):  # noqa C901
         else:
             info("No newer tool versions were found, so the workflow was not updated.")
 
-    if modified_workflows and not kwds.get('dry_run'):
+    if modified_workflows and not kwds.get("dry_run"):
         assert is_galaxy_engine(**kwds)
         if kwds.get("engine") != "external_galaxy":
             kwds["install_most_recent_revision"] = True
             kwds["install_resolver_dependencies"] = False
             kwds["install_repository_dependencies"] = False
-            kwds['shed_install'] = True
+            kwds["shed_install"] = True
 
         with engine_context(ctx, **kwds) as galaxy_engine:
             with galaxy_engine.ensure_runnables_served(modified_workflows) as config:
@@ -143,7 +140,7 @@ def cli(ctx, paths, **kwds):  # noqa C901
                             with open(workflow.path) as f:
                                 original_workflow = json.load(f)
                             edited_workflow = autoupdate.fix_workflow_ga(original_workflow, updated_workflow)
-                            with open(workflow.path, 'w') as f:
+                            with open(workflow.path, "w") as f:
                                 json.dump(edited_workflow, f, indent=4)
                         else:
                             with open(workflow.path) as f:
@@ -151,17 +148,23 @@ def cli(ctx, paths, **kwds):  # noqa C901
                             edited_workflow = autoupdate.fix_workflow_gxformat2(original_workflow, updated_workflow)
                             with open(workflow.path, "w") as f:
                                 yaml.dump(edited_workflow, f)
-                        if original_workflow.get('release'):
-                            info(f"The workflow release number has been updated from "
-                                 f"{original_workflow.get('release')} to {edited_workflow.get('release')}.")
+                        if original_workflow.get("release"):
+                            info(
+                                f"The workflow release number has been updated from "
+                                f"{original_workflow.get('release')} to {edited_workflow.get('release')}."
+                            )
 
-    if kwds['test']:
+    if kwds["test"]:
         if not modified_files and not modified_workflows:
             info("No tools or workflows were updated, so no tests were run.")
         else:
             with temp_directory(dir=ctx.planemo_directory) as temp_path:
                 # only test tools in updated directories
-                modified_paths = [path for path, tool_xml in yield_tool_sources_on_paths(ctx, paths, recursive) if path in modified_files]
+                modified_paths = [
+                    path
+                    for path, tool_xml in yield_tool_sources_on_paths(ctx, paths, recursive)
+                    if path in modified_files
+                ]
                 info(f"Running tests for the following auto-updated tools: {', '.join(modified_paths)}")
                 runnables = for_paths(modified_paths + modified_workflows, temp_path=temp_path)
                 kwds["engine"] = "galaxy"
@@ -171,7 +174,7 @@ def cli(ctx, paths, **kwds):  # noqa C901
 
 
 def handle_tool_load_error(tool_path, tool_xml):
-    """ Return True if tool_xml is tool load error (invalid XML), and
+    """Return True if tool_xml is tool load error (invalid XML), and
     print a helpful error message.
     """
     is_error = False

@@ -41,9 +41,7 @@ from .api import (
     gi,
     user_api_key,
 )
-from .distro_tools import (
-    DISTRO_TOOLS_ID_TO_PATH
-)
+from .distro_tools import DISTRO_TOOLS_ID_TO_PATH
 from .run import (
     setup_common_startup_args,
     setup_venv,
@@ -53,7 +51,6 @@ from .workflows import (
     import_workflow,
     install_shed_repos,
 )
-
 
 NO_TEST_DATA_MESSAGE = (
     "planemo couldn't find a target test-data directory, you should likely "
@@ -207,10 +204,10 @@ CWL_GALAXY_SOURCE = "https://github.com/common-workflow-language/galaxy"
 
 DATABASE_LOCATION_TEMPLATE = "sqlite:///%s?isolation_level=IMMEDIATE"
 
-COMMAND_STARTUP_COMMAND = './scripts/common_startup.sh ${COMMON_STARTUP_ARGS}'
+COMMAND_STARTUP_COMMAND = "./scripts/common_startup.sh ${COMMON_STARTUP_ARGS}"
 
 CLEANUP_IGNORE_ERRORS = True
-DEFAULT_GALAXY_BRAND = 'Configured by Planemo'
+DEFAULT_GALAXY_BRAND = "Configured by Planemo"
 DEFAULT_TOOL_INSTALL_TIMEOUT = 60 * 60 * 1
 UNINITIALIZED = object()
 
@@ -226,7 +223,7 @@ def galaxy_config(ctx, runnables, **kwds):
     log_thread = None
     try:
         with c(ctx, runnables, **kwds) as config:
-            if kwds.get('daemon'):
+            if kwds.get("daemon"):
                 log_thread = threading.Thread(target=read_log, args=(ctx, config.log_file))
                 log_thread.daemon = True
                 log_thread.start()
@@ -244,7 +241,7 @@ def read_log(ctx, log_path):
             if os.path.exists(log_path):
                 if not log_fh:
                     # Open in append so we start at the end of the log file
-                    log_fh = open(log_path, 'a+')
+                    log_fh = open(log_path, "a+")
                 log_lines = log_fh.read()
                 if log_lines:
                     ctx.log(log_lines)
@@ -265,16 +262,17 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
     test_data_dir = _find_test_data(runnables, **kwds)
 
     with _config_directory(ctx, **kwds) as config_directory:
+
         def config_join(*args):
             return os.path.join(config_directory, *args)
 
         ensure_dependency_resolvers_conf_configured(ctx, kwds, os.path.join(config_directory, "resolvers_conf.xml"))
         _handle_job_metrics(config_directory, kwds)
-        galaxy_root = kwds.get('galaxy_root')
+        galaxy_root = kwds.get("galaxy_root")
         _handle_refgenie_config(config_directory, galaxy_root, kwds)
 
         shed_tool_conf = "config/shed_tool_conf.xml"
-        all_tool_paths = _all_tool_paths(runnables, galaxy_root, kwds.get('extra_tools'))
+        all_tool_paths = _all_tool_paths(runnables, galaxy_root, kwds.get("extra_tools"))
 
         tool_directories = set()  # Things to mount...
         for tool_path in all_tool_paths:
@@ -295,9 +293,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         shed_tool_path = kwds.get("shed_tool_path") or config_join("shed_tools")
         _ensure_directory(shed_tool_path)
 
-        sheds_config_path = _configure_sheds_config_file(
-            ctx, config_directory, **kwds
-        )
+        sheds_config_path = _configure_sheds_config_file(ctx, config_directory, **kwds)
         port = _get_port(kwds)
         properties = _shared_galaxy_properties(config_directory, kwds, for_tests=for_tests)
         _handle_container_resolution(ctx, kwds, properties)
@@ -312,18 +308,19 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         _write_tool_conf(ctx, all_tool_paths, tool_conf)
         write_file(empty_tool_conf, EMPTY_TOOL_CONF_TEMPLATE)
 
-        properties.update(dict(
-            tool_config_file=tool_config_file,
-            tool_sheds_config_file=sheds_config_path,
-            migrated_tools_config=empty_tool_conf,
-        ))
+        properties.update(
+            dict(
+                tool_config_file=tool_config_file,
+                tool_sheds_config_file=sheds_config_path,
+                migrated_tools_config=empty_tool_conf,
+            )
+        )
 
         server_name = f"planemo{random.randint(0, 100000)}"
 
         # Value substitutions in Galaxy properties - for consistency with
         # non-Dockerized version.
-        template_args = dict(
-        )
+        template_args = dict()
         env = _build_env_for_galaxy(properties, template_args)
         env["NONUSE"] = "nodejs,proftp,reports"
         if ctx.verbose:
@@ -362,11 +359,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
     """Set up a ``GalaxyConfig`` in an auto-cleaned context."""
     test_data_dir = _find_test_data(runnables, **kwds)
-    tool_data_table = _find_tool_data_table(
-        runnables,
-        test_data_dir=test_data_dir,
-        **kwds
-    )
+    tool_data_table = _find_tool_data_table(runnables, test_data_dir=test_data_dir, **kwds)
     data_manager_config_paths = [r.data_manager_conf_path for r in runnables if r.data_manager_conf_path]
     galaxy_root = _find_galaxy_root(ctx, **kwds)
     install_galaxy = kwds.get("install_galaxy", False)
@@ -383,28 +376,31 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
                 kwds["docker"] = True
             else:
                 raise Exception("Specified no docker and mulled containers together.")
-        conda_default_options = ('conda_auto_init', 'conda_auto_install')
-        use_conda_options = ('dependency_resolution', 'conda_use_local', 'conda_prefix', 'conda_exec')
-        if not any(kwds.get(_) for _ in use_conda_options) and all(ctx.get_option_source(_) == OptionSource.default for _ in conda_default_options):
+        conda_default_options = ("conda_auto_init", "conda_auto_install")
+        use_conda_options = ("dependency_resolution", "conda_use_local", "conda_prefix", "conda_exec")
+        if not any(kwds.get(_) for _ in use_conda_options) and all(
+            ctx.get_option_source(_) == OptionSource.default for _ in conda_default_options
+        ):
             # If using mulled_containers and default conda options disable conda resolution
-            kwds['no_dependency_resolution'] = kwds['no_conda_auto_init'] = True
+            kwds["no_dependency_resolution"] = kwds["no_conda_auto_init"] = True
 
     with _config_directory(ctx, **kwds) as config_directory:
+
         def config_join(*args):
             return os.path.join(config_directory, *args)
 
         install_env = {}
-        if kwds.get('galaxy_skip_client_build', True):
-            install_env['GALAXY_SKIP_CLIENT_BUILD'] = '1'
+        if kwds.get("galaxy_skip_client_build", True):
+            install_env["GALAXY_SKIP_CLIENT_BUILD"] = "1"
         if galaxy_root is None:
             galaxy_root = config_join("galaxy-dev")
         if not os.path.isdir(galaxy_root):
             _install_galaxy(ctx, galaxy_root, install_env, kwds)
 
-        if parse_version(kwds.get('galaxy_python_version') or DEFAULT_PYTHON_VERSION) >= parse_version('3'):
+        if parse_version(kwds.get("galaxy_python_version") or DEFAULT_PYTHON_VERSION) >= parse_version("3"):
             # on python 3 we use gunicorn,
             # which requires 'main' as server name
-            server_name = 'main'
+            server_name = "main"
         else:
             server_name = f"planemo{random.randint(0, 100000)}"
         # Once we don't have to support earlier than 18.01 - try putting these files
@@ -422,7 +418,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         _ensure_directory(tool_dependency_dir)
 
         shed_tool_conf = kwds.get("shed_tool_conf") or config_join("shed_tools_conf.xml")
-        all_tool_paths = _all_tool_paths(runnables, galaxy_root=galaxy_root, extra_tools=kwds.get('extra_tools'))
+        all_tool_paths = _all_tool_paths(runnables, galaxy_root=galaxy_root, extra_tools=kwds.get("extra_tools"))
         empty_tool_conf = config_join("empty_tool_conf.xml")
 
         tool_conf = config_join("tool_conf.xml")
@@ -432,9 +428,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         shed_tool_path = kwds.get("shed_tool_path") or config_join("shed_tools")
         _ensure_directory(shed_tool_path)
 
-        sheds_config_path = _configure_sheds_config_file(
-            ctx, config_directory, **kwds
-        )
+        sheds_config_path = _configure_sheds_config_file(ctx, config_directory, **kwds)
 
         database_location = config_join("galaxy.sqlite")
         master_api_key = _get_master_api_key(kwds)
@@ -450,46 +444,48 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             database_location=database_location,
             tool_conf=tool_conf,
             debug=kwds.get("debug", "true"),
-            id_secret=kwds.get("id_secret", hashlib.md5(str(time.time()).encode('utf-8')).hexdigest()),
+            id_secret=kwds.get("id_secret", hashlib.md5(str(time.time()).encode("utf-8")).hexdigest()),
             log_level="DEBUG" if ctx.verbose else "INFO",
         )
         tool_config_file = f"{tool_conf},{shed_tool_conf}"
         # Setup both galaxy_email and older test user test@bx.psu.edu
         # as admins for command_line, etc...
         properties = _shared_galaxy_properties(config_directory, kwds, for_tests=for_tests)
-        properties.update(dict(
-            server_name="main",
-            ftp_upload_dir_template="${ftp_upload_dir}",
-            ftp_upload_purge="False",
-            ftp_upload_dir=test_data_dir or os.path.abspath('.'),
-            ftp_upload_site="Test Data",
-            check_upload_content="False",
-            tool_dependency_dir=dependency_dir,
-            file_path=file_path,
-            new_file_path="${temp_directory}/tmp",
-            tool_config_file=tool_config_file,
-            tool_sheds_config_file=sheds_config_path,
-            manage_dependency_relationships="False",
-            job_working_directory="${temp_directory}/job_working_directory",
-            template_cache_path="${temp_directory}/compiled_templates",
-            citation_cache_type="file",
-            citation_cache_data_dir="${temp_directory}/citations/data",
-            citation_cache_lock_dir="${temp_directory}/citations/lock",
-            database_auto_migrate="True",
-            enable_beta_tool_formats="True",
-            id_secret="${id_secret}",
-            log_level="${log_level}",
-            debug="${debug}",
-            watch_tools="auto",
-            default_job_shell="/bin/bash",  # For conda dependency resolution
-            tool_data_table_config_path=tool_data_table,
-            data_manager_config_file=",".join(data_manager_config_paths) or None,  # without 'or None' may raise IOError in galaxy (see #946)
-            integrated_tool_panel_config=("${temp_directory}/"
-                                          "integrated_tool_panel_conf.xml"),
-            migrated_tools_config=empty_tool_conf,
-            test_data_dir=test_data_dir,  # TODO: make gx respect this
-            shed_data_manager_config_file=shed_data_manager_config_file,
-        ))
+        properties.update(
+            dict(
+                server_name="main",
+                ftp_upload_dir_template="${ftp_upload_dir}",
+                ftp_upload_purge="False",
+                ftp_upload_dir=test_data_dir or os.path.abspath("."),
+                ftp_upload_site="Test Data",
+                check_upload_content="False",
+                tool_dependency_dir=dependency_dir,
+                file_path=file_path,
+                new_file_path="${temp_directory}/tmp",
+                tool_config_file=tool_config_file,
+                tool_sheds_config_file=sheds_config_path,
+                manage_dependency_relationships="False",
+                job_working_directory="${temp_directory}/job_working_directory",
+                template_cache_path="${temp_directory}/compiled_templates",
+                citation_cache_type="file",
+                citation_cache_data_dir="${temp_directory}/citations/data",
+                citation_cache_lock_dir="${temp_directory}/citations/lock",
+                database_auto_migrate="True",
+                enable_beta_tool_formats="True",
+                id_secret="${id_secret}",
+                log_level="${log_level}",
+                debug="${debug}",
+                watch_tools="auto",
+                default_job_shell="/bin/bash",  # For conda dependency resolution
+                tool_data_table_config_path=tool_data_table,
+                data_manager_config_file=",".join(data_manager_config_paths)
+                or None,  # without 'or None' may raise IOError in galaxy (see #946)
+                integrated_tool_panel_config=("${temp_directory}/" "integrated_tool_panel_conf.xml"),
+                migrated_tools_config=empty_tool_conf,
+                test_data_dir=test_data_dir,  # TODO: make gx respect this
+                shed_data_manager_config_file=shed_data_manager_config_file,
+            )
+        )
         _handle_container_resolution(ctx, kwds, properties)
         write_file(config_join("logging.ini"), _sub(LOGGING_TEMPLATE, template_args))
         properties["database_connection"] = _database_connection(database_location, **kwds)
@@ -510,8 +506,8 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         env = _build_env_for_galaxy(properties, template_args)
         env.update(install_env)
         _build_test_env(properties, env)
-        env['GALAXY_TEST_SHED_TOOL_CONF'] = shed_tool_conf
-        env['GALAXY_TEST_DBURI'] = properties["database_connection"]
+        env["GALAXY_TEST_SHED_TOOL_CONF"] = shed_tool_conf
+        env["GALAXY_TEST_DBURI"] = properties["database_connection"]
 
         env["GALAXY_TEST_UPLOAD_ASYNC"] = "false"
         env["GALAXY_TEST_LOGGING_CONFIG"] = config_join("logging.ini")
@@ -550,12 +546,17 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 def _expand_paths(galaxy_root, extra_tools):
     """Replace $GALAXY_FUNCTION_TEST_TOOLS with actual path."""
     if galaxy_root:
-        extra_tools = [path if path != GX_TEST_TOOL_PATH else os.path.join(galaxy_root, 'test/functional/tools') for path in extra_tools]
+        extra_tools = [
+            path if path != GX_TEST_TOOL_PATH else os.path.join(galaxy_root, "test/functional/tools")
+            for path in extra_tools
+        ]
     return extra_tools
 
 
 def get_galaxy_major_version(galaxy_root):
-    spec = importlib.util.spec_from_file_location('__galaxy_version', os.path.join(galaxy_root, 'lib', 'galaxy', 'version.py'))
+    spec = importlib.util.spec_from_file_location(
+        "__galaxy_version", os.path.join(galaxy_root, "lib", "galaxy", "version.py")
+    )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return parse_version(module.VERSION_MAJOR)
@@ -565,7 +566,7 @@ def get_refgenie_config(galaxy_root, refgenie_dir):
     config_version = 0.4
     if galaxy_root:
         version_major = get_galaxy_major_version(galaxy_root=galaxy_root)
-        if version_major < parse_version('21.09'):
+        if version_major < parse_version("21.09"):
             config_version = 0.3
     return REFGENIE_CONFIG_TEMPLATE % (config_version, refgenie_dir)
 
@@ -598,23 +599,23 @@ def _shared_galaxy_properties(config_directory, kwds, for_tests):
     master_api_key = _get_master_api_key(kwds)
     user_email = _user_email(kwds)
     properties = {
-        'master_api_key': master_api_key,
-        'admin_users': f"{user_email},test@bx.psu.edu",
-        'expose_dataset_path': "True",
-        'collect_outputs_from': "job_working_directory",
-        'allow_path_paste': "True",
-        'check_migrate_tools': "False",
-        'use_cached_dependency_manager': str(kwds.get("conda_auto_install", False)),
-        'brand': kwds.get("galaxy_brand", DEFAULT_GALAXY_BRAND),
-        'strict_cwl_validation': str(not kwds.get("non_strict_cwl", False)),
+        "master_api_key": master_api_key,
+        "admin_users": f"{user_email},test@bx.psu.edu",
+        "expose_dataset_path": "True",
+        "collect_outputs_from": "job_working_directory",
+        "allow_path_paste": "True",
+        "check_migrate_tools": "False",
+        "use_cached_dependency_manager": str(kwds.get("conda_auto_install", False)),
+        "brand": kwds.get("galaxy_brand", DEFAULT_GALAXY_BRAND),
+        "strict_cwl_validation": str(not kwds.get("non_strict_cwl", False)),
     }
     if kwds.get("no_cleanup", False):
-        properties['cleanup_job'] = 'onsuccess'
+        properties["cleanup_job"] = "onsuccess"
     else:
-        properties['cleanup_job'] = 'always'
+        properties["cleanup_job"] = "always"
 
     if kwds.get("galaxy_single_user", True):
-        properties['single_user'] = user_email
+        properties["single_user"] = user_email
 
     if for_tests:
         empty_dir = os.path.join(config_directory, "empty")
@@ -622,7 +623,7 @@ def _shared_galaxy_properties(config_directory, kwds, for_tests):
         properties["tour_config_dir"] = empty_dir
         properties["interactive_environment_plugins_directory"] = empty_dir
         properties["visualization_plugins_directory"] = empty_dir
-        properties["refgenie_config_file"] = kwds.get('refgenie_config_file', '')
+        properties["refgenie_config_file"] = kwds.get("refgenie_config_file", "")
     return properties
 
 
@@ -634,7 +635,7 @@ def external_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         master_api_key=_get_master_api_key(kwds),
         user_api_key=kwds.get("galaxy_user_key", None),
         runnables=runnables,
-        kwds=kwds
+        kwds=kwds,
     )
 
 
@@ -761,7 +762,6 @@ class GalaxyConfig(GalaxyInterface, metaclass=abc.ABCMeta):
 
 
 class BaseGalaxyConfig(GalaxyInterface):
-
     def __init__(
         self,
         ctx,
@@ -809,9 +809,7 @@ class BaseGalaxyConfig(GalaxyInterface):
         return gi(url=self.galaxy_url, key=key)
 
     def install_repo(self, *args, **kwds):
-        self.tool_shed_client.install_repository_revision(
-            *args, **kwds
-        )
+        self.tool_shed_client.install_repository_revision(*args, **kwds)
 
     @property
     def tool_shed_client(self):
@@ -839,23 +837,24 @@ class BaseGalaxyConfig(GalaxyInterface):
                 self._install_workflow(runnable)
 
     def _install_workflow(self, runnable):
-        if self._kwds.get("shed_install") and (self._kwds.get("engine") != "external_galaxy" or self._kwds.get("galaxy_admin_key")):
-            workflow_repos = install_shed_repos(runnable,
-                                                self.gi,
-                                                self._kwds.get("ignore_dependency_problems", False),
-                                                self._kwds.get("install_tool_dependencies", False),
-                                                self._kwds.get("install_resolver_dependencies", True),
-                                                self._kwds.get("install_repository_dependencies", True),
-                                                self._kwds.get("install_most_recent_revision", False)
-                                                )
+        if self._kwds.get("shed_install") and (
+            self._kwds.get("engine") != "external_galaxy" or self._kwds.get("galaxy_admin_key")
+        ):
+            workflow_repos = install_shed_repos(
+                runnable,
+                self.gi,
+                self._kwds.get("ignore_dependency_problems", False),
+                self._kwds.get("install_tool_dependencies", False),
+                self._kwds.get("install_resolver_dependencies", True),
+                self._kwds.get("install_repository_dependencies", True),
+                self._kwds.get("install_most_recent_revision", False),
+            )
             self.installed_repos[runnable.path], self.updated_repos[runnable.path] = workflow_repos
         default_from_path = self._kwds.get("workflows_from_path", False)
         # TODO: Allow serialization so this doesn't need to assume a
         # shared filesystem with Galaxy server.
         from_path = default_from_path or (runnable.type.name == "cwl_workflow")
-        workflow = import_workflow(
-            runnable.path, admin_gi=self.gi, user_gi=self.user_gi, from_path=from_path
-        )
+        workflow = import_workflow(runnable.path, admin_gi=self.gi, user_gi=self.user_gi, from_path=from_path)
         self._workflow_ids[runnable.path] = workflow["id"]
 
     def workflow_id_for_runnable(self, runnable):
@@ -896,7 +895,6 @@ class BaseGalaxyConfig(GalaxyInterface):
 
 
 class BaseManagedGalaxyConfig(BaseGalaxyConfig):
-
     def __init__(
         self,
         ctx,
@@ -916,7 +914,7 @@ class BaseManagedGalaxyConfig(BaseGalaxyConfig):
             master_api_key=master_api_key,
             user_api_key=None,
             runnables=runnables,
-            kwds=kwds
+            kwds=kwds,
         )
         self.config_directory = config_directory
         self.env = env
@@ -966,10 +964,7 @@ class DockerGalaxyConfig(BaseManagedGalaxyConfig):
 
     def kill(self):
         """Kill planemo container..."""
-        kill_command = docker_util.kill_command(
-            self.server_name,
-            **self.docker_target_kwds
-        )
+        kill_command = docker_util.kill_command(self.server_name, **self.docker_target_kwds)
         return shell(kill_command)
 
     def startup_command(self, ctx, **kwds):
@@ -984,7 +979,8 @@ class DockerGalaxyConfig(BaseManagedGalaxyConfig):
         env_directives = [f"{k}='{v}'" for k, v in self.env.items()]
         image = kwds.get("docker_galaxy_image", "bgruening/galaxy-stable")
         run_command = docker_util.build_docker_run_command(
-            "", image,
+            "",
+            image,
             interactive=False,
             env_directives=env_directives,
             working_directory=None,
@@ -992,7 +988,7 @@ class DockerGalaxyConfig(BaseManagedGalaxyConfig):
             run_extra_arguments=docker_run_extras,
             set_user=False,
             volumes=self.volumes,
-            **self.docker_target_kwds
+            **self.docker_target_kwds,
         )
         chmod_command = [
             "chmod",
@@ -1010,13 +1006,8 @@ class DockerGalaxyConfig(BaseManagedGalaxyConfig):
 
     @property
     def log_contents(self):
-        logs_command = docker_util.logs_command(
-            self.server_name,
-            **self.docker_target_kwds
-        )
-        output, _ = communicate(
-            logs_command
-        )
+        logs_command = docker_util.logs_command(self.server_name, **self.docker_target_kwds)
+        output, _ = communicate(logs_command)
         return output
 
     def cleanup(self):
@@ -1080,16 +1071,18 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
             run_script += f" --server-name {shlex.quote(self.server_name)}"
         server_ini = os.path.join(self.config_directory, "galaxy.ini")
         self.env["GALAXY_CONFIG_FILE"] = server_ini
-        if parse_version(kwds.get('galaxy_python_version') or DEFAULT_PYTHON_VERSION) >= parse_version('3'):
+        if parse_version(kwds.get("galaxy_python_version") or DEFAULT_PYTHON_VERSION) >= parse_version("3"):
             # We need to start under gunicorn
-            self.env['APP_WEBSERVER'] = 'gunicorn'
-            self.env['GUNICORN_CMD_ARGS'] = "--timeout={timeout} --capture-output --bind={host}:{port} --name={server_name}".format(
+            self.env["APP_WEBSERVER"] = "gunicorn"
+            self.env[
+                "GUNICORN_CMD_ARGS"
+            ] = "--timeout={timeout} --capture-output --bind={host}:{port} --name={server_name}".format(
                 timeout=DEFAULT_TOOL_INSTALL_TIMEOUT,
-                host=kwds.get('host', '127.0.0.1'),
-                port=kwds['port'],
+                host=kwds.get("host", "127.0.0.1"),
+                port=kwds["port"],
                 server_name=self.server_name,
             )
-        cd_to_galaxy_command = ['cd', self.galaxy_root]
+        cd_to_galaxy_command = ["cd", self.galaxy_root]
         return shell_join(
             cd_to_galaxy_command,
             setup_venv_command,
@@ -1187,8 +1180,7 @@ def _find_tool_data_table(runnables, test_data_dir, **kwds):
             "tool_data_table_conf.xml.test",
             extra_paths,
         ) or _search_tool_path_for(  # if all else fails just use sample
-            tool_data_search_path,
-            "tool_data_table_conf.xml.sample"
+            tool_data_search_path, "tool_data_table_conf.xml.sample"
         )
 
 
@@ -1223,9 +1215,9 @@ def _tool_conf_entry_for(tool_paths):
     tool_definitions = ""
     for tool_path in tool_paths:
         if os.path.isdir(tool_path):
-            tool_definitions += f'''<tool_dir dir="{tool_path}" />'''
+            tool_definitions += f"""<tool_dir dir="{tool_path}" />"""
         else:
-            tool_definitions += f'''<tool file="{tool_path}" />'''
+            tool_definitions += f"""<tool file="{tool_path}" />"""
     return tool_definitions
 
 
@@ -1238,7 +1230,11 @@ def _install_galaxy(ctx, galaxy_root, env, kwds):
 
 def _install_galaxy_via_download(ctx, galaxy_root, env, kwds):
     branch = _galaxy_branch(kwds)
-    untar_to("https://codeload.github.com/galaxyproject/galaxy/tar.gz/" + branch, tar_args=['-xvzf', '-', 'galaxy-' + branch], dest_dir=galaxy_root)
+    untar_to(
+        "https://codeload.github.com/galaxyproject/galaxy/tar.gz/" + branch,
+        tar_args=["-xvzf", "-", "galaxy-" + branch],
+        dest_dir=galaxy_root,
+    )
     _install_with_command(ctx, galaxy_root, env, kwds)
 
 
@@ -1293,9 +1289,9 @@ def _install_with_command(ctx, galaxy_root, env, kwds):
 def _ensure_galaxy_repository_available(ctx, kwds):
     workspace = ctx.workspace
     cwl = kwds.get("cwl", False)
-    galaxy_source = kwds.get('galaxy_source')
+    galaxy_source = kwds.get("galaxy_source")
     if galaxy_source and galaxy_source != DEFAULT_GALAXY_SOURCE:
-        sanitized_repo_name = "".join(c if c.isalnum() else '_' for c in kwds['galaxy_source']).rstrip()[:255]
+        sanitized_repo_name = "".join(c if c.isalnum() else "_" for c in kwds["galaxy_source"]).rstrip()[:255]
         gx_repo = os.path.join(workspace, f"gx_repo_{sanitized_repo_name}")
     else:
         gx_repo = os.path.join(workspace, "gx_repo")
@@ -1303,8 +1299,8 @@ def _ensure_galaxy_repository_available(ctx, kwds):
         gx_repo += "_cwl"
     if os.path.exists(gx_repo):
         # Convert the git repository from bare to mirror, if needed
-        shell(['git', '--git-dir', gx_repo, 'config', 'remote.origin.fetch', '+refs/*:refs/*'])
-        shell(['git', '--git-dir', gx_repo, 'config', 'remote.origin.mirror', 'true'])
+        shell(["git", "--git-dir", gx_repo, "config", "remote.origin.fetch", "+refs/*:refs/*"])
+        shell(["git", "--git-dir", gx_repo, "config", "remote.origin.mirror", "true"])
         # Attempt remote update - but don't fail if not interweb, etc...
         shell(f"git --git-dir {gx_repo} remote update >/dev/null 2>&1")
     else:
@@ -1329,11 +1325,11 @@ def _build_test_env(properties, env):
     # many are probably not needed as of the following commit.
     # https://bitbucket.org/galaxy/galaxy-central/commits/d7dd1f9
     test_property_variants = {
-        'GALAXY_TEST_JOB_CONFIG_FILE': 'job_config_file',
-        'GALAXY_TEST_MIGRATED_TOOL_CONF': 'migrated_tools_config',
-        'GALAXY_TEST_TOOL_CONF': 'tool_config_file',
-        'GALAXY_TEST_FILE_DIR': 'test_data_dir',
-        'GALAXY_TOOL_DEPENDENCY_DIR': 'tool_dependency_dir',
+        "GALAXY_TEST_JOB_CONFIG_FILE": "job_config_file",
+        "GALAXY_TEST_MIGRATED_TOOL_CONF": "migrated_tools_config",
+        "GALAXY_TEST_TOOL_CONF": "tool_config_file",
+        "GALAXY_TEST_FILE_DIR": "test_data_dir",
+        "GALAXY_TOOL_DEPENDENCY_DIR": "tool_dependency_dir",
         # Next line would be required for tool shed tests.
         # 'GALAXY_TEST_TOOL_DEPENDENCY_DIR': 'tool_dependency_dir',
     }
@@ -1357,15 +1353,17 @@ def _handle_job_config_file(config_directory, server_name, kwds):
         if docker_host:
             docker_host_param = f"""<param id="docker_host">{docker_host}</param>"""
 
-        conf_contents = Template(template_str).safe_substitute({
-            "server_name": server_name,
-            "docker_enable": docker_enable,
-            "require_container": "false",
-            "docker_sudo": str(kwds.get("docker_sudo", False)),
-            "docker_sudo_cmd": str(kwds.get("docker_sudo_cmd", docker_util.DEFAULT_SUDO_COMMAND)),
-            "docker_cmd": str(kwds.get("docker_cmd", docker_util.DEFAULT_DOCKER_COMMAND)),
-            "docker_host_param": docker_host_param,
-        })
+        conf_contents = Template(template_str).safe_substitute(
+            {
+                "server_name": server_name,
+                "docker_enable": docker_enable,
+                "require_container": "false",
+                "docker_sudo": str(kwds.get("docker_sudo", False)),
+                "docker_sudo_cmd": str(kwds.get("docker_sudo_cmd", docker_util.DEFAULT_SUDO_COMMAND)),
+                "docker_cmd": str(kwds.get("docker_cmd", docker_util.DEFAULT_DOCKER_COMMAND)),
+                "docker_host_param": docker_host_param,
+            }
+        )
         write_file(job_config_file, conf_contents)
     kwds["job_config_file"] = job_config_file
 
@@ -1398,7 +1396,7 @@ def _handle_job_metrics(config_directory, kwds):
 
 
 def _handle_refgenie_config(config_directory, galaxy_root, kwds):
-    refgenie_dir = os.path.join(config_directory, 'refgenie')
+    refgenie_dir = os.path.join(config_directory, "refgenie")
     _ensure_directory(refgenie_dir)
     refgenie_config_file = os.path.join(refgenie_dir, "genome_config.yaml")
     refgenie_config = get_refgenie_config(galaxy_root=galaxy_root, refgenie_dir=refgenie_dir)
@@ -1409,9 +1407,9 @@ def _handle_refgenie_config(config_directory, galaxy_root, kwds):
 
 def _handle_kwd_overrides(properties, kwds):
     kwds_gx_properties = [
-        'job_config_file',
-        'job_metrics_config_file',
-        'dependency_resolvers_config_file',
+        "job_config_file",
+        "job_metrics_config_file",
+        "dependency_resolvers_config_file",
     ]
     for prop in kwds_gx_properties:
         val = kwds.get(prop, None)
@@ -1421,7 +1419,7 @@ def _handle_kwd_overrides(properties, kwds):
 
 def _sub(template, args):
     if template is None:
-        return ''
+        return ""
     return Template(template).safe_substitute(args)
 
 

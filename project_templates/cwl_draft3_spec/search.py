@@ -16,7 +16,7 @@ st = term + ": "
 
 for a in index:
     if a.startswith(st):
-        n = [int(i) for i in a[len(st):].split(", ") if i]
+        n = [int(i) for i in a[len(st) :].split(", ") if i]
         linenum = 0
         for l in main:
             linenum += 1

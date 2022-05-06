@@ -2,9 +2,11 @@
 
 import click
 
-from planemo import io
-from planemo import options
-from planemo import tool_builder
+from planemo import (
+    io,
+    options,
+    tool_builder,
+)
 from planemo.cli import command_function
 
 
@@ -39,9 +41,7 @@ def cli(ctx, **kwds):
     if invalid:
         ctx.exit(invalid)
     tool_description = tool_builder.build(**kwds)
-    tool_builder.write_tool_description(
-        ctx, tool_description, **kwds
-    )
+    tool_builder.write_tool_description(ctx, tool_description, **kwds)
 
 
 def _validate_kwds(kwds):

@@ -7,7 +7,6 @@ from .test_utils import TempDirectoryTestCase
 
 
 class ShedExpansionTestCase(TempDirectoryTestCase):
-
     def test_invalid_name_with_multiple_repos(self):
         self._make_shed_yml("repo1", name="repo1")
         self._make_shed_yml("repo2", name="repo2")

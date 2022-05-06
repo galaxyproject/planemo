@@ -17,8 +17,9 @@ sphinx_rtd_theme
 recommonmark
 
 # Used for code checking.
+black
 flake8
-flake8-import-order
+isort
 
 # For release
 wheel

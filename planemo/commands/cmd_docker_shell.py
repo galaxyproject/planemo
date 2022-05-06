@@ -25,20 +25,12 @@ from planemo import options
 from planemo.cli import command_function
 
 
-@click.command('docker_shell')
+@click.command("docker_shell")
 @options.required_tool_arg()
 @click.option(
-    '--from_tag',
-    is_flag=True,
-    help=(
-        "Treat the tool's Docker container identifier as a locally cached tag."
-    )
+    "--from_tag", is_flag=True, help=("Treat the tool's Docker container identifier as a locally cached tag.")
 )
-@click.option(
-    '--shell',
-    default="/bin/bash",
-    help="Shell to launch in container (defaults to /bin/bash)."
-)
+@click.option("--shell", default="/bin/bash", help="Shell to launch in container (defaults to /bin/bash).")
 @options.docker_cmd_option()
 @options.docker_sudo_option()
 @options.docker_sudo_cmd_option()
@@ -71,18 +63,11 @@ def cli(ctx, path, **kwds):
     tool_dir = os.path.dirname(os.path.abspath(path))
     working_dir = os.path.abspath(os.getcwd())
     if tool_dir.startswith(working_dir):
-        volumes = [
-            f"{working_dir}:{working_dir}"
-        ]
+        volumes = [f"{working_dir}:{working_dir}"]
     elif working_dir.startswith(tool_dir):
-        volumes = [
-            f"{tool_dir}:{tool_dir}"
-        ]
+        volumes = [f"{tool_dir}:{tool_dir}"]
     else:
-        volumes = [
-            f"{working_dir}:{working_dir}",
-            f"{tool_dir}:{tool_dir}"
-        ]
+        volumes = [f"{working_dir}:{working_dir}", f"{tool_dir}:{tool_dir}"]
 
     script = docker_util.build_docker_run_command(
         "/bin/bash",
@@ -91,6 +76,6 @@ def cli(ctx, path, **kwds):
         terminal=True,
         working_directory=working_dir,
         volumes=volumes,
-        **dockerfiles.docker_host_args(**kwds)
+        **dockerfiles.docker_host_args(**kwds),
     )
     print(script)

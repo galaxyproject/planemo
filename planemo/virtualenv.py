@@ -10,7 +10,7 @@ DEFAULT_PYTHON_VERSION = os.environ.get("PLANEMO_DEFAULT_PYTHON_VERSION", "3")
 
 
 def create_command(virtualenv_path, galaxy_python_version=None):
-    """ If virtualenv is on Planemo's path use it, otherwise use the planemo
+    """If virtualenv is on Planemo's path use it, otherwise use the planemo
     subcommand virtualenv to create the virtualenv.
     """
     # Create a virtualenv with the selected python version.
@@ -20,10 +20,10 @@ def create_command(virtualenv_path, galaxy_python_version=None):
     if python:
         python = os.path.abspath(python)
     else:
-        python = sys.executable or 'python'
-    virtualenv_on_path = which('virtualenv')
+        python = sys.executable or "python"
+    virtualenv_on_path = which("virtualenv")
     if virtualenv_on_path:
-        command = [virtualenv_on_path, virtualenv_path, '-p', python]
+        command = [virtualenv_on_path, virtualenv_path, "-p", python]
     else:
-        command = [python, '-m', 'venv', virtualenv_path]
+        command = [python, "-m", "venv", virtualenv_path]
     return " ".join(command)

@@ -7,7 +7,7 @@ from planemo.galaxy import profiles
 from planemo.io import info
 
 
-@click.command('profile_list')
+@click.command("profile_list")
 @command_function
 def cli(ctx, **kwds):
     """List configured profile names."""

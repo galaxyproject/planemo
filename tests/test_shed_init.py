@@ -7,20 +7,13 @@ from .test_utils import (
     TEST_REPOS_DIR,
 )
 
-TEST_WORKFLOW_PATH = os.path.join(
-    TEST_REPOS_DIR,
-    "workflow_1",
-    "blast_top_hit_species.ga"
-)
+TEST_WORKFLOW_PATH = os.path.join(TEST_REPOS_DIR, "workflow_1", "blast_top_hit_species.ga")
 
 
 class ShedInitTestCase(CliShedTestCase):
-
     def test_minimal(self):
         with self._isolate() as f:
-            self._check_exit_code([
-                "shed_init", "--owner", "iuc", "--name", "samtools_filter"
-            ])
+            self._check_exit_code(["shed_init", "--owner", "iuc", "--name", "samtools_filter"])
             shed_config_path = os.path.join(f, ".shed.yml")
             assert os.path.exists(shed_config_path)
             with open(shed_config_path) as fh:
@@ -35,16 +28,24 @@ class ShedInitTestCase(CliShedTestCase):
             repo_url = "https://github.com/galaxyproject/tools-devteam"
             init_command = [
                 "shed_init",
-                "--owner", "devteam",
-                "--name", "samtools_filter",
-                "--description", "A samtools repo",
-                "--long_description", "A longer description.",
+                "--owner",
+                "devteam",
+                "--name",
+                "samtools_filter",
+                "--description",
+                "A samtools repo",
+                "--long_description",
+                "A longer description.",
                 "--remote_repository_url",
                 repo_url,
-                "--homepage_url", "https://example.com/",
-                "--category", "SAM",
-                "--category", "Sequence Analysis",
-                "--category", "Statistics",
+                "--homepage_url",
+                "https://example.com/",
+                "--category",
+                "SAM",
+                "--category",
+                "Sequence Analysis",
+                "--category",
+                "Statistics",
             ]
             self._check_exit_code(init_command)
             shed_config_path = os.path.join(f, ".shed.yml")
@@ -82,12 +83,8 @@ class ShedInitTestCase(CliShedTestCase):
     def test_bad_name(self):
         with self._isolate():
             # has an invalid -
-            self._check_exit_code([
-                "shed_init", "--owner", "iuc", "--name", "samtools-filter"
-            ], exit_code=1)
+            self._check_exit_code(["shed_init", "--owner", "iuc", "--name", "samtools-filter"], exit_code=1)
 
     def test_bad_owner(self):
         with self._isolate():
-            self._check_exit_code([
-                "shed_init", "--owner", "IuC", "--name", "samtools_filter"
-            ], exit_code=1)
+            self._check_exit_code(["shed_init", "--owner", "IuC", "--name", "samtools_filter"], exit_code=1)

@@ -3,13 +3,10 @@ import os
 
 import yaml
 
-from .test_utils import (
-    CliTestCase,
-)
+from .test_utils import CliTestCase
 
 
 class CmdWorkflowTestInitTestCase(CliTestCase):
-
     def test_plain_init(self):
         with self._isolate_with_test_data("wf_repos/from_format2/0_basic_native") as f:
             init_cmd = ["workflow_test_init", "0_basic_native.yml"]
@@ -18,7 +15,7 @@ class CmdWorkflowTestInitTestCase(CliTestCase):
             assert os.path.exists(test_path)
             with open(test_path) as stream:
                 test_config = yaml.safe_load(stream)
-            job = test_config[0]['job']
+            job = test_config[0]["job"]
             assert isinstance(job, dict)
 
     def test_init_split_test(self):

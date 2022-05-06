@@ -69,9 +69,7 @@ def lint_conda_recipe(ctx, recipe_dir, **kwds):
 
 
 def wraps_recipe_error(is_error=True):
-
     def outer_wrapper(f):
-
         @wraps(f)
         def wrapper(recipe_dir, lint_ctx):
             try:
@@ -90,7 +88,6 @@ def wraps_recipe_error(is_error=True):
 
 
 def lints_metadata(f):
-
     @wraps(f)
     def wrapper(recipe_dir, lint_ctx):
         meta = raw_metadata(recipe_dir)
@@ -114,7 +111,7 @@ def lint_license_family(meta, lint_ctx):
 
 @lints_metadata
 def lint_summary(meta, lint_ctx):
-    summary = get_field(meta, 'about/summary')
+    summary = get_field(meta, "about/summary")
 
     if not summary:
         lint_ctx.warn("No summary supplied in about metadata.")
@@ -127,8 +124,7 @@ def lint_summary(meta, lint_ctx):
 @lints_metadata
 @wraps_recipe_error(is_error=False)
 def lint_about_urls(meta, lint_ctx):
-    for field in ('about/home', 'about/dev_url', 'about/doc_url',
-                  'about/license_url'):
+    for field in ("about/home", "about/dev_url", "about/doc_url", "about/license_url"):
         url = get_field(meta, field)
         if url:
             check_url(url)
@@ -145,7 +141,7 @@ def lint_source(meta, lint_ctx):
 @lints_metadata
 @wraps_recipe_error(is_error=True)
 def lint_build_number(meta, lint_ctx):
-    build_number = get_field(meta, 'build/number', 0)
+    build_number = get_field(meta, "build/number", 0)
     check_build_number(build_number)
     lint_ctx.info("Valid build number [%s]" % build_number)
 
@@ -153,7 +149,7 @@ def lint_build_number(meta, lint_ctx):
 @lints_metadata
 @wraps_recipe_error(is_error=True)
 def lint_version(meta, lint_ctx):
-    version = get_field(meta, 'package/version')
+    version = get_field(meta, "package/version")
     check_version(version)
     lint_ctx.info("Valid version number [%s]" % version)
 
@@ -161,7 +157,7 @@ def lint_version(meta, lint_ctx):
 @lints_metadata
 @wraps_recipe_error(is_error=True)
 def lint_name(meta, lint_ctx):
-    name = get_field(meta, 'package/name')
+    name = get_field(meta, "package/name")
     check_name(name)
     lint_ctx.info("Valid recipe name [%s]" % name)
 
@@ -183,8 +179,7 @@ def lint_fields(meta, lint_ctx):
                 continue
 
             if key not in FIELDS[section]:
-                raise RecipeError("in section %r: unknown key %r" %
-                                  (section, key))
+                raise RecipeError("in section %r: unknown key %r" % (section, key))
 
 
 @lints_metadata
@@ -196,12 +191,8 @@ def lint_requirements(meta, lint_ctx):
 
 def yield_recipes_on_paths(ctx, paths, recursive):
     for path in paths:
-        recipe_dirs = find_matching_directories(
-            path, "meta.yaml", recursive=recursive
-        )
+        recipe_dirs = find_matching_directories(path, "meta.yaml", recursive=recursive)
         yield from recipe_dirs
 
 
-__all__ = (
-    "lint_recipes_on_paths",
-)
+__all__ = ("lint_recipes_on_paths",)

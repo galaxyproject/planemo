@@ -5,7 +5,10 @@ import contextlib
 
 from galaxy.tool_util.verify import interactor
 
-from planemo.galaxy.activity import execute, execute_rerun
+from planemo.galaxy.activity import (
+    execute,
+    execute_rerun,
+)
 from planemo.galaxy.config import external_galaxy_config
 from planemo.galaxy.serve import serve_daemon
 from planemo.runnable import RunnableType
@@ -61,11 +64,13 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
                 test_results = []
 
                 def _register_job_data(job_data):
-                    test_results.append({
-                        'id': tool_id + "-" + str(test_index),
-                        'has_data': True,
-                        'data': job_data,
-                    })
+                    test_results.append(
+                        {
+                            "id": tool_id + "-" + str(test_index),
+                            "has_data": True,
+                            "data": job_data,
+                        }
+                    )
 
                 verbose = self._ctx.verbose
                 try:
@@ -118,8 +123,7 @@ class DockerizedManagedGalaxyEngine(LocalManagedGalaxyEngine):
 
 
 class ExternalGalaxyEngine(GalaxyEngine):
-    """An :class:`Engine` implementation backed by an external Galaxy instance.
-    """
+    """An :class:`Engine` implementation backed by an external Galaxy instance."""
 
     @contextlib.contextmanager
     def ensure_runnables_served(self, runnables):

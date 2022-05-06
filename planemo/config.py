@@ -2,27 +2,29 @@
 
 import os
 from enum import Enum
-from typing import Any, Dict
+from typing import (
+    Any,
+    Dict,
+)
 
 import click
 import yaml
 
 PLANEMO_CONFIG_ENV_PROP = "PLANEMO_GLOBAL_CONFIG_PATH"
-DEFAULT_CONFIG = {
-}  # type: Dict[str, Any]
+DEFAULT_CONFIG = {}  # type: Dict[str, Any]
 
 VALUE_UNSET = object()
 
 
-OptionSource = Enum(
-    "OptionSource", 'cli profile global_config default'
-)
+OptionSource = Enum("OptionSource", "cli profile global_config default")
 
 
 def _default_callback(
-    default, use_global_config=False, resolve_path=False, extra_global_config_vars=[],
+    default,
+    use_global_config=False,
+    resolve_path=False,
+    extra_global_config_vars=[],
 ):
-
     def callback(ctx, param, value):
         planemo_ctx = ctx.obj
         param_name = param.name
@@ -109,7 +111,7 @@ def planemo_option(*args, **kwargs):
         name = None
         for arg in args:
             if arg.startswith("--"):
-                name = arg[len("--"):]
+                name = arg[len("--") :]
         assert name
         kwargs["envvar"] = "PLANEMO_%s" % name.upper()
 
@@ -119,10 +121,7 @@ def planemo_option(*args, **kwargs):
 
 def global_config_path(config_path=None):
     if not config_path:
-        config_path = os.environ.get(
-            PLANEMO_CONFIG_ENV_PROP,
-            "~/.planemo.yml"
-        )
+        config_path = os.environ.get(PLANEMO_CONFIG_ENV_PROP, "~/.planemo.yml")
         config_path = os.path.expanduser(config_path)
     return config_path
 

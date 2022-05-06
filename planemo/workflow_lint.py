@@ -9,18 +9,27 @@ from galaxy.tool_util.lint import LintContext
 from galaxy.tool_util.loader_directory import EXCLUDE_WALK_DIRS
 from galaxy.tool_util.verify import asserts
 from gxformat2._yaml import ordered_load
-from gxformat2.lint import lint_format2, lint_ga
-
+from gxformat2.lint import (
+    lint_format2,
+    lint_ga,
+)
 
 from planemo.exit_codes import (
     EXIT_CODE_GENERIC_FAILURE,
     EXIT_CODE_OK,
 )
-from planemo.galaxy.workflows import input_labels, output_labels, required_input_labels
-from planemo.runnable import cases, for_path
+from planemo.galaxy.workflows import (
+    input_labels,
+    output_labels,
+    required_input_labels,
+)
+from planemo.runnable import (
+    cases,
+    for_path,
+)
 from planemo.shed import DOCKSTORE_REGISTRY_CONF
 
-POTENTIAL_WORKFLOW_FILES = re.compile(r'^.*(\.yml|\.yaml|\.ga)$')
+POTENTIAL_WORKFLOW_FILES = re.compile(r"^.*(\.yml|\.yaml|\.ga)$")
 DOCKSTORE_REGISTRY_CONF_VERSION = "1.2"
 
 
@@ -38,10 +47,10 @@ def generate_dockstore_yaml(directory):
             # TODO: support CWL
             "subclass": "Galaxy",
             "name": "main",
-            "primaryDescriptorPath": f"/{os.path.relpath(workflow_path, directory)}"
+            "primaryDescriptorPath": f"/{os.path.relpath(workflow_path, directory)}",
         }
         if os.path.exists(test_parameter_path):
-            workflow_entry['testParameterFiles'] = [f"/{os.path.relpath(test_parameter_path, directory)}"]
+            workflow_entry["testParameterFiles"] = [f"/{os.path.relpath(test_parameter_path, directory)}"]
         workflows.append(workflow_entry)
     # Force version to the top of file but serializing rest of config seprately
     contents = "version: %s\n" % DOCKSTORE_REGISTRY_CONF_VERSION
@@ -108,6 +117,7 @@ def _lint_best_practices(path, lint_context):  # noqa: C901
     This function duplicates the checks made by Galaxy's best practices panel:
     https://github.com/galaxyproject/galaxy/blob/5396bb15fe8cfcf2e89d46c1d061c49b60e2f0b1/client/src/components/Workflow/Editor/Lint.vue
     """
+
     def check_json_for_untyped_params(j):
         values = j if type(j) == list else j.values()
         for value in values:
@@ -115,7 +125,7 @@ def _lint_best_practices(path, lint_context):  # noqa: C901
                 if check_json_for_untyped_params(value):
                     return True
             elif type(value) == str:
-                if re.match(r'\$\{.+?\}', value):
+                if re.match(r"\$\{.+?\}", value):
                     return True
         return False
 
@@ -142,7 +152,9 @@ def _lint_best_practices(path, lint_context):  # noqa: C901
         # disconnected inputs
         for input in step.get("inputs", []):
             if input.get("name") not in step.get("input_connections"):  # TODO: check optional
-                lint_context.warn(f"Input {input.get('name')} of workflow step {step.get('annotation') or step.get('id')} is disconnected.")
+                lint_context.warn(
+                    f"Input {input.get('name')} of workflow step {step.get('annotation') or step.get('id')} is disconnected."
+                )
 
         # missing metadata
         if not step.get("annotation"):
@@ -152,17 +164,19 @@ def _lint_best_practices(path, lint_context):  # noqa: C901
 
         # untyped parameters
         if workflow_dict.get("class") == "GalaxyWorkflow":
-            tool_state = step.get('tool_state', {})
-            pjas = step.get('out', {})
+            tool_state = step.get("tool_state", {})
+            pjas = step.get("out", {})
         else:
-            tool_state = json.loads(step.get('tool_state', '{}'))
-            pjas = step.get('post_job_actions', {})
+            tool_state = json.loads(step.get("tool_state", "{}"))
+            pjas = step.get("post_job_actions", {})
 
         if check_json_for_untyped_params(tool_state):
             lint_context.warn(f"Workflow step with ID {step.get('id')} specifies an untyped parameter as an input.")
 
         if check_json_for_untyped_params(pjas):
-            lint_context.warn(f"Workflow step with ID {step.get('id')} specifies an untyped parameter in the post-job actions.")
+            lint_context.warn(
+                f"Workflow step with ID {step.get('id')} specifies an untyped parameter in the post-job actions."
+            )
 
         # unlabeled outputs are checked by gxformat2, no need to check here
 
@@ -175,7 +189,9 @@ def _lint_case(path, test_case, lint_context):
     for key in job_keys:
         if key not in i_labels:
             # consider an error instead?
-            lint_context.warn(f"Unknown workflow input in test job definition [{key}], workflow inputs are [{i_labels}]")
+            lint_context.warn(
+                f"Unknown workflow input in test job definition [{key}], workflow inputs are [{i_labels}]"
+            )
             test_valid = False
 
     # check non-optional parameters are set
@@ -219,15 +235,15 @@ def _check_test_assertions(lint_context, assertion_definitions):
     if assertion_definitions:
         for module in asserts.assertion_modules:
             for function_name in dir(module):
-                if function_name.split('assert_')[-1] in assertion_definitions:
+                if function_name.split("assert_")[-1] in assertion_definitions:
                     signature = inspect.signature(module.__dict__[function_name])
                     try:
                         # try mapping the function with the attributes supplied and check for TypeError
-                        signature.bind('', **assertion_definitions[function_name.split('assert_')[-1]])
+                        signature.bind("", **assertion_definitions[function_name.split("assert_")[-1]])
                     except AssertionError:
                         pass
                     except TypeError as e:
-                        lint_context.error(f'Invalid assertion in tests: {function_name} {str(e)}')
+                        lint_context.error(f"Invalid assertion in tests: {function_name} {str(e)}")
                         assertions_valid = False
     return assertions_valid
 
@@ -245,7 +261,7 @@ def _tst_input_valid(test_case, input_id, input_def, lint_context):
                     lint_context.warn(message)
                     return False
         elif clazz == "Collection":
-            for elem in input_def.get('elements', []):
+            for elem in input_def.get("elements", []):
                 elem_valid = _tst_input_valid(test_case, input_id, elem, lint_context)
                 if not elem_valid:
                     return False

@@ -9,7 +9,6 @@ from .test_utils import (
 
 
 class CmdWorkflowLintTestCase(CliTestCase):
-
     def test_gxformat2_examples_as_repos(self):
         repos = glob.glob(_wf_repo("from_format2") + "/*")
         for repo in repos:
@@ -134,7 +133,7 @@ class CmdWorkflowLintTestCase(CliTestCase):
         self._check_exit_code(lint_cmd, exit_code=0)
 
     def test_best_practices_linting_gx(self):
-        workflow_path = '/'.join((TEST_DATA_DIR, 'wf14-unlinted-best-practices.yml'))
+        workflow_path = "/".join((TEST_DATA_DIR, "wf14-unlinted-best-practices.yml"))
         lint_cmd = ["workflow_lint", workflow_path]
         result = self._runner.invoke(self._cli.planemo, lint_cmd)
 
@@ -153,7 +152,7 @@ class CmdWorkflowLintTestCase(CliTestCase):
             assert warning in result.output
 
     def test_best_practices_linting_ga(self):
-        workflow_path = '/'.join((TEST_DATA_DIR, 'wf14-unlinted-best-practices.ga'))
+        workflow_path = "/".join((TEST_DATA_DIR, "wf14-unlinted-best-practices.ga"))
         lint_cmd = ["workflow_lint", workflow_path]
         result = self._runner.invoke(self._cli.planemo, lint_cmd)
 
@@ -172,10 +171,13 @@ class CmdWorkflowLintTestCase(CliTestCase):
             assert warning in result.output
 
     def test_assertion_linting(self):
-        workflow_path = '/'.join((TEST_DATA_DIR, 'wf15-test-assertions.yml'))
+        workflow_path = "/".join((TEST_DATA_DIR, "wf15-test-assertions.yml"))
         lint_cmd = ["workflow_lint", workflow_path]
         result = self._runner.invoke(self._cli.planemo, lint_cmd)
-        assert "Invalid assertion in tests: assert_has_text got an unexpected keyword argument 'non_existent_attribute'" in result.output
+        assert (
+            "Invalid assertion in tests: assert_has_text got an unexpected keyword argument 'non_existent_attribute'"
+            in result.output
+        )
 
 
 def _wf_repo(rel_path):

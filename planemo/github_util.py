@@ -18,6 +18,7 @@ from planemo.io import (
 
 try:
     import github
+
     has_github_lib = True
 except ImportError:
     github = None
@@ -25,10 +26,9 @@ except ImportError:
 
 GH_VERSION = "1.5.0"
 
-NO_GITHUB_DEP_ERROR = ("Cannot use github functionality - "
-                       "PyGithub library not available.")
+NO_GITHUB_DEP_ERROR = "Cannot use github functionality - " "PyGithub library not available."
 FAILED_TO_DOWNLOAD_GH = "No gh executable available and it could not be installed."
-DEFAULT_REMOTE_NAME = 'planemo-remote'
+DEFAULT_REMOTE_NAME = "planemo-remote"
 
 
 def get_github_config(ctx, allow_anonymous=False):
@@ -39,23 +39,22 @@ def get_github_config(ctx, allow_anonymous=False):
 
 def clone_fork_branch(ctx, target, path, remote_name=DEFAULT_REMOTE_NAME, **kwds):
     """Clone, fork, and branch a repository ahead of building a pull request."""
-    git.checkout(
-        ctx,
-        target,
-        path,
-        branch=kwds.get("branch", None),
-        remote="origin",
-        from_branch="master"
-    )
+    git.checkout(ctx, target, path, branch=kwds.get("branch", None), remote="origin", from_branch="master")
     if kwds.get("fork"):
         try:
             fork(ctx, path, remote_name=remote_name, **kwds)
         except Exception:
             pass
-    if 'GITHUB_USER' in os.environ:
+    if "GITHUB_USER" in os.environ:
         # On CI systems fork doesn't add a local remote under circumstances I don't quite understand,
         # but that's probably linked to https://github.com/cli/cli/issues/2722
-        cmd = ['git', 'remote', 'add', remote_name, f"https://github.com/{os.environ['GITHUB_USER']}/{os.path.basename(target)}"]
+        cmd = [
+            "git",
+            "remote",
+            "add",
+            remote_name,
+            f"https://github.com/{os.environ['GITHUB_USER']}/{os.path.basename(target)}",
+        ]
         try:
             communicate(cmd, cwd=path)
         except RuntimeError:
@@ -68,7 +67,7 @@ def fork(ctx, path, remote_name=DEFAULT_REMOTE_NAME, **kwds):
     """Fork the target repository using ``gh``."""
     gh_path = ensure_gh(ctx, **kwds)
     gh_env = get_gh_env(ctx, path, **kwds)
-    cmd = [gh_path, "repo", "fork", '--remote=true', '--remote-name', remote_name]
+    cmd = [gh_path, "repo", "fork", "--remote=true", "--remote-name", remote_name]
     communicate(cmd, cwd=path, env=gh_env)
     return remote_name
 
@@ -78,10 +77,10 @@ def get_or_create_repository(ctx, owner, repo, dry_run=True, **kwds):
     target = os.path.realpath(tempfile.mkdtemp())
     remote_repo = f"https://github.com/{owner}/{repo}"
     try:
-        ctx.log(f'Cloning {remote_repo}')
+        ctx.log(f"Cloning {remote_repo}")
         git.clone(ctx, src=remote_repo, dest=target)
     except Exception:
-        ctx.log(f'Creating repository {remote_repo}')
+        ctx.log(f"Creating repository {remote_repo}")
         target = create_repository(ctx, owner=owner, repo=repo, dest=target, dry_run=dry_run)
     return target
 
@@ -89,7 +88,7 @@ def get_or_create_repository(ctx, owner, repo, dry_run=True, **kwds):
 def create_repository(ctx, owner, repo, dest, dry_run, **kwds):
     gh_path = ensure_gh(ctx, **kwds)
     gh_env = get_gh_env(ctx, dry_run=dry_run, **kwds)
-    cmd = [gh_path, 'repo', 'create', '-y', '--public', f"{owner}/{repo}"]
+    cmd = [gh_path, "repo", "create", "-y", "--public", f"{owner}/{repo}"]
     if dry_run:
         "Would run command '{}'".format(" ".join(cmd))
         git.init(ctx, dest)
@@ -141,11 +140,11 @@ def changelog_in_repo(target_repository_path):
     """
     changelog = []
     for path in os.listdir(target_repository_path):
-        if 'changelog.md' in path.lower():
+        if "changelog.md" in path.lower():
             version_header_seen = False
-            version_header_prefix = '## '
+            version_header_prefix = "## "
             top_level_header_seen = False
-            top_level_header_prefix = '# '
+            top_level_header_prefix = "# "
             with open(os.path.join(target_repository_path, path)) as changelog_fh:
                 for line in changelog_fh:
                     if line.startswith(top_level_header_prefix):
@@ -165,20 +164,22 @@ def changelog_in_repo(target_repository_path):
 def create_release(ctx, from_dir, target_dir, owner, repo, version, dry_run, notes="", **kwds):
     assert_new_version(ctx, version, owner=owner, repo=repo)
     target_repository_path = get_or_create_repository(ctx, owner=owner, repo=repo, dry_run=dry_run)
-    add_dir_contents_to_repo(ctx, from_dir, target_dir, target_repository_path, version=version, dry_run=dry_run, notes=notes)
+    add_dir_contents_to_repo(
+        ctx, from_dir, target_dir, target_repository_path, version=version, dry_run=dry_run, notes=notes
+    )
     gh_path = ensure_gh(ctx, **kwds)
     gh_env = get_gh_env(ctx, dry_run=dry_run, **kwds)
     cmd = [
         gh_path,
-        'release',
-        '-R',
+        "release",
+        "-R",
         f"{owner}/{repo}",
-        'create',
+        "create",
         f"v{version}",
-        '--title',
+        "--title",
         str(version),
     ]
-    cmd.extend(['--notes', notes or changelog_in_repo(target_repository_path)])
+    cmd.extend(["--notes", notes or changelog_in_repo(target_repository_path)])
     if not dry_run:
         communicate(cmd, env=gh_env)
     else:
@@ -191,14 +192,14 @@ def pull_request(ctx, path, message=None, repo=None, **kwds):
     gh_env = get_gh_env(ctx, path, **kwds)
     cmd = [gh_path, "pr", "create"]
     if message is None:
-        cmd.append('--fill')
+        cmd.append("--fill")
     else:
         lines = message.splitlines()
-        cmd.extend(['--title', lines[0]])
+        cmd.extend(["--title", lines[0]])
         if len(lines) > 1:
             cmd.extend(["--body", "\n".join(lines[1:])])
     if repo:
-        cmd.extend(['--repo', repo])
+        cmd.extend(["--repo", repo])
     communicate(cmd, env=gh_env)
 
 
@@ -238,9 +239,9 @@ def _try_download_gh(planemo_gh_path):
     link = _gh_link()
     path = Path(planemo_gh_path)
     resp = requests.get(link)
-    with tarfile.open(fileobj=io.BytesIO(resp.content)) as tf, path.open('wb') as outfile:
+    with tarfile.open(fileobj=io.BytesIO(resp.content)) as tf, path.open("wb") as outfile:
         for member in tf.getmembers():
-            if member.name.endswith('bin/gh'):
+            if member.name.endswith("bin/gh"):
                 outfile.write(tf.extractfile(member).read())
     path.chmod(path.stat().st_mode | stat.S_IEXEC)
 

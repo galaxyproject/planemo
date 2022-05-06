@@ -8,7 +8,10 @@ from planemo.runnable import (
     get_outputs,
     RunnableType,
 )
-from .test_utils import create_test_context, TEST_DATA_DIR
+from .test_utils import (
+    create_test_context,
+    TEST_DATA_DIR,
+)
 
 A_CWL_TOOL = os.path.join(TEST_DATA_DIR, "tools", "ok-cat1-tool.cwl")
 A_CWL_WORKFLOW = os.path.join(TEST_DATA_DIR, "count-lines2-wf.cwl")
@@ -18,20 +21,20 @@ A_GALAXY_GA_WORKFLOW = os.path.join(TEST_DATA_DIR, "test_workflow_1.ga")
 A_GALAXY_YAML_WORKFLOW = os.path.join(TEST_DATA_DIR, "wf1.gxwf.yml")
 
 CAN_HANDLE = {
-    'galaxy': {
+    "galaxy": {
         A_CWL_TOOL: True,
         A_CWL_WORKFLOW: True,
         A_GALAXY_TOOL: True,
         A_GALAXY_GA_WORKFLOW: True,
         A_GALAXY_YAML_WORKFLOW: True,
     },
-    'cwltool': {
+    "cwltool": {
         A_CWL_TOOL: True,
         A_CWL_WORKFLOW: True,
         A_GALAXY_TOOL: False,
         A_GALAXY_GA_WORKFLOW: False,
         A_GALAXY_YAML_WORKFLOW: False,
-    }
+    },
 }
 
 

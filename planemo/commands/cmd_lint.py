@@ -3,10 +3,13 @@ import click
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.tool_lint import build_tool_lint_args, lint_tools_on_path
+from planemo.tool_lint import (
+    build_tool_lint_args,
+    lint_tools_on_path,
+)
 
 
-@click.command('lint')
+@click.command("lint")
 @options.optional_tools_arg(multiple=True, allow_uris=True)
 @options.report_level_option()
 @options.report_xunit()
@@ -50,12 +53,7 @@ from planemo.tool_lint import build_tool_lint_args, lint_tools_on_path
 def cli(ctx, uris, **kwds):
     """Check for common errors and best practices."""
     lint_args = build_tool_lint_args(ctx, **kwds)
-    exit_code = lint_tools_on_path(
-        ctx,
-        uris,
-        lint_args,
-        recursive=kwds["recursive"]
-    )
+    exit_code = lint_tools_on_path(ctx, uris, lint_args, recursive=kwds["recursive"])
 
     # TODO: rearchitect XUnit.
     # if kwds['urls']:

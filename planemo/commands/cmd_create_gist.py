@@ -14,15 +14,12 @@ target_path = click.Path(
 
 @click.command("create_gist")
 @click.argument(
-    'path',
+    "path",
     metavar="FILE_PATH",
     type=target_path,
 )
 @click.option(
-    "--link_type",
-    type=click.Choice(["raw", "html"]),
-    default="raw",
-    help=("Link type to generate for the file.")
+    "--link_type", type=click.Choice(["raw", "html"]), default="raw", help=("Link type to generate for the file.")
 )
 @command_function
 def cli(ctx, path, **kwds):

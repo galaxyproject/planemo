@@ -11,7 +11,6 @@ from .test_utils import (
 
 
 class LintTestCase(CliTestCase):
-
     def test_ok_tools(self):
         ok_tools = glob.glob("%s/ok_*" % TEST_TOOLS_DIR)
         for ok_tool in ok_tools:
@@ -26,7 +25,10 @@ class LintTestCase(CliTestCase):
 
     @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
     def test_ok_http(self):
-        lint_cmd = ["lint", "https://raw.githubusercontent.com/galaxyproject/planemo/master/tests/data/tools/ok_conditional.xml"]
+        lint_cmd = [
+            "lint",
+            "https://raw.githubusercontent.com/galaxyproject/planemo/master/tests/data/tools/ok_conditional.xml",
+        ]
         self._check_exit_code(lint_cmd)
 
     def test_fail_tools(self):
@@ -45,10 +47,7 @@ class LintTestCase(CliTestCase):
         names = ["fail_citation.xml", "fail_order.xml"]
         paths = list(map(lambda p: os.path.join(TEST_TOOLS_DIR, p), names))
         self._check_exit_code(["lint"] + paths, exit_code=1)
-        self._check_exit_code(
-            ["lint", "--skip", "citations,xml_order"] + paths,
-            exit_code=0
-        )
+        self._check_exit_code(["lint", "--skip", "citations,xml_order"] + paths, exit_code=0)
 
     def test_skips(self):
         fail_citation = os.path.join(TEST_TOOLS_DIR, "fail_citation.xml")

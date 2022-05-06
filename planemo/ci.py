@@ -7,8 +7,10 @@ import os
 
 import yaml
 
-from planemo import git
-from planemo import io
+from planemo import (
+    git,
+    io,
+)
 from planemo.shed import REPO_METADATA_FILES
 
 
@@ -43,7 +45,7 @@ def filter_paths(ctx, raw_paths, path_type="repo", **kwds):
         ctx.log("List of excluded paths: %s" % excluded_paths)
 
     path_count = len(filtered_paths)
-    chunk_size = ((1.0 * path_count) / kwds["chunk_count"])
+    chunk_size = (1.0 * path_count) / kwds["chunk_count"]
     chunk = kwds["chunk"]
 
     chunked_paths = []
