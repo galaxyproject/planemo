@@ -8,11 +8,11 @@ import yaml
 from galaxy.tool_util.lint import LintContext
 from galaxy.tool_util.loader_directory import EXCLUDE_WALK_DIRS
 from galaxy.tool_util.verify import asserts
-from gxformat2._yaml import ordered_load
 from gxformat2.lint import (
     lint_format2,
     lint_ga,
 )
+from gxformat2.yaml import ordered_load
 
 from planemo.exit_codes import (
     EXIT_CODE_GENERIC_FAILURE,
