@@ -92,8 +92,8 @@ def _indent(elem, level=0):
             elem.text = i + "    "
         if not elem.tail or not elem.tail.strip():
             elem.tail = i
-        for elem in elem:
-            _indent(elem, level + 1)
+        for subelem in elem:
+            _indent(subelem, level + 1)
         if not elem.tail or not elem.tail.strip():
             elem.tail = i
     else:
