@@ -70,7 +70,7 @@ class GalaxyServeTestCase(CliTestCase):
         )
         _assert_service_up(config)
         user_gi = config.user_gi
-        assert user_gi.tools.get_tools(tool_id="random_lines1")
+        assert user_gi.tools.show_tool("random_lines1")
         assert len(user_gi.workflows.get_workflows()) == 1
         config.kill()
         _assert_service_down(config)

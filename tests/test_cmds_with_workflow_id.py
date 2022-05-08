@@ -55,7 +55,7 @@ class CmdsWithWorkflowIdTestCase(CliTestCase, UsesServeCommand):
             user_gi = self._user_gi
             assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0
             user_gi.histories.create_history(TEST_HISTORY_NAME)
-            assert user_gi.tools.get_tools(tool_id="random_lines1")
+            assert user_gi.tools.show_tool("random_lines1")
             workflows = user_gi.workflows.get_workflows()
             assert len(workflows) == 1
             workflow = workflows[0]
