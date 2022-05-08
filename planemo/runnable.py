@@ -185,7 +185,7 @@ def workflows_from_dockstore_yaml(path):
     return workflows
 
 
-def workfow_dir_runnables(path, return_all=False):
+def workflow_dir_runnables(path, return_all=False):
     dockstore_path = os.path.join(path, DOCKSTORE_REGISTRY_CONF)
     if os.path.exists(dockstore_path):
         runnables = [
@@ -201,7 +201,7 @@ def for_path(path, temp_path=None, return_all=False):
     """Produce a class:`Runnable` for supplied path."""
     runnable_type = None
     if os.path.isdir(path):
-        runnable = workfow_dir_runnables(path, return_all=return_all)
+        runnable = workflow_dir_runnables(path, return_all=return_all)
         if runnable:
             return runnable
         runnable_type = RunnableType.directory
