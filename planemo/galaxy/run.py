@@ -63,6 +63,7 @@ def setup_venv(ctx, kwds):
 def locate_galaxy_virtualenv(ctx, kwds):
     if os.environ.get("GALAXY_VIRTUAL_ENV"):
         venv_command = ""
+        kwds["GALAXY_VIRTUAL_ENV"] = os.environ["GALAXY_VIRTUAL_ENV"]
     elif not kwds.get("no_cache_galaxy", False):
         workspace = ctx.workspace
         galaxy_branch = kwds.get("galaxy_branch") or "master"
@@ -71,8 +72,10 @@ def locate_galaxy_virtualenv(ctx, kwds):
         shared_venv_path = f"{shared_venv_path}_{galaxy_python_version}"
         if galaxy_branch != "master":
             shared_venv_path = f"{shared_venv_path}_{galaxy_branch}"
+        kwds["GALAXY_VIRTUAL_ENV"] = shared_venv_path
         venv_command = CACHED_VIRTUAL_ENV_COMMAND % shlex.quote(shared_venv_path)
     else:
+        kwds["GALAXY_VIRTUAL_ENV"] = ".venv"
         venv_command = UNCACHED_VIRTUAL_ENV_COMMAND
     return shell_join(
         venv_command,
