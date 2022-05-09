@@ -69,8 +69,8 @@ def run_in_config(ctx, config, run=run_galaxy_command, test_data_target_dir=None
 
     info("Testing using galaxy_root %s", config.galaxy_root)
     # TODO: Allow running dockerized Galaxy here instead.
-    server_ini = os.path.join(config_directory, "galaxy.ini")
-    config.env["GALAXY_CONFIG_FILE"] = server_ini
+    galaxy_yml = os.path.join(config_directory, "galaxy.yml")
+    config.env["GALAXY_CONFIG_FILE"] = galaxy_yml
     config.env["GALAXY_TEST_VERBOSE_ERRORS"] = "true"
     config.env["GALAXY_TEST_SAVE"] = job_output_files
 

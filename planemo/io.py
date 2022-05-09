@@ -199,6 +199,13 @@ def ps1_for_path(path, base="PS1"):
     return ps1
 
 
+def stop_gravity(virtual_env, gravity_state_dir, env):
+    gravity_bin = os.path.join(virtual_env, "bin", "galaxyctl")
+    environ = os.environ.copy()
+    environ.update(env)
+    subprocess.check_call([gravity_bin, "--state-dir", gravity_state_dir, "shutdown"], env=environ)
+
+
 def kill_pid_file(pid_file: str):
     """Kill process group corresponding to specified pid file."""
     try:

@@ -4,6 +4,7 @@ import abc
 import contextlib
 import hashlib
 import importlib.util
+import json
 import os
 import random
 import shlex
@@ -11,7 +12,10 @@ import shutil
 import threading
 import time
 from string import Template
-from tempfile import mkdtemp
+from tempfile import (
+    mkdtemp,
+    NamedTemporaryFile,
+)
 
 from galaxy.containers.docker_model import DockerVolume
 from galaxy.tool_util.deps import docker_util
@@ -28,6 +32,7 @@ from planemo.io import (
     kill_pid_file,
     shell,
     shell_join,
+    stop_gravity,
     untar_to,
     wait_on,
     warn,
@@ -100,7 +105,6 @@ JOB_CONFIG_LOCAL = """<job_conf>
         <plugin id="planemo_runner" type="runner" load="galaxy.jobs.runners.local:LocalJobRunner" workers="4"/>
     </plugins>
     <handlers>
-        <handler id="main"/>
     </handlers>
     <destinations default="planemo_dest">
         <destination id="planemo_dest" runner="planemo_runner">
@@ -436,8 +440,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         _ensure_directory(shed_tool_path)
         port = _get_port(kwds)
         template_args = dict(
-            port=port,
-            host=kwds.get("host", "127.0.0.1"),
             server_name=server_name,
             temp_directory=config_directory,
             shed_tool_path=shed_tool_path,
@@ -521,8 +523,24 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         # https://github.com/galaxyproject/planemo/issues/788
         env["GALAXY_LOG"] = log_file
         env["GALAXY_PID"] = pid_file
-        web_config = _sub(WEB_SERVER_CONFIG_TEMPLATE, template_args)
-        write_file(config_join("galaxy.ini"), web_config)
+        env["GRAVITY_STATE_DIR"] = config_join("gravity")
+        with NamedTemporaryFile(suffix=".sock", delete=True) as nt:
+            env["SUPERVISORD_SOCKET"] = nt.name
+        write_file(
+            config_join("galaxy.yml"),
+            json.dumps(
+                {
+                    "galaxy": {"job_config_file": kwds["job_config_file"]},
+                    "gravity": {
+                        "galaxy_root": galaxy_root,
+                        "gunicorn": {"bind": f"localhost:{port}"},
+                        "gx-it-proxy": {
+                            "enable": False,
+                        },
+                    },
+                }
+            ),
+        )
         _write_tool_conf(ctx, all_tool_paths, tool_conf)
         write_file(empty_tool_conf, EMPTY_TOOL_CONF_TEMPLATE)
 
@@ -1046,6 +1064,17 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         )
         self.galaxy_root = galaxy_root
 
+    @property
+    def virtual_env_dir(self):
+        virtual_env = self._kwds.get("GALAXY_VIRTUAL_ENV")
+        if virtual_env and not os.path.isabs(virtual_env):
+            virtual_env = os.path.join(self.galaxy_root, virtual_env)
+        return virtual_env
+
+    @property
+    def gravity_state_dir(self):
+        return self.env["GRAVITY_STATE_DIR"]
+
     def kill(self):
         if self._ctx.verbose:
             shell(["ps", "ax"])
@@ -1055,6 +1084,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
             if exists:
                 with open(self.pid_file) as f:
                     print(f"pid_file contents are [{f.read()}]")
+        stop_gravity(virtual_env=self.virtual_env_dir, gravity_state_dir=self.gravity_state_dir, env=self.env)
         kill_pid_file(self.pid_file)
 
     def startup_command(self, ctx, **kwds):
@@ -1072,24 +1102,14 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
             self.env["GALAXY_RUN_ALL"] = "1"
         else:
             run_script += f" --server-name {shlex.quote(self.server_name)}"
-        server_ini = os.path.join(self.config_directory, "galaxy.ini")
-        self.env["GALAXY_CONFIG_FILE"] = server_ini
-        if parse_version(kwds.get("galaxy_python_version") or DEFAULT_PYTHON_VERSION) >= parse_version("3"):
-            # We need to start under gunicorn
-            self.env["APP_WEBSERVER"] = "gunicorn"
-            self.env[
-                "GUNICORN_CMD_ARGS"
-            ] = "--timeout={timeout} --capture-output --bind={host}:{port} --name={server_name}".format(
-                timeout=DEFAULT_TOOL_INSTALL_TIMEOUT,
-                host=kwds.get("host", "127.0.0.1"),
-                port=kwds["port"],
-                server_name=self.server_name,
-            )
+        galaxy_yml = os.path.join(self.config_directory, "galaxy.yml")
+        self.env["GALAXY_CONFIG_FILE"] = galaxy_yml
         cd_to_galaxy_command = ["cd", self.galaxy_root]
         return shell_join(
             cd_to_galaxy_command,
             setup_venv_command,
             setup_common_startup_args(),
+            "./create_db.sh",
             run_script,
         )
 
