@@ -232,9 +232,8 @@ def stage_in(ctx, runnable, config, job_path, **kwds):  # noqa C901
     simultaneous_uploads = kwds.get("simultaneous_uploads", False)
     user_gi = config.user_gi
     history_id = _history_id(user_gi, **kwds)
-    job_dict, datasets = PlanemoStagingInterface(
-        ctx, runnable, user_gi, config.version_major, simultaneous_uploads
-    ).stage(
+    psi = PlanemoStagingInterface(ctx, runnable, user_gi, config.version_major, simultaneous_uploads)
+    job_dict, datasets = psi.stage(
         tool_or_workflow,
         history_id=history_id,
         job_path=job_path,
