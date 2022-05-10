@@ -1,8 +1,10 @@
 """A high-level interface to local Galaxy instances using bioblend."""
 from io import StringIO
 
-from planemo.bioblend import ensure_module
-from planemo.bioblend import galaxy
+from planemo.bioblend import (
+    ensure_module,
+    galaxy,
+)
 
 DEFAULT_ADMIN_API_KEY = "test_key"
 
@@ -17,10 +19,7 @@ def gi(port=None, url=None, key=None):
     else:
         url = "http://localhost:%d" % int(port)
 
-    return galaxy.GalaxyInstance(
-        url=url,
-        key=key
-    )
+    return galaxy.GalaxyInstance(url=url, key=key)
 
 
 def test_credentials_valid(port=None, url=None, key=None, is_admin=False):
@@ -29,7 +28,7 @@ def test_credentials_valid(port=None, url=None, key=None, is_admin=False):
     try:
         current_user = test_gi.users.get_current_user()
         if is_admin:
-            return current_user['is_admin']
+            return current_user["is_admin"]
         else:
             return True
     except Exception:
@@ -68,8 +67,7 @@ def user_api_key(admin_gi):
 
 
 def summarize_history(ctx, gi, history_id):
-    """Summarize a history with print() based on similar code in Galaxy for populators.
-    """
+    """Summarize a history with print() based on similar code in Galaxy for populators."""
     if not ctx.verbose:
         return
 
@@ -82,9 +80,9 @@ def summarize_history(ctx, gi, history_id):
         return
 
     for history_content in history_contents:
-        history_content_id = history_content.get('id', None)
-        print("| %d - %s (HID - NAME) " % (int(history_content['hid']), history_content['name']))
-        if history_content['history_content_type'] == 'dataset_collection':
+        history_content_id = history_content.get("id", None)
+        print("| %d - %s (HID - NAME) " % (int(history_content["hid"]), history_content["name"]))
+        if history_content["history_content_type"] == "dataset_collection":
             history_contents_json = gi.histories.show_dataset_collection(history_id, history_content["id"])
             print("| Dataset Collection: %s" % history_contents_json)
             continue
@@ -114,10 +112,13 @@ def summarize_history(ctx, gi, history_id):
 def get_invocations(url, key, workflow_id):
     inv_gi = gi(None, url, key)
     invocations = inv_gi.workflows.get_invocations(workflow_id)
-    return {invocation['id']: {
-            'states': inv_gi.invocations.get_invocation_summary(invocation['id'])['states'],
-            'history_id': invocation['history_id']}
-            for invocation in invocations}
+    return {
+        invocation["id"]: {
+            "states": inv_gi.invocations.get_invocation_summary(invocation["id"])["states"],
+            "history_id": invocation["history_id"],
+        }
+        for invocation in invocations
+    }
 
 
 def _format_for_summary(blob, empty_message, prefix="|  "):

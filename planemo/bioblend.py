@@ -1,14 +1,18 @@
 """Planemo layer for ensuring bioblend available."""
 try:
-    from bioblend import toolshed
-    from bioblend import galaxy
+    from bioblend import (
+        galaxy,
+        toolshed,
+    )
 except ImportError:
     toolshed = None
     galaxy = None
 
-BIOBLEND_UNAVAILABLE = ("This functionality requires the bioblend library "
-                        " which is unavailable, please install `pip install "
-                        "bioblend`")
+BIOBLEND_UNAVAILABLE = (
+    "This functionality requires the bioblend library "
+    " which is unavailable, please install `pip install "
+    "bioblend`"
+)
 
 
 def ensure_module():

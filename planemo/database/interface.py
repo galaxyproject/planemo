@@ -29,6 +29,4 @@ class DatabaseSource(metaclass=abc.ABCMeta):
         """Return a URL string for use by sqlalchemy."""
 
 
-__all__ = (
-    "DatabaseSource",
-)
+__all__ = ("DatabaseSource",)

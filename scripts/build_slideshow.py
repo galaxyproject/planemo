@@ -2,7 +2,6 @@ import os
 import string
 import sys
 
-
 SCRIPTS_DIRECTORY = os.path.dirname(__file__)
 TEMPLATE_PATH = os.path.join(SCRIPTS_DIRECTORY, "slideshow_template.html")
 
@@ -18,13 +17,15 @@ def main(argv=None):
     if len(argv) >= 4:
         output = argv[3]
     else:
-        output = os.path.splitext(markdown_source)[0] + '.html'
+        output = os.path.splitext(markdown_source)[0] + ".html"
     with open(markdown_source) as s:
         content = s.read()
-    html = TEMPLATE.safe_substitute(**{
-        'title': title,
-        'content': content,
-    })
+    html = TEMPLATE.safe_substitute(
+        **{
+            "title": title,
+            "content": content,
+        }
+    )
     print(html)
     with open(output, "w") as ofh:
         ofh.write(html)

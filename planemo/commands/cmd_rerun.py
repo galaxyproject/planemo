@@ -5,11 +5,14 @@ import click
 from planemo import options
 from planemo.cli import command_function
 from planemo.engine import engine_context
-from planemo.io import error, info
+from planemo.io import (
+    error,
+    info,
+)
 from planemo.runnable import Rerunnable
 
 
-@click.command('rerun')
+@click.command("rerun")
 @options.profile_option()
 @options.galaxy_url_option()
 @options.galaxy_user_key_option()
@@ -17,19 +20,16 @@ from planemo.runnable import Rerunnable
     "--invocation",
     "rerunnable_type",
     flag_value="invocation",
-    help=("Rerun failed jobs associated by one or more invocation IDs.")
+    help=("Rerun failed jobs associated by one or more invocation IDs."),
 )
 @click.option(
     "--history",
     "rerunnable_type",
     flag_value="history",
-    help=("Rerun failed jobs associated by one or more history IDs.")
+    help=("Rerun failed jobs associated by one or more history IDs."),
 )
 @click.option(
-    "--job",
-    "rerunnable_type",
-    flag_value="job",
-    help=("Rerun failed jobs specified by one or more job IDs.")
+    "--job", "rerunnable_type", flag_value="job", help=("Rerun failed jobs specified by one or more job IDs.")
 )
 @click.argument(
     "rerunnable_ids",
@@ -52,21 +52,21 @@ def cli(ctx, rerunnable_ids, **kwds):
         % planemo rerun --invocation / --history / --job RERUNNABLE_IDS
     """
     # Possible TODO: allow collection IDs to be specified as well
-    if not kwds.get('rerunnable_type'):
+    if not kwds.get("rerunnable_type"):
         error("Please specify the type (invocation, history or job) of the IDs which should be rerun.")
         ctx.exit(1)
     kwds["engine"] = "external_galaxy"
     rerun_successful = True
     with engine_context(ctx, **kwds) as engine:
         for rerunnable_id in rerunnable_ids:
-            rerunnable = Rerunnable(rerunnable_id, kwds['rerunnable_type'], kwds["galaxy_url"])
+            rerunnable = Rerunnable(rerunnable_id, kwds["rerunnable_type"], kwds["galaxy_url"])
             rerun_result = engine.rerun(ctx, rerunnable, **kwds)
             if not rerun_result.was_successful:
                 rerun_successful = False
 
     if rerun_successful:
-        info('All requested jobs were rerun successfully.')
+        info("All requested jobs were rerun successfully.")
         ctx.exit(0)
     else:
-        error('Some of the requested jobs could not be rerun.')
+        error("Some of the requested jobs could not be rerun.")
         ctx.exit(1)

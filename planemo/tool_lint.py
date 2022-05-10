@@ -70,7 +70,7 @@ def _lint_extra_modules(**kwds):
 
 
 def handle_tool_load_error(tool_path, tool_xml):
-    """ Return True if tool_xml is tool load error (invalid XML), and
+    """Return True if tool_xml is tool load error (invalid XML), and
     print a helpful error message.
     """
     is_error = False

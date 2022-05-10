@@ -2,15 +2,15 @@ import re
 import sys
 
 IGNORE_PATTERNS = [
-    re.compile(r'nonlocal image URI found'),
-    re.compile(r'included in any toctree'),
+    re.compile(r"nonlocal image URI found"),
+    re.compile(r"included in any toctree"),
 ]
 
 
 def warning_line(line):
-    if 'WARNING' not in line:
+    if "WARNING" not in line:
         return False
-    if 'docs/tests' in line:  # Doesn't actually show up in docs so don't lint.
+    if "docs/tests" in line:  # Doesn't actually show up in docs so don't lint.
         return False
     for pat in IGNORE_PATTERNS:
         if pat.search(line):

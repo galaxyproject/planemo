@@ -23,7 +23,8 @@ class CmdTestCondaTestCase(CliTestCase):
             test_command = [
                 "--verbose",
                 "test",
-                "--galaxy_branch", target_galaxy_branch(),
+                "--galaxy_branch",
+                target_galaxy_branch(),
                 bwa_test,
             ]
             self._check_exit_code(test_command, exit_code=0)
@@ -53,7 +54,8 @@ class CmdTestCondaTestCase(CliTestCase):
             test_command = [
                 "--verbose",
                 "test",
-                "--galaxy_branch", target_galaxy_branch(),
+                "--galaxy_branch",
+                target_galaxy_branch(),
                 "--conda_dependency_resolution",
                 "--conda_auto_install",
                 "--conda_auto_init",
@@ -81,7 +83,8 @@ class CmdTestCondaTestCase(CliTestCase):
             self._check_exit_code(conda_install_command)
             test_command = [
                 "test",
-                "--galaxy_branch", target_galaxy_branch(),
+                "--galaxy_branch",
+                target_galaxy_branch(),
                 fleeqtk_tool,
             ]
             self._check_exit_code(test_command)

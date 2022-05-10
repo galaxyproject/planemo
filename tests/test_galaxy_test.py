@@ -4,8 +4,10 @@ import os
 import shutil
 
 from planemo.galaxy.test import structures
-from planemo.galaxy.test.actions import passed
-from planemo.galaxy.test.actions import run_in_config
+from planemo.galaxy.test.actions import (
+    passed,
+    run_in_config,
+)
 from .test_utils import (
     create_test_context,
     TempDirectoryTestCase,
@@ -36,6 +38,7 @@ class RunInConfigTestCase(TempDirectoryTestCase):
 
     def test_failed_execution(self):
         """Test run_in_config with a failed test."""
+
         def mock_galaxy_run(ctx_, command, env, action):
             self._copy_failing_artifacts(["xml", "html", "json"])
             return 1
@@ -54,6 +57,7 @@ class RunInConfigTestCase(TempDirectoryTestCase):
 
     def test_normal_execution(self):
         """Test normal operation of run_in_config."""
+
         def mock_galaxy_run(ctx_, command, env, action):
             assert ctx_ is self.ctx
             assert env["test_key"] == "test_value"
@@ -74,6 +78,7 @@ class RunInConfigTestCase(TempDirectoryTestCase):
 
     def test_failed_to_produce_xunit(self):
         """Test an exception is thrown if not XUnit report is produced."""
+
         def mock_galaxy_run(ctx_, command, env, action):
             self._copy_good_artifacts(["json", "html"])
             return 0
@@ -83,6 +88,7 @@ class RunInConfigTestCase(TempDirectoryTestCase):
 
     def test_failed_to_produce_json(self):
         """Test an exception is thrown if not XUnit report is produced."""
+
         def mock_galaxy_run(ctx_, command, env, action):
             self._copy_good_artifacts(["xml", "html"])
             return 0
@@ -161,7 +167,6 @@ def test_passed():
 
 
 class _MockConfig:
-
     def __init__(self, temp_directory):
         self.config_directory = temp_directory
         self.env = {"test_key": "test_value"}

@@ -6,7 +6,4 @@ Built on Galaxy abstractions in :mod:`galaxy.tools.deps.dockerfiles` and
 
 from galaxy.tool_util.deps.dockerfiles import docker_host_args
 
-
-__all__ = (
-    'docker_host_args',
-)
+__all__ = ("docker_host_args",)

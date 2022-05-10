@@ -6,13 +6,12 @@ import time
 
 from planemo import (
     io,
-    network_util
+    network_util,
 )
 from .config import galaxy_config
 from .ephemeris_sleep import sleep
-from .run import (
-    run_galaxy_command,
-)
+from .run import run_galaxy_command
+
 INSTALLING_MESSAGE = "Installing repositories - this may take some time..."
 
 
@@ -60,7 +59,9 @@ def _serve(ctx, runnables, **kwds):
         galaxy_url = f"http://{host}:{port}"
         galaxy_alive = sleep(galaxy_url, verbose=ctx.verbose, timeout=timeout)
         if not galaxy_alive:
-            raise Exception("Attempted to serve Galaxy at %s, but it failed to start in %d seconds." % (galaxy_url, timeout))
+            raise Exception(
+                "Attempted to serve Galaxy at %s, but it failed to start in %d seconds." % (galaxy_url, timeout)
+            )
         config.install_workflows()
         if kwds.get("pid_file"):
             real_pid_file = config.pid_file
@@ -82,9 +83,7 @@ def shed_serve(ctx, install_args_list, **kwds):
             install_args["install_tool_dependencies"] = install_deps
             install_args["install_repository_dependencies"] = True
             install_args["new_tool_panel_section_label"] = "Shed Installs"
-            config.install_repo(
-                **install_args
-            )
+            config.install_repo(**install_args)
         try:
             config.wait_for_all_installed()
         except Exception:
@@ -92,7 +91,7 @@ def shed_serve(ctx, install_args_list, **kwds):
                 print("Failed to install tool repositories, Galaxy log:")
                 print(config.log_contents)
                 print("Galaxy root:")
-                io.shell(['ls', config.galaxy_root])
+                io.shell(["ls", config.galaxy_root])
             raise
         yield config
 

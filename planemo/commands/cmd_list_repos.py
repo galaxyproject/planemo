@@ -11,7 +11,7 @@ from planemo.shed import (
 )
 
 
-@click.command('list_repos')
+@click.command("list_repos")
 @options.shed_project_arg()
 @options.ci_find_options()
 @command_function
@@ -30,5 +30,5 @@ def cli(ctx, paths, **kwds):
     realized_repos = []
     for repo_gen in (_realize_effective_repositories(r, path=p) for r, p in zip(repos, raw_paths)):
         for repo in repo_gen:
-            realized_repos.append({'name': repo.config['name'], 'owner': repo.config['owner']})
+            realized_repos.append({"name": repo.config["name"], "owner": repo.config["owner"]})
     print_as_yaml(realized_repos, **kwds)

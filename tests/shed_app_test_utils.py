@@ -16,18 +16,16 @@ DEFAULT_OP_TIMEOUT = 2
 
 
 def mock_model(directory):
-    return InMemoryShedDataModel(
-        directory
-    ).add_category(
-        "c1", "Text Manipulation"
-    ).add_category(
-        "c2", "Sequence Analysis"
-    ).add_category(
-        "c3", "Tool Dependency Packages"
-    ).add_repository(
-        "r1",
-        name="test_repo_1",
-        owner="iuc",
+    return (
+        InMemoryShedDataModel(directory)
+        .add_category("c1", "Text Manipulation")
+        .add_category("c2", "Sequence Analysis")
+        .add_category("c3", "Tool Dependency Packages")
+        .add_repository(
+            "r1",
+            name="test_repo_1",
+            owner="iuc",
+        )
     )
 
 
@@ -39,13 +37,7 @@ def setup_mock_shed():
     def run():
         app.debug = True
         app.config["model"] = model
-        run_simple(
-            'localhost',
-            port,
-            app,
-            use_reloader=False,
-            use_debugger=True
-        )
+        run_simple("localhost", port, app, use_reloader=False, use_debugger=True)
 
     p = multiprocessing.Process(target=run)
     p.start()

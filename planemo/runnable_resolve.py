@@ -12,7 +12,7 @@ from .runnable import (
 def for_runnable_identifier(ctx, runnable_identifier, kwds, temp_path=None, return_all=False):
     """Convert URI, path, or alias into Runnable."""
     # could be a URI, path, or alias
-    current_profile = kwds.get('profile')
+    current_profile = kwds.get("profile")
     runnable_identifier = translate_alias(ctx, runnable_identifier, current_profile)
     if not runnable_identifier.startswith(GALAXY_WORKFLOWS_PREFIX):
         runnable_identifier = uri_to_path(ctx, runnable_identifier)

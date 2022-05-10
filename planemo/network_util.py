@@ -7,7 +7,7 @@ from urllib.request import urlopen
 
 def get_free_port():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind(('localhost', 0))
+    sock.bind(("localhost", 0))
     port = sock.getsockname()[1]
     sock.close()
     return port
@@ -39,7 +39,7 @@ def wait_http_service(url, timeout=None):
 
 # code.activestate.com/recipes/576655-wait-for-network-service-to-appear
 def wait_net_service(server, port, timeout=None):
-    """ Wait for network service to appear.
+    """Wait for network service to appear.
 
     :param int timeout: in seconds, if None or 0 wait forever
     :return: A ``bool`` - if ``timeout`` is ``None`` may return only ``True`` or

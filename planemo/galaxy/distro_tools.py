@@ -96,6 +96,6 @@ DISTRO_TOOLS_ID_TO_PATH = {
     "axt_to_fasta": "filters/axt_to_fasta.xml",
     "addValue": "filters/fixedValueColumn.xml",
     "__TAG_FROM_FILE__": "${model_tools_path}/tag_collection_from_file.xml",
-    'param_value_from_file': "expression_tools/parse_values_from_file.xml",
+    "param_value_from_file": "expression_tools/parse_values_from_file.xml",
     "__APPLY_RULES__": "${model_tools_path}/apply_rules.xml",
 }

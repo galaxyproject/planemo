@@ -1,19 +1,17 @@
 """Module describing the planemo ``pull_request`` command."""
 import click
 
-from planemo import github_util
-from planemo import options
+from planemo import (
+    github_util,
+    options,
+)
 from planemo.cli import command_function
 from planemo.config import planemo_option
 
 
-@click.command('pull_request')
+@click.command("pull_request")
 @planemo_option(
-    "-m",
-    "--message",
-    type=click.STRING,
-    default=None,
-    help="Message describing the pull request to create."
+    "-m", "--message", type=click.STRING, default=None, help="Message describing the pull request to create."
 )
 @options.optional_project_arg(exists=None)
 @command_function

@@ -19,7 +19,6 @@ def _cwl_file(name):
 # TODO: Improve these tests so they actually check something instead
 # of just arbitrarily exercising the code.
 class RunTestCase(CliTestCase):
-
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_run_cat_cwltool(self):
         with self._isolate() as f:
@@ -27,14 +26,15 @@ class RunTestCase(CliTestCase):
             job_path = _cwl_file("cat-job.json")
             test_cmd = [
                 "run",
-                "--engine", "cwltool",
+                "--engine",
+                "cwltool",
                 "--no_container",
                 tool_path,
                 job_path,
             ]
             self._check_exit_code(test_cmd)
-            assert os.path.exists(os.path.join(f, 'tool_test_output.html'))
-            assert os.path.exists(os.path.join(f, 'tool_test_output.json'))
+            assert os.path.exists(os.path.join(f, "tool_test_output.html"))
+            assert os.path.exists(os.path.join(f, "tool_test_output.json"))
 
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_run_cat_cwltool_more_options(self):
@@ -44,14 +44,15 @@ class RunTestCase(CliTestCase):
             test_cmd = [
                 "--verbose",
                 "run",
-                "--engine", "cwltool",
+                "--engine",
+                "cwltool",
                 "--no_container",
                 tool_path,
                 job_path,
             ]
             self._check_exit_code(test_cmd)
-            assert os.path.exists(os.path.join(f, 'tool_test_output.html'))
-            assert os.path.exists(os.path.join(f, 'tool_test_output.json'))
+            assert os.path.exists(os.path.join(f, "tool_test_output.html"))
+            assert os.path.exists(os.path.join(f, "tool_test_output.json"))
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch
@@ -63,13 +64,14 @@ class RunTestCase(CliTestCase):
                 "--verbose",
                 "run",
                 "--no_dependency_resolution",
-                "--galaxy_branch", target_galaxy_branch(),
+                "--galaxy_branch",
+                target_galaxy_branch(),
                 tool_path,
                 job_path,
             ]
             self._check_exit_code(test_cmd)
-            assert os.path.exists(os.path.join(f, 'tool_test_output.html'))
-            assert os.path.exists(os.path.join(f, 'tool_test_output.json'))
+            assert os.path.exists(os.path.join(f, "tool_test_output.html"))
+            assert os.path.exists(os.path.join(f, "tool_test_output.json"))
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
@@ -85,8 +87,8 @@ class RunTestCase(CliTestCase):
                 job_path,
             ]
             self._check_exit_code(test_cmd)
-            assert os.path.exists(os.path.join(f, 'tool_test_output.html'))
-            assert os.path.exists(os.path.join(f, 'tool_test_output.json'))
+            assert os.path.exists(os.path.join(f, "tool_test_output.html"))
+            assert os.path.exists(os.path.join(f, "tool_test_output.json"))
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
@@ -105,8 +107,8 @@ class RunTestCase(CliTestCase):
                 job_path,
             ]
             self._check_exit_code(test_cmd)
-            assert os.path.exists(os.path.join(f, 'tool_test_output.html'))
-            assert os.path.exists(os.path.join(f, 'tool_test_output.json'))
+            assert os.path.exists(os.path.join(f, "tool_test_output.html"))
+            assert os.path.exists(os.path.join(f, "tool_test_output.json"))
             output_path = os.path.join(f, "output")
             assert os.path.exists(output_path)
             with open(output_path) as fh:

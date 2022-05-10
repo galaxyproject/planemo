@@ -5,16 +5,19 @@ from collections import namedtuple
 
 from galaxy.util import unicodify
 from galaxy.util.commands import which
+
 try:
     from lxml import etree
 except ImportError:
     etree = None
 
 XMLLINT_COMMAND = "xmllint --noout --schema {0} {1} 2>&1"
-INSTALL_VALIDATOR_MESSAGE = ("This feature requires an external dependency "
-                             "to function, pleaes install xmllint (e.g 'brew "
-                             "install libxml2' or 'apt-get install "
-                             "libxml2-utils'.")
+INSTALL_VALIDATOR_MESSAGE = (
+    "This feature requires an external dependency "
+    "to function, pleaes install xmllint (e.g 'brew "
+    "install libxml2' or 'apt-get install "
+    "libxml2-utils'."
+)
 
 
 class XsdValidator(metaclass=abc.ABCMeta):

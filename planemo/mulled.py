@@ -33,8 +33,7 @@ def build_involucro_context(ctx, **kwds):
     involucro_path = kwds.get("involucro_path", involucro_path_default)
     use_planemo_shell = kwds.get("use_planemo_shell_exec", True)
     shell_exec = shell if use_planemo_shell else None
-    involucro_context = InvolucroContext(involucro_bin=involucro_path,
-                                         shell_exec=shell_exec)
+    involucro_context = InvolucroContext(involucro_bin=involucro_path, shell_exec=shell_exec)
     if not ensure_installed(involucro_context, True):
         raise Exception("Failed to install involucro for Planemo.")
     return involucro_context
@@ -46,10 +45,10 @@ def build_mull_target_kwds(ctx, **kwds):
     channels = kwds.get("conda_ensure_channels", ",".join(DEFAULT_CHANNELS))
     namespace = kwds.get("mulled_namespace", "biocontainers")
     target_kwds = {
-        'involucro_context': involucro_context,
-        'channels': channels.split(","),
-        'namespace': namespace,
-        'verbose': ctx.verbose,
+        "involucro_context": involucro_context,
+        "channels": channels.split(","),
+        "namespace": namespace,
+        "verbose": ctx.verbose,
     }
 
     conda_version = kwds.get("mulled_conda_version", None)

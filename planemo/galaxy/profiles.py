@@ -33,7 +33,7 @@ def delete_profile(ctx, profile_name, **kwds):
     profile_directory = _profile_directory(ctx, profile_name)
     profile_options = _read_profile_options(profile_directory)
     profile_options, profile_options_path = _load_profile_to_json(ctx, profile_name)
-    if profile_options["engine"] != 'external_galaxy':
+    if profile_options["engine"] != "external_galaxy":
         database_type = profile_options.get("database_type")
         kwds["database_type"] = database_type
         if database_type != "sqlite":
@@ -50,9 +50,7 @@ def create_profile(ctx, profile_name, **kwds):
     engine_type = kwds.get("engine", "galaxy")
     profile_directory = _profile_directory(ctx, profile_name)
     if profile_exists(ctx, profile_name, **kwds):
-        message = ALREADY_EXISTS_EXCEPTION % (
-            profile_name, profile_directory
-        )
+        message = ALREADY_EXISTS_EXCEPTION % (profile_name, profile_directory)
         raise Exception(message)
 
     os.makedirs(profile_directory)
@@ -118,7 +116,7 @@ def _create_profile_external(ctx, profile_directory, profile_name, kwds):
             "engine": "external_galaxy",
         }
     else:
-        raise ConnectionError('The credentials provided for an external Galaxy instance are not valid.')
+        raise ConnectionError("The credentials provided for an external Galaxy instance are not valid.")
 
 
 def ensure_profile(ctx, profile_name, **kwds):
@@ -132,12 +130,12 @@ def ensure_profile(ctx, profile_name, **kwds):
 def create_alias(ctx, alias, obj, profile_name, **kwds):
     profile_options, profile_options_path = _load_profile_to_json(ctx, profile_name)
 
-    if profile_options.get('aliases'):
-        profile_options['aliases'][alias] = obj
+    if profile_options.get("aliases"):
+        profile_options["aliases"][alias] = obj
     else:  # no aliases yet defined
-        profile_options['aliases'] = {alias: obj}
+        profile_options["aliases"] = {alias: obj}
 
-    with open(profile_options_path, 'w') as f:
+    with open(profile_options_path, "w") as f:
         json.dump(profile_options, f)
 
     return 0
@@ -145,17 +143,17 @@ def create_alias(ctx, alias, obj, profile_name, **kwds):
 
 def list_alias(ctx, profile_name, **kwds):
     profile_options, _ = _load_profile_to_json(ctx, profile_name)
-    return profile_options.get('aliases', {})
+    return profile_options.get("aliases", {})
 
 
 def delete_alias(ctx, alias, profile_name, **kwds):
     profile_options, profile_options_path = _load_profile_to_json(ctx, profile_name)
-    if alias not in profile_options.get('aliases', {}):
+    if alias not in profile_options.get("aliases", {}):
         return 1
     else:
-        del profile_options['aliases'][alias]
+        del profile_options["aliases"][alias]
 
-    with open(profile_options_path, 'w') as f:
+    with open(profile_options_path, "w") as f:
         json.dump(profile_options, f)
 
     return 0
@@ -164,7 +162,7 @@ def delete_alias(ctx, alias, profile_name, **kwds):
 def translate_alias(ctx, alias, profile_name):
     if not profile_name:
         return alias
-    aliases = _load_profile_to_json(ctx, profile_name)[0].get('aliases', {})
+    aliases = _load_profile_to_json(ctx, profile_name)[0].get("aliases", {})
     return aliases.get(alias, alias)
 
 
@@ -183,9 +181,7 @@ def _profile_options(ctx, profile_name, **kwds):
     profile_options = _read_profile_options(profile_directory)
 
     if profile_options["engine"] == "docker_galaxy":
-        engine_options = dict(
-            export_directory=os.path.join(profile_directory, "export")
-        )
+        engine_options = dict(export_directory=os.path.join(profile_directory, "export"))
     else:
         file_path = os.path.join(profile_directory, "files")
         shed_tool_path = os.path.join(profile_directory, "shed_tools")
@@ -217,9 +213,7 @@ def _read_profile_options(profile_directory):
 
 
 def _stored_profile_options_path(profile_directory):
-    profile_options_path = os.path.join(
-        profile_directory, PROFILE_OPTIONS_JSON_NAME
-    )
+    profile_options_path = os.path.join(profile_directory, PROFILE_OPTIONS_JSON_NAME)
     return profile_options_path
 
 

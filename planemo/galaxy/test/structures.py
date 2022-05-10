@@ -8,7 +8,6 @@ from xml.etree import ElementTree as ET
 from planemo.io import error
 from planemo.test.results import StructuredData as BaseStructuredData
 
-
 NO_STRUCTURED_FILE = (
     "Warning: Problem with target Galaxy, it did not "
     "produce a structured test results file [%s] - summary "
@@ -42,13 +41,13 @@ class GalaxyTestCommand:
         if sd_report_file:
             cmd += " --structured_data_report_file %s" % shlex.quote(sd_report_file)
         if self.installed:
-            cmd += ' -installed'
+            cmd += " -installed"
         elif self.failed:
             sd = StructuredData(sd_report_file)
             tests = " ".join(sd.failed_ids)
             cmd += " %s" % tests
         else:
-            cmd += ' functional.test_toolbox'
+            cmd += " functional.test_toolbox"
         return cmd
 
 
@@ -96,7 +95,7 @@ class StructuredData(BaseStructuredData):
 
 
 class GalaxyTestResults:
-    """ Class that combine the test-centric xunit output
+    """Class that combine the test-centric xunit output
     with the Galaxy centric structured data output - and
     abstracts away the difference (someday).
     """

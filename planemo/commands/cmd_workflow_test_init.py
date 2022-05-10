@@ -15,7 +15,7 @@ from planemo.galaxy.workflows import (
 from planemo.io import can_write_to_path
 
 
-@click.command('workflow_test_init')
+@click.command("workflow_test_init")
 @options.required_workflow_arg()
 @options.force_option()
 @options.workflow_output_artifact()
@@ -33,30 +33,38 @@ def cli(ctx, workflow_identifier, output=None, split_test=False, **kwds):
     testing easier.
     """
     if kwds["from_invocation"]:
-        if not os.path.isdir('test-data'):
+        if not os.path.isdir("test-data"):
             ctx.log("Creating test-data directory.")
             os.makedirs("test-data")
-        path_basename = get_workflow_from_invocation_id(workflow_identifier, kwds["galaxy_url"], kwds["galaxy_user_key"])
+        path_basename = get_workflow_from_invocation_id(
+            workflow_identifier, kwds["galaxy_url"], kwds["galaxy_user_key"]
+        )
     else:
         path_basename = os.path.basename(workflow_identifier)
     job = job_template(workflow_identifier, **kwds)
     if output is None:
         output = new_workflow_associated_path(path_basename if kwds["from_invocation"] else workflow_identifier)
-    job_output = new_workflow_associated_path(path_basename if kwds["from_invocation"] else workflow_identifier, suffix="job1")
+    job_output = new_workflow_associated_path(
+        path_basename if kwds["from_invocation"] else workflow_identifier, suffix="job1"
+    )
     if not can_write_to_path(output, **kwds):
         ctx.exit(1)
 
-    test_description = [{
-         'doc': 'Test outline for %s' % path_basename,
-         'job': job,
-         'outputs': output_stubs_for_workflow(workflow_identifier, **kwds),
-    }]
+    test_description = [
+        {
+            "doc": "Test outline for %s" % path_basename,
+            "job": job,
+            "outputs": output_stubs_for_workflow(workflow_identifier, **kwds),
+        }
+    ]
     if split_test:
-        job_output = new_workflow_associated_path(path_basename if kwds["from_invocation"] else workflow_identifier, suffix="job1")
+        job_output = new_workflow_associated_path(
+            path_basename if kwds["from_invocation"] else workflow_identifier, suffix="job1"
+        )
         if not can_write_to_path(job_output, **kwds):
             ctx.exit(1)
 
-        test_description[0]['job'] = os.path.basename(job_output)
+        test_description[0]["job"] = os.path.basename(job_output)
         with open(job_output, "w") as f_job:
             yaml.dump(job, f_job)
     with open(output, "w") as f:

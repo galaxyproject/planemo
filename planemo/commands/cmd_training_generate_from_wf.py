@@ -7,7 +7,7 @@ from planemo.cli import command_function
 from planemo.training import Training
 
 
-@click.command('training_generate_from_wf')
+@click.command("training_generate_from_wf")
 @options.optional_tools_arg(multiple=True, allow_uris=True)
 @options.training_generate_tuto_from_wf_options()
 @options.galaxy_serve_options()

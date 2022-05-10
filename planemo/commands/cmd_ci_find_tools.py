@@ -6,16 +6,16 @@ from planemo import options
 from planemo.ci import (
     filter_paths,
     group_paths,
-    print_path_list
+    print_path_list,
 )
 from planemo.cli import command_function
 from planemo.tools import (
     is_tool_load_error,
-    yield_tool_sources_on_paths
+    yield_tool_sources_on_paths,
 )
 
 
-@click.command('ci_find_tools')
+@click.command("ci_find_tools")
 @options.shed_project_arg()
 @options.ci_find_options()
 @options.ci_group_tools_option()
@@ -33,6 +33,6 @@ def cli(ctx, paths, **kwds):
         tool_paths.append(tool_path)
 
     paths = filter_paths(ctx, tool_paths, path_type="file", **kwds)
-    if kwds.get('group_tools', False):
+    if kwds.get("group_tools", False):
         paths = group_paths(paths)
     print_path_list(paths, **kwds)

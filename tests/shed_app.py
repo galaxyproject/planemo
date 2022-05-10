@@ -22,7 +22,7 @@ def get_repositories():
     return json.dumps(list(repos.values()))
 
 
-@app.route('/api/repositories', methods=['POST'])
+@app.route("/api/repositories", methods=["POST"])
 def create_repository():
     repo = _request_post_message()
     # TODO: rework things to not need to hardcode this
@@ -34,7 +34,7 @@ def create_repository():
     return json.dumps(model.get_repository(id))
 
 
-@app.route('/api/repositories/<id>', methods=['PUT'])
+@app.route("/api/repositories/<id>", methods=["PUT"])
 def update_repository(id):
     repo = _request_post_message()
     repo["owner"] = "iuc"
@@ -43,9 +43,9 @@ def update_repository(id):
     return json.dumps(model.get_repository(id))
 
 
-@app.route('/api/repositories/<id>/changeset_revision', methods=['POST'])
+@app.route("/api/repositories/<id>/changeset_revision", methods=["POST"])
 def update_repository_contents(id):
-    updated_tar = request.files['file']
+    updated_tar = request.files["file"]
     message = request.form["commit_message"]
     repo_path = app.config["model"].repository_path(id)
     repo_tar_path = repo_path + ".tar.gz"
@@ -69,9 +69,7 @@ def get_categories():
 
 @app.route("/api/users")
 def get_users():
-    return json.dumps([{
-        "username": "iuc"
-    }])
+    return json.dumps([{"username": "iuc"}])
 
 
 @app.route("/repository/download")
@@ -99,7 +97,6 @@ def _request_post_message():
 
 
 class InMemoryShedDataModel:
-
     def __init__(self, directory):
         self.directory = directory
         self._repositories = {}

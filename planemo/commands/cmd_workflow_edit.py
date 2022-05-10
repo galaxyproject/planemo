@@ -11,13 +11,12 @@ from planemo.galaxy.serve import sleep_for_serve
 from planemo.runnable_resolve import for_runnable_identifier
 
 
-@click.command('workflow_edit')
+@click.command("workflow_edit")
 @options.required_workflow_arg()
 @options.galaxy_serve_options()
 @command_function
 def cli(ctx, workflow_identifier, output=None, force=False, **kwds):
-    """Open a synchronized Galaxy workflow editor.
-    """
+    """Open a synchronized Galaxy workflow editor."""
     assert is_galaxy_engine(**kwds)
     runnable = for_runnable_identifier(ctx, workflow_identifier, kwds.get("profile"))
 

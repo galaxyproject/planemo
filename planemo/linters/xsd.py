@@ -7,7 +7,7 @@ import galaxy.tool_util
 
 import planemo.lint
 
-TOOL_XSD = os.path.join(os.path.dirname(galaxy.tool_util.__file__), 'xsd', "galaxy.xsd")
+TOOL_XSD = os.path.join(os.path.dirname(galaxy.tool_util.__file__), "xsd", "galaxy.xsd")
 
 
 def lint_tool_xsd(tool_xml, lint_ctx):

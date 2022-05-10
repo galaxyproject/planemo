@@ -23,7 +23,6 @@ DIFF_LINES = [
 
 
 class ShedDiffTestCase(CliShedTestCase):
-
     def test_shed_diff(self):
         with self._isolate_repo("single_tool") as f:
             upload_command = ["shed_upload", "--force_repository_creation"]
@@ -60,16 +59,12 @@ class ShedDiffTestCase(CliShedTestCase):
         with self._isolate_repo("suite_auto"):
             self._shed_create()
 
-            diff_command = [
-                "shed_diff", "-o", "diff"
-            ]
+            diff_command = ["shed_diff", "-o", "diff"]
             diff_command.append("--raw")
             diff_command.extend(self._shed_args(read_only=True))
             self._check_exit_code(diff_command, exit_code=1)
 
-            diff_command = [
-                "shed_diff", "-o", "diff"
-            ]
+            diff_command = ["shed_diff", "-o", "diff"]
             diff_command.extend(self._shed_args(read_only=True))
             self._check_exit_code(diff_command, exit_code=0)
 
@@ -100,10 +95,8 @@ class ShedDiffTestCase(CliShedTestCase):
             xunit_report.close()
             diff_command = ["shed_diff", "-r", "--report_xunit", xunit_report.name]
             diff_command.extend(self._shed_args(read_only=True))
-            known_good_xunit_report = os.path.join(TEST_REPOS_DIR,
-                                                   'multi_repos_nested.xunit.xml')
-            known_bad_xunit_report = os.path.join(TEST_REPOS_DIR,
-                                                  'multi_repos_nested.xunit-bad.xml')
+            known_good_xunit_report = os.path.join(TEST_REPOS_DIR, "multi_repos_nested.xunit.xml")
+            known_bad_xunit_report = os.path.join(TEST_REPOS_DIR, "multi_repos_nested.xunit-bad.xml")
             self._check_exit_code(diff_command, exit_code=0)
 
             with open(xunit_report.name) as fh:
@@ -111,7 +104,7 @@ class ShedDiffTestCase(CliShedTestCase):
             if diff(
                 self._make_deterministic(ElementTree.parse(known_good_xunit_report).getroot()),
                 self._make_deterministic(ElementTree.fromstring(compare)),
-                reporter=sys.stdout.write
+                reporter=sys.stdout.write,
             ):
                 sys.stdout.write(compare)
                 assert False, "XUnit report different from multi_repos_nested.xunit.xml."
@@ -127,7 +120,7 @@ class ShedDiffTestCase(CliShedTestCase):
             if diff(
                 self._make_deterministic(ElementTree.parse(known_bad_xunit_report).getroot()),
                 self._make_deterministic(ElementTree.fromstring(compare)),
-                reporter=sys.stdout.write
+                reporter=sys.stdout.write,
             ):
                 sys.stdout.write(compare)
                 assert False, "XUnit report different from multi_repos_nested.xunit-bad.xml."
@@ -147,14 +140,14 @@ class ShedDiffTestCase(CliShedTestCase):
             assert diff_line in diff
 
     def _make_deterministic(self, node):
-        for x in node.findall('testcase'):
-            if 'time' in x.attrib:
-                del x.attrib['time']
+        for x in node.findall("testcase"):
+            if "time" in x.attrib:
+                del x.attrib["time"]
 
             # Remove contents of stdout/stderr blocks
-            for y in x.findall('system-out'):
+            for y in x.findall("system-out"):
                 y.text = ""
-            for y in x.findall('system-err'):
+            for y in x.findall("system-err"):
                 y.text = ""
 
         return node

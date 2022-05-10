@@ -14,7 +14,7 @@ except ImportError:
     tabulate = None  # type: ignore
 
 
-@click.command('list_alias')
+@click.command("list_alias")
 @options.profile_option(required=True)
 @command_function
 def cli(ctx, profile, **kwds):
