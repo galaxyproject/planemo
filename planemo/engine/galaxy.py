@@ -29,68 +29,80 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
         RunnableType.galaxy_datamanager,
     ]
 
-    def _run(self, runnable, job_path):
+    def _run(self, runnables, job_paths):
         """Run CWL job in Galaxy."""
-        self._ctx.vlog(f"Serving artifact [{runnable}] with Galaxy.")
-        with self.ensure_runnables_served([runnable]) as config:
-            self._ctx.vlog("Running job path [%s]" % job_path)
-            if self._ctx.verbose:
-                self._ctx.log("Running Galaxy with API configuration [%s]" % config.user_api_config)
-            run_response = execute(self._ctx, config, runnable, job_path, **self._kwds)
+        results = []
+        for runnable, job_path in zip(runnables, job_paths):
+            self._ctx.vlog(f"Serving artifact [{runnable}] with Galaxy.")
+            with self.ensure_runnables_served([runnable]) as config:
+                self._ctx.vlog("Running job path [%s]" % job_path)
+                if self._ctx.verbose:
+                    self._ctx.log("Running Galaxy with API configuration [%s]" % config.user_api_config)
+                run_response = execute(self._ctx, config, runnable, job_path, **self._kwds)
+                results.append(run_response)
 
-        return run_response
+        return results
 
     @abc.abstractmethod
     def ensure_runnables_served(self, runnables):
         """Use a context manager and describe Galaxy instance with runnables being served."""
 
-    def _run_test_case(self, test_case):
-        if hasattr(test_case, "job_path"):
-            # Simple file-based job path.
-            return super()._run_test_case(test_case)
-        else:
-            with self.ensure_runnables_served([test_case.runnable]) as config:
-                galaxy_interactor_kwds = {
-                    "galaxy_url": config.galaxy_url,
-                    "master_api_key": config.master_api_key,
-                    "api_key": config.user_api_key,
-                    "keep_outputs_dir": "",  # TODO: this...
-                }
-                tool_id = test_case.tool_id
-                test_index = test_case.test_index
-                tool_version = test_case.tool_version
-                galaxy_interactor = interactor.GalaxyInteractorApi(**galaxy_interactor_kwds)
+    def _run_test_cases(self, test_cases):
+        test_results = []
+        file_based_test_cases = []
+        embedded_test_cases = []
+        # TODO: unify interface so we don't need to split test cases
+        for test_case in test_cases:
+            if hasattr(test_cases, "job_path"):
+                # Simple file-based job path.
+                file_based_test_cases.append(test_case)
+            else:
+                embedded_test_cases.append(test_case)
+        if file_based_test_cases:
+            test_results.extend(super()._run_test_cases(file_based_test_cases))
+        if embedded_test_cases:
+            runnables = [test_case.runnable for test_case in embedded_test_cases]
+            with self.ensure_runnables_served(runnables) as config:
+                for test_case in embedded_test_cases:
+                    galaxy_interactor_kwds = {
+                        "galaxy_url": config.galaxy_url,
+                        "master_api_key": config.master_api_key,
+                        "api_key": config.user_api_key,
+                        "keep_outputs_dir": "",  # TODO: this...
+                    }
+                    tool_id = test_case.tool_id
+                    test_index = test_case.test_index
+                    tool_version = test_case.tool_version
+                    galaxy_interactor = interactor.GalaxyInteractorApi(**galaxy_interactor_kwds)
 
-                test_results = []
+                    def _register_job_data(job_data):
+                        test_results.append(
+                            {
+                                "id": tool_id + "-" + str(test_index),
+                                "has_data": True,
+                                "data": job_data,
+                            }
+                        )
 
-                def _register_job_data(job_data):
-                    test_results.append(
-                        {
-                            "id": tool_id + "-" + str(test_index),
-                            "has_data": True,
-                            "data": job_data,
-                        }
-                    )
+                    verbose = self._ctx.verbose
+                    try:
+                        if verbose:
+                            # TODO: this is pretty hacky, it'd be better to send a stream
+                            # and capture the output information somehow.
+                            interactor.VERBOSE_GALAXY_ERRORS = True
 
-                verbose = self._ctx.verbose
-                try:
-                    if verbose:
-                        # TODO: this is pretty hacky, it'd be better to send a stream
-                        # and capture the output information somehow.
-                        interactor.VERBOSE_GALAXY_ERRORS = True
+                        interactor.verify_tool(
+                            tool_id,
+                            galaxy_interactor,
+                            test_index=test_index,
+                            tool_version=tool_version,
+                            register_job_data=_register_job_data,
+                            quiet=not verbose,
+                        )
+                    except Exception:
+                        pass
 
-                    interactor.verify_tool(
-                        tool_id,
-                        galaxy_interactor,
-                        test_index=test_index,
-                        tool_version=tool_version,
-                        register_job_data=_register_job_data,
-                        quiet=not verbose,
-                    )
-                except Exception:
-                    pass
-
-                return test_results[0]
+        return test_results
 
 
 class LocalManagedGalaxyEngine(GalaxyEngine):

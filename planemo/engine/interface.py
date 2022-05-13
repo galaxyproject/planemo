@@ -48,11 +48,11 @@ class BaseEngine(Engine):
     def cleanup(self):
         """Default no-op cleanup method."""
 
-    def run(self, runnable, job_path):
+    def run(self, runnables, job_paths):
         """Run a job using a compatible artifact (workflow or tool)."""
-        self._check_can_run(runnable)
-        run_response = self._run(runnable, job_path)
-        return run_response
+        self._check_can_run_all(runnables)
+        run_responses = self._run(runnables, job_paths)
+        return run_responses
 
     @abc.abstractmethod
     def _run(self, runnable, job_path):
@@ -87,41 +87,36 @@ class BaseEngine(Engine):
         return structured_results
 
     def _collect_test_results(self, test_cases):
-        test_results = []
-        for test_case in test_cases:
-            self._ctx.vlog("Running tests %s" % test_case)
-            run_response = self._run_test_case(test_case)
-            self._ctx.vlog(
-                "Test case [%s] resulted in run response [%s]",
-                test_case,
-                run_response,
-            )
-            test_results.append((test_case, run_response))
-        return test_results
+        run_responses = self._run_test_cases(test_cases)
+        return [(test_case, run_response) for test_case, run_response in zip(test_cases, run_responses)]
 
-    def _run_test_case(self, test_case):
-        runnable = test_case.runnable
-        job_path = test_case.job_path
-        tmp_path = None
-        if job_path is None:
-            job = test_case.job
-            f = tempfile.NamedTemporaryFile(
-                dir=test_case.tests_directory,
-                suffix=".json",
-                prefix="plnmotmptestjob",
-                delete=False,
-                mode="w+",
-            )
-            tmp_path = f.name
-            job_path = tmp_path
-            json.dump(job, f)
-            f.close()
+    def _run_test_cases(self, test_cases):
+        runnables = [test_case.runnable for test_case in test_cases]
+        job_paths = []
+        tmp_paths = []
+        for test_case in test_cases:
+            if test_case.job_path is None:
+                job = test_case.job
+                with tempfile.NamedTemporaryFile(
+                    dir=test_case.tests_directory,
+                    suffix=".json",
+                    prefix="plnmotmptestjob",
+                    delete=False,
+                    mode="w+",
+                ) as f:
+                    tmp_path = f.name
+                    job_path = tmp_path
+                    tmp_paths.append(tmp_path)
+                    json.dump(job, f)
+                job_paths.append(job_path)
+            else:
+                job_paths.append(test_case.job_path)
         try:
-            run_response = self._run(runnable, job_path)
+            run_responses = self._run(runnables, job_paths)
         finally:
-            if tmp_path:
+            for tmp_path in tmp_paths:
                 os.remove(tmp_path)
-        return run_response
+        return run_responses
 
 
 __all__ = (

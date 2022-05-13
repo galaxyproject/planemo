@@ -49,7 +49,7 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
         else:
             kwds["engine"] = "galaxy"
     with engine_context(ctx, **kwds) as engine:
-        run_result = engine.run(runnable, job_path)
+        run_result = engine.run([runnable], [job_path])[0]
 
     if not run_result.was_successful:
         warn("Run failed [%s]" % unicodify(run_result))
