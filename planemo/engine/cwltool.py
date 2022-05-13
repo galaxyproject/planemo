@@ -13,9 +13,12 @@ class CwlToolEngine(BaseEngine):
 
     handled_runnable_types = [RunnableType.cwl_tool, RunnableType.cwl_workflow]
 
-    def _run(self, runnable, job_path):
+    def _run(self, runnables, job_paths):
         """Run CWL job using cwltool."""
-        return cwl.run_cwltool(self._ctx, runnable, job_path, **self._kwds)
+        results = []
+        for runnable, job_path in zip(runnables, job_paths):
+            results.append(cwl.run_cwltool(self._ctx, runnable, job_path, **self._kwds))
+        return results
 
 
 __all__ = ("CwlToolEngine",)
