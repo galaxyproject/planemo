@@ -484,6 +484,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
                 migrated_tools_config=empty_tool_conf,
                 test_data_dir=test_data_dir,  # TODO: make gx respect this
                 shed_data_manager_config_file=shed_data_manager_config_file,
+                outputs_to_working_directory="True",  # this makes Galaxy's files dir RO for dockerized testing
             )
         )
         _handle_container_resolution(ctx, kwds, properties)
@@ -500,7 +501,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         # sanitize_all_html = True
         # serve_xss_vulnerable_mimetypes = False
         # track_jobs_in_database = None
-        # outputs_to_working_directory = False
         # retry_job_output_collection = 0
 
         env = _build_env_for_galaxy(properties, template_args)
