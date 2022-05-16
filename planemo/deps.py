@@ -3,7 +3,6 @@ import tempfile
 from string import Template
 
 import click
-from six import iteritems
 
 from planemo.conda import build_conda_context
 
@@ -58,22 +57,22 @@ def ensure_dependency_resolvers_conf_configured(ctx, kwds, resolvers_conf=None):
     always_specify_attribute = object()
 
     dependency_attribute_kwds = {
-        'conda_prefix': None,
-        'conda_exec': None,
-        'conda_debug': False,
-        'conda_copy_dependencies': False,
-        'conda_auto_init': always_specify_attribute,
-        'conda_auto_install': always_specify_attribute,
-        'conda_ensure_channels': '',
-        'conda_use_local': False,
+        "conda_prefix": None,
+        "conda_exec": None,
+        "conda_debug": False,
+        "conda_copy_dependencies": False,
+        "conda_auto_init": always_specify_attribute,
+        "conda_auto_install": always_specify_attribute,
+        "conda_ensure_channels": "",
+        "conda_use_local": False,
     }
     attributes = []
 
     def add_attribute(key, value):
-        attributes.append('%s="%s"' % (key, value))
+        attributes.append(f'{key}="{value}"')
 
     conda_prefix_specified = False
-    for key, default_value in iteritems(dependency_attribute_kwds):
+    for key, default_value in dependency_attribute_kwds.items():
         value = kwds.get(key, default_value)
         if value != default_value:
             conda_prefix_specified = conda_prefix_specified or (key == "conda_prefix")
@@ -99,9 +98,7 @@ def ensure_dependency_resolvers_conf_configured(ctx, kwds, resolvers_conf=None):
     if resolution_type != "__explicit__":
         # Planemo manages the dependency resolve conf file.
         template_str = STOCK_DEPENDENCY_RESOLUTION_STRATEGIES[resolution_type]
-        conf_contents = Template(template_str).safe_substitute({
-            'attributes': attribute_str
-        })
+        conf_contents = Template(template_str).safe_substitute({"attributes": attribute_str})
         if resolvers_conf is None:
             resolvers_conf = tempfile.NamedTemporaryFile(delete=False).name
         with open(resolvers_conf, "w") as fh:

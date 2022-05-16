@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # Little script to make HISTORY.rst more easy to format properly, lots TODO
 # pull message down and embed, use arg parse, handle multiple, etc...
-import io
 import os
 import sys
 import textwrap
+from urllib.parse import urljoin
 
 import requests
-from six.moves.urllib.parse import urljoin
 
 PROJECT_DIRECTORY = os.path.join(os.path.dirname(__file__), "..")
 new_path = [PROJECT_DIRECTORY]
@@ -18,14 +17,14 @@ import planemo as project  # noqa: E402
 
 PROJECT_OWNER = project.PROJECT_OWNER
 PROJECT_NAME = project.PROJECT_NAME
-PROJECT_URL = "https://github.com/%s/%s" % (PROJECT_OWNER, PROJECT_NAME)
-PROJECT_API = "https://api.github.com/repos/%s/%s/" % (PROJECT_OWNER, PROJECT_NAME)
+PROJECT_URL = f"https://github.com/{PROJECT_OWNER}/{PROJECT_NAME}"
+PROJECT_API = f"https://api.github.com/repos/{PROJECT_OWNER}/{PROJECT_NAME}/"
 AUTHORS_SKIP_CREDIT = ["jmchilton", "mvdbeek", "nsoranzo", "bgruening", "natefoo"]
 
 
 def main(argv):
     history_path = os.path.join(PROJECT_DIRECTORY, "HISTORY.rst")
-    with io.open(history_path, "r", encoding="utf-8") as fh:
+    with open(history_path, encoding="utf-8") as fh:
         history = fh.read()
 
     def extend(from_str, line):
@@ -44,7 +43,7 @@ def main(argv):
         message = commit["message"]
         message = get_first_sentence(message)
     elif requests is not None and ident.startswith("pr"):
-        pull_request = ident[len("pr"):]
+        pull_request = ident[len("pr") :]
         api_url = urljoin(PROJECT_API, "pulls/%s" % pull_request)
         req = requests.get(api_url).json()
         message = req["title"]
@@ -53,7 +52,7 @@ def main(argv):
             message = message.rstrip(".")
             message += " (thanks to `@%s`_)." % req["user"]["login"]
     elif requests is not None and ident.startswith("issue"):
-        issue = ident[len("issue"):]
+        issue = ident[len("issue") :]
         api_url = urljoin(PROJECT_API, "issues/%s" % issue)
         req = requests.get(api_url).json()
         message = req["title"]
@@ -63,24 +62,24 @@ def main(argv):
     to_doc = message + " "
 
     if ident.startswith("pr"):
-        pull_request = ident[len("pr"):]
+        pull_request = ident[len("pr") :]
         text = ".. _Pull Request {0}: {1}/pull/{0}".format(pull_request, PROJECT_URL)
         history = extend(".. github_links", text)
-        to_doc += "`Pull Request {0}`_".format(pull_request)
+        to_doc += f"`Pull Request {pull_request}`_"
     elif ident.startswith("issue"):
-        issue = ident[len("issue"):]
+        issue = ident[len("issue") :]
         text = ".. _Issue {0}: {1}/issues/{0}".format(issue, PROJECT_URL)
         history = extend(".. github_links", text)
-        to_doc += "`Issue {0}`_".format(issue)
+        to_doc += f"`Issue {issue}`_"
     else:
         short_rev = ident[:7]
         text = ".. _{0}: {1}/commit/{0}".format(short_rev, PROJECT_URL)
         history = extend(".. github_links", text)
-        to_doc += "{0}_".format(short_rev)
+        to_doc += f"{short_rev}_"
 
     to_doc = wrap(to_doc)
     history = extend(".. to_doc", to_doc)
-    with io.open(history_path, "w", encoding="utf-8") as fh:
+    with open(history_path, "w", encoding="utf-8") as fh:
         fh.write(history)
 
 
@@ -91,7 +90,7 @@ def get_first_sentence(message):
 
 def wrap(message):
     wrapper = textwrap.TextWrapper(initial_indent="* ")
-    wrapper.subsequent_indent = '  '
+    wrapper.subsequent_indent = "  "
     wrapper.width = 78
     return "\n".join(wrapper.wrap(message))
 

@@ -3,22 +3,30 @@
 The extend galaxy-tool-util's features with planemo specific idioms.
 """
 
-from __future__ import absolute_import
 
 import collections
 import os
 import threading
+from copy import deepcopy
 
 from galaxy.tool_util.deps import conda_util
 from galaxy.util import unicodify
 
-from planemo.exit_codes import EXIT_CODE_FAILED_DEPENDENCIES, ExitCodeException
-from planemo.io import error, shell
+from planemo.exit_codes import (
+    EXIT_CODE_FAILED_DEPENDENCIES,
+    ExitCodeException,
+)
+from planemo.io import (
+    error,
+    shell,
+)
 from planemo.tools import yield_tool_sources_on_paths
 
 MESSAGE_ERROR_FAILED_INSTALL = "Attempted to install conda and failed."
 MESSAGE_ERROR_CANNOT_INSTALL = "Cannot install Conda - perhaps due to a failed installation or permission problems."
-MESSAGE_ERROR_NOT_INSTALLING = "Conda not configured - run ``planemo conda_init`` or pass ``--conda_auto_init`` to continue."
+MESSAGE_ERROR_NOT_INSTALLING = (
+    "Conda not configured - run ``planemo conda_init`` or pass ``--conda_auto_init`` to continue."
+)
 
 BEST_PRACTICE_CHANNELS = ["conda-forge", "bioconda", "defaults"]
 
@@ -35,11 +43,13 @@ def build_conda_context(ctx, **kwds):
     condarc_override = kwds.get("condarc", condarc_override_default)
     use_local = kwds.get("conda_use_local", False)
     shell_exec = shell if use_planemo_shell else None
-    conda_context = conda_util.CondaContext(conda_prefix=conda_prefix,
-                                            ensure_channels=ensure_channels,
-                                            condarc_override=condarc_override,
-                                            use_local=use_local,
-                                            shell_exec=shell_exec)
+    conda_context = conda_util.CondaContext(
+        conda_prefix=conda_prefix,
+        ensure_channels=ensure_channels,
+        condarc_override=condarc_override,
+        use_local=use_local,
+        shell_exec=shell_exec,
+    )
     handle_auto_init = kwds.get("handle_auto_init", False)
     if handle_auto_init and not conda_context.is_installed():
         auto_init = kwds.get("conda_auto_init", True)
@@ -68,7 +78,7 @@ def collect_conda_targets(ctx, paths, recursive=False, found_tool_callback=None)
     If a tool contains more than one requirement, the requirements will each
     appear once in the output.
     """
-    conda_targets = set([])
+    conda_targets = set()
     real_paths = []
     for path in paths:
         if not os.path.exists(path):
@@ -77,7 +87,9 @@ def collect_conda_targets(ctx, paths, recursive=False, found_tool_callback=None)
         else:
             real_paths.append(path)
 
-    for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, real_paths, recursive=recursive, exclude_deprecated=True):
+    for (tool_path, tool_source) in yield_tool_sources_on_paths(
+        ctx, real_paths, recursive=recursive, exclude_deprecated=True
+    ):
         if found_tool_callback:
             found_tool_callback(tool_path)
         for target in tool_source_conda_targets(tool_source):
@@ -106,7 +118,9 @@ def collect_conda_target_lists(ctx, paths, recursive=False, found_tool_callback=
     If a tool contains more than one requirement, the requirements will all
     appear together as one list element of the output list.
     """
-    conda_target_lists, _ = collect_conda_target_lists_and_tool_paths(ctx, paths, recursive=recursive, found_tool_callback=found_tool_callback)
+    conda_target_lists, _ = collect_conda_target_lists_and_tool_paths(
+        ctx, paths, recursive=recursive, found_tool_callback=found_tool_callback
+    )
     return conda_target_lists
 
 
@@ -116,9 +130,11 @@ def collect_conda_target_lists_and_tool_paths(ctx, paths, recursive=False, found
     If a tool contains more than one requirement, the requirements will all
     appear together as one list element of the output list.
     """
-    conda_target_lists = set([])
+    conda_target_lists = set()
     tool_paths = collections.defaultdict(list)
-    for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, paths, recursive=recursive, yield_load_errors=False):
+    for (tool_path, tool_source) in yield_tool_sources_on_paths(
+        ctx, paths, recursive=recursive, yield_load_errors=False
+    ):
         try:
             if found_tool_callback:
                 found_tool_callback(tool_path)
@@ -154,12 +170,15 @@ def best_practice_search(conda_target, conda_context=None, platform=None):
         best_practice_search_first.previously_called = True
         offline = False
 
-    if not conda_context:
-        conda_context = conda_util.CondaContext()
+    if conda_context:
+        if conda_context.ensure_channels != BEST_PRACTICE_CHANNELS:
+            conda_context = deepcopy(conda_context)
+            conda_context.ensure_channels = BEST_PRACTICE_CHANNELS
+    else:
+        conda_context = conda_util.CondaContext(ensure_channels=BEST_PRACTICE_CHANNELS)
     return conda_util.best_search_result(
         conda_target,
         conda_context=conda_context,
-        channels_override=BEST_PRACTICE_CHANNELS,
         offline=offline,
         platform=platform,
     )

@@ -9,8 +9,7 @@ EXPECTED_HELLO_REV = "1c36390f585f8baa953548c00fc18c58e32fcf8b"
 
 COMMITTER_DATE = "GIT_COMMITTER_DATE='2000-01-01T00:00:00+0000'"
 COMMITTER_NAME = "GIT_COMMITTER_NAME='a' GIT_COMMITTER_EMAIL='a@example.com'"
-COMMIT = ("git commit --date='2000-01-01T00:00:00+0000' "
-          "--author='a <a@example.com>' -m 'initial'")
+COMMIT = "git commit --date='2000-01-01T00:00:00+0000' " "--author='a <a@example.com>' -m 'initial'"
 
 
 def test_rev():
@@ -53,18 +52,16 @@ def _git_directory():
 
 
 def _add_and_commit(t, files, init=False):
-    cmd = " && ".join([
-        "cd '{0}'",
-        "git init ." if init else "true",
-        "git add %s" % " ".join(files),
-        _commit_command(),
-    ]).format(t)
+    cmd = " && ".join(
+        [
+            f"cd '{t}'",
+            "git init ." if init else "true",
+            f"git add {' '.join(files)}",
+            _commit_command(),
+        ]
+    )
     assert io.shell(cmd) == 0
 
 
 def _commit_command():
-    return "%s %s %s" % (
-        COMMITTER_DATE,
-        COMMITTER_NAME,
-        COMMIT
-    )
+    return f"{COMMITTER_DATE} {COMMITTER_NAME} {COMMIT}"

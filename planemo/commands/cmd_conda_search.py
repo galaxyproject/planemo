@@ -1,5 +1,4 @@
 """Module describing the planemo ``conda_search`` command."""
-from __future__ import print_function
 
 import click
 import packaging.version
@@ -11,7 +10,7 @@ from planemo.conda import build_conda_context
 VERSION_4_DOT_4 = packaging.version.Version("4.4")
 
 
-@click.command('conda_search')
+@click.command("conda_search")
 @options.conda_target_options(include_local=False)
 @click.argument(
     "term",

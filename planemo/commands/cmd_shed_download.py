@@ -3,8 +3,10 @@ import sys
 
 import click
 
-from planemo import options
-from planemo import shed
+from planemo import (
+    options,
+    shed,
+)
 from planemo.cli import command_function
 
 target_path = click.Path(
@@ -17,15 +19,15 @@ target_path = click.Path(
 @click.command("shed_download")
 @options.shed_read_options()
 @click.option(
-    '--destination',
+    "--destination",
     default="shed_download.tar.gz",
     type=target_path,
     help="Destination pattern of tarball(s) to download - if this doesn't "
-         "end in 'gz' it will be treated as a directory to extract tool "
-         "contents into (defaults to shed_download.tar.gz). If multiple "
-         "repositories are discovered in a .shed.yml file these will be "
-         "created as shed_download_<name>.tar.gz by default for instance, "
-         "simpler repositories will just be downloaded to the specified file."
+    "end in 'gz' it will be treated as a directory to extract tool "
+    "contents into (defaults to shed_download.tar.gz). If multiple "
+    "repositories are discovered in a .shed.yml file these will be "
+    "created as shed_download_<name>.tar.gz by default for instance, "
+    "simpler repositories will just be downloaded to the specified file.",
 )
 @command_function
 def cli(ctx, paths, **kwds):

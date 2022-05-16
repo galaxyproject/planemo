@@ -6,7 +6,7 @@ from planemo.cli import command_function
 from planemo.training import Training
 
 
-@click.command('training_fill_data_library')
+@click.command("training_fill_data_library")
 @options.optional_tools_arg(multiple=True, allow_uris=True)
 @options.training_fill_data_library_options()
 @command_function

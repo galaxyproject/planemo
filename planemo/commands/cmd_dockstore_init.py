@@ -5,10 +5,13 @@ import click
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.workflow_lint import DOCKSTORE_REGISTRY_CONF, generate_dockstore_yaml
+from planemo.workflow_lint import (
+    DOCKSTORE_REGISTRY_CONF,
+    generate_dockstore_yaml,
+)
 
 
-@click.command('dockstore_init')
+@click.command("dockstore_init")
 @options.optional_project_arg()
 @command_function
 def cli(ctx, path=".", **kwds):

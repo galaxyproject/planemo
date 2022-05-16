@@ -1,12 +1,14 @@
 """Module describing the planemo ``conda_lint`` command."""
 import click
 
-from planemo import conda_lint
-from planemo import options
+from planemo import (
+    conda_lint,
+    options,
+)
 from planemo.cli import command_function
 
 
-@click.command('conda_lint')
+@click.command("conda_lint")
 @options.report_level_option()
 @options.fail_level_option()
 @options.recursive_option(

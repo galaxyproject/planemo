@@ -18,9 +18,14 @@ from planemo.cli import command_function
 from planemo.conda import (
     best_practice_search,
     build_conda_context,
-    collect_conda_target_lists_and_tool_paths
+    collect_conda_target_lists_and_tool_paths,
 )
-from planemo.git import add, branch, commit, push
+from planemo.git import (
+    add,
+    branch,
+    commit,
+    push,
+)
 from planemo.github_util import (
     clone_fork_branch,
     DEFAULT_REMOTE_NAME,
@@ -35,10 +40,10 @@ REGISTRY_REPOSITORY = "BioContainers/multi-package-containers"
 DEFAULT_MESSAGE = "Add container $hash.\n**Hash**: $hash\n\n**Packages**:\n$packages\nBase Image:$base_image\n\n"
 DEFAULT_MESSAGE += "**For** :\n$tools\n\nGenerated with Planemo."
 CONTENTS = "#targets\tbase_image\timage_build\n$targets\t$base_image\t$image_build\n"
-BIOCONTAINERS_PLATFORM = 'linux-64'
+BIOCONTAINERS_PLATFORM = "linux-64"
 
 
-@click.command('container_register')
+@click.command("container_register")
 @options.optional_tools_arg(multiple=True)
 @options.recursive_option()
 @options.mulled_namespace_option()
@@ -58,13 +63,13 @@ BIOCONTAINERS_PLATFORM = 'linux-64'
     "-m",
     "--message",
     default=DEFAULT_MESSAGE,
-    help="Commit and pull request message template for registration interactions."
+    help="Commit and pull request message template for registration interactions.",
 )
 @click.option(
     "--pull_request/--no_pull_request",
     is_flag=True,
     default=True,
-    help="Fork and create a pull request against %s for these changes." % REGISTRY_REPOSITORY
+    help="Fork and create a pull request against %s for these changes." % REGISTRY_REPOSITORY,
 )
 @click.option(
     "--force_push/--no_force_push",
@@ -85,7 +90,9 @@ def cli(ctx, paths, **kwds):
     conda_context = build_conda_context(ctx, **kwds)
 
     combinations_added = 0
-    conda_targets_list, tool_paths_list = collect_conda_target_lists_and_tool_paths(ctx, paths, recursive=kwds["recursive"])
+    conda_targets_list, tool_paths_list = collect_conda_target_lists_and_tool_paths(
+        ctx, paths, recursive=kwds["recursive"]
+    )
     for conda_targets, tool_paths in zip(conda_targets_list, tool_paths_list):
         ctx.vlog("Handling conda_targets [%s]" % conda_targets)
         mulled_targets = conda_to_mulled_targets(conda_targets)
@@ -97,13 +104,13 @@ def cli(ctx, paths, **kwds):
 
         name = v2_image_name(mulled_targets)
         tag = "0"
-        name_and_tag = "%s-%s" % (name, tag)
+        name_and_tag = f"{name}-{tag}"
         target_filename = os.path.join(registry_target.output_directory, "%s.tsv" % name_and_tag)
         if os.path.exists(target_filename):
             ctx.log("Target file '%s' already exists, skipping" % target_filename)
             continue
 
-        if targets_to_mulled_name(mulled_targets, hash_func='v2', namespace=kwds["mulled_namespace"]):
+        if targets_to_mulled_name(mulled_targets, hash_func="v2", namespace=kwds["mulled_namespace"]):
             ctx.vlog("quay repository already exists, skipping")
             continue
 
@@ -113,14 +120,18 @@ def cli(ctx, paths, **kwds):
 
         best_practice_requirements = True
         for conda_target in conda_targets:
-            best_hit, exact = best_practice_search(conda_target, conda_context=conda_context, platform=BIOCONTAINERS_PLATFORM)
+            best_hit, exact = best_practice_search(
+                conda_target, conda_context=conda_context, platform=BIOCONTAINERS_PLATFORM
+            )
             if not best_hit:
                 ctx.log("Target [%s] is not available in best practice channels - skipping" % conda_target)
                 best_practice_requirements = False
             if not exact:
-                ctx.log("Target version [%s] for package [%s] is not available in best practice channels - please specify the full version",
-                        conda_target.version,
-                        conda_target.package)
+                ctx.log(
+                    "Target version [%s] for package [%s] is not available in best practice channels - please specify the full version",
+                    conda_target.version,
+                    conda_target.package,
+                )
 
         if not best_practice_requirements:
             continue
@@ -129,16 +140,18 @@ def cli(ctx, paths, **kwds):
         for conda_target in conda_targets:
             base_image = base_image_for_targets([conda_target], conda_context=conda_context)
             if base_image != DEFAULT_BASE_IMAGE:
-                ctx.log("%s requires '%s' as base image" % (conda_target, base_image))
+                ctx.log(f"{conda_target} requires '{base_image}' as base image")
                 break
 
         registry_target.write_targets(ctx, target_filename, mulled_targets, tag, base_image)
         tools_str = "\n".join(map(lambda p: "- " + os.path.basename(p), tool_paths))
-        registry_target.handle_pull_request(ctx, name, target_filename, mulled_targets_str, tools_str, base_image, **kwds)
+        registry_target.handle_pull_request(
+            ctx, name, target_filename, mulled_targets_str, tools_str, base_image, **kwds
+        )
         combinations_added += 1
 
 
-class RegistryTarget(object):
+class RegistryTarget:
     """Abstraction around mulled container registry (both directory and Github repo)."""
 
     def __init__(self, ctx, **kwds):
@@ -150,12 +163,15 @@ class RegistryTarget(object):
         if output_directory is None:
             target_repository = os.path.join(ctx.workspace, REGISTRY_TARGET_NAME)
             output_directory = os.path.join(target_repository, REGISTRY_TARGET_PATH)
-            self.remote_name = clone_fork_branch(
-                ctx,
-                "https://github.com/%s" % REGISTRY_REPOSITORY,
-                target_repository,
-                fork=do_pull_request,
-            ) or self.remote_name
+            self.remote_name = (
+                clone_fork_branch(
+                    ctx,
+                    "https://github.com/%s" % REGISTRY_REPOSITORY,
+                    target_repository,
+                    fork=do_pull_request,
+                )
+                or self.remote_name
+            )
             pr_titles = [pr.title for pr in open_prs(ctx)]
 
         self.do_pull_request = do_pull_request
@@ -174,12 +190,14 @@ class RegistryTarget(object):
     def handle_pull_request(self, ctx, name, target_filename, packages_str, tools_str, base_image, **kwds):
         if self.do_pull_request:
             message = kwds["message"]
-            message = string.Template(message).safe_substitute({
-                "hash": name,
-                "packages": packages_str,
-                "tools": tools_str,
-                "base_image": base_image,
-            })
+            message = string.Template(message).safe_substitute(
+                {
+                    "hash": name,
+                    "packages": packages_str,
+                    "tools": tools_str,
+                    "base_image": base_image,
+                }
+            )
             branch_name = name.replace(":", "-")
             branch(ctx, self.target_repository, branch_name, from_branch="master")
             add(ctx, self.target_repository, target_filename)
@@ -191,20 +209,15 @@ class RegistryTarget(object):
     def write_targets(self, ctx, target_filename, mulled_targets, tag, base_image):
         with open(target_filename, "w") as f:
             targets = to_target_str(mulled_targets)
-            f.write(string.Template(CONTENTS).safe_substitute(
-                targets=targets,
-                base_image=base_image,
-                image_build=tag
-                )
-            )
-            ctx.log("Wrote requirements [%s] to file [%s]" % (targets, target_filename))
+            f.write(string.Template(CONTENTS).safe_substitute(targets=targets, base_image=base_image, image_build=tag))
+            ctx.log(f"Wrote requirements [{targets}] to file [{target_filename}]")
 
 
 def to_target_str(targets):
     target_strings = []
     for target in targets:
         if target.version:
-            target_str = "%s=%s" % (target.package_name, target.version)
+            target_str = f"{target.package_name}={target.version}"
         else:
             target_str = target.package_name
         target_strings.append(target_str)

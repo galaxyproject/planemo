@@ -26,8 +26,10 @@ def lint_requirements_in_conda(tool_source, lint_ctx):
             message = template % (conda_target_str, best_hit.get("channel"))
             lint_ctx.info(message)
         elif best_hit:
-            template = "Requirement [%s] doesn't exactly match available version [%s] in best practice Conda channel [%s]."
-            message = template % (conda_target_str, best_hit['version'], best_hit.get("channel"))
+            template = (
+                "Requirement [%s] doesn't exactly match available version [%s] in best practice Conda channel [%s]."
+            )
+            message = template % (conda_target_str, best_hit["version"], best_hit.get("channel"))
             lint_ctx.warn(message)
         else:
             template = "Requirement [%s] doesn't match any recipe in a best practice conda channel [%s]."

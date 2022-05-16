@@ -1,5 +1,4 @@
 """Module describing the planemo ``database_create`` command."""
-from __future__ import print_function
 
 import click
 
@@ -8,7 +7,7 @@ from planemo.cli import command_function
 from planemo.database import create_database_source
 
 
-@click.command('database_create')
+@click.command("database_create")
 @options.database_identifier_argument()
 @options.profile_database_options()
 @options.docker_config_options()

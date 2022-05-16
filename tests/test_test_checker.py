@@ -4,7 +4,7 @@ import os
 from planemo.runnable import (
     cases,
     for_path,
-    SuccessfulRunResponse
+    SuccessfulRunResponse,
 )
 from .test_utils import TEST_DATA_DIR
 
@@ -67,11 +67,7 @@ class MockRunResponse(SuccessfulRunResponse):
 
     @property
     def job_info(self):
-        return {
-            "command_line": "cat /tmp/1.txt > /tmp/2.out",
-            "stdout": "Cat output",
-            "stderr": "Cat problems..."
-        }
+        return {"command_line": "cat /tmp/1.txt > /tmp/2.out", "stdout": "Cat output", "stderr": "Cat problems..."}
 
     @property
     def outputs_dict(self):

@@ -59,16 +59,17 @@ def _verify_output_file(runnable, output_properties, test_properties, **kwds):
     if expected_file is None:
         location = test_properties.get("location")
         if location:
-            if location.startswith(('http://', 'https://')):
+            if location.startswith(("http://", "https://")):
                 expected_file = _get_location(location)
             else:
-                expected_file = location.split('file://', 1)[-1]
+                expected_file = location.split("file://", 1)[-1]
 
     job_output_files = kwds.get("job_output_files", None)
     item_label = "Output with path %s" % path
     if "asserts" in test_properties:
         # TODO: break fewer abstractions here...
         from galaxy.tool_util.parser.yaml import __to_test_assert_list
+
         test_properties["assert_list"] = __to_test_assert_list(test_properties["asserts"])
     verify(
         item_label,
@@ -92,7 +93,7 @@ def _check_output_file(runnable, output_properties, test_properties, **kwds):
 
 
 def _get_location(location):
-    data_file = tempfile.NamedTemporaryFile(prefix='planemo_test_file_', delete=False)
+    data_file = tempfile.NamedTemporaryFile(prefix="planemo_test_file_", delete=False)
     with requests.get(location, stream=True) as r:
         r.raise_for_status()
 
@@ -103,7 +104,6 @@ def _get_location(location):
 
 
 def _test_filename_getter(runnable):
-
     def get_filename(name):
         artifact_directory = os.path.dirname(runnable.path)
         return os.path.join(artifact_directory, name)
@@ -111,6 +111,4 @@ def _test_filename_getter(runnable):
     return get_filename
 
 
-__all__ = (
-    "check_output",
-)
+__all__ = ("check_output",)

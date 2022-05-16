@@ -29,7 +29,6 @@ SERVE_TEST_VERBOSE = True
 
 
 class UsesServeCommand:
-
     def _run(self, serve_args=[], serve_cmd="serve"):
         serve_cmd = self._serve_command_list(serve_args, serve_cmd)
         if run_verbosely():
@@ -38,14 +37,19 @@ class UsesServeCommand:
 
     def _serve_command_list(self, serve_args=[], serve_cmd="serve"):
         test_cmd = ["--verbose"] if run_verbosely() else []
-        test_cmd.extend([
-            serve_cmd,
-            "--galaxy_root", self.galaxy_root,
-            "--galaxy_branch", target_galaxy_branch(),
-            "--no_dependency_resolution",
-            "--port", str(self._port),
-            self._serve_artifact,
-        ])
+        test_cmd.extend(
+            [
+                serve_cmd,
+                "--galaxy_root",
+                self.galaxy_root,
+                "--galaxy_branch",
+                target_galaxy_branch(),
+                "--no_dependency_resolution",
+                "--port",
+                str(self._port),
+                self._serve_artifact,
+            ]
+        )
         test_cmd.extend(serve_args)
         return test_cmd
 
@@ -63,7 +67,6 @@ class UsesServeCommand:
 
 
 class ServeTestCase(CliTestCase, UsesServeCommand):
-
     @classmethod
     def setUpClass(cls):
         cls.galaxy_root = tempfile.mkdtemp()
@@ -73,7 +76,7 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         safe_rmtree(cls.galaxy_root)
 
     def setUp(self):
-        super(ServeTestCase, self).setUp()
+        super().setUp()
         self._port = network_util.get_free_port()
         self._pid_file = os.path.join(self._home, "test.pid")
         self._serve_artifact = os.path.join(TEST_REPOS_DIR, "single_tool", "cat.xml")
@@ -90,9 +93,7 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
     @skip_if_environ("PLANEMO_SKIP_GALAXY_CLIENT_TESTS")
     @skip_unless_executable("python3")
     def test_serve_client_python3(self):
-        extra_args = [
-            "--galaxy_python_version", "3"
-        ]
+        extra_args = ["--galaxy_python_version", "3"]
         # Given the client build - give this more time.
         timeout_multiplier = 3
         self._launch_thread_and_wait(self._run, extra_args, timeout_multiplier=timeout_multiplier)
@@ -104,10 +105,7 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch
     def test_serve_daemon(self):
-        extra_args = [
-            "--daemon",
-            "--skip_client_build",
-            "--pid_file", self._pid_file]
+        extra_args = ["--daemon", "--skip_client_build", "--pid_file", self._pid_file]
         self._launch_thread_and_wait(self._run, extra_args)
         user_gi = self._user_gi
         assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0
@@ -123,16 +121,19 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         extra_args = [
             "--daemon",
             "--skip_client_build",
-            "--pid_file", self._pid_file,
-            "--extra_tools", random_lines,
-            "--extra_tools", cat,
+            "--pid_file",
+            self._pid_file,
+            "--extra_tools",
+            random_lines,
+            "--extra_tools",
+            cat,
         ]
         self._launch_thread_and_wait(self._run, extra_args)
         time.sleep(30)
         user_gi = self._user_gi
         assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0
         user_gi.histories.create_history(TEST_HISTORY_NAME)
-        assert user_gi.tools.get_tools(tool_id="random_lines1")
+        assert user_gi.tools.show_tool("random_lines1")
         workflows = user_gi.workflows.get_workflows()
         assert len(workflows) == 1
         workflow = workflows[0]
@@ -143,11 +144,7 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
     @skip_if_environ("PLANEMO_SKIP_SHED_TESTS")
     @mark.tests_galaxy_branch
     def test_shed_serve(self):
-        extra_args = [
-            "--daemon",
-            "--skip_client_build",
-            "--pid_file", self._pid_file,
-            "--shed_target", "toolshed"]
+        extra_args = ["--daemon", "--skip_client_build", "--pid_file", self._pid_file, "--shed_target", "toolshed"]
         fastqc_path = os.path.join(TEST_REPOS_DIR, "fastqc")
         self._serve_artifact = fastqc_path
         self._launch_thread_and_wait(self._run_shed, extra_args)
@@ -179,8 +176,10 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         extra_args = [
             "--daemon",
             "--skip_client_build",
-            "--pid_file", self._pid_file,
-            "--profile", new_profile,
+            "--pid_file",
+            self._pid_file,
+            "--profile",
+            new_profile,
         ]
         serve_cmd = self._serve_command_list(extra_args)
         with cli_daemon_galaxy(self._runner, self._pid_file, self._port, serve_cmd):

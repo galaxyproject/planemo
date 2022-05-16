@@ -3,8 +3,10 @@ import sys
 
 import click
 
-from planemo import options
-from planemo import shed
+from planemo import (
+    options,
+    shed,
+)
 from planemo.cli import command_function
 
 
@@ -13,30 +15,17 @@ from planemo.cli import command_function
 @click.option(
     "--from_workflow",
     type=click.Path(exists=True, file_okay=True, resolve_path=True),
-    help=('Attempt to generate repository dependencies from specified '
-          'workflow.')
+    help=("Attempt to generate repository dependencies from specified " "workflow."),
 )
-@click.option(
-    "--description",
-    help='Specify repository description for .shed.yml.'
-)
-@click.option(
-    "--long_description",
-    help='Specify repository long_description for .shed.yml.'
-)
-@click.option(
-    "--remote_repository_url",
-    help='Specify repository remote_repository_url for .shed.yml.'
-)
-@click.option(
-    "--homepage_url",
-    help='Specify repository homepage_url for .shed.yml.'
-)
+@click.option("--description", help="Specify repository description for .shed.yml.")
+@click.option("--long_description", help="Specify repository long_description for .shed.yml.")
+@click.option("--remote_repository_url", help="Specify repository remote_repository_url for .shed.yml.")
+@click.option("--homepage_url", help="Specify repository homepage_url for .shed.yml.")
 @click.option(
     "--category",
     multiple=True,
-    help='Specify repository category for .shed.yml (may specify multiple).',
-    type=click.Choice(shed.CURRENT_CATEGORIES)
+    help="Specify repository category for .shed.yml (may specify multiple).",
+    type=click.Choice(shed.CURRENT_CATEGORIES),
 )
 @options.shed_repo_options()
 @options.force_option()

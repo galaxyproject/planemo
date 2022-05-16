@@ -2,11 +2,8 @@
 
 import abc
 
-from six import add_metaclass
 
-
-@add_metaclass(abc.ABCMeta)
-class DatabaseSource(object):
+class DatabaseSource(metaclass=abc.ABCMeta):
     """Interface describing a source of profile databases."""
 
     @abc.abstractmethod
@@ -32,6 +29,4 @@ class DatabaseSource(object):
         """Return a URL string for use by sqlalchemy."""
 
 
-__all__ = (
-    "DatabaseSource",
-)
+__all__ = ("DatabaseSource",)

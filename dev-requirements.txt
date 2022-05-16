@@ -11,17 +11,15 @@ pytest
 coverage
 
 #Building Docs
+docutils
 sphinx
 sphinx_rtd_theme
 recommonmark
 
-# Used to check readme.
-readme
-
 # Used for code checking.
-pyflakes
+black
 flake8
-flake8-import-order
+isort
 
 # For release
 wheel

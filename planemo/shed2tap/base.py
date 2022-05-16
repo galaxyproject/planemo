@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import os
 import subprocess
 import sys
@@ -7,15 +5,11 @@ import tarfile
 import zipfile
 from ftplib import all_errors as FTPErrors  # tuple of exceptions
 from typing import List
+from urllib.error import URLError
+from urllib.request import urlretrieve
 from xml.etree import ElementTree
 
 from galaxy.util import unicodify
-from six import iteritems
-from six import string_types
-from six.moves import map as imap
-from six.moves.urllib.error import URLError
-from six.moves.urllib.request import urlretrieve
-
 
 TOOLSHED_MAP = {
     "toolshed": "https://toolshed.g2.bx.psu.edu",
@@ -23,9 +17,8 @@ TOOLSHED_MAP = {
 }
 
 
-class Dependencies(object):
-    """ Base class for parsing Tool Shed dependency files.
-    """
+class Dependencies:
+    """Base class for parsing Tool Shed dependency files."""
 
     def __init__(
         self,
@@ -51,17 +44,12 @@ class Dependencies(object):
             assert len(install_els) in (0, 1)
             if len(install_els) == 1:
                 install_el = install_els[0]
-                package = package_factory(
-                    self,
-                    package_el,
-                    install_el,
-                    readme=readme
-                )
+                package = package_factory(self, package_el, install_el, readme=readme)
                 packages.append(package)
             else:
                 repository_el = package_el.find("repository")
                 if repository_el is None:
-                    message = "no repository in package el for %s" % repo
+                    message = f"no repository in package el for {repo}"
                     raise AssertionError(message)
                 dependency = Dependency(self, package_el, repository_el)
                 dependencies.append(dependency)
@@ -73,20 +61,19 @@ class Dependencies(object):
         return len(self.packages) == 1
 
     def __repr__(self):
-        return "Dependencies[for_repo=%s]" % self.repo
+        return f"Dependencies[for_repo={self.repo}]"
 
 
-class Repo(object):
-
+class Repo:
     def __init__(self, **kwds):
-        for key, value in iteritems(kwds):
+        for key, value in kwds.items():
             setattr(self, key, value)
 
     def recipe_base_name(self):
         owner = self.owner.replace("-", "")
         name = self.name
         name = name.replace("_", "").replace("-", "")
-        base = "%s_%s" % (owner, name)
+        base = f"{owner}_{name}"
         return base
 
     @staticmethod
@@ -117,13 +104,7 @@ class Repo(object):
 
     def get_file(self, path):
         try:
-            url_template = "%s/repos/%s/%s/raw-file/tip/%s"
-            url = url_template % (
-                self.tool_shed_url,
-                self.owner,
-                self.name,
-                path
-            )
+            url = f"{self.tool_shed_url}/repos/{self.owner}/{self.name}/raw-file/tip/{path}"
             path, headers = urlretrieve(url)
             return path
         except Exception as e:
@@ -131,11 +112,10 @@ class Repo(object):
             return None
 
     def __repr__(self):
-        return "Repository[name=%s,owner=%s]" % (self.name, self.owner)
+        return f"Repository[name={self.name},owner={self.owner}]"
 
 
-class Dependency(object):
-
+class Dependency:
     def __init__(self, dependencies, package_el, repository_el):
         self.dependencies = dependencies
         self.package_el = package_el
@@ -143,16 +123,13 @@ class Dependency(object):
         self.repo = Repo.from_xml(repository_el)
 
     def __repr__(self):
-        temp = "Dependency[package_name=%s,version=%s,dependent_package=%s]"
-        return temp % (
-            self.package_el.attrib["name"],
-            self.package_el.attrib["version"],
-            self.repository_el.attrib["name"]
+        return (
+            f"Dependency[package_name={self.package_el.attrib['name']},version={self.package_el.attrib['version']},"
+            f"dependent_package={self.repository_el.attrib['name']}]"
         )
 
 
-class BasePackage(object):
-
+class BasePackage:
     def __init__(self, dependencies, package_el, install_el, readme):
         self.dependencies = dependencies
         self.package_el = package_el
@@ -210,7 +187,7 @@ class BasePackage(object):
         architecture = actions.get("architecture", None)
         action_els = actions.findall("action")
         assert action_els is not None
-        parsed_actions = list(imap(self.parse_action, action_els))
+        parsed_actions = list(map(self.parse_action, action_els))
         action_packages = []
         for package in actions.findall("package"):
             action_packages.append(self.parse_action_package(package))
@@ -227,25 +204,14 @@ class BasePackage(object):
 
     def __repr__(self):
         actions = self.all_actions
-        parts = (
-            self.package_el.attrib["name"],
-            self.package_el.attrib["version"],
-            self.dependencies,
-            actions
+        return (
+            f"Install[name={self.package_el.attrib['name']},version={self.package_el.attrib['version']},"
+            f"dependencies={self.dependencies},actions={actions}]"
         )
-        template = "Install[name=%s,version=%s,dependencies=%s,actions=%s]"
-        return template % parts
 
 
-class Actions(object):
-
-    def __init__(
-        self,
-        actions,
-        os=None,
-        architecture=None,
-        action_packages=[]
-    ):
+class Actions:
+    def __init__(self, actions, os=None, architecture=None, action_packages=[]):
         self.os = os
         self.architecture = architecture
         self.actions = actions or []
@@ -267,8 +233,8 @@ class Actions(object):
     def __repr__(self):
         platform = ""
         if self.os or self.architecture:
-            platform = "os=%s,arch=%s," % (self.os, self.architecture)
-        return "Actions[%s%s]" % (platform, map(str, self.actions))
+            platform = f"os={self.os},arch={self.architecture},"
+        return f"Actions[{platform}{map(str, self.actions)}]"
 
     def _indent_extend(self, target, new_entries, indent="    "):
         for line in new_entries:
@@ -277,11 +243,11 @@ class Actions(object):
     def to_bash(self):
         # Use self.os.title() to match "Linux" or "Darwin" in bash where case matters:
         if self.os and self.architecture:
-            condition = '("%s" == `uname`) && ("%s" == `arch`)' % (self.os.title(), self.architecture)
+            condition = f'("{self.os.title()}" == `uname`) && ("{self.architecture}" == `arch`)'
         elif self.os:
-            condition = '"%s" == `uname`' % self.os.title()
+            condition = f'"{self.os.title()}" == `uname`'
         elif self.architecture:
-            condition = '"%s" == `arch`' % self.architecture
+            condition = f'"{self.architecture}" == `arch`'
         else:
             condition = None
 
@@ -291,10 +257,11 @@ class Actions(object):
         if condition:
             # Conditional actions block
             install_cmds = [
-                '#' + '-' * 60,
-                'if [[ $specifc_action_done == 0 && %s ]]' % condition,
-                'then',
-                '    echo "Platform-specific action for os=%s, arch=%s"' % (self.os, self.architecture)]
+                "#" + "-" * 60,
+                f"if [[ $specifc_action_done == 0 && {condition} ]]",
+                "then",
+                f'    echo "Platform-specific action for os={self.os}, arch={self.architecture}"',
+            ]
             env_cmds = install_cmds[:]
             # TODO - Refactor block indentation?
             for action in self.actions:
@@ -302,39 +269,39 @@ class Actions(object):
                 self._indent_extend(install_cmds, i_cmds)
                 self._indent_extend(env_cmds, e_cmds)
             # If we run the action, do not want to run any later actions!
-            install_cmds.extend(['    specifc_action_done=1', 'fi'])
-            env_cmds.extend(['    specifc_action_done=1', 'fi'])
+            install_cmds.extend(["    specifc_action_done=1", "fi"])
+            env_cmds.extend(["    specifc_action_done=1", "fi"])
         else:
             # Non-specific default action...
             install_cmds = [
-                '#' + '-' * 60,
-                'if [[ $specifc_action_done == 0 ]]',
-                'then',
-                '    echo "Non-platform-specific actions"']
+                "#" + "-" * 60,
+                "if [[ $specifc_action_done == 0 ]]",
+                "then",
+                '    echo "Non-platform-specific actions"',
+            ]
             env_cmds = install_cmds[:]
             for action in self.actions:
                 i_cmds, e_cmds = action.to_bash()
                 self._indent_extend(install_cmds, i_cmds)
                 self._indent_extend(env_cmds, e_cmds)
-            install_cmds.append('fi')
-            env_cmds.append('fi')
+            install_cmds.append("fi")
+            env_cmds.append("fi")
         return install_cmds, env_cmds
 
 
-class ActionPackage(object):
-
+class ActionPackage:
     def __init__(self, name, version, repo):
         self.name = name
         self.version = version
         self.repo = repo
 
 
-class BaseAction(object):
+class BaseAction:
     _keys = []  # type: List[str]
     action_type = None  # type: str
 
     def __repr__(self):
-        return "Action[type=%s]" % self.action_type
+        return f"Action[type={self.action_type}]"
 
     def same_as(self, other):
         if self._keys != other._keys:
@@ -372,7 +339,7 @@ class BaseAction(object):
         return two list of strings (for ``dep_install.sh`` and
         ``env.sh`` respectively).
         """
-        raise NotImplementedError("No to_bash defined for %r" % self)
+        raise NotImplementedError(f"No to_bash defined for {self!r}")
 
 
 def _tar_folders(filename):
@@ -388,7 +355,7 @@ def _tar_folders(filename):
 
 def _zip_folders(filename):
     archive = zipfile.ZipFile(filename, "r")
-    return list(set(i.filename.rstrip("/") for i in archive.infolist() if i.filename.endswith("/")))
+    return list({i.filename.rstrip("/") for i in archive.infolist() if i.filename.endswith("/")})
 
 
 def _common_prefix(folders):
@@ -415,24 +382,24 @@ def _cache_download(url, filename, sha256sum=None):
         # Must download it...
         try:
             # TODO - log this nicely...
-            sys.stderr.write("Downloading %s to %r\n" % (url, local))
+            sys.stderr.write(f"Downloading {url} to {local!r}\n")
             urlretrieve(url, local)
         except URLError:
             # Most likely server is down, could be bad URL in XML action:
-            raise RuntimeError("Unable to download %s" % url)
+            raise RuntimeError(f"Unable to download {url}")
         except FTPErrors:
             # Most likely server is down, could be bad URL in XML action:
-            raise RuntimeError("Unable to download %s" % url)
+            raise RuntimeError(f"Unable to download {url}")
 
         # Verifying the checksum is slow, only do this on a fresh
         # download. Assume locally cached files are already OK.
         if sha256sum:
             # TODO - log this nicely...
-            sys.stderr.write("Verifying checksum for %s\n" % filename)
-            filehash = subprocess.check_output(['shasum', '-a', '256', local])[0:64].strip()
+            sys.stderr.write(f"Verifying checksum for {filename}\n")
+            filehash = subprocess.check_output(["shasum", "-a", "256", local])[0:64].strip()
             filehash = unicodify(filehash)
             if filehash != sha256sum:
-                raise RuntimeError("Checksum failure for %s, got %r but wanted %r" % (local, filehash, sha256sum))
+                raise RuntimeError(f"Checksum failure for {local}, got {filehash!r} but wanted {sha256sum!r}")
 
     return local
 
@@ -467,32 +434,32 @@ def _determine_compressed_file_folder(url, downloaded_filename, target_filename=
     if tarfile.is_tarfile(local):
         folders = _tar_folders(local)
         if target_filename.endswith((".tar.gz", ".tgz")):
-            answer.append('tar -zxvf %s' % target_filename)
+            answer.append(f"tar -zxvf {target_filename}")
         elif target_filename.endswith(".tar.bz2"):
-            answer.append('tar -jxvf %s' % target_filename)
+            answer.append(f"tar -jxvf {target_filename}")
         elif target_filename.endswith(".tar"):
-            answer.extend('tar -xvf %s' % target_filename)
+            answer.extend(f"tar -xvf {target_filename}")
         else:
             # Quite possibly this file doesn't need decompressing,
             # but until we've tested lots of real world tool_dependencies.xml
             # files I'd like to check these cases to confirm this.
-            raise NotImplementedError("How to decompress tar file %s?" % target_filename)
+            raise NotImplementedError(f"How to decompress tar file {target_filename}?")
     elif zipfile.is_zipfile(local):
         if target_filename.endswith(".jar"):
             # Do not decompress!
             return answer
         folders = _zip_folders(local)
-        answer.append('unzip %s' % target_filename)
+        answer.append(f"unzip {target_filename}")
     elif target_filename.endswith(".dmg"):
         # Do not decompress!
         return answer
     else:
         # No compression? Leave as it is?
-        raise NotImplementedError("What kind of compression is %s using?" % local)
+        raise NotImplementedError(f"What kind of compression is {local} using?")
 
     common_prefix = _common_prefix(folders)
     if common_prefix:
-        answer.append('cd "%s"' % common_prefix)
+        answer.append(f'cd "{common_prefix}"')
 
     return answer
 
@@ -505,9 +472,9 @@ def _commands_and_downloaded_file(url, target_filename=None, sha256sum=None):
     # e.g. tests/data/repos/package_1/tool_dependencies.xml
     downloaded_filename = os.path.split(url)[-1]
     if "?" in downloaded_filename:
-        downloaded_filename = downloaded_filename[:downloaded_filename.index("?")]
+        downloaded_filename = downloaded_filename[: downloaded_filename.index("?")]
     if "#" in downloaded_filename:
-        downloaded_filename = downloaded_filename[:downloaded_filename.index("#")]
+        downloaded_filename = downloaded_filename[: downloaded_filename.index("#")]
 
     if not target_filename:
         target_filename = downloaded_filename
@@ -515,23 +482,23 @@ def _commands_and_downloaded_file(url, target_filename=None, sha256sum=None):
     # Curl is present on Mac OS X, can we assume it will be on Linux?
     # Cannot assume that wget will be on Mac OS X.
     answer = [
-        'if [[ -f "%s" ]]' % target_filename,
-        'then',
-        '    echo "Reusing existing %s"' % target_filename,
-        'elif [[ -f "$DOWNLOAD_CACHE/%s" ]]' % downloaded_filename,
-        'then',
-        '    echo "Reusing cached %s"' % downloaded_filename,
-        '    cp "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, target_filename),
-        'else',
-        '    echo "Downloading %s"' % downloaded_filename,
-        '    curl -L -o "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, url),
-        '    cp "$DOWNLOAD_CACHE/%s" "%s"' % (downloaded_filename, target_filename),
+        f'if [[ -f "{target_filename}" ]]',
+        "then",
+        f'    echo "Reusing existing {target_filename}"',
+        f'elif [[ -f "$DOWNLOAD_CACHE/{downloaded_filename}" ]]',
+        "then",
+        f'    echo "Reusing cached {downloaded_filename}"',
+        f'    cp "$DOWNLOAD_CACHE/{downloaded_filename}" "{target_filename}"',
+        "else",
+        f'    echo "Downloading {downloaded_filename}"',
+        f'    curl -L -o "$DOWNLOAD_CACHE/{downloaded_filename}" "{url}"',
+        f'    cp "$DOWNLOAD_CACHE/{downloaded_filename}" "{target_filename}"',
     ]
     if sha256sum:
         # This is inserted into the if-else for a fresh download only.
         # Note double space between checksum and filename:
-        answer.append('    echo "%s  %s" | shasum -a 256 -c -' % (sha256sum, target_filename))
-    answer.append('fi')
+        answer.append(f'    echo "{sha256sum}  {target_filename}" | shasum -a 256 -c -')
+    answer.append("fi")
 
     return answer, downloaded_filename
 
@@ -584,7 +551,7 @@ class DownloadBinary(BaseAction):
     def __init__(self, elem):
         self.url_template = elem.text
         assert self.url_template
-        self.target_directory = elem.get('target_directory', None)
+        self.target_directory = elem.get("target_directory", None)
 
 
 class ShellCommandAction(BaseAction):
@@ -607,7 +574,7 @@ class TemplateShellCommandAction(BaseAction):
 
     def __init__(self, elem):
         self.command = elem.text
-        self.language = elem.get('language', 'cheetah').lower()
+        self.language = elem.get("language", "cheetah").lower()
         assert self.command
         assert self.language == "cheetah"
 
@@ -621,7 +588,7 @@ class MoveFileAction(BaseAction):
         self.destination = elem.find("destination").text
 
     def to_bash(self):
-        return ["mv %s %s" % (self.source, self.destination)], []
+        return [f"mv {self.source} {self.destination}"], []
 
 
 class MoveDirectoryFilesAction(BaseAction):
@@ -635,7 +602,7 @@ class MoveDirectoryFilesAction(BaseAction):
         self.destination_directory = destination_directory
 
     def to_bash(self):
-        return ["mv %s/* %s/" % (self.source_directory, self.destination_directory)], []
+        return [f"mv {self.source_directory}/* {self.destination_directory}/"], []
 
 
 class SetEnvironmentAction(BaseAction):
@@ -657,13 +624,13 @@ class SetEnvironmentAction(BaseAction):
         for var in self.variables:
             # Expand $INSTALL_DIR here?
             if var.action == "set_to":
-                answer.append('export %s=%s' % (var.name, var.raw_value))
+                answer.append(f"export {var.name}={var.raw_value}")
             elif var.action == "prepend_to":
-                answer.append('export %s=%s:$%s' % (var.name, var.raw_value, var.name))
+                answer.append(f"export {var.name}={var.raw_value}:${var.name}")
             elif var.action == "append_to":
-                answer.append('export %s=$%s:%s' % (var.name, var.name, var.raw_value))
+                answer.append(f"export {var.name}=${var.name}:{var.raw_value}")
             else:
-                raise ValueError("Undefined environment variable action %r" % var.action)
+                raise ValueError(f"Undefined environment variable action {var.action!r}")
         return answer, answer  # Actions needed in env.sh here!
 
 
@@ -684,7 +651,7 @@ class ChmodAction(BaseAction):
         assert self.mods
 
     def to_bash(self):
-        return ["chmod %s %s" % (m["mode"], m["target"]) for m in self.mods], []
+        return [f"chmod {m['mode']} {m['target']}" for m in self.mods], []
 
 
 class MakeInstallAction(BaseAction):
@@ -708,7 +675,7 @@ class AutoconfAction(BaseAction):
     def to_bash(self):
         if self.options:
             raise NotImplementedError("Options with action autoconf not implemented yet.")
-        return ['./configure', 'make', 'make install'], []
+        return ["./configure", "make", "make install"], []
 
 
 class ChangeDirectoryAction(BaseAction):
@@ -720,7 +687,7 @@ class ChangeDirectoryAction(BaseAction):
         assert self.directory
 
     def to_bash(self):
-        return ["cd %s" % self.directory], []
+        return [f"cd {self.directory}"], []
 
 
 class MakeDirectoryAction(BaseAction):
@@ -731,7 +698,7 @@ class MakeDirectoryAction(BaseAction):
         self.directory = elem.text
 
     def to_bash(self):
-        return ["mkdir -p %s" % self.directory], []
+        return [f"mkdir -p {self.directory}"], []
 
 
 class SetupPerlEnvironmentAction(BaseAction):
@@ -768,8 +735,8 @@ class SetupVirtualenvAction(BaseAction):
     def __init__(self, elem):
         use_reqs = elem.attrib.get("use_requirements_file", "True")
         self.use_requirements_file = asbool(use_reqs)
-        self.python = elem.get('python', 'python')
-        self.requirements = elem.text or 'requirements.txt'
+        self.python = elem.get("python", "python")
+        self.requirements = elem.text or "requirements.txt"
 
 
 class SetupREnvironmentAction(BaseAction):
@@ -792,27 +759,26 @@ class SetEnvironmentForInstallAction(BaseAction):
         return ['echo "WARNING: Assuming packages already installed!"'], []
 
 
-class SetVariable(object):
-
+class SetVariable:
     def __init__(self, elem):
         self.action = elem.attrib["action"]
         self.name = elem.attrib["name"]
         self.raw_value = elem.text
 
 
-truthy = frozenset(['true', 'yes', 'on', 'y', 't', '1'])
-falsy = frozenset(['false', 'no', 'off', 'n', 'f', '0'])
+truthy = frozenset(["true", "yes", "on", "y", "t", "1"])
+falsy = frozenset(["false", "no", "off", "n", "f", "0"])
 
 
 def asbool(obj):
-    if isinstance(obj, string_types):
+    if isinstance(obj, str):
         obj = obj.strip().lower()
         if obj in truthy:
             return True
         elif obj in falsy:
             return False
         else:
-            raise ValueError("String is not true/false: %r" % obj)
+            raise ValueError(f"String is not true/false: {obj!r}")
     return bool(obj)
 
 

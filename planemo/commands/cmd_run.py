@@ -1,5 +1,4 @@
 """Module describing the planemo ``run`` command."""
-from __future__ import print_function
 
 import json
 
@@ -10,12 +9,15 @@ from planemo import options
 from planemo.cli import command_function
 from planemo.engine import engine_context
 from planemo.galaxy.test import handle_reports_and_summary
-from planemo.io import info, warn
+from planemo.io import (
+    info,
+    warn,
+)
 from planemo.runnable_resolve import for_runnable_identifier
 from planemo.test.results import StructuredData
 
 
-@click.command('run')
+@click.command("run")
 @options.required_runnable_arg()
 @options.required_job_arg()
 @options.galaxy_run_options()
@@ -42,7 +44,7 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
     if kwds.get("engine", None) is None:
         if is_cwl:
             kwds["engine"] = "cwltool"
-        elif kwds.get('galaxy_url', None):
+        elif kwds.get("galaxy_url", None):
             kwds["engine"] = "external_galaxy"
         else:
             kwds["engine"] = "galaxy"
@@ -51,17 +53,17 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
 
     if not run_result.was_successful:
         warn("Run failed [%s]" % unicodify(run_result))
-    elif kwds.get('no_wait'):
-        info('Run successfully executed - exiting without waiting for results.')
+    elif kwds.get("no_wait"):
+        info("Run successfully executed - exiting without waiting for results.")
     else:
         output_json = kwds.get("output_json", None)
         outputs_dict = run_result.outputs_dict
         if output_json:
             with open(output_json, "w") as f:
                 json.dump(outputs_dict, f)
-        info('Run completed successfully.')
+        info("Run completed successfully.")
 
-    report_data = StructuredData(data={'tests': [run_result.structured_data()], 'version': '0.1'})
+    report_data = StructuredData(data={"tests": [run_result.structured_data()], "version": "0.1"})
     report_data.calculate_summary_data()
     return_value = handle_reports_and_summary(ctx, report_data.structured_data, kwds=kwds)
     ctx.exit(return_value)

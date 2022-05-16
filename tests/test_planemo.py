@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 test_planemo
@@ -12,7 +11,6 @@ from .test_utils import CliTestCase
 
 
 class TestPlanemo(CliTestCase):
-
     def test_commands_have_help(self):
         commands = self._cli.list_cmds()
         for command in commands:

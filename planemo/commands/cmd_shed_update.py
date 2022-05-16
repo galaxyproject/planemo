@@ -3,8 +3,10 @@ import sys
 
 import click
 
-from planemo import options
-from planemo import shed
+from planemo import (
+    options,
+    shed,
+)
 from planemo.cli import command_function
 from planemo.io import (
     captured_io_for_xunit,
@@ -55,20 +57,20 @@ def cli(ctx, paths, **kwds):
     # In a little bit of cheating, we're defining this variable here to collect
     # a "report" on the shed_update command
     collected_data = {
-        'results': {
-            'total': 0,
-            'errors': 0,
-            'failures': 0,
-            'skips': 0,
+        "results": {
+            "total": 0,
+            "errors": 0,
+            "failures": 0,
+            "skips": 0,
         },
-        'suitename': 'update',
-        'tests': [],
+        "suitename": "update",
+        "tests": [],
     }
 
     shed_context = shed.get_shed_context(ctx, **kwds)
 
     def update(realized_repository):
-        collected_data['results']['total'] += 1
+        collected_data["results"]["total"] += 1
         skip_upload = kwds["skip_upload"]
         skip_metadata = kwds["skip_metadata"]
         upload_ret_code = 0
@@ -77,34 +79,34 @@ def cli(ctx, paths, **kwds):
         captured_io = {}
         if not skip_upload:
             with captured_io_for_xunit(kwds, captured_io):
-                upload_ret_code = shed.upload_repository(
-                    ctx, realized_repository, **kwds
-                )
+                upload_ret_code = shed.upload_repository(ctx, realized_repository, **kwds)
                 upload_ok = not upload_ret_code
 
         repo_result = {
-            'classname': realized_repository.name,
-            'time': captured_io.get("time", None),
-            'name': 'shed-update',
-            'stdout': captured_io.get("stdout", None),
-            'stderr': captured_io.get("stderr", None),
+            "classname": realized_repository.name,
+            "time": captured_io.get("time", None),
+            "name": "shed-update",
+            "stdout": captured_io.get("stdout", None),
+            "stderr": captured_io.get("stderr", None),
         }
 
         # Now that we've uploaded (or skipped appropriately), collect results.
         if upload_ret_code == 2:
-            collected_data['results']['failures'] += 1
-            message = "Failed to update repository '%s' as it does not exist on the %s." % (realized_repository.name, shed_context.label)
-            repo_result.update({
-                'errorType': 'FailedUpdate',
-                'errorMessage': message,
-            })
-            collected_data['tests'].append(repo_result)
+            collected_data["results"]["failures"] += 1
+            message = f"Failed to update repository '{realized_repository.name}' as it does not exist on the {shed_context.label}."
+            repo_result.update(
+                {
+                    "errorType": "FailedUpdate",
+                    "errorMessage": message,
+                }
+            )
+            collected_data["tests"].append(repo_result)
             error(message)
             return upload_ret_code
 
         exit = 0
         metadata_ok = True
-        repository_destination_label = "repository '%s' on the %s" % (realized_repository.name, shed_context.label)
+        repository_destination_label = f"repository '{realized_repository.name}' on the {shed_context.label}"
         if not skip_metadata:
             repo_id = shed.handle_force_create(realized_repository, ctx, shed_context, **kwds)
             # failing to create the repo, give up
@@ -122,26 +124,32 @@ def cli(ctx, paths, **kwds):
         if metadata_ok and upload_ok:
             pass
         elif upload_ok:
-            collected_data['results']['skips'] += 1
-            repo_result.update({
-                'errorType': 'FailedMetadata',
-                'errorMessage': 'Failed to update repository metadata',
-            })
+            collected_data["results"]["skips"] += 1
+            repo_result.update(
+                {
+                    "errorType": "FailedMetadata",
+                    "errorMessage": "Failed to update repository metadata",
+                }
+            )
             if not skip_upload:
-                error("Repository contents updated but failed to update metadata for %s." % repository_destination_label)
+                error(
+                    "Repository contents updated but failed to update metadata for %s." % repository_destination_label
+                )
             exit = exit or 1
         else:
-            collected_data['results']['failures'] += 1
-            repo_result.update({
-                'errorType': 'FailedUpdate',
-                'errorMessage': 'Failed to update repository',
-            })
+            collected_data["results"]["failures"] += 1
+            repo_result.update(
+                {
+                    "errorType": "FailedUpdate",
+                    "errorMessage": "Failed to update repository",
+                }
+            )
             if metadata_ok:
                 error("Failed to update repository contents for %s." % repository_destination_label)
             else:
                 error("Failed to update repository contents and metadata for %s." % repository_destination_label)
             exit = exit or 1
-        collected_data['tests'].append(repo_result)
+        collected_data["tests"].append(repo_result)
         return exit
 
     exit_code = shed.for_each_repository(ctx, update, paths, **kwds)

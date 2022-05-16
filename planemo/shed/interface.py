@@ -10,25 +10,17 @@ from planemo.bioblend import (
 )
 from planemo.io import untar_to
 
-REPOSITORY_DOWNLOAD_TEMPLATE = (
-    "%srepository/download?repository_id=%s"
-    "&changeset_revision=default&file_type=gz"
-)
+REPOSITORY_DOWNLOAD_TEMPLATE = "%srepository/download?repository_id=%s" "&changeset_revision=default&file_type=gz"
 
 
 def tool_shed_instance(url, key, email, password):
     ensure_module()
-    tsi = toolshed.ToolShedInstance(
-        url=url,
-        key=key,
-        email=email,
-        password=password
-    )
+    tsi = toolshed.ToolShedInstance(url=url, key=key, email=email, password=password)
     return tsi
 
 
 def find_repository(tsi, owner, name):
-    """ Find repository information for given owner and repository
+    """Find repository information for given owner and repository
     name.
     """
     repos = tsi.repositories.get_repositories()
@@ -47,28 +39,22 @@ def latest_installable_revision(tsi, repository_id):
     info = tsi.repositories.show_repository(repository_id)
     owner = info["owner"]
     name = info["name"]
-    revisions = tsi.repositories.get_ordered_installable_revisions(
-        name, owner
-    )
+    revisions = tsi.repositories.get_ordered_installable_revisions(name, owner)
     if len(revisions) == 0:
-        msg = "Failed to find installable revisions for [{0}, {1}].".format(
-            owner,
-            name,
-        )
+        msg = f"Failed to find installable revisions for [{owner}, {name}]."
         raise Exception(msg)
     else:
         return revisions[-1]
 
 
 def username(tsi):
-    """ Fetch current username from shed given API key/auth.
-    """
+    """Fetch current username from shed given API key/auth."""
     user = _user(tsi)
     return user["username"]
 
 
 def api_exception_to_message(e):
-    """ Convert API exception to human digestable error message - parsing
+    """Convert API exception to human digestable error message - parsing
     out the shed generate message if possible.
     """
     message = unicodify(e)
@@ -78,24 +64,23 @@ def api_exception_to_message(e):
             # Galaxy passes nice JSON messages as their errors, which bioblend
             # blindly returns. Attempt to parse those.
             upstream_error = json.loads(message)
-            message = upstream_error['err_msg']
+            message = upstream_error["err_msg"]
         except Exception:
             pass
     return message
 
 
 def find_category_ids(tsi, categories):
-    """ Translate human readable category names into their associated IDs.
-    """
+    """Translate human readable category names into their associated IDs."""
     category_list = tsi.categories.get_categories()
 
     category_ids = []
     for cat in categories:
-        matching_cats = [x for x in category_list if x['name'] == cat]
+        matching_cats = [x for x in category_list if x["name"] == cat]
         if not matching_cats:
             message = "Failed to find category %s" % cat
             raise Exception(message)
-        category_ids.append(matching_cats[0]['id'])
+        category_ids.append(matching_cats[0]["id"])
     return category_ids
 
 
@@ -105,14 +90,14 @@ def download_tar(tsi, repo_id, destination, to_directory):
         base_url += "/"
     download_url = REPOSITORY_DOWNLOAD_TEMPLATE % (base_url, repo_id)
     if to_directory:
-        tar_args = ['-xzf', '-', '--strip-components=1']
+        tar_args = ["-xzf", "-", "--strip-components=1"]
         untar_to(download_url, tar_args=tar_args, dest_dir=destination)
     else:
         untar_to(download_url, path=destination)
 
 
 def _user(tsi):
-    """ Fetch user information from the ToolShed API for given
+    """Fetch user information from the ToolShed API for given
     key.
     """
     # TODO: this should be done with an actual bioblend method,

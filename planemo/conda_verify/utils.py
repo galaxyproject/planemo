@@ -12,22 +12,20 @@ def get_object_type(data):
     if head not in MAGIC_HEADERS:
         return None
     lookup = MAGIC_HEADERS.get(head)
-    if lookup == 'DLL':
-        pos = data.find('PE\0\0')
+    if lookup == "DLL":
+        pos = data.find("PE\0\0")
         if pos < 0:
             return "<no PE header found>"
         i = ord(data[pos + 4]) + 256 * ord(data[pos + 5])
         return "DLL " + DLL_TYPES.get(i)
-    elif lookup.startswith('MachO'):
+    elif lookup.startswith("MachO"):
         return lookup
-    elif lookup == 'ELF':
-        return "ELF" + {'\x01': '32', '\x02': '64'}.get(data[4])
+    elif lookup == "ELF":
+        return "ELF" + {"\x01": "32", "\x02": "64"}.get(data[4])
 
 
 def get_bad_seq(s):
-    for seq in ('--', '-.', '-_',
-                '.-', '..', '._',
-                '_-', '_.'):  # but '__' is fine
+    for seq in ("--", "-.", "-_", ".-", "..", "._", "_-", "_."):  # but '__' is fine
         if seq in s:
             return seq
     return None
@@ -44,11 +42,12 @@ def all_ascii(data, allow_CR=False):
     return True
 
 
-class memoized(object):
+class memoized:
     """Decorator. Caches a function's return value each time it is called.
     If called later with the same arguments, the cached value is returned
     (not reevaluated).
     """
+
     def __init__(self, func):
         self.func = func
         self.cache = {}
@@ -66,6 +65,6 @@ class memoized(object):
             return value
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print(sys.version)
-    print(all_ascii(b'Hello\x00'), all_ascii(b"Hello World!"))
+    print(all_ascii(b"Hello\x00"), all_ascii(b"Hello World!"))

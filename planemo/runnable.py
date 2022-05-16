@@ -1,11 +1,13 @@
 """Describe artifacts that can be run, tested, and linted."""
 
-from __future__ import absolute_import
 
 import abc
 import os
 from distutils.dir_util import copy_tree
-from enum import auto, Enum
+from enum import (
+    auto,
+    Enum,
+)
 from pathlib import Path
 from typing import NamedTuple
 from urllib.parse import urlparse
@@ -20,26 +22,27 @@ from galaxy.tool_util.loader_directory import (
     looks_like_a_tool_xml,
 )
 from galaxy.tool_util.parser import get_tool_source
-from six import (
-    add_metaclass,
-    python_2_unicode_compatible,
-)
 
-from planemo.exit_codes import EXIT_CODE_UNKNOWN_FILE_TYPE, ExitCodeException
-from planemo.galaxy.workflows import describe_outputs, GALAXY_WORKFLOWS_PREFIX
+from planemo.exit_codes import (
+    EXIT_CODE_UNKNOWN_FILE_TYPE,
+    ExitCodeException,
+)
+from planemo.galaxy.workflows import (
+    describe_outputs,
+    GALAXY_WORKFLOWS_PREFIX,
+)
 from planemo.io import error
 from planemo.shed import DOCKSTORE_REGISTRY_CONF
-from planemo.test import check_output, for_collections
+from planemo.test import (
+    check_output,
+    for_collections,
+)
 
-TEST_SUFFIXES = [
-    "-tests", "_tests", "-test", "_test"
-]
+TEST_SUFFIXES = ["-tests", "_tests", "-test", "_test"]
 TEST_EXTENSIONS = [".yml", ".yaml", ".json"]
 
-TEST_FILE_NOT_LIST_MESSAGE = ("Invalid test definition file [%s] - file must "
-                              "contain a list of tests")
-TEST_FIELD_MISSING_MESSAGE = ("Invalid test definition [test #%d in %s] -"
-                              "defintion must field [%s].")
+TEST_FILE_NOT_LIST_MESSAGE = "Invalid test definition file [%s] - file must " "contain a list of tests"
+TEST_FIELD_MISSING_MESSAGE = "Invalid test definition [test #%d in %s] -" "defintion must field [%s]."
 
 
 class RunnableType(Enum):
@@ -73,6 +76,7 @@ class RunnableType(Enum):
 
 class Runnable(NamedTuple):
     """Abstraction describing tools and workflows."""
+
     uri: str
     type: RunnableType
 
@@ -84,7 +88,7 @@ class Runnable(NamedTuple):
             query = parse_result.query
             if query:
                 assert query.startswith("runnable_path=")
-                return query[len("runnable_path="):]
+                return query[len("runnable_path=") :]
             else:
                 raise ValueError(f"Runnable with URI {uri} is remote resource without local path")
         else:
@@ -105,7 +109,7 @@ class Runnable(NamedTuple):
     @property
     def test_data_search_path(self):
         """During testing, path to search for test data files."""
-        if self.type.name in ['galaxy_datamanager']:
+        if self.type.name in ["galaxy_datamanager"]:
             return os.path.join(os.path.dirname(self.path), os.path.pardir)
         else:
             return self.path
@@ -118,13 +122,13 @@ class Runnable(NamedTuple):
     @property
     def data_manager_conf_path(self):
         """Path of a Galaxy data manager configuration for runnable or None."""
-        if self.type.name in ['galaxy_datamanager']:
-            return os.path.join(os.path.dirname(self.path), os.pardir, 'data_manager_conf.xml')
+        if self.type.name in ["galaxy_datamanager"]:
+            return os.path.join(os.path.dirname(self.path), os.pardir, "data_manager_conf.xml")
 
     @property
     def has_tools(self):
         """Boolean indicating if this runnable corresponds to one or more tools."""
-        return _runnable_delegate_attribute('has_tools')
+        return _runnable_delegate_attribute("has_tools")
 
     @property
     def is_single_artifact(self):
@@ -132,18 +136,18 @@ class Runnable(NamedTuple):
 
         Currently only directories are considered not a single artifact.
         """
-        return _runnable_delegate_attribute('is_single_artifact')
+        return _runnable_delegate_attribute("is_single_artifact")
 
 
 class Rerunnable(NamedTuple):
     """Abstraction describing artifacts (histories, invocation, jobs) on external Galaxy instances with associated rerunnable and remappable jobs."""
+
     rerunnable_id: str
     rerunnable_type: str
     server_url: str
 
 
 def _runnable_delegate_attribute(attribute):
-
     @property
     def getter(runnable):
         return getattr(runnable.type, attribute)
@@ -172,19 +176,21 @@ def workflows_from_dockstore_yaml(path):
     workflows = []
     parent_dir = Path(path).absolute().parent
     with open(path) as y:
-        for workflow in yaml.safe_load(y).get('workflows', []):
-            workflow_path = workflow.get('primaryDescriptorPath')
+        for workflow in yaml.safe_load(y).get("workflows", []):
+            workflow_path = workflow.get("primaryDescriptorPath")
             if workflow_path:
-                if workflow_path.startswith('/'):
+                if workflow_path.startswith("/"):
                     workflow_path = workflow_path[1:]
             workflows.append(parent_dir.joinpath(workflow_path))
     return workflows
 
 
-def workfow_dir_runnables(path, return_all=False):
+def workflow_dir_runnables(path, return_all=False):
     dockstore_path = os.path.join(path, DOCKSTORE_REGISTRY_CONF)
     if os.path.exists(dockstore_path):
-        runnables = [Runnable(str(path), RunnableType.galaxy_workflow) for path in workflows_from_dockstore_yaml(dockstore_path)]
+        runnables = [
+            Runnable(str(path), RunnableType.galaxy_workflow) for path in workflows_from_dockstore_yaml(dockstore_path)
+        ]
         if return_all:
             return runnables
         else:
@@ -195,7 +201,7 @@ def for_path(path, temp_path=None, return_all=False):
     """Produce a class:`Runnable` for supplied path."""
     runnable_type = None
     if os.path.isdir(path):
-        runnable = workfow_dir_runnables(path, return_all=return_all)
+        runnable = workflow_dir_runnables(path, return_all=return_all)
         if runnable:
             return runnable
         runnable_type = RunnableType.directory
@@ -214,7 +220,7 @@ def for_path(path, temp_path=None, return_all=False):
     else:
         # Check to see if it is a Galaxy workflow with a different extension
         try:
-            with open(path, "r") as f:
+            with open(path) as f:
                 as_dict = yaml.safe_load(f)
             if as_dict.get("a_galaxy_workflow", False):
                 runnable_type = RunnableType.galaxy_workflow
@@ -267,7 +273,7 @@ def cases(runnable):
             absolute_path = path
         return os.path.normpath(absolute_path)
 
-    with open(tests_path, "r") as f:
+    with open(tests_path) as f:
         tests_def = yaml.safe_load(f)
 
     if not isinstance(tests_def, list):
@@ -276,9 +282,7 @@ def cases(runnable):
 
     for i, test_def in enumerate(tests_def):
         if "job" not in test_def:
-            message = TEST_FIELD_MISSING_MESSAGE % (
-                i + 1, tests_path, "job"
-            )
+            message = TEST_FIELD_MISSING_MESSAGE % (i + 1, tests_path, "job")
             raise Exception(message)
         job_def = test_def["job"]
         if isinstance(job_def, dict):
@@ -304,8 +308,7 @@ def cases(runnable):
     return cases
 
 
-@add_metaclass(abc.ABCMeta)
-class AbstractTestCase(object):
+class AbstractTestCase(metaclass=abc.ABCMeta):
     """Description of a test case for a runnable."""
 
     def structured_test_data(self, run_response):
@@ -348,8 +351,10 @@ class TestCase(AbstractTestCase):
         self.doc = doc
 
     def __repr__(self):
-        return 'TestCase (%s) for runnable (%s) with job (%s) and expected outputs (%s) in directory (%s) with id (%s)' % \
-            (self.doc, self.runnable, self.job, self.output_expectations, self.tests_directory, self.index)
+        return (
+            "TestCase (%s) for runnable (%s) with job (%s) and expected outputs (%s) in directory (%s) with id (%s)"
+            % (self.doc, self.runnable, self.job, self.output_expectations, self.tests_directory, self.index)
+        )
 
     def structured_test_data(self, run_response):
         """Check a test case against outputs dictionary."""
@@ -358,7 +363,7 @@ class TestCase(AbstractTestCase):
     @property
     def _job(self):
         if self.job_path is not None:
-            with open(self.job_path, "r") as f:
+            with open(self.job_path) as f:
                 return f.read()
         else:
             return self.job
@@ -390,7 +395,7 @@ class TestCase(AbstractTestCase):
                     return output_problems
                 if "path" not in output_value and "location" in output_value:
                     assert output_value["location"].startswith("file://")
-                    output_value["path"] = output_value["location"][len("file://"):]
+                    output_value["path"] = output_value["location"][len("file://") :]
                 if "path" not in output_value:
                     message = "No path specified for expected output file [%s]" % output_id
                     output_problems.append(message)
@@ -477,8 +482,7 @@ def get_outputs(runnable, gi=None):
         raise NotImplementedError("Getting outputs for this artifact type is not yet supported.")
 
 
-@add_metaclass(abc.ABCMeta)
-class RunnableOutput(object):
+class RunnableOutput(metaclass=abc.ABCMeta):
     """Description of a single output of an execution of a Runnable."""
 
     @abc.abstractproperty
@@ -520,8 +524,7 @@ class CwlWorkflowOutput(RunnableOutput):
         return self._label
 
 
-@add_metaclass(abc.ABCMeta)
-class RunResponse(object):
+class RunResponse(metaclass=abc.ABCMeta):
     """Description of an attempt for an engine to execute a Runnable."""
 
     @property
@@ -567,9 +570,7 @@ class RunResponse(object):
                         continue
 
                     output_value = outputs_dict[output_id]
-                    output_problems.extend(
-                        test_case._check_output(output_id, output_value, output_test)
-                    )
+                    output_problems.extend(test_case._check_output(output_id, output_value, output_test))
             if output_problems:
                 status = "failure"
             else:
@@ -577,9 +578,7 @@ class RunResponse(object):
         else:
             execution_problem = self.error_message
             status = "error"
-        data_dict = dict(
-            status=status
-        )
+        data_dict = dict(status=status)
         if status != "success":
             data_dict["output_problems"] = output_problems
             data_dict["execution_problem"] = execution_problem
@@ -599,7 +598,7 @@ class RunResponse(object):
         if test_case:
             data_dict["inputs"] = test_case._job
             return dict(
-                id=("%s_%s" % (test_case._test_id, test_case.index)),
+                id=(f"{test_case._test_id}_{test_case.index}"),
                 has_data=True,
                 data=data_dict,
                 doc=test_case.doc,
@@ -615,8 +614,7 @@ class RunResponse(object):
             )
 
 
-@add_metaclass(abc.ABCMeta)
-class SuccessfulRunResponse(RunResponse):
+class SuccessfulRunResponse(RunResponse, metaclass=abc.ABCMeta):
     """Description of the results of an engine executing a Runnable."""
 
     def was_successful(self):
@@ -628,11 +626,12 @@ class SuccessfulRunResponse(RunResponse):
         """Return a dict of output descriptions."""
 
 
-@python_2_unicode_compatible
 class ErrorRunResponse(RunResponse):
     """Description of an error while attempting to execute a Runnable."""
 
-    def __init__(self, error_message, job_info=None, invocation_details=None, log=None, start_datetime=None, end_datetime=None):
+    def __init__(
+        self, error_message, job_info=None, invocation_details=None, log=None, start_datetime=None, end_datetime=None
+    ):
         """Create an ErrorRunResponse with specified error message."""
         self._error_message = error_message
         self._job_info = job_info

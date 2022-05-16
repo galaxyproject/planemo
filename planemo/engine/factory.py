@@ -10,7 +10,6 @@ from .galaxy import (
 )
 from .toil import ToilEngine
 
-
 UNKNOWN_ENGINE_TYPE_MESSAGE = "Unknown engine type specified [%s]."
 
 

@@ -7,7 +7,6 @@ from .test_utils import (
 
 
 class DatabaseCommandsTestCase(CliTestCase):
-
     @skip_unless_environ("PLANEMO_ENABLE_POSTGRES_TESTS")
     def _database_commands(self, database_type="postgres"):
         with self._isolate():

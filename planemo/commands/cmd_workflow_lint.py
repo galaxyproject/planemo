@@ -7,7 +7,7 @@ from planemo.lint import build_lint_args
 from planemo.workflow_lint import lint_workflow_artifacts_on_paths
 
 
-@click.command('workflow_lint')
+@click.command("workflow_lint")
 @options.optional_tools_or_packages_arg(multiple=True)
 @options.report_level_option()
 @options.report_xunit()

@@ -1,6 +1,4 @@
 """Planemo I/O abstractions and utilities."""
-from __future__ import absolute_import
-from __future__ import print_function
 
 import contextlib
 import errno
@@ -11,29 +9,25 @@ import subprocess
 import sys
 import tempfile
 import time
+from io import StringIO
 from sys import platform as _platform
 from xml.sax.saxutils import escape
 
 import click
 from galaxy.util import commands
 from galaxy.util.commands import download_command
-from six import (
-    string_types,
-    StringIO
-)
 
 from .exit_codes import (
     EXIT_CODE_NO_SUCH_TARGET,
     EXIT_CODE_OK,
 )
 
-
 IS_OS_X = _platform == "darwin"
 
 
 def args_to_str(args):
     """Collapse list of arguments in a commmand-line string."""
-    if args is None or isinstance(args, string_types):
+    if args is None or isinstance(args, str):
         return args
     else:
         return commands.argv_to_str(args)
@@ -54,8 +48,7 @@ def communicate(cmds, **kwds):
         output = p.communicate()
 
     if p.returncode != 0:
-        template = "Problem executing commands {0} - ({1}, {2})"
-        msg = template.format(cmd_string, output[0], output[1])
+        msg = f"Problem executing commands {cmd_string} - ({output[0]}, {output[1]})"
         raise RuntimeError(msg)
     return output
 
@@ -71,21 +64,21 @@ def info(message, *args):
     """Print stylized info message to the screen."""
     if args:
         message = message % args
-    click.echo(click.style(message, bold=True, fg='green'))
+    click.echo(click.style(message, bold=True, fg="green"))
 
 
 def error(message, *args):
     """Print stylized error message to the screen."""
     if args:
         message = message % args
-    click.echo(click.style(message, bold=True, fg='red'), err=True)
+    click.echo(click.style(message, bold=True, fg="red"), err=True)
 
 
 def warn(message, *args):
     """Print stylized warning message to the screen."""
     if args:
         message = message % args
-    click.echo(click.style(message, fg='red'), err=True)
+    click.echo(click.style(message, fg="red"), err=True)
 
 
 def can_write_to_path(path: str, **kwds):
@@ -95,7 +88,7 @@ def can_write_to_path(path: str, **kwds):
     unless --force caused the 'force' keyword argument to be True.
     """
     if not kwds["force"] and os.path.exists(path):
-        error("%s already exists, exiting." % path)
+        error(f"{path} already exists, exiting.")
         return False
     return True
 
@@ -119,15 +112,15 @@ def untar_to(url, tar_args=None, path=None, dest_dir=None):
         if dest_dir:
             if not os.path.exists(dest_dir):
                 os.makedirs(dest_dir)
-            tar_args[0:0] = ['-C', dest_dir]
+            tar_args[0:0] = ["-C", dest_dir]
         if path:
-            tar_args.insert(0, '-O')
+            tar_args.insert(0, "-O")
 
         download_cmd = download_command(url)
         download_p = commands.shell_process(download_cmd, stdout=subprocess.PIPE)
-        untar_cmd = ['tar'] + tar_args
+        untar_cmd = ["tar"] + tar_args
         if path:
-            with open(path, 'wb') as fh:
+            with open(path, "wb") as fh:
                 shell(untar_cmd, stdin=download_p.stdout, stdout=fh)
         else:
             shell(untar_cmd, stdin=download_p.stdout)
@@ -146,8 +139,7 @@ def find_matching_directories(path, pattern, recursive):
     dirs = []
     if recursive:
         if not os.path.isdir(path):
-            template = "--recursive specified with non-directory path [%s]"
-            message = template % (path)
+            message = f"--recursive specified with non-directory path [{path}]"
             raise Exception(message)
 
         for base_path, dirnames, filenames in os.walk(path):
@@ -198,12 +190,12 @@ def temp_directory(prefix="planemo_tmp_", dir=None, **kwds):
 
 
 def ps1_for_path(path, base="PS1"):
-    """ Used by environment commands to build a PS1 shell
+    """Used by environment commands to build a PS1 shell
     variables for tool or directory of tools.
     """
     file_name = os.path.basename(path)
     base_name = os.path.splitext(file_name)[0]
-    ps1 = "(%s)${%s}" % (base_name, base)
+    ps1 = f"({base_name})${{{base}}}"
     return ps1
 
 
@@ -215,7 +207,7 @@ def kill_pid_file(pid_file: str):
         if e.errno == errno.ENOENT:
             return False
 
-    with open(pid_file, "r") as fh:
+    with open(pid_file) as fh:
         pid = int(fh.read())
     kill_posix(pid)
     try:
@@ -226,6 +218,7 @@ def kill_pid_file(pid_file: str):
 
 def kill_posix(pid: int):
     """Kill process group corresponding to specified pid."""
+
     def _check_pid():
         try:
             os.kill(pid, 0)
@@ -263,20 +256,18 @@ def conditionally_captured_io(capture, tee=False):
 def captured_io_for_xunit(kwds, captured_io):
     """Capture Planemo I/O and timing for outputting to an xUnit report."""
     captured_std = []
-    with_xunit = kwds.get('report_xunit', False)
+    with_xunit = kwds.get("report_xunit", False)
     with conditionally_captured_io(with_xunit, tee=True):
         time1 = time.time()
         yield
         time2 = time.time()
 
     if with_xunit:
-        stdout = [escape(m['data']) for m in captured_std
-                  if m['logger'] == 'stdout']
-        stderr = [escape(m['data']) for m in captured_std
-                  if m['logger'] == 'stderr']
+        stdout = [escape(m["data"]) for m in captured_std if m["logger"] == "stdout"]
+        stderr = [escape(m["data"]) for m in captured_std if m["logger"] == "stderr"]
         captured_io["stdout"] = stdout
         captured_io["stderr"] = stderr
-        captured_io["time"] = (time2 - time1)
+        captured_io["time"] = time2 - time1
     else:
         captured_io["stdout"] = None
         captured_io["stderr"] = None
@@ -294,6 +285,7 @@ class _Capturing(list):
     This swaps sys.std{out,err} with StringIOs and then makes that output
     available.
     """
+
     # http://stackoverflow.com/a/16571630
 
     def __enter__(self):
@@ -304,10 +296,8 @@ class _Capturing(list):
         return self
 
     def __exit__(self, *args):
-        self.extend([{'logger': 'stdout', 'data': x} for x in
-                     self._stringio_stdout.getvalue().splitlines()])
-        self.extend([{'logger': 'stderr', 'data': x} for x in
-                     self._stringio_stderr.getvalue().splitlines()])
+        self.extend([{"logger": "stdout", "data": x} for x in self._stringio_stdout.getvalue().splitlines()])
+        self.extend([{"logger": "stderr", "data": x} for x in self._stringio_stderr.getvalue().splitlines()])
 
         sys.stdout = self._stdout
         sys.stderr = self._stderr
@@ -321,10 +311,10 @@ def tee_captured_output(output):
     """
     for message in output:
         # Append '\n' due to `splitlines()` above
-        if message['logger'] == 'stdout':
-            sys.stdout.write(message['data'] + '\n')
-        if message['logger'] == 'stderr':
-            sys.stderr.write(message['data'] + '\n')
+        if message["logger"] == "stdout":
+            sys.stdout.write(message["data"] + "\n")
+        if message["logger"] == "stderr":
+            sys.stderr.write(message["data"] + "\n")
 
 
 def wait_on(function, desc, timeout=5, polling_backoff=0):
@@ -332,11 +322,11 @@ def wait_on(function, desc, timeout=5, polling_backoff=0):
 
     Grow the polling interval incrementally by the polling_backoff.
     """
-    delta = .25
+    delta = 0.25
     timing = 0
     while True:
         if timing > timeout:
-            message = "Timed out waiting on %s." % desc
+            message = f"Timed out waiting on {desc}."
             raise Exception(message)
         timing += delta
         delta += polling_backoff
@@ -373,15 +363,16 @@ def filter_paths(paths, cwd=None, **kwds):
             norm_p = norm(p)
             norm_exclude_path = norm(exclude_path)
             if norm_p.startswith(norm_exclude_path):
-                return norm_p[len(norm_exclude_path):len(norm_exclude_path) + 1] in ['', os.sep]
+                return norm_p[len(norm_exclude_path) : len(norm_exclude_path) + 1] in ["", os.sep]
             return False
+
         return path_startswith
 
     filters_as_funcs = []
     filters_as_funcs.extend(map(exclude_func, kwds.get("exclude", [])))
 
     for exclude_paths_ins in kwds.get("exclude_from", []):
-        with open(exclude_paths_ins, "r") as f:
+        with open(exclude_paths_ins) as f:
             for line in f.readlines():
                 line = line.strip()
                 if not line or line.startswith("#"):

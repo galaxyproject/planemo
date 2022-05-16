@@ -66,9 +66,7 @@ def test_example_cwl_simple_redirect():
 
 def test_prefixes_separated():
     command_io = _example(
-        "seqtk convert -i '1.bed' --output '1.bam'",
-        example_outputs=["1.bam"],
-        example_inputs=["1.bed"]
+        "seqtk convert -i '1.bed' --output '1.bam'", example_outputs=["1.bam"], example_inputs=["1.bed"]
     )
     cwl_properties = command_io.cwl_properties()
     assert_equal(cwl_properties["base_command"], ["seqtk", "convert"])
@@ -83,11 +81,7 @@ def test_prefixes_separated():
 
 
 def test_prefixes_joined():
-    command_io = _example(
-        "seqtk convert INPUT=1.bed OUTPUT=1.bam",
-        example_outputs=["1.bam"],
-        example_inputs=["1.bed"]
-    )
+    command_io = _example("seqtk convert INPUT=1.bed OUTPUT=1.bam", example_outputs=["1.bam"], example_inputs=["1.bed"])
     cwl_properties = command_io.cwl_properties()
     assert_equal(cwl_properties["base_command"], ["seqtk", "convert"])
     assert_equal(cwl_properties["inputs"][0].position, 1)
@@ -104,7 +98,7 @@ def test_integer_parameters():
     command_io = _example(
         "seqtk convert --size 100 -i '1.bed' --threshold 2.0 --output_type bam > '1.bam'",
         example_outputs=["1.bam"],
-        example_inputs=["1.bed"]
+        example_inputs=["1.bed"],
     )
     cwl_properties = command_io.cwl_properties()
     assert_equal(cwl_properties["base_command"], ["seqtk", "convert"])

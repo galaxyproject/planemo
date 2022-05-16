@@ -8,10 +8,10 @@ from planemo.cli import command_function
 from planemo.io import error
 
 
-@click.command('docker_build')
+@click.command("docker_build")
 @options.optional_tools_arg()
-@click.option('--dockerfile', default=None)
-@click.option('--docker_image_cache', default=None)
+@click.option("--dockerfile", default=None)
+@click.option("--docker_image_cache", default=None)
 @options.docker_cmd_option()
 @options.docker_sudo_option()
 @options.docker_sudo_cmd_option()
@@ -36,9 +36,4 @@ def cli(ctx, path=".", dockerfile=None, **kwds):
 
     This can optionally also cache the images.
     """
-    dockerfiles.dockerfile_build(
-        path=path,
-        dockerfile=dockerfile,
-        error=error,
-        **kwds
-    )
+    dockerfiles.dockerfile_build(path=path, dockerfile=dockerfile, error=error, **kwds)

@@ -2,8 +2,7 @@
 from .run import run_cwltool
 from .toil import run_toil
 
-
 __all__ = (
-    'run_cwltool',
-    'run_toil',
+    "run_cwltool",
+    "run_toil",
 )

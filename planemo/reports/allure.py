@@ -11,7 +11,11 @@ from allure_commons.model2 import (
     Status,
     StatusDetails,
 )
-from allure_commons.types import AttachmentType, LabelType, LinkType
+from allure_commons.types import (
+    AttachmentType,
+    LabelType,
+    LinkType,
+)
 from allure_commons.utils import (
     escape_non_unicode_symbols,
     md5,
@@ -19,21 +23,18 @@ from allure_commons.utils import (
     uuid4,
 )
 from dateutil import parser
-from galaxy.util import (
-    safe_makedirs,
-)
+from galaxy.util import safe_makedirs
 
 JSON_INDENT = 2
 WORKFLOW_INDEX_MATCH = re.compile(r"(.*)\_([\d+])")
 
 
-class AllureListener(object):
+class AllureListener:
     def __init__(self, lifecycle):
         self.lifecycle = lifecycle
 
 
 class AllureWriter:
-
     def __init__(self, results_path):
         safe_makedirs(results_path)
         self.lifecycle = AllureLifecycle()
@@ -67,7 +68,9 @@ class AllureWriter:
             test_result.historyId = md5(str(uuid.uuid4()))
             tool_id = self._record_suite_labels(test_result, test_index, test_data, job)
 
-            self._attach_data("test_data", json.dumps(test_data, indent=JSON_INDENT), attachment_type=AttachmentType.JSON)
+            self._attach_data(
+                "test_data", json.dumps(test_data, indent=JSON_INDENT), attachment_type=AttachmentType.JSON
+            )
             for key in ["stderr", "stdout", "command_line", "external_id", "job_messages"]:
                 val = job.get(key)
                 if not val:
@@ -109,15 +112,14 @@ class AllureWriter:
                 if job_messages:
                     problem_message = str(job_messages)
 
-            test_result.labels.append(Label(name=LabelType.FRAMEWORK, value='planemo'))
+            test_result.labels.append(Label(name=LabelType.FRAMEWORK, value="planemo"))
             test_result.labels.append(Label(name=LabelType.LANGUAGE, value=platform_label()))
 
             self._record_tool_link(test_result, tool_id)
             self._record_status(test_result, test_data)
             if test_result.status in [Status.BROKEN, Status.FAILED]:
                 test_result.statusDetails = StatusDetails(
-                    message=escape_non_unicode_symbols(problem_message or "Unknown problem"),
-                    trace=None
+                    message=escape_non_unicode_symbols(problem_message or "Unknown problem"), trace=None
                 )
 
         self.lifecycle.write_test_case()
@@ -165,7 +167,7 @@ class AllureWriter:
         return tool_id
 
     def _record_tool_link(self, test_result, tool_id):
-        if tool_id and 'repos' in tool_id:
+        if tool_id and "repos" in tool_id:
             tool_parts = tool_id.split("/")
             if len(tool_parts) >= 4:
                 link = Link(LinkType.LINK, "https://%s" % "/".join(tool_parts[0:4]), "Tool Repository")
@@ -183,13 +185,7 @@ class AllureWriter:
             test_result.status = Status.BROKEN
 
     def _attach_data(self, key, val, attachment_type=AttachmentType.TEXT):
-        self.lifecycle.attach_data(
-            uuid4(),
-            val,
-            name=key,
-            attachment_type=attachment_type,
-            extension=None
-        )
+        self.lifecycle.attach_data(uuid4(), val, name=key, attachment_type=attachment_type, extension=None)
 
 
 def write_results(results_path, structured_data, **kwds):

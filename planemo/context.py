@@ -148,39 +148,35 @@ class PlanemoContext(PlanemoContextInterface):
 def configure_standard_planemo_logging(verbose):
     """Configure Planemo's default logging rules."""
     logging_config = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'formatters': {
-            'verbose': {
-                'format': '%(name)s %(levelname)s %(asctime)s: %(message)s'
-            },
-            'simple': {
-                'format': '%(name)s %(levelname)s: %(message)s'
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "verbose": {"format": "%(name)s %(levelname)s %(asctime)s: %(message)s"},
+            "simple": {"format": "%(name)s %(levelname)s: %(message)s"},
+        },
+        "handlers": {
+            "console": {
+                "level": "DEBUG",
+                "class": "logging.StreamHandler",
+                "formatter": "simple" if not verbose else "verbose",
             },
         },
-        'handlers': {
-            'console': {
-                'level': 'DEBUG',
-                'class': 'logging.StreamHandler',
-                'formatter': 'simple' if not verbose else 'verbose'
-            },
-        },
-        'loggers': {
+        "loggers": {
             # Suppress CWL is beta warning, for Planemo purposes - it is absolutely not.
-            'galaxy.tools.parser.factory': {
-                'handlers': ['console'],
-                'propagate': False,
-                'level': 'ERROR' if not verbose else "DEBUG",
+            "galaxy.tools.parser.factory": {
+                "handlers": ["console"],
+                "propagate": False,
+                "level": "ERROR" if not verbose else "DEBUG",
             },
-            'galaxy.tools.deps.commands': {
-                'handlers': ['console'],
-                'propagate': False,
-                'level': 'ERROR' if not verbose else "DEBUG",
+            "galaxy.tools.deps.commands": {
+                "handlers": ["console"],
+                "propagate": False,
+                "level": "ERROR" if not verbose else "DEBUG",
             },
-            'galaxy': {
-                'handlers': ['console'],
-                'propagate': False,
-                'level': 'INFO' if not verbose else "DEBUG",
+            "galaxy": {
+                "handlers": ["console"],
+                "propagate": False,
+                "level": "INFO" if not verbose else "DEBUG",
             },
             # @jmchilton
             # I'm fixing up Planemo's lint functionality for CWL and I keep seeing this for the
@@ -191,23 +187,23 @@ def configure_standard_planemo_logging(verbose):
             # @mr-c
             # That particular warning is worth suppressing. A PR to silence it permanently would be very welcome!
             # https://github.com/RDFLib/rdflib/blob/master/rdflib/term.py#L225
-            'rdflib.term': {
-                'handlers': ['console'],
-                'propagate': False,
-                'level': 'ERROR' if not verbose else "DEBUG",
-            }
+            "rdflib.term": {
+                "handlers": ["console"],
+                "propagate": False,
+                "level": "ERROR" if not verbose else "DEBUG",
+            },
         },
-        'root': {
-            'handlers': ['console'],
-            'propagate': False,
-            'level': 'WARNING' if not verbose else "DEBUG",
-        }
+        "root": {
+            "handlers": ["console"],
+            "propagate": False,
+            "level": "WARNING" if not verbose else "DEBUG",
+        },
     }
     logging.config.dictConfig(logging_config)
 
 
 __all__ = (
-    'configure_standard_planemo_logging',
-    'PlanemoContextInterface',
-    'PlanemoContext',
+    "configure_standard_planemo_logging",
+    "PlanemoContextInterface",
+    "PlanemoContext",
 )

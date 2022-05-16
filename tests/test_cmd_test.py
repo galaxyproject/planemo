@@ -24,18 +24,15 @@ class CmdTestTestCase(CliTestCase):
         """Test testing a data manager test."""
         with self._isolate(), NamedTemporaryFile(prefix="data_manager_test_json") as json_out:
             test_artifact = os.path.join(TEST_DATA_DIR, DATA_MANAGER_TEST_PATH)
-            test_command = self._test_command(
-                "--test_output_json",
-                json_out.name
-            )
+            test_command = self._test_command("--test_output_json", json_out.name)
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
                 "--no_dependency_resolution",
                 test_artifact,
             ]
             self._check_exit_code(test_command, exit_code=0)
-            with open(json_out.name, 'r') as fh:
-                assert json.load(fh)['summary']['num_tests'] == 1
+            with open(json_out.name) as fh:
+                assert json.load(fh)["summary"]["num_tests"] == 1
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_workflow_test_simple_yaml(self):
@@ -48,8 +45,31 @@ class CmdTestTestCase(CliTestCase):
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
                 "--no_dependency_resolution",
-                "--extra_tools", random_lines,
-                "--extra_tools", cat,
+                "--extra_tools",
+                random_lines,
+                "--extra_tools",
+                cat,
+                test_artifact,
+            ]
+            self._check_exit_code(test_command, exit_code=0)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_test_simple_yaml_dockerized(self):
+        """Test testing a simple YAML workflow with Galaxy in Docker."""
+        with self._isolate():
+            random_lines = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "randomlines.xml")
+            cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
+            test_artifact = os.path.join(TEST_DATA_DIR, "wf1.gxwf.yml")
+            test_command = self._test_command()
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command += [
+                "--no_dependency_resolution",
+                "--engine",
+                "docker_galaxy",
+                "--extra_tools",
+                random_lines,
+                "--extra_tools",
+                cat,
                 test_artifact,
             ]
             self._check_exit_code(test_command, exit_code=0)
@@ -64,7 +84,8 @@ class CmdTestTestCase(CliTestCase):
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
                 "--no_dependency_resolution",
-                "--extra_tools", cat,
+                "--extra_tools",
+                cat,
                 test_artifact,
             ]
             # try:
@@ -102,7 +123,8 @@ class CmdTestTestCase(CliTestCase):
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
                 "--no_dependency_resolution",
-                "--extra_tools", composite_input_imzml,
+                "--extra_tools",
+                composite_input_imzml,
                 test_artifact,
             ]
             self._check_exit_code(test_command, exit_code=0)
@@ -117,7 +139,8 @@ class CmdTestTestCase(CliTestCase):
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
                 "--no_dependency_resolution",
-                "--extra_tools", cat_list,
+                "--extra_tools",
+                cat_list,
                 test_artifact,
             ]
             # try:
@@ -168,7 +191,8 @@ class CmdTestTestCase(CliTestCase):
         with self._isolate() as f:
             test_artifact = os.path.join(TEST_DATA_DIR, "int_tool.cwl")
             test_command = self._test_command(
-                "--engine", "toil",
+                "--engine",
+                "toil",
                 test_artifact,
             )
             self._check_exit_code(test_command, exit_code=0)
@@ -203,7 +227,7 @@ class CmdTestTestCase(CliTestCase):
             test_command.append(test_artifact)
             self._check_exit_code(test_command, exit_code=1)
             output_json_path = os.path.join(f, "tool_test_output.json")
-            with open(output_json_path, "r") as f:
+            with open(output_json_path) as f:
                 output = json.load(f)
             assert "tests" in output
             tests = output["tests"]

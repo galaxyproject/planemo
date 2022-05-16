@@ -7,7 +7,7 @@ from planemo.cli import command_function
 from planemo.database import create_database_source
 
 
-@click.command('database_delete')
+@click.command("database_delete")
 @options.database_identifier_argument()
 @options.profile_database_options()
 @options.docker_config_options()

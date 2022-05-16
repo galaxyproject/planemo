@@ -18,11 +18,12 @@ runner = CliRunner()
 # Don't document the following commands - they should not be considered part
 # of the planemo API.
 INTERNAL_COMMANDS = [
-    'create_gist',
-    'shed_download',
+    "create_gist",
+    "shed_download",
 ]
 
-COMMAND_TEMPLATE = Template('''
+COMMAND_TEMPLATE = Template(
+    """
 ``${command}`` command
 ======================================
 
@@ -31,7 +32,8 @@ This section is auto-generated from the help text for the planemo command
 --help``.
 
 ${command_help}
-''')
+"""
+)
 
 COMMANDS_TEMPLATE = """========
 Commands
@@ -56,12 +58,13 @@ for command in list_cmds():
 
     def clean_rst_line(line):
         # Check for that click \b.
-        if line.startswith('    \x08'):
+        if line.startswith("    \x08"):
             return "::\n"
         if line.startswith("    "):
             return line[4:]
         else:
             return line
+
     all_lines = raw_rst.split("\n")
     all_lines[0] = all_lines[0].lstrip()  # """ Fix docs like this.
     clean_rst = "\n".join(map(clean_rst_line, all_lines))
@@ -74,7 +77,7 @@ for command in list_cmds():
     option_lines = False
     for line in lines:
         if line.startswith("Usage: "):
-            new_lines.append("**Usage**::\n\n    %s" % line[len("Usage: "):])
+            new_lines.append("**Usage**::\n\n    %s" % line[len("Usage: ") :])
             new_lines.append("\n**Help**\n")
             new_lines.append(clean_rst)
             help_lines = True
@@ -82,7 +85,7 @@ for command in list_cmds():
             help_lines = False
             new_lines.append("**Options**::\n\n")
             option_lines = True
-        elif line.startswith('\b') or line.startswith("^H") or line.startswith('\x08') or line.startswith(''):
+        elif line.startswith("\b") or line.startswith("^H") or line.startswith("\x08") or line.startswith(""):
             new_lines.append("\n::\n\n")
         elif option_lines:
             new_lines.append("    %s" % line)
