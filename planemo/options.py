@@ -1591,6 +1591,12 @@ def test_options():
                 "to disable completely."
             ),
         ),
+        planemo_option(
+            "--test_default_wait",
+            type=int,
+            help="Maximum runtime of a single test in seconds.",
+            default=0,
+        ),
     )
 
 
