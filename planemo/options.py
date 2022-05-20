@@ -1592,7 +1592,7 @@ def test_options():
             ),
         ),
         planemo_option(
-            "--test_default_wait",
+            "--test_timeout",
             type=int,
             help="Maximum runtime of a single test in seconds.",
             default=0,
