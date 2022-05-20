@@ -78,6 +78,8 @@ def skip_requirements_option():
 @options.report_level_option()
 @options.report_xunit()
 @options.fail_level_option()
+@options.galaxy_url_option()
+@options.galaxy_user_key_option()
 @command_function
 def cli(ctx, paths, **kwds):  # noqa C901
     """Auto-update tool requirements by checking against Conda and updating if newer versions are available."""
