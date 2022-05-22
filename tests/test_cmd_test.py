@@ -11,6 +11,7 @@ from .test_utils import (
     skip_if_environ,
     skip_unless_module,
     TEST_DATA_DIR,
+    TEST_TOOLS_DIR,
 )
 
 DATA_MANAGER_TEST_PATH = "data_manager/data_manager_fetch_genome_dbkeys_all_fasta/data_manager/data_manager_fetch_genome_all_fasta_dbkeys.xml"
@@ -52,6 +53,31 @@ class CmdTestTestCase(CliTestCase):
                 test_artifact,
             ]
             self._check_exit_code(test_command, exit_code=0)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_tool_test_timeout(self):
+        """Test if --test_timeout parameter is working."""
+        with self._isolate(), NamedTemporaryFile(prefix="timeout_test_json") as json_out:
+            test_artifact = os.path.join(TEST_TOOLS_DIR, "timeout.xml")
+            test_command = self._test_command("--test_output_json", json_out.name)
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command += [
+                "--test_timeout",
+                "1",
+                test_artifact,
+            ]
+            self._check_exit_code(test_command, exit_code=1)
+            with open(json_out.name) as fh:
+                tool_test_json = json.load(fh)
+                assert tool_test_json["summary"]["num_tests"] == 1
+                # check run time, for smaller 10 since the test will take a bit longer than 1s
+                # the important bit is that it's not about 30s (since the test tool calls `sleep 30`)
+                assert (
+                    float(tool_test_json["tests"][0]["data"]["time_seconds"]) > 10
+                ), "Test needed more than 10 sec but should time out after 1"
+                assert (
+                    "Timed out after" not in tool_test_json["tests"][0]["data"]["problem_log"]
+                ), "Time out did not happen"
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_workflow_test_simple_yaml_dockerized(self):

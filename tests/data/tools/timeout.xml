@@ -1,0 +1,22 @@
+<tool id="timeout" name="time out" version="1.0">
+    <description>just wastes time</description>
+    <command detect_errors="exit_code"><![CDATA[
+        echo "output" > '$output' &&
+        sleep 30;
+    ]]></command>
+    <inputs>
+    </inputs>
+    <outputs>
+        <data name="output" format="txt"/>
+    </outputs>
+    <tests>
+        <test>
+            <output name="output">
+                <assert_contents>
+                    <has_text text="output"/>
+                </assert_contents>
+            </output>
+        </test>
+    </tests>
+    <help/>
+</tool>
