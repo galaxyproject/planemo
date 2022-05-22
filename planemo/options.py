@@ -1750,7 +1750,7 @@ def tool_init_command_option():
         type=click.STRING,
         default=None,
         prompt=False,
-        help=("Command potentially including cheetah variables ()" "(e.g. 'seqtk seq -a $input > $output')"),
+        help=("Command potentially including cheetah variables ()" "(e.g. 'seqtk seq -A $input > $output')"),
     )
 
 
@@ -1909,7 +1909,7 @@ def tool_init_container_option():
 
 EXAMPLE_COMMAND_HELP = (
     "Example to command with paths to build Cheetah template from "
-    "(e.g. 'seqtk seq -a 2.fastq > 2.fasta'). Option cannot be used "
+    "(e.g. 'seqtk seq -A 2.fastq > 2.fasta'). Option cannot be used "
     "with --command, should be used --example_input and "
     "--example_output."
 )

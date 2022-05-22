@@ -23,10 +23,10 @@ Generate tool outline from given arguments.
       --version TEXT            Tool XML version.
       -d, --description TEXT    Short description for new tool (user facing)
       -c, --command TEXT        Command potentially including cheetah variables
-                                ()(e.g. 'seqtk seq -a $input > $output')
+                                ()(e.g. 'seqtk seq -A $input > $output')
     
       --example_command TEXT    Example to command with paths to build Cheetah
-                                template from (e.g. 'seqtk seq -a 2.fastq >
+                                template from (e.g. 'seqtk seq -A 2.fastq >
                                 2.fasta'). Option cannot be used with --command,
                                 should be used --example_input and --example_output.
     

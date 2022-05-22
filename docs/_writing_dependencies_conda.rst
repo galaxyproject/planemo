@@ -164,7 +164,7 @@ demonstrating using this tool.
     2017-02-22 10:13:29,064 INFO  [galaxy.jobs.handler] (2) Job dispatched
     2017-02-22 10:13:29,281 DEBUG [galaxy.tools.deps] Using dependency seqtk version 1.2 of type conda
     2017-02-22 10:13:29,282 DEBUG [galaxy.tools.deps] Using dependency seqtk version 1.2 of type conda
-    2017-02-22 10:13:29,317 INFO  [galaxy.jobs.command_factory] Built script [/tmp/tmpLvKwta/job_working_directory/000/2/tool_script.sh] for tool command [[ "$CONDA_DEFAULT_ENV" = "/Users/john/miniconda2/envs/__seqtk@1.2" ] || . /Users/john/miniconda2/bin/activate '/Users/john/miniconda2/envs/__seqtk@1.2' >conda_activate.log 2>&1 ; seqtk seq -a '/tmp/tmpLvKwta/files/000/dataset_1.dat' > '/tmp/tmpLvKwta/files/000/dataset_2.dat']
+    2017-02-22 10:13:29,317 INFO  [galaxy.jobs.command_factory] Built script [/tmp/tmpLvKwta/job_working_directory/000/2/tool_script.sh] for tool command [[ "$CONDA_DEFAULT_ENV" = "/Users/john/miniconda2/envs/__seqtk@1.2" ] || . /Users/john/miniconda2/bin/activate '/Users/john/miniconda2/envs/__seqtk@1.2' >conda_activate.log 2>&1 ; seqtk seq -A '/tmp/tmpLvKwta/files/000/dataset_1.dat' > '/tmp/tmpLvKwta/files/000/dataset_2.dat']
     2017-02-22 10:13:29,516 DEBUG [galaxy.tools.deps] Using dependency samtools version None of type conda
     2017-02-22 10:13:29,516 DEBUG [galaxy.tools.deps] Using dependency samtools version None of type conda
     ok

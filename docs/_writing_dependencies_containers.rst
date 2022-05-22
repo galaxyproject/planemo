@@ -102,7 +102,7 @@ tool from the introductory tutorial.
     2017-03-01 08:18:20,325 INFO  [galaxy.tools.deps.containers] Checking with container resolver [ExplicitDockerContainerResolver[]] found description [None]
     2017-03-01 08:18:20,468 INFO  [galaxy.tools.deps.containers] Checking with container resolver [CachedMulledDockerContainerResolver[namespace=None]] found description [None]
     2017-03-01 08:18:20,881 INFO  [galaxy.tools.deps.containers] Checking with container resolver [MulledDockerContainerResolver[namespace=biocontainers]] found description [ContainerDescription[identifier=quay.io/biocontainers/seqtk:1.2--0,type=docker]]
-    2017-03-01 08:18:20,904 INFO  [galaxy.jobs.command_factory] Built script [/tmp/tmpw8_UQm/job_working_directory/000/2/tool_script.sh] for tool command [seqtk seq -a '/tmp/tmpw8_UQm/files/000/dataset_1.dat' > '/tmp/tmpw8_UQm/files/000/dataset_2.dat']
+    2017-03-01 08:18:20,904 INFO  [galaxy.jobs.command_factory] Built script [/tmp/tmpw8_UQm/job_working_directory/000/2/tool_script.sh] for tool command [seqtk seq -A '/tmp/tmpw8_UQm/files/000/dataset_1.dat' > '/tmp/tmpw8_UQm/files/000/dataset_2.dat']
     2017-03-01 08:18:21,060 DEBUG [galaxy.tools.deps] Using dependency samtools version None of type conda
     2017-03-01 08:18:21,061 DEBUG [galaxy.tools.deps] Using dependency samtools version None of type conda
     ok
