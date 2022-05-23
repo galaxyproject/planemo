@@ -49,7 +49,7 @@ class BuildAndLintTestCase(CliTestCase):
             assert process_dict["baseCommand"] == ["seqtk", "seq"]
             input0 = process_dict["inputs"]["input1"]
             assert input0["inputBinding"]["position"] == 1
-            assert input0["inputBinding"]["prefix"] == "-a"
+            assert input0["inputBinding"]["prefix"] == "-A"
             assert input0["type"] == "File"
             output = process_dict["outputs"]["output1"]
             assert output["type"] == "File"
