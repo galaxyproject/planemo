@@ -506,6 +506,9 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         env = _build_env_for_galaxy(properties, template_args)
         env.update(install_env)
         _build_test_env(properties, env)
+        test_timeout = kwds.get("test_timeout")
+        if test_timeout:
+            env["GALAXY_TEST_DEFAULT_WAIT"] = str(test_timeout)
         env["GALAXY_TEST_SHED_TOOL_CONF"] = shed_tool_conf
         env["GALAXY_TEST_DBURI"] = properties["database_connection"]
 
