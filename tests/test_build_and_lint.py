@@ -49,7 +49,7 @@ class BuildAndLintTestCase(CliTestCase):
             assert process_dict["baseCommand"] == ["seqtk", "seq"]
             input0 = process_dict["inputs"]["input1"]
             assert input0["inputBinding"]["position"] == 1
-            assert input0["inputBinding"]["prefix"] == "-a"
+            assert input0["inputBinding"]["prefix"] == "-A"
             assert input0["type"] == "File"
             output = process_dict["outputs"]["output1"]
             assert output["type"] == "File"
@@ -94,7 +94,7 @@ def _cwl_init_command(help_text=True, container=True, test_case=True):
         "--name",
         "Convert to FASTA (seqtk)",
         "--example_command",
-        "seqtk seq -a 2.fastq > 2.fasta",
+        "seqtk seq -A 2.fastq > 2.fasta",
         "--example_input",
         "2.fastq",
         "--example_output",
@@ -121,7 +121,7 @@ def _init_command(test_case=True, help_text=True, doi=True, macros=False):
         "--requirement",
         "seqtk@1.0-r68",
         "--example_command",
-        "seqtk seq -a 2.fastq > 2.fasta",
+        "seqtk seq -A 2.fastq > 2.fasta",
         "--example_input",
         "2.fastq",
         "--example_output",
