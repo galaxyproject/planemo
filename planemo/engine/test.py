@@ -9,8 +9,8 @@ def test_runnables(ctx, runnables, original_paths=None, **kwds):
     test_engine_testable = {RunnableType.galaxy_tool, RunnableType.galaxy_datamanager, RunnableType.directory}
     enable_test_engines = any(r.type not in test_engine_testable for r in runnables)
     enable_test_engines = enable_test_engines or engine_type != "galaxy"
-    ctx.vlog("Using test engine type %s" % engine_type)
+    ctx.vlog(f"Using test engine type {engine_type}")
     with engine_context(ctx, **kwds) as engine:
         test_data = engine.test(runnables)
-        ctx.vlog("engine.test returning [%s]" % test_data)
+        ctx.vlog(f"engine.test returning [{test_data}]")
         return handle_reports_and_summary(ctx, test_data.structured_data, kwds=kwds)

@@ -38,7 +38,7 @@ def cli(ctx, paths, **kwds):
     kwds["port"] = get_free_port()
     with engine_context(ctx, **kwds) as engine:
         test_data = engine.test(runnables)
-        ctx.vlog("engine.test returning [%s]" % test_data)
+        ctx.vlog(f"engine.test returning [{test_data}]")
         return_code = handle_reports_and_summary(ctx, test_data.structured_data, kwds=kwds)
     sys.exit(return_code)
 
