@@ -6,6 +6,7 @@ from planemo.tools import uri_to_path
 from .runnable import (
     for_path,
     for_uri,
+    GALAXY_TOOLS_PREFIX,
 )
 
 
@@ -18,8 +19,10 @@ def for_runnable_identifier(ctx, runnable_identifier, kwds, temp_path=None, retu
         runnable_identifier = uri_to_path(ctx, runnable_identifier)
     if os.path.exists(runnable_identifier):
         runnable = for_path(runnable_identifier, temp_path=temp_path, return_all=return_all)
-    else:  # assume galaxy workflow id
-        if not runnable_identifier.startswith(GALAXY_WORKFLOWS_PREFIX):
+    else:  # assume galaxy workflow or tool id
+        if "/repos/" in runnable_identifier:
+            runnable_identifier = f"{GALAXY_TOOLS_PREFIX}{runnable_identifier}"
+        elif not runnable_identifier.startswith(GALAXY_WORKFLOWS_PREFIX):
             runnable_identifier = f"{GALAXY_WORKFLOWS_PREFIX}{runnable_identifier}"
         runnable = for_uri(runnable_identifier)
     return runnable
