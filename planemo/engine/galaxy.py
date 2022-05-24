@@ -5,14 +5,22 @@ import contextlib
 
 from galaxy.tool_util.verify import interactor
 
+from planemo import io
 from planemo.galaxy.activity import (
     execute,
     execute_rerun,
 )
 from planemo.galaxy.config import external_galaxy_config
 from planemo.galaxy.serve import serve_daemon
-from planemo.runnable import RunnableType
+from planemo.runnable import (
+    DelayedGalaxyToolTestCase,
+    ExternalGalaxyToolTestCase,
+    GALAXY_TOOLS_PREFIX,
+    RunnableType,
+)
 from .interface import BaseEngine
+
+INSTALLING_MESSAGE = "Installing repositories - this may take some time..."
 
 
 class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
@@ -30,7 +38,7 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
     ]
 
     def _run(self, runnables, job_paths):
-        """Run CWL job in Galaxy."""
+        """Run job in Galaxy."""
         results = []
         for runnable, job_path in zip(runnables, job_paths):
             self._ctx.vlog(f"Serving artifact [{runnable}] with Galaxy.")
@@ -63,7 +71,8 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
         if embedded_test_cases:
             runnables = [test_case.runnable for test_case in embedded_test_cases]
             with self.ensure_runnables_served(runnables) as config:
-                for test_case in embedded_test_cases:
+                expanded_test_cases = expand_test_cases(config, embedded_test_cases)
+                for test_case in expanded_test_cases:
                     galaxy_interactor_kwds = {
                         "galaxy_url": config.galaxy_url,
                         "master_api_key": config.master_api_key,
@@ -116,7 +125,30 @@ class LocalManagedGalaxyEngine(GalaxyEngine):
         # TODO: define an interface for this - not everything in config would make sense for a
         # pre-existing Galaxy interface.
         with serve_daemon(self._ctx, runnables, **self._serve_kwds()) as config:
+            if "install_args_list" in self._serve_kwds():
+                self.shed_install(config)
             yield config
+
+    def shed_install(self, config):
+        kwds = self._serve_kwds()
+        install_args_list = kwds["install_args_list"]
+        install_deps = not kwds.get("skip_dependencies", False)
+        print(INSTALLING_MESSAGE)
+        io.info(INSTALLING_MESSAGE)
+        for install_args in install_args_list:
+            install_args["install_tool_dependencies"] = install_deps
+            install_args["install_repository_dependencies"] = True
+            install_args["new_tool_panel_section_label"] = "Shed Installs"
+            config.install_repo(**install_args)
+        try:
+            config.wait_for_all_installed()
+        except Exception:
+            if self._ctx.verbose:
+                print("Failed to install tool repositories, Galaxy log:")
+                print(config.log_contents)
+                print("Galaxy root:")
+                io.shell(["ls", config.galaxy_root])
+            raise
 
     def _serve_kwds(self):
         return self._kwds.copy()
@@ -148,6 +180,28 @@ class ExternalGalaxyEngine(GalaxyEngine):
         with self.ensure_runnables_served([]) as config:
             rerun_response = execute_rerun(ctx, config, rerunnable, **kwds)
             return rerun_response
+
+
+def expand_test_cases(config, test_cases):
+    expanded_test_cases = []
+    for test_case in test_cases:
+        if not isinstance(test_case, DelayedGalaxyToolTestCase):
+            expanded_test_cases.append(test_case)
+        else:
+            runnable = test_case.runnable
+            tool_id = runnable.uri.split(GALAXY_TOOLS_PREFIX)[1]
+            test_data = config.gi.tools._get(f"{tool_id}/test_data")
+            for test_dict in test_data:
+                expanded_test_cases.append(
+                    ExternalGalaxyToolTestCase(
+                        runnable,
+                        tool_id=tool_id,
+                        tool_version=test_dict["tool_version"],
+                        test_index=test_dict["test_index"],
+                        test_dict=test_dict,
+                    )
+                )
+    return expanded_test_cases
 
 
 __all__ = (
