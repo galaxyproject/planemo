@@ -33,5 +33,5 @@ def cli(ctx, paths, **kwds):
     runnables = install_args_list_to_runnables(ctx, install_args_list, kwds)
     with engine_context(ctx, **kwds) as engine:
         with engine.ensure_runnables_served(runnables) as config:
-            io.info("Galaxy running with tools installed at %s" % config.galaxy_url)
+            io.info(f"Galaxy running with tools installed at {config.galaxy_url}")
             sleep_for_serve()

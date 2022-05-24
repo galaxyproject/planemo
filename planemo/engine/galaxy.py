@@ -43,9 +43,9 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
         for runnable, job_path in zip(runnables, job_paths):
             self._ctx.vlog(f"Serving artifact [{runnable}] with Galaxy.")
             with self.ensure_runnables_served([runnable]) as config:
-                self._ctx.vlog("Running job path [%s]" % job_path)
+                self._ctx.vlog(f"Running job path [{job_path}]")
                 if self._ctx.verbose:
-                    self._ctx.log("Running Galaxy with API configuration [%s]" % config.user_api_config)
+                    self._ctx.log(f"Running Galaxy with API configuration [{config.user_api_config}]")
                 run_response = execute(self._ctx, config, runnable, job_path, **self._kwds)
                 results.append(run_response)
 
