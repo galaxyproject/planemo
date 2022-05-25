@@ -10,7 +10,11 @@ from urllib.parse import urljoin
 
 import bioblend
 from bioblend.util import attach_file
-from galaxy.tool_util.client.staging import StagingInterace
+
+try:
+    from galaxy.tool_util.client.staging import StagingInterface
+except ImportError:
+    from galaxy.tool_util.client.staging import StagingInterace as StagingInterface
 from galaxy.tool_util.cwl.util import (
     invocation_to_output,
     output_to_cwl_json,
@@ -78,7 +82,7 @@ def log_contents_str(config):
         return "No log for this engine type."
 
 
-class PlanemoStagingInterface(StagingInterace):
+class PlanemoStagingInterface(StagingInterface):
     def __init__(self, ctx, runnable, user_gi, version_major, simultaneous_uploads):
         self._ctx = ctx
         self._user_gi = user_gi
