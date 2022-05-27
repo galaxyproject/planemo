@@ -4,11 +4,14 @@ from galaxy.tool_util.deps import conda_util
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.conda import build_conda_context, collect_conda_targets
+from planemo.conda import (
+    build_conda_context,
+    collect_conda_targets,
+)
 from planemo.io import coalesce_return_codes
 
 
-@click.command('conda_install')
+@click.command("conda_install")
 @options.optional_tools_or_packages_arg(multiple=True)
 @options.recursive_option()
 @options.conda_target_options()

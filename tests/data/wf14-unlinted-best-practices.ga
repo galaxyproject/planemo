@@ -1,0 +1,96 @@
+{
+    "a_galaxy_workflow": "true",
+    "annotation": "",
+    "format-version": "0.1",
+    "name": "bp (imported from uploaded file)",
+    "steps": {
+        "0": {
+            "annotation": "",
+            "content_id": null,
+            "errors": null,
+            "id": 0,
+            "input_connections": {},
+            "inputs": [],
+            "label": null,
+            "name": "Input dataset",
+            "outputs": [],
+            "position": {
+                "bottom": 730.3166656494141,
+                "height": 82.55000305175781,
+                "left": 1155,
+                "right": 1355,
+                "top": 647.7666625976562,
+                "width": 200,
+                "x": 1155,
+                "y": 647.7666625976562
+            },
+            "tool_id": null,
+            "tool_state": "{\"optional\": false}",
+            "tool_version": null,
+            "type": "data_input",
+            "uuid": "4219d43a-e182-49c0-bee3-8422e6344911",
+            "workflow_outputs": []
+        },
+        "1": {
+            "annotation": "",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_replace_in_column/1.1.3",
+            "errors": null,
+            "id": 1,
+            "input_connections": {},
+            "inputs": [
+                {
+                    "description": "runtime parameter for tool Replace Text",
+                    "name": "infile"
+                }
+            ],
+            "label": null,
+            "name": "Replace Text",
+            "outputs": [
+                {
+                    "name": "outfile",
+                    "type": "input"
+                }
+            ],
+            "position": {
+                "bottom": 744.8333282470703,
+                "height": 114.06666564941406,
+                "left": 1465,
+                "right": 1665,
+                "top": 630.7666625976562,
+                "width": 200,
+                "x": 1465,
+                "y": 630.7666625976562
+            },
+            "post_job_actions": {
+                "TagDatasetActionoutfile": {
+                    "action_arguments": {
+                        "tags": "${report_name}"
+                    },
+                    "action_type": "TagDatasetAction",
+                    "output_name": "outfile"
+                }
+            },
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_replace_in_column/1.1.3",
+            "tool_shed_repository": {
+                "changeset_revision": "ddf54b12c295",
+                "name": "text_processing",
+                "owner": "bgruening",
+                "tool_shed": "toolshed.g2.bx.psu.edu"
+            },
+            "tool_state": "{\"infile\": {\"__class__\": \"RuntimeValue\"}, \"replacements\": [{\"__index__\": 0, \"column\": \"1\", \"find_pattern\": \"${report_name}\", \"replace_pattern\": \"\"}], \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+            "tool_version": "1.1.3",
+            "type": "tool",
+            "uuid": "e429e21f-f01e-4efb-b665-56f454cbe38b",
+            "workflow_outputs": [
+                {
+                    "label": null,
+                    "output_name": "outfile",
+                    "uuid": "e4066fe7-c9a2-43af-a9f5-30a75a5b2107"
+                }
+            ]
+        }
+    },
+    "tags": [],
+    "uuid": "66708ffe-c08c-4647-a7e9-fc7f731206a1",
+    "version": 2
+}

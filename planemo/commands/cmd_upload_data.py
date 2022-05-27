@@ -1,5 +1,4 @@
 """Module describing the planemo ``upload_data`` command."""
-from __future__ import print_function
 
 import click
 
@@ -12,7 +11,7 @@ from planemo.io import info
 from planemo.runnable_resolve import for_runnable_identifier
 
 
-@click.command('upload_data')
+@click.command("upload_data")
 @options.required_runnable_arg()
 @options.required_job_arg()
 @options.required_new_job_arg()

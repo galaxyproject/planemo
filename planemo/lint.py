@@ -1,11 +1,10 @@
 """Utilities to help linting various targets."""
-from __future__ import absolute_import
 
 import os
+from urllib.request import urlopen
 
 import requests
 from galaxy.tool_util.lint import LintContext
-from six.moves.urllib.request import urlopen
 
 from planemo.io import error
 from planemo.shed import find_urls_for_xml
@@ -58,7 +57,7 @@ def find_dois_for_xml(tool_xml):
     dois = []
     for element in tool_xml.getroot().findall("citations"):
         for citation in list(element):
-            if citation.tag == 'citation' and citation.attrib.get('type', '') == 'doi':
+            if citation.tag == "citation" and citation.attrib.get("type", "") == "doi":
                 dois.append(citation.text)
     return dois
 
@@ -67,14 +66,14 @@ def is_doi(publication_id, lint_ctx):
     """Check if dx.doi knows about the ``publication_id``."""
     base_url = "https://doi.org"
     if publication_id is None:
-        lint_ctx.error('Empty DOI citation')
+        lint_ctx.error("Empty DOI citation")
         return
     publication_id = publication_id.strip()
     doiless_publication_id = publication_id.split("doi:", 1)[-1]
     if not doiless_publication_id:
-        lint_ctx.error('Empty DOI citation')
+        lint_ctx.error("Empty DOI citation")
         return
-    url = "%s/%s" % (base_url, doiless_publication_id)
+    url = f"{base_url}/{doiless_publication_id}"
     r = requests.get(url)
     if r.status_code == 200:
         if publication_id != doiless_publication_id:
@@ -109,9 +108,9 @@ def lint_urls(root, lint_ctx):
 
     def validate_url(url, lint_ctx, user_agent=None):
         is_valid = True
-        if url.startswith('http://') or url.startswith('https://'):
+        if url.startswith("http://") or url.startswith("https://"):
             if user_agent:
-                headers = {"User-Agent": user_agent, 'Accept': '*/*'}
+                headers = {"User-Agent": user_agent, "Accept": "*/*"}
             else:
                 headers = None
             r = None
@@ -123,19 +122,19 @@ def lint_urls(root, lint_ctx):
                 if r is not None and r.status_code == 429:
                     # too many requests
                     pass
-                if r is not None and r.status_code == 403 and 'cloudflare' in r.text:
+                if r is not None and r.status_code == 403 and "cloudflare" in r.text:
                     # CloudFlare protection block
                     pass
                 else:
                     is_valid = False
-                    lint_ctx.error("Error '%s' accessing %s" % (e, url))
+                    lint_ctx.error(f"Error '{e}' accessing {url}")
         else:
             try:
                 with urlopen(url) as handle:
                     handle.read(100)
             except Exception as e:
                 is_valid = False
-                lint_ctx.error("Error '%s' accessing %s" % (e, url))
+                lint_ctx.error(f"Error '{e}' accessing {url}")
         if is_valid:
             lint_ctx.info("URL OK %s" % url)
 

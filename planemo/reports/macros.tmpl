@@ -14,7 +14,7 @@
           </details>
 {%      elif step_data.subworkflow%}
 
-{{      render_steps(step_data.subworkflow.values(), display_job_attributes, "Subworkflow Steps")|indent(5, first=True) }}
+{{      render_steps(step_data.subworkflow.steps.values(), display_job_attributes, "Subworkflow Steps")|indent(5, first=True) }}
 
 {%      endif %}
 {%    endfor %}

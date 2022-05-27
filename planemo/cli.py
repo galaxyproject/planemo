@@ -6,14 +6,16 @@ import sys
 import click
 
 from planemo import __version__
-from planemo.context import configure_standard_planemo_logging, PlanemoContext
+from planemo.context import (
+    configure_standard_planemo_logging,
+    PlanemoContext,
+)
 from planemo.exit_codes import ExitCodeException
 from planemo.galaxy import profiles
 from .config import OptionSource
 from .io import error
 
-
-CONTEXT_SETTINGS = dict(auto_envvar_prefix='PLANEMO')
+CONTEXT_SETTINGS = dict(auto_envvar_prefix="PLANEMO")
 COMMAND_ALIASES = {
     "l": "lint",
     "o": "open",
@@ -39,17 +41,15 @@ class PlanemoCliContext(PlanemoContext):
 
 
 pass_context = click.make_pass_decorator(PlanemoCliContext, ensure=True)
-cmd_folder = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                          'commands'))
+cmd_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), "commands"))
 
 
 def list_cmds():
     """List planemo commands from commands folder."""
     rv = []
     for filename in os.listdir(cmd_folder):
-        if filename.endswith('.py') and \
-           filename.startswith('cmd_'):
-            rv.append(filename[len("cmd_"):-len(".py")])
+        if filename.endswith(".py") and filename.startswith("cmd_"):
+            rv.append(filename[len("cmd_") : -len(".py")])
     rv.sort()
     return rv
 
@@ -62,17 +62,16 @@ def name_to_command(name):
     """
     try:
         if sys.version_info[0] == 2:
-            name = name.encode('ascii', 'replace')
-        mod_name = 'planemo.commands.cmd_' + name
-        mod = __import__(mod_name, None, None, ['cli'])
+            name = name.encode("ascii", "replace")
+        mod_name = "planemo.commands.cmd_" + name
+        mod = __import__(mod_name, None, None, ["cli"])
     except ImportError as e:
-        error("Problem loading command %s, exception %s" % (name, e))
+        error(f"Problem loading command {name}, exception {e}")
         return
     return mod.cli
 
 
 class PlanemoCLI(click.MultiCommand):
-
     def list_commands(self, ctx):
         return list_cmds()
 
@@ -84,14 +83,13 @@ class PlanemoCLI(click.MultiCommand):
 
 def command_function(f):
     """Extension point for processing kwds after click callbacks."""
+
     @functools.wraps(f)
     def handle_blended_options(*args, **kwds):
         profile = kwds.get("profile", None)
         if profile:
             ctx = args[0]
-            profile_defaults = profiles.ensure_profile(
-                ctx, profile, **kwds
-            )
+            profile_defaults = profiles.ensure_profile(ctx, profile, **kwds)
             _setup_profile_options(ctx, profile_defaults, kwds)
 
         try:
@@ -109,23 +107,16 @@ def _setup_profile_options(ctx, profile_defaults, kwds):
         use_profile_option = not option_present or not option_cli_specified
         if use_profile_option:
             kwds[key] = value
-            ctx.set_option_source(
-                key, OptionSource.profile, force=True
-            )
+            ctx.set_option_source(key, OptionSource.profile, force=True)
 
 
 @click.command(cls=PlanemoCLI, context_settings=CONTEXT_SETTINGS)
 @click.version_option(__version__)
-@click.option('-v', '--verbose', is_flag=True,
-              help='Enables verbose mode.')
-@click.option('--config',
-              default="~/.planemo.yml",
-              envvar="PLANEMO_GLOBAL_CONFIG_PATH",
-              help="Planemo configuration YAML file.")
-@click.option('--directory',
-              default="~/.planemo",
-              envvar="PLANEMO_GLOBAL_WORKSPACE",
-              help="Workspace for planemo.")
+@click.option("-v", "--verbose", is_flag=True, help="Enables verbose mode.")
+@click.option(
+    "--config", default="~/.planemo.yml", envvar="PLANEMO_GLOBAL_CONFIG_PATH", help="Planemo configuration YAML file."
+)
+@click.option("--directory", default="~/.planemo", envvar="PLANEMO_GLOBAL_WORKSPACE", help="Workspace for planemo.")
 @pass_context
 def planemo(ctx, config, directory, verbose, configure_logging=True):
     """A command-line toolkit for building tools and workflows for Galaxy.

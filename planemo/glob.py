@@ -1,6 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
 NO_GLOB_2 = "glob2 library unavailabile, please install with pip install glob2."
 
 try:
@@ -15,6 +12,4 @@ def glob(*args, **kwds):
     return _glob(*args, **kwds)
 
 
-__all__ = (
-    "glob",
-)
+__all__ = ("glob",)

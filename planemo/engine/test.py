@@ -1,8 +1,6 @@
 import os
 
-from planemo.engine import (
-    engine_context,
-)
+from planemo.engine import engine_context
 from planemo.galaxy import galaxy_config
 from planemo.galaxy import galaxy_serve
 from planemo.galaxy.api import (
@@ -54,9 +52,9 @@ def test_runnables(ctx, runnables, original_paths=None, **kwds):
     else:
         ctx.vlog("Running traditional Galaxy tool tests using run_tests.sh in Galaxy root %s" % engine_type)
         kwds["for_tests"] = True
-        if kwds.get('update_test_data'):
+        if kwds.get("update_test_data"):
             non_copied_runnables = for_paths(original_paths)
-            kwds['test_data_target_dir'] = _find_test_data(non_copied_runnables, **kwds)
+            kwds["test_data_target_dir"] = _find_test_data(non_copied_runnables, **kwds)
         with galaxy_config(ctx, runnables, **kwds) as config:
             return_value = run_in_config(ctx, config, **kwds)
     return return_value

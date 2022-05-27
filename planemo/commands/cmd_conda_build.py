@@ -1,5 +1,4 @@
 """Module describing the planemo ``conda_build`` command."""
-from __future__ import print_function
 
 import click
 
@@ -8,7 +7,7 @@ from planemo.cli import command_function
 from planemo.conda import build_conda_context
 
 
-@click.command('conda_build')
+@click.command("conda_build")
 @options.conda_target_options(include_local=False)  # No reason to expose local, we have to use it.
 @options.recipe_arg(multiple=True)
 @command_function

@@ -1,0 +1,45 @@
+class: GalaxyWorkflow
+label: bp (imported from uploaded file)
+uuid: 66708ffe-c08c-4647-a7e9-fc7f731206a1
+inputs:
+  null:
+    optional: false
+    position:
+      bottom: 730.3166656494141
+      height: 82.55000305175781
+      left: 1155
+      right: 1355
+      top: 647.7666625976562
+      width: 200
+      x: 1155
+      y: 647.7666625976562
+    type: data
+outputs:
+  _anonymous_output_1:
+    outputSource: 1/outfile
+steps:
+  input:
+    tool_id: toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_replace_in_column/1.1.3
+    tool_version: 1.1.3
+    position:
+      bottom: 744.8333282470703
+      height: 114.06666564941406
+      left: 1465
+      right: 1665
+      top: 630.7666625976562
+      width: 200
+      x: 1465
+      y: 630.7666625976562
+    tool_state:
+      infile:
+        __class__: RuntimeValue
+      replacements:
+      - __index__: 0
+        column: '1'
+        find_pattern: ${report_name}
+        replace_pattern: ''
+    in: {}
+    out:
+      outfile:
+        add_tags:
+        - ${report_name}

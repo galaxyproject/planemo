@@ -1,6 +1,5 @@
 """ Utilities for using virtualenv as library and planemo command.
 """
-from __future__ import absolute_import
 
 import os
 import sys
@@ -11,7 +10,7 @@ DEFAULT_PYTHON_VERSION = os.environ.get("PLANEMO_DEFAULT_PYTHON_VERSION", "3")
 
 
 def create_command(virtualenv_path, galaxy_python_version=None):
-    """ If virtualenv is on Planemo's path use it, otherwise use the planemo
+    """If virtualenv is on Planemo's path use it, otherwise use the planemo
     subcommand virtualenv to create the virtualenv.
     """
     # Create a virtualenv with the selected python version.
@@ -21,6 +20,10 @@ def create_command(virtualenv_path, galaxy_python_version=None):
     if python:
         python = os.path.abspath(python)
     else:
-        python = sys.executable or 'python'
-    command = [python, '-m', 'venv', virtualenv_path]
+        python = sys.executable or "python"
+    virtualenv_on_path = which("virtualenv")
+    if virtualenv_on_path:
+        command = [virtualenv_on_path, virtualenv_path, "-p", python]
+    else:
+        command = [python, "-m", "venv", virtualenv_path]
     return " ".join(command)

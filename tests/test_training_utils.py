@@ -4,7 +4,7 @@ import os
 from planemo.training.utils import (
     load_yaml,
     Requirement,
-    save_to_yaml
+    save_to_yaml,
 )
 from .test_utils import TEST_DATA_DIR
 
@@ -17,7 +17,7 @@ def test_load_yaml():
     # test if name there
     assert metadata["name"] == "test"
     # test if order of material is conserved
-    assert metadata['maintainers'][0] == 'maintainer1'
+    assert metadata["maintainers"][0] == "maintainer1"
 
 
 def test_save_to_yaml():
@@ -46,13 +46,9 @@ def test_requirement_init():
 def test_requirement_init_from_dict():
     """Test :func:`planemo.training.utils.Requirement.init_from_dict`."""
     req = Requirement()
-    req.init_from_dict({
-        'title': 'The Requirement',
-        'type': 'external',
-        'link': "http://URL"
-    })
-    assert req.title == 'The Requirement'
-    assert req.type == 'external'
+    req.init_from_dict({"title": "The Requirement", "type": "external", "link": "http://URL"})
+    assert req.title == "The Requirement"
+    assert req.type == "external"
     assert req.link == "http://URL"
 
 
@@ -60,7 +56,7 @@ def test_requirement_export_to_ordered_dict():
     """Test :func:`planemo.training.utils.Requirement.export_to_ordered_dict`."""
     req = Requirement()
     exp_req = req.export_to_ordered_dict()
-    assert 'type' in exp_req
-    assert exp_req['type'] == "internal"
-    assert 'topic_name' in exp_req
-    assert 'link' not in exp_req
+    assert "type" in exp_req
+    assert exp_req["type"] == "internal"
+    assert "topic_name" in exp_req
+    assert "link" not in exp_req

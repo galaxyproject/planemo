@@ -38,15 +38,22 @@ The ``autoupdate`` subcommand can also be used to automatically update workflows
 
     planemo autoupdate workflow.ga
 
-In the basic usage, a local Galaxy instance will be spun up and the workflow uploaded, refactored to include the most recent tool versions, and re-downloaded.
+In the basic usage with the above command, a local Galaxy instance will be spun up and the workflow uploaded, refactored to include the most recent tool versions, and re-downloaded.
 
-Workflows can also be updated against an external galaxy, for example:
+Workflows can also be updated against an external Galaxy server; see the example below. (Please note the server must be running Galaxy version 21.05 or more recent.)
 
 ::
 
     planemo autoupdate workflow.ga --profile usegalaxy-eu
 
 In this case, the workflow returned will contain the most recent tool and subworkflow versions available on that Galaxy server.
+
+An equivalent alternative, if you don't want to use Planemo profiles, is the following:
+
+::
+
+    planemo autoupdate workflow.ga --galaxy_url SERVER_URL --galaxy_user_key API_KEY
+
 
 Implementing an autoupdate CI job
 =================================

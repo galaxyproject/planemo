@@ -7,11 +7,13 @@ import contextlib
 import os
 import shutil
 import tarfile
-from os.path import exists, join
+from os.path import (
+    exists,
+    join,
+)
 
 from galaxy.util import unicodify
 
-from planemo import git
 from planemo.io import shell
 from .test_utils import (
     assert_exists,
@@ -22,7 +24,6 @@ from .test_utils import (
 
 
 class ShedUploadTestCase(CliShedTestCase):
-
     def test_tar_single(self):
         with self._isolate_repo("single_tool") as f:
             upload_command = ["shed_upload", "--tar_only"]
@@ -54,9 +55,7 @@ class ShedUploadTestCase(CliShedTestCase):
 
             self._assert_shed_diff(diff=0)
 
-            upload_command = [
-                "shed_update", "--force_repository_creation", "--check_diff"
-            ]
+            upload_command = ["shed_update", "--force_repository_creation", "--check_diff"]
             upload_command.extend(self._shed_args())
             self._check_exit_code(upload_command)
 
@@ -81,9 +80,7 @@ class ShedUploadTestCase(CliShedTestCase):
             self._shed_create()
 
             self._assert_shed_diff(diff=0)
-            upload_command = [
-                "shed_update", "--force_repository_creation", "--check_diff"
-            ]
+            upload_command = ["shed_update", "--force_repository_creation", "--check_diff"]
             upload_command.extend(self._shed_args())
             self._check_exit_code(upload_command)
 
@@ -119,16 +116,8 @@ class ShedUploadTestCase(CliShedTestCase):
             with self._git_configured():
                 dest = join(f, "single_tool")
                 self._copy_repo("single_tool", dest)
-                shell(" && ".join([
-                    "cd %s" % dest,
-                    "git init",
-                    "git add .",
-                    "git commit -m 'initial commit'"
-                ]))
-                upload_command = [
-                    "shed_update", "--force_repository_creation",
-                    "git+single_tool/.git"
-                ]
+                shell(" && ".join(["cd %s" % dest, "git init", "git add .", "git commit -m 'initial commit'"]))
+                upload_command = ["shed_update", "--force_repository_creation", "git+single_tool/.git"]
                 upload_command.extend(self._shed_args())
                 self._check_exit_code(upload_command)
                 self._verify_single_uploaded(f, ["single_tool"])
@@ -138,36 +127,23 @@ class ShedUploadTestCase(CliShedTestCase):
             with self._git_configured():
                 dest = join(f, "single_tool")
                 self._copy_repo("single_tool", dest)
-                shell(" && ".join([
-                    "cd %s" % dest,
-                    "git init",
-                    "git add .",
-                    "git commit -m 'initial commit'"
-                ]))
-                rev = git.rev(None, "single_tool")
-                upload_command = [
-                    "shed_update", "--force_repository_creation",
-                    "git+single_tool/.git"
-                ]
+                shell(" && ".join(["cd %s" % dest, "git init", "git add .", "git commit -m 'initial commit'"]))
+                upload_command = ["shed_update", "--force_repository_creation", "git+single_tool/.git"]
                 upload_command.extend(self._shed_args())
                 self._check_exit_code(upload_command)
                 self._verify_single_uploaded(f, ["single_tool"])
-                model = self.mock_shed.model
-                repo_id = self.repository_by_name("single_tool")["id"]
-                message = model._repositories_msg[repo_id][0]
-                assert "planemo upload for repository " in message
-                assert "repository https://github.com/galaxyproject" in message
-                assert rev in message
 
     @contextlib.contextmanager
     def _git_configured(self):
-        with modify_environ({
-            "GIT_AUTHOR_NAME": "planemo developer",
-            "GIT_COMMITTER_NAME": "planemo developer",
-            "EMAIL": "planemo@galaxyproject.org",
-            "GIT_AUTHOR_EMAIL": "planemo@galaxyproject.org",
-            "GIT_COMMITTER_EMAIL": "planemo@galaxyproject.org",
-        }):
+        with modify_environ(
+            {
+                "GIT_AUTHOR_NAME": "planemo developer",
+                "GIT_COMMITTER_NAME": "planemo developer",
+                "EMAIL": "planemo@galaxyproject.org",
+                "GIT_AUTHOR_EMAIL": "planemo@galaxyproject.org",
+                "GIT_COMMITTER_EMAIL": "planemo@galaxyproject.org",
+            }
+        ):
             yield
 
     def test_create_and_upload(self):
@@ -202,9 +178,7 @@ class ShedUploadTestCase(CliShedTestCase):
 
     def test_upload_recusrive(self):
         with self._isolate_repo("multi_repos_nested") as f:
-            upload_command = [
-                "shed_update", "-r", "--force_repository_creation"
-            ]
+            upload_command = ["shed_update", "-r", "--force_repository_creation"]
             upload_command.extend(self._shed_args())
             self._check_exit_code(upload_command)
             self._verify_upload(f, ["cat1.xml", "macros.xml"], ["cat1"])
@@ -214,8 +188,7 @@ class ShedUploadTestCase(CliShedTestCase):
         with self._isolate_repo("suite_1") as f:
             # No .shed.yml, make sure to test it can infer type
             # from passed in --name.
-            upload_command = ["shed_upload", "--tar_only",
-                              "--name", "suite_1"]
+            upload_command = ["shed_upload", "--tar_only", "--name", "suite_1"]
             upload_command.extend(self._shed_args())
             self._check_exit_code(upload_command)
             target = self._untar(f, "shed_upload.tar.gz")
@@ -248,7 +221,7 @@ class ShedUploadTestCase(CliShedTestCase):
             upload_command.extend(self._shed_args())
             self._check_exit_code(upload_command)
             target = self._verify_upload(f, ["macros.xml"], ["cat2"])
-            with open(join(target, "macros.xml"), "r") as macro_f:
+            with open(join(target, "macros.xml")) as macro_f:
                 macro_contents = macro_f.read()
                 assert macro_contents.startswith("<macros>")
 
@@ -307,7 +280,8 @@ class ShedUploadTestCase(CliShedTestCase):
             self._verify_expansion(f, "repo")
             for tool_id in ["cat1", "cat2"]:
                 self._check_tar(
-                    f, "shed_upload_cs_%s.tar.gz" % tool_id,
+                    f,
+                    "shed_upload_cs_%s.tar.gz" % tool_id,
                     contains=[
                         "CITATION.txt",
                         "test-data/extra_test_file.txt",
@@ -318,11 +292,12 @@ class ShedUploadTestCase(CliShedTestCase):
         with self._isolate_repo("multi_repos_flat_flag_suite") as f:
             self._verify_expansion(f)
             target = self._check_tar(
-                f, "shed_upload_suite_cat.tar.gz",
+                f,
+                "shed_upload_suite_cat.tar.gz",
                 contains=[
                     "repository_dependencies.xml",
                 ],
-                not_contains=["macros.xml"]
+                not_contains=["macros.xml"],
             )
             with open(join(target, "repository_dependencies.xml")) as f:
                 repo_xml = f.read()
@@ -337,13 +312,15 @@ class ShedUploadTestCase(CliShedTestCase):
             upload_command.extend(self._shed_args())
             self._check_exit_code(upload_command)
             self._check_tar(
-                f, "shed_upload.tar.gz",
+                f,
+                "shed_upload.tar.gz",
                 contains=[
                     "up_root/README.rst",
                     "up_root/cat.xml",
                     "shared_files/extra_test_data/extra_test_file.txt",
                 ],
-                not_contains=[])
+                not_contains=[],
+            )
 
     def _assert_shed_diff(self, diff=1):
         shed_diff_command = ["shed_diff"]
@@ -357,40 +334,35 @@ class ShedUploadTestCase(CliShedTestCase):
             upload_command.append(join(f, name))
         self._check_exit_code(upload_command)
         self._check_tar(
-            f, "shed_upload_cs_cat1.tar.gz",
-            contains=[
-                "cat1.xml",
-                "macros.xml",
-                "test-data/1.bed"
-            ],
-            not_contains=["cat2.xml"]
+            f,
+            "shed_upload_cs_cat1.tar.gz",
+            contains=["cat1.xml", "macros.xml", "test-data/1.bed"],
+            not_contains=["cat2.xml"],
         )
         self._check_tar(
-            f, "shed_upload_cs_cat2.tar.gz",
-            contains=[
-                "cat2.xml",
-                "macros.xml",
-                "test-data/1.bed"
-            ],
-            not_contains=["cat1.xml"]
+            f,
+            "shed_upload_cs_cat2.tar.gz",
+            contains=["cat2.xml", "macros.xml", "test-data/1.bed"],
+            not_contains=["cat1.xml"],
         )
 
-    def _verify_single_uploaded(self, f, download_args=[]):
-        self._verify_upload(
-            f, ["cat.xml", "related_file", "test-data/1.bed"], download_args
-        )
+    def _verify_single_uploaded(self, f, download_args=None):
+        self._verify_upload(f, ["cat.xml", "related_file", "test-data/1.bed"], download_args)
 
-    def _verify_empty_repository(self, f, download_args=[]):
+    def _verify_empty_repository(self, f, download_args=None):
         target = self._download_repo(f, download_args)
         assert len(os.listdir(target)) == 0
 
-    def _verify_upload(self, f, download_files=[], download_args=[]):
+    def _verify_upload(self, f, download_files=None, download_args=None):
+        download_files = download_files or []
         target = self._download_repo(f, download_args)
         for download_file in download_files:
             assert_exists(join(target, download_file))
         return target
 
-    def _check_tar(self, f, tar_path, contains=[], not_contains=[]):
+    def _check_tar(self, f, tar_path, contains=None, not_contains=None):
+        contains = contains or []
+        not_contains = not_contains or []
         tar_path = join(f, tar_path)
         assert_exists(tar_path)
         target = self._untar(f, tar_path)
@@ -400,9 +372,10 @@ class ShedUploadTestCase(CliShedTestCase):
             assert not exists(join(target, path))
         return target
 
-    def _download_repo(self, f, download_args=[]):
+    def _download_repo(self, f, download_args=None):
         download_command = ["shed_download"]
-        download_command.extend(download_args)
+        if download_args:
+            download_command.extend(download_args)
         download_command.extend(self._shed_args(read_only=True))
         self._check_exit_code(download_command)
         download = join(f, "shed_download.tar.gz")
@@ -437,9 +410,5 @@ class ShedUploadTestCase(CliShedTestCase):
 
 def update_package_1(f):
     """Update tool dependencies file for package_1."""
-    changed_xml = join(
-        TEST_REPOS_DIR,
-        "package_1_changed",
-        "tool_dependencies.xml"
-    )
+    changed_xml = join(TEST_REPOS_DIR, "package_1_changed", "tool_dependencies.xml")
     shutil.copyfile(changed_xml, join(f, "tool_dependencies.xml"))

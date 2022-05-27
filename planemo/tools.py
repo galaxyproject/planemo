@@ -1,5 +1,4 @@
 """Planemo-specific wrappers around galaxy-tool-util tool functionality."""
-from __future__ import absolute_import
 
 import os
 import sys
@@ -8,7 +7,10 @@ import traceback
 from galaxy.tool_util import loader_directory
 from galaxy.tool_util.fetcher import ToolLocationFetcher
 
-from planemo.io import error, info
+from planemo.io import (
+    error,
+    info,
+)
 
 is_tool_load_error = loader_directory.is_tool_load_error
 SKIP_XML_MESSAGE = "Skipping XML file - does not appear to be a tool %s."
@@ -36,7 +38,7 @@ def yield_tool_sources_on_paths(ctx, paths, recursive=False, yield_load_errors=T
     """Walk paths and yield ToolSource objects discovered."""
     for path in paths:
         for (tool_path, tool_source) in yield_tool_sources(ctx, path, recursive, yield_load_errors):
-            if exclude_deprecated and 'deprecated' in tool_path:
+            if exclude_deprecated and "deprecated" in tool_path:
                 continue
             yield (tool_path, tool_source)
 

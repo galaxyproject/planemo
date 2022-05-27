@@ -13,14 +13,16 @@ from galaxy.tool_util.cwl.cwltool_deps import (
 )
 
 from planemo.deps import ensure_dependency_resolvers_conf_configured
-from planemo.io import error, real_io
+from planemo.io import (
+    error,
+    real_io,
+)
 from planemo.runnable import (
     ErrorRunResponse,
     SuccessfulRunResponse,
 )
 
-JSON_PARSE_ERROR_MESSAGE = ("Failed to parse JSON from cwltool output [%s] "
-                            "in file [%s]. cwltool logs [%s].")
+JSON_PARSE_ERROR_MESSAGE = "Failed to parse JSON from cwltool output [%s] " "in file [%s]. cwltool logs [%s]."
 
 
 class CwlToolRunResponse(SuccessfulRunResponse):
@@ -72,8 +74,7 @@ def run_cwltool(ctx, runnable, job_path, **kwds):
 
     args.extend([runnable.path, job_path])
     ctx.vlog("Calling cwltool with arguments %s" % args)
-    with tempfile.NamedTemporaryFile("w") as tmp_stdout, \
-            tempfile.NamedTemporaryFile("w") as tmp_stderr:
+    with tempfile.NamedTemporaryFile("w") as tmp_stdout, tempfile.NamedTemporaryFile("w") as tmp_stderr:
         # cwltool passes sys.stderr to subprocess.Popen - ensure it has
         # and actual fileno.
         with real_io():
@@ -84,18 +85,14 @@ def run_cwltool(ctx, runnable, job_path, **kwds):
             )
         tmp_stdout.flush()
         tmp_stderr.flush()
-        with open(tmp_stderr.name, "r") as stderr_f:
+        with open(tmp_stderr.name) as stderr_f:
             log = stderr_f.read()
             ctx.vlog("cwltool log output [%s]" % log)
-        with open(tmp_stdout.name, "r") as stdout_f:
+        with open(tmp_stdout.name) as stdout_f:
             try:
                 result = json.load(stdout_f)
             except ValueError:
-                message = JSON_PARSE_ERROR_MESSAGE % (
-                    open(tmp_stdout.name, "r").read(),
-                    tmp_stdout.name,
-                    log
-                )
+                message = JSON_PARSE_ERROR_MESSAGE % (open(tmp_stdout.name).read(), tmp_stdout.name, log)
                 error(message)
                 raise Exception(message)
 
@@ -109,6 +106,4 @@ def run_cwltool(ctx, runnable, job_path, **kwds):
     )
 
 
-__all__ = (
-    "run_cwltool",
-)
+__all__ = ("run_cwltool",)

@@ -34,7 +34,7 @@ still need to open up the editor and fill out the command template, describe
 input parameters, tool outputs, write a help section, etc.
 
 The ``tool_init`` command can do a little bit better than this as well. We can
-use the test command we tried above ``seqtk seq -a 2.fastq > 2.fasta`` as
+use the test command we tried above ``seqtk seq -A 2.fastq > 2.fasta`` as
 an example to generate a command block by specifing the inputs and the outputs
 as follows.
 
@@ -44,7 +44,7 @@ as follows.
                         --id 'seqtk_seq' \
                         --name 'Convert to FASTA (seqtk)' \
                         --requirement seqtk@1.2 \
-                        --example_command 'seqtk seq -a 2.fastq > 2.fasta' \
+                        --example_command 'seqtk seq -A 2.fastq > 2.fasta' \
                         --example_input 2.fastq \
                         --example_output 2.fasta
 
@@ -63,7 +63,7 @@ definitions for the input and output as well as an actual command template.
                         --id 'seqtk_seq' \
                         --name 'Convert to FASTA (seqtk)' \
                         --requirement seqtk@1.2 \
-                        --example_command 'seqtk seq -a 2.fastq > 2.fasta' \
+                        --example_command 'seqtk seq -A 2.fastq > 2.fasta' \
                         --example_input 2.fastq \
                         --example_output 2.fasta \
                         --test_case \

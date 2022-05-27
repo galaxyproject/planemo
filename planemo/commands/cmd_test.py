@@ -5,33 +5,29 @@ import click
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.engine.test import (
-    test_runnables,
-)
+from planemo.engine.test import test_runnables
 from planemo.io import temp_directory
-from planemo.runnable import (
-    RunnableType,
-)
+from planemo.runnable import RunnableType
 from planemo.runnable_resolve import for_runnable_identifiers
 
 
-@click.command('test')
+@click.command("test")
 @options.optional_tools_arg(multiple=True, allow_uris=True)
 @click.option(
     "--failed",
     is_flag=True,
     help="Re-run only failed tests. This command will read "
-         "tool_test_output.json to determine which tests failed so this "
-         "file must have been produced with the same set of tool ids "
-         "previously.",
+    "tool_test_output.json to determine which tests failed so this "
+    "file must have been produced with the same set of tool ids "
+    "previously.",
     default=False,
 )
 @click.option(
     "--polling_backoff",
     type=int,
     help="Poll resources with an increasing interval between requests. "
-         "Useful when testing against remote and/or production "
-         "instances to limit generated traffic.",
+    "Useful when testing against remote and/or production "
+    "instances to limit generated traffic.",
     default="0",
 )
 @options.serve_option()
@@ -81,7 +77,7 @@ def cli(ctx, uris, **kwds):
         if kwds.get("engine", None) is None:
             if is_cwl:
                 kwds["engine"] = "cwltool"
-            elif kwds.get('galaxy_url', None):
+            elif kwds.get("galaxy_url", None):
                 kwds["engine"] = "external_galaxy"
             else:
                 kwds["engine"] = "galaxy"

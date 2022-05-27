@@ -8,7 +8,6 @@ import shutil
 
 import oyaml as yaml
 import requests
-import six
 
 from planemo import templates
 from planemo.bioblend import galaxy
@@ -24,11 +23,11 @@ from planemo.runnable import for_path
 from .tool_input import (
     get_empty_input,
     get_empty_param,
-    ToolInput
+    ToolInput,
 )
 from .utils import (
     load_yaml,
-    save_to_yaml
+    save_to_yaml,
 )
 
 TUTO_HAND_ON_TEMPLATE = """---
@@ -261,7 +260,7 @@ pipeline used.
 """
 
 
-class Tutorial(object):
+class Tutorial:
     """Class to describe a training tutorial."""
 
     def __init__(self, training, topic, name="new_tuto", title="The new tutorial", zenodo_link=""):
@@ -285,35 +284,34 @@ class Tutorial(object):
         self.datatype_fp = ""
         self.set_dir_name()
         self.init_data_lib()
-        self.body = templates.render(HANDS_ON_TOOL_BOX_TEMPLATE, **{
-            'tool_name': "My Tool",
-            'inputlist': get_empty_input(),
-            'paramlist': get_empty_param()
-        })
+        self.body = templates.render(
+            HANDS_ON_TOOL_BOX_TEMPLATE,
+            **{"tool_name": "My Tool", "inputlist": get_empty_input(), "paramlist": get_empty_param()},
+        )
 
     def init_from_kwds(self, kwds):
         """Init a tutorial instance from a kwds dictionary."""
         self.name = kwds["tutorial_name"]
         self.title = kwds["tutorial_title"]
-        self.zenodo_link = kwds["zenodo_link"] if kwds["zenodo_link"] else ''
+        self.zenodo_link = kwds["zenodo_link"] if kwds["zenodo_link"] else ""
         self.questions = [
             "Which biological questions are addressed by the tutorial?",
-            "Which bioinformatics techniques are important to know for this type of data?"]
+            "Which bioinformatics techniques are important to know for this type of data?",
+        ]
         self.objectives = [
             "The learning objectives are the goals of the tutorial",
             "They will be informed by your audience and will communicate to them and to yourself what you should focus on during the course",
             "They are single sentences describing what a learner should be able to do once they have completed the tutorial",
-            "You can use Bloom's Taxonomy to write effective learning objectives"]
+            "You can use Bloom's Taxonomy to write effective learning objectives",
+        ]
         self.time = "3H"
-        self.key_points = [
-            "The take-home messages",
-            "They will appear at the end of the tutorial"]
+        self.key_points = ["The take-home messages", "They will appear at the end of the tutorial"]
         self.contributors = ["contributor1", "contributor2"]
-        self.init_wf_fp = kwds['workflow']
-        self.init_wf_id = kwds['workflow_id']
-        self.hands_on = kwds['hands_on']
-        self.slides = kwds['slides']
-        self.datatype_fp = kwds['datatypes']
+        self.init_wf_fp = kwds["workflow"]
+        self.init_wf_id = kwds["workflow_id"]
+        self.hands_on = kwds["hands_on"]
+        self.slides = kwds["slides"]
+        self.datatype_fp = kwds["datatypes"]
         self.set_dir_name()
         self.init_data_lib()
 
@@ -326,9 +324,9 @@ class Tutorial(object):
             raise Exception("The tutorial %s does not exists. It should be created" % self.name)
 
         # get the metadata information of the tutorial (from the top of the tutorial.md)
-        with open(self.tuto_fp, "r") as tuto_f:
+        with open(self.tuto_fp) as tuto_f:
             tuto_content = tuto_f.read()
-        regex = r'^---\n(?P<metadata>[\s\S]*)\n---(?P<body>[\s\S]*)'
+        regex = r"^---\n(?P<metadata>[\s\S]*)\n---(?P<body>[\s\S]*)"
         tuto_split_regex = re.search(regex, tuto_content)
         if not tuto_split_regex:
             raise Exception("No metadata found at the top of the tutorial")
@@ -354,50 +352,47 @@ class Tutorial(object):
         else:
             self.data_lib = collections.OrderedDict()
         # set default information
-        self.data_lib.setdefault('destination', collections.OrderedDict())
-        self.data_lib['destination']['type'] = 'library'
-        self.data_lib['destination']['name'] = 'GTN - Material'
-        self.data_lib['destination']['description'] = 'Galaxy Training Network Material'
-        self.data_lib['destination']['synopsis'] = 'Galaxy Training Network Material. See https://training.galaxyproject.org'
-        self.data_lib.setdefault('items', [])
-        self.data_lib.pop('libraries', None)
+        self.data_lib.setdefault("destination", collections.OrderedDict())
+        self.data_lib["destination"]["type"] = "library"
+        self.data_lib["destination"]["name"] = "GTN - Material"
+        self.data_lib["destination"]["description"] = "Galaxy Training Network Material"
+        self.data_lib["destination"][
+            "synopsis"
+        ] = "Galaxy Training Network Material. See https://training.galaxyproject.org"
+        self.data_lib.setdefault("items", [])
+        self.data_lib.pop("libraries", None)
         # get topic or create new one
         topic = collections.OrderedDict()
-        for item in self.data_lib['items']:
-            if item['name'] == self.topic.title:
+        for item in self.data_lib["items"]:
+            if item["name"] == self.topic.title:
                 topic = item
         if not topic:
-            self.data_lib['items'].append(topic)
-            topic['name'] = self.topic.title
-            topic['description'] = self.topic.summary
-            topic['items'] = []
+            self.data_lib["items"].append(topic)
+            topic["name"] = self.topic.title
+            topic["description"] = self.topic.summary
+            topic["items"] = []
         # get tutorial or create new one
         self.tuto_data_lib = collections.OrderedDict()
-        for item in topic['items']:
-            if item['name'] == self.title:
+        for item in topic["items"]:
+            if item["name"] == self.title:
                 self.tuto_data_lib = item
         if not self.tuto_data_lib:
-            topic['items'].append(self.tuto_data_lib)
-            self.tuto_data_lib['name'] = self.title
-            self.tuto_data_lib['items'] = []
+            topic["items"].append(self.tuto_data_lib)
+            self.tuto_data_lib["name"] = self.title
+            self.tuto_data_lib["items"] = []
 
     # GETTERS
     def get_tuto_metata(self):
         """Return the string corresponding to the tutorial metadata."""
         metadata = collections.OrderedDict()
-        metadata['title'] = self.title
-        metadata['zenodo_link'] = self.zenodo_link
-        metadata['questions'] = self.questions
-        metadata['objectives'] = self.objectives
-        metadata['time_estimation'] = self.time
-        metadata['key_points'] = self.key_points
-        metadata['contributors'] = self.contributors
-        return yaml.safe_dump(
-            metadata,
-            indent=2,
-            default_flow_style=False,
-            default_style='',
-            explicit_start=False)
+        metadata["title"] = self.title
+        metadata["zenodo_link"] = self.zenodo_link
+        metadata["questions"] = self.questions
+        metadata["objectives"] = self.objectives
+        metadata["time_estimation"] = self.time
+        metadata["key_points"] = self.key_points
+        metadata["contributors"] = self.contributors
+        return yaml.safe_dump(metadata, indent=2, default_flow_style=False, default_style="", explicit_start=False)
 
     # SETTERS
     def set_dir_name(self):
@@ -405,10 +400,11 @@ class Tutorial(object):
         self.dir = os.path.join(self.topic.dir, "tutorials", self.name)
         self.tuto_fp = os.path.join(self.dir, "tutorial.md")
         self.bib_fp = os.path.join(self.dir, "tutorial.bib")
-        self.slide_fp = os.path.join(self.dir, 'slides.html')
+        self.slide_fp = os.path.join(self.dir, "slides.html")
         self.data_lib_fp = os.path.join(self.dir, "data-library.yaml")
         self.wf_dir = os.path.join(self.dir, "workflows")
         self.wf_fp = os.path.join(self.wf_dir, "main_workflow.ga")
+        self.faq_dir = os.path.join(self.dir, "faqs")
         self.tour_dir = os.path.join(self.dir, "tours")
         # remove empty workflow file if there
         empty_wf_filepath = os.path.join(self.wf_dir, "empty_workflow.ga")
@@ -429,17 +425,14 @@ class Tutorial(object):
         """Copy or extract workflow file and add it to the tutorial directory."""
         if not os.path.exists(self.wf_dir):
             os.makedirs(self.wf_dir)
-        if not os.path.exists(os.path.join(self.wf_dir, 'index.md')):
-            with open(os.path.join(self.wf_dir, 'index.md'), 'w') as handle:
-                handle.write('---\nlayout: workflow-list\n---\n')
+        if not os.path.exists(os.path.join(self.wf_dir, "index.md")):
+            with open(os.path.join(self.wf_dir, "index.md"), "w") as handle:
+                handle.write("---\nlayout: workflow-list\n---\n")
         if self.init_wf_fp:
             shutil.copy(self.init_wf_fp, self.wf_fp)
         elif self.init_wf_id:
             gi = galaxy.GalaxyInstance(self.training.galaxy_url, key=self.training.galaxy_api_key)
-            gi.workflows.export_workflow_to_local_path(
-                self.init_wf_id,
-                self.wf_fp,
-                use_default_filename=False)
+            gi.workflows.export_workflow_to_local_path(self.init_wf_id, self.wf_fp, use_default_filename=False)
 
     # OTHER METHODS
     def get_files_from_zenodo(self):
@@ -447,18 +440,18 @@ class Tutorial(object):
         z_record, req_res = get_zenodo_record(self.zenodo_link)
 
         self.zenodo_file_links = []
-        if 'files' not in req_res:
+        if "files" not in req_res:
             raise ValueError("No files in the Zenodo record")
 
         files = []
-        for f in req_res['files']:
-            file_dict = {'url': '', 'src': 'url', 'ext': '', 'info': self.zenodo_link}
-            if 'type' in f:
-                file_dict['ext'] = get_galaxy_datatype(f['type'], self.datatype_fp)
-            if 'links' not in f and 'self' not in f['links']:
+        for f in req_res["files"]:
+            file_dict = {"url": "", "src": "url", "ext": "", "info": self.zenodo_link}
+            if "type" in f:
+                file_dict["ext"] = get_galaxy_datatype(f["type"], self.datatype_fp)
+            if "links" not in f and "self" not in f["links"]:
                 raise ValueError("No link for file %s" % f)
-            file_dict['url'] = f['links']['self']
-            self.zenodo_file_links.append(f['links']['self'])
+            file_dict["url"] = f["links"]["self"]
+            self.zenodo_file_links.append(f["links"]["self"])
             files.append(file_dict)
 
         return (files, z_record)
@@ -466,7 +459,7 @@ class Tutorial(object):
     def prepare_data_library_from_zenodo(self):
         """Get the list of URLs of the files on Zenodo, fill the data library, save it into the file."""
         self.zenodo_file_links = []
-        if self.zenodo_link != '':
+        if self.zenodo_link != "":
             files, z_record = self.get_files_from_zenodo()
             if z_record:
                 # get current data library and/or previous data library for the tutorial
@@ -474,47 +467,42 @@ class Tutorial(object):
                 # remove the any other existing library
                 current_data_lib = collections.OrderedDict()
                 previous_data_lib = collections.OrderedDict()
-                for item in self.tuto_data_lib['items']:
-                    if item['name'] == "DOI: 10.5281/zenodo.%s" % z_record:
+                for item in self.tuto_data_lib["items"]:
+                    if item["name"] == "DOI: 10.5281/zenodo.%s" % z_record:
                         current_data_lib = item
-                    elif item['description'] == 'latest':
+                    elif item["description"] == "latest":
                         previous_data_lib = item
-                        previous_data_lib['description'] = ''
+                        previous_data_lib["description"] = ""
                 if not current_data_lib:
-                    current_data_lib['name'] = "DOI: 10.5281/zenodo.%s" % z_record
-                    current_data_lib['description'] = 'latest'
-                    current_data_lib['items'] = []
-                current_data_lib['items'] = files
+                    current_data_lib["name"] = "DOI: 10.5281/zenodo.%s" % z_record
+                    current_data_lib["description"] = "latest"
+                    current_data_lib["items"] = []
+                current_data_lib["items"] = files
 
-                self.tuto_data_lib['items'] = [current_data_lib]
+                self.tuto_data_lib["items"] = [current_data_lib]
                 if previous_data_lib:
-                    self.tuto_data_lib['items'].append(previous_data_lib)
+                    self.tuto_data_lib["items"].append(previous_data_lib)
         save_to_yaml(self.data_lib, self.data_lib_fp)
 
     def write_hands_on_tutorial(self, add_z_file_links=True):
         """Write the content of the hands-on tutorial in the corresponding file."""
         if add_z_file_links:
-            self.body = templates.render(TUTO_HAND_ON_BODY_TEMPLATE, **{
-                "z_file_links": "\n>    ".join(self.zenodo_file_links),
-                "body": self.body
-            })
+            self.body = templates.render(
+                TUTO_HAND_ON_BODY_TEMPLATE,
+                **{"z_file_links": "\n>    ".join(self.zenodo_file_links), "body": self.body},
+            )
         # write in the tutorial file with the metadata on the top
         metadata = self.get_tuto_metata()
-        with open(self.tuto_fp, 'w') as md:
-            md.write(templates.render(TUTO_HAND_ON_TEMPLATE, **{
-                "metadata": metadata,
-                "body": self.body
-            }))
+        with open(self.tuto_fp, "w") as md:
+            md.write(templates.render(TUTO_HAND_ON_TEMPLATE, **{"metadata": metadata, "body": self.body}))
 
         # create the bibliography file
         self.write_bibliography()
 
     def write_bibliography(self):
         """Write the content of the bibliography file for the tutorial."""
-        with open(self.bib_fp, 'w') as bib:
-            bib.write(templates.render(TUTO_BIBLIOGRAPHY_TEMPLATE, **{
-                "body": self.body
-            }))
+        with open(self.bib_fp, "w") as bib:
+            bib.write(templates.render(TUTO_BIBLIOGRAPHY_TEMPLATE, **{"body": self.body}))
 
     def create_hands_on_tutorial(self, ctx):
         """Create tutorial structure from the workflow file (if it is provided)."""
@@ -524,7 +512,9 @@ class Tutorial(object):
                 raise ValueError("No Galaxy URL given")
             if not self.training.galaxy_api_key:
                 raise ValueError("No API key to access the given Galaxy instance")
-            self.body = get_hands_on_boxes_from_running_galaxy(self.init_wf_id, self.training.galaxy_url, self.training.galaxy_api_key)
+            self.body = get_hands_on_boxes_from_running_galaxy(
+                self.init_wf_id, self.training.galaxy_url, self.training.galaxy_api_key
+            )
         elif self.init_wf_fp:
             self.body = get_hands_on_boxes_from_local_galaxy(self.training.kwds, self.init_wf_fp, ctx)
         # write tutorial body
@@ -538,7 +528,7 @@ class Tutorial(object):
         os.makedirs(self.wf_dir)
 
         # extract the data library from Zenodo and the links for the tutorial
-        if self.zenodo_link != '':
+        if self.zenodo_link != "":
             info("Create the data library from Zenodo")
             self.prepare_data_library_from_zenodo()
 
@@ -550,30 +540,35 @@ class Tutorial(object):
 
         # create slide skeleton
         if self.slides:
-            with open(self.slide_fp, 'w') as slide_f:
-                slide_f.write(
-                    templates.render(TUTO_SLIDES_TEMPLATE, **{"metadata": self.get_tuto_metata()}))
+            with open(self.slide_fp, "w") as slide_f:
+                slide_f.write(templates.render(TUTO_SLIDES_TEMPLATE, **{"metadata": self.get_tuto_metata()}))
+
+        # create the FAQ page
+        os.makedirs(self.faq_dir)
+        if not os.path.exists(os.path.join(self.faq_dir, "index.md")):
+            with open(os.path.join(self.faq_dir, "index.md"), "w") as handle:
+                handle.write("---\nlayout: faq-page\n---\n")
 
 
 def get_galaxy_datatype(z_ext, datatype_fp):
     """Get the Galaxy datatype corresponding to a Zenodo file type."""
-    g_datatype = ''
+    g_datatype = ""
     datatypes = load_yaml(datatype_fp)
     if z_ext in datatypes:
         g_datatype = datatypes[z_ext]
-    if g_datatype == '':
-        g_datatype = '# Please add a Galaxy datatype or update the shared/datatypes.yaml file'
-    info("Get Galaxy datatypes: %s --> %s" % (z_ext, g_datatype))
+    if g_datatype == "":
+        g_datatype = "# Please add a Galaxy datatype or update the shared/datatypes.yaml file"
+    info(f"Get Galaxy datatypes: {z_ext} --> {g_datatype}")
     return g_datatype
 
 
 def get_zenodo_record(zenodo_link):
     """Get the content of a Zenodo record."""
     # get the record in the Zenodo link
-    if 'doi' in zenodo_link:
-        z_record = zenodo_link.split('.')[-1]
+    if "doi" in zenodo_link:
+        z_record = zenodo_link.split(".")[-1]
     else:
-        z_record = zenodo_link.split('/')[-1]
+        z_record = zenodo_link.split("/")[-1]
     # get JSON corresponding to the record from Zenodo API
     req = "https://zenodo.org/api/records/%s" % (z_record)
     try:
@@ -581,30 +576,29 @@ def get_zenodo_record(zenodo_link):
         r.raise_for_status()
         req_res = r.json()
     except Exception as e:
-        error("The Zenodo link (%s) seems invalid: %s" % (zenodo_link, e))
-        req_res = {'files': []}
+        error(f"The Zenodo link ({zenodo_link}) seems invalid: {e}")
+        req_res = {"files": []}
         z_record = None
-    return(z_record, req_res)
+    return (z_record, req_res)
 
 
 def get_wf_inputs(step_inp):
     """Get the inputs from a workflow step and format them into a hierarchical dictionary."""
     inputs = {}
     for inp_n, inp in step_inp.items():
-        if '|' in inp_n:
-            repeat_regex = r'(?P<prefix>[^\|]*)_(?P<nb>\d+)\|(?P<suffix>.+).+'
+        if "|" in inp_n:
+            repeat_regex = r"(?P<prefix>[^\|]*)_(?P<nb>\d+)\|(?P<suffix>.+).+"
             repeat_search = re.search(repeat_regex, inp_n)
-            hier_regex = r'(?P<prefix>[^\|]*)\|(?P<suffix>.+)'
+            hier_regex = r"(?P<prefix>[^\|]*)\|(?P<suffix>.+)"
             hier_regex = re.search(hier_regex, inp_n)
             if repeat_search and repeat_search.start(0) <= hier_regex.start(0):
-                inputs.setdefault(repeat_search.group('prefix'), {})
-                inputs[repeat_search.group('prefix')].setdefault(
-                    repeat_search.group('nb'),
-                    get_wf_inputs({hier_regex.group('suffix'): inp}))
+                inputs.setdefault(repeat_search.group("prefix"), {})
+                inputs[repeat_search.group("prefix")].setdefault(
+                    repeat_search.group("nb"), get_wf_inputs({hier_regex.group("suffix"): inp})
+                )
             else:
-                inputs.setdefault(hier_regex.group('prefix'), {})
-                inputs[hier_regex.group('prefix')].update(
-                    get_wf_inputs({hier_regex.group('suffix'): inp}))
+                inputs.setdefault(hier_regex.group("prefix"), {})
+                inputs[hier_regex.group("prefix")].update(get_wf_inputs({hier_regex.group("suffix"): inp}))
         else:
             inputs.setdefault(inp_n, inp)
     return inputs
@@ -612,12 +606,14 @@ def get_wf_inputs(step_inp):
 
 def get_wf_param_values(init_params, inp_connections):
     """Get the param values from a workflow step and format them into a hierarchical dictionary."""
-    if not isinstance(init_params, six.string_types) or '": ' not in init_params:
+    if not isinstance(init_params, str) or '": ' not in init_params:
         form_params = init_params
     else:
         form_params = json.loads(init_params)
     if isinstance(form_params, dict):
-        if '__class__' in form_params and (form_params['__class__'] == 'RuntimeValue' or form_params['__class__'] == 'ConnectedValue'):
+        if "__class__" in form_params and (
+            form_params["__class__"] == "RuntimeValue" or form_params["__class__"] == "ConnectedValue"
+        ):
             form_params = inp_connections
         else:
             for p in form_params:
@@ -629,40 +625,40 @@ def get_wf_param_values(init_params, inp_connections):
         for i, p in enumerate(json_params):
             inp = inp_connections[str(i)] if str(i) in inp_connections else {}
             form_params.append(get_wf_param_values(p, inp))
-    elif isinstance(form_params, six.string_types) and '"' in form_params:
-        form_params = form_params.replace('"', '')
+    elif isinstance(form_params, str) and '"' in form_params:
+        form_params = form_params.replace('"', "")
     return form_params
 
 
 def format_wf_steps(wf, gi):
     """Get a string with the hands-on boxes describing the different steps of the worklow."""
-    body = ''
-    steps = wf['steps']
+    body = ""
+    steps = wf["steps"]
 
     for s in range(len(steps)):
         wf_step = steps[str(s)]
 
         # get params in workflow
         wf_param_values = {}
-        if wf_step['tool_state'] and wf_step['input_connections']:
-            wf_param_values = get_wf_param_values(wf_step['tool_state'], get_wf_inputs(wf_step['input_connections']))
+        if wf_step["tool_state"] and wf_step["input_connections"]:
+            wf_param_values = get_wf_param_values(wf_step["tool_state"], get_wf_inputs(wf_step["input_connections"]))
         if not wf_param_values:
             continue
         # get tool description
         try:
-            tool_desc = gi.tools.show_tool(wf_step['tool_id'], io_details=True)
+            tool_desc = gi.tools.show_tool(wf_step["tool_id"], io_details=True)
         except Exception:
-            tool_desc = {'inputs': []}
+            tool_desc = {"inputs": []}
         # get formatted param description
-        paramlist = ''
+        paramlist = ""
         for inp in tool_desc["inputs"]:
             tool_inp = ToolInput(inp, wf_param_values, steps, 1, should_be_there=True)
             paramlist += tool_inp.get_formatted_desc()
         # format the hands-on box
-        body += templates.render(HANDS_ON_TOOL_BOX_TEMPLATE, **{
-            "tool_name": wf_step['name'],
-            "tool_id": wf_step['tool_id'],
-            "paramlist": paramlist})
+        body += templates.render(
+            HANDS_ON_TOOL_BOX_TEMPLATE,
+            **{"tool_name": wf_step["name"], "tool_id": wf_step["tool_id"], "paramlist": paramlist},
+        )
     return body
 
 
@@ -670,7 +666,7 @@ def get_hands_on_boxes_from_local_galaxy(kwds, wf_filepath, ctx):
     """Server local Galaxy and get the workflow dictionary."""
     assert is_galaxy_engine(**kwds)
     runnable = for_path(wf_filepath)
-    tuto_body = ''
+    tuto_body = ""
     with engine_context(ctx, **kwds) as galaxy_engine:
         with galaxy_engine.ensure_runnables_served([runnable]) as config:
             info("Status of installed repositories: %s" % config.gi.toolshed.get_repositories())

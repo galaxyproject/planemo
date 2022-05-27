@@ -4,10 +4,13 @@ from galaxy.tool_util.deps.mulled.mulled_build import mull_targets
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.mulled import build_mull_target_kwds, collect_mulled_target_lists
+from planemo.mulled import (
+    build_mull_target_kwds,
+    collect_mulled_target_lists,
+)
 
 
-@click.command('mull')
+@click.command("mull")
 @options.optional_tools_arg(multiple=True)
 @options.recursive_option()
 @options.mulled_options()

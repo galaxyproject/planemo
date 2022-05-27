@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import ast
 import os
 import re
 import sys
+
 try:
     from setuptools import setup
 except ImportError:
@@ -23,14 +23,14 @@ PLANEMO_REQUIRE_LXML = os.environ.get("PLANEMO_REQUIRE_LXML", "%d" % DEFAULT_PLA
 
 SOURCE_DIR = "planemo"
 
-_version_re = re.compile(r'__version__\s+=\s+(.*)')
+_version_re = re.compile(r"__version__\s+=\s+(.*)")
 
 
-with open('%s/__init__.py' % SOURCE_DIR, 'rb') as f:
-    init_contents = f.read().decode('utf-8')
+with open("%s/__init__.py" % SOURCE_DIR, "rb") as f:
+    init_contents = f.read().decode("utf-8")
 
     def get_var(var_name):
-        pattern = re.compile(r'%s\s+=\s+(.*)' % var_name)
+        pattern = re.compile(r"%s\s+=\s+(.*)" % var_name)
         match = pattern.search(init_contents).group(1)
         return str(ast.literal_eval(match))
 
@@ -40,45 +40,47 @@ with open('%s/__init__.py' % SOURCE_DIR, 'rb') as f:
     PROJECT_AUTHOR = get_var("PROJECT_AUTHOR")
     PROJECT_EMAIL = get_var("PROJECT_EMAIL")
 
-TEST_DIR = 'tests'
-PROJECT_DESCRIPTION = 'Command-line utilities to assist in building tools for the Galaxy project (http://galaxyproject.org/).'
+TEST_DIR = "tests"
+PROJECT_DESCRIPTION = (
+    "Command-line utilities to assist in building tools for the Galaxy project (http://galaxyproject.org/)."
+)
 PACKAGES = [
-    'planemo',
-    'planemo.cwl',
-    'planemo.commands',
-    'planemo.conda_verify',
-    'planemo.database',
-    'planemo.engine',
-    'planemo.galaxy',
-    'planemo.galaxy.test',
-    'planemo.linters',
-    'planemo.reports',
-    'planemo.shed',
-    'planemo.shed2tap',
-    'planemo.test',
-    'planemo.training',
-    'planemo.xml',
+    "planemo",
+    "planemo.cwl",
+    "planemo.commands",
+    "planemo.conda_verify",
+    "planemo.database",
+    "planemo.engine",
+    "planemo.galaxy",
+    "planemo.galaxy.test",
+    "planemo.linters",
+    "planemo.reports",
+    "planemo.shed",
+    "planemo.shed2tap",
+    "planemo.test",
+    "planemo.training",
+    "planemo.xml",
 ]
-ENTRY_POINTS = '''
+ENTRY_POINTS = """
     [console_scripts]
     planemo=planemo.cli:planemo
-'''
+"""
 PACKAGE_DATA = {
-    'planemo': [
-        'xml/xsd/repository_dependencies.xsd',
-        'xml/xsd/tool_dependencies.xsd',
-        'reports/*',
-        'scripts/*',
+    "planemo": [
+        "xml/xsd/repository_dependencies.xsd",
+        "xml/xsd/tool_dependencies.xsd",
+        "reports/*",
+        "scripts/*",
     ],
 }
 PACKAGE_DIR = {
     SOURCE_DIR: SOURCE_DIR,
 }
 
-with open('README.rst') as fh:
+with open("README.rst") as fh:
     readme = fh.read()
-with open('HISTORY.rst') as fh:
-    history = fh.read().replace('.. :changelog:', '')
+with open("HISTORY.rst") as fh:
+    history = fh.read().replace(".. :changelog:", "")
 
 if os.path.exists("requirements.txt"):
     with open("requirements.txt") as fh:
@@ -98,7 +100,7 @@ setup(
     name=PROJECT_NAME,
     version=version,
     description=PROJECT_DESCRIPTION,
-    long_description=readme + '\n\n' + history,
+    long_description=readme + "\n\n" + history,
     long_description_content_type="text/x-rst",
     author=PROJECT_AUTHOR,
     author_email=PROJECT_EMAIL,
@@ -111,23 +113,23 @@ setup(
     install_requires=requirements,
     license="MIT",
     zip_safe=False,
-    keywords='planemo',
+    keywords="planemo",
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        'Intended Audience :: Developers',
-        'Environment :: Console',
-        'License :: OSI Approved :: MIT License',
-        'Operating System :: POSIX',
-        'Topic :: Software Development',
-        'Topic :: Software Development :: Code Generators',
-        'Topic :: Software Development :: Testing',
-        'Natural Language :: English',
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "Environment :: Console",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: POSIX",
+        "Topic :: Software Development",
+        "Topic :: Software Development :: Code Generators",
+        "Topic :: Software Development :: Testing",
+        "Natural Language :: English",
         "Programming Language :: Python :: 3",
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     test_suite=TEST_DIR,
-    tests_require=test_requirements
+    tests_require=test_requirements,
 )

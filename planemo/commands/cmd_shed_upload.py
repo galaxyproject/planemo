@@ -3,10 +3,11 @@ import sys
 
 import click
 
-from planemo import options
-from planemo import shed
+from planemo import (
+    options,
+    shed,
+)
 from planemo.cli import command_function
-
 
 tar_path = click.Path(
     exists=True,
@@ -20,14 +21,13 @@ tar_path = click.Path(
 @options.shed_publish_options()
 @options.shed_upload_options()
 @click.option(
-    '--tar_only',
+    "--tar_only",
     is_flag=True,
     help="Produce tar file for upload but do not publish to a tool shed.",
 )
 @click.option(
-    '--tar',
-    help="Specify a pre-existing tar file instead of automatically building "
-         "one as part of this command.",
+    "--tar",
+    help="Specify a pre-existing tar file instead of automatically building " "one as part of this command.",
     type=tar_path,
     default=None,
 )
@@ -49,6 +49,7 @@ def cli(ctx, paths, **kwds):
         117
 
     """
+
     def upload(realized_repository):
         return shed.upload_repository(ctx, realized_repository, **kwds)
 

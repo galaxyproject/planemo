@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-'''Utility to do a blocking sleep until a Galaxy instance is responsive.
+"""Utility to do a blocking sleep until a Galaxy instance is responsive.
 This is useful in docker images, in RUN steps, where one needs to wait
 for a currently starting Galaxy to be alive, before API requests can be
 made successfully.
 The script functions by making repeated requests to
 ``http(s)://fqdn/api/version``, an API which requires no authentication
-to access.'''
+to access."""
 
 import sys
 import time
@@ -24,13 +24,16 @@ DEFAULT_SLEEP_WAIT = 1
 
 
 def _parser():
-    '''Constructs the parser object'''
+    """Constructs the parser object"""
     parent = get_common_args(login_required=False)
-    parser = ArgumentParser(parents=[parent], usage="usage: python %(prog)s <options>",
-                            description="Script to sleep and wait for Galaxy to be alive.")
-    parser.add_argument("--timeout",
-                        default=0, type=int,
-                        help="Galaxy startup timeout in seconds. The default value of 0 waits forever")
+    parser = ArgumentParser(
+        parents=[parent],
+        usage="usage: python %(prog)s <options>",
+        description="Script to sleep and wait for Galaxy to be alive.",
+    )
+    parser.add_argument(
+        "--timeout", default=0, type=int, help="Galaxy startup timeout in seconds. The default value of 0 waits forever"
+    )
     return parser
 
 
@@ -42,8 +45,7 @@ def _parse_cli_options():
     return parser.parse_args()
 
 
-class SleepCondition(object):
-
+class SleepCondition:
     def __init__(self):
         self.sleep = True
 
@@ -58,11 +60,11 @@ def sleep(galaxy_url, verbose=False, timeout=0, sleep_condition=None):
     count = 0
     while sleep_condition.sleep:
         try:
-            result = requests.get(galaxy_url + '/api/version')
+            result = requests.get(galaxy_url + "/api/version")
             try:
                 result = result.json()
                 if verbose:
-                    sys.stdout.write("Galaxy Version: %s\n" % result['version_major'])
+                    sys.stdout.write("Galaxy Version: %s\n" % result["version_major"])
                     sys.stdout.flush()
                 break
             except ValueError:

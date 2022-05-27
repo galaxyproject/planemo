@@ -33,12 +33,13 @@ def test_filter_paths():
 
     def assert_filtered_is(paths, expected, **kwds):
         result = io.filter_paths(paths, cwd=test_cwd, **kwds)
-        assert result == expected, "paths [%s] arent't expected [%s]" % (result, expected)
+        assert result == expected, f"paths [{result}] arent't expected [{expected}]"
+
     assert_filtered_is([], [], exclude=["/a"])
     assert_filtered_is(["/a/c"], [], exclude=["/a"])
     assert_filtered_is(["/b"], ["/b"], exclude=["/a"])
     assert_filtered_is(["/a/b/c"], [], exclude=["c"])
-    with tempfile.NamedTemporaryFile(mode='w+') as tmp:
+    with tempfile.NamedTemporaryFile(mode="w+") as tmp:
         tmp.write("#exclude c\n\nc\n")
         tmp.flush()
         assert_filtered_is(["/a/b/c", "/a/b/d"], ["/a/b/d"], exclude_from=[tmp.name])

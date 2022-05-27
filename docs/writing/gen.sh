@@ -6,7 +6,7 @@ planemo tool_init --force \
                   --id 'seqtk_seq' \
                   --name 'Convert to FASTA (seqtk)' \
                   --requirement seqtk@1.2 \
-                  --example_command 'seqtk seq -a 2.fastq > 2.fasta' \
+                  --example_command 'seqtk seq -A 2.fastq > 2.fasta' \
                   --example_input 2.fastq \
                   --example_output 2.fasta
 mv seqtk_seq.xml seqtk_seq_v2.xml
@@ -14,7 +14,7 @@ planemo tool_init --force \
                   --id 'seqtk_seq' \
                   --name 'Convert to FASTA (seqtk)' \
                   --requirement seqtk@1.2 \
-                  --example_command 'seqtk seq -a 2.fastq > 2.fasta' \
+                  --example_command 'seqtk seq -A 2.fastq > 2.fasta' \
                   --example_input 2.fastq \
                   --example_output 2.fasta \
                   --test_case \
@@ -30,7 +30,7 @@ planemo tool_init --force \
                   --cwl \
                   --id 'seqtk_seq' \
                   --name 'Convert to FASTA (seqtk)' \
-                  --example_command 'seqtk seq -a 2.fastq > 2.fasta' \
+                  --example_command 'seqtk seq -A 2.fastq > 2.fasta' \
                   --example_input 2.fastq \
                   --example_output 2.fasta
 mv seqtk_seq.cwl seqtk_seq_v2.cwl
@@ -39,7 +39,7 @@ planemo tool_init --force \
                   --cwl \
                   --id 'seqtk_seq' \
                   --name 'Convert to FASTA (seqtk)' \
-                  --example_command 'seqtk seq -a 2.fastq > 2.fasta' \
+                  --example_command 'seqtk seq -A 2.fastq > 2.fasta' \
                   --example_input 2.fastq \
                   --example_output 2.fasta \
                   --test_case \

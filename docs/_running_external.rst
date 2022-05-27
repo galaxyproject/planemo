@@ -300,3 +300,26 @@ You can also delete unwanted profiles or aliases with these commands:
 
     $ planemo delete_alias --alias my_favorite_workflow --profile tutorial_profile
     $ planemo profile_delete tutorial_profile
+
+
+Rerunning failed jobs
+===============================================
+
+A frequent issue that arises when running a complex workflow is that component
+jobs can fail, resulting in failure of the entire workflow. These jobs can be
+rerun in the graphical interface, selecting the ``Resume dependencies from this
+job ?`` option, which restarts the paused workflow (so-called 'remapping' of the
+failed job over the previously created output dataset(s)). However, if there are
+a large number of failures, and you believe the errors are transitory, e.g. due
+to some temporary server issue, you can rerun several failed jobs simultaneously
+using the ``planemo rerun`` command:
+
+::
+
+    $ planemo rerun --history 68008488b4fb94de
+    $ planemo rerun --invocation 27267240b7d1f22a a9b086729787c907c
+    $ planemo rerun --job a2b39deaa34509bb 3318707f2f0ff1fd
+
+In the first two cases, all failed, remappable jobs which are associated with
+the specified history(s) or invocation(s) will be rerun. In the third case,
+the specified jobs will simply be rerun.

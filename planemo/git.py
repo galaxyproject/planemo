@@ -1,5 +1,4 @@
 """Utilities for interacting with git using planemo abstractions."""
-from __future__ import absolute_import
 
 import os
 import subprocess
@@ -12,10 +11,7 @@ from planemo import io
 def git_env_for(path):
     """Setup env dictionary to target specified git repo with git commands."""
     env = os.environ.copy()
-    env.update({
-        "GIT_WORK_DIR": path,
-        "GIT_DIR": os.path.join(path, ".git")
-    })
+    env.update({"GIT_WORK_DIR": path, "GIT_DIR": os.path.join(path, ".git")})
     return env
 
 
@@ -25,7 +21,7 @@ def ls_remote(ctx, remote_repo):
         ["git", "ls-remote", remote_repo],
         stdout=subprocess.PIPE,
     )[0]
-    return dict(line.split()[::-1] for line in commits_and_refs.decode('utf-8').splitlines())
+    return dict(line.split()[::-1] for line in commits_and_refs.decode("utf-8").splitlines())
 
 
 def init(ctx, repo_path):
@@ -49,7 +45,7 @@ def push(ctx, repo_path, to=None, branch=None, force=False):
     if force:
         cmd += ["--force"]
     if to and branch:
-        cmd += ['-u', to, branch]
+        cmd += ["-u", to, branch]
     io.communicate(cmd, env=env, cwd=repo_path)
 
 
@@ -70,9 +66,9 @@ def checkout(ctx, remote_repo, local_path, branch=None, remote="origin", from_br
         io.communicate(["git", "fetch", remote], env=env)
 
     if branch:
-        io.communicate(["git", "checkout", "%s/%s" % (remote, from_branch), "-b", branch], env=env)
+        io.communicate(["git", "checkout", f"{remote}/{from_branch}", "-b", branch], env=env)
     else:
-        io.communicate(["git", "merge", "--ff-only", "%s/%s" % (remote, from_branch)], env=env)
+        io.communicate(["git", "merge", "--ff-only", f"{remote}/{from_branch}"], env=env)
 
 
 def command_clone(ctx, src, dest, mirror=False, branch=None):
@@ -80,7 +76,7 @@ def command_clone(ctx, src, dest, mirror=False, branch=None):
 
     Take in ``ctx`` to allow more configurability down the road.
     """
-    cmd = ['git', 'clone']
+    cmd = ["git", "clone"]
     if mirror:
         cmd.append("--mirror")
     if branch is not None:
@@ -93,11 +89,7 @@ def diff(ctx, directory, range):
     """Produce a list of diff-ed files for commit range."""
     cmd_template = "cd '%s' && git diff --name-only '%s' --"
     cmd = cmd_template % (directory, range)
-    stdout, _ = io.communicate(
-        cmd,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        universal_newlines=True
-    )
+    stdout, _ = io.communicate(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     return [line.strip() for line in unicodify(stdout).splitlines() if line]
 
 
@@ -117,15 +109,13 @@ def rev(ctx, directory):
     """
     cmd_template = "cd '%s' && git rev-parse HEAD"
     cmd = cmd_template % directory
-    stdout, _ = io.communicate(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
+    stdout, _ = io.communicate(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return unicodify(stdout).strip()
 
 
 def is_rev_dirty(ctx, directory):
     """Check if specified git repository has uncommitted changes."""
-    return io.shell(['git', 'diff', '--quiet'], cwd=directory) != 0
+    return io.shell(["git", "diff", "--quiet"], cwd=directory) != 0
 
 
 def rev_if_git(ctx, directory):

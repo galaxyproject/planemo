@@ -5,11 +5,14 @@ from galaxy.tool_util.deps import (
     docker_util,
     dockerfiles,
 )
-from galaxy.tool_util.deps.commands import execute
 from galaxy.util import unicodify
+from galaxy.util.commands import execute
 
 from .interface import DatabaseSource
-from .postgres import _CommandBuilder, ExecutesPostgresSqlMixin
+from .postgres import (
+    _CommandBuilder,
+    ExecutesPostgresSqlMixin,
+)
 
 DEFAULT_CONTAINER_NAME = "planemopostgres"
 DEFAULT_POSTGRES_PASSWORD = "mysecretpassword"
@@ -31,21 +34,19 @@ def is_running_container(name=DEFAULT_CONTAINER_NAME, **kwds):
     return name in containers
 
 
-def start_postgres_docker(name=DEFAULT_CONTAINER_NAME, password=DEFAULT_POSTGRES_PASSWORD, port=DEFAULT_POSTGRES_PORT_EXPOSE, **kwds):
+def start_postgres_docker(
+    name=DEFAULT_CONTAINER_NAME, password=DEFAULT_POSTGRES_PASSWORD, port=DEFAULT_POSTGRES_PORT_EXPOSE, **kwds
+):
     run_command = docker_util.command_list(
         "run",
         ["-p", "%d:5432" % port, "--name", name, "-e", "POSTGRES_PASSWORD=%s" % password, "--rm", "-d", "postgres"],
-        **kwds
+        **kwds,
     )
     execute(run_command)
 
 
 def stop_postgres_docker(name=DEFAULT_CONTAINER_NAME, **kwds):
-    stop_command = docker_util.command_list(
-        "stop",
-        [name],
-        **kwds
-    )
+    stop_command = docker_util.command_list("stop", [name], **kwds)
     execute(stop_command)
 
 
@@ -54,10 +55,10 @@ class DockerPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource):
 
     def __init__(self, **kwds):
         """Construct a postgres database source from planemo configuration."""
-        self.psql_path = 'psql'
-        self.database_user = 'postgres'
+        self.psql_path = "psql"
+        self.database_user = "postgres"
         self.database_password = DEFAULT_POSTGRES_PASSWORD
-        self.database_host = 'localhost'  # TODO: Make docker host
+        self.database_host = "localhost"  # TODO: Make docker host
         self.database_port = DEFAULT_POSTGRES_PORT_EXPOSE
         self._kwds = kwds
         self._docker_host_kwds = dockerfiles.docker_host_args(**kwds)
@@ -73,7 +74,7 @@ class DockerPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource):
             self.database_password,
             self.database_host,
             self.database_port,
-            identifier
+            identifier,
         )
 
     def _psql_command_builder(self, *args):
@@ -87,6 +88,4 @@ class DockerPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource):
         return command_builder
 
 
-__all__ = (
-    'DockerPostgresDatabaseSource',
-)
+__all__ = ("DockerPostgresDatabaseSource",)

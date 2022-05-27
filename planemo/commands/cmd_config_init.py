@@ -4,10 +4,15 @@ import sys
 
 import click
 
-from planemo import config
-from planemo import options
+from planemo import (
+    config,
+    options,
+)
 from planemo.cli import command_function
-from planemo.io import info, warn
+from planemo.io import (
+    info,
+    warn,
+)
 
 CONFIG_TEMPLATE = """## Planemo Global Configuration File.
 ## Everything in this file is completely optional - these values can all be
@@ -33,18 +38,12 @@ sheds:
     #email: "<TODO>"
     #password: "<TODO>"
 """
-SUCCESS_MESSAGE = (
-    "Wrote configuration template to %s, "
-    "please open with editor and fill out."
-)
+SUCCESS_MESSAGE = "Wrote configuration template to %s, please open with editor and fill out."
 
 
 @click.command("config_init")
 @options.optional_project_arg(exists=None)
-@click.option(
-    '--template',
-    default=None
-)
+@click.option("--template", default=None)
 @command_function
 def cli(ctx, path, template=None, **kwds):
     """Initialise global configuration for Planemo.

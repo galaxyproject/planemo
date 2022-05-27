@@ -6,19 +6,21 @@ import tempfile
 import time
 import traceback
 from datetime import datetime
+from urllib.parse import urljoin
 
 import bioblend
 from bioblend.util import attach_file
-from galaxy.tool_util.client.staging import (
-    StagingInterace,
-)
+
+try:
+    from galaxy.tool_util.client.staging import StagingInterface
+except ImportError:
+    from galaxy.tool_util.client.staging import StagingInterace as StagingInterface
 from galaxy.tool_util.cwl.util import (
     invocation_to_output,
     output_to_cwl_json,
     tool_response_to_output,
 )
 from galaxy.tool_util.parser import get_tool_source
-from galaxy.tool_util.verify.interactor import galaxy_requests_post
 from galaxy.util import (
     safe_makedirs,
     unicodify,
@@ -27,7 +29,6 @@ from requests.exceptions import (
     HTTPError,
     RequestException,
 )
-from six.moves.urllib.parse import urljoin
 
 from planemo.galaxy.api import summarize_history
 from planemo.io import wait_on
@@ -39,8 +40,10 @@ from planemo.runnable import (
 )
 
 DEFAULT_HISTORY_NAME = "CWL Target History"
-ERR_NO_SUCH_TOOL = ("Failed to find tool with ID [%s] in Galaxy - cannot execute job. "
-                    "You may need to enable verbose logging and determine why the tool did not load. [%s]")
+ERR_NO_SUCH_TOOL = (
+    "Failed to find tool with ID [%s] in Galaxy - cannot execute job. "
+    "You may need to enable verbose logging and determine why the tool did not load. [%s]"
+)
 
 
 def execute(ctx, config, runnable, job_path, **kwds):
@@ -79,8 +82,7 @@ def log_contents_str(config):
         return "No log for this engine type."
 
 
-class PlanemoStagingInterface(StagingInterace):
-
+class PlanemoStagingInterface(StagingInterface):
     def __init__(self, ctx, runnable, user_gi, version_major, simultaneous_uploads):
         self._ctx = ctx
         self._user_gi = user_gi
@@ -89,9 +91,13 @@ class PlanemoStagingInterface(StagingInterace):
         self._simultaneous_uploads = simultaneous_uploads
 
     def _post(self, api_path, payload, files_attached=False):
-        params = dict(key=self._user_gi.key)
         url = urljoin(self._user_gi.url, "api/" + api_path)
-        return galaxy_requests_post(url, data=payload, params=params, as_json=True).json()
+        if payload.get("__files"):  # put attached files where BioBlend expects them
+            files_attached = True
+            for k, v in payload["__files"].items():
+                payload[k] = v
+            del payload["__files"]
+        return self._user_gi.make_post_request(url, payload=payload, files_attached=files_attached)
 
     def _attach_file(self, path):
         return attach_file(path)
@@ -134,7 +140,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):  # noqa C901
         ctx.vlog("Post to Galaxy tool API with payload [%s]" % run_tool_payload)
         tool_run_response = user_gi.tools._post(run_tool_payload)
 
-        if not kwds.get('no_wait'):
+        if not kwds.get("no_wait"):
             job = tool_run_response["jobs"][0]
             job_id = job["id"]
             try:
@@ -150,8 +156,8 @@ def _execute(ctx, config, runnable, job_path, **kwds):  # noqa C901
             ctx.vlog("Final job state was ok, fetching details for job [%s]" % job_id)
             job_info = admin_gi.jobs.show_job(job_id)
             response_kwds = {
-                'job_info': job_info,
-                'api_run_response': tool_run_response,
+                "job_info": job_info,
+                "api_run_response": tool_run_response,
             }
             if ctx.verbose:
                 summarize_history(ctx, user_gi, history_id)
@@ -159,7 +165,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):  # noqa C901
     elif runnable.type in [RunnableType.galaxy_workflow, RunnableType.cwl_workflow]:
         response_class = GalaxyWorkflowRunResponse
         workflow_id = config.workflow_id_for_runnable(runnable)
-        ctx.vlog("Found Galaxy workflow ID [%s] for URI [%s]" % (workflow_id, runnable.uri))
+        ctx.vlog(f"Found Galaxy workflow ID [{workflow_id}] for URI [{runnable.uri}]")
         invocation = user_gi.workflows.invoke_workflow(
             workflow_id,
             inputs=job_dict,
@@ -171,33 +177,35 @@ def _execute(ctx, config, runnable, job_path, **kwds):  # noqa C901
 
         ctx.vlog("Waiting for invocation [%s]" % invocation_id)
         polling_backoff = kwds.get("polling_backoff", 0)
-        final_invocation_state = 'new'
+        final_invocation_state = "new"
         error_message = ""
         try:
-            final_invocation_state = _wait_for_invocation(ctx, user_gi, history_id, workflow_id, invocation_id, polling_backoff)
-            assert final_invocation_state == 'scheduled'
+            final_invocation_state = _wait_for_invocation(
+                ctx, user_gi, history_id, workflow_id, invocation_id, polling_backoff
+            )
+            assert final_invocation_state == "scheduled"
         except Exception:
             ctx.vlog("Problem waiting on invocation...")
             summarize_history(ctx, user_gi, history_id)
             error_message = "Final invocation state is [%s]" % final_invocation_state
         ctx.vlog("Final invocation state is [%s]" % final_invocation_state)
 
-        if not kwds.get('no_wait'):
+        if not kwds.get("no_wait"):
             final_state = _wait_for_history(ctx, user_gi, history_id, polling_backoff)
             if final_state != "ok":
                 msg = "Failed to run workflow final history state is [%s]." % final_state
-                error_message = msg if not error_message else "%s. %s" % (error_message, msg)
+                error_message = msg if not error_message else f"{error_message}. {msg}"
                 ctx.vlog(msg)
                 summarize_history(ctx, user_gi, history_id)
             else:
                 ctx.vlog("Final history state is 'ok'")
 
         response_kwds = {
-            'workflow_id': workflow_id,
-            'invocation_id': invocation_id,
-            'history_state': final_state if not kwds.get('no_wait') else None,
-            'invocation_state': final_invocation_state,
-            'error_message': error_message,
+            "workflow_id": workflow_id,
+            "invocation_id": invocation_id,
+            "history_state": final_state if not kwds.get("no_wait") else None,
+            "invocation_state": final_invocation_state,
+            "error_message": error_message,
         }
 
     else:
@@ -211,7 +219,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):  # noqa C901
         log=log_contents_str(config),
         start_datetime=start_datetime,
         end_datetime=datetime.now(),
-        **response_kwds
+        **response_kwds,
     )
     if kwds.get("download_outputs", True):
         output_directory = kwds.get("output_directory", None)
@@ -228,7 +236,8 @@ def stage_in(ctx, runnable, config, job_path, **kwds):  # noqa C901
     simultaneous_uploads = kwds.get("simultaneous_uploads", False)
     user_gi = config.user_gi
     history_id = _history_id(user_gi, **kwds)
-    job_dict, datasets = PlanemoStagingInterface(ctx, runnable, user_gi, config.version_major, simultaneous_uploads).stage(
+    psi = PlanemoStagingInterface(ctx, runnable, user_gi, config.version_major, simultaneous_uploads)
+    job_dict, datasets = psi.stage(
         tool_or_workflow,
         history_id=history_id,
         job_path=job_path,
@@ -236,7 +245,7 @@ def stage_in(ctx, runnable, config, job_path, **kwds):  # noqa C901
         to_posix_lines=to_posix_lines,
     )
 
-    if datasets and kwds.get('check_uploads_ok', True):
+    if datasets and kwds.get("check_uploads_ok", True):
         ctx.vlog("uploaded datasets [%s] for activity, checking history state" % datasets)
         final_state = _wait_for_history(ctx, user_gi, history_id)
 
@@ -245,7 +254,7 @@ def stage_in(ctx, runnable, config, job_path, **kwds):  # noqa C901
                 history_id,
                 dataset["id"],
             )
-            ctx.vlog("Uploaded dataset for path [%s] with metadata [%s]" % (path, dataset_details))
+            ctx.vlog(f"Uploaded dataset for path [{path}] with metadata [{dataset_details}]")
     else:
         # Mark uploads as ok because nothing to do.
         final_state = "ok"
@@ -266,8 +275,53 @@ def _file_path_to_name(file_path):
     return name
 
 
-class GalaxyBaseRunResponse(SuccessfulRunResponse):
+def execute_rerun(ctx, config, rerunnable, **kwds):
+    rerun_successful = True
+    user_gi = config.user_gi
+    if rerunnable.rerunnable_type == "history":
+        job_ids = [job["id"] for job in user_gi.jobs.get_jobs(history_id=rerunnable.rerunnable_id, state="error")]
+    elif rerunnable.rerunnable_type == "invocation":
+        job_ids = [job["id"] for job in user_gi.jobs.get_jobs(invocation_id=rerunnable.rerunnable_id, state="error")]
+    elif rerunnable.rerunnable_type == "job":
+        job_ids = [rerunnable.rerunnable_id]
+    # elif rerunnable.rerunnable_type = 'collection':
+    else:
+        raise Exception(f"Unknown Rerunnable type {rerunnable.rerunnable_type}")
 
+    for job_id in job_ids:
+        try:
+            user_gi.jobs.rerun_job(job_id, remap=True)
+        except (ValueError, bioblend.ConnectionError):
+            rerun_successful = False
+            if rerunnable.rerunnable_type == "job":
+                ctx.log(f"Job {job_id} could not be rerun with dataset remapping.")
+            else:
+                ctx.log(
+                    f"Job {job_id} associated with {rerunnable.rerunnable_type} {rerunnable.rerunnable_id} "
+                    "could not be rerun with dataset remapping."
+                )
+        else:
+            if rerunnable.rerunnable_type == "job":
+                ctx.log(f"Job {job_id} was successfully rerun.")
+            else:
+                ctx.log(
+                    f"Job {job_id} associated with {rerunnable.rerunnable_type} {rerunnable.rerunnable_id} was successfully rerun."
+                )
+    if not job_ids:
+        ctx.log(f"No jobs matching the specified {rerunnable.rerunnable_type} {rerunnable.rerunnable_id} were found.")
+    run_response = GalaxyBaseRunResponse(
+        ctx=ctx,
+        runnable=rerunnable,
+        user_gi=user_gi,
+        history_id=rerunnable.rerunnable_id if rerunnable.rerunnable_type == "history_id" else None,
+        log=log_contents_str(config),
+    )
+
+    run_response.was_successful = rerun_successful
+    return run_response
+
+
+class GalaxyBaseRunResponse(SuccessfulRunResponse):
     def __init__(
         self,
         ctx,
@@ -308,8 +362,8 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         return self._end_datetime
 
     def _get_extra_files(self, dataset_details):
-        extra_files_url = "%s/histories/%s/contents/%s/extra_files" % (
-            self._user_gi.url, self._history_id, dataset_details["id"]
+        extra_files_url = (
+            f"{self._user_gi.url}/histories/{self._history_id}/contents/{dataset_details['id']}/extra_files"
         )
         extra_files = self._user_gi.jobs._get(url=extra_files_url)
         return extra_files
@@ -440,7 +494,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
 
     def _history_content_download(self, ctx, history_id, dataset_id, to_path, filename=None):
         user_gi = self._user_gi
-        url = user_gi.url + "/histories/%s/contents/%s/display" % (history_id, dataset_id)
+        url = f"{user_gi.url}/histories/{history_id}/contents/{dataset_id}/display"
 
         data = {}
         if filename:
@@ -457,14 +511,13 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             ctx.vlog(f"Failed to download history content at URL {url}, exception: {e}")
             return
 
-        with open(to_path, 'wb') as fp:
+        with open(to_path, "wb") as fp:
             for chunk in r.iter_content(chunk_size=bioblend.CHUNK_SIZE):
                 if chunk:
                     fp.write(chunk)
 
 
 class GalaxyToolRunResponse(GalaxyBaseRunResponse):
-
     def __init__(
         self,
         ctx,
@@ -477,7 +530,7 @@ class GalaxyToolRunResponse(GalaxyBaseRunResponse):
         start_datetime=None,
         end_datetime=None,
     ):
-        super(GalaxyToolRunResponse, self).__init__(
+        super().__init__(
             ctx=ctx,
             runnable=runnable,
             user_gi=user_gi,
@@ -504,7 +557,7 @@ class GalaxyToolRunResponse(GalaxyBaseRunResponse):
         output_collections = self.api_run_response["output_collections"]
         output_id = output.get_id()
         output_src = None
-        self._ctx.vlog("Looking for id [%s] in outputs [%s]" % (output_id, outputs))
+        self._ctx.vlog(f"Looking for id [{output_id}] in outputs [{outputs}]")
         for output in outputs:
             if output["output_name"] == output_id:
                 output_src = {"src": "hda", "id": output["id"]}
@@ -515,7 +568,6 @@ class GalaxyToolRunResponse(GalaxyBaseRunResponse):
 
 
 class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
-
     def __init__(
         self,
         ctx,
@@ -525,13 +577,13 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         log,
         workflow_id,
         invocation_id,
-        history_state='ok',
-        invocation_state='ok',
+        history_state="ok",
+        invocation_state="ok",
         error_message=None,
         start_datetime=None,
         end_datetime=None,
     ):
-        super(GalaxyWorkflowRunResponse, self).__init__(
+        super().__init__(
             ctx=ctx,
             runnable=runnable,
             user_gi=user_gi,
@@ -564,33 +616,35 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         elif output_name in invocation["output_collections"]:
             return invocation["output_collections"][output.get_id()]
         else:
-            raise Exception("Failed to find output [%s] in invocation outputs [%s]" % (output_name, invocation["outputs"]))
+            raise Exception(f"Failed to find output [{output_name}] in invocation outputs [{invocation['outputs']}]")
 
     def collect_invocation_details(self, invocation_id=None):
         gi = self._user_gi
         invocation_steps = {}
         invocation = self.get_invocation(invocation_id)
-        for step in invocation['steps']:
-            step_label_or_index = "{}. {}".format(step['order_index'], step['workflow_step_label'] or 'Unnamed step')
-            workflow_step = gi.invocations.show_invocation_step(self._invocation_id, step['id'])
-            workflow_step['subworkflow'] = None
-            subworkflow_invocation_id = workflow_step.get('subworkflow_invocation_id')
+        for step in invocation["steps"]:
+            step_label_or_index = f"{step['order_index']}. {step['workflow_step_label'] or 'Unnamed step'}"
+            workflow_step = gi.invocations.show_invocation_step(self._invocation_id, step["id"])
+            workflow_step["subworkflow"] = None
+            subworkflow_invocation_id = workflow_step.get("subworkflow_invocation_id")
             if subworkflow_invocation_id:
-                workflow_step['subworkflow'] = self.collect_invocation_details(subworkflow_invocation_id)
-            workflow_step_job_details = [self._user_gi.jobs.show_job(j['id'], full_details=True) for j in workflow_step['jobs']]
-            workflow_step['jobs'] = workflow_step_job_details
+                workflow_step["subworkflow"] = self.collect_invocation_details(subworkflow_invocation_id)
+            workflow_step_job_details = [
+                self._user_gi.jobs.show_job(j["id"], full_details=True) for j in workflow_step["jobs"]
+            ]
+            workflow_step["jobs"] = workflow_step_job_details
             invocation_steps[step_label_or_index] = workflow_step
         invocation_details = {
-                'steps': invocation_steps,
-                'details': {
-                    'invocation_id': self._invocation_id,
-                    'history_id': self._history_id,
-                    'workflow_id': self._workflow_id,
-                    'invocation_state': self.invocation_state,
-                    'history_state': self.history_state,
-                    'error_message': self.error_message,
-                }
-            }
+            "steps": invocation_steps,
+            "details": {
+                "invocation_id": self._invocation_id,
+                "history_id": self._history_id,
+                "workflow_id": self._workflow_id,
+                "invocation_state": self.invocation_state,
+                "history_state": self.history_state,
+                "error_message": self.error_message,
+            },
+        }
         return invocation_details
 
     @property
@@ -608,7 +662,7 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
 
     @property
     def was_successful(self):
-        return self.history_state in ['ok', None] and self.invocation_state == 'scheduled'
+        return self.history_state in ["ok", None] and self.invocation_state == "scheduled"
 
 
 def _tool_id(tool_path):
@@ -621,8 +675,8 @@ def _history_id(gi, **kwds):
     if history_id is None:
         history_name = kwds.get("history_name", DEFAULT_HISTORY_NAME) or DEFAULT_HISTORY_NAME
         history_id = gi.histories.create_history(history_name)["id"]
-    if kwds.get('tags'):
-        tags = kwds.get('tags').split(',')
+    if kwds.get("tags"):
+        tags = kwds.get("tags").split(",")
         gi.histories.update_history(history_id, tags=tags)
     return history_id
 
@@ -632,7 +686,6 @@ def get_dict_from_workflow(gi, workflow_id):
 
 
 def _wait_for_invocation(ctx, gi, history_id, workflow_id, invocation_id, polling_backoff=0):
-
     def state_func():
         return _retry_on_timeouts(ctx, gi, lambda gi: gi.workflows.show_invocation(workflow_id, invocation_id))
 
@@ -660,7 +713,7 @@ def _retry_on_timeouts(ctx, gi, f):
 
 def has_jobs_in_states(ctx, gi, history_id, states):
     params = {"history_id": history_id}
-    jobs_url = gi.url + '/jobs'
+    jobs_url = gi.url + "/jobs"
     jobs = gi.jobs._get(url=jobs_url, params=params)
     target_jobs = [j for j in jobs if j["state"] in states]
     return len(target_jobs) > 0
@@ -685,7 +738,6 @@ def _wait_for_job(gi, job_id):
 
 
 def _wait_on_state(state_func, polling_backoff=0):
-
     def get_state():
         response = state_func()
         state = response["state"]
@@ -693,11 +745,10 @@ def _wait_on_state(state_func, polling_backoff=0):
             return state
         else:
             return None
+
     timeout = 60 * 60 * 24
     final_state = wait_on(get_state, "state", timeout, polling_backoff)
     return final_state
 
 
-__all__ = (
-    "execute",
-)
+__all__ = ("execute",)

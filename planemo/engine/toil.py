@@ -19,6 +19,4 @@ class ToilEngine(BaseEngine):
         return cwl.run_toil(self._ctx, path, job_path, **self._kwds)
 
 
-__all__ = (
-    "ToilEngine",
-)
+__all__ = ("ToilEngine",)

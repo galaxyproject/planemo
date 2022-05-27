@@ -12,20 +12,17 @@ from planemo.engine import (
     is_galaxy_engine,
 )
 from planemo.io import write_file
-from planemo.runnable import (
-    for_path,
-)
+from planemo.runnable import for_path
 
 
-@click.command('workflow_convert')
+@click.command("workflow_convert")
 @options.required_workflow_arg()
 @options.force_option()
 @options.workflow_output_artifact()
 @options.galaxy_serve_options()
 @command_function
 def cli(ctx, workflow_identifier, output=None, force=False, **kwds):
-    """Convert Format 2 workflows to native Galaxy workflows, and vice-versa.
-    """
+    """Convert Format 2 workflows to native Galaxy workflows, and vice-versa."""
     assert is_galaxy_engine(**kwds)
 
     kwds["no_dependency_resolution"] = True
@@ -34,7 +31,7 @@ def cli(ctx, workflow_identifier, output=None, force=False, **kwds):
         if output is None:
             output = os.path.splitext(workflow_identifier)[0] + ".gxwf.yml"
 
-        with open(workflow_identifier, "r") as f:
+        with open(workflow_identifier) as f:
             workflow_dict = json.load(f)
         format2_wrapper = from_galaxy_native(workflow_dict, json_wrapper=True)
         with open(output, "w") as f:

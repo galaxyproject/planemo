@@ -9,9 +9,9 @@ from planemo.galaxy.config import (
     get_refgenie_config,
 )
 from .test_utils import (
+    create_test_context,
     skip_if_environ,
     TempDirectoryContext,
-    test_context,
 )
 
 
@@ -43,13 +43,18 @@ def test_override_files_path():
 
 def test_refgenie_config_version():
     with TempDirectoryContext() as tdc:
-        galaxy_lib_path = os.path.join(tdc.temp_directory, 'lib', 'galaxy')
+        galaxy_lib_path = os.path.join(tdc.temp_directory, "lib", "galaxy")
         os.makedirs(galaxy_lib_path)
-        version_path = os.path.join(galaxy_lib_path, 'version.py')
-        with open(version_path, 'w') as version_fh:
+        version_path = os.path.join(galaxy_lib_path, "version.py")
+        with open(version_path, "w") as version_fh:
             version_fh.write('VERSION_MAJOR = "21.05"')
+<<<<<<< HEAD
         refgenie_config = get_refgenie_config(galaxy_root=tdc.temp_directory, refgenie_dir='/')
     assert yaml.load(refgenie_config, Loader=yaml.SafeLoader)['config_version'] == 0.3
+=======
+        refgenie_config = get_refgenie_config(galaxy_root=tdc.temp_directory, refgenie_dir="/")
+    assert yaml.load(refgenie_config, Loader=yaml.SafeLoader)["config_version"] == 0.3
+>>>>>>> upstream/master
 
 
 def _assert_property_is(config, prop, value):
@@ -59,7 +64,7 @@ def _assert_property_is(config, prop, value):
 
 @contextlib.contextmanager
 def _test_galaxy_config(tool_paths=[], **kwargs):
-    ctx = test_context()
+    ctx = create_test_context()
     with TempDirectoryContext() as tdc:
         test_data = os.path.join(tdc.temp_directory, "test-data")
         os.makedirs(test_data)

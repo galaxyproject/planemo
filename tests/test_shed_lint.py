@@ -4,7 +4,6 @@ from .test_utils import CliTestCase
 
 
 class ShedLintTestCase(CliTestCase):
-
     def test_valid_repos(self):
         with self._isolate_repo("single_tool"):
             self._check_exit_code(["shed_lint"])
@@ -63,13 +62,11 @@ class ShedLintTestCase(CliTestCase):
             for name in ["bad_invalid_yaml", "single_tool_exclude"]:
                 self._copy_repo(name, join(f, name))
                 self._copy_repo(name, join(f, name))
-            r = self._check_exit_code(["shed_lint", "-r", "--fail_fast"],
-                                      exit_code=1)
+            r = self._check_exit_code(["shed_lint", "-r", "--fail_fast"], exit_code=1)
             assert isinstance(r.exception, RuntimeError)
 
     def test_ensure_metadata(self):
         with self._isolate_repo("single_tool"):
             self._check_exit_code(["shed_lint"])
         with self._isolate_repo("single_tool_exclude"):
-            self._check_exit_code(["shed_lint", "--ensure_metadata"],
-                                  exit_code=1)
+            self._check_exit_code(["shed_lint", "--ensure_metadata"], exit_code=1)

@@ -20,7 +20,6 @@ SERVE_TEST_VERBOSE = True
 
 
 class CmdsWithWorkflowIdTestCase(CliTestCase, UsesServeCommand):
-
     @classmethod
     def setUpClass(cls):
         cls.galaxy_root = tempfile.mkdtemp()
@@ -30,7 +29,7 @@ class CmdsWithWorkflowIdTestCase(CliTestCase, UsesServeCommand):
         safe_rmtree(cls.galaxy_root)
 
     def setUp(self):
-        super(CmdsWithWorkflowIdTestCase, self).setUp()
+        super().setUp()
         self._port = network_util.get_free_port()
         self._pid_file = os.path.join(self._home, "test.pid")
 
@@ -44,16 +43,19 @@ class CmdsWithWorkflowIdTestCase(CliTestCase, UsesServeCommand):
             extra_args = [
                 "--daemon",
                 "--skip_client_build",
-                "--pid_file", self._pid_file,
-                "--extra_tools", random_lines,
-                "--extra_tools", cat,
+                "--pid_file",
+                self._pid_file,
+                "--extra_tools",
+                random_lines,
+                "--extra_tools",
+                cat,
             ]
             self._launch_thread_and_wait(self._run, extra_args)
             time.sleep(30)
             user_gi = self._user_gi
             assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0
             user_gi.histories.create_history(TEST_HISTORY_NAME)
-            assert user_gi.tools.get_tools(tool_id="random_lines1")
+            assert user_gi.tools.show_tool("random_lines1")
             workflows = user_gi.workflows.get_workflows()
             assert len(workflows) == 1
             workflow = workflows[0]
@@ -73,6 +75,6 @@ class CmdsWithWorkflowIdTestCase(CliTestCase, UsesServeCommand):
             ]
             self._check_exit_code(test_command, exit_code=0)
             output_json_path = os.path.join(f, "tool_test_output.json")
-            with open(output_json_path, "r") as f:
+            with open(output_json_path) as f:
                 output = json.load(f)
             assert "tests" in output

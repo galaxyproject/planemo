@@ -1,6 +1,6 @@
 import json
 
-with open("tool_index.json", "r") as f:
+with open("tool_index.json") as f:
     tool_index = json.load(f)
 
 tool_map = {}

@@ -12,27 +12,30 @@ from planemo import options
 from planemo.cli import command_function
 
 
-@click.command('normalize')
+@click.command("normalize")
 @options.required_tool_arg()
 @click.option(
     "--expand_macros",
     is_flag=True,
-    help=("Expand macros while normalizing tool XML - useful to see how "
-          "macros are evaluated.")
+    help="Expand macros while normalizing tool XML - useful to see how macros are evaluated.",
 )
 @click.option(
     "--skip_reorder",
     is_flag=True,
-    help=("Planemo will reorder top-level tool blocks according to tool "
-          "development best practices as part of this command, this flag "
-          "will disable that behavior.")
+    help=(
+        "Planemo will reorder top-level tool blocks according to tool "
+        "development best practices as part of this command, this flag "
+        "will disable that behavior."
+    ),
 )
 @click.option(
     "--skip_reindent",
     is_flag=True,
-    help=("Planemo will reindent the XML according to tool development "
-          "best practices as part of this command, this flag will disable "
-          "that behavior.")
+    help=(
+        "Planemo will reindent the XML according to tool development "
+        "best practices as part of this command, this flag will disable "
+        "that behavior."
+    ),
 )
 @command_function
 def cli(ctx, path, expand_macros=False, **kwds):
@@ -89,8 +92,8 @@ def _indent(elem, level=0):
             elem.text = i + "    "
         if not elem.tail or not elem.tail.strip():
             elem.tail = i
-        for elem in elem:
-            _indent(elem, level + 1)
+        for subelem in elem:
+            _indent(subelem, level + 1)
         if not elem.tail or not elem.tail.strip():
             elem.tail = i
     else:

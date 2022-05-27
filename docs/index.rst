@@ -22,6 +22,8 @@ Contents:
    standards/docs/best_practices
    best_practices_workflows
    running
+   automating_workflows
+   autoupdate
    commands
    galaxy_changelog
    conduct

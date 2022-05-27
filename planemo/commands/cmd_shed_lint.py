@@ -1,29 +1,30 @@
 """Module describing the planemo ``shed_lint`` command."""
 import click
 
-from planemo import options
-from planemo import shed
-from planemo import shed_lint
+from planemo import (
+    options,
+    shed,
+    shed_lint,
+)
 from planemo.cli import command_function
 
 
-@click.command('shed_lint')
+@click.command("shed_lint")
 @options.shed_realization_options()
 @options.report_level_option()
 @options.fail_level_option()
 @options.click.option(
-    '--tools',
-    is_flag=True,
-    default=False,
-    help=("Lint tools discovered in the process of linting repositories.")
+    "--tools", is_flag=True, default=False, help=("Lint tools discovered in the process of linting repositories.")
 )
 @options.lint_xsd_option()
 @options.click.option(
-    '--ensure_metadata',
+    "--ensure_metadata",
     is_flag=True,
     default=False,
-    help=("Ensure .shed.yml files contain enough metadata for each repository "
-          "to allow automated creation and/or updates.")
+    help=(
+        "Ensure .shed.yml files contain enough metadata for each repository "
+        "to allow automated creation and/or updates."
+    ),
 )
 @click.option(
     "--urls",
@@ -51,6 +52,7 @@ def cli(ctx, paths, **kwds):
     was received. In tool XML files, the ``--urls`` option checks through the
     help text for mentioned URLs and checks those.
     """
+
     def lint(realized_repository):
         return shed_lint.lint_repository(ctx, realized_repository, **kwds)
 

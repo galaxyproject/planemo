@@ -3,7 +3,6 @@
 Some intelligence is required because the tool shed updates attributes that it
 is beneficial to ignore.
 """
-from __future__ import print_function
 
 import os
 import sys
@@ -61,6 +60,4 @@ def _remove_attribs(xml_element):
             del xml_element.attrib[attrib]
 
 
-__all__ = (
-    "diff_and_remove",
-)
+__all__ = ("diff_and_remove",)

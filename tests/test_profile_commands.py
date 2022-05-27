@@ -2,12 +2,11 @@ from planemo.database.postgres_docker import stop_postgres_docker
 from .test_utils import (
     CliTestCase,
     skip_unless_environ,
-    skip_unless_executable
+    skip_unless_executable,
 )
 
 
 class ProfileCommandsTestCase(CliTestCase):
-
     def _profile_commands(self, database_type="postgres"):
         with self._isolate():
             result = self._check_exit_code(["profile_list"])

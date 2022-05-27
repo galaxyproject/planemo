@@ -1,5 +1,5 @@
 """Create a DatabaseSource from supplied planemo configuration."""
-from galaxy.tool_util.deps.commands import which
+from galaxy.util.commands import which
 
 from .postgres import LocalPostgresDatabaseSource
 from .postgres_docker import DockerPostgresDatabaseSource
@@ -28,6 +28,4 @@ def create_database_source(**kwds):
         raise Exception("Unknown database type [%s]." % database_type)
 
 
-__all__ = (
-    "create_database_source",
-)
+__all__ = ("create_database_source",)
