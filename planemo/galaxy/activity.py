@@ -315,7 +315,7 @@ def execute_rerun(ctx, config, rerunnable, **kwds):
         user_gi=user_gi,
         history_id=rerunnable.rerunnable_id if rerunnable.rerunnable_type == "history_id" else None,
         log=log_contents_str(config),
-    )[0]
+    )
 
     run_response.was_successful = rerun_successful
     return run_response
