@@ -225,23 +225,24 @@ def galaxy_config(ctx, runnables, **kwds):
     elif kwds.get("external", False):
         c = external_galaxy_config
     log_thread = None
+    e = threading.Event()
     try:
         with c(ctx, runnables, **kwds) as config:
             if kwds.get("daemon"):
-                log_thread = threading.Thread(target=read_log, args=(ctx, config.log_file))
+                log_thread = threading.Thread(target=read_log, args=(ctx, config.log_file, e))
                 log_thread.daemon = True
                 log_thread.start()
             yield config
     finally:
         if log_thread:
+            e.set()
             log_thread.join(1)
 
 
-def read_log(ctx, log_path):
+def read_log(ctx, log_path, e: threading.Event):
     log_fh = None
-    e = threading.Event()
     try:
-        while e:
+        while not e.is_set():
             if os.path.exists(log_path):
                 if not log_fh:
                     # Open in append so we start at the end of the log file
