@@ -92,7 +92,8 @@ def serve_daemon(ctx, runnables=None, **kwds):
 
 def sleep_for_serve():
     # This is bad, do something better...
-    time.sleep(1000000)
+    for _ in range(3600 * 24):
+        time.sleep(1)
 
 
 __all__ = (
