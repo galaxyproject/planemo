@@ -61,11 +61,10 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
         embedded_test_cases = []
         # TODO: unify interface so we don't need to split test cases
         for test_case in test_cases:
-            if hasattr(test_cases, "job_path"):
-                # Simple file-based job path.
-                file_based_test_cases.append(test_case)
-            else:
+            if isinstance(test_case, ExternalGalaxyToolTestCase):
                 embedded_test_cases.append(test_case)
+            else:
+                file_based_test_cases.append(test_case)
         if file_based_test_cases:
             test_results.extend(super()._run_test_cases(file_based_test_cases))
         if embedded_test_cases:
