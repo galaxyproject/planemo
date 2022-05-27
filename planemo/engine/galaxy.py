@@ -80,7 +80,7 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
                         interactor.VERBOSE_GALAXY_ERRORS = True
 
                     # on an external Galaxy it makes sense to keep test histories
-                    no_history_cleanup = config._kwds.get('engine') == 'external_galaxy'
+                    no_history_cleanup = config._kwds.get("engine") == "external_galaxy"
 
                     interactor.verify_tool(
                         tool_id,

@@ -1,11 +1,11 @@
 import os
 
 from planemo.engine import engine_context
-from planemo.galaxy import galaxy_config
-from planemo.galaxy import galaxy_serve
-from planemo.galaxy.api import (
-    DEFAULT_ADMIN_API_KEY
+from planemo.galaxy import (
+    galaxy_config,
+    galaxy_serve,
 )
+from planemo.galaxy.api import DEFAULT_ADMIN_API_KEY
 from planemo.galaxy.config import _find_test_data
 from planemo.galaxy.ephemeris_sleep import sleep
 from planemo.galaxy.test import (
@@ -24,7 +24,7 @@ def test_runnables(ctx, runnables, original_paths=None, **kwds):
     if kwds.get("serve"):
         if "galaxy" not in kwds["engine"]:
             raise ValueError("The serve option is only supported by Galaxy-based engines.")
-        kwds["galaxy_url"] = kwds["galaxy_url"] or ''.join(("http://", kwds["host"], ":", str(kwds["port"])))
+        kwds["galaxy_url"] = kwds["galaxy_url"] or "".join(("http://", kwds["host"], ":", str(kwds["port"])))
         kwds["galaxy_admin_key"] = kwds["galaxy_admin_key"] or DEFAULT_ADMIN_API_KEY
         pid = os.fork()
         if pid == 0:

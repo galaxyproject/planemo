@@ -48,13 +48,8 @@ def test_refgenie_config_version():
         version_path = os.path.join(galaxy_lib_path, "version.py")
         with open(version_path, "w") as version_fh:
             version_fh.write('VERSION_MAJOR = "21.05"')
-<<<<<<< HEAD
-        refgenie_config = get_refgenie_config(galaxy_root=tdc.temp_directory, refgenie_dir='/')
-    assert yaml.load(refgenie_config, Loader=yaml.SafeLoader)['config_version'] == 0.3
-=======
         refgenie_config = get_refgenie_config(galaxy_root=tdc.temp_directory, refgenie_dir="/")
     assert yaml.load(refgenie_config, Loader=yaml.SafeLoader)["config_version"] == 0.3
->>>>>>> upstream/master
 
 
 def _assert_property_is(config, prop, value):

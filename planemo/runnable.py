@@ -494,7 +494,7 @@ def flatten_to_single_artifacts(runnables):
         if runnable.type.is_single_artifact:
             single_runnables.append(runnable)
         else:
-            paths = glob.glob(f'{runnable.path}/*')
+            paths = glob.glob(f"{runnable.path}/*")
             for path in paths:
                 if os.path.isdir(path):
                     continue

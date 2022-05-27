@@ -173,9 +173,11 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         extra_args = [
             "--serve",
             test_artifact,
-            "--port", str(self._port),
+            "--port",
+            str(self._port),
             "--no_dependency_resolution",
-            "--extra_tools", cat,
+            "--extra_tools",
+            cat,
         ]
         self._launch_thread_and_wait(self._run_test, extra_args)
         time.sleep(30)
@@ -184,7 +186,7 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         user_gi = self._user_gi
         workflows = user_gi.workflows.get_workflows()
         assert len(workflows) == 1
-        assert workflows[0]['name'] == 'TestWorkflow1'
+        assert workflows[0]["name"] == "TestWorkflow1"
         histories = user_gi.histories.get_histories(name="CWL Target History")
         assert len(histories) == 1
 
