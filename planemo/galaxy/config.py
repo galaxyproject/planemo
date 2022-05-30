@@ -1042,14 +1042,12 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         run_script = f"{shlex.quote(os.path.join(self.galaxy_root, 'run.sh'))} $COMMON_STARTUP_ARGS"
         if daemon:
             run_script += " --daemon"
-            self.env["GALAXY_RUN_ALL"] = "1"
         else:
             run_script += f" --server-name {shlex.quote(self.server_name)}"
         cd_to_galaxy_command = ["cd", self.galaxy_root]
         return shell_join(
             cd_to_galaxy_command,
             setup_venv_command,
-            "./create_db.sh",
             run_script,
         )
 
