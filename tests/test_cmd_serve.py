@@ -1,4 +1,6 @@
 import os
+import signal
+import subprocess
 import tempfile
 import time
 import uuid
@@ -33,7 +35,32 @@ class UsesServeCommand:
         serve_cmd = self._serve_command_list(serve_args, serve_cmd)
         if run_verbosely():
             print("Running command for test [%s]" % serve_cmd)
-        self._check_exit_code(serve_cmd)
+        if "--daemon" not in serve_cmd:
+            self._run_subprocess(serve_cmd)
+        else:
+            self._check_exit_code(serve_cmd)
+
+    def _run_subprocess(self, serve_cmd):
+        serve_cmd.insert(0, "planemo")
+        stdout_file = tempfile.NamedTemporaryFile(mode="wb+", suffix="_planemo_stdout")
+        popen = subprocess.Popen(
+            serve_cmd, env=os.environ.copy(), stdout=stdout_file, stderr=stdout_file, preexec_fn=os.setsid
+        )
+        if popen.poll() is not None:
+            stdout_file.seek(0)
+            raise Exception(
+                f"planemo serve command failed. exit_code: {popen.returncode}, output: {stdout_file.read().decode('utf-8')}"
+            )
+
+        def cleanup():
+            pgrp = os.getpgid(popen.pid)
+            os.killpg(pgrp, signal.SIGINT)
+            stdout_file.seek(0)
+            print(stdout_file.read().decode("utf-8"))
+            popen.terminate()
+            popen.kill()
+
+        self._cleanup_hooks.append(cleanup)
 
     def _serve_command_list(self, serve_args=[], serve_cmd="serve"):
         test_cmd = ["--verbose"] if run_verbosely() else []
@@ -53,10 +80,11 @@ class UsesServeCommand:
         test_cmd.extend(serve_args)
         return test_cmd
 
-    def _launch_thread_and_wait(self, func, args=[], **kwd):
-        future = launch_and_wait_for_galaxy(self._port, func, [args], **kwd)
-        if future is not None:
-            self._futures.append(future)
+    def _launch_thread_and_wait(self, func, args=None, run_as_subprocess=False, **kwd):
+        args = args or []
+        future = launch_and_wait_for_galaxy(self._port, func, [args], run_as_subprocess=run_as_subprocess, **kwd)
+        if future:
+            self._cleanup_hooks.append(lambda: future.cancel())
 
     @property
     def _user_gi(self):
@@ -87,7 +115,7 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         extra_args = [
             "--skip_client_build",
         ]
-        self._launch_thread_and_wait(self._run, extra_args)
+        self._launch_thread_and_wait(self._run, extra_args, run_as_subprocess=True)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @skip_if_environ("PLANEMO_SKIP_GALAXY_CLIENT_TESTS")
@@ -96,7 +124,9 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         extra_args = ["--galaxy_python_version", "3"]
         # Given the client build - give this more time.
         timeout_multiplier = 3
-        self._launch_thread_and_wait(self._run, extra_args, timeout_multiplier=timeout_multiplier)
+        self._launch_thread_and_wait(
+            self._run, extra_args, timeout_multiplier=timeout_multiplier, run_as_subprocess=True
+        )
         # Check that the client was correctly built
         url = "http://localhost:%d/static/dist/analysis.bundled.js" % int(self._port)
         r = requests.get(url)

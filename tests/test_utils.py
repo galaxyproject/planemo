@@ -13,6 +13,10 @@ from concurrent.futures import (
 )
 from sys import version_info
 from tempfile import mkdtemp
+from typing import (
+    Callable,
+    List,
+)
 from unittest import (
     skip,
     TestCase,
@@ -76,17 +80,16 @@ class CliTestCase(TestCase):
         self._runner = CliRunner()
         self._home = mkdtemp()
         self._old_config = os.environ.get(PLANEMO_CONFIG_ENV_PROP, None)
-        self._futures = []
+        self._cleanup_hooks: List[Callable] = []
         self._port = None
         os.environ[PLANEMO_CONFIG_ENV_PROP] = self.planemo_yaml_path
 
     def tearDown(self):  # noqa
-        for future in self._futures:
-            future.cancel()
+        for cleanup_hook in self._cleanup_hooks:
             try:
-                future.result(timeout=10)
+                cleanup_hook()
             except Exception as e:
-                print(f"Failed to dispose of future driven resource [{e}]")
+                print(f"Failed to run cleanup hook: [{e}]")
         if self._port:
             kill_process_on_port(self._port)
         if self._old_config:
@@ -341,14 +344,20 @@ def cli_daemon_galaxy(runner, pid_file, port, command_list, exit_code=0):
     _wait_on_future_suppress_exception(future)
 
 
-def launch_and_wait_for_galaxy(port, func, args=[], timeout=600, timeout_multiplier=1):
+def launch_and_wait_for_galaxy(port, func, args=[], timeout=600, timeout_multiplier=1, run_as_subprocess=False):
     """Run func(args) in a thread and wait on port for service.
 
     Service should remain up so check network a few times, this prevents
     the code that finds a free port from causing a false positive when
     detecting that the port is bound to.
     """
-    target = functools.partial(func, *args)
+    target = None
+    if run_as_subprocess:
+        # func is responsible for starting subprocess registering a subprocess.Popen instance for cleanup.
+        # Should return immediately.
+        func(*args)
+    else:
+        target = functools.partial(func, *args)
 
     wait_sleep_condition = SleepCondition()
 
@@ -361,17 +370,24 @@ def launch_and_wait_for_galaxy(port, func, args=[], timeout=600, timeout_multipl
 
     executor = ThreadPoolExecutor(max_workers=2)
     try:
-        target_future = executor.submit(target)
+        futures = []
+        if target:
+            target_future = executor.submit(target)
+            futures.append(target_future)
+        else:
+            target_future = None
         wait_future = executor.submit(wait)
-        for _ in as_completed([target_future, wait_future]):
+        futures.append(wait_future)
+
+        for _ in as_completed(futures):
             break
 
-        if target_future.running():
+        if target_future and target_future.running():
             # If wait timed out re-throw.
             wait_future.result()
             return target_future
         else:
-            if target_future.exception() is not None:
+            if target_future and target_future.exception() is not None:
                 wait_future.cancel()
                 wait_sleep_condition.cancel()
                 _wait_on_future_suppress_exception(wait_future)
