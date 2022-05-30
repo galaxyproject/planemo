@@ -125,73 +125,6 @@ JOB_CONFIG_LOCAL = """<job_conf>
 </job_conf>
 """
 
-LOGGING_TEMPLATE = """
-## Configure Python loggers.
-[loggers]
-keys = root,paste,urllib,displayapperrors,galaxydeps,galaxytoolsactions,galaxymasterapikey,galaxy
-
-[handlers]
-keys = console
-
-[formatters]
-keys = generic
-
-[logger_root]
-level = WARN
-handlers = console
-
-[logger_paste]
-level = WARN
-handlers = console
-qualname = paste
-propagate = 0
-
-[logger_urllib]
-level = WARN
-handlers = console
-qualname = urllib3
-propagate = 0
-
-[logger_galaxydeps]
-level = DEBUG
-handlers = console
-qualname = galaxy.tools.deps
-propagate = 0
-
-[logger_galaxytoolsactions]
-level = DEBUG
-handlers = console
-qualname = galaxy.tools.actions
-propagate = 0
-
-[logger_galaxymasterapikey]
-level = WARN
-handlers = console
-qualname = galaxy.web.framework.webapp
-propagate = 0
-
-[logger_displayapperrors]
-level = ERROR
-handlers =
-qualname = galaxy.datatypes.display_applications.application
-propagate = 0
-
-[logger_galaxy]
-level = ${log_level}
-handlers = console
-qualname = galaxy
-propagate = 0
-
-[handler_console]
-class = StreamHandler
-args = (sys.stderr,)
-level = DEBUG
-formatter = generic
-
-[formatter_generic]
-format = %(asctime)s %(levelname)-5.5s [%(name)s] %(message)s
-"""
-
 REFGENIE_CONFIG_TEMPLATE = """
 config_version: %s
 genome_folder: '%s'
@@ -332,7 +265,6 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             env["GALAXY_LOGGING"] = "full"
 
         # TODO: setup FTP upload dir and disable FTP server in container.
-        _build_test_env(properties, env)
 
         docker_target_kwds = docker_host_args(**kwds)
         volumes = tool_volumes + [simple_docker_volume(config_directory)]
@@ -493,7 +425,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             )
         )
         _handle_container_resolution(ctx, kwds, properties)
-        write_file(config_join("logging.ini"), _sub(LOGGING_TEMPLATE, template_args))
         properties["database_connection"] = _database_connection(database_location, **kwds)
 
         _handle_kwd_overrides(properties, kwds)
@@ -510,24 +441,21 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
         env = _build_env_for_galaxy(properties, template_args)
         env.update(install_env)
-        _build_test_env(properties, env)
         test_timeout = kwds.get("test_timeout")
         if test_timeout:
             env["GALAXY_TEST_DEFAULT_WAIT"] = str(test_timeout)
-        env["GALAXY_TEST_SHED_TOOL_CONF"] = shed_tool_conf
-        env["GALAXY_TEST_DBURI"] = properties["database_connection"]
-
-        env["GALAXY_TEST_UPLOAD_ASYNC"] = "false"
-        env["GALAXY_TEST_LOGGING_CONFIG"] = config_join("logging.ini")
         env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
-        # disable all access log messages from uvicorn
-        env["GALAXY_TEST_DISABLE_ACCESS_LOG"] = "False"
         # Following are needed in 18.01 to prevent Galaxy from changing log and pid.
         # https://github.com/galaxyproject/planemo/issues/788
         env["GALAXY_LOG"] = log_file
         env["GALAXY_PID"] = pid_file
         write_galaxy_config(
-            galaxy_root=galaxy_root, env=env, kwds=kwds, template_args=template_args, config_join=config_join
+            galaxy_root=galaxy_root,
+            properties=properties,
+            env=env,
+            kwds=kwds,
+            template_args=template_args,
+            config_join=config_join,
         )
 
         _write_tool_conf(ctx, all_tool_paths, tool_conf)
@@ -553,7 +481,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         )
 
 
-def write_galaxy_config(galaxy_root, env, kwds, template_args, config_join):
+def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, config_join):
     if get_galaxy_major_version(galaxy_root) < parse_version("22.01"):
         # Legacy .ini setup
         env["GALAXY_CONFIG_FILE"] = config_join("galaxy.ini")
@@ -568,7 +496,7 @@ def write_galaxy_config(galaxy_root, env, kwds, template_args, config_join):
             env["GALAXY_CONFIG_FILE"],
             json.dumps(
                 {
-                    "galaxy": {"job_config_file": kwds["job_config_file"]},
+                    "galaxy": properties,
                     "gravity": {
                         "galaxy_root": galaxy_root,
                         "gunicorn": {"bind": f"localhost:{template_args['port']}"},
@@ -1357,25 +1285,6 @@ def _build_env_for_galaxy(properties, template_args):
             value = _sub(value, template_args)
             env[var] = value
     return env
-
-
-def _build_test_env(properties, env):
-    # Keeping these environment variables around for a little while but
-    # many are probably not needed as of the following commit.
-    # https://bitbucket.org/galaxy/galaxy-central/commits/d7dd1f9
-    test_property_variants = {
-        "GALAXY_TEST_JOB_CONFIG_FILE": "job_config_file",
-        "GALAXY_TEST_MIGRATED_TOOL_CONF": "migrated_tools_config",
-        "GALAXY_TEST_TOOL_CONF": "tool_config_file",
-        "GALAXY_TEST_FILE_DIR": "test_data_dir",
-        "GALAXY_TOOL_DEPENDENCY_DIR": "tool_dependency_dir",
-        # Next line would be required for tool shed tests.
-        # 'GALAXY_TEST_TOOL_DEPENDENCY_DIR': 'tool_dependency_dir',
-    }
-    for test_key, gx_key in test_property_variants.items():
-        value = properties.get(gx_key, None)
-        if value is not None:
-            env[test_key] = value
 
 
 def _handle_job_config_file(config_directory, server_name, kwds):
