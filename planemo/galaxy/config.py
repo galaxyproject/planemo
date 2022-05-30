@@ -47,10 +47,7 @@ from .api import (
     user_api_key,
 )
 from .distro_tools import DISTRO_TOOLS_ID_TO_PATH
-from .run import (
-    setup_common_startup_args,
-    setup_venv,
-)
+from .run import setup_venv
 from .workflows import (
     find_tool_ids,
     import_workflow,
@@ -1052,7 +1049,6 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         return shell_join(
             cd_to_galaxy_command,
             setup_venv_command,
-            setup_common_startup_args(),
             "./create_db.sh",
             run_script,
         )
@@ -1241,7 +1237,6 @@ def _install_with_command(ctx, galaxy_root, env, kwds):
     setup_venv_command = setup_venv(ctx, kwds)
     install_cmd = shell_join(
         setup_venv_command,
-        setup_common_startup_args(),
         COMMAND_STARTUP_COMMAND,
     )
     exit_code = shell(install_cmd, cwd=galaxy_root, env=env)

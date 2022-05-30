@@ -83,29 +83,6 @@ def locate_galaxy_virtualenv(ctx, kwds):
     )
 
 
-def shell_if_wheels(command):
-    """Take a shell command and convert it to shell command that runs
-    only if Galaxy is new enough to use wheels.
-    """
-    return "$(grep -q 'skip-venv' run_tests.sh) && %s" % command
-
-
-def setup_common_startup_args():
-    return _set_variable_if_wheels("COMMON_STARTUP_ARGS", "--dev-wheels")
-
-
-def _set_variable_if_wheels(var, if_wheels_val, else_val=""):
-    var_command = "${var}=${else_val}; "
-    var_command += shell_if_wheels('${var}="${if_wheels_val}"; ')
-    var_command += "export ${var}"
-    var_command += '; echo "Set ${var} to ${${var}}"'
-    return string.Template(var_command).safe_substitute(
-        var=var,
-        if_wheels_val=if_wheels_val,
-        else_val=else_val,
-    )
-
-
 def run_galaxy_command(ctx, command, env, action):
     """Run Galaxy command with informative verbose logging."""
     message = f"{action} with command [{command}]"
@@ -124,5 +101,4 @@ def run_galaxy_command(ctx, command, env, action):
 __all__ = (
     "setup_venv",
     "run_galaxy_command",
-    "setup_common_startup_args",
 )
