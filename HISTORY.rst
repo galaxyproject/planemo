@@ -2601,3 +2601,4 @@ History
 .. _@bedroesb: https://github.com/bedroesb
 .. _@simonbray: https://github.com/simonbray
 .. _@gallardoalba: https://github.com/gallardoalba
+.. _@stain: https://github.com/stain
