@@ -69,11 +69,11 @@ class BaseEngine(Engine):
         for runnable in runnables:
             self._check_can_run(runnable)
 
-    def test(self, runnables):
+    def test(self, runnables, test_timeout):
         """Test runnable artifacts (workflow or tool)."""
         self._check_can_run_all(runnables)
         test_cases = [t for tl in map(cases, runnables) for t in tl]
-        test_results = self._collect_test_results(test_cases)
+        test_results = self._collect_test_results(test_cases, test_timeout)
         tests = []
         for (test_case, run_response) in test_results:
             test_case_data = test_case.structured_test_data(run_response)
@@ -86,11 +86,11 @@ class BaseEngine(Engine):
         structured_results.calculate_summary_data()
         return structured_results
 
-    def _collect_test_results(self, test_cases):
-        run_responses = self._run_test_cases(test_cases)
+    def _collect_test_results(self, test_cases, test_timeout):
+        run_responses = self._run_test_cases(test_cases, test_timeout)
         return [(test_case, run_response) for test_case, run_response in zip(test_cases, run_responses)]
 
-    def _run_test_cases(self, test_cases):
+    def _run_test_cases(self, test_cases, test_timeout):
         runnables = [test_case.runnable for test_case in test_cases]
         job_paths = []
         tmp_paths = []

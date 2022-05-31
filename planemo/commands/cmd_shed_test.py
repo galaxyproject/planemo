@@ -37,7 +37,7 @@ def cli(ctx, paths, **kwds):
     runnables = install_args_list_to_runnables(ctx, install_args_list, kwds)
     kwds["port"] = get_free_port()
     with engine_context(ctx, **kwds) as engine:
-        test_data = engine.test(runnables)
+        test_data = engine.test(runnables, test_timeout=kwds.get("test_timeout"))
         ctx.vlog(f"engine.test returning [{test_data}]")
         return_code = handle_reports_and_summary(ctx, test_data.structured_data, kwds=kwds)
     sys.exit(return_code)

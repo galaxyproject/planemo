@@ -6,6 +6,7 @@ import os
 
 import click
 from galaxy.tool_util.deps import docker_util
+from galaxy.tool_util.verify.interactor import DEFAULT_TOOL_TEST_WAIT
 
 from .config import planemo_option
 
@@ -1603,7 +1604,7 @@ def test_options():
             "--test_timeout",
             type=int,
             help="Maximum runtime of a single test in seconds.",
-            default=0,
+            default=DEFAULT_TOOL_TEST_WAIT,
         ),
     )
 

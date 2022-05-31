@@ -55,7 +55,7 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
     def ensure_runnables_served(self, runnables):
         """Use a context manager and describe Galaxy instance with runnables being served."""
 
-    def _run_test_cases(self, test_cases):
+    def _run_test_cases(self, test_cases, test_timeout):
         test_results = []
         file_based_test_cases = []
         embedded_test_cases = []
@@ -66,7 +66,7 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
             else:
                 file_based_test_cases.append(test_case)
         if file_based_test_cases:
-            test_results.extend(super()._run_test_cases(file_based_test_cases))
+            test_results.extend(super()._run_test_cases(file_based_test_cases, test_timeout))
         if embedded_test_cases:
             runnables = [test_case.runnable for test_case in embedded_test_cases]
             with self.ensure_runnables_served(runnables) as config:
@@ -105,6 +105,7 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
                             test_index=test_index,
                             tool_version=tool_version,
                             register_job_data=_register_job_data,
+                            maxseconds=test_timeout,
                             quiet=not verbose,
                         )
                     except Exception:
