@@ -257,7 +257,7 @@ def cases(runnable):
 
     tests_path = _tests_path(runnable)
     if tests_path is None:
-        if runnable.type == RunnableType.galaxy_tool:
+        if runnable.type in (RunnableType.galaxy_tool, RunnableType.galaxy_datamanager):
             if runnable.uri.startswith(GALAXY_TOOLS_PREFIX):
                 return [DelayedGalaxyToolTestCase(runnable)]
             tool_source = get_tool_source(runnable.path)
