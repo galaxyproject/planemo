@@ -438,9 +438,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
         env = _build_env_for_galaxy(properties, template_args)
         env.update(install_env)
-        test_timeout = kwds.get("test_timeout")
-        if test_timeout:
-            env["GALAXY_TEST_DEFAULT_WAIT"] = str(test_timeout)
         env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
         # Following are needed in 18.01 to prevent Galaxy from changing log and pid.
         # https://github.com/galaxyproject/planemo/issues/788

@@ -144,7 +144,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):  # noqa C901
             job = tool_run_response["jobs"][0]
             job_id = job["id"]
             try:
-                final_state = _wait_for_job(user_gi, job_id)
+                final_state = _wait_for_job(user_gi, job_id, timeout=kwds.get("test_timeout"))
             except Exception:
                 summarize_history(ctx, user_gi, history_id)
                 raise
@@ -730,14 +730,14 @@ def _wait_for_history(ctx, gi, history_id, polling_backoff=0):
     return _wait_on_state(state_func, polling_backoff)
 
 
-def _wait_for_job(gi, job_id):
+def _wait_for_job(gi, job_id, timeout=None):
     def state_func():
         return gi.jobs.show_job(job_id, full_details=True)
 
-    return _wait_on_state(state_func)
+    return _wait_on_state(state_func, timeout=timeout)
 
 
-def _wait_on_state(state_func, polling_backoff=0):
+def _wait_on_state(state_func, polling_backoff=0, timeout=None):
     def get_state():
         response = state_func()
         state = response["state"]
@@ -746,7 +746,7 @@ def _wait_on_state(state_func, polling_backoff=0):
         else:
             return None
 
-    timeout = 60 * 60 * 24
+    timeout = timeout or 60 * 60 * 24
     final_state = wait_on(get_state, "state", timeout, polling_backoff)
     return final_state
 
