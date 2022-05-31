@@ -6,10 +6,34 @@ History
 .. to_doc
 
 ---------------------
-0.75.0.dev0
+0.74.10 (2022-05-31)
 ---------------------
-
-    
+* Allow specifying URL and API key with workflow autoupdate and docs
+  improvements (thanks to `@simonbray`_). `Pull Request 1237`_
+* Pin planemo to last known working major galaxy version `Pull Request 1230`_
+* Drop unused Python dependencies and upgrade syntax to Python 3.6 `Pull Request 1228`_
+* Update `best_practice_search()` for changes in galaxy-tool-util `Pull Request 1224`_
+* Make galaxy config `cleanup_job` depend on `--no_cleanup`
+  (thanks to `@bernt-matthias`_). `Pull Request 1226`_
+* Tool builder: add profile and suffix version
+  (thanks to `@gallardoalba`_). `Pull Request 1222`_
+* training-init: add the FAQ index page to tutorial folder
+  (thanks to `@shiltemann`_). `Pull Request 1217`_
+* Adding best practices and assertion checks to workflow_lint
+  (thanks to `@simonbray`_). `Pull Request 1213`_
+* Updates to workflow autoupdate required for IWC bot
+  (thanks to `@simonbray`_). `Pull Request 1214`_
+* Add test and fix for failing docker_galaxy engine
+  (thanks to `@simonbray`_). `Pull Request 1215`_
+* Generate workflow test from invocation id
+  (thanks to `@simonbray`_). `Pull Request 1209`_
+* Fixed minor typo in documentation
+  (thanks to `@stain`_). `Pull Request 1206`_
+* Add missing ToolShed categories `Pull Request 1207`_
+* Use WorkflowId rather than StoredWorkflowId when autoupdating subworkflows
+  (thanks to `@simonbray`_). `Pull Request 1205`_
+* Always use random id_secret for testing (thanks to `@bernt-matthias`_). `Pull Request 1198`_
+* Add rerun subcommand for rerunning jobs (thanks to `@simonbray`_). `Pull Request 1140`_
 
 ---------------------
 0.74.9 (2021-11-03)
@@ -1769,6 +1793,22 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1237: https://github.com/galaxyproject/planemo/pull/1237
+.. _Pull Request 1230: https://github.com/galaxyproject/planemo/pull/1230
+.. _Pull Request 1228: https://github.com/galaxyproject/planemo/pull/1228
+.. _Pull Request 1224: https://github.com/galaxyproject/planemo/pull/1224
+.. _Pull Request 1226: https://github.com/galaxyproject/planemo/pull/1226
+.. _Pull Request 1222: https://github.com/galaxyproject/planemo/pull/1222
+.. _Pull Request 1217: https://github.com/galaxyproject/planemo/pull/1217
+.. _Pull Request 1213: https://github.com/galaxyproject/planemo/pull/1213
+.. _Pull Request 1214: https://github.com/galaxyproject/planemo/pull/1214
+.. _Pull Request 1215: https://github.com/galaxyproject/planemo/pull/1215
+.. _Pull Request 1209: https://github.com/galaxyproject/planemo/pull/1209
+.. _Pull Request 1206: https://github.com/galaxyproject/planemo/pull/1206
+.. _Pull Request 1207: https://github.com/galaxyproject/planemo/pull/1207
+.. _Pull Request 1205: https://github.com/galaxyproject/planemo/pull/1205
+.. _Pull Request 1198: https://github.com/galaxyproject/planemo/pull/1198
+.. _Pull Request 1140: https://github.com/galaxyproject/planemo/pull/1140
 .. _Pull Request 1200: https://github.com/galaxyproject/planemo/pull/1200
 .. _Pull Request 1201: https://github.com/galaxyproject/planemo/pull/1201
 .. _Pull Request 1188: https://github.com/galaxyproject/planemo/pull/1188
