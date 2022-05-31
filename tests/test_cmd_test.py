@@ -75,7 +75,9 @@ class CmdTestTestCase(CliTestCase):
                 assert (
                     float(tool_test_json["tests"][0]["data"]["time_seconds"]) <= 10
                 ), "Test needed more than 10 sec but should time out after 1"
-                assert "Timed out after" in tool_test_json["tests"][0]["data"]["problem_log"], "Time out did not happen"
+                assert (
+                    "Timed out after" in tool_test_json["tests"][0]["data"]["output_problems"][0]
+                ), "Time out did not happen"
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_workflow_test_simple_yaml_dockerized(self):
