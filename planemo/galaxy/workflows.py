@@ -367,13 +367,13 @@ def _job_outputs_template_from_invocation(invocation_id, galaxy_url, galaxy_api_
             user_gi.datasets.download_dataset(
                 collection["elements"][0]["object"]["id"],
                 use_default_filename=False,
-                file_path=f"test-data/{label}.{collection['elements'][0].get('extension', 'txt')}",
+                file_path=f"test-data/{label}.{collection['elements'][0]['object'].get('file_ext', 'txt')}",
             )
             outputs[label] = {
                 "element_tests": {  # only check the first element
                     collection["elements"][0][
                         "element_identifier"
-                    ]: f"test-data/{label}.{collection['elements'][0]['extension']}"
+                    ]: f"test-data/{label}.{collection['elements'][0]['object']['file_ext']}"
                 }
             }
         else:
