@@ -315,6 +315,7 @@ def _job_inputs_template_from_invocation(invocation_id, galaxy_url, galaxy_api_k
             if element["element_type"] == "hdca":
                 template["elements"].append(_template_from_collection(element["object"]["id"]))
             elif element["element_type"] == "hda":
+                ext = element["object"]["file_ext"]
                 user_gi.datasets.download_dataset(
                     element["object"]["id"],
                     use_default_filename=False,
@@ -360,7 +361,7 @@ def _job_outputs_template_from_invocation(invocation_id, galaxy_url, galaxy_api_
         user_gi.datasets.download_dataset(
             output["id"], use_default_filename=False, file_path=f"test-data/{label}.{ext}"
         )
-        outputs[label] = {"file": f"test-data/{label}.{ext}"}
+        outputs[label] = {"path": f"test-data/{label}.{ext}"}
     for label, output in invocation["output_collections"].items():
         collection = user_gi.dataset_collections.show_dataset_collection(output["id"])
         if ":" not in collection["collection_type"]:
@@ -371,9 +372,9 @@ def _job_outputs_template_from_invocation(invocation_id, galaxy_url, galaxy_api_
             )
             outputs[label] = {
                 "element_tests": {  # only check the first element
-                    collection["elements"][0][
-                        "element_identifier"
-                    ]: f"test-data/{label}.{collection['elements'][0]['object']['file_ext']}"
+                    collection["elements"][0]["element_identifier"]: {
+                        "path": f"test-data/{label}.{collection['elements'][0]['object']['file_ext']}"
+                    }
                 }
             }
         else:
