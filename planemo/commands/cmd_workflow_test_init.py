@@ -66,6 +66,6 @@ def cli(ctx, workflow_identifier, output=None, split_test=False, **kwds):
 
         test_description[0]["job"] = os.path.basename(job_output)
         with open(job_output, "w") as f_job:
-            yaml.dump(job, f_job)
+            yaml.dump(job, f_job, sort_keys=False)
     with open(output, "w") as f:
-        yaml.dump(test_description, f)
+        yaml.dump(test_description, f, sort_keys=False)
