@@ -2,6 +2,12 @@
 import json
 import os
 from collections import namedtuple
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+)
 from urllib.parse import urlparse
 
 import yaml
@@ -307,33 +313,57 @@ def get_workflow_from_invocation_id(invocation_id, galaxy_url, galaxy_api_key):
     return workflow_name
 
 
-def _job_inputs_template_from_invocation(invocation_id, galaxy_url, galaxy_api_key):
-    def _elements_to_test_def(elements):
-        element_test_def = []
-        for element in elements:
-            if element["element_type"] == "dataset_collection":
+def _elements_to_test_def(
+    elements: List[Dict[str, Any]],
+    test_data_base_path: str,
+    download_function: Callable,
+    definition_style: str = "input",
+):
+    element_test_def = []
+    output_element_test_def = {}
+    if definition_style == "output":
+        elements = elements[:1]
+    for element in elements:
+        if element["element_type"] == "dataset_collection":
+            nested_elements = _elements_to_test_def(
+                element["object"]["elements"],
+                test_data_base_path,
+                download_function,
+                definition_style=definition_style,
+            )
+            test_def = {}
+            if definition_style == "input":
+                test_def["class"] = "Collection"
+                test_def["type"] = element["object"]["collection_type"]
+                test_def["identifier"] = element["element_identifier"]
+                test_def["elements"] = nested_elements
+                element_test_def.append(test_def)
+            else:
+                output_element_test_def[element["element_identifier"]] = {"elements": nested_elements}
+        elif element["element_type"] == "hda":
+            ext = element["object"]["file_ext"]
+            path = f"{test_data_base_path}_{element['element_identifier']}.{ext}"
+            download_function(
+                element["object"]["id"],
+                use_default_filename=False,
+                file_path=path,
+            )
+            if definition_style == "input":
                 test_def = {
-                    "class": "Collection",
-                    "type": element["object"]["collection_type"],
+                    "class": "File",
                     "identifier": element["element_identifier"],
-                    "elements": _elements_to_test_def(element["object"]["elements"]),
+                    "path": path,
                 }
                 element_test_def.append(test_def)
-            elif element["element_type"] == "hda":
-                ext = element["object"]["file_ext"]
-                user_gi.datasets.download_dataset(
-                    element["object"]["id"],
-                    use_default_filename=False,
-                    file_path=f"test-data/{input_step['label']}_{element['element_identifier']}.{ext}",
-                )
-                element_test_def.append(
-                    {
-                        "class": "File",
-                        "identifier": element["element_identifier"],
-                        "path": f"test-data/{input_step['label']}_{element['element_identifier']}.{ext}",
-                    }
-                )
+            else:
+                output_element_test_def[element["element_identifier"]] = {"path": path}
+    if definition_style == "input":
         return element_test_def
+    else:
+        return output_element_test_def
+
+
+def _job_inputs_template_from_invocation(invocation_id, galaxy_url, galaxy_api_key):
 
     user_gi = gi(url=galaxy_url, key=galaxy_api_key)
     invocation = user_gi.invocations.show_invocation(invocation_id)
@@ -354,7 +384,11 @@ def _job_inputs_template_from_invocation(invocation_id, galaxy_url, galaxy_api_k
             test_def = {
                 "class": "Collection",
                 "collection_type": collection["collection_type"],
-                "elements": _elements_to_test_def(collection["elements"]),
+                "elements": _elements_to_test_def(
+                    collection["elements"],
+                    test_data_base_path=f"test-data/{input_step['label']}",
+                    download_function=user_gi.datasets.download_dataset,
+                ),
             }
             template[input_step["label"]] = test_def
     for param, param_step in invocation["input_step_parameters"].items():
@@ -375,20 +409,13 @@ def _job_outputs_template_from_invocation(invocation_id, galaxy_url, galaxy_api_
         outputs[label] = {"path": f"test-data/{label}.{ext}"}
     for label, output in invocation["output_collections"].items():
         collection = user_gi.dataset_collections.show_dataset_collection(output["id"])
-        outputs[label] = test_dict = {}
-        for collection_type in collection["collection_type"].split(":"):
-            assert collection_type in ("list", "paired", "record"), f"{collection_type} not valid"
-            element = collection["elements"][0]  # only check the first element
-            element_identifier = element["element_identifier"]
-            test_dict = test_dict[element_identifier] = {}
-        file_path = f"test-data/{label}.{element['object'].get('file_ext', 'txt')}"
-        user_gi.datasets.download_dataset(
-            element["object"]["id"],
-            use_default_filename=False,
-            file_path=file_path,
+        element_tests = _elements_to_test_def(
+            collection["elements"],
+            test_data_base_path=f"test-data/{label}",
+            download_function=user_gi.datasets.download_dataset,
+            definition_style="outputs",
         )
-        test_dict["element_tests"] = {element_identifier: {"path": file_path}}
-        outputs[label] = {"element_tests": test_dict}
+        outputs[label] = {"element_tests": element_tests}
     return outputs
 
 
