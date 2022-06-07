@@ -60,14 +60,14 @@ Further reading:
 --------------------------------------------------
 
 Tool parameters support a ``validator`` element (`syntax
-<https://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax#A.3Cvalidator.3E_tag_set>`__)
+<https://docs.galaxyproject.org/en/latest/dev/schema.html#tool-inputs-param-validator>`__)
 to perform validation of a single parameter. More complex validation across
 parameters can be performed using arbitrary Python functions using the
 ``code`` file syntax but this feature should be used sparingly.
 
 Further reading:
 
-- `validator <https://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax#A.3Cvalidator.3E_tag_set>`__
+- `validator <https://docs.galaxyproject.org/en/latest/dev/schema.html#tool-inputs-param-validator>`__
   XML tag syntax on the Galaxy wiki.
 - `fastq_filter.xml <https://github.com/galaxyproject/tools-devteam/blob/master/tool_collections/galaxy_sequence_utils/fastq_filter/fastq_filter.xml>`__
   (a FASTQ filtering tool demonstrating validator constructs)
