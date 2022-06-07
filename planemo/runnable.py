@@ -244,8 +244,7 @@ def for_paths(paths, temp_path=None):
 
 
 def for_uri(uri):
-    """Produce a class:`Runnable` for supplied Galaxy workflow ID."""
-    # TODO: allow galaxy_tool also, this trick would work fine for running tools
+    """Produce a class:`Runnable` for supplied Galaxy workflow or tool ID."""
     runnable_type = RunnableType.galaxy_tool if uri.startswith(GALAXY_TOOLS_PREFIX) else RunnableType.galaxy_workflow
     runnable = Runnable(uri, runnable_type)
     return runnable
