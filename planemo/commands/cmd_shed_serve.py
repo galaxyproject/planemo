@@ -7,9 +7,9 @@ from planemo import (
     shed,
 )
 from planemo.cli import command_function
-from planemo.commands.cmd_shed_test import install_args_list_to_runnables
 from planemo.engine import engine_context
 from planemo.galaxy.serve import sleep_for_serve
+from planemo.runnable_resolve import install_args_list_to_runnables
 
 
 @click.command("shed_serve")
