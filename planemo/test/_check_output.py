@@ -64,7 +64,7 @@ def _verify_output_file(runnable, output_properties, test_properties, **kwds):
             else:
                 expected_file = location.split("file://", 1)[-1]
 
-    job_output_files = kwds.get("job_output_files", None)
+    test_data_target_dir = kwds.get("test_data_target_dir", None)
     item_label = "Output with path %s" % path
     if "asserts" in test_properties:
         # TODO: break fewer abstractions here...
@@ -77,7 +77,7 @@ def _verify_output_file(runnable, output_properties, test_properties, **kwds):
         attributes=test_properties,
         filename=expected_file,
         get_filename=get_filename,
-        keep_outputs_dir=job_output_files,
+        keep_outputs_dir=test_data_target_dir,
         verify_extra_files=None,
     )
 
