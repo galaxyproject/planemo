@@ -55,7 +55,7 @@ class BaseEngine(Engine):
         return run_responses
 
     @abc.abstractmethod
-    def _run(self, runnable, job_path):
+    def _run(self, runnables, job_path):
         """Run a job using a compatible artifact (workflow or tool) wrapped as a runnable."""
 
     def _check_can_run(self, runnable):
