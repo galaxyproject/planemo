@@ -6,6 +6,17 @@ History
 .. to_doc
 
 ---------------------
+0.74.11 (2022-06-08)
+---------------------
+
+* Removing broken link, update it to current doc (thanks to `@profgiuseppe`_).
+  `Pull Request 1244`_
+* Implement nested collection inputs and outputs in workflow_test_init `Pull
+  Request 1242`_
+* More fixes for auto-generating workflow tests `Pull Request 1241`_
+* Fix workflow_test_init for collection outputs `Pull Request 1239`_
+
+---------------------
 0.74.10 (2022-05-31)
 ---------------------
 * Allow specifying URL and API key with workflow autoupdate and docs
@@ -1793,6 +1804,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1244: https://github.com/galaxyproject/planemo/pull/1244
+.. _Pull Request 1242: https://github.com/galaxyproject/planemo/pull/1242
+.. _Pull Request 1241: https://github.com/galaxyproject/planemo/pull/1241
+.. _Pull Request 1239: https://github.com/galaxyproject/planemo/pull/1239
 .. _Pull Request 1237: https://github.com/galaxyproject/planemo/pull/1237
 .. _Pull Request 1230: https://github.com/galaxyproject/planemo/pull/1230
 .. _Pull Request 1228: https://github.com/galaxyproject/planemo/pull/1228
@@ -2602,3 +2617,4 @@ History
 .. _@simonbray: https://github.com/simonbray
 .. _@gallardoalba: https://github.com/gallardoalba
 .. _@stain: https://github.com/stain
+.. _@profgiuseppe: https://github.com/profgiuseppe
