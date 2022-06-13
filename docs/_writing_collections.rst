@@ -175,7 +175,7 @@ the idiom:
 Some example tools which consume multiple datasets (including lists) include:
 
  - `multi_data_param <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/multi_data_param.xml>`__ (small test tool in Galaxy test suite)
- - `cuffmerge <https://github.com/galaxyproject/tools-devteam/blob/master/tool_collections/cufflinks/cuffmerge/cuffmerge_wrapper.xml>`__
+ - `cuffmerge tool macros <https://github.com/galaxyproject/tools-iuc/blob/master/tool_collections/cufflinks/cuff_macros.xml>`__
  - `unionBedGraphs <https://github.com/galaxyproject/tools-iuc/blob/master/tools/bedtools/unionBedGraphs.xml>`__
 
 Also see the tools-devteam repository `Pull Request #20 <https://github.com/galaxyproject/tools-devteam/pull/20>`__ modifying the cufflinks suite of tools for collection compatible reductions.
