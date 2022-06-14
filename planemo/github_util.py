@@ -107,7 +107,9 @@ def rm_dir_contents(directory, ignore_dirs=(".git")):
                 item.unlink()
 
 
-def add_dir_contents_to_repo(ctx, from_dir, target_dir, target_repository_path, version, dry_run, notes=""):
+def add_dir_contents_to_repo(
+    ctx, from_dir, target_dir, target_repository_path, version, dry_run, branch="main", notes=""
+):
     ctx.log(f"From {from_dir} to {target_repository_path}")
     rm_dir_contents(target_repository_path)
     copy_tree(from_dir, target_repository_path)
@@ -117,7 +119,7 @@ def add_dir_contents_to_repo(ctx, from_dir, target_dir, target_repository_path, 
         message += f"\n{notes}"
     git.commit(ctx, repo_path=target_repository_path, message=message)
     if not dry_run:
-        git.push(ctx, target_repository_path)
+        git.push(ctx, target_repository_path, to="origin", branch=branch)
 
 
 def assert_new_version(ctx, version, owner, repo):
@@ -161,11 +163,11 @@ def changelog_in_repo(target_repository_path):
     return "\n".join(changelog).rstrip()
 
 
-def create_release(ctx, from_dir, target_dir, owner, repo, version, dry_run, notes="", **kwds):
+def create_release(ctx, from_dir, target_dir, owner, repo, version, dry_run, branch, notes="", **kwds):
     assert_new_version(ctx, version, owner=owner, repo=repo)
     target_repository_path = get_or_create_repository(ctx, owner=owner, repo=repo, dry_run=dry_run)
     add_dir_contents_to_repo(
-        ctx, from_dir, target_dir, target_repository_path, version=version, dry_run=dry_run, notes=notes
+        ctx, from_dir, target_dir, target_repository_path, version=version, dry_run=dry_run, branch=branch, notes=notes
     )
     gh_path = ensure_gh(ctx, **kwds)
     gh_env = get_gh_env(ctx, dry_run=dry_run, **kwds)
