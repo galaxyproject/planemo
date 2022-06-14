@@ -13,10 +13,11 @@ from planemo.workflow_lint import find_workflow_descriptions
 
 @click.command("workflow_upload")
 @options.github_namespace()
+@options.github_branch()
 @options.dry_run()
 @options.optional_tools_or_packages_arg(multiple=True)
 @command_function
-def cli(ctx, paths, namespace, dry_run, **kwds):
+def cli(ctx, paths, namespace, dry_run, github_branch, **kwds):
     """Upload workflows to github organization."""
     owner = namespace
     for path in paths:
@@ -40,5 +41,12 @@ def cli(ctx, paths, namespace, dry_run, **kwds):
                 raise Exception(f"All workflows in repository must have same version.\n{msg}")
         if versions:
             create_release(
-                ctx, from_dir=path, target_dir=repo, owner=owner, repo=repo, version=version, dry_run=dry_run
+                ctx,
+                from_dir=path,
+                target_dir=repo,
+                owner=owner,
+                repo=repo,
+                version=version,
+                dry_run=dry_run,
+                branch=github_branch,
             )

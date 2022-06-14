@@ -1115,6 +1115,14 @@ def dry_run():
     )
 
 
+def github_branch():
+    return planemo_option(
+        "--github_branch",
+        help="GitHub branch to use for the action. Default is main.",
+        default="main",
+    )
+
+
 def galaxy_run_options():
     return _compose(
         galaxy_target_options(),
