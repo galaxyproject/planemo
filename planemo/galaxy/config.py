@@ -613,7 +613,7 @@ def _shared_galaxy_properties(config_directory, kwds, for_tests):
         "strict_cwl_validation": str(not kwds.get("non_strict_cwl", False)),
     }
     if kwds.get("no_cleanup", False):
-        properties["cleanup_job"] = "onsuccess"
+        properties["cleanup_job"] = "never"
     else:
         properties["cleanup_job"] = "always"
 
