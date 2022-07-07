@@ -10,8 +10,8 @@ try:
 except ImportError:
     from distutils.core import setup
 
-if sys.version_info < (3, 6):
-    sys.stderr.write("ERROR: planemo requires at least Python Version 3.6\n")
+if sys.version_info < (3, 7):
+    sys.stderr.write("ERROR: planemo requires at least Python version 3.7\n")
     sys.exit(1)
 
 # Allow installer to turn off dependency on lxml by setting the environment variable
@@ -125,7 +125,6 @@ setup(
         "Topic :: Software Development :: Testing",
         "Natural Language :: English",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",

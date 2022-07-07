@@ -74,7 +74,7 @@ flake8: ## check style using flake8 for current Python (faster than lint)
 	$(IN_VENV) flake8 $(SOURCE_DIR) $(TEST_DIR)
 
 lint: ## check style using tox and flake8 for Python 2 and Python 3
-	$(IN_VENV) tox -e py36-lint
+	$(IN_VENV) tox -e py37-lint
 
 test: ## run tests with the default Python (faster than tox)
 	$(IN_VENV) pytest $(TESTS)
