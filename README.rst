@@ -34,8 +34,9 @@ Obtaining
 -----------------
 
 For a traditional Python installation of Planemo, first set up a virtualenv
-for ``planemo`` (this example creates a new one in ``.venv``) and then
-install with ``pip``. Planemo requires pip 7.0 or newer.
+for ``planemo`` (this example creates a new one in ``.venv``) containing
+Python 3.7 or newer and then install with ``pip``. Planemo must be installed
+with pip 7.0 or newer.
 
 ::
 
