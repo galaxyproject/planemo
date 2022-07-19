@@ -652,6 +652,8 @@ def format_wf_steps(wf, gi):
         # get formatted param description
         paramlist = ""
         for inp in tool_desc["inputs"]:
+            if inp["name"] == "__job_resource":
+                continue
             tool_inp = ToolInput(inp, wf_param_values, steps, 1, should_be_there=True)
             paramlist += tool_inp.get_formatted_desc()
         # format the hands-on box
