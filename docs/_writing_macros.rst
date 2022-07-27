@@ -348,7 +348,7 @@ named token ``more_whens``).
 Parameterizing XML Macros (with tokens)
 -----------------------------------------
 
-In addition to using ``yield`` blocks, there is another way to parameterize
+In addition to using ``yield`` blocks, there is another way to parametrize
 macros by specifying:
 
 - required parameters as comma-separated list of parameter names using the
