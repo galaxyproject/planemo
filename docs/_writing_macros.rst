@@ -249,8 +249,8 @@ The following expand declarations have replaced the original conditional element
    </expand>
 
 From Galaxy release 22.01 named yields are supported. That is, if the macro contains
-``<yield name="xyz"/>`` it is replaced by the content of the ``token`` tag with the same name.
-Token tags need to be direct children of the ``expand`` element. This is useful if different
+``<yield name="xyz"/>`` it is replaced by the content of the ``token`` element with the same name.
+Token elements need to be direct children of the ``expand`` element. This is useful if different
 parts of the macro should be parametrized. 
 
 In the following example two named yield and one unnamed yield are used to
@@ -302,7 +302,7 @@ and expanding the macro in the following way:
 we get the following expanded definition:
 
 .. code-block:: xml
-   :emphasize-lines: 6,9-14,17-24
+   :emphasize-lines: 6,10-13,17-24
 
    <xml name="named_yields_example">
      <conditional>
@@ -332,11 +332,11 @@ we get the following expanded definition:
    </xml>
 
 Named yields are replaced in the order of the tokens defined in the ``expand``
-tag. Unamed yields are replaced after all named tokens have been replaced (by
+tag. Unnamed yields are replaced after all named tokens have been replaced (by
 the non-token child elements of the expand tag). If there are named
 yields that have no corresponding token, then they are treated like unnamed
-yields. Note that, unnamed and named tokens can be used multiple times in a
-macro, then each occurence is preplaced by the corresponding content definedin
+yields. Note that unnamed and named tokens can be used multiple times in a
+macro, then each occurrence is replaced by the corresponding content defined in
 the ``expand``.
 
 Further, note that the order of the replacements offers some possibilities
@@ -396,7 +396,7 @@ is invalid in attribute names). Luckily the delimiting character(s) can be chang
 
    <macros>
      <xml name="color" tokens="attr,attr_value" token_quote="__" token_label="label">
-         <param __VAR__="__ATTR_VALUE__" label="__LABEL__"/>
+         <param __ATTR__="__ATTR_VALUE__" label="__LABEL__"/>
      </xml>
    </macros>
 
