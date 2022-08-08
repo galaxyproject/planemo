@@ -6,12 +6,15 @@ import ast
 import sys
 from typing import Tuple, Optional, Any, Set, List
 
+from .constants import STD_LIB_MODULE_NAMES
 from .decoy_parser import obtain_class_def
 from .parsing_exceptions import ArgParseImportNotFound, ArgParserNotUsed
 from .parsing_commons import Discovery
 
 ARGPARSE_MODULE_NAME = "argparse"
 ARGUMENT_PARSER_CLASS_NAME = "ArgumentParser"
+
+
 
 
 def is_this_group_creation(node: ast.Assign):
@@ -50,7 +53,7 @@ class ImportDiscovery(Discovery):
                 return
 
             # stdlib modules should be also imported during this step
-            if item.name in sys.stdlib_module_names:
+            if item.name in STD_LIB_MODULE_NAMES:
                 self.actions.append(node)
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> Any:
@@ -59,7 +62,7 @@ class ImportDiscovery(Discovery):
 
         # look for argparse import (or any imports from stdlib) and import them
         for name in node.module.split("."):
-            name_in_known_modules = name in sys.stdlib_module_names
+            name_in_known_modules = name in STD_LIB_MODULE_NAMES
             if name_in_known_modules:
                 self.actions.append(node)
                 for item in node.names:
@@ -68,13 +71,13 @@ class ImportDiscovery(Discovery):
                     # in case argparse is being imported, determine the
                     # alias of the parser, if there is any
                     if name == ARGPARSE_MODULE_NAME and \
-                            item.name == ARGUMENT_PARSER_CLASS_NAME:
+                        item.name == ARGUMENT_PARSER_CLASS_NAME:
                         self.argument_parser_alias = alias
 
     def report_findings(self) -> Tuple[List[ast.AST], str, str, Set[str]]:
         if self.argparse_module_alias is None and \
-                self.argument_parser_alias is None:
-            raise ArgParseImportNotFound
+            self.argument_parser_alias is None:
+            raise ArgParseImportNotFound()
 
         return (self.actions, self.argparse_module_alias,
                 self.argument_parser_alias, self.imported_names)
@@ -137,7 +140,7 @@ class SimpleParserDiscoveryAndReplacement(Discovery):
 
     def _replace_parser(self, node: ast.Assign, imported_using_from: bool):
         if imported_using_from:
-            self.custom_parser_def.bases[0] =\
+            self.custom_parser_def.bases[0] = \
                 ast.Name(self.argument_parser_alias, ast.Load())
             node.value.func.id = self.custom_parser_def.name
             return
@@ -206,7 +209,7 @@ class ArgumentCreationDiscovery(Discovery):
             # name of the variable needs to be rewritten,
             # because we want to use only one parser
             if node.func.value.id != self.main_name and \
-                    node.func.value.id not in self.sections:
+                node.func.value.id not in self.sections:
                 node.func.value.id = self.main_name
 
             self.actions.append(ast.Expr(node))
@@ -218,7 +221,7 @@ class ArgumentCreationDiscovery(Discovery):
 
 
 def get_parser_init_and_actions(source: ast.Module) -> \
-        Tuple[List[ast.AST], str, Set[str], Set[str]]:
+    Tuple[List[ast.AST], str, Set[str], Set[str]]:
     """
     Function used to extract necessary imports, parser and argument creation
      function calls
@@ -239,7 +242,6 @@ def get_parser_init_and_actions(source: ast.Module) -> \
     import_discovery = ImportDiscovery(actions)
     actions, argparse_module_alias, argparse_class_alias, imported_names = \
         import_discovery.visit_and_report(source)
-
     imported_names.add(custom_parser_class_def.name)
 
     parser_discovery = SimpleParserDiscoveryAndReplacement(actions,

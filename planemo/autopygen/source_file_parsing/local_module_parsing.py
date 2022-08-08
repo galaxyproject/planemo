@@ -3,10 +3,11 @@ Module responsible for resolving assignments and constant list comprehensives
 used in argument parser
 """
 import ast
-from typing import List, Tuple, Optional, Any, Dict
+from typing import List, Tuple, Optional, Any, Set
 import logging
 
 from planemo.autopygen.source_file_parsing.constants import LINTER_MAGIC
+from planemo.autopygen.source_file_parsing.parsing_commons import add_parents
 
 
 class UnknownNamesRemoval(ast.NodeVisitor):
@@ -21,7 +22,7 @@ class UnknownNamesRemoval(ast.NodeVisitor):
      that have not been resolved yet
 
     """
-    def __init__(self, unknown: set[str]):
+    def __init__(self, unknown: Set[str]):
         self.unknown = unknown
 
     # currently able to resolve add_argument calls containing unknown names,
@@ -82,7 +83,7 @@ class UnknownNamesRemoval(ast.NodeVisitor):
 
 
 def handle_local_module_names(actions: List[ast.AST],
-                              unknown_names: set[str]) -> ast.Module:
+                              unknown_names: Set[str]) -> ast.Module:
     """
     Function used to remove assignments and list comprehensions which can't be
     resolved

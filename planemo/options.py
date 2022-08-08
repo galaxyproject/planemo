@@ -1740,9 +1740,8 @@ def workflow_output_artifact():
     )
 
 
-def tool_init_autopygen_option(prompt=True):
+def tool_init_autopygen_option(prompt=False):
     return planemo_option(
-        "-a",
         "--autopygen",
         type=click.STRING,
         prompt=prompt,

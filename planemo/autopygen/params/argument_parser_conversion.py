@@ -8,8 +8,6 @@ import logging
 import math
 import uuid
 
-
-
 from typing import Optional, Set, Any, List, Dict, Tuple, Union
 from argparse import ArgumentParser
 import dataclasses
@@ -50,6 +48,8 @@ class ParamInfo:
     choices: Optional[List[Any]] = None
     is_flag: bool = False
 
+    def __str__(self):
+        return f'<param type="{self.type}" name="{self.name}" optional="{self.optional}" />'
 
 def obtain_and_convert_parser(path: str) -> Optional[ArgumentParser]:
     """
@@ -70,6 +70,7 @@ def obtain_and_convert_parser(path: str) -> Optional[ArgumentParser]:
     except FileNotFoundError:
         logging.error("Input file not found")
         return None
+
 
     return obtain_parser(tree)
 
@@ -97,7 +98,6 @@ def obtain_parser(tree: ast.Module) -> Optional[ArgumentParser]:
     try:
         actions, name, section_names, imported_names = \
             get_parser_init_and_actions(tree)
-
         actions, unknown_names = \
             initialize_variables_in_module(tree, name,
                                            section_names, actions,
@@ -105,6 +105,7 @@ def obtain_parser(tree: ast.Module) -> Optional[ArgumentParser]:
 
         result_module = handle_local_module_names(actions, unknown_names)
     except ArgumentParsingDiscoveryError as e:
+        print(e)
         logging.error(e)
         return None
 
@@ -113,8 +114,7 @@ def obtain_parser(tree: ast.Module) -> Optional[ArgumentParser]:
     compiled_module = compile(result_module, filename="<parser>", mode="exec")
     namespace = {}
     try:
-        print(ast.unparse(result_module))
-
+        # print(ast.unparse(result_module))
         exec(compiled_module, namespace)
     except Exception as e:
         print(e)
@@ -127,7 +127,7 @@ def obtain_parser(tree: ast.Module) -> Optional[ArgumentParser]:
 def extract_useful_info_from_parser(parser: DecoyParser,
                                     data_inputs: Dict[str, str],
                                     reserved_names: Set[str]) \
-        -> Tuple[List[ParamInfo], Dict[str, str]]:
+    -> Tuple[List[ParamInfo], Dict[str, str]]:
     """
     Converts extracted argument parser object into tuple of Param info objects
 
@@ -237,8 +237,7 @@ def _determine_nargs(nargs: Union[str, int, None]) -> Union[float, int]:
     return int(nargs)
 
 
-def _determine_custom_attributes(type_: str, nargs: int) -> List[
-    Tuple[str, str]]:
+def _determine_custom_attributes(type_: str, nargs: int) -> List[Tuple[str, str]]:
     flags: List[Tuple[str, str]] = []
 
     if type_ == "data" and nargs > 1:

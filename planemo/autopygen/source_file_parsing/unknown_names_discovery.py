@@ -3,7 +3,9 @@ Module containing discovery classes used to find names
 (assignments to variables) that have not been extracted yet
 """
 import ast
-from .parsing_commons import Discovery, CustomVisitor
+
+from .constants import STD_LIB_MODULE_NAMES
+from .parsing_commons import CustomVisitor
 from typing import Tuple, List, Any, Set
 import sys
 import builtins
@@ -118,7 +120,7 @@ def initialize_variables_in_module(original_module: ast.Module,
     List containing newly extracted actions and new unknown names
     """
     builtin_names = [e for e in builtins.__dict__]
-    lib_modules = sys.stdlib_module_names
+    lib_modules = STD_LIB_MODULE_NAMES
 
     # this is a set of all known names, basically the things that are already
     # known and don't have to be added to the list of actions
