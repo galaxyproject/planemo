@@ -1740,6 +1740,16 @@ def workflow_output_artifact():
     )
 
 
+def tool_init_autopygen_option(prompt=True):
+    return planemo_option(
+        "-a",
+        "--autopygen",
+        type=click.STRING,
+        prompt=prompt,
+        help="Option for automatic generation of tool file,"
+             " from python source code"
+    )
+
 def tool_init_id_option(prompt=True):
     return planemo_option(
         "-i",
