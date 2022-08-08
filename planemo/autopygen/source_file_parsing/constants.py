@@ -1,0 +1,1 @@
+LINTER_MAGIC = "##!!##"
