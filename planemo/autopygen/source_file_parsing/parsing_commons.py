@@ -33,6 +33,7 @@ def create_module_tree_from_path(path: str) -> ast.Module:
         add_parents(tree)
         return tree
 
+
 def create_module_tree_from_str(text: str) -> ast.Module:
     tree = ast.parse(text)
     add_parents(tree)

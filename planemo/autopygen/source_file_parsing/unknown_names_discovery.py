@@ -7,7 +7,6 @@ import ast
 from .constants import STD_LIB_MODULE_NAMES
 from .parsing_commons import CustomVisitor
 from typing import Tuple, List, Any, Set
-import sys
 import builtins
 
 
@@ -67,8 +66,7 @@ class UnknownNameInit(CustomVisitor):
             self.new_known_names.add(node.name)
 
     def report_findings(self) -> Tuple:
-        return self.variable_definitions, self.class_definitions, \
-               self.new_known_names
+        return self.variable_definitions, self.class_definitions, self.new_known_names
 
 
 def _insert_into_actions(actions: List[ast.AST], assignments: List[ast.Assign],
@@ -76,8 +74,8 @@ def _insert_into_actions(actions: List[ast.AST], assignments: List[ast.Assign],
     def find_end_of_imports():
         index = 0
         for item in actions:
-            if not (isinstance(item, ast.Import) or
-                    isinstance(item, ast.ImportFrom)):
+            if not (isinstance(item, ast.Import)
+                    or isinstance(item, ast.ImportFrom)):
                 return index
 
             index += 1

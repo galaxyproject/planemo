@@ -3,7 +3,7 @@ Module responsible for resolving assignments and constant list comprehensives
 used in argument parser
 """
 import ast
-from typing import List, Tuple, Optional, Any, Set
+from typing import List, Tuple, Any, Set
 import logging
 
 from planemo.autopygen.source_file_parsing.constants import LINTER_MAGIC
@@ -22,6 +22,7 @@ class UnknownNamesRemoval(ast.NodeVisitor):
      that have not been resolved yet
 
     """
+
     def __init__(self, unknown: Set[str]):
         self.unknown = unknown
 
@@ -32,16 +33,16 @@ class UnknownNamesRemoval(ast.NodeVisitor):
         parent = current.parent
 
         def _reach_add_argument():
-            return (isinstance(parent, ast.Call) and
-                    isinstance(parent.func, ast.Attribute) and
-                    parent.func.attr == "add_argument")
+            return (isinstance(parent, ast.Call)
+                    and isinstance(parent.func, ast.Attribute)
+                    and parent.func.attr == "add_argument")
 
         def _reach_assignment_as_list_comprehension():
-            return (isinstance(parent, ast.Assign) and
-                    isinstance(current, ast.ListComp))
+            return (isinstance(parent, ast.Assign)
+                    and isinstance(current, ast.ListComp))
 
-        while not (_reach_add_argument() or
-                   _reach_assignment_as_list_comprehension()):
+        while not (_reach_add_argument()
+                   or _reach_assignment_as_list_comprehension()):
             current = parent
             parent = current.parent
 

@@ -3,7 +3,6 @@ Module responsible for discovery of import statements importing Argument parser
 and discovery of the statements initializing the parser itself
 """
 import ast
-import sys
 from typing import Tuple, Optional, Any, Set, List
 
 from .constants import STD_LIB_MODULE_NAMES
@@ -15,17 +14,15 @@ ARGPARSE_MODULE_NAME = "argparse"
 ARGUMENT_PARSER_CLASS_NAME = "ArgumentParser"
 
 
-
-
 def is_this_group_creation(node: ast.Assign):
-    if not (len(node.targets) == 1 and
-            isinstance(node.targets[0], ast.Name)):
+    if not (len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Name)):
         return False, None
 
     name = node.targets[0].id
-    if not (isinstance(node.value, ast.Call) and
-            isinstance(node.value.func, ast.Attribute) and
-            node.value.func.attr == "add_argument_group"):
+    if not (isinstance(node.value, ast.Call)
+            and isinstance(node.value.func, ast.Attribute)
+            and node.value.func.attr == "add_argument_group"):
         return False, None
 
     return True, name
@@ -71,12 +68,12 @@ class ImportDiscovery(Discovery):
                     # in case argparse is being imported, determine the
                     # alias of the parser, if there is any
                     if name == ARGPARSE_MODULE_NAME and \
-                        item.name == ARGUMENT_PARSER_CLASS_NAME:
+                            item.name == ARGUMENT_PARSER_CLASS_NAME:
                         self.argument_parser_alias = alias
 
     def report_findings(self) -> Tuple[List[ast.AST], str, str, Set[str]]:
         if self.argparse_module_alias is None and \
-            self.argument_parser_alias is None:
+                self.argument_parser_alias is None:
             raise ArgParseImportNotFound()
 
         return (self.actions, self.argparse_module_alias,
@@ -107,16 +104,16 @@ class SimpleParserDiscoveryAndReplacement(Discovery):
 
     @staticmethod
     def imported_using_from(node: ast.Assign, argument_parser_alias: str):
-        return (isinstance(node.value, ast.Call) and
-                isinstance(node.value.func, ast.Name) and
-                node.value.func.id == argument_parser_alias)
+        return (isinstance(node.value, ast.Call)
+                and isinstance(node.value.func, ast.Name)
+                and node.value.func.id == argument_parser_alias)
 
     @staticmethod
     def imported_using_import(node: ast.Assign, argparse_module_alias: str):
-        return (isinstance(node.value, ast.Call) and
-                isinstance(node.value.func, ast.Attribute) and
-                node.value.func.attr == ARGUMENT_PARSER_CLASS_NAME and
-                node.value.func.value.id == argparse_module_alias)
+        return (isinstance(node.value, ast.Call)
+                and isinstance(node.value.func, ast.Attribute)
+                and node.value.func.attr == ARGUMENT_PARSER_CLASS_NAME
+                and node.value.func.value.id == argparse_module_alias)
 
     def visit_Assign(self, node: ast.Assign):
         if self.argparse_found:
@@ -197,11 +194,10 @@ class ArgumentCreationDiscovery(Discovery):
         super(ArgumentCreationDiscovery, self).__init__(actions)
 
     def is_call_on_parser_or_group(self, node: ast.Call):
-        return isinstance(node.func, ast.Attribute) and \
-               node.func.attr == "add_argument" and \
-               hasattr(node.func.value, "id") and \
-               (node.func.value.id in self.sections or
-                node.func.value.id == self.main_name)
+        return isinstance(node.func, ast.Attribute) \
+            and node.func.attr == "add_argument" \
+            and hasattr(node.func.value, "id") \
+            and (node.func.value.id in self.sections or node.func.value.id == self.main_name)
 
     def visit_Call(self, node: ast.Call) -> Any:
         if self.is_call_on_parser_or_group(node):
@@ -209,7 +205,7 @@ class ArgumentCreationDiscovery(Discovery):
             # name of the variable needs to be rewritten,
             # because we want to use only one parser
             if node.func.value.id != self.main_name and \
-                node.func.value.id not in self.sections:
+                    node.func.value.id not in self.sections:
                 node.func.value.id = self.main_name
 
             self.actions.append(ast.Expr(node))
@@ -221,7 +217,7 @@ class ArgumentCreationDiscovery(Discovery):
 
 
 def get_parser_init_and_actions(source: ast.Module) -> \
-    Tuple[List[ast.AST], str, Set[str], Set[str]]:
+        Tuple[List[ast.AST], str, Set[str], Set[str]]:
     """
     Function used to extract necessary imports, parser and argument creation
      function calls

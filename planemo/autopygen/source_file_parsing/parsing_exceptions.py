@@ -1,11 +1,14 @@
 """
 Module containing Exceptions that can be raised during param discovery
 """
+
+
 class ArgumentParsingDiscoveryError(Exception):
     """
     Exception for general error encountered during param extraction
     """
     pass
+
 
 class ArgParseImportNotFound(ArgumentParsingDiscoveryError):
     """
