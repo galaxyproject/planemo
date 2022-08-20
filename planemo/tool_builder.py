@@ -16,7 +16,7 @@ from planemo import (
     templates,
 )
 from planemo.autopygen.params.argument_parser_conversion import obtain_and_convert_parser, \
-    extract_useful_info_from_parser, ParamInfo
+    inputs_from_decoy
 
 REUSING_MACROS_MESSAGE = (
     "Macros file macros.xml already exists, assuming " " it has relevant planemo-generated definitions."
@@ -384,8 +384,8 @@ class CommandIO:
             parser = obtain_and_convert_parser(kwds["autopygen"])
 
             if parser is not None:
-                params, mapping = extract_useful_info_from_parser(parser, dict(), set())
-                inputs.extend(ParamInput.create_param_inputs(params))
+                text = inputs_from_decoy(parser, dict(), set(), dict(), dict())
+                inputs.append(GeneratedInput(text))
 
         # handle raw outputs (from_work_dir ones) as well as named_outputs
         outputs = kwds.pop("output", [])
@@ -769,21 +769,14 @@ class Input:
         return f'<param type="data" name="{self.name}" format="{self.datatype}" />'
 
 
-class ParamInput:
-    @staticmethod
-    def create_param_inputs(params):
-        result = []
-        for param in params:
-            result.append(ParamInput(param))
-
-        return result
-
-    def __init__(self, param):
-        self.param = param
-        self.example = None
+class GeneratedInput:
+    def __init__(self, text: str):
+        self.text = text
+        # TODO add functionality, not just compatibility
+        self.example = False
 
     def __str__(self):
-        return str(self.param)
+        return self.text
 
 
 class Output:

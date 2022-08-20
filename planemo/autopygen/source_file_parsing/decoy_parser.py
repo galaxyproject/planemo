@@ -2,6 +2,7 @@ import argparse
 import ast
 from typing import Optional
 
+
 class DecoyParser(argparse.ArgumentParser):
     """
     Decoy class that is injected into code that initializes parser
@@ -9,7 +10,7 @@ class DecoyParser(argparse.ArgumentParser):
     """
 
     class Action:
-        def __init__(self, scope, argument, action,
+        def __init__(self, section, argument, action,
                      kwargs):
             self.argument = argument
 
@@ -18,46 +19,76 @@ class DecoyParser(argparse.ArgumentParser):
 
             self.action = action.upper()
             self.kwargs = kwargs
-            self.scope = scope
+            self.scope = section
 
     class Section:
-        def __init__(self, name=None, description=None):
+        def __init__(self, parent=None, name=None, description=None):
             self.name = name
             self.description = description
+            self.parent = parent
+            self.actions = []
+            self.subsections = []
+
+        def get_actions_recursive(self):
+            for action in self.actions:
+                yield action
+
+            for subsection in self.subsections:
+                yield from subsection.get_actions_recursive()
 
     def __init__(self):
-        self.tracked_actions = []
-        self.default_scope = self.Section("default")
+        self.default_section = self.Section(name="default")
         super().__init__()
 
     def report_arguments_and_groups(self):
-        return self.tracked_actions
+        yield from self.default_section.get_actions_recursive()
 
-    def save_action(self, scope, *args, **kwargs):
-        self.tracked_actions.append(
-            self.Action(scope, args[-1], kwargs.get("action",
-                                                   "STORE"), kwargs))
+    def save_action(self, section, *args, **kwargs):
+        section.actions.append(
+            self.Action(section, args[-1], kwargs.get("action",
+                                                      "STORE"), kwargs))
 
     def add_argument(self, *args, **kwargs):
-        self.save_action(self.default_scope, *args, **kwargs)
+        self.save_action(self.default_section, *args, **kwargs)
         return super().add_argument(*args, **kwargs)
 
-    def add_argument_for_arg_group(self, scope, group):
+    def add_argument_for_arg_group(self, section, group):
         def add_argument(*args, **kwargs):
-            self.save_action(scope, *args, **kwargs)
+            self.save_action(section, *args, **kwargs)
             return super(type(group), group).add_argument(*args, **kwargs)
 
         return add_argument
 
-    def add_argument_group(self, *args, **kwargs):
-        arg_group = super().add_argument_group(*args, **kwargs)
-        if len(args) == 0:
-            scope = self.Section(**kwargs)
-        else:
-            scope = self.Section(*args)
+    def create_custom_add_argument_group(self, original, parent_section):
+        def custom_add_argument_group(*args, **kwargs):
+            from copy import copy
+            new_grp = original.add_argument_group(*args, **kwargs)
+            if len(args) == 0:
+                subsection = self.Section(parent_section, **kwargs)
+            else:
+                subsection = self.Section(parent_section, *args)
+            parent_section.subsections.append(subsection)
 
-        arg_group.add_argument = self.add_argument_for_arg_group(scope,
+            new_grp.add_argument = self.add_argument_for_arg_group(subsection, new_grp)
+            new_grp.add_argument_group = self.create_custom_add_argument_group(copy(new_grp), subsection)
+            return new_grp
+
+        return custom_add_argument_group
+
+    def add_argument_group(self, *args, **kwargs):
+        from copy import copy
+
+        arg_group = super().add_argument_group(*args, **kwargs)
+
+        if len(args) == 0:
+            subsection = self.Section(self.default_section, **kwargs)
+        else:
+            subsection = self.Section(self.default_section, *args)
+
+        arg_group.add_argument = self.add_argument_for_arg_group(subsection,
                                                                  arg_group)
+        arg_group.add_argument_group = self.create_custom_add_argument_group(copy(arg_group), subsection)
+        self.default_section.subsections.append(subsection)
         return arg_group
 
 
