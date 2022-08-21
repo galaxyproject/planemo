@@ -15,7 +15,7 @@ from planemo import (
     io,
     templates,
 )
-from planemo.autopygen.params.argument_parser_conversion import obtain_and_convert_parser, \
+from planemo.autopygen.argument_parser_conversion import obtain_and_convert_parser, \
     inputs_from_decoy
 
 REUSING_MACROS_MESSAGE = (
