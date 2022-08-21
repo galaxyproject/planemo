@@ -59,6 +59,9 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}+galaxy
 {%- for input in inputs %}
         {{ input }}
 {%- endfor %}
+{%- if auto_inputs %}
+        {{ auto_inputs }}
+{%- endif %}
     </inputs>
     <outputs>
 {%- for output in outputs %}
@@ -337,6 +340,7 @@ def _build_galaxy(**kwds):
     kwds["inputs"] = command_io.inputs
     kwds["outputs"] = command_io.outputs
     kwds["command"] = command_io.cheetah_template
+    kwds["auto_inputs"] = command_io.auto_inputs
 
     test_case = command_io.test_case()
 
@@ -380,12 +384,12 @@ class CommandIO:
             inputs.append(Input(input_file, name=name, example=True))
             cheetah_template = _replace_file_in_command(cheetah_template, input_file, name)
 
+        auto_inputs = None
         if kwds["autopygen"] is not None:
             parser = obtain_and_convert_parser(kwds["autopygen"])
 
             if parser is not None:
-                text = inputs_from_decoy(parser, dict(), set(), dict(), dict())
-                inputs.append(GeneratedInput(text))
+                auto_inputs = inputs_from_decoy(parser, dict(), set(), dict(), dict())
 
         # handle raw outputs (from_work_dir ones) as well as named_outputs
         outputs = kwds.pop("output", [])
@@ -412,6 +416,7 @@ class CommandIO:
         self.inputs = inputs
         self.outputs = outputs
         self.command = command
+        self.auto_inputs = auto_inputs
         self.cheetah_template = cheetah_template
 
     def example_input_names(self):
