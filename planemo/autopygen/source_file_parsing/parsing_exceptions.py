@@ -22,3 +22,7 @@ class ArgParserNotUsed(ArgumentParsingDiscoveryError):
     Exception raised in case no uses of argument parser were found
     """
     pass
+
+
+class CouldNotFixNameError(ArgumentParsingDiscoveryError):
+    pass

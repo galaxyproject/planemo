@@ -69,8 +69,10 @@ class DecoyParser(argparse.ArgumentParser):
                 subsection = self.Section(parent_section, *args)
             parent_section.subsections.append(subsection)
 
-            new_grp.add_argument = self.add_argument_for_arg_group(subsection, new_grp)
-            new_grp.add_argument_group = self.create_custom_add_argument_group(copy(new_grp), subsection)
+            new_grp.add_argument = self.add_argument_for_arg_group(subsection,
+                                                                   new_grp)
+            new_grp.add_argument_group = self.create_custom_add_argument_group(
+                copy(new_grp), subsection)
             return new_grp
 
         return custom_add_argument_group
@@ -87,7 +89,8 @@ class DecoyParser(argparse.ArgumentParser):
 
         arg_group.add_argument = self.add_argument_for_arg_group(subsection,
                                                                  arg_group)
-        arg_group.add_argument_group = self.create_custom_add_argument_group(copy(arg_group), subsection)
+        arg_group.add_argument_group = self.create_custom_add_argument_group(
+            copy(arg_group), subsection)
         self.default_section.subsections.append(subsection)
         return arg_group
 

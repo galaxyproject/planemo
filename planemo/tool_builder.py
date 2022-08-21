@@ -16,7 +16,7 @@ from planemo import (
     templates,
 )
 from planemo.autopygen.argument_parser_conversion import obtain_and_convert_parser, \
-    inputs_from_decoy
+    inputs_from_decoy, command_from_decoy
 
 REUSING_MACROS_MESSAGE = (
     "Macros file macros.xml already exists, assuming " " it has relevant planemo-generated definitions."
@@ -51,8 +51,12 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}+galaxy
     <command detect_errors="exit_code"><![CDATA[
 {%- if command %}
         {{ command }}
-{%- else %}
-        TODO: Fill in command template.
+{%- endif %}
+{%- if auto_commands %}
+        {{ auto_commands }}
+{%- endif %}
+{%- if not (command or auto_commands) %}
+    TODO: Fill in command template.
 {%- endif %}
     ]]></command>
     <inputs>
@@ -341,7 +345,7 @@ def _build_galaxy(**kwds):
     kwds["outputs"] = command_io.outputs
     kwds["command"] = command_io.cheetah_template
     kwds["auto_inputs"] = command_io.auto_inputs
-
+    kwds["auto_commands"] = command_io.auto_commands
     test_case = command_io.test_case()
 
     # finally wrap up tests
@@ -385,11 +389,18 @@ class CommandIO:
             cheetah_template = _replace_file_in_command(cheetah_template, input_file, name)
 
         auto_inputs = None
+        auto_commands = None
         if kwds["autopygen"] is not None:
             parser = obtain_and_convert_parser(kwds["autopygen"])
 
             if parser is not None:
-                auto_inputs = inputs_from_decoy(parser, dict(), set(), dict(), dict())
+                # todo use real data inputs and reserved names
+                data_inputs = dict()
+                reserved_names = set()
+                name_map = dict()
+                section_map = dict()
+                auto_inputs = inputs_from_decoy(parser, data_inputs, reserved_names, name_map, section_map)
+                auto_commands = command_from_decoy(parser, data_inputs, reserved_names, name_map, section_map)
 
         # handle raw outputs (from_work_dir ones) as well as named_outputs
         outputs = kwds.pop("output", [])
@@ -417,6 +428,7 @@ class CommandIO:
         self.outputs = outputs
         self.command = command
         self.auto_inputs = auto_inputs
+        self.auto_commands = auto_commands
         self.cheetah_template = cheetah_template
 
     def example_input_names(self):

@@ -3,6 +3,7 @@ Module responsible for discovery of import statements importing Argument parser
 and discovery of the statements initializing the parser itself
 """
 import ast
+import logging
 from typing import Tuple, Optional, Any, Set, List
 
 from .constants import STD_LIB_MODULE_NAMES
@@ -136,6 +137,14 @@ class SimpleParserDiscoveryAndReplacement(Discovery):
             self._replace_parser(node, import_from)
 
     def _replace_parser(self, node: ast.Assign, imported_using_from: bool):
+        # FIXME TODO currently, passing variables to custom argument parser
+        # is not supported
+        if node.value.args or node.value.keywords:
+            logging.warning("Arguments that are normally passed to argument"
+                            " parser will be ignored. Their use is"
+                            " not currently supported")
+        node.value.args = []
+        node.value.keywords = []
         if imported_using_from:
             self.custom_parser_def.bases[0] = \
                 ast.Name(self.argument_parser_alias, ast.Load())

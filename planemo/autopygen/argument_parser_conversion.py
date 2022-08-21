@@ -6,12 +6,14 @@ and to transform it into easily usable ParamInfo class containing
 import ast
 import logging
 import math
+import re
 import uuid
 
-from typing import Optional, Set, Any, List, Dict, Tuple, Union
+from typing import Optional, Set, List, Dict, Tuple, Union
 from argparse import ArgumentParser
-import dataclasses
 
+from planemo.autopygen.commands.command_utils import transform_param_info
+from planemo.autopygen.param_info import ParamInfo
 from planemo.autopygen.source_file_parsing.constants import LINTER_MAGIC
 from planemo.autopygen.source_file_parsing.decoy_parser import DecoyParser
 from planemo.autopygen.source_file_parsing.local_module_parsing import \
@@ -24,30 +26,6 @@ from planemo.autopygen.source_file_parsing.parsing_exceptions import \
     ArgumentParsingDiscoveryError
 from planemo.autopygen.source_file_parsing.unknown_names_discovery import \
     initialize_variables_in_module
-
-
-@dataclasses.dataclass
-class ParamInfo:
-    """
-    Class containing data of a single extracted parameter
-    """
-    type: str
-    name: str
-    argument: str
-    label: str
-    section: str
-    section_label: str
-    default_val: Any
-    custom_attributes: List[Tuple[str, str]]
-
-    nargs: Union[float, int] = 0
-    help: Optional[str] = None
-    optional: bool = False
-    is_repeat: bool = False
-    is_select: bool = False
-    choices: Optional[List[Any]] = None
-    is_flag: bool = False
-    format: Optional[str] = None
 
 
 def obtain_and_convert_parser(path: str) -> Optional[DecoyParser]:
@@ -125,9 +103,10 @@ def obtain_parser(tree: ast.Module) -> Optional[ArgumentParser]:
 def _options(param_info: ParamInfo):
     options = []
     for option in param_info.choices:
-        options.append(f'<option value="{option}">{option.capitalize()}</option>\n')
+        options.append(
+            f'<option value="{option}">{option.capitalize()}</option>\n')
 
-    return _default(param_info)
+    return _default(param_info, "\n".join(options).rstrip())
 
 
 def _repeat(param_info: ParamInfo):
@@ -154,7 +133,7 @@ def _repeat(param_info: ParamInfo):
     return f'<repeat {attr_str}>{inner}</repeat>\n'
 
 
-def _default(param_info: ParamInfo):
+def _default(param_info: ParamInfo, body: Optional[str] = None):
     attributes = {
         "argument": param_info.argument,
         "type": param_info.type,
@@ -169,6 +148,9 @@ def _default(param_info: ParamInfo):
     # of attributes
     if param_info.format is None:
         attributes.pop("format")
+
+    if body:
+        return f'<param {attributes_to_str(attributes)}>\n{body}\n</param>\n'
 
     return f'<param {attributes_to_str(attributes)}/>\n'
 
@@ -188,16 +170,12 @@ def _action_to_param(action: DecoyParser.Action,
     param_info = obtain_param_info(action, data_inputs, reserved_names,
                                    name_map, section_map)
 
-    if param_info.is_select:
-        return _options(param_info)
-    elif param_info.is_repeat:
+    if param_info.is_repeat:
         return _repeat(param_info)
+    elif param_info.is_select:
+        return _options(param_info)
 
     return _default(param_info)
-
-
-def _action_to_command(action: DecoyParser.Action):
-    pass
 
 
 def generate_inputs_from_section(section: DecoyParser.Section,
@@ -218,10 +196,34 @@ def generate_inputs_from_section(section: DecoyParser.Section,
                                      section_map) for subsection in
         section.subsections if subsection.actions]
 
-    return f'<section name="{section.name}" title="{section.name}" expanded="true">\n' \
+    transformed_name = re.sub("[/\\-* ()]", "_", section_map[section.name]).lower()
+    return f'<section name="{transformed_name}" title="{section.name}" expanded="true">\n' \
            f'{"".join(sub_actions)}' \
            f'{"".join(sub_sections)}' \
            f'</section>\n'
+
+
+def _command_recursion(section: DecoyParser.Section,
+                       data_inputs: Dict[str, str],
+                       reserved_names: Set[str],
+                       name_map: Dict[str, str],
+                       section_map: Dict[str, str], nesting: str, depth: int):
+    for action in section.actions:
+        param_info = obtain_param_info(action, data_inputs, reserved_names,
+                                       name_map, section_map)
+        yield transform_param_info(param_info, nesting,
+                                   depth)
+
+    for subsection in section.subsections:
+        sec_name = re.sub("[/\\-* ()]", "_", section_map[subsection.name]).lower()
+
+        yield from _command_recursion(subsection,
+                                      data_inputs,
+                                      reserved_names,
+                                      name_map,
+                                      section_map,
+                                      nesting + f".{sec_name}",
+                                      depth + 1)
 
 
 def inputs_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
@@ -236,6 +238,31 @@ def inputs_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
                                                    reserved_names,
                                                    name_map,
                                                    section_map))
+    return "\n".join(result)
+
+
+def command_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
+                       reserved_names: Set[str],
+                       name_map: Dict[str, str],
+                       section_map: Dict[str, str]):
+    """
+    The function generates commands from decoy parser. It requires name and section maps that have already been
+    initialised and contain correct mapping
+    """
+    result = []
+    for subsection in parser.default_section.subsections:
+        if not subsection.actions:
+            continue
+        sec_name = re.sub("[/\\-* ()]", "_", section_map[subsection.name]).lower()
+        result.extend([command for command in
+                       _command_recursion(subsection,
+                                          data_inputs,
+                                          reserved_names,
+                                          name_map,
+                                          section_map,
+                                          sec_name,
+                                          depth=0)])
+
     return "\n".join(result)
 
 
@@ -318,6 +345,7 @@ def update_name_map(name: str, name_map: Dict[str, str],
                     reserved_names: Set[str]):
     """
     Updates names that are equal to one of the values in 'reserved_names'
+    Doesn't change names already present in the mapping
 
     Parameters
     ----------
@@ -326,13 +354,18 @@ def update_name_map(name: str, name_map: Dict[str, str],
     reserved_names :
     """
     old_name = name
+
+    if old_name in name_map:
+        return
+
     while name.lower() in reserved_names:
         name = name + str(uuid.uuid4())[:4]
 
     name_map[old_name] = name
 
 
-def _determine_type(action: DecoyParser.Action, data_inputs: Dict[str, str], name: str, type_):
+def _determine_type(action: DecoyParser.Action, data_inputs: Dict[str, str],
+                    name: str, type_):
     if action.kwargs.get("choices", []):
         return "select"
 
@@ -365,6 +398,7 @@ def _determine_nargs(nargs: Union[str, int, None]) -> Union[float, int]:
 
 def _determine_custom_attributes(type_: str, nargs: int) -> List[Tuple[str, str]]:
     flags: List[Tuple[str, str]] = []
+
     if type_ == "data" and nargs > 1:
         flags.append(("multiple", "true"))
 

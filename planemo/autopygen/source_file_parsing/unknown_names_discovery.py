@@ -24,6 +24,12 @@ class UnknownNamesDiscovery(CustomVisitor):
         if node.id not in self.known_names:
             self.unknown_names.add(node.id)
 
+    def visit_ClassDef(self, node: ast.ClassDef) -> Any:
+        if node.name == "DecoyParser":
+            return
+
+        self.generic_visit(node)
+
     # def visit_For(self, node: ast.For) -> Any:
     #     for item in node.body:
     #         self.generic_visit(item)
@@ -82,12 +88,28 @@ def _insert_into_actions(actions: List[ast.AST], assignments: List[ast.Assign],
 
         return index
 
+    def find_end_of_assignments(start: int):
+        index = start
+        for item in actions:
+            if isinstance(item, ast.Expr):
+                return index
+
+            index += 1
+
+        return index
+
     end_of_imports = find_end_of_imports()
-    if assignments:
-        actions.insert(end_of_imports, *assignments)
+    end_of_assignments = find_end_of_assignments(0)
 
     if class_defs:
-        actions.insert(end_of_imports, *class_defs)
+        actions = actions[:end_of_imports] + class_defs \
+                  + actions[end_of_imports:]
+
+    if assignments:
+        actions = actions[:end_of_assignments] + assignments \
+                  + actions[end_of_assignments:]
+
+    return actions
 
 
 def initialize_variables_in_module(original_module: ast.Module,
@@ -137,7 +159,7 @@ def initialize_variables_in_module(original_module: ast.Module,
         new_vars, new_classes, new_known_names = \
             unknown_names_loader.visit_and_report(original_module)
 
-        _insert_into_actions(actions, new_vars, new_classes)
+        actions = _insert_into_actions(actions, new_vars, new_classes)
         known_names = known_names.union(new_known_names)
 
         if len(new_known_names) == 0:

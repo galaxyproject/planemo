@@ -8,6 +8,7 @@ import logging
 
 from planemo.autopygen.source_file_parsing.constants import LINTER_MAGIC
 from planemo.autopygen.source_file_parsing.parsing_commons import add_parents
+from planemo.autopygen.source_file_parsing.parsing_exceptions import CouldNotFixNameError
 
 
 class UnknownNamesRemoval(ast.NodeVisitor):
@@ -33,23 +34,29 @@ class UnknownNamesRemoval(ast.NodeVisitor):
         parent = current.parent
 
         def _reach_add_argument():
-            return (isinstance(parent, ast.Call)
-                    and isinstance(parent.func, ast.Attribute)
-                    and parent.func.attr == "add_argument")
+            return (isinstance(parent, ast.Call) and
+                    isinstance(parent.func, ast.Attribute) and
+                    parent.func.attr == "add_argument")
 
         def _reach_assignment_as_list_comprehension():
-            return (isinstance(parent, ast.Assign)
-                    and isinstance(current, ast.ListComp))
+            return (isinstance(parent, ast.Assign) and
+                    isinstance(current, ast.ListComp))
 
-        while not (_reach_add_argument()
-                   or _reach_assignment_as_list_comprehension()):
+        while not (_reach_add_argument() or
+                   _reach_assignment_as_list_comprehension()):
             current = parent
+            if not hasattr(current, "parent"):
+                raise CouldNotFixNameError
             parent = current.parent
 
         return parent, current
 
-    def _fix_name(self, node: ast.Name, name: str):
-        parent, current = self._reach_top(node)
+    def _fix_name(self, node: ast.Name, name: str) -> bool:
+        try:
+            parent, current = self._reach_top(node)
+        except CouldNotFixNameError:
+            return False
+
         not_found_const = ast.Constant(value=f"{LINTER_MAGIC} Name {name}"
                                              f" could not be loaded")
         # if top is assignment
@@ -58,18 +65,19 @@ class UnknownNamesRemoval(ast.NodeVisitor):
                 f"Problem with assignment to {parent.targets[0].id}")
             parent.value = ast.List(elts=[not_found_const],
                                     ctx=ast.Load())
-            return
+            return True
 
         # this name can be a part of normal args
         if current in parent.args:
             idx = parent.args.index(current)
 
             parent.args[idx] = not_found_const
-            return
+            return True
 
         # or a part of keyword args
         current: ast.keyword
         current.value = not_found_const
+        return True
 
     # we dont care about class defifnitions, they should only depend
     # on outside things
@@ -80,7 +88,10 @@ class UnknownNamesRemoval(ast.NodeVisitor):
         if node.id not in self.unknown:
             return
 
-        self._fix_name(node, node.id)
+        if not self._fix_name(node, node.id):
+            logging.error("Name could not be fixed and it can't be"
+                          " replaced with a constant,"
+                          " the parser extraction process failed")
 
 
 def handle_local_module_names(actions: List[ast.AST],
