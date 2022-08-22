@@ -786,16 +786,6 @@ class Input:
         return f'<param type="data" name="{self.name}" format="{self.datatype}" />'
 
 
-class GeneratedInput:
-    def __init__(self, text: str):
-        self.text = text
-        # TODO add functionality, not just compatibility
-        self.example = False
-
-    def __str__(self):
-        return self.text
-
-
 class Output:
     def __init__(self, from_path=None, name=None, use_from_path=False, example=False):
         if from_path:
