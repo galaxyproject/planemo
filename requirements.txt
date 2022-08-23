@@ -3,9 +3,9 @@ bioblend>=0.17.0
 click!=8.0.2
 cwltool>=1.0.20191225192155
 ephemeris>=0.10.3
-galaxy-containers<22.01
-galaxy-tool-util>=21.1.0.dev4,<22.01
-galaxy-util>=20.5.0,<22.01
+galaxy-containers<22.05
+galaxy-tool-util>=21.1.0.dev4,<22.05
+galaxy-util>=20.5.0,<22.05
 glob2
 gxformat2>=0.14.0
 jinja2
