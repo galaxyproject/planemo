@@ -73,6 +73,7 @@ def skip_requirements_option() -> Callable:
 @test_option()
 @skiplist_option()
 @skip_requirements_option()
+@options.serve_engine_option()
 @options.test_options()
 @options.galaxy_target_options()
 @options.galaxy_config_options()
