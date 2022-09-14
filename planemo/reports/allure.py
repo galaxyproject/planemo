@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import uuid
 
@@ -27,6 +28,9 @@ from galaxy.util import safe_makedirs
 
 JSON_INDENT = 2
 WORKFLOW_INDEX_MATCH = re.compile(r"(.*)\_([\d+])")
+
+ALLURE_RECORD_DEBUG_DATA = os.environ.get("ALLURE_RECORD_DEBUG_DATA", "0") == "1"
+ALLURE_RANDOM_HISTORY_ID = os.environ.get("ALLURE_RANDOM_HISTORY_ID", "1") == "1"
 
 
 class AllureListener:
@@ -62,11 +66,14 @@ class AllureWriter:
 
             test_result.fullName = test_index
             test_result.testCaseId = md5(test_index)
-            # Maybe an option to swap this - seems like it is causing all runs to seem like
-            # retries instead of history proper?
-            # test_result.historyId = md5(test_index)
-            test_result.historyId = md5(str(uuid.uuid4()))
+            # TODO: figure out what this ought to be for workflows and tools - might be different I suppose.
+            if ALLURE_RANDOM_HISTORY_ID:
+                test_result.historyId = md5(str(uuid.uuid4()))
+            else:
+                test_result.historyId = md5(test_index)
             tool_id = self._record_suite_labels(test_result, test_index, test_data, job)
+            if ALLURE_RECORD_DEBUG_DATA:
+                self._attach_data("test_case", json.dumps(test_case, indent=JSON_INDENT), attachment_type=AttachmentType.JSON)
 
             self._attach_data(
                 "test_data", json.dumps(test_data, indent=JSON_INDENT), attachment_type=AttachmentType.JSON
@@ -159,10 +166,16 @@ class AllureWriter:
         elif "tool_version" in job:
             test_result.labels.append(Label(name=LabelType.SUITE, value=job["tool_version"]))
 
+        def subsuite_name(index: str):
+            if index.isdigit():
+                return f"Test Case #{int(index) + 1}"
+            else:
+                return index
+
         if "test_index" in test_data:
-            test_result.labels.append(Label(name=LabelType.SUB_SUITE, value=str(test_data["test_index"])))
+            test_result.labels.append(Label(name=LabelType.SUB_SUITE, value=subsuite_name(str(test_data["test_index"]))))
         elif index_match:
-            test_result.labels.append(Label(name=LabelType.SUB_SUITE, value=index_match.group(2)))
+            test_result.labels.append(Label(name=LabelType.SUB_SUITE, value=subsuite_name(index_match.group(2))))
 
         return tool_id
 
