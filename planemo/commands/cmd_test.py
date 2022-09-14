@@ -1,4 +1,6 @@
 """Module describing the planemo ``test`` command."""
+from contextlib import ExitStack
+
 import click
 
 from planemo import options
@@ -28,7 +30,8 @@ from planemo.runnable_resolve import for_runnable_identifiers
     "instances to limit generated traffic.",
     default="0",
 )
-@options.galaxy_target_options()
+@options.serve_option()
+@options.galaxy_run_options()
 @options.galaxy_config_options()
 @options.test_options()
 @options.engine_options()
@@ -61,7 +64,11 @@ def cli(ctx, uris, **kwds):
     against that same Galaxy root - but this may not be bullet proof yet so
     please careful and do not try this against production Galaxy instances.
     """
-    with temp_directory(dir=ctx.planemo_directory) as temp_path:
+    with ExitStack() as stack:
+        if not kwds["serve"]:
+            temp_path = stack.enter_context(temp_directory(dir=ctx.planemo_directory))
+        else:
+            temp_path = None
         # Create temp dir(s) outside of temp, docker can't mount $TEMPDIR on OSX
         runnables = for_runnable_identifiers(ctx, uris, kwds, temp_path=temp_path)
 

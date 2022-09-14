@@ -162,6 +162,35 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         kill_pid_file(self._pid_file)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_test_with_serve(self):
+        """
+        Test testing a Galaxy workflow with the serve flag. Even though
+        this is technically using the test subcommand it is easier to test here
+        so we can use the UsesServeCommand methods
+        """
+        cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
+        test_artifact = os.path.join(TEST_DATA_DIR, "wf2.ga")
+        extra_args = [
+            "--serve",
+            test_artifact,
+            "--port",
+            str(self._port),
+            "--no_dependency_resolution",
+            "--extra_tools",
+            cat,
+        ]
+        self._launch_thread_and_wait(self._run_test, extra_args)
+        time.sleep(30)
+
+        # access the served instance to check everything worked
+        user_gi = self._user_gi
+        workflows = user_gi.workflows.get_workflows()
+        assert len(workflows) == 1
+        assert workflows[0]["name"] == "TestWorkflow1"
+        histories = user_gi.histories.get_histories(name="CWL Target History")
+        assert len(histories) == 1
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_serve_profile(self):
         self._test_serve_profile()
 
@@ -193,3 +222,6 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
 
     def _run_shed(self, serve_args=[]):
         return self._run(serve_args=serve_args, serve_cmd="shed_serve")
+
+    def _run_test(self, serve_args=[]):
+        return self._run(serve_args=serve_args, serve_cmd="test")

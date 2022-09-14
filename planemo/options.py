@@ -882,6 +882,17 @@ def no_cleanup_option():
     return planemo_option("--no_cleanup", is_flag=True, help=("Do not cleanup temp files created for and by Galaxy."))
 
 
+def serve_option():
+    return planemo_option(
+        "--serve",
+        is_flag=True,
+        default=False,
+        help=(
+            "Continue serving Galaxy instance after testing. Like the serve command itself, this is only compatible with Galaxy-based engines."
+        ),
+    )
+
+
 def docker_enable_option():
     return planemo_option("--docker/--no_docker", default=False, help=("Run Galaxy tools in Docker if enabled."))
 
