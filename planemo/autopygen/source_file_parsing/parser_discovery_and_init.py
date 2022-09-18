@@ -48,23 +48,26 @@ class ImportDiscovery(Discovery):
                 self.argparse_module_alias = alias
                 self.known_names.add(item.name)
 
-        self.actions.append(node)
+            if item.name in STD_LIB_MODULE_NAMES:
+                self.actions.append(node)
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> Any:
         if node.module is None:
             return
 
         for name in node.module.split("."):
-            for item in node.names:
-                alias = item.asname or item.name
-                self.known_names.add(alias)
-                # in case argparse is being imported, determine the
-                # alias of the parser, if there is any
-                if name == ARGPARSE_MODULE_NAME and \
-                    item.name == ARGUMENT_PARSER_CLASS_NAME:
-                    self.argument_parser_alias = alias
+            name_in_known_modules = name in STD_LIB_MODULE_NAMES
+            if name_in_known_modules:
+                self.actions.append(node)
+                for item in node.names:
+                    alias = item.asname or item.name
+                    self.known_names.add(alias)
+                    # in case argparse is being imported, determine the
+                    # alias of the parser, if there is any
+                    if name == ARGPARSE_MODULE_NAME and \
+                        item.name == ARGUMENT_PARSER_CLASS_NAME:
+                        self.argument_parser_alias = alias
 
-        self.actions.append(node)
 
     def report_findings(self) -> Tuple[List[ast.AST], str, str, Set[str]]:
         if self.argparse_module_alias is None and self.argument_parser_alias is None:
