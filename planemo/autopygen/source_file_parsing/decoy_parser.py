@@ -9,6 +9,22 @@ class DecoyParser(argparse.ArgumentParser):
     It removes dependency on the internal representation of actions
     """
 
+    class Subparsers:
+        def __init__(self, real):
+            self.real_subparsers = real
+            self.parsers = []
+            self.real_parsers = []
+
+        @staticmethod
+        def mock_add_parsers(mock_subparser):
+            def add_parser(name, **kwargs):
+                dp = DecoyParser(name)
+                mock_subparser.parsers.append(dp)
+                mock_subparser.real_parsers.append(mock_subparser.real_subparsers.add_parser(name, **kwargs))
+                return dp
+
+            return add_parser
+
     class Action:
         def __init__(self, section, argument, action,
                      kwargs):
@@ -36,8 +52,9 @@ class DecoyParser(argparse.ArgumentParser):
             for subsection in self.subsections:
                 yield from subsection.get_actions_recursive()
 
-    def __init__(self):
-        self.default_section = self.Section(name="default")
+    def __init__(self, name="default"):
+        self.default_section = self.Section(name=name)
+        self.sub_parsers = []
         super().__init__()
 
     def report_arguments_and_groups(self):
@@ -93,6 +110,14 @@ class DecoyParser(argparse.ArgumentParser):
             copy(arg_group), subsection)
         self.default_section.subsections.append(subsection)
         return arg_group
+
+    def add_subparsers(self, **kwargs):
+        real_subparsers = super(DecoyParser, self).add_subparsers(**kwargs)
+        mock_subparser = self.Subparsers(real_subparsers)
+        self.sub_parsers.append(mock_subparser)
+
+        real_subparsers.add_parser = self.Subparsers.mock_add_parsers(mock_subparser)
+        return real_subparsers
 
 
 def obtain_class_def() -> Optional[ast.ClassDef]:

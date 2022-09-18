@@ -90,7 +90,7 @@ def obtain_parser(tree: ast.Module) -> Optional[ArgumentParser]:
     compiled_module = compile(result_module, filename="<parser>", mode="exec")
     namespace = {}
     try:
-        # print(ast.unparse(result_module))
+        print(ast.unparse(result_module))
         exec(compiled_module, namespace)
     except Exception as e:
         print(e)
@@ -196,7 +196,7 @@ def generate_inputs_from_section(section: DecoyParser.Section,
                                      section_map) for subsection in
         section.subsections if subsection.actions]
 
-    transformed_name = re.sub("[/\\-* ()]", "_", section_map[section.name]).lower()
+    transformed_name = re.sub("[/\\-* ()]", "_", section_map.get(section.name, section.name)).lower()
     return f'<section name="{transformed_name}" title="{section.name}" expanded="true">\n' \
            f'{"".join(sub_actions)}' \
            f'{"".join(sub_sections)}' \
@@ -231,13 +231,20 @@ def inputs_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
                       name_map: Dict[str, str],
                       section_map: Dict[str, str]):
     result = []
+
     for subsection in parser.default_section.subsections:
-        if not subsection.actions:
+        if not subsection.actions and not subsection.subsections:
             continue
         result.append(generate_inputs_from_section(subsection, data_inputs,
                                                    reserved_names,
                                                    name_map,
                                                    section_map))
+
+    for sub_parsers in parser.sub_parsers:
+        for parser in sub_parsers.parsers:
+            result.append(inputs_from_decoy(parser, data_inputs,
+                                            reserved_names, name_map, section_map))
+
     return "\n".join(result)
 
 
@@ -262,6 +269,11 @@ def command_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
                                           section_map,
                                           sec_name,
                                           depth=0)])
+
+        for sub_parsers in parser.sub_parsers:
+            for parser in sub_parsers.parsers:
+                result.append(command_from_decoy(parser, data_inputs,
+                                                 reserved_names, name_map, section_map))
 
     return "\n".join(result)
 
@@ -302,7 +314,7 @@ def obtain_param_info(action: DecoyParser.Action,
 def extract_useful_info_from_parser(parser: DecoyParser,
                                     data_inputs: Dict[str, str],
                                     reserved_names: Set[str]) \
-        -> Tuple[List[ParamInfo], Dict[str, str]]:
+    -> Tuple[List[ParamInfo], Dict[str, str]]:
     """
     !!! SOON TO BE DEPRECATED !!!
     Converts extracted argument parser object into tuple of Param info objects
