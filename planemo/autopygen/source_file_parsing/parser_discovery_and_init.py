@@ -15,7 +15,7 @@ ARGPARSE_MODULE_NAME = "argparse"
 ARGUMENT_PARSER_CLASS_NAME = "ArgumentParser"
 
 
-def is_this_group_creation(node: ast.Assign):
+def is_this_x_creation(node: ast.Assign, function_name: str):
     if not (len(node.targets) == 1
             and isinstance(node.targets[0], ast.Name)):
         return False, None
@@ -23,7 +23,7 @@ def is_this_group_creation(node: ast.Assign):
     name = node.targets[0].id
     if not (isinstance(node.value, ast.Call)
             and isinstance(node.value.func, ast.Attribute)
-            and node.value.func.attr == "add_argument_group"):
+            and node.value.func.attr == function_name):
         return False, None
 
     return True, name
@@ -160,7 +160,7 @@ class SimpleParserDiscoveryAndReplacement(Discovery):
 
         return self.actions, self.main_parser_name
 
-
+SUBPARSERS = [""]
 # this visitor class goes through the tree and tries to find creation of
 # all argument groups
 # it works only if the group is assigned a name
@@ -177,10 +177,12 @@ class GroupDiscovery(Discovery):
         super(GroupDiscovery, self).__init__(actions)
 
     def visit_Assign(self, node: ast.Assign):
-        is_group_creation, name = is_this_group_creation(node)
+        is_group_creation, name = is_this_x_creation(node, "add_argument_group")
         if is_group_creation:
             self.groups.add(name)
             self.actions.append(node)
+
+
 
     def report_findings(self) -> Tuple:
         return self.actions, self.groups
