@@ -16,16 +16,14 @@ from planemo.autopygen.commands.command_utils import transform_param_info
 from planemo.autopygen.param_info import ParamInfo
 from planemo.autopygen.source_file_parsing.constants import LINTER_MAGIC
 from planemo.autopygen.source_file_parsing.decoy_parser import DecoyParser
-from planemo.autopygen.source_file_parsing.local_module_parsing import \
-    handle_local_module_names
+from planemo.autopygen.source_file_parsing.local_module_parsing import handle_local_module_names
 from planemo.autopygen.source_file_parsing.parser_discovery_and_init import \
     get_parser_init_and_actions
 from planemo.autopygen.source_file_parsing.parsing_commons import \
     create_module_tree_from_path, create_module_tree_from_str
 from planemo.autopygen.source_file_parsing.parsing_exceptions import \
     ArgumentParsingDiscoveryError
-from planemo.autopygen.source_file_parsing.unknown_names_discovery import \
-    initialize_variables_in_module
+from planemo.autopygen.source_file_parsing.unknown_names_discovery import initialize_variables_in_module
 
 
 def obtain_and_convert_parser(path: str) -> Optional[DecoyParser]:
@@ -72,29 +70,25 @@ def obtain_and_convert_parser_from_str(text: str) -> Optional[ArgumentParser]:
 
 def obtain_parser(tree: ast.Module) -> Optional[ArgumentParser]:
     try:
-        actions, name, section_names, imported_names = \
+        actions, name, known_names = \
             get_parser_init_and_actions(tree)
 
         actions, unknown_names = \
-            initialize_variables_in_module(tree, name,
-                                           section_names, actions,
-                                           imported_names)
+            initialize_variables_in_module(tree, name, actions,
+                                           known_names)
 
         result_module = handle_local_module_names(actions, unknown_names)
     except ArgumentParsingDiscoveryError as e:
         logging.error(e)
         return None
 
-    # result_module.body.pop(2)
     ast.fix_missing_locations(result_module)
     compiled_module = compile(result_module, filename="<parser>", mode="exec")
     namespace = {}
     try:
-        print(ast.unparse(result_module))
         exec(compiled_module, namespace)
     except Exception as e:
         print(e)
-        print(ast.unparse(result_module))
         logging.error("Parser couldn't be extracted")
         return None
     return namespace[name]
@@ -230,15 +224,10 @@ def inputs_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
                       reserved_names: Set[str],
                       name_map: Dict[str, str],
                       section_map: Dict[str, str]):
-    result = []
-
-    for subsection in parser.default_section.subsections:
-        if not subsection.actions and not subsection.subsections:
-            continue
-        result.append(generate_inputs_from_section(subsection, data_inputs,
-                                                   reserved_names,
-                                                   name_map,
-                                                   section_map))
+    result = [generate_inputs_from_section(parser.default_section, data_inputs,
+                                           reserved_names,
+                                           name_map,
+                                           section_map)]
 
     for sub_parsers in parser.sub_parsers:
         for parser in sub_parsers.parsers:
@@ -309,48 +298,6 @@ def obtain_param_info(action: DecoyParser.Action,
                      default_val, custom_attributes, nargs, help_,
                      optional, is_repeat, is_select, choices,
                      is_flag)
-
-
-def extract_useful_info_from_parser(parser: DecoyParser,
-                                    data_inputs: Dict[str, str],
-                                    reserved_names: Set[str]) \
-    -> Tuple[List[ParamInfo], Dict[str, str]]:
-    """
-    !!! SOON TO BE DEPRECATED !!!
-    Converts extracted argument parser object into tuple of Param info objects
-
-    It also renames parameters whose names are equal to
-    name in 'reserved_names' set
-
-    containing parsed out data of arguments, and dictionary mapping new names
-    of these arguments, compatible with galaxy wrappers, to the old names
-
-    Parameters
-    ----------
-    parser : ArgumentParser
-     extracted argument parser, initialized with possible command
-     line arguments of target tool
-    data_inputs : Dict[str, str]
-     dictionary mapping names of arguments which should be interpreted
-     as paths to input datasets
-    reserved_names : set of names reserved by Galaxy, parameters whose name
-     are equal to one of the names in reserved names must be renamed
-
-    Returns
-    -------
-    Parsed out data of arguments, and dictionary mapping new names
-    of these arguments, compatible with galaxy wrappers, to the old names
-    """
-    params = []
-    name_map = dict()
-    section_map = dict()
-
-    for action in parser.report_arguments_and_groups():
-        param_info = obtain_param_info(action, data_inputs, reserved_names,
-                                       name_map, section_map)
-        params.append(param_info)
-
-    return params, {new: old for old, new in name_map.items()}
 
 
 def update_name_map(name: str, name_map: Dict[str, str],

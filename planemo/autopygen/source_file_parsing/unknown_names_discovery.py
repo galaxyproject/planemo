@@ -30,9 +30,6 @@ class UnknownNamesDiscovery(CustomVisitor):
 
         self.generic_visit(node)
 
-    # def visit_For(self, node: ast.For) -> Any:
-    #     for item in node.body:
-    #         self.generic_visit(item)
 
     def visit_ListComp(self, node: ast.ListComp) -> Any:
         for comprehension in node.generators:
@@ -114,7 +111,6 @@ def _insert_into_actions(actions: List[ast.AST], assignments: List[ast.Assign],
 
 def initialize_variables_in_module(original_module: ast.Module,
                                    parser_name: str,
-                                   sections: Set[str],
                                    actions: List[ast.AST],
                                    imported_names: Set[str]) -> \
         Tuple[List[ast.AST], Set[str]]:
@@ -128,8 +124,6 @@ def initialize_variables_in_module(original_module: ast.Module,
      AST of the original source file
     parser_name : str
      default name of the parser
-    sections : Set[str]
-     set of section names
     actions : List[ast.AST]
      list of actions extracted so far
     imported_names : Set[str]
@@ -144,7 +138,7 @@ def initialize_variables_in_module(original_module: ast.Module,
 
     # this is a set of all known names, basically the things that are already
     # known and don't have to be added to the list of actions
-    known_names = {parser_name, *sections,
+    known_names = {parser_name,
                    *builtin_names, *lib_modules, *imported_names}
 
     while True:

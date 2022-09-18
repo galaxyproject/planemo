@@ -10,20 +10,13 @@ class DecoyParser(argparse.ArgumentParser):
     """
 
     class Subparsers:
-        def __init__(self, real):
-            self.real_subparsers = real
+        def __init__(self):
             self.parsers = []
-            self.real_parsers = []
 
-        @staticmethod
-        def mock_add_parsers(mock_subparser):
-            def add_parser(name, **kwargs):
-                dp = DecoyParser(name)
-                mock_subparser.parsers.append(dp)
-                mock_subparser.real_parsers.append(mock_subparser.real_subparsers.add_parser(name, **kwargs))
-                return dp
-
-            return add_parser
+        def add_parser(self, name, **kwargs):
+            dp = DecoyParser(name)
+            self.parsers.append(dp)
+            return dp
 
     class Action:
         def __init__(self, section, argument, action,
@@ -112,12 +105,9 @@ class DecoyParser(argparse.ArgumentParser):
         return arg_group
 
     def add_subparsers(self, **kwargs):
-        real_subparsers = super(DecoyParser, self).add_subparsers(**kwargs)
-        mock_subparser = self.Subparsers(real_subparsers)
+        mock_subparser = self.Subparsers()
         self.sub_parsers.append(mock_subparser)
-
-        real_subparsers.add_parser = self.Subparsers.mock_add_parsers(mock_subparser)
-        return real_subparsers
+        return mock_subparser
 
 
 def obtain_class_def() -> Optional[ast.ClassDef]:
