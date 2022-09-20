@@ -233,18 +233,17 @@ def _check_test_assertions(lint_context, assertion_definitions):
     # Python functions directly, rather than checking against galaxy.xsd as for tool linting
     assertions_valid = True
     if assertion_definitions:
-        for module in asserts.assertion_modules:
-            for function_name in dir(module):
-                if function_name.split("assert_")[-1] in assertion_definitions:
-                    signature = inspect.signature(module.__dict__[function_name])
-                    try:
-                        # try mapping the function with the attributes supplied and check for TypeError
-                        signature.bind("", **assertion_definitions[function_name.split("assert_")[-1]])
-                    except AssertionError:
-                        pass
-                    except TypeError as e:
-                        lint_context.error(f"Invalid assertion in tests: {function_name} {str(e)}")
-                        assertions_valid = False
+        for assertion_name in assertion_definitions:
+            function = asserts.assertion_functions[f"assert_{assertion_name}"]
+            signature = inspect.signature(function)
+            try:
+                # try mapping the function with the attributes supplied and check for TypeError
+                signature.bind("", **assertion_definitions[assertion_name])
+            except AssertionError:
+                pass
+            except TypeError as e:
+                lint_context.error(f"Invalid assertion in tests: assert_{assertion_name} {str(e)}")
+                assertions_valid = False
     return assertions_valid
 
 

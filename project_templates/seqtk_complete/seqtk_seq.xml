@@ -38,7 +38,10 @@
                 <param name="mask_regions" type="data" label="Mask regions in BED" 
                        format="bed" help="(-M)" optional="true" />
                 <conditional name="sample">
-                    <param name="sample" type="boolean" label="Sample fraction of sequences" />
+                    <param name="sample" type="select" label="Sample fraction of sequences">
+                        <option value="false">No</option>
+                        <option value="true">Yes</option>
+                    </param>
                     <when value="true">
                         <param name="fraction" label="Fraction" type="float" value="1.0"
                                help="(-f)" />
