@@ -5,14 +5,8 @@ style tests are available in ``test_cmd_serve.py``.
 """
 import os
 
-from planemo import (
-    network_util,
-    shed,
-)
-from planemo.galaxy import (
-    galaxy_serve,
-    shed_serve,
-)
+from planemo import network_util
+from planemo.galaxy import galaxy_serve
 from planemo.runnable import for_path
 from .test_utils import (
     CliTestCase,
@@ -74,31 +68,6 @@ class GalaxyServeTestCase(CliTestCase):
         assert len(user_gi.workflows.get_workflows()) == 1
         config.kill()
         _assert_service_down(config)
-
-    @skip_if_environ("PLANEMO_SKIP_REDUNDANT_TESTS")  # redundant with test_cmd_serve -> test_shed_serve
-    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-    @skip_if_environ("PLANEMO_SKIP_SHED_TESTS")
-    @mark.tests_galaxy_branch
-    def test_shed_serve_daemon(self):
-        """Test serving FASTQC from the tool shed via a daemon Galaxy process."""
-        port = network_util.get_free_port()
-        fastqc_path = os.path.join(TEST_REPOS_DIR, "fastqc")
-        ctx = self.test_context
-        install_args_list = shed.install_arg_lists(
-            ctx,
-            [fastqc_path],
-            shed_target="toolshed",
-        )
-        with shed_serve(
-            ctx,
-            install_args_list,
-            port=port,
-            skip_dependencies=True,
-            install_galaxy=True,
-            galaxy_branch=target_galaxy_branch(),
-        ) as config:
-            _assert_service_up(config)
-            # TODO: verify it is in the tool list!
 
 
 def _assert_service_up(config):

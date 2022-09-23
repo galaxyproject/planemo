@@ -1,5 +1,4 @@
 """Module describing the planemo ``shed_test`` command."""
-import socket
 import sys
 
 import click
@@ -9,8 +8,10 @@ from planemo import (
     shed,
 )
 from planemo.cli import command_function
-from planemo.galaxy.serve import shed_serve
-from planemo.galaxy.test import run_in_config
+from planemo.engine import engine_context
+from planemo.galaxy.test.actions import handle_reports_and_summary
+from planemo.network_util import get_free_port
+from planemo.runnable_resolve import install_args_list_to_runnables
 
 
 @click.command("shed_test")
@@ -31,20 +32,11 @@ def cli(ctx, paths, **kwds):
 
     This command requires the target to be version 15.07 or newer.
     """
-    install_args_list = shed.install_arg_lists(ctx, paths, **kwds)
-    port = get_free_port()
-    kwds["port"] = port
-    return_code = 1
-    with shed_serve(ctx, install_args_list, **kwds) as config:
-        config.kill()
-        return_code = run_in_config(ctx, config, installed=True, **kwds)
-    if return_code:
-        sys.exit(return_code)
-
-
-def get_free_port():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind(("localhost", 0))
-    port = sock.getsockname()[1]
-    sock.close()
-    return port
+    install_args_list = kwds["install_args_list"] = shed.install_arg_lists(ctx, paths, **kwds)
+    runnables = install_args_list_to_runnables(ctx, install_args_list, kwds)
+    kwds["port"] = get_free_port()
+    with engine_context(ctx, **kwds) as engine:
+        test_data = engine.test(runnables, test_timeout=kwds.get("test_timeout"))
+        ctx.vlog(f"engine.test returning [{test_data}]")
+        return_code = handle_reports_and_summary(ctx, test_data.structured_data, kwds=kwds)
+    sys.exit(return_code)

@@ -12,8 +12,6 @@ from .config import galaxy_config
 from .ephemeris_sleep import sleep
 from .run import run_galaxy_command
 
-INSTALLING_MESSAGE = "Installing repositories - this may take some time..."
-
 
 def serve(ctx, runnables=None, **kwds):
     if runnables is None:
@@ -73,30 +71,6 @@ def _serve(ctx, runnables, **kwds):
 
 
 @contextlib.contextmanager
-def shed_serve(ctx, install_args_list, **kwds):
-    """Serve a daemon instance of Galaxy with specified repositories installed."""
-    with serve_daemon(ctx, **kwds) as config:
-        install_deps = not kwds.get("skip_dependencies", False)
-        print(INSTALLING_MESSAGE)
-        io.info(INSTALLING_MESSAGE)
-        for install_args in install_args_list:
-            install_args["install_tool_dependencies"] = install_deps
-            install_args["install_repository_dependencies"] = True
-            install_args["new_tool_panel_section_label"] = "Shed Installs"
-            config.install_repo(**install_args)
-        try:
-            config.wait_for_all_installed()
-        except Exception:
-            if ctx.verbose:
-                print("Failed to install tool repositories, Galaxy log:")
-                print(config.log_contents)
-                print("Galaxy root:")
-                io.shell(["ls", config.galaxy_root])
-            raise
-        yield config
-
-
-@contextlib.contextmanager
 def serve_daemon(ctx, runnables=None, **kwds):
     """Serve a daemonized Galaxy instance with artifacts defined by paths."""
     if runnables is None:
@@ -118,11 +92,11 @@ def serve_daemon(ctx, runnables=None, **kwds):
 
 def sleep_for_serve():
     # This is bad, do something better...
-    time.sleep(1000000)
+    for _ in range(3600 * 24):
+        time.sleep(1)
 
 
 __all__ = (
     "serve",
     "serve_daemon",
-    "shed_serve",
 )

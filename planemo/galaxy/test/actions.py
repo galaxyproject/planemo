@@ -1,8 +1,6 @@
 """Actions related to running and reporting on Galaxy-specific testing."""
 
 import json
-import os
-from distutils.dir_util import copy_tree
 
 import click
 from galaxy.util import unicodify
@@ -12,14 +10,8 @@ from planemo.exit_codes import (
     EXIT_CODE_NO_SUCH_TARGET,
     EXIT_CODE_OK,
 )
-from planemo.galaxy.run import (
-    run_galaxy_command,
-    setup_venv,
-)
 from planemo.io import (
-    error,
     info,
-    shell_join,
     warn,
 )
 from planemo.reports import (
@@ -47,75 +39,6 @@ GENERIC_PROBLEMS_MESSAGE = "One or more tests failed. See %s for detailed " "bre
 GENERIC_TESTS_PASSED_MESSAGE = "No failing tests encountered."
 TEST_DATA_UPDATED_MESSAGE = "Test data were updated and tests were rerun."
 TEST_DATA_NOT_UPDATED_MESSAGE = "%s Therefore, no test data were updated." % ALL_TESTS_PASSED_MESSAGE
-
-
-def run_in_config(ctx, config, run=run_galaxy_command, test_data_target_dir=None, **kwds):
-    """Run Galaxy tests with the run_tests.sh command.
-
-    The specified `config` object describes the context for tool
-    execution.
-    """
-    config_directory = config.config_directory
-    html_report_file = kwds["test_output"]
-
-    job_output_files = kwds.get("job_output_files", None)
-    if job_output_files is None:
-        job_output_files = os.path.join(config_directory, "jobfiles")
-
-    xunit_report_file = _xunit_state(kwds, config)
-    xunit_report_file_tracker = _FileChangeTracker(xunit_report_file)
-    structured_report_file = _structured_report_file(kwds, config)
-    structured_report_file_tracker = _FileChangeTracker(structured_report_file)
-
-    info("Testing using galaxy_root %s", config.galaxy_root)
-    # TODO: Allow running dockerized Galaxy here instead.
-    server_ini = os.path.join(config_directory, "galaxy.ini")
-    config.env["GALAXY_CONFIG_FILE"] = server_ini
-    config.env["GALAXY_TEST_VERBOSE_ERRORS"] = "true"
-    config.env["GALAXY_TEST_SAVE"] = job_output_files
-
-    cd_to_galaxy_command = ["cd", config.galaxy_root]
-    test_cmd = test_structures.GalaxyTestCommand(
-        html_report_file,
-        xunit_report_file,
-        structured_report_file,
-        failed=kwds.get("failed", False),
-        installed=kwds.get("installed", False),
-    ).build()
-    setup_common_startup_args = ""
-    if kwds.get("skip_venv", False):
-        setup_common_startup_args = shell_join(
-            "COMMON_STARTUP_ARGS=--skip-venv",
-            "export COMMON_STARTUP_ARGS",
-            'echo "Set COMMON_STARTUP_ARGS to ${COMMON_STARTUP_ARGS}"',
-        )
-    setup_venv_command = setup_venv(ctx, kwds)
-    cmd = shell_join(
-        cd_to_galaxy_command,
-        setup_common_startup_args,
-        setup_venv_command,
-        test_cmd,
-    )
-    action = "Testing tools"
-    return_code = run(ctx, cmd, config.env, action)
-    if return_code != 0 and kwds.get("update_test_data", False):
-        for test_data_dir in [config.test_data_dir, test_data_target_dir]:
-            if test_data_dir:
-                copy_tree(job_output_files, test_data_dir)
-        kwds["test_data_updated"] = True
-        info("Test data updated. Rerunning...")
-        return_code = run(ctx, cmd, config.env, action)
-
-    _check_test_outputs(xunit_report_file_tracker, structured_report_file_tracker)
-    test_results = test_structures.GalaxyTestResults(
-        structured_report_file,
-        xunit_report_file,
-        html_report_file,
-        return_code,
-    )
-
-    structured_data = test_results.structured_data
-    return handle_reports_and_summary(ctx, structured_data, exit_code=test_results.exit_code, kwds=kwds)
 
 
 def handle_reports_and_summary(ctx, structured_data, exit_code=None, kwds=None):
@@ -283,77 +206,7 @@ def _print_command_line(test, test_id):
     click.echo("| command: %s" % command)
 
 
-def _check_test_outputs(xunit_report_file_tracker, structured_report_file_tracker):
-    if not os.path.exists(xunit_report_file_tracker.path):
-        message = NO_XUNIT_REPORT_MESSAGE % xunit_report_file_tracker.path
-        error(message)
-        raise Exception(message)
-
-    if not os.path.exists(structured_report_file_tracker.path):
-        message = NO_JSON_REPORT_MESSAGE % structured_report_file_tracker.path
-        error(message)
-        raise Exception(message)
-
-    if not xunit_report_file_tracker.changed():
-        message = REPORT_NOT_CHANGED % xunit_report_file_tracker.path
-        error(message)
-        raise Exception(message)
-
-    if not structured_report_file_tracker.changed():
-        message = REPORT_NOT_CHANGED % structured_report_file_tracker.path
-        error(message)
-        raise Exception(message)
-
-
-def _xunit_state(kwds, config):
-    # This has been supported in Galaxy for well over a year, just going to assume
-    # it from here on out.
-    # xunit_supported = True
-    # if shell("grep -q xunit '%s'/run_tests.sh" % config.galaxy_root):
-    #    xunit_supported = False
-
-    xunit_report_file = kwds.get("test_output_xunit", None)
-    if xunit_report_file is None:
-        xunit_report_file = os.path.join(config.config_directory, "xunit.xml")
-
-    return xunit_report_file
-
-
-def _structured_report_file(kwds, config):
-    # This has been supported in Galaxy for well over a year, just going to assume
-    # it from here on out.
-    # structured_data_supported = True
-    # if shell("grep -q structured_data '%s'/run_tests.sh" % config.galaxy_root):
-    #    structured_data_supported = False
-
-    structured_report_file = None
-    structured_report_file = kwds.get("test_output_json", None)
-    if structured_report_file is None:
-        conf_dir = config.config_directory
-        structured_report_file = os.path.join(conf_dir, "structured_data.json")
-
-    return structured_report_file
-
-
-class _FileChangeTracker:
-    def __init__(self, path):
-        modification_time = None
-        if os.path.exists(path):
-            modification_time = os.path.getmtime(path)
-
-        self.path = path
-        self.modification_time = modification_time
-
-    def changed(self):
-        if self.modification_time:
-            new_modification_time = os.path.getmtime(self.path)
-            return self.modification_time != new_modification_time
-        else:
-            return os.path.exists(self.path)
-
-
 __all__ = (
-    "run_in_config",
     "handle_reports",
     "handle_reports_and_summary",
 )

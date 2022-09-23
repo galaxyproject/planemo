@@ -4,6 +4,7 @@ import abc
 import contextlib
 import hashlib
 import importlib.util
+import json
 import os
 import random
 import shlex
@@ -11,7 +12,10 @@ import shutil
 import threading
 import time
 from string import Template
-from tempfile import mkdtemp
+from tempfile import (
+    mkdtemp,
+    NamedTemporaryFile,
+)
 
 from galaxy.containers.docker_model import DockerVolume
 from galaxy.tool_util.deps import docker_util
@@ -28,6 +32,7 @@ from planemo.io import (
     kill_pid_file,
     shell,
     shell_join,
+    stop_gravity,
     untar_to,
     wait_on,
     warn,
@@ -42,10 +47,7 @@ from .api import (
     user_api_key,
 )
 from .distro_tools import DISTRO_TOOLS_ID_TO_PATH
-from .run import (
-    setup_common_startup_args,
-    setup_venv,
-)
+from .run import setup_venv
 from .workflows import (
     find_tool_ids,
     import_workflow,
@@ -100,7 +102,6 @@ JOB_CONFIG_LOCAL = """<job_conf>
         <plugin id="planemo_runner" type="runner" load="galaxy.jobs.runners.local:LocalJobRunner" workers="4"/>
     </plugins>
     <handlers>
-        <handler id="main"/>
     </handlers>
     <destinations default="planemo_dest">
         <destination id="planemo_dest" runner="planemo_runner">
@@ -119,73 +120,6 @@ JOB_CONFIG_LOCAL = """<job_conf>
         <tool id="upload1" destination="upload_dest" />
     </tools>
 </job_conf>
-"""
-
-LOGGING_TEMPLATE = """
-## Configure Python loggers.
-[loggers]
-keys = root,paste,urllib,displayapperrors,galaxydeps,galaxytoolsactions,galaxymasterapikey,galaxy
-
-[handlers]
-keys = console
-
-[formatters]
-keys = generic
-
-[logger_root]
-level = WARN
-handlers = console
-
-[logger_paste]
-level = WARN
-handlers = console
-qualname = paste
-propagate = 0
-
-[logger_urllib]
-level = WARN
-handlers = console
-qualname = urllib3
-propagate = 0
-
-[logger_galaxydeps]
-level = DEBUG
-handlers = console
-qualname = galaxy.tools.deps
-propagate = 0
-
-[logger_galaxytoolsactions]
-level = DEBUG
-handlers = console
-qualname = galaxy.tools.actions
-propagate = 0
-
-[logger_galaxymasterapikey]
-level = WARN
-handlers = console
-qualname = galaxy.web.framework.webapp
-propagate = 0
-
-[logger_displayapperrors]
-level = ERROR
-handlers =
-qualname = galaxy.datatypes.display_applications.application
-propagate = 0
-
-[logger_galaxy]
-level = ${log_level}
-handlers = console
-qualname = galaxy
-propagate = 0
-
-[handler_console]
-class = StreamHandler
-args = (sys.stderr,)
-level = DEBUG
-formatter = generic
-
-[formatter_generic]
-format = %(asctime)s %(levelname)-5.5s [%(name)s] %(message)s
 """
 
 REFGENIE_CONFIG_TEMPLATE = """
@@ -221,23 +155,24 @@ def galaxy_config(ctx, runnables, **kwds):
     elif kwds.get("external", False):
         c = external_galaxy_config
     log_thread = None
+    e = threading.Event()
     try:
         with c(ctx, runnables, **kwds) as config:
             if kwds.get("daemon"):
-                log_thread = threading.Thread(target=read_log, args=(ctx, config.log_file))
+                log_thread = threading.Thread(target=read_log, args=(ctx, config.log_file, e))
                 log_thread.daemon = True
                 log_thread.start()
             yield config
     finally:
         if log_thread:
+            e.set()
             log_thread.join(1)
 
 
-def read_log(ctx, log_path):
+def read_log(ctx, log_path, e: threading.Event):
     log_fh = None
-    e = threading.Event()
     try:
-        while e:
+        while not e.is_set():
             if os.path.exists(log_path):
                 if not log_fh:
                     # Open in append so we start at the end of the log file
@@ -327,7 +262,6 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             env["GALAXY_LOGGING"] = "full"
 
         # TODO: setup FTP upload dir and disable FTP server in container.
-        _build_test_env(properties, env)
 
         docker_target_kwds = docker_host_args(**kwds)
         volumes = tool_volumes + [simple_docker_volume(config_directory)]
@@ -488,7 +422,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             )
         )
         _handle_container_resolution(ctx, kwds, properties)
-        write_file(config_join("logging.ini"), _sub(LOGGING_TEMPLATE, template_args))
         properties["database_connection"] = _database_connection(database_location, **kwds)
 
         _handle_kwd_overrides(properties, kwds)
@@ -505,24 +438,20 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
         env = _build_env_for_galaxy(properties, template_args)
         env.update(install_env)
-        _build_test_env(properties, env)
-        test_timeout = kwds.get("test_timeout")
-        if test_timeout:
-            env["GALAXY_TEST_DEFAULT_WAIT"] = str(test_timeout)
-        env["GALAXY_TEST_SHED_TOOL_CONF"] = shed_tool_conf
-        env["GALAXY_TEST_DBURI"] = properties["database_connection"]
-
-        env["GALAXY_TEST_UPLOAD_ASYNC"] = "false"
-        env["GALAXY_TEST_LOGGING_CONFIG"] = config_join("logging.ini")
         env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
-        # disable all access log messages from uvicorn
-        env["GALAXY_TEST_DISABLE_ACCESS_LOG"] = "False"
         # Following are needed in 18.01 to prevent Galaxy from changing log and pid.
         # https://github.com/galaxyproject/planemo/issues/788
         env["GALAXY_LOG"] = log_file
         env["GALAXY_PID"] = pid_file
-        web_config = _sub(WEB_SERVER_CONFIG_TEMPLATE, template_args)
-        write_file(config_join("galaxy.ini"), web_config)
+        write_galaxy_config(
+            galaxy_root=galaxy_root,
+            properties=properties,
+            env=env,
+            kwds=kwds,
+            template_args=template_args,
+            config_join=config_join,
+        )
+
         _write_tool_conf(ctx, all_tool_paths, tool_conf)
         write_file(empty_tool_conf, EMPTY_TOOL_CONF_TEMPLATE)
 
@@ -543,6 +472,34 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             runnables,
             galaxy_root,
             kwds,
+        )
+
+
+def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, config_join):
+    if get_galaxy_major_version(galaxy_root) < parse_version("22.01"):
+        # Legacy .ini setup
+        env["GALAXY_CONFIG_FILE"] = config_join("galaxy.ini")
+        web_config = _sub(WEB_SERVER_CONFIG_TEMPLATE, template_args)
+        write_file(env["GALAXY_CONFIG_FILE"], web_config)
+    else:
+        env["GALAXY_CONFIG_FILE"] = config_join("galaxy.yml")
+        env["GRAVITY_STATE_DIR"] = config_join("gravity")
+        with NamedTemporaryFile(suffix=".sock", delete=True) as nt:
+            env["SUPERVISORD_SOCKET"] = nt.name
+        write_file(
+            env["GALAXY_CONFIG_FILE"],
+            json.dumps(
+                {
+                    "galaxy": properties,
+                    "gravity": {
+                        "galaxy_root": galaxy_root,
+                        "gunicorn": {"bind": f"localhost:{template_args['port']}"},
+                        "gx-it-proxy": {
+                            "enable": False,
+                        },
+                    },
+                }
+            ),
         )
 
 
@@ -1046,6 +1003,17 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         )
         self.galaxy_root = galaxy_root
 
+    @property
+    def virtual_env_dir(self):
+        virtual_env = self._kwds.get("GALAXY_VIRTUAL_ENV", ".venv")
+        if virtual_env and not os.path.isabs(virtual_env):
+            virtual_env = os.path.join(self.galaxy_root, virtual_env)
+        return virtual_env
+
+    @property
+    def gravity_state_dir(self):
+        return self.env["GRAVITY_STATE_DIR"]
+
     def kill(self):
         if self._ctx.verbose:
             shell(["ps", "ax"])
@@ -1055,6 +1023,8 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
             if exists:
                 with open(self.pid_file) as f:
                     print(f"pid_file contents are [{f.read()}]")
+        if self.env.get("GRAVITY_STATE_DIR"):
+            stop_gravity(virtual_env=self.virtual_env_dir, gravity_state_dir=self.gravity_state_dir, env=self.env)
         kill_pid_file(self.pid_file)
 
     def startup_command(self, ctx, **kwds):
@@ -1069,27 +1039,12 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         run_script = f"{shlex.quote(os.path.join(self.galaxy_root, 'run.sh'))} $COMMON_STARTUP_ARGS"
         if daemon:
             run_script += " --daemon"
-            self.env["GALAXY_RUN_ALL"] = "1"
         else:
             run_script += f" --server-name {shlex.quote(self.server_name)}"
-        server_ini = os.path.join(self.config_directory, "galaxy.ini")
-        self.env["GALAXY_CONFIG_FILE"] = server_ini
-        if parse_version(kwds.get("galaxy_python_version") or DEFAULT_PYTHON_VERSION) >= parse_version("3"):
-            # We need to start under gunicorn
-            self.env["APP_WEBSERVER"] = "gunicorn"
-            self.env[
-                "GUNICORN_CMD_ARGS"
-            ] = "--timeout={timeout} --capture-output --bind={host}:{port} --name={server_name}".format(
-                timeout=DEFAULT_TOOL_INSTALL_TIMEOUT,
-                host=kwds.get("host", "127.0.0.1"),
-                port=kwds["port"],
-                server_name=self.server_name,
-            )
         cd_to_galaxy_command = ["cd", self.galaxy_root]
         return shell_join(
             cd_to_galaxy_command,
             setup_venv_command,
-            setup_common_startup_args(),
             run_script,
         )
 
@@ -1277,7 +1232,6 @@ def _install_with_command(ctx, galaxy_root, env, kwds):
     setup_venv_command = setup_venv(ctx, kwds)
     install_cmd = shell_join(
         setup_venv_command,
-        setup_common_startup_args(),
         COMMAND_STARTUP_COMMAND,
     )
     exit_code = shell(install_cmd, cwd=galaxy_root, env=env)
@@ -1321,25 +1275,6 @@ def _build_env_for_galaxy(properties, template_args):
             value = _sub(value, template_args)
             env[var] = value
     return env
-
-
-def _build_test_env(properties, env):
-    # Keeping these environment variables around for a little while but
-    # many are probably not needed as of the following commit.
-    # https://bitbucket.org/galaxy/galaxy-central/commits/d7dd1f9
-    test_property_variants = {
-        "GALAXY_TEST_JOB_CONFIG_FILE": "job_config_file",
-        "GALAXY_TEST_MIGRATED_TOOL_CONF": "migrated_tools_config",
-        "GALAXY_TEST_TOOL_CONF": "tool_config_file",
-        "GALAXY_TEST_FILE_DIR": "test_data_dir",
-        "GALAXY_TOOL_DEPENDENCY_DIR": "tool_dependency_dir",
-        # Next line would be required for tool shed tests.
-        # 'GALAXY_TEST_TOOL_DEPENDENCY_DIR': 'tool_dependency_dir',
-    }
-    for test_key, gx_key in test_property_variants.items():
-        value = properties.get(gx_key, None)
-        if value is not None:
-            env[test_key] = value
 
 
 def _handle_job_config_file(config_directory, server_name, kwds):

@@ -63,6 +63,7 @@ def setup_venv(ctx, kwds):
 def locate_galaxy_virtualenv(ctx, kwds):
     if os.environ.get("GALAXY_VIRTUAL_ENV"):
         venv_command = ""
+        kwds["GALAXY_VIRTUAL_ENV"] = os.environ["GALAXY_VIRTUAL_ENV"]
     elif not kwds.get("no_cache_galaxy", False):
         workspace = ctx.workspace
         galaxy_branch = kwds.get("galaxy_branch") or "master"
@@ -71,35 +72,14 @@ def locate_galaxy_virtualenv(ctx, kwds):
         shared_venv_path = f"{shared_venv_path}_{galaxy_python_version}"
         if galaxy_branch != "master":
             shared_venv_path = f"{shared_venv_path}_{galaxy_branch}"
+        kwds["GALAXY_VIRTUAL_ENV"] = shared_venv_path
         venv_command = CACHED_VIRTUAL_ENV_COMMAND % shlex.quote(shared_venv_path)
     else:
+        kwds["GALAXY_VIRTUAL_ENV"] = ".venv"
         venv_command = UNCACHED_VIRTUAL_ENV_COMMAND
     return shell_join(
         venv_command,
         "export GALAXY_VIRTUAL_ENV",
-    )
-
-
-def shell_if_wheels(command):
-    """Take a shell command and convert it to shell command that runs
-    only if Galaxy is new enough to use wheels.
-    """
-    return "$(grep -q 'skip-venv' run_tests.sh) && %s" % command
-
-
-def setup_common_startup_args():
-    return _set_variable_if_wheels("COMMON_STARTUP_ARGS", "--dev-wheels")
-
-
-def _set_variable_if_wheels(var, if_wheels_val, else_val=""):
-    var_command = "${var}=${else_val}; "
-    var_command += shell_if_wheels('${var}="${if_wheels_val}"; ')
-    var_command += "export ${var}"
-    var_command += '; echo "Set ${var} to ${${var}}"'
-    return string.Template(var_command).safe_substitute(
-        var=var,
-        if_wheels_val=if_wheels_val,
-        else_val=else_val,
     )
 
 
@@ -121,5 +101,4 @@ def run_galaxy_command(ctx, command, env, action):
 __all__ = (
     "setup_venv",
     "run_galaxy_command",
-    "setup_common_startup_args",
 )

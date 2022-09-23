@@ -43,6 +43,7 @@ TEST_EXTENSIONS = [".yml", ".yaml", ".json"]
 
 TEST_FILE_NOT_LIST_MESSAGE = "Invalid test definition file [%s] - file must " "contain a list of tests"
 TEST_FIELD_MISSING_MESSAGE = "Invalid test definition [test #%d in %s] -" "defintion must field [%s]."
+GALAXY_TOOLS_PREFIX = "gxid://tools/"
 
 
 class RunnableType(Enum):
@@ -243,9 +244,9 @@ def for_paths(paths, temp_path=None):
 
 
 def for_uri(uri):
-    """Produce a class:`Runnable` for supplied Galaxy workflow ID."""
-    # TODO: allow galaxy_tool also, this trick would work fine for running tools
-    runnable = Runnable(uri, RunnableType.galaxy_workflow)
+    """Produce a class:`Runnable` for supplied Galaxy workflow or tool ID."""
+    runnable_type = RunnableType.galaxy_tool if uri.startswith(GALAXY_TOOLS_PREFIX) else RunnableType.galaxy_workflow
+    runnable = Runnable(uri, runnable_type)
     return runnable
 
 
@@ -255,7 +256,9 @@ def cases(runnable):
 
     tests_path = _tests_path(runnable)
     if tests_path is None:
-        if runnable.type == RunnableType.galaxy_tool:
+        if runnable.type in (RunnableType.galaxy_tool, RunnableType.galaxy_datamanager):
+            if runnable.uri.startswith(GALAXY_TOOLS_PREFIX):
+                return [DelayedGalaxyToolTestCase(runnable)]
             tool_source = get_tool_source(runnable.path)
             test_dicts = tool_source.parse_tests_to_dict()
             tool_id = tool_source.parse_id()
@@ -440,6 +443,13 @@ class ExternalGalaxyToolTestCase(AbstractTestCase):
     def structured_test_data(self, run_response):
         """Just return the structured_test_data generated from galaxy-tool-util for this test variant."""
         return run_response
+
+
+class DelayedGalaxyToolTestCase(ExternalGalaxyToolTestCase):
+    """Special class that requires installing tools prior to finding test cases."""
+
+    def __init__(self, runnable):
+        super().__init__(runnable, tool_id=None, tool_version=None, test_index=None, test_dict=None)
 
 
 def _tests_path(runnable):

@@ -7,8 +7,9 @@ from planemo import (
     shed,
 )
 from planemo.cli import command_function
-from planemo.galaxy import shed_serve
+from planemo.engine import engine_context
 from planemo.galaxy.serve import sleep_for_serve
+from planemo.runnable_resolve import install_args_list_to_runnables
 
 
 @click.command("shed_serve")
@@ -28,7 +29,9 @@ def cli(ctx, paths, **kwds):
     logged into and explored interactively.
     """
     kwds["galaxy_skip_client_build"] = kwds.pop("skip_client_build", False)
-    install_args_list = shed.install_arg_lists(ctx, paths, **kwds)
-    with shed_serve(ctx, install_args_list, **kwds) as config:
-        io.info("Galaxy running with tools installed at %s" % config.galaxy_url)
-        sleep_for_serve()
+    install_args_list = kwds["install_args_list"] = shed.install_arg_lists(ctx, paths, **kwds)
+    runnables = install_args_list_to_runnables(ctx, install_args_list, kwds)
+    with engine_context(ctx, **kwds) as engine:
+        with engine.ensure_runnables_served(runnables) as config:
+            io.info(f"Galaxy running with tools installed at {config.galaxy_url}")
+            sleep_for_serve()
