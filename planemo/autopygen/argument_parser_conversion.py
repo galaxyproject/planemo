@@ -209,7 +209,7 @@ def _command_recursion(section: DecoyParser.Section,
                                    depth)
 
     for subsection in section.subsections:
-        sec_name = re.sub("[/\\-* ()]", "_", section_map[subsection.name]).lower()
+        sec_name = re.sub("[/\\-* ()]", "_", section_map.get(subsection.name, subsection.name)).lower()
 
         yield from _command_recursion(subsection,
                                       data_inputs,
@@ -223,7 +223,7 @@ def _command_recursion(section: DecoyParser.Section,
 def inputs_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
                       reserved_names: Set[str],
                       name_map: Dict[str, str],
-                      section_map: Dict[str, str]):
+                      section_map: Dict[str, str]) -> str:
     result = [generate_inputs_from_section(parser.default_section, data_inputs,
                                            reserved_names,
                                            name_map,
@@ -240,29 +240,21 @@ def inputs_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
 def command_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
                        reserved_names: Set[str],
                        name_map: Dict[str, str],
-                       section_map: Dict[str, str]):
+                       section_map: Dict[str, str]) -> str:
     """
     The function generates commands from decoy parser. It requires name and section maps that have already been
     initialised and contain correct mapping
     """
-    result = []
-    for subsection in parser.default_section.subsections:
-        if not subsection.actions:
-            continue
-        sec_name = re.sub("[/\\-* ()]", "_", section_map[subsection.name]).lower()
-        result.extend([command for command in
-                       _command_recursion(subsection,
-                                          data_inputs,
-                                          reserved_names,
-                                          name_map,
-                                          section_map,
-                                          sec_name,
-                                          depth=0)])
+    sec_name = re.sub("[/\\-* ()]", "_", section_map[parser.default_section.name]).lower()
+    result = ["\n".join(_command_recursion(parser.default_section, data_inputs,
+                                 reserved_names,
+                                 name_map,
+                                 section_map, sec_name, 0))]
 
-        for sub_parsers in parser.sub_parsers:
-            for parser in sub_parsers.parsers:
-                result.append(command_from_decoy(parser, data_inputs,
-                                                 reserved_names, name_map, section_map))
+    for sub_parsers in parser.sub_parsers:
+        for parser in sub_parsers.parsers:
+            result.append(command_from_decoy(parser, data_inputs,
+                                             reserved_names, name_map, section_map))
 
     return "\n".join(result)
 

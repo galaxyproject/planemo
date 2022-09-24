@@ -1,0 +1,24 @@
+<section name="default" title="default" expanded="true">
+<param argument="--help" type="text" optional="false" label="help" help="show this help message and exit"/>
+<param argument="keyword" type="text" optional="false" label="keyword" help="action keyword"/>
+<repeat name="integers_repeat" title="integers_repeat"><param argument="integers" type="integer" optional="false" label="integers" help="an integer for the accumulator"/>
+</repeat>
+<param argument="-s" type="text" optional="false" label="s" help="sum the integers (default: find the max)"/>
+<param argument="--foo" type="text" optional="false" label="foo" help="foo help"/>
+<repeat name="bar_repeat" title="bar_repeat"><param argument="--bar" type="text" optional="false" label="bar" help="BAR!"/>
+</repeat>
+<param argument="--true" type="text" optional="false" label="true" help="Store a true"/>
+<param argument="--false" type="text" optional="false" label="false" help="Store a false"/>
+<repeat name="append_repeat" title="append_repeat"><param argument="--append" type="text" optional="false" label="append" help="Append a value"/>
+</repeat>
+<repeat name="nargs2_repeat" title="nargs2_repeat"><param argument="--nargs2" type="text" optional="false" label="nargs2" help="nargs2"/>
+</repeat>
+<param argument="--mode" type="select" optional="false" label="mode">
+<option value="rock">Rock</option>
+
+<option value="paper">Paper</option>
+
+<option value="scissors">Scissors</option>
+</param>
+<param argument="--version" type="text" optional="false" label="version"/>
+</section>
