@@ -64,10 +64,8 @@ class ImportDiscovery(Discovery):
                     self.known_names.add(alias)
                     # in case argparse is being imported, determine the
                     # alias of the parser, if there is any
-                    if name == ARGPARSE_MODULE_NAME and \
-                        item.name == ARGUMENT_PARSER_CLASS_NAME:
+                    if name == ARGPARSE_MODULE_NAME and item.name == ARGUMENT_PARSER_CLASS_NAME:
                         self.argument_parser_alias = alias
-
 
     def report_findings(self) -> Tuple[List[ast.AST], str, str, Set[str]]:
         if self.argparse_module_alias is None and self.argument_parser_alias is None:
@@ -211,8 +209,7 @@ class ArgumentCreationDiscovery(Discovery):
         return self.actions
 
 
-def get_parser_init_and_actions(source: ast.Module) -> \
-    Tuple[List[ast.AST], str, Set[str]]:
+def get_parser_init_and_actions(source: ast.Module) -> Tuple[List[ast.AST], str, Set[str]]:
     """
     Function used to extract necessary imports, parser and argument creation
      function calls

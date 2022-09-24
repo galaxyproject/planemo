@@ -30,7 +30,6 @@ class UnknownNamesDiscovery(CustomVisitor):
 
         self.generic_visit(node)
 
-
     def visit_ListComp(self, node: ast.ListComp) -> Any:
         for comprehension in node.generators:
             if isinstance(comprehension.target, ast.Name):
@@ -99,12 +98,10 @@ def _insert_into_actions(actions: List[ast.AST], assignments: List[ast.Assign],
     end_of_assignments = find_end_of_assignments(0)
 
     if class_defs:
-        actions = actions[:end_of_imports] + class_defs \
-                  + actions[end_of_imports:]
+        actions = actions[:end_of_imports] + class_defs + actions[end_of_imports:]
 
     if assignments:
-        actions = actions[:end_of_assignments] + assignments \
-                  + actions[end_of_assignments:]
+        actions = actions[:end_of_assignments] + assignments + actions[end_of_assignments:]
 
     return actions
 
@@ -112,8 +109,7 @@ def _insert_into_actions(actions: List[ast.AST], assignments: List[ast.Assign],
 def initialize_variables_in_module(original_module: ast.Module,
                                    parser_name: str,
                                    actions: List[ast.AST],
-                                   imported_names: Set[str]) -> \
-        Tuple[List[ast.AST], Set[str]]:
+                                   imported_names: Set[str]) -> Tuple[List[ast.AST], Set[str]]:
     """
     Function used to initialize variables that have constant values
 

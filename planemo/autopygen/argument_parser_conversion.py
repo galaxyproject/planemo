@@ -247,9 +247,9 @@ def command_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
     """
     sec_name = re.sub("[/\\-* ()]", "_", section_map[parser.default_section.name]).lower()
     result = ["\n".join(_command_recursion(parser.default_section, data_inputs,
-                                 reserved_names,
-                                 name_map,
-                                 section_map, sec_name, 0))]
+                                           reserved_names,
+                                           name_map,
+                                           section_map, sec_name, 0))]
 
     for sub_parsers in parser.sub_parsers:
         for parser in sub_parsers.parsers:
