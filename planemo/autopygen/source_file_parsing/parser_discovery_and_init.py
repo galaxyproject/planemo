@@ -46,7 +46,7 @@ class ImportDiscovery(Discovery):
                 alias = item.asname if item.asname is not None \
                     else ARGPARSE_MODULE_NAME
                 self.argparse_module_alias = alias
-                self.known_names.add(item.name)
+                self.known_names.add(alias)
 
             if item.name in STD_LIB_MODULE_NAMES:
                 self.actions.append(node)
@@ -243,5 +243,7 @@ def get_parser_init_and_actions(source: ast.Module) -> Tuple[List[ast.AST], str,
 
     argument_creation = ArgumentCreationDiscovery(actions, parser_name)
     actions = argument_creation.visit_and_report(source)
+
+
 
     return actions, parser_name, known_names

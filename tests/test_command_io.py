@@ -2,10 +2,8 @@
 import os
 
 from planemo.tool_builder import CommandIO
-from .test_utils import assert_equal, TEST_DATA_DIR
+from .test_utils import assert_equal, TEST_AUTOPYGEN_DATA
 
-
-AUTOPYGEN_DATA_DIR = os.path.join(TEST_DATA_DIR, "autopygen")
 
 
 def test_simplest_command():
@@ -126,31 +124,22 @@ def test_integer_parameters():
     assert_equal(cwl_properties["outputs"][0].glob, "out")
     assert_equal(cwl_properties["stdout"], "out")
 
-def test_autogen_without_other_inputs():
-    command_io = CommandIO(autopygen=os.path.join(AUTOPYGEN_DATA_DIR, "autopygen_end_to_end_test_case.py"))
 
-    expected_inputs = _open_and_read(os.path.join(AUTOPYGEN_DATA_DIR, "autopygen_generated_inputs.txt"))
-    expected_commands = _open_and_read(os.path.join(AUTOPYGEN_DATA_DIR, "autopygen_generated_commands.txt"))
+def test_autogen_without_other_inputs():
+    command_io = CommandIO(autopygen=os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_end_to_end_test_case.py"))
+
+    expected_inputs = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_generated_inputs.txt"))
+    expected_commands = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_generated_commands.txt"))
 
     assert_equal(command_io.auto_inputs, expected_inputs)
     assert_equal(command_io.auto_commands, expected_commands)
 
 
 def test_autogen_subparsers():
-    command_io = CommandIO(autopygen=os.path.join(AUTOPYGEN_DATA_DIR, "autopygen_end_to_end_sub.py"))
+    command_io = CommandIO(autopygen=os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_end_to_end_sub.py"))
 
-    expected_inputs = _open_and_read(os.path.join(AUTOPYGEN_DATA_DIR, "autopygen_end_to_end_sub_inputs.txt"))
-    expected_commands = _open_and_read(os.path.join(AUTOPYGEN_DATA_DIR, "autopygen_end_to_end_sub_commands.txt"))
-
-    assert_equal(command_io.auto_inputs, expected_inputs)
-    assert_equal(command_io.auto_commands, expected_commands)
-
-
-def test_autogen_data_inputs():
-    command_io = CommandIO(autopygen=os.path.join(AUTOPYGEN_DATA_DIR, "autopygen_end_to_end_sub.py"))
-
-    expected_inputs = _open_and_read(os.path.join(AUTOPYGEN_DATA_DIR, "autopygen_end_to_end_sub_inputs.txt"))
-    expected_commands = _open_and_read(os.path.join(AUTOPYGEN_DATA_DIR, "autopygen_end_to_end_sub_commands.txt"))
+    expected_inputs = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_end_to_end_sub_inputs.txt"))
+    expected_commands = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_end_to_end_sub_commands.txt"))
 
     assert_equal(command_io.auto_inputs, expected_inputs)
     assert_equal(command_io.auto_commands, expected_commands)

@@ -1,119 +1,103 @@
 import ast
 import os
 
+from planemo.autopygen.source_file_parsing.decoy_parser import obtain_class_def
 from planemo.autopygen.source_file_parsing.parser_discovery_and_init import SimpleParserDiscoveryAndReplacement, \
-    ImportDiscovery, GroupAndSubparsersDiscovery, ArgumentCreationDiscovery, get_parser_init_and_actions
-from .test_utils import assert_equal, TEST_DATA_DIR
+    ImportDiscovery, GroupAndSubparsersDiscovery, ArgumentCreationDiscovery
+from .test_utils import assert_equal, TEST_AUTOPYGEN_DATA
 
 
 def test_import_discovery():
     result = []
-    expected_actions = []
-    expected_names = []
-
+    expected_known_names = {"asd", "parser"}
     discovery = ImportDiscovery(result)
-    module = _prepare_test_module("test_data_visitors")
+    module = _prepare_test_module("import_discovery")
 
-    actions, known_names = discovery.visit_and_report(module)
+    actions, argparse_module_alias, argparse_class_alias, known_names = discovery.visit_and_report(module)
 
-    assert_equal(actions, expected_actions)
-    assert_equal(known_names, expected_names)
+    assert_equal(len(actions), 4)
+    assert_equal(argparse_module_alias, "parser")
+    assert_equal(known_names, expected_known_names)
 
 
 def test_parser_discovery_and_replacement():
     result = []
-    expected_actions = []
-    expected_names = []
+    module = _prepare_test_module("parser_discovery_and_replacement")
+    discovery = ImportDiscovery(result)
+    custom_parser_class_def = obtain_class_def()
 
-    discovery = SimpleParserDiscoveryAndReplacement(result)
-    module = _prepare_test_module("test_data_visitors")
+    actions, argparse_module_alias, argparse_class_alias, known_names = discovery.visit_and_report(module)
 
-    actions, known_names = discovery.visit_and_report(module)
+    discovery = SimpleParserDiscoveryAndReplacement(actions, argparse_module_alias, argparse_class_alias,
+                                                    custom_parser_class_def)
 
-    assert_equal(actions, expected_actions)
-    assert_equal(known_names, expected_names)
+    actions, parser_name = discovery.visit_and_report(module)
+
+    assert_equal(len(actions), 3)
+    _, decoy_def, parser_init = actions
+    assert_equal(type(decoy_def), ast.ClassDef)
+    assert_equal(decoy_def.name, "DecoyParser")
+    assert_equal(type(parser_init), ast.Assign)
+    assert_equal(parser_init.value.func.id, "DecoyParser")
 
 
 def test_group_discovery():
     result = []
-    expected_actions = []
-    expected_names = []
 
-    discovery = GroupAndSubparsersDiscovery(result)
-    module = _prepare_test_module("test_data_visitors")
+    module = _prepare_test_module("group_discovery")
 
-    actions, known_names = discovery.visit_and_report(module)
+    discovery = ImportDiscovery(result)
+    custom_parser_class_def = obtain_class_def()
 
-    assert_equal(actions, expected_actions)
-    assert_equal(known_names, expected_names)
+    actions, argparse_module_alias, argparse_class_alias, known_names = discovery.visit_and_report(module)
+
+    discovery = SimpleParserDiscoveryAndReplacement(actions, argparse_module_alias, argparse_class_alias,
+                                                    custom_parser_class_def)
+
+    actions, parser_name = discovery.visit_and_report(module)
+    groups = GroupAndSubparsersDiscovery(actions, known_names, parser_name)
+    actions, known_names = groups.visit_and_report(module)
+
+    assert_equal(len(actions), 4)
+    assert_equal(type(actions[3]), ast.Assign)
+    group = actions[3]
+    assert_equal(group.targets[0].id, "group")
+    assert_equal(group.value.func.attr, "add_argument_group")
 
 
 def test_argument_creation_discovery():
     result = []
-    expected_actions = []
-    expected_names = []
+    module = _prepare_test_module("argument_creation")
 
-    discovery = ArgumentCreationDiscovery(result)
-    module = _prepare_test_module("test_data_visitors")
+    discovery = ImportDiscovery(result)
+    custom_parser_class_def = obtain_class_def()
 
-    actions, known_names = discovery.visit_and_report(module)
+    actions, argparse_module_alias, argparse_class_alias, known_names = discovery.visit_and_report(module)
 
-    assert_equal(actions, expected_actions)
-    assert_equal(known_names, expected_names)
+    discovery = SimpleParserDiscoveryAndReplacement(actions, argparse_module_alias, argparse_class_alias,
+                                                    custom_parser_class_def)
 
+    actions, parser_name = discovery.visit_and_report(module)
+    groups = GroupAndSubparsersDiscovery(actions, known_names, parser_name)
+    actions, known_names = groups.visit_and_report(module)
 
-def test_simple_file():
-    """Test very simple command."""
-    SimpleParserDiscoveryAndReplacement()
-    assert_equal(command_io.cheetah_template, "random_fastq")
+    argument_creation = ArgumentCreationDiscovery(actions, parser_name)
+    actions = argument_creation.visit_and_report(module)
 
-
-def test_parser_in_function():
-    """Test example input/output transition."""
-    command_io = _example("convert 1.bed 1.bam", example_outputs=["1.bam"], example_inputs=["1.bed"])
-    assert_equal(command_io.cheetah_template, "convert '$input1' '$output1'")
-    assert_equal(len(command_io.outputs), 1)
-    assert_equal(len(command_io.inputs), 1)
-
-
-def test_unknown_import():
-    """Test example input/output transition."""
-    command_io = _example('convert "1.bed" "1.bam"', example_outputs=["1.bam"], example_inputs=["1.bed"])
-    assert_equal(command_io.cheetah_template, "convert '$input1' '$output1'")
-
-
-def test_no_parser_found():
-    """Test example input/output transition."""
-    command_io = _example("convert '1.bed' '1.bam'", example_outputs=["1.bam"], example_inputs=["1.bed"])
-    assert_equal(command_io.cheetah_template, "convert '$input1' '$output1'")
-
-
-def test_custom_parser_used():
-    command_io = _example("convert '1.bed' '1.bam'", example_outputs=["1.bam"], example_inputs=["1.bed"])
-    cwl_properties = command_io.cwl_properties()
-
-    assert_equal(cwl_properties["base_command"], ["convert"])
-    assert_equal(cwl_properties["inputs"][0].position, 1)
-    assert_equal(cwl_properties["outputs"][0].position, 2)
-
-
-def test_subparsers():
-    command_io = _example("convert '1.bed' '1.bam'", example_outputs=["1.bam"], example_inputs=["1.bed"])
-    cwl_properties = command_io.cwl_properties()
-
-    assert_equal(cwl_properties["base_command"], ["convert"])
-    assert_equal(cwl_properties["inputs"][0].position, 1)
-    assert_equal(cwl_properties["outputs"][0].position, 2)
-
-
-def test_argument_groups():
-    command_io = _example("convert '1.bed' '1.bam'", example_outputs=["1.bam"], example_inputs=["1.bed"])
-    cwl_properties = command_io.cwl_properties()
-
-    assert_equal(cwl_properties["base_command"], ["convert"])
-    assert_equal(cwl_properties["inputs"][0].position, 1)
-    assert_equal(cwl_properties["outputs"][0].position, 2)
+    assert_equal(len(actions), 4)
+    assert_equal(type(actions[3]), ast.Expr)
+    arg_creat_call = actions[3]
+    assert_equal(arg_creat_call.value.func.attr, "add_argument")
+    assert_equal(arg_creat_call.value.args[0].value, "--test")
 
 
 def _prepare_test_module(func_name: str) -> ast.Module:
-    test_file = open(os.join(TEST_DATA_DIR, ))
+    with open(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_parser_extraction_test_data.py")) as file:
+        module = ast.parse(file.read())
+
+        for item in module.body:
+            if (isinstance(item, ast.FunctionDef)
+                and item.name == func_name):
+                return ast.Module(body=item.body, type_ignores=[])
+
+        raise ModuleNotFoundError()

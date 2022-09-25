@@ -53,6 +53,8 @@ else:
 
 TEST_DIR = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
+TEST_AUTOPYGEN_DATA = os.path.join(TEST_DATA_DIR, "autopygen")
+TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
 TEST_REPOS_DIR = os.path.join(TEST_DATA_DIR, "repos")
 TEST_TOOLS_DIR = os.path.join(TEST_DATA_DIR, "tools")
 PROJECT_TEMPLATES_DIR = os.path.join(TEST_DIR, os.path.pardir, "project_templates")
