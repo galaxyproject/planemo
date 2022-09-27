@@ -18,6 +18,7 @@ Is Planemo the right tool for me?
 
 Yes, if you are comfortable using the command-line and one of the following is true:
   - You want to use a piece of scientific software not currently available in Galaxy and therefore need to wrap it yourself.
+  - You want to develop a workflow from individual Galaxy tools and submit it to a community repository such as the Intergalactic Workflow Commission.
   - You want to develop CWL tools or workflows.
   - You're writing a tutorial for the `Galaxy Training Network`_ and would like to use a pre-prepared template.
   - You want to run Galaxy workflows from the command line.
@@ -51,6 +52,10 @@ Where can I learn to write tools?
 We have a `tutorial`_ in this documentation and `another <https://training.galaxyproject.org/training-material/topics/dev/tutorials/tool-from-scratch/tutorial.html>`__ incorporated into the
 Galaxy Training Network, which should get you off to a good start.
 
+If you use the Visual Studio Code editor, we recommend using Planemo in conjunction with the
+`Galaxy Language Server`_, which encourages development best practices and should greatly
+improve the speed at which you can develop new Galaxy tools.
+
 How do I set up deployment to the ToolShed with Planemo?
 ========================================================
 
@@ -78,6 +83,7 @@ https://planemo.readthedocs.io/en/latest/contributing.html
 
 .. _tutorial: https://planemo.readthedocs.io/en/latest/writing_standalone.html
 .. _Galaxy Training Network: https://training.galaxyproject.org/
+.. _Galaxy Language Server: https://github.com/galaxyproject/galaxy-language-server
 .. _template: https://github.com/galaxyproject/galaxy-tool-repository-template
 .. _IUC: https://github.com/galaxyproject/tools-iuc
 .. _section: https://planemo.readthedocs.io/en/latest/running.html
