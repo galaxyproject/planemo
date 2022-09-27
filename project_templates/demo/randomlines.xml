@@ -23,7 +23,7 @@ python '$__tool_directory__/random_lines_two_pass.py' '${input}' '${out_file1}' 
     </conditional>
   </inputs>
   <outputs>
-    <data format="input" name="out_file1" metadata_source="input"/>
+    <data format_source="input" name="out_file1" metadata_source="input"/>
   </outputs>
   <tests>
     <test>
@@ -64,4 +64,7 @@ Selecting 2 random lines might return this::
     chr7  56775  56795   D17003_CTCF_R4  207  +
 
     </help>
+    <citations>
+	    <citation type="bibtex">@misc{randomlines title = {Python script for selecting N random lines}, author = {Dan Blankenberg and John Chilton and Nicola Soranzo}</citation>
+    </citations>
 </tool>
