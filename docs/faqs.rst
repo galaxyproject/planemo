@@ -71,10 +71,10 @@ Training Network.
 How can I contribute to the project?
 ====================================
 
-We would love to see new contributions to Planemo! Probably the easiest way to contribute is
-to this documentation; if you find any material which is unclear, out-of-date, or simply wrong,
-please `make a GitHub issue`_ or a pull request to our `GitHub repository`_. If you are comfortable
-writing code, have a look at our `list of issues`_ for ideas.
+We would love to see new contributions to Planemo! Please have a look `here`_ to see the different
+ways you can help.
+
+https://planemo.readthedocs.io/en/latest/contributing.html
 
 .. _tutorial: https://planemo.readthedocs.io/en/latest/writing_standalone.html
 .. _Galaxy Training Network: https://training.galaxyproject.org/
@@ -82,6 +82,4 @@ writing code, have a look at our `list of issues`_ for ideas.
 .. _IUC: https://github.com/galaxyproject/tools-iuc
 .. _section: https://planemo.readthedocs.io/en/latest/running.html
 .. _training: https://training.galaxyproject.org/training-material/topics/galaxy-interface/tutorials/workflow-automation/tutorial.html
-.. _make a GitHub issue: https://github.com/galaxyproject/planemo/issues/new
-.. _GitHub repository: https://github.com/galaxyproject/planemo/tree/master/docs
-.. _list of issues: https://github.com/galaxyproject/planemo/issues
+.. _here: https://planemo.readthedocs.io/en/latest/contributing.html
