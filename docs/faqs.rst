@@ -14,7 +14,7 @@ Galaxy-based analyses via the command-line, if you prefer or need to use that ra
 graphical interface.
 
 Is Planemo the right tool for me?
-=============================
+=================================
 
 Yes, if you are comfortable using the command-line and one of the following is true:
   - You want to use a piece of scientific software not currently available in Galaxy and therefore need to wrap it yourself.
@@ -23,7 +23,7 @@ Yes, if you are comfortable using the command-line and one of the following is t
   - You want to run Galaxy workflows from the command line.
 
 What is the difference between Galaxy and CWL? Which should I use?
-=============================
+==================================================================
 
 Galaxy is a web-based scientific analysis platform which provides access to scientific software
 via a graphical interface. It is also a scientific workflow management system and allows chaining
@@ -39,20 +39,20 @@ are supported by a variety of workflow managers, including Toil, cwltool, Arvado
 Both Galaxy and CWL place a high value on community, open-source code and FAIR data analysis.
 
 Can I develop Galaxy tools without Planemo?
-=============================
+===========================================
 
 Yes, you can, but we highly discourage you from doing so. Planemo encourages best practices in
 software development and follows guidelines agreed on by the Galaxy community, particularly
 test-driven development.
 
-How can I learn tool development?
-=============================
+Where can I learn to write tools?
+=================================
 
-We have a `tutorial`_ in this documentation and another incorporated into the
+We have a `tutorial`_ in this documentation and `another <https://training.galaxyproject.org/training-material/topics/dev/tutorials/tool-from-scratch/tutorial.html>`__ incorporated into the
 Galaxy Training Network, which should get you off to a good start.
 
 How do I set up deployment to the ToolShed with Planemo?
-=============================
+========================================================
 
 We recommend using continuous integration (e.g. GitHub Actions) to achieve this and provide
 a `template`_ which you can use to set up a GitHub repository which automatically deploys tools
@@ -63,13 +63,13 @@ a community repository such as the `IUC`_. This also has the advantage that your
 reviewed by experienced Galaxy users and developers.
 
 How can I automate workflow execution with Planemo?
-=============================
+===================================================
 
 Have a look at this `section`_ of the documentation, or this `training`_ provided by the Galaxy
 Training Network.
 
 How can I contribute to the project?
-=============================
+====================================
 
 We would love to see new contributions to Planemo! Probably the easiest way to contribute is
 to this documentation; if you find any material which is unclear, out-of-date, or simply wrong,
@@ -77,11 +77,11 @@ please `make a GitHub issue`_ or a pull request to our `GitHub repository`_. If 
 writing code, have a look at our `list of issues`_ for ideas.
 
 .. _tutorial: https://planemo.readthedocs.io/en/latest/writing_standalone.html
-.. _Galaxy Training Network: https://training.galaxyproject.org/training-material/topics/dev/tutorials/tool-from-scratch/tutorial.html
+.. _Galaxy Training Network: https://training.galaxyproject.org/
 .. _template: https://github.com/galaxyproject/galaxy-tool-repository-template
 .. _IUC: https://github.com/galaxyproject/tools-iuc
 .. _section: https://planemo.readthedocs.io/en/latest/running.html
-.. _Galaxy Training Network: https://training.galaxyproject.org/training-material/topics/galaxy-interface/tutorials/workflow-automation/tutorial.html
+.. _training: https://training.galaxyproject.org/training-material/topics/galaxy-interface/tutorials/workflow-automation/tutorial.html
 .. _make a GitHub issue: https://github.com/galaxyproject/planemo/issues/new
 .. _GitHub repository: https://github.com/galaxyproject/planemo/tree/master/docs
 .. _list of issues: https://github.com/galaxyproject/planemo/issues
