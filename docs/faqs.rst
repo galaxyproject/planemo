@@ -79,7 +79,6 @@ How can I contribute to the project?
 We would love to see new contributions to Planemo! Please have a look `here`_ to see the different
 ways you can help.
 
-https://planemo.readthedocs.io/en/latest/contributing.html
 
 .. _tutorial: https://planemo.readthedocs.io/en/latest/writing_standalone.html
 .. _Galaxy Training Network: https://training.galaxyproject.org/
