@@ -42,7 +42,7 @@ Both Galaxy and CWL place a high value on community, open-source code and FAIR d
 Can I develop Galaxy tools without Planemo?
 ===========================================
 
-Yes, you can, but we highly discourage you from doing so. Planemo encourages best practices in
+Yes, you can, but it is more complicated to do so and will take more time. Planemo encourages best practices in
 software development and follows guidelines agreed on by the Galaxy community, particularly
 test-driven development.
 
