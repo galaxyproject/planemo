@@ -1745,7 +1745,8 @@ def tool_init_autopygen_option(prompt=False):
         type=click.STRING,
         prompt=prompt,
         help="Option for automatic generation of tool file,"
-             " from python source code"
+             " from python source code that uses argparse. "
+             "Parameter is a path to source file containing definition of the parser"
     )
 
 
