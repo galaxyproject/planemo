@@ -13,7 +13,7 @@ from typing import Optional, Set, List, Dict, Tuple, Union
 from argparse import ArgumentParser
 
 from planemo.autopygen.commands.command_utils import transform_param_info
-from planemo.autopygen.param_info import ParamInfo
+from planemo.autopygen.param_info import ParamInfo, ParamTypeFlags
 from planemo.autopygen.source_file_parsing.constants import LINTER_MAGIC
 from planemo.autopygen.source_file_parsing.decoy_parser import DecoyParser
 from planemo.autopygen.source_file_parsing.local_module_parsing import handle_local_module_names
@@ -119,7 +119,7 @@ def _repeat(param_info: ParamInfo):
 
     attr_str = attributes_to_str(attributes)
 
-    if param_info.is_select:
+    if param_info.param_type.is_selection:
         inner = _options(param_info)
     else:
         inner = _default(param_info)
@@ -132,13 +132,19 @@ def _default(param_info: ParamInfo, body: Optional[str] = None):
         "argument": param_info.argument,
         "type": param_info.type,
         "format": param_info.format,
-        "optional": str(param_info.optional).lower(),
-        "label": param_info.label
     }
+
+    if param_info.param_type.is_flag:
+        attributes["truevalue"] = param_info.argument
+        attributes["falsevalue"] = ""
+        attributes["checked"] = "false"
+
+    attributes["optional"] = str(param_info.optional).lower()
+    attributes["label"] = param_info.label
 
     if param_info.help is not None:
         attributes["help"] = param_info.help
-    # this might seem weird but it is done like this for correct order
+    # this might seem weird, but it is done like this for correct order
     # of attributes
     if param_info.format is None:
         attributes.pop("format")
@@ -156,17 +162,10 @@ def attributes_to_str(attributes):
     return " ".join(result)
 
 
-def _action_to_param(action: DecoyParser.Action,
-                     data_inputs: Dict[str, str],
-                     reserved_names: Set[str],
-                     name_map: Dict[str, str],
-                     section_map: Dict[str, str]):
-    param_info = obtain_param_info(action, data_inputs, reserved_names,
-                                   name_map, section_map)
-
-    if param_info.is_repeat:
+def _action_to_param(param_info: ParamInfo):
+    if param_info.param_type.is_repeat:
         return _repeat(param_info)
-    elif param_info.is_select:
+    elif param_info.param_type.is_selection:
         return _options(param_info)
 
     return _default(param_info)
@@ -177,11 +176,15 @@ def generate_inputs_from_section(section: DecoyParser.Section,
                                  reserved_names: Set[str],
                                  name_map: Dict[str, str],
                                  section_map: Dict[str, str]):
-    sub_actions = [_action_to_param(action,
-                                    data_inputs,
-                                    reserved_names,
-                                    name_map,
-                                    section_map) for action in section.actions]
+    sub_actions = []
+    for action in section.actions:
+        param_info = obtain_param_info(action, data_inputs, reserved_names,
+                                       name_map, section_map)
+        if param_info.param_type.is_help or param_info.param_type.is_version:
+            continue
+
+        sub_actions.append(_action_to_param(param_info))
+
     sub_sections = [
         generate_inputs_from_section(subsection,
                                      data_inputs,
@@ -205,6 +208,10 @@ def _command_recursion(section: DecoyParser.Section,
     for action in section.actions:
         param_info = obtain_param_info(action, data_inputs, reserved_names,
                                        name_map, section_map)
+
+        if param_info.param_type.is_help or param_info.param_type.is_version:
+            continue
+
         yield transform_param_info(param_info, nesting,
                                    depth)
 
@@ -220,6 +227,36 @@ def _command_recursion(section: DecoyParser.Section,
                                       depth + 1)
 
 
+def _sub_parsers_conditionals(parsers: List[DecoyParser], index: int,
+                              data_inputs: Dict[str, str],
+                              reserved_names: Set[str],
+                              name_map: Dict[str, str],
+                              section_map: Dict[str, str]):
+    result = []
+    conditional_options = []
+    is_first = True
+    for parser in parsers:
+        conditional_options.append(f'<option value="{parser.name}" selected="{str(is_first).lower()}">'
+                                   f'{parser.name}'
+                                   f'</option>')
+        if is_first:
+            is_first = False
+
+        inner = inputs_from_decoy(parser, data_inputs,
+                                  reserved_names, name_map, section_map)
+        result.append(f'<when value="{parser.name}">\n{inner}\n</when>')
+
+    conditional_options_joined = "\n".join(conditional_options)
+    result_joined = "\n".join(result)
+
+    return f'<conditional name="subparsers{index}">' \
+           f'<param name="subparser_selector" type="select" label="">' \
+           f'{conditional_options_joined}' \
+           f'</param>' \
+           f'{result_joined}' \
+           f'</conditional>'
+
+
 def inputs_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
                       reserved_names: Set[str],
                       name_map: Dict[str, str],
@@ -229,10 +266,13 @@ def inputs_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
                                            name_map,
                                            section_map)]
 
-    for sub_parsers in parser.sub_parsers:
-        for parser in sub_parsers.parsers:
-            result.append(inputs_from_decoy(parser, data_inputs,
-                                            reserved_names, name_map, section_map))
+    for index, sub_parsers in enumerate(parser.sub_parsers):
+        result.append(_sub_parsers_conditionals(sub_parsers.parsers,
+                                                index,
+                                                data_inputs,
+                                                reserved_names,
+                                                name_map,
+                                                section_map))
 
     return "\n".join(result)
 
@@ -266,8 +306,7 @@ def obtain_param_info(action: DecoyParser.Action,
                       section_map: Dict[str, str]):
     name = action.argument.lstrip("-").replace("-", "_")
     argument = action.argument
-    type_ = _determine_type(action, data_inputs, name,
-                            action.kwargs.get("type", str))
+
     nargs = _determine_nargs(action.kwargs.get("nargs", None))
 
     update_name_map(name, name_map, reserved_names)
@@ -278,18 +317,17 @@ def obtain_param_info(action: DecoyParser.Action,
 
     help_ = action.kwargs.get("help", None)
     optional = action.kwargs.get("required", False)
-    is_repeat = action.action == "APPEND" or nargs > 1
-    is_select = action.kwargs.get("choices", None) is not None
-    choices = action.kwargs.get("choices", None)
-    is_flag = action.action == "STORE_TRUE"
 
+    param_type = _determine_param_type(action, nargs)
+    type_ = _determine_type(action, data_inputs, name,
+                            action.kwargs.get("type", str), param_type)
+    choices = action.kwargs.get("choices", None)
     custom_attributes = _determine_custom_attributes(type_, nargs)
 
-    return ParamInfo(type_, name_map[name], argument, name,
+    return ParamInfo(param_type, type_, name_map[name], argument, name,
                      section_map[section], section,
                      default_val, custom_attributes, nargs, help_,
-                     optional, is_repeat, is_select, choices,
-                     is_flag)
+                     optional, choices)
 
 
 def update_name_map(name: str, name_map: Dict[str, str],
@@ -315,12 +353,25 @@ def update_name_map(name: str, name_map: Dict[str, str],
     name_map[old_name] = name
 
 
+def _determine_param_type(action: DecoyParser.Action, nargs: Union[int, float]):
+    param_flags = ParamTypeFlags()
+
+    param_flags.is_selection = action.kwargs.get("choices", None) is not None
+    param_flags.is_repeat = action.action in ["APPEND", "APPEND_CONST", "COUNT"] or nargs > 1
+    param_flags.is_flag = action.action in ["STORE_TRUE", "STORE_CONST", "STORE_FALSE"]
+    param_flags.is_extend = action.action == "EXTEND"
+    param_flags.is_help = action.action == "HELP"
+    param_flags.is_version = action.action == "VERSION"
+
+    return param_flags
+
+
 def _determine_type(action: DecoyParser.Action, data_inputs: Dict[str, str],
-                    name: str, type_):
+                    name: str, type_, param_type_flags: ParamTypeFlags):
     if action.kwargs.get("choices", []):
         return "select"
 
-    if type_ is None or type_ == bool:
+    if type_ is None or type_ == bool or param_type_flags.is_flag:
         type_ = "boolean"
     elif type_ == int:
         type_ = "integer"

@@ -1,14 +1,32 @@
 import dataclasses
+import enum
 from typing import Any, List, Tuple, Union, Optional
 
-class ParamType:
-    pass
+
+@dataclasses.dataclass
+class ParamTypeFlags:
+    # No flags => store
+    # ===============================================
+    # is_flag => store_const, store_true, store_false
+    is_flag: bool = False
+    # is_repeat => append, append_const, count
+    is_repeat: bool = False
+    # is_selection => has choices
+    is_selection: bool = False
+    # is_extend => extend
+    is_extend: bool = False
+    # is_version => version action
+    is_version: bool = False
+    # is_help => help action
+    is_help: bool = False
+
 
 @dataclasses.dataclass
 class ParamInfo:
     """
     Class containing data of a single extracted parameter
     """
+    param_type: ParamTypeFlags
     type: str
     name: str
     argument: str
@@ -21,8 +39,5 @@ class ParamInfo:
     nargs: Union[float, int] = 0
     help: Optional[str] = None
     optional: bool = False
-    is_repeat: bool = False
-    is_select: bool = False
     choices: Optional[List[Any]] = None
-    is_flag: bool = False
     format: Optional[str] = None

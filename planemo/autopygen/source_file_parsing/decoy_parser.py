@@ -46,6 +46,7 @@ class DecoyParser(argparse.ArgumentParser):
                 yield from subsection.get_actions_recursive()
 
     def __init__(self, name="default"):
+        self.name = name
         self.default_section = self.Section(name=name)
         self.sub_parsers = []
         super().__init__()
