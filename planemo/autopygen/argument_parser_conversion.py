@@ -107,9 +107,9 @@ def _repeat(param_info: ParamInfo):
     attributes = {
         "name": param_info.name + "_repeat",
         "title": param_info.name + "_repeat",
-        "min_reps": None,  # TODO add support for reps
-        "max_reps": None,
-        "default_reps": None,
+        "min": param_info.custom_attributes.get("min", None),  # TODO add support for reps
+        "max": param_info.custom_attributes.get("max", None),
+        "default": param_info.custom_attributes.get("default", None),
     }
 
     names = list(attributes.keys())
@@ -199,7 +199,7 @@ def generate_inputs_from_section(section: DecoyParser.Section,
            f'{"".join(sub_sections)}' \
            f'</section>\n'
 
-
+# FIXME conditionals broke command generation
 def _command_recursion(section: DecoyParser.Section,
                        data_inputs: Dict[str, str],
                        reserved_names: Set[str],
@@ -322,7 +322,7 @@ def obtain_param_info(action: DecoyParser.Action,
     type_ = _determine_type(action, data_inputs, name,
                             action.kwargs.get("type", str), param_type)
     choices = action.kwargs.get("choices", None)
-    custom_attributes = _determine_custom_attributes(type_, nargs)
+    custom_attributes = _determine_custom_attributes(param_type, type_, nargs)
 
     return ParamInfo(param_type, type_, name_map[name], argument, name,
                      section_map[section], section,
@@ -398,10 +398,13 @@ def _determine_nargs(nargs: Union[str, int, None]) -> Union[float, int]:
     return int(nargs)
 
 
-def _determine_custom_attributes(type_: str, nargs: int) -> List[Tuple[str, str]]:
-    flags: List[Tuple[str, str]] = []
+def _determine_custom_attributes(param_type: ParamTypeFlags, type_: str, nargs: int) -> Dict[str, str]:
+    flags: Dict[str, str] = dict()
 
     if type_ == "data" and nargs > 1:
-        flags.append(("multiple", "true"))
+        flags["multiple"] = "true"
+
+    if param_type.is_repeat and 1 < nargs < math.inf:
+        flags["max"] = str(nargs)
 
     return flags

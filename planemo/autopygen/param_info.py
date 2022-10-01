@@ -1,6 +1,5 @@
 import dataclasses
-import enum
-from typing import Any, List, Tuple, Union, Optional
+from typing import Any, List, Union, Optional, Dict
 
 
 @dataclasses.dataclass
@@ -34,7 +33,7 @@ class ParamInfo:
     section: str
     section_label: str
     default_val: Any
-    custom_attributes: List[Tuple[str, str]]
+    custom_attributes: Dict[str, str]
 
     nargs: Union[float, int] = 0
     help: Optional[str] = None
