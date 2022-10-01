@@ -138,7 +138,7 @@ def test_autogen_without_other_inputs():
 def test_autogen_subparsers():
     command_io = CommandIO(autopygen=os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_end_to_end_sub.py"))
 
-    expected_inputs = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_end_to_end_sub_inputs.txt"))
+    expected_inputs = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_end_to_end_sub_inputs.xml"))
     expected_commands = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_end_to_end_sub_commands.txt"))
 
     assert_equal(command_io.auto_inputs, expected_inputs)
