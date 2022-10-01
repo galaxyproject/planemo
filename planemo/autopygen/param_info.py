@@ -1,6 +1,8 @@
 import dataclasses
 from typing import Any, List, Tuple, Union, Optional
 
+class ParamType:
+    pass
 
 @dataclasses.dataclass
 class ParamInfo:

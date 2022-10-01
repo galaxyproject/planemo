@@ -390,8 +390,9 @@ class CommandIO:
 
         auto_inputs = None
         auto_commands = None
-        if kwds["autopygen"] is not None:
-            parser = obtain_and_convert_parser(kwds["autopygen"])
+        parser_path = kwds.get("autopygen", None)
+        if parser_path is not None:
+            parser = obtain_and_convert_parser(parser_path)
 
             if parser is not None:
                 # todo use real data inputs and reserved names
