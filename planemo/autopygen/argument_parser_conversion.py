@@ -12,7 +12,7 @@ import uuid
 from typing import Optional, Set, List, Dict, Tuple, Union
 from argparse import ArgumentParser
 
-from planemo.autopygen.commands.command_utils import transform_param_info
+from planemo.autopygen.commands.command_utils import transform_param_info, create_element_with_body, create_flag
 from planemo.autopygen.param_info import ParamInfo, ParamTypeFlags
 from planemo.autopygen.source_file_parsing.constants import LINTER_MAGIC
 from planemo.autopygen.source_file_parsing.decoy_parser import DecoyParser
@@ -136,6 +136,9 @@ def generate_xml_from_section(section: DecoyParser.Section,
             sub_outputs.append(sub_outputs)
 
     sub_sections = []
+    # and once again we decrease the depth of subsections
+    if dont_wrap_in_section:
+        depth -= 1
 
     for subsection in (subsection for subsection in section.subsections if subsection.actions):
         inputs, outputs, sub_ver_comm = generate_xml_from_section(subsection,
@@ -171,7 +174,9 @@ def _command_recursion(section: DecoyParser.Section,
                        data_inputs: Dict[str, str],
                        reserved_names: Set[str],
                        name_map: Dict[str, str],
-                       section_map: Dict[str, str], nesting: str, depth: int):
+                       section_map: Dict[str, str],
+                       namespace: str,
+                       depth: int):
     for action in section.actions:
         param_info = obtain_param_info(action, data_inputs, reserved_names,
                                        name_map, section_map)
@@ -179,18 +184,20 @@ def _command_recursion(section: DecoyParser.Section,
         if param_info.param_type.is_help or param_info.param_type.is_version:
             continue
 
-        yield transform_param_info(param_info, nesting,
+        yield transform_param_info(param_info, namespace,
                                    depth)
 
     for subsection in section.subsections:
         sec_name = re.sub("[/\\-* ()]", "_", section_map.get(subsection.name, subsection.name)).lower()
+        separator = "." if namespace else ""
+        child_namespace = f"{namespace}{separator}{sec_name}"
 
         yield from _command_recursion(subsection,
                                       data_inputs,
                                       reserved_names,
                                       name_map,
                                       section_map,
-                                      nesting + f".{sec_name}",
+                                      child_namespace,
                                       depth + 1)
 
 
@@ -226,7 +233,7 @@ def _sub_parsers_conditionals(parsers: List[DecoyParser], index: int, depth: int
     conditional_param_definition = formatted_xml_elem("param",
                                                       {"name": "subparser_selector", "type": "selector"},
                                                       depth + 1, conditional_options_joined)
-    result_inputs = formatted_xml_elem("conditional", {"name": f"subparsers{index}_{depth}"},
+    result_inputs = formatted_xml_elem("conditional", {"name": f"subparsers{index}"},
                                        depth, conditional_param_definition + result_joined)
 
     return result_inputs, "\n".join(result_outputs), version_command
@@ -236,7 +243,7 @@ def xml_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
                    reserved_names: Set[str],
                    name_map: Dict[str, str],
                    section_map: Dict[str, str],
-                   depth: int = 0, dont_wrap_default_section: bool = True) -> Tuple[str, str, ParamInfo]:
+                   depth: int = 2, dont_wrap_default_section: bool = True) -> Tuple[str, str, ParamInfo]:
     input_params, outputs_str, version_command = \
         generate_xml_from_section(parser.default_section,
                                   depth,
@@ -270,21 +277,43 @@ def xml_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
 def command_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
                        reserved_names: Set[str],
                        name_map: Dict[str, str],
-                       section_map: Dict[str, str]) -> str:
+                       section_map: Dict[str, str],
+                       depth: int = 0,
+                       starting_namespace: str = "",
+                       skip_default_namespace: bool = False) -> str:
     """
     The function generates commands from decoy parser. It requires name and section maps that have already been
     initialised and contain correct mapping
     """
-    sec_name = re.sub("[/\\-* ()]", "_", section_map[parser.default_section.name]).lower()
+    sec_name = starting_namespace
+    if not skip_default_namespace:
+        if starting_namespace:
+            sec_name += "."
+
+        sec_name += re.sub("[/\\-* ()]", "_", section_map[parser.default_section.name]).lower()
+
     result = ["\n".join(_command_recursion(parser.default_section, data_inputs,
                                            reserved_names,
                                            name_map,
-                                           section_map, sec_name, 0))]
+                                           section_map, sec_name, depth))]
 
-    for sub_parsers in parser.sub_parsers:
+    for index, sub_parsers in enumerate(parser.sub_parsers):
+        subparsers_variable_name = f"subparsers{index}"
+        subparsers_chosen_parser = f"${subparsers_variable_name}.subparser_selector"
+        result.append(create_element_with_body("if", subparsers_chosen_parser, [subparsers_chosen_parser],
+                                               "Selected subparser", depth, body_indented=False))
         for parser in sub_parsers.parsers:
-            result.append(command_from_decoy(parser, data_inputs,
-                                             reserved_names, name_map, section_map))
+            conditional = \
+                create_element_with_body("if",
+                                         f'str({subparsers_chosen_parser}) == "{parser.name}"',
+                                         body=[command_from_decoy(parser, data_inputs,
+                                                                  reserved_names,
+                                                                  name_map, section_map, depth+1,
+                                                                  subparsers_variable_name,
+                                                                  skip_default_namespace)],
+                                         comment=f"Conditional option {parser.name}",
+                                         depth=0)
+            result.append(conditional)
 
     return "\n".join(result)
 

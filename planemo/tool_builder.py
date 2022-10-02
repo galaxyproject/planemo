@@ -406,8 +406,9 @@ class CommandIO:
                 name_map = dict()
                 section_map = dict()
                 auto_inputs, auto_outputs, version_command_param =\
-                    xml_from_decoy(parser, data_inputs, reserved_names, name_map, section_map, depth=2)
-                auto_commands = command_from_decoy(parser, data_inputs, reserved_names, name_map, section_map)
+                    xml_from_decoy(parser, data_inputs, reserved_names, name_map, section_map)
+                auto_commands = command_from_decoy(parser, data_inputs, reserved_names, name_map,
+                                                   section_map, skip_default_namespace=True)
 
                 version_command = f"[TODO exec name] {version_command_param.argument}"
 
