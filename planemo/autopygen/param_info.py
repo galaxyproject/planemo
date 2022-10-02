@@ -18,6 +18,8 @@ class ParamTypeFlags:
     is_version: bool = False
     # is_help => help action
     is_help: bool = False
+    # is_output => could be parameter for result output file
+    is_output: bool = False
 
 
 @dataclasses.dataclass

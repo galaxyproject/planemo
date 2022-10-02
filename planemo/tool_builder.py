@@ -16,7 +16,7 @@ from planemo import (
     templates,
 )
 from planemo.autopygen.argument_parser_conversion import obtain_and_convert_parser, \
-    inputs_from_decoy, command_from_decoy
+    xml_from_decoy, command_from_decoy
 
 REUSING_MACROS_MESSAGE = (
     "Macros file macros.xml already exists, assuming " " it has relevant planemo-generated definitions."
@@ -52,6 +52,9 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}+galaxy
 {%- if command %}
         {{ command }}
 {%- endif %}
+{%- if not command and auto_commands %}
+    TODO: executable name
+{%- endif %}
 {%- if auto_commands %}
         {{ auto_commands }}
 {%- endif %}
@@ -64,7 +67,7 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}+galaxy
         {{ input }}
 {%- endfor %}
 {%- if auto_inputs %}
-        {{ auto_inputs }}
+{{ auto_inputs }}
 {%- endif %}
     </inputs>
     <outputs>
@@ -346,6 +349,7 @@ def _build_galaxy(**kwds):
     kwds["command"] = command_io.cheetah_template
     kwds["auto_inputs"] = command_io.auto_inputs
     kwds["auto_commands"] = command_io.auto_commands
+    kwds["version_command"] = command_io.version_command
     test_case = command_io.test_case()
 
     # finally wrap up tests
@@ -390,6 +394,7 @@ class CommandIO:
 
         auto_inputs = None
         auto_commands = None
+        version_command = None
         parser_path = kwds.get("autopygen", None)
         if parser_path is not None:
             parser = obtain_and_convert_parser(parser_path)
@@ -400,8 +405,11 @@ class CommandIO:
                 reserved_names = set()
                 name_map = dict()
                 section_map = dict()
-                auto_inputs = inputs_from_decoy(parser, data_inputs, reserved_names, name_map, section_map)
+                auto_inputs, auto_outputs, version_command_param =\
+                    xml_from_decoy(parser, data_inputs, reserved_names, name_map, section_map, depth=2)
                 auto_commands = command_from_decoy(parser, data_inputs, reserved_names, name_map, section_map)
+
+                version_command = f"[TODO exec name] {version_command_param.argument}"
 
         # handle raw outputs (from_work_dir ones) as well as named_outputs
         outputs = kwds.pop("output", [])
@@ -430,6 +438,7 @@ class CommandIO:
         self.command = command
         self.auto_inputs = auto_inputs
         self.auto_commands = auto_commands
+        self.version_command = version_command
         self.cheetah_template = cheetah_template
 
     def example_input_names(self):

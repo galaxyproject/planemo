@@ -5,7 +5,6 @@ from planemo.tool_builder import CommandIO
 from .test_utils import assert_equal, TEST_AUTOPYGEN_DATA
 
 
-
 def test_simplest_command():
     """Test very simple command."""
     command_io = _example("random_fastq")
@@ -130,9 +129,11 @@ def test_autogen_without_other_inputs():
 
     expected_inputs = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_generated_inputs.txt"))
     expected_commands = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_generated_commands.txt"))
+    expected_version_command = "--version"
 
     assert_equal(command_io.auto_inputs, expected_inputs)
     assert_equal(command_io.auto_commands, expected_commands)
+    assert_equal(command_io.version_command, expected_version_command)
 
 
 def test_autogen_subparsers():
@@ -140,9 +141,11 @@ def test_autogen_subparsers():
 
     expected_inputs = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_end_to_end_sub_inputs.xml"))
     expected_commands = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_end_to_end_sub_commands.txt"))
+    expected_version_command = "--version"
 
     assert_equal(command_io.auto_inputs, expected_inputs)
     assert_equal(command_io.auto_commands, expected_commands)
+    assert_equal(command_io.version_command, expected_version_command)
 
 
 def _open_and_read(path: str) -> str:

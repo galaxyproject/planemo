@@ -1,5 +1,4 @@
-LINTER_MAGIC = "##!!##"
-
+LINTER_MAGIC = "##!_FIXME_!##"
 
 STD_LIB_MODULE_NAMES = frozenset(
     {'_json', 'mimetypes', '_signal', '_csv', 'pickletools', '_sre', 'nntplib', '_codecs_iso2022', '_ctypes',

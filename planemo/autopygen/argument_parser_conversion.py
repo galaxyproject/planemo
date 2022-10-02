@@ -24,6 +24,7 @@ from planemo.autopygen.source_file_parsing.parsing_commons import \
 from planemo.autopygen.source_file_parsing.parsing_exceptions import \
     ArgumentParsingDiscoveryError
 from planemo.autopygen.source_file_parsing.unknown_names_discovery import initialize_variables_in_module
+from planemo.autopygen.xml.xml_utils import repeat, options, param, formatted_xml_elem
 
 
 def obtain_and_convert_parser(path: str) -> Optional[DecoyParser]:
@@ -94,112 +95,78 @@ def obtain_parser(tree: ast.Module) -> Optional[ArgumentParser]:
     return namespace[name]
 
 
-def _options(param_info: ParamInfo):
-    options = []
-    for option in param_info.choices:
-        options.append(
-            f'<option value="{option}">{option.capitalize()}</option>\n')
-
-    return _default(param_info, "\n".join(options).rstrip())
-
-
-def _repeat(param_info: ParamInfo):
-    attributes = {
-        "name": param_info.name + "_repeat",
-        "title": param_info.name + "_repeat",
-        "min": param_info.custom_attributes.get("min", None),  # TODO add support for reps
-        "max": param_info.custom_attributes.get("max", None),
-        "default": param_info.custom_attributes.get("default", None),
-    }
-
-    names = list(attributes.keys())
-    for name in names:
-        if attributes[name] is None:
-            attributes.pop(name)
-
-    attr_str = attributes_to_str(attributes)
-
-    if param_info.param_type.is_selection:
-        inner = _options(param_info)
-    else:
-        inner = _default(param_info)
-
-    return f'<repeat {attr_str}>{inner}</repeat>\n'
-
-
-def _default(param_info: ParamInfo, body: Optional[str] = None):
-    attributes = {
-        "argument": param_info.argument,
-        "type": param_info.type,
-        "format": param_info.format,
-    }
-
-    if param_info.param_type.is_flag:
-        attributes["truevalue"] = param_info.argument
-        attributes["falsevalue"] = ""
-        attributes["checked"] = "false"
-
-    attributes["optional"] = str(param_info.optional).lower()
-    attributes["label"] = param_info.label
-
-    if param_info.help is not None:
-        attributes["help"] = param_info.help
-    # this might seem weird, but it is done like this for correct order
-    # of attributes
-    if param_info.format is None:
-        attributes.pop("format")
-
-    if body:
-        return f'<param {attributes_to_str(attributes)}>\n{body}\n</param>\n'
-
-    return f'<param {attributes_to_str(attributes)}/>\n'
-
-
-def attributes_to_str(attributes):
-    result = []
-    for key, value in attributes.items():
-        result.append(f'{key}="{value}"')
-    return " ".join(result)
-
-
-def _action_to_param(param_info: ParamInfo):
+def _action_to_param(param_info: ParamInfo, depth: int):
     if param_info.param_type.is_repeat:
-        return _repeat(param_info)
+        return repeat(param_info, depth)
     elif param_info.param_type.is_selection:
-        return _options(param_info)
+        return options(param_info, depth)
 
-    return _default(param_info)
+    return param(param_info, depth)
 
 
-def generate_inputs_from_section(section: DecoyParser.Section,
-                                 data_inputs: Dict[str, str],
-                                 reserved_names: Set[str],
-                                 name_map: Dict[str, str],
-                                 section_map: Dict[str, str]):
-    sub_actions = []
+def generate_xml_from_section(section: DecoyParser.Section,
+                              depth: int,
+                              data_inputs: Dict[str, str],
+                              reserved_names: Set[str],
+                              name_map: Dict[str, str],
+                              section_map: Dict[str, str],
+                              dont_wrap_in_section: bool = False) -> Tuple[str, str, ParamInfo]:
+    sub_params = []
+    sub_outputs = []
+    version_command = None
+
+    # if params aren't supposed to be wrapped in the default section, additional indentation is not necessary
+    if dont_wrap_in_section:
+        depth -= 1
+
     for action in section.actions:
         param_info = obtain_param_info(action, data_inputs, reserved_names,
                                        name_map, section_map)
-        if param_info.param_type.is_help or param_info.param_type.is_version:
+
+        if param_info.param_type.is_help:
             continue
 
-        sub_actions.append(_action_to_param(param_info))
+        if param_info.param_type.is_version:
+            version_command = param_info
+            continue
 
-    sub_sections = [
-        generate_inputs_from_section(subsection,
-                                     data_inputs,
-                                     reserved_names,
-                                     name_map,
-                                     section_map) for subsection in
-        section.subsections if subsection.actions]
+        sub_params.append(_action_to_param(param_info, depth + 1))
+
+        if param_info.param_type.is_output:
+            sub_outputs.append(sub_outputs)
+
+    sub_sections = []
+
+    for subsection in (subsection for subsection in section.subsections if subsection.actions):
+        inputs, outputs, sub_ver_comm = generate_xml_from_section(subsection,
+                                                                  depth + 2,
+                                                                  data_inputs,
+                                                                  reserved_names,
+                                                                  name_map,
+                                                                  section_map)
+        # we want to save the first version command found
+        if sub_ver_comm is not None and version_command is None:
+            version_command = sub_ver_comm
+
+        sub_sections.append(inputs)
+        sub_outputs.append(outputs)
 
     transformed_name = re.sub("[/\\-* ()]", "_", section_map.get(section.name, section.name)).lower()
-    return f'<section name="{transformed_name}" title="{section.name}" expanded="true">\n' \
-           f'{"".join(sub_actions)}' \
-           f'{"".join(sub_sections)}' \
-           f'</section>\n'
 
-# FIXME conditionals broke command generation
+    result_inputs = f'{"".join(sub_params)}' \
+                    f'{"".join(sub_sections)}'
+
+    if not dont_wrap_in_section:
+        attrs = {
+            "name": transformed_name,
+            "title": section.name,
+            "expanded": "true",
+        }
+        result_inputs = formatted_xml_elem("section", attrs, depth, result_inputs)
+
+    return result_inputs, "\n".join(sub_outputs), version_command
+
+
 def _command_recursion(section: DecoyParser.Section,
                        data_inputs: Dict[str, str],
                        reserved_names: Set[str],
@@ -227,54 +194,77 @@ def _command_recursion(section: DecoyParser.Section,
                                       depth + 1)
 
 
-def _sub_parsers_conditionals(parsers: List[DecoyParser], index: int,
+def _sub_parsers_conditionals(parsers: List[DecoyParser], index: int, depth: int,
                               data_inputs: Dict[str, str],
                               reserved_names: Set[str],
                               name_map: Dict[str, str],
-                              section_map: Dict[str, str]):
+                              section_map: Dict[str, str],
+                              found_version_comm: bool = False) -> Tuple[str, str, Optional[ParamInfo]]:
     result = []
+    result_outputs = []
+    version_command = None
     conditional_options = []
     is_first = True
     for parser in parsers:
-        conditional_options.append(f'<option value="{parser.name}" selected="{str(is_first).lower()}">'
-                                   f'{parser.name}'
-                                   f'</option>')
+        conditional_options.append(
+            formatted_xml_elem("option", {"value": parser.name, "selected": str(is_first).lower()},
+                               depth + 2, parser.name, inline=True))
         if is_first:
             is_first = False
 
-        inner = inputs_from_decoy(parser, data_inputs,
-                                  reserved_names, name_map, section_map)
-        result.append(f'<when value="{parser.name}">\n{inner}\n</when>')
+        inputs, outputs, version_comm = xml_from_decoy(parser, data_inputs,
+                                                       reserved_names, name_map, section_map, depth + 2)
+        result_outputs.append(outputs)
+        result.append(formatted_xml_elem("when", {"value": parser.name}, depth + 1, inputs))
 
-    conditional_options_joined = "\n".join(conditional_options)
-    result_joined = "\n".join(result)
+        if not found_version_comm or (version_command is None and version_comm is not None):
+            version_command = version_comm
 
-    return f'<conditional name="subparsers{index}">' \
-           f'<param name="subparser_selector" type="select" label="">' \
-           f'{conditional_options_joined}' \
-           f'</param>' \
-           f'{result_joined}' \
-           f'</conditional>'
+    conditional_options_joined = "".join(conditional_options)
+    result_joined = "".join(result)
+
+    conditional_param_definition = formatted_xml_elem("param",
+                                                      {"name": "subparser_selector", "type": "selector"},
+                                                      depth + 1, conditional_options_joined)
+    result_inputs = formatted_xml_elem("conditional", {"name": f"subparsers{index}_{depth}"},
+                                       depth, conditional_param_definition + result_joined)
+
+    return result_inputs, "\n".join(result_outputs), version_command
 
 
-def inputs_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
-                      reserved_names: Set[str],
-                      name_map: Dict[str, str],
-                      section_map: Dict[str, str]) -> str:
-    result = [generate_inputs_from_section(parser.default_section, data_inputs,
-                                           reserved_names,
-                                           name_map,
-                                           section_map)]
-
+def xml_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
+                   reserved_names: Set[str],
+                   name_map: Dict[str, str],
+                   section_map: Dict[str, str],
+                   depth: int = 0, dont_wrap_default_section: bool = True) -> Tuple[str, str, ParamInfo]:
+    input_params, outputs_str, version_command = \
+        generate_xml_from_section(parser.default_section,
+                                  depth,
+                                  data_inputs,
+                                  reserved_names,
+                                  name_map,
+                                  section_map,
+                                  dont_wrap_default_section)
+    inputs = [input_params]
+    outputs = [outputs_str]
     for index, sub_parsers in enumerate(parser.sub_parsers):
-        result.append(_sub_parsers_conditionals(sub_parsers.parsers,
-                                                index,
-                                                data_inputs,
-                                                reserved_names,
-                                                name_map,
-                                                section_map))
+        sub_parser_inputs, sub_parser_outputs, ver_comm = \
+            _sub_parsers_conditionals(sub_parsers.parsers,
+                                      index,
+                                      depth,
+                                      data_inputs,
+                                      reserved_names,
+                                      name_map,
+                                      section_map,
+                                      version_command is not None)
 
-    return "\n".join(result)
+        inputs.append(sub_parser_inputs)
+        outputs.append(sub_parser_outputs)
+
+        if version_command is None and ver_comm is not None:
+            version_command = ver_comm
+
+    return "\n".join(inputs), "\n".join(outputs), version_command
 
 
 def command_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
