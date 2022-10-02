@@ -335,7 +335,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         conda_default_options = ("conda_auto_init", "conda_auto_install")
         use_conda_options = ("dependency_resolution", "conda_use_local", "conda_prefix", "conda_exec")
         if not any(kwds.get(_) for _ in use_conda_options) and all(
-            ctx.get_option_source(_) == OptionSource.param for _ in conda_default_options
+            ctx.get_option_source(_) == OptionSource.default for _ in conda_default_options
         ):
             # If using mulled_containers and default conda options disable conda resolution
             kwds["no_dependency_resolution"] = kwds["no_conda_auto_init"] = True
