@@ -1,103 +1,90 @@
-## help definition
-#if $default.help:
-   --help $default.help
-#end if
-## end help definition
 
-## help definition
-#if $foo.help:
-   --help $foo.help
+## Selected subparser
+#if $subparsers0.subparser_selector:
+   $subparsers0.subparser_selector
 #end if
-## end help definition
+## end Selected subparser
 
-## keyword definition
-#if $foo.keyword:
-   keyword $foo.keyword
-#end if
-## end keyword definition
-
-## integers definition
-#for $item in $foo.integers:
-      ## integers definition
-   #if $item:
-   integers $item
+## Conditional option foo
+#if str($subparsers0.subparser_selector) == "foo":
+   ## keyword definition
+   #if $subparsers0.keyword:
+      $subparsers0.keyword
    #end if
+   ## end keyword definition
+
+   ## integers definition
+   #for $item in $subparsers0.integers:
+      ## integers definition
+      #if $item:
+         $item
+      #end if
+      ## end integers definition
+
+   #end for
    ## end integers definition
 
-#end for
-## end integers definition
+   ## FLAG s definition
+   $subparsers0.s
+   ## end FLAG s definition
 
-## s definition
-#if $foo.s:
-   -s $foo.s
-#end if
-## end s definition
-
-## foo definition
-#if $foo.foo:
-   --foo $foo.foo
-#end if
-## end foo definition
-
-## bar definition
-#for $item in $foo.bar:
-      ## bar definition
-   #if $item:
-   --bar $item
+   ## foo definition
+   #if $subparsers0.foo:
+      --foo $subparsers0.foo
    #end if
+   ## end foo definition
+
+   ## bar definition
+   #for $item in $subparsers0.bar:
+      ## bar definition
+      #if $item:
+         --bar $item
+      #end if
+      ## end bar definition
+
+   #end for
    ## end bar definition
 
-#end for
-## end bar definition
+   ## FLAG true definition
+   $subparsers0.true
+   ## end FLAG true definition
 
-## true definition
-#if $foo.true:
-   --true $foo.true
 #end if
-## end true definition
+## end Conditional option foo
 
-## help definition
-#if $bar.help:
-   --help $bar.help
-#end if
-## end help definition
+## Conditional option bar
+#if str($subparsers0.subparser_selector) == "bar":
+   ## FLAG false definition
+   $subparsers0.false
+   ## end FLAG false definition
 
-## false definition
-#if $bar.false:
-   --false $bar.false
-#end if
-## end false definition
-
-## append definition
-#for $item in $bar.append:
+   ## append definition
+   #for $item in $subparsers0.append:
       ## append definition
-   #if $item:
-   --append $item
-   #end if
+      #if $item:
+         --append $item
+      #end if
+      ## end append definition
+
+   #end for
    ## end append definition
 
-#end for
-## end append definition
-
-## nargs2 definition
-#for $item in $bar.nargs2:
+   ## nargs2 definition
+   #for $item in $subparsers0.nargs2:
       ## nargs2 definition
-   #if $item:
-   --nargs2 $item
-   #end if
+      #if $item:
+         --nargs2 $item
+      #end if
+      ## end nargs2 definition
+
+   #end for
    ## end nargs2 definition
 
-#end for
-## end nargs2 definition
+   ## mode definition
+   #if $subparsers0.mode:
+      --mode $subparsers0.mode
+   #end if
+   ## end mode definition
 
-## mode definition
-#if $bar.mode:
-   --mode $bar.mode
 #end if
-## end mode definition
-
-## version definition
-#if $bar.version:
-   --version $bar.version
-#end if
-## end version definition
+## end Conditional option bar

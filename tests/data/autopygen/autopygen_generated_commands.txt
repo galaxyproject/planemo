@@ -1,66 +1,54 @@
-## help definition
-#if $default.help:
-   --help $default.help
-#end if
-## end help definition
-
 ## keyword definition
-#if $default.keyword:
-   keyword $default.keyword
+#if $keyword:
+   $keyword
 #end if
 ## end keyword definition
 
 ## integers definition
-#for $item in $default.integers:
-      ## integers definition
+#for $item in $.integers:
+   ## integers definition
    #if $item:
-   integers $item
+      $item
    #end if
    ## end integers definition
 
 #end for
 ## end integers definition
 
-## s definition
-#if $default.s:
-   -s $default.s
-#end if
-## end s definition
+## FLAG s definition
+$s
+## end FLAG s definition
 
 ## foo definition
-#if $default.foo:
-   --foo $default.foo
+#if $foo:
+   --foo $foo
 #end if
 ## end foo definition
 
 ## bar definition
-#for $item in $default.bar:
-      ## bar definition
+#for $item in $.bar:
+   ## bar definition
    #if $item:
-   --bar $item
+      --bar $item
    #end if
    ## end bar definition
 
 #end for
 ## end bar definition
 
-## true definition
-#if $default.true:
-   --true $default.true
-#end if
-## end true definition
+## FLAG true definition
+$true
+## end FLAG true definition
 
-## false definition
-#if $default.false:
-   --false $default.false
-#end if
-## end false definition
+## FLAG false definition
+$false
+## end FLAG false definition
 
 ## append definition
-#for $item in $default.append:
-      ## append definition
+#for $item in $.append:
+   ## append definition
    #if $item:
-   --append $item
+      --append $item
    #end if
    ## end append definition
 
@@ -68,10 +56,10 @@
 ## end append definition
 
 ## nargs2 definition
-#for $item in $default.nargs2:
-      ## nargs2 definition
+#for $item in $.nargs2:
+   ## nargs2 definition
    #if $item:
-   --nargs2 $item
+      --nargs2 $item
    #end if
    ## end nargs2 definition
 
@@ -79,13 +67,7 @@
 ## end nargs2 definition
 
 ## mode definition
-#if $default.mode:
-   --mode $default.mode
+#if $mode:
+   --mode $mode
 #end if
 ## end mode definition
-
-## version definition
-#if $default.version:
-   --version $default.version
-#end if
-## end version definition

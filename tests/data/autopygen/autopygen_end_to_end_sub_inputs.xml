@@ -1,4 +1,4 @@
-        <conditional name="subparsers0_2">
+        <conditional name="subparsers0">
             <param name="subparser_selector" type="selector">
                 <option value="foo" selected="true">foo</option>
                 <option value="bar" selected="false">bar</option>

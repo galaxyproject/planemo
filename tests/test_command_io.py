@@ -129,7 +129,7 @@ def test_autogen_without_other_inputs():
 
     expected_inputs = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_generated_inputs.xml"))
     expected_commands = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_generated_commands.txt"))
-    expected_version_command = "--version"
+    expected_version_command = "[TODO exec name] --version"
 
     assert_equal(command_io.auto_inputs, expected_inputs)
     assert_equal(command_io.auto_commands, expected_commands)
@@ -141,7 +141,7 @@ def test_autogen_subparsers():
 
     expected_inputs = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_end_to_end_sub_inputs.xml"))
     expected_commands = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_end_to_end_sub_commands.txt"))
-    expected_version_command = "--version"
+    expected_version_command = "[TODO exec name] --version"
 
     assert_equal(command_io.auto_inputs, expected_inputs)
     assert_equal(command_io.auto_commands, expected_commands)
