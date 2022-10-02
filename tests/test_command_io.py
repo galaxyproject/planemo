@@ -127,7 +127,7 @@ def test_integer_parameters():
 def test_autogen_without_other_inputs():
     command_io = CommandIO(autopygen=os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_end_to_end_test_case.py"))
 
-    expected_inputs = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_generated_inputs.txt"))
+    expected_inputs = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_generated_inputs.xml"))
     expected_commands = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_generated_commands.txt"))
     expected_version_command = "--version"
 

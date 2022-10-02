@@ -264,7 +264,7 @@ def xml_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
         if version_command is None and ver_comm is not None:
             version_command = ver_comm
 
-    return "\n".join(inputs), "\n".join(outputs), version_command
+    return "".join(inputs), "\n".join(outputs), version_command
 
 
 def command_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
