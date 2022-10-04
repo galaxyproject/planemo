@@ -205,6 +205,8 @@ def autoupdate_tool(ctx, tool_path, modified_files, **kwds):
         xml_files[macro_path] = ET.parse(macro_path)
 
     requirements, main_req = create_requirement_dict(xml_files, kwds.get("skip_requirements", "").split(","))
+    if main_req is None:
+        return
     tokens, xml_to_update, current_main_req, updated_main_req = create_token_dict(ctx, xml_files, main_req, **kwds)
 
     if current_main_req == updated_main_req and not (modified_files & set(xml_files)):
