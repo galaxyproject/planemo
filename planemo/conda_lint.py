@@ -2,8 +2,17 @@
 
 
 from functools import wraps
+from typing import (
+    Callable,
+    Dict,
+    List,
+    Tuple,
+    TYPE_CHECKING,
+    Union,
+)
 
 from galaxy.tool_util.deps.conda_compat import raw_metadata
+from galaxy.tool_util.lint import LintContext
 from galaxy.util import unicodify
 
 from planemo.conda_verify.recipe import (
@@ -33,8 +42,11 @@ from planemo.lint import (
     setup_lint,
 )
 
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
 
-def lint_recipes_on_paths(ctx, paths, **kwds):
+
+def lint_recipes_on_paths(ctx: "PlanemoCliContext", paths: Tuple[str], **kwds) -> int:
     """Apply conda linting procedure to recipes on supplied paths."""
     assert_tools = kwds.get("assert_recipes", True)
     recursive = kwds.get("recursive", False)
@@ -47,7 +59,7 @@ def lint_recipes_on_paths(ctx, paths, **kwds):
     return coalesce_return_codes(exit_codes, assert_at_least_one=assert_tools)
 
 
-def lint_conda_recipe(ctx, recipe_dir, **kwds):
+def lint_conda_recipe(ctx: "PlanemoCliContext", recipe_dir: str, **kwds) -> int:
     info("Linting conda recipe %s" % recipe_dir)
     lint_args, lint_ctx = setup_lint(ctx, **kwds)
 
@@ -68,7 +80,7 @@ def lint_conda_recipe(ctx, recipe_dir, **kwds):
     return handle_lint_complete(lint_ctx, lint_args)
 
 
-def wraps_recipe_error(is_error=True):
+def wraps_recipe_error(is_error: bool = True) -> Callable:
     def outer_wrapper(f):
         @wraps(f)
         def wrapper(recipe_dir, lint_ctx):
@@ -87,7 +99,7 @@ def wraps_recipe_error(is_error=True):
     return outer_wrapper
 
 
-def lints_metadata(f):
+def lints_metadata(f: Callable) -> Callable:
     @wraps(f)
     def wrapper(recipe_dir, lint_ctx):
         meta = raw_metadata(recipe_dir)
@@ -97,20 +109,26 @@ def lints_metadata(f):
 
 
 @wraps_recipe_error(is_error=False)
-def lint_directory_content(recipe_dir, lint_ctx):
+def lint_directory_content(recipe_dir: str, lint_ctx: LintContext) -> None:
     check_dir_content(recipe_dir)
     lint_ctx.info("Directory content seems okay.")
 
 
 @lints_metadata
 @wraps_recipe_error(is_error=False)
-def lint_license_family(meta, lint_ctx):
+def lint_license_family(
+    meta: Dict[str, Union[Dict[str, str], Dict[str, List[str]], Dict[str, Union[str, int]], Dict[str, int], str]],
+    lint_ctx: LintContext,
+) -> None:
     check_license_family(meta)
     lint_ctx.info("License from vaild license family.")
 
 
 @lints_metadata
-def lint_summary(meta, lint_ctx):
+def lint_summary(
+    meta: Dict[str, Union[Dict[str, str], Dict[str, List[str]], Dict[str, Union[str, int]], Dict[str, int], str]],
+    lint_ctx: LintContext,
+) -> None:
     summary = get_field(meta, "about/summary")
 
     if not summary:
@@ -123,7 +141,10 @@ def lint_summary(meta, lint_ctx):
 
 @lints_metadata
 @wraps_recipe_error(is_error=False)
-def lint_about_urls(meta, lint_ctx):
+def lint_about_urls(
+    meta: Dict[str, Union[Dict[str, str], Dict[str, List[str]], Dict[str, Union[str, int]], Dict[str, int], str]],
+    lint_ctx: LintContext,
+) -> None:
     for field in ("about/home", "about/dev_url", "about/doc_url", "about/license_url"):
         url = get_field(meta, field)
         if url:
@@ -133,14 +154,20 @@ def lint_about_urls(meta, lint_ctx):
 
 @lints_metadata
 @wraps_recipe_error(is_error=True)
-def lint_source(meta, lint_ctx):
+def lint_source(
+    meta: Dict[str, Union[Dict[str, str], Dict[str, List[str]], Dict[str, Union[str, int]], Dict[str, int], str]],
+    lint_ctx: LintContext,
+) -> None:
     check_source(meta)
     lint_ctx.info("Source (if present) is valid")
 
 
 @lints_metadata
 @wraps_recipe_error(is_error=True)
-def lint_build_number(meta, lint_ctx):
+def lint_build_number(
+    meta: Dict[str, Union[Dict[str, str], Dict[str, List[str]], Dict[str, Union[str, int]], Dict[str, int], str]],
+    lint_ctx: LintContext,
+) -> None:
     build_number = get_field(meta, "build/number", 0)
     check_build_number(build_number)
     lint_ctx.info("Valid build number [%s]" % build_number)
@@ -148,7 +175,10 @@ def lint_build_number(meta, lint_ctx):
 
 @lints_metadata
 @wraps_recipe_error(is_error=True)
-def lint_version(meta, lint_ctx):
+def lint_version(
+    meta: Dict[str, Union[Dict[str, str], Dict[str, List[str]], Dict[str, Union[str, int]], Dict[str, int], str]],
+    lint_ctx: LintContext,
+) -> None:
     version = get_field(meta, "package/version")
     check_version(version)
     lint_ctx.info("Valid version number [%s]" % version)
@@ -156,7 +186,10 @@ def lint_version(meta, lint_ctx):
 
 @lints_metadata
 @wraps_recipe_error(is_error=True)
-def lint_name(meta, lint_ctx):
+def lint_name(
+    meta: Dict[str, Union[Dict[str, str], Dict[str, List[str]], Dict[str, Union[str, int]], Dict[str, int], str]],
+    lint_ctx: LintContext,
+) -> None:
     name = get_field(meta, "package/name")
     check_name(name)
     lint_ctx.info("Valid recipe name [%s]" % name)
@@ -164,7 +197,10 @@ def lint_name(meta, lint_ctx):
 
 @lints_metadata
 @wraps_recipe_error(is_error=False)
-def lint_fields(meta, lint_ctx):
+def lint_fields(
+    meta: Dict[str, Union[Dict[str, str], Dict[str, List[str]], Dict[str, Union[str, int]], Dict[str, int], str]],
+    lint_ctx: LintContext,
+) -> None:
     # Taken from validate_meta
     for section in meta:
         if section not in FIELDS:
@@ -184,12 +220,15 @@ def lint_fields(meta, lint_ctx):
 
 @lints_metadata
 @wraps_recipe_error(is_error=False)
-def lint_requirements(meta, lint_ctx):
+def lint_requirements(
+    meta: Dict[str, Union[Dict[str, str], Dict[str, List[str]], Dict[str, Union[str, int]], Dict[str, int], str]],
+    lint_ctx: LintContext,
+) -> None:
     check_requirements(meta)
     lint_ctx.info("Reference recipe files appear valid")
 
 
-def yield_recipes_on_paths(ctx, paths, recursive):
+def yield_recipes_on_paths(ctx: "PlanemoCliContext", paths: Tuple[str], recursive: bool) -> None:
     for path in paths:
         recipe_dirs = find_matching_directories(path, "meta.yaml", recursive=recursive)
         yield from recipe_dirs
