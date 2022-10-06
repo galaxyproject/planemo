@@ -300,6 +300,15 @@ def run_download_outputs_option():
     )
 
 
+def publish_dockstore_option():
+    return planemo_option(
+        "--publish/--no_publish",
+        is_flag=True,
+        default=True,
+        help="Set publish attribute to true in .dockstore.yml file",
+    )
+
+
 def no_dependency_resolution():
     return planemo_option(
         "--no_dependency_resolution",
