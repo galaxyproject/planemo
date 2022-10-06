@@ -1,4 +1,6 @@
 """Module describing the planemo ``clone`` command."""
+from typing import Callable
+
 import click
 
 from planemo import (
@@ -20,7 +22,7 @@ CLONE_GITHUB_TARGETS = {
 }
 
 
-def clone_target_arg():
+def clone_target_arg() -> Callable:
     """Represent target to clone/branch."""
     return click.argument(
         "target",
