@@ -13,12 +13,10 @@ from typing import (
 )
 
 import click
-
-if TYPE_CHECKING:
-    from click.core import (
-        Command,
-        Context,
-    )
+from click.core import (
+    Command,
+    Context,
+)
 
 from planemo import __version__
 from planemo.context import (
