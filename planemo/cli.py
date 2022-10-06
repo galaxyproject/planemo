@@ -113,7 +113,7 @@ def command_function(f: Callable) -> Callable:
 
 
 def _setup_profile_options(
-    ctx: PlanemoCliContext, profile_defaults: Dict[str, Optional[Union[str, Dict[str, str]]]], kwds: Dict[str, Any]
+    ctx: PlanemoCliContext, profile_defaults: Dict[str, Any], kwds: Dict[str, Any]
 ) -> None:
     for key, value in profile_defaults.items():
         option_present = key in kwds
