@@ -110,9 +110,7 @@ def command_function(f: Callable) -> Callable:
     return pass_context(handle_blended_options)
 
 
-def _setup_profile_options(
-    ctx: PlanemoCliContext, profile_defaults: Dict[str, Any], kwds: Dict[str, Any]
-) -> None:
+def _setup_profile_options(ctx: PlanemoCliContext, profile_defaults: Dict[str, Any], kwds: Dict[str, Any]) -> None:
     for key, value in profile_defaults.items():
         option_present = key in kwds
         option_cli_specified = option_present and (ctx.get_option_source(key) == OptionSource.cli)
