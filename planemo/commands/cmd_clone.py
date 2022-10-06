@@ -1,4 +1,6 @@
 """Module describing the planemo ``clone`` command."""
+from typing import Callable
+
 import click
 
 from planemo import (
@@ -7,7 +9,6 @@ from planemo import (
 )
 from planemo.cli import command_function
 from planemo.config import planemo_option
-from typing import Callable
 
 CLONE_GITHUB_TARGETS = {
     "tools-iuc": "galaxyproject/tools-iuc",
