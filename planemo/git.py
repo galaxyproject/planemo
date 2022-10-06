@@ -2,20 +2,31 @@
 
 import os
 import subprocess
+from typing import (
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    TYPE_CHECKING,
+    Union,
+)
 
 from galaxy.util import unicodify
 
 from planemo import io
 
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
 
-def git_env_for(path):
+
+def git_env_for(path: str) -> Dict[str, str]:
     """Setup env dictionary to target specified git repo with git commands."""
     env = os.environ.copy()
     env.update({"GIT_WORK_DIR": path, "GIT_DIR": os.path.join(path, ".git")})
     return env
 
 
-def ls_remote(ctx, remote_repo):
+def ls_remote(ctx: Optional["PlanemoCliContext"], remote_repo: str) -> Dict[str, str]:
     """Return a dictionary with refs as key and commits as value."""
     commits_and_refs = io.communicate(
         ["git", "ls-remote", remote_repo],
@@ -24,22 +35,28 @@ def ls_remote(ctx, remote_repo):
     return dict(line.split()[::-1] for line in commits_and_refs.decode("utf-8").splitlines())
 
 
-def init(ctx, repo_path):
+def init(ctx: "PlanemoCliContext", repo_path: str) -> None:
     env = git_env_for(repo_path)
     io.communicate(["git", "init"], env=env)
 
 
-def add(ctx, repo_path, file_path):
+def add(ctx: "PlanemoCliContext", repo_path: str, file_path: str) -> None:
     env = git_env_for(repo_path)
     io.communicate(["git", "add", os.path.relpath(file_path, repo_path)], env=env, cwd=repo_path)
 
 
-def commit(ctx, repo_path, message=""):
+def commit(ctx: "PlanemoCliContext", repo_path: str, message: str = "") -> None:
     env = git_env_for(repo_path)
     io.communicate(["git", "commit", "-m", message], env=env)
 
 
-def push(ctx, repo_path, to=None, branch=None, force=False):
+def push(
+    ctx: "PlanemoCliContext",
+    repo_path: str,
+    to: Optional[str] = None,
+    branch: Optional[str] = None,
+    force: bool = False,
+):
     env = git_env_for(repo_path)
     cmd = ["git", "push"]
     if force:
@@ -71,7 +88,9 @@ def checkout(ctx, remote_repo, local_path, branch=None, remote="origin", from_br
         io.communicate(["git", "merge", "--ff-only", f"{remote}/{from_branch}"], env=env)
 
 
-def command_clone(ctx, src, dest, mirror=False, branch=None):
+def command_clone(
+    ctx: "PlanemoCliContext", src: str, dest: str, mirror: bool = False, branch: Optional[str] = None
+) -> List[str]:
     """Produce a command-line string to clone a repository.
 
     Take in ``ctx`` to allow more configurability down the road.
@@ -85,7 +104,7 @@ def command_clone(ctx, src, dest, mirror=False, branch=None):
     return cmd
 
 
-def diff(ctx, directory, range):
+def diff(ctx: None, directory: str, range: str) -> List[str]:
     """Produce a list of diff-ed files for commit range."""
     cmd_template = "cd '%s' && git diff --name-only '%s' --"
     cmd = cmd_template % (directory, range)
@@ -93,7 +112,7 @@ def diff(ctx, directory, range):
     return [line.strip() for line in unicodify(stdout).splitlines() if line]
 
 
-def clone(*args, **kwds):
+def clone(*args, **kwds) -> Union[Tuple[bytes, None], Tuple[None, None]]:
     """Clone a git repository.
 
     See :func:`command_clone` for description of arguments.
@@ -102,7 +121,7 @@ def clone(*args, **kwds):
     return io.communicate(command)
 
 
-def rev(ctx, directory):
+def rev(ctx: Optional["PlanemoCliContext"], directory: str) -> str:
     """Raw revision for git directory specified.
 
     Throws ``RuntimeError`` if not a git directory.
@@ -113,12 +132,12 @@ def rev(ctx, directory):
     return unicodify(stdout).strip()
 
 
-def is_rev_dirty(ctx, directory):
+def is_rev_dirty(ctx: Optional["PlanemoCliContext"], directory: str) -> bool:
     """Check if specified git repository has uncommitted changes."""
     return io.shell(["git", "diff", "--quiet"], cwd=directory) != 0
 
 
-def rev_if_git(ctx, directory):
+def rev_if_git(ctx: Optional["PlanemoCliContext"], directory: str) -> Optional[str]:
     """Determine git revision (or ``None``)."""
     try:
         the_rev = rev(ctx, directory)
