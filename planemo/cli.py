@@ -2,8 +2,18 @@
 import functools
 import os
 import sys
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+)
 
 import click
+from click.core import (
+    Command,
+    Context,
+)
 
 from planemo import __version__
 from planemo.context import (
@@ -31,10 +41,10 @@ class PlanemoCliContext(PlanemoContext):
     for interacting with the click library.
     """
 
-    def _log_message(self, message):
+    def _log_message(self, message: str) -> None:
         click.echo(message, file=sys.stderr)
 
-    def exit(self, exit_code):
+    def exit(self, exit_code: int):
         """Exit planemo with the supplied exit code."""
         self.vlog("Exiting planemo with exit code [%d]" % exit_code)
         raise ExitCodeException(exit_code)
@@ -44,7 +54,7 @@ pass_context = click.make_pass_decorator(PlanemoCliContext, ensure=True)
 cmd_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), "commands"))
 
 
-def list_cmds():
+def list_cmds() -> List[str]:
     """List planemo commands from commands folder."""
     rv = []
     for filename in os.listdir(cmd_folder):
@@ -54,7 +64,7 @@ def list_cmds():
     return rv
 
 
-def name_to_command(name):
+def name_to_command(name: str) -> Command:
     """Convert a subcommand name to the cli function for that command.
 
     Command <X> is defined by the method 'planemo.commands.cmd_<x>:cli',
@@ -72,16 +82,16 @@ def name_to_command(name):
 
 
 class PlanemoCLI(click.MultiCommand):
-    def list_commands(self, ctx):
+    def list_commands(self, ctx: Context) -> List[str]:
         return list_cmds()
 
-    def get_command(self, ctx, name):
+    def get_command(self, ctx: Context, name: str) -> Command:
         if name in COMMAND_ALIASES:
             name = COMMAND_ALIASES[name]
         return name_to_command(name)
 
 
-def command_function(f):
+def command_function(f: Callable) -> Callable:
     """Extension point for processing kwds after click callbacks."""
 
     @functools.wraps(f)
@@ -100,7 +110,7 @@ def command_function(f):
     return pass_context(handle_blended_options)
 
 
-def _setup_profile_options(ctx, profile_defaults, kwds):
+def _setup_profile_options(ctx: PlanemoCliContext, profile_defaults: Dict[str, Any], kwds: Dict[str, Any]) -> None:
     for key, value in profile_defaults.items():
         option_present = key in kwds
         option_cli_specified = option_present and (ctx.get_option_source(key) == OptionSource.cli)
