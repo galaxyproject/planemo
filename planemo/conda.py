@@ -36,7 +36,7 @@ MESSAGE_ERROR_NOT_INSTALLING = (
 BEST_PRACTICE_CHANNELS = ["conda-forge", "bioconda", "defaults"]
 
 
-def build_conda_context(ctx: PlanemoCliContext, **kwds) -> CondaContext:
+def build_conda_context(ctx: "PlanemoCliContext", **kwds) -> CondaContext:
     """Build a galaxy-tool-util CondaContext tailored to planemo use.
 
     Using planemo's common command-line/global config options.
