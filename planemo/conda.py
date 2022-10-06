@@ -8,8 +8,10 @@ import collections
 import os
 import threading
 from copy import deepcopy
+from typing import TYPE_CHECKING
 
 from galaxy.tool_util.deps import conda_util
+from galaxy.tool_util.deps.conda_util import CondaContext
 from galaxy.util import unicodify
 
 from planemo.exit_codes import (
@@ -22,6 +24,9 @@ from planemo.io import (
 )
 from planemo.tools import yield_tool_sources_on_paths
 
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
+
 MESSAGE_ERROR_FAILED_INSTALL = "Attempted to install conda and failed."
 MESSAGE_ERROR_CANNOT_INSTALL = "Cannot install Conda - perhaps due to a failed installation or permission problems."
 MESSAGE_ERROR_NOT_INSTALLING = (
@@ -31,7 +36,7 @@ MESSAGE_ERROR_NOT_INSTALLING = (
 BEST_PRACTICE_CHANNELS = ["conda-forge", "bioconda", "defaults"]
 
 
-def build_conda_context(ctx, **kwds):
+def build_conda_context(ctx: "PlanemoCliContext", **kwds) -> CondaContext:
     """Build a galaxy-tool-util CondaContext tailored to planemo use.
 
     Using planemo's common command-line/global config options.
