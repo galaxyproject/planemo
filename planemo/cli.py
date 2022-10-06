@@ -8,7 +8,6 @@ from typing import (
     Dict,
     List,
     Optional,
-    TYPE_CHECKING,
     Union,
 )
 
