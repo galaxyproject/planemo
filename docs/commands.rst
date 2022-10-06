@@ -15,7 +15,6 @@ documentation describes these commands.
 .. include:: commands/conda_env.rst
 .. include:: commands/conda_init.rst
 .. include:: commands/conda_install.rst
-.. include:: commands/conda_lint.rst
 .. include:: commands/conda_search.rst
 .. include:: commands/config_init.rst
 .. include:: commands/container_register.rst
