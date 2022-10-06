@@ -7,8 +7,6 @@ from typing import (
     Callable,
     Dict,
     List,
-    Optional,
-    Union,
 )
 
 import click
