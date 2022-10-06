@@ -144,6 +144,7 @@ def tool_data_table_option():
         "--tool_data_table",
         type=click.Path(exists=True, file_okay=True, resolve_path=True),
         help="tool_data_table_conf.xml file to for specified tool(s).",
+        multiple=True,
     )
 
 
