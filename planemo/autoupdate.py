@@ -4,11 +4,24 @@ import collections
 import itertools
 import re
 import xml.etree.ElementTree as ET
+from typing import (
+    Any,
+    DefaultDict,
+    Dict,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    TYPE_CHECKING,
+    Union,
+)
+from xml.etree.ElementTree import ElementTree
 
 import packaging.version
 import requests
 import yaml
 from bioblend import toolshed
+from bioblend.toolshed import ToolShedInstance
 from galaxy.tool_util.deps import conda_util
 
 import planemo.conda
@@ -17,10 +30,15 @@ from planemo.io import (
     info,
 )
 
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
+    from planemo.galaxy.config import LocalGalaxyConfig
+    from planemo.runnable import Runnable
+
 AUTOUPDATE_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
 
 
-def find_macros(xml_tree):
+def find_macros(xml_tree: ElementTree) -> List[Any]:
     """
     Get macros from the XML tree
     """
@@ -30,7 +48,7 @@ def find_macros(xml_tree):
     return macros
 
 
-def get_requirements(xml_tree):
+def get_requirements(xml_tree: ElementTree) -> Tuple[Dict[str, Dict[str, Optional[str]]], Optional[str]]:
     """
     Get requirements from the XML tree
     """
@@ -40,6 +58,7 @@ def get_requirements(xml_tree):
         if requirement.attrib.get("version") == "@TOOL_VERSION@":
             main_req = requirement.text
         else:
+            assert requirement.text
             requirements[requirement.text] = {
                 "tag": ET.tostring(requirement, encoding="unicode").strip(),
                 "text": requirement.attrib.get("version"),
@@ -47,7 +66,7 @@ def get_requirements(xml_tree):
     return requirements, main_req
 
 
-def get_tokens(xml_tree):
+def get_tokens(xml_tree: ElementTree) -> Dict[str, Dict[str, Optional[str]]]:
     """
     Get tokens from the XML tree
     """
@@ -57,25 +76,33 @@ def get_tokens(xml_tree):
     return tokens
 
 
-def check_conda(tool_name, ctx, **kwds):
+def check_conda(package_name: str, ctx: "PlanemoCliContext", **kwds) -> str:
     """
-    Get the most up-to-date conda version for a tool requirement
+    Get the most up-to-date conda version for a package.
     """
     conda_context = planemo.conda.build_conda_context(ctx, **kwds)
     if not conda_context.is_conda_installed():
         # check directly via Anaconda API
-        r = requests.get("https://api.anaconda.org/search", params={"name": tool_name})
+        r = requests.get("https://api.anaconda.org/search", params={"name": package_name})
         search_results = itertools.chain.from_iterable(
-            n["versions"] for n in r.json() if n["name"] == tool_name and n["owner"] in kwds["conda_ensure_channels"]
+            n["versions"] for n in r.json() if n["name"] == package_name and n["owner"] in kwds["conda_ensure_channels"]
         )
         return sorted(search_results, key=packaging.version.parse, reverse=True)[0]
 
-    target = planemo.conda.conda_util.CondaTarget(tool_name)
-    search_results = conda_util.best_search_result(target, conda_context=conda_context)
-    return search_results[0]["version"]
+    target = conda_util.CondaTarget(package_name)
+    best_search_results = conda_util.best_search_result(target, conda_context=conda_context)
+    if best_search_results[0] is None:
+        raise Exception(f"No conda package found for {package_name}")
+    return best_search_results[0]["version"]
 
 
-def update_xml(tool_path, xml_tree, tags_to_update, wrapper_version_token, is_macro=False):
+def update_xml(
+    tool_path: str,
+    xml_tree: ElementTree,
+    tags_to_update: List[Dict[str, str]],
+    wrapper_version_token: Optional[Union[int, str]],
+    is_macro: bool = False,
+) -> None:
     """
     Write modified XML to tool_path
     """
@@ -108,7 +135,9 @@ def update_xml(tool_path, xml_tree, tags_to_update, wrapper_version_token, is_ma
         f.write(xml_text)
 
 
-def create_requirement_dict(xml_files, skip_reqs):
+def create_requirement_dict(
+    xml_files: Dict[str, ElementTree], skip_reqs: List[str]
+) -> Tuple[Dict[str, Dict[str, Dict[str, Optional[str]]]], Optional[Tuple[str, str]]]:
     """
     Create dict with requirements and find main requirement
     """
@@ -126,11 +155,15 @@ def create_requirement_dict(xml_files, skip_reqs):
     return requirements, main_req
 
 
-def create_token_dict(ctx, xml_files, main_req, **kwds):
+def create_token_dict(
+    ctx: "PlanemoCliContext", xml_files: Dict[str, ElementTree], main_req: Tuple[str, str], **kwds
+) -> Tuple[
+    Dict[str, Dict[str, Dict[str, Optional[str]]]], DefaultDict[str, List[Dict[str, str]]], Optional[str], Optional[str]
+]:
     """
     Create dict with relevant tokens and check conda requirements for main
     """
-    tokens = {}
+    tokens: Dict[str, Dict[str, Dict[str, Optional[str]]]] = {}
     current_main_req, updated_main_req = None, None
     xml_to_update = collections.defaultdict(list)
     for k, v in xml_files.items():
@@ -140,16 +173,23 @@ def create_token_dict(ctx, xml_files, main_req, **kwds):
             current_main_req = tokens[k]["@TOOL_VERSION@"]["text"]
             updated_main_req = check_conda(main_req[0], ctx, **kwds)
             if current_main_req:
-                xml_to_update[k].append(
-                    {"type": "token", "tag": tokens[k]["@TOOL_VERSION@"]["tag"], "value": updated_main_req}
-                )
+                tag = tokens[k]["@TOOL_VERSION@"]["tag"]
+                assert tag is not None
+                xml_to_update[k].append({"type": "token", "tag": tag, "value": updated_main_req})
 
     return tokens, xml_to_update, current_main_req, updated_main_req
 
 
 def perform_required_update(
-    ctx, xml_files, tool_path, requirements, tokens, xml_to_update, wrapper_version_token, **kwds
-):
+    ctx: "PlanemoCliContext",
+    xml_files: Dict[str, ElementTree],
+    tool_path: str,
+    requirements: Dict[str, Dict[str, Dict[str, Optional[str]]]],
+    tokens: Dict[str, Dict[str, Dict[str, Optional[str]]]],
+    xml_to_update: DefaultDict[str, List[Dict[str, str]]],
+    wrapper_version_token: Optional[Union[int, str]],
+    **kwds,
+) -> Set[str]:
     """
     Carry out the update, if requirements are out-of-date
     """
@@ -159,22 +199,26 @@ def perform_required_update(
             req_check = check_conda(req, ctx, **kwds)
             # print(req_check, v[req]['text'])
             if req_check != v[req]["text"]:
-                xml_to_update[k].append({"type": "requirement", "tag": v[req]["tag"], "value": req_check})
+                tag = v[req]["tag"]
+                assert tag is not None
+                xml_to_update[k].append({"type": "requirement", "tag": tag, "value": req_check})
 
     # check all tokens, if wrapper_version_token exists
     if wrapper_version_token:
         for k, v in tokens.items():
-            if wrapper_version_token in v:
-                xml_to_update[k].append({"type": "token", "tag": v[wrapper_version_token]["tag"], "value": 0})
+            if isinstance(wrapper_version_token, str) and wrapper_version_token in v:
+                tag = v[wrapper_version_token]["tag"]
+                assert tag is not None
+                xml_to_update[k].append({"type": "token", "tag": tag, "value": "0"})
 
     # finally, update each file separately
-    for k, v in xml_files.items():
-        update_xml(k, v, xml_to_update[k], wrapper_version_token, is_macro=(k != tool_path))
+    for k, et in xml_files.items():
+        update_xml(k, et, xml_to_update[k], wrapper_version_token, is_macro=(k != tool_path))
     info(f"Tool {tool_path} successfully updated.")
     return set(xml_files)
 
 
-def autoupdate_tool(ctx, tool_path, modified_files, **kwds):
+def autoupdate_tool(ctx: "PlanemoCliContext", tool_path: str, modified_files: Set[Any], **kwds) -> Optional[Set[str]]:
     """
     Autoupdate an XML file
     """
@@ -188,14 +232,14 @@ def autoupdate_tool(ctx, tool_path, modified_files, **kwds):
         versions = versions.split("+galaxy")
         if versions[0] != "@TOOL_VERSION@":
             error("Tool version does not contain @TOOL_VERSION@ as required by autoupdate.")
-            return
+            return None
         elif len(versions) == 1:
             wrapper_version_token = None
         else:
             if versions[1][0] == versions[1][-1] == "@":
                 wrapper_version_token = versions[1]
             else:
-                wrapper_version_token = 0  # assume an int
+                wrapper_version_token = 0  # assume an int, reset to 0
     else:
         wrapper_version_token = None
 
@@ -206,18 +250,18 @@ def autoupdate_tool(ctx, tool_path, modified_files, **kwds):
 
     requirements, main_req = create_requirement_dict(xml_files, kwds.get("skip_requirements", "").split(","))
     if main_req is None:
-        return
+        return None
     tokens, xml_to_update, current_main_req, updated_main_req = create_token_dict(ctx, xml_files, main_req, **kwds)
 
     if current_main_req == updated_main_req and not (modified_files & set(xml_files)):
         info(f"No updates required or made to {tool_path}.")
-        return  # end here if no update needed
+        return None  # end here if no update needed
 
     if kwds.get("dry_run"):
         error(
             f"Update required to {tool_path}! Tool main requirement has version {current_main_req}, newest conda version is {updated_main_req}"
         )
-        return
+        return None
 
     else:
         info(f"Updating {tool_path.split('/')[-1]} from version {current_main_req} to {updated_main_req}")
@@ -226,7 +270,7 @@ def autoupdate_tool(ctx, tool_path, modified_files, **kwds):
         )
 
 
-def _update_wf(config, workflow_id, instance=False):
+def _update_wf(config: "LocalGalaxyConfig", workflow_id: str, instance: bool = False) -> None:
     """
     Recursively update a workflow, including subworkflows
     """
@@ -240,7 +284,9 @@ def _update_wf(config, workflow_id, instance=False):
     config.user_gi.workflows.refactor_workflow(wf["id"], actions=[{"action_type": "upgrade_all_steps"}])
 
 
-def outdated_tools(ctx, wf_dict, ts):
+def outdated_tools(
+    ctx: "PlanemoCliContext", wf_dict: Dict[str, Any], ts: ToolShedInstance
+) -> Dict[str, Dict[str, str]]:
     def check_tool_step(step, ts):  # return a dict with current and newest tool version, in case they don't match
         if not step["tool_id"].startswith(AUTOUPDATE_TOOLSHED_URL[8:]):
             return {}  # assume a built in tool
@@ -276,7 +322,9 @@ def outdated_tools(ctx, wf_dict, ts):
     return outdated_tool_dict
 
 
-def get_tools_to_update(ctx, workflow, tools_to_skip):
+def get_tools_to_update(
+    ctx: "PlanemoCliContext", workflow: "Runnable", tools_to_skip: List[Any]
+) -> Dict[str, Dict[str, str]]:
     # before we run the autoupdate, we check the tools against the toolshed to see if there
     # are any new versions. This saves spinning up Galaxy and installing the tools if there
     # is nothing to do, and also allows us to collect a list of the tools which need updating
@@ -288,13 +336,13 @@ def get_tools_to_update(ctx, workflow, tools_to_skip):
     return {tool: versions for tool, versions in tools_to_update.items() if tool not in tools_to_skip}
 
 
-def autoupdate_wf(ctx, config, wf):
+def autoupdate_wf(ctx: "PlanemoCliContext", config: "LocalGalaxyConfig", wf: "Runnable") -> Dict[str, Any]:
     workflow_id = config.workflow_id_for_runnable(wf)
     _update_wf(config, workflow_id)
     return config.user_gi.workflows.export_workflow_dict(workflow_id)
 
 
-def fix_workflow_ga(original_wf, updated_wf):
+def fix_workflow_ga(original_wf: Dict[str, Any], updated_wf: Dict[str, Any]) -> Dict[str, Any]:
     # the Galaxy refactor action can't do everything right now... some manual fixes here
     # * bump release number if present
     # * order steps numerically, leave everything else sorted as in the original workflow
@@ -317,7 +365,7 @@ def fix_workflow_ga(original_wf, updated_wf):
     return edited_wf
 
 
-def fix_workflow_gxformat2(original_wf, updated_wf):
+def fix_workflow_gxformat2(original_wf: Dict[str, Any], updated_wf: Dict[str, Any]) -> Dict[str, Any]:
     # does the same as fix_workflow_ga for gxformat2
     edited_wf = original_wf.copy()
     # check release; bump if it exists
