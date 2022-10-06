@@ -6,11 +6,21 @@ It can be found at https://github.com/common-workflow-language/cwltool,
 """
 import json
 import tempfile
+from typing import (
+    Dict,
+    Optional,
+    TYPE_CHECKING,
+    Union,
+)
 
 from galaxy.tool_util.cwl.cwltool_deps import (
     ensure_cwltool_available,
     main,
 )
+
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
+    from planemo.runnable import Runnable
 
 from planemo.deps import ensure_dependency_resolvers_conf_configured
 from planemo.io import (
@@ -28,29 +38,36 @@ JSON_PARSE_ERROR_MESSAGE = "Failed to parse JSON from cwltool output [%s] " "in 
 class CwlToolRunResponse(SuccessfulRunResponse):
     """Describe the resut of a cwltool invocation."""
 
-    def __init__(self, runnable, log, outputs=None):
+    def __init__(
+        self,
+        runnable: "Runnable",
+        log: str,
+        outputs: Optional[Dict[str, Union[Dict[str, Union[str, int]], int]]] = None,
+    ) -> None:
         self._runnable = runnable
         self._log = log
         self._outputs = outputs
 
     @property
-    def log(self):
+    def log(self) -> str:
         return self._log
 
     @property
-    def job_info(self):
+    def job_info(self) -> None:
         return None
 
     @property
-    def invocation_details(self):
+    def invocation_details(self) -> None:
         return None
 
     @property
-    def outputs_dict(self):
+    def outputs_dict(self) -> Optional[Dict[str, Union[Dict[str, Union[str, int]], int]]]:
         return self._outputs
 
 
-def run_cwltool(ctx, runnable, job_path, **kwds):
+def run_cwltool(
+    ctx: "PlanemoCliContext", runnable: "Runnable", job_path: str, **kwds
+) -> Union[ErrorRunResponse, CwlToolRunResponse]:
     """Translate planemo kwds to cwltool kwds and run cwltool main function."""
     ensure_cwltool_available()
 
