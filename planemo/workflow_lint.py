@@ -53,13 +53,14 @@ class WorkflowLintContext(LintContext):
     training_topic = None
 
 
-def generate_dockstore_yaml(directory: str) -> str:
+def generate_dockstore_yaml(directory: str, publish: bool = True) -> str:
     workflows = []
     for workflow_path in find_workflow_descriptions(directory):
         test_parameter_path = f"{workflow_path.rsplit('.', 1)[0]}-tests.yml"
         workflow_entry: Dict[str, Any] = {
             # TODO: support CWL
             "subclass": "Galaxy",
+            "publish": publish,
             "name": "main",
             "primaryDescriptorPath": f"/{os.path.relpath(workflow_path, directory)}",
         }
