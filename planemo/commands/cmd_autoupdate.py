@@ -1,8 +1,10 @@
 """Module describing the planemo ``autoupdate`` command."""
 import json
+from typing import Callable
 
 import click
 import yaml
+from galaxy.tool_util.parser.xml import XmlToolSource
 
 from planemo import (
     autoupdate,
@@ -35,19 +37,19 @@ from planemo.tools import (
 )
 
 
-def dry_run_option():
+def dry_run_option() -> Callable:
     """Perform a dry run autoupdate without modifying the XML files"""
     return planemo_option(
         "--dry-run", is_flag=True, help="Perform a dry run autoupdate without modifying the XML files."
     )
 
 
-def test_option():
+def test_option() -> Callable:
     """Test updated XML files"""
     return planemo_option("--test", is_flag=True, help="Test updated XML files.")
 
 
-def skiplist_option():
+def skiplist_option() -> Callable:
     """List of XML files to skip"""
     return planemo_option(
         "--skiplist",
@@ -56,7 +58,7 @@ def skiplist_option():
     )
 
 
-def skip_requirements_option():
+def skip_requirements_option() -> Callable:
     """List of requirements to skip"""
     return planemo_option(
         "--skip_requirements",
@@ -175,7 +177,7 @@ def cli(ctx, paths, **kwds):  # noqa C901
     return coalesce_return_codes(exit_codes, assert_at_least_one=assert_tools)
 
 
-def handle_tool_load_error(tool_path, tool_xml):
+def handle_tool_load_error(tool_path: str, tool_xml: XmlToolSource) -> bool:
     """Return True if tool_xml is tool load error (invalid XML), and
     print a helpful error message.
     """
