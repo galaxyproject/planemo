@@ -7,6 +7,7 @@ from planemo import (
 )
 from planemo.cli import command_function
 from planemo.config import planemo_option
+from typing import Callable
 
 CLONE_GITHUB_TARGETS = {
     "tools-iuc": "galaxyproject/tools-iuc",
@@ -20,7 +21,7 @@ CLONE_GITHUB_TARGETS = {
 }
 
 
-def clone_target_arg():
+def clone_target_arg() -> Callable:
     """Represent target to clone/branch."""
     return click.argument(
         "target",
