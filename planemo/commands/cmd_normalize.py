@@ -7,7 +7,7 @@ from galaxy.tool_util.loader import (
     load_tool,
     raw_tool_xml_tree,
 )
-from lxml.etree import _Element
+from galaxy.util import Element
 
 from planemo import options
 from planemo.cli import command_function
@@ -85,7 +85,7 @@ def cli(ctx, path, expand_macros=False, **kwds):
     ElementTree.dump(root)
 
 
-def _indent(elem: _Element, level: int = 0) -> None:
+def _indent(elem: Element, level: int = 0) -> None:
     # http://stackoverflow.com/questions/749796/pretty-printing-xml-in-python
     i = "\n" + level * "    "
     if len(elem):
