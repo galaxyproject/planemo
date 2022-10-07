@@ -11,7 +11,10 @@ from planemo.io import (
     error,
     real_io,
 )
-from planemo.runnable import ErrorRunResponse
+from planemo.runnable import (
+    ErrorRunResponse,
+    Runnable,
+)
 from .run import (
     CwlToolRunResponse,
     JSON_PARSE_ERROR_MESSAGE,
@@ -20,7 +23,7 @@ from .run import (
 TOIL_REQUIRED_MESSAGE = "This functionality requires Toil, please install with 'pip install toil'"
 
 
-def run_toil(ctx, path, job_path, **kwds):
+def run_toil(ctx, runnable: "Runnable", job_path: str, **kwds):
     """Translate planemo kwds to cwltool kwds and run cwltool main function."""
     _ensure_toil_available()
 
@@ -42,8 +45,8 @@ def run_toil(ctx, path, job_path, **kwds):
     if kwds.get("non_strict_cwl", False):
         args.append("--non-strict")
 
-    args.extend([path, job_path])
-    ctx.vlog("Calling cwltoil with arguments %s" % args)
+    args.extend([runnable.path, job_path])
+    ctx.vlog(f"Calling cwltoil with arguments {args}")
     with tempfile.NamedTemporaryFile("w") as tmp_stdout:
         # cwltool passes sys.stderr to subprocess.Popen - ensure it has
         # and actual fileno.
@@ -65,6 +68,7 @@ def run_toil(ctx, path, job_path, **kwds):
             return ErrorRunResponse("Error running Toil")
         outputs = result
     return CwlToolRunResponse(
+        runnable,
         "",
         outputs=outputs,
     )

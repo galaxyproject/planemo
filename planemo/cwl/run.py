@@ -7,6 +7,7 @@ It can be found at https://github.com/common-workflow-language/cwltool,
 import json
 import tempfile
 from typing import (
+    Any,
     Dict,
     Optional,
     TYPE_CHECKING,
@@ -18,10 +19,6 @@ from galaxy.tool_util.cwl.cwltool_deps import (
     main,
 )
 
-if TYPE_CHECKING:
-    from planemo.cli import PlanemoCliContext
-    from planemo.runnable import Runnable
-
 from planemo.deps import ensure_dependency_resolvers_conf_configured
 from planemo.io import (
     error,
@@ -29,8 +26,12 @@ from planemo.io import (
 )
 from planemo.runnable import (
     ErrorRunResponse,
+    Runnable,
     SuccessfulRunResponse,
 )
+
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
 
 JSON_PARSE_ERROR_MESSAGE = "Failed to parse JSON from cwltool output [%s] " "in file [%s]. cwltool logs [%s]."
 
@@ -42,7 +43,7 @@ class CwlToolRunResponse(SuccessfulRunResponse):
         self,
         runnable: "Runnable",
         log: str,
-        outputs: Optional[Dict[str, Union[Dict[str, Union[str, int]], int]]] = None,
+        outputs: Optional[Dict[str, Any]] = None,
     ) -> None:
         self._runnable = runnable
         self._log = log
@@ -61,7 +62,7 @@ class CwlToolRunResponse(SuccessfulRunResponse):
         return None
 
     @property
-    def outputs_dict(self) -> Optional[Dict[str, Union[Dict[str, Union[str, int]], int]]]:
+    def outputs_dict(self) -> Optional[Dict[str, Any]]:
         return self._outputs
 
 

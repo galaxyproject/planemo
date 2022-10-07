@@ -6,9 +6,7 @@ from typing import (
     Dict,
     List,
     Optional,
-    Tuple,
     TYPE_CHECKING,
-    Union,
 )
 
 from galaxy.util import unicodify
@@ -26,7 +24,7 @@ def git_env_for(path: str) -> Dict[str, str]:
     return env
 
 
-def ls_remote(ctx: Optional["PlanemoCliContext"], remote_repo: str) -> Dict[str, str]:
+def ls_remote(ctx: "PlanemoCliContext", remote_repo: str) -> Dict[str, str]:
     """Return a dictionary with refs as key and commits as value."""
     commits_and_refs = io.communicate(
         ["git", "ls-remote", remote_repo],
@@ -56,7 +54,7 @@ def push(
     to: Optional[str] = None,
     branch: Optional[str] = None,
     force: bool = False,
-):
+) -> None:
     env = git_env_for(repo_path)
     cmd = ["git", "push"]
     if force:
@@ -104,40 +102,38 @@ def command_clone(
     return cmd
 
 
-def diff(ctx: None, directory: str, range: str) -> List[str]:
+def diff(ctx: "PlanemoCliContext", directory: str, range: str) -> List[str]:
     """Produce a list of diff-ed files for commit range."""
-    cmd_template = "cd '%s' && git diff --name-only '%s' --"
-    cmd = cmd_template % (directory, range)
+    cmd = f"cd '{directory}' && git diff --name-only '{range}' --"
     stdout, _ = io.communicate(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     return [line.strip() for line in unicodify(stdout).splitlines() if line]
 
 
-def clone(*args, **kwds) -> Union[Tuple[bytes, None], Tuple[None, None]]:
+def clone(*args, **kwds) -> None:
     """Clone a git repository.
 
     See :func:`command_clone` for description of arguments.
     """
     command = command_clone(*args, **kwds)
-    return io.communicate(command)
+    io.communicate(command)
 
 
-def rev(ctx: Optional["PlanemoCliContext"], directory: str) -> str:
+def rev(ctx: "PlanemoCliContext", directory: str) -> str:
     """Raw revision for git directory specified.
 
     Throws ``RuntimeError`` if not a git directory.
     """
-    cmd_template = "cd '%s' && git rev-parse HEAD"
-    cmd = cmd_template % directory
+    cmd = f"cd '{directory}' && git rev-parse HEAD"
     stdout, _ = io.communicate(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return unicodify(stdout).strip()
 
 
-def is_rev_dirty(ctx: Optional["PlanemoCliContext"], directory: str) -> bool:
+def is_rev_dirty(ctx: "PlanemoCliContext", directory: str) -> bool:
     """Check if specified git repository has uncommitted changes."""
     return io.shell(["git", "diff", "--quiet"], cwd=directory) != 0
 
 
-def rev_if_git(ctx: Optional["PlanemoCliContext"], directory: str) -> Optional[str]:
+def rev_if_git(ctx: "PlanemoCliContext", directory: str) -> Optional[str]:
     """Determine git revision (or ``None``)."""
     try:
         the_rev = rev(ctx, directory)
