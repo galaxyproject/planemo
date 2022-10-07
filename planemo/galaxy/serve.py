@@ -53,7 +53,7 @@ def _serve(ctx, runnables, **kwds):
             raise Exception(message)
         host = kwds.get("host", "127.0.0.1")
 
-        timeout = 500
+        timeout = 900
         galaxy_url = f"http://{host}:{port}"
         galaxy_alive = sleep(galaxy_url, verbose=ctx.verbose, timeout=timeout)
         if not galaxy_alive:
