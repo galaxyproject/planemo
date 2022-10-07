@@ -48,7 +48,6 @@ PACKAGES = [
     "planemo",
     "planemo.cwl",
     "planemo.commands",
-    "planemo.conda_verify",
     "planemo.database",
     "planemo.engine",
     "planemo.galaxy",

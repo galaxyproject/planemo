@@ -56,7 +56,6 @@ else:
 TEST_DIR = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
 TEST_REPOS_DIR = os.path.join(TEST_DATA_DIR, "repos")
-TEST_RECIPES_DIR = os.path.join(TEST_DATA_DIR, "recipes")
 TEST_TOOLS_DIR = os.path.join(TEST_DATA_DIR, "tools")
 PROJECT_TEMPLATES_DIR = os.path.join(TEST_DIR, os.path.pardir, "project_templates")
 CWL_DRAFT3_DIR = os.path.join(PROJECT_TEMPLATES_DIR, "cwl_draft3_spec")

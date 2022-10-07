@@ -8,7 +8,6 @@ Subpackages
    :maxdepth: 4
 
    planemo.commands
-   planemo.conda_verify
    planemo.cwl
    planemo.database
    planemo.engine
@@ -60,14 +59,6 @@ planemo.conda module
 --------------------
 
 .. automodule:: planemo.conda
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-planemo.conda\_lint module
---------------------------
-
-.. automodule:: planemo.conda_lint
    :members:
    :undoc-members:
    :show-inheritance:

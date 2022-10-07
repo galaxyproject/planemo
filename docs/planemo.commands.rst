@@ -68,14 +68,6 @@ planemo.commands.cmd\_conda\_install module
    :undoc-members:
    :show-inheritance:
 
-planemo.commands.cmd\_conda\_lint module
-----------------------------------------
-
-.. automodule:: planemo.commands.cmd_conda_lint
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 planemo.commands.cmd\_conda\_search module
 ------------------------------------------
 
