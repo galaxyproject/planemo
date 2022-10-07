@@ -1355,6 +1355,7 @@ def _handle_refgenie_config(config_directory, galaxy_root, kwds):
 
 def _handle_kwd_overrides(properties, kwds):
     kwds_gx_properties = [
+        "tool_data_path",
         "job_config_file",
         "job_metrics_config_file",
         "dependency_resolvers_config_file",

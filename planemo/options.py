@@ -402,6 +402,16 @@ def job_config_option():
     )
 
 
+def tool_data_path_option():
+    return planemo_option(
+        "--tool_data_path",
+        type=click.Path(exists=True, file_okay=False, dir_okay=True, resolve_path=True),
+        help="Directory where data used by tools is located. Required if tests are run in docker and should make use of external reference data.",
+        default=None,
+        use_global_config=True,
+    )
+
+
 def mulled_containers_option():
     return planemo_option(
         "mulled_containers",
@@ -1184,6 +1194,7 @@ def galaxy_target_options():
         # Profile options...
         job_config_option(),
         tool_dependency_dir_option(),
+        tool_data_path_option(),
     )
 
 
