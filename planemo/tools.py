@@ -14,9 +14,7 @@ from typing import (
 
 from galaxy.tool_util import loader_directory
 from galaxy.tool_util.fetcher import ToolLocationFetcher
-from galaxy.tool_util.parser.cwl import CwlToolSource
-from galaxy.tool_util.parser.xml import XmlToolSource
-from galaxy.tool_util.parser.yaml import YamlToolSource
+from galaxy.tool_util.parser.interface import ToolSource
 
 from planemo.io import (
     error,
@@ -54,9 +52,7 @@ def yield_tool_sources_on_paths(
     recursive: bool = False,
     yield_load_errors: bool = True,
     exclude_deprecated: bool = False,
-) -> Iterator[
-    Union[Tuple[str, "XmlToolSource"], Tuple[str, object], Tuple[str, "CwlToolSource"], Tuple[str, "YamlToolSource"]]
-]:
+) -> Iterator[Tuple[str, "ToolSource"]]:
     """Walk paths and yield ToolSource objects discovered."""
     for path in paths:
         for (tool_path, tool_source) in yield_tool_sources(ctx, path, recursive, yield_load_errors):
@@ -67,9 +63,7 @@ def yield_tool_sources_on_paths(
 
 def yield_tool_sources(
     ctx: "PlanemoCliContext", path: str, recursive: bool = False, yield_load_errors: bool = True
-) -> Iterator[
-    Union[Tuple[str, "XmlToolSource"], Tuple[str, object], Tuple[str, "CwlToolSource"], Tuple[str, "YamlToolSource"]]
-]:
+) -> Iterator[Tuple[str, "ToolSource"]]:
     """Walk single path and yield ToolSource objects discovered."""
     tools = load_tool_sources_from_path(
         path,
@@ -91,11 +85,7 @@ def yield_tool_sources(
 
 def load_tool_sources_from_path(
     path: str, recursive: bool, register_load_errors: bool = False
-) -> List[
-    Union[
-        Tuple[str, "YamlToolSource"], Any, Tuple[str, "XmlToolSource"], Tuple[str, "CwlToolSource"], Tuple[str, object]
-    ]
-]:
+) -> List[Tuple[str, "ToolSource"]]:
     """Generate a list for tool sources found down specified path."""
     return loader_directory.load_tool_sources_from_path(
         path,
@@ -110,9 +100,7 @@ def _load_exception_handler(path, exc_info):
     traceback.print_exception(*exc_info, limit=1, file=sys.stderr)
 
 
-def _is_tool_source(
-    ctx: "PlanemoCliContext", tool_path: str, tool_source: Union["XmlToolSource", "CwlToolSource", "YamlToolSource"]
-) -> bool:
+def _is_tool_source(ctx: "PlanemoCliContext", tool_path: str, tool_source: "ToolSource") -> bool:
     if os.path.basename(tool_path) in SHED_FILES:
         return False
     root = getattr(tool_source, "root", None)
