@@ -290,3 +290,12 @@ class CmdTestTestCase(CliTestCase):
                 command += ["--database_type", database_type]
 
         return command
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_with_optional_input_output_not_provided(self):
+        with self._isolate():
+            test_artifact = os.path.join(TEST_DATA_DIR, "wf16_optional_input_output_label.ga")
+            test_command = self._test_command()
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command.append(test_artifact)
+            self._check_exit_code(test_command, exit_code=0)

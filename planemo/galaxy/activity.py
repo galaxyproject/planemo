@@ -415,9 +415,13 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             if not output_id:
                 ctx.vlog("Workflow output identified without an ID (label), skipping")
                 continue
-            output_dict_value = None
             is_cwl = self._runnable.type in [RunnableType.cwl_workflow, RunnableType.cwl_tool]
             output_src = self.output_src(runnable_output)
+            if not output_src:
+                # Optional workflow output
+                ctx.vlog(f"Optional workflow output '{output_id}' not created, skipping")
+                outputs_dict[output_id] = None
+                continue
             output_dataset_id = output_src["id"]
             galaxy_output = self.to_galaxy_output(runnable_output)
             cwl_output = output_to_cwl_json(
@@ -427,6 +431,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                 self._get_extra_files,
                 pseduo_location=True,
             )
+            output_dict_value = None
             if is_cwl or output_src["src"] == "hda":
                 output_dict_value = cwl_output
             else:
@@ -612,6 +617,8 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
             return invocation["outputs"][output.get_id()]
         elif output_name in invocation["output_collections"]:
             return invocation["output_collections"][output.get_id()]
+        elif output.is_optional():
+            return None
         else:
             raise Exception(f"Failed to find output [{output_name}] in invocation outputs [{invocation['outputs']}]")
 
