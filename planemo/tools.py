@@ -3,22 +3,34 @@
 import os
 import sys
 import traceback
+from typing import (
+    Iterable,
+    Iterator,
+    List,
+    Tuple,
+    TYPE_CHECKING,
+    Union,
+)
 
 from galaxy.tool_util import loader_directory
 from galaxy.tool_util.fetcher import ToolLocationFetcher
+from galaxy.tool_util.loader_directory import is_tool_load_error
+from galaxy.tool_util.parser.interface import ToolSource
 
 from planemo.io import (
     error,
     info,
 )
 
-is_tool_load_error = loader_directory.is_tool_load_error
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
+
 SKIP_XML_MESSAGE = "Skipping XML file - does not appear to be a tool %s."
 SHED_FILES = ["tool_dependencies.xml", "repository_dependencies.xml"]
 LOAD_ERROR_MESSAGE = "Error loading tool with path %s"
 
 
-def uri_to_path(ctx, uri):
+def uri_to_path(ctx: "PlanemoCliContext", uri: str) -> str:
     """Fetch URI to a local path."""
     fetcher = ToolLocationFetcher()
     return fetcher.to_tool_path(uri)
@@ -34,7 +46,13 @@ def uris_to_paths(ctx, uris):
     return paths
 
 
-def yield_tool_sources_on_paths(ctx, paths, recursive=False, yield_load_errors=True, exclude_deprecated=False):
+def yield_tool_sources_on_paths(
+    ctx: "PlanemoCliContext",
+    paths: Iterable[str],
+    recursive: bool = False,
+    yield_load_errors: bool = True,
+    exclude_deprecated: bool = False,
+) -> Iterator[Tuple[str, Union[ToolSource, object]]]:
     """Walk paths and yield ToolSource objects discovered."""
     for path in paths:
         for (tool_path, tool_source) in yield_tool_sources(ctx, path, recursive, yield_load_errors):
@@ -43,7 +61,9 @@ def yield_tool_sources_on_paths(ctx, paths, recursive=False, yield_load_errors=T
             yield (tool_path, tool_source)
 
 
-def yield_tool_sources(ctx, path, recursive=False, yield_load_errors=True):
+def yield_tool_sources(
+    ctx: "PlanemoCliContext", path: str, recursive: bool = False, yield_load_errors: bool = True
+) -> Iterator[Tuple[str, Union[ToolSource, object]]]:
     """Walk single path and yield ToolSource objects discovered."""
     tools = load_tool_sources_from_path(
         path,
@@ -63,7 +83,9 @@ def yield_tool_sources(ctx, path, recursive=False, yield_load_errors=True):
         yield (tool_path, tool_source)
 
 
-def load_tool_sources_from_path(path, recursive, register_load_errors=False):
+def load_tool_sources_from_path(
+    path: str, recursive: bool, register_load_errors: bool = False
+) -> List[Tuple[str, Union[ToolSource, object]]]:
     """Generate a list for tool sources found down specified path."""
     return loader_directory.load_tool_sources_from_path(
         path,
@@ -78,7 +100,7 @@ def _load_exception_handler(path, exc_info):
     traceback.print_exception(*exc_info, limit=1, file=sys.stderr)
 
 
-def _is_tool_source(ctx, tool_path, tool_source):
+def _is_tool_source(ctx: "PlanemoCliContext", tool_path: str, tool_source: "ToolSource") -> bool:
     if os.path.basename(tool_path) in SHED_FILES:
         return False
     root = getattr(tool_source, "root", None)

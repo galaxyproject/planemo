@@ -15,7 +15,7 @@ BIOBLEND_UNAVAILABLE = (
 )
 
 
-def ensure_module():
+def ensure_module() -> None:
     """Throw an exception if bioblend is not available to Planemo."""
     if toolshed is None:
         raise Exception(BIOBLEND_UNAVAILABLE)

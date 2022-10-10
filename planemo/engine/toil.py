@@ -17,8 +17,7 @@ class ToilEngine(BaseEngine):
         """Run CWL job using Toil."""
         results = []
         for runnable, job_path in zip(runnables, job_paths):
-            path = runnable.path
-            results.append(cwl.run_toil(self._ctx, path, job_path, **self._kwds))
+            results.append(cwl.run_toil(self._ctx, runnable, job_path, **self._kwds))
         return results
 
 
