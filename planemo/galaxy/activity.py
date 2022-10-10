@@ -420,18 +420,13 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             output_src = self.output_src(runnable_output)
             output_dataset_id = output_src["id"]
             galaxy_output = self.to_galaxy_output(runnable_output)
-            try:
-                cwl_output = output_to_cwl_json(
-                    galaxy_output,
-                    self._get_metadata,
-                    get_dataset,
-                    self._get_extra_files,
-                    pseduo_location=True,
-                )
-            except AssertionError:
-                # In galaxy-tool-util < 21.05 output_to_cwl_json will raise an AssertionError when the output state is not OK
-                # Remove with new galaxy-tool-util release.
-                continue
+            cwl_output = output_to_cwl_json(
+                galaxy_output,
+                self._get_metadata,
+                get_dataset,
+                self._get_extra_files,
+                pseduo_location=True,
+            )
             if is_cwl or output_src["src"] == "hda":
                 output_dict_value = cwl_output
             else:
