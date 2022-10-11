@@ -109,15 +109,13 @@ def transform_param_info(info: ParamInfo, namespace: str, depth: int):
 
     iteration_var = "$item"
     if info.param_type.is_flag:
-        param = create_flag(iteration_var, f"{name} definition", depth)
+        param = create_flag(iteration_var, f"{name} definition", depth + 1)
     else:
         body_expression = create_body_expression(info, iteration_var, depth + 2)
         param = create_element_with_body("if", iteration_var, [body_expression],
                                          f"{name} definition", depth + 1)
 
-    head_expression = (f"{iteration_var}"
-                       f" in ${namespace}."
-                       f"{info.name}")
+    head_expression = f"{iteration_var} in ${namespace}{separator}{info.name}"
 
     return create_element_with_body("for", head_expression,
                                     [param],

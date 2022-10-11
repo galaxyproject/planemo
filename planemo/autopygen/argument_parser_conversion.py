@@ -243,7 +243,7 @@ def xml_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
                    reserved_names: Set[str],
                    name_map: Dict[str, str],
                    section_map: Dict[str, str],
-                   depth: int = 2, dont_wrap_default_section: bool = True) -> Tuple[str, str, ParamInfo]:
+                   depth: int = 2, dont_wrap_default_section: bool = True) -> Tuple[str, str, Optional[ParamInfo]]:
     input_params, outputs_str, version_command = \
         generate_xml_from_section(parser.default_section,
                                   depth,
@@ -380,7 +380,7 @@ def _determine_param_type(action: DecoyParser.Action, nargs: Union[int, float]):
 
     param_flags.is_selection = action.kwargs.get("choices", None) is not None
     param_flags.is_repeat = action.action in ["APPEND", "APPEND_CONST", "COUNT"] or nargs > 1
-    param_flags.is_flag = action.action in ["STORE_TRUE", "STORE_CONST", "STORE_FALSE"]
+    param_flags.is_flag = action.action in ["STORE_TRUE", "STORE_CONST", "STORE_FALSE", "APPEND_CONST", "COUNT"]
     param_flags.is_extend = action.action == "EXTEND"
     param_flags.is_help = action.action == "HELP"
     param_flags.is_version = action.action == "VERSION"

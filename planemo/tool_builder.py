@@ -400,7 +400,6 @@ class CommandIO:
             parser = obtain_and_convert_parser(parser_path)
 
             if parser is not None:
-                # todo use real data inputs and reserved names
                 data_inputs = dict()
                 reserved_names = set()
                 name_map = dict()

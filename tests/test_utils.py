@@ -1,5 +1,5 @@
 """Provide abstractions over click testing of the app and unittest."""
-
+import ast
 import contextlib
 import functools
 import os
@@ -271,7 +271,7 @@ def create_test_context():
     return context
 
 
-def assert_equal(a, b):
+def assert_equal(a: object, b: object) -> object:
     """Assert two things are equal."""
     assert a == b, f"{a} != {b}"
 
@@ -412,6 +412,17 @@ def safe_rmtree(path):
         shutil.rmtree(path)
     except Exception as e:
         print(f"Failed to cleanup test directory [{path}]: [{e}]")
+
+
+def load_function_body(path: str, func_name: str) -> ast.Module:
+    with open(path) as file:
+        module = ast.parse(file.read())
+
+        for item in module.body:
+            if isinstance(item, ast.FunctionDef) and item.name == func_name:
+                return ast.Module(body=item.body, type_ignores=[])
+
+        raise ModuleNotFoundError()
 
 
 # TODO: everything should be considered "exported".

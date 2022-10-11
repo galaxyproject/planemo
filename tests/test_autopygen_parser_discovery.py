@@ -4,7 +4,7 @@ import os
 from planemo.autopygen.source_file_parsing.decoy_parser import obtain_class_def
 from planemo.autopygen.source_file_parsing.parser_discovery_and_init import SimpleParserDiscoveryAndReplacement, \
     ImportDiscovery, GroupAndSubparsersDiscovery, ArgumentCreationDiscovery
-from .test_utils import assert_equal, TEST_AUTOPYGEN_DATA
+from .test_utils import assert_equal, TEST_AUTOPYGEN_DATA, load_function_body
 
 
 def test_import_discovery():
@@ -92,12 +92,4 @@ def test_argument_creation_discovery():
 
 
 def _prepare_test_module(func_name: str) -> ast.Module:
-    with open(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_parser_extraction_test_data.py")) as file:
-        module = ast.parse(file.read())
-
-        for item in module.body:
-            if (isinstance(item, ast.FunctionDef)
-                and item.name == func_name):
-                return ast.Module(body=item.body, type_ignores=[])
-
-        raise ModuleNotFoundError()
+    return load_function_body(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_parser_extraction_test_data.py"), func_name)
