@@ -5,7 +5,7 @@
 ## end keyword definition
 
 ## integers definition
-#for $item in $.integers:
+#for $item in $integers:
    ## integers definition
    #if $item:
       $item
@@ -26,7 +26,7 @@ $s
 ## end foo definition
 
 ## bar definition
-#for $item in $.bar:
+#for $item in $bar:
    ## bar definition
    #if $item:
       --bar $item
@@ -45,7 +45,7 @@ $false
 ## end FLAG false definition
 
 ## append definition
-#for $item in $.append:
+#for $item in $append:
    ## append definition
    #if $item:
       --append $item
@@ -56,7 +56,7 @@ $false
 ## end append definition
 
 ## nargs2 definition
-#for $item in $.nargs2:
+#for $item in $nargs2:
    ## nargs2 definition
    #if $item:
       --nargs2 $item
