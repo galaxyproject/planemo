@@ -119,12 +119,16 @@ table tr th :last-child, table tr td :last-child {
   margin-top: 0;
 }
 
+summary {
+  display: revert;
+}
+
 ul {
+  list-style-type: none;
   padding-left: 10px;
 }
 
 li {
-  list-style-type: none;
   padding: 2px;
 }
 
