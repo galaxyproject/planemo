@@ -117,13 +117,16 @@ def _lint_tsts(path: str, lint_context: WorkflowLintContext) -> None:
         runnables = [runnables]
     for runnable in runnables:
         test_cases = cases(runnable)
-        all_tests_valid = False
         if len(test_cases) == 0:
             lint_context.warn("Workflow missing test cases.")
-        else:
-            all_tests_valid = True
+            return
+        all_tests_valid = True
         for test_case in test_cases:
-            if not _lint_case(path, test_case, lint_context):
+            if isinstance(test_case, TestCase):
+                if not _lint_case(path, test_case, lint_context):
+                    all_tests_valid = False
+            else:
+                lint_context.warn(f"Test case of type {type(test_case)} not currently supported.")
                 all_tests_valid = False
 
         if all_tests_valid:
