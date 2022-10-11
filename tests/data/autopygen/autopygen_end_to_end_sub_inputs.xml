@@ -8,22 +8,22 @@
                 <repeat name="integers_repeat" title="integers_repeat">
                     <param argument="integers" type="integer" optional="false" label="integers" help="an integer for the accumulator" />
                 </repeat>
-                <param argument="-s" type="boolean" truevalue="-s" falsevalue="" checked="false" optional="false" label="s" help="sum the integers (default: find the max)" />
-                <param argument="--foo" type="text" optional="false" label="foo" help="foo help" />
+                <param argument="-s" type="boolean" truevalue="-s" falsevalue="" checked="false" optional="true" label="s" help="sum the integers (default: find the max)" />
+                <param argument="--foo" type="text" optional="true" label="foo" help="foo help" />
                 <repeat name="bar_repeat" title="bar_repeat">
-                    <param argument="--bar" type="text" optional="false" label="bar" help="BAR!" />
+                    <param argument="--bar" type="text" optional="true" label="bar" help="BAR!" />
                 </repeat>
-                <param argument="--true" type="boolean" truevalue="--true" falsevalue="" checked="false" optional="false" label="true" help="Store a true" />
+                <param argument="--true" type="boolean" truevalue="--true" falsevalue="" checked="false" optional="true" label="true" help="Store a true" />
             </when>
             <when value="bar">
-                <param argument="--false" type="boolean" truevalue="--false" falsevalue="" checked="false" optional="false" label="false" help="Store a false" />
+                <param argument="--false" type="boolean" truevalue="--false" falsevalue="" checked="false" optional="true" label="false" help="Store a false" />
                 <repeat name="append_repeat" title="append_repeat">
-                    <param argument="--append" type="text" optional="false" label="append" help="Append a value" />
+                    <param argument="--append" type="text" optional="true" label="append" help="Append a value" />
                 </repeat>
                 <repeat name="nargs2_repeat" title="nargs2_repeat" max="2">
-                    <param argument="--nargs2" type="text" optional="false" label="nargs2" help="nargs2" />
+                    <param argument="--nargs2" type="text" optional="true" label="nargs2" help="nargs2" />
                 </repeat>
-                <param argument="--mode" type="select" optional="false" label="mode">
+                <param argument="--mode" type="select" optional="true" label="mode">
                     <option value="rock">Rock</option>
                     <option value="paper">Paper</option>
                     <option value="scissors">Scissors</option>

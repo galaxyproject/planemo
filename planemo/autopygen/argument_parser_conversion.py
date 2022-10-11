@@ -69,7 +69,7 @@ def obtain_and_convert_parser_from_str(text: str) -> Optional[ArgumentParser]:
     return obtain_parser(tree)
 
 
-def obtain_parser(tree: ast.Module) -> Optional[ArgumentParser]:
+def obtain_parser(tree: ast.Module) -> Optional[DecoyParser]:
     try:
         actions, name, known_names = \
             get_parser_init_and_actions(tree)
@@ -322,9 +322,11 @@ def obtain_param_info(action: DecoyParser.Action,
                       data_inputs: Dict[str, str],
                       reserved_names: Set[str],
                       name_map: Dict[str, str],
-                      section_map: Dict[str, str]):
+                      section_map: Dict[str, str]) -> ParamInfo:
     name = action.argument.lstrip("-").replace("-", "_")
     argument = action.argument
+
+    is_positional = name == argument
 
     nargs = _determine_nargs(action.kwargs.get("nargs", None))
 
@@ -335,7 +337,8 @@ def obtain_param_info(action: DecoyParser.Action,
     default_val = action.kwargs.get("default", None)
 
     help_ = action.kwargs.get("help", None)
-    optional = action.kwargs.get("required", False)
+    # value of required should be used, otherwise argparse assumes that all positional arguments are required
+    optional = action.kwargs.get("required", not is_positional)
 
     param_type = _determine_param_type(action, nargs)
     type_ = _determine_type(action, data_inputs, name,
@@ -343,7 +346,7 @@ def obtain_param_info(action: DecoyParser.Action,
     choices = action.kwargs.get("choices", None)
     custom_attributes = _determine_custom_attributes(param_type, type_, nargs)
 
-    return ParamInfo(param_type, type_, name_map[name], argument, name,
+    return ParamInfo(is_positional, param_type, type_, name_map[name], argument, name,
                      section_map[section], section,
                      default_val, custom_attributes, nargs, help_,
                      optional, choices)

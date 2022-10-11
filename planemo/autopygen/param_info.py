@@ -27,6 +27,7 @@ class ParamInfo:
     """
     Class containing data of a single extracted parameter
     """
+    is_positional: bool
     param_type: ParamTypeFlags
     type: str
     name: str
