@@ -191,7 +191,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):  # noqa C901
         ctx.vlog("Final invocation state is [%s]" % final_invocation_state)
 
         if not kwds.get("no_wait"):
-            final_state = _wait_for_history(ctx, user_gi, history_id, polling_backoff)
+            final_state = _wait_for_invocation_jobs(ctx, user_gi, invocation_id, polling_backoff)
             if final_state != "ok":
                 msg = "Failed to run workflow final history state is [%s]." % final_state
                 error_message = msg if not error_message else f"{error_message}. {msg}"
@@ -732,6 +732,19 @@ def _wait_for_history(ctx, gi, history_id, polling_backoff=0):
     return _wait_on_state(state_func, polling_backoff)
 
 
+def _wait_for_invocation_jobs(ctx, gi, invocation_id, polling_backoff=0):
+    # Wait for invocation jobs to finish. Less brittle than waiting for a history to finish,
+    # as you could have more than one invocation in a history, or an invocation without
+    # steps that produce history items.
+
+    ctx.log(f"waiting for invocation {invocation_id}")
+
+    def state_func():
+        return _retry_on_timeouts(ctx, gi, lambda gi: gi.jobs.get_jobs(invocation_id=invocation_id))
+
+    return _wait_on_state(state_func, polling_backoff)
+
+
 def _wait_for_job(gi, job_id, timeout=None):
     def state_func():
         return gi.jobs.show_job(job_id, full_details=True)
@@ -742,11 +755,33 @@ def _wait_for_job(gi, job_id, timeout=None):
 def _wait_on_state(state_func, polling_backoff=0, timeout=None):
     def get_state():
         response = state_func()
-        state = response["state"]
-        if str(state) not in ["running", "queued", "new", "ready"]:
-            return state
-        else:
+        if not isinstance(response, list):
+            response = [response]
+        if not response:
+            # invocation may not have any attached jobs, that's fine
+            return "ok"
+        non_terminal_states = {"running", "queued", "new", "ready", "resubmitted", "upload", "waiting"}
+        current_states = set(item["state"] for item in response)
+        current_non_terminal_states = non_terminal_states.intersection(current_states)
+        # Mix of "error"-ish terminal job, dataset, invocation terminal states, so we can use this for whatever we throw at it
+        hierarchical_fail_states = [
+            "error",
+            "paused",
+            "deleted",
+            "stopped",
+            "discarded",
+            "failed_metadata",
+            "cancelled",
+            "failed",
+        ]
+        for terminal_state in hierarchical_fail_states:
+            if terminal_state in current_states:
+                # If we got here something has failed and we can return (early)
+                return terminal_state
+        if current_non_terminal_states:
             return None
+        assert len(current_states) == 1, f"unexpected state(s) found: {current_states}"
+        return current_states.pop()
 
     timeout = timeout or 60 * 60 * 24
     final_state = wait_on(get_state, "state", timeout, polling_backoff)
