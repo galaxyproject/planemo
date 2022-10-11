@@ -261,7 +261,7 @@ def stage_in(ctx, runnable, config, job_path, **kwds):  # noqa C901
 
     ctx.vlog("final state is %s" % final_state)
     if final_state != "ok":
-        msg = "Failed to run job final job state is [%s]." % final_state
+        msg = "Failed to upload data, upload state is [%s]." % final_state
         summarize_history(ctx, user_gi, history_id)
         raise Exception(msg)
     return job_dict, datasets, history_id
