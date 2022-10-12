@@ -8,7 +8,7 @@ What is Planemo?
 =============================
 
 Planemo is a command-line application which is primarily used for developing Galaxy and CWL tools,
-workflows and training materials. It's also used to deploying the tools and workflows once developed
+workflows and training materials. It's also used for deploying the tools and workflows once developed
 (tools to the Galaxy ToolShed; workflows to the Intergalactic Workflow Commission) and executing
 Galaxy-based analyses via the command-line, if you prefer or need to use that rather than Galaxy's
 graphical interface.
@@ -30,10 +30,10 @@ Galaxy is a web-based scientific analysis platform which provides access to scie
 via a graphical interface. It is also a scientific workflow management system and allows chaining
 multiple individual tools together to form a complex pipeline, which can be executed as a single
 tool. If you place a high value on a graphical interface, usability and developing flexible, reusable
-tools which can easily be adapted for other purposes, Galaxy could be a good choice for you.
+tools which can easily be adapted for other purposes, Galaxy is the best choice for you.
 
 CWL (Common Workflow Language) is a workflow specification, rather than a workflow management system.
-It aims to allow the description of scientific pipelines in a way that is independent of the particular
+It aims to allow the textual description of scientific pipelines in a way that is independent of the particular
 workflow manager used; if this is important to you, using CWL would be an excellent idea. CWL workflows
 are supported by a variety of workflow managers, including Toil, cwltool, Arvados and Galaxy. 
 
@@ -59,12 +59,12 @@ improve the speed at which you can develop new Galaxy tools.
 How do I set up deployment to the ToolShed with Planemo?
 ========================================================
 
-We recommend using continuous integration (e.g. GitHub Actions) to achieve this and provide
-a `template`_ which you can use to set up a GitHub repository which automatically deploys tools
+We recommend using continuous integration (e.g. `GitHub Actions`_) to achieve this and provide
+a `template repository`_ which you can use to set up a GitHub repository which automatically deploys tools
 to the ToolShed when a pull request is merged.
 
 If you don't want to handle tool deployment yourself, you can also submit your tool wrappers to
-a community repository such as the `IUC`_. This also has the advantage that your wrappers will be
+a community repository such as the one provided by the `IUC`_. This also has the advantage that your wrappers will be
 reviewed by experienced Galaxy users and developers.
 
 How can I automate workflow execution with Planemo?
@@ -83,7 +83,8 @@ ways you can help.
 .. _tutorial: https://planemo.readthedocs.io/en/latest/writing_standalone.html
 .. _Galaxy Training Network: https://training.galaxyproject.org/
 .. _Galaxy Language Server: https://github.com/galaxyproject/galaxy-language-server
-.. _template: https://github.com/galaxyproject/galaxy-tool-repository-template
+.. _GitHub Actions: https://docs.github.com/actions
+.. _template repository: https://github.com/galaxyproject/galaxy-tool-repository-template
 .. _IUC: https://github.com/galaxyproject/tools-iuc
 .. _section: https://planemo.readthedocs.io/en/latest/running.html
 .. _training: https://training.galaxyproject.org/training-material/topics/galaxy-interface/tutorials/workflow-automation/tutorial.html
