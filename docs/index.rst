@@ -25,6 +25,7 @@ Contents:
    automating_workflows
    autoupdate
    commands
+   faqs
    galaxy_changelog
    conduct
    contributing
