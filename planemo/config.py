@@ -4,14 +4,24 @@ import os
 from enum import Enum
 from typing import (
     Any,
+    Callable,
     Dict,
+    List,
+    Optional,
+    Tuple,
+    TYPE_CHECKING,
+    Union,
 )
 
 import click
 import yaml
+from click.core import Option
+
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
 
 PLANEMO_CONFIG_ENV_PROP = "PLANEMO_GLOBAL_CONFIG_PATH"
-DEFAULT_CONFIG = {}  # type: Dict[str, Any]
+DEFAULT_CONFIG: Dict[str, Any] = {}
 
 VALUE_UNSET = object()
 
@@ -20,11 +30,11 @@ OptionSource = Enum("OptionSource", "cli profile global_config default")
 
 
 def _default_callback(
-    default,
-    use_global_config=False,
-    resolve_path=False,
-    extra_global_config_vars=[],
-):
+    default: Any,
+    use_global_config: bool = False,
+    resolve_path: bool = False,
+    extra_global_config_vars: List[str] = [],
+) -> Callable:
     def callback(ctx, param, value):
         planemo_ctx = ctx.obj
         param_name = param.name
@@ -55,10 +65,12 @@ def _default_callback(
     return callback
 
 
-def _find_default(ctx, param, use_global_config, extra_global_config_vars):
+def _find_default(
+    ctx: "PlanemoCliContext", param: Option, use_global_config: bool, extra_global_config_vars: List[str]
+) -> Union[Tuple[Any, OptionSource], Tuple[object, None]]:
     if use_global_config:
         global_config = ctx.global_config
-        global_config_keys = ["default_%s" % param.name] + extra_global_config_vars
+        global_config_keys = [f"default_{param.name}"] + extra_global_config_vars
         for global_config_key in global_config_keys:
             if global_config_key in global_config:
                 default_value = global_config[global_config_key]
@@ -67,7 +79,7 @@ def _find_default(ctx, param, use_global_config, extra_global_config_vars):
     return VALUE_UNSET, None
 
 
-def planemo_option(*args, **kwargs):
+def planemo_option(*args, **kwargs) -> Callable:
     """Extend ``click.option`` with planemo-config aware configuration.
 
     This extends click.option to use a callback when assigning default
@@ -75,7 +87,7 @@ def planemo_option(*args, **kwargs):
     defaults from ~/.planemo.yml, and tracks how parameters are specified
     using the Planemo Context object.
     """
-    option_type = kwargs.get("type", None)
+    option_type = kwargs.get("type")
     use_global_config = kwargs.pop("use_global_config", False)
     use_env_var = kwargs.pop("use_env_var", False)
     extra_global_config_vars = kwargs.pop("extra_global_config_vars", [])
@@ -89,7 +101,7 @@ def planemo_option(*args, **kwargs):
         outer_callback = kwargs.pop("callback", None)
 
         def callback(ctx, param, value):
-            resolve_path = option_type and getattr(option_type, "resolve_path", False)
+            resolve_path = bool(option_type and getattr(option_type, "resolve_path", False))
             result = _default_callback(
                 default,
                 use_global_config=use_global_config,
@@ -113,20 +125,20 @@ def planemo_option(*args, **kwargs):
             if arg.startswith("--"):
                 name = arg[len("--") :]
         assert name
-        kwargs["envvar"] = "PLANEMO_%s" % name.upper()
+        kwargs["envvar"] = f"PLANEMO_{name.upper()}"
 
     option = click.option(*args, **kwargs)
     return option
 
 
-def global_config_path(config_path=None):
+def global_config_path(config_path: Optional[str] = None) -> str:
     if not config_path:
-        config_path = os.environ.get(PLANEMO_CONFIG_ENV_PROP, "~/.planemo.yml")
-        config_path = os.path.expanduser(config_path)
+        planemo_config_env_prop = os.environ.get(PLANEMO_CONFIG_ENV_PROP, "~/.planemo.yml")
+        config_path = os.path.expanduser(planemo_config_env_prop)
     return config_path
 
 
-def read_global_config(config_path: str):
+def read_global_config(config_path: Optional[str]) -> Dict[str, Any]:
     config_path = global_config_path(config_path)
     if not os.path.exists(config_path):
         return DEFAULT_CONFIG
