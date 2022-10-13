@@ -9,10 +9,7 @@ import os
 import shutil
 import sys
 import traceback
-from typing import (
-    Dict,
-    TYPE_CHECKING
-)
+from typing import Dict, TYPE_CHECKING
 from urllib.request import urlopen
 from planemo.config import read_global_config
 
