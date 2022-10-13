@@ -9,9 +9,15 @@ import os
 import shutil
 import sys
 import traceback
+from typing import (
+    Dict,
+    TYPE_CHECKING
+)
 from urllib.request import urlopen
-
 from planemo.config import read_global_config
+
+if TYPE_CHECKING:
+    from planemo.config import OptionSource
 
 
 class PlanemoContextInterface(metaclass=abc.ABCMeta):
@@ -53,7 +59,7 @@ class PlanemoContextInterface(metaclass=abc.ABCMeta):
 class PlanemoContext(PlanemoContextInterface):
     """Implementation of ``PlanemoContextInterface``"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Construct a Context object using execution environment."""
         self.home = os.getcwd()
         self._global_config = None
@@ -63,19 +69,19 @@ class PlanemoContext(PlanemoContextInterface):
         self.planemo_directory = None
         self.option_source = {}
 
-    def set_option_source(self, param_name, option_source, force=False):
+    def set_option_source(self, param_name: str, option_source: "OptionSource", force: bool = False) -> None:
         """Specify how an option was set."""
         if not force:
             assert param_name not in self.option_source, "No option source for [%s]" % param_name
         self.option_source[param_name] = option_source
 
-    def get_option_source(self, param_name):
+    def get_option_source(self, param_name: str) -> "OptionSource":
         """Return OptionSource value indicating how the option was set."""
         assert param_name in self.option_source, "No option source for [%s]" % param_name
         return self.option_source[param_name]
 
     @property
-    def global_config(self):
+    def global_config(self) -> Dict[str, Dict[str, str]]:
         """Read Planemo's global configuration.
 
         As defined most simply by ~/.planemo.yml.
@@ -84,13 +90,13 @@ class PlanemoContext(PlanemoContextInterface):
             self._global_config = read_global_config(self.planemo_config)
         return self._global_config or {}
 
-    def log(self, msg, *args):
+    def log(self, msg: str, *args) -> None:
         """Log a message."""
         if args:
             msg %= args
         self._log_message(msg)
 
-    def vlog(self, msg, *args, **kwds):
+    def vlog(self, msg: str, *args, **kwds) -> None:
         """Log a message only if verbose is enabled."""
         if self.verbose:
             self.log(msg, *args)
@@ -98,7 +104,7 @@ class PlanemoContext(PlanemoContextInterface):
                 traceback.print_exc(file=sys.stderr)
 
     @property
-    def workspace(self):
+    def workspace(self) -> str:
         """Create and return Planemo's workspace.
 
         By default this will be ``~/.planemo``.
@@ -109,7 +115,7 @@ class PlanemoContext(PlanemoContextInterface):
         return self._ensure_directory(workspace, "workspace")
 
     @property
-    def galaxy_profiles_directory(self):
+    def galaxy_profiles_directory(self) -> str:
         """Create a return a directory for storing Galaxy profiles."""
         path = os.path.join(self.workspace, "profiles")
         return self._ensure_directory(path, "Galaxy profiles")
@@ -131,7 +137,7 @@ class PlanemoContext(PlanemoContextInterface):
 
         shutil.copy(cache_destination, destination)
 
-    def _ensure_directory(self, path, name):
+    def _ensure_directory(self, path: str, name: str) -> str:
         if not os.path.exists(path):
             os.makedirs(path)
         if not os.path.isdir(path):
@@ -145,7 +151,7 @@ class PlanemoContext(PlanemoContextInterface):
         print(message)
 
 
-def configure_standard_planemo_logging(verbose):
+def configure_standard_planemo_logging(verbose: bool) -> None:
     """Configure Planemo's default logging rules."""
     logging_config = {
         "version": 1,
