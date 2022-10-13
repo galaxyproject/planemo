@@ -9,8 +9,8 @@ from typing import (
     List,
     Optional,
     Tuple,
-    Union,
     TYPE_CHECKING,
+    Union,
 )
 
 import click
@@ -133,8 +133,8 @@ def planemo_option(*args, **kwargs) -> Callable:
 
 def global_config_path(config_path: Optional[str] = None) -> str:
     if not config_path:
-        config_path = os.environ.get(PLANEMO_CONFIG_ENV_PROP, "~/.planemo.yml")
-        config_path = os.path.expanduser(config_path)
+        planemo_config_env_prop = os.environ.get(PLANEMO_CONFIG_ENV_PROP, "~/.planemo.yml")
+        config_path = os.path.expanduser(planemo_config_env_prop)
     return config_path
 
 

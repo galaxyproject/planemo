@@ -5,8 +5,8 @@ from .postgres import LocalPostgresDatabaseSource
 from .postgres_docker import DockerPostgresDatabaseSource
 
 
-def create_database_source(**kwds) -> "DockerPostgresDatabaseSource":
-    """Return a :class:`planemo.database.DatabaseSource` for configuration."""
+def create_database_source(**kwds) -> DatabaseSource:
+    """Return a :class:`planemo.database.interface.DatabaseSource` for configuration."""
     database_type = kwds.get("database_type", "auto")
     if database_type == "auto":
         if which("psql"):
