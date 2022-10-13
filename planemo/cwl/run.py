@@ -45,7 +45,7 @@ class CwlToolRunResponse(SuccessfulRunResponse):
         log: str,
         outputs: Optional[Dict[str, Any]] = None,
     ) -> None:
-        self._runnable = runnable
+        super().__init__(runnable=runnable)
         self._log = log
         self._outputs = outputs
 

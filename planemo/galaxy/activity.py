@@ -332,8 +332,8 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         start_datetime=None,
         end_datetime=None,
     ):
+        super().__init__(runnable=runnable)
         self._ctx = ctx
-        self._runnable = runnable
         self._user_gi = user_gi
         self._history_id = history_id
         self._log = log

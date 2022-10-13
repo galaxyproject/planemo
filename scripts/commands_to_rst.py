@@ -65,6 +65,7 @@ for command in list_cmds():
         else:
             return line
 
+    assert raw_rst, f"Documentation of {command} is empty"
     all_lines = raw_rst.split("\n")
     all_lines[0] = all_lines[0].lstrip()  # """ Fix docs like this.
     clean_rst = "\n".join(map(clean_rst_line, all_lines))

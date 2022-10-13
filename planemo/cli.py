@@ -23,7 +23,6 @@ from planemo.context import (
 from planemo.exit_codes import ExitCodeException
 from planemo.galaxy import profiles
 from .config import OptionSource
-from .io import error
 
 CONTEXT_SETTINGS = dict(auto_envvar_prefix="PLANEMO")
 COMMAND_ALIASES = {
@@ -71,13 +70,10 @@ def name_to_command(name: str) -> Command:
     this method uses `__import__` to load and return that method.
     """
     try:
-        if sys.version_info[0] == 2:
-            name = name.encode("ascii", "replace")
         mod_name = "planemo.commands.cmd_" + name
         mod = __import__(mod_name, None, None, ["cli"])
     except ImportError as e:
-        error(f"Problem loading command {name}, exception {e}")
-        return
+        raise Exception(f"Problem loading command {name}, exception {e}")
     return mod.cli
 
 
