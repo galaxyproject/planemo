@@ -10,10 +10,13 @@ import shutil
 import sys
 import traceback
 from typing import (
+    Any,
     Dict,
+    Optional,
     TYPE_CHECKING,
 )
 from urllib.request import urlopen
+
 from planemo.config import read_global_config
 
 if TYPE_CHECKING:
@@ -62,26 +65,26 @@ class PlanemoContext(PlanemoContextInterface):
     def __init__(self) -> None:
         """Construct a Context object using execution environment."""
         self.home = os.getcwd()
-        self._global_config = None
+        self._global_config: Optional[Dict] = None
         # Will be set by planemo CLI driver
         self.verbose = False
-        self.planemo_config = None
+        self.planemo_config: Optional[str] = None
         self.planemo_directory = None
-        self.option_source = {}
+        self.option_source: Dict[str, "OptionSource"] = {}
 
     def set_option_source(self, param_name: str, option_source: "OptionSource", force: bool = False) -> None:
         """Specify how an option was set."""
         if not force:
-            assert param_name not in self.option_source, "No option source for [%s]" % param_name
+            assert param_name not in self.option_source, f"Option source for [{param_name}] already set"
         self.option_source[param_name] = option_source
 
     def get_option_source(self, param_name: str) -> "OptionSource":
         """Return OptionSource value indicating how the option was set."""
-        assert param_name in self.option_source, "No option source for [%s]" % param_name
+        assert param_name in self.option_source, f"No option source for [{param_name}]"
         return self.option_source[param_name]
 
     @property
-    def global_config(self) -> Dict[str, Dict[str, str]]:
+    def global_config(self) -> Dict[str, Any]:
         """Read Planemo's global configuration.
 
         As defined most simply by ~/.planemo.yml.
@@ -131,7 +134,7 @@ class PlanemoContext(PlanemoContextInterface):
             with urlopen(url) as fh:
                 content = fh.read()
             if len(content) == 0:
-                raise Exception("Failed to download [%s]." % url)
+                raise Exception(f"Failed to download [{url}].")
             with open(cache_destination, "wb") as f:
                 f.write(content)
 
@@ -141,9 +144,7 @@ class PlanemoContext(PlanemoContextInterface):
         if not os.path.exists(path):
             os.makedirs(path)
         if not os.path.isdir(path):
-            template = "Planemo %s directory [%s] unavailable."
-            message = template % (name, path)
-            raise Exception(message)
+            raise Exception(f"Planemo {name} directory [{path}] unavailable.")
         return path
 
     def _log_message(self, message):
