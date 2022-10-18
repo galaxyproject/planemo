@@ -56,7 +56,7 @@ Please follow our
 HANDS_ON_TOOL_BOX_TEMPLATE = """
 ## Sub-step with **{{tool_name}}**
 
-> ### {{ '{%' }} icon hands_on {{ '%}' }} Hands-on: Task description
+> <hands-on-title> Hands-on: Task description </hands-on-title>
 >
 > 1. {{ '{%' }} tool [{{tool_name}}]({{tool_id}}) {{ '%}' }} with the following parameters:{{inputlist}}{{paramlist}}
 >
@@ -64,7 +64,7 @@ HANDS_ON_TOOL_BOX_TEMPLATE = """
 >
 >    ***TODO***: *Consider adding a comment or tip box*
 >
->    > ### {{ '{%' }} icon comment {{ '%}' }} Comment
+>    > <comment-title> Comment </comment-title>
 >    >
 >    > A comment about the tool or something else. This box can also be in the main text
 >    {: .comment}
@@ -73,12 +73,12 @@ HANDS_ON_TOOL_BOX_TEMPLATE = """
 
 ***TODO***: *Consider adding a question to test the learners understanding of the previous exercise*
 
-> ### {{ '{%' }} icon question {{ '%}' }} Questions
+> <question-title></question-title>
 >
 > 1. Question1?
 > 2. Question2?
 >
-> > ### {{ '{%' }} icon solution {{ '%}' }} Solution
+> > <solution-title></solution-title>
 > >
 > > 1. Answer for question1
 > > 2. Answer for question2
@@ -136,7 +136,6 @@ TUTO_BIBLIOGRAPHY_TEMPLATE = """
 
 TUTO_HAND_ON_BODY_TEMPLATE = """
 # Introduction
-{:.no_toc}
 
 <!-- This is a comment. -->
 
@@ -163,7 +162,7 @@ tutorial.
 [tutorial to learn how to fill the Markdown]({{ '{{' }} site.baseurl {{ '}}' }}/topics/contributing/tutorials/\
 create-new-tutorial-content/tutorial.html)**
 
-> ### Agenda
+> <agenda-title></agenda-title>
 >
 > In this tutorial, we will cover:
 >
@@ -195,7 +194,7 @@ have fun!
 
 ## Get data
 
-> ### {{ '{%' }} icon hands_on {{ '%}' }} Hands-on: Data upload
+> <hands-on-title> Hands-on: Data Upload </hands-on-title>
 >
 > 1. Create a new history for this tutorial
 > 2. Import the files from [Zenodo]({{ '{{' }} page.zenodo_link {{ '}}' }}) or from
@@ -235,7 +234,7 @@ The idea is to keep the theory description before quite simple to focus more on 
 
 ***TODO***: *Consider adding a detail box to expand the theory*
 
-> ### {{ '{%' }} icon details {{ '%}' }} More details about the theory
+> <details-title> More details about the theory </details-title>
 >
 > But to describe more details, it is possible to use the detail boxes which are expandable
 >
@@ -253,7 +252,6 @@ To create the template, each step of the workflow had its own subsection.
 Consider merging some hands-on boxes to have a meaningful flow of the analyses*
 
 # Conclusion
-{:.no_toc}
 
 Sum up the tutorial and the key takeaways here. We encourage adding an overview image of the
 pipeline used.
