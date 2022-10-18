@@ -56,7 +56,7 @@ Please follow our
 HANDS_ON_TOOL_BOX_TEMPLATE = """
 ## Sub-step with **{{tool_name}}**
 
-> <hands-on-title> Hands-on: Task description </hands-on-title>
+> <hands-on-title> Task description </hands-on-title>
 >
 > 1. {{ '{%' }} tool [{{tool_name}}]({{tool_id}}) {{ '%}' }} with the following parameters:{{inputlist}}{{paramlist}}
 >
@@ -64,7 +64,7 @@ HANDS_ON_TOOL_BOX_TEMPLATE = """
 >
 >    ***TODO***: *Consider adding a comment or tip box*
 >
->    > <comment-title> Comment </comment-title>
+>    > <comment-title> short description </comment-title>
 >    >
 >    > A comment about the tool or something else. This box can also be in the main text
 >    {: .comment}
