@@ -194,7 +194,7 @@ have fun!
 
 ## Get data
 
-> <hands-on-title> Hands-on: Data Upload </hands-on-title>
+> <hands-on-title> Data Upload </hands-on-title>
 >
 > 1. Create a new history for this tutorial
 > 2. Import the files from [Zenodo]({{ '{{' }} page.zenodo_link {{ '}}' }}) or from
