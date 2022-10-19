@@ -21,6 +21,16 @@ class CmdTestTestCase(CliTestCase):
     """Integration tests for the ``test`` command."""
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_startup_timeout(self):
+        """Test --galaxy_startup_timeout."""
+        with self._isolate():
+            test_artifact = os.path.join(TEST_DATA_DIR, DATA_MANAGER_TEST_PATH)
+            test_command = self._test_command(
+                "--galaxy_startup_timeout", "1", test_artifact, "--no_dependency_resolution"
+            )
+            self._check_exit_code(test_command, exit_code=1)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_data_manager(self):
         """Test testing a data manager test."""
         with self._isolate(), NamedTemporaryFile(prefix="data_manager_test_json") as json_out:

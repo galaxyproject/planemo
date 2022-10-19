@@ -422,6 +422,15 @@ def mulled_containers_option():
     )
 
 
+def galaxy_startup_timeout_option():
+    return planemo_option(
+        "--galaxy_startup_timeout",
+        type=click.IntRange(1),
+        default=900,
+        help="Wait for galaxy to start before assuming Galaxy did not start.",
+    )
+
+
 def install_galaxy_option():
     return planemo_option(
         "--install_galaxy", is_flag=True, help="Download and configure a disposable copy of Galaxy from github."
@@ -1191,6 +1200,7 @@ def galaxy_target_options():
         galaxy_email_option(),
         galaxy_docker_options(),
         mulled_containers_option(),
+        galaxy_startup_timeout_option(),
         # Profile options...
         job_config_option(),
         tool_dependency_dir_option(),
