@@ -624,7 +624,7 @@ def _config_directory(ctx, **kwds):
     finally:
         cleanup = not kwds.get("no_cleanup", False)
         if created_config_directory and cleanup:
-            shutil.rmtree(config_directory)
+            shutil.rmtree(config_directory, ignore_errors=True)
 
 
 class GalaxyInterface(metaclass=abc.ABCMeta):
