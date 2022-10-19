@@ -171,6 +171,27 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         assert workflow_id
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @mark.tests_galaxy_branch
+    def test_serve_multiple_tool_data_tables(self):
+        tool_data_table_path_1 = self._tool_data_table("planemo1")
+        tool_data_table_path_2 = self._tool_data_table("planemo2")
+        extra_args = [
+            "--daemon",
+            "--skip_client_build",
+            "--pid_file",
+            self._pid_file,
+            "--tool_data_table",
+            tool_data_table_path_1,
+            "--tool_data_table",
+            tool_data_table_path_2,
+        ]
+        self._launch_thread_and_wait(self._run, extra_args)
+        admin_gi = api.gi(self._port)
+        table_contents = admin_gi.tool_data.show_data_table("__dbkeys__")
+        assert any("planemo1" in field[0] for field in table_contents["fields"]), table_contents
+        assert any("planemo2" in field[0] for field in table_contents["fields"]), table_contents
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @skip_if_environ("PLANEMO_SKIP_SHED_TESTS")
     @mark.tests_galaxy_branch
     def test_shed_serve(self):
@@ -220,6 +241,24 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         # TODO: Pretty sure this is getting killed, but we should verify.
         with cli_daemon_galaxy(self._runner, self._pid_file, self._port, serve_cmd):
             assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 1
+
+    def _tool_data_table(self, dbkey):
+        with tempfile.NamedTemporaryFile(
+            "w", suffix=".xml.test", delete=False
+        ) as tool_data_table, tempfile.NamedTemporaryFile("w", suffix="bla.loc", delete=False) as loc_file:
+            tool_data_table.write(
+                f"""<tables>
+    <table name="__dbkeys__" comment_char="#">
+        <columns>value, name, len_path</columns>
+        <file path="{loc_file.name}" />
+    </table>
+</tables>"""
+            )
+            loc_file.write(f"{dbkey}\t{dbkey}\t{dbkey}.len")
+            tool_data_table.flush()
+            loc_file.flush()
+        self._cleanup_hooks.extend([lambda: os.remove(loc_file.name), lambda: os.remove(tool_data_table.name)])
+        return tool_data_table.name
 
     def _run_shed(self, serve_args=[]):
         return self._run(serve_args=serve_args, serve_cmd="shed_serve")

@@ -144,6 +144,7 @@ def tool_data_table_option():
         "--tool_data_table",
         type=click.Path(exists=True, file_okay=True, resolve_path=True),
         help="tool_data_table_conf.xml file to for specified tool(s).",
+        multiple=True,
     )
 
 
@@ -396,6 +397,16 @@ def job_config_option():
         "--job_config_file",
         type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True),
         help="Job configuration file for Galaxy to target.",
+        default=None,
+        use_global_config=True,
+    )
+
+
+def tool_data_path_option():
+    return planemo_option(
+        "--tool_data_path",
+        type=click.Path(exists=True, file_okay=False, dir_okay=True, resolve_path=True),
+        help="Directory where data used by tools is located. Required if tests are run in docker and should make use of external reference data.",
         default=None,
         use_global_config=True,
     )
@@ -1183,6 +1194,7 @@ def galaxy_target_options():
         # Profile options...
         job_config_option(),
         tool_dependency_dir_option(),
+        tool_data_path_option(),
     )
 
 
