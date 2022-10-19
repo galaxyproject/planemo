@@ -5,6 +5,7 @@ import os
 import stat
 import tarfile
 import tempfile
+import time
 from distutils.dir_util import copy_tree
 from pathlib import Path
 
@@ -29,6 +30,7 @@ GH_VERSION = "1.5.0"
 NO_GITHUB_DEP_ERROR = "Cannot use github functionality - " "PyGithub library not available."
 FAILED_TO_DOWNLOAD_GH = "No gh executable available and it could not be installed."
 DEFAULT_REMOTE_NAME = "planemo-remote"
+SLEEP_BEFORE_RELEASE = int(os.environ.get("PLANEMO_SLEEP_BEFORE_RELEASE", 60))
 
 
 def get_github_config(ctx, allow_anonymous=False):
@@ -183,6 +185,8 @@ def create_release(ctx, from_dir, target_dir, owner, repo, version, dry_run, bra
     ]
     cmd.extend(["--notes", notes or changelog_in_repo(target_repository_path)])
     if not dry_run:
+        # For new repositories dockstore needs a bit of time to register the new workflow.
+        time.sleep(SLEEP_BEFORE_RELEASE)
         communicate(cmd, env=gh_env)
     else:
         ctx.log("Would run command '{}'".format(" ".join(cmd)))

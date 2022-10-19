@@ -28,7 +28,7 @@ from planemo.io import can_write_to_path
 def cli(ctx, workflow_identifier, output=None, split_test=False, **kwds):
     """Initialize a Galaxy workflow test description for supplied workflow.
 
-    Be sure to your lint your workflow with ``workflow_lint`` before calling this
+    Be sure to lint your workflow with ``workflow_lint`` before calling this
     to ensure inputs and outputs comply with best practices that make workflow
     testing easier.
     """
