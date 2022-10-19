@@ -501,17 +501,19 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             data["filename"] = filename
 
         r = user_gi.make_get_request(url, params=data, stream=True, timeout=user_gi.timeout)
-        try:
-            r.raise_for_status()
-        except HTTPError as e:
-            # When a job fails abruptly the object store may not contain a dataset,
-            # and that results in an internal server error on the Galaxy side.
-            # We don't want this to break the rest of the test report.
-            # Should probably find a way to propagate this back into the report.
-            ctx.vlog(f"Failed to download history content at URL {url}, exception: {e}")
-            return
-
+        # Do write an output file before anything could fail, so that the downstream
+        # data collection doesn't fail. Comment below still applies.
         with open(to_path, "wb") as fp:
+            try:
+                r.raise_for_status()
+            except HTTPError as e:
+                # When a job fails abruptly the object store may not contain a dataset,
+                # and that results in an internal server error on the Galaxy side.
+                # We don't want this to break the rest of the test report.
+                # Should probably find a way to propagate this back into the report.
+                ctx.vlog(f"Failed to download history content at URL {url}, exception: {e}")
+                return
+
             for chunk in r.iter_content(chunk_size=bioblend.CHUNK_SIZE):
                 if chunk:
                     fp.write(chunk)
