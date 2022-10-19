@@ -40,7 +40,6 @@ from planemo.io import (
 )
 from planemo.mulled import build_involucro_context
 from planemo.shed import tool_shed_url
-from planemo.virtualenv import DEFAULT_PYTHON_VERSION
 from .api import (
     DEFAULT_ADMIN_API_KEY,
     gi,

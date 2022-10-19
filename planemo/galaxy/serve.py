@@ -13,17 +13,20 @@ from .ephemeris_sleep import sleep
 from .run import run_galaxy_command
 
 
+@contextlib.contextmanager
 def serve(ctx, runnables=None, **kwds):
     if runnables is None:
         runnables = []
     """Serve a Galaxy instance with artifacts defined by paths."""
     try:
-        return _serve(ctx, runnables, **kwds)
+        with _serve(ctx, runnables, **kwds) as config:
+            yield config
     except Exception as e:
         ctx.vlog("Problem serving Galaxy", exception=e)
         raise
 
 
+@contextlib.contextmanager
 def _serve(ctx, runnables, **kwds):
     engine = kwds.get("engine", "galaxy")
     if engine == "docker_galaxy":
@@ -67,7 +70,7 @@ def _serve(ctx, runnables, **kwds):
                 os.symlink(real_pid_file, kwds["pid_file"])
             else:
                 io.warn("Can't find Galaxy pid file [%s] to link" % real_pid_file)
-        return config
+        yield config
 
 
 @contextlib.contextmanager
@@ -76,10 +79,10 @@ def serve_daemon(ctx, runnables=None, **kwds):
     if runnables is None:
         runnables = []
     config = None
+    kwds["daemon"] = True
     try:
-        kwds["daemon"] = True
-        config = serve(ctx, runnables, **kwds)
-        yield config
+        with serve(ctx, runnables, **kwds) as config:
+            yield config
     finally:
         if config:
             if ctx.verbose:

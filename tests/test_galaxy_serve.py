@@ -29,7 +29,7 @@ class GalaxyServeTestCase(CliTestCase):
         """Test serving a galaxy tool via a daemon Galaxy process."""
         port = network_util.get_free_port()
         cat_path = os.path.join(TEST_REPOS_DIR, "single_tool", "cat.xml")
-        config = galaxy_serve(
+        with galaxy_serve(
             self.test_context,
             [for_path(cat_path)],
             install_galaxy=True,
@@ -37,9 +37,9 @@ class GalaxyServeTestCase(CliTestCase):
             port=port,
             daemon=True,
             no_dependency_resolution=True,
-        )
-        _assert_service_up(config)
-        config.kill()
+        ) as config:
+            _assert_service_up(config)
+            config.kill()
         _assert_service_down(config)
 
     @skip_if_environ("PLANEMO_SKIP_REDUNDANT_TESTS")  # redundant with test_cmd_serve -> test_serve_workflow
@@ -52,7 +52,7 @@ class GalaxyServeTestCase(CliTestCase):
         cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
         workflow = os.path.join(TEST_DATA_DIR, "wf1.gxwf.yml")
         extra_tools = [random_lines, cat]
-        config = galaxy_serve(
+        with galaxy_serve(
             self.test_context,
             [for_path(workflow)],
             install_galaxy=True,
@@ -61,13 +61,13 @@ class GalaxyServeTestCase(CliTestCase):
             daemon=True,
             extra_tools=extra_tools,
             no_dependency_resolution=True,
-        )
-        _assert_service_up(config)
-        user_gi = config.user_gi
-        assert user_gi.tools.show_tool("random_lines1")
-        assert len(user_gi.workflows.get_workflows()) == 1
-        config.kill()
-        _assert_service_down(config)
+        ) as config:
+            _assert_service_up(config)
+            user_gi = config.user_gi
+            assert user_gi.tools.show_tool("random_lines1")
+            assert len(user_gi.workflows.get_workflows()) == 1
+            config.kill()
+            _assert_service_down(config)
 
 
 def _assert_service_up(config):
