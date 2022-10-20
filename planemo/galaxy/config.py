@@ -44,7 +44,6 @@ from planemo.io import (
 )
 from planemo.mulled import build_involucro_context
 from planemo.shed import tool_shed_url
-from planemo.virtualenv import DEFAULT_PYTHON_VERSION
 from .api import (
     DEFAULT_ADMIN_API_KEY,
     gi,
@@ -336,12 +335,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         if not os.path.isdir(galaxy_root):
             _install_galaxy(ctx, galaxy_root, install_env, kwds)
 
-        if parse_version(kwds.get("galaxy_python_version") or DEFAULT_PYTHON_VERSION) >= parse_version("3"):
-            # on python 3 we use gunicorn,
-            # which requires 'main' as server name
-            server_name = "main"
-        else:
-            server_name = f"planemo{random.randint(0, 100000)}"
+        server_name = "main"
         # Once we don't have to support earlier than 18.01 - try putting these files
         # somewhere better than with Galaxy.
         log_file = f"{server_name}.log"
@@ -634,7 +628,7 @@ def _config_directory(ctx, **kwds):
     finally:
         cleanup = not kwds.get("no_cleanup", False)
         if created_config_directory and cleanup:
-            shutil.rmtree(config_directory)
+            shutil.rmtree(config_directory, ignore_errors=True)
 
 
 class GalaxyInterface(metaclass=abc.ABCMeta):
