@@ -1,0 +1,38 @@
+{
+    "a_galaxy_workflow": "true",
+    "annotation": "",
+    "format-version": "0.1",
+    "name": "optional_input_label",
+    "steps": {
+        "0": {
+            "annotation": "",
+            "content_id": null,
+            "errors": null,
+            "id": 0,
+            "input_connections": {},
+            "inputs": [],
+            "label": null,
+            "name": "Input dataset",
+            "outputs": [],
+            "position": {
+                "left": 0,
+                "top": 0.0
+            },
+            "tool_id": null,
+            "tool_state": "{\"optional\": true, \"tag\": \"\"}",
+            "tool_version": null,
+            "type": "data_input",
+            "uuid": "e6301247-43c4-452d-a3d1-8e140c3945fd",
+            "workflow_outputs": [
+                {
+                    "label": "optional_output",
+                    "output_name": "output",
+                    "uuid": "6b333ea9-6c5c-4823-be37-be9a36112c39"
+                }
+            ]
+        }
+    },
+    "tags": [],
+    "uuid": "25f7fecd-45f1-4ece-93a9-86e085e02fc3",
+    "version": 1
+}

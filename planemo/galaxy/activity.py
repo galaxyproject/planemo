@@ -191,7 +191,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):  # noqa C901
         ctx.vlog("Final invocation state is [%s]" % final_invocation_state)
 
         if not kwds.get("no_wait"):
-            final_state = _wait_for_history(ctx, user_gi, history_id, polling_backoff)
+            final_state = _wait_for_invocation_jobs(ctx, user_gi, invocation_id, polling_backoff)
             if final_state != "ok":
                 msg = "Failed to run workflow final history state is [%s]." % final_state
                 error_message = msg if not error_message else f"{error_message}. {msg}"
@@ -261,7 +261,7 @@ def stage_in(ctx, runnable, config, job_path, **kwds):  # noqa C901
 
     ctx.vlog("final state is %s" % final_state)
     if final_state != "ok":
-        msg = "Failed to run job final job state is [%s]." % final_state
+        msg = "Failed to upload data, upload state is [%s]." % final_state
         summarize_history(ctx, user_gi, history_id)
         raise Exception(msg)
     return job_dict, datasets, history_id
@@ -415,23 +415,23 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             if not output_id:
                 ctx.vlog("Workflow output identified without an ID (label), skipping")
                 continue
-            output_dict_value = None
             is_cwl = self._runnable.type in [RunnableType.cwl_workflow, RunnableType.cwl_tool]
             output_src = self.output_src(runnable_output)
+            if not output_src:
+                # Optional workflow output
+                ctx.vlog(f"Optional workflow output '{output_id}' not created, skipping")
+                outputs_dict[output_id] = None
+                continue
             output_dataset_id = output_src["id"]
             galaxy_output = self.to_galaxy_output(runnable_output)
-            try:
-                cwl_output = output_to_cwl_json(
-                    galaxy_output,
-                    self._get_metadata,
-                    get_dataset,
-                    self._get_extra_files,
-                    pseduo_location=True,
-                )
-            except AssertionError:
-                # In galaxy-tool-util < 21.05 output_to_cwl_json will raise an AssertionError when the output state is not OK
-                # Remove with new galaxy-tool-util release.
-                continue
+            cwl_output = output_to_cwl_json(
+                galaxy_output,
+                self._get_metadata,
+                get_dataset,
+                self._get_extra_files,
+                pseduo_location=True,
+            )
+            output_dict_value = None
             if is_cwl or output_src["src"] == "hda":
                 output_dict_value = cwl_output
             else:
@@ -617,6 +617,8 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
             return invocation["outputs"][output.get_id()]
         elif output_name in invocation["output_collections"]:
             return invocation["output_collections"][output.get_id()]
+        elif output.is_optional():
+            return None
         else:
             raise Exception(f"Failed to find output [{output_name}] in invocation outputs [{invocation['outputs']}]")
 
@@ -732,6 +734,19 @@ def _wait_for_history(ctx, gi, history_id, polling_backoff=0):
     return _wait_on_state(state_func, polling_backoff)
 
 
+def _wait_for_invocation_jobs(ctx, gi, invocation_id, polling_backoff=0):
+    # Wait for invocation jobs to finish. Less brittle than waiting for a history to finish,
+    # as you could have more than one invocation in a history, or an invocation without
+    # steps that produce history items.
+
+    ctx.log(f"waiting for invocation {invocation_id}")
+
+    def state_func():
+        return _retry_on_timeouts(ctx, gi, lambda gi: gi.jobs.get_jobs(invocation_id=invocation_id))
+
+    return _wait_on_state(state_func, polling_backoff)
+
+
 def _wait_for_job(gi, job_id, timeout=None):
     def state_func():
         return gi.jobs.show_job(job_id, full_details=True)
@@ -742,11 +757,33 @@ def _wait_for_job(gi, job_id, timeout=None):
 def _wait_on_state(state_func, polling_backoff=0, timeout=None):
     def get_state():
         response = state_func()
-        state = response["state"]
-        if str(state) not in ["running", "queued", "new", "ready"]:
-            return state
-        else:
+        if not isinstance(response, list):
+            response = [response]
+        if not response:
+            # invocation may not have any attached jobs, that's fine
+            return "ok"
+        non_terminal_states = {"running", "queued", "new", "ready", "resubmitted", "upload", "waiting"}
+        current_states = set(item["state"] for item in response)
+        current_non_terminal_states = non_terminal_states.intersection(current_states)
+        # Mix of "error"-ish terminal job, dataset, invocation terminal states, so we can use this for whatever we throw at it
+        hierarchical_fail_states = [
+            "error",
+            "paused",
+            "deleted",
+            "stopped",
+            "discarded",
+            "failed_metadata",
+            "cancelled",
+            "failed",
+        ]
+        for terminal_state in hierarchical_fail_states:
+            if terminal_state in current_states:
+                # If we got here something has failed and we can return (early)
+                return terminal_state
+        if current_non_terminal_states:
             return None
+        assert len(current_states) == 1, f"unexpected state(s) found: {current_states}"
+        return current_states.pop()
 
     timeout = timeout or 60 * 60 * 24
     final_state = wait_on(get_state, "state", timeout, polling_backoff)

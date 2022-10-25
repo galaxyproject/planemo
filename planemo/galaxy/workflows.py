@@ -145,7 +145,7 @@ def find_tool_ids(path):
     return list(tool_ids)
 
 
-WorkflowOutput = namedtuple("WorkflowOutput", ["order_index", "output_name", "label"])
+WorkflowOutput = namedtuple("WorkflowOutput", ["order_index", "output_name", "label", "optional"])
 
 
 def remote_runnable_to_workflow_id(runnable):
@@ -165,12 +165,18 @@ def describe_outputs(runnable, gi=None):
 
     outputs = []
     for (order_index, step) in workflow["steps"].items():
+        optional = False
+        if not step.get("tool_id"):
+            # One of the parameter types ... need eliminate this guesswork on the Galaxy side
+            tool_state = json.loads(step.get("tool_state", "{}"))
+            optional = tool_state.get("optional", False)
         step_outputs = step.get("workflow_outputs", [])
         for step_output in step_outputs:
             output = WorkflowOutput(
                 int(order_index),
                 step_output["output_name"],
                 step_output["label"],
+                optional,
             )
             outputs.append(output)
     return outputs

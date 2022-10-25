@@ -538,6 +538,9 @@ class RunnableOutput(metaclass=abc.ABCMeta):
     def get_id(self):
         """An identifier that describes this output."""
 
+    def is_optional(self):
+        return False
+
 
 class ToolOutput(RunnableOutput):
     """Implementation of RunnableOutput corresponding to Galaxy tool outputs."""
@@ -557,6 +560,9 @@ class GalaxyWorkflowOutput(RunnableOutput):
 
     def get_id(self) -> Optional[str]:
         return self._workflow_output.label
+
+    def is_optional(self):
+        return self.workflow_output.optional
 
     @property
     def workflow_output(self):
