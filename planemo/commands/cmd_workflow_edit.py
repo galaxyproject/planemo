@@ -18,7 +18,7 @@ from planemo.runnable_resolve import for_runnable_identifier
 def cli(ctx, workflow_identifier, output=None, force=False, **kwds):
     """Open a synchronized Galaxy workflow editor."""
     assert is_galaxy_engine(**kwds)
-    runnable = for_runnable_identifier(ctx, workflow_identifier, kwds.get("profile"))
+    runnable = for_runnable_identifier(ctx, workflow_identifier, kwds)
 
     kwds["workflows_from_path"] = True
 
