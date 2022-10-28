@@ -6,6 +6,65 @@ History
 .. to_doc
 
 ---------------------
+0.75.0 (2022-10-28)
+---------------------
+
+* Update outdated cuffmerge url (thanks to `@martenson`_). `Pull Request
+  1247`_
+* Set upstream branch when pushing workflows to GitHub (thanks to
+  `@simonbray`_). `Pull Request 1249`_
+* restore --no_cleanup to set cleanup_job to never (thanks to `@bernt-matthias`_). `Pull Request 1255`_
+* Drop support for Python 3.6 (thanks to `@simonbray`_). `Pull Request 1257`_
+* Replace CoC with link to GalaxyProject's one `Pull Request 1259`_
+* Mains resource selector must be skipped (thanks to `@hexylena`_). `Pull
+  Request 1260`_
+* Ignore cloudflare 503 status when checking links (thanks to `@bernt-matthias`_). `Pull Request 1262`_
+* Document the use of mandatory macro parameters and add named macro tokens
+  (thanks to `@bernt-matthias`_). `Pull Request 1212`_
+* Bump galaxy package requirements to 22.01 (thanks to `@bernt-matthias`_).
+  `Pull Request 1264`_
+* Run local galaxy via gravity `Pull Request 1232`_
+* Lint randomlines.xml file (thanks to `@simonbray`_). `Pull Request 1270`_
+* Check if main requirement is `None` (thanks to `@bernt-matthias`_). `Pull
+  Request 1274`_
+* Planemo type annotation: module planemo.commands.cmd_autoupdate (thanks to
+  `@gallardoalba`_). `Pull Request 1278`_
+* Planemo type annotation: module planemo.cli (thanks to `@gallardoalba`_).
+  `Pull Request 1277`_
+* Planemo type annotation: module cmd_clone (thanks to `@gallardoalba`_).
+  `Pull Request 1279`_
+* Planemo type annotation: module cmd_tool_init (thanks to `@gallardoalba`_).
+  `Pull Request 1281`_
+* Add type annotations to ``planemo.autoupdate`` module `Pull Request 1283`_
+* Planemo type annotation: module cmd_normalize (thanks to `@gallardoalba`_).
+  `Pull Request 1280`_
+* Planemo type annotation: module planemo.conda (thanks to `@gallardoalba`_).
+  `Pull Request 1284`_
+* Add type annotations to ``planemo.glob`` and ``planemo.virtualenv`` `Pull
+  Request 1287`_
+* Drop ``conda_lint`` command `Pull Request 1288`_
+* Type annotations for planemo.bioblend, planemo.git, and planemo.cwl.run
+  (thanks to `@adRn-s`_). `Pull Request 1285`_
+* Add FAQ page to docs (thanks to `@simonbray`_). `Pull Request 1271`_
+* Add type annotations to ``planemo.runnable`` and ``planemo.workflow_lint``
+  `Pull Request 1291`_
+* Make `--channels` also affect mulled channels and update/extend howto use
+  bioconda artifacts (thanks to `@bernt-matthias`_). `Pull Request 1227`_
+* Planemo type annotation: config, context and factory (thanks to
+  `@gallardoalba`_). `Pull Request 1292`_
+* [Training] update templates to use new, more accessible box style (thanks to
+  `@shiltemann`_). `Pull Request 1293`_
+* Pre-create expected output file on disk `Pull Request 1276`_
+* Control publish setting in .dockstore.yml, fix first release not appearing
+  on dockstore `Pull Request 1295`_
+* Fix disclosure css for summary elements `Pull Request 1294`_
+* Enable providing multiple `--tool_data_table` options `Pull Request 1296`_
+* Make startup timeout configurable `Pull Request 1298`_
+* Fix printing planemo test logs `Pull Request 1299`_
+* Fix workflow test when input is optional but also workflow output `Pull
+  Request 1297`_
+
+---------------------
 0.74.11 (2022-06-08)
 ---------------------
 
@@ -1804,6 +1863,40 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1247: https://github.com/galaxyproject/planemo/pull/1247
+.. _Pull Request 1249: https://github.com/galaxyproject/planemo/pull/1249
+.. _Pull Request 1255: https://github.com/galaxyproject/planemo/pull/1255
+.. _Pull Request 1257: https://github.com/galaxyproject/planemo/pull/1257
+.. _Pull Request 1259: https://github.com/galaxyproject/planemo/pull/1259
+.. _Pull Request 1260: https://github.com/galaxyproject/planemo/pull/1260
+.. _Pull Request 1262: https://github.com/galaxyproject/planemo/pull/1262
+.. _Pull Request 1212: https://github.com/galaxyproject/planemo/pull/1212
+.. _Pull Request 1264: https://github.com/galaxyproject/planemo/pull/1264
+.. _Pull Request 1232: https://github.com/galaxyproject/planemo/pull/1232
+.. _Pull Request 1270: https://github.com/galaxyproject/planemo/pull/1270
+.. _Pull Request 1274: https://github.com/galaxyproject/planemo/pull/1274
+.. _Pull Request 1278: https://github.com/galaxyproject/planemo/pull/1278
+.. _Pull Request 1277: https://github.com/galaxyproject/planemo/pull/1277
+.. _Pull Request 1279: https://github.com/galaxyproject/planemo/pull/1279
+.. _Pull Request 1281: https://github.com/galaxyproject/planemo/pull/1281
+.. _Pull Request 1283: https://github.com/galaxyproject/planemo/pull/1283
+.. _Pull Request 1280: https://github.com/galaxyproject/planemo/pull/1280
+.. _Pull Request 1284: https://github.com/galaxyproject/planemo/pull/1284
+.. _Pull Request 1287: https://github.com/galaxyproject/planemo/pull/1287
+.. _Pull Request 1288: https://github.com/galaxyproject/planemo/pull/1288
+.. _Pull Request 1285: https://github.com/galaxyproject/planemo/pull/1285
+.. _Pull Request 1271: https://github.com/galaxyproject/planemo/pull/1271
+.. _Pull Request 1291: https://github.com/galaxyproject/planemo/pull/1291
+.. _Pull Request 1227: https://github.com/galaxyproject/planemo/pull/1227
+.. _Pull Request 1292: https://github.com/galaxyproject/planemo/pull/1292
+.. _Pull Request 1293: https://github.com/galaxyproject/planemo/pull/1293
+.. _Pull Request 1276: https://github.com/galaxyproject/planemo/pull/1276
+.. _Pull Request 1295: https://github.com/galaxyproject/planemo/pull/1295
+.. _Pull Request 1294: https://github.com/galaxyproject/planemo/pull/1294
+.. _Pull Request 1296: https://github.com/galaxyproject/planemo/pull/1296
+.. _Pull Request 1298: https://github.com/galaxyproject/planemo/pull/1298
+.. _Pull Request 1299: https://github.com/galaxyproject/planemo/pull/1299
+.. _Pull Request 1297: https://github.com/galaxyproject/planemo/pull/1297
 .. _Pull Request 1244: https://github.com/galaxyproject/planemo/pull/1244
 .. _Pull Request 1242: https://github.com/galaxyproject/planemo/pull/1242
 .. _Pull Request 1241: https://github.com/galaxyproject/planemo/pull/1241
@@ -2618,3 +2711,4 @@ History
 .. _@gallardoalba: https://github.com/gallardoalba
 .. _@stain: https://github.com/stain
 .. _@profgiuseppe: https://github.com/profgiuseppe
+.. _@adRn-s: https://github.com/adRn-s
