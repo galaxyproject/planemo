@@ -15,7 +15,8 @@ History
   `@simonbray`_). `Pull Request 1249`_
 * restore --no_cleanup to set cleanup_job to never (thanks to `@bernt-matthias`_). `Pull Request 1255`_
 * Drop support for Python 3.6 (thanks to `@simonbray`_). `Pull Request 1257`_
-* Replace CoC with link to GalaxyProject's one `Pull Request 1259`_
+* Replace CoC with link to GalaxyProject's one (thanks to `@nsoranzo`_). `Pull
+  Request 1259`_
 * Mains resource selector must be skipped (thanks to `@hexylena`_). `Pull
   Request 1260`_
 * Ignore cloudflare 503 status when checking links (thanks to `@bernt-matthias`_). `Pull Request 1262`_
@@ -23,7 +24,7 @@ History
   (thanks to `@bernt-matthias`_). `Pull Request 1212`_
 * Bump galaxy package requirements to 22.01 (thanks to `@bernt-matthias`_).
   `Pull Request 1264`_
-* Run local galaxy via gravity `Pull Request 1232`_
+* Run local galaxy via gravity (thanks to `@mvdbeek`_). `Pull Request 1232`_
 * Lint randomlines.xml file (thanks to `@simonbray`_). `Pull Request 1270`_
 * Check if main requirement is `None` (thanks to `@bernt-matthias`_). `Pull
   Request 1274`_
@@ -35,34 +36,39 @@ History
   `Pull Request 1279`_
 * Planemo type annotation: module cmd_tool_init (thanks to `@gallardoalba`_).
   `Pull Request 1281`_
-* Add type annotations to ``planemo.autoupdate`` module `Pull Request 1283`_
+* Add type annotations to ``planemo.autoupdate`` module (thanks to
+  `@nsoranzo`_). `Pull Request 1283`_
 * Planemo type annotation: module cmd_normalize (thanks to `@gallardoalba`_).
   `Pull Request 1280`_
 * Planemo type annotation: module planemo.conda (thanks to `@gallardoalba`_).
   `Pull Request 1284`_
-* Add type annotations to ``planemo.glob`` and ``planemo.virtualenv`` `Pull
-  Request 1287`_
-* Drop ``conda_lint`` command `Pull Request 1288`_
+* Add type annotations to ``planemo.glob`` and ``planemo.virtualenv`` (thanks
+  to `@nsoranzo`_). `Pull Request 1287`_
+* Drop ``conda_lint`` command (thanks to `@nsoranzo`_). `Pull Request 1288`_
 * Type annotations for planemo.bioblend, planemo.git, and planemo.cwl.run
   (thanks to `@adRn-s`_). `Pull Request 1285`_
 * Add FAQ page to docs (thanks to `@simonbray`_). `Pull Request 1271`_
 * Add type annotations to ``planemo.runnable`` and ``planemo.workflow_lint``
-  `Pull Request 1291`_
+  (thanks to `@nsoranzo`_). `Pull Request 1291`_
 * Make `--channels` also affect mulled channels and update/extend howto use
   bioconda artifacts (thanks to `@bernt-matthias`_). `Pull Request 1227`_
 * Planemo type annotation: config, context and factory (thanks to
   `@gallardoalba`_). `Pull Request 1292`_
 * [Training] update templates to use new, more accessible box style (thanks to
   `@shiltemann`_). `Pull Request 1293`_
-* Pre-create expected output file on disk `Pull Request 1276`_
+* Pre-create expected output file on disk (thanks to `@mvdbeek`_). `Pull
+  Request 1276`_
 * Control publish setting in .dockstore.yml, fix first release not appearing
-  on dockstore `Pull Request 1295`_
-* Fix disclosure css for summary elements `Pull Request 1294`_
-* Enable providing multiple `--tool_data_table` options `Pull Request 1296`_
-* Make startup timeout configurable `Pull Request 1298`_
-* Fix printing planemo test logs `Pull Request 1299`_
-* Fix workflow test when input is optional but also workflow output `Pull
-  Request 1297`_
+  on dockstore (thanks to `@mvdbeek`_). `Pull Request 1295`_
+* Fix disclosure css for summary elements (thanks to `@mvdbeek`_). `Pull
+  Request 1294`_
+* Enable providing multiple `--tool_data_table` options (thanks to
+  `@mvdbeek`_). `Pull Request 1296`_
+* Make startup timeout configurable (thanks to `@mvdbeek`_). `Pull Request
+  1298`_
+* Fix printing planemo test logs (thanks to `@mvdbeek`_). `Pull Request 1299`_
+* Fix workflow test when input is optional but also workflow output (thanks to
+  `@mvdbeek`_). `Pull Request 1297`_
 
 ---------------------
 0.74.11 (2022-06-08)
