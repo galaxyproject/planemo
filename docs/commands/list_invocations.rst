@@ -20,6 +20,5 @@ Get a list of invocations for a particular workflow ID or alias.
 
       --profile TEXT  Name of profile (created with the profile_create command) to
                       use with this command.  [required]
-    
       --help          Show this message and exit.
     

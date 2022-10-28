@@ -44,7 +44,6 @@ planemo.linters.xsd module
    :undoc-members:
    :show-inheritance:
 
-
 Module contents
 ---------------
 

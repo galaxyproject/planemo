@@ -26,7 +26,20 @@ lines at some point.
 **Options**::
 
 
-      -f, --force        Overwrite existing files if present.
+      -f, --force                     Overwrite existing files if present.
       -o, --output FILE
-      --help             Show this message and exit.
+      --galaxy_url TEXT               Remote Galaxy URL to use with external Galaxy
+                                      engine.
+      --galaxy_user_key TEXT          User key to use with external Galaxy engine.
+      --from_invocation / --from_uri  Build a workflow test or job description from
+                                      an invocation ID run on an external Galaxy.A
+                                      Galaxy URL and API key must also be specified.
+                                      This allows test data to be downloadedand
+                                      inputs and parameters defined automatically.
+                                      Alternatively, the default is to build
+                                      thedescriptions from a provided workflow URI.
+      --profile TEXT                  Name of profile (created with the
+                                      profile_create command) to use with this
+                                      command.
+      --help                          Show this message and exit.
     

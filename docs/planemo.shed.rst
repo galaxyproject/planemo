@@ -20,7 +20,6 @@ planemo.shed.interface module
    :undoc-members:
    :show-inheritance:
 
-
 Module contents
 ---------------
 

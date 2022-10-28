@@ -20,6 +20,5 @@ List aliases for a path or a workflow or dataset ID. Aliases are associated with
 
       --profile TEXT  Name of profile (created with the profile_create command) to
                       use with this command.  [required]
-    
       --help          Show this message and exit.
     
