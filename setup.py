@@ -25,7 +25,6 @@ SOURCE_DIR = "planemo"
 
 _version_re = re.compile(r"__version__\s+=\s+(.*)")
 
-
 with open("%s/__init__.py" % SOURCE_DIR, "rb") as f:
     init_contents = f.read().decode("utf-8")
 
@@ -40,7 +39,6 @@ with open("%s/__init__.py" % SOURCE_DIR, "rb") as f:
     PROJECT_AUTHOR = get_var("PROJECT_AUTHOR")
     PROJECT_EMAIL = get_var("PROJECT_EMAIL")
 
-TEST_DIR = "tests"
 PROJECT_DESCRIPTION = (
     "Command-line utilities to assist in building tools for the Galaxy project (http://galaxyproject.org/)."
 )
@@ -90,11 +88,6 @@ else:
     # In tox, it will cover them anyway.
     requirements = []
 
-test_requirements = [
-    # TODO: put package test requirements here
-]
-
-
 setup(
     name=PROJECT_NAME,
     version=version,
@@ -127,7 +120,6 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
-    test_suite=TEST_DIR,
-    tests_require=test_requirements,
 )
