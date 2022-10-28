@@ -4,10 +4,8 @@ import shutil
 
 import pytest
 
-from planemo.engine import (
-    engine_context,
-    is_galaxy_engine,
-)
+from planemo.engine import engine_context
+from planemo.engine.galaxy import LocalManagedGalaxyEngine
 from planemo.training import Training
 from planemo.training.topic import Topic
 from planemo.training.tutorial import (
@@ -38,14 +36,14 @@ topic = Topic()
 training = Training(KWDS)
 
 
-def test_get_galaxy_datatype():
+def test_get_galaxy_datatype() -> None:
     """Test :func:`planemo.training.tutorial.get_galaxy_datatype`."""
     assert get_galaxy_datatype("csv", datatype_fp) == "csv"
     assert get_galaxy_datatype("test", datatype_fp) == "strange_datatype"
     assert "# Please add" in get_galaxy_datatype("unknown", datatype_fp)
 
 
-def test_get_zenodo_record():
+def test_get_zenodo_record() -> None:
     """Test :func:`planemo.training.tutorial.get_zenodo_record`."""
     z_record, req_res = get_zenodo_record(zenodo_link)
     file_link_prefix = "https://zenodo.org/api/files/51a1b5db-ff05-4cda-83d4-3b46682f921f"
@@ -68,7 +66,7 @@ def test_get_zenodo_record():
     assert file_link_prefix in req_res["files"][0]["links"]["self"]
 
 
-def test_get_wf_inputs():
+def test_get_wf_inputs() -> None:
     """Test :func:`planemo.training.tutorial.get_wf_inputs`."""
     step_inp = {
         "tables_1|table": {"output_name": "output", "id": 2},
@@ -93,7 +91,7 @@ def test_get_wf_inputs():
     assert "tt" in step_inputs["add_to_database"]["tab"]["0"]
 
 
-def test_get_wf_param_values():
+def test_get_wf_param_values() -> None:
     """Test :func:`planemo.training.tutorial.get_wf_param_values`."""
     wf_step = wf["steps"]["3"]
     wf_param_value_tests = get_wf_param_values(wf_step["tool_state"], get_wf_inputs(wf_step["input_connections"]))
@@ -103,7 +101,7 @@ def test_get_wf_param_values():
 
 
 @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-def test_get_hands_on_boxes_from_local_galaxy():
+def test_get_hands_on_boxes_from_local_galaxy() -> None:
     """Test :func:`planemo.training.tutorial.get_hands_on_boxes_from_local_galaxy`."""
     tuto_body = get_hands_on_boxes_from_local_galaxy(KWDS, WF_FP, CTX)
     assert_body_contains(tuto_body, "## Sub-step with **FastQC**")
@@ -112,11 +110,11 @@ def test_get_hands_on_boxes_from_local_galaxy():
 
 
 @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-def test_get_hands_on_boxes_from_running_galaxy():
+def test_get_hands_on_boxes_from_running_galaxy() -> None:
     """Test :func:`planemo.training.tutorial.get_hands_on_boxes_from_running_galaxy`."""
-    assert is_galaxy_engine(**KWDS)
     galaxy_url = f"http://{KWDS['host']}:{KWDS['port']}"
     with engine_context(CTX, **KWDS) as galaxy_engine:
+        assert isinstance(galaxy_engine, LocalManagedGalaxyEngine)
         with galaxy_engine.ensure_runnables_served([RUNNABLE]) as config:
             wf_id = config.workflow_id(WF_FP)
             tuto_body = get_hands_on_boxes_from_running_galaxy(wf_id, galaxy_url, config.user_api_key)
@@ -126,7 +124,7 @@ def test_get_hands_on_boxes_from_running_galaxy():
     assert_body_contains(tuto_body, "## Sub-step with **Select first**")
 
 
-def test_tutorial_init():
+def test_tutorial_init() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.init`."""
     # with default parameter
     tuto = Tutorial(training=training, topic=topic)
@@ -149,7 +147,7 @@ def test_tutorial_init():
     assert "my_tuto" in tuto.dir
 
 
-def test_tutorial_init_from_kwds():
+def test_tutorial_init_from_kwds() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.init_from_kwds`."""
     kwds = {
         "tutorial_name": "my_tuto",
@@ -175,7 +173,7 @@ def test_tutorial_init_from_kwds():
     assert "my_tuto" in tuto.dir
 
 
-def test_tutorial_init_from_existing_tutorial():
+def test_tutorial_init_from_existing_tutorial() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.init_from_existing_tutorial`."""
     tuto = Tutorial(training=training, topic=topic)
     # non existing tutorial
@@ -192,7 +190,7 @@ def test_tutorial_init_from_existing_tutorial():
     shutil.rmtree("topics")
 
 
-def test_tutorial_init_data_lib():
+def test_tutorial_init_data_lib() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.init_data_lib`."""
     tuto = Tutorial(training=training, topic=topic)
     tuto.init_data_lib()
@@ -214,7 +212,7 @@ def test_tutorial_init_data_lib():
     shutil.rmtree("topics")
 
 
-def test_tutorial_get_tuto_metata():
+def test_tutorial_get_tuto_metata() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.get_tuto_metata`."""
     tuto = Tutorial(training=training, topic=topic)
     tuto.questions = ["q1", "q2"]
@@ -223,7 +221,7 @@ def test_tutorial_get_tuto_metata():
     assert "- q1" in metadata
 
 
-def test_tutorial_set_dir_name():
+def test_tutorial_set_dir_name() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.set_dir_name`."""
     tuto = Tutorial(training=training, topic=topic)
     tuto.name = "the_tuto"
@@ -236,7 +234,7 @@ def test_tutorial_set_dir_name():
     assert tuto.name in tuto.wf_fp
 
 
-def test_tutorial_exists():
+def test_tutorial_exists() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.exists`."""
     # default
     tuto = Tutorial(training=training, topic=topic)
@@ -247,7 +245,7 @@ def test_tutorial_exists():
     shutil.rmtree("topics")
 
 
-def test_tutorial_has_workflow():
+def test_tutorial_has_workflow() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.has_workflow`."""
     # default
     tuto = Tutorial(training=training, topic=topic)
@@ -265,7 +263,7 @@ def test_tutorial_has_workflow():
 
 
 @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-def test_tutorial_export_workflow_file():
+def test_tutorial_export_workflow_file() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.export_workflow_file`."""
     tuto = Tutorial(training=training, topic=topic)
     os.makedirs(tuto.wf_dir)
@@ -276,9 +274,9 @@ def test_tutorial_export_workflow_file():
     # with workflow id
     tuto.init_wf_fp = None
     os.remove(tuto.wf_fp)
-    assert is_galaxy_engine(**KWDS)
     galaxy_url = f"http://{KWDS['host']}:{KWDS['port']}"
     with engine_context(CTX, **KWDS) as galaxy_engine:
+        assert isinstance(galaxy_engine, LocalManagedGalaxyEngine)
         with galaxy_engine.ensure_runnables_served([RUNNABLE]) as config:
             tuto.init_wf_id = config.workflow_id(WF_FP)
             tuto.training.galaxy_url = galaxy_url
@@ -288,7 +286,7 @@ def test_tutorial_export_workflow_file():
     shutil.rmtree("topics")
 
 
-def test_tutorial_get_files_from_zenodo():
+def test_tutorial_get_files_from_zenodo() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.get_files_from_zenodo`."""
     tuto = Tutorial(training=training, topic=topic, zenodo_link=zenodo_link)
     tuto.datatype_fp = datatype_fp
@@ -305,7 +303,7 @@ def test_tutorial_get_files_from_zenodo():
     assert files[1]["ext"] == "csv"
 
 
-def test_tutorial_prepare_data_library_from_zenodo():
+def test_tutorial_prepare_data_library_from_zenodo() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.prepare_data_library_from_zenodo`."""
     # without zenodo link
     tuto = Tutorial(training=training, topic=topic)
@@ -323,7 +321,7 @@ def test_tutorial_prepare_data_library_from_zenodo():
     shutil.rmtree("topics")
 
 
-def test_tutorial_write_hands_on_tutorial():
+def test_tutorial_write_hands_on_tutorial() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.write_hands_on_tutorial`."""
     tuto = Tutorial(training=training, topic=topic)
     os.makedirs(tuto.wf_dir)
@@ -340,7 +338,7 @@ def test_tutorial_write_hands_on_tutorial():
 
 
 @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-def test_tutorial_create_hands_on_tutorial():
+def test_tutorial_create_hands_on_tutorial() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.create_hands_on_tutorial`."""
     tuto = Tutorial(training=training, topic=topic)
     os.makedirs(tuto.wf_dir)
@@ -356,8 +354,8 @@ def test_tutorial_create_hands_on_tutorial():
     with pytest.raises(Exception, match="No API key to access the given Galaxy instance"):
         tuto.create_hands_on_tutorial(CTX)
     # with init_wf_id
-    assert is_galaxy_engine(**KWDS)
     with engine_context(CTX, **KWDS) as galaxy_engine:
+        assert isinstance(galaxy_engine, LocalManagedGalaxyEngine)
         with galaxy_engine.ensure_runnables_served([RUNNABLE]) as config:
             tuto.init_wf_id = config.workflow_id(WF_FP)
             tuto.training.galaxy_api_key = config.user_api_key
@@ -373,7 +371,7 @@ def test_tutorial_create_hands_on_tutorial():
 
 
 @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-def test_tutorial_create_tutorial():
+def test_tutorial_create_tutorial() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.create_tutorial`."""
     tuto = Tutorial(training=training, topic=topic)
     tuto.init_from_kwds(
@@ -400,7 +398,7 @@ def test_tutorial_create_tutorial():
     shutil.rmtree("topics")
 
 
-def assert_body_contains(body, contents):
+def assert_body_contains(body: str, contents: str) -> None:
     if contents not in body:
         message = f"Expected to find contents [{contents}] in body [{body}]"
         raise AssertionError(message)

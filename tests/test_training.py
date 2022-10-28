@@ -102,7 +102,7 @@ KWDS = {
 }
 
 
-def test_training_init():
+def test_training_init() -> None:
     """Test :func:`planemo.training.Training.init`."""
     train = Training(KWDS)
     assert train.topics_dir == "topics"
@@ -110,7 +110,7 @@ def test_training_init():
     assert train.tuto is None
 
 
-def test_training_init_training():
+def test_training_init_training() -> None:
     """Test :func:`planemo.training.Training.init_training`."""
     train = Training(KWDS)
     # new topic, nothing else
@@ -152,13 +152,13 @@ def test_training_init_training():
     shutil.rmtree("metadata")
 
 
-def create_existing_tutorial(exit_tuto_name, tuto_fp, topic):
+def create_existing_tutorial(exit_tuto_name, tuto_fp, topic) -> None:
     exist_tuto_dir = os.path.join(topic.dir, "tutorials", exit_tuto_name)
     os.makedirs(exist_tuto_dir)
     shutil.copyfile(tuto_fp, os.path.join(exist_tuto_dir, "tutorial.md"))
 
 
-def test_training_check_topic_init_tuto():
+def test_training_check_topic_init_tuto() -> None:
     """Test :func:`planemo.training.Training.check_topic_init_tuto`."""
     train = Training(KWDS)
     # no topic
@@ -181,7 +181,7 @@ def test_training_check_topic_init_tuto():
     shutil.rmtree("metadata")
 
 
-def test_fill_data_library():
+def test_fill_data_library() -> None:
     """Test :func:`planemo.training.fill_data_library`."""
     train = Training(KWDS)
     train.kwds["tutorial_name"] = None
@@ -208,6 +208,7 @@ def test_fill_data_library():
     train.kwds["zenodo_link"] = new_z_link
     train.tuto = None
     train.fill_data_library(CTX)
+    assert train.tuto
     with open(train.tuto.data_lib_fp) as fh:
         assert "DOI: 10.5281/zenodo.1324204" in fh.read()
     with open(train.tuto.tuto_fp) as fh:
@@ -225,7 +226,7 @@ def test_fill_data_library():
 
 
 @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-def test_generate_tuto_from_wf():
+def test_generate_tuto_from_wf() -> None:
     """Test :func:`planemo.training.generate_tuto_from_wf`."""
     train = Training(KWDS)
     train.kwds["tutorial_name"] = None
@@ -253,7 +254,7 @@ def test_generate_tuto_from_wf():
     shutil.rmtree("metadata")
 
 
-def assert_file_contains(file, text):
+def assert_file_contains(file: str, text: str) -> None:
     with open(file) as fh:
         contents = fh.read()
     if text not in contents:
