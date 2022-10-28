@@ -2,6 +2,8 @@
 import json
 import os
 
+import pytest
+
 from planemo.training.tool_input import (
     get_empty_input,
     get_empty_param,
@@ -12,10 +14,7 @@ from .test_training import (
     wf,
     wf_param_values,
 )
-from .test_utils import (
-    assert_raises_regexp,
-    TEST_DATA_DIR,
-)
+from .test_utils import TEST_DATA_DIR
 
 wf_steps = wf["steps"]
 # load the output from
@@ -45,8 +44,7 @@ def test_get_empty_param():
 def test_ToolInput_init():
     """Test :func:`planemo.training.tool_input.ToolInput.init`."""
     # test type exception
-    exp_exception = "No type for the parameter t"
-    with assert_raises_regexp(Exception, exp_exception):
+    with pytest.raises(Exception, match="No type for the parameter t"):
         ToolInput(
             tool_inp_desc={"name": "t"},
             wf_param_values=wf_param_values,
@@ -56,8 +54,7 @@ def test_ToolInput_init():
             force_default=False,
         )
     # test with param not in workflow and exception
-    exp_exception = "t not in workflow"
-    with assert_raises_regexp(Exception, exp_exception):
+    with pytest.raises(Exception, match="t not in workflow"):
         ToolInput(
             tool_inp_desc={"name": "t", "type": ""},
             wf_param_values=wf_param_values,

@@ -3,11 +3,12 @@ import json
 import os
 import shutil
 
+import pytest
+
 from planemo import cli
 from planemo.runnable import for_path
 from planemo.training import Training
 from .test_utils import (
-    assert_raises_regexp,
     skip_if_environ,
     TEST_DATA_DIR,
 )
@@ -123,20 +124,19 @@ def test_training_init_training():
     assert not os.listdir(os.path.join(train.topic.dir, "tutorials"))
     # no new topic, no tutorial name but hands-on
     train.kwds["slides"] = True
-    exp_exception = "A tutorial name is needed to create the skeleton of a tutorial slide deck"
-    with assert_raises_regexp(Exception, exp_exception):
+    with pytest.raises(Exception, match="A tutorial name is needed to create the skeleton of a tutorial slide deck"):
         train.init_training(CTX)
     # no new topic, no tutorial name but workflow
     train.kwds["workflow"] = WF_FP
     train.kwds["slides"] = False
-    exp_exception = "A tutorial name is needed to create the skeleton of the tutorial from a workflow"
-    with assert_raises_regexp(Exception, exp_exception):
+    with pytest.raises(
+        Exception, match="A tutorial name is needed to create the skeleton of the tutorial from a workflow"
+    ):
         train.init_training(CTX)
     # no new topic, no tutorial name but zenodo
     train.kwds["workflow"] = None
     train.kwds["zenodo_link"] = zenodo_link
-    exp_exception = "A tutorial name is needed to add Zenodo information"
-    with assert_raises_regexp(Exception, exp_exception):
+    with pytest.raises(Exception, match="A tutorial name is needed to add Zenodo information"):
         train.init_training(CTX)
     # no new topic, new tutorial
     train.kwds["tutorial_name"] = "new_tuto"
@@ -162,8 +162,7 @@ def test_training_check_topic_init_tuto():
     """Test :func:`planemo.training.Training.check_topic_init_tuto`."""
     train = Training(KWDS)
     # no topic
-    exp_exception = "The topic my_new_topic does not exists. It should be created"
-    with assert_raises_regexp(Exception, exp_exception):
+    with pytest.raises(Exception, match="The topic my_new_topic does not exists. It should be created"):
         train.check_topic_init_tuto()
     # add topic
     train.kwds["tutorial_name"] = None
@@ -193,8 +192,9 @@ def test_fill_data_library():
     create_existing_tutorial("existing_tutorial", tuto_wo_zenodo_fp, train.topic)
     # no Zenodo link
     train.kwds["zenodo_link"] = None
-    exp_exception = "A Zenodo link should be provided either in the metadata file or as argument of the command"
-    with assert_raises_regexp(Exception, exp_exception):
+    with pytest.raises(
+        Exception, match="A Zenodo link should be provided either in the metadata file or as argument of the command"
+    ):
         train.fill_data_library(CTX)
     # with a given Zenodo link and no Zenodo in metadata
     train.kwds["zenodo_link"] = zenodo_link
@@ -235,8 +235,10 @@ def test_generate_tuto_from_wf():
     create_existing_tutorial("existing_tutorial", tuto_fp, train.topic)
     # no workflow
     train.kwds["workflow"] = None
-    exp_exception = "A path to a local workflow or the id of a workflow on a running Galaxy instance should be provided"
-    with assert_raises_regexp(Exception, exp_exception):
+    with pytest.raises(
+        Exception,
+        match="A path to a local workflow or the id of a workflow on a running Galaxy instance should be provided",
+    ):
         train.generate_tuto_from_wf(CTX)
     # with workflow
     train.kwds["workflow"] = WF_FP

@@ -2,6 +2,8 @@
 import os
 import shutil
 
+import pytest
+
 from planemo.engine import (
     engine_context,
     is_galaxy_engine,
@@ -30,10 +32,7 @@ from .test_training import (
     wf_param_values,
     zenodo_link,
 )
-from .test_utils import (
-    assert_raises_regexp,
-    skip_if_environ,
-)
+from .test_utils import skip_if_environ
 
 topic = Topic()
 training = Training(KWDS)
@@ -180,8 +179,7 @@ def test_tutorial_init_from_existing_tutorial():
     """Test :func:`planemo.training.tutorial.tutorial.init_from_existing_tutorial`."""
     tuto = Tutorial(training=training, topic=topic)
     # non existing tutorial
-    exp_exception = "The tutorial existing_tutorial does not exists. It should be created"
-    with assert_raises_regexp(Exception, exp_exception):
+    with pytest.raises(Exception, match="The tutorial existing_tutorial does not exists. It should be created"):
         tuto.init_from_existing_tutorial("existing_tutorial")
     # existing tutorial
     create_existing_tutorial("existing_tutorial", tuto_fp, tuto.topic)
@@ -349,15 +347,13 @@ def test_tutorial_create_hands_on_tutorial():
     # with init_wf_id and no Galaxy URL
     tuto.init_wf_id = "ID"
     tuto.training.galaxy_url = None
-    exp_exception = "No Galaxy URL given"
-    with assert_raises_regexp(Exception, exp_exception):
+    with pytest.raises(Exception, match="No Galaxy URL given"):
         tuto.create_hands_on_tutorial(CTX)
     # with init_wf_id and no Galaxy API key
     tuto.init_wf_id = "ID"
     tuto.training.galaxy_url = f"http://{KWDS['host']}:{KWDS['port']}"
     tuto.training.galaxy_api_key = None
-    exp_exception = "No API key to access the given Galaxy instance"
-    with assert_raises_regexp(Exception, exp_exception):
+    with pytest.raises(Exception, match="No API key to access the given Galaxy instance"):
         tuto.create_hands_on_tutorial(CTX)
     # with init_wf_id
     assert is_galaxy_engine(**KWDS)
