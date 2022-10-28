@@ -3,7 +3,6 @@
 import contextlib
 import functools
 import os
-import re
 import shutil
 import signal
 import traceback
@@ -23,7 +22,6 @@ from unittest import (
 )
 
 import psutil
-import py.code
 import pytest
 from click.testing import CliRunner
 from galaxy.util import (
@@ -405,39 +403,6 @@ def _wait_on_future_suppress_exception(future):
         future.result(timeout=30)
     except Exception as e:
         print(f"Problem waiting on future {e}")
-
-
-# From pytest-raisesregexp
-class assert_raises_regexp:
-    def __init__(self, expected_exception, regexp, *args, **kwargs):
-        __tracebackhide__ = True
-        self.exception = expected_exception
-        self.regexp = regexp
-        self.excinfo = None
-
-        if args:
-            with self:
-                args[0](*args[1:], **kwargs)
-
-    def __enter__(self):
-        self.excinfo = object.__new__(py.code.ExceptionInfo)
-        return self.excinfo
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        __tracebackhide__ = True
-
-        if exc_type is None:
-            pytest.fail(f"DID NOT RAISE {self.exception}")
-
-        self.excinfo.__init__((exc_type, exc_val, exc_tb))
-
-        if not issubclass(exc_type, self.exception):
-            pytest.fail(f"{exc_type} RAISED instead of {self.exception}\n{exc_val!r}")
-
-        if not re.search(self.regexp, str(exc_val)):
-            pytest.fail(f'Pattern "{self.regexp}" not found in "{exc_val!s}"')
-
-        return True
 
 
 def safe_rmtree(path):

@@ -2,6 +2,8 @@
 import json
 import os
 
+import pytest
+
 from planemo.training.tool_input import (
     get_empty_input,
     get_empty_param,
@@ -12,10 +14,7 @@ from .test_training import (
     wf,
     wf_param_values,
 )
-from .test_utils import (
-    assert_raises_regexp,
-    TEST_DATA_DIR,
-)
+from .test_utils import TEST_DATA_DIR
 
 wf_steps = wf["steps"]
 # load the output from
@@ -25,28 +24,27 @@ with open(os.path.join(TEST_DATA_DIR, "training_query_tabular.json")) as tool_de
 tool_inp_desc = tool_desc["inputs"]
 
 
-def test_get_input_tool_name():
+def test_get_input_tool_name() -> None:
     """Test :func:`planemo.training.tool_input.get_input_tool_name`."""
     assert "Input dataset" in get_input_tool_name("1", wf_steps)
     assert "output of" in get_input_tool_name("4", wf_steps)
     assert get_input_tool_name("10", wf_steps) == ""
 
 
-def test_get_empty_input():
+def test_get_empty_input() -> None:
     """Test :func:`planemo.training.tool_input.get_empty_input`."""
     assert '{% icon param-file %} *"Input file"*: File' in get_empty_input()
 
 
-def test_get_empty_param():
+def test_get_empty_param() -> None:
     """Test :func:`planemo.training.tool_input.get_empty_param`."""
     assert '*"Parameter"*: `a value`' in get_empty_param()
 
 
-def test_ToolInput_init():
+def test_ToolInput_init() -> None:
     """Test :func:`planemo.training.tool_input.ToolInput.init`."""
     # test type exception
-    exp_exception = "No type for the parameter t"
-    with assert_raises_regexp(Exception, exp_exception):
+    with pytest.raises(Exception, match="No type for the parameter t"):
         ToolInput(
             tool_inp_desc={"name": "t"},
             wf_param_values=wf_param_values,
@@ -56,8 +54,7 @@ def test_ToolInput_init():
             force_default=False,
         )
     # test with param not in workflow and exception
-    exp_exception = "t not in workflow"
-    with assert_raises_regexp(Exception, exp_exception):
+    with pytest.raises(Exception, match="t not in workflow"):
         ToolInput(
             tool_inp_desc={"name": "t", "type": ""},
             wf_param_values=wf_param_values,
@@ -89,7 +86,7 @@ def test_ToolInput_init():
     assert tool_input.wf_param_values == "workdb.sqlite"
 
 
-def test_ToolInput_get_formatted_inputs():
+def test_ToolInput_get_formatted_inputs() -> None:
     """Test :func:`planemo.training.tool_input.ToolInput.get_formatted_inputs`."""
     # test no input
     tool_input = ToolInput(
@@ -128,7 +125,7 @@ def test_ToolInput_get_formatted_inputs():
     assert "(Input dataset)" in inputlist
 
 
-def test_ToolInput_get_lower_param_desc():
+def test_ToolInput_get_lower_param_desc() -> None:
     """Test :func:`planemo.training.tool_input.ToolInput.get_lower_param_desc`."""
     tool_input = ToolInput(
         tool_inp_desc=tool_inp_desc[1],
@@ -142,7 +139,7 @@ def test_ToolInput_get_lower_param_desc():
     assert ">        - {% icon param-collection %}" in sub_param_desc
 
 
-def test_ToolInput_get_formatted_section_desc():
+def test_ToolInput_get_formatted_section_desc() -> None:
     """Test :func:`planemo.training.tool_input.ToolInput.get_formatted_section_desc`."""
     tool_input = ToolInput(
         tool_inp_desc=tool_inp_desc[1],
@@ -157,7 +154,7 @@ def test_ToolInput_get_formatted_section_desc():
     assert ">        - {%" in section_paramlist
 
 
-def test_ToolInput_get_formatted_conditional_desc():
+def test_ToolInput_get_formatted_conditional_desc() -> None:
     """Test :func:`planemo.training.tool_input.ToolInput.get_formatted_conditional_desc`."""
     tool_input = ToolInput(
         tool_inp_desc=tool_inp_desc[5],
@@ -173,7 +170,7 @@ def test_ToolInput_get_formatted_conditional_desc():
     assert '>        - *"' in conditional_paramlist
 
 
-def test_ToolInput_get_formatted_repeat_desc():
+def test_ToolInput_get_formatted_repeat_desc() -> None:
     """Test :func:`planemo.training.tool_input.ToolInput.get_formatted_repeat_desc`."""
     tool_input = ToolInput(
         tool_inp_desc=tool_inp_desc[2],
@@ -189,7 +186,7 @@ def test_ToolInput_get_formatted_repeat_desc():
     assert ">            -" in repeat_desc
 
 
-def test_ToolInput_get_formatted_other_param_desc():
+def test_ToolInput_get_formatted_other_param_desc() -> None:
     """Test :func:`planemo.training.tool_input.ToolInput.get_formatted_other_param_desc`."""
     # test default value of the tool
     tool_input = ToolInput(
@@ -235,7 +232,7 @@ def test_ToolInput_get_formatted_other_param_desc():
     assert "*: ``" in tool_input.get_formatted_other_param_desc()
 
 
-def test_ToolInput_get_formatted_desc():
+def test_ToolInput_get_formatted_desc() -> None:
     """Test :func:`planemo.training.tool_input.ToolInput.get_formatted_desc`."""
     # test no param values
     tool_input = ToolInput(

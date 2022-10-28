@@ -62,6 +62,8 @@ class PlanemoContextInterface(metaclass=abc.ABCMeta):
 class PlanemoContext(PlanemoContextInterface):
     """Implementation of ``PlanemoContextInterface``"""
 
+    planemo_directory: Optional[str]
+
     def __init__(self) -> None:
         """Construct a Context object using execution environment."""
         self.home = os.getcwd()
