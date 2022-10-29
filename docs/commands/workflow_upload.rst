@@ -16,10 +16,10 @@ Upload workflows to github organization.
 **Options**::
 
 
-      --namespace TEXT  Organization or username under which to create or update
-                        workflow repository. Must be a valid github username or
-                        organization
-    
-      --dry_run         Don't execute action, show preview of action.
-      --help            Show this message and exit.
+      --namespace TEXT      Organization or username under which to create or update
+                            workflow repository. Must be a valid github username or
+                            organization
+      --github_branch TEXT  GitHub branch to use for the action. Default is main.
+      --dry_run             Don't execute action, show preview of action.
+      --help                Show this message and exit.
     

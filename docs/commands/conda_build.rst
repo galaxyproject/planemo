@@ -18,14 +18,11 @@ Perform conda build with Planemo's conda.
 
       --conda_prefix DIRECTORY        Conda prefix to use for conda dependency
                                       commands.
-    
       --conda_exec FILE               Location of conda executable.
       --conda_channels, --conda_ensure_channels TEXT
                                       Ensure conda is configured with specified
                                       comma separated list of channels.
-    
       --conda_use_local               Use locally built packages while building
                                       Conda environments.
-    
       --help                          Show this message and exit.
     

@@ -19,7 +19,6 @@ PROJECT_OWNER = project.PROJECT_OWNER
 PROJECT_NAME = project.PROJECT_NAME
 PROJECT_URL = f"https://github.com/{PROJECT_OWNER}/{PROJECT_NAME}"
 PROJECT_API = f"https://api.github.com/repos/{PROJECT_OWNER}/{PROJECT_NAME}/"
-AUTHORS_SKIP_CREDIT = ["jmchilton", "mvdbeek", "nsoranzo", "bgruening", "natefoo"]
 
 
 def main(argv):
@@ -48,9 +47,8 @@ def main(argv):
         req = requests.get(api_url).json()
         message = req["title"]
         login = req["user"]["login"]
-        if login not in AUTHORS_SKIP_CREDIT:
-            message = message.rstrip(".")
-            message += " (thanks to `@%s`_)." % req["user"]["login"]
+        message = message.rstrip(".")
+        message += f" (thanks to `@{login}`_)."
     elif requests is not None and ident.startswith("issue"):
         issue = ident[len("issue") :]
         api_url = urljoin(PROJECT_API, "issues/%s" % issue)

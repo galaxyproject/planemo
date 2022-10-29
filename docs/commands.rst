@@ -41,6 +41,7 @@ documentation describes these commands.
 .. include:: commands/profile_list.rst
 .. include:: commands/project_init.rst
 .. include:: commands/pull_request.rst
+.. include:: commands/rerun.rst
 .. include:: commands/run.rst
 .. include:: commands/serve.rst
 .. include:: commands/share_test.rst

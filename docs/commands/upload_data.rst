@@ -1,38 +1,32 @@
 
-``serve`` command
+``upload_data`` command
 ======================================
 
 This section is auto-generated from the help text for the planemo command
-``serve``. This help message can be generated with ``planemo serve
+``upload_data``. This help message can be generated with ``planemo upload_data
 --help``.
 
 **Usage**::
 
-    planemo serve [OPTIONS] TOOL_PATH
+    planemo upload_data [OPTIONS] RUNNABLE_PATH_OR_ID JOB_PATH NEW_JOB_PATH
 
 **Help**
 
-Launch Galaxy instance with specified tools.
+Planemo command for uploading data to an external Galaxy server.
 
-The Galaxy tool panel will include just the referenced tool or tools (by
-default all the tools in the current working directory) and the upload
-tool.
+::
 
-planemo will search parent directories to see if any is a Galaxy instance
-- but one can pick the Galaxy instance to use with the ``--galaxy_root``
-option or force planemo to download a disposable instance with the
-``--install_galaxy`` flag.
+    % planemo upload_data wf.ga wf-job.yml new-wf-job.yml --profile profile
 
-``planemo`` will run the Galaxy instance in an existing virtualenv if one
-exists in a ``.venv`` directory in the specified ``--galaxy_root``.
-Otherwise, the Galaxy instance will run in a clean virtualenv created in
-``/tmp``.
-
-``planemo`` uses temporarily generated config files and environment
-variables to attempt to shield this execution of Galaxy from manually
-launched runs against that same Galaxy root - but this may not be bullet
-proof yet, so please be careful and do not try this against a production
-Galaxy instance.
+Running this subcommand requires a workflow file or identifier
+and a job file, just as for ``planemo run``. In addition, a third
+argument is required, for the location of a new job file which
+Planemo will write. The data will be uploaded to the specified
+external Galaxy server and the job file will be recreated at the
+specified location, with all instances of ``path`` or ``location``
+for input datasets and collections replaced by ``galaxy_id``. The
+new job file can then be used to run the workflow separately from
+the already completed data upload.
 
 **Options**::
 
@@ -94,17 +88,6 @@ Galaxy instance.
                                       for security reasons set to 0.0.0.0 to bind
                                       Galaxy to all ports including potentially
                                       publicly accessible ones.
-      --engine [galaxy|docker_galaxy|external_galaxy]
-                                      Select an engine to serve artifacts such as
-                                      tools and workflows. Defaults to a local
-                                      Galaxy, but running Galaxy within a Docker
-                                      container.
-      --non_strict_cwl                Disable strict validation of CWL.
-      --docker_galaxy_image TEXT      Docker image identifier for docker-galaxy-
-                                      flavor used if engine type is specified as
-                                      ``docker-galaxy``. Defaults to
-                                      quay.io/bgruening/galaxy.
-      --docker_extra_volume PATH      Extra path to mount if --engine docker.
       --test_data DIRECTORY           test-data directory to for specified tool(s).
       --tool_data_table PATH          tool_data_table_conf.xml file to for specified
                                       tool(s).
@@ -178,30 +161,7 @@ Galaxy instance.
                                       one user and this user is automatically logged
                                       it. Use --no_galaxy_single_user to prevent
                                       Galaxy from running this way.
-      --daemon                        Serve Galaxy process as a daemon.
-      --pid_file FILE                 Location of pid file is executed with
-                                      --daemon.
-      --ignore_dependency_problems    When installing shed repositories for
-                                      workflows, ignore dependency issues. These
-                                      likely indicate a problem but in some cases
-                                      may not prevent a workflow from successfully
-                                      executing.
-      --skip_client_build             Do not build Galaxy client when serving
-                                      Galaxy.
-      --shed_install / --no_shed_install
-                                      By default Planemo will attempt to install
-                                      repositories needed for workflow testing. This
-                                      may not be appropriate for production servers
-                                      and so this can disabled by calling planemo
-                                      with --no_shed_install.
-      --cwl                           Configure Galaxy for use with CWL tool. (this
-                                      option is experimental and will be replaced
-                                      when and if CWL support is merged into
-                                      Galaxy).
-      --cwl_galaxy_root DIRECTORY     Root of development galaxy directory to
-                                      execute command with (must be branch of Galaxy
-                                      with CWL support, this option is experimental
-                                      and will be replaced with --galaxy_root when
-                                      and if CWL support is merged into Galaxy.
+      --tags TEXT                     Comma-separated list of tags to add to the
+                                      created history.
       --help                          Show this message and exit.
     
