@@ -1,7 +1,7 @@
 <tool id="copy" name="Copy Dataset" version="1.0">
     <description>copies a dataset</description>
     <command>
-        cp $input $output
+        cp '$input1' '$output'
     </command>
     <inputs>
         <param name="input1" type="data" format="txt" label="Concatenate Dataset"/>

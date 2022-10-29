@@ -49,6 +49,7 @@ from planemo.test import (
     check_output,
     for_collections,
 )
+from planemo.tools import yield_tool_sources_on_paths
 
 TEST_SUFFIXES = ["-tests", "_tests", "-test", "_test"]
 TEST_EXTENSIONS = [".yml", ".yaml", ".json"]
@@ -211,6 +212,16 @@ def workflow_dir_runnables(path: str, return_all: bool = False) -> Optional[Unio
     return None
 
 
+def tool_dir_runnables(path: str, temp_path: Optional[str]) -> Optional[List[Runnable]]:
+    tool_sources = [p for p in yield_tool_sources_on_paths(ctx=None, paths=[path])]
+    if tool_sources:
+        if temp_path:
+            path = _copy_runnable_tree(path, RunnableType.directory, temp_path)
+        tool_sources = [p for p in yield_tool_sources_on_paths(ctx=None, paths=[path])]
+        return [for_path(p) for (p, _) in tool_sources]
+    return None
+
+
 @overload
 def for_path(path: str, temp_path: Optional[str] = None, return_all: Literal[False] = False) -> Runnable:
     ...
@@ -225,7 +236,7 @@ def for_path(path: str, temp_path: Optional[str] = None, return_all: bool = Fals
     """Produce a class:`Runnable` for supplied path."""
     runnable_type = None
     if os.path.isdir(path):
-        runnable = workflow_dir_runnables(path, return_all=return_all)
+        runnable = workflow_dir_runnables(path, return_all=return_all) or tool_dir_runnables(path, temp_path)
         if runnable:
             return runnable
         runnable_type = RunnableType.directory
