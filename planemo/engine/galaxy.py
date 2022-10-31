@@ -35,6 +35,7 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
         RunnableType.galaxy_workflow,
         RunnableType.galaxy_tool,
         RunnableType.galaxy_datamanager,
+        RunnableType.directory,
     ]
 
     def _run(self, runnables, job_paths):

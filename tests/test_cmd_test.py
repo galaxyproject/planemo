@@ -1,7 +1,11 @@
 """Module contains :class:`CmdTestTestCase` - integration tests for the ``test`` command."""
 import json
 import os
-from tempfile import NamedTemporaryFile
+import shutil
+from tempfile import (
+    NamedTemporaryFile,
+    TemporaryDirectory,
+)
 
 from .test_utils import (
     assert_exists,
@@ -29,6 +33,15 @@ class CmdTestTestCase(CliTestCase):
                 "--galaxy_startup_timeout", "1", test_artifact, "--no_dependency_resolution"
             )
             self._check_exit_code(test_command, exit_code=1)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_tool_in_directory(self):
+        """Test with (single) tool in directory."""
+        with self._isolate(), TemporaryDirectory() as tempdir:
+            test_artifact = os.path.join(TEST_DATA_DIR, "tools", "ok_test_assert_command.xml")
+            shutil.copy(test_artifact, tempdir)
+            test_command = self._test_command(tempdir, "--no_dependency_resolution")
+            self._check_exit_code(test_command, exit_code=0)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_data_manager(self):
