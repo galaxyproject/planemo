@@ -12,6 +12,7 @@ from typing import (
     Optional,
     TYPE_CHECKING,
     Union,
+    Tuple,
 )
 
 import yaml
@@ -394,7 +395,7 @@ def find_potential_workflow_files(directory: str) -> List[str]:
     return matches
 
 
-def find_repos_from_tool_id(tool_id: str, ts: ToolShedInstance) -> (str, Dict[str, Any]):
+def find_repos_from_tool_id(tool_id: str, ts: ToolShedInstance) -> Tuple[str, Dict[str, Any]]:
     """
     Return a string which indicates what failed and dict with all revisions for a given tool id
     """
@@ -411,7 +412,8 @@ def find_repos_from_tool_id(tool_id: str, ts: ToolShedInstance) -> (str, Dict[st
 
 
 def _lint_tool_ids(path: str, lint_context: WorkflowLintContext) -> None:
-    def _lint_tool_ids_steps(lint_context: WorkflowLintContext, wf_dict: Dict, ts: ToolShedInstance) -> None:
+    def _lint_tool_ids_steps(lint_context: WorkflowLintContext, wf_dict: Dict, ts: ToolShedInstance) -> bool:
+        """ Returns whether a single tool_id was invalid """
         failed = False
         steps = wf_dict.get("steps", {})
         for step in steps.values():
