@@ -30,7 +30,7 @@ from planemo.io import (
     info,
 )
 from planemo.workflow_lint import (
-    AUTOUPDATE_TOOLSHED_URL,
+    MAIN_TOOLSHED_URL,
     find_repos_from_tool_id,
 )
 
@@ -331,7 +331,7 @@ def get_tools_to_update(
     with open(workflow.path) as f:
         wf_dict = yaml.load(f, Loader=yaml.SafeLoader)
 
-    ts = toolshed.ToolShedInstance(url=AUTOUPDATE_TOOLSHED_URL)
+    ts = toolshed.ToolShedInstance(url=MAIN_TOOLSHED_URL)
     tools_to_update = outdated_tools(ctx, wf_dict, ts)
     return {tool: versions for tool, versions in tools_to_update.items() if tool not in tools_to_skip}
 
@@ -385,7 +385,7 @@ def fix_workflow_gxformat2(original_wf: Dict[str, Any], updated_wf: Dict[str, An
             if (
                 updated_wf["steps"][str(step_index + len(original_wf["inputs"]))]
                 .get("tool_id", "")
-                .startswith(AUTOUPDATE_TOOLSHED_URL[8:])
+                .startswith(MAIN_TOOLSHED_URL[8:])
             ):
                 step["tool_version"] = updated_wf["steps"][str(step_index + len(original_wf["inputs"]))]["tool_version"]
                 step["tool_id"] = updated_wf["steps"][str(step_index + len(original_wf["inputs"]))]["tool_id"]

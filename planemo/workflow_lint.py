@@ -49,7 +49,7 @@ if TYPE_CHECKING:
 POTENTIAL_WORKFLOW_FILES = re.compile(r"^.*(\.yml|\.yaml|\.ga)$")
 DOCKSTORE_REGISTRY_CONF_VERSION = "1.2"
 
-AUTOUPDATE_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
+MAIN_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
 
 
 class WorkflowLintContext(LintContext):
@@ -399,7 +399,7 @@ def find_repos_from_tool_id(tool_id: str, ts: ToolShedInstance) -> Tuple[str, Di
     """
     Return a string which indicates what failed and dict with all revisions for a given tool id
     """
-    if not tool_id.startswith(AUTOUPDATE_TOOLSHED_URL[8:]):
+    if not tool_id.startswith(MAIN_TOOLSHED_URL[8:]):
         return ("", {})  # assume a built in tool
     try:
         repos = ts.repositories._get(params={"tool_ids": tool_id})
@@ -436,7 +436,7 @@ def _lint_tool_ids(path: str, lint_context: WorkflowLintContext) -> None:
 
     with open(path) as f:
         workflow_dict = ordered_load(f)
-    ts = toolshed.ToolShedInstance(url=AUTOUPDATE_TOOLSHED_URL)
+    ts = toolshed.ToolShedInstance(url=MAIN_TOOLSHED_URL)
     failed = _lint_tool_ids_steps(lint_context, workflow_dict, ts)
     if not failed:
         lint_context.valid("All tools_id appear to be valid.")
