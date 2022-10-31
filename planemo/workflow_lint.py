@@ -15,6 +15,8 @@ from typing import (
 )
 
 import yaml
+from bioblend import toolshed
+from bioblend.toolshed import ToolShedInstance
 from galaxy.tool_util.lint import LintContext
 from galaxy.tool_util.loader_directory import EXCLUDE_WALK_DIRS
 from galaxy.tool_util.verify import asserts
@@ -45,6 +47,8 @@ if TYPE_CHECKING:
 
 POTENTIAL_WORKFLOW_FILES = re.compile(r"^.*(\.yml|\.yaml|\.ga)$")
 DOCKSTORE_REGISTRY_CONF_VERSION = "1.2"
+
+AUTOUPDATE_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
 
 
 class WorkflowLintContext(LintContext):
@@ -106,6 +110,7 @@ def _lint_workflow_artifacts_on_path(
             lint_context.lint("lint_structure", structure, potential_workflow_artifact_path)
             lint_context.lint("lint_best_practices", _lint_best_practices, potential_workflow_artifact_path)
             lint_context.lint("lint_tests", _lint_tsts, potential_workflow_artifact_path)
+            lint_context.lint("lint_tool_ids", _lint_tool_ids, potential_workflow_artifact_path)
         else:
             # Allow linting ro crates and such also
             pass
@@ -387,3 +392,51 @@ def find_potential_workflow_files(directory: str) -> List[str]:
     else:
         matches.append(directory)
     return matches
+
+
+def find_repos_from_tool_id(
+    tool_id: str, ts: ToolShedInstance
+) -> (str, Dict[str, Any]):
+    """
+    Return a string which indicates what failed and dict with all revisions for a given tool id
+    """
+    if not tool_id.startswith(AUTOUPDATE_TOOLSHED_URL[8:]):
+        return ("", {})  # assume a built in tool
+    try:
+        repos = ts.repositories._get(params={"tool_ids": tool_id})
+    except Exception:
+        return (f"The ToolShed returned an error when searching for the most recent version of {tool_id}", {})
+    if len(repos) == 0:
+        return (f"The tool {tool_id} is not in the toolshed (may have been tagged as invalid).", {})
+    else:
+        return ("", repos)
+
+
+def _lint_tool_ids(path: str, lint_context: WorkflowLintContext) -> None:
+    def _lint_tool_ids_steps(lint_context: WorkflowLintContext, wf_dict: Dict, ts: ToolShedInstance) -> None:
+        failed = False
+        steps = wf_dict.get("steps", {})
+        for step in steps.values():
+            if step.get("type", "tool") == "tool" and not step.get("run", {}).get("class") == "GalaxyWorkflow":
+                warning_msg, _ = find_repos_from_tool_id(step["tool_id"], ts)
+                if warning_msg != "":
+                    lint_context.error(warning_msg)
+                    failed = True
+            elif step.get("type") == "subworkflow":  # GA SWF
+                sub_failed = _lint_tool_ids_steps(lint_context, step["subworkflow"], ts)
+                if sub_failed:
+                    failed = True
+            elif step.get("run", {}).get("class") == "GalaxyWorkflow":  # gxformat2 SWF
+                sub_failed = _lint_tool_ids_steps(lint_context, step["run"], ts)
+                if sub_failed:
+                    failed = True
+            else:
+                continue
+        return failed
+    with open(path) as f:
+        workflow_dict = ordered_load(f)
+    ts = toolshed.ToolShedInstance(url=AUTOUPDATE_TOOLSHED_URL)
+    failed = _lint_tool_ids_steps(lint_context, workflow_dict, ts)
+    if not failed:
+        lint_context.valid("All tools_id appear to be valid.")
+    return None
