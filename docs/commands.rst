@@ -10,6 +10,7 @@ documentation describes these commands.
 .. include:: commands/autoupdate.rst
 .. include:: commands/ci_find_repos.rst
 .. include:: commands/ci_find_tools.rst
+.. include:: commands/ci_setup.rst
 .. include:: commands/clone.rst
 .. include:: commands/conda_build.rst
 .. include:: commands/conda_env.rst
