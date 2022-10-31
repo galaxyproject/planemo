@@ -295,6 +295,9 @@ def outdated_tools(
         except Exception:
             ctx.log(f"The ToolShed returned an error when searching for the most recent version of {step['tool_id']}")
             return {}
+        if len(repos) == 0:
+            ctx.log(f"The tool {step['tool_id']} is not in the toolshed (may have been tagged as invalid).")
+            return {}
         base_id = "/".join(step["tool_id"].split("/")[:-1])
         tool_ids_found = {
             tool["guid"] for repo in repos.values() if type(repo) == dict for tool in repo.get("tools", [])
