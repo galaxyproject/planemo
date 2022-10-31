@@ -1008,7 +1008,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
     @property
     def virtual_env_dir(self):
         virtual_env = self._virtual_env_dir or ".venv"
-        if virtual_env and not os.path.isabs(virtual_env):
+        if not os.path.isabs(virtual_env):
             virtual_env = os.path.join(self.galaxy_root, virtual_env)
         return virtual_env
 
