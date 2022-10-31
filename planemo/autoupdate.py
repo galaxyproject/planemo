@@ -30,8 +30,8 @@ from planemo.io import (
     info,
 )
 from planemo.workflow_lint import (
-    MAIN_TOOLSHED_URL,
     find_repos_from_tool_id,
+    MAIN_TOOLSHED_URL,
 )
 
 if TYPE_CHECKING:
