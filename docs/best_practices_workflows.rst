@@ -67,7 +67,8 @@ Tools
 
 The tools used within a workflow should be packaged with Galaxy by default or published
 to the main Galaxy ToolShed. Using private tool sheds or the test tool shed limits the
-ability of other Galaxy's to use the workflow.
+ability of other Galaxy's to use the workflow. In addition, ``workflow_lint`` will check
+that the tools starting with ``toolshed.g2.bx.psu.edu`` are available in the toolshed.
 
 Syntax
 ~~~~~~
