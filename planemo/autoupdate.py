@@ -29,13 +29,15 @@ from planemo.io import (
     error,
     info,
 )
+from planemo.workflow_lint import (
+    find_repos_from_tool_id,
+    MAIN_TOOLSHED_URL,
+)
 
 if TYPE_CHECKING:
     from planemo.cli import PlanemoCliContext
     from planemo.galaxy.config import LocalGalaxyConfig
     from planemo.runnable import Runnable
-
-AUTOUPDATE_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
 
 
 def find_macros(xml_tree: ElementTree) -> List[Any]:
@@ -288,16 +290,11 @@ def outdated_tools(
     ctx: "PlanemoCliContext", wf_dict: Dict[str, Any], ts: ToolShedInstance
 ) -> Dict[str, Dict[str, str]]:
     def check_tool_step(step, ts):  # return a dict with current and newest tool version, in case they don't match
-        if not step["tool_id"].startswith(AUTOUPDATE_TOOLSHED_URL[8:]):
-            return {}  # assume a built in tool
-        try:
-            repos = ts.repositories._get(params={"tool_ids": step["tool_id"]})
-        except Exception:
-            ctx.log(f"The ToolShed returned an error when searching for the most recent version of {step['tool_id']}")
-            return {}
+        warning_msg, repos = find_repos_from_tool_id(step["tool_id"], ts)
+        if warning_msg != "":
+            ctx.log(warning_msg)
         if len(repos) == 0:
-            ctx.log(f"The tool {step['tool_id']} is not in the toolshed (may have been tagged as invalid).")
-            return {}
+            return repos
         base_id = "/".join(step["tool_id"].split("/")[:-1])
         tool_ids_found = {
             tool["guid"] for repo in repos.values() if type(repo) == dict for tool in repo.get("tools", [])
@@ -334,7 +331,7 @@ def get_tools_to_update(
     with open(workflow.path) as f:
         wf_dict = yaml.load(f, Loader=yaml.SafeLoader)
 
-    ts = toolshed.ToolShedInstance(url=AUTOUPDATE_TOOLSHED_URL)
+    ts = toolshed.ToolShedInstance(url=MAIN_TOOLSHED_URL)
     tools_to_update = outdated_tools(ctx, wf_dict, ts)
     return {tool: versions for tool, versions in tools_to_update.items() if tool not in tools_to_skip}
 
@@ -388,7 +385,7 @@ def fix_workflow_gxformat2(original_wf: Dict[str, Any], updated_wf: Dict[str, An
             if (
                 updated_wf["steps"][str(step_index + len(original_wf["inputs"]))]
                 .get("tool_id", "")
-                .startswith(AUTOUPDATE_TOOLSHED_URL[8:])
+                .startswith(MAIN_TOOLSHED_URL[8:])
             ):
                 step["tool_version"] = updated_wf["steps"][str(step_index + len(original_wf["inputs"]))]["tool_version"]
                 step["tool_id"] = updated_wf["steps"][str(step_index + len(original_wf["inputs"]))]["tool_id"]

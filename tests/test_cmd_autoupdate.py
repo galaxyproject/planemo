@@ -110,3 +110,11 @@ class CmdAutoupdateTestCase(CliTestCase):
             # We just want to be sure planemo autoupdate do not raise an error
             # Currently it would write to the output that no update are available
             # In future versions it could be great that it gives the last valid version.
+
+    def test_autoupdate_workflow_unexisting_tool(self):
+        """Test autoupdate command for a workflow where the tool is not in the toolshed."""
+        with self._isolate_with_test_data("wf_repos/autoupdate_tests") as f:
+            wf_file = os.path.join(f, "workflow_with_unexisting_tool.ga")
+            autoupdate_command = ["autoupdate", wf_file]
+            result = self._runner.invoke(self._cli.planemo, autoupdate_command)
+            assert "No newer tool versions were found, so the workflow was not updated." in result.output
