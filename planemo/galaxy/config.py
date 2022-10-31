@@ -1003,11 +1003,12 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
             kwds,
         )
         self.galaxy_root = galaxy_root
+        self._virtual_env_dir = None
 
     @property
     def virtual_env_dir(self):
-        virtual_env = self._kwds.get("GALAXY_VIRTUAL_ENV", ".venv")
-        if virtual_env and not os.path.isabs(virtual_env):
+        virtual_env = self._virtual_env_dir or ".venv"
+        if not os.path.isabs(virtual_env):
             virtual_env = os.path.join(self.galaxy_root, virtual_env)
         return virtual_env
 
@@ -1036,7 +1037,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         """
         daemon = kwds.get("daemon", False)
         # TODO: Allow running dockerized Galaxy here instead.
-        setup_venv_command = setup_venv(ctx, kwds)
+        setup_venv_command = setup_venv(ctx, kwds, self)
         run_script = f"{shlex.quote(os.path.join(self.galaxy_root, 'run.sh'))} $COMMON_STARTUP_ARGS"
         if daemon:
             run_script += " --daemon"
