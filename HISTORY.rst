@@ -6,9 +6,25 @@ History
 .. to_doc
 
 ---------------------
+0.75.1 (2022-10-31)
+---------------------
+
+* Use `pytest.raises()` instead of ad-hoc `assert_raises_regexp()` context
+  manager (thanks to `@nsoranzo`_). `Pull Request 1302`_
+* Add planemo_ci_setup command (thanks to `@mvdbeek`_). `Pull Request 1304`_
+* Don't fail planemo autoupdate if tool version not found in tool shed (thanks
+  to `@lldelisle`_). `Pull Request 1305`_
+* workflow_lint: ensure that tool shed tool ids are valid (thanks to
+  `@lldelisle`_). `Pull Request 1306`_
+* Fix recording of virtual_env_dir (thanks to `@mvdbeek`_). `Pull Request
+  1307`_
+
+---------------------
 0.75.0 (2022-10-28)
 ---------------------
 
+* Restore running tool tests against directory (thanks to `@mvdbeek`_). `Pull
+  Request 1303`_
 * Update outdated cuffmerge url (thanks to `@martenson`_). `Pull Request
   1247`_
 * Set upstream branch when pushing workflows to GitHub (thanks to
@@ -1869,6 +1885,12 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1302: https://github.com/galaxyproject/planemo/pull/1302
+.. _Pull Request 1303: https://github.com/galaxyproject/planemo/pull/1303
+.. _Pull Request 1304: https://github.com/galaxyproject/planemo/pull/1304
+.. _Pull Request 1305: https://github.com/galaxyproject/planemo/pull/1305
+.. _Pull Request 1306: https://github.com/galaxyproject/planemo/pull/1306
+.. _Pull Request 1307: https://github.com/galaxyproject/planemo/pull/1307
 .. _Pull Request 1247: https://github.com/galaxyproject/planemo/pull/1247
 .. _Pull Request 1249: https://github.com/galaxyproject/planemo/pull/1249
 .. _Pull Request 1255: https://github.com/galaxyproject/planemo/pull/1255
@@ -2718,3 +2740,4 @@ History
 .. _@stain: https://github.com/stain
 .. _@profgiuseppe: https://github.com/profgiuseppe
 .. _@adRn-s: https://github.com/adRn-s
+.. _@lldelisle: https://github.com/lldelisle
