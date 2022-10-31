@@ -394,9 +394,7 @@ def find_potential_workflow_files(directory: str) -> List[str]:
     return matches
 
 
-def find_repos_from_tool_id(
-    tool_id: str, ts: ToolShedInstance
-) -> (str, Dict[str, Any]):
+def find_repos_from_tool_id(tool_id: str, ts: ToolShedInstance) -> (str, Dict[str, Any]):
     """
     Return a string which indicates what failed and dict with all revisions for a given tool id
     """
@@ -433,6 +431,7 @@ def _lint_tool_ids(path: str, lint_context: WorkflowLintContext) -> None:
             else:
                 continue
         return failed
+
     with open(path) as f:
         workflow_dict = ordered_load(f)
     ts = toolshed.ToolShedInstance(url=AUTOUPDATE_TOOLSHED_URL)

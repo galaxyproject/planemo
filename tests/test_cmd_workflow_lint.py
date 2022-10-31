@@ -180,7 +180,9 @@ class CmdWorkflowLintTestCase(CliTestCase):
         )
 
     def test_tool_id_linting_wrong_version(self):
-        workflow_path = "/".join((TEST_DATA_DIR, "wf_repos", "autoupdate_tests", "workflow_with_unexisting_version_of_tool.ga"))
+        workflow_path = "/".join(
+            (TEST_DATA_DIR, "wf_repos", "autoupdate_tests", "workflow_with_unexisting_version_of_tool.ga")
+        )
         lint_cmd = ["workflow_lint", workflow_path]
         result = self._runner.invoke(self._cli.planemo, lint_cmd)
         assert (
@@ -192,10 +194,7 @@ class CmdWorkflowLintTestCase(CliTestCase):
         workflow_path = "/".join((TEST_DATA_DIR, "wf_repos", "autoupdate_tests", "workflow_with_unexisting_tool.ga"))
         lint_cmd = ["workflow_lint", workflow_path]
         result = self._runner.invoke(self._cli.planemo, lint_cmd)
-        assert (
-            "ERROR: The ToolShed returned an error when searching"
-            in result.output
-        )
+        assert "ERROR: The ToolShed returned an error when searching" in result.output
 
 
 def _wf_repo(rel_path):
