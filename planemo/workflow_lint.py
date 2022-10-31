@@ -413,7 +413,7 @@ def find_repos_from_tool_id(tool_id: str, ts: ToolShedInstance) -> Tuple[str, Di
 
 def _lint_tool_ids(path: str, lint_context: WorkflowLintContext) -> None:
     def _lint_tool_ids_steps(lint_context: WorkflowLintContext, wf_dict: Dict, ts: ToolShedInstance) -> bool:
-        """ Returns whether a single tool_id was invalid """
+        """Returns whether a single tool_id was invalid"""
         failed = False
         steps = wf_dict.get("steps", {})
         for step in steps.values():
