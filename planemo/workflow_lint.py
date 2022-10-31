@@ -10,9 +10,9 @@ from typing import (
     Iterator,
     List,
     Optional,
+    Tuple,
     TYPE_CHECKING,
     Union,
-    Tuple,
 )
 
 import yaml

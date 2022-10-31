@@ -29,8 +29,10 @@ from planemo.io import (
     error,
     info,
 )
-
-from planemo.workflow_lint import find_repos_from_tool_id, AUTOUPDATE_TOOLSHED_URL
+from planemo.workflow_lint import (
+    AUTOUPDATE_TOOLSHED_URL,
+    find_repos_from_tool_id,
+)
 
 if TYPE_CHECKING:
     from planemo.cli import PlanemoCliContext
