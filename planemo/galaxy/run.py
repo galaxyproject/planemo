@@ -2,6 +2,12 @@
 import os
 import shlex
 import string
+from typing import (
+    Any,
+    Dict,
+    Optional,
+    TYPE_CHECKING,
+)
 
 from galaxy.util.commands import shell
 
@@ -13,6 +19,9 @@ from planemo.virtualenv import (
     create_command,
     DEFAULT_PYTHON_VERSION,
 )
+
+if TYPE_CHECKING:
+    from planemo.galaxy.config import LocalGalaxyConfig
 
 # Activate galaxy's virtualenv if present (needed for tests say but not for
 # server because run.sh does this).
@@ -38,7 +47,7 @@ CACHED_VIRTUAL_ENV_COMMAND = "if [ -d .venv ]; " "then GALAXY_VIRTUAL_ENV=.venv;
 UNCACHED_VIRTUAL_ENV_COMMAND = "GALAXY_VIRTUAL_ENV=.venv"
 
 
-def setup_venv(ctx, kwds):
+def setup_venv(ctx, kwds: Dict[str, Any], config: Optional["LocalGalaxyConfig"] = None):
     if kwds.get("skip_venv", False):
         return ""
 
@@ -46,7 +55,7 @@ def setup_venv(ctx, kwds):
         "create_virtualenv": create_command("$GALAXY_VIRTUAL_ENV", kwds.get("galaxy_python_version"))
     }
     return shell_join(
-        locate_galaxy_virtualenv(ctx, kwds),
+        locate_galaxy_virtualenv(ctx, kwds, config),
         PRINT_VENV_COMMAND if ctx.verbose else None,
         CREATE_COMMAND_TEMPLATE.safe_substitute(create_template_params),
         PRINT_VENV_COMMAND if ctx.verbose else None,
@@ -60,10 +69,10 @@ def setup_venv(ctx, kwds):
     )
 
 
-def locate_galaxy_virtualenv(ctx, kwds):
+def locate_galaxy_virtualenv(ctx, kwds: Dict[str, Any], config: Optional["LocalGalaxyConfig"] = None):
     if os.environ.get("GALAXY_VIRTUAL_ENV"):
         venv_command = ""
-        kwds["GALAXY_VIRTUAL_ENV"] = os.environ["GALAXY_VIRTUAL_ENV"]
+        virtual_env_dir = os.environ["GALAXY_VIRTUAL_ENV"]
     elif not kwds.get("no_cache_galaxy", False):
         workspace = ctx.workspace
         galaxy_branch = kwds.get("galaxy_branch") or "master"
@@ -72,11 +81,14 @@ def locate_galaxy_virtualenv(ctx, kwds):
         shared_venv_path = f"{shared_venv_path}_{galaxy_python_version}"
         if galaxy_branch != "master":
             shared_venv_path = f"{shared_venv_path}_{galaxy_branch}"
-        kwds["GALAXY_VIRTUAL_ENV"] = shared_venv_path
+
+        virtual_env_dir = shared_venv_path
         venv_command = CACHED_VIRTUAL_ENV_COMMAND % shlex.quote(shared_venv_path)
     else:
-        kwds["GALAXY_VIRTUAL_ENV"] = ".venv"
+        virtual_env_dir = ".venv"
         venv_command = UNCACHED_VIRTUAL_ENV_COMMAND
+    if config:
+        config._virtual_env_dir = virtual_env_dir
     return shell_join(
         venv_command,
         "export GALAXY_VIRTUAL_ENV",
