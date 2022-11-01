@@ -541,7 +541,7 @@ def _all_tool_paths(
     runnables: List["Runnable"], galaxy_root: Optional[str] = None, extra_tools: Optional[List[str]] = None
 ) -> Set[str]:
     extra_tools = extra_tools or []
-    all_tool_paths = set(r.path for r in runnables if r.has_tools and not r.data_manager_conf_path)
+    all_tool_paths = {r.path for r in runnables if r.has_tools and not r.data_manager_conf_path}
     extra_tools = _expand_paths(galaxy_root, extra_tools=extra_tools)
     all_tool_paths.update(extra_tools)
     for runnable in runnables:
