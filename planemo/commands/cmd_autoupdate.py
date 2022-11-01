@@ -25,7 +25,6 @@ from planemo.io import (
     coalesce_return_codes,
     error,
     info,
-    temp_directory,
 )
 from planemo.runnable import (
     for_paths,
@@ -162,18 +161,14 @@ def cli(ctx, paths, **kwds):  # noqa C901
         if not modified_files and not modified_workflows:
             info("No tools or workflows were updated, so no tests were run.")
         else:
-            with temp_directory(dir=ctx.planemo_directory) as temp_path:
-                # only test tools in updated directories
-                modified_paths = [
-                    path
-                    for path, tool_xml in yield_tool_sources_on_paths(ctx, paths, recursive)
-                    if path in modified_files
-                ]
-                info(f"Running tests for the following auto-updated tools: {', '.join(modified_paths)}")
-                runnables = for_paths(modified_paths + modified_workflows, temp_path=temp_path)
-                kwds["engine"] = "galaxy"
-                return_value = test_runnables(ctx, runnables, original_paths=paths, **kwds)
-                exit_codes.append(return_value)
+            modified_paths = [
+                path for path, tool_xml in yield_tool_sources_on_paths(ctx, paths, recursive) if path in modified_files
+            ]
+            info(f"Running tests for the following auto-updated tools: {', '.join(modified_paths)}")
+            runnables = for_paths(modified_paths + modified_workflows)
+            kwds["engine"] = "galaxy"
+            return_value = test_runnables(ctx, runnables, original_paths=paths, **kwds)
+            exit_codes.append(return_value)
     return coalesce_return_codes(exit_codes, assert_at_least_one=assert_tools)
 
 

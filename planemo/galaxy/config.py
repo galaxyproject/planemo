@@ -1312,7 +1312,7 @@ def _handle_job_config_file(config_directory, server_name, kwds):
 
 
 def _write_tool_conf(ctx, tool_paths, tool_conf_path):
-    tool_definition = _tool_conf_entry_for(tool_paths)
+    tool_definition = _tool_conf_entry_for(set(tool_paths))
     tool_conf_template_kwds = dict(tool_definition=tool_definition)
     tool_conf_contents = _sub(TOOL_CONF_TEMPLATE, tool_conf_template_kwds)
     write_file(tool_conf_path, tool_conf_contents)
