@@ -197,7 +197,6 @@ def workflow_dir_runnables(path: str, return_all: bool = False) -> Optional[Unio
 def tool_dir_runnables(path: str) -> Optional[List[Runnable]]:
     tool_sources = [p for p in yield_tool_sources_on_paths(ctx=None, paths=[path])]
     if tool_sources:
-        tool_sources = [p for p in yield_tool_sources_on_paths(ctx=None, paths=[path])]
         return [for_path(p) for (p, _) in tool_sources]
     return None
 
