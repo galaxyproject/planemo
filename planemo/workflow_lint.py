@@ -245,9 +245,17 @@ def _lint_case(path: str, test_case: TestCase, lint_context: WorkflowLintContext
             found_valid_expectation = True
         # TODO: validate structure of test expectations
 
-        assertion_definitions = test_case.output_expectations[test_output_id].get("asserts")
-        if not _check_test_assertions(lint_context, assertion_definitions):
-            test_valid = False
+        output_expectations = test_case.output_expectations[test_output_id]
+        all_assertion_definitions = []
+        if 'element_tests' in output_expectations:
+            # This is a collection
+            for element_id in output_expectations['element_tests']:
+                all_assertion_definitions.append(output_expectations['element_tests'][element_id].get("asserts"))
+        else:
+            all_assertion_definitions.append(output_expectations.get("asserts"))
+        for assertion_definitions in all_assertion_definitions:
+            if not _check_test_assertions(lint_context, assertion_definitions):
+                test_valid = False
 
     if not found_valid_expectation:
         lint_context.warn("Found no valid test expectations for workflow test")
