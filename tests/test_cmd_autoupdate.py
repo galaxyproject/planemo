@@ -2,12 +2,14 @@
 import json
 import os
 import tempfile
+from contextlib import contextmanager
 
 import yaml
 
 from .test_utils import CliTestCase
 
 
+@contextmanager
 def create_tmp_test_tool_file(tool_version):
     """
     Note that to ensure this test is stable, we use packages that have
@@ -25,9 +27,12 @@ def create_tmp_test_tool_file(tool_version):
     </requirements>
 </tool>
     """
-    t = tempfile.NamedTemporaryFile(suffix=".xml", delete=False, mode="w")
-    t.write(xml_str)
-    return t.name
+    with tempfile.TemporaryDirectory() as tempdir, tempfile.NamedTemporaryFile(
+        suffix=".xml", mode="w", dir=tempdir
+    ) as t:
+        t.write(xml_str)
+        t.flush()
+        yield t.name
 
 
 class CmdAutoupdateTestCase(CliTestCase):
@@ -38,8 +43,7 @@ class CmdAutoupdateTestCase(CliTestCase):
 
     def test_autoupdate_dry_run(self):
         """Test autoupdate command with dry run flag."""
-        with self._isolate():
-            xmlfile = create_tmp_test_tool_file("0.6.0")
+        with self._isolate(), create_tmp_test_tool_file("0.6.0") as xmlfile:
             autoupdate_command = ["autoupdate", xmlfile, "--conda_channels", "bioconda", "--dry-run"]
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
             assert f"Update required to {xmlfile}!" in result.output
@@ -47,9 +51,20 @@ class CmdAutoupdateTestCase(CliTestCase):
 
     def test_autoupdate(self):
         """Test autoupdate command."""
-        with self._isolate():
-            xmlfile = create_tmp_test_tool_file("0.6.0")
+        with self._isolate(), create_tmp_test_tool_file("0.6.0") as xmlfile:
             autoupdate_command = ["autoupdate", xmlfile, "--conda_channels", "bioconda"]
+            result = self._runner.invoke(self._cli.planemo, autoupdate_command)
+            assert f'Updating {xmlfile.split("/")[-1]} from version 0.6.0 to 0.7.3' in result.output
+            assert f"Tool {xmlfile} successfully updated." in result.output
+            with open(xmlfile) as f:
+                xmlfile_contents = f.read()
+            assert "2017.11.9" in xmlfile_contents
+
+    def test_autoupdate_directory(self):
+        """Test autoupdate command."""
+        with self._isolate(), create_tmp_test_tool_file("0.6.0") as xmlfile:
+            xml_directory = os.path.dirname(xmlfile)
+            autoupdate_command = ["autoupdate", xml_directory, "--conda_channels", "bioconda"]
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
             assert f'Updating {xmlfile.split("/")[-1]} from version 0.6.0 to 0.7.3' in result.output
             assert f"Tool {xmlfile} successfully updated." in result.output
@@ -59,8 +74,7 @@ class CmdAutoupdateTestCase(CliTestCase):
 
     def test_autoupdate_no_update_needed(self):
         """Test autoupdate command when no update is needed."""
-        with self._isolate():
-            xmlfile = create_tmp_test_tool_file("0.7.3")
+        with self._isolate(), create_tmp_test_tool_file("0.7.3") as xmlfile:
             autoupdate_command = ["autoupdate", xmlfile, "--conda_channels", "bioconda"]
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
             assert f"No updates required or made to {xmlfile}." in result.output

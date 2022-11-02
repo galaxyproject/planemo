@@ -247,7 +247,14 @@ def for_path(path: str, return_all: bool = False) -> Union[Runnable, List[Runnab
 
 def for_paths(paths: Iterable[str]) -> List[Runnable]:
     """Return a specialized list of Runnable objects for paths."""
-    return [for_path(path) for path in paths]
+    runnables = []
+    for path in paths:
+        runnables_for_path = for_path(path)
+        if isinstance(runnables_for_path, list):
+            runnables.extend(runnables_for_path)
+        else:
+            runnables.append(runnables_for_path)
+    return runnables
 
 
 def for_uri(uri: str) -> Runnable:
