@@ -291,7 +291,7 @@ def _check_test_assertions(
             except AssertionError:
                 pass
             except TypeError as e:
-                lint_context.error(f"Invalid assertion in tests: assert_{assertion_name} {str(e)}")
+                lint_context.error(f"Invalid assertion in tests: assert_{assertion_description['tag']} {str(e)}")
                 assertions_valid = False
     return assertions_valid
 
