@@ -12,7 +12,7 @@ from .runnable import (
 )
 
 
-def for_runnable_identifier(ctx, runnable_identifier, kwds, return_all=False):
+def for_runnable_identifier(ctx, runnable_identifier, kwds):
     """Convert URI, path, or alias into Runnable."""
     # could be a URI, path, or alias
     current_profile = kwds.get("profile")
@@ -20,7 +20,7 @@ def for_runnable_identifier(ctx, runnable_identifier, kwds, return_all=False):
     if not runnable_identifier.startswith(GALAXY_WORKFLOWS_PREFIX):
         runnable_identifier = uri_to_path(ctx, runnable_identifier)
     if os.path.exists(runnable_identifier):
-        runnable = for_path(runnable_identifier, return_all=return_all)
+        runnable = for_path(runnable_identifier)
     else:  # assume galaxy workflow or tool id
         if "/repos/" in runnable_identifier:
             runnable_identifier = f"{GALAXY_TOOLS_PREFIX}{runnable_identifier}"
@@ -34,7 +34,7 @@ def for_runnable_identifiers(ctx, runnable_identifiers, kwds):
     """Convert lists of URIs, paths, and/or aliases into Runnables."""
     runnables = []
     for r in runnable_identifiers:
-        runnable = for_runnable_identifier(ctx, r, kwds, return_all=True)
+        runnable = for_runnable_identifier(ctx, r, kwds)
         if isinstance(runnable, list):
             runnables.extend(runnable)
         else:
