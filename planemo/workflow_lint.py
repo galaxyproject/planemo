@@ -120,7 +120,7 @@ def _lint_workflow_artifacts_on_path(
 
 # misspell for pytest
 def _lint_tsts(path: str, lint_context: WorkflowLintContext) -> None:
-    runnables = for_path(path, return_all=True)
+    runnables = for_path(path)
     if not isinstance(runnables, list):
         runnables = [runnables]
     for runnable in runnables:

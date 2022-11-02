@@ -15,7 +15,6 @@ from typing import (
     List,
     NamedTuple,
     Optional,
-    overload,
     Union,
 )
 from urllib.parse import urlparse
@@ -31,7 +30,6 @@ from galaxy.tool_util.loader_directory import (
     looks_like_a_tool_xml,
 )
 from galaxy.tool_util.parser import get_tool_source
-from typing_extensions import Literal
 
 from planemo.exit_codes import (
     EXIT_CODE_UNKNOWN_FILE_TYPE,
@@ -181,38 +179,24 @@ def workflows_from_dockstore_yaml(path):
     return workflows
 
 
-def workflow_dir_runnables(path: str, return_all: bool = False) -> Optional[Union[Runnable, List[Runnable]]]:
+def workflow_dir_runnables(path: str) -> List[Runnable]:
     dockstore_path = os.path.join(path, DOCKSTORE_REGISTRY_CONF)
     if os.path.exists(dockstore_path):
-        runnables = [
+        return [
             Runnable(str(path), RunnableType.galaxy_workflow) for path in workflows_from_dockstore_yaml(dockstore_path)
         ]
-        if return_all:
-            return runnables
-        else:
-            return runnables[0]
-    return None
+    return []
 
 
 def tool_dir_runnables(path: str) -> List[Runnable]:
-    return [for_path(p) for (p, _) in yield_tool_sources_on_paths(ctx=None, paths=[path])]
+    return for_paths(tool_path for tool_path, _ in yield_tool_sources_on_paths(ctx=None, paths=[path]))
 
 
-@overload
-def for_path(path: str, return_all: Literal[False] = False) -> Runnable:
-    ...
-
-
-@overload
-def for_path(path: str, return_all: bool = False) -> Union[Runnable, List[Runnable]]:
-    pass
-
-
-def for_path(path: str, return_all: bool = False) -> Union[Runnable, List[Runnable]]:
+def for_path(path: str) -> Union[Runnable, List[Runnable]]:
     """Produce a class:`Runnable` for supplied path."""
     runnable_type = None
     if os.path.isdir(path):
-        runnable = workflow_dir_runnables(path, return_all=return_all) or tool_dir_runnables(path)
+        runnable = workflow_dir_runnables(path) or tool_dir_runnables(path)
         if runnable:
             return runnable
         runnable_type = RunnableType.directory
@@ -247,7 +231,14 @@ def for_path(path: str, return_all: bool = False) -> Union[Runnable, List[Runnab
 
 def for_paths(paths: Iterable[str]) -> List[Runnable]:
     """Return a specialized list of Runnable objects for paths."""
-    return [for_path(path) for path in paths]
+    runnables = []
+    for path in paths:
+        runnables_for_path = for_path(path)
+        if isinstance(runnables_for_path, list):
+            runnables.extend(runnables_for_path)
+        else:
+            runnables.append(runnables_for_path)
+    return runnables
 
 
 def for_uri(uri: str) -> Runnable:
