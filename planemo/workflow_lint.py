@@ -20,6 +20,7 @@ from bioblend import toolshed
 from bioblend.toolshed import ToolShedInstance
 from galaxy.tool_util.lint import LintContext
 from galaxy.tool_util.loader_directory import EXCLUDE_WALK_DIRS
+from galaxy.tool_util.parser.yaml import __to_test_assert_list
 from galaxy.tool_util.verify import asserts
 from gxformat2.lint import (
     lint_format2,
@@ -271,9 +272,19 @@ def _check_test_assertions(
     # Python functions directly, rather than checking against galaxy.xsd as for tool linting
     assertions_valid = True
     if assertion_definitions:
-        for assertion_name, assertion_params in assertion_definitions.items():
-            function = asserts.assertion_functions[f"assert_{assertion_name}"]
+        # Can be either a dictionary with different assert
+        # Or a list with max of asserts and potentially identical
+        # We transform to list:
+        assertion_definitions_list = __to_test_assert_list(assertion_definitions)
+        for assertion_description in assertion_definitions_list:
+            function = asserts.assertion_functions.get(f"assert_{assertion_description['tag']}")
+            if function is None:
+                lint_context.error(f"Invalid assertion: assert_{assertion_description['tag']} does not exists")
+                assertions_valid = False
+                continue
             signature = inspect.signature(function)
+            assertion_params = assertion_description["attributes"].copy()
+            del assertion_params["that"]
             try:
                 # try mapping the function with the attributes supplied and check for TypeError
                 signature.bind("", **assertion_params)
