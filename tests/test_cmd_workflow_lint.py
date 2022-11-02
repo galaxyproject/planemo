@@ -196,6 +196,10 @@ class CmdWorkflowLintTestCase(CliTestCase):
         result = self._runner.invoke(self._cli.planemo, lint_cmd)
         assert "ERROR: The ToolShed returned an error when searching" in result.output
 
+    def test_tool_id_linting_tool_classic_api_fail(self):
+        workflow_path = "/".join((TEST_DATA_DIR, "wf_repos", "autoupdate_tests", "workflow_with_bamleftalign.ga"))
+        lint_cmd = ["workflow_lint", workflow_path]
+        self._check_exit_code(lint_cmd, exit_code=0)
 
 def _wf_repo(rel_path):
     return os.path.join(TEST_DATA_DIR, "wf_repos", rel_path)

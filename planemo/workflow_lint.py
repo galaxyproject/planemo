@@ -404,9 +404,39 @@ def find_repos_from_tool_id(tool_id: str, ts: ToolShedInstance) -> Tuple[str, Di
     try:
         repos = ts.repositories._get(params={"tool_ids": tool_id})
     except Exception:
-        return (f"The ToolShed returned an error when searching for the most recent version of {tool_id}", {})
+        repos = {}
     if len(repos) == 0:
-        return (f"The tool {tool_id} is not in the toolshed (may have been tagged as invalid).", {})
+        try:
+            # Try with owner and repo
+            owner_repo_tool_version = tool_id.split('/repos/')[1]
+            owner, repo = owner_repo_tool_version.split('/')[:2]
+            found_in_ts = False
+            def reformat(repo_dic: Dict[str, Any], meta_dic: Dict[str, Any], add_info_dic: Dict[str, Any]) -> Dict[str, Any]:
+                """Reformat the output of get_ordered_installable_revisions to get something close to _get tool_ids"""
+                meta_dic['repository'] = repo_dic
+                if 'valid_tools' in meta_dic:
+                    meta_dic['tools'] = meta_dic['valid_tools']
+                    del meta_dic['valid_tools']
+                return meta_dic
+            repos = {}
+            for revision in ts.repositories.get_ordered_installable_revisions(name=repo, owner=owner):
+                repo_dic, meta_dic, add_info_dic = ts.repositories.get_repository_revision_install_info(
+                         name=repo, owner=owner, changeset_revision=revision
+                         )
+                repos[f"{meta_dic['numeric_revision']}:{revision}"] = reformat(repo_dic, meta_dic, add_info_dic)
+                if 'tools' in repos[f"{meta_dic['numeric_revision']}:{revision}"]:
+                    if tool_id in [t['guid'] for t in repos[f"{meta_dic['numeric_revision']}:{revision}"]['tools']]:
+                        found_in_ts = True
+            # Try to set current_changeset to the last version
+            # But maybe should be only the last with valid_tools?
+            repos['current_changeset'] = f"{meta_dic['numeric_revision']}:{revision}"
+        except Exception:
+            return (f"The ToolShed returned an error when searching for {tool_id}", {})
+        if found_in_ts:
+            msg = ""
+        else:
+            msg = f"The tool {tool_id} is not in the toolshed (may have been tagged as invalid)."
+        return (msg, repos)
     else:
         return ("", repos)
 

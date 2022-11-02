@@ -1,0 +1,92 @@
+{
+    "a_galaxy_workflow": "true",
+    "annotation": "",
+    "format-version": "0.1",
+    "name": "Workflow with bamleftalign",
+    "steps": {
+        "0": {
+            "annotation": "",
+            "content_id": null,
+            "errors": null,
+            "id": 0,
+            "input_connections": {},
+            "inputs": [
+                {
+                    "description": "",
+                    "name": "BAM"
+                }
+            ],
+            "label": "BAM",
+            "name": "Input dataset",
+            "outputs": [],
+            "position": {
+                "left": 0,
+                "top": 0
+            },
+            "tool_id": null,
+            "tool_state": "{\"optional\": false, \"tag\": \"\"}",
+            "tool_version": null,
+            "type": "data_input",
+            "uuid": "65194e38-bf3b-48bf-9a31-f5266d924472",
+            "workflow_outputs": [
+                {
+                    "label": null,
+                    "output_name": "output",
+                    "uuid": "58b1ccd8-ebe7-42a6-b640-55d6a2cf7035"
+                }
+            ]
+        },
+        "1": {
+            "annotation": "",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/devteam/freebayes/bamleftalign/1.3.1",
+            "errors": null,
+            "id": 1,
+            "input_connections": {
+                "reference_source|input_bam": {
+                    "id": 0,
+                    "output_name": "output"
+                }
+            },
+            "inputs": [
+                {
+                    "description": "runtime parameter for tool BamLeftAlign",
+                    "name": "reference_source"
+                }
+            ],
+            "label": null,
+            "name": "BamLeftAlign",
+            "outputs": [
+                {
+                    "name": "output_bam",
+                    "type": "bam"
+                }
+            ],
+            "position": {
+                "left": 174,
+                "top": 108
+            },
+            "post_job_actions": {},
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/devteam/freebayes/bamleftalign/1.3.1",
+            "tool_shed_repository": {
+                "changeset_revision": "ef2c525bd8cd",
+                "name": "freebayes",
+                "owner": "devteam",
+                "tool_shed": "toolshed.g2.bx.psu.edu"
+            },
+            "tool_state": "{\"iterations\": \"5\", \"reference_source\": {\"reference_source_selector\": \"cached\", \"__current_case__\": 0, \"input_bam\": {\"__class__\": \"RuntimeValue\"}, \"ref_file\": \"Arabidopsis_thaliana_TAIR9\"}, \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+            "tool_version": "1.3.1",
+            "type": "tool",
+            "uuid": "2bb2b194-956a-459f-8e0f-645d941a92ae",
+            "workflow_outputs": [
+                {
+                    "label": "BamLeftAlign",
+                    "output_name": "output_bam",
+                    "uuid": "6d630e73-4937-49d6-81c3-a87d625c5da7"
+                }
+            ]
+        }
+    },
+    "tags": [],
+    "uuid": "e38091f4-4c5b-4241-94fe-3b6c386c0521",
+    "version": 1
+}
