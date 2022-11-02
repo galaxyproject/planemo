@@ -20,6 +20,7 @@ from bioblend import toolshed
 from bioblend.toolshed import ToolShedInstance
 from galaxy.tool_util.lint import LintContext
 from galaxy.tool_util.loader_directory import EXCLUDE_WALK_DIRS
+from galaxy.tool_util.parser.yaml import __to_test_assert_list
 from galaxy.tool_util.verify import asserts
 from gxformat2.lint import (
     lint_format2,
@@ -119,7 +120,7 @@ def _lint_workflow_artifacts_on_path(
 
 # misspell for pytest
 def _lint_tsts(path: str, lint_context: WorkflowLintContext) -> None:
-    runnables = for_path(path, return_all=True)
+    runnables = for_path(path)
     if not isinstance(runnables, list):
         runnables = [runnables]
     for runnable in runnables:
@@ -245,9 +246,17 @@ def _lint_case(path: str, test_case: TestCase, lint_context: WorkflowLintContext
             found_valid_expectation = True
         # TODO: validate structure of test expectations
 
-        assertion_definitions = test_case.output_expectations[test_output_id].get("asserts")
-        if not _check_test_assertions(lint_context, assertion_definitions):
-            test_valid = False
+        output_expectations = test_case.output_expectations[test_output_id]
+        all_assertion_definitions = []
+        if "element_tests" in output_expectations:
+            # This is a collection
+            for element_id in output_expectations["element_tests"]:
+                all_assertion_definitions.append(output_expectations["element_tests"][element_id].get("asserts"))
+        else:
+            all_assertion_definitions.append(output_expectations.get("asserts"))
+        for assertion_definitions in all_assertion_definitions:
+            if not _check_test_assertions(lint_context, assertion_definitions):
+                test_valid = False
 
     if not found_valid_expectation:
         lint_context.warn("Found no valid test expectations for workflow test")
@@ -263,16 +272,26 @@ def _check_test_assertions(
     # Python functions directly, rather than checking against galaxy.xsd as for tool linting
     assertions_valid = True
     if assertion_definitions:
-        for assertion_name, assertion_params in assertion_definitions.items():
-            function = asserts.assertion_functions[f"assert_{assertion_name}"]
+        # Can be either a dictionary with different assert
+        # Or a list with max of asserts and potentially identical
+        # We transform to list:
+        assertion_definitions_list = __to_test_assert_list(assertion_definitions)
+        for assertion_description in assertion_definitions_list:
+            function = asserts.assertion_functions.get(f"assert_{assertion_description['tag']}")
+            if function is None:
+                lint_context.error(f"Invalid assertion: assert_{assertion_description['tag']} does not exists")
+                assertions_valid = False
+                continue
             signature = inspect.signature(function)
+            assertion_params = assertion_description["attributes"].copy()
+            del assertion_params["that"]
             try:
                 # try mapping the function with the attributes supplied and check for TypeError
                 signature.bind("", **assertion_params)
             except AssertionError:
                 pass
             except TypeError as e:
-                lint_context.error(f"Invalid assertion in tests: assert_{assertion_name} {str(e)}")
+                lint_context.error(f"Invalid assertion in tests: assert_{assertion_description['tag']} {str(e)}")
                 assertions_valid = False
     return assertions_valid
 

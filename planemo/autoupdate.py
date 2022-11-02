@@ -286,6 +286,13 @@ def _update_wf(config: "LocalGalaxyConfig", workflow_id: str, instance: bool = F
     config.user_gi.workflows.refactor_workflow(wf["id"], actions=[{"action_type": "upgrade_all_steps"}])
 
 
+def get_newest_tool_id(tool_ids: List[str]) -> str:
+    return sorted(
+        tool_ids,
+        key=lambda n: packaging.version.parse(n.split("/")[-1]),
+    )[-1]
+
+
 def outdated_tools(
     ctx: "PlanemoCliContext", wf_dict: Dict[str, Any], ts: ToolShedInstance
 ) -> Dict[str, Dict[str, str]]:
@@ -295,16 +302,19 @@ def outdated_tools(
             ctx.log(warning_msg)
         if len(repos) == 0:
             return repos
-        base_id = "/".join(step["tool_id"].split("/")[:-1])
-        tool_ids_found = {
-            tool["guid"] for repo in repos.values() if type(repo) == dict for tool in repo.get("tools", [])
-        }
-        updated_tool_id = sorted(
-            {tool_id for tool_id in tool_ids_found if f"{base_id}/" in tool_id},
-            key=lambda n: packaging.version.parse(n),
-        )[-1]
-        if step["tool_id"] != updated_tool_id:
-            return {base_id: {"current": step["tool_id"], "updated": updated_tool_id}}
+        tool_id = step["tool_id"]
+        base_id = "/".join(tool_id.split("/")[:-1])
+        matching_tool_ids = []
+        for repo in repos.values():
+            if isinstance(repo, dict):
+                for tool in repo.get("tools") or []:
+                    if tool["guid"].startswith(base_id):
+                        matching_tool_ids.append(tool["guid"])
+                        # there can only be one matching tool id in a repo
+                        break
+        updated_tool_id = get_newest_tool_id(matching_tool_ids)
+        if tool_id != updated_tool_id:
+            return {base_id: {"current": tool_id, "updated": updated_tool_id}}
         else:
             return {}
 

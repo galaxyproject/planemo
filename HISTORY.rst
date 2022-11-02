@@ -6,6 +6,19 @@ History
 .. to_doc
 
 ---------------------
+0.75.2 (2022-11-02)
+---------------------
+
+* Compare versions, not tool ids to find latest tool ids (thanks to
+  `@mvdbeek`_). `Pull Request 1313`_
+* Fix ``for_paths`` when path is directory of tools (thanks to `@mvdbeek`_).
+  `Pull Request 1312`_
+* Fix workflow_lint with list + check elements in collection (thanks to
+  `@lldelisle`_). `Pull Request 1310`_
+* Drop copy_tree workaround for tool sources (thanks to `@mvdbeek`_). `Pull
+  Request 1308`_
+
+---------------------
 0.75.1 (2022-10-31)
 ---------------------
 
@@ -1885,6 +1898,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1313: https://github.com/galaxyproject/planemo/pull/1313
+.. _Pull Request 1312: https://github.com/galaxyproject/planemo/pull/1312
+.. _Pull Request 1310: https://github.com/galaxyproject/planemo/pull/1310
+.. _Pull Request 1308: https://github.com/galaxyproject/planemo/pull/1308
 .. _Pull Request 1302: https://github.com/galaxyproject/planemo/pull/1302
 .. _Pull Request 1303: https://github.com/galaxyproject/planemo/pull/1303
 .. _Pull Request 1304: https://github.com/galaxyproject/planemo/pull/1304
