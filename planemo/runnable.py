@@ -189,14 +189,7 @@ def workflow_dir_runnables(path: str) -> List[Runnable]:
 
 
 def tool_dir_runnables(path: str) -> List[Runnable]:
-    runnables = []
-    for tool_path, _ in yield_tool_sources_on_paths(ctx=None, paths=[path]):
-        runnable = for_path(tool_path)
-        if isinstance(runnable, list):
-            runnables.extend(runnable)
-        else:
-            runnables.append(runnable)
-    return runnables
+    return for_paths(tool_path for tool_path, _ in yield_tool_sources_on_paths(ctx=None, paths=[path]))
 
 
 def for_path(path: str) -> Union[Runnable, List[Runnable]]:
