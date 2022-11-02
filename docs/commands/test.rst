@@ -12,7 +12,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Help**
 
-Run specified tool's tests within Galaxy.
+Run specified tool or workflow tests within Galaxy.
 
 All referenced tools (by default all the tools in the current working
 directory) will be tested and the results quickly summarized.
