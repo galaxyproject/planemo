@@ -72,10 +72,40 @@ def generate_dockstore_yaml(directory: str, publish: bool = True) -> str:
         }
         if os.path.exists(test_parameter_path):
             workflow_entry["testParameterFiles"] = [f"/{os.path.relpath(test_parameter_path, directory)}"]
+
+        with open(workflow_path) as f:
+            workflow_dict = ordered_load(f)
+
+        # add author
+        if len(workflow_dict.get("creator", [])) > 0:
+            creators = workflow_dict["creator"]
+            authors = []
+            for creator in creators:
+                author = {}
+                # Put name first
+                if "name" in creator:
+                    author["name"] = creator["name"]
+                for field, value in creator.items():
+                    if field in ["class", "name"]:
+                        continue
+                    if field == "identifier":
+                        # Check if it is an orcid:
+                        orcid = re.findall(
+                            "[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]", value
+                        )
+                        if len(orcid) > 0:
+                            author["orcid"] = orcid[0]
+                        else:
+                            author["identifier"] = value
+                    else:
+                        author[field] = value
+                authors.append(author)
+            workflow_entry["authors"] = authors
+
         workflows.append(workflow_entry)
     # Force version to the top of file but serializing rest of config separately
     contents = "version: %s\n" % DOCKSTORE_REGISTRY_CONF_VERSION
-    contents += yaml.dump({"workflows": workflows})
+    contents += yaml.dump({"workflows": workflows}, sort_keys=False)
     return contents
 
 
