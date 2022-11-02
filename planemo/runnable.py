@@ -179,14 +179,13 @@ def workflows_from_dockstore_yaml(path):
     return workflows
 
 
-def workflow_dir_runnables(path: str) -> Optional[List[Runnable]]:
+def workflow_dir_runnables(path: str) -> List[Runnable]:
     dockstore_path = os.path.join(path, DOCKSTORE_REGISTRY_CONF)
     if os.path.exists(dockstore_path):
-        runnables = [
+        return [
             Runnable(str(path), RunnableType.galaxy_workflow) for path in workflows_from_dockstore_yaml(dockstore_path)
         ]
-        return runnables
-    return None
+    return []
 
 
 def tool_dir_runnables(path: str) -> List[Runnable]:
