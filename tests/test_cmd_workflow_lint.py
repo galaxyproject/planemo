@@ -196,6 +196,30 @@ class CmdWorkflowLintTestCase(CliTestCase):
         result = self._runner.invoke(self._cli.planemo, lint_cmd)
         assert "ERROR: The ToolShed returned an error when searching" in result.output
 
+    def test_workflow_linting_asserts(self):
+        repo = _wf_repo("basic_format2_ok_collection")
+        lint_cmd = ["workflow_lint", repo]
+        self._check_exit_code(lint_cmd, exit_code=0)
+
+        repo = _wf_repo("basic_format2_ok_list")
+        lint_cmd = ["workflow_lint", repo]
+        self._check_exit_code(lint_cmd, exit_code=0)
+
+        repo = _wf_repo("basic_format2_wrong_assert_list")
+        lint_cmd = ["workflow_lint", repo]
+        result = self._runner.invoke(self._cli.planemo, lint_cmd)
+        assert "ERROR: Invalid assertion in tests: assert_has_text missing a required argument: 'text'" in result.output
+
+        repo = _wf_repo("basic_format2_collection_wrong_assert_list")
+        lint_cmd = ["workflow_lint", repo]
+        result = self._runner.invoke(self._cli.planemo, lint_cmd)
+        assert "ERROR: Invalid assertion in tests: assert_has_line missing a required argument: 'line'" in result.output
+
+        repo = _wf_repo("basic_format2_collection_wrong_assert")
+        lint_cmd = ["workflow_lint", repo]
+        result = self._runner.invoke(self._cli.planemo, lint_cmd)
+        assert "ERROR: Invalid assertion in tests: assert_has_line missing a required argument: 'line'" in result.output
+
 
 def _wf_repo(rel_path):
     return os.path.join(TEST_DATA_DIR, "wf_repos", rel_path)
