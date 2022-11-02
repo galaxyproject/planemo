@@ -3,7 +3,6 @@
 
 import abc
 import os
-from distutils.dir_util import copy_tree
 from enum import (
     auto,
     Enum,
@@ -169,23 +168,6 @@ def _runnable_delegate_attribute(attribute: str) -> property:
     return property(getter)
 
 
-def _copy_runnable_tree(path: str, runnable_type: RunnableType, temp_path: str) -> str:
-    dir_to_copy = None
-    if runnable_type in {RunnableType.galaxy_tool, RunnableType.cwl_tool}:
-        dir_to_copy = os.path.dirname(path)
-        path = os.path.join(temp_path, os.path.basename(path))
-    elif runnable_type == RunnableType.directory:
-        dir_to_copy = path
-        path = temp_path
-    elif runnable_type == RunnableType.galaxy_datamanager:
-        dir_to_copy = os.path.join(os.path.dirname(path), os.pardir)
-        path_to_data_manager_tool = os.path.relpath(path, dir_to_copy)
-        path = os.path.join(temp_path, path_to_data_manager_tool)
-    if dir_to_copy:
-        copy_tree(dir_to_copy, temp_path, update=True)
-    return path
-
-
 def workflows_from_dockstore_yaml(path):
     workflows = []
     parent_dir = Path(path).absolute().parent
@@ -212,31 +194,25 @@ def workflow_dir_runnables(path: str, return_all: bool = False) -> Optional[Unio
     return None
 
 
-def tool_dir_runnables(path: str, temp_path: Optional[str]) -> Optional[List[Runnable]]:
-    tool_sources = [p for p in yield_tool_sources_on_paths(ctx=None, paths=[path])]
-    if tool_sources:
-        if temp_path:
-            path = _copy_runnable_tree(path, RunnableType.directory, temp_path)
-        tool_sources = [p for p in yield_tool_sources_on_paths(ctx=None, paths=[path])]
-        return [for_path(p) for (p, _) in tool_sources]
-    return None
+def tool_dir_runnables(path: str) -> List[Runnable]:
+    return [for_path(p) for (p, _) in yield_tool_sources_on_paths(ctx=None, paths=[path])]
 
 
 @overload
-def for_path(path: str, temp_path: Optional[str] = None, return_all: Literal[False] = False) -> Runnable:
+def for_path(path: str, return_all: Literal[False] = False) -> Runnable:
     ...
 
 
 @overload
-def for_path(path: str, temp_path: Optional[str] = None, return_all: bool = False) -> Union[Runnable, List[Runnable]]:
+def for_path(path: str, return_all: bool = False) -> Union[Runnable, List[Runnable]]:
     pass
 
 
-def for_path(path: str, temp_path: Optional[str] = None, return_all: bool = False) -> Union[Runnable, List[Runnable]]:
+def for_path(path: str, return_all: bool = False) -> Union[Runnable, List[Runnable]]:
     """Produce a class:`Runnable` for supplied path."""
     runnable_type = None
     if os.path.isdir(path):
-        runnable = workflow_dir_runnables(path, return_all=return_all) or tool_dir_runnables(path, temp_path)
+        runnable = workflow_dir_runnables(path, return_all=return_all) or tool_dir_runnables(path)
         if runnable:
             return runnable
         runnable_type = RunnableType.directory
@@ -266,15 +242,12 @@ def for_path(path: str, temp_path: Optional[str] = None, return_all: bool = Fals
         error(f"Unable to determine runnable type for path [{path}]")
         raise ExitCodeException(EXIT_CODE_UNKNOWN_FILE_TYPE)
 
-    if temp_path:
-        path = _copy_runnable_tree(path, runnable_type, temp_path)
-
     return Runnable(path, runnable_type)
 
 
-def for_paths(paths: Iterable[str], temp_path: Optional[str] = None) -> List[Runnable]:
+def for_paths(paths: Iterable[str]) -> List[Runnable]:
     """Return a specialized list of Runnable objects for paths."""
-    return [for_path(path, temp_path=temp_path) for path in paths]
+    return [for_path(path) for path in paths]
 
 
 def for_uri(uri: str) -> Runnable:

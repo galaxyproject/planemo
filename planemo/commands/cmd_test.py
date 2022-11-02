@@ -4,7 +4,6 @@ import click
 from planemo import options
 from planemo.cli import command_function
 from planemo.engine.test import test_runnables
-from planemo.io import temp_directory
 from planemo.runnable import RunnableType
 from planemo.runnable_resolve import for_runnable_identifiers
 
@@ -34,7 +33,7 @@ from planemo.runnable_resolve import for_runnable_identifiers
 @options.engine_options()
 @command_function
 def cli(ctx, uris, **kwds):
-    """Run specified tool's tests within Galaxy.
+    """Run specified tool or workflow tests within Galaxy.
 
     All referenced tools (by default all the tools in the current working
     directory) will be tested and the results quickly summarized.
@@ -61,20 +60,18 @@ def cli(ctx, uris, **kwds):
     against that same Galaxy root - but this may not be bullet proof yet so
     please careful and do not try this against production Galaxy instances.
     """
-    with temp_directory(dir=ctx.planemo_directory) as temp_path:
-        # Create temp dir(s) outside of temp, docker can't mount $TEMPDIR on OSX
-        runnables = for_runnable_identifiers(ctx, uris, kwds, temp_path=temp_path)
+    runnables = for_runnable_identifiers(ctx, uris, kwds)
 
-        # pick a default engine type if needed
-        is_cwl = all(r.type in {RunnableType.cwl_tool, RunnableType.cwl_workflow} for r in runnables)
-        if kwds.get("engine", None) is None:
-            if is_cwl:
-                kwds["engine"] = "cwltool"
-            elif kwds.get("galaxy_url", None):
-                kwds["engine"] = "external_galaxy"
-            else:
-                kwds["engine"] = "galaxy"
+    # pick a default engine type if needed
+    is_cwl = all(r.type in {RunnableType.cwl_tool, RunnableType.cwl_workflow} for r in runnables)
+    if kwds.get("engine", None) is None:
+        if is_cwl:
+            kwds["engine"] = "cwltool"
+        elif kwds.get("galaxy_url", None):
+            kwds["engine"] = "external_galaxy"
+        else:
+            kwds["engine"] = "galaxy"
 
-        return_value = test_runnables(ctx, runnables, original_paths=uris, **kwds)
+    return_value = test_runnables(ctx, runnables, original_paths=uris, **kwds)
 
     ctx.exit(return_value)

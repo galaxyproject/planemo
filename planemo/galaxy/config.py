@@ -19,6 +19,8 @@ from tempfile import (
 from typing import (
     List,
     Optional,
+    Set,
+    TYPE_CHECKING,
 )
 
 from galaxy.containers.docker_model import DockerVolume
@@ -56,6 +58,9 @@ from .workflows import (
     import_workflow,
     install_shed_repos,
 )
+
+if TYPE_CHECKING:
+    from planemo.runnable import Runnable
 
 NO_TEST_DATA_MESSAGE = (
     "planemo couldn't find a target test-data directory, you should likely "
@@ -504,7 +509,7 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
         )
 
 
-def _expand_paths(galaxy_root, extra_tools):
+def _expand_paths(galaxy_root: Optional[str], extra_tools: List[str]) -> List[str]:
     """Replace $GALAXY_FUNCTION_TEST_TOOLS with actual path."""
     if galaxy_root:
         extra_tools = [
@@ -532,11 +537,13 @@ def get_refgenie_config(galaxy_root, refgenie_dir):
     return REFGENIE_CONFIG_TEMPLATE % (config_version, refgenie_dir)
 
 
-def _all_tool_paths(runnables, galaxy_root=None, extra_tools=None):
+def _all_tool_paths(
+    runnables: List["Runnable"], galaxy_root: Optional[str] = None, extra_tools: Optional[List[str]] = None
+) -> Set[str]:
     extra_tools = extra_tools or []
-    all_tool_paths = [r.path for r in runnables if r.has_tools and not r.data_manager_conf_path]
+    all_tool_paths = {r.path for r in runnables if r.has_tools and not r.data_manager_conf_path}
     extra_tools = _expand_paths(galaxy_root, extra_tools=extra_tools)
-    all_tool_paths.extend(extra_tools)
+    all_tool_paths.update(extra_tools)
     for runnable in runnables:
         if runnable.type.name == "galaxy_workflow":
             tool_ids = find_tool_ids(runnable.path)
@@ -545,7 +552,7 @@ def _all_tool_paths(runnables, galaxy_root=None, extra_tools=None):
                 if tool_paths:
                     if isinstance(tool_paths, str):
                         tool_paths = [tool_paths]
-                    all_tool_paths.extend(tool_paths)
+                    all_tool_paths.update(tool_paths)
 
     return all_tool_paths
 
