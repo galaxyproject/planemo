@@ -15,6 +15,7 @@ from typing import (
     Union,
 )
 
+import requests
 import yaml
 from bioblend import toolshed
 from bioblend.toolshed import ToolShedInstance
@@ -90,11 +91,19 @@ def generate_dockstore_yaml(directory: str, publish: bool = True) -> str:
                         continue
                     if field == "identifier":
                         # Check if it is an orcid:
-                        orcid = re.findall(
-                            "(?:\d{4}-){3}\d{3}", value
-                        )
+                        orcid = re.findall(r"(?:\d{4}-){3}\d{3}", value)
                         if len(orcid) > 0:
-                            author["orcid"] = orcid[0]
+                            # Check the orcid is valid
+                            if (
+                                requests.get(
+                                    f"https://orcid.org/{orcid[0]}", headers={"Accept": "application/xml"}
+                                ).status_code
+                                == 200
+                            ):
+                                author["orcid"] = orcid[0]
+                            else:
+                                # If it is not put as identifier
+                                author["identifier"] = value
                         else:
                             author["identifier"] = value
                     else:
