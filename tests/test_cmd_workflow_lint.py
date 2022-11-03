@@ -222,7 +222,7 @@ class CmdWorkflowLintTestCase(CliTestCase):
 
     def test_tool_id_linting_tool_classic_api_fail(self):
         workflow_path = "/".join((TEST_DATA_DIR, "wf_repos", "autoupdate_tests", "workflow_with_bamleftalign.ga"))
-        lint_cmd = ["workflow_lint", workflow_path]
+        lint_cmd = ["workflow_lint", "--skip", "best_practices,structure,tests", workflow_path]
         self._check_exit_code(lint_cmd, exit_code=0)
 
 
