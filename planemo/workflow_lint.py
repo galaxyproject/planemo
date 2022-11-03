@@ -65,7 +65,7 @@ def generate_dockstore_yaml(directory: str, publish: bool = True) -> str:
         test_parameter_path = f"{workflow_path.rsplit('.', 1)[0]}-tests.yml"
         workflow_entry: Dict[str, Any] = {
             # TODO: support CWL
-            "name": "main" if len(all_workflow_paths) == 1 else os.path.basename(workflow_path).replace(".ga$", ""),
+            "name": "main" if len(all_workflow_paths) == 1 else os.path.basename(workflow_path).split(".ga")[0],
             "subclass": "Galaxy",
             "publish": publish,
             "primaryDescriptorPath": f"/{os.path.relpath(workflow_path, directory)}",
