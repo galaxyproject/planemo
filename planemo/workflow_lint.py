@@ -15,6 +15,7 @@ from typing import (
     Union,
 )
 
+import requests
 import yaml
 from bioblend import toolshed
 from bioblend.toolshed import ToolShedInstance
@@ -61,21 +62,60 @@ class WorkflowLintContext(LintContext):
 
 def generate_dockstore_yaml(directory: str, publish: bool = True) -> str:
     workflows = []
-    for workflow_path in find_workflow_descriptions(directory):
+    all_workflow_paths = list(find_workflow_descriptions(directory))
+    for workflow_path in all_workflow_paths:
         test_parameter_path = f"{workflow_path.rsplit('.', 1)[0]}-tests.yml"
         workflow_entry: Dict[str, Any] = {
             # TODO: support CWL
+            "name": "main" if len(all_workflow_paths) == 1 else os.path.basename(workflow_path).split(".ga")[0],
             "subclass": "Galaxy",
             "publish": publish,
-            "name": "main",
             "primaryDescriptorPath": f"/{os.path.relpath(workflow_path, directory)}",
         }
         if os.path.exists(test_parameter_path):
             workflow_entry["testParameterFiles"] = [f"/{os.path.relpath(test_parameter_path, directory)}"]
+
+        with open(workflow_path) as f:
+            workflow_dict = ordered_load(f)
+
+        # add author
+        if len(workflow_dict.get("creator", [])) > 0:
+            creators = workflow_dict["creator"]
+            authors = []
+            for creator in creators:
+                author = {}
+                # Put name first
+                if "name" in creator:
+                    author["name"] = creator["name"]
+                for field, value in creator.items():
+                    if field in ["class", "name"]:
+                        continue
+                    if field == "identifier":
+                        # Check if it is an orcid:
+                        orcid = re.findall(r"(?:\d{4}-){3}\d{3}", value)
+                        if len(orcid) > 0:
+                            # Check the orcid is valid
+                            if (
+                                requests.get(
+                                    f"https://orcid.org/{orcid[0]}", headers={"Accept": "application/xml"}
+                                ).status_code
+                                == 200
+                            ):
+                                author["orcid"] = orcid[0]
+                            else:
+                                # If it is not put as identifier
+                                author["identifier"] = value
+                        else:
+                            author["identifier"] = value
+                    else:
+                        author[field] = value
+                authors.append(author)
+            workflow_entry["authors"] = authors
+
         workflows.append(workflow_entry)
     # Force version to the top of file but serializing rest of config separately
     contents = "version: %s\n" % DOCKSTORE_REGISTRY_CONF_VERSION
-    contents += yaml.dump({"workflows": workflows})
+    contents += yaml.dump({"workflows": workflows}, sort_keys=False)
     return contents
 
 
