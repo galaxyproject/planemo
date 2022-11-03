@@ -91,7 +91,7 @@ def generate_dockstore_yaml(directory: str, publish: bool = True) -> str:
                     if field == "identifier":
                         # Check if it is an orcid:
                         orcid = re.findall(
-                            "[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]", value
+                            "(?:\d{4}-){3}\d{3}", value
                         )
                         if len(orcid) > 0:
                             author["orcid"] = orcid[0]
