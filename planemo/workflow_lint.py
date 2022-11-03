@@ -416,7 +416,10 @@ def find_potential_workflow_files(directory: str) -> List[str]:
 
 def find_repos_from_tool_id(tool_id: str, ts: ToolShedInstance) -> Tuple[str, Dict[str, Any]]:
     """
-    Return a string which indicates what failed and dict with all revisions for a given tool id
+    Return a string which indicates what failed
+        if the string is empty: either the tool_id does not pretend to be in the MAIN_TOOLSHED or it is installable
+        if the string is not empty: the tool_id was not found installable in the MAIN_TOOLSHED while it was supposed to be
+    and dict with all revisions for a given tool id
     """
     if not tool_id.startswith(MAIN_TOOLSHED_URL[8:]):
         return ("", {})  # assume a built in tool
