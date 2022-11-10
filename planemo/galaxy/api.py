@@ -1,19 +1,22 @@
 """A high-level interface to local Galaxy instances using bioblend."""
 from io import StringIO
+from typing import Optional
 
 from bioblend.galaxy import GalaxyInstance
 
 DEFAULT_ADMIN_API_KEY = "test_key"
 
 
-def gi(port=None, url=None, key=None) -> GalaxyInstance:
+def gi(port: Optional[int] = None, url: Optional[str] = None, key: Optional[str] = None) -> GalaxyInstance:
     """Return a bioblend ``GalaxyInstance`` for Galaxy on this port."""
     if key is None:
         key = DEFAULT_ADMIN_API_KEY
+    if port is not None and url is not None:
+        raise ValueError("Either port or url parameter needs to be None")
     if port is None:
         url = url
     else:
-        url = "http://localhost:%d" % int(port)
+        url = f"http://localhost:{int(port)}"
 
     return GalaxyInstance(url=url, key=key)
 

@@ -5,7 +5,7 @@ from urllib.error import URLError
 from urllib.request import urlopen
 
 
-def get_free_port():
+def get_free_port() -> int:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind(("localhost", 0))
     port = sock.getsockname()[1]

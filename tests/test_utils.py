@@ -73,7 +73,7 @@ mark = MarkGenerator()
 class CliTestCase(TestCase):
     non_zero_exit_code = NON_ZERO_EXIT_CODE
 
-    def setUp(self):  # noqa
+    def setUp(self) -> None:
         self._runner = CliRunner()
         self._home = mkdtemp()
         self._old_config = os.environ.get(PLANEMO_CONFIG_ENV_PROP, None)

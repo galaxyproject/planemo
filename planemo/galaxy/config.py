@@ -848,7 +848,7 @@ class BaseGalaxyConfig(GalaxyInterface):
         return False
 
     @property
-    def version_major(self):
+    def version_major(self) -> str:
         """Return target Galaxy version."""
         if self._target_version is UNINITIALIZED:
             self._target_version = self.user_gi.config.get_version()["version_major"]

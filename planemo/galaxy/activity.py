@@ -6,15 +6,25 @@ import tempfile
 import time
 import traceback
 from datetime import datetime
+from typing import (
+    Any,
+    Dict,
+    Optional,
+    Tuple,
+    Type,
+    TYPE_CHECKING,
+)
 from urllib.parse import urljoin
 
 import bioblend
+from bioblend.galaxy import GalaxyInstance
 from bioblend.util import attach_file
 
 try:
     from galaxy.tool_util.client.staging import StagingInterface
 except ImportError:
     from galaxy.tool_util.client.staging import StagingInterace as StagingInterface
+
 from galaxy.tool_util.cwl.util import (
     invocation_to_output,
     output_to_cwl_json,
@@ -35,9 +45,16 @@ from planemo.io import wait_on
 from planemo.runnable import (
     ErrorRunResponse,
     get_outputs,
+    Rerunnable,
+    Runnable,
     RunnableType,
+    RunResponse,
     SuccessfulRunResponse,
 )
+
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
+    from planemo.galaxy.config import BaseGalaxyConfig
 
 DEFAULT_HISTORY_NAME = "CWL Target History"
 ERR_NO_SUCH_TOOL = (
@@ -46,7 +63,9 @@ ERR_NO_SUCH_TOOL = (
 )
 
 
-def execute(ctx, config, runnable, job_path, **kwds):
+def execute(
+    ctx: "PlanemoCliContext", config: "BaseGalaxyConfig", runnable: Runnable, job_path: str, **kwds
+) -> RunResponse:
     """Execute a Galaxy activity."""
     try:
         start_datetime = datetime.now()
@@ -83,14 +102,21 @@ def log_contents_str(config):
 
 
 class PlanemoStagingInterface(StagingInterface):
-    def __init__(self, ctx, runnable, user_gi, version_major, simultaneous_uploads):
+    def __init__(
+        self,
+        ctx: "PlanemoCliContext",
+        runnable: Runnable,
+        user_gi: GalaxyInstance,
+        version_major: str,
+        simultaneous_uploads: bool,
+    ) -> None:
         self._ctx = ctx
         self._user_gi = user_gi
         self._runnable = runnable
         self._version_major = version_major
         self._simultaneous_uploads = simultaneous_uploads
 
-    def _post(self, api_path, payload, files_attached=False):
+    def _post(self, api_path: str, payload: Dict[str, Any], files_attached: bool = False) -> Dict[str, Any]:
         url = urljoin(self._user_gi.url, "api/" + api_path)
         if payload.get("__files"):  # put attached files where BioBlend expects them
             files_attached = True
@@ -117,7 +143,9 @@ class PlanemoStagingInterface(StagingInterface):
         self._ctx.vlog(message)
 
 
-def _execute(ctx, config, runnable, job_path, **kwds):  # noqa C901
+def _execute(  # noqa C901
+    ctx: "PlanemoCliContext", config: "BaseGalaxyConfig", runnable: Runnable, job_path: str, **kwds
+) -> "GalaxyBaseRunResponse":
     user_gi = config.user_gi
     admin_gi = config.gi
 
@@ -128,7 +156,7 @@ def _execute(ctx, config, runnable, job_path, **kwds):  # noqa C901
         ctx.vlog("Problem with staging in data for Galaxy activities...")
         raise
     if runnable.type in [RunnableType.galaxy_tool, RunnableType.cwl_tool]:
-        response_class = GalaxyToolRunResponse
+        response_class: Type[GalaxyBaseRunResponse] = GalaxyToolRunResponse
         tool_id = _verified_tool_id(runnable, user_gi)
         inputs_representation = _inputs_representation(runnable)
         run_tool_payload = dict(
@@ -246,7 +274,7 @@ def stage_in(ctx, runnable, config, job_path, **kwds):  # noqa C901
     )
 
     if datasets and kwds.get("check_uploads_ok", True):
-        ctx.vlog("uploaded datasets [%s] for activity, checking history state" % datasets)
+        ctx.vlog(f"Uploaded datasets [{datasets}] for activity, checking history state")
         final_state = _wait_for_history(ctx, user_gi, history_id)
 
         for (dataset, path) in datasets:
@@ -259,7 +287,7 @@ def stage_in(ctx, runnable, config, job_path, **kwds):  # noqa C901
         # Mark uploads as ok because nothing to do.
         final_state = "ok"
 
-    ctx.vlog("final state is %s" % final_state)
+    ctx.vlog(f"Final state is {final_state}")
     if final_state != "ok":
         msg = "Failed to upload data, upload state is [%s]." % final_state
         summarize_history(ctx, user_gi, history_id)
@@ -275,7 +303,9 @@ def _file_path_to_name(file_path):
     return name
 
 
-def execute_rerun(ctx, config, rerunnable, **kwds):
+def execute_rerun(
+    ctx: "PlanemoCliContext", config: "BaseGalaxyConfig", rerunnable: Rerunnable, **kwds
+) -> "GalaxyBaseRunResponse":
     rerun_successful = True
     user_gi = config.user_gi
     if rerunnable.rerunnable_type == "history":
@@ -309,29 +339,28 @@ def execute_rerun(ctx, config, rerunnable, **kwds):
                 )
     if not job_ids:
         ctx.log(f"No jobs matching the specified {rerunnable.rerunnable_type} {rerunnable.rerunnable_id} were found.")
-    run_response = GalaxyBaseRunResponse(
+    return GalaxyBaseRunResponse(
         ctx=ctx,
         runnable=rerunnable,
         user_gi=user_gi,
         history_id=rerunnable.rerunnable_id if rerunnable.rerunnable_type == "history_id" else None,
         log=log_contents_str(config),
+        successful=rerun_successful,
     )
-
-    run_response.was_successful = rerun_successful
-    return run_response
 
 
 class GalaxyBaseRunResponse(SuccessfulRunResponse):
     def __init__(
         self,
-        ctx,
+        ctx: "PlanemoCliContext",
         runnable,
-        user_gi,
+        user_gi: GalaxyInstance,
         history_id,
         log,
-        start_datetime=None,
-        end_datetime=None,
-    ):
+        start_datetime: Optional[datetime] = None,
+        end_datetime: Optional[datetime] = None,
+        successful: bool = True,
+    ) -> None:
         super().__init__(runnable=runnable)
         self._ctx = ctx
         self._user_gi = user_gi
@@ -343,6 +372,11 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         self._outputs_dict = None
         self._start_datetime = start_datetime
         self._end_datetime = end_datetime
+        self._successful = successful
+
+    @property
+    def was_successful(self):
+        return self._successful
 
     def to_galaxy_output(self, output):
         """Convert runnable output to a GalaxyOutput object.
@@ -674,13 +708,14 @@ def _tool_id(tool_path):
     return tool_source.parse_id()
 
 
-def _history_id(gi, **kwds):
-    history_id = kwds.get("history_id", None)
+def _history_id(gi, **kwds) -> str:
+    history_id = kwds.get("history_id")
     if history_id is None:
         history_name = kwds.get("history_name", DEFAULT_HISTORY_NAME) or DEFAULT_HISTORY_NAME
         history_id = gi.histories.create_history(history_name)["id"]
-    if kwds.get("tags"):
-        tags = kwds.get("tags").split(",")
+    tags_str = kwds.get("tags")
+    if tags_str:
+        tags = tags_str.split(",")
         gi.histories.update_history(history_id, tags=tags)
     return history_id
 

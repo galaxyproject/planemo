@@ -2,6 +2,7 @@
 
 import abc
 import contextlib
+from typing import TYPE_CHECKING
 
 from galaxy.tool_util.verify import interactor
 
@@ -9,6 +10,7 @@ from planemo import io
 from planemo.galaxy.activity import (
     execute,
     execute_rerun,
+    GalaxyBaseRunResponse,
 )
 from planemo.galaxy.config import external_galaxy_config
 from planemo.galaxy.serve import serve_daemon
@@ -16,9 +18,13 @@ from planemo.runnable import (
     DelayedGalaxyToolTestCase,
     ExternalGalaxyToolTestCase,
     GALAXY_TOOLS_PREFIX,
+    Rerunnable,
     RunnableType,
 )
 from .interface import BaseEngine
+
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
 
 INSTALLING_MESSAGE = "Installing repositories - this may take some time..."
 
@@ -177,7 +183,7 @@ class ExternalGalaxyEngine(GalaxyEngine):
             config.install_workflows()
             yield config
 
-    def rerun(self, ctx, rerunnable, **kwds):
+    def rerun(self, ctx: "PlanemoCliContext", rerunnable: Rerunnable, **kwds) -> GalaxyBaseRunResponse:
         with self.ensure_runnables_served([]) as config:
             rerun_response = execute_rerun(ctx, config, rerunnable, **kwds)
             return rerun_response
