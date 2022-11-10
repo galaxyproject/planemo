@@ -117,6 +117,8 @@ class PlanemoStagingInterface(StagingInterface):
         self._simultaneous_uploads = simultaneous_uploads
 
     def _post(self, api_path: str, payload: Dict[str, Any], files_attached: bool = False) -> Dict[str, Any]:
+        # Keep the files_attached argument because StagingInterface._post() had
+        # it until Galaxy 22.05.
         url = urljoin(self._user_gi.url, "api/" + api_path)
         if payload.get("__files"):  # put attached files where BioBlend expects them
             files_attached = True
@@ -151,7 +153,7 @@ def _execute(  # noqa C901
 
     start_datetime = datetime.now()
     try:
-        job_dict, _, history_id = stage_in(ctx, runnable, config, job_path, **kwds)
+        job_dict, history_id = stage_in(ctx, runnable, config, job_path, **kwds)
     except Exception:
         ctx.vlog("Problem with staging in data for Galaxy activities...")
         raise
@@ -257,7 +259,9 @@ def _execute(  # noqa C901
     return run_response
 
 
-def stage_in(ctx, runnable, config, job_path, **kwds):  # noqa C901
+def stage_in(
+    ctx: "PlanemoCliContext", runnable: Runnable, config: "BaseGalaxyConfig", job_path: str, **kwds
+) -> Tuple[Dict[str, Any], str]:
     # only upload objects as files/collections for CWL workflows...
     tool_or_workflow = "tool" if runnable.type != RunnableType.cwl_workflow else "workflow"
     to_posix_lines = runnable.type.is_galaxy_artifact
@@ -276,13 +280,6 @@ def stage_in(ctx, runnable, config, job_path, **kwds):  # noqa C901
     if datasets and kwds.get("check_uploads_ok", True):
         ctx.vlog(f"Uploaded datasets [{datasets}] for activity, checking history state")
         final_state = _wait_for_history(ctx, user_gi, history_id)
-
-        for (dataset, path) in datasets:
-            dataset_details = user_gi.histories.show_dataset(
-                history_id,
-                dataset["id"],
-            )
-            ctx.vlog(f"Uploaded dataset for path [{path}] with metadata [{dataset_details}]")
     else:
         # Mark uploads as ok because nothing to do.
         final_state = "ok"
@@ -292,7 +289,7 @@ def stage_in(ctx, runnable, config, job_path, **kwds):  # noqa C901
         msg = "Failed to upload data, upload state is [%s]." % final_state
         summarize_history(ctx, user_gi, history_id)
         raise Exception(msg)
-    return job_dict, datasets, history_id
+    return job_dict, history_id
 
 
 def _file_path_to_name(file_path):
