@@ -31,14 +31,6 @@ planemo.autoupdate module
    :undoc-members:
    :show-inheritance:
 
-planemo.bioblend module
------------------------
-
-.. automodule:: planemo.bioblend
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 planemo.ci module
 -----------------
 
