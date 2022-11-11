@@ -9,6 +9,7 @@ import click
 from planemo import options
 from planemo.cli import command_function
 from planemo.conda import build_conda_context
+from planemo.io import error
 
 if TYPE_CHECKING:
     from planemo.cli import PlanemoCliContext
@@ -23,5 +24,5 @@ def cli(ctx: "PlanemoCliContext", paths: Tuple[str], **kwds) -> None:
     # Force conda_use_local for building...
     kwds["conda_use_local"] = True
     conda_context = build_conda_context(ctx, handle_auto_init=True, **kwds)
-    build_args = list(paths)
-    conda_context.exec_command("build", build_args)
+    if conda_context.exec_command("build", paths) != 0:
+        error(f"Failed to build [{' '.join(paths)}] with conda.")

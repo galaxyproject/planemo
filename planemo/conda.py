@@ -27,12 +27,6 @@ from planemo.tools import yield_tool_sources_on_paths
 if TYPE_CHECKING:
     from planemo.cli import PlanemoCliContext
 
-MESSAGE_ERROR_FAILED_INSTALL = "Attempted to install conda and failed."
-MESSAGE_ERROR_CANNOT_INSTALL = "Cannot install Conda - perhaps due to a failed installation or permission problems."
-MESSAGE_ERROR_NOT_INSTALLING = (
-    "Conda not configured - run ``planemo conda_init`` or pass ``--conda_auto_init`` to continue."
-)
-
 BEST_PRACTICE_CHANNELS = ["conda-forge", "bioconda", "defaults"]
 
 
@@ -61,19 +55,20 @@ def build_conda_context(ctx: "PlanemoCliContext", **kwds) -> CondaContext:
         failed = True
         if auto_init:
             if conda_context.can_install_conda():
-                if conda_util.install_conda(conda_context):
-                    error(MESSAGE_ERROR_FAILED_INSTALL)
+                if conda_util.install_conda(conda_context) != 0:
+                    error("Attempted to install conda and failed.")
                 else:
                     failed = False
             else:
-                error(MESSAGE_ERROR_CANNOT_INSTALL)
+                error("Cannot install Conda - perhaps due to a failed installation or permission problems.")
         else:
-            error(MESSAGE_ERROR_NOT_INSTALLING)
+            error("Conda not configured - run ``planemo conda_init`` or pass ``--conda_auto_init`` to continue.")
 
         if failed:
             raise ExitCodeException(EXIT_CODE_FAILED_DEPENDENCIES)
     if handle_auto_init:
-        conda_context.ensure_conda_build_installed_if_needed()
+        if conda_context.ensure_conda_build_installed_if_needed() != 0:
+            error("Attempted to install conda-build and failed.")
     return conda_context
 
 
