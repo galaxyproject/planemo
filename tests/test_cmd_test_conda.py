@@ -67,16 +67,21 @@ class CmdTestCondaTestCase(CliTestCase):
     @mark.tests_galaxy_branch
     def test_local_conda_dependencies_version(self):
         """Test a tool that requires local package builds."""
-        with self._isolate():
+        with self._isolate() as isolated_dir:
+            conda_prefix = os.path.join(isolated_dir, "miniconda3")
             fleeqtk_recipe = os.path.join(PROJECT_TEMPLATES_DIR, "conda_answers", "exercise_2", "fleeqtk")
             build_command = [
                 "conda_build",
+                "--conda_prefix",
+                conda_prefix,
                 fleeqtk_recipe,
             ]
             self._check_exit_code(build_command)
             fleeqtk_tool = os.path.join(TEST_REPOS_DIR, "conda_exercises_fleeqtk", "fleeqtk_seq.xml")
             conda_install_command = [
                 "conda_install",
+                "--conda_prefix",
+                conda_prefix,
                 "--conda_use_local",
                 fleeqtk_tool,
             ]
@@ -85,6 +90,8 @@ class CmdTestCondaTestCase(CliTestCase):
                 "test",
                 "--galaxy_branch",
                 target_galaxy_branch(),
+                "--conda_prefix",
+                conda_prefix,
                 fleeqtk_tool,
             ]
             self._check_exit_code(test_command)
