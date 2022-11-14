@@ -8,9 +8,9 @@ import shutil
 
 import oyaml as yaml
 import requests
+from bioblend.galaxy import GalaxyInstance
 
 from planemo import templates
-from planemo.bioblend import galaxy
 from planemo.engine import (
     engine_context,
     is_galaxy_engine,
@@ -429,7 +429,7 @@ class Tutorial:
         if self.init_wf_fp:
             shutil.copy(self.init_wf_fp, self.wf_fp)
         elif self.init_wf_id:
-            gi = galaxy.GalaxyInstance(self.training.galaxy_url, key=self.training.galaxy_api_key)
+            gi = GalaxyInstance(self.training.galaxy_url, key=self.training.galaxy_api_key)
             gi.workflows.export_workflow_to_local_path(self.init_wf_id, self.wf_fp, use_default_filename=False)
 
     # OTHER METHODS
@@ -678,7 +678,7 @@ def get_hands_on_boxes_from_local_galaxy(kwds, wf_filepath, ctx):
 
 def get_hands_on_boxes_from_running_galaxy(wf_id, galaxy_url, galaxy_api_key):
     """Get the workflow dictionary from a running Galaxy instance with the workflow installed on it."""
-    gi = galaxy.GalaxyInstance(galaxy_url, key=galaxy_api_key)
+    gi = GalaxyInstance(galaxy_url, key=galaxy_api_key)
     wf = gi.workflows.export_workflow_dict(wf_id)
     tuto_body = format_wf_steps(wf, gi)
     return tuto_body

@@ -1,25 +1,24 @@
 """A high-level interface to local Galaxy instances using bioblend."""
 from io import StringIO
+from typing import Optional
 
-from planemo.bioblend import (
-    ensure_module,
-    galaxy,
-)
+from bioblend.galaxy import GalaxyInstance
 
 DEFAULT_ADMIN_API_KEY = "test_key"
 
 
-def gi(port=None, url=None, key=None):
+def gi(port: Optional[int] = None, url: Optional[str] = None, key: Optional[str] = None) -> GalaxyInstance:
     """Return a bioblend ``GalaxyInstance`` for Galaxy on this port."""
-    ensure_module()
     if key is None:
         key = DEFAULT_ADMIN_API_KEY
+    if port is not None and url is not None:
+        raise ValueError("Either port or url parameter needs to be None")
     if port is None:
         url = url
     else:
-        url = "http://localhost:%d" % int(port)
+        url = f"http://localhost:{int(port)}"
 
-    return galaxy.GalaxyInstance(url=url, key=key)
+    return GalaxyInstance(url=url, key=key)
 
 
 def test_credentials_valid(port=None, url=None, key=None, is_admin=False):
@@ -37,7 +36,6 @@ def test_credentials_valid(port=None, url=None, key=None, is_admin=False):
 
 def user_api_key(admin_gi):
     """Use an admin authenticated account to generate a user API key."""
-    ensure_module()
     # TODO: thread-safe
     users = admin_gi.users
     all_users = users.get_users()

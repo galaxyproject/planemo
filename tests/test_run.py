@@ -75,7 +75,6 @@ class RunTestCase(CliTestCase):
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
-    @skip_if_environ("PLANEMO_SKIP_GALAXY_CWL_TESTS")
     def test_run_cat(self):
         with self._isolate() as f:
             tool_path = _cwl_file("cat1-tool.cwl")

@@ -14,6 +14,7 @@ from typing import NamedTuple
 
 import bioblend
 import yaml
+from bioblend.toolshed import ToolShedInstance
 from galaxy.util import (
     odict,
     unicodify,
@@ -24,7 +25,6 @@ from planemo import (
     glob,
     templates,
 )
-from planemo.bioblend import toolshed
 from planemo.io import (
     can_write_to_path,
     coalesce_return_codes,
@@ -177,7 +177,7 @@ yaml.SafeLoader.add_constructor("tag:yaml.org,2002:str", construct_yaml_str)
 
 
 class ShedContext(NamedTuple):
-    tsi: toolshed.ToolShedInstance
+    tsi: ToolShedInstance
     shed_config: dict
     config_owner: str
 

@@ -23,7 +23,7 @@ def cli(ctx, profile, **kwds):
     """
     info("Looking for profiles...")
     aliases = profiles.list_alias(ctx, profile)
-    if tabulate:
+    if tabulate is not None:
         print(tabulate({"Alias": aliases.keys(), "Object": aliases.values()}, headers="keys"))
     else:
         print(json.dumps(aliases, indent=4, sort_keys=True))

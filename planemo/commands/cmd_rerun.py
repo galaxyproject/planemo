@@ -1,15 +1,23 @@
 """Module describing the planemo ``rerun`` command."""
+from typing import (
+    Tuple,
+    TYPE_CHECKING,
+)
 
 import click
 
 from planemo import options
 from planemo.cli import command_function
 from planemo.engine import engine_context
+from planemo.engine.galaxy import ExternalGalaxyEngine
 from planemo.io import (
     error,
     info,
 )
 from planemo.runnable import Rerunnable
+
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
 
 
 @click.command("rerun")
@@ -38,7 +46,7 @@ from planemo.runnable import Rerunnable
     nargs=-1,
 )
 @command_function
-def cli(ctx, rerunnable_ids, **kwds):
+def cli(ctx: "PlanemoCliContext", rerunnable_ids: Tuple[str], **kwds) -> None:
     """Planemo command for rerunning and remapping failed jobs on an external Galaxy server.
     Supply a list of history, invocation or job IDs, identifying the ID type using the
     --invocation, --history or --job flag, and all associated failed jobs will be rerun.
@@ -58,6 +66,7 @@ def cli(ctx, rerunnable_ids, **kwds):
     kwds["engine"] = "external_galaxy"
     rerun_successful = True
     with engine_context(ctx, **kwds) as engine:
+        assert isinstance(engine, ExternalGalaxyEngine)
         for rerunnable_id in rerunnable_ids:
             rerunnable = Rerunnable(rerunnable_id, kwds["rerunnable_type"], kwds["galaxy_url"])
             rerun_result = engine.rerun(ctx, rerunnable, **kwds)

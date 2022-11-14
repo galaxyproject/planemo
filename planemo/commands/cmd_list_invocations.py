@@ -42,7 +42,7 @@ def cli(ctx, workflow_identifier, **kwds):
         key=profile["galaxy_admin_key"] or profile["galaxy_user_key"],
         workflow_id=workflow_id,
     )
-    if tabulate:
+    if tabulate is not None:
         state_colors = {
             "ok": "\033[92m",  # green
             "running": "\033[93m",  # yellow

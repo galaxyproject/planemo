@@ -2,21 +2,16 @@
 
 import json
 
+from bioblend.toolshed import ToolShedInstance
 from galaxy.util import unicodify
 
-from planemo.bioblend import (
-    ensure_module,
-    toolshed,
-)
 from planemo.io import untar_to
 
 REPOSITORY_DOWNLOAD_TEMPLATE = "%srepository/download?repository_id=%s" "&changeset_revision=default&file_type=gz"
 
 
 def tool_shed_instance(url, key, email, password):
-    ensure_module()
-    tsi = toolshed.ToolShedInstance(url=url, key=key, email=email, password=password)
-    return tsi
+    return ToolShedInstance(url=url, key=key, email=email, password=password)
 
 
 def find_repository(tsi, owner, name):

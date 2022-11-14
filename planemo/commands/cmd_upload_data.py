@@ -39,7 +39,7 @@ def cli(ctx, runnable_identifier, job_path, new_job_path, **kwds):
     runnable = for_runnable_identifier(ctx, runnable_identifier, kwds)
     with engine_context(ctx, **kwds) as engine:
         with engine.ensure_runnables_served([runnable]) as config:
-            job, _, _ = stage_in(ctx, runnable, config, job_path, **kwds)
+            job, _ = stage_in(ctx, runnable, config, job_path, **kwds)
 
     rewrite_job_file(job_path, new_job_path, job)
     info(f"Files uploaded and new job file written to {new_job_path}")

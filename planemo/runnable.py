@@ -568,7 +568,7 @@ class RunResponse(metaclass=abc.ABCMeta):
         return None
 
     @abc.abstractproperty
-    def was_successful(self):
+    def was_successful(self) -> bool:
         """Indicate whether an error was encountered while executing this runnable.
 
         If successful, response should conform to the SuccessfulRunResponse interface,
@@ -651,6 +651,7 @@ class SuccessfulRunResponse(RunResponse, metaclass=abc.ABCMeta):
     def __init__(self, runnable: "Runnable") -> None:
         self._runnable = runnable
 
+    @property
     def was_successful(self):
         """Return `True` to indicate this run was successful."""
         return True
