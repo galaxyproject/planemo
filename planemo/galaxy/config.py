@@ -118,6 +118,7 @@ JOB_CONFIG_LOCAL = """<job_conf>
             <param id="docker_sudo">${docker_sudo}</param>
             <param id="docker_sudo_cmd">${docker_sudo_cmd}</param>
             <param id="docker_cmd">${docker_cmd}</param>
+            <param id="docker_volumes">${docker_volumes}</param>
             ${docker_host_param}
         </destination>
         <destination id="upload_dest" runner="planemo_runner">
@@ -346,7 +347,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         log_file = f"{server_name}.log"
         pid_file = f"{server_name}.pid"
         ensure_dependency_resolvers_conf_configured(ctx, kwds, os.path.join(config_directory, "resolvers_conf.xml"))
-        _handle_job_config_file(config_directory, server_name, kwds)
+        _handle_job_config_file(config_directory, server_name, test_data_dir or os.path.abspath("."), kwds)
         _handle_job_metrics(config_directory, kwds)
         _handle_refgenie_config(config_directory, galaxy_root, kwds)
         file_path = kwds.get("file_path") or config_join("files")
@@ -1289,7 +1290,7 @@ def _build_env_for_galaxy(properties, template_args):
     return env
 
 
-def _handle_job_config_file(config_directory, server_name, kwds):
+def _handle_job_config_file(config_directory, server_name, test_data_dir, kwds):
     job_config_file = kwds.get("job_config_file", None)
     if not job_config_file:
         template_str = JOB_CONFIG_LOCAL
@@ -1312,6 +1313,7 @@ def _handle_job_config_file(config_directory, server_name, kwds):
                 "docker_sudo_cmd": str(kwds.get("docker_sudo_cmd", docker_util.DEFAULT_SUDO_COMMAND)),
                 "docker_cmd": str(kwds.get("docker_cmd", docker_util.DEFAULT_DOCKER_COMMAND)),
                 "docker_host_param": docker_host_param,
+                "docker_volumes": f"$defaults,{test_data_dir}:ro",
             }
         )
         write_file(job_config_file, conf_contents)
