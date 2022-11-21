@@ -1214,7 +1214,7 @@ def _install_galaxy_via_git(ctx, galaxy_root, env, kwds):
     command = git.command_clone(ctx, gx_repo, galaxy_root, branch=branch)
     exit_code = shell(command, env=env)
     if exit_code != 0:
-        raise Exception("Failed to glone Galaxy via git")
+        raise Exception("Failed to clone Galaxy via git")
     _install_with_command(ctx, galaxy_root, env, kwds)
 
 
