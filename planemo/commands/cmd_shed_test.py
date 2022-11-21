@@ -17,6 +17,7 @@ from planemo.runnable_resolve import install_args_list_to_runnables
 @click.command("shed_test")
 @options.shed_read_options()
 @options.galaxy_target_options()
+@options.galaxy_config_options()
 @options.test_options()
 @click.option(
     "--skip_dependencies", is_flag=True, help="Do not install shed dependencies as part of repository installation."
@@ -29,8 +30,6 @@ def cli(ctx, paths, **kwds):
     specified shed, find published artifacts (tools and dependencies)
     corresponding to command-line arguments and ``.shed.yml`` file(s),
     install these artifacts, and run the tool tests for these commands.
-
-    This command requires the target to be version 15.07 or newer.
     """
     install_args_list = kwds["install_args_list"] = shed.install_arg_lists(ctx, paths, **kwds)
     runnables = install_args_list_to_runnables(ctx, install_args_list, kwds)
