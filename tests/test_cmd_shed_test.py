@@ -20,7 +20,7 @@ class CmdShedTestTestCase(CliTestCase):
                 "--name",
                 "collection_element_identifiers",
                 "--shed_target",
-                "https://toolshed.g2.bx.psu.edu/",
+                "toolshed",
             )
             self._check_exit_code(test_command, exit_code=0)
 
