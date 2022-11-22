@@ -1,5 +1,5 @@
 allure-python-commons
-bioblend>=0.17.0
+bioblend>=1.0.0
 click!=8.0.2
 cwltool>=1.0.20191225192155
 ephemeris>=0.10.3
