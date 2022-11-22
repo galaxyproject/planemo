@@ -164,7 +164,7 @@ def galaxy_python_version():
         "--galaxy_python_version",
         use_global_config=True,
         default=None,
-        type=click.Choice(["3", "3.7", "3.8", "3.9"]),
+        type=click.Choice(["3", "3.7", "3.8", "3.9", "3.10", "3.11"]),
         help="Python version to start Galaxy under",
     )
 
