@@ -241,10 +241,14 @@ def install_arg_lists(ctx, paths, **kwds):
         # Can only provide a single tool shed artifact to test
         name = kwds["name"]
         owner = kwds["owner"]
-        tool_shed_url = kwds["shed_target"]
         changeset_revision = shed_context.tsi.repositories.get_ordered_installable_revisions(owner=owner, name=name)[-1]
         install_args_list.append(
-            {"name": name, "owner": owner, "tool_shed_url": tool_shed_url, "changeset_revision": changeset_revision}
+            {
+                "name": name,
+                "owner": owner,
+                "tool_shed_url": shed_context.tsi.base_url,
+                "changeset_revision": changeset_revision,
+            }
         )
 
     return install_args_list
