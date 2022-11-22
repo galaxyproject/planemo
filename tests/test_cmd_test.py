@@ -68,9 +68,16 @@ class CmdTestTestCase(CliTestCase):
             test_artifact = os.path.join(TEST_DATA_DIR, BOWTIE2_DATA_MANAGER_TEST_PATH)
             test_command = self._test_command("--test_output_json", json_out.name)
             test_command = self.append_profile_argument_if_needed(test_command)
+            # data manager script is symlinked out of directory, will only work with `--docker_extra_volume`
+            # we'll also add a bunch more to test multi path handling
+            extra_volume = os.path.join(TEST_DATA_DIR, "data_manager")
             test_command += [
                 "--no_dependency_resolution",
                 "--biocontainers",
+                "--docker_extra_volume",
+                extra_volume,
+                "--docker_extra_volume",
+                extra_volume,
                 test_artifact,
             ]
             self._check_exit_code(test_command, exit_code=0)

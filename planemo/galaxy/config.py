@@ -202,7 +202,7 @@ def create_docker_volumes(paths: Iterable[str]) -> Iterable[DockerVolume]:
     """
     Creates string of the format "host_path:target_path:mode" and deduplicates overlapping mounts.
     """
-    docker_volumes = {}
+    docker_volumes: Dict[str, DockerVolume] = {}
     for path in paths:
         docker_volume = DockerVolume.from_str(path)
         if docker_volume.path in docker_volumes:
