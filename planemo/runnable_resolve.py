@@ -52,7 +52,7 @@ def install_args_list_to_runnables(ctx, install_args_list, kwds):
         response.raise_for_status()
         install_info = response.json()
         repository_metadata = install_info[1]
-        assert repository_metadata["model_class"] == "RepositoryMetadata"
+        assert repository_metadata and repository_metadata["model_class"] == "RepositoryMetadata", repository_metadata
         for tool in repository_metadata.get("valid_tools", []):
             runnable = for_runnable_identifier(ctx, tool["guid"], kwds)
             runnables.append(runnable)

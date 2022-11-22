@@ -233,9 +233,23 @@ def install_arg_lists(ctx, paths, **kwds):
         install_args_list.append(realized_repository.install_args(ctx, shed_context))
         return 0
 
-    exit_code = for_each_repository(ctx, process_repo, paths, **kwds)
-    if exit_code:
-        raise RuntimeError(PROBLEM_PROCESSING_REPOSITORY_MESSAGE)
+    if not kwds.get("name"):
+        exit_code = for_each_repository(ctx, process_repo, paths, **kwds)
+        if exit_code:
+            raise RuntimeError(PROBLEM_PROCESSING_REPOSITORY_MESSAGE)
+    else:
+        # Can only provide a single tool shed artifact to test
+        name = kwds["name"]
+        owner = kwds["owner"]
+        changeset_revision = shed_context.tsi.repositories.get_ordered_installable_revisions(owner=owner, name=name)[-1]
+        install_args_list.append(
+            {
+                "name": name,
+                "owner": owner,
+                "tool_shed_url": shed_context.tsi.base_url,
+                "changeset_revision": changeset_revision,
+            }
+        )
 
     return install_args_list
 

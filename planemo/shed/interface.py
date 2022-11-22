@@ -18,7 +18,7 @@ def find_repository(tsi, owner, name):
     """Find repository information for given owner and repository
     name.
     """
-    repos = tsi.repositories.get_repositories()
+    repos = tsi.repositories.get_repositories(owner=owner, name=name)
 
     def matches(r):
         return r["owner"] == owner and r["name"] == name
