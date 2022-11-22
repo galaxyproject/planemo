@@ -56,9 +56,6 @@ def _default_callback(
         assert option_source is not None
         assert result is not VALUE_UNSET
 
-        if resolve_path and result is not None:
-            result = os.path.abspath(result)
-
         planemo_ctx.set_option_source(param_name, option_source)
         return result
 

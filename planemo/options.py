@@ -463,7 +463,8 @@ def docker_extra_volume_option():
         type=arg_type,
         default=None,
         use_global_config=True,
-        help=("Extra path to mount if --engine docker."),
+        multiple=True,
+        help=("Extra path to mount if --engine docker or `--biocontainers` or `--docker`."),
     )
 
 
