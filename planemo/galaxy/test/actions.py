@@ -76,7 +76,7 @@ def handle_reports(ctx, structured_data, kwds):
     if structured_report_file:
         try:
             with open(structured_report_file, mode="w", encoding="utf-8") as f:
-                f.write(unicodify(json.dumps(structured_data)))
+                f.write(unicodify(json.dumps(structured_data, indent=4, sort_keys=True)))
         except Exception as e:
             exceptions.append(e)
 
