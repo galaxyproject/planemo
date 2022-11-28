@@ -292,8 +292,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
         # TODO: Allow this to real Docker volumes and allow multiple.
         extra_volumes = kwds.get("docker_extra_volume") or []
-        for extra_volume in extra_volumes:
-            volumes.append(extra_volume)
+        volumes.extend(extra_volumes)
         docker_volumes = create_docker_volumes(volumes)
         yield DockerGalaxyConfig(
             ctx,
