@@ -30,7 +30,7 @@
 | Skipped    | {{ state.skipped }} |
 
 
-{% set display_job_attributes = {'command_line': 'Command Line', 'exit_code': 'Exit Code', 'stderr': 'Standard Error', 'stdout': 'Standard Output'} %}
+{% set display_job_attributes = {'command_line': 'Command Line', 'exit_code': 'Exit Code', 'stderr': 'Standard Error', 'stdout': 'Standard Output', 'traceback': 'Traceback'} %}
 {% for status, desc in {'error': 'Errored', 'failure': 'Failed', 'success': 'Passed'}.items() if state[status]%}
 <details><summary>{{ desc }} {{ execution_type }}s</summary>
 {%   for test in raw_data.tests %}
