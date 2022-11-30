@@ -6,6 +6,26 @@ History
 .. to_doc
 
 ---------------------
+0.75.3 (2022-11-30)
+---------------------
+
+* Mount test data dir read-only in docker (thanks to `@mvdbeek`_). `Pull
+  Request 1327`_
+* Add traceback to report template (thanks to `@bernt-matthias`_). `Pull
+  Request 1332`_
+* Add indent and sort_keys to tool_test_json (thanks to `@simonbray`_). `Pull
+  Request 1330`_
+* Fix ``planemo shed_test`` (thanks to `@mvdbeek`_). `Pull Request 1329`_
+* Add h5py dependency, required for comparing h5 files (thanks to
+  `@mvdbeek`_). `Pull Request 1326`_
+* Update GitHub action versions (thanks to `@nsoranzo`_). `Pull Request 1322`_
+* Fix "glone" typo in error message (thanks to `@bernt-matthias`_). `Pull
+  Request 1325`_
+* Type annotation for input staging-related code (thanks to `@nsoranzo`_).
+  `Pull Request 1320`_
+* Add creator dockstore (thanks to `@lldelisle`_). `Pull Request 1314`_
+
+---------------------
 0.75.2 (2022-11-02)
 ---------------------
 
@@ -1898,6 +1918,15 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1327: https://github.com/galaxyproject/planemo/pull/1327
+.. _Pull Request 1332: https://github.com/galaxyproject/planemo/pull/1332
+.. _Pull Request 1330: https://github.com/galaxyproject/planemo/pull/1330
+.. _Pull Request 1329: https://github.com/galaxyproject/planemo/pull/1329
+.. _Pull Request 1326: https://github.com/galaxyproject/planemo/pull/1326
+.. _Pull Request 1322: https://github.com/galaxyproject/planemo/pull/1322
+.. _Pull Request 1325: https://github.com/galaxyproject/planemo/pull/1325
+.. _Pull Request 1320: https://github.com/galaxyproject/planemo/pull/1320
+.. _Pull Request 1314: https://github.com/galaxyproject/planemo/pull/1314
 .. _Pull Request 1313: https://github.com/galaxyproject/planemo/pull/1313
 .. _Pull Request 1312: https://github.com/galaxyproject/planemo/pull/1312
 .. _Pull Request 1310: https://github.com/galaxyproject/planemo/pull/1310

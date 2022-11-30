@@ -23,7 +23,7 @@ Planemo command for running tools and jobs.
 
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
-      --galaxy_python_version [3|3.7|3.8|3.9]
+      --galaxy_python_version [3|3.7|3.8|3.9|3.10|3.11]
                                       Python version to start Galaxy under
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be
@@ -183,7 +183,8 @@ Planemo command for running tools and jobs.
                                       flavor used if engine type is specified as
                                       ``docker-galaxy``. Defaults to
                                       quay.io/bgruening/galaxy.
-      --docker_extra_volume PATH      Extra path to mount if --engine docker.
+      --docker_extra_volume PATH      Extra path to mount if --engine docker or
+                                      `--biocontainers` or `--docker`.
       --ignore_dependency_problems    When installing shed repositories for
                                       workflows, ignore dependency issues. These
                                       likely indicate a problem but in some cases

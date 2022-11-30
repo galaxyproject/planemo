@@ -19,8 +19,6 @@ specified shed, find published artifacts (tools and dependencies)
 corresponding to command-line arguments and ``.shed.yml`` file(s),
 install these artifacts, and run the tool tests for these commands.
 
-This command requires the target to be version 15.07 or newer.
-
 **Options**::
 
 
@@ -48,7 +46,7 @@ This command requires the target to be version 15.07 or newer.
                                       mappings defined ~/.planemo.yml.
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
-      --galaxy_python_version [3|3.7|3.8|3.9]
+      --galaxy_python_version [3|3.7|3.8|3.9|3.10|3.11]
                                       Python version to start Galaxy under
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be
@@ -97,6 +95,79 @@ This command requires the target to be version 15.07 or newer.
       --tool_data_path DIRECTORY      Directory where data used by tools is located.
                                       Required if tests are run in docker and should
                                       make use of external reference data.
+      --test_data DIRECTORY           test-data directory to for specified tool(s).
+      --tool_data_table PATH          tool_data_table_conf.xml file to for specified
+                                      tool(s).
+      --dependency_resolvers_config_file FILE
+                                      Dependency resolver configuration for Galaxy
+                                      to target.
+      --brew_dependency_resolution    Configure Galaxy to use plain brew dependency
+                                      resolution.
+      --shed_dependency_resolution    Configure Galaxy to use brewed Tool Shed
+                                      dependency resolution.
+      --no_dependency_resolution      Configure Galaxy with no dependency resolvers.
+      --conda_prefix DIRECTORY        Conda prefix to use for conda dependency
+                                      commands.
+      --conda_exec FILE               Location of conda executable.
+      --conda_channels, --conda_ensure_channels TEXT
+                                      Ensure conda is configured with specified
+                                      comma separated list of channels.
+      --conda_use_local               Use locally built packages while building
+                                      Conda environments.
+      --conda_dependency_resolution   Configure Galaxy to use only conda for
+                                      dependency resolution.
+      --conda_auto_install / --no_conda_auto_install
+                                      Conda dependency resolution for Galaxy will
+                                      attempt to install requested but missing
+                                      packages.
+      --conda_auto_init / --no_conda_auto_init
+                                      Conda dependency resolution for Galaxy will
+                                      auto install conda itself using miniconda if
+                                      not availabe on conda_prefix.
+      --simultaneous_uploads / --no_simultaneous_uploads
+                                      When uploading files to Galaxy for tool or
+                                      workflow tests or runs, upload multiple files
+                                      simultaneously without waiting for the
+                                      previous file upload to complete.
+      --check_uploads_ok / --no_check_uploads_ok
+                                      When uploading files to Galaxy for tool or
+                                      workflow tests or runs, check that the history
+                                      is in an 'ok' state before beginning tool or
+                                      workflow execution.
+      --profile TEXT                  Name of profile (created with the
+                                      profile_create command) to use with this
+                                      command.
+      --postgres                      Use postgres database type.
+      --database_type [postgres|postgres_docker|sqlite|auto]
+                                      Type of database to use for profile - 'auto',
+                                      'sqlite', 'postgres', and 'postgres_docker'
+                                      are available options. Use postgres to use an
+                                      existing postgres server you user can access
+                                      without a password via the psql command. Use
+                                      postgres_docker to have Planemo manage a
+                                      docker container running postgres. Data with
+                                      postgres_docker is not yet persisted past when
+                                      you restart the docker container launched by
+                                      Planemo so be careful with this option.
+      --postgres_psql_path TEXT       Name or or path to postgres client binary
+                                      (psql).
+      --postgres_database_user TEXT   Postgres username for managed development
+                                      databases.
+      --postgres_database_host TEXT   Postgres host name for managed development
+                                      databases.
+      --postgres_database_port TEXT   Postgres port for managed development
+                                      databases.
+      --file_path DIRECTORY           Location for files created by Galaxy (e.g.
+                                      database/files).
+      --database_connection TEXT      Database connection string to use for Galaxy.
+      --shed_tool_conf TEXT           Location of shed tools conf file for Galaxy.
+      --shed_tool_path TEXT           Location of shed tools directory for Galaxy.
+      --galaxy_single_user / --no_galaxy_single_user
+                                      By default Planemo will configure Galaxy to
+                                      run in single-user mode where there is just
+                                      one user and this user is automatically logged
+                                      it. Use --no_galaxy_single_user to prevent
+                                      Galaxy from running this way.
       --update_test_data              Update test-data directory with job outputs
                                       (normally written to directory
                                       --job_output_files if specified.)

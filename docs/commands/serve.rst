@@ -39,7 +39,7 @@ Galaxy instance.
 
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
-      --galaxy_python_version [3|3.7|3.8|3.9]
+      --galaxy_python_version [3|3.7|3.8|3.9|3.10|3.11]
                                       Python version to start Galaxy under
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be
@@ -104,7 +104,8 @@ Galaxy instance.
                                       flavor used if engine type is specified as
                                       ``docker-galaxy``. Defaults to
                                       quay.io/bgruening/galaxy.
-      --docker_extra_volume PATH      Extra path to mount if --engine docker.
+      --docker_extra_volume PATH      Extra path to mount if --engine docker or
+                                      `--biocontainers` or `--docker`.
       --test_data DIRECTORY           test-data directory to for specified tool(s).
       --tool_data_table PATH          tool_data_table_conf.xml file to for specified
                                       tool(s).
