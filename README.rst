@@ -18,10 +18,6 @@ including tools, workflows, and training materials.
 .. image:: https://github.com/galaxyproject/planemo/workflows/Python%20CI/badge.svg
    :target: https://github.com/galaxyproject/planemo/actions?query=workflow%3A%22Python+CI%22
 
-.. image:: https://travis-ci.org/galaxyproject/planemo.png?branch=master
-   :target: https://travis-ci.org/galaxyproject/planemo
-   :alt: Build Status
-
 * Free software: MIT License
 * Documentation: https://planemo.readthedocs.io.
 * Code: https://github.com/galaxyproject/planemo
