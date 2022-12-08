@@ -11,6 +11,7 @@ import shlex
 import shutil
 import threading
 import time
+from pathlib import Path
 from string import Template
 from tempfile import (
     mkdtemp,
@@ -232,6 +233,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         shed_tool_conf = "config/shed_tool_conf.xml"
         all_tool_paths = _all_tool_paths(runnables, galaxy_root, kwds.get("extra_tools"))
 
+        # TODO MB LCA?
         tool_directories = set()  # Things to mount...
         for tool_path in all_tool_paths:
             directory = os.path.dirname(os.path.normpath(tool_path))
@@ -1144,6 +1146,26 @@ def _find_test_data(runnables, **kwds):
     return None
 
 
+def _find_lcadir(paths):
+    """
+    the function
+    - traverses the directory below the given runnables
+    - resolves all symlinked files and directories
+    returns the lowest common ancesor containing all data
+    (contained and symlinked)
+    """
+
+    lca_dirs = []
+    for path in paths:
+        path = Path(path).parent.absolute()
+        lca_dirs.append(path)
+        for root, dirs, files in os.walk(path):
+            subdirs = {Path(os.path.join(root, x)).resolve() for x in dirs}
+            filedirs = {Path(os.path.join(root, x)).resolve().parent for x in files}
+            lca_dirs[-1] = os.path.commonpath({lca_dirs[-1]} | subdirs | filedirs)
+    return os.path.commonpath(lca_dirs)
+
+
 def _find_tool_data_table(runnables, test_data_dir, **kwds) -> Optional[List[str]]:
     tool_data_search_path = "."
     runnables = [r for r in runnables if r.has_tools]
@@ -1326,7 +1348,10 @@ def _handle_job_config_file(
         if test_data_dir:
             volumes.append(f"{test_data_dir}:ro")
 
-        docker_volumes_str = "$defaults"
+        # append the LCA of the tool paths (and the targets of all contained symlinks) to the ro mounts
+        volumes.append(f"{_find_lcadir(all_tool_paths)}:ro")
+
+        docker_volumes_str = f"$defaults"
         if volumes:
             # exclude tool directories, these are mounted :ro by $defaults
             all_tool_dirs = {os.path.dirname(tool_path) for tool_path in all_tool_paths}
