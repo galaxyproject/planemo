@@ -26,7 +26,7 @@ from typing import (
     TYPE_CHECKING,
 )
 
-from galaxy.containers.docker_model import DockerVolume
+from galaxy.tool_util.deps.container_volums import DockerVolume
 from galaxy.tool_util.deps import docker_util
 from galaxy.util.commands import argv_to_str
 from packaging.version import parse as parse_version
