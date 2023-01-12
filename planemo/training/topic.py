@@ -53,23 +53,6 @@ ENTRYPOINT ["/data_libarary_download.sh"]
 """
 
 
-INTRO_SLIDES_FILE_TEMPLATE = """---
-layout: introduction_slides
-logo: "GTN"
-
-title: {{ title }}
-type: {{ type }}
-contributors:
-- contributor
----
-
-### How to fill the slide decks?
-
-Please follow our
-[tutorial to learn how to fill the slides]({{ '{{' }} site.baseurl {{ '}}' }}/topics/contributing/tutorials/create-new-tutorial-slides/slides.html)
-"""
-
-
 class Topic:
     """Class to describe a training topic."""
 
@@ -149,7 +132,6 @@ class Topic:
         self.metadata_fp = os.path.join(self.dir, "metadata.yaml")
         self.docker_folder = os.path.join(self.dir, "docker")
         self.dockerfile_fp = os.path.join(self.docker_folder, "Dockerfile")
-        self.slides_folder = os.path.join(self.dir, "slides")
 
     # TESTS
     def exists(self):
@@ -193,17 +175,6 @@ class Topic:
         with open(self.dockerfile_fp, "w") as dockerfile:
             dockerfile.write(
                 templates.render(DOCKER_FILE_TEMPLATE, **{"topic_name": self.name, "topic_title": self.title})
-            )
-
-        # create empty introduction slides
-        self.slides_folder = os.path.join(self.dir, "slides")
-        os.makedirs(self.slides_folder)
-        self.intro_slide_fp = os.path.join(self.slides_folder, "introduction.html")
-        with open(self.intro_slide_fp, "w") as intro_slide_f:
-            intro_slide_f.write(
-                templates.render(
-                    INTRO_SLIDES_FILE_TEMPLATE, **{"title": "Introduction to %s" % self.title, "type": "introduction"}
-                )
             )
 
         # add a symbolic link to the metadata.yaml

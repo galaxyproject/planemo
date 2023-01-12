@@ -96,7 +96,6 @@ def test_topic_set_paths():
     assert new_name in topic.metadata_fp
     assert new_name in topic.docker_folder
     assert new_name in topic.dockerfile_fp
-    assert new_name in topic.slides_folder
 
 
 def test_topic_exists():
@@ -134,10 +133,6 @@ def test_topic_create_topic_structure():
     with open(topic.dockerfile_fp) as fh:
         assert topic_name in fh.read()
     with open(topic.dockerfile_fp) as fh:
-        assert topic_title in fh.read()
-    # check introduction slide
-    assert os.path.exists(topic.intro_slide_fp)
-    with open(topic.intro_slide_fp) as fh:
         assert topic_title in fh.read()
     # check in metadata directory
     assert os.path.exists(os.path.join("metadata", "%s.yaml" % topic_name))
