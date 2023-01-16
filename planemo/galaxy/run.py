@@ -70,9 +70,10 @@ def setup_venv(ctx, kwds: Dict[str, Any], config: Optional["LocalGalaxyConfig"] 
 
 
 def locate_galaxy_virtualenv(ctx, kwds: Dict[str, Any], config: Optional["LocalGalaxyConfig"] = None):
+    virtual_env_locs = []
     if os.environ.get("GALAXY_VIRTUAL_ENV"):
         venv_command = ""
-        virtual_env_dir = os.environ["GALAXY_VIRTUAL_ENV"]
+        virtual_env_locs.append(os.environ["GALAXY_VIRTUAL_ENV"])
     elif not kwds.get("no_cache_galaxy", False):
         workspace = ctx.workspace
         galaxy_branch = kwds.get("galaxy_branch") or "master"
@@ -82,13 +83,13 @@ def locate_galaxy_virtualenv(ctx, kwds: Dict[str, Any], config: Optional["LocalG
         if galaxy_branch != "master":
             shared_venv_path = f"{shared_venv_path}_{galaxy_branch}"
 
-        virtual_env_dir = shared_venv_path
+        virtual_env_locs += [".venv", shared_venv_path]
         venv_command = CACHED_VIRTUAL_ENV_COMMAND % shlex.quote(shared_venv_path)
     else:
-        virtual_env_dir = ".venv"
+        virtual_env_locs.append(".venv")
         venv_command = UNCACHED_VIRTUAL_ENV_COMMAND
     if config:
-        config._virtual_env_dir = virtual_env_dir
+        config._virtual_env_locs = virtual_env_locs
     return shell_join(
         venv_command,
         "export GALAXY_VIRTUAL_ENV",
