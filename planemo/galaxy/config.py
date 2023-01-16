@@ -1023,14 +1023,17 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
             kwds,
         )
         self.galaxy_root = galaxy_root
-        self._virtual_env_dir = None
+        self._virtual_env_locs = []
 
     @property
     def virtual_env_dir(self):
-        virtual_env = self._virtual_env_dir or ".venv"
-        if not os.path.isabs(virtual_env):
-            virtual_env = os.path.join(self.galaxy_root, virtual_env)
-        return virtual_env
+        loc = None
+        for loc in self._virtual_env_locs:
+            if not os.path.isabs(loc):
+                loc = os.path.join(self.galaxy_root, loc)
+            if os.path.isdir(loc):
+                break
+        return loc
 
     @property
     def gravity_state_dir(self):
@@ -1046,7 +1049,11 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
                 with open(self.pid_file) as f:
                     print(f"pid_file contents are [{f.read()}]")
         if self.env.get("GRAVITY_STATE_DIR"):
-            stop_gravity(virtual_env=self.virtual_env_dir, gravity_state_dir=self.gravity_state_dir, env=self.env)
+            stop_gravity(
+                virtual_env=self.virtual_env_dir or os.path.join(self.galaxy_root, ".venv"),
+                gravity_state_dir=self.gravity_state_dir,
+                env=self.env,
+            )
         kill_pid_file(self.pid_file)
 
     def startup_command(self, ctx, **kwds):
