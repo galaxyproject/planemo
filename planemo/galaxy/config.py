@@ -1052,7 +1052,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
             stop_gravity(
                 virtual_env=self.virtual_env_dir or os.path.join(self.galaxy_root, ".venv"),
                 gravity_state_dir=self.gravity_state_dir,
-                env=self.env
+                env=self.env,
             )
         kill_pid_file(self.pid_file)
 
