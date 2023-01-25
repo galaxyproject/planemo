@@ -97,7 +97,9 @@ def generate_dockstore_yaml(directory: str, publish: bool = True) -> str:
                             # Check the orcid is valid
                             if (
                                 requests.get(
-                                    f"https://orcid.org/{orcid[0]}", headers={"Accept": "application/xml"}
+                                    f"https://orcid.org/{orcid[0]}",
+                                    headers={"Accept": "application/xml"},
+                                    allow_redirects=False,
                                 ).status_code
                                 == 200
                             ):
