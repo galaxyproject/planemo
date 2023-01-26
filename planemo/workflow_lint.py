@@ -92,12 +92,14 @@ def generate_dockstore_yaml(directory: str, publish: bool = True) -> str:
                         continue
                     if field == "identifier":
                         # Check if it is an orcid:
-                        orcid = re.findall(r"(?:\d{4}-){3}\d{3}", value)
+                        orcid = re.findall(r"(?:\d{4}-){3}\d{4}", value)
                         if len(orcid) > 0:
                             # Check the orcid is valid
                             if (
                                 requests.get(
-                                    f"https://orcid.org/{orcid[0]}", headers={"Accept": "application/xml"}
+                                    f"https://orcid.org/{orcid[0]}",
+                                    headers={"Accept": "application/xml"},
+                                    allow_redirects=False,
                                 ).status_code
                                 == 200
                             ):
