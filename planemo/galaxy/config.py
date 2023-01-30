@@ -436,6 +436,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
                 test_data_dir=test_data_dir,  # TODO: make gx respect this
                 shed_data_manager_config_file=shed_data_manager_config_file,
                 outputs_to_working_directory="True",  # this makes Galaxy's files dir RO for dockerized testing
+                object_store_store_by="uuid",
             )
         )
         _handle_container_resolution(ctx, kwds, properties)
