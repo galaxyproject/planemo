@@ -75,7 +75,7 @@ class BaseEngine(Engine):
         test_cases = [t for tl in map(cases, runnables) for t in tl]
         test_results = self._collect_test_results(test_cases, test_timeout)
         tests = []
-        for (test_case, run_response) in test_results:
+        for test_case, run_response in test_results:
             test_case_data = test_case.structured_test_data(run_response)
             tests.append(test_case_data)
         test_data = {

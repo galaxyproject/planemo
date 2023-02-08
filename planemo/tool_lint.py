@@ -36,7 +36,7 @@ def lint_tools_on_path(ctx, paths, lint_args, **kwds):
     assert_tools = kwds.get("assert_tools", True)
     recursive = kwds.get("recursive", False)
     exit_codes = []
-    for (tool_path, tool_xml) in yield_tool_sources_on_paths(ctx, paths, recursive):
+    for tool_path, tool_xml in yield_tool_sources_on_paths(ctx, paths, recursive):
         if handle_tool_load_error(tool_path, tool_xml):
             exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
             continue

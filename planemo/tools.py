@@ -56,7 +56,7 @@ def yield_tool_sources_on_paths(
 ) -> Iterator[Tuple[str, Union[ToolSource, object]]]:
     """Walk paths and yield ToolSource objects discovered."""
     for path in paths:
-        for (tool_path, tool_source) in yield_tool_sources(ctx, path, recursive, yield_load_errors):
+        for tool_path, tool_source in yield_tool_sources(ctx, path, recursive, yield_load_errors):
             if exclude_deprecated and "deprecated" in tool_path:
                 continue
             yield (tool_path, tool_source)
@@ -71,7 +71,7 @@ def yield_tool_sources(
         recursive,
         register_load_errors=True,
     )
-    for (tool_path, tool_source) in tools:
+    for tool_path, tool_source in tools:
         if is_tool_load_error(tool_source):
             if yield_load_errors:
                 yield (tool_path, tool_source)

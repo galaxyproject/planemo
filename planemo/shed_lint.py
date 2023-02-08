@@ -121,7 +121,7 @@ def lint_repository(ctx, realized_repository, **kwds):
 
 def lint_repository_tools(ctx, realized_repository, lint_ctx, lint_args):
     path = realized_repository.path
-    for (tool_path, tool_source) in yield_tool_sources(ctx, path, recursive=True):
+    for tool_path, tool_source in yield_tool_sources(ctx, path, recursive=True):
         original_path = tool_path.replace(path, realized_repository.real_path)
         info("+Linting tool %s" % original_path)
         if handle_tool_load_error(tool_path, tool_source):

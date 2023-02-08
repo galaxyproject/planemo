@@ -27,7 +27,7 @@ def cli(ctx, paths, **kwds):
     operations over for continuous integration operations.
     """
     tool_paths = []
-    for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, paths, recursive=True):
+    for tool_path, tool_source in yield_tool_sources_on_paths(ctx, paths, recursive=True):
         if is_tool_load_error(tool_source):
             continue
         tool_paths.append(tool_path)

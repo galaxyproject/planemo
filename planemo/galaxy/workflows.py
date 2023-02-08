@@ -164,7 +164,7 @@ def describe_outputs(runnable, gi=None):
         workflow = _raw_dict(runnable.path)
 
     outputs = []
-    for (order_index, step) in workflow["steps"].items():
+    for order_index, step in workflow["steps"].items():
         optional = False
         if not step.get("tool_id"):
             # One of the parameter types ... need eliminate this guesswork on the Galaxy side
@@ -370,7 +370,6 @@ def _elements_to_test_def(
 
 
 def _job_inputs_template_from_invocation(invocation_id, galaxy_url, galaxy_api_key):
-
     user_gi = gi(url=galaxy_url, key=galaxy_api_key)
     invocation = user_gi.invocations.show_invocation(invocation_id)
     template = {}
