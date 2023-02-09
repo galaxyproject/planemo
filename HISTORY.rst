@@ -6,6 +6,23 @@ History
 .. to_doc
 
 ---------------------
+0.75.4 (2022-02-09)
+---------------------
+
+* Store datasets by UUID (thanks to `@bernt-matthias`_). `Pull Request 1347`_
+* Fix orcid regex for dockstore_init (thanks to `@lldelisle`_). `Pull Request
+  1348`_
+* Fix virtualenv dir bookkeeping (thanks to `@wm75`_). `Pull Request 1346`_
+* Deprecate introduction slides folder (thanks to `@hexylena`_). `Pull Request
+  1344`_
+* Remove note recommending installing dev versions from `planemo run` tutorial
+  (thanks to `@simonbray`_). `Pull Request 1338`_
+* Rename configuration option removed in tox 4.0 (thanks to `@nsoranzo`_).
+  `Pull Request 1337`_
+* Remove travis-ci.org badge from README.rst (thanks to `@SimonWaldherr`_).
+  `Pull Request 1334`_
+
+---------------------
 0.75.3 (2022-11-30)
 ---------------------
 
@@ -1918,6 +1935,13 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1347: https://github.com/galaxyproject/planemo/pull/1347
+.. _Pull Request 1348: https://github.com/galaxyproject/planemo/pull/1348
+.. _Pull Request 1346: https://github.com/galaxyproject/planemo/pull/1346
+.. _Pull Request 1344: https://github.com/galaxyproject/planemo/pull/1344
+.. _Pull Request 1338: https://github.com/galaxyproject/planemo/pull/1338
+.. _Pull Request 1337: https://github.com/galaxyproject/planemo/pull/1337
+.. _Pull Request 1334: https://github.com/galaxyproject/planemo/pull/1334
 .. _Pull Request 1327: https://github.com/galaxyproject/planemo/pull/1327
 .. _Pull Request 1332: https://github.com/galaxyproject/planemo/pull/1332
 .. _Pull Request 1330: https://github.com/galaxyproject/planemo/pull/1330
@@ -2787,3 +2811,5 @@ History
 .. _@profgiuseppe: https://github.com/profgiuseppe
 .. _@adRn-s: https://github.com/adRn-s
 .. _@lldelisle: https://github.com/lldelisle
+.. _@wm75: https://github.com/wm75
+.. _@SimonWaldherr: https://github.com/SimonWaldherr
