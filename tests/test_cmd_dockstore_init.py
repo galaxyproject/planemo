@@ -17,6 +17,9 @@ class CmdDockstoreInitTestCase(CliTestCase):
     def test_init_publish_false(self):
         self.run_dockstore_init(False)
 
+    def test_init_with_creator(self):
+        self.run_dockstore_init_with_creator()
+
     def run_dockstore_init(self, publish: Optional[bool] = None):
         with self._isolate_with_test_data("wf_repos/from_format2/0_basic_native") as f:
             init_cmd = ["dockstore_init"]
