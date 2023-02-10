@@ -3,7 +3,7 @@ bioblend>=1.0.0
 click!=8.0.2
 cwltool>=1.0.20191225192155
 ephemeris>=0.10.3
-galaxy-tool-util>=21.1.1,<23.0
+galaxy-tool-util>=22.5.dev2,<23.0
 galaxy-util[template]>=22.1.0,<23.0
 glob2
 gxformat2>=0.14.0
