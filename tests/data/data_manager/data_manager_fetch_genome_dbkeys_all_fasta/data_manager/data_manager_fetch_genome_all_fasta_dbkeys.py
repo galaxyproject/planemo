@@ -373,7 +373,6 @@ def _stream_fasta_to_file(fasta_stream, target_directory, sequence_id, close_str
     fasta_base_filename = "%s.fa" % sequence_id
     fasta_filename = os.path.join(target_directory, fasta_base_filename)
     with open(fasta_filename, "wb+") as fasta_writer:
-
         if isinstance(fasta_stream, list) and len(fasta_stream) == 1:
             fasta_stream = fasta_stream[0]
 

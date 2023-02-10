@@ -414,7 +414,6 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             raise Exception("Unknown history content type encountered [%s]" % history_content_type)
 
     def collect_outputs(self, ctx, output_directory):
-
         outputs_dict = {}
         # TODO: rather than creating a directory just use
         # Galaxy paths if they are available in this

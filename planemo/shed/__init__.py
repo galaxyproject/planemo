@@ -963,7 +963,7 @@ class RepositoryDependencies:
     def __str__(self):
         contents = '<repositories description="%s">' % self.description
         line_template = '  <repository owner="%s" name="%s" />\n'
-        for (owner, name) in self.repo_pairs:
+        for owner, name in self.repo_pairs:
             contents += line_template % (owner, name)
         contents += "</repositories>"
         return contents
@@ -1021,7 +1021,7 @@ class RawRepositoryDirectory:
                 continue
             realized_file.realize_to(directory)
 
-        for (name, contents) in config.get("_files", {}).items():
+        for name, contents in config.get("_files", {}).items():
             path = os.path.join(directory, name)
             with open(path, "w") as f:
                 f.write(contents)
