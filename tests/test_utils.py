@@ -116,6 +116,12 @@ class CliTestCase(TestCase):
             yield f
 
     @contextlib.contextmanager
+    def _isolate_workflow(self, name):
+        with self._isolate() as f:
+            self._copy_workflow(name, f)
+            yield f
+
+    @contextlib.contextmanager
     def _isolate_with_test_data(self, relative_path):
         with self._isolate() as f:
             repo = os.path.join(TEST_DATA_DIR, relative_path)
@@ -125,6 +131,10 @@ class CliTestCase(TestCase):
     def _copy_repo(self, name, dest):
         repo = os.path.join(TEST_REPOS_DIR, name)
         self._copy_directory(repo, dest)
+
+    def _copy_worklfow(self, name, dest):
+        workflow = os.path.join(TEST_REPOS_DIR, name)
+        io.shell(["cp", workflow, dest])
 
     def _copy_directory(self, path, dest):
         io.shell(["cp", "-r", f"{path}/.", dest])
