@@ -99,7 +99,7 @@ def generate_dockstore_yaml(directory: str, publish: bool = True) -> str:
                                 requests.get(
                                     f"https://orcid.org/{orcid[0]}",
                                     headers={"Accept": "application/xml"},
-                                    allow_redirects=False,
+                                    allow_redirects=True,
                                 ).status_code
                                 == 200
                             ):
