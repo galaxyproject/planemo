@@ -6,6 +6,12 @@ History
 .. to_doc
 
 ---------------------
+0.75.5 (2022-02-10)
+---------------------
+* Bump galaxy packages to 22.05 (thanks to `@bernt-matthias`_). `Pull Request
+  1275`_
+
+---------------------
 0.75.4 (2022-02-09)
 ---------------------
 
@@ -1935,6 +1941,7 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1275: https://github.com/galaxyproject/planemo/pull/1275
 .. _Pull Request 1347: https://github.com/galaxyproject/planemo/pull/1347
 .. _Pull Request 1348: https://github.com/galaxyproject/planemo/pull/1348
 .. _Pull Request 1346: https://github.com/galaxyproject/planemo/pull/1346
