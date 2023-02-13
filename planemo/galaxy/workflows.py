@@ -7,6 +7,7 @@ from typing import (
     Callable,
     Dict,
     List,
+    TYPE_CHECKING,
 )
 from urllib.parse import urlparse
 
@@ -24,12 +25,21 @@ from gxformat2.normalize import (
     inputs_normalized,
     outputs_normalized,
 )
+from typing_extensions import NamedTuple
 
 from planemo.galaxy.api import gi
 from planemo.io import warn
 
+if TYPE_CHECKING:
+    from ephemeris.shed_tools import InstallRepoDict
+
 FAILED_REPOSITORIES_MESSAGE = "Failed to install one or more repositories."
 GALAXY_WORKFLOWS_PREFIX = "gxid://workflows/"
+
+
+class InstalledShedRepos(NamedTuple):
+    installed_repositories: List["InstallRepoDict"]
+    updated_repositories: List["InstallRepoDict"]
 
 
 def load_shed_repos(runnable):
