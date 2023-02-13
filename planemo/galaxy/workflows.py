@@ -88,16 +88,17 @@ def install_shed_repos(
             install_results.errored_repositories.extend(update_results.errored_repositories)
             updated_repos = update_results.installed_repositories
         else:
-            updated_repos = None
+            updated_repos = []
 
         if install_results.errored_repositories:
+            msg = f"{FAILED_REPOSITORIES_MESSAGE}: \n{yaml.safe_dump(install_results.errored_repositories)}"
             if ignore_dependency_problems:
-                warn(FAILED_REPOSITORIES_MESSAGE)
+                warn(msg)
             else:
-                raise Exception(FAILED_REPOSITORIES_MESSAGE)
-        return install_results.installed_repositories, updated_repos
+                raise Exception(msg)
+        return InstalledShedRepos(install_results.installed_repositories, updated_repos)
     else:
-        return None, None
+        return InstalledShedRepos([], [])
 
 
 def import_workflow(path, admin_gi, user_gi, from_path=False):
