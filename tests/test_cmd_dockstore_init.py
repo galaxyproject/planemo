@@ -41,7 +41,7 @@ class CmdDockstoreInitTestCase(CliTestCase):
             self._check_exit_code(workflow_lint_cmd)
 
     def run_dockstore_init_with_creator(self):
-        with self._isolate_workflow("wf_repos/autoupdate_tests/workflow_with_unexisting_version_of_tool.ga") as f:
+        with self._isolate_workflow("wf_repos/autoupdate_tests/workflow_with_unexisting_tool.ga") as f:
             init_cmd = ["dockstore_init"]
             self._check_exit_code(init_cmd)
             assert os.path.exists(".dockstore.yml")
@@ -50,7 +50,8 @@ class CmdDockstoreInitTestCase(CliTestCase):
             assert str(dockstore_config["version"]) == "1.2"
             assert "workflows" in dockstore_config
             assert len(dockstore_config["workflows"]) == 1
-            assert "authors" in dockstore_config["workflows"]
-            assert dockstore_config["workflows"]["authors"]["orcid"] == "0000-0002-1964-4960"
+            workflow = dockstore_config["workflows"][0]
+            assert "authors" in workflow
+            assert workflow["authors"][0]["orcid"] == "0000-0002-1964-4960"
             workflow_lint_cmd = ["workflow_lint", "--skip", "tool_ids", "--fail_level", "error", f]
             self._check_exit_code(workflow_lint_cmd)

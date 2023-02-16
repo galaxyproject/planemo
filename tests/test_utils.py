@@ -132,8 +132,8 @@ class CliTestCase(TestCase):
         repo = os.path.join(TEST_REPOS_DIR, name)
         self._copy_directory(repo, dest)
 
-    def _copy_worklfow(self, name, dest):
-        workflow = os.path.join(TEST_REPOS_DIR, name)
+    def _copy_workflow(self, name, dest):
+        workflow = os.path.join(TEST_DATA_DIR, name)
         io.shell(["cp", workflow, dest])
 
     def _copy_directory(self, path, dest):
