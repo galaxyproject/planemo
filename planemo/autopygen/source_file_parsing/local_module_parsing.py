@@ -31,7 +31,7 @@ class UnknownNamesRemoval(ast.NodeVisitor):
     # and list comprehension assignment
     def _reach_top(self, node: ast.Name) -> Tuple[ast.Call, ast.AST]:
         current = node
-        parent = current.parent
+        parent = current.parent  # type: ignore
 
         def _reach_add_argument():
             return (isinstance(parent, ast.Call)
@@ -47,7 +47,7 @@ class UnknownNamesRemoval(ast.NodeVisitor):
             current = parent
             if not hasattr(current, "parent"):
                 raise CouldNotFixNameError
-            parent = current.parent
+            parent = current.parent  # type: ignore
 
         return parent, current
 
@@ -62,21 +62,20 @@ class UnknownNamesRemoval(ast.NodeVisitor):
         # if top is assignment
         if isinstance(parent, ast.Assign):
             logging.warning(
-                f"Problem with assignment to {parent.targets[0].id}")
+                f"Problem with assignment to {parent.targets[0].id}")  # type: ignore
             parent.value = ast.List(elts=[not_found_const],
                                     ctx=ast.Load())
             return True
 
         # this name can be a part of normal args
         if current in parent.args:
-            idx = parent.args.index(current)
+            idx = parent.args.index(current)  # type: ignore
 
             parent.args[idx] = not_found_const
             return True
 
         # or a part of keyword args
-        current: ast.keyword
-        current.value = not_found_const
+        current.value = not_found_const  # type: ignore
         return True
 
     # we dont care about class defifnitions, they should only depend

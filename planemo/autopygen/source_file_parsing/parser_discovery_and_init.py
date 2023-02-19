@@ -7,7 +7,7 @@ import logging
 from typing import Tuple, Optional, Any, Set, List
 
 from .constants import STD_LIB_MODULE_NAMES
-from .decoy_parser import obtain_class_def
+from .decoy_parser import obtain_class_def, CustomParserUnavailableException
 from .parsing_exceptions import ArgParseImportNotFound, ArgParserNotUsed
 from .parsing_commons import Discovery
 
@@ -67,7 +67,7 @@ class ImportDiscovery(Discovery):
                     if name == ARGPARSE_MODULE_NAME and item.name == ARGUMENT_PARSER_CLASS_NAME:
                         self.argument_parser_alias = alias
 
-    def report_findings(self) -> Tuple[List[ast.AST], str, str, Set[str]]:
+    def report_findings(self) -> Tuple[List[ast.AST], Optional[str], Optional[str], Set[str]]:
         if self.argparse_module_alias is None and self.argument_parser_alias is None:
             raise ArgParseImportNotFound()
 
@@ -82,8 +82,8 @@ class SimpleParserDiscoveryAndReplacement(Discovery):
          by the one supplied through constructor
     """
 
-    def __init__(self, actions: List[ast.AST], argparse_alias: Optional[str],
-                 argument_parser_alias: Optional[str],
+    def __init__(self, actions: List[ast.AST], argparse_alias: str,
+                 argument_parser_alias: str,
                  custom_parser_def: ast.ClassDef):
         self.argument_parser_alias = argument_parser_alias
         self.argparse_module_alias = argparse_alias
@@ -108,7 +108,7 @@ class SimpleParserDiscoveryAndReplacement(Discovery):
         return (isinstance(node.value, ast.Call)
                 and isinstance(node.value.func, ast.Attribute)
                 and node.value.func.attr == ARGUMENT_PARSER_CLASS_NAME
-                and node.value.func.value.id == argparse_module_alias)
+                and node.value.func.value.id == argparse_module_alias)  # type: ignore
 
     def visit_Assign(self, node: ast.Assign):
         if self.argparse_found:
@@ -117,7 +117,7 @@ class SimpleParserDiscoveryAndReplacement(Discovery):
         if not self.is_simple_assignment(node):
             return
 
-        name = node.targets[0].id
+        name = node.targets[0].id  # type: ignore
         import_from = self.imported_using_from(node,
                                                self.argument_parser_alias)
         import_import = self.imported_using_import(node,
@@ -133,20 +133,20 @@ class SimpleParserDiscoveryAndReplacement(Discovery):
     def _replace_parser(self, node: ast.Assign, imported_using_from: bool):
         # FIXME TODO currently, passing variables to custom argument parser
         # is not supported
-        if node.value.args or node.value.keywords:
+        if node.value.args or node.value.keywords:  # type: ignore
             logging.warning("Arguments that are normally passed to argument"
                             " parser will be ignored. Their use is"
                             " not currently supported")
-        node.value.args = []
-        node.value.keywords = []
+        node.value.args = []  # type: ignore
+        node.value.keywords = []  # type: ignore
         if imported_using_from:
             self.custom_parser_def.bases[0] = \
                 ast.Name(self.argument_parser_alias, ast.Load())
-            node.value.func.id = self.custom_parser_def.name
+            node.value.func.id = self.custom_parser_def.name  # type: ignore
             return
 
         assert type(node.value is ast.Call)
-        node.value.func = ast.Name(self.custom_parser_def.name, ast.Load())
+        node.value.func = ast.Name(self.custom_parser_def.name, ast.Load())  # type: ignore
 
     def report_findings(self) -> Tuple:
         if self.main_parser_name is None:
@@ -205,8 +205,8 @@ class ArgumentCreationDiscovery(Discovery):
 
         self.generic_visit(node)
 
-    def report_findings(self) -> List[ast.AST]:
-        return self.actions
+    def report_findings(self) -> Tuple[List[ast.AST]]:
+        return self.actions,
 
 
 def get_parser_init_and_actions(source: ast.Module) -> Tuple[List[ast.AST], str, Set[str]]:
@@ -225,8 +225,12 @@ def get_parser_init_and_actions(source: ast.Module) -> Tuple[List[ast.AST], str,
     section names
     """
 
-    actions = []
+    actions: List[ast.AST] = []
     custom_parser_class_def = obtain_class_def()
+
+    if custom_parser_class_def is None:
+        raise CustomParserUnavailableException()
+
     import_discovery = ImportDiscovery(actions)
     actions, argparse_module_alias, argparse_class_alias, known_names = \
         import_discovery.visit_and_report(source)
@@ -242,6 +246,6 @@ def get_parser_init_and_actions(source: ast.Module) -> Tuple[List[ast.AST], str,
     actions, known_names = group_discovery.visit_and_report(source)
 
     argument_creation = ArgumentCreationDiscovery(actions, parser_name)
-    actions = argument_creation.visit_and_report(source)
+    actions, = argument_creation.visit_and_report(source)
 
     return actions, parser_name, known_names

@@ -82,7 +82,7 @@ def test_argument_creation_discovery():
     actions, known_names = groups.visit_and_report(module)
 
     argument_creation = ArgumentCreationDiscovery(actions, parser_name)
-    actions = argument_creation.visit_and_report(module)
+    actions, = argument_creation.visit_and_report(module)
 
     assert_equal(len(actions), 4)
     assert_equal(type(actions[3]), ast.Expr)

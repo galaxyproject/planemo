@@ -1,6 +1,6 @@
 import ast
 import os
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Dict, Set
 
 from planemo.autopygen.argument_parser_conversion import command_from_decoy, xml_from_decoy, \
     obtain_parser
@@ -181,10 +181,14 @@ def extract_xml(func_name: str) -> Tuple[str, str, Optional[ParamInfo]]:
     module = _prepare_test_module(func_name)
     parser = obtain_parser(module)
 
-    data_inputs = dict()
-    reserved_names = set()
-    name_map = dict()
-    section_map = dict()
+    if parser is None:
+        return "", "", None
+
+    data_inputs: Dict[str, str] = dict()
+    reserved_names: Set[str] = set()
+    name_map: Dict[str, str] = dict()
+    section_map: Dict[str, str] = dict()
+
     auto_inputs, auto_outputs, version_command_param = \
         xml_from_decoy(parser, data_inputs, reserved_names, name_map, section_map, depth=0)
 
@@ -195,10 +199,13 @@ def extract_command(func_name: str) -> str:
     module = _prepare_test_module(func_name)
     parser = obtain_parser(module)
 
-    data_inputs = dict()
-    reserved_names = set()
-    name_map = dict()
-    section_map = dict()
+    data_inputs: Dict[str, str] = dict()
+    reserved_names: Set[str] = set()
+    name_map: Dict[str, str] = dict()
+    section_map: Dict[str, str] = dict()
+
+    if parser is None:
+        return ""
 
     return command_from_decoy(parser, data_inputs, reserved_names, name_map, section_map, skip_default_namespace=True)
 

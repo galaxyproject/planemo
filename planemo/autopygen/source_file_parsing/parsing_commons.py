@@ -3,7 +3,13 @@ Module containing the parent class of Dicovery classes
 """
 import ast
 import abc
-from typing import List, Tuple
+from typing import List, Tuple, Any
+
+
+class CustomAST(ast.AST):
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+        self.parent = None
 
 
 class CustomVisitor(ast.NodeVisitor, abc.ABC):
@@ -21,7 +27,7 @@ class Discovery(CustomVisitor, abc.ABC):
         self.actions = actions
 
 
-def add_parents(tree: ast.AST):
+def add_parents(tree):
     for node in ast.walk(tree):
         for child in ast.iter_child_nodes(node):
             child.parent = node

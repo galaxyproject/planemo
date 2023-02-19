@@ -18,7 +18,7 @@ class UnknownNamesDiscovery(CustomVisitor):
 
     def __init__(self, known_names: Set[str]):
         self.known_names = known_names
-        self.unknown_names = set()
+        self.unknown_names: Set[str] = set()
 
     def visit_Name(self, node: ast.Name) -> Any:
         if node.id not in self.known_names:
@@ -48,9 +48,9 @@ class UnknownNameInit(CustomVisitor):
 
     def __init__(self, unknown_names: Set[str]):
         self.unknown_names = unknown_names
-        self.class_definitions = []
-        self.variable_definitions = []
-        self.new_known_names = set()
+        self.class_definitions: List[ast.ClassDef] = []
+        self.variable_definitions: List[ast.Assign] = []
+        self.new_known_names: Set[str] = set()
 
     # assignment of variables
     def visit_Assign(self, node: ast.Assign) -> Any:

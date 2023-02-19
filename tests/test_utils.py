@@ -271,7 +271,7 @@ def create_test_context():
     return context
 
 
-def assert_equal(a: object, b: object) -> object:
+def assert_equal(a: object, b: object) -> None:
     """Assert two things are equal."""
     assert a == b, f"{a} != {b}"
 

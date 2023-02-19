@@ -128,10 +128,10 @@ def transform_param_info(info: ParamInfo, namespace: str, depth: int):
 # otherwise the command generator will not work correctly
 def create_body_expression(info: ParamInfo, variable: str, depth: int, indentation: int = 3) -> str:
     stripped_arg = info.argument.lstrip("-")
-    indentation = SPACE * depth * indentation
+    str_indent = SPACE * depth * indentation
     if stripped_arg == info.argument:
-        return f"{indentation}{variable}"
-    return f"{indentation}{info.argument} {variable}"
+        return f"{str_indent}{variable}"
+    return f"{str_indent}{info.argument} {variable}"
 
 
 class ParamTypeNotSupported(Exception):

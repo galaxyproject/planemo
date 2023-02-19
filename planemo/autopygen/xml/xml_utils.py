@@ -6,6 +6,9 @@ SPACE = " "
 
 
 def options(param_info: ParamInfo, depth: int):
+    if param_info.choices is None:
+        return param(param_info, depth, "")
+
     opts = []
     for option in param_info.choices:
         opts.append(

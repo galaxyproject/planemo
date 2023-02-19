@@ -9,7 +9,7 @@ import math
 import re
 import uuid
 
-from typing import Optional, Set, List, Dict, Tuple, Union
+from typing import Optional, Set, List, Dict, Tuple, Union, Any
 from argparse import ArgumentParser
 
 from planemo.autopygen.commands.command_utils import transform_param_info, create_element_with_body
@@ -85,7 +85,7 @@ def obtain_parser(tree: ast.Module) -> Optional[DecoyParser]:
 
     ast.fix_missing_locations(result_module)
     compiled_module = compile(result_module, filename="<parser>", mode="exec")
-    namespace = {}
+    namespace: Dict[Any, Any] = {}
     try:
         exec(compiled_module, namespace)
     except Exception as e:
@@ -110,7 +110,7 @@ def generate_xml_from_section(section: DecoyParser.Section,
                               reserved_names: Set[str],
                               name_map: Dict[str, str],
                               section_map: Dict[str, str],
-                              dont_wrap_in_section: bool = False) -> Tuple[str, str, ParamInfo]:
+                              dont_wrap_in_section: bool = False) -> Tuple[str, str, Optional[ParamInfo]]:
     sub_params = []
     sub_outputs = []
     version_command = None
@@ -133,7 +133,8 @@ def generate_xml_from_section(section: DecoyParser.Section,
         sub_params.append(_action_to_param(param_info, depth + 1))
 
         if param_info.param_type.is_output:
-            sub_outputs.append(sub_outputs)
+            logging.warning("Outputs are not supported yet")
+            continue
 
     sub_sections = []
     # and once again we decrease the depth of subsections
@@ -420,7 +421,7 @@ def _determine_nargs(nargs: Union[str, int, None]) -> Union[float, int]:
     return int(nargs)
 
 
-def _determine_custom_attributes(param_type: ParamTypeFlags, type_: str, nargs: int) -> Dict[str, str]:
+def _determine_custom_attributes(param_type: ParamTypeFlags, type_: str, nargs: Union[float, int]) -> Dict[str, str]:
     flags: Dict[str, str] = dict()
 
     if type_ == "data" and nargs > 1:

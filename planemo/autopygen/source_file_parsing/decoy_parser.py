@@ -118,3 +118,7 @@ def obtain_class_def() -> Optional[ast.ClassDef]:
     return next((item for item in module.body if
                  type(item) is ast.ClassDef and item.name == "DecoyParser"),
                 None)
+
+
+class CustomParserUnavailableException(Exception):
+    pass
