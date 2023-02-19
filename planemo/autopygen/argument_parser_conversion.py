@@ -12,7 +12,7 @@ import uuid
 from typing import Optional, Set, List, Dict, Tuple, Union
 from argparse import ArgumentParser
 
-from planemo.autopygen.commands.command_utils import transform_param_info, create_element_with_body, create_flag
+from planemo.autopygen.commands.command_utils import transform_param_info, create_element_with_body
 from planemo.autopygen.param_info import ParamInfo, ParamTypeFlags
 from planemo.autopygen.source_file_parsing.constants import LINTER_MAGIC
 from planemo.autopygen.source_file_parsing.decoy_parser import DecoyParser
@@ -308,7 +308,7 @@ def command_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
                                          f'str({subparsers_chosen_parser}) == "{parser.name}"',
                                          body=[command_from_decoy(parser, data_inputs,
                                                                   reserved_names,
-                                                                  name_map, section_map, depth+1,
+                                                                  name_map, section_map, depth + 1,
                                                                   subparsers_variable_name,
                                                                   skip_default_namespace)],
                                          comment=f"Conditional option {parser.name}",

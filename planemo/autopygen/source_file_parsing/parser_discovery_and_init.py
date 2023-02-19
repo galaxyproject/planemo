@@ -244,6 +244,4 @@ def get_parser_init_and_actions(source: ast.Module) -> Tuple[List[ast.AST], str,
     argument_creation = ArgumentCreationDiscovery(actions, parser_name)
     actions = argument_creation.visit_and_report(source)
 
-
-
     return actions, parser_name, known_names
