@@ -6,6 +6,14 @@ History
 .. to_doc
 
 ---------------------
+0.75.6 (2022-02-22)
+---------------------
+* Allow running autoupdate against external server (thanks to `@mvdbeek`_).
+  `Pull Request 1265`_
+* Fix extraction of orcid identifiers for .dockstore.yml (thanks to
+  `@lldelisle`_). `Pull Request 1350`_
+
+---------------------
 0.75.5 (2022-02-10)
 ---------------------
 * Bump galaxy packages to 22.05 (thanks to `@bernt-matthias`_). `Pull Request
@@ -1941,6 +1949,8 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1265: https://github.com/galaxyproject/planemo/pull/1265
+.. _Pull Request 1350: https://github.com/galaxyproject/planemo/pull/1350
 .. _Pull Request 1275: https://github.com/galaxyproject/planemo/pull/1275
 .. _Pull Request 1347: https://github.com/galaxyproject/planemo/pull/1347
 .. _Pull Request 1348: https://github.com/galaxyproject/planemo/pull/1348
