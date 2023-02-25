@@ -1,23 +1,21 @@
-from typing import Optional
-
+from typing import Optional, List
+from lxml import etree
 from planemo.autopygen.param_info import ParamInfo
 
-SPACE = " "
 
-
-def options(param_info: ParamInfo, depth: int):
+def options(param_info: ParamInfo) -> etree._Element:
     if param_info.choices is None:
-        return param(param_info, depth, "")
+        return param(param_info)
 
     opts = []
     for option in param_info.choices:
         opts.append(
-            formatted_xml_elem("option", {"value": option}, depth + 1, option.capitalize(), inline=True))
+            formatted_xml_elem("option", {"value": option}, text=option.capitalize()))
 
-    return param(param_info, depth, "".join(opts).rstrip())
+    return param(param_info, body=opts)
 
 
-def repeat(param_info: ParamInfo, depth: int):
+def repeat(param_info: ParamInfo) -> etree._Element:
     attributes = {
         "name": param_info.name + "_repeat",
         "title": param_info.name + "_repeat",
@@ -32,14 +30,14 @@ def repeat(param_info: ParamInfo, depth: int):
             attributes.pop(name)
 
     if param_info.param_type.is_selection:
-        inner = options(param_info, depth + 1)
+        inner = options(param_info)
     else:
-        inner = param(param_info, depth + 1)
+        inner = param(param_info)
 
-    return formatted_xml_elem("repeat", attributes, depth, inner)
+    return formatted_xml_elem("repeat", attributes, body=[inner])
 
 
-def param(param_info: ParamInfo, depth: int, body: Optional[str] = None):
+def param(param_info: ParamInfo, body: Optional[List[etree._Element]] = None):
     attributes = {
         "argument": param_info.argument,
         "type": param_info.type,
@@ -61,31 +59,14 @@ def param(param_info: ParamInfo, depth: int, body: Optional[str] = None):
     if param_info.format is None:
         attributes.pop("format")
 
-    return formatted_xml_elem("param", attributes, depth, body)
+    return formatted_xml_elem("param", attributes, body=body)
 
 
-def formatted_xml_elem(name, attributes, depth, body: Optional[str] = None, indent: int = 4,
-                       body_indented: bool = True, inline: bool = False):
-    left_indent: str = depth * indent * SPACE
-    right_indent: str = left_indent
-    if body:
-        if not body_indented:
-            body = f"{left_indent}{body}"
+def formatted_xml_elem(name, attributes, text: Optional[str] = None,
+                       body: Optional[List[etree._Element]] = None) -> etree._Element:
+    element = etree.Element(name, attributes)
+    element.text = text
+    if body is not None:
+        element.extend(body)
 
-        body_newlines = "\n"
-        if inline:
-            body_newlines = ""
-            right_indent = ""
-
-        return f'{left_indent}<{name} {attributes_to_str(attributes)}>' \
-               f'{body_newlines}{body.rstrip()}{body_newlines}' \
-               f'{right_indent}</{name}>\n'
-
-    return f'{left_indent}<{name} {attributes_to_str(attributes)} />\n'
-
-
-def attributes_to_str(attributes):
-    result = []
-    for key, value in attributes.items():
-        result.append(f'{key}="{value}"')
-    return " ".join(result)
+    return element
