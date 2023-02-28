@@ -55,6 +55,14 @@ Galaxy is known to have issues when running with a Conda Python so this approach
 should be considered experimental for now. If you have problems with it or hacks to
 make it work better - please report them.
 
+
+.. note::
+    The options ``--docker`` and ``--biocontainers`` for ``planemo serve`` and ``planemo test`` require that 
+    docker is installed on the system and that it can be run without root privileges. 
+    See `Docker installation <https://docs.docker.com/engine/install>`__ and 
+    `run Docker without root privileges <https://docs.docker.com/engine/install/linux-postinstall>`__ for further instructions.
+
+
 .. _pip: https://pip.pypa.io/
 .. _Conda: http://conda.pydata.org/docs/
 .. _pyenv: https://github.com/pyenv/pyenv
