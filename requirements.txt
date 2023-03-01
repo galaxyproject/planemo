@@ -1,4 +1,4 @@
-allure-python-commons<=2.13.0
+allure-python-commons<2.13.0
 bioblend>=1.0.0
 click!=8.0.2
 cwltool>=1.0.20191225192155
