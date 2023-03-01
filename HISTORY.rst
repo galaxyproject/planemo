@@ -6,6 +6,12 @@ History
 .. to_doc
 
 ---------------------
+0.75.7 (2022-03-01)
+---------------------
+* Drop call to ``escape_non_unicode_symbols`` (thanks to `@nsoranzo`_). `Pull
+  Request 1357`_
+
+---------------------
 0.75.6 (2022-02-22)
 ---------------------
 * Allow running autoupdate against external server (thanks to `@mvdbeek`_).
@@ -1949,6 +1955,7 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1357: https://github.com/galaxyproject/planemo/pull/1357
 .. _Pull Request 1265: https://github.com/galaxyproject/planemo/pull/1265
 .. _Pull Request 1350: https://github.com/galaxyproject/planemo/pull/1350
 .. _Pull Request 1275: https://github.com/galaxyproject/planemo/pull/1275
