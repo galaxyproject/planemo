@@ -23,16 +23,33 @@ def test_store():
     assert_equal(inputs, '<param argument="--test" type="text" optional="true" label="test"/>\n')
 
 
+def test_store_with_default():
+    inputs, _, _ = extract_xml("store_with_default")
+    assert_equal(inputs, '<param argument="--test" type="text" value="foo" optional="true" label="test"/>\n')
+
+
+STORE_WITH_DEFAULT_CHOICES = ('<param argument="--test" type="select" optional="true" label="test">\n'
+                              '    <option value="foo">Foo</option>\n'
+                              '    <option value="bar" selected="true">Bar</option>\n'
+                              '    <option value="goo">Goo</option>\n'
+                              '</param>\n')
+
+
+def test_store_with_default_choices():
+    inputs, _, _ = extract_xml("store_with_default_choices")
+    assert_equal(inputs, STORE_WITH_DEFAULT_CHOICES)
+
+
 def test_store_const():
     inputs, _, _ = extract_xml("store_const")
     assert_equal(inputs, '<param argument="--test" type="boolean" truevalue="--test" falsevalue="" checked="false" '
-                         'optional="true" label="test"/>\n')
+                         'label="test"/>\n')
 
 
 def test_store_true():
     inputs, _, _ = extract_xml("store_true")
     assert_equal(inputs, '<param argument="--test" type="boolean" truevalue="--test" falsevalue="" checked="false" '
-                         'optional="true" label="test"/>\n')
+                         'label="test"/>\n')
 
 
 def test_append():
@@ -48,7 +65,7 @@ def test_append_const():
     inputs, _, _ = extract_xml("append_const")
     expected = ('<repeat name="test_repeat" title="test_repeat">\n'
                 '    <param argument="--test" type="boolean" truevalue="--test" falsevalue="" checked="false" '
-                'optional="true" label="test"/>\n'
+                'label="test"/>\n'
                 '</repeat>\n')
     assert_equal(inputs, expected)
 
@@ -57,7 +74,7 @@ def test_count():
     inputs, _, _ = extract_xml("count")
     expected = ('<repeat name="test_repeat" title="test_repeat">\n'
                 '    <param argument="--test" type="boolean" truevalue="--test" falsevalue="" checked="false" '
-                'optional="true" label="test"/>\n'
+                'label="test"/>\n'
                 '</repeat>\n')
     assert_equal(inputs, expected)
 
@@ -79,33 +96,37 @@ def test_extend():
 
 
 POSITIONAL_COMMAND = (
-    '#if $test:\n'
-    '    $test\n'
-    '#end if\n'
+    "#if $test:\n"
+    "    $test\n"
+    "#end if\n"
 )
 
-NON_POSITIONAL_NON_FLAG = (
-    '#if $test:\n'
-    '    --test $test\n'
-    '#end if\n'
+NON_POSITIONAL_NON_FLAG_TEXT = (
+    "#if $test:\n"
+    "    --test '$test'\n"
+    "#end if\n"
 )
 
 FLAG_COMMAND = (
-    '$test\n'
+    "$test\n"
 )
 
-REPEAT_COMMAND = (
-    '#for $item in $test:\n'
-    '    #if $item:\n'
-    '        --test $item\n'
-    '    #end if\n'
-    '#end for\n'
+FLAG_COMMAND_TEXT = (
+    "$test\n"
+)
+
+REPEAT_COMMAND_TEXT_DATA = (
+    "#for $item in $test:\n"
+    "    #if $item:\n"
+    "        --test '$item'\n"
+    "    #end if\n"
+    "#end for\n"
 )
 
 REPEAT_FLAG_COMMAND = (
-    '#for $item in $test:\n'
-    '    $item\n'
-    '#end for\n'
+    "#for $item in $test:\n"
+    "    $item\n"
+    "#end for\n"
 )
 
 
@@ -116,16 +137,21 @@ def test_no_action_positional_command():
 
 def test_no_action_command():
     command = extract_command("none")
-    assert_equal(command, NON_POSITIONAL_NON_FLAG)
+    assert_equal(command, NON_POSITIONAL_NON_FLAG_TEXT)
 
 
 def test_store_command():
     command = extract_command("store")
-    assert_equal(command, NON_POSITIONAL_NON_FLAG)
+    assert_equal(command, NON_POSITIONAL_NON_FLAG_TEXT)
 
 
 def test_store_const_command():
     command = extract_command("store_const")
+    assert_equal(command, FLAG_COMMAND)
+
+
+def test_store_const_command_text_data():
+    command = extract_command("store_const_text")
     assert_equal(command, FLAG_COMMAND)
 
 
@@ -136,7 +162,7 @@ def test_store_true_command():
 
 def test_append_command():
     command = extract_command("append")
-    assert_equal(command, REPEAT_COMMAND)
+    assert_equal(command, REPEAT_COMMAND_TEXT_DATA)
 
 
 def test_append_const_command():
@@ -158,7 +184,7 @@ def test_version_command():
 
 def test_extend_command():
     command = extract_command("extend")
-    assert_equal(command, REPEAT_COMMAND)
+    assert_equal(command, REPEAT_COMMAND_TEXT_DATA)
 
 
 def extract_xml(func_name: str) -> Tuple[str, str, Optional[ParamInfo]]:

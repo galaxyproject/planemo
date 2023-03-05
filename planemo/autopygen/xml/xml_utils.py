@@ -1,6 +1,6 @@
 from typing import Optional, List
 from lxml import etree
-from planemo.autopygen.param_info import ParamInfo
+from planemo.autopygen.param_info import ParamInfo, ParamDataType
 
 
 def options(param_info: ParamInfo) -> etree._Element:
@@ -9,8 +9,15 @@ def options(param_info: ParamInfo) -> etree._Element:
 
     opts = []
     for option in param_info.choices:
+        attributes = {
+            "value": option
+        }
+
+        if param_info.default_val and param_info.default_val == option:
+            attributes["selected"] = "true"
+
         opts.append(
-            formatted_xml_elem("option", {"value": option}, text=option.capitalize()))
+            formatted_xml_elem("option", attributes, text=option.capitalize()))
 
     return param(param_info, body=opts)
 
@@ -38,18 +45,23 @@ def repeat(param_info: ParamInfo) -> etree._Element:
 
 
 def param(param_info: ParamInfo, body: Optional[List[etree._Element]] = None):
-    attributes = {
-        "argument": param_info.argument,
-        "type": param_info.type,
-        "format": param_info.format,
-    }
+    attributes = {"argument": param_info.argument, "type": str(param_info.type), "format": param_info.format}
+
+    if not param_info.param_type.is_flag \
+            and not param_info.param_type.is_selection \
+            and not param_info.param_type.is_repeat \
+            and not param_info.param_type.is_extend \
+            and param_info.default_val:
+        attributes["value"] = param_info.default_val
 
     if param_info.param_type.is_flag:
         attributes["truevalue"] = param_info.argument
         attributes["falsevalue"] = ""
         attributes["checked"] = "false"
 
-    attributes["optional"] = str(param_info.optional).lower()
+    if param_info.type != ParamDataType.BOOLEAN:
+        attributes["optional"] = str(param_info.optional).lower()
+
     attributes["label"] = param_info.label
 
     if param_info.help is not None:

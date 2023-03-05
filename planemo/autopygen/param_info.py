@@ -1,5 +1,8 @@
 import dataclasses
+import enum
 from typing import Any, List, Union, Optional, Dict
+
+from planemo.autopygen.source_file_parsing.constants import WARNING_STRING
 
 
 @dataclasses.dataclass
@@ -22,6 +25,27 @@ class ParamTypeFlags:
     is_output: bool = False
 
 
+class ParamDataType(enum.Enum):
+    SELECT = "select",
+    BOOLEAN = "boolean",
+    INTEGER = "integer",
+    FLOAT = "float"
+    DATA = "data",
+    TEXT = "text",
+    UNDEFINED = f"{WARNING_STRING} argument uses complex type it's type cannot be determined"
+
+    def __str__(self):
+        # For some reason, python is storing these strings as enums, even though there is no reason for it
+        if isinstance(self.value, str):
+            return str(self.value)
+
+        if isinstance(self.value, tuple):
+            val, = self.value
+            return str(val)
+
+        raise RuntimeError("Python interpreter is doing something weird with enum values")
+
+
 @dataclasses.dataclass
 class ParamInfo:
     """
@@ -29,7 +53,7 @@ class ParamInfo:
     """
     is_positional: bool
     param_type: ParamTypeFlags
-    type: str
+    type: ParamDataType
     name: str
     argument: str
     label: str

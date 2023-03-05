@@ -11,7 +11,7 @@ Elements can be nested
 """
 from typing import List
 
-from planemo.autopygen.param_info import ParamInfo
+from planemo.autopygen.param_info import ParamInfo, ParamDataType
 
 SPACE = " "
 DEFAULT_INDENT = 4
@@ -154,7 +154,7 @@ def create_body_expression(info: ParamInfo, variable: str, depth: int, indentati
     str_indent = SPACE * depth * indentation
 
     wrapped_variable = variable
-    if info.type == "data" or info.type == "text":
+    if info.type == ParamDataType.DATA or info.type == ParamDataType.TEXT:
         wrapped_variable = f"'{wrapped_variable}'"
 
     if stripped_arg == info.argument:

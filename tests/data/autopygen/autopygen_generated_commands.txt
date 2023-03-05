@@ -11,12 +11,12 @@
 $s
 
 #if $foo:
-    --foo $foo
+    --foo '$foo'
 #end if
 
 #for $item in $bar:
     #if $item:
-        --bar $item
+        --bar '$item'
     #end if
 #end for
 
@@ -26,13 +26,13 @@ $false
 
 #for $item in $append:
     #if $item:
-        --append $item
+        --append '$item'
     #end if
 #end for
 
 #for $item in $nargs2:
     #if $item:
-        --nargs2 $item
+        --nargs2 '$item'
     #end if
 #end for
 

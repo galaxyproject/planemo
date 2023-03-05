@@ -13,8 +13,7 @@ from typing import Optional, Set, List, Dict, Tuple, Union, Any
 from argparse import ArgumentParser
 
 from planemo.autopygen.commands.command_utils import transform_param_info, create_element_with_body
-from planemo.autopygen.param_info import ParamInfo, ParamTypeFlags
-from planemo.autopygen.source_file_parsing.constants import LINTER_MAGIC
+from planemo.autopygen.param_info import ParamInfo, ParamTypeFlags, ParamDataType
 from planemo.autopygen.source_file_parsing.decoy_parser import DecoyParser
 from planemo.autopygen.source_file_parsing.local_module_parsing import handle_local_module_names
 from planemo.autopygen.source_file_parsing.parser_discovery_and_init import \
@@ -394,25 +393,23 @@ def _determine_param_type(action: DecoyParser.Action, nargs: Union[int, float]):
 
 
 def _determine_type(action: DecoyParser.Action, data_inputs: Dict[str, str],
-                    name: str, type_, param_type_flags: ParamTypeFlags):
+                    name: str, type_, param_type_flags: ParamTypeFlags) -> ParamDataType:
     if action.kwargs.get("choices", []):
-        return "select"
+        return ParamDataType.SELECT
 
     if type_ is None or type_ == bool or param_type_flags.is_flag:
-        type_ = "boolean"
+        return ParamDataType.BOOLEAN
     elif type_ == int:
-        type_ = "integer"
+        return ParamDataType.INTEGER
     elif type_ == float:
-        type_ = "float"
+        return ParamDataType.FLOAT
     elif type_ == str:
         if name in data_inputs:
-            type_ = "data"
+            return ParamDataType.DATA
         else:
-            type_ = "text"
-    else:
-        type_ = f"{LINTER_MAGIC} argument uses complex type," \
-                f" it's type cannot be determined"
-    return type_
+            return ParamDataType.TEXT
+
+    return ParamDataType.UNDEFINED
 
 
 def _determine_nargs(nargs: Union[str, int, None]) -> Union[float, int]:
@@ -425,10 +422,10 @@ def _determine_nargs(nargs: Union[str, int, None]) -> Union[float, int]:
     return int(nargs)
 
 
-def _determine_custom_attributes(param_type: ParamTypeFlags, type_: str, nargs: Union[float, int]) -> Dict[str, str]:
+def _determine_custom_attributes(param_type: ParamTypeFlags, type_: ParamDataType, nargs: Union[float, int]) -> Dict[str, str]:
     flags: Dict[str, str] = dict()
 
-    if type_ == "data" and nargs > 1:
+    if type_ == ParamDataType.DATA and nargs > 1:
         flags["multiple"] = "true"
 
     if param_type.is_repeat and 1 < nargs < math.inf:

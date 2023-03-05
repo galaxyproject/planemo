@@ -17,12 +17,12 @@
     $subparsers0.s
 
     #if $subparsers0.foo:
-        --foo $subparsers0.foo
+        --foo '$subparsers0.foo'
     #end if
 
     #for $item in $subparsers0.bar:
         #if $item:
-            --bar $item
+            --bar '$item'
         #end if
     #end for
 
@@ -34,13 +34,13 @@
 
     #for $item in $subparsers0.append:
         #if $item:
-            --append $item
+            --append '$item'
         #end if
     #end for
 
     #for $item in $subparsers0.nargs2:
         #if $item:
-            --nargs2 $item
+            --nargs2 '$item'
         #end if
     #end for
 
