@@ -152,9 +152,14 @@ def transform_param_info(info: ParamInfo, namespace: str, depth: int):
 def create_body_expression(info: ParamInfo, variable: str, depth: int, indentation: int = DEFAULT_INDENT) -> str:
     stripped_arg = info.argument.lstrip("-")
     str_indent = SPACE * depth * indentation
+
+    wrapped_variable = variable
+    if info.type == "data" or info.type == "text":
+        wrapped_variable = f"'{wrapped_variable}'"
+
     if stripped_arg == info.argument:
         return f"{str_indent}{variable}"
-    return f"{str_indent}{info.argument} {variable}"
+    return f"{str_indent}{info.argument} {wrapped_variable}"
 
 
 class ParamTypeNotSupported(Exception):

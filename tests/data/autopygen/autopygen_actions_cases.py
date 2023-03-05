@@ -22,6 +22,12 @@ def store_const():
     parser.add_argument("--test", action="store_const", const=42)
 
 
+def store_const_text():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--test", action="store_const", const="asd")
+
+
 def store_true():
     import argparse
     parser = argparse.ArgumentParser()
