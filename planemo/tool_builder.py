@@ -92,8 +92,11 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}+galaxy
     <help><![CDATA[
 {%- if help %}
         {{ help }}
-{%- else %}
-        TODO: Fill in help.
+{%- if auto_help %}
+        {{ auto_help }}
+{%- endif %}
+{%- if not (help or auto_help) %}
+    TODO: Fill in help.
 {%- endif %}
     ]]></help>
 {%- if macros %}
@@ -394,6 +397,7 @@ class CommandIO:
 
         auto_inputs = None
         auto_commands = None
+        auto_help = None
         version_command = None
         parser_path = kwds.get("autopygen", None)
         if parser_path is not None:
@@ -418,6 +422,8 @@ class CommandIO:
 
                 if version_command_param:
                     version_command = f"[TODO exec name] {version_command_param.argument}"
+
+                auto_help = parser.format_help()
 
         # handle raw outputs (from_work_dir ones) as well as named_outputs
         outputs = kwds.pop("output", [])
@@ -446,6 +452,7 @@ class CommandIO:
         self.command = command
         self.auto_inputs = auto_inputs
         self.auto_commands = auto_commands
+        self.auto_help = auto_help
         self.version_command = version_command
         self.cheetah_template = cheetah_template
 
