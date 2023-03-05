@@ -16,6 +16,18 @@ def store():
     parser.add_argument("--test", action="store")
 
 
+def store_with_default():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--test", action="store", default="foo")
+
+
+def store_with_default_choices():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--test", action="store", choices=["foo", "bar", "goo"], default="bar")
+
+
 def store_const():
     import argparse
     parser = argparse.ArgumentParser()

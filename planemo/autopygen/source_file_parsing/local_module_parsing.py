@@ -6,7 +6,7 @@ import ast
 from typing import List, Tuple, Any, Set
 import logging
 
-from planemo.autopygen.source_file_parsing.constants import LINTER_MAGIC
+from planemo.autopygen.source_file_parsing.constants import WARNING_STRING
 from planemo.autopygen.source_file_parsing.parsing_commons import add_parents
 from planemo.autopygen.source_file_parsing.parsing_exceptions import CouldNotFixNameError
 
@@ -57,7 +57,7 @@ class UnknownNamesRemoval(ast.NodeVisitor):
         except CouldNotFixNameError:
             return False
 
-        not_found_const = ast.Constant(value=f"{LINTER_MAGIC} Name {name}"
+        not_found_const = ast.Constant(value=f"{WARNING_STRING} Name {name}"
                                              f" could not be loaded")
         # if top is assignment
         if isinstance(parent, ast.Assign):
