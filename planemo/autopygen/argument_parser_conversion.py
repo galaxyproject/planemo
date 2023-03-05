@@ -107,6 +107,10 @@ def _action_to_param(param_info: ParamInfo):
     return param(param_info)
 
 
+def transform_section_name(section_name: str) -> str:
+    return re.sub("[/\\-* ()]", "_", section_name).lower()
+
+
 def generate_xml_from_section(section: DecoyParser.Section,
                               data_inputs: Dict[str, str],
                               reserved_names: Set[str],
@@ -151,7 +155,7 @@ def generate_xml_from_section(section: DecoyParser.Section,
 
         sub_outputs.extend(outputs)
 
-    transformed_name = re.sub("[/\\-* ()]", "_", section_map.get(section.name, section.name)).lower()
+    transformed_name = transform_section_name(section_map.get(section.name, section.name))
 
     result_inputs = [*sub_params, *sub_sections]
 
@@ -184,7 +188,7 @@ def _command_recursion(section: DecoyParser.Section,
                                    depth)
 
     for subsection in section.subsections:
-        sec_name = re.sub("[/\\-* ()]", "_", section_map.get(subsection.name, subsection.name)).lower()
+        sec_name = transform_section_name(section_map.get(subsection.name, subsection.name))
         separator = "." if namespace else ""
         child_namespace = f"{namespace}{separator}{sec_name}"
 
@@ -291,7 +295,7 @@ def command_from_decoy(parser: DecoyParser, data_inputs: Dict[str, str],
         if starting_namespace:
             sec_name += "."
 
-        sec_name += re.sub("[/\\-* ()]", "_", section_map[parser.default_section.name]).lower()
+        sec_name += transform_section_name(section_map[parser.default_section.name])
 
     result = ["\n".join(_command_recursion(parser.default_section, data_inputs,
                                            reserved_names,
