@@ -79,49 +79,33 @@ def test_extend():
 
 
 POSITIONAL_COMMAND = (
-    '## test definition\n'
     '#if $test:\n'
-    '   $test\n'
+    '    $test\n'
     '#end if\n'
-    '## end test definition\n'
 )
 
 NON_POSITIONAL_NON_FLAG = (
-    '## test definition\n'
     '#if $test:\n'
-    '   --test $test\n'
+    '    --test $test\n'
     '#end if\n'
-    '## end test definition\n'
 )
 
 FLAG_COMMAND = (
-    '## FLAG test definition\n'
     '$test\n'
-    '## end FLAG test definition\n'
 )
 
 REPEAT_COMMAND = (
-    '## test definition\n'
     '#for $item in $test:\n'
-    '   ## test definition\n'
-    '   #if $item:\n'
-    '      --test $item\n'
-    '   #end if\n'
-    '   ## end test definition\n'
-    '\n'
+    '    #if $item:\n'
+    '        --test $item\n'
+    '    #end if\n'
     '#end for\n'
-    '## end test definition\n'
 )
 
 REPEAT_FLAG_COMMAND = (
-    '## test definition\n'
     '#for $item in $test:\n'
-    '   ## FLAG test definition\n'
-    '   $item\n'
-    '   ## end FLAG test definition\n'
-    '\n'
+    '    $item\n'
     '#end for\n'
-    '## end test definition\n'
 )
 
 

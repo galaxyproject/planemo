@@ -27,7 +27,7 @@ from planemo.autopygen.source_file_parsing.unknown_names_discovery import initia
 from planemo.autopygen.xml.xml_utils import repeat, options, param, formatted_xml_elem
 from lxml import etree
 
-DEFAULT_INDENT = 4
+DEFAULT_XML_INDENT = 4
 
 
 def obtain_and_convert_parser(path: str) -> Optional[DecoyParser]:
@@ -237,7 +237,7 @@ def _sub_parsers_conditionals(parsers: List[DecoyParser], index: int,
 
 def xml_to_string(nodes: List[etree._Element], indent: int):
     def set_indent_and_convert(node: etree._Element) -> str:
-        etree.indent(node, " " * DEFAULT_INDENT)
+        etree.indent(node, " " * DEFAULT_XML_INDENT)
         return etree.tostring(node, encoding="unicode", pretty_print=True)
 
     unified_str = "".join(map(set_indent_and_convert, nodes))

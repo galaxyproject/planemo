@@ -1,90 +1,50 @@
 
-## Selected subparser
 #if $subparsers0.subparser_selector:
-   $subparsers0.subparser_selector
+    $subparsers0.subparser_selector
 #end if
-## end Selected subparser
 
-## Conditional option foo
 #if str($subparsers0.subparser_selector) == "foo":
-   ## keyword definition
-   #if $subparsers0.keyword:
-      $subparsers0.keyword
-   #end if
-   ## end keyword definition
+    #if $subparsers0.keyword:
+        $subparsers0.keyword
+    #end if
 
-   ## integers definition
-   #for $item in $subparsers0.integers:
-      ## integers definition
-      #if $item:
-         $item
-      #end if
-      ## end integers definition
+    #for $item in $subparsers0.integers:
+        #if $item:
+            $item
+        #end if
+    #end for
 
-   #end for
-   ## end integers definition
+    $subparsers0.s
 
-   ## FLAG s definition
-   $subparsers0.s
-   ## end FLAG s definition
+    #if $subparsers0.foo:
+        --foo $subparsers0.foo
+    #end if
 
-   ## foo definition
-   #if $subparsers0.foo:
-      --foo $subparsers0.foo
-   #end if
-   ## end foo definition
+    #for $item in $subparsers0.bar:
+        #if $item:
+            --bar $item
+        #end if
+    #end for
 
-   ## bar definition
-   #for $item in $subparsers0.bar:
-      ## bar definition
-      #if $item:
-         --bar $item
-      #end if
-      ## end bar definition
-
-   #end for
-   ## end bar definition
-
-   ## FLAG true definition
-   $subparsers0.true
-   ## end FLAG true definition
-
+    $subparsers0.true
 #end if
-## end Conditional option foo
 
-## Conditional option bar
 #if str($subparsers0.subparser_selector) == "bar":
-   ## FLAG false definition
-   $subparsers0.false
-   ## end FLAG false definition
+    $subparsers0.false
 
-   ## append definition
-   #for $item in $subparsers0.append:
-      ## append definition
-      #if $item:
-         --append $item
-      #end if
-      ## end append definition
+    #for $item in $subparsers0.append:
+        #if $item:
+            --append $item
+        #end if
+    #end for
 
-   #end for
-   ## end append definition
+    #for $item in $subparsers0.nargs2:
+        #if $item:
+            --nargs2 $item
+        #end if
+    #end for
 
-   ## nargs2 definition
-   #for $item in $subparsers0.nargs2:
-      ## nargs2 definition
-      #if $item:
-         --nargs2 $item
-      #end if
-      ## end nargs2 definition
-
-   #end for
-   ## end nargs2 definition
-
-   ## mode definition
-   #if $subparsers0.mode:
-      --mode $subparsers0.mode
-   #end if
-   ## end mode definition
-
+    #if $subparsers0.mode:
+        --mode $subparsers0.mode
+    #end if
 #end if
-## end Conditional option bar

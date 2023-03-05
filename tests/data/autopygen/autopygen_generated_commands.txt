@@ -1,73 +1,41 @@
-## keyword definition
 #if $keyword:
-   $keyword
+    $keyword
 #end if
-## end keyword definition
 
-## integers definition
 #for $item in $integers:
-   ## integers definition
-   #if $item:
-      $item
-   #end if
-   ## end integers definition
-
+    #if $item:
+        $item
+    #end if
 #end for
-## end integers definition
 
-## FLAG s definition
 $s
-## end FLAG s definition
 
-## foo definition
 #if $foo:
-   --foo $foo
+    --foo $foo
 #end if
-## end foo definition
 
-## bar definition
 #for $item in $bar:
-   ## bar definition
-   #if $item:
-      --bar $item
-   #end if
-   ## end bar definition
-
+    #if $item:
+        --bar $item
+    #end if
 #end for
-## end bar definition
 
-## FLAG true definition
 $true
-## end FLAG true definition
 
-## FLAG false definition
 $false
-## end FLAG false definition
 
-## append definition
 #for $item in $append:
-   ## append definition
-   #if $item:
-      --append $item
-   #end if
-   ## end append definition
-
+    #if $item:
+        --append $item
+    #end if
 #end for
-## end append definition
 
-## nargs2 definition
 #for $item in $nargs2:
-   ## nargs2 definition
-   #if $item:
-      --nargs2 $item
-   #end if
-   ## end nargs2 definition
-
+    #if $item:
+        --nargs2 $item
+    #end if
 #end for
-## end nargs2 definition
 
-## mode definition
 #if $mode:
-   --mode $mode
+    --mode $mode
 #end if
-## end mode definition
