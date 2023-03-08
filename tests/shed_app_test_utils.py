@@ -1,6 +1,6 @@
 import contextlib
-import multiprocessing
 import shutil
+import threading
 from tempfile import mkdtemp
 from typing import NamedTuple
 
@@ -39,10 +39,10 @@ def setup_mock_shed():
         app.config["model"] = model
         run_simple("localhost", port, app, use_reloader=False, use_debugger=True)
 
-    p = multiprocessing.Process(target=run)
-    p.start()
+    t = threading.Thread(target=run, daemon=True)
+    t.start()
     network_util.wait_net_service("localhost", port, DEFAULT_OP_TIMEOUT)
-    return MockShed(f"http://localhost:{port}", directory, p, model)
+    return MockShed(f"http://localhost:{port}", directory, t, model)
 
 
 @contextlib.contextmanager
@@ -59,11 +59,11 @@ def mock_shed():
 class MockShed(NamedTuple):
     url: str
     directory: str
-    process: multiprocessing.Process
+    thread: threading.Thread
     model: InMemoryShedDataModel
 
     def shutdown(self):
-        self.process.terminate()
+        self.thread.join(timeout=1)
         shutil.rmtree(self.directory)
 
 
