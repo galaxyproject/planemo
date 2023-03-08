@@ -533,8 +533,7 @@ def _find_repository_id(ctx, shed_context, name, repo_config, **kwds):
     owner = _owner(ctx, repo_config, shed_context, **kwds)
     matching_repository = find_repository(shed_context.tsi, owner, name)
     if matching_repository is None:
-        message = "Failed to find repository for owner/name %s/%s"
-        raise Exception(message % (owner, name))
+        raise Exception(f"Failed to find repository for owner/name {owner}/{name}")
     else:
         repo_id = matching_repository["id"]
         return repo_id
