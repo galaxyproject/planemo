@@ -51,7 +51,7 @@ def param(param_info: ParamInfo, body: Optional[List[etree._Element]] = None):
         and not param_info.param_type.is_extend
         and param_info.default_val
     ):
-        attributes["value"] = param_info.default_val
+        attributes["value"] = str(param_info.default_val)
 
     if param_info.param_type.is_flag:
         attributes["truevalue"] = param_info.argument
