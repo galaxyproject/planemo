@@ -34,16 +34,16 @@ class UnknownNamesRemoval(ast.NodeVisitor):
         parent = current.parent  # type: ignore
 
         def _reach_add_argument():
-            return (isinstance(parent, ast.Call)
-                    and isinstance(parent.func, ast.Attribute)
-                    and parent.func.attr == "add_argument")
+            return (
+                isinstance(parent, ast.Call)
+                and isinstance(parent.func, ast.Attribute)
+                and parent.func.attr == "add_argument"
+            )
 
         def _reach_assignment_as_list_comprehension():
-            return (isinstance(parent, ast.Assign)
-                    and isinstance(current, ast.ListComp))
+            return isinstance(parent, ast.Assign) and isinstance(current, ast.ListComp)
 
-        while not (_reach_add_argument()
-                   or _reach_assignment_as_list_comprehension()):
+        while not (_reach_add_argument() or _reach_assignment_as_list_comprehension()):
             current = parent
             if not hasattr(current, "parent"):
                 raise CouldNotFixNameError
@@ -57,14 +57,11 @@ class UnknownNamesRemoval(ast.NodeVisitor):
         except CouldNotFixNameError:
             return False
 
-        not_found_const = ast.Constant(value=f"{WARNING_STRING} Name {name}"
-                                             f" could not be loaded")
+        not_found_const = ast.Constant(value=f"{WARNING_STRING} Name {name}" f" could not be loaded")
         # if top is assignment
         if isinstance(parent, ast.Assign):
-            logging.warning(
-                f"Problem with assignment to {parent.targets[0].id}")  # type: ignore
-            parent.value = ast.List(elts=[not_found_const],
-                                    ctx=ast.Load())
+            logging.warning(f"Problem with assignment to {parent.targets[0].id}")  # type: ignore
+            parent.value = ast.List(elts=[not_found_const], ctx=ast.Load())
             return True
 
         # this name can be a part of normal args
@@ -88,13 +85,14 @@ class UnknownNamesRemoval(ast.NodeVisitor):
             return
 
         if not self._fix_name(node, node.id):
-            logging.error("Name could not be fixed and it can't be"
-                          " replaced with a constant,"
-                          " the parser extraction process failed")
+            logging.error(
+                "Name could not be fixed and it can't be"
+                " replaced with a constant,"
+                " the parser extraction process failed"
+            )
 
 
-def handle_local_module_names(actions: List[ast.AST],
-                              unknown_names: Set[str]) -> ast.Module:
+def handle_local_module_names(actions: List[ast.AST], unknown_names: Set[str]) -> ast.Module:
     """
     Function used to remove assignments and list comprehensions which can't be
     resolved

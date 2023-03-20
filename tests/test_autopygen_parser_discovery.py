@@ -2,8 +2,12 @@ import ast
 import os
 
 from planemo.autopygen.source_file_parsing.decoy_parser import obtain_class_def
-from planemo.autopygen.source_file_parsing.parser_discovery_and_init import SimpleParserDiscoveryAndReplacement, \
-    ImportDiscovery, GroupAndSubparsersDiscovery, ArgumentCreationDiscovery
+from planemo.autopygen.source_file_parsing.parser_discovery_and_init import (
+    SimpleParserDiscoveryAndReplacement,
+    ImportDiscovery,
+    GroupAndSubparsersDiscovery,
+    ArgumentCreationDiscovery,
+)
 from .test_utils import assert_equal, TEST_AUTOPYGEN_DATA, load_function_body
 
 
@@ -28,8 +32,9 @@ def test_parser_discovery_and_replacement():
 
     actions, argparse_module_alias, argparse_class_alias, known_names = discovery.visit_and_report(module)
 
-    discovery = SimpleParserDiscoveryAndReplacement(actions, argparse_module_alias, argparse_class_alias,
-                                                    custom_parser_class_def)
+    discovery = SimpleParserDiscoveryAndReplacement(
+        actions, argparse_module_alias, argparse_class_alias, custom_parser_class_def
+    )
 
     actions, parser_name = discovery.visit_and_report(module)
 
@@ -51,8 +56,9 @@ def test_group_discovery():
 
     actions, argparse_module_alias, argparse_class_alias, known_names = discovery.visit_and_report(module)
 
-    discovery = SimpleParserDiscoveryAndReplacement(actions, argparse_module_alias, argparse_class_alias,
-                                                    custom_parser_class_def)
+    discovery = SimpleParserDiscoveryAndReplacement(
+        actions, argparse_module_alias, argparse_class_alias, custom_parser_class_def
+    )
 
     actions, parser_name = discovery.visit_and_report(module)
     groups = GroupAndSubparsersDiscovery(actions, known_names, parser_name)
@@ -74,15 +80,16 @@ def test_argument_creation_discovery():
 
     actions, argparse_module_alias, argparse_class_alias, known_names = discovery.visit_and_report(module)
 
-    discovery = SimpleParserDiscoveryAndReplacement(actions, argparse_module_alias, argparse_class_alias,
-                                                    custom_parser_class_def)
+    discovery = SimpleParserDiscoveryAndReplacement(
+        actions, argparse_module_alias, argparse_class_alias, custom_parser_class_def
+    )
 
     actions, parser_name = discovery.visit_and_report(module)
     groups = GroupAndSubparsersDiscovery(actions, known_names, parser_name)
     actions, known_names = groups.visit_and_report(module)
 
     argument_creation = ArgumentCreationDiscovery(actions, parser_name)
-    actions, = argument_creation.visit_and_report(module)
+    (actions,) = argument_creation.visit_and_report(module)
 
     assert_equal(len(actions), 4)
     assert_equal(type(actions[3]), ast.Expr)

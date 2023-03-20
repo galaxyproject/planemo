@@ -12,6 +12,7 @@ def import_discovery():
 
 def parser_discovery_and_replacement():
     import argparse
+
     parser = argparse.ArgumentParser()  # noqa: F401, F841
 
 

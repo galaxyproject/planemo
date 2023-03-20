@@ -19,8 +19,7 @@ class DecoyParser(argparse.ArgumentParser):
             return dp
 
     class Action:
-        def __init__(self, section, argument, action,
-                     kwargs):
+        def __init__(self, section, argument, action, kwargs):
             self.argument = argument
 
             if action is None:
@@ -55,9 +54,7 @@ class DecoyParser(argparse.ArgumentParser):
         yield from self.default_section.get_actions_recursive()
 
     def save_action(self, section, *args, **kwargs):
-        section.actions.append(
-            self.Action(section, args[-1], kwargs.get("action",
-                                                      "STORE"), kwargs))
+        section.actions.append(self.Action(section, args[-1], kwargs.get("action", "STORE"), kwargs))
 
     def add_argument(self, *args, **kwargs):
         self.save_action(self.default_section, *args, **kwargs)
@@ -73,6 +70,7 @@ class DecoyParser(argparse.ArgumentParser):
     def create_custom_add_argument_group(self, original, parent_section):
         def custom_add_argument_group(*args, **kwargs):
             from copy import copy
+
             new_grp = original.add_argument_group(*args, **kwargs)
             if len(args) == 0:
                 subsection = self.Section(parent_section, **kwargs)
@@ -80,10 +78,8 @@ class DecoyParser(argparse.ArgumentParser):
                 subsection = self.Section(parent_section, *args)
             parent_section.subsections.append(subsection)
 
-            new_grp.add_argument = self.add_argument_for_arg_group(subsection,
-                                                                   new_grp)
-            new_grp.add_argument_group = self.create_custom_add_argument_group(
-                copy(new_grp), subsection)
+            new_grp.add_argument = self.add_argument_for_arg_group(subsection, new_grp)
+            new_grp.add_argument_group = self.create_custom_add_argument_group(copy(new_grp), subsection)
             return new_grp
 
         return custom_add_argument_group
@@ -98,10 +94,8 @@ class DecoyParser(argparse.ArgumentParser):
         else:
             subsection = self.Section(self.default_section, *args)
 
-        arg_group.add_argument = self.add_argument_for_arg_group(subsection,
-                                                                 arg_group)
-        arg_group.add_argument_group = self.create_custom_add_argument_group(
-            copy(arg_group), subsection)
+        arg_group.add_argument = self.add_argument_for_arg_group(subsection, arg_group)
+        arg_group.add_argument_group = self.create_custom_add_argument_group(copy(arg_group), subsection)
         self.default_section.subsections.append(subsection)
         return arg_group
 
@@ -115,9 +109,7 @@ def obtain_class_def() -> Optional[ast.ClassDef]:
     file = open(__file__, "r")
     module = ast.parse(file.read())
     file.close()
-    return next((item for item in module.body if
-                 type(item) is ast.ClassDef and item.name == "DecoyParser"),
-                None)
+    return next((item for item in module.body if type(item) is ast.ClassDef and item.name == "DecoyParser"), None)
 
 
 class CustomParserUnavailableException(Exception):

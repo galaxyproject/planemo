@@ -9,15 +9,12 @@ def options(param_info: ParamInfo) -> etree._Element:
 
     opts = []
     for option in param_info.choices:
-        attributes = {
-            "value": option
-        }
+        attributes = {"value": option}
 
         if param_info.default_val and param_info.default_val == option:
             attributes["selected"] = "true"
 
-        opts.append(
-            formatted_xml_elem("option", attributes, text=option.capitalize()))
+        opts.append(formatted_xml_elem("option", attributes, text=option.capitalize()))
 
     return param(param_info, body=opts)
 
@@ -47,11 +44,13 @@ def repeat(param_info: ParamInfo) -> etree._Element:
 def param(param_info: ParamInfo, body: Optional[List[etree._Element]] = None):
     attributes = {"argument": param_info.argument, "type": str(param_info.type), "format": param_info.format}
 
-    if not param_info.param_type.is_flag \
-            and not param_info.param_type.is_selection \
-            and not param_info.param_type.is_repeat \
-            and not param_info.param_type.is_extend \
-            and param_info.default_val:
+    if (
+        not param_info.param_type.is_flag
+        and not param_info.param_type.is_selection
+        and not param_info.param_type.is_repeat
+        and not param_info.param_type.is_extend
+        and param_info.default_val
+    ):
         attributes["value"] = param_info.default_val
 
     if param_info.param_type.is_flag:
@@ -74,8 +73,9 @@ def param(param_info: ParamInfo, body: Optional[List[etree._Element]] = None):
     return formatted_xml_elem("param", attributes, body=body)
 
 
-def formatted_xml_elem(name, attributes, text: Optional[str] = None,
-                       body: Optional[List[etree._Element]] = None) -> etree._Element:
+def formatted_xml_elem(
+    name, attributes, text: Optional[str] = None, body: Optional[List[etree._Element]] = None
+) -> etree._Element:
     element = etree.Element(name, attributes)
     element.text = text
     if body is not None:

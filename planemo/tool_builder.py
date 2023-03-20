@@ -15,8 +15,12 @@ from planemo import (
     io,
     templates,
 )
-from planemo.autopygen.argument_parser_conversion import obtain_and_convert_parser, \
-    xml_from_decoy, command_from_decoy, xml_to_string
+from planemo.autopygen.argument_parser_conversion import (
+    obtain_and_convert_parser,
+    xml_from_decoy,
+    command_from_decoy,
+    xml_to_string,
+)
 
 REUSING_MACROS_MESSAGE = (
     "Macros file macros.xml already exists, assuming " " it has relevant planemo-generated definitions."
@@ -409,16 +413,16 @@ class CommandIO:
                 name_map = dict()
                 section_map = dict()
 
-                generated_inputs, _, version_command_param = xml_from_decoy(parser, data_inputs,
-                                                                            reserved_names,
-                                                                            name_map,
-                                                                            section_map)
+                generated_inputs, _, version_command_param = xml_from_decoy(
+                    parser, data_inputs, reserved_names, name_map, section_map
+                )
 
                 auto_inputs = xml_to_string(generated_inputs, 8)
                 # TODO make them useful  auto_outputs = xml_to_string(generated_outputs, 8)
 
-                auto_commands = command_from_decoy(parser, data_inputs, reserved_names, name_map,
-                                                   section_map, skip_default_namespace=True)
+                auto_commands = command_from_decoy(
+                    parser, data_inputs, reserved_names, name_map, section_map, skip_default_namespace=True
+                )
 
                 if version_command_param:
                     version_command = f"[TODO exec name] {version_command_param.argument}"

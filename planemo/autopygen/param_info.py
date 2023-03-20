@@ -26,12 +26,12 @@ class ParamTypeFlags:
 
 
 class ParamDataType(enum.Enum):
-    SELECT = "select",
-    BOOLEAN = "boolean",
-    INTEGER = "integer",
+    SELECT = ("select",)
+    BOOLEAN = ("boolean",)
+    INTEGER = ("integer",)
     FLOAT = "float"
-    DATA = "data",
-    TEXT = "text",
+    DATA = ("data",)
+    TEXT = ("text",)
     UNDEFINED = f"{WARNING_STRING} argument uses complex type it's type cannot be determined"
 
     def __str__(self):
@@ -40,7 +40,7 @@ class ParamDataType(enum.Enum):
             return str(self.value)
 
         if isinstance(self.value, tuple):
-            val, = self.value
+            (val,) = self.value
             return str(val)
 
         raise RuntimeError("Python interpreter is doing something weird with enum values")
@@ -51,6 +51,7 @@ class ParamInfo:
     """
     Class containing data of a single extracted parameter
     """
+
     is_positional: bool
     param_type: ParamTypeFlags
     type: ParamDataType

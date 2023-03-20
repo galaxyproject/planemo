@@ -22,11 +22,13 @@ class DefinitionNotFoundException(Exception):
     """
     Exception raised if part of template definition cannot be found
     """
+
     pass
 
 
-def create_flag(variable: str, comment: str, depth: int, indent=DEFAULT_INDENT,
-                add_comment: bool = ADD_COMMENTS_BY_DEFAULT) -> str:
+def create_flag(
+    variable: str, comment: str, depth: int, indent=DEFAULT_INDENT, add_comment: bool = ADD_COMMENTS_BY_DEFAULT
+) -> str:
     """
     Function used to create a flag definition, wrapped in a comment
 
@@ -49,17 +51,19 @@ def create_flag(variable: str, comment: str, depth: int, indent=DEFAULT_INDENT,
     if not add_comment:
         return result
 
-    return f"{depth * indent * SPACE}## FLAG {comment}\n" \
-           f"{result}" \
-           f"{depth * indent * SPACE}## end FLAG {comment}\n"
+    return f"{depth * indent * SPACE}## FLAG {comment}\n" f"{result}" f"{depth * indent * SPACE}## end FLAG {comment}\n"
 
 
-def create_element_with_body(kind: str, head: str,
-                             body: List[str], comment: str,
-                             depth: int,
-                             indent: int = DEFAULT_INDENT,
-                             body_indented: bool = True,
-                             add_comment: bool = ADD_COMMENTS_BY_DEFAULT) -> str:
+def create_element_with_body(
+    kind: str,
+    head: str,
+    body: List[str],
+    comment: str,
+    depth: int,
+    indent: int = DEFAULT_INDENT,
+    body_indented: bool = True,
+    add_comment: bool = ADD_COMMENTS_BY_DEFAULT,
+) -> str:
     """
     Function used to create block of template, like if or loop
 
@@ -102,8 +106,8 @@ def create_element_with_body(kind: str, head: str,
             body[0] = f"{body_indent}{body[0]}"
 
         translated_body = ("\n" + body_indent).join(body)
-        if translated_body[-1] != '\n':
-            translated_body += '\n'
+        if translated_body[-1] != "\n":
+            translated_body += "\n"
 
         result.append(translated_body)
 
@@ -127,23 +131,18 @@ def transform_param_info(info: ParamInfo, namespace: str, depth: int):
             return create_flag(variable, f"{name} definition", depth)
         else:
             body_expression = create_body_expression(info, variable, depth + 1)
-            return create_element_with_body("if", variable, [body_expression],
-                                            f"{name} definition", depth)
+            return create_element_with_body("if", variable, [body_expression], f"{name} definition", depth)
 
     iteration_var = "$item"
     if info.param_type.is_flag:
         param = create_flag(iteration_var, f"{name} definition", depth + 1)
     else:
         body_expression = create_body_expression(info, iteration_var, depth + 2)
-        param = create_element_with_body("if", iteration_var, [body_expression],
-                                         f"{name} definition", depth + 1)
+        param = create_element_with_body("if", iteration_var, [body_expression], f"{name} definition", depth + 1)
 
     head_expression = f"{iteration_var} in ${namespace}{separator}{info.name}"
 
-    return create_element_with_body("for", head_expression,
-                                    [param],
-                                    f"{info.name} definition",
-                                    depth)
+    return create_element_with_body("for", head_expression, [param], f"{info.name} definition", depth)
 
 
 # TODO generating command like this assumes that parameters are added to argparse in the right order.
