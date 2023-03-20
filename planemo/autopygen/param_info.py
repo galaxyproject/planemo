@@ -26,25 +26,16 @@ class ParamTypeFlags:
 
 
 class ParamDataType(enum.Enum):
-    SELECT = ("select",)
-    BOOLEAN = ("boolean",)
-    INTEGER = ("integer",)
+    SELECT = "select"
+    BOOLEAN = "boolean"
+    INTEGER = "integer"
     FLOAT = "float"
-    DATA = ("data",)
-    TEXT = ("text",)
+    DATA = "data"
+    TEXT = "text"
     UNDEFINED = f"{WARNING_STRING} argument uses complex type it's type cannot be determined"
 
     def __str__(self):
-        # For some reason, python is storing these strings as enums, even though there is no reason for it
-        if isinstance(self.value, str):
-            return str(self.value)
-
-        if isinstance(self.value, tuple):
-            (val,) = self.value
-            return str(val)
-
-        raise RuntimeError("Python interpreter is doing something weird with enum values")
-
+        return self.value
 
 @dataclasses.dataclass
 class ParamInfo:
