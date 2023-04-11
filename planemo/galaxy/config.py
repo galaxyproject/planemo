@@ -29,6 +29,7 @@ from typing import (
 from galaxy.tool_util.deps import docker_util
 from galaxy.tool_util.deps.container_volumes import DockerVolume
 from galaxy.util.commands import argv_to_str
+from galaxy.util.yaml_util import ordered_dump
 from packaging.version import parse as parse_version
 
 from planemo import git
@@ -122,32 +123,28 @@ TOOL_SHEDS_CONF = """<tool_sheds>
 </tool_sheds>
 """
 
-JOB_CONFIG_LOCAL = """<job_conf>
-    <plugins>
-        <plugin id="planemo_runner" type="runner" load="galaxy.jobs.runners.local:LocalJobRunner" workers="4"/>
-    </plugins>
-    <handlers>
-    </handlers>
-    <destinations default="planemo_dest">
-        <destination id="planemo_dest" runner="planemo_runner">
-            <param id="require_container">${require_container}</param>
-            <param id="docker_enabled">${docker_enable}</param>
-            <param id="docker_sudo">${docker_sudo}</param>
-            <param id="docker_sudo_cmd">${docker_sudo_cmd}</param>
-            <param id="docker_cmd">${docker_cmd}</param>
-            <param id="docker_volumes">${docker_volumes}</param>
-            <param id="docker_run_extra_arguments"><![CDATA[${docker_run_extra_arguments}]]></param>
-            ${docker_host_param}
-        </destination>
-        <destination id="upload_dest" runner="planemo_runner">
-            <param id="docker_enabled">false</param>
-        </destination>
-    </destinations>
-    <tools>
-        <tool id="upload1" destination="upload_dest" />
-    </tools>
-</job_conf>
-"""
+JOB_CONFIG_LOCAL: Dict[str, Any] = {
+    "runners": {"planemo_runner": {"load": "galaxy.jobs.runners.local:LocalJobRunner", "workers": 4}},
+    "execution": {
+        "default": "planemo_dest",
+        "environments": {
+            "planemo_dest": {
+                "runner": "planemo_runner",
+                "require_container": False,
+                "docker_enabled": False,
+                "docker_sudo": False,
+                "docker_sudo_cmd": docker_util.DEFAULT_SUDO_COMMAND,
+                "docker_cmd": docker_util.DEFAULT_DOCKER_COMMAND,
+                "docker_volumes": "$defaults",
+            },
+            "upload_dest": {"runner": "planemo_runner", "docker_enabled": False},
+        },
+    },
+    "tools": [
+        {"id": "upload1", "environment": "upload_dest"},
+    ],
+}
+
 
 REFGENIE_CONFIG_TEMPLATE = """
 config_version: %s
@@ -1376,16 +1373,19 @@ def _handle_job_config_file(
 ):
     job_config_file = kwds.get("job_config_file", None)
     if not job_config_file:
-        template_str = JOB_CONFIG_LOCAL
         job_config_file = os.path.join(
             config_directory,
-            "job_conf.xml",
+            "job_conf.yml",
         )
-        docker_enable = str(kwds.get("docker", False))
+        planemo_dest = JOB_CONFIG_LOCAL["execution"]["environments"]["planemo_dest"]
+        planemo_dest["docker_enabled"] = kwds.get("docker", False)
+        planemo_dest["docker_sudo"] = kwds.get("docker_sudo", False)
+        planemo_dest["docker_sudo_cmd"] = kwds.get("docker_sudo_cmd", docker_util.DEFAULT_SUDO_COMMAND)
+        planemo_dest["docker_cmd"] = kwds.get("docker_cmd", docker_util.DEFAULT_DOCKER_COMMAND)
+
         docker_host = kwds.get("docker_host", docker_util.DEFAULT_HOST)
-        docker_host_param = ""
         if docker_host:
-            docker_host_param = f"""<param id="docker_host">{docker_host}</param>"""
+            planemo_dest["docker_host"] = docker_host
 
         volumes = list(kwds.get("docker_extra_volume") or [])
         if test_data_dir:
@@ -1397,21 +1397,11 @@ def _handle_job_config_file(
             all_tool_dirs = {os.path.dirname(tool_path) for tool_path in all_tool_paths}
             extra_volumes_str = ",".join(str(v) for v in create_docker_volumes(volumes) if v.path not in all_tool_dirs)
             docker_volumes_str = f"{docker_volumes_str},{extra_volumes_str}"
-
-        conf_contents = Template(template_str).safe_substitute(
-            {
-                "server_name": server_name,
-                "docker_enable": docker_enable,
-                "require_container": "false",
-                "docker_sudo": str(kwds.get("docker_sudo", False)),
-                "docker_sudo_cmd": str(kwds.get("docker_sudo_cmd", docker_util.DEFAULT_SUDO_COMMAND)),
-                "docker_cmd": str(kwds.get("docker_cmd", docker_util.DEFAULT_DOCKER_COMMAND)),
-                "docker_host_param": docker_host_param,
-                "docker_volumes": docker_volumes_str,
-                "docker_run_extra_arguments": kwds.get("docker_run_extra_arguments", ""),
-            }
-        )
-        write_file(job_config_file, conf_contents)
+        planemo_dest["docker_volumes"] = docker_volumes_str
+        planemo_dest["docker_run_extra_arguments"] = kwds.get("docker_run_extra_arguments", "")
+        JOB_CONFIG_LOCAL["execution"]["environments"]["planemo_dest"] = planemo_dest
+        with open(job_config_file, "w") as job_config_fh:
+            ordered_dump(JOB_CONFIG_LOCAL, job_config_fh)
     kwds["job_config_file"] = job_config_file
 
 
