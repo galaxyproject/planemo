@@ -4,7 +4,10 @@ import functools
 import os
 
 import click
-from galaxy.tool_util.deps import docker_util
+from galaxy.tool_util.deps import (
+    docker_util,
+    singularity_util,
+)
 from galaxy.tool_util.verify.interactor import DEFAULT_TOOL_TEST_WAIT
 
 from .config import planemo_option
@@ -431,7 +434,7 @@ def mulled_containers_option():
         "--mulled_containers",
         "--biocontainers",
         is_flag=True,
-        help="Test tools against mulled containers (forces --docker). Disables conda resolution unless any conda option has been set explicitly.",
+        help="Test tools against mulled containers (requires --docker/--singularity, if none of these are given --docker is used automatically). Disables conda resolution unless any conda option has been set explicitly.",
     )
 
 
@@ -471,13 +474,23 @@ def docker_extra_volume_option():
         readable=True,
         resolve_path=True,
     )
-    return planemo_option(
-        "--docker_extra_volume",
-        type=arg_type,
-        default=None,
-        use_global_config=True,
-        multiple=True,
-        help=("Extra path to mount if --engine docker or `--biocontainers` or `--docker`."),
+    return _compose(
+        planemo_option(
+            "--docker_extra_volume",
+            type=arg_type,
+            default=None,
+            use_global_config=True,
+            multiple=True,
+            help=("Extra path to mount if --engine docker or `--biocontainers` or `--docker`."),
+        ),
+        planemo_option(
+            "--singularity_extra_volume",
+            type=arg_type,
+            default=None,
+            use_global_config=True,
+            multiple=True,
+            help=("Extra path to mount if `--biocontainers` and `--singularity`."),
+        ),
     )
 
 
@@ -945,27 +958,52 @@ def no_cleanup_option():
 
 
 def docker_enable_option():
-    return planemo_option("--docker/--no_docker", default=False, help=("Run Galaxy tools in Docker if enabled."))
+    return _compose(
+        planemo_option("--docker/--no_docker", default=False, help=("Run Galaxy tools in Docker if enabled.")),
+        planemo_option(
+            "--singularity/--no_singularity", default=False, help=("Run Galaxy tools in Singularity if enabled.")
+        ),
+    )
 
 
 def docker_cmd_option():
-    return planemo_option(
-        "--docker_cmd",
-        default=docker_util.DEFAULT_DOCKER_COMMAND,
-        help="Command used to launch docker (defaults to docker).",
+    return _compose(
+        planemo_option(
+            "--docker_cmd",
+            default=docker_util.DEFAULT_DOCKER_COMMAND,
+            help=f"Command used to launch docker (defaults to {docker_util.DEFAULT_DOCKER_COMMAND}).",
+        ),
+        planemo_option(
+            "--singularity_cmd",
+            default=singularity_util.DEFAULT_SINGULARITY_COMMAND,
+            help=f"Command used to launch singularity (defaults to {singularity_util.DEFAULT_SINGULARITY_COMMAND}).",
+        ),
     )
 
 
 def docker_sudo_option():
-    return planemo_option("--docker_sudo/--no_docker_sudo", is_flag=True, help="Flag to use sudo when running docker.")
+    return _compose(
+        planemo_option("--docker_sudo/--no_docker_sudo", is_flag=True, help="Flag to use sudo when running docker."),
+        planemo_option(
+            "--singularity_sudo/--no_singularity_sudo", is_flag=True, help="Flag to use sudo when running singularity."
+        ),
+    )
 
 
 def docker_sudo_cmd_option():
-    return planemo_option(
-        "--docker_sudo_cmd",
-        help="sudo command to use when --docker_sudo is enabled " + "(defaults to sudo).",
-        default=docker_util.DEFAULT_SUDO_COMMAND,
-        use_global_config=True,
+    return _compose(
+        planemo_option(
+            "--docker_sudo_cmd",
+            help=f"sudo command to use when --docker_sudo is enabled (defaults to {docker_util.DEFAULT_SUDO_COMMAND}).",
+            default=docker_util.DEFAULT_SUDO_COMMAND,
+            use_global_config=True,
+        ),
+        planemo_option(
+            "--singularity_sudo_cmd",
+            help=f"sudo command to use when --singularity_sudo is enabled (defaults to {singularity_util.DEFAULT_SUDO_COMMAND}).",
+            default=docker_util.DEFAULT_SUDO_COMMAND,
+            use_global_config=True,
+        ),
     )
 
 

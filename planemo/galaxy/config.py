@@ -27,6 +27,7 @@ from typing import (
 )
 
 from galaxy.tool_util.deps import docker_util
+from galaxy.tool_util.deps import singularity_util
 from galaxy.tool_util.deps.container_volumes import DockerVolume
 from galaxy.util.commands import argv_to_str
 from galaxy.util.yaml_util import ordered_dump
@@ -131,11 +132,6 @@ JOB_CONFIG_LOCAL: Dict[str, Any] = {
             "planemo_dest": {
                 "runner": "planemo_runner",
                 "require_container": False,
-                "docker_enabled": False,
-                "docker_sudo": False,
-                "docker_sudo_cmd": docker_util.DEFAULT_SUDO_COMMAND,
-                "docker_cmd": docker_util.DEFAULT_DOCKER_COMMAND,
-                "docker_volumes": "$defaults",
             },
             "upload_dest": {"runner": "planemo_runner", "docker_enabled": False},
         },
@@ -342,11 +338,14 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
     # Duplicate block in docker variant above.
     if kwds.get("mulled_containers", False):
-        if not kwds.get("docker", False):
-            if ctx.get_option_source("docker") != OptionSource.cli:
+        if not (kwds.get("docker", False) or kwds.get("singularity", False)):
+            if (
+                ctx.get_option_source("docker") != OptionSource.cli
+                and ctx.get_option_source("singularity") != OptionSource.cli
+            ):
                 kwds["docker"] = True
             else:
-                raise Exception("Specified no docker and mulled containers together.")
+                raise Exception("Specified --no-docker/--no-singularity and mulled containers together.")
         conda_default_options = ("conda_auto_init", "conda_auto_install")
         use_conda_options = ("dependency_resolution", "conda_use_local", "conda_prefix", "conda_exec")
         if not any(kwds.get(_) for _ in use_conda_options) and all(
@@ -737,7 +736,7 @@ class GalaxyConfig(GalaxyInterface, metaclass=abc.ABCMeta):
 
     This assumes more than an API connection is available - Planemo needs to be able to
     start and stop the Galaxy instance, recover logs, etc... There are currently two
-    implementations - a locally executed Galaxy and one running inside a Docker containe
+    implementations - a locally executed Galaxy and one running inside a Docker container
     """
 
     @abc.abstractproperty
@@ -1378,27 +1377,43 @@ def _handle_job_config_file(
             "job_conf.yml",
         )
         planemo_dest = JOB_CONFIG_LOCAL["execution"]["environments"]["planemo_dest"]
-        planemo_dest["docker_enabled"] = kwds.get("docker", False)
-        planemo_dest["docker_sudo"] = kwds.get("docker_sudo", False)
-        planemo_dest["docker_sudo_cmd"] = kwds.get("docker_sudo_cmd", docker_util.DEFAULT_SUDO_COMMAND)
-        planemo_dest["docker_cmd"] = kwds.get("docker_cmd", docker_util.DEFAULT_DOCKER_COMMAND)
 
-        docker_host = kwds.get("docker_host", docker_util.DEFAULT_HOST)
-        if docker_host:
-            planemo_dest["docker_host"] = docker_host
+        for container_type in ["docker", "singularity"]:
+            if not kwds.get(container_type, False):
+                continue
+            planemo_dest[f"{container_type}_enabled"] = kwds.get(container_type, False)
+            planemo_dest[f"{container_type}_sudo"] = kwds.get(f"{container_type}_sudo", False)
+            planemo_dest[f"{container_type}_sudo_cmd"] = kwds.get(
+                f"{container_type}_sudo_cmd",
+                docker_util.DEFAULT_SUDO_COMMAND
+                if container_type == "docker"
+                else singularity_util.DEFAULT_SUDO_COMMAND,
+            )
+            planemo_dest[f"{container_type}_cmd"] = kwds.get(
+                f"{container_type}_cmd",
+                docker_util.DEFAULT_DOCKER_COMMAND
+                if container_type == "docker"
+                else singularity_util.DEFAULT_SINGULARITY_COMMAND,
+            )
+            if container_type == "docker":
+                docker_host = kwds.get("docker_host", docker_util.DEFAULT_HOST)
+                if docker_host:
+                    planemo_dest["docker_host"] = docker_host
 
-        volumes = list(kwds.get("docker_extra_volume") or [])
-        if test_data_dir:
-            volumes.append(f"{test_data_dir}:ro")
+            volumes = list(kwds.get(f"{container_type}_extra_volume") or [])
+            if test_data_dir:
+                volumes.append(f"{test_data_dir}:ro")
+            volumes_str = "$defaults"
+            if volumes:
+                # exclude tool directories, these are mounted :ro by $defaults
+                all_tool_dirs = {os.path.dirname(tool_path) for tool_path in all_tool_paths}
+                extra_volumes_str = ",".join(
+                    str(v) for v in create_docker_volumes(volumes) if v.path not in all_tool_dirs
+                )
+                volumes_str = f"{volumes_str},{extra_volumes_str}"
+            planemo_dest[f"{container_type}_volumes"] = volumes_str
+            break
 
-        docker_volumes_str = "$defaults"
-        if volumes:
-            # exclude tool directories, these are mounted :ro by $defaults
-            all_tool_dirs = {os.path.dirname(tool_path) for tool_path in all_tool_paths}
-            extra_volumes_str = ",".join(str(v) for v in create_docker_volumes(volumes) if v.path not in all_tool_dirs)
-            docker_volumes_str = f"{docker_volumes_str},{extra_volumes_str}"
-        planemo_dest["docker_volumes"] = docker_volumes_str
-        planemo_dest["docker_run_extra_arguments"] = kwds.get("docker_run_extra_arguments", "")
         JOB_CONFIG_LOCAL["execution"]["environments"]["planemo_dest"] = planemo_dest
         with open(job_config_file, "w") as job_config_fh:
             ordered_dump(JOB_CONFIG_LOCAL, job_config_fh)
