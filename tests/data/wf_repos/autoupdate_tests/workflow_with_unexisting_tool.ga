@@ -6,6 +6,11 @@
             "class": "Person",
             "identifier": "https://orcid.org/0000-0002-1964-4960",
             "name": "Lucille Delisle"
+        },
+        {
+            "class": "Person",
+            "identifier": "https://orcid.org/0000-0002-2799-424X",
+            "name": " Hans-Rudolf Hotz"
         }
     ],
     "format-version": "0.1",
