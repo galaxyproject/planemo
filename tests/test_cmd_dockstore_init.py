@@ -53,5 +53,6 @@ class CmdDockstoreInitTestCase(CliTestCase):
             workflow = dockstore_config["workflows"][0]
             assert "authors" in workflow
             assert workflow["authors"][0]["orcid"] == "0000-0002-1964-4960"
+            assert workflow["authors"][1]["orcid"] == "0000-0002-2799-424X"
             workflow_lint_cmd = ["workflow_lint", "--skip", "tool_ids", "--fail_level", "error", f]
             self._check_exit_code(workflow_lint_cmd)
