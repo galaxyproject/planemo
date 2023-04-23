@@ -95,7 +95,13 @@ def test_argument_creation_discovery():
     assert_equal(type(actions[3]), ast.Expr)
     arg_creat_call = actions[3]
     assert_equal(arg_creat_call.value.func.attr, "add_argument")
-    assert_equal(arg_creat_call.value.args[0].value, "--test")
+
+    arg = arg_creat_call.value.args[0]
+    if isinstance(arg, ast.Str):
+        assert_equal(arg.s, "--test")
+    # different python versions produce different results
+    else:
+        assert_equal(arg.value, "--test")
 
 
 def _prepare_test_module(func_name: str) -> ast.Module:
