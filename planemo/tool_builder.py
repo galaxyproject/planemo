@@ -96,6 +96,7 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}+galaxy
     <help><![CDATA[
 {%- if help %}
         {{ help }}
+{%- endif %}
 {%- if auto_help %}
         {{ auto_help }}
 {%- endif %}
