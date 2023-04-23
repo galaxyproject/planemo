@@ -82,10 +82,9 @@ class CmdAutoupdateTestCase(CliTestCase):
     def test_autoupdate_workflow(self):
         """Test autoupdate command for a workflow is needed."""
         with self._isolate_with_test_data("wf_repos/autoupdate_tests") as f:
-            wf_file = os.path.join(f, "diff-refactor-test.ga")
-            autoupdate_command = ["autoupdate", wf_file, "--galaxy_branch", "dev"]  # need >= 21.05
+            wf_file = os.path.realpath(os.path.join(f, "diff-refactor-test.ga"))
+            autoupdate_command = ["autoupdate", wf_file]
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
-
             assert f"Auto-updating workflow {wf_file}" in result.output
             with open(wf_file) as g:
                 wf = json.load(g)

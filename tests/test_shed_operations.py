@@ -21,14 +21,6 @@ def test_find_repository_id():
         assert repo_id == "r1"
 
 
-def test_find_repository_id_missing():
-    with mock_shed_context() as shed_context:
-        repo_id = shed.find_repository_id(
-            ctx=None, shed_context=shed_context, path=".", name="test_repo_absent", owner="iuc", allow_none=True
-        )
-        assert repo_id is None
-
-
 def test_find_repository_id_missing_exception():
     with mock_shed_context() as shed_context:
         exception = None

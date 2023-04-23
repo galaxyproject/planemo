@@ -533,11 +533,7 @@ def _find_repository_id(ctx, shed_context, name, repo_config, **kwds):
     owner = _owner(ctx, repo_config, shed_context, **kwds)
     matching_repository = find_repository(shed_context.tsi, owner, name)
     if matching_repository is None:
-        if not kwds.get("allow_none", False):
-            message = "Failed to find repository for owner/name %s/%s"
-            raise Exception(message % (owner, name))
-        else:
-            return None
+        raise Exception(f"Failed to find repository for owner/name {owner}/{name}")
     else:
         repo_id = matching_repository["id"]
         return repo_id
@@ -963,7 +959,7 @@ class RepositoryDependencies:
     def __str__(self):
         contents = '<repositories description="%s">' % self.description
         line_template = '  <repository owner="%s" name="%s" />\n'
-        for (owner, name) in self.repo_pairs:
+        for owner, name in self.repo_pairs:
             contents += line_template % (owner, name)
         contents += "</repositories>"
         return contents
@@ -1021,7 +1017,7 @@ class RawRepositoryDirectory:
                 continue
             realized_file.realize_to(directory)
 
-        for (name, contents) in config.get("_files", {}).items():
+        for name, contents in config.get("_files", {}).items():
             path = os.path.join(directory, name)
             with open(path, "w") as f:
                 f.write(contents)
@@ -1237,7 +1233,6 @@ class RealizedRepositry:
                 shed_context,
                 name=self.name,
                 repo_config=self.config,
-                allow_none=True,
             )
             return repo_id
         except Exception as e:

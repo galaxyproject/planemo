@@ -51,7 +51,6 @@ class AllureWriter:
         plugin_manager.unregister(plugin=self.logger)
 
     def process_test_case(self, test_case, file_modication_datetime=None):
-
         with self.lifecycle.schedule_test_case() as test_result:
             test_index = test_case["id"]
             test_data = test_case.get("data") or {}

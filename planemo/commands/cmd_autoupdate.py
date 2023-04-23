@@ -73,6 +73,7 @@ def skip_requirements_option() -> Callable:
 @test_option()
 @skiplist_option()
 @skip_requirements_option()
+@options.serve_engine_option()
 @options.test_options()
 @options.galaxy_target_options()
 @options.galaxy_config_options()
@@ -81,6 +82,7 @@ def skip_requirements_option() -> Callable:
 @options.fail_level_option()
 @options.galaxy_url_option()
 @options.galaxy_user_key_option()
+@options.galaxy_admin_key_option()
 @command_function
 def cli(ctx, paths, **kwds):  # noqa C901
     """Auto-update tool requirements by checking against Conda and updating if newer versions are available."""
@@ -93,7 +95,7 @@ def cli(ctx, paths, **kwds):  # noqa C901
 
     if any(r.type in {RunnableType.galaxy_tool, RunnableType.directory} for r in runnables):
         # update Galaxy tools
-        for (tool_path, tool_xml) in yield_tool_sources_on_paths(ctx, paths, recursive):
+        for tool_path, tool_xml in yield_tool_sources_on_paths(ctx, paths, recursive):
             if tool_path.split("/")[-1] in tools_to_skip:
                 info("Skipping tool %s" % tool_path)
                 continue
@@ -126,7 +128,7 @@ def cli(ctx, paths, **kwds):  # noqa C901
 
     if modified_workflows and not kwds.get("dry_run"):
         assert is_galaxy_engine(**kwds)
-        if kwds.get("engine") != "external_galaxy":
+        if kwds.get("engine") != "external_galaxy" or kwds.get("galaxy_admin_key"):
             kwds["install_most_recent_revision"] = True
             kwds["install_resolver_dependencies"] = False
             kwds["install_repository_dependencies"] = False

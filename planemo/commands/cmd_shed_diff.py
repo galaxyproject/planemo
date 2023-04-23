@@ -84,7 +84,6 @@ def cli(ctx, paths, **kwds):
     }
 
     def diff(realized_repository):
-
         # We create a temporary redirection from kwds's
         # output to our tempfile. This lets us capture the
         # diff and redirect it to their requested location as

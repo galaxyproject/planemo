@@ -87,7 +87,7 @@ def collect_conda_targets(ctx, paths, recursive=False, found_tool_callback=None)
         else:
             real_paths.append(path)
 
-    for (tool_path, tool_source) in yield_tool_sources_on_paths(
+    for tool_path, tool_source in yield_tool_sources_on_paths(
         ctx, real_paths, recursive=recursive, exclude_deprecated=True
     ):
         if found_tool_callback:
@@ -132,9 +132,7 @@ def collect_conda_target_lists_and_tool_paths(ctx, paths, recursive=False, found
     """
     conda_target_lists = set()
     tool_paths = collections.defaultdict(list)
-    for (tool_path, tool_source) in yield_tool_sources_on_paths(
-        ctx, paths, recursive=recursive, yield_load_errors=False
-    ):
+    for tool_path, tool_source in yield_tool_sources_on_paths(ctx, paths, recursive=recursive, yield_load_errors=False):
         try:
             if found_tool_callback:
                 found_tool_callback(tool_path)
@@ -153,7 +151,7 @@ def collect_conda_target_lists_and_tool_paths(ctx, paths, recursive=False, found
 
 def tool_source_conda_targets(tool_source):
     """Load CondaTarget object from supplied abstract tool source."""
-    requirements, _ = tool_source.parse_requirements_and_containers()
+    requirements, *_ = tool_source.parse_requirements_and_containers()
     return conda_util.requirements_to_conda_targets(requirements)
 
 
