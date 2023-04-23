@@ -110,8 +110,8 @@ class SimpleParserDiscoveryAndReplacement(Discovery):
             isinstance(node.value, ast.Call)
             and isinstance(node.value.func, ast.Attribute)
             and node.value.func.attr == ARGUMENT_PARSER_CLASS_NAME
-            and node.value.func.value.id == argparse_module_alias
-        )  # type: ignore
+            and node.value.func.value.id == argparse_module_alias  # type: ignore
+        )
 
     def visit_Assign(self, node: ast.Assign):
         if self.argparse_found:
