@@ -37,6 +37,7 @@ class ParamDataType(enum.Enum):
     def __str__(self):
         return self.value
 
+
 @dataclasses.dataclass
 class ParamInfo:
     """
