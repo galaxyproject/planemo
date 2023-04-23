@@ -1,6 +1,9 @@
 import ast
 import os
 from typing import Tuple, Optional, Dict, Set
+import sys
+
+import pytest
 
 from planemo.autopygen.argument_parser_conversion import (
     command_from_decoy,
@@ -103,6 +106,7 @@ def test_version():
     assert_equal(param_info.param_type.is_version, True)
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="Extend command is supported from python 3.8")
 def test_extend():
     inputs, _, _ = extract_xml("extend")
     expected = (
@@ -180,6 +184,7 @@ def test_version_command():
     assert_equal(command, "")
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="Extend command is supported from python 3.8")
 def test_extend_command():
     command = extract_command("extend")
     assert_equal(command, REPEAT_COMMAND_TEXT_DATA)
