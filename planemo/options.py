@@ -1357,6 +1357,17 @@ def lint_xsd_option():
     )
 
 
+def lint_biocontainers_option():
+    return planemo_option(
+        "biocontainer",
+        "--biocontainer",
+        "--biocontainers",
+        is_flag=True,
+        default=False,
+        help="Check best practice BioContainer namespaces for a container definition applicable for this tool.",
+    )
+
+
 def report_level_option():
     return planemo_option(
         "--report_level",
