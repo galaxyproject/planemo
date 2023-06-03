@@ -35,14 +35,7 @@ from planemo.tool_lint import (
     default=False,
     help="Check tool requirements for availability in best practice Conda channels.",
 )
-@click.option(
-    "biocontainer",
-    "--biocontainer",
-    "--biocontainers",
-    is_flag=True,
-    default=False,
-    help="Check best practice BioContainer namespaces for a container definition applicable for this tool.",
-)
+@options.lint_biocontainers_option()
 # @click.option(
 # "--verify",
 # is_flag=True,
