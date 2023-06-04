@@ -35,6 +35,7 @@ from galaxy.util import (
     safe_makedirs,
     unicodify,
 )
+from pathvalidate import sanitize_filename
 from requests.exceptions import (
     HTTPError,
     RequestException,
@@ -421,7 +422,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         output_directory = output_directory or tempfile.mkdtemp()
 
         def get_dataset(dataset_details, filename=None):
-            parent_basename = dataset_details.get("cwl_file_name") or dataset_details.get("name")
+            parent_basename = sanitize_filename(dataset_details.get("cwl_file_name") or dataset_details.get("name"))
             file_ext = dataset_details["file_ext"]
             if file_ext == "directory":
                 # TODO: rename output_directory to outputs_directory because we can have output directories
@@ -509,7 +510,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
 
     def download_output_to(self, ctx, dataset_details, output_directory, filename=None):
         if filename is None:
-            local_filename = dataset_details.get("cwl_file_name") or dataset_details.get("name")
+            local_filename = sanitize_filename(dataset_details.get("cwl_file_name") or dataset_details.get("name"))
         else:
             local_filename = filename
         destination = os.path.join(output_directory, local_filename)
