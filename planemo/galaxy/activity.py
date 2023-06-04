@@ -421,24 +421,6 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         # configuration.
         output_directory = output_directory or tempfile.mkdtemp()
 
-        def get_dataset(dataset_details, filename=None):
-            parent_basename = sanitize_filename(dataset_details.get("cwl_file_name") or dataset_details.get("name"))
-            file_ext = dataset_details["file_ext"]
-            if file_ext == "directory":
-                # TODO: rename output_directory to outputs_directory because we can have output directories
-                # and this is confusing...
-                the_output_directory = os.path.join(output_directory, parent_basename)
-                safe_makedirs(the_output_directory)
-                destination = self.download_output_to(ctx, dataset_details, the_output_directory, filename=filename)
-            else:
-                destination = self.download_output_to(ctx, dataset_details, output_directory, filename=filename)
-            if filename is None:
-                basename = parent_basename
-            else:
-                basename = os.path.basename(filename)
-
-            return {"path": destination, "basename": basename}
-
         ctx.vlog("collecting outputs to directory %s" % output_directory)
 
         for runnable_output in get_outputs(self._runnable, gi=self._user_gi):
@@ -446,6 +428,25 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             if not output_id:
                 ctx.vlog("Workflow output identified without an ID (label), skipping")
                 continue
+
+            def get_dataset(dataset_details, filename=None):
+                parent_basename = sanitize_filename(dataset_details.get("cwl_file_name") or output_id)
+                file_ext = dataset_details["file_ext"]
+                if file_ext == "directory":
+                    # TODO: rename output_directory to outputs_directory because we can have output directories
+                    # and this is confusing...
+                    the_output_directory = os.path.join(output_directory, parent_basename)
+                    safe_makedirs(the_output_directory)
+                    destination = self.download_output_to(ctx, dataset_details, the_output_directory, filename=filename)
+                else:
+                    destination = self.download_output_to(ctx, dataset_details, output_directory, filename=filename)
+                if filename is None:
+                    basename = parent_basename
+                else:
+                    basename = os.path.basename(filename)
+
+                return {"path": destination, "basename": basename}
+
             is_cwl = self._runnable.type in [RunnableType.cwl_workflow, RunnableType.cwl_tool]
             output_src = self.output_src(runnable_output)
             if not output_src:
