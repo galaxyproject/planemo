@@ -220,7 +220,7 @@ def _sub_parsers_conditionals(
             version_command = version_comm
 
     conditional_param_definition = formatted_xml_elem(
-        "param", {"name": "subparser_selector", "type": "selector"}, body=conditional_options
+        "param", {"name": "subparser_selector", "type": "select"}, body=conditional_options
     )
     result_inputs = formatted_xml_elem(
         "conditional", {"name": f"subparsers{index}"}, body=[conditional_param_definition, *result]
