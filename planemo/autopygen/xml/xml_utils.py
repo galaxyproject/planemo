@@ -9,6 +9,7 @@ def options(param_info: ParamInfo) -> etree._Element:
 
     opts = []
     for option in param_info.choices:
+        option = str(option)
         attributes = {"value": option}
 
         if param_info.default_val and param_info.default_val == option:
