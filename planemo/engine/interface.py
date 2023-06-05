@@ -34,7 +34,7 @@ class Engine(metaclass=abc.ABCMeta):
 class BaseEngine(Engine):
     """Base class providing context and keywords for Engine implementations."""
 
-    handled_runnable_types = []  # type: List[RunnableType]
+    handled_runnable_types: List[RunnableType] = []
 
     def __init__(self, ctx, **kwds):
         """Store context and kwds."""
