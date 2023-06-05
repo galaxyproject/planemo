@@ -421,12 +421,12 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         # configuration.
         output_directory = output_directory or tempfile.mkdtemp()
 
-        ctx.vlog("collecting outputs to directory %s" % output_directory)
+        ctx.log("collecting outputs to directory %s" % output_directory)
 
         for runnable_output in get_outputs(self._runnable, gi=self._user_gi):
             output_id = runnable_output.get_id()
             if not output_id:
-                ctx.vlog("Workflow output identified without an ID (label), skipping")
+                ctx.log("Workflow output identified without an ID (label), skipping")
                 continue
 
             def get_dataset(dataset_details, filename=None):
@@ -543,7 +543,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                 # and that results in an internal server error on the Galaxy side.
                 # We don't want this to break the rest of the test report.
                 # Should probably find a way to propagate this back into the report.
-                ctx.vlog(f"Failed to download history content at URL {url}, exception: {e}")
+                ctx.log(f"Failed to download history content at URL {url}, exception: {e}")
                 return
 
             for chunk in r.iter_content(chunk_size=bioblend.CHUNK_SIZE):
