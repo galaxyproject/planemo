@@ -1,0 +1,24 @@
+class: GalaxyWorkflow
+inputs:
+  - id: input1
+outputs:
+  - id: wf_output_1
+    outputSource: first_cat/out_file1
+  - id: wf_output_2
+    outputSource: second_cat/out_file1
+steps:
+  first_cat:
+    tool_id: cat
+    in:
+      input1: input1
+    out:
+      out_file1:
+        rename: 'a / very / funky / output'
+  second_cat:
+    tool_id: cat
+    label: second_cat
+    in:
+      input1: input1
+    out:
+      out_file1:
+        rename: 'a / very / funky / output'
