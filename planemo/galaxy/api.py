@@ -18,7 +18,9 @@ def gi(port: Optional[int] = None, url: Optional[str] = None, key: Optional[str]
     else:
         url = f"http://localhost:{int(port)}"
 
-    return GalaxyInstance(url=url, key=key)
+    g = GalaxyInstance(url=url, key=key)
+    g.max_get_attempts = 10
+    return g
 
 
 def test_credentials_valid(port=None, url=None, key=None, is_admin=False):
