@@ -42,5 +42,9 @@ help text for mentioned URLs and checks those.
                                       for each repository to allow automated
                                       creation and/or updates.
       --urls                          Check validity of URLs in XML files
+      --biocontainer, --biocontainers
+                                      Check best practice BioContainer namespaces
+                                      for a container definition applicable for this
+                                      tool.
       --help                          Show this message and exit.
     

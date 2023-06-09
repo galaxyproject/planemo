@@ -27,6 +27,11 @@ Auto-update tool requirements by checking against Conda and updating if newer ve
       --skip_requirements TEXT        Comma-separated list of requirements which
                                       should be not be updated. Default is
                                       python,r-base,perl.
+      --engine [galaxy|docker_galaxy|external_galaxy]
+                                      Select an engine to serve artifacts such as
+                                      tools and workflows. Defaults to a local
+                                      Galaxy, but running Galaxy within a Docker
+                                      container.
       --update_test_data              Update test-data directory with job outputs
                                       (normally written to directory
                                       --job_output_files if specified.)
@@ -185,5 +190,6 @@ Auto-update tool requirements by checking against Conda and updating if newer ve
       --galaxy_url TEXT               Remote Galaxy URL to use with external Galaxy
                                       engine.
       --galaxy_user_key TEXT          User key to use with external Galaxy engine.
+      --galaxy_admin_key TEXT         Admin key to use with external Galaxy engine.
       --help                          Show this message and exit.
     
