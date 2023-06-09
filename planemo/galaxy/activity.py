@@ -461,7 +461,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                 self._get_metadata,
                 get_dataset,
                 self._get_extra_files,
-                pseduo_location=True,
+                pseudo_location=True,
             )
             output_dict_value = None
             if is_cwl or output_src["src"] == "hda":
