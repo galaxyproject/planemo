@@ -11,6 +11,7 @@ h5py
 jinja2
 lxml
 oyaml
+pathvalidate
 pyyaml
 virtualenv
 tabulate

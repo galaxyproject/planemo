@@ -35,6 +35,7 @@ from galaxy.util import (
     safe_makedirs,
     unicodify,
 )
+from pathvalidate import sanitize_filename
 from requests.exceptions import (
     HTTPError,
     RequestException,
@@ -420,31 +421,32 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         # configuration.
         output_directory = output_directory or tempfile.mkdtemp()
 
-        def get_dataset(dataset_details, filename=None):
-            parent_basename = dataset_details.get("cwl_file_name") or dataset_details.get("name")
-            file_ext = dataset_details["file_ext"]
-            if file_ext == "directory":
-                # TODO: rename output_directory to outputs_directory because we can have output directories
-                # and this is confusing...
-                the_output_directory = os.path.join(output_directory, parent_basename)
-                safe_makedirs(the_output_directory)
-                destination = self.download_output_to(ctx, dataset_details, the_output_directory, filename=filename)
-            else:
-                destination = self.download_output_to(ctx, dataset_details, output_directory, filename=filename)
-            if filename is None:
-                basename = parent_basename
-            else:
-                basename = os.path.basename(filename)
-
-            return {"path": destination, "basename": basename}
-
-        ctx.vlog("collecting outputs to directory %s" % output_directory)
+        ctx.log("collecting outputs to directory %s" % output_directory)
 
         for runnable_output in get_outputs(self._runnable, gi=self._user_gi):
             output_id = runnable_output.get_id()
             if not output_id:
-                ctx.vlog("Workflow output identified without an ID (label), skipping")
+                ctx.log("Workflow output identified without an ID (label), skipping")
                 continue
+
+            def get_dataset(dataset_details, filename=None):
+                parent_basename = sanitize_filename(dataset_details.get("cwl_file_name") or output_id)
+                file_ext = dataset_details["file_ext"]
+                if file_ext == "directory":
+                    # TODO: rename output_directory to outputs_directory because we can have output directories
+                    # and this is confusing...
+                    the_output_directory = os.path.join(output_directory, parent_basename)
+                    safe_makedirs(the_output_directory)
+                    destination = self.download_output_to(ctx, dataset_details, the_output_directory, filename=filename)
+                else:
+                    destination = self.download_output_to(ctx, dataset_details, output_directory, filename=filename)
+                if filename is None:
+                    basename = parent_basename
+                else:
+                    basename = os.path.basename(filename)
+
+                return {"path": destination, "basename": basename}
+
             is_cwl = self._runnable.type in [RunnableType.cwl_workflow, RunnableType.cwl_tool]
             output_src = self.output_src(runnable_output)
             if not output_src:
@@ -509,7 +511,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
 
     def download_output_to(self, ctx, dataset_details, output_directory, filename=None):
         if filename is None:
-            local_filename = dataset_details.get("cwl_file_name") or dataset_details.get("name")
+            local_filename = sanitize_filename(dataset_details.get("cwl_file_name") or dataset_details.get("name"))
         else:
             local_filename = filename
         destination = os.path.join(output_directory, local_filename)
@@ -541,7 +543,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                 # and that results in an internal server error on the Galaxy side.
                 # We don't want this to break the rest of the test report.
                 # Should probably find a way to propagate this back into the report.
-                ctx.vlog(f"Failed to download history content at URL {url}, exception: {e}")
+                ctx.log(f"Failed to download history content at URL {url}, exception: {e}")
                 return
 
             for chunk in r.iter_content(chunk_size=bioblend.CHUNK_SIZE):

@@ -371,7 +371,7 @@ class TestCase(AbstractTestCase):
     def _job(self):
         if self.job_path is not None:
             with open(self.job_path) as f:
-                return f.read()
+                return yaml.safe_load(f)
         else:
             return self.job
 
