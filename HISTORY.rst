@@ -6,6 +6,17 @@ History
 .. to_doc
 
 ---------------------
+0.75.8 (2022-06-09)
+---------------------
+
+* Bump galaxy package requirements to allow for 23.0 (thanks to `@bernt-matthias`_). `Pull Request 1372`_
+* Sanitize and make output names unique (thanks to `@mvdbeek`_). `Pull Request 1371`_
+* Increase bioblend retries for bad networks (thanks to `@hexylena`_). `Pull Request 1369`_
+* Add ``--biocontainers`` option to shed_lint (thanks to `@mvdbeek`_). `Pull Request 1370`_
+* fix regex of orcid + add test (thanks to `@lldelisle`_). `Pull Request 1364`_
+* Drop `allow_none` for finding repository (thanks to `@mvdbeek`_). `Pull Request 1358`_
+
+---------------------
 0.75.7 (2022-03-01)
 ---------------------
 * Drop call to ``escape_non_unicode_symbols`` (thanks to `@nsoranzo`_). `Pull
@@ -1955,6 +1966,12 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1372: https://github.com/galaxyproject/planemo/pull/1372
+.. _Pull Request 1371: https://github.com/galaxyproject/planemo/pull/1371
+.. _Pull Request 1369: https://github.com/galaxyproject/planemo/pull/1369
+.. _Pull Request 1370: https://github.com/galaxyproject/planemo/pull/1370
+.. _Pull Request 1364: https://github.com/galaxyproject/planemo/pull/1364
+.. _Pull Request 1358: https://github.com/galaxyproject/planemo/pull/1358
 .. _Pull Request 1357: https://github.com/galaxyproject/planemo/pull/1357
 .. _Pull Request 1265: https://github.com/galaxyproject/planemo/pull/1265
 .. _Pull Request 1350: https://github.com/galaxyproject/planemo/pull/1350
