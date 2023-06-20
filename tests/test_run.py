@@ -66,6 +66,8 @@ class RunTestCase(CliTestCase):
                 "--no_dependency_resolution",
                 "--galaxy_branch",
                 target_galaxy_branch(),
+                "--test_data",
+                TEST_DATA_DIR,
                 tool_path,
                 job_path,
             ]

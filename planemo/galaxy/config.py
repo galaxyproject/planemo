@@ -103,6 +103,14 @@ EMPTY_JOB_METRICS_TEMPLATE = """<?xml version="1.0"?>
 </job_metrics>
 """
 
+FILE_SOURCES_TEMPLATE = """
+- type: posix
+  root: '${test_data_dir}'
+  id: test_data_dir
+  label: Test data directory
+  doc: Test data directory for the runnables being tested
+"""
+
 TOOL_SHEDS_CONF = """<tool_sheds>
   <tool_shed name="Target Shed" url="${shed_target_url}" />
 </tool_sheds>
@@ -362,6 +370,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         all_tool_paths = _all_tool_paths(runnables, galaxy_root=galaxy_root, extra_tools=kwds.get("extra_tools"))
         _handle_job_config_file(config_directory, server_name, test_data_dir, all_tool_paths, kwds)
         _handle_job_metrics(config_directory, kwds)
+        _handle_file_sources(config_directory, test_data_dir, kwds)
         _handle_refgenie_config(config_directory, galaxy_root, kwds)
         file_path = kwds.get("file_path") or config_join("files")
         _ensure_directory(file_path)
@@ -1382,6 +1391,13 @@ def _handle_job_metrics(config_directory, kwds):
     with open(metrics_conf, "w") as fh:
         fh.write(EMPTY_JOB_METRICS_TEMPLATE)
     kwds["job_metrics_config_file"] = metrics_conf
+
+
+def _handle_file_sources(config_directory, test_data_dir, kwds):
+    file_sources_conf = os.path.join(config_directory, "file_sources_conf.yml")
+    file_sources_conf_contents = _sub(FILE_SOURCES_TEMPLATE, {"test_data_dir": test_data_dir})
+    write_file(file_sources_conf, file_sources_conf_contents)
+    kwds["file_sources_config_file"] = file_sources_conf
 
 
 def _handle_refgenie_config(config_directory, galaxy_root, kwds):
