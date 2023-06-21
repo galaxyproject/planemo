@@ -306,7 +306,7 @@ option to mount test data into the testing container.
     $ planemo test --engine external_galaxy --galaxy_admin_key <admin_key> --galaxy_user_key <user_key> [--no_shed_install] [--polling_backoff <integer>] --galaxy_url <url>
 
 This is primarily useful for testing workflows against already running Galaxy instances. An admin or
-master API key should be supplied to install missing tool repositories for the workflow and a user API
+bootstrap API key should be supplied to install missing tool repositories for the workflow and a user API
 key should be supplied to run the workflow using. If you wish to skip tool shed repository installation
 (this requires all the tools be present already), use the ``--no_shed_install`` option. If you want to
 reduce the load on the target Galaxy while checking for the status changes use the ``--polling_backoff <integer>``
