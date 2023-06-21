@@ -32,7 +32,7 @@ Futher reading:
 
 - `bibtex.xml <https://github.com/jmchilton/galaxy/blob/dev/test/functional/tools/bibtex.xml>`__ (test tool with a bunch of random examples)
 - `bwa-mem.xml <https://github.com/jmchilton/bwa-mem/commit/0425264039950bfd9ded06997a08cc8b4ee1ad8f>`__ (BWA-MEM tool by Anton Nekrutenko demonstrating citation of an arXiv article)
-- `macros.xml <https://github.com/galaxyproject/tools-devteam/blob/master/tool_collections/vcflib/macros.xml#L15>`__ (Macros for vcflib tool demonstrating citing a github repository)
+- `macros.xml <https://github.com/galaxyproject/tools-iuc/blob/main/tool_collections/vcflib/macros.xml#L16>`__ (Macros for vcflib tool demonstrating citing a github repository)
 
 --------------------------------------------------
 \.\.\. declare a Docker container for my tool?
@@ -69,16 +69,14 @@ Further reading:
 
 - `validator <https://docs.galaxyproject.org/en/latest/dev/schema.html#tool-inputs-param-validator>`__
   XML tag syntax on the Galaxy wiki.
-- `fastq_filter.xml <https://github.com/galaxyproject/tools-devteam/blob/master/tool_collections/galaxy_sequence_utils/fastq_filter/fastq_filter.xml>`__
+- `fastq_filter.xml <https://github.com/galaxyproject/tools-iuc/blob/main/tool_collections/galaxy_sequence_utils/fastq_filter/fastq_filter.xml>`__
   (a FASTQ filtering tool demonstrating validator constructs)
-- `gffread.xml <https://github.com/galaxyproject/tools-devteam/blob/master/tool_collections/cufflinks/gffread/gffread.xml>`__
+- `gffread.xml <https://github.com/galaxyproject/tools-iuc/blob/main/tools/gffread/gffread.xml>`__
   (a tool by Jim Johnson demonstrating using regular expressions with ``validator`` tags)
 - `code_file.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/code_file.xml>`__,
   `code_file.py <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/code_file.py>`__
   (test files demonstrating defining a simple constraint in Python across
   two parameters)
-- `deseq2 tool <https://github.com/bgruening/galaxytools/tree/master/tools/deseq2>`__
-  by Björn Grüning demonstrating advanced ``code`` file validation.
 
 -------------------------------------------------
 \.\.\. check input type in command blocks?
@@ -220,7 +218,7 @@ specify tests for the individual output files using the ``extra_files`` element
 demonstrated by the following tool.
 
 - `composite_output.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/composite_output.xml>`__
-- `macs_wrapper.xml <https://github.com/galaxyproject/tools-devteam/blob/master/tools/macs/macs_wrapper.xml>`__
+- `macs2_callpeak.xml <https://github.com/galaxyproject/tools-iuc/blob/main/tools/macs2/macs2_callpeak.xml>`__
 
 ------------------------------------------
 \.\.\. test index (\.loc) data?

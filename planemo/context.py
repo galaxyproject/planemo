@@ -195,7 +195,7 @@ def configure_standard_planemo_logging(verbose: bool) -> None:
             # examples wrong and should declare their namespaces differently in some way?
             # @mr-c
             # That particular warning is worth suppressing. A PR to silence it permanently would be very welcome!
-            # https://github.com/RDFLib/rdflib/blob/master/rdflib/term.py#L225
+            # https://github.com/RDFLib/rdflib/blob/main/rdflib/term.py
             "rdflib.term": {
                 "handlers": ["console"],
                 "propagate": False,

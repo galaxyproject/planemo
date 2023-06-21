@@ -4,7 +4,7 @@ The Basics
 .. include:: _writing_using_seqtk.rst
 
 For fully featured Seqtk wrappers check out Helena Rasche's
-`wrappers <https://github.com/galaxyproject/tools-iuc/tree/master/tools/seqtk>`__
+`wrappers <https://github.com/galaxyproject/tools-iuc/tree/main/tools/seqtk>`__
 on GitHub.
 
 Galaxy tool files are just XML files, so at this point one could

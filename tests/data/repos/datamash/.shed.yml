@@ -20,5 +20,5 @@ suite:
   description: datamash performs basic numeric, textual and statistical operations on input textual data files
 name: datamash
 owner: iuc
-remote_repository_url: https://github.com/galaxyproject/tools-iuc/tree/master/tools/datamash
+remote_repository_url: https://github.com/galaxyproject/tools-iuc/tree/main/tools/datamash
 type: unrestricted

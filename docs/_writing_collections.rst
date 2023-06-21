@@ -117,9 +117,9 @@ arbitrary collection types an array syntax can also be used (e.g.
 Some example tools which consume paired datasets include:
 
  - `collection_paired_test <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/collection_paired_test.xml>`__ (minimal test tool in Galaxy test suite)
- - `Bowtie 2 <https://github.com/galaxyproject/tools-devteam/blob/master/tools/bowtie2/bowtie2_wrapper.xml>`__
- - `BWA MEM <https://github.com/galaxyproject/tools-devteam/blob/master/tools/bwa/bwa-mem.xml>`__
- - `Tophat <https://github.com/galaxyproject/tools-devteam/blob/master/tools/tophat2/tophat2_wrapper.xml>`__
+ - `Bowtie 2 <https://github.com/galaxyproject/tools-iuc/blob/main/tools/bowtie2/bowtie2_wrapper.xml>`__
+ - `BWA MEM <https://github.com/galaxyproject/tools-iuc/blob/main/tools/bwa/bwa-mem.xml>`__
+ - `Tophat <https://github.com/galaxyproject/tools-devteam/blob/main/tools/tophat2/tophat2_wrapper.xml>`__
 
 Processing Lists (Reductions)
 -------------------------------
@@ -175,8 +175,8 @@ the idiom:
 Some example tools which consume multiple datasets (including lists) include:
 
  - `multi_data_param <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/multi_data_param.xml>`__ (small test tool in Galaxy test suite)
- - `cuffmerge tool macros <https://github.com/galaxyproject/tools-iuc/blob/master/tool_collections/cufflinks/cuff_macros.xml>`__
- - `unionBedGraphs <https://github.com/galaxyproject/tools-iuc/blob/master/tools/bedtools/unionBedGraphs.xml>`__
+ - `cuffmerge tool macros <https://github.com/galaxyproject/tools-iuc/blob/main/tool_collections/cufflinks/cuff_macros.xml>`__
+ - `unionBedGraphs <https://github.com/galaxyproject/tools-iuc/blob/main/tools/bedtools/unionBedGraphs.xml>`__
 
 Also see the tools-devteam repository `Pull Request #20 <https://github.com/galaxyproject/tools-devteam/pull/20>`__ modifying the cufflinks suite of tools for collection compatible reductions.
 
@@ -215,9 +215,9 @@ Some example tools which utilize ``element_identifier`` include:
 
  - `identifier_multiple <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/identifier_multiple.xml>`__
  - `identifier_single <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/identifier_single.xml>`__
- - `vcftools_merge <https://github.com/galaxyproject/tools-devteam/blob/master/tool_collections/vcftools/vcftools_merge/vcftools_merge.xml>`__
- - `jbrowse <https://github.com/galaxyproject/tools-iuc/blob/master/tools/jbrowse/jbrowse.xml>`_
- - `kraken-mpa-report <https://github.com/blankenberg/tools-devteam/blob/master/tool_collections/kraken/kraken_report/kraken-mpa-report.xml>`__
+ - `vcftools_merge <https://github.com/galaxyproject/tools-devteam/blob/main/tool_collections/vcftools/vcftools_merge/vcftools_merge.xml>`__
+ - `jbrowse <https://github.com/galaxyproject/tools-iuc/blob/main/tools/jbrowse/jbrowse.xml>`_
+ - `kraken-mpa-report <https://github.com/galaxyproject/tools-iuc/blob/main/tool_collections/kraken/kraken-mpa-report.xml>`__
 
 More on ``data_collection`` parameters
 ----------------------------------------------

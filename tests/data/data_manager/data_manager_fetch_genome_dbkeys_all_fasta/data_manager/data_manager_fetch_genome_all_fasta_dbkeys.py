@@ -319,11 +319,11 @@ def download_from_url(params, tmp_dir, **kwds):
     Download a file from a URL and return a list of filehandles from which to read the data.
 
     >>> tmp_dir = tempfile.mkdtemp()
-    >>> url = 'https://github.com/galaxyproject/tools-iuc/raw/master/data_managers/data_manager_fetch_genome_dbkeys_all_fasta/test-data/test.tar.bz2'
+    >>> url = "https://github.com/galaxyproject/tools-iuc/raw/main/data_managers/data_manager_fetch_genome_dbkeys_all_fasta/test-data/test.tar.bz2"
     >>> params = {'param_dict': {'reference_source': {'user_url': url}}}
     >>> fh = download_from_url(params=params, tmp_dir=tmp_dir)[0][0]
     >>> assert fh.readline().startswith('b>FBtr0304171')
-    >>> url = 'https://github.com/galaxyproject/tools-iuc/raw/master/data_managers/data_manager_fetch_genome_dbkeys_all_fasta/test-data/phiX174.fasta'
+    >>> url = "https://github.com/galaxyproject/tools-iuc/raw/main/data_managers/data_manager_fetch_genome_dbkeys_all_fasta/test-data/phiX174.fasta"
     >>> params = {'param_dict': {'reference_source': {'user_url': url}}}
     >>> fh = download_from_url(params=params, tmp_dir=tmp_dir)[0][0]
     >>> assert fh.readline().startswith('b>phiX174')
