@@ -35,6 +35,13 @@ jobs:
           - unit-nonredundant-noclientbuild-noshed-gx-dev
           - unit-nonredundant-noclientbuild-noshed-nogx
           - unit-diagnostic-serveclientcmd
+        include:
+          - python-version: '3.11'
+            tox-action: lint
+          - python-version: '3.11'
+            tox-action: mypy
+          - python-version: '3.11'
+            tox-action: unit-quick
     services:
       postgres:
         image: postgres:10.8
