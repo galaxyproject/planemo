@@ -52,7 +52,7 @@ DISTRO_TOOLS_ID_TO_PATH = {
     "__FILTER_FROM_FILE__": "${model_tools_path}/filter_from_file.xml",
     "__TAG_FROM_FILE__": "${model_tools_path}/tag_collection_from_file.xml",
     "__APPLY_RULES__": "${model_tools_path}/apply_rules.xml",
-    "__BUILD_LIST__": "${model_tools_path}/build_list_1.2.0.xml",
+    "__BUILD_LIST__": ["${model_tools_path}/build_list.xml", "${model_tools_path}/build_list_1.2.0.xml"],
     "__EXTRACT_DATASET__": "${model_tools_path}/extract_dataset.xml",
     "__DUPLICATE_FILE_TO_COLLECTION__": "${model_tools_path}/duplicate_file_to_collection.xml",
     "biomart": "data_source/biomart.xml",
