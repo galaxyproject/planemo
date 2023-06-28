@@ -41,9 +41,9 @@ to avoid duplication and keep your XML concise.
 Further reading:
 
 - `Macros syntax <https://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax#Reusing_Repeated_Configuration_Elements>`__ on the Galaxy Wiki.
-- `GATK tools <https://github.com/galaxyproject/tools-iuc/tree/master/tools/gatk2>`__ (example tools making extensive use of macros)
-- `gemini tools <https://github.com/galaxyproject/tools-iuc/tree/master/tools/gemini>`__ (example tools making extensive use of macros)
-- `bedtools tools <https://github.com/galaxyproject/tools-iuc/tree/master/tools/bedtools>`__ (example tools making extensive use of macros)
+- `GATK tools <https://github.com/galaxyproject/tools-iuc/tree/main/deprecated/tools/gatk2>`__ (example tools making extensive use of macros)
+- `gemini tools <https://github.com/galaxyproject/tools-iuc/tree/main/tools/gemini>`__ (example tools making extensive use of macros)
+- `bedtools tools <https://github.com/galaxyproject/tools-iuc/tree/main/tools/bedtools>`__ (example tools making extensive use of macros)
 - Macros implementation details - `Pull Request #129 <https://bitbucket.org/galaxy/galaxy-central/pull-request/129/implement-macro-engine-to-reduce-tool/diff>`__ and `Pull Request #140 <https://bitbucket.org/galaxy/galaxy-central/pull-request/140/improvements-to-tool-xml-macroing-system/diff>`__
 
 .. _macros: https://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax#Reusing_Repeated_Configuration_Elements
