@@ -298,7 +298,7 @@ class ActionPackage:
 
 class BaseAction:
     _keys: List[str] = []
-    action_type = None  # type: str
+    action_type: str
 
     def __repr__(self):
         return f"Action[type={self.action_type}]"
