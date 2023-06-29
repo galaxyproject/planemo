@@ -83,7 +83,7 @@ DISTRO_TOOLS_ID_TO_PATH = {
     "gtf_filter_by_attribute_values_list": "filters/gff/gtf_filter_by_attribute_values_list.xml",
     "Summary_Statistics1": "stats/gsummary.xml",
     "qual_stats_boxplot": "plotting/boxplot.xml",
-    "cat1": ["filters/catWrapper.xml", "filters/catWrapper2.xml"],
+    "cat1": "filters/catWrapper.xml",
     "maf_by_block_number1": "maf/maf_by_block_number.xml",
     "Grep1": "filters/grep.xml",
     "eupathdb": "data_source/eupathdb.xml",
