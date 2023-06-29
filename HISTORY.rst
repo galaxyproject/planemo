@@ -6,6 +6,18 @@ History
 .. to_doc
 
 ---------------------
+0.75.9 (2022-06-29)
+---------------------
+
+* Update collection operation tool list (thanks to `@mvdbeek`_). `Pull Request
+  1377`_
+* Officially support Python 3.10 and 3.11 (thanks to `@nsoranzo`_). `Pull
+  Request 1375`_
+* Fix links (thanks to `@nsoranzo`_). `Pull Request 1374`_
+* Fix ``test_run_gxtool_randomlines`` test on Galaxy dev branch (thanks to
+  `@nsoranzo`_). `Pull Request 1373`_
+
+---------------------
 0.75.8 (2022-06-09)
 ---------------------
 
@@ -1966,6 +1978,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1377: https://github.com/galaxyproject/planemo/pull/1377
+.. _Pull Request 1375: https://github.com/galaxyproject/planemo/pull/1375
+.. _Pull Request 1374: https://github.com/galaxyproject/planemo/pull/1374
+.. _Pull Request 1373: https://github.com/galaxyproject/planemo/pull/1373
 .. _Pull Request 1372: https://github.com/galaxyproject/planemo/pull/1372
 .. _Pull Request 1371: https://github.com/galaxyproject/planemo/pull/1371
 .. _Pull Request 1369: https://github.com/galaxyproject/planemo/pull/1369
