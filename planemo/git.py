@@ -98,6 +98,9 @@ def command_clone(
         cmd.append("--mirror")
     if branch is not None:
         cmd.extend(["--branch", branch])
+        cmd.extend(["--depth", "1"])
+        if not src.startswith("file://"):
+            src = f"file://{src}"
     cmd.extend([src, dest])
     return cmd
 
