@@ -1230,9 +1230,12 @@ def _install_galaxy(ctx, galaxy_root, env, kwds):
 
 def _install_galaxy_via_download(ctx, galaxy_root, env, kwds):
     branch = _galaxy_branch(kwds)
+    source = _galaxy_source(kwds)
+    if source.startswith("https://github.com/"):
+        source = source[len("https://github.com/"):]
     untar_to(
-        "https://codeload.github.com/galaxyproject/galaxy/tar.gz/" + branch,
-        tar_args=["-xvzf", "-", "galaxy-" + branch],
+        f"https://codeload.github.com/{source}/tar.gz/{branch}",
+        tar_args=["--strip-components", "1", "-xvzf", "-", "galaxy-" + branch],
         dest_dir=galaxy_root,
     )
     _install_with_command(ctx, galaxy_root, env, kwds)
