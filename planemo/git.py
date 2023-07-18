@@ -87,7 +87,7 @@ def checkout(ctx, remote_repo, local_path, branch=None, remote="origin", from_br
 
 
 def command_clone(
-    ctx: "PlanemoCliContext", src: str, dest: str, mirror: bool = False, branch: Optional[str] = None
+    ctx: "PlanemoCliContext", src: str, dest: str, mirror: bool = False, branch: Optional[str] = None, depth: Optional[int] = None
 ) -> List[str]:
     """Produce a command-line string to clone a repository.
 
@@ -98,9 +98,8 @@ def command_clone(
         cmd.append("--mirror")
     if branch is not None:
         cmd.extend(["--branch", branch])
-        cmd.extend(["--depth", "1"])
-        if not src.startswith("file://"):
-            src = f"file://{src}"
+    if depth is not None:
+        cmd.extend(["--depth", str(depth)])
     cmd.extend([src, dest])
     return cmd
 
