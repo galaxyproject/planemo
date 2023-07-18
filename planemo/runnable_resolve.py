@@ -45,7 +45,8 @@ def for_runnable_identifiers(ctx, runnable_identifiers, kwds):
 def install_args_list_to_runnables(ctx, install_args_list, kwds):
     runnables = []
     for repo in install_args_list:
-        url = f'{repo["tool_shed_url"]}api/repositories/get_repository_revision_install_info'
+        base_tool_shed_url = repo["tool_shed_url"].rstrip("/")
+        url = f"{base_tool_shed_url}/api/repositories/get_repository_revision_install_info"
         response = requests.get(
             url, params={"name": repo["name"], "owner": repo["owner"], "changeset_revision": repo["changeset_revision"]}
         )

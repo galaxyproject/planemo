@@ -7,7 +7,7 @@ from galaxy.util import unicodify
 
 from planemo.io import untar_to
 
-REPOSITORY_DOWNLOAD_TEMPLATE = "%srepository/download?repository_id=%s" "&changeset_revision=default&file_type=gz"
+REPOSITORY_DOWNLOAD_TEMPLATE = "%s/repository/download?repository_id=%s&changeset_revision=default&file_type=gz"
 
 
 def tool_shed_instance(url, key, email, password):
@@ -80,9 +80,7 @@ def find_category_ids(tsi, categories):
 
 
 def download_tar(tsi, repo_id, destination, to_directory):
-    base_url = tsi.base_url
-    if not base_url.endswith("/"):
-        base_url += "/"
+    base_url = tsi.base_url.rstrip("/")
     download_url = REPOSITORY_DOWNLOAD_TEMPLATE % (base_url, repo_id)
     if to_directory:
         tar_args = ["-xzf", "-", "--strip-components=1"]
