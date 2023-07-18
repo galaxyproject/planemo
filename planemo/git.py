@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+import urllib.parse
 from typing import (
     Dict,
     List,
@@ -87,7 +88,12 @@ def checkout(ctx, remote_repo, local_path, branch=None, remote="origin", from_br
 
 
 def command_clone(
-    ctx: "PlanemoCliContext", src: str, dest: str, mirror: bool = False, branch: Optional[str] = None, depth: Optional[int] = None
+    ctx: "PlanemoCliContext",
+    src: str,
+    dest: str,
+    mirror: bool = False,
+    branch: Optional[str] = None,
+    depth: Optional[int] = None,
 ) -> List[str]:
     """Produce a command-line string to clone a repository.
 
@@ -100,6 +106,8 @@ def command_clone(
         cmd.extend(["--branch", branch])
     if depth is not None:
         cmd.extend(["--depth", str(depth)])
+        if urllib.parse.urlparse(src).scheme == "":
+            src = f"file://{src}"
     cmd.extend([src, dest])
     return cmd
 
