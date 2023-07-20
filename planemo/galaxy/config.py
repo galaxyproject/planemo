@@ -1230,9 +1230,12 @@ def _install_galaxy(ctx, galaxy_root, env, kwds):
 
 def _install_galaxy_via_download(ctx, galaxy_root, env, kwds):
     branch = _galaxy_branch(kwds)
+    source = _galaxy_source(kwds)
+    if source.startswith("https://github.com/"):
+        source = source[len("https://github.com/") :]
     untar_to(
-        "https://codeload.github.com/galaxyproject/galaxy/tar.gz/" + branch,
-        tar_args=["-xvzf", "-", "galaxy-" + branch],
+        f"https://codeload.github.com/{source}/tar.gz/{branch}",
+        tar_args=["--strip-components", "1", "-xvzf", "-", "galaxy-" + branch.replace("/", "-")],
         dest_dir=galaxy_root,
     )
     _install_with_command(ctx, galaxy_root, env, kwds)
@@ -1241,7 +1244,7 @@ def _install_galaxy_via_download(ctx, galaxy_root, env, kwds):
 def _install_galaxy_via_git(ctx, galaxy_root, env, kwds):
     gx_repo = _ensure_galaxy_repository_available(ctx, kwds)
     branch = _galaxy_branch(kwds)
-    command = git.command_clone(ctx, gx_repo, galaxy_root, branch=branch)
+    command = git.command_clone(ctx, gx_repo, galaxy_root, branch=branch, depth=1)
     exit_code = shell(command, env=env)
     if exit_code != 0:
         raise Exception("Failed to clone Galaxy via git")
