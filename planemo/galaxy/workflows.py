@@ -300,7 +300,7 @@ def rewrite_job_file(input_file, output_file, job):
     with open(input_file) as f:
         job_contents = yaml.safe_load(f)
         for job_input, job_input_name in job_contents.items():
-            if type(job[job_input]) == dict:  # dataset or collection
+            if isinstance(job[job_input], dict):  # dataset or collection
                 job_contents[job_input] = {"class": job_input_name["class"], "galaxy_id": job[job_input]["id"]}
             # else: presumably a parameter, no need to modify
     with open(output_file, "w") as f:

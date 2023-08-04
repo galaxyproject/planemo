@@ -319,7 +319,7 @@ def outdated_tools(
             return {}
 
     outdated_tool_dict = {}
-    steps = wf_dict["steps"].values() if type(wf_dict["steps"]) == dict else wf_dict["steps"]
+    steps = wf_dict["steps"].values() if isinstance(wf_dict["steps"], dict) else wf_dict["steps"]
     for step in steps:
         if step.get("type", "tool") == "tool" and not step.get("run", {}).get("class") == "GalaxyWorkflow":
             outdated_tool_dict.update(check_tool_step(step, ts))

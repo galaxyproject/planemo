@@ -191,12 +191,12 @@ def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None: 
     """
 
     def check_json_for_untyped_params(j):
-        values = j if type(j) == list else j.values()
+        values = j if isinstance(j, list) else j.values()
         for value in values:
             if type(value) in [list, dict, OrderedDict]:
                 if check_json_for_untyped_params(value):
                     return True
-            elif type(value) == str:
+            elif isinstance(value, str):
                 if re.match(r"\$\{.+?\}", value):
                     return True
         return False
@@ -345,7 +345,7 @@ def _tst_input_valid(
     input_def: Dict[str, Any],
     lint_context: WorkflowLintContext,
 ) -> bool:
-    if type(input_def) == dict:  # else assume it is a parameter
+    if isinstance(input_def, dict):  # else assume it is a parameter
         clazz = input_def.get("class")
         if clazz == "File":
             input_path = input_def.get("path")
