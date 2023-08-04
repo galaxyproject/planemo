@@ -25,6 +25,7 @@ from typing import (
     Set,
     TYPE_CHECKING,
 )
+from xml.etree import ElementTree
 
 from galaxy.tool_util.deps import docker_util
 from galaxy.tool_util.deps.container_volumes import DockerVolume
@@ -269,7 +270,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         )
         tool_config_file = f"{tool_conf},{shed_tool_conf}"
 
-        _write_tool_conf(ctx, all_tool_paths, tool_conf)
+        _write_tool_conf(ctx, all_tool_paths, tool_conf, galaxy_root)
         write_file(empty_tool_conf, EMPTY_TOOL_CONF_TEMPLATE)
 
         properties.update(
@@ -481,7 +482,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             config_join=config_join,
         )
 
-        _write_tool_conf(ctx, all_tool_paths, tool_conf)
+        _write_tool_conf(ctx, all_tool_paths, tool_conf, galaxy_root)
         write_file(empty_tool_conf, EMPTY_TOOL_CONF_TEMPLATE)
 
         shed_tool_conf_contents = _sub(SHED_TOOL_CONF_TEMPLATE, template_args)
@@ -1211,14 +1212,15 @@ def _configure_sheds_config_file(ctx, config_directory, **kwds):
     return tool_sheds_conf
 
 
-def _tool_conf_entry_for(tool_paths):
-    tool_definitions = ""
+def _tool_conf_entry_for(tool_paths: List[str], root: "ElementTree.Element") -> None:
+    planemo_tools_section = ElementTree.SubElement(
+        root, "section", attrib={"id": "planemo_tools", "name": "planemo tools"}
+    )
     for tool_path in tool_paths:
         if os.path.isdir(tool_path):
-            tool_definitions += f"""<tool_dir dir="{tool_path}" />"""
+            ElementTree.SubElement(planemo_tools_section, "tool_dir", attrib={"dir": tool_path})
         else:
-            tool_definitions += f"""<tool file="{tool_path}" />"""
-    return tool_definitions
+            ElementTree.SubElement(planemo_tools_section, "tool", attrib={"file": tool_path})
 
 
 def _install_galaxy(ctx, galaxy_root, env, kwds):
@@ -1369,15 +1371,24 @@ def _handle_job_config_file(
     kwds["job_config_file"] = job_config_file
 
 
-def _write_tool_conf(ctx, tool_paths, tool_conf_path):
-    tool_definition = _tool_conf_entry_for(tool_paths)
-    tool_conf_template_kwds = dict(tool_definition=tool_definition)
-    tool_conf_contents = _sub(TOOL_CONF_TEMPLATE, tool_conf_template_kwds)
-    write_file(tool_conf_path, tool_conf_contents)
+def _write_tool_conf(ctx, tool_paths: List[str], tool_conf_path: str, galaxy_root: str):
+    ctx.vlog(f"_write_tool_conf tool_paths {tool_paths}")
+    ctx.vlog(f"_write_tool_conf tool_conf_path {tool_conf_path}")
+    ctx.vlog(f"_write_tool_conf galaxy_root {galaxy_root}")
+
+    tool_conf_sample_path = os.path.join(galaxy_root, "config", "tool_conf.xml.sample")
+    tree = ElementTree.parse(tool_conf_sample_path)
+    root = tree.getroot()
+    _tool_conf_entry_for(tool_paths, root)
+    tree.write(tool_conf_path)
+
+    # tool_conf_template_kwds = dict(tool_definition=tool_definition)
+    # tool_conf_contents = _sub(TOOL_CONF_TEMPLATE, tool_conf_template_kwds)
+    # write_file(tool_conf_path, tool_conf_contents)
     ctx.vlog(
         "Writing tool_conf to path %s with contents [%s]",
         tool_conf_path,
-        tool_conf_contents,
+        ElementTree.tostring(root, encoding="unicode"),
     )
 
 
