@@ -1372,10 +1372,6 @@ def _handle_job_config_file(
 
 
 def _write_tool_conf(ctx, tool_paths: List[str], tool_conf_path: str, galaxy_root: str):
-    ctx.vlog(f"_write_tool_conf tool_paths {tool_paths}")
-    ctx.vlog(f"_write_tool_conf tool_conf_path {tool_conf_path}")
-    ctx.vlog(f"_write_tool_conf galaxy_root {galaxy_root}")
-
     tool_conf_sample_path = os.path.join(galaxy_root, "config", "tool_conf.xml.sample")
     tree = ElementTree.parse(tool_conf_sample_path)
     root = tree.getroot()
