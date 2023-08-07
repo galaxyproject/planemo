@@ -191,7 +191,7 @@ def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None: 
     """
 
     def check_json_for_untyped_params(j):
-        values = j if isinstance(j, list) else j.values()
+        values = j.values() if isinstance(j, dict) else j
         for value in values:
             if type(value) in [list, dict, OrderedDict]:
                 if check_json_for_untyped_params(value):
