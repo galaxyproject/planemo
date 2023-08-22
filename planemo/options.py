@@ -429,12 +429,20 @@ def tool_data_path_option():
 
 
 def mulled_containers_option():
-    return planemo_option(
-        "mulled_containers",
-        "--mulled_containers",
-        "--biocontainers",
-        is_flag=True,
-        help="Test tools against mulled containers (requires --docker/--singularity, if none of these are given --docker is used automatically). Disables conda resolution unless any conda option has been set explicitly.",
+    return _compose(
+        planemo_option(
+            "mulled_containers",
+            "--mulled_containers",
+            "--biocontainers",
+            is_flag=True,
+            help="Test tools against mulled containers (requires --docker/--singularity, if none of these are given --docker is used automatically). Disables conda resolution unless any conda option has been set explicitly.",
+        ),
+        planemo_option(
+            "--container_resolvers_config_file",
+            type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True),
+            help="Container resolver config file",
+            default=None,
+        ),
     )
 
 
