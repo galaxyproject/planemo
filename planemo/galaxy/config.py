@@ -1438,6 +1438,8 @@ def _handle_container_resolution(ctx, kwds, galaxy_properties):
         involucro_context = build_involucro_context(ctx, **kwds)
         galaxy_properties["involucro_auto_init"] = "False"  # Use planemo's
         galaxy_properties["involucro_path"] = involucro_context.involucro_bin
+    if kwds.get("container_resolvers_config_file"):
+        galaxy_properties["container_resolvers_config_file"] = kwds.get("container_resolvers_config_file")
 
 
 def _handle_job_metrics(config_directory, kwds):
