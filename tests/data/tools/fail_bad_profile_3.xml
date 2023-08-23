@@ -1,4 +1,4 @@
-<tool id="fail_bad_profile_3" name="fail_bad_profile_3" version="1.0" profile="16.34">
+<tool id="fail_bad_profile_3" name="fail_bad_profile_3" version="1.0" profile="16,34">
     <description>select param</description>
     <command><![CDATA[
         echo "$select_opt" > $output
