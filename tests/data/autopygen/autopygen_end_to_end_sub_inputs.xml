@@ -1,5 +1,5 @@
         <conditional name="subparsers0">
-            <param name="subparser_selector" type="selector">
+            <param name="subparser_selector" type="select">
                 <option value="foo" selected="true">foo</option>
                 <option value="bar" selected="false">bar</option>
             </param>

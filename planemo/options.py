@@ -764,9 +764,9 @@ def from_invocation():
         is_flag=True,
         default=False,
         help="Build a workflow test or job description from an invocation ID run on an external Galaxy."
-             "A Galaxy URL and API key must also be specified. This allows test data to be downloaded"
-             "and inputs and parameters defined automatically. Alternatively, the default is to build the"
-             "descriptions from a provided workflow URI.",
+        "A Galaxy URL and API key must also be specified. This allows test data to be downloaded"
+        "and inputs and parameters defined automatically. Alternatively, the default is to build the"
+        "descriptions from a provided workflow URI.",
     )
 
 
@@ -981,8 +981,8 @@ def shed_target_option():
         "-t",
         "--shed_target",
         help="Tool Shed to target (this can be 'toolshed', 'testtoolshed', "
-             "'local' (alias for http://localhost:9009/), an arbitrary url "
-             "or mappings defined ~/.planemo.yml.",
+        "'local' (alias for http://localhost:9009/), an arbitrary url "
+        "or mappings defined ~/.planemo.yml.",
         default=None,
         use_global_config=True,
         callback=validate_shed_target_callback,
@@ -1346,7 +1346,7 @@ def shed_fail_fast_option():
         is_flag=True,
         default=False,
         help="If multiple repositories are specified and an error occurs "
-             "stop immediately instead of processing remaining repositories.",
+        "stop immediately instead of processing remaining repositories.",
     )
 
 
@@ -1604,7 +1604,7 @@ def test_options():
             "--update_test_data",
             is_flag=True,
             help="Update test-data directory with job outputs (normally"
-                 " written to directory --job_output_files if specified.)",
+            " written to directory --job_output_files if specified.)",
         ),
         paste_test_data_paths_option(),
         test_report_options(),
@@ -1745,8 +1745,8 @@ def tool_init_autopygen_option(prompt=False):
         type=click.STRING,
         prompt=prompt,
         help="Option for automatic generation of tool file,"
-             " from python source code that uses argparse. "
-             "Parameter is a path to source file containing definition of the parser"
+        " from python source code that uses argparse. "
+        "Parameter is a path to source file containing definition of the parser",
     )
 
 
