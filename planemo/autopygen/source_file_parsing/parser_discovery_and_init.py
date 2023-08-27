@@ -4,11 +4,23 @@ and discovery of the statements initializing the parser itself
 """
 import ast
 import logging
-from typing import Tuple, Optional, Any, Set, List
+from typing import (
+    Any,
+    List,
+    Optional,
+    Set,
+    Tuple,
+)
 
 from .constants import STD_LIB_MODULE_NAMES
-from .decoy_parser import obtain_class_def, CustomParserUnavailableException
-from .parsing_exceptions import ArgParseImportNotFound, ArgParserNotUsed
+from .decoy_parser import (
+    CustomParserUnavailableException,
+    obtain_class_def,
+)
+from .parsing_exceptions import (
+    ArgParseImportNotFound,
+    ArgParserNotUsed,
+)
 from .parsing_commons import Discovery
 
 ARGPARSE_MODULE_NAME = "argparse"
