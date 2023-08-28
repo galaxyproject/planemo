@@ -1,6 +1,6 @@
-WARNING_STRING = "##!_FIXME_!##"
+import sys
 
-sys.version
+WARNING_STRING = "##!_FIXME_!##"
 
 # stdlib_module_names is only available from python 3.10
 try:
