@@ -440,13 +440,13 @@ def _determine_type(
     if action.kwargs.get("choices", []):
         return ParamDataType.SELECT
 
-    if type_ is None or type_ == bool or param_type_flags.is_flag:
+    if type_ is None or type_ is bool or param_type_flags.is_flag:
         return ParamDataType.BOOLEAN
-    elif type_ == int:
+    elif type_ is int:
         return ParamDataType.INTEGER
-    elif type_ == float:
+    elif type_ is float:
         return ParamDataType.FLOAT
-    elif type_ == str:
+    elif type_ is str:
         if name in data_inputs:
             return ParamDataType.DATA
         else:
