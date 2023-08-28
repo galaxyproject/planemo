@@ -2,7 +2,7 @@
 try:
     from sys import stdlib_module_names
 except ImportError:
-    from stdlib_list import module_names as stdlib_module_names
+    from stdlib_list import stdlib_list as stdlib_module_names
 
 WARNING_STRING = "##!_FIXME_!##"
 
