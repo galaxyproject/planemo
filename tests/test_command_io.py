@@ -2,7 +2,10 @@
 import os
 
 from planemo.tool_builder import CommandIO
-from .test_utils import assert_equal, TEST_AUTOPYGEN_DATA
+from .test_utils import (
+    assert_equal,
+    TEST_AUTOPYGEN_DATA,
+)
 
 
 def test_simplest_command():

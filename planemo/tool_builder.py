@@ -16,9 +16,9 @@ from planemo import (
     templates,
 )
 from planemo.autopygen.argument_parser_conversion import (
+    command_from_decoy,
     obtain_and_convert_parser,
     xml_from_decoy,
-    command_from_decoy,
     xml_to_string,
 )
 
