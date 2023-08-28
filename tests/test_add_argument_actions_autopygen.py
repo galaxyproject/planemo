@@ -1,18 +1,27 @@
 import ast
 import os
-from typing import Tuple, Optional, Dict, Set
 import sys
+from typing import (
+    Dict,
+    Optional,
+    Set,
+    Tuple,
+)
 
 import pytest
 
 from planemo.autopygen.argument_parser_conversion import (
     command_from_decoy,
-    xml_from_decoy,
     obtain_parser,
+    xml_from_decoy,
     xml_to_string,
 )
 from planemo.autopygen.param_info import ParamInfo
-from tests.test_utils import load_function_body, TEST_AUTOPYGEN_DATA, assert_equal
+from tests.test_utils import (
+    assert_equal,
+    load_function_body,
+    TEST_AUTOPYGEN_DATA,
+)
 
 
 def test_no_action_positional():

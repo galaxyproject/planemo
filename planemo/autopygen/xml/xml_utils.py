@@ -1,6 +1,14 @@
-from typing import Optional, List
+from typing import (
+    List,
+    Optional,
+)
+
 from lxml import etree
-from planemo.autopygen.param_info import ParamInfo, ParamDataType
+
+from planemo.autopygen.param_info import (
+    ParamDataType,
+    ParamInfo,
+)
 
 
 def options(param_info: ParamInfo) -> etree._Element:

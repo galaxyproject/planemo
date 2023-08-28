@@ -8,12 +8,28 @@ import logging
 import math
 import re
 import uuid
-
-from typing import Optional, Set, List, Dict, Tuple, Union, Any
 from argparse import ArgumentParser
+from typing import (
+    Any,
+    Dict,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    Union,
+)
 
-from planemo.autopygen.commands.command_utils import transform_param_info, create_element_with_body
-from planemo.autopygen.param_info import ParamInfo, ParamTypeFlags, ParamDataType
+from lxml import etree
+
+from planemo.autopygen.commands.command_utils import (
+    create_element_with_body,
+    transform_param_info,
+)
+from planemo.autopygen.param_info import (
+    ParamDataType,
+    ParamInfo,
+    ParamTypeFlags,
+)
 from planemo.autopygen.source_file_parsing.decoy_parser import DecoyParser
 from planemo.autopygen.source_file_parsing.local_module_parsing import handle_local_module_names
 from planemo.autopygen.source_file_parsing.parser_discovery_and_init import get_parser_init_and_actions
@@ -23,8 +39,12 @@ from planemo.autopygen.source_file_parsing.parsing_commons import (
 )
 from planemo.autopygen.source_file_parsing.parsing_exceptions import ArgumentParsingDiscoveryError
 from planemo.autopygen.source_file_parsing.unknown_names_discovery import initialize_variables_in_module
-from planemo.autopygen.xml.xml_utils import repeat, options, param, formatted_xml_elem
-from lxml import etree
+from planemo.autopygen.xml.xml_utils import (
+    formatted_xml_elem,
+    options,
+    param,
+    repeat,
+)
 
 DEFAULT_XML_INDENT = 4
 

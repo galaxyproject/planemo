@@ -3,11 +3,16 @@ Module containing discovery classes used to find names
 (assignments to variables) that have not been extracted yet
 """
 import ast
+import builtins
+from typing import (
+    Any,
+    List,
+    Set,
+    Tuple,
+)
 
 from .constants import STD_LIB_MODULE_NAMES
 from .parsing_commons import CustomVisitor
-from typing import Tuple, List, Any, Set
-import builtins
 
 
 class UnknownNamesDiscovery(CustomVisitor):

@@ -17,11 +17,11 @@ from .decoy_parser import (
     CustomParserUnavailableException,
     obtain_class_def,
 )
+from .parsing_commons import Discovery
 from .parsing_exceptions import (
     ArgParseImportNotFound,
     ArgParserNotUsed,
 )
-from .parsing_commons import Discovery
 
 ARGPARSE_MODULE_NAME = "argparse"
 ARGUMENT_PARSER_CLASS_NAME = "ArgumentParser"

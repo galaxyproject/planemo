@@ -1,6 +1,12 @@
 import dataclasses
 import enum
-from typing import Any, List, Union, Optional, Dict
+from typing import (
+    Any,
+    Dict,
+    List,
+    Optional,
+    Union,
+)
 
 from planemo.autopygen.source_file_parsing.constants import WARNING_STRING
 

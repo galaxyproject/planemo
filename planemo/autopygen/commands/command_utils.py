@@ -11,7 +11,10 @@ Elements can be nested
 """
 from typing import List
 
-from planemo.autopygen.param_info import ParamInfo, ParamDataType
+from planemo.autopygen.param_info import (
+    ParamDataType,
+    ParamInfo,
+)
 
 SPACE = " "
 DEFAULT_INDENT = 4

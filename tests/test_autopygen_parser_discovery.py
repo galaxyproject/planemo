@@ -3,12 +3,16 @@ import os
 
 from planemo.autopygen.source_file_parsing.decoy_parser import obtain_class_def
 from planemo.autopygen.source_file_parsing.parser_discovery_and_init import (
-    SimpleParserDiscoveryAndReplacement,
-    ImportDiscovery,
-    GroupAndSubparsersDiscovery,
     ArgumentCreationDiscovery,
+    GroupAndSubparsersDiscovery,
+    ImportDiscovery,
+    SimpleParserDiscoveryAndReplacement,
 )
-from .test_utils import assert_equal, TEST_AUTOPYGEN_DATA, load_function_body
+from .test_utils import (
+    assert_equal,
+    load_function_body,
+    TEST_AUTOPYGEN_DATA,
+)
 
 
 def test_import_discovery():

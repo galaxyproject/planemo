@@ -3,8 +3,13 @@ Module responsible for resolving assignments and constant list comprehensives
 used in argument parser
 """
 import ast
-from typing import List, Tuple, Any, Set
 import logging
+from typing import (
+    Any,
+    List,
+    Set,
+    Tuple,
+)
 
 from planemo.autopygen.source_file_parsing.constants import WARNING_STRING
 from planemo.autopygen.source_file_parsing.parsing_commons import add_parents

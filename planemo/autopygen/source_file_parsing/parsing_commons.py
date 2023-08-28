@@ -1,9 +1,13 @@
 """
 Module containing the parent class of Dicovery classes
 """
-import ast
 import abc
-from typing import List, Tuple, Any
+import ast
+from typing import (
+    Any,
+    List,
+    Tuple,
+)
 
 
 class CustomAST(ast.AST):
