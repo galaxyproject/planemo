@@ -13,4 +13,5 @@ lxml
 oyaml
 pyyaml
 virtualenv
+stdlib_list; python_version < '3.10'
 tabulate
