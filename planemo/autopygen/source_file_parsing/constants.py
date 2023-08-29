@@ -1,15 +1,10 @@
 # stdlib_module_names is only available from python 3.10
-# the inner try-except is essentially needed for mypy
-# since we assume that stdlib-list is available
-try:
+if sys.version_info >= (3, 10):
     from sys import stdlib_module_names
-except ImportError:
-    try:
-        from stdlib_list import stdlib_list
-        stdlib_module_names = stdlib_list()
-    except ImportError:
-        # Handle the case where stdlib_list is not available
-        stdlib_module_names = []
+else:
+    from stdlib_list import stdlib_list
+
+    stdlib_module_names = stdlib_list()
 
 WARNING_STRING = "##!_FIXME_!##"
 
