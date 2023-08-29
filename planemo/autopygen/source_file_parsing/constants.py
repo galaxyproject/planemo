@@ -1,5 +1,7 @@
+from sys import version_info
 # stdlib_module_names is only available from python 3.10
-if sys.version_info >= (3, 10):
+
+if version_info >= (3, 10):
     from sys import stdlib_module_names
 else:
     from stdlib_list import stdlib_list
