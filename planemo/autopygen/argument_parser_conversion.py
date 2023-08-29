@@ -456,7 +456,7 @@ def _determine_type(
 
 
 def _determine_nargs(nargs: Union[str, int, None]) -> Union[float, int]:
-    if type(nargs) == str:
+    if isinstance(nargs, str):
         if nargs == "?":
             return 1
         return math.inf
