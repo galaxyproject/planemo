@@ -37,6 +37,7 @@ def build_conda_context(ctx: "PlanemoCliContext", **kwds) -> CondaContext:
     """
     condarc_override_default = os.path.join(ctx.workspace, "condarc")
     conda_prefix = kwds.get("conda_prefix", None)
+    conda_exec = kwds.get("conda_exec", None)
     use_planemo_shell = kwds.get("use_planemo_shell_exec", True)
     ensure_channels = kwds.get("conda_ensure_channels", "")
     condarc_override = kwds.get("condarc", condarc_override_default)
@@ -48,6 +49,7 @@ def build_conda_context(ctx: "PlanemoCliContext", **kwds) -> CondaContext:
         condarc_override=condarc_override,
         use_local=use_local,
         shell_exec=shell_exec,
+        conda_exec=conda_exec,
     )
     handle_auto_init = kwds.get("handle_auto_init", False)
     if handle_auto_init and not conda_context.is_installed():
