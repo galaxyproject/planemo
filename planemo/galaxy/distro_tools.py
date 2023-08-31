@@ -104,4 +104,5 @@ DISTRO_TOOLS_ID_TO_PATH = {
     "axt_to_fasta": "filters/axt_to_fasta.xml",
     "addValue": "filters/fixedValueColumn.xml",
     "param_value_from_file": "expression_tools/parse_values_from_file.xml",
+    "pick_value": "expression_tools/pick_value.xml",
 }
