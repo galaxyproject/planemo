@@ -6,6 +6,22 @@ History
 .. to_doc
 
 ---------------------
+0.75.10 (2022-09-01)
+---------------------
+
+* Add pick_value to distro_tools (thanks to `@mvdbeek`_). `Pull Request 1385`_
+* Allow missing conda_exec (thanks to `@mstabrin`_). `Pull Request 1384`_
+* Fix profile version test (thanks to `@bernt-matthias`_). `Pull Request
+  1383`_
+* Fix type comparisons (thanks to `@bernt-matthias`_). `Pull Request 1382`_
+* Added a note that docker is required for docker and biocontainers option
+  (thanks to `@paulzierep`_). `Pull Request 1355`_
+* Optimize disk space usage for `planemo test` (thanks to `@bernt-matthias`_).
+  `Pull Request 1378`_
+* Fix for change of base_url in BioBlend 1.2.0 (thanks to `@nsoranzo`_). `Pull
+  Request 1379`_
+
+---------------------
 0.75.9 (2022-06-29)
 ---------------------
 
@@ -1978,6 +1994,13 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1385: https://github.com/galaxyproject/planemo/pull/1385
+.. _Pull Request 1384: https://github.com/galaxyproject/planemo/pull/1384
+.. _Pull Request 1383: https://github.com/galaxyproject/planemo/pull/1383
+.. _Pull Request 1382: https://github.com/galaxyproject/planemo/pull/1382
+.. _Pull Request 1355: https://github.com/galaxyproject/planemo/pull/1355
+.. _Pull Request 1378: https://github.com/galaxyproject/planemo/pull/1378
+.. _Pull Request 1379: https://github.com/galaxyproject/planemo/pull/1379
 .. _Pull Request 1377: https://github.com/galaxyproject/planemo/pull/1377
 .. _Pull Request 1375: https://github.com/galaxyproject/planemo/pull/1375
 .. _Pull Request 1374: https://github.com/galaxyproject/planemo/pull/1374
@@ -2870,3 +2893,5 @@ History
 .. _@lldelisle: https://github.com/lldelisle
 .. _@wm75: https://github.com/wm75
 .. _@SimonWaldherr: https://github.com/SimonWaldherr
+.. _@mstabrin: https://github.com/mstabrin
+.. _@paulzierep: https://github.com/paulzierep
