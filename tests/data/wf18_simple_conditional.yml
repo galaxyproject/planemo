@@ -1,0 +1,13 @@
+class: GalaxyWorkflow
+inputs:
+  should_run:
+    type: boolean
+  some_file:
+    type: data
+steps:
+  cat1:
+    tool_id: cat1
+    in:
+      input1: some_file
+      should_run: should_run
+    when: $(inputs.should_run)

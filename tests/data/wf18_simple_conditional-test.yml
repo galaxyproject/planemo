@@ -1,0 +1,7 @@
+- doc: Simple conditional concat workflow test
+  job:
+    some_file:
+      class: File
+      path: hello.txt
+    should_run: false
+  outputs: {}

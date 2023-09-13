@@ -358,3 +358,13 @@ class CmdTestTestCase(CliTestCase):
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command.append(test_artifact)
             self._check_exit_code(test_command, exit_code=0)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_test_skipped_invocation(self):
+        cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
+        with self._isolate():
+            test_artifact = os.path.join(TEST_DATA_DIR, "wf18_simple_conditional.yml")
+            test_command = self._test_command("--extra_tools", cat)
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command.append(test_artifact)
+            self._check_exit_code(test_command, exit_code=0)
