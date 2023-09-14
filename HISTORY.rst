@@ -6,7 +6,16 @@ History
 .. to_doc
 
 ---------------------
-0.75.10 (2022-09-01)
+0.75.11 (2023-09-01)
+---------------------
+
+* Implement automatic tool generation based on the source code of the tool
+  (thanks to `@Kulivox`_). `Pull Request 1263`_
+* Support for testing workflows with conditional steps (thanks to
+  `@mvdbeek`_). `Pull Request 1387`_
+
+---------------------
+0.75.10 (2023-09-01)
 ---------------------
 
 * Add pick_value to distro_tools (thanks to `@mvdbeek`_). `Pull Request 1385`_
@@ -22,7 +31,7 @@ History
   Request 1379`_
 
 ---------------------
-0.75.9 (2022-06-29)
+0.75.9 (2023-06-29)
 ---------------------
 
 * Update collection operation tool list (thanks to `@mvdbeek`_). `Pull Request
@@ -34,7 +43,7 @@ History
   `@nsoranzo`_). `Pull Request 1373`_
 
 ---------------------
-0.75.8 (2022-06-09)
+0.75.8 (2023-06-09)
 ---------------------
 
 * Bump galaxy package requirements to allow for 23.0 (thanks to `@bernt-matthias`_). `Pull Request 1372`_
@@ -45,13 +54,13 @@ History
 * Drop `allow_none` for finding repository (thanks to `@mvdbeek`_). `Pull Request 1358`_
 
 ---------------------
-0.75.7 (2022-03-01)
+0.75.7 (2023-03-01)
 ---------------------
 * Drop call to ``escape_non_unicode_symbols`` (thanks to `@nsoranzo`_). `Pull
   Request 1357`_
 
 ---------------------
-0.75.6 (2022-02-22)
+0.75.6 (2023-02-22)
 ---------------------
 * Allow running autoupdate against external server (thanks to `@mvdbeek`_).
   `Pull Request 1265`_
@@ -59,13 +68,13 @@ History
   `@lldelisle`_). `Pull Request 1350`_
 
 ---------------------
-0.75.5 (2022-02-10)
+0.75.5 (2023-02-10)
 ---------------------
 * Bump galaxy packages to 22.05 (thanks to `@bernt-matthias`_). `Pull Request
   1275`_
 
 ---------------------
-0.75.4 (2022-02-09)
+0.75.4 (2023-02-09)
 ---------------------
 
 * Store datasets by UUID (thanks to `@bernt-matthias`_). `Pull Request 1347`_
@@ -1994,6 +2003,8 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1263: https://github.com/galaxyproject/planemo/pull/1263
+.. _Pull Request 1387: https://github.com/galaxyproject/planemo/pull/1387
 .. _Pull Request 1385: https://github.com/galaxyproject/planemo/pull/1385
 .. _Pull Request 1384: https://github.com/galaxyproject/planemo/pull/1384
 .. _Pull Request 1383: https://github.com/galaxyproject/planemo/pull/1383
@@ -2895,3 +2906,4 @@ History
 .. _@SimonWaldherr: https://github.com/SimonWaldherr
 .. _@mstabrin: https://github.com/mstabrin
 .. _@paulzierep: https://github.com/paulzierep
+.. _@Kulivox: https://github.com/Kulivox
