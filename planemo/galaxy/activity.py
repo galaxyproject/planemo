@@ -223,7 +223,7 @@ def _execute(  # noqa C901
 
         if not kwds.get("no_wait"):
             final_state = _wait_for_invocation_jobs(ctx, user_gi, invocation_id, polling_backoff)
-            if final_state != "ok":
+            if final_state not in ("ok", "skipped"):
                 msg = "Failed to run workflow final history state is [%s]." % final_state
                 error_message = msg if not error_message else f"{error_message}. {msg}"
                 ctx.vlog(msg)
@@ -698,7 +698,7 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
 
     @property
     def was_successful(self):
-        return self.history_state in ["ok", None] and self.invocation_state == "scheduled"
+        return self.history_state in ["ok", "skipped", None] and self.invocation_state == "scheduled"
 
 
 def _tool_id(tool_path):
@@ -740,7 +740,7 @@ def _retry_on_timeouts(ctx, gi, f):
             except RequestException:
                 end_time = time.time()
                 if end_time - start_time > 45 and (try_num + 1) < try_count:
-                    ctx.vlog("Galaxy seems to have timedout, retrying to fetch status.")
+                    ctx.vlog("Galaxy seems to have timed out, retrying to fetch status.")
                     continue
                 else:
                     raise
@@ -815,6 +815,8 @@ def _wait_on_state(state_func, polling_backoff=0, timeout=None):
                 return terminal_state
         if current_non_terminal_states:
             return None
+        if len(current_states) > 1:
+            current_states = current_states - {"skipped"}
         assert len(current_states) == 1, f"unexpected state(s) found: {current_states}"
         return current_states.pop()
 
