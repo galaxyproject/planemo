@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   planemo.autopygen
    planemo.commands
    planemo.cwl
    planemo.database
