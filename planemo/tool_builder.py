@@ -15,12 +15,17 @@ from planemo import (
     io,
     templates,
 )
+from planemo.autopygen.argument_parser_conversion import (
+    command_from_decoy,
+    obtain_and_convert_parser,
+    xml_from_decoy,
+    xml_to_string,
+)
 
 REUSING_MACROS_MESSAGE = (
     "Macros file macros.xml already exists, assuming " " it has relevant planemo-generated definitions."
 )
 DEFAULT_CWL_VERSION = "v1.0"
-
 
 TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}+galaxy0" python_template_version="3.5" profile="21.05">
 {%- if description %}
@@ -50,14 +55,24 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}+galaxy
     <command detect_errors="exit_code"><![CDATA[
 {%- if command %}
         {{ command }}
-{%- else %}
-        TODO: Fill in command template.
+{%- endif %}
+{%- if not command and auto_commands %}
+    TODO: executable name
+{%- endif %}
+{%- if auto_commands %}
+        {{ auto_commands }}
+{%- endif %}
+{%- if not (command or auto_commands) %}
+    TODO: Fill in command template.
 {%- endif %}
     ]]></command>
     <inputs>
 {%- for input in inputs %}
         {{ input }}
 {%- endfor %}
+{%- if auto_inputs %}
+{{ auto_inputs }}
+{%- endif %}
     </inputs>
     <outputs>
 {%- for output in outputs %}
@@ -81,8 +96,12 @@ TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}+galaxy
     <help><![CDATA[
 {%- if help %}
         {{ help }}
-{%- else %}
-        TODO: Fill in help.
+{%- endif %}
+{%- if auto_help %}
+        {{ auto_help }}
+{%- endif %}
+{%- if not (help or auto_help) %}
+    TODO: Fill in help.
 {%- endif %}
     ]]></help>
 {%- if macros %}
@@ -336,7 +355,9 @@ def _build_galaxy(**kwds):
     kwds["inputs"] = command_io.inputs
     kwds["outputs"] = command_io.outputs
     kwds["command"] = command_io.cheetah_template
-
+    kwds["auto_inputs"] = command_io.auto_inputs
+    kwds["auto_commands"] = command_io.auto_commands
+    kwds["version_command"] = command_io.version_command
     test_case = command_io.test_case()
 
     # finally wrap up tests
@@ -372,13 +393,42 @@ class CommandIO:
         # process raw inputs
         inputs = kwds.pop("input", [])
         inputs = list(map(Input, inputs or []))
-
         # alternatively process example inputs
         example_inputs = kwds.pop("example_input", [])
         for i, input_file in enumerate(example_inputs or []):
             name = f"input{i + 1}"
             inputs.append(Input(input_file, name=name, example=True))
             cheetah_template = _replace_file_in_command(cheetah_template, input_file, name)
+
+        auto_inputs = None
+        auto_commands = None
+        auto_help = None
+        version_command = None
+        parser_path = kwds.get("autopygen", None)
+        if parser_path is not None:
+            parser = obtain_and_convert_parser(parser_path)
+
+            if parser is not None:
+                data_inputs = dict()
+                reserved_names = set()
+                name_map = dict()
+                section_map = dict()
+
+                generated_inputs, _, version_command_param = xml_from_decoy(
+                    parser, data_inputs, reserved_names, name_map, section_map
+                )
+
+                auto_inputs = xml_to_string(generated_inputs, 8)
+                # TODO make them useful  auto_outputs = xml_to_string(generated_outputs, 8)
+
+                auto_commands = command_from_decoy(
+                    parser, data_inputs, reserved_names, name_map, section_map, skip_default_namespace=True
+                )
+
+                if version_command_param:
+                    version_command = f"[TODO exec name] {version_command_param.argument}"
+
+                auto_help = parser.format_help()
 
         # handle raw outputs (from_work_dir ones) as well as named_outputs
         outputs = kwds.pop("output", [])
@@ -405,6 +455,10 @@ class CommandIO:
         self.inputs = inputs
         self.outputs = outputs
         self.command = command
+        self.auto_inputs = auto_inputs
+        self.auto_commands = auto_commands
+        self.auto_help = auto_help
+        self.version_command = version_command
         self.cheetah_template = cheetah_template
 
     def example_input_names(self):

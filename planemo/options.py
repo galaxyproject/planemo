@@ -1,6 +1,5 @@
 """Click definitions for various shared options and arguments."""
 
-
 import functools
 import os
 
@@ -1748,6 +1747,17 @@ def workflow_output_artifact():
             readable=True,
             resolve_path=True,
         ),
+    )
+
+
+def tool_init_autopygen_option(prompt=False):
+    return planemo_option(
+        "--autopygen",
+        type=click.STRING,
+        prompt=prompt,
+        help="Option for automatic generation of tool file,"
+        " from python source code that uses argparse. "
+        "Parameter is a path to source file containing definition of the parser",
     )
 
 

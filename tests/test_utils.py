@@ -1,5 +1,5 @@
 """Provide abstractions over click testing of the app and unittest."""
-
+import ast
 import contextlib
 import functools
 import os
@@ -52,6 +52,8 @@ else:
     PYTHON_27 = False
 
 TEST_DIR = os.path.dirname(__file__)
+TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
+TEST_AUTOPYGEN_DATA = os.path.join(TEST_DATA_DIR, "autopygen")
 TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
 TEST_REPOS_DIR = os.path.join(TEST_DATA_DIR, "repos")
 TEST_TOOLS_DIR = os.path.join(TEST_DATA_DIR, "tools")
@@ -279,7 +281,7 @@ def create_test_context():
     return context
 
 
-def assert_equal(a, b):
+def assert_equal(a: object, b: object) -> None:
     """Assert two things are equal."""
     assert a == b, f"{a} != {b}"
 
@@ -420,6 +422,17 @@ def safe_rmtree(path):
         shutil.rmtree(path)
     except Exception as e:
         print(f"Failed to cleanup test directory [{path}]: [{e}]")
+
+
+def load_function_body(path: str, func_name: str) -> ast.Module:
+    with open(path) as file:
+        module = ast.parse(file.read())
+
+        for item in module.body:
+            if isinstance(item, ast.FunctionDef) and item.name == func_name:
+                return ast.Module(body=item.body, type_ignores=[])
+
+        raise ModuleNotFoundError()
 
 
 # TODO: everything should be considered "exported".

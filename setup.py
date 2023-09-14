@@ -44,6 +44,10 @@ PROJECT_DESCRIPTION = (
 )
 PACKAGES = [
     "planemo",
+    "planemo.autopygen",
+    "planemo.autopygen.commands",
+    "planemo.autopygen.source_file_parsing",
+    "planemo.autopygen.xml",
     "planemo.cwl",
     "planemo.commands",
     "planemo.database",

@@ -1,0 +1,32 @@
+        <conditional name="subparsers0">
+            <param name="subparser_selector" type="select">
+                <option value="foo" selected="true">foo</option>
+                <option value="bar" selected="false">bar</option>
+            </param>
+            <when value="foo">
+                <param argument="keyword" type="text" optional="false" label="keyword" help="action keyword"/>
+                <repeat name="integers_repeat" title="integers_repeat">
+                    <param argument="integers" type="integer" optional="false" label="integers" help="an integer for the accumulator"/>
+                </repeat>
+                <param argument="-s" type="boolean" truevalue="-s" falsevalue="" checked="false" label="s" help="sum the integers (default: find the max)"/>
+                <param argument="--foo" type="text" optional="true" label="foo" help="foo help"/>
+                <repeat name="bar_repeat" title="bar_repeat">
+                    <param argument="--bar" type="text" optional="true" label="bar" help="BAR!"/>
+                </repeat>
+                <param argument="--true" type="boolean" truevalue="--true" falsevalue="" checked="false" label="true" help="Store a true"/>
+            </when>
+            <when value="bar">
+                <param argument="--false" type="boolean" truevalue="--false" falsevalue="" checked="false" label="false" help="Store a false"/>
+                <repeat name="append_repeat" title="append_repeat">
+                    <param argument="--append" type="text" optional="true" label="append" help="Append a value"/>
+                </repeat>
+                <repeat name="nargs2_repeat" title="nargs2_repeat" max="2">
+                    <param argument="--nargs2" type="text" optional="true" label="nargs2" help="nargs2"/>
+                </repeat>
+                <param argument="--mode" type="select" optional="true" label="mode">
+                    <option value="rock">Rock</option>
+                    <option value="paper">Paper</option>
+                    <option value="scissors" selected="true">Scissors</option>
+                </param>
+            </when>
+        </conditional>
