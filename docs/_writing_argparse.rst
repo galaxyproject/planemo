@@ -26,5 +26,3 @@ files all file parameters will be rendered as input parameters of the tool.
 
 Please open an issue if you have ideas on how to improve the generated tools:
 https://github.com/galaxyproject/planemo/issues
-
-

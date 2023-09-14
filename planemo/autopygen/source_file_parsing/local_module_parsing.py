@@ -23,9 +23,10 @@ class UnknownNamesRemoval(ast.NodeVisitor):
 
     Attributes
     ---
+
     unknown: Set[str]
-     set of names that represent variables used in parser initialization,
-     that have not been resolved yet
+      set of names that represent variables used in parser initialization,
+      that have not been resolved yet
 
     """
 
@@ -104,10 +105,10 @@ def handle_local_module_names(actions: List[ast.AST], unknown_names: Set[str]) -
 
     Parameters
     ----------
-    actions : List[ast.AST]
-     list of actions extracted so far
-    unknown_names :
-     set of unknown names that have to be extracted
+    actions: List[ast.AST]
+      list of actions extracted so far
+    unknown_names:
+      set of unknown names that have to be extracted
 
     Returns
     -------

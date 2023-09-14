@@ -3,6 +3,7 @@ Module used for creation and manipulation of template elements
 are parts of template, separated from the rest by comments
 with specific structure
 Example of the comments:
+
     ## foo definition
     ... block itself ...
     ## end foo definition
@@ -42,8 +43,8 @@ def create_flag(
     comment : str
         wrapping comment
     depth : int
-     integer, used to set the depth of the current element.
-     This value is used to indent the block properly
+      integer, used to set the depth of the current element.
+      This value is used to indent the block properly
     indent : int
       default value for size of the block indent
     add_comment : bool
@@ -73,18 +74,18 @@ def create_element_with_body(
     Parameters
     ----------
     kind : str
-     string defining what kind of element is created, for example if or for
-     (loop)
+      string defining what kind of element is created, for example if or for
+      (loop)
     head : str
-     body of block header, for example predicate of condition, or the
-     body of loop
+      body of block header, for example predicate of condition, or the
+      body of loop
     body : str
-     body of the block, can be another element
+      body of the block, can be another element
     comment : str
-     comment, used to set the start and end of the block
+      comment, used to set the start and end of the block
     depth : int
-     integer, used to set the depth of the current element.
-     This value is used to indent the block properly
+      integer, used to set the depth of the current element.
+      This value is used to indent the block properly
     indent : int
       default value for size of the block indent
     body_indented : bool

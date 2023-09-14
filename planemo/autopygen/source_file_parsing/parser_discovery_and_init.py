@@ -90,7 +90,7 @@ class SimpleParserDiscoveryAndReplacement(Discovery):
     """
     Class responsible for discovery of ArgumentParser creation
     and assignment, and replacement of the class definition
-     by the one supplied through constructor
+    by the one supplied through constructor
     """
 
     def __init__(
@@ -230,7 +230,7 @@ def get_parser_init_and_actions(source: ast.Module) -> Tuple[List[ast.AST], str,
     Parameters
     ----------
     source : ast.Module
-     source file parsed into ATT
+      source file parsed into ATT
 
     Returns
     -------

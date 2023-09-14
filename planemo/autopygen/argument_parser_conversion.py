@@ -1,7 +1,7 @@
 """
 Functions used to extract initialized ArgumentParser from target source code,
 and to transform it into easily usable ParamInfo class containing
- all the necessary info for 'inputs' element initialization
+all the necessary info for 'inputs' element initialization
 """
 import ast
 import logging
@@ -57,7 +57,7 @@ def obtain_and_convert_parser(path: str) -> Optional[DecoyParser]:
     Parameters
     ----------
     path : str
-     path to the source file containing argument parser init
+      path to the source file containing argument parser init
 
     Returns
     -------
@@ -80,7 +80,7 @@ def obtain_and_convert_parser_from_str(text: str) -> Optional[ArgumentParser]:
     Parameters
     ----------
     text : str
-     variable containing target source code
+      variable containing target source code
 
     Returns
     -------
