@@ -219,7 +219,7 @@ def _execute(  # noqa C901
             polling_backoff=polling_backoff,
         )
         if final_invocation_state not in ("ok", "skipped"):
-            msg = f"Failed to run workflow, at least one job is in [{final_invocation_state}] state."
+            msg = f"Failed to run workflow [{workflow_id}], at least one job is in [{final_invocation_state}] state."
             ctx.vlog(msg)
             summarize_history(ctx, user_gi, history_id)
 
@@ -729,14 +729,14 @@ def wait_for_invocation_and_jobs(
     except Exception as e:
         ctx.vlog(f"Problem waiting on invocation: {str(e)}")
         summarize_history(ctx, user_gi, history_id)
-        error_message = "Final invocation state is [%s]" % final_invocation_state
+        error_message = f"Final state of invocation {invocation_id} is [{final_invocation_state}]"
 
-    ctx.vlog("Final invocation state is [%s]" % final_invocation_state)
+    ctx.vlog(f"Final state of invocation {invocation_id} is [{final_invocation_state}]")
 
     if not no_wait:
         job_state = _wait_for_invocation_jobs(ctx, user_gi, invocation_id, polling_backoff)
         if job_state not in ("ok", "skipped"):
-            msg = "Failed to run workflow, at least one job is in [%s] state." % job_state
+            msg = f"Failed to run workflow, at least one job is in [{job_state}] state."
             error_message = msg if not error_message else f"{error_message}. {msg}"
         else:
             # wait for possible subworkflow invocations
@@ -754,7 +754,7 @@ def wait_for_invocation_and_jobs(
                     if final_invocation_state != "scheduled" or job_state not in ("ok", "skipped"):
                         return final_invocation_state, job_state, error_message
 
-        ctx.vlog("All invocation and subworkflow invocations states are 'ok'")
+        ctx.vlog(f"The final state of all jobs and subworkflow invocations for invocation [{invocation_id}] is 'ok'")
     return final_invocation_state, job_state, error_message
 
 
