@@ -6,7 +6,13 @@ History
 .. to_doc
 
 ---------------------
-0.75.11 (2023-09-01)
+0.75.12 (2023-09-18)
+---------------------
+* Track subworkflow invocations after main invocation is scheduled (thanks to
+  `@mvdbeek`_). `Pull Request 1389`_
+
+---------------------
+0.75.11 (2023-09-14)
 ---------------------
 
 * Implement automatic tool generation based on the source code of the tool
@@ -2003,6 +2009,7 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1389: https://github.com/galaxyproject/planemo/pull/1389
 .. _Pull Request 1263: https://github.com/galaxyproject/planemo/pull/1263
 .. _Pull Request 1387: https://github.com/galaxyproject/planemo/pull/1387
 .. _Pull Request 1385: https://github.com/galaxyproject/planemo/pull/1385
