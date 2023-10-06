@@ -1,0 +1,17 @@
+- doc: Test outline for Test-workflow
+  job:
+    input text file with numbers:
+      class: File
+      path: wf_same_name_outputs_input.txt
+      filetype: txt
+  outputs:
+    output:
+      element_tests:
+        split_file_000000.txt:
+          asserts:
+            has_n_lines:
+              n: 1
+        split_file_000001.txt:
+          asserts:
+            has_n_lines:
+              n: 2

@@ -368,3 +368,12 @@ class CmdTestTestCase(CliTestCase):
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command.append(test_artifact)
             self._check_exit_code(test_command, exit_code=0)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_with_identical_output_names(self):
+        with self._isolate():
+            test_artifact = os.path.join(TEST_DATA_DIR, "wf_same_name_outputs.ga")
+            test_command = self._test_command()
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command.append(test_artifact)
+            self._check_exit_code(test_command, exit_code=0)

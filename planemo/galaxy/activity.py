@@ -503,7 +503,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
 
     def download_output_to(self, ctx, dataset_details, output_directory, filename=None):
         if filename is None:
-            local_filename = sanitize_filename(dataset_details.get("cwl_file_name") or dataset_details.get("name"))
+            local_filename = f'{sanitize_filename(dataset_details.get("cwl_file_name") or dataset_details.get("name"))}__{dataset_details["uuid"]}'
         else:
             local_filename = filename
         destination = os.path.join(output_directory, local_filename)
