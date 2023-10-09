@@ -508,8 +508,6 @@ class Tutorial:
         if self.init_wf_id:
             if not self.training.galaxy_url:
                 raise ValueError("No Galaxy URL given")
-            if not self.training.galaxy_api_key:
-                raise ValueError("No API key to access the given Galaxy instance")
             self.body = get_hands_on_boxes_from_running_galaxy(
                 self.init_wf_id, self.training.galaxy_url, self.training.galaxy_api_key
             )
