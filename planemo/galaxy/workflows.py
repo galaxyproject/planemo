@@ -7,6 +7,7 @@ from typing import (
     Callable,
     Dict,
     List,
+    TYPE_CHECKING,
 )
 from urllib.parse import urlparse
 
@@ -24,12 +25,21 @@ from gxformat2.normalize import (
     inputs_normalized,
     outputs_normalized,
 )
+from typing_extensions import NamedTuple
 
 from planemo.galaxy.api import gi
 from planemo.io import warn
 
+if TYPE_CHECKING:
+    from ephemeris.shed_tools import InstallRepoDict
+
 FAILED_REPOSITORIES_MESSAGE = "Failed to install one or more repositories."
 GALAXY_WORKFLOWS_PREFIX = "gxid://workflows/"
+
+
+class InstalledShedRepos(NamedTuple):
+    installed_repositories: List["InstallRepoDict"]
+    updated_repositories: List["InstallRepoDict"]
 
 
 def load_shed_repos(runnable):
@@ -88,16 +98,17 @@ def install_shed_repos(
             install_results.errored_repositories.extend(update_results.errored_repositories)
             updated_repos = update_results.installed_repositories
         else:
-            updated_repos = None
+            updated_repos = []
 
         if install_results.errored_repositories:
+            msg = f"{FAILED_REPOSITORIES_MESSAGE}: \n{yaml.safe_dump(install_results.errored_repositories)}"
             if ignore_dependency_problems:
-                warn(FAILED_REPOSITORIES_MESSAGE)
+                warn(msg)
             else:
-                raise Exception(FAILED_REPOSITORIES_MESSAGE)
-        return install_results.installed_repositories, updated_repos
+                raise Exception(msg)
+        return InstalledShedRepos(install_results.installed_repositories, updated_repos)
     else:
-        return None, None
+        return InstalledShedRepos([], [])
 
 
 def import_workflow(path, admin_gi, user_gi, from_path=False):
