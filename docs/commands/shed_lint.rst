@@ -34,6 +34,10 @@ help text for mentioned URLs and checks those.
                                       processing remaining repositories.
       --report_level [all|warn|error]
       --fail_level [warn|error]
+      -s, --skip TEXT                 Comma-separated list of lint tests to skip
+                                      (e.g. passing --skip 'citations,xml_order'
+                                      would skip linting of citations and best-
+                                      practice XML ordering.
       --tools                         Lint tools discovered in the process of
                                       linting repositories.
       --xsd / --no_xsd                Include tool XSD validation in linting

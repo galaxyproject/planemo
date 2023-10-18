@@ -6,6 +6,15 @@ History
 .. to_doc
 
 ---------------------
+0.75.13 (2023-10-18)
+---------------------
+* Add --skip to shed_lint (thanks to `@bernt-matthias`_). `Pull Request 1394`_
+* Remove API key requirement from training_init (thanks to `@hexylena`_).
+  `Pull Request 1393`_
+* Try to fix planemo test workflow when output is collection with identical
+  name (thanks to `@lldelisle`_). `Pull Request 1391`_
+
+---------------------
 0.75.12 (2023-09-18)
 ---------------------
 * Track subworkflow invocations after main invocation is scheduled (thanks to
@@ -2009,6 +2018,9 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1394: https://github.com/galaxyproject/planemo/pull/1394
+.. _Pull Request 1393: https://github.com/galaxyproject/planemo/pull/1393
+.. _Pull Request 1391: https://github.com/galaxyproject/planemo/pull/1391
 .. _Pull Request 1389: https://github.com/galaxyproject/planemo/pull/1389
 .. _Pull Request 1263: https://github.com/galaxyproject/planemo/pull/1263
 .. _Pull Request 1387: https://github.com/galaxyproject/planemo/pull/1387
