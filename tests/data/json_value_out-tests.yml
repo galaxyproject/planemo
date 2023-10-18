@@ -1,0 +1,5 @@
+- doc: Test outline for Param-value-from-file-workflow
+  job:
+    int_in: 2
+  outputs:
+    int_out: 2
