@@ -5,6 +5,13 @@ History
 
 .. to_doc
 
+
+---------------------
+0.75.14 (2023-10-19)
+---------------------
+* Fix workflow_lint for json output values (thanks to `@mvdbeek`_). `Pull
+  Request 1395`_
+
 ---------------------
 0.75.13 (2023-10-18)
 ---------------------
@@ -2018,6 +2025,7 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1395: https://github.com/galaxyproject/planemo/pull/1395
 .. _Pull Request 1394: https://github.com/galaxyproject/planemo/pull/1394
 .. _Pull Request 1393: https://github.com/galaxyproject/planemo/pull/1393
 .. _Pull Request 1391: https://github.com/galaxyproject/planemo/pull/1391
