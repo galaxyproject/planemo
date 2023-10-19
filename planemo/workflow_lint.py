@@ -290,22 +290,30 @@ def _lint_case(path: str, test_case: TestCase, lint_context: WorkflowLintContext
         # TODO: validate structure of test expectations
 
         output_expectations = test_case.output_expectations[test_output_id]
-        all_assertion_definitions = []
-        if "element_tests" in output_expectations:
-            # This is a collection
-            for element_id in output_expectations["element_tests"]:
-                all_assertion_definitions.append(output_expectations["element_tests"][element_id].get("asserts"))
-        else:
-            all_assertion_definitions.append(output_expectations.get("asserts"))
-        for assertion_definitions in all_assertion_definitions:
-            if not _check_test_assertions(lint_context, assertion_definitions):
-                test_valid = False
+        test_valid = is_valid_output_expectations(lint_context=lint_context, output_expectations=output_expectations)
 
     if not found_valid_expectation:
         lint_context.warn("Found no valid test expectations for workflow test")
         test_valid = False
 
     return test_valid
+
+
+def is_valid_output_expectations(lint_context, output_expectations):
+    all_assertion_definitions = []
+    if isinstance(output_expectations, (int, str, float, bool)):
+        # CWL style parameter output
+        return True
+    elif "element_tests" in output_expectations:
+        # This is a collection
+        for element_id in output_expectations["element_tests"]:
+            all_assertion_definitions.append(output_expectations["element_tests"][element_id].get("asserts"))
+    else:
+        all_assertion_definitions.append(output_expectations.get("asserts"))
+    for assertion_definitions in all_assertion_definitions:
+        if not _check_test_assertions(lint_context, assertion_definitions):
+            return False
+    return True
 
 
 def _check_test_assertions(

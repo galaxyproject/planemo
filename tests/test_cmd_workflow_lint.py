@@ -179,6 +179,11 @@ class CmdWorkflowLintTestCase(CliTestCase):
             in result.output
         )
 
+    def test_json_value_out(self):
+        workflow_path = "/".join((TEST_DATA_DIR, "json_value_out.yml"))
+        lint_cmd = ["workflow_lint", workflow_path, "--fail_level", "error"]
+        self._check_exit_code(lint_cmd, exit_code=0)
+
     def test_tool_id_linting_wrong_version(self):
         workflow_path = "/".join(
             (TEST_DATA_DIR, "wf_repos", "autoupdate_tests", "workflow_with_unexisting_version_of_tool.ga")

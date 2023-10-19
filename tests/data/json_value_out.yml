@@ -1,0 +1,27 @@
+class: GalaxyWorkflow
+label: Param value from file workflow
+inputs:
+  int_in:
+    optional: false
+    type: int
+outputs:
+  int_out:
+    outputSource: pick/integer_param
+steps:
+  pick:
+    tool_id: pick_value
+    tool_version: 0.1.0
+    tool_state:
+      style_cond:
+        __current_case__: 0
+        pick_style: first
+        type_cond:
+          __current_case__: 1
+          param_type: integer
+          pick_from:
+          - __index__: 0
+            value:
+              __class__: ConnectedValue
+    in:
+      style_cond|type_cond|pick_from_0|value:
+        source: int_in
