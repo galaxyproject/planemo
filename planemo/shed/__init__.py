@@ -103,8 +103,10 @@ VALID_PUBLICNAME_RE = re.compile(r"^[a-z0-9._\-]+$")
 # Generate with python scripts/categories.py
 CURRENT_CATEGORIES = [
     "Assembly",
+    "Astronomy",
     "ChIP-seq",
     "Climate Analysis",
+    "CLIP-seq",
     "Combinatorial Selections",
     "Computational chemistry",
     "Constructive Solid Geometry",
@@ -127,6 +129,7 @@ CURRENT_CATEGORIES = [
     "Imaging",
     "InteractiveTools",
     "Machine Learning",
+    "Materials science",
     "Metabolomics",
     "Metagenomics",
     "Micro-array Analysis",
