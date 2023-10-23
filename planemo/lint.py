@@ -33,7 +33,7 @@ def build_lint_args(ctx, **kwds):
 def setup_lint(ctx, **kwds):
     """Prepare lint_args and lint_ctx to begin linting a target."""
     lint_args = kwds.get("lint_args", None) or build_lint_args(ctx, **kwds)
-    lint_ctx = LintContext(lint_args["level"])
+    lint_ctx = LintContext(level=lint_args["level"], skip_types=lint_args["skip_types"])
     return lint_args, lint_ctx
 
 
