@@ -244,7 +244,7 @@ def _execute(  # noqa C901
         end_datetime=datetime.now(),
         **response_kwds,
     )
-    if kwds.get("download_outputs", True):
+    if kwds.get("download_outputs"):
         output_directory = kwds.get("output_directory", None)
         ctx.vlog("collecting outputs from run...")
         run_response.collect_outputs(ctx, output_directory)
