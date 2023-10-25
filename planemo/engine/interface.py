@@ -4,7 +4,11 @@ import abc
 import json
 import os
 import tempfile
-from typing import List
+from typing import (
+    Callable,
+    List,
+    Optional,
+)
 
 from planemo.exit_codes import EXIT_CODE_UNSUPPORTED_FILE_TYPE
 from planemo.io import error
@@ -48,14 +52,14 @@ class BaseEngine(Engine):
     def cleanup(self):
         """Default no-op cleanup method."""
 
-    def run(self, runnables, job_paths):
+    def run(self, runnables, job_paths, output_collectors: Optional[List[Callable]] = None):
         """Run a job using a compatible artifact (workflow or tool)."""
         self._check_can_run_all(runnables)
-        run_responses = self._run(runnables, job_paths)
+        run_responses = self._run(runnables, job_paths, output_collectors)
         return run_responses
 
     @abc.abstractmethod
-    def _run(self, runnables, job_path):
+    def _run(self, runnables, job_path, output_collectors: Optional[List[Callable]] = None):
         """Run a job using a compatible artifact (workflow or tool) wrapped as a runnable."""
 
     def _check_can_run(self, runnable):
@@ -94,6 +98,7 @@ class BaseEngine(Engine):
         runnables = [test_case.runnable for test_case in test_cases]
         job_paths = []
         tmp_paths = []
+        output_collectors = []
         for test_case in test_cases:
             if test_case.job_path is None:
                 job = test_case.job
@@ -111,8 +116,9 @@ class BaseEngine(Engine):
                 job_paths.append(job_path)
             else:
                 job_paths.append(test_case.job_path)
+            output_collectors.append(lambda run_response: test_case.structured_test_data(run_response))
         try:
-            run_responses = self._run(runnables, job_paths)
+            run_responses = self._run(runnables, job_paths, output_collectors)
         finally:
             for tmp_path in tmp_paths:
                 os.remove(tmp_path)

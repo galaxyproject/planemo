@@ -56,6 +56,7 @@ from planemo.runnable import (
 if TYPE_CHECKING:
     from planemo.cli import PlanemoCliContext
     from planemo.galaxy.config import BaseGalaxyConfig
+    from planemo.runnable import RunnableOutput
 
 DEFAULT_HISTORY_NAME = "CWL Target History"
 ERR_NO_SUCH_TOOL = (
@@ -247,7 +248,7 @@ def _execute(  # noqa C901
     if kwds.get("download_outputs"):
         output_directory = kwds.get("output_directory", None)
         ctx.vlog("collecting outputs from run...")
-        run_response.collect_outputs(ctx, output_directory)
+        run_response.collect_outputs(output_directory)
         ctx.vlog("collecting outputs complete")
     return run_response
 
@@ -359,7 +360,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
 
         self._job_info = None
 
-        self._outputs_dict = None
+        self._outputs_dict: Optional[Dict[str, Optional[str]]] = None
         self._start_datetime = start_datetime
         self._end_datetime = end_datetime
         self._successful = successful
@@ -385,6 +386,9 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         """End datetime of run."""
         return self._end_datetime
 
+    def output_src(self, output: "RunnableOutput", ignore_missing_outputs: bool = False) -> Dict[str, str]:
+        return {}
+
     def _get_extra_files(self, dataset_details):
         extra_files_url = (
             f"{self._user_gi.url}/histories/{self._history_id}/contents/{dataset_details['id']}/extra_files"
@@ -406,19 +410,19 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         else:
             raise Exception("Unknown history content type encountered [%s]" % history_content_type)
 
-    def collect_outputs(self, ctx, output_directory):
-        outputs_dict = {}
+    def collect_outputs(self, output_directory: Optional[str] = None, ignore_missing_output: Optional[bool] = False):
+        outputs_dict: Dict[str, Optional[str]] = {}
         # TODO: rather than creating a directory just use
         # Galaxy paths if they are available in this
         # configuration.
         output_directory = output_directory or tempfile.mkdtemp()
 
-        ctx.log("collecting outputs to directory %s" % output_directory)
+        self._ctx.log("collecting outputs to directory %s" % output_directory)
 
         for runnable_output in get_outputs(self._runnable, gi=self._user_gi):
             output_id = runnable_output.get_id()
             if not output_id:
-                ctx.log("Workflow output identified without an ID (label), skipping")
+                self._ctx.log("Workflow output identified without an ID (label), skipping")
                 continue
 
             def get_dataset(dataset_details, filename=None):
@@ -429,9 +433,13 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                     # and this is confusing...
                     the_output_directory = os.path.join(output_directory, parent_basename)
                     safe_makedirs(the_output_directory)
-                    destination = self.download_output_to(ctx, dataset_details, the_output_directory, filename=filename)
+                    destination = self.download_output_to(
+                        self._ctx, dataset_details, the_output_directory, filename=filename
+                    )
                 else:
-                    destination = self.download_output_to(ctx, dataset_details, output_directory, filename=filename)
+                    destination = self.download_output_to(
+                        self._ctx, dataset_details, output_directory, filename=filename
+                    )
                 if filename is None:
                     basename = parent_basename
                 else:
@@ -440,10 +448,10 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                 return {"path": destination, "basename": basename}
 
             is_cwl = self._runnable.type in [RunnableType.cwl_workflow, RunnableType.cwl_tool]
-            output_src = self.output_src(runnable_output)
+            output_src = self.output_src(runnable_output, ignore_missing_output)
             if not output_src:
-                # Optional workflow output
-                ctx.vlog(f"Optional workflow output '{output_id}' not created, skipping")
+                # Optional workflow output or invocation failed
+                self._ctx.vlog(f"workflow output '{output_id}' not created, skipping")
                 outputs_dict[output_id] = None
                 continue
             output_dataset_id = output_src["id"]
@@ -476,7 +484,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             outputs_dict[output_id] = output_dict_value
 
         self._outputs_dict = outputs_dict
-        ctx.vlog("collected outputs [%s]" % self._outputs_dict)
+        self._ctx.vlog("collected outputs [%s]" % self._outputs_dict)
 
     @property
     def log(self):
@@ -499,6 +507,8 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
 
     @property
     def outputs_dict(self):
+        if self._outputs_dict is None:
+            self.collect_outputs(ignore_missing_output=True)
         return self._outputs_dict
 
     def download_output_to(self, ctx, dataset_details, output_directory, filename=None):
@@ -578,7 +588,7 @@ class GalaxyToolRunResponse(GalaxyBaseRunResponse):
         output_id = runnable_output.get_id()
         return tool_response_to_output(self.api_run_response, self._history_id, output_id)
 
-    def output_src(self, output):
+    def output_src(self, output, ignore_missing_outputs=False):
         outputs = self.api_run_response["outputs"]
         output_collections = self.api_run_response["output_collections"]
         output_id = output.get_id()
@@ -632,7 +642,7 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         self._ctx.vlog("checking for output in invocation [%s]" % self._invocation)
         return invocation_to_output(self._invocation, self._history_id, output_id)
 
-    def output_src(self, output):
+    def output_src(self, output, ignore_missing_outputs=False):
         invocation = self._invocation
         # Use newer workflow outputs API.
 
@@ -642,6 +652,9 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         elif output_name in invocation["output_collections"]:
             return invocation["output_collections"][output.get_id()]
         elif output.is_optional():
+            return None
+        elif ignore_missing_outputs:
+            # We don't need to check this in testing mode, we'll get an error through failed invocation and failed history anyway
             return None
         else:
             raise Exception(f"Failed to find output [{output_name}] in invocation outputs [{invocation['outputs']}]")

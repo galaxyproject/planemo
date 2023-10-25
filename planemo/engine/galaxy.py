@@ -2,7 +2,12 @@
 
 import abc
 import contextlib
-from typing import TYPE_CHECKING
+from typing import (
+    Callable,
+    List,
+    Optional,
+    TYPE_CHECKING,
+)
 
 from galaxy.tool_util.verify import interactor
 
@@ -44,10 +49,12 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
         RunnableType.directory,
     ]
 
-    def _run(self, runnables, job_paths):
+    def _run(self, runnables, job_paths, output_collectors: Optional[List[Callable]] = None):
         """Run job in Galaxy."""
         results = []
-        for runnable, job_path in zip(runnables, job_paths):
+        if not output_collectors:
+            output_collectors = [None] * len(runnables)
+        for runnable, job_path, collect_output in zip(runnables, job_paths, output_collectors):
             self._ctx.vlog(f"Serving artifact [{runnable}] with Galaxy.")
             with self.ensure_runnables_served([runnable]) as config:
                 self._ctx.vlog(f"Running job path [{job_path}]")
@@ -55,6 +62,8 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
                     self._ctx.log(f"Running Galaxy with API configuration [{config.user_api_config}]")
                 run_response = execute(self._ctx, config, runnable, job_path, **self._kwds)
                 results.append(run_response)
+                if collect_output:
+                    collect_output(run_response)
 
         return results
 
