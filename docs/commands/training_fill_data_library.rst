@@ -21,7 +21,5 @@ Build training template from workflow.
       --tutorial_name TEXT  Name (directory name) of the tutorial to modify
                             [required]
       --zenodo_link TEXT    Zenodo URL with the input data
-      --datatypes PATH      YAML file with the correspondance between Zenodo
-                            extension and Galaxy datatypes
       --help                Show this message and exit.
     

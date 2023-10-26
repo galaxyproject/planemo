@@ -1283,15 +1283,6 @@ def training_tutorial_name_req_option():
     return planemo_option("--tutorial_name", required=True, help="Name (directory name) of the tutorial to modify")
 
 
-def training_datatype_option():
-    return planemo_option(
-        "--datatypes",
-        type=click.Path(file_okay=True, resolve_path=True),
-        help="YAML file with the correspondance between Zenodo extension and Galaxy datatypes",
-        default="shared/datatypes.yaml",
-    )
-
-
 def training_zenodo_option():
     return planemo_option("--zenodo_link", help="Zenodo URL with the input data")
 
@@ -1322,7 +1313,7 @@ def training_tutorial_option():
 
 
 def training_init_options():
-    return _compose(training_topic_option(), training_tutorial_option(), training_datatype_option())
+    return _compose(training_topic_option(), training_tutorial_option())
 
 
 def training_fill_data_library_options():
@@ -1330,7 +1321,6 @@ def training_fill_data_library_options():
         training_topic_name_option(),
         training_tutorial_name_req_option(),
         training_zenodo_option(),
-        training_datatype_option(),
     )
 
 
