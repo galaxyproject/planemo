@@ -587,19 +587,26 @@ class RunResponse(metaclass=abc.ABCMeta):
     def log(self):
         """If engine related log is available, return as text data."""
 
+    @abc.abstractproperty
+    def outputs_dict(self):
+        """Return a dict of output descriptions."""
+
+    def get_output(self, output_id):
+        """Fetch output from engine."""
+        return self.outputs_dict.get(output_id)
+
     def structured_data(self, test_case: Optional[TestCase] = None) -> Dict[str, Any]:
         output_problems = []
         if isinstance(self, SuccessfulRunResponse) and self.was_successful:
-            outputs_dict = self.outputs_dict
             execution_problem = None
             if test_case:
                 for output_id, output_test in test_case.output_expectations.items():
-                    if output_id not in outputs_dict:
+                    output_value = self.get_output(output_id)
+                    if not output_value:
                         message = f"Expected output [{output_id}] not found in results."
                         output_problems.append(message)
                         continue
 
-                    output_value = outputs_dict[output_id]
                     output_problems.extend(test_case._check_output(output_id, output_value, output_test))
             if output_problems:
                 status = "failure"
@@ -656,10 +663,6 @@ class SuccessfulRunResponse(RunResponse, metaclass=abc.ABCMeta):
         """Return `True` to indicate this run was successful."""
         return True
 
-    @abc.abstractproperty
-    def outputs_dict(self):
-        """Return a dict of output descriptions."""
-
 
 class ErrorRunResponse(RunResponse):
     """Description of an error while attempting to execute a Runnable."""
@@ -708,6 +711,10 @@ class ErrorRunResponse(RunResponse):
     def log(self):
         """Return potentially null stored `log` text."""
         return self._log
+
+    @property
+    def outputs_dict(self):
+        return {}
 
     def __str__(self):
         """Print a helpful error description of run."""

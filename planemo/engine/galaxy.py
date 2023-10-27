@@ -53,7 +53,7 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
         """Run job in Galaxy."""
         results = []
         if not output_collectors:
-            output_collectors = [None] * len(runnables)
+            output_collectors = [lambda x: None] * len(runnables)
         for runnable, job_path, collect_output in zip(runnables, job_paths, output_collectors):
             self._ctx.vlog(f"Serving artifact [{runnable}] with Galaxy.")
             with self.ensure_runnables_served([runnable]) as config:
@@ -62,7 +62,7 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
                     self._ctx.log(f"Running Galaxy with API configuration [{config.user_api_config}]")
                 run_response = execute(self._ctx, config, runnable, job_path, **self._kwds)
                 results.append(run_response)
-                if collect_output:
+                if collect_output is not None:
                     collect_output(run_response)
 
         return results

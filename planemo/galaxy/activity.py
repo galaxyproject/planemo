@@ -360,7 +360,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
 
         self._job_info = None
 
-        self._outputs_dict: Optional[Dict[str, Optional[str]]] = None
+        self._outputs_dict: Dict[str, Optional[str]] = {}
         self._start_datetime = start_datetime
         self._end_datetime = end_datetime
         self._successful = successful
@@ -386,7 +386,11 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         """End datetime of run."""
         return self._end_datetime
 
-    def output_src(self, output: "RunnableOutput", ignore_missing_outputs: bool = False) -> Dict[str, str]:
+    @property
+    def outputs_dict(self):
+        return self._outputs_dict
+
+    def output_src(self, output: "RunnableOutput", ignore_missing_outputs: Optional[bool] = False) -> Dict[str, str]:
         return {}
 
     def _get_extra_files(self, dataset_details):
@@ -410,7 +414,12 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         else:
             raise Exception("Unknown history content type encountered [%s]" % history_content_type)
 
-    def collect_outputs(self, output_directory: Optional[str] = None, ignore_missing_output: Optional[bool] = False):
+    def collect_outputs(
+        self,
+        output_directory: Optional[str] = None,
+        ignore_missing_output: Optional[bool] = False,
+        output_id: Optional[str] = None,
+    ):
         outputs_dict: Dict[str, Optional[str]] = {}
         # TODO: rather than creating a directory just use
         # Galaxy paths if they are available in this
@@ -420,13 +429,16 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         self._ctx.log("collecting outputs to directory %s" % output_directory)
 
         for runnable_output in get_outputs(self._runnable, gi=self._user_gi):
-            output_id = runnable_output.get_id()
-            if not output_id:
+            runnable_output_id = runnable_output.get_id()
+            if not runnable_output_id:
                 self._ctx.log("Workflow output identified without an ID (label), skipping")
                 continue
 
+            if output_id and runnable_output_id != output_id:
+                continue
+
             def get_dataset(dataset_details, filename=None):
-                parent_basename = sanitize_filename(dataset_details.get("cwl_file_name") or output_id)
+                parent_basename = sanitize_filename(dataset_details.get("cwl_file_name") or runnable_output_id)
                 file_ext = dataset_details["file_ext"]
                 if file_ext == "directory":
                     # TODO: rename output_directory to outputs_directory because we can have output directories
@@ -451,8 +463,8 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             output_src = self.output_src(runnable_output, ignore_missing_output)
             if not output_src:
                 # Optional workflow output or invocation failed
-                self._ctx.vlog(f"workflow output '{output_id}' not created, skipping")
-                outputs_dict[output_id] = None
+                self._ctx.vlog(f"workflow output '{runnable_output_id}' not created, skipping")
+                outputs_dict[runnable_output_id] = None
                 continue
             output_dataset_id = output_src["id"]
             galaxy_output = self.to_galaxy_output(runnable_output)
@@ -481,7 +493,9 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                 attach_file_properties(output_metadata, cwl_output)
                 output_dict_value = output_metadata
 
-            outputs_dict[output_id] = output_dict_value
+            if output_id:
+                return output_dict_value
+            outputs_dict[runnable_output_id] = output_dict_value
 
         self._outputs_dict = outputs_dict
         self._ctx.vlog("collected outputs [%s]" % self._outputs_dict)
@@ -505,11 +519,10 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
     def invocation_details(self):
         return None
 
-    @property
-    def outputs_dict(self):
-        if self._outputs_dict is None:
-            self.collect_outputs(ignore_missing_output=True)
-        return self._outputs_dict
+    def get_output(self, output_id):
+        if output_id not in self._outputs_dict:
+            self._outputs_dict[output_id] = self.collect_outputs(ignore_missing_output=True, output_id=output_id)
+        return self._outputs_dict[output_id]
 
     def download_output_to(self, ctx, dataset_details, output_directory, filename=None):
         if filename is None:
@@ -588,7 +601,7 @@ class GalaxyToolRunResponse(GalaxyBaseRunResponse):
         output_id = runnable_output.get_id()
         return tool_response_to_output(self.api_run_response, self._history_id, output_id)
 
-    def output_src(self, output, ignore_missing_outputs=False):
+    def output_src(self, output, ignore_missing_outputs: Optional[bool] = False):
         outputs = self.api_run_response["outputs"]
         output_collections = self.api_run_response["output_collections"]
         output_id = output.get_id()
@@ -642,7 +655,7 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         self._ctx.vlog("checking for output in invocation [%s]" % self._invocation)
         return invocation_to_output(self._invocation, self._history_id, output_id)
 
-    def output_src(self, output, ignore_missing_outputs=False):
+    def output_src(self, output, ignore_missing_outputs: Optional[bool] = False):
         invocation = self._invocation
         # Use newer workflow outputs API.
 
