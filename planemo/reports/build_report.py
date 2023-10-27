@@ -13,7 +13,7 @@ cancel_fragment = "Invocation scheduling cancelled because"
 fail_fragment = "Invocation scheduling failed because"
 
 
-def render_message_to_string(invocation_message):
+def render_message_to_string(invocation_message):  # noqa: C901
     # ChatGPT did a reasonable job of translating this from https://github.com/galaxyproject/galaxy/blob/d92bbb144ffcda7e17368cf43dd25c8a9a3a7dd6/client/src/components/WorkflowInvocationState/InvocationMessage.vue#L93-L172
     reason = invocation_message["reason"]
     if reason == "user_request":
