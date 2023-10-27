@@ -66,3 +66,13 @@
 {%    endfor %}
       </details>
 {% endmacro %}
+
+
+{% macro render_invocation_messages(messages, summary_label='Invocation Messages') %}
+   * {{summary_label}}
+{%    for message in messages %}
+
+     - {{ render_message_to_string(message) }}
+
+{%    endfor %}
+{% endmacro %}

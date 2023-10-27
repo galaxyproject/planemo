@@ -697,6 +697,8 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
                 "invocation_state": self.invocation_state,
                 "history_state": self.history_state,
                 "error_message": self.error_message,
+                # Messages are only present from 23.0 onward
+                "messages": invocation.get("messages", []),
             },
         }
         return invocation_details

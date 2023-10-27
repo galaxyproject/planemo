@@ -1,0 +1,10 @@
+- job:
+    some_file:
+      class: File
+      path: ../hello.txt
+    should_run: true
+  outputs:
+    some_output:
+      asserts:
+        has_text:
+          text: "Hello World!"
