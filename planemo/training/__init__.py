@@ -49,8 +49,6 @@ class Training:
         # initiate the tutorial
         self.tuto = Tutorial(training=self, topic=self.topic)
         self.tuto.init_from_existing_tutorial(self.kwds["tutorial_name"])
-        if "datatypes" in self.kwds:
-            self.tuto.datatype_fp = self.kwds["datatypes"]
         if "workflow" in self.kwds:
             self.tuto.init_wf_fp = self.kwds["workflow"]
         if "workflow_id" in self.kwds:

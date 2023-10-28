@@ -9,7 +9,6 @@ from planemo.engine.galaxy import LocalManagedGalaxyEngine
 from planemo.training import Training
 from planemo.training.topic import Topic
 from planemo.training.tutorial import (
-    get_galaxy_datatype,
     get_hands_on_boxes_from_local_galaxy,
     get_hands_on_boxes_from_running_galaxy,
     get_wf_inputs,
@@ -21,7 +20,6 @@ from planemo.training.utils import save_to_yaml
 from .test_training import (
     create_existing_tutorial,
     CTX,
-    datatype_fp,
     KWDS,
     RUNNABLE,
     tuto_fp,
@@ -36,20 +34,14 @@ topic = Topic()
 training = Training(KWDS)
 
 
-def test_get_galaxy_datatype() -> None:
-    """Test :func:`planemo.training.tutorial.get_galaxy_datatype`."""
-    assert get_galaxy_datatype("csv", datatype_fp) == "csv"
-    assert get_galaxy_datatype("test", datatype_fp) == "strange_datatype"
-    assert "# Please add" in get_galaxy_datatype("unknown", datatype_fp)
-
-
 def test_get_zenodo_record() -> None:
     """Test :func:`planemo.training.tutorial.get_zenodo_record`."""
     z_record, req_res = get_zenodo_record(zenodo_link)
-    file_link_prefix = "https://zenodo.org/api/files/51a1b5db-ff05-4cda-83d4-3b46682f921f"
+    file_link_prefix = f"https://zenodo.org/api/records/{z_record}"
     assert z_record == "1321885"
     assert "files" in req_res
-    assert req_res["files"][0]["type"] in ["rdata", "csv"]
+    print(req_res["files"][0])
+    assert req_res["files"][0]["key"].endswith(".RData")
     assert file_link_prefix in req_res["files"][0]["links"]["self"]
     # check with wrong zenodo link
     z_record, req_res = get_zenodo_record("https://zenodo.org/api/records/zenodooo")
@@ -59,10 +51,10 @@ def test_get_zenodo_record() -> None:
     # using DOI
     z_link = "https://doi.org/10.5281/zenodo.1321885"
     z_record, req_res = get_zenodo_record(z_link)
-    file_link_prefix = "https://zenodo.org/api/files/51a1b5db-ff05-4cda-83d4-3b46682f921f"
+    file_link_prefix = f"https://zenodo.org/api/records/{z_record}"
     assert z_record == "1321885"
     assert "files" in req_res
-    assert req_res["files"][0]["type"] in ["rdata", "csv"]
+    assert req_res["files"][0]["key"].endswith(".RData")
     assert file_link_prefix in req_res["files"][0]["links"]["self"]
 
 
@@ -135,7 +127,6 @@ def test_tutorial_init() -> None:
     assert not tuto.slides
     assert tuto.init_wf_id is None
     assert tuto.init_wf_fp is None
-    assert tuto.datatype_fp == ""
     assert "new_tuto" in tuto.dir
     assert "## Sub-step with **My Tool**" in tuto.body
     assert tuto.data_lib
@@ -157,7 +148,6 @@ def test_tutorial_init_from_kwds() -> None:
         "workflow": WF_FP,
         "workflow_id": "id",
         "zenodo_link": None,
-        "datatypes": datatype_fp,
     }
     tuto = Tutorial(training=training, topic=topic)
     tuto.init_from_kwds(kwds)
@@ -169,7 +159,6 @@ def test_tutorial_init_from_kwds() -> None:
     assert tuto.slides
     assert tuto.init_wf_id == "id"
     assert tuto.init_wf_fp == WF_FP
-    assert tuto.datatype_fp == datatype_fp
     assert "my_tuto" in tuto.dir
 
 
@@ -289,25 +278,21 @@ def test_tutorial_export_workflow_file() -> None:
 def test_tutorial_get_files_from_zenodo() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.get_files_from_zenodo`."""
     tuto = Tutorial(training=training, topic=topic, zenodo_link=zenodo_link)
-    tuto.datatype_fp = datatype_fp
     files, z_record = tuto.get_files_from_zenodo()
     assert z_record == "1321885"
     # test links
-    file_link_prefix = "https://zenodo.org/api/files/51a1b5db-ff05-4cda-83d4-3b46682f921f"
-    assert file_link_prefix in tuto.zenodo_file_links[0]
+    assert z_record in tuto.zenodo_file_links[0]
     # test files dict
-    assert file_link_prefix in files[0]["url"]
+    assert z_record in files[0]["url"]
     assert files[0]["src"] == "url"
     assert files[0]["info"] == zenodo_link
-    assert "# Please add" in files[0]["ext"]
-    assert files[1]["ext"] == "csv"
+    assert ".csv" in files[1]["url"]
 
 
 def test_tutorial_prepare_data_library_from_zenodo() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.prepare_data_library_from_zenodo`."""
     # without zenodo link
     tuto = Tutorial(training=training, topic=topic)
-    tuto.datatype_fp = datatype_fp
     os.makedirs(tuto.wf_dir)
     tuto.prepare_data_library_from_zenodo()
     assert os.path.exists(tuto.data_lib_fp)
@@ -383,7 +368,6 @@ def test_tutorial_create_tutorial() -> None:
             "workflow": WF_FP,
             "workflow_id": None,
             "zenodo_link": zenodo_link,
-            "datatypes": datatype_fp,
         }
     )
     tuto.create_tutorial(CTX)

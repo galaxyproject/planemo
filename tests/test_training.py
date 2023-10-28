@@ -13,7 +13,6 @@ from .test_utils import (
     TEST_DATA_DIR,
 )
 
-datatype_fp = os.path.join(TEST_DATA_DIR, "training_datatypes.yaml")
 tuto_fp = os.path.join(TEST_DATA_DIR, "training_tutorial.md")
 tuto_wo_zenodo_fp = os.path.join(TEST_DATA_DIR, "training_tutorial_wo_zenodo.md")
 zenodo_link = "https://zenodo.org/record/1321885"
@@ -40,7 +39,6 @@ KWDS = {
     "workflow": None,
     "workflow_id": None,
     "zenodo_link": None,
-    "datatypes": os.path.join(TEST_DATA_DIR, "training_datatypes.yaml"),
     "templates": None,
     # planemo configuation
     "conda_auto_init": True,
@@ -175,7 +173,6 @@ def test_training_check_topic_init_tuto() -> None:
     create_existing_tutorial("existing_tutorial", tuto_fp, train.topic)
     train.check_topic_init_tuto()
     assert train.tuto.name == train.kwds["tutorial_name"]
-    assert train.tuto.datatype_fp
     # clean after
     shutil.rmtree(train.topics_dir)
     shutil.rmtree("metadata")

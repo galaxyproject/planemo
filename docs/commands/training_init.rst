@@ -34,8 +34,6 @@ Build training template from workflow.
                                       workflow
       --workflow_id TEXT              ID of the workflow on the Galaxy instance
       --zenodo_link TEXT              Zenodo URL with the input data
-      --datatypes PATH                YAML file with the correspondance between
-                                      Zenodo extension and Galaxy datatypes
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
       --galaxy_python_version [3|3.7|3.8|3.9|3.10|3.11]

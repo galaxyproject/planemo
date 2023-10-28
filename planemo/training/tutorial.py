@@ -279,7 +279,6 @@ class Tutorial:
         self.init_wf_id = None
         self.hands_on = True
         self.slides = False
-        self.datatype_fp = ""
         self.set_dir_name()
         self.init_data_lib()
         self.body = templates.render(
@@ -309,7 +308,6 @@ class Tutorial:
         self.init_wf_id = kwds["workflow_id"]
         self.hands_on = kwds["hands_on"]
         self.slides = kwds["slides"]
-        self.datatype_fp = kwds["datatypes"]
         self.set_dir_name()
         self.init_data_lib()
 
@@ -443,9 +441,7 @@ class Tutorial:
 
         files = []
         for f in req_res["files"]:
-            file_dict = {"url": "", "src": "url", "ext": "", "info": self.zenodo_link}
-            if "type" in f:
-                file_dict["ext"] = get_galaxy_datatype(f["type"], self.datatype_fp)
+            file_dict = {"url": "", "src": "url", "ext": "auto", "info": self.zenodo_link}
             if "links" not in f and "self" not in f["links"]:
                 raise ValueError("No link for file %s" % f)
             file_dict["url"] = f["links"]["self"]
@@ -544,18 +540,6 @@ class Tutorial:
         if not os.path.exists(os.path.join(self.faq_dir, "index.md")):
             with open(os.path.join(self.faq_dir, "index.md"), "w") as handle:
                 handle.write("---\nlayout: faq-page\n---\n")
-
-
-def get_galaxy_datatype(z_ext, datatype_fp):
-    """Get the Galaxy datatype corresponding to a Zenodo file type."""
-    g_datatype = ""
-    datatypes = load_yaml(datatype_fp)
-    if z_ext in datatypes:
-        g_datatype = datatypes[z_ext]
-    if g_datatype == "":
-        g_datatype = "# Please add a Galaxy datatype or update the shared/datatypes.yaml file"
-    info(f"Get Galaxy datatypes: {z_ext} --> {g_datatype}")
-    return g_datatype
 
 
 def get_zenodo_record(zenodo_link):
