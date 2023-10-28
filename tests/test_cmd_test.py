@@ -121,10 +121,10 @@ class CmdTestTestCase(CliTestCase):
             with open(json_out.name) as fh:
                 tool_test_json = json.load(fh)
                 assert tool_test_json["summary"]["num_tests"] == 1
-                # check run time, for smaller 10 since the test will take a bit longer than 1s
-                # the important bit is that it's not about 30s (since the test tool calls `sleep 30`)
+                # check run time, for smaller 4 since the test will take a bit longer than 1s
+                # the important bit is that it's not about 5s (since the test tool calls `sleep 5`)
                 assert (
-                    float(tool_test_json["tests"][0]["data"]["time_seconds"]) <= 10
+                    float(tool_test_json["tests"][0]["data"]["time_seconds"]) <= 4
                 ), "Test needed more than 10 sec but should time out after 1"
                 assert (
                     "Timed out after" in tool_test_json["tests"][0]["data"]["output_problems"][0]
