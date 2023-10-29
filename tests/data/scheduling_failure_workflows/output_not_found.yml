@@ -1,0 +1,15 @@
+class: GalaxyWorkflow
+inputs:
+  data_input: data
+steps:
+  cat1:
+    tool_id: cat1
+    in:
+      input1: data_input
+    outputs:
+      out_file1:
+        rename: "my new name"
+  first_cat1:
+    tool_id: cat1
+    in:
+      input1: cat1/does_not_exist

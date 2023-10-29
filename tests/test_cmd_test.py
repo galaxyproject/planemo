@@ -18,6 +18,8 @@ from .test_utils import (
     TEST_TOOLS_DIR,
 )
 
+SCHEDULING_WORKFLOWS_PATH = os.path.join(TEST_DATA_DIR, "scheduling_failure_workflows")
+FUNCTIONAL_TEST_TOOLS = os.path.join(TEST_DATA_DIR, "tools", "functional_test_tools")
 FETCH_DATA_DATA_MANAGER_TEST_PATH = "data_manager/data_manager_fetch_genome_dbkeys_all_fasta/data_manager/data_manager_fetch_genome_all_fasta_dbkeys.xml"
 BOWTIE2_DATA_MANAGER_TEST_PATH = (
     "data_manager/data_manager_bowtie2_index_builder/data_manager/bowtie2_index_builder.xml"
@@ -119,10 +121,10 @@ class CmdTestTestCase(CliTestCase):
             with open(json_out.name) as fh:
                 tool_test_json = json.load(fh)
                 assert tool_test_json["summary"]["num_tests"] == 1
-                # check run time, for smaller 10 since the test will take a bit longer than 1s
-                # the important bit is that it's not about 30s (since the test tool calls `sleep 30`)
+                # check run time, for smaller 4 since the test will take a bit longer than 1s
+                # the important bit is that it's not about 5s (since the test tool calls `sleep 5`)
                 assert (
-                    float(tool_test_json["tests"][0]["data"]["time_seconds"]) <= 10
+                    float(tool_test_json["tests"][0]["data"]["time_seconds"]) <= 4
                 ), "Test needed more than 10 sec but should time out after 1"
                 assert (
                     "Timed out after" in tool_test_json["tests"][0]["data"]["output_problems"][0]
@@ -377,3 +379,58 @@ class CmdTestTestCase(CliTestCase):
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command.append(test_artifact)
             self._check_exit_code(test_command, exit_code=0)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TEST")
+    def test_scheduling_error_invalid_when_expression(self):
+        with self._isolate() as test_dir:
+            test_artifact = os.path.join(SCHEDULING_WORKFLOWS_PATH, "invalid_when_expression.yml")
+            markdown_output_path = os.path.join(test_dir, "test_output.md")
+            test_command = self._test_command()
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command.append(test_artifact)
+            test_command.append("--test_output_markdown")
+            test_command.append(markdown_output_path)
+            self._check_exit_code(test_command, exit_code=1)
+            with open(markdown_output_path) as out:
+                markdown_content = out.read()
+            assert (
+                "Invocation scheduling failed because step 3 contains an expression that could not be evaluated"
+                in markdown_content
+            )
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TEST")
+    def test_scheduling_error_output_not_found(self):
+        with self._isolate() as test_dir:
+            test_artifact = os.path.join(SCHEDULING_WORKFLOWS_PATH, "output_not_found.yml")
+            markdown_output_path = os.path.join(test_dir, "test_output.md")
+            test_command = self._test_command()
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command.append(test_artifact)
+            test_command.append("--test_output_markdown")
+            test_command.append(markdown_output_path)
+            self._check_exit_code(test_command, exit_code=1)
+            with open(markdown_output_path) as out:
+                markdown_content = out.read()
+            assert (
+                "Invocation scheduling failed because step 3 depends on output 'does_not_exist' of step 2, but this step did not produce an output of that name"
+                in markdown_content
+            )
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TEST")
+    def test_scheduling_error_dataset_failed(self):
+        job_properties = os.path.join(FUNCTIONAL_TEST_TOOLS, "job_properties.xml")
+        with self._isolate() as test_dir:
+            test_artifact = os.path.join(SCHEDULING_WORKFLOWS_PATH, "dataset_failed.yml")
+            markdown_output_path = os.path.join(test_dir, "test_output.md")
+            test_command = test_command = self._test_command("--extra_tools", job_properties)
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command.append(test_artifact)
+            test_command.append("--test_output_markdown")
+            test_command.append(markdown_output_path)
+            self._check_exit_code(test_command, exit_code=1)
+            with open(markdown_output_path) as out:
+                markdown_content = out.read()
+            assert (
+                "Invocation scheduling failed because step 2 requires a dataset, but dataset entered a failed state."
+                in markdown_content
+            )

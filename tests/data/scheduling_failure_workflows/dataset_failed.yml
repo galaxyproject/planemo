@@ -1,0 +1,19 @@
+class: GalaxyWorkflow
+steps:
+  job_props:
+    tool_id: job_properties
+    state:
+      thebool: true
+      failbool: true
+  apply:
+    tool_id: __APPLY_RULES__
+    in:
+      input: job_props/list_output
+    state:
+      rules:
+        rules:
+          - type: add_column_metadata
+            value: identifier0
+        mapping:
+          - type: list_identifiers
+            columns: [0]

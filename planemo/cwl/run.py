@@ -62,7 +62,7 @@ class CwlToolRunResponse(SuccessfulRunResponse):
         return None
 
     @property
-    def outputs_dict(self) -> Optional[Dict[str, Any]]:
+    def outputs_dict(self):
         return self._outputs
 
 

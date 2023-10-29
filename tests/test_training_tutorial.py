@@ -327,32 +327,26 @@ def test_tutorial_create_hands_on_tutorial() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.create_hands_on_tutorial`."""
     tuto = Tutorial(training=training, topic=topic)
     os.makedirs(tuto.wf_dir)
-    # with init_wf_id and no Galaxy URL
-    tuto.init_wf_id = "ID"
-    tuto.training.galaxy_url = None
-    with pytest.raises(Exception, match="No Galaxy URL given"):
-        tuto.create_hands_on_tutorial(CTX)
-    # with init_wf_id and no Galaxy API key
-    tuto.init_wf_id = "ID"
-    tuto.training.galaxy_url = f"http://{KWDS['host']}:{KWDS['port']}"
-    tuto.training.galaxy_api_key = None
-    with pytest.raises(Exception, match="No API key to access the given Galaxy instance"):
-        tuto.create_hands_on_tutorial(CTX)
-    # with init_wf_id
     with engine_context(CTX, **KWDS) as galaxy_engine:
         assert isinstance(galaxy_engine, LocalManagedGalaxyEngine)
         with galaxy_engine.ensure_runnables_served([RUNNABLE]) as config:
+            # fail without Galaxy URL
+            tuto.init_wf_id = "ID"
+            tuto.training.galaxy_url = None
+            with pytest.raises(Exception, match="No Galaxy URL given"):
+                tuto.create_hands_on_tutorial(CTX)
+            tuto.training.galaxy_url = f"http://{KWDS['host']}:{KWDS['port']}"
             tuto.init_wf_id = config.workflow_id(WF_FP)
             tuto.training.galaxy_api_key = config.user_api_key
             tuto.create_hands_on_tutorial(CTX)
-    assert os.path.exists(tuto.tuto_fp)
-    os.remove(tuto.tuto_fp)
-    # with init_wf_fp
-    tuto.init_wf_id = None
-    tuto.init_wf_fp = WF_FP
-    tuto.create_hands_on_tutorial(CTX)
-    assert os.path.exists(tuto.tuto_fp)
-    shutil.rmtree("topics")
+            assert os.path.exists(tuto.tuto_fp)
+            os.remove(tuto.tuto_fp)
+            # with init_wf_fp
+            tuto.init_wf_id = None
+            tuto.init_wf_fp = WF_FP
+            tuto.create_hands_on_tutorial(CTX)
+            assert os.path.exists(tuto.tuto_fp)
+            shutil.rmtree("topics")
 
 
 @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")

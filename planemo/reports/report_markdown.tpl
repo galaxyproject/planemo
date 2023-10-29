@@ -1,4 +1,4 @@
-{% from 'macros.tmpl' import render_invocation_details, render_job_parameters, render_steps %}
+{% from 'macros.tmpl' import render_invocation_details, render_invocation_messages, render_job_parameters, render_steps %}
 {% if title %}
 # {{ execution_type }} {{ title }}
 
@@ -32,7 +32,8 @@
 
 {% set display_job_attributes = {'command_line': 'Command Line', 'exit_code': 'Exit Code', 'stderr': 'Standard Error', 'stdout': 'Standard Output', 'traceback': 'Traceback'} %}
 {% for status, desc in {'error': 'Errored', 'failure': 'Failed', 'success': 'Passed'}.items() if state[status]%}
-<details><summary>{{ desc }} {{ execution_type }}s</summary>
+{% set expanded = "open" if status in ("error", "failure") else "" %}
+<details {{ expanded }}><summary>{{ desc }} {{ execution_type }}s</summary>
 {%   for test in raw_data.tests %}
 {%     if test.data.status == status %}
 {%       if test.data.status == 'success' %}
@@ -74,6 +75,8 @@
 {%       if test.data.invocation_details %}
 
     #### Workflow invocation details
+
+{{render_invocation_messages(test.data.invocation_details.details.messages)}}
 
 {{render_steps(test.data.invocation_details.steps.values(), display_job_attributes)}}
 
