@@ -5,6 +5,19 @@ History
 
 .. to_doc
 
+---------------------
+0.75.15 (2023-10-29)
+---------------------
+* Change info message for markdown readme in repo
+  (thanks to `@bernt-matthias`_). `Pull Request 1398`_
+* Make test reports more resilient to failing invocations (thanks to
+  `@mvdbeek`_). `Pull Request 1400`_
+* Fix zenodo test, drop explicit datatype mapping (thanks to `@mvdbeek`_).
+  `Pull Request 1399`_
+* Fix linting rule selection (thanks to `@bernt-matthias`_). `Pull Request
+  1396`_
+* Add missing ``Astronomy``, ``CLIP-seq`` and ``Materials science`` TS
+  categories (thanks to `@bernt-matthias`_). `Pull Request 1397`_
 
 ---------------------
 0.75.14 (2023-10-19)
@@ -2025,6 +2038,11 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1398: https://github.com/galaxyproject/planemo/pull/1398
+.. _Pull Request 1400: https://github.com/galaxyproject/planemo/pull/1400
+.. _Pull Request 1399: https://github.com/galaxyproject/planemo/pull/1399
+.. _Pull Request 1396: https://github.com/galaxyproject/planemo/pull/1396
+.. _Pull Request 1397: https://github.com/galaxyproject/planemo/pull/1397
 .. _Pull Request 1395: https://github.com/galaxyproject/planemo/pull/1395
 .. _Pull Request 1394: https://github.com/galaxyproject/planemo/pull/1394
 .. _Pull Request 1393: https://github.com/galaxyproject/planemo/pull/1393
