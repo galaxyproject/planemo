@@ -21,7 +21,7 @@ class ShedLintTestCase(CliTestCase):
         with self._isolate_repo("bad_readme_rst"):
             self._check_exit_code(["shed_lint"], exit_code=1)
         with self._isolate_repo("bad_readme_md"):
-            self._check_exit_code(["shed_lint"], exit_code=1)
+            self._check_exit_code(["shed_lint"], exit_code=0)
         with self._isolate_repo("bad_repo_name"):
             self._check_exit_code(["shed_lint"], exit_code=1)
         with self._isolate_repo("bad_missing_include"):

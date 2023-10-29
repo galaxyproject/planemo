@@ -159,16 +159,15 @@ def lint_readme(realized_repository, lint_ctx):
         if os.path.exists(readme):
             readme_found = readme
 
-    readme_md = os.path.join(path, "README.md")
-    if not readme_found and os.path.exists(readme_md):
-        lint_ctx.warn("Tool Shed doesn't render markdown, " "README.md is invalid readme.")
-        return
-
     if not readme_found:
         # TODO: filter on TYPE and make this a warning if
         # unrestricted repository - need to update iuc standards
         # first though.
-        lint_ctx.info("No README found skipping.")
+        readme_md = os.path.join(path, "README.md")
+        if os.path.exists(readme_md):
+            lint_ctx.info("Found README in Markdown format, which is not rendered by the Tool Shed, skipping")
+        else:
+            lint_ctx.info("No README found, skipping.")
         return
 
     if readme_found.endswith(".rst"):
