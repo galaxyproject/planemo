@@ -265,6 +265,12 @@ def cases(runnable: Runnable) -> List["AbstractTestCase"]:
                 cases.append(ExternalGalaxyToolTestCase(runnable, tool_id, tool_version, i, test_dict))
         return cases
 
+    return definition_to_test_case(tests_path=tests_path, runnable=runnable)
+
+
+def definition_to_test_case(tests_path, runnable):
+    with open(tests_path) as f:
+        tests_def = yaml.safe_load(f)
     tests_directory = os.path.abspath(os.path.dirname(tests_path))
 
     def normalize_to_tests_path(path: str) -> str:
@@ -274,13 +280,11 @@ def cases(runnable: Runnable) -> List["AbstractTestCase"]:
             absolute_path = path
         return os.path.normpath(absolute_path)
 
-    with open(tests_path) as f:
-        tests_def = yaml.safe_load(f)
-
     if not isinstance(tests_def, list):
         message = TEST_FILE_NOT_LIST_MESSAGE % tests_path
         raise Exception(message)
 
+    cases = []
     for i, test_def in enumerate(tests_def):
         if "job" not in test_def:
             message = TEST_FIELD_MISSING_MESSAGE % (i + 1, tests_path, "job")
@@ -305,7 +309,6 @@ def cases(runnable: Runnable) -> List["AbstractTestCase"]:
             doc=doc,
         )
         cases.append(case)
-
     return cases
 
 
@@ -434,7 +437,7 @@ class TestCase(AbstractTestCase):
         ]:
             return get_tool_source(self.runnable.path).parse_id()
         else:
-            return os.path.basename(self.runnable.path)
+            return os.path.basename(self.runnable.uri)
 
 
 class ExternalGalaxyToolTestCase(AbstractTestCase):

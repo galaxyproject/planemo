@@ -152,6 +152,7 @@ def _execute(  # noqa C901
 ) -> "GalaxyBaseRunResponse":
     user_gi = config.user_gi
     admin_gi = config.gi
+    run_response = None
 
     start_datetime = datetime.now()
     try:
@@ -205,52 +206,76 @@ def _execute(  # noqa C901
             allow_tool_state_corrections=True,
             inputs_by="name",
         )
-        invocation_id = invocation["id"]
-
-        ctx.vlog("Waiting for invocation [%s]" % invocation_id)
-        polling_backoff = kwds.get("polling_backoff", 0)
-        no_wait = kwds.get("no_wait", False)
-
-        final_invocation_state, job_state, error_message = wait_for_invocation_and_jobs(
+        run_response = invocation_to_run_response(
             ctx,
-            invocation_id=invocation_id,
-            history_id=history_id,
-            user_gi=user_gi,
-            no_wait=no_wait,
-            polling_backoff=polling_backoff,
+            config.user_gi,
+            runnable,
+            invocation,
+            polling_backoff=kwds.get("polling_backoff", 0),
+            no_wait=kwds.get("no_wait", False),
+            start_datetime=start_datetime,
+            log=log_contents_str(config),
         )
-        if final_invocation_state not in ("ok", "skipped"):
-            msg = f"Failed to run workflow [{workflow_id}], at least one job is in [{final_invocation_state}] state."
-            ctx.vlog(msg)
-            summarize_history(ctx, user_gi, history_id)
-
-        response_kwds = {
-            "workflow_id": workflow_id,
-            "invocation_id": invocation_id,
-            "history_state": job_state if not no_wait else None,
-            "invocation_state": final_invocation_state,
-            "error_message": error_message,
-        }
 
     else:
         raise NotImplementedError()
 
-    run_response = response_class(
-        ctx=ctx,
-        runnable=runnable,
-        user_gi=user_gi,
-        history_id=history_id,
-        log=log_contents_str(config),
-        start_datetime=start_datetime,
-        end_datetime=datetime.now(),
-        **response_kwds,
-    )
+    if not run_response:
+        run_response = response_class(
+            ctx=ctx,
+            runnable=runnable,
+            user_gi=user_gi,
+            history_id=history_id,
+            log=log_contents_str(config),
+            start_datetime=start_datetime,
+            end_datetime=datetime.now(),
+            **response_kwds,
+        )
     if kwds.get("download_outputs"):
         output_directory = kwds.get("output_directory", None)
         ctx.vlog("collecting outputs from run...")
         run_response.collect_outputs(output_directory)
         ctx.vlog("collecting outputs complete")
     return run_response
+
+
+def invocation_to_run_response(
+    ctx, user_gi, runnable, invocation, polling_backoff=0, no_wait=False, start_datetime=None, log=None
+):
+    start_datetime = start_datetime or datetime.now()
+    invocation_id = invocation["id"]
+    history_id = invocation["history_id"]
+    workflow_id = invocation["workflow_id"]
+
+    ctx.vlog("Waiting for invocation [%s]" % invocation_id)
+
+    final_invocation_state, job_state, error_message = wait_for_invocation_and_jobs(
+        ctx,
+        invocation_id=invocation_id,
+        history_id=history_id,
+        user_gi=user_gi,
+        no_wait=no_wait,
+        polling_backoff=polling_backoff,
+    )
+    if final_invocation_state not in ("ok", "skipped"):
+        msg = f"Failed to run workflow [{workflow_id}], at least one job is in [{final_invocation_state}] state."
+        ctx.vlog(msg)
+        summarize_history(ctx, user_gi, history_id)
+
+    return GalaxyWorkflowRunResponse(
+        ctx,
+        runnable=runnable,
+        user_gi=user_gi,
+        history_id=history_id,
+        workflow_id=workflow_id,
+        invocation_id=invocation_id,
+        history_state=job_state if not no_wait else None,
+        invocation_state=final_invocation_state,
+        error_message=error_message,
+        log=log,
+        start_datetime=start_datetime,
+        end_datetime=datetime.now(),
+    )
 
 
 def stage_in(

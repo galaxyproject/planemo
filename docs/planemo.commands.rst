@@ -500,6 +500,14 @@ planemo.commands.cmd\_workflow\_lint module
    :undoc-members:
    :show-inheritance:
 
+planemo.commands.cmd\_workflow\_test\_check module
+--------------------------------------------------
+
+.. automodule:: planemo.commands.cmd_workflow_test_check
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 planemo.commands.cmd\_workflow\_test\_init module
 -------------------------------------------------
 
