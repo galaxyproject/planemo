@@ -1,6 +1,6 @@
 
 ``autoupdate`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``autoupdate``. This help message can be generated with ``planemo autoupdate
@@ -35,12 +35,6 @@ Auto-update tool requirements by checking against Conda and updating if newer ve
       --update_test_data              Update test-data directory with job outputs
                                       (normally written to directory
                                       --job_output_files if specified.)
-      --paste_test_data_paths / --no_paste_test_data_paths
-                                      By default Planemo will use or not use
-                                      Galaxy's path paste option to load test data
-                                      into a history based on the engine type it is
-                                      targeting. This can override the logic to
-                                      explicitly enable or disable path pasting.
       --test_output PATH              Output test report (HTML - for humans)
                                       defaults to tool_test_output.html.
       --test_output_text PATH         Output test report (Basic text - for display

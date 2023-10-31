@@ -1,6 +1,6 @@
 
 ``workflow_convert`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``workflow_convert``. This help message can be generated with ``planemo workflow_convert

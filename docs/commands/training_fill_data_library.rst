@@ -1,6 +1,6 @@
 
 ``training_fill_data_library`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``training_fill_data_library``. This help message can be generated with ``planemo training_fill_data_library

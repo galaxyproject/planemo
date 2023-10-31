@@ -1,6 +1,6 @@
 
 ``ci_find_repos`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``ci_find_repos``. This help message can be generated with ``planemo ci_find_repos

@@ -1,6 +1,6 @@
 
 ``training_init`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``training_init``. This help message can be generated with ``planemo training_init

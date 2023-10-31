@@ -82,8 +82,8 @@ class CmdsWithWorkflowIdTestCase(CliTestCase, UsesServeCommand):
             test_index = 1
             invocation_id = output["tests"][test_index]["data"]["invocation_details"]["details"]["invocation_id"]
             test_path = os.path.join(TEST_DATA_DIR, "wf11-remote.gxwf-test.yml")
-            workflow_test_check_command = [
-                "workflow_test_check",
+            workflow_test_on_invocation_command = [
+                "workflow_test_on_invocation",
                 "--galaxy_url",
                 f"http://localhost:{self._port}",
                 "--galaxy_user_key",
@@ -93,4 +93,4 @@ class CmdsWithWorkflowIdTestCase(CliTestCase, UsesServeCommand):
                 test_path,
                 invocation_id,
             ]
-            self._check_exit_code(workflow_test_check_command, exit_code=0)
+            self._check_exit_code(workflow_test_on_invocation_command, exit_code=0)

@@ -1,6 +1,6 @@
 
 ``shed_update`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``shed_update``. This help message can be generated with ``planemo shed_update

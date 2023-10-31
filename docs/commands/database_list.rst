@@ -1,6 +1,6 @@
 
 ``database_list`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``database_list``. This help message can be generated with ``planemo database_list

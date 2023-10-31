@@ -11,7 +11,7 @@ from planemo.runnable_resolve import for_runnable_identifier
 from planemo.test.results import StructuredData
 
 
-@click.command("workflow_test_check")
+@click.command("workflow_test_on_invocation")
 @options.optional_tools_arg(multiple=False, allow_uris=False, metavar="TEST DEFINITION")
 @options.required_workflow_arg()
 @options.galaxy_url_option(required=True)

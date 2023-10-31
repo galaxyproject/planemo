@@ -1,6 +1,6 @@
 
 ``upload_data`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``upload_data``. This help message can be generated with ``planemo upload_data
