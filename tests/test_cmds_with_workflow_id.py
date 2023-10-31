@@ -78,6 +78,7 @@ class CmdsWithWorkflowIdTestCase(CliTestCase, UsesServeCommand):
             with open(output_json_path) as f:
                 output = json.load(f)
             assert "tests" in output
+
             test_index = 1
             invocation_id = output["tests"][test_index]["data"]["invocation_details"]["details"]["invocation_id"]
             test_path = os.path.join(TEST_DATA_DIR, "wf11-remote.gxwf-test.yml")
