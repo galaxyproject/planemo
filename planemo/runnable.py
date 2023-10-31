@@ -597,7 +597,7 @@ class RunResponse(metaclass=abc.ABCMeta):
 
     def structured_data(self, test_case: Optional[TestCase] = None) -> Dict[str, Any]:
         output_problems = []
-        if isinstance(self, SuccessfulRunResponse) and self.was_successful:
+        if self.was_successful:
             execution_problem = None
             if test_case:
                 for output_id, output_test in test_case.output_expectations.items():
