@@ -268,7 +268,7 @@ def cases(runnable: Runnable) -> List["AbstractTestCase"]:
     return definition_to_test_case(tests_path=tests_path, runnable=runnable)
 
 
-def definition_to_test_case(tests_path, runnable):
+def definition_to_test_case(tests_path: str, runnable: Runnable) -> List["AbstractTestCase"]:
     with open(tests_path) as f:
         tests_def = yaml.safe_load(f)
     tests_directory = os.path.abspath(os.path.dirname(tests_path))
@@ -284,7 +284,7 @@ def definition_to_test_case(tests_path, runnable):
         message = TEST_FILE_NOT_LIST_MESSAGE % tests_path
         raise Exception(message)
 
-    cases = []
+    cases: List["AbstractTestCase"] = []
     for i, test_def in enumerate(tests_def):
         if "job" not in test_def:
             message = TEST_FIELD_MISSING_MESSAGE % (i + 1, tests_path, "job")
