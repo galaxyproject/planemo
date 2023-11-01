@@ -20,7 +20,8 @@ Run defined tests against existing workflow invocation.
                                       engine.  [required]
       --galaxy_user_key TEXT          User key to use with external Galaxy engine.
                                       [required]
-      --test_index INTEGER            Select which test to run. Counting starts at 1
+      --test_index INTEGER            Select which test to check. Counting starts at
+                                      1
       --update_test_data              Update test-data directory with job outputs
                                       (normally written to directory
                                       --job_output_files if specified.)

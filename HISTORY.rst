@@ -6,11 +6,16 @@ History
 .. to_doc
 
 ---------------------
-0.75.16 (2023-11-01)
+0.75.17 (2023-11-01)
 ---------------------
 * Implement running tests against existing invocation (thanks to `@mvdbeek`_).
   `Pull Request 1401`_
 * Fix test result download (thanks to `@mvdbeek`_). `Pull Request 1402`_
+
+---------------------
+0.75.16 (2023-11-01)
+---------------------
+* No changes
 
 ---------------------
 0.75.15 (2023-10-29)
