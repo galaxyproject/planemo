@@ -1,6 +1,6 @@
 
 ``shed_create`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``shed_create``. This help message can be generated with ``planemo shed_create

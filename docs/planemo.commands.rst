@@ -508,6 +508,14 @@ planemo.commands.cmd\_workflow\_test\_init module
    :undoc-members:
    :show-inheritance:
 
+planemo.commands.cmd\_workflow\_test\_on\_invocation module
+-----------------------------------------------------------
+
+.. automodule:: planemo.commands.cmd_workflow_test_on_invocation
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 planemo.commands.cmd\_workflow\_upload module
 ---------------------------------------------
 

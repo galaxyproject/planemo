@@ -1,6 +1,6 @@
 
 ``test_reports`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``test_reports``. This help message can be generated with ``planemo test_reports

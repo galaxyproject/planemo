@@ -467,12 +467,13 @@ def docker_extra_volume_option():
     )
 
 
-def galaxy_url_option():
+def galaxy_url_option(required: bool = False):
     return planemo_option(
         "--galaxy_url",
         use_global_config=True,
         extra_global_config_vars=["galaxy_url"],
         use_env_var=True,
+        required=required,
         type=str,
         help="Remote Galaxy URL to use with external Galaxy engine.",
     )
@@ -489,12 +490,13 @@ def galaxy_admin_key_option():
     )
 
 
-def galaxy_user_key_option():
+def galaxy_user_key_option(required: bool = False):
     return planemo_option(
         "--galaxy_user_key",
         use_global_config=True,
         extra_global_config_vars=["admin_key"],
         use_env_var=True,
+        required=required,
         type=str,
         help="User key to use with external Galaxy engine.",
     )
@@ -824,7 +826,7 @@ class UriLike(click.Path):
             return super().convert(value, param, ctx)
 
 
-def optional_tools_arg(multiple=False, allow_uris=False):
+def optional_tools_arg(multiple=False, allow_uris=False, metavar="TOOL_PATH"):
     """Decorate click method as optionally taking in the path to a tool
     or directory of tools. If no such argument is given the current working
     directory will be treated as a directory of tools.
@@ -844,7 +846,7 @@ def optional_tools_arg(multiple=False, allow_uris=False):
     nargs = -1 if multiple else 1
     return click.argument(
         name,
-        metavar="TOOL_PATH",
+        metavar=metavar,
         type=arg_type,
         nargs=nargs,
         callback=_optional_tools_default,
@@ -1599,7 +1601,11 @@ def profile_database_options():
     )
 
 
-def test_options():
+def test_index_option():
+    return planemo_option("--test_index", default=1, type=int, help="Select which test to check. Counting starts at 1")
+
+
+def test_output_options():
     return _compose(
         planemo_option(
             "--update_test_data",
@@ -1607,7 +1613,6 @@ def test_options():
             help="Update test-data directory with job outputs (normally"
             " written to directory --job_output_files if specified.)",
         ),
-        paste_test_data_paths_option(),
         test_report_options(),
         planemo_option(
             "--test_output_json",
@@ -1638,6 +1643,13 @@ def test_options():
             help="Maximum runtime of a single test in seconds.",
             default=DEFAULT_TOOL_TEST_WAIT,
         ),
+    )
+
+
+def test_options():
+    return _compose(
+        paste_test_data_paths_option(),
+        test_output_options(),
     )
 
 

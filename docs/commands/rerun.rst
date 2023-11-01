@@ -1,6 +1,6 @@
 
 ``rerun`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``rerun``. This help message can be generated with ``planemo rerun

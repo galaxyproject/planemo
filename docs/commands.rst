@@ -68,4 +68,5 @@ documentation describes these commands.
 .. include:: commands/workflow_job_init.rst
 .. include:: commands/workflow_lint.rst
 .. include:: commands/workflow_test_init.rst
+.. include:: commands/workflow_test_on_invocation.rst
 .. include:: commands/workflow_upload.rst

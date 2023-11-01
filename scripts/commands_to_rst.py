@@ -25,7 +25,7 @@ INTERNAL_COMMANDS = [
 COMMAND_TEMPLATE = Template(
     """
 ``${command}`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``${command}``. This help message can be generated with ``planemo ${command}
