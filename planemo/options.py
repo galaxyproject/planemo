@@ -1602,7 +1602,7 @@ def profile_database_options():
 
 
 def test_index_option():
-    return planemo_option("--test_index", default=1, type=int, help="Select which test to run. Counting starts at 1")
+    return planemo_option("--test_index", default=1, type=int, help="Select which test to check. Counting starts at 1")
 
 
 def test_options():
