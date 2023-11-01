@@ -212,6 +212,12 @@ Planemo command for running tools and jobs.
                                       created.
       --no_wait                       After invoking a job or workflow, do not wait
                                       for completion.
+      --paste_test_data_paths / --no_paste_test_data_paths
+                                      By default Planemo will use or not use
+                                      Galaxy's path paste option to load test data
+                                      into a history based on the engine type it is
+                                      targeting. This can override the logic to
+                                      explicitly enable or disable path pasting.
       --update_test_data              Update test-data directory with job outputs
                                       (normally written to directory
                                       --job_output_files if specified.)

@@ -32,6 +32,12 @@ Auto-update tool requirements by checking against Conda and updating if newer ve
                                       tools and workflows. Defaults to a local
                                       Galaxy, but running Galaxy within a Docker
                                       container.
+      --paste_test_data_paths / --no_paste_test_data_paths
+                                      By default Planemo will use or not use
+                                      Galaxy's path paste option to load test data
+                                      into a history based on the engine type it is
+                                      targeting. This can override the logic to
+                                      explicitly enable or disable path pasting.
       --update_test_data              Update test-data directory with job outputs
                                       (normally written to directory
                                       --job_output_files if specified.)

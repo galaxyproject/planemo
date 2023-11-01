@@ -168,6 +168,12 @@ install these artifacts, and run the tool tests for these commands.
                                       one user and this user is automatically logged
                                       it. Use --no_galaxy_single_user to prevent
                                       Galaxy from running this way.
+      --paste_test_data_paths / --no_paste_test_data_paths
+                                      By default Planemo will use or not use
+                                      Galaxy's path paste option to load test data
+                                      into a history based on the engine type it is
+                                      targeting. This can override the logic to
+                                      explicitly enable or disable path pasting.
       --update_test_data              Update test-data directory with job outputs
                                       (normally written to directory
                                       --job_output_files if specified.)

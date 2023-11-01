@@ -1605,7 +1605,7 @@ def test_index_option():
     return planemo_option("--test_index", default=1, type=int, help="Select which test to check. Counting starts at 1")
 
 
-def test_options():
+def test_output_options():
     return _compose(
         planemo_option(
             "--update_test_data",
@@ -1643,6 +1643,13 @@ def test_options():
             help="Maximum runtime of a single test in seconds.",
             default=DEFAULT_TOOL_TEST_WAIT,
         ),
+    )
+
+
+def test_options():
+    return _compose(
+        paste_test_data_paths_option(),
+        test_output_options(),
     )
 
 

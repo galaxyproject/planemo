@@ -17,7 +17,7 @@ from planemo.test.results import StructuredData
 @options.galaxy_url_option(required=True)
 @options.galaxy_user_key_option(required=True)
 @options.test_index_option()
-@options.test_options()
+@options.test_output_options()
 @command_function
 def cli(ctx, path, workflow_identifier, test_index, **kwds):
     """Run defined tests against existing workflow invocation."""
