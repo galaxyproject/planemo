@@ -30,4 +30,5 @@ def cli(ctx, term, **kwds):
     if conda_context.conda_version >= VERSION_4_DOT_4:
         term = "*%s*" % term
     args = conda_context._override_channels_args + [term]
-    conda_context.exec_command("search", args)
+    exit_code = conda_context.exec_command("search", args)
+    ctx.exit(exit_code)
