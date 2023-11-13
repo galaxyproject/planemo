@@ -308,7 +308,7 @@ def outdated_tools(
         for repo in repos.values():
             if isinstance(repo, dict):
                 for tool in repo.get("tools") or []:
-                    if tool["guid"].startswith(base_id):
+                    if tool["guid"].startswith(base_id + "/"):
                         matching_tool_ids.append(tool["guid"])
                         # there can only be one matching tool id in a repo
                         break
