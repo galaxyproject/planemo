@@ -28,4 +28,5 @@ def cli(ctx, paths, **kwds):
             conda_target, conda_context=conda_context, skip_environment=kwds.get("global", False)
         )
         return_codes.append(return_code)
-    return coalesce_return_codes(return_codes, assert_at_least_one=True)
+    exit_code = coalesce_return_codes(return_codes, assert_at_least_one=True)
+    ctx.exit(exit_code)
