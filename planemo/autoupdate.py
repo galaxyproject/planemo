@@ -293,17 +293,26 @@ def get_newest_tool_id(tool_ids: List[str]) -> str:
     )[-1]
 
 
-def outdated_tools(
-    ctx: "PlanemoCliContext", wf_dict: Dict[str, Any], ts: ToolShedInstance
+def outdated_tools(  # noqa: C901
+    ctx: "PlanemoCliContext", wf_dict: Dict[str, Any], ts: ToolShedInstance, tools_to_skip: List[str]
 ) -> Dict[str, Dict[str, str]]:
-    def check_tool_step(step, ts):  # return a dict with current and newest tool version, in case they don't match
-        warning_msg, repos = find_repos_from_tool_id(step["tool_id"], ts)
+    """
+    tools_to_skip should be a list of base tool ids.
+    """
+
+    def base_tool_id(tool_id: str) -> str:
+        return tool_id.rsplit("/", 1)[0]
+
+    def check_tool_step(tool_id: str) -> Dict[str, Dict[str, str]]:
+        """
+        Return a dict with current and newest tool version, in case they don't match
+        """
+        warning_msg, repos = find_repos_from_tool_id(tool_id, ts)
         if warning_msg != "":
             ctx.log(warning_msg)
         if len(repos) == 0:
             return repos
-        tool_id = step["tool_id"]
-        base_id = "/".join(tool_id.split("/")[:-1])
+        base_id = base_tool_id(tool_id)
         matching_tool_ids = []
         for repo in repos.values():
             if isinstance(repo, dict):
@@ -318,22 +327,31 @@ def outdated_tools(
         else:
             return {}
 
-    outdated_tool_dict = {}
-    steps = wf_dict["steps"].values() if isinstance(wf_dict["steps"], dict) else wf_dict["steps"]
-    for step in steps:
-        if step.get("type", "tool") == "tool" and not step.get("run", {}).get("class") == "GalaxyWorkflow":
-            outdated_tool_dict.update(check_tool_step(step, ts))
-        elif step.get("type") == "subworkflow":  # GA SWF
-            outdated_tool_dict.update(outdated_tools(ctx, step["subworkflow"], ts))
-        elif step.get("run", {}).get("class") == "GalaxyWorkflow":  # gxformat2 SWF
-            outdated_tool_dict.update(outdated_tools(ctx, step["run"], ts))
-        else:
-            continue
+    def outdated_tools_rec(wf_dict: Dict[str, Any]) -> None:
+        steps = wf_dict["steps"].values() if isinstance(wf_dict["steps"], dict) else wf_dict["steps"]
+        for step in steps:
+            if step.get("type", "tool") == "tool" and not step.get("run", {}).get("class") == "GalaxyWorkflow":
+                tool_id = step["tool_id"]
+                base_id = base_tool_id(tool_id)
+                if base_id not in checked_tools:
+                    outdated_tool_dict.update(check_tool_step(tool_id))
+                    checked_tools.append(base_id)
+            elif step.get("type") == "subworkflow":  # GA SWF
+                outdated_tools_rec(step["subworkflow"])
+            elif step.get("run", {}).get("class") == "GalaxyWorkflow":  # gxformat2 SWF
+                outdated_tools_rec(step["run"])
+            else:
+                continue
+
+    outdated_tool_dict: Dict[str, Dict[str, str]] = {}
+    # Initialize the list of tools already checked with a copy of tools_to_skip
+    checked_tools = tools_to_skip.copy()
+    outdated_tools_rec(wf_dict)
     return outdated_tool_dict
 
 
 def get_tools_to_update(
-    ctx: "PlanemoCliContext", workflow: "Runnable", tools_to_skip: List[Any]
+    ctx: "PlanemoCliContext", workflow: "Runnable", tools_to_skip: List[str]
 ) -> Dict[str, Dict[str, str]]:
     # before we run the autoupdate, we check the tools against the toolshed to see if there
     # are any new versions. This saves spinning up Galaxy and installing the tools if there
@@ -342,8 +360,7 @@ def get_tools_to_update(
         wf_dict = yaml.load(f, Loader=yaml.SafeLoader)
 
     ts = toolshed.ToolShedInstance(url=MAIN_TOOLSHED_URL)
-    tools_to_update = outdated_tools(ctx, wf_dict, ts)
-    return {tool: versions for tool, versions in tools_to_update.items() if tool not in tools_to_skip}
+    return outdated_tools(ctx, wf_dict, ts, tools_to_skip)
 
 
 def autoupdate_wf(ctx: "PlanemoCliContext", config: "LocalGalaxyConfig", wf: "Runnable") -> Dict[str, Any]:
