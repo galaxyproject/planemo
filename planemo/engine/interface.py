@@ -116,7 +116,9 @@ class BaseEngine(Engine):
                 job_paths.append(job_path)
             else:
                 job_paths.append(test_case.job_path)
-            output_collectors.append(lambda run_response: test_case.structured_test_data(run_response))
+            output_collectors.append(
+                lambda run_response, test_case=test_case: test_case.structured_test_data(run_response)
+            )
         try:
             run_responses = self._run(runnables, job_paths, output_collectors)
         finally:
