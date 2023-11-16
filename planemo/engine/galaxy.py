@@ -54,12 +54,13 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
         results = []
         if not output_collectors:
             output_collectors = [lambda x: None] * len(runnables)
-        for runnable, job_path, collect_output in zip(runnables, job_paths, output_collectors):
-            self._ctx.vlog(f"Serving artifact [{runnable}] with Galaxy.")
-            with self.ensure_runnables_served([runnable]) as config:
+
+        with self.ensure_runnables_served(runnables) as config:
+            if self._ctx.verbose:
+                self._ctx.log(f"Running Galaxy with API configuration [{config.user_api_config}]")
+            for runnable, job_path, collect_output in zip(runnables, job_paths, output_collectors):
+                self._ctx.vlog(f"Serving artifact [{runnable}] with Galaxy.")
                 self._ctx.vlog(f"Running job path [{job_path}]")
-                if self._ctx.verbose:
-                    self._ctx.log(f"Running Galaxy with API configuration [{config.user_api_config}]")
                 run_response = execute(self._ctx, config, runnable, job_path, **self._kwds)
                 results.append(run_response)
                 if collect_output is not None:
