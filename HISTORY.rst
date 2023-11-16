@@ -6,6 +6,17 @@ History
 .. to_doc
 
 ---------------------
+0.75.18 (2023-11-16)
+---------------------
+
+* Pretty-print workflow and use correct version of linked workflow in
+  ``workflow_test_init`` (thanks to `@mvdbeek`_). `Pull Request 1408`_
+* Fix running workflow tests when there are multiple tests (thanks to
+  `@mvdbeek`_). `Pull Request 1407`_
+* Fix matching of tool ids to autoupdate (thanks to `@nsoranzo`_). `Pull
+  Request 1406`_
+
+---------------------
 0.75.17 (2023-11-01)
 ---------------------
 * Implement running tests against existing invocation (thanks to `@mvdbeek`_).
@@ -2050,6 +2061,9 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1408: https://github.com/galaxyproject/planemo/pull/1408
+.. _Pull Request 1407: https://github.com/galaxyproject/planemo/pull/1407
+.. _Pull Request 1406: https://github.com/galaxyproject/planemo/pull/1406
 .. _Pull Request 1401: https://github.com/galaxyproject/planemo/pull/1401
 .. _Pull Request 1402: https://github.com/galaxyproject/planemo/pull/1402
 .. _Pull Request 1398: https://github.com/galaxyproject/planemo/pull/1398
