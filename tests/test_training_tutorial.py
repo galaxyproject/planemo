@@ -331,7 +331,7 @@ def test_tutorial_write_hands_on_tutorial() -> None:
     with open(tuto.tuto_fp) as tuto_f:
         tuto_c = tuto_f.read()
         assert "layout: tutorial_hands_on" in tuto_c
-        assert "# Introduction" in tuto_c
+        assert "<agenda" in tuto_c
         assert "URL1" in tuto_c
         assert "# Conclusion" in tuto_c
     shutil.rmtree("topics")

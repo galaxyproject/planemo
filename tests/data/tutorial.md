@@ -16,12 +16,9 @@ contributors:
   - the_best_contributor
 ---
 
-# Introduction
-{:.no_toc}
-
 The introduction
 
-> ### Agenda
+> <agenda-title></agenda-title>
 >
 > In this tutorial, we will deal with:
 >
