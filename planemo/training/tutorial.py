@@ -135,9 +135,6 @@ TUTO_BIBLIOGRAPHY_TEMPLATE = """
 """
 
 TUTO_HAND_ON_BODY_TEMPLATE = """
-# Introduction
-
-<!-- This is a comment. -->
 
 General introduction about the topic and then an introduction of the
 tutorial (the questions and the objectives). It is nice also to have a
@@ -157,6 +154,7 @@ This will be rendered like this: {{ '{%' }} cite Batut2018 {{ '%}' }}, and links
 [bibliography section](#bibliography) which will automatically be created at the end of the
 tutorial.
 
+<!-- This is a comment. -->
 
 **Please follow our
 [tutorial to learn how to fill the Markdown]({{ '{{' }} site.baseurl {{ '}}' }}/topics/contributing/tutorials/\
