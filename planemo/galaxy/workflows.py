@@ -160,7 +160,7 @@ def remote_runnable_to_workflow_id(runnable):
 
 def describe_outputs(runnable, gi=None):
     """Return a list of :class:`WorkflowOutput` objects for target workflow."""
-    if runnable.uri.startswith("gxid://"):
+    if runnable.uri.startswith((GALAXY_WORKFLOWS_PREFIX, GALAXY_WORKFLOW_INSTANCE_PREFIX)):
         workflow_id = remote_runnable_to_workflow_id(runnable)
         assert gi is not None
         instance = runnable.uri.startswith(GALAXY_WORKFLOW_INSTANCE_PREFIX)
