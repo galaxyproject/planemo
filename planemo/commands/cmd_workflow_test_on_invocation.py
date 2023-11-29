@@ -14,17 +14,17 @@ from planemo.test.results import StructuredData
 
 @click.command("workflow_test_on_invocation")
 @options.optional_tools_arg(multiple=False, allow_uris=False, metavar="TEST DEFINITION")
-@options.required_workflow_arg()
+@options.required_invocation_id_arg()
 @options.galaxy_url_option(required=True)
 @options.galaxy_user_key_option(required=True)
 @options.test_index_option()
 @options.test_output_options()
 @command_function
-def cli(ctx, path, workflow_identifier, test_index, **kwds):
+def cli(ctx, path, invocation_id, test_index, **kwds):
     """Run defined tests against existing workflow invocation."""
     with engine_context(ctx, engine="external_galaxy", **kwds) as engine, engine.ensure_runnables_served([]) as config:
         user_gi = config.user_gi
-        invocation = user_gi.invocations.show_invocation(workflow_identifier)
+        invocation = user_gi.invocations.show_invocation(invocation_id)
         runnable = for_runnable_identifier(ctx, f"{GALAXY_WORKFLOW_INSTANCE_PREFIX}{invocation['workflow_id']}", kwds)
         test_cases = definition_to_test_case(path, runnable)
         assert (
