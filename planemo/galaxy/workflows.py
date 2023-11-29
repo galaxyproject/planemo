@@ -25,11 +25,15 @@ from gxformat2.normalize import (
     outputs_normalized,
 )
 
-from planemo.galaxy.api import gi
+from planemo.galaxy.api import (
+    get_dict_from_workflow,
+    gi,
+)
 from planemo.io import warn
 
 FAILED_REPOSITORIES_MESSAGE = "Failed to install one or more repositories."
 GALAXY_WORKFLOWS_PREFIX = "gxid://workflows/"
+GALAXY_WORKFLOW_INSTANCE_PREFIX = "gxid://workflow-instance/"
 
 
 def load_shed_repos(runnable):
@@ -156,10 +160,11 @@ def remote_runnable_to_workflow_id(runnable):
 
 def describe_outputs(runnable, gi=None):
     """Return a list of :class:`WorkflowOutput` objects for target workflow."""
-    if runnable.uri.startswith(GALAXY_WORKFLOWS_PREFIX):
+    if runnable.uri.startswith("gxid://"):
         workflow_id = remote_runnable_to_workflow_id(runnable)
         assert gi is not None
-        workflow = get_dict_from_workflow(gi, workflow_id)
+        instance = runnable.uri.startswith(GALAXY_WORKFLOW_INSTANCE_PREFIX)
+        workflow = get_dict_from_workflow(gi, workflow_id, instance)
     else:
         workflow = _raw_dict(runnable.path)
 
@@ -291,10 +296,6 @@ def new_workflow_associated_path(workflow_path, suffix="tests"):
     return base + sep + suffix + "." + ext
 
 
-def get_dict_from_workflow(gi, workflow_id):
-    return gi.workflows.export_workflow_dict(workflow_id)
-
-
 def rewrite_job_file(input_file, output_file, job):
     """Rewrite a job file with galaxy_ids for upload_data subcommand"""
     with open(input_file) as f:
@@ -310,7 +311,7 @@ def rewrite_job_file(input_file, output_file, job):
 def get_workflow_from_invocation_id(invocation_id, galaxy_url, galaxy_api_key):
     user_gi = gi(url=galaxy_url, key=galaxy_api_key)
     workflow_id = user_gi.invocations.show_invocation(invocation_id)["workflow_id"]
-    workflow = user_gi.workflows._get(workflow_id, params={"instance": "true"})
+    workflow = get_dict_from_workflow(user_gi, workflow_id, instance=True)
     workflow_name = "-".join(workflow["name"].split())
     export_dict = user_gi.workflows.export_workflow_dict(workflow_id=workflow["id"], version=workflow["version"])
     with open(f"{workflow_name}.ga", "w") as workflow_out:

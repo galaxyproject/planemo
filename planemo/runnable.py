@@ -37,7 +37,6 @@ from planemo.exit_codes import (
 )
 from planemo.galaxy.workflows import (
     describe_outputs,
-    GALAXY_WORKFLOWS_PREFIX,
     WorkflowOutput,
 )
 from planemo.io import error
@@ -115,7 +114,7 @@ class Runnable(NamedTuple):
 
     @property
     def is_remote_workflow_uri(self) -> bool:
-        return self.uri.startswith(GALAXY_WORKFLOWS_PREFIX)
+        return self.uri.startswith("gxid://")
 
     @property
     def test_data_search_path(self) -> str:

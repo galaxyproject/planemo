@@ -6,6 +6,7 @@ from planemo.cli import command_function
 from planemo.engine.factory import engine_context
 from planemo.galaxy.activity import invocation_to_run_response
 from planemo.galaxy.test.actions import handle_reports_and_summary
+from planemo.galaxy.workflows import GALAXY_WORKFLOW_INSTANCE_PREFIX
 from planemo.runnable import definition_to_test_case
 from planemo.runnable_resolve import for_runnable_identifier
 from planemo.test.results import StructuredData
@@ -24,7 +25,7 @@ def cli(ctx, path, workflow_identifier, test_index, **kwds):
     with engine_context(ctx, engine="external_galaxy", **kwds) as engine, engine.ensure_runnables_served([]) as config:
         user_gi = config.user_gi
         invocation = user_gi.invocations.show_invocation(workflow_identifier)
-        runnable = for_runnable_identifier(ctx, invocation["workflow_id"], kwds)
+        runnable = for_runnable_identifier(ctx, f"{GALAXY_WORKFLOW_INSTANCE_PREFIX}{invocation['workflow_id']}", kwds)
         test_cases = definition_to_test_case(path, runnable)
         assert (
             len(test_cases) >= test_index

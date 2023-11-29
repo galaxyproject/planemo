@@ -763,8 +763,8 @@ def _history_id(gi, **kwds) -> str:
     return history_id
 
 
-def get_dict_from_workflow(gi, workflow_id):
-    return gi.workflows.export_workflow_dict(workflow_id)
+def get_dict_from_workflow(gi, workflow_id, instance=False):
+    return gi.workflows._get(workflow_id, params={"instance": instance})
 
 
 def wait_for_invocation_and_jobs(
