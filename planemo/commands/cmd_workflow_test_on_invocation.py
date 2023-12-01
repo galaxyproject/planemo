@@ -25,7 +25,9 @@ def cli(ctx, path, invocation_id, test_index, **kwds):
     with engine_context(ctx, engine="external_galaxy", **kwds) as engine, engine.ensure_runnables_served([]) as config:
         user_gi = config.user_gi
         invocation = user_gi.invocations.show_invocation(invocation_id)
-        runnable = for_runnable_identifier(ctx, f"{GALAXY_WORKFLOW_INSTANCE_PREFIX}{invocation['workflow_id']}", kwds)
+        runnable = for_runnable_identifier(
+            ctx, f"{GALAXY_WORKFLOW_INSTANCE_PREFIX}{invocation['workflow_id']}?runnable_path={path}", kwds
+        )
         test_cases = definition_to_test_case(path, runnable)
         assert (
             len(test_cases) >= test_index
