@@ -3,7 +3,10 @@ import os
 import requests
 
 from planemo.galaxy.profiles import translate_alias
-from planemo.galaxy.workflows import GALAXY_WORKFLOWS_PREFIX
+from planemo.galaxy.workflows import (
+    GALAXY_WORKFLOW_INSTANCE_PREFIX,
+    GALAXY_WORKFLOWS_PREFIX,
+)
 from planemo.tools import uri_to_path
 from .runnable import (
     for_path,
@@ -17,14 +20,14 @@ def for_runnable_identifier(ctx, runnable_identifier, kwds):
     # could be a URI, path, or alias
     current_profile = kwds.get("profile")
     runnable_identifier = translate_alias(ctx, runnable_identifier, current_profile)
-    if not runnable_identifier.startswith(GALAXY_WORKFLOWS_PREFIX):
+    if not runnable_identifier.startswith((GALAXY_WORKFLOWS_PREFIX, GALAXY_WORKFLOW_INSTANCE_PREFIX)):
         runnable_identifier = uri_to_path(ctx, runnable_identifier)
     if os.path.exists(runnable_identifier):
         runnable = for_path(runnable_identifier)
     else:  # assume galaxy workflow or tool id
         if "/repos/" in runnable_identifier:
             runnable_identifier = f"{GALAXY_TOOLS_PREFIX}{runnable_identifier}"
-        elif not runnable_identifier.startswith(GALAXY_WORKFLOWS_PREFIX):
+        elif not runnable_identifier.startswith("gxid://"):
             runnable_identifier = f"{GALAXY_WORKFLOWS_PREFIX}{runnable_identifier}"
         runnable = for_uri(runnable_identifier)
     return runnable

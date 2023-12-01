@@ -8,7 +8,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Usage**::
 
-    planemo workflow_test_on_invocation [OPTIONS] TEST DEFINITION
+    planemo workflow_test_on_invocation [OPTIONS] TEST.YML INVOCATION_ID
 
 **Help**
 

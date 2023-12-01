@@ -257,7 +257,7 @@ def invocation_to_run_response(
         no_wait=no_wait,
         polling_backoff=polling_backoff,
     )
-    if final_invocation_state not in ("ok", "skipped"):
+    if final_invocation_state not in ("ok", "skipped", "scheduled"):
         msg = f"Failed to run workflow [{workflow_id}], at least one job is in [{final_invocation_state}] state."
         ctx.vlog(msg)
         summarize_history(ctx, user_gi, history_id)
@@ -761,10 +761,6 @@ def _history_id(gi, **kwds) -> str:
         tags = tags_str.split(",")
         gi.histories.update_history(history_id, tags=tags)
     return history_id
-
-
-def get_dict_from_workflow(gi, workflow_id):
-    return gi.workflows.export_workflow_dict(workflow_id)
 
 
 def wait_for_invocation_and_jobs(
