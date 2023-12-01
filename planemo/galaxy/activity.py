@@ -257,7 +257,7 @@ def invocation_to_run_response(
         no_wait=no_wait,
         polling_backoff=polling_backoff,
     )
-    if final_invocation_state not in ("ok", "skipped"):
+    if final_invocation_state not in ("ok", "skipped", "scheduled"):
         msg = f"Failed to run workflow [{workflow_id}], at least one job is in [{final_invocation_state}] state."
         ctx.vlog(msg)
         summarize_history(ctx, user_gi, history_id)

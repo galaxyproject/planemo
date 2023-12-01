@@ -8,7 +8,7 @@ DEFAULT_ADMIN_API_KEY = "test_key"
 
 
 def get_dict_from_workflow(gi: GalaxyInstance, workflow_id: str, instance: bool = False):
-    return gi.workflows._get(workflow_id, params={"instance": instance})
+    return gi.workflows._get(f"{workflow_id}/download", params={"instance": instance})
 
 
 def gi(port: Optional[int] = None, url: Optional[str] = None, key: Optional[str] = None) -> GalaxyInstance:

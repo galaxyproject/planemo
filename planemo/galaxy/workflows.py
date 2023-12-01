@@ -313,9 +313,8 @@ def get_workflow_from_invocation_id(invocation_id, galaxy_url, galaxy_api_key):
     workflow_id = user_gi.invocations.show_invocation(invocation_id)["workflow_id"]
     workflow = get_dict_from_workflow(user_gi, workflow_id, instance=True)
     workflow_name = "-".join(workflow["name"].split())
-    export_dict = user_gi.workflows.export_workflow_dict(workflow_id=workflow["id"], version=workflow["version"])
     with open(f"{workflow_name}.ga", "w") as workflow_out:
-        json.dump(export_dict, workflow_out, indent=4)
+        json.dump(workflow, workflow_out, indent=4)
     return workflow_name
 
 
