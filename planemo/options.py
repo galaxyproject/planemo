@@ -757,7 +757,7 @@ def required_workflow_arg():
 def required_invocation_id_arg():
     return click.argument(
         "invocation_id",
-        metavar="INVOCATION ID",
+        metavar="INVOCATION_ID",
         type=str,
     )
 

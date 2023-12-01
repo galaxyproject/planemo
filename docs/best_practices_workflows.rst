@@ -125,7 +125,7 @@ the ``--from_invocation`` option.
 
 ::
 
-    $ planemo workflow_test_init --from_invocation <INVOCATION ID> --galaxy_url <GALAXY SERVER URL> --galaxy_user_key" <GALAXY API KEY>
+    $ planemo workflow_test_init --from_invocation <INVOCATION_ID> --galaxy_url <GALAXY SERVER URL> --galaxy_user_key" <GALAXY API KEY>
 
 You also need to specify the server URL and your API key, as Galaxy invocation IDs are
 only unique to a particular server. You can obtain the invocation ID from
