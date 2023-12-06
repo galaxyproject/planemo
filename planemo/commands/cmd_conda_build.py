@@ -24,5 +24,7 @@ def cli(ctx: "PlanemoCliContext", paths: Tuple[str], **kwds) -> None:
     # Force conda_use_local for building...
     kwds["conda_use_local"] = True
     conda_context = build_conda_context(ctx, handle_auto_init=True, **kwds)
-    if conda_context.exec_command("build", paths) != 0:
+    exit_code = conda_context.exec_command("build", paths)
+    if exit_code:
         error(f"Failed to build [{' '.join(paths)}] with conda.")
+    ctx.exit(exit_code)
