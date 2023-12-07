@@ -268,8 +268,7 @@ def _lint_case(path: str, test_case: TestCase, lint_context: WorkflowLintContext
     job_keys = test_case.input_ids
     for key in job_keys:
         if key not in i_labels:
-            # consider an error instead?
-            lint_context.warn(
+            lint_context.error(
                 f"Unknown workflow input in test job definition [{key}], workflow inputs are [{i_labels}]"
             )
             test_valid = False
