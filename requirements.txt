@@ -9,6 +9,7 @@ glob2
 gxformat2>=0.14.0
 h5py
 jinja2
+check-jsonschema
 lxml
 oyaml
 pathvalidate

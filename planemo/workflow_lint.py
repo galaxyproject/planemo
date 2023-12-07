@@ -39,10 +39,12 @@ from planemo.galaxy.workflows import (
     required_input_labels,
 )
 from planemo.runnable import (
+    _tests_path,
     cases,
     for_path,
     TestCase,
 )
+from planemo.schema.validate_schema import validate_schema
 from planemo.shed import DOCKSTORE_REGISTRY_CONF
 
 if TYPE_CHECKING:
@@ -173,6 +175,12 @@ def _lint_tsts(path: str, lint_context: WorkflowLintContext) -> None:
             lint_context.warn("Workflow missing test cases.")
             return
         all_tests_valid = True
+        test_paths = _tests_path(runnable=runnable)
+        if test_paths:
+            validation_errors = validate_schema(test_files=[test_paths])
+            if validation_errors:
+                lint_context.error(validation_errors)
+                all_tests_valid = False
         for test_case in test_cases:
             if isinstance(test_case, TestCase):
                 if not _lint_case(path, test_case, lint_context):
