@@ -52,6 +52,7 @@ POTENTIAL_WORKFLOW_FILES = re.compile(r"^.*(\.yml|\.yaml|\.ga)$")
 DOCKSTORE_REGISTRY_CONF_VERSION = "1.2"
 
 MAIN_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
+INPUT_STEP_TYPES = {"data_input", "data_collection_input", "parameter_input"}
 
 
 class WorkflowLintContext(LintContext):
@@ -220,10 +221,9 @@ def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None: 
 
     # checks on individual steps
     for step in steps.values():
-        print(step)
         # disconnected inputs
         for input in step.get("inputs", []):
-            if input.get("name") not in step.get("input_connections"):  # TODO: check optional
+            if step.get("type") not in INPUT_STEP_TYPES and input.get("name") not in step.get("input_connections"):  # TODO: check optional
                 lint_context.warn(
                     f"Input {input.get('name')} of workflow step {step.get('annotation') or step.get('id')} is disconnected."
                 )
