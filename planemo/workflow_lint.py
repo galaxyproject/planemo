@@ -214,6 +214,8 @@ def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None: 
         workflow_dict = ordered_load(f)
 
     steps = workflow_dict.get("steps", {})
+    if isinstance(steps, dict):
+        steps = steps.values()
 
     # annotation
     if not workflow_dict.get("annotation"):
@@ -228,7 +230,8 @@ def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None: 
         lint_context.warn("Workflow does not specify a license.")
 
     # checks on individual steps
-    for step in steps.values():
+    for step in steps:
+
         # disconnected inputs
         for input in step.get("inputs", []):
             if step.get("type") not in INPUT_STEP_TYPES and input.get("name") not in step.get("input_connections"):  # TODO: check optional
@@ -493,7 +496,9 @@ def _lint_tool_ids(path: str, lint_context: WorkflowLintContext) -> None:
         """Returns whether a single tool_id was invalid"""
         failed = False
         steps = wf_dict.get("steps", {})
-        for step in steps.values():
+        if isinstance(steps, dict):
+            steps = steps.values()
+        for step in steps:
             if step.get("type", "tool") == "tool" and not step.get("run", {}).get("class") == "GalaxyWorkflow":
                 warning_msg, _ = find_repos_from_tool_id(step["tool_id"], ts)
                 if warning_msg != "":
