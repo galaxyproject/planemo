@@ -9,7 +9,6 @@
           path: hello.txt
   outputs:
     wf_output_1:
-      attributes: {}
       element_tests:
         el1:
           elements:

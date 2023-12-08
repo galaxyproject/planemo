@@ -1,2 +1,3 @@
 - doc: Test optional input workflow output
   job: {}
+  outputs: {}
