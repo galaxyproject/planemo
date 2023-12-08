@@ -231,10 +231,11 @@ def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None: 
 
     # checks on individual steps
     for step in steps:
-
         # disconnected inputs
         for input in step.get("inputs", []):
-            if step.get("type") not in INPUT_STEP_TYPES and input.get("name") not in step.get("input_connections"):  # TODO: check optional
+            if step.get("type") not in INPUT_STEP_TYPES and input.get("name") not in step.get(
+                "input_connections"
+            ):  # TODO: check optional
                 lint_context.warn(
                     f"Input {input.get('name')} of workflow step {step.get('annotation') or step.get('id')} is disconnected."
                 )

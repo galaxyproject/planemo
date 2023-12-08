@@ -8,6 +8,7 @@ from typing import (
 
 SCHEMA = pathlib.Path(__file__).parent / "test_file_schema.json"
 
+
 def validate_schema(test_files: List[str], verbose: bool = False) -> Optional[str]:
     """
     Runs check_jsonschema on `test_files`.
@@ -20,4 +21,3 @@ def validate_schema(test_files: List[str], verbose: bool = False) -> Optional[st
     result = subprocess.run(check_args, capture_output=True, text=True)
     if result.returncode:
         return result.stdout
-    
