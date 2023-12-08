@@ -311,13 +311,14 @@ def _lint_case(path: str, test_case: TestCase, lint_context: WorkflowLintContext
 
 def is_valid_output_expectations(lint_context, output_expectations):
     all_assertion_definitions = []
+    element_tests = output_expectations.get("element_tests") or output_expectations.get("elements")
     if isinstance(output_expectations, (int, str, float, bool)):
         # CWL style parameter output
         return True
-    elif "element_tests" in output_expectations:
+    elif element_tests:
         # This is a collection
-        for element_id in output_expectations["element_tests"]:
-            all_assertion_definitions.append(output_expectations["element_tests"][element_id].get("asserts"))
+        for element_id in element_tests:
+            all_assertion_definitions.append(element_tests[element_id].get("asserts"))
     else:
         all_assertion_definitions.append(output_expectations.get("asserts"))
     for assertion_definitions in all_assertion_definitions:
