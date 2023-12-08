@@ -342,6 +342,16 @@ class AbstractTestCase(metaclass=abc.ABCMeta):
         """
 
 
+def elements_to_element_tests(output_expectations):
+    # I'm seeing this as a temporary fix, ultimately
+    # we should use pydantic to parse the tests and use
+    # pydantic models (or dataclasses) throughout the
+    # test framework.
+    for output_value in output_expectations.values():
+        if isinstance(output_value, dict) and "elements" in output_value:
+            output_value["element_tests"] = output_value.pop("elements")
+
+
 class TestCase(AbstractTestCase):
     """Describe an abstract test case for a specified runnable."""
 
@@ -359,6 +369,7 @@ class TestCase(AbstractTestCase):
         self.runnable = runnable
         self.job_path = job_path
         self.job = job
+        elements_to_element_tests(output_expectations)
         self.output_expectations = output_expectations
         self.tests_directory = tests_directory
         self.index = index
