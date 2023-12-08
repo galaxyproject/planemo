@@ -21,3 +21,4 @@ def validate_schema(test_files: List[str], verbose: bool = False) -> Optional[st
     result = subprocess.run(check_args, capture_output=True, text=True)
     if result.returncode:
         return result.stdout
+    return None
