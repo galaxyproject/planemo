@@ -21,10 +21,10 @@
               text: Word
         second:
           asserts:
-            - that: has_text
-              text: Hello
-            - that: has_text
-              text: World
-            - that: not_has_text
-              text: Word
+            - has_text:
+                text: Hello
+            - has_text:
+                text: World
+            - not_has_text:
+                text: Word
 

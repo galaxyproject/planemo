@@ -6,9 +6,9 @@
   outputs:
     the_output:
       asserts:
-        - that: has_text
-          text: Hello
-        - that: has_text
-          line: Hello World!
-        - that: not_has_text
-          text: Word
+        - has_text:
+            text: Hello
+        - has_text:
+            line: Hello World!
+        - not_has_text:
+            text: Word
