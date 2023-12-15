@@ -1377,7 +1377,7 @@ def shed_fail_fast_option():
 
 def lint_xsd_option():
     return planemo_option(
-        "--xsd/--no_xsd", is_flag=True, default=True, help=("Include tool XSD validation in linting process.")
+        "--xsd/--no_xsd", is_flag=True, default=False, help=("Include tool XSD validation in linting process.")
     )
 
 
