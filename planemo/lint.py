@@ -20,8 +20,16 @@ def build_lint_args(ctx, **kwds):
         skip = ctx.global_config.get("lint_skip", "")
         if isinstance(skip, list):
             skip = ",".join(skip)
-
     skip_types = [s.strip() for s in skip.split(",")]
+
+    for skip_file in kwds.get("skip_file", []):
+        with open(skip_file) as f:
+            for line in f.readlines():
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                skip_types.append(line)
+
     lint_args = dict(
         level=report_level,
         fail_level=fail_level,
