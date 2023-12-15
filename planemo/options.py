@@ -1434,9 +1434,7 @@ def skip_file_option():
         "--skip_file",
         type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True),
         multiple=True,
-        help=(
-            "File containing a list of lint tests to skip"
-        ),
+        help=("File containing a list of lint tests to skip"),
     )
 
 
