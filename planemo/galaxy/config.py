@@ -26,8 +26,10 @@ from typing import (
     TYPE_CHECKING,
 )
 
-from galaxy.tool_util.deps import docker_util
-from galaxy.tool_util.deps import singularity_util
+from galaxy.tool_util.deps import (
+    docker_util,
+    singularity_util,
+)
 from galaxy.tool_util.deps.container_volumes import DockerVolume
 from galaxy.util.commands import argv_to_str
 from galaxy.util.yaml_util import ordered_dump
