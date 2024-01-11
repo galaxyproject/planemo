@@ -39,10 +39,12 @@ from planemo.galaxy.workflows import (
     required_input_labels,
 )
 from planemo.runnable import (
+    _tests_path,
     cases,
     for_path,
     TestCase,
 )
+from planemo.schema.validate_schema import validate_schema
 from planemo.shed import DOCKSTORE_REGISTRY_CONF
 
 if TYPE_CHECKING:
@@ -52,6 +54,7 @@ POTENTIAL_WORKFLOW_FILES = re.compile(r"^.*(\.yml|\.yaml|\.ga)$")
 DOCKSTORE_REGISTRY_CONF_VERSION = "1.2"
 
 MAIN_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
+INPUT_STEP_TYPES = {"data_input", "data_collection_input", "parameter_input"}
 
 
 class WorkflowLintContext(LintContext):
@@ -172,6 +175,12 @@ def _lint_tsts(path: str, lint_context: WorkflowLintContext) -> None:
             lint_context.warn("Workflow missing test cases.")
             return
         all_tests_valid = True
+        test_paths = _tests_path(runnable=runnable)
+        if test_paths:
+            validation_errors = validate_schema(test_files=[test_paths])
+            if validation_errors:
+                lint_context.error(validation_errors)
+                all_tests_valid = False
         for test_case in test_cases:
             if isinstance(test_case, TestCase):
                 if not _lint_case(path, test_case, lint_context):
@@ -205,6 +214,8 @@ def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None: 
         workflow_dict = ordered_load(f)
 
     steps = workflow_dict.get("steps", {})
+    if isinstance(steps, dict):
+        steps = steps.values()
 
     # annotation
     if not workflow_dict.get("annotation"):
@@ -219,11 +230,12 @@ def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None: 
         lint_context.warn("Workflow does not specify a license.")
 
     # checks on individual steps
-    for step in steps.values():
-        print(step)
+    for step in steps:
         # disconnected inputs
         for input in step.get("inputs", []):
-            if input.get("name") not in step.get("input_connections"):  # TODO: check optional
+            if step.get("type") not in INPUT_STEP_TYPES and input.get("name") not in step.get(
+                "input_connections"
+            ):  # TODO: check optional
                 lint_context.warn(
                     f"Input {input.get('name')} of workflow step {step.get('annotation') or step.get('id')} is disconnected."
                 )
@@ -260,8 +272,7 @@ def _lint_case(path: str, test_case: TestCase, lint_context: WorkflowLintContext
     job_keys = test_case.input_ids
     for key in job_keys:
         if key not in i_labels:
-            # consider an error instead?
-            lint_context.warn(
+            lint_context.error(
                 f"Unknown workflow input in test job definition [{key}], workflow inputs are [{i_labels}]"
             )
             test_valid = False
@@ -301,13 +312,14 @@ def _lint_case(path: str, test_case: TestCase, lint_context: WorkflowLintContext
 
 def is_valid_output_expectations(lint_context, output_expectations):
     all_assertion_definitions = []
+    element_tests = output_expectations.get("element_tests") or output_expectations.get("elements")
     if isinstance(output_expectations, (int, str, float, bool)):
         # CWL style parameter output
         return True
-    elif "element_tests" in output_expectations:
+    elif element_tests:
         # This is a collection
-        for element_id in output_expectations["element_tests"]:
-            all_assertion_definitions.append(output_expectations["element_tests"][element_id].get("asserts"))
+        for element_id in element_tests:
+            all_assertion_definitions.append(element_tests[element_id].get("asserts"))
     else:
         all_assertion_definitions.append(output_expectations.get("asserts"))
     for assertion_definitions in all_assertion_definitions:
@@ -486,7 +498,9 @@ def _lint_tool_ids(path: str, lint_context: WorkflowLintContext) -> None:
         """Returns whether a single tool_id was invalid"""
         failed = False
         steps = wf_dict.get("steps", {})
-        for step in steps.values():
+        if isinstance(steps, dict):
+            steps = steps.values()
+        for step in steps:
             if step.get("type", "tool") == "tool" and not step.get("run", {}).get("class") == "GalaxyWorkflow":
                 warning_msg, _ = find_repos_from_tool_id(step["tool_id"], ts)
                 if warning_msg != "":

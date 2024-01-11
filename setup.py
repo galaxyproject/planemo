@@ -56,6 +56,7 @@ PACKAGES = [
     "planemo.galaxy.test",
     "planemo.linters",
     "planemo.reports",
+    "planemo.schema",
     "planemo.shed",
     "planemo.shed2tap",
     "planemo.test",

@@ -419,7 +419,7 @@ def _job_outputs_template_from_invocation(invocation_id, galaxy_url, galaxy_api_
             download_function=user_gi.datasets.download_dataset,
             definition_style="outputs",
         )
-        outputs[label] = {"element_tests": element_tests}
+        outputs[label] = {"elements": element_tests}
     return outputs
 
 
