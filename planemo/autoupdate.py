@@ -17,12 +17,12 @@ from typing import (
 )
 from xml.etree.ElementTree import ElementTree
 
-import packaging.version
 import requests
 import yaml
 from bioblend import toolshed
 from bioblend.toolshed import ToolShedInstance
 from galaxy.tool_util.deps import conda_util
+from galaxy.tool_util.version import parse_version
 
 import planemo.conda
 from planemo.io import (
@@ -89,7 +89,7 @@ def check_conda(package_name: str, ctx: "PlanemoCliContext", **kwds) -> str:
         search_results = itertools.chain.from_iterable(
             n["versions"] for n in r.json() if n["name"] == package_name and n["owner"] in kwds["conda_ensure_channels"]
         )
-        return sorted(search_results, key=packaging.version.parse, reverse=True)[0]
+        return sorted(search_results, key=parse_version, reverse=True)[0]
 
     target = conda_util.CondaTarget(package_name)
     best_search_results = conda_util.best_search_result(target, conda_context=conda_context)
@@ -289,7 +289,7 @@ def _update_wf(config: "LocalGalaxyConfig", workflow_id: str, instance: bool = F
 def get_newest_tool_id(tool_ids: List[str]) -> str:
     return sorted(
         tool_ids,
-        key=lambda n: packaging.version.parse(n.split("/")[-1]),
+        key=lambda n: parse_version(n.split("/")[-1]),
     )[-1]
 
 
