@@ -4,7 +4,10 @@ import os
 from urllib.request import urlopen
 
 import requests
-from galaxy.tool_util.lint import LintContext
+from galaxy.tool_util.lint import (
+    LintContext,
+    Linter,
+)
 
 from planemo.io import error
 from planemo.shed import find_urls_for_xml
@@ -29,6 +32,11 @@ def build_lint_args(ctx, **kwds):
                 if not line or line.startswith("#"):
                     continue
                 skip_types.append(line)
+
+    linters = Linter.list_listers()
+    invalid_skip_types = list(set(skip_types) - set(linters))
+    if len(invalid_skip_types):
+            error(f"Unknown linter type(s) {invalid_skip_types} in list of linters to be skipped. Known linters {linters}")
 
     lint_args = dict(
         level=report_level,
