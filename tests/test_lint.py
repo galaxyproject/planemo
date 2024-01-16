@@ -5,6 +5,7 @@ from .test_utils import (
     CliTestCase,
     PROJECT_TEMPLATES_DIR,
     skip_if_environ,
+    TEST_DATA_DIR,
     TEST_REPOS_DIR,
     TEST_TOOLS_DIR,
 )
@@ -59,6 +60,11 @@ class LintTestCase(CliTestCase):
 
         # Check string splitting and stuff.
         lint_cmd = ["lint", "--skip", "xml_order, citations", fail_citation]
+        self._check_exit_code(lint_cmd, exit_code=0)
+
+        # Check skip_file (containing the same skips)
+        skip_file = os.path.join(TEST_DATA_DIR, "lint_skip_list.txt")
+        lint_cmd = ["lint", "--skip_file", skip_file, fail_citation]
         self._check_exit_code(lint_cmd, exit_code=0)
 
     def test_recursive(self):

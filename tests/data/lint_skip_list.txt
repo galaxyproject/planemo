@@ -1,0 +1,4 @@
+# check that comments work
+xml_order
+# check the white spaces are ignored
+ citations 
