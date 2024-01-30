@@ -1,4 +1,5 @@
 """Module describing the planemo ``rerun`` command."""
+
 from typing import (
     Tuple,
     TYPE_CHECKING,

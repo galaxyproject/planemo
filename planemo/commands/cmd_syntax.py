@@ -1,4 +1,5 @@
 """Module describing the planemo ``syntax`` command."""
+
 import click
 
 from planemo.cli import command_function

@@ -1,4 +1,5 @@
 """A high-level interface to local Galaxy instances using bioblend."""
+
 from io import StringIO
 from typing import Optional
 

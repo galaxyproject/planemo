@@ -1,4 +1,5 @@
 """Test git library functions in ``planemo.git``."""
+
 import contextlib
 import os
 

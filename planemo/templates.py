@@ -1,4 +1,5 @@
 """Templating abstraction around jinja2 for Planemo."""
+
 try:
     from jinja2 import Template
 except ImportError:

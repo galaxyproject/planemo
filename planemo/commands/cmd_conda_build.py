@@ -1,4 +1,5 @@
 """Module describing the planemo ``conda_build`` command."""
+
 from typing import (
     Tuple,
     TYPE_CHECKING,

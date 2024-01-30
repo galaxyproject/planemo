@@ -4,6 +4,7 @@ cwltool is an executable Python script and library mostly maintained by
 Peter Amstutz and serves the reference implementation for the CWL.
 It can be found at https://github.com/common-workflow-language/cwltool,
 """
+
 import json
 import tempfile
 from typing import (

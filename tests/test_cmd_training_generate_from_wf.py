@@ -1,4 +1,5 @@
 """Tests for the ``training_generate_from_wf`` command."""
+
 import os
 import shutil
 

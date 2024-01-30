@@ -3,6 +3,7 @@
 This is a workspace with a specific default configuration and shed
 tool setup. It is meant to be used with various serve commands.
 """
+
 import json
 import os
 import shutil

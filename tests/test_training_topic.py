@@ -1,4 +1,5 @@
 """Training:topic functions."""
+
 import os
 import shutil
 

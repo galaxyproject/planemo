@@ -1,6 +1,5 @@
 """Entry-point for Galaxy specific functionality in Planemo."""
 
-
 from .config import galaxy_config
 from .run import (
     run_galaxy_command,

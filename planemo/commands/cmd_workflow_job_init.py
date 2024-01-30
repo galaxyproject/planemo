@@ -1,4 +1,5 @@
 """Module describing the planemo ``workflow_job_init`` command."""
+
 import os
 
 import click

@@ -1,4 +1,5 @@
 """Module describing the planemo ``shed_upload`` command."""
+
 import sys
 
 import click

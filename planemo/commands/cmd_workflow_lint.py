@@ -1,4 +1,5 @@
 """Module describing the planemo ``workflow_lint`` command."""
+
 import click
 
 from planemo import options

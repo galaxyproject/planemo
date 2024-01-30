@@ -1,4 +1,5 @@
 """Tests for the ``dockstore_init`` command."""
+
 import os
 from typing import Optional
 

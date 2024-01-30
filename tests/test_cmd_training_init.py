@@ -1,4 +1,5 @@
 """Tests for the ``training_init`` command."""
+
 import os
 
 from .test_utils import (

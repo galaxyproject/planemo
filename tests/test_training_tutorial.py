@@ -1,4 +1,5 @@
 """Training:tutorial functions."""
+
 import os
 import shutil
 

@@ -1,4 +1,5 @@
 """Module describing the planemo ``autoupdate`` command."""
+
 import json
 from typing import Callable
 

@@ -1,4 +1,5 @@
 """Module describing the planemo ``ci_setup`` command."""
+
 import click
 
 from planemo import options

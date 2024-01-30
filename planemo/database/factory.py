@@ -1,4 +1,5 @@
 """Create a DatabaseSource from supplied planemo configuration."""
+
 from galaxy.util.commands import which
 
 from .interface import DatabaseSource

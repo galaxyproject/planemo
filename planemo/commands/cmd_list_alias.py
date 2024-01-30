@@ -1,4 +1,5 @@
 """Module describing the planemo ``list_alias`` command."""
+
 import json
 
 import click

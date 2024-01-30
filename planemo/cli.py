@@ -1,4 +1,5 @@
 """The module describes a CLI framework extending ``click``."""
+
 import functools
 import os
 import sys

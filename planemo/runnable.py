@@ -1,6 +1,5 @@
 """Describe artifacts that can be run, tested, and linted."""
 
-
 import abc
 import os
 from enum import (

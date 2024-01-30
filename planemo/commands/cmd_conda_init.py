@@ -1,4 +1,5 @@
 """Module describing the planemo ``conda_init`` command."""
+
 import click
 from galaxy.tool_util.deps import conda_util
 

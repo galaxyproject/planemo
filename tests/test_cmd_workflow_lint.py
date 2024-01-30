@@ -1,4 +1,5 @@
 """Tests for the ``workflow_lint`` command."""
+
 import glob
 import os
 

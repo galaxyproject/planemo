@@ -2,6 +2,7 @@
 Module responsible for discovery of import statements importing Argument parser
 and discovery of the statements initializing the parser itself
 """
+
 import ast
 import logging
 from typing import (

@@ -1,4 +1,5 @@
 """Module describing the planemo ``training_fill_data_library`` command."""
+
 import click
 
 from planemo import options
