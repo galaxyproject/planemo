@@ -6,6 +6,17 @@ History
 .. to_doc
 
 ---------------------
+0.75.20 (2024-01-30)
+---------------------
+* Fix use of `package_name` attribute on `CondaTarget` objects (thanks to
+  `@nsoranzo`_). `Pull Request 1424`_
+* Don't crash autoupdate on non-PEP440-compliant tool versions (thanks to
+  `@nsoranzo`_). `Pull Request 1422`_
+* Add now mandatory readthedocs config files (thanks to `@nsoranzo`_). `Pull
+  Request 1419`_
+* Update action versions (thanks to `@nsoranzo`_). `Pull Request 1416`_
+
+---------------------
 0.75.19 (2023-12-06)
 ---------------------
 
@@ -2071,6 +2082,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1424: https://github.com/galaxyproject/planemo/pull/1424
+.. _Pull Request 1422: https://github.com/galaxyproject/planemo/pull/1422
+.. _Pull Request 1419: https://github.com/galaxyproject/planemo/pull/1419
+.. _Pull Request 1416: https://github.com/galaxyproject/planemo/pull/1416
 .. _Pull Request 1388: https://github.com/galaxyproject/planemo/pull/1388
 .. _Pull Request 1412: https://github.com/galaxyproject/planemo/pull/1412
 .. _Pull Request 1410: https://github.com/galaxyproject/planemo/pull/1410
