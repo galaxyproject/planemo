@@ -14,7 +14,7 @@ directory. Additional bells and whistles include the ability to generate XUnit r
 test results and get embedded Markdown to link to them for PRs, and test remote artifacts in Git repositories.
 
 For more information about testing Galaxy tools using embedded tool XML tests see the tutorial-style chapter
-`Test-Driven Development <http://planemo.readthedocs.io/en/latest/writing_advanced.html#test-driven-development>`__
+`Test-Driven Development <https://planemo.readthedocs.io/en/latest/writing_advanced.html#test-driven-development>`__
 of Galaxy tools.
 
 Much of this same functionality is now also available for Galaxy_ Workflows as well as `Common Workflow Language`_
@@ -202,7 +202,7 @@ Some additional examples of inexact file comparisons taken from an artificial te
 .. literalinclude:: example_assertions.yml
    :language: yaml
 
-Currently, the full list of available assertions is only documented as part of the `Galaxy Tool XML format <https://docs.galaxyproject.org/en/latest/dev/schema.html>` definition in the section on `asserting the contents of Galaxy tool outputs <https://docs.galaxyproject.org/en/latest/dev/schema.html#tool-tests-test-output-assert-contents>`__, but it should be fairly easy to translate this XML syntax into the YAML format above.
+Currently, the full list of available assertions is only documented as part of the `Galaxy Tool XML format <https://docs.galaxyproject.org/en/latest/dev/schema.html>`__ definition in the section on `asserting the contents of Galaxy tool outputs <https://docs.galaxyproject.org/en/latest/dev/schema.html#tool-tests-test-output-assert-contents>`__, but it should be fairly easy to translate this XML syntax into the YAML format above.
 
 
 Engines for Testing
