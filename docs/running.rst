@@ -1,5 +1,5 @@
 ====================================
-Running Galaxy workflows
+Interacting with Galaxy workflows
 ====================================
 
 Planemo offers a number of convenient commands for working with Galaxy
