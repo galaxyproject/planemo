@@ -25,7 +25,7 @@ def cli(ctx, workflow_identifier, output=None, force=False, **kwds):
     with engine_context(ctx, **kwds) as galaxy_engine:
         with galaxy_engine.ensure_runnables_served([runnable]) as config:
             workflow_id = config.workflow_id_for_runnable(runnable)
-            url = f"{config.galaxy_url}/workflow/editor?id={workflow_id}"
+            url = f"{config.galaxy_url}/workflows/edit?id={workflow_id}"
             click.launch(url)
             if kwds["engine"] != "external_galaxy":
                 sleep_for_serve()
