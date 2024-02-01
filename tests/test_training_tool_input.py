@@ -1,4 +1,5 @@
 """Training:tool_input functions."""
+
 import json
 import os
 

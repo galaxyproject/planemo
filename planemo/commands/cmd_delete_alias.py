@@ -1,4 +1,5 @@
 """Module describing the planemo ``delete_alias`` command."""
+
 import click
 
 from planemo import options

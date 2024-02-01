@@ -1,4 +1,5 @@
 """Provide abstractions over click testing of the app and unittest."""
+
 import ast
 import contextlib
 import functools

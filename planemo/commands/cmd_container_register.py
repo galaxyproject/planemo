@@ -1,4 +1,5 @@
 """Module describing the planemo ``container_register`` command."""
+
 import os
 import string
 from typing import List

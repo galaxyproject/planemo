@@ -1,4 +1,5 @@
 """Unit tests for ``planemo.galaxy.config``."""
+
 import contextlib
 import os
 

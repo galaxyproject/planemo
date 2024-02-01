@@ -1,4 +1,5 @@
 """Module describing the planemo ``serve`` command."""
+
 import click
 
 from planemo import options

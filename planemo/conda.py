@@ -3,7 +3,6 @@
 The extend galaxy-tool-util's features with planemo specific idioms.
 """
 
-
 import collections
 import os
 import threading

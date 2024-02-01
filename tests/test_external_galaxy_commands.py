@@ -1,5 +1,6 @@
 """Tests for planemo commands relating to external Galaxy instances
 """
+
 import os
 
 import yaml

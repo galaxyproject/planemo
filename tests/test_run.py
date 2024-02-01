@@ -1,4 +1,5 @@
 """The module contains a class to test the ``cwl_run`` command."""
+
 import os
 
 from .test_utils import (

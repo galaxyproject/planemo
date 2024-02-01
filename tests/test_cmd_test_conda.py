@@ -1,4 +1,5 @@
 """Module contains :class:`CmdTestTestCase` - integration tests for the ``test`` command."""
+
 import os
 
 from .test_utils import (

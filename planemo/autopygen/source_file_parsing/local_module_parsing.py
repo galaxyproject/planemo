@@ -2,6 +2,7 @@
 Module responsible for resolving assignments and constant list comprehensives
 used in argument parser
 """
+
 import ast
 import logging
 from typing import (

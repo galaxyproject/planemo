@@ -10,6 +10,7 @@ Example of the comments:
 
 Elements can be nested
 """
+
 from typing import List
 
 from planemo.autopygen.param_info import (

@@ -1,4 +1,5 @@
 """Tests for the ``autoupdate`` command."""
+
 import json
 import os
 import tempfile

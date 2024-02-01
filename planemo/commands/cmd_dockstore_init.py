@@ -1,4 +1,5 @@
 """Module describing the planemo ``dockstore_init`` command."""
+
 import os
 
 import click

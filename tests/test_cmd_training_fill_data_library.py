@@ -1,4 +1,5 @@
 """Tests for the ``training_fill_data_library`` command."""
+
 from .test_cmd_training_generate_from_wf import create_tutorial_dir
 from .test_utils import CliTestCase
 

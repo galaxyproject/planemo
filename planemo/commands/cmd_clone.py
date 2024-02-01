@@ -1,4 +1,5 @@
 """Module describing the planemo ``clone`` command."""
+
 from typing import Callable
 
 import click

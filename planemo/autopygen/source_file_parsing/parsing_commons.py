@@ -1,6 +1,7 @@
 """
 Module containing the parent class of Dicovery classes
 """
+
 import abc
 import ast
 from typing import (

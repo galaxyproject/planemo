@@ -1,4 +1,5 @@
 """Module contains :class:`CmdTestTestCase` - integration tests for the ``test`` command."""
+
 import json
 import os
 import shutil

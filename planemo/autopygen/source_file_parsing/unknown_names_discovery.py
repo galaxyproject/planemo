@@ -2,6 +2,7 @@
 Module containing discovery classes used to find names
 (assignments to variables) that have not been extracted yet
 """
+
 import ast
 import builtins
 from typing import (

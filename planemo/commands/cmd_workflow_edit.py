@@ -1,4 +1,5 @@
 """Module describing the planemo ``workflow_edit`` command."""
+
 import click
 
 from planemo import options

@@ -1,4 +1,5 @@
 """Module describing abstractions for validating XML content."""
+
 import abc
 import subprocess
 from collections import namedtuple
