@@ -956,12 +956,22 @@ def docker_host_option():
     )
 
 
+def docker_run_extra_arguments_option():
+    return planemo_option(
+        "--docker_run_extra_arguments",
+        help="Extra arguments to pass to docker run.",
+        use_global_config=True,
+        default="",
+    )
+
+
 def docker_config_options():
     return _compose(
         docker_cmd_option(),
         docker_sudo_option(),
         docker_host_option(),
         docker_sudo_cmd_option(),
+        docker_run_extra_arguments_option(),
     )
 
 

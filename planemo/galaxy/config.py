@@ -130,6 +130,7 @@ JOB_CONFIG_LOCAL = """<job_conf>
             <param id="docker_sudo_cmd">${docker_sudo_cmd}</param>
             <param id="docker_cmd">${docker_cmd}</param>
             <param id="docker_volumes">${docker_volumes}</param>
+            <param id="docker_run_extra_arguments"><![CDATA[${docker_run_extra_arguments}]]></param>
             ${docker_host_param}
         </destination>
         <destination id="upload_dest" runner="planemo_runner">
@@ -1363,6 +1364,7 @@ def _handle_job_config_file(
                 "docker_cmd": str(kwds.get("docker_cmd", docker_util.DEFAULT_DOCKER_COMMAND)),
                 "docker_host_param": docker_host_param,
                 "docker_volumes": docker_volumes_str,
+                "docker_run_extra_arguments": kwds.get("docker_run_extra_arguments", ""),
             }
         )
         write_file(job_config_file, conf_contents)
