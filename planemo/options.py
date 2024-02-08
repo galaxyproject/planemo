@@ -955,6 +955,7 @@ def docker_host_option():
         default=docker_util.DEFAULT_HOST,
     )
 
+
 def docker_run_extra_arguments_option():
     return planemo_option(
         "--docker_run_extra_arguments",
