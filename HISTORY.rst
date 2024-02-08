@@ -6,6 +6,14 @@ History
 .. to_doc
 
 ---------------------
+0.75.21 (2024-02-01)
+---------------------
+* Add option to pass extra arguments to `docker run` (thanks to `@bernt-matthias`_). `Pull Request 1428`_
+* Fix workflow_edit (thanks to `@mvdbeek`_). `Pull Request 1427`_
+* Update to black 2024 stable style (thanks to `@nsoranzo`_). `Pull Request
+  1425`_
+
+---------------------
 0.75.20 (2024-01-30)
 ---------------------
 * Fix use of `package_name` attribute on `CondaTarget` objects (thanks to
@@ -2082,6 +2090,9 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1428: https://github.com/galaxyproject/planemo/pull/1428
+.. _Pull Request 1427: https://github.com/galaxyproject/planemo/pull/1427
+.. _Pull Request 1425: https://github.com/galaxyproject/planemo/pull/1425
 .. _Pull Request 1424: https://github.com/galaxyproject/planemo/pull/1424
 .. _Pull Request 1422: https://github.com/galaxyproject/planemo/pull/1422
 .. _Pull Request 1419: https://github.com/galaxyproject/planemo/pull/1419

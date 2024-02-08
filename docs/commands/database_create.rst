@@ -85,5 +85,7 @@ be set by setting up a file ``~/.pgpass`` file with the following contents.
                                       commands (defaults to localhost).
       --docker_sudo_cmd TEXT          sudo command to use when --docker_sudo is
                                       enabled (defaults to sudo).
+      --docker_run_extra_arguments TEXT
+                                      Extra arguments to pass to docker run.
       --help                          Show this message and exit.
     
