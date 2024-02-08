@@ -56,6 +56,8 @@ Convert Format 2 workflows to native Galaxy workflows, and vice-versa.
                                       commands (defaults to localhost).
       --docker_sudo_cmd TEXT          sudo command to use when --docker_sudo is
                                       enabled (defaults to sudo).
+      --docker_run_extra_arguments TEXT
+                                      Extra arguments to pass to docker run.
       --mulled_containers, --biocontainers
                                       Test tools against mulled containers (forces
                                       --docker). Disables conda resolution unless
