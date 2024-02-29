@@ -27,6 +27,7 @@ from planemo.test.results import StructuredData
 @options.run_history_tags_option()
 @options.run_output_directory_option()
 @options.run_output_json_option()
+@options.run_output_metadata_option()
 @options.run_download_outputs_option()
 @options.engine_options()
 @options.test_options()
@@ -50,6 +51,11 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
             kwds["engine"] = "galaxy"
     with engine_context(ctx, **kwds) as engine:
         run_result = engine.run([runnable], [job_path])[0]
+        run_infos ={"history_id": run_result._history_id, "invocation_id": run_result._invocation_id, "workflow_id": run_result._workflow_id}
+        output_metadata = kwds.get("output_metadata", None)
+        if output_metadata:
+            with open(output_metadata, "w") as f:
+                json.dump(run_infos, f)
 
     if not run_result.was_successful:
         warn("Run failed [%s]" % unicodify(run_result))
