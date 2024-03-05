@@ -273,6 +273,7 @@ def run_output_directory_option():
         help=("Where to store outputs of a 'run' task."),
     )
 
+
 def run_output_metadata_option():
     return planemo_option(
         "output_metadata",
@@ -285,6 +286,7 @@ def run_output_metadata_option():
         default=None,
         help=("Where to store JSON dictionary describing the metadata of " "a 'run' task."),
     )
+
 
 def run_output_json_option():
     return planemo_option(
