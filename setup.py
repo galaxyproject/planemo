@@ -85,7 +85,7 @@ with open("HISTORY.rst") as fh:
 
 if os.path.exists("requirements.txt"):
     with open("requirements.txt") as fh:
-        requirements = [r for r in fh.read().split("\n") if ";" not in r]
+        requirements = [r for r in fh.read().split("\n")]
     if not PLANEMO_REQUIRE_LXML:
         requirements.remove("lxml")
 else:
