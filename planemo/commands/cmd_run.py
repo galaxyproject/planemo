@@ -52,13 +52,13 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
     with engine_context(ctx, **kwds) as engine:
         run_result = engine.run([runnable], [job_path])[0]
         if kwds["engine"] == "galaxy" or kwds["engine"] == "external_galaxy":
-            run_infos = {
-                "history_id": run_result._history_id,
-                "invocation_id": run_result._invocation_id,
-                "workflow_id": run_result._workflow_id,
-            }
             output_metadata = kwds.get("output_metadata", None)
             if output_metadata:
+                run_infos = {
+                    "history_id": run_result._history_id,
+                    "invocation_id": run_result._invocation_id,
+                    "workflow_id": run_result._workflow_id,
+                }
                 with open(output_metadata, "w") as f:
                     json.dump(run_infos, f)
 

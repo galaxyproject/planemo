@@ -284,7 +284,7 @@ def run_output_metadata_option():
             resolve_path=True,
         ),
         default=None,
-        help=("Where to store JSON dictionary describing the metadata of " "a 'run' task."),
+        help=("Where to store JSON dictionary describing the metadata of " "a workflow 'run' task."),
     )
 
 
