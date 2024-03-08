@@ -1362,7 +1362,7 @@ def shed_fail_fast_option():
 
 def lint_xsd_option():
     return planemo_option(
-        "--xsd/--no_xsd", is_flag=True, default=True, help=("Include tool XSD validation in linting process.")
+        "--xsd/--no_xsd", is_flag=True, default=False, help=("Include tool XSD validation in linting process.")
     )
 
 
@@ -1394,6 +1394,13 @@ def report_xunit():
     )
 
 
+def skip_options():
+    return _compose(
+        skip_option(),
+        skip_file_option(),
+    )
+
+
 def skip_option():
     return planemo_option(
         "-s",
@@ -1404,6 +1411,15 @@ def skip_option():
             "--skip 'citations,xml_order' would skip linting of citations "
             "and best-practice XML ordering."
         ),
+    )
+
+
+def skip_file_option():
+    return planemo_option(
+        "--skip_file",
+        type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True),
+        multiple=True,
+        help=("File containing a list of lint tests to skip"),
     )
 
 
