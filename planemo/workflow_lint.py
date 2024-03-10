@@ -334,8 +334,14 @@ def _check_test_assertions(
                 assertions_valid = False
                 continue
             signature = inspect.signature(function)
+            function_args = inspect.getfullargspec(function)
             assertion_params = assertion_description["attributes"].copy()
+            if "verify_assertions_function" in function_args:
+                assertion_params["verify_assertions_function"] = asserts.verify_assertion(b"", [])
+            if "children" in function_args:
+                assertion_params["children"] = []
             del assertion_params["that"]
+
             try:
                 # try mapping the function with the attributes supplied and check for TypeError
                 signature.bind("", **assertion_params)
