@@ -220,13 +220,13 @@ def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None: 
 
     # checks on individual steps
     for step in steps.values():
-        print(step)
         # disconnected inputs
-        for input in step.get("inputs", []):
-            if input.get("name") not in step.get("input_connections"):  # TODO: check optional
-                lint_context.warn(
-                    f"Input {input.get('name')} of workflow step {step.get('annotation') or step.get('id')} is disconnected."
-                )
+        if step.get("type") not in ["data_collection_input", "parameter_input"]:
+            for input in step.get("inputs", []):
+                if input.get("name") not in step.get("input_connections"):  # TODO: check optional
+                    lint_context.warn(
+                        f"Input {input.get('name')} of workflow step {step.get('annotation') or step.get('id')} is disconnected."
+                    )
 
         # missing metadata
         if not step.get("annotation"):
@@ -334,8 +334,14 @@ def _check_test_assertions(
                 assertions_valid = False
                 continue
             signature = inspect.signature(function)
+            function_args = inspect.getfullargspec(function)
             assertion_params = assertion_description["attributes"].copy()
+            if "verify_assertions_function" in function_args:
+                assertion_params["verify_assertions_function"] = asserts.verify_assertion(b"", [])
+            if "children" in function_args:
+                assertion_params["children"] = []
             del assertion_params["that"]
+
             try:
                 # try mapping the function with the attributes supplied and check for TypeError
                 signature.bind("", **assertion_params)
