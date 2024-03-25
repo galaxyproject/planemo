@@ -17,7 +17,7 @@ def test_topic_init():
     assert topic.title == "The new topic"
     assert topic.summary == "Summary"
     assert topic.docker_image == ""
-    assert "maintainers" in topic.maintainers
+    assert topic.editorial_board == []
     assert topic.parent_dir == "topics"
     assert topic.dir == "topics/new_topic"
     assert topic.requirements[0].topic_name == "introduction"
@@ -57,7 +57,7 @@ def test_topic_init_from_metadata():
     assert topic.summary == "Summary"
     assert topic.requirements[0].topic_name == "introduction"
     assert topic.requirements[0].tutorials == ["peaks2genes"]
-    assert "maintainer1" in topic.maintainers
+    assert "maintainer1" in topic.editorial_board
     shutil.rmtree(topic.parent_dir)
 
 
@@ -80,7 +80,7 @@ def test_topic_export_metadata_to_ordered_dict():
     assert "summary" in metadata
     assert "requirements" in metadata
     assert "docker_image" in metadata
-    assert "maintainers" in metadata
+    assert "editorial_board" in metadata
 
 
 def test_topic_set_paths():
