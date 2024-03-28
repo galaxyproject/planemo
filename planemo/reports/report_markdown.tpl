@@ -38,11 +38,11 @@
 {%     if test.data.status == status %}
 {%       if test.data.status == 'success' %}
 
-* <details class="rcorners light-green"><summary class="light-green">&#9989; {{ test.id }}</summary><div class="padded">
+* <details class="rcorners light-green"><summary class="light-green">&#9989; {{ test.id|replace("#","# ") }}</summary><div class="padded">
 
 {%       else %}
 
-* <details class="rcorners light-red"><summary class="light-red">&#10060; {{ test.id }}</summary><div class="padded">
+* <details class="rcorners light-red"><summary class="light-red">&#10060; {{ test.id|replace("#","# ") }}</summary><div class="padded">
 
 {%       endif %}
 {%       if test.data.output_problems %}
