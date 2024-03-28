@@ -84,7 +84,7 @@
 
 {%       endif %}
 
-  </div></details>
+    </div></details>
 
 {%     endif %}
 {%   endfor %}
