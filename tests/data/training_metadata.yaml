@@ -9,6 +9,6 @@ requirements:
   topic_name: introduction
   tutorials:
     - peaks2genes
-maintainers:
+editorial_board:
 - maintainer1
 - maintainer2

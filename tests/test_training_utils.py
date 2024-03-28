@@ -18,7 +18,7 @@ def test_load_yaml():
     # test if name there
     assert metadata["name"] == "test"
     # test if order of material is conserved
-    assert metadata["maintainers"][0] == "maintainer1"
+    assert metadata["editorial_board"][0] == "maintainer1"
 
 
 def test_save_to_yaml():
