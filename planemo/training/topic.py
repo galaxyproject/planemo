@@ -3,6 +3,8 @@
 import collections
 import os
 
+from galaxy.util import listify
+
 from planemo import templates
 from .utils import (
     load_yaml,
@@ -63,7 +65,7 @@ class Topic:
         self.title = title
         self.summary = summary
         self.docker_image = ""
-        self.maintainers = ["maintainers"]
+        self.editorial_board = []
         self.parent_dir = parent_dir
         self.set_default_requirement()
         self.set_paths()
@@ -86,13 +88,13 @@ class Topic:
         self.summary = metadata["summary"]
         self.requirements = []
         if "requirements" in metadata:
-            for r in metadata["requirements"]:
+            for r in listify(metadata["requirements"]):
                 req = Requirement()
                 req.init_from_dict(r)
                 self.requirements.append(req)
         if "docker_image" in metadata:
             self.docker_image = metadata["docker_image"]
-        self.maintainers = metadata["maintainers"]
+        self.editorial_board = metadata["editorial_board"]
         self.set_paths()
 
     # GETTERS
@@ -112,7 +114,7 @@ class Topic:
         metadata["summary"] = self.summary
         metadata["requirements"] = self.get_requirements()
         metadata["docker_image"] = self.docker_image
-        metadata["maintainers"] = self.maintainers
+        metadata["editorial_board"] = self.editorial_board
         return metadata
 
     # SETTERS
