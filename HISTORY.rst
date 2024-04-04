@@ -6,6 +6,19 @@ History
 .. to_doc
 
 ---------------------
+0.75.22 (2024-04-04)
+---------------------
+* Fix parsing of training ``metadata.yaml`` files (thanks to `@nsoranzo`_).
+  `Pull Request 1439`_
+* Fix markdown template: add missing closing details tag (thanks to `@bernt-matthias`_). `Pull Request 1440`_
+* Misc workflow linting improvements (thanks to `@bernt-matthias`_). `Pull
+  Request 1437`_
+* Don't skip requirements with an environment marker (thanks to `@nsoranzo`_).
+  `Pull Request 1433`_
+* Add `--host` parameter to allow listening on non-default hosts (thanks to
+  `@selten`_). `Pull Request 1430`_
+
+---------------------
 0.75.21 (2024-02-01)
 ---------------------
 * Add option to pass extra arguments to `docker run` (thanks to `@bernt-matthias`_). `Pull Request 1428`_
@@ -2090,6 +2103,11 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1439: https://github.com/galaxyproject/planemo/pull/1439
+.. _Pull Request 1440: https://github.com/galaxyproject/planemo/pull/1440
+.. _Pull Request 1437: https://github.com/galaxyproject/planemo/pull/1437
+.. _Pull Request 1433: https://github.com/galaxyproject/planemo/pull/1433
+.. _Pull Request 1430: https://github.com/galaxyproject/planemo/pull/1430
 .. _Pull Request 1428: https://github.com/galaxyproject/planemo/pull/1428
 .. _Pull Request 1427: https://github.com/galaxyproject/planemo/pull/1427
 .. _Pull Request 1425: https://github.com/galaxyproject/planemo/pull/1425
