@@ -334,14 +334,18 @@ def _check_test_assertions(
                 assertions_valid = False
                 continue
             signature = inspect.signature(function)
-            function_args = inspect.getfullargspec(function)
+            function_args = inspect.getfullargspec(function).args
             assertion_params = assertion_description["attributes"].copy()
             if "verify_assertions_function" in function_args:
-                assertion_params["verify_assertions_function"] = asserts.verify_assertion(b"", [])
+                assertion_params["verify_assertions_function"] = asserts.verify_assertion
             if "children" in function_args:
-                assertion_params["children"] = []
+                if "asserts" in assertion_params:
+                    assertion_params["children"] = assertion_params["asserts"]
+                    del assertion_params["asserts"]
+                if "children" not in assertion_params:
+                    assertion_params["children"] = []
+                _check_test_assertions(lint_context, assertion_params["children"])
             del assertion_params["that"]
-
             try:
                 # try mapping the function with the attributes supplied and check for TypeError
                 signature.bind("", **assertion_params)
