@@ -82,7 +82,7 @@ class ImportDiscovery(Discovery):
 
     def report_findings(self) -> Tuple[List[ast.AST], Optional[str], Optional[str], Set[str]]:
         if self.argparse_module_alias is None and self.argument_parser_alias is None:
-            raise ArgParseImportNotFound()
+            raise ArgParseImportNotFound("No argparse import found")
 
         return (self.actions, self.argparse_module_alias, self.argument_parser_alias, self.known_names)
 
@@ -165,7 +165,7 @@ class SimpleParserDiscoveryAndReplacement(Discovery):
 
     def report_findings(self) -> Tuple:
         if self.main_parser_name is None:
-            raise ArgParserNotUsed
+            raise ArgParserNotUsed("Atgument parser not used")
 
         return self.actions, self.main_parser_name
 
@@ -243,7 +243,7 @@ def get_parser_init_and_actions(source: ast.Module) -> Tuple[List[ast.AST], str,
     custom_parser_class_def = obtain_class_def()
 
     if custom_parser_class_def is None:
-        raise CustomParserUnavailableException()
+        raise CustomParserUnavailableException("Custom parser unavailable")
 
     import_discovery = ImportDiscovery(actions)
     actions, argparse_module_alias, argparse_class_alias, known_names = import_discovery.visit_and_report(source)
