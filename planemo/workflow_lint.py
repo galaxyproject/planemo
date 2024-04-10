@@ -481,10 +481,13 @@ def find_repos_from_tool_id(tool_id: str, ts: ToolShedInstance) -> Tuple[str, Di
     """
     if "/repos" not in tool_id:
         return ("", {})  # assume a built in tool
+    *_, owner, name, _tool_id, _version = tool_id.split("/")
+
     try:
-        repos = ts.repositories._get(params={"tool_ids": tool_id})
-    except Exception:
-        return (f"The ToolShed returned an error when searching for the most recent version of {tool_id}", {})
+        repo = ts.repositories.get_repositories(name, owner)[0]
+        repos = ts.repositories._get(url=f'{ts.repositories._make_url()}/{repo["id"]}/metadata')
+    except Exception as e:
+        return (f"The ToolShed returned an error when searching for the most recent version of {tool_id}: {e}", {})
     if len(repos) == 0:
         return (f"The tool {tool_id} is not in the toolshed (may have been tagged as invalid).", {})
     else:
