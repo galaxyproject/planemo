@@ -328,8 +328,7 @@ def outdated_tools(  # noqa: C901
         base_id = base_tool_id(tool_id)
         matching_tool_ids = []
         # newer toolshed returns list
-        repos = repos.values() if isinstance(repos, dict) else repos
-        for repo in repos:
+        for repo in repos.values():
             if isinstance(repo, dict):
                 for tool in repo.get("tools") or []:
                     if tool["guid"].startswith(base_id + "/"):
@@ -387,14 +386,13 @@ def get_tools_to_update(
 
 def get_shed_tools_conf_string_for_tool_ids(tool_ids: List[str]) -> str:
     tool_shed_urls = set(get_toolshed_url_for_tool_id(tool_id) for tool_id in tool_ids if tool_id)
-    tool_shed_urls = [_ for _ in tool_shed_urls if _ is not None]
+    cleaned_tool_shed_urls = set(_ for _ in tool_shed_urls if _ is not None)
     TOOL_SHEDS_CONF_TEMPLATE = Template("""<tool_sheds>${tool_shed_lines}</tool_sheds>""")
     tool_sheds: List[str] = []
     # sort tool_shed_urls from shortest to longest, as https://github.com/galaxyproject/galaxy/blob/c7cb47a1b18ccd5b39075a705bbd2f34572755fe/lib/galaxy/util/tool_shed/tool_shed_registry.py#L106-L118
     # has a bug where a toolshed that is an exact substring of another registered toolshed would wrongly be selected.
-    for tool_shed_url in sorted(tool_shed_urls, key=lambda url: len(url)):
-        if tool_shed_url:
-            tool_sheds.append(f'<tool_shed name="{tool_shed_url.split("://")[-1]}" url="{tool_shed_url}" />')
+    for tool_shed_url in sorted(cleaned_tool_shed_urls, key=lambda url: len(url)):
+        tool_sheds.append(f'<tool_shed name="{tool_shed_url.split("://")[-1]}" url="{tool_shed_url}" />')
     return TOOL_SHEDS_CONF_TEMPLATE.substitute(tool_shed_lines="".join(tool_sheds))
 
 
