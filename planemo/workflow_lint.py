@@ -479,7 +479,7 @@ def find_repos_from_tool_id(tool_id: str, ts: ToolShedInstance) -> Tuple[str, Di
     """
     Return a string which indicates what failed and dict with all revisions for a given tool id
     """
-    if not tool_id.startswith(MAIN_TOOLSHED_URL[8:]):
+    if "/repos" not in tool_id:
         return ("", {})  # assume a built in tool
     try:
         repos = ts.repositories._get(params={"tool_ids": tool_id})

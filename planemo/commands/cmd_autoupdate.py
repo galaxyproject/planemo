@@ -135,6 +135,14 @@ def cli(ctx, paths, **kwds):  # noqa C901
             kwds["install_repository_dependencies"] = False
             kwds["shed_install"] = True
 
+        tool_ids = []
+        for workflow in modified_workflows:
+            with open(workflow.path) as fh:
+                wf_dict = yaml.safe_load(fh)
+                tool_ids.extend(autoupdate.get_tool_ids_for_workflow(wf_dict=wf_dict))
+        tool_ids = list(dict.fromkeys(tool_ids))
+        kwds["tool_sheds_config_content"] = autoupdate.get_shed_tools_conf_string_for_tool_ids(tool_ids)
+
         with engine_context(ctx, **kwds) as galaxy_engine:
             with galaxy_engine.ensure_runnables_served(modified_workflows) as config:
                 for workflow in modified_workflows:

@@ -1202,11 +1202,13 @@ def _search_tool_path_for(path, target, extra_paths=None):
 
 
 def _configure_sheds_config_file(ctx, config_directory, **kwds):
-    if "shed_target" not in kwds:
-        kwds = kwds.copy()
-        kwds["shed_target"] = "toolshed"
-    shed_target_url = tool_shed_url(ctx, **kwds)
-    contents = _sub(TOOL_SHEDS_CONF, {"shed_target_url": shed_target_url})
+    contents = kwds.get("tool_sheds_config_content")
+    if not contents:
+        if "shed_target" not in kwds:
+            kwds = kwds.copy()
+            kwds["shed_target"] = "toolshed"
+        shed_target_url = tool_shed_url(ctx, **kwds)
+        contents = _sub(TOOL_SHEDS_CONF, {"shed_target_url": shed_target_url})
     tool_sheds_conf = os.path.join(config_directory, "tool_sheds_conf.xml")
     write_file(tool_sheds_conf, contents)
     return tool_sheds_conf
