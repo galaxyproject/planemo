@@ -1,6 +1,8 @@
 import json
 import os
+
 from galaxy.util import parse_xml_string
+
 from planemo.autoupdate import (
     get_newest_tool_id,
     get_shed_tools_conf_string_for_tool_ids,
