@@ -4,7 +4,6 @@ import collections
 import itertools
 import re
 import xml.etree.ElementTree as ET
-from functools import lru_cache
 from string import Template
 from typing import (
     Any,
@@ -26,15 +25,15 @@ from galaxy.tool_util.deps import conda_util
 from galaxy.tool_util.version import parse_version
 
 import planemo.conda
+from planemo.galaxy.workflows import (
+    guess_tool_shed_url,
+    MAIN_TOOLSHED_URL,
+)
 from planemo.io import (
     error,
     info,
-    warn,
 )
-from planemo.workflow_lint import (
-    find_repos_from_tool_id,
-    MAIN_TOOLSHED_URL,
-)
+from planemo.workflow_lint import find_repos_from_tool_id
 
 if TYPE_CHECKING:
     from planemo.cli import PlanemoCliContext
@@ -295,26 +294,11 @@ def get_newest_tool_id(tool_ids: List[str]) -> str:
     )[-1]
 
 
-@lru_cache(maxsize=None)
 def get_toolshed_url_for_tool_id(tool_id: str) -> Optional[str]:
     components = tool_id.split("/repos")
     if len(components) > 1:
         tool_shed_fqdn = components[0]
-        if tool_shed_fqdn in MAIN_TOOLSHED_URL:
-            return MAIN_TOOLSHED_URL
-        else:
-            # guess if tool shed is served over https or http
-            https_tool_shed_url = f"https://{tool_shed_fqdn}"
-            r = requests.get(https_tool_shed_url)
-            if r.status_code == 200:
-                return https_tool_shed_url
-            else:
-                http_tool_shed_url = f"http://{tool_shed_fqdn}"
-                r = requests.get(http_tool_shed_url)
-                if r.status_code == 200:
-                    return http_tool_shed_url
-                else:
-                    warn(f"Could not connect to {tool_shed_fqdn}")
+        return guess_tool_shed_url(tool_shed_fqdn=tool_shed_fqdn)
     return None
 
 
@@ -403,11 +387,14 @@ def get_tools_to_update(
 
 def get_shed_tools_conf_string_for_tool_ids(tool_ids: List[str]) -> str:
     tool_shed_urls = set(get_toolshed_url_for_tool_id(tool_id) for tool_id in tool_ids if tool_id)
+    tool_shed_urls = [_ for _ in tool_shed_urls if _ is not None]
     TOOL_SHEDS_CONF_TEMPLATE = Template("""<tool_sheds>${tool_shed_lines}</tool_sheds>""")
     tool_sheds: List[str] = []
-    for tool_shed_url in tool_shed_urls:
+    # sort tool_shed_urls from shortest to longest, as https://github.com/galaxyproject/galaxy/blob/c7cb47a1b18ccd5b39075a705bbd2f34572755fe/lib/galaxy/util/tool_shed/tool_shed_registry.py#L106-L118
+    # has a bug where a toolshed that is an exact substring of another registered toolshed would wrongly be selected.
+    for tool_shed_url in sorted(tool_shed_urls, key=lambda url: len(url)):
         if tool_shed_url:
-            tool_sheds.append(f'<tool_shed name="{tool_shed_url}" url="{tool_shed_url}" />')
+            tool_sheds.append(f'<tool_shed name="{tool_shed_url.split("://")[-1]}" url="{tool_shed_url}" />')
     return TOOL_SHEDS_CONF_TEMPLATE.substitute(tool_shed_lines="".join(tool_sheds))
 
 

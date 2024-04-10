@@ -35,6 +35,7 @@ from planemo.exit_codes import (
 )
 from planemo.galaxy.workflows import (
     input_labels,
+    MAIN_TOOLSHED_URL,
     output_labels,
     required_input_labels,
 )
@@ -50,8 +51,6 @@ if TYPE_CHECKING:
 
 POTENTIAL_WORKFLOW_FILES = re.compile(r"^.*(\.yml|\.yaml|\.ga)$")
 DOCKSTORE_REGISTRY_CONF_VERSION = "1.2"
-
-MAIN_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
 
 
 class WorkflowLintContext(LintContext):

@@ -3,14 +3,17 @@
 import json
 import os
 from collections import namedtuple
+from functools import lru_cache
 from typing import (
     Any,
     Callable,
     Dict,
     List,
+    Optional,
 )
 from urllib.parse import urlparse
 
+import requests
 import yaml
 from ephemeris import (
     generate_tool_list_from_ga_workflow_files,
@@ -35,6 +38,27 @@ from planemo.io import warn
 FAILED_REPOSITORIES_MESSAGE = "Failed to install one or more repositories."
 GALAXY_WORKFLOWS_PREFIX = "gxid://workflows/"
 GALAXY_WORKFLOW_INSTANCE_PREFIX = "gxid://workflow-instance/"
+MAIN_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
+
+
+@lru_cache(maxsize=None)
+def guess_tool_shed_url(tool_shed_fqdn: str) -> Optional[str]:
+    if tool_shed_fqdn in MAIN_TOOLSHED_URL:
+        return MAIN_TOOLSHED_URL
+    else:
+        # guess if tool shed is served over https or http
+        https_tool_shed_url = f"https://{tool_shed_fqdn}"
+        r = requests.get(https_tool_shed_url)
+        if r.status_code == 200:
+            return https_tool_shed_url
+        else:
+            http_tool_shed_url = f"http://{tool_shed_fqdn}"
+            r = requests.get(http_tool_shed_url)
+            if r.status_code == 200:
+                return http_tool_shed_url
+            else:
+                warn(f"Could not connect to {tool_shed_fqdn}")
+    return None
 
 
 def load_shed_repos(runnable):
@@ -62,6 +86,12 @@ def load_shed_repos(runnable):
             if repository:
                 repository["tool_panel_section_label"] = "Tools from workflows"
                 tools.append(repository)
+    for repo in tools:
+        tool_shed = repo.get("tool_shed")
+        if tool_shed:
+            tool_shed_url = guess_tool_shed_url(tool_shed)
+            if tool_shed_url:
+                repo["tool_shed_url"] = tool_shed_url
     return tools
 
 
