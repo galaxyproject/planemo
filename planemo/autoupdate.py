@@ -343,7 +343,9 @@ def outdated_tools(  # noqa: C901
             return repos
         base_id = base_tool_id(tool_id)
         matching_tool_ids = []
-        for repo in repos.values():
+        # newer toolshed returns list
+        repos = repos.values() if isinstance(repos, dict) else repos
+        for repo in repos:
             if isinstance(repo, dict):
                 for tool in repo.get("tools") or []:
                     if tool["guid"].startswith(base_id + "/"):
