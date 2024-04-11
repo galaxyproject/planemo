@@ -327,7 +327,6 @@ def outdated_tools(  # noqa: C901
             return repos
         base_id = base_tool_id(tool_id)
         matching_tool_ids = []
-        # newer toolshed returns list
         for repo in repos.values():
             if isinstance(repo, dict):
                 for tool in repo.get("tools") or []:
