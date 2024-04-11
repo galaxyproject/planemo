@@ -493,6 +493,18 @@ def find_repos_from_tool_id(tool_id: str, ts: ToolShedInstance) -> Tuple[str, Di
         return ("", repos)
 
 
+def assert_valid_tool_id_in_tool_shed(tool_id, ts: ToolShedInstance) -> Optional[str]:
+    warning_msg, repos = find_repos_from_tool_id(tool_id, ts)
+    if warning_msg:
+        return warning_msg
+    for repo in repos.values():
+        tools = repo.get("tools", [])
+        for tool in tools:
+            if tool_id == tool.get("guid"):
+                return None
+    return f"The tool {tool_id} is not in the toolshed (may have been tagged as invalid)."
+
+
 def _lint_tool_ids(path: str, lint_context: WorkflowLintContext) -> None:
     def _lint_tool_ids_steps(lint_context: WorkflowLintContext, wf_dict: Dict, ts: ToolShedInstance) -> bool:
         """Returns whether a single tool_id was invalid"""
@@ -500,8 +512,8 @@ def _lint_tool_ids(path: str, lint_context: WorkflowLintContext) -> None:
         steps = wf_dict.get("steps", {})
         for step in steps.values():
             if step.get("type", "tool") == "tool" and not step.get("run", {}).get("class") == "GalaxyWorkflow":
-                warning_msg, _ = find_repos_from_tool_id(step["tool_id"], ts)
-                if warning_msg != "":
+                warning_msg = assert_valid_tool_id_in_tool_shed(step["tool_id"], ts)
+                if warning_msg:
                     lint_context.error(warning_msg)
                     failed = True
             elif step.get("type") == "subworkflow":  # GA SWF
@@ -521,5 +533,5 @@ def _lint_tool_ids(path: str, lint_context: WorkflowLintContext) -> None:
     ts = toolshed.ToolShedInstance(url=MAIN_TOOLSHED_URL)
     failed = _lint_tool_ids_steps(lint_context, workflow_dict, ts)
     if not failed:
-        lint_context.valid("All tools_id appear to be valid.")
+        lint_context.valid("All tool ids appear to be valid.")
     return None
