@@ -493,7 +493,9 @@ def find_repos_from_tool_id(tool_id: str, ts: ToolShedInstance) -> Tuple[str, Di
         return ("", repos)
 
 
-def assert_valid_tool_id_in_tool_shed(tool_id, ts: ToolShedInstance) -> Optional[str]:
+def assert_valid_tool_id_in_tool_shed(tool_id: str, ts: ToolShedInstance) -> Optional[str]:
+    if "/repos" not in tool_id:
+        return None
     warning_msg, repos = find_repos_from_tool_id(tool_id, ts)
     if warning_msg:
         return warning_msg
