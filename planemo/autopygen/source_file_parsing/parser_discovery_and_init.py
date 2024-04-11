@@ -165,7 +165,7 @@ class SimpleParserDiscoveryAndReplacement(Discovery):
 
     def report_findings(self) -> Tuple:
         if self.main_parser_name is None:
-            raise ArgParserNotUsed("Atgument parser not used")
+            raise ArgParserNotUsed("Argument parser not used")
 
         return self.actions, self.main_parser_name
 
