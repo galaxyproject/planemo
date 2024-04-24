@@ -133,6 +133,8 @@ class RunTestCase(CliTestCase):
                 "--no_wait",
                 "--output_metadata",
                 info_path,
+                "--test_data",
+                TEST_DATA_DIR,
             ]
             self._check_exit_code(test_cmd)
             assert os.path.exists(os.path.join(f, "run_info.json"))
