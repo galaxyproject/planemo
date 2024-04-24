@@ -115,3 +115,24 @@ class RunTestCase(CliTestCase):
             assert os.path.exists(output_path)
             with open(output_path) as fh:
                 assert fh.read().startswith("  16  198 1111")
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_run_metadata(self):
+        with self._isolate() as f:
+            workflow_path = os.path.join(TEST_DATA_DIR, "first_lines.ga")
+            job_path = os.path.join(TEST_DATA_DIR, "first_lines.yml")
+            info_path = os.path.join(f, "run_info.json")
+            test_cmd = [
+                "--verbose",
+                "run",
+                workflow_path,
+                job_path,
+                "--no_dependency_resolution",
+                "--galaxy_branch",
+                target_galaxy_branch(),
+                "--no_wait",
+                "--output_metadata",
+                info_path,
+            ]
+            self._check_exit_code(test_cmd)
+            assert os.path.exists(os.path.join(f, "run_info.json"))
