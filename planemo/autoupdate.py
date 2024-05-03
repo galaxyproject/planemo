@@ -4,7 +4,6 @@ import collections
 import itertools
 import re
 import xml.etree.ElementTree as ET
-from string import Template
 from typing import (
     Any,
     DefaultDict,
@@ -26,7 +25,8 @@ from galaxy.tool_util.version import parse_version
 
 import planemo.conda
 from planemo.galaxy.workflows import (
-    guess_tool_shed_url,
+    get_tool_ids_for_workflow,
+    get_toolshed_url_for_tool_id,
     MAIN_TOOLSHED_URL,
 )
 from planemo.io import (
@@ -294,14 +294,6 @@ def get_newest_tool_id(tool_ids: List[str]) -> str:
     )[-1]
 
 
-def get_toolshed_url_for_tool_id(tool_id: str) -> Optional[str]:
-    components = tool_id.split("/repos")
-    if len(components) > 1:
-        tool_shed_fqdn = components[0]
-        return guess_tool_shed_url(tool_shed_fqdn=tool_shed_fqdn)
-    return None
-
-
 def outdated_tools(  # noqa: C901
     ctx: "PlanemoCliContext", wf_dict: Dict[str, Any], tools_to_skip: List[str]
 ) -> Dict[str, Dict[str, str]]:
@@ -355,22 +347,6 @@ def outdated_tools(  # noqa: C901
     return outdated_tool_dict
 
 
-def get_tool_ids_for_workflow(wf_dict: Dict[str, Any], tool_ids: Optional[List[str]] = None) -> List[str]:
-    tool_ids = [] if tool_ids is None else tool_ids
-    steps = wf_dict["steps"].values() if isinstance(wf_dict["steps"], dict) else wf_dict["steps"]
-    for step in steps:
-        if step.get("type", "tool") == "tool" and not step.get("run", {}).get("class") == "GalaxyWorkflow":
-            tool_id = step["tool_id"]
-            tool_ids.append(tool_id)
-        elif step.get("type") == "subworkflow":  # GA SWF
-            get_tool_ids_for_workflow(step["subworkflow"], tool_ids=tool_ids)
-        elif step.get("run", {}).get("class") == "GalaxyWorkflow":  # gxformat2 SWF
-            get_tool_ids_for_workflow(step["run"], tool_ids=tool_ids)
-        else:
-            continue
-    return list(dict.fromkeys(tool_ids))
-
-
 def get_tools_to_update(
     ctx: "PlanemoCliContext", workflow: "Runnable", tools_to_skip: List[str]
 ) -> Dict[str, Dict[str, str]]:
@@ -381,18 +357,6 @@ def get_tools_to_update(
         wf_dict = yaml.load(f, Loader=yaml.SafeLoader)
 
     return outdated_tools(ctx, wf_dict, tools_to_skip)
-
-
-def get_shed_tools_conf_string_for_tool_ids(tool_ids: List[str]) -> str:
-    tool_shed_urls = set(get_toolshed_url_for_tool_id(tool_id) for tool_id in tool_ids if tool_id)
-    cleaned_tool_shed_urls = set(_ for _ in tool_shed_urls if _ is not None)
-    TOOL_SHEDS_CONF_TEMPLATE = Template("""<tool_sheds>${tool_shed_lines}</tool_sheds>""")
-    tool_sheds: List[str] = []
-    # sort tool_shed_urls from shortest to longest, as https://github.com/galaxyproject/galaxy/blob/c7cb47a1b18ccd5b39075a705bbd2f34572755fe/lib/galaxy/util/tool_shed/tool_shed_registry.py#L106-L118
-    # has a bug where a toolshed that is an exact substring of another registered toolshed would wrongly be selected.
-    for tool_shed_url in sorted(cleaned_tool_shed_urls, key=lambda url: len(url)):
-        tool_sheds.append(f'<tool_shed name="{tool_shed_url.split("://")[-1]}" url="{tool_shed_url}" />')
-    return TOOL_SHEDS_CONF_TEMPLATE.substitute(tool_shed_lines="".join(tool_sheds))
 
 
 def autoupdate_wf(ctx: "PlanemoCliContext", config: "LocalGalaxyConfig", wf: "Runnable") -> Dict[str, Any]:

@@ -35,7 +35,10 @@ from planemo import git
 from planemo.config import OptionSource
 from planemo.deps import ensure_dependency_resolvers_conf_configured
 from planemo.docker import docker_host_args
-from planemo.galaxy.workflows import remote_runnable_to_workflow_id
+from planemo.galaxy.workflows import (
+    get_toolshed_url_for_tool_id,
+    remote_runnable_to_workflow_id,
+)
 from planemo.io import (
     communicate,
     kill_pid_file,
@@ -48,6 +51,7 @@ from planemo.io import (
     write_file,
 )
 from planemo.mulled import build_involucro_context
+from planemo.runnable import RunnableType
 from planemo.shed import tool_shed_url
 from .api import (
     DEFAULT_ADMIN_API_KEY,
@@ -258,6 +262,10 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         shed_tool_path = kwds.get("shed_tool_path") or config_join("shed_tools")
         _ensure_directory(shed_tool_path)
 
+        # Find tool sheds to add to config
+        tool_sheds_config_content = get_tool_sheds_conf_for_runnables(runnables)
+        if tool_sheds_config_content:
+            kwds["tool_sheds_config_content"] = tool_sheds_config_content
         sheds_config_path = _configure_sheds_config_file(ctx, config_directory, **kwds)
         port = _get_port(kwds)
         properties = _shared_galaxy_properties(config_directory, kwds, for_tests=for_tests)
@@ -389,6 +397,10 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         shed_tool_path = kwds.get("shed_tool_path") or config_join("shed_tools")
         _ensure_directory(shed_tool_path)
 
+        # Find tool sheds to add to config
+        tool_sheds_config_content = get_tool_sheds_conf_for_runnables(runnables)
+        if tool_sheds_config_content:
+            kwds["tool_sheds_config_content"] = tool_sheds_config_content
         sheds_config_path = _configure_sheds_config_file(ctx, config_directory, **kwds)
 
         database_location = config_join("galaxy.sqlite")
@@ -568,17 +580,25 @@ def _all_tool_paths(
     all_tool_paths = {r.path for r in runnables if r.has_tools and not r.data_manager_conf_path}
     extra_tools = _expand_paths(galaxy_root, extra_tools=extra_tools)
     all_tool_paths.update(extra_tools)
-    for runnable in runnables:
-        if runnable.type.name == "galaxy_workflow":
-            tool_ids = find_tool_ids(runnable.path)
-            for tool_id in tool_ids:
-                tool_paths = DISTRO_TOOLS_ID_TO_PATH.get(tool_id)
-                if tool_paths:
-                    if isinstance(tool_paths, str):
-                        tool_paths = [tool_paths]
-                    all_tool_paths.update(tool_paths)
+    for tool_id in get_tool_ids_for_runnables(runnables):
+        tool_paths = DISTRO_TOOLS_ID_TO_PATH.get(tool_id)
+        if tool_paths:
+            if isinstance(tool_paths, str):
+                tool_paths = [tool_paths]
+            all_tool_paths.update(tool_paths)
 
     return all_tool_paths
+
+
+def get_workflow_runnables(runnables: List["Runnable"]) -> List["Runnable"]:
+    return [r for r in runnables if r.type == RunnableType.galaxy_workflow and r.has_path]
+
+
+def get_tool_ids_for_runnables(runnables) -> List[str]:
+    tool_ids = []
+    for r in get_workflow_runnables(runnables):
+        tool_ids.extend(find_tool_ids(r.path))
+    return list(dict.fromkeys(tool_ids))
 
 
 def _shared_galaxy_properties(config_directory, kwds, for_tests):
@@ -1199,6 +1219,27 @@ def _search_tool_path_for(path, target, extra_paths=None):
         if os.path.exists(possible_path):
             return os.path.abspath(possible_path)
     return None
+
+
+def get_tool_sheds_conf_for_runnables(runnables: Optional[List["Runnable"]]) -> Optional[str]:
+    if runnables:
+        tool_ids = get_tool_ids_for_runnables(runnables)
+        return get_shed_tools_conf_string_for_tool_ids(tool_ids)
+    return None
+
+
+def get_shed_tools_conf_string_for_tool_ids(tool_ids: List[str]) -> str:
+    tool_shed_urls = set(get_toolshed_url_for_tool_id(tool_id) for tool_id in tool_ids if tool_id)
+    # always add main toolshed
+    tool_shed_urls.add("https://toolshed.g2.bx.psu.edu")
+    cleaned_tool_shed_urls = set(_ for _ in tool_shed_urls if _ is not None)
+    TOOL_SHEDS_CONF_TEMPLATE = Template("""<tool_sheds>${tool_shed_lines}</tool_sheds>""")
+    tool_sheds: List[str] = []
+    # sort tool_shed_urls from shortest to longest, as https://github.com/galaxyproject/galaxy/blob/c7cb47a1b18ccd5b39075a705bbd2f34572755fe/lib/galaxy/util/tool_shed/tool_shed_registry.py#L106-L118
+    # has a bug where a toolshed that is an exact substring of another registered toolshed would wrongly be selected.
+    for shed_url in sorted(cleaned_tool_shed_urls, key=lambda url: len(url)):
+        tool_sheds.append(f'<tool_shed name="{shed_url.split("://")[-1]}" url="{shed_url}" />')
+    return TOOL_SHEDS_CONF_TEMPLATE.substitute(tool_shed_lines="".join(tool_sheds))
 
 
 def _configure_sheds_config_file(ctx, config_directory, **kwds):

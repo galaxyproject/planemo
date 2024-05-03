@@ -3,9 +3,9 @@ import os
 
 from galaxy.util import parse_xml_string
 
-from planemo.autoupdate import (
-    get_newest_tool_id,
-    get_shed_tools_conf_string_for_tool_ids,
+from planemo.autoupdate import get_newest_tool_id
+from planemo.galaxy.config import get_shed_tools_conf_string_for_tool_ids
+from planemo.galaxy.workflows import (
     get_tool_ids_for_workflow,
     get_toolshed_url_for_tool_id,
 )
