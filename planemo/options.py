@@ -36,7 +36,21 @@ def skip_venv_option():
 def skip_client_build_option():
     """Annotate click command as consume the --skip_client_build option."""
     return planemo_option(
-        "--skip_client_build", dest="galaxy_skip_client_build", is_flag=True, default=False, help=("Do not build Galaxy client when serving Galaxy.")
+        "--skip_client_build",
+        "galaxy_skip_client_build",
+        is_flag=True,
+        default=False,
+        help=("Do not build Galaxy client when serving Galaxy."),
+    )
+
+
+def install_prebuilt_client_option():
+    return planemo_option(
+        "--install_prebuilt_client/--no_install_prebuilt_client",
+        "galaxy_install_prebuilt_client",
+        is_flag=True,
+        default=True,
+        help=("Install a pre-built client from npm. Turn this off you need access to visualizations."),
     )
 
 
@@ -1268,6 +1282,7 @@ def galaxy_serve_options():
         daemon_option(),
         pid_file_option(),
         ignore_dependency_problems_option(),
+        install_prebuilt_client_option(),
         skip_client_build_option(),
         shed_install_option(),
     )

@@ -357,6 +357,8 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         install_env = {}
         if kwds.get("galaxy_skip_client_build", True):
             install_env["GALAXY_SKIP_CLIENT_BUILD"] = "1"
+        elif kwds.get("galaxy_install_prebuilt_client", True):
+            install_env["GALAXY_INSTALL_PREBUILT_CLIENT"] = "1"
         if galaxy_root is None:
             galaxy_root = config_join("galaxy-dev")
         if not os.path.isdir(galaxy_root):
