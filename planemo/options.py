@@ -36,7 +36,7 @@ def skip_venv_option():
 def skip_client_build_option():
     """Annotate click command as consume the --skip_client_build option."""
     return planemo_option(
-        "--skip_client_build", is_flag=True, default=False, help=("Do not build Galaxy client when serving Galaxy.")
+        "--skip_client_build", dest="galaxy_skip_client_build", is_flag=True, default=False, help=("Do not build Galaxy client when serving Galaxy.")
     )
 
 

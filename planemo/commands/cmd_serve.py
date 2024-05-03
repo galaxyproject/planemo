@@ -40,6 +40,5 @@ def cli(ctx, uris, **kwds):
     """
     paths = uris_to_paths(ctx, uris)
     runnables = for_paths(paths)
-    kwds["galaxy_skip_client_build"] = kwds.pop("skip_client_build", False)
     with galaxy_serve(ctx, runnables, **kwds):
         pass
