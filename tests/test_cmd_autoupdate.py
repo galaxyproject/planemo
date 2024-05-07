@@ -115,6 +115,19 @@ class CmdAutoupdateTestCase(CliTestCase):
             assert wf["steps"][1]["run"]["steps"][0]["tool_version"] == "3.7+galaxy0"
             assert wf["release"] == "0.1.1"
 
+    def test_autoupdate_workflow_from_multiple_tool_sheds(self):
+        with self._isolate_with_test_data("wf_repos/autoupdate_tests") as f:
+            wf_file = os.path.realpath(os.path.join(f, "wf_autoupdate_test_multiple_repos.ga"))
+            autoupdate_command = ["autoupdate", wf_file]
+            result = self._runner.invoke(self._cli.planemo, autoupdate_command)
+            assert f"Auto-updating workflow {wf_file}" in result.output
+            with open(wf_file) as g:
+                wf = json.load(g)
+            # Assert toolshed tool is updated
+            assert wf["steps"]["1"]["tool_version"] != "9.3+galaxy0"
+            # Assert testtoolshed tool is updated
+            assert wf["steps"]["2"]["tool_version"] != "0.69"
+
     def test_autoupdate_workflow_unexisting_version(self):
         """Test autoupdate command for a workflow where the version of the tool is not in the toolshed."""
         with self._isolate_with_test_data("wf_repos/autoupdate_tests") as f:

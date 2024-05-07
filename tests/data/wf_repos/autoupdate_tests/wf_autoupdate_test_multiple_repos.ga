@@ -1,0 +1,93 @@
+{
+    "steps": {
+        "0": {
+            "collection_type": "paired",
+            "type": "data_collection_input",
+            "label": "pe-fastq",
+            "id": 0,
+            "position": {
+                "left": 0,
+                "top": 0
+            },
+            "annotation": "",
+            "input_connections": {},
+            "inputs": [
+                {
+                    "name": "pe-fastq",
+                    "description": ""
+                }
+            ],
+            "tool_state": "{\"name\": \"pe-fastq\", \"collection_type\": \"paired\"}"
+        },
+        "1": {
+            "label": "fastqc 1",
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_find_and_replace/9.3+galaxy0",
+            "tool_version": "9.3+galaxy0",
+            "tool_shed_repository": {
+                "name": "text_processing",
+                "owner": "bgruening",
+                "tool_shed": "toolshed.g2.bx.psu.edu",
+                "changeset_revision": "12615d397df7"
+            },
+            "id": 1,
+            "position": {
+                "left": 10,
+                "top": 10
+            },
+            "type": "tool",
+            "name": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_find_and_replace/9.3+galaxy0",
+            "post_job_actions": {},
+            "annotation": "",
+            "input_connections": {
+                "input_file": [
+                    {
+                        "id": 0,
+                        "output_name": "output"
+                    }
+                ]
+            },
+            "tool_state": "{\"__page__\": 0}",
+            "workflow_outputs": [
+                {
+                    "output_name": "text_file",
+                    "label": "FastQC txt",
+                    "uuid": null
+                }
+            ]
+        },
+        "2": {
+            "label": "fastqc 2",
+            "tool_id": "testtoolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.69",
+            "tool_version": "0.69",
+            "tool_shed_repository": {
+                "name": "fastqc",
+                "owner": "devteam",
+                "tool_shed": "testtoolshed.g2.bx.psu.edu",
+                "changeset_revision": "7b0207bd2183"
+            },
+            "id": 2,
+            "position": {
+                "left": 20,
+                "top": 20
+            },
+            "type": "tool",
+            "name": "testtoolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.69",
+            "post_job_actions": {},
+            "annotation": "",
+            "input_connections": {
+                "input_file": [
+                    {
+                        "id": 0,
+                        "output_name": "output"
+                    }
+                ]
+            },
+            "tool_state": "{\"__page__\": 0}"
+        }
+    },
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "Workflow",
+    "uuid": "869b6bb3-23a8-4322-a325-cc55abdf7540",
+    "annotation": "Run fastqc"
+}

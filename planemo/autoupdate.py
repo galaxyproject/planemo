@@ -19,20 +19,21 @@ from xml.etree.ElementTree import ElementTree
 
 import requests
 import yaml
-from bioblend import toolshed
 from bioblend.toolshed import ToolShedInstance
 from galaxy.tool_util.deps import conda_util
 from galaxy.tool_util.version import parse_version
 
 import planemo.conda
+from planemo.galaxy.workflows import (
+    get_tool_ids_for_workflow,
+    get_toolshed_url_for_tool_id,
+    MAIN_TOOLSHED_URL,
+)
 from planemo.io import (
     error,
     info,
 )
-from planemo.workflow_lint import (
-    find_repos_from_tool_id,
-    MAIN_TOOLSHED_URL,
-)
+from planemo.workflow_lint import find_repos_from_tool_id
 
 if TYPE_CHECKING:
     from planemo.cli import PlanemoCliContext
@@ -294,7 +295,7 @@ def get_newest_tool_id(tool_ids: List[str]) -> str:
 
 
 def outdated_tools(  # noqa: C901
-    ctx: "PlanemoCliContext", wf_dict: Dict[str, Any], ts: ToolShedInstance, tools_to_skip: List[str]
+    ctx: "PlanemoCliContext", wf_dict: Dict[str, Any], tools_to_skip: List[str]
 ) -> Dict[str, Dict[str, str]]:
     """
     tools_to_skip should be a list of base tool ids.
@@ -305,8 +306,12 @@ def outdated_tools(  # noqa: C901
 
     def check_tool_step(tool_id: str) -> Dict[str, Dict[str, str]]:
         """
-        Return a dict with current and newest tool version, in case they don't match
+        Return a dict with current and newest tool version, in case they don't match.
         """
+        tool_shed_url = get_toolshed_url_for_tool_id(tool_id)
+        if not tool_shed_url:
+            return {}
+        ts = ToolShedInstance(tool_shed_url)
         warning_msg, repos = find_repos_from_tool_id(tool_id, ts)
         if warning_msg != "":
             ctx.log(warning_msg)
@@ -328,20 +333,12 @@ def outdated_tools(  # noqa: C901
             return {}
 
     def outdated_tools_rec(wf_dict: Dict[str, Any]) -> None:
-        steps = wf_dict["steps"].values() if isinstance(wf_dict["steps"], dict) else wf_dict["steps"]
-        for step in steps:
-            if step.get("type", "tool") == "tool" and not step.get("run", {}).get("class") == "GalaxyWorkflow":
-                tool_id = step["tool_id"]
-                base_id = base_tool_id(tool_id)
-                if base_id not in checked_tools:
-                    outdated_tool_dict.update(check_tool_step(tool_id))
-                    checked_tools.append(base_id)
-            elif step.get("type") == "subworkflow":  # GA SWF
-                outdated_tools_rec(step["subworkflow"])
-            elif step.get("run", {}).get("class") == "GalaxyWorkflow":  # gxformat2 SWF
-                outdated_tools_rec(step["run"])
-            else:
-                continue
+        tool_ids = get_tool_ids_for_workflow(wf_dict)
+        for tool_id in tool_ids:
+            base_id = base_tool_id(tool_id)
+            if base_id not in checked_tools:
+                outdated_tool_dict.update(check_tool_step(tool_id))
+                checked_tools.append(base_id)
 
     outdated_tool_dict: Dict[str, Dict[str, str]] = {}
     # Initialize the list of tools already checked with a copy of tools_to_skip
@@ -359,8 +356,7 @@ def get_tools_to_update(
     with open(workflow.path) as f:
         wf_dict = yaml.load(f, Loader=yaml.SafeLoader)
 
-    ts = toolshed.ToolShedInstance(url=MAIN_TOOLSHED_URL)
-    return outdated_tools(ctx, wf_dict, ts, tools_to_skip)
+    return outdated_tools(ctx, wf_dict, tools_to_skip)
 
 
 def autoupdate_wf(ctx: "PlanemoCliContext", config: "LocalGalaxyConfig", wf: "Runnable") -> Dict[str, Any]:

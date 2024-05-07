@@ -35,6 +35,7 @@ from planemo.exit_codes import (
 )
 from planemo.galaxy.workflows import (
     input_labels,
+    MAIN_TOOLSHED_URL,
     output_labels,
     required_input_labels,
 )
@@ -50,8 +51,6 @@ if TYPE_CHECKING:
 
 POTENTIAL_WORKFLOW_FILES = re.compile(r"^.*(\.yml|\.yaml|\.ga)$")
 DOCKSTORE_REGISTRY_CONF_VERSION = "1.2"
-
-MAIN_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
 
 
 class WorkflowLintContext(LintContext):
@@ -479,16 +478,33 @@ def find_repos_from_tool_id(tool_id: str, ts: ToolShedInstance) -> Tuple[str, Di
     """
     Return a string which indicates what failed and dict with all revisions for a given tool id
     """
-    if not tool_id.startswith(MAIN_TOOLSHED_URL[8:]):
+    if "/repos" not in tool_id:
         return ("", {})  # assume a built in tool
+    *_, owner, name, _tool_id, _version = tool_id.split("/")
+
     try:
-        repos = ts.repositories._get(params={"tool_ids": tool_id})
-    except Exception:
-        return (f"The ToolShed returned an error when searching for the most recent version of {tool_id}", {})
+        repo = ts.repositories.get_repositories(name, owner)[0]
+        repos = ts.repositories._get(url=f'{ts.repositories._make_url()}/{repo["id"]}/metadata')
+    except Exception as e:
+        return (f"The ToolShed returned an error when searching for the most recent version of {tool_id}: {e}", {})
     if len(repos) == 0:
         return (f"The tool {tool_id} is not in the toolshed (may have been tagged as invalid).", {})
     else:
         return ("", repos)
+
+
+def assert_valid_tool_id_in_tool_shed(tool_id: str, ts: ToolShedInstance) -> Optional[str]:
+    if "/repos" not in tool_id:
+        return None
+    warning_msg, repos = find_repos_from_tool_id(tool_id, ts)
+    if warning_msg:
+        return warning_msg
+    for repo in repos.values():
+        tools = repo.get("tools", [])
+        for tool in tools:
+            if tool_id == tool.get("guid"):
+                return None
+    return f"The tool {tool_id} is not in the toolshed (may have been tagged as invalid)."
 
 
 def _lint_tool_ids(path: str, lint_context: WorkflowLintContext) -> None:
@@ -498,8 +514,8 @@ def _lint_tool_ids(path: str, lint_context: WorkflowLintContext) -> None:
         steps = wf_dict.get("steps", {})
         for step in steps.values():
             if step.get("type", "tool") == "tool" and not step.get("run", {}).get("class") == "GalaxyWorkflow":
-                warning_msg, _ = find_repos_from_tool_id(step["tool_id"], ts)
-                if warning_msg != "":
+                warning_msg = assert_valid_tool_id_in_tool_shed(step["tool_id"], ts)
+                if warning_msg:
                     lint_context.error(warning_msg)
                     failed = True
             elif step.get("type") == "subworkflow":  # GA SWF
@@ -519,5 +535,5 @@ def _lint_tool_ids(path: str, lint_context: WorkflowLintContext) -> None:
     ts = toolshed.ToolShedInstance(url=MAIN_TOOLSHED_URL)
     failed = _lint_tool_ids_steps(lint_context, workflow_dict, ts)
     if not failed:
-        lint_context.valid("All tools_id appear to be valid.")
+        lint_context.valid("All tool ids appear to be valid.")
     return None
