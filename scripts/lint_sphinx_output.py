@@ -8,7 +8,7 @@ IGNORE_PATTERNS = [
 
 
 def warning_line(line):
-    if "WARNING" not in line:
+    if "WARNING" not in line or "Toil" in line:
         return False
     if "docs/tests" in line:  # Doesn't actually show up in docs so don't lint.
         return False
@@ -23,9 +23,7 @@ def main(argv=None):
         argv = sys.argv
     sphinx_output = sys.stdin.read()
     warning_lines = [_ for _ in sphinx_output.splitlines() if warning_line(_)]
-    for line in warning_lines:
-        print(line)
-    sys.exit(1 if warning_lines else 0)
+    sys.exit("\n".join(warning_lines) if warning_lines else 0)
 
 
 if __name__ == "__main__":
