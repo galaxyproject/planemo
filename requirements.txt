@@ -3,7 +3,7 @@ bioblend>=1.0.0
 click!=8.0.2
 cwltool>=1.0.20191225192155
 ephemeris>=0.10.3
-galaxy-tool-util @ git+https://github.com/bernt-matthias/galaxy.git@skip-name-restore#egg=galaxy-tool-util&subdirectory=packages/tool_util
+galaxy-tool-util>=23.1,!=24.0.0,!=24.0.1,<24.1
 galaxy-util[template]>=23.1,<24.1
 glob2
 gxformat2>=0.14.0
