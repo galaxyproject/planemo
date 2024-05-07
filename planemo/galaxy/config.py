@@ -64,6 +64,7 @@ from .workflows import (
     find_tool_ids,
     import_workflow,
     install_shed_repos,
+    MAIN_TOOLSHED_URL,
 )
 
 if TYPE_CHECKING:
@@ -1231,7 +1232,7 @@ def get_tool_sheds_conf_for_runnables(runnables: Optional[List["Runnable"]]) -> 
 def get_shed_tools_conf_string_for_tool_ids(tool_ids: List[str]) -> str:
     tool_shed_urls = set(get_toolshed_url_for_tool_id(tool_id) for tool_id in tool_ids if tool_id)
     # always add main toolshed
-    tool_shed_urls.add("https://toolshed.g2.bx.psu.edu")
+    tool_shed_urls.add(MAIN_TOOLSHED_URL)
     cleaned_tool_shed_urls = set(_ for _ in tool_shed_urls if _ is not None)
     TOOL_SHEDS_CONF_TEMPLATE = Template("""<tool_sheds>${tool_shed_lines}</tool_sheds>""")
     tool_sheds: List[str] = []
