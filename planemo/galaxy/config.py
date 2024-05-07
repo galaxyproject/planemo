@@ -263,11 +263,7 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         shed_tool_path = kwds.get("shed_tool_path") or config_join("shed_tools")
         _ensure_directory(shed_tool_path)
 
-        # Find tool sheds to add to config
-        tool_sheds_config_content = get_tool_sheds_conf_for_runnables(runnables)
-        if tool_sheds_config_content:
-            kwds["tool_sheds_config_content"] = tool_sheds_config_content
-        sheds_config_path = _configure_sheds_config_file(ctx, config_directory, **kwds)
+        sheds_config_path = _configure_sheds_config_file(ctx, config_directory, runnables, **kwds)
         port = _get_port(kwds)
         properties = _shared_galaxy_properties(config_directory, kwds, for_tests=for_tests)
         _handle_container_resolution(ctx, kwds, properties)
@@ -398,11 +394,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         shed_tool_path = kwds.get("shed_tool_path") or config_join("shed_tools")
         _ensure_directory(shed_tool_path)
 
-        # Find tool sheds to add to config
-        tool_sheds_config_content = get_tool_sheds_conf_for_runnables(runnables)
-        if tool_sheds_config_content:
-            kwds["tool_sheds_config_content"] = tool_sheds_config_content
-        sheds_config_path = _configure_sheds_config_file(ctx, config_directory, **kwds)
+        sheds_config_path = _configure_sheds_config_file(ctx, config_directory, runnables, **kwds)
 
         database_location = config_join("galaxy.sqlite")
         master_api_key = _get_master_api_key(kwds)
@@ -1243,8 +1235,9 @@ def get_shed_tools_conf_string_for_tool_ids(tool_ids: List[str]) -> str:
     return TOOL_SHEDS_CONF_TEMPLATE.substitute(tool_shed_lines="".join(tool_sheds))
 
 
-def _configure_sheds_config_file(ctx, config_directory, **kwds):
-    contents = kwds.get("tool_sheds_config_content")
+def _configure_sheds_config_file(ctx, config_directory, runnables, **kwds):
+    # Find tool sheds to add to config
+    contents = get_tool_sheds_conf_for_runnables(runnables)
     if not contents:
         if "shed_target" not in kwds:
             kwds = kwds.copy()
