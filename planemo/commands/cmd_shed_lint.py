@@ -18,7 +18,6 @@ from planemo.cli import command_function
 @options.click.option(
     "--tools", is_flag=True, default=False, help=("Lint tools discovered in the process of linting repositories.")
 )
-@options.lint_xsd_option()
 @options.click.option(
     "--ensure_metadata",
     is_flag=True,
