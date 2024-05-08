@@ -14,11 +14,10 @@ from planemo.cli import command_function
 @options.shed_realization_options()
 @options.report_level_option()
 @options.fail_level_option()
-@options.skip_option()
+@options.skip_options()
 @options.click.option(
     "--tools", is_flag=True, default=False, help=("Lint tools discovered in the process of linting repositories.")
 )
-@options.lint_xsd_option()
 @options.click.option(
     "--ensure_metadata",
     is_flag=True,

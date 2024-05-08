@@ -15,8 +15,7 @@ from planemo.tool_lint import (
 @options.report_level_option()
 @options.report_xunit()
 @options.fail_level_option()
-@options.skip_option()
-@options.lint_xsd_option()
+@options.skip_options()
 @options.recursive_option()
 @click.option(
     "--urls",
