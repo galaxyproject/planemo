@@ -6,6 +6,23 @@ History
 .. to_doc
 
 ---------------------
+0.75.23 (2024-05-08)
+---------------------
+* Implement run/test/workflow_edit/autoupdate from non default tool sheds
+  (thanks to `@mvdbeek`_). `Pull Request 1445`_
+* Install prebuilt client by default (thanks to `@mvdbeek`_). `Pull Request
+  1450`_
+* Bump galaxy packages to allow for 24.0 (thanks to `@bernt-matthias`_). `Pull
+  Request 1441`_
+* replace dead link in conclusions (thanks to `@martenson`_). `Pull Request
+  1447`_
+* Add text to autopygen exceptions (thanks to `@bernt-matthias`_). `Pull
+  Request 1444`_
+* Drop circleci config (thanks to `@mvdbeek`_). `Pull Request 1443`_
+* Fix linting of asserts with children (thanks to `@bernt-matthias`_). `Pull
+  Request 1442`_
+
+---------------------
 0.75.22 (2024-04-04)
 ---------------------
 * Fix parsing of training ``metadata.yaml`` files (thanks to `@nsoranzo`_).
@@ -2103,6 +2120,13 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1445: https://github.com/galaxyproject/planemo/pull/1445
+.. _Pull Request 1450: https://github.com/galaxyproject/planemo/pull/1450
+.. _Pull Request 1441: https://github.com/galaxyproject/planemo/pull/1441
+.. _Pull Request 1447: https://github.com/galaxyproject/planemo/pull/1447
+.. _Pull Request 1444: https://github.com/galaxyproject/planemo/pull/1444
+.. _Pull Request 1443: https://github.com/galaxyproject/planemo/pull/1443
+.. _Pull Request 1442: https://github.com/galaxyproject/planemo/pull/1442
 .. _Pull Request 1439: https://github.com/galaxyproject/planemo/pull/1439
 .. _Pull Request 1440: https://github.com/galaxyproject/planemo/pull/1440
 .. _Pull Request 1437: https://github.com/galaxyproject/planemo/pull/1437

@@ -168,6 +168,9 @@ Open a synchronized Galaxy workflow editor.
                                       likely indicate a problem but in some cases
                                       may not prevent a workflow from successfully
                                       executing.
+      --install_prebuilt_client / --no_install_prebuilt_client
+                                      Install a pre-built client from npm. Turn this
+                                      off you need access to visualizations.
       --skip_client_build             Do not build Galaxy client when serving
                                       Galaxy.
       --shed_install / --no_shed_install
