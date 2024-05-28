@@ -127,6 +127,9 @@ class CmdAutoupdateTestCase(CliTestCase):
             assert wf["steps"]["1"]["tool_version"] != "9.3+galaxy0"
             # Assert testtoolshed tool is updated
             assert wf["steps"]["2"]["tool_version"] != "0.69"
+            # Assert that name and description of inputs in not modified
+            assert wf["steps"]["0"]["inputs"][0]["name"] == "pe-fastq"
+            assert wf["steps"]["0"]["inputs"][0]["description"] == ""
 
     def test_autoupdate_workflow_unexisting_version(self):
         """Test autoupdate command for a workflow where the version of the tool is not in the toolshed."""
