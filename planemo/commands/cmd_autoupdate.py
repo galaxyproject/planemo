@@ -135,9 +135,9 @@ def cli(ctx, paths, **kwds):  # noqa C901
             kwds["install_repository_dependencies"] = False
             kwds["shed_install"] = True
 
-        with engine_context(ctx, **kwds) as galaxy_engine:
-            with galaxy_engine.ensure_runnables_served(modified_workflows) as config:
-                for workflow in modified_workflows:
+        for workflow in modified_workflows:
+            with engine_context(ctx, **kwds) as galaxy_engine:
+                with galaxy_engine.ensure_runnables_served([workflow]) as config:
                     if config.updated_repos.get(workflow.path) or kwds.get("engine") == "external_galaxy":
                         info("Auto-updating workflow %s" % workflow.path)
                         updated_workflow = autoupdate.autoupdate_wf(ctx, config, workflow)
