@@ -138,27 +138,26 @@ def cli(ctx, paths, **kwds):  # noqa C901
         with engine_context(ctx, **kwds) as galaxy_engine:
             with galaxy_engine.ensure_runnables_served(modified_workflows) as config:
                 for workflow in modified_workflows:
-                    if config.updated_repos.get(workflow.path) or kwds.get("engine") == "external_galaxy":
-                        info("Auto-updating workflow %s" % workflow.path)
-                        updated_workflow = autoupdate.autoupdate_wf(ctx, config, workflow)
+                    info("Auto-updating workflow %s" % workflow.path)
+                    updated_workflow = autoupdate.autoupdate_wf(ctx, config, workflow)
 
-                        if workflow.path.endswith(".ga"):
-                            with open(workflow.path) as f:
-                                original_workflow = json.load(f)
-                            edited_workflow = autoupdate.fix_workflow_ga(original_workflow, updated_workflow)
-                            with open(workflow.path, "w") as f:
-                                json.dump(edited_workflow, f, indent=4)
-                        else:
-                            with open(workflow.path) as f:
-                                original_workflow = yaml.load(f, Loader=yaml.SafeLoader)
-                            edited_workflow = autoupdate.fix_workflow_gxformat2(original_workflow, updated_workflow)
-                            with open(workflow.path, "w") as f:
-                                yaml.dump(edited_workflow, f)
-                        if original_workflow.get("release"):
-                            info(
-                                f"The workflow release number has been updated from "
-                                f"{original_workflow.get('release')} to {edited_workflow.get('release')}."
-                            )
+                    if workflow.path.endswith(".ga"):
+                        with open(workflow.path) as f:
+                            original_workflow = json.load(f)
+                        edited_workflow = autoupdate.fix_workflow_ga(original_workflow, updated_workflow)
+                        with open(workflow.path, "w") as f:
+                            json.dump(edited_workflow, f, indent=4)
+                    else:
+                        with open(workflow.path) as f:
+                            original_workflow = yaml.load(f, Loader=yaml.SafeLoader)
+                        edited_workflow = autoupdate.fix_workflow_gxformat2(original_workflow, updated_workflow)
+                        with open(workflow.path, "w") as f:
+                            yaml.dump(edited_workflow, f)
+                    if original_workflow.get("release"):
+                        info(
+                            f"The workflow release number has been updated from "
+                            f"{original_workflow.get('release')} to {edited_workflow.get('release')}."
+                        )
 
     if kwds["test"]:
         if not modified_files and not modified_workflows:
