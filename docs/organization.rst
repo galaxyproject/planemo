@@ -45,7 +45,6 @@ Committers
 
 - Dannon Baker (@dannon)
 - Bérénice Batut (@bebatut)
-- Simon Bray (@simonbray)
 - Martin Cech (@martenson)
 - John Chilton (@jmchilton)
 - Peter Cock (@peterjc)
