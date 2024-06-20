@@ -2,7 +2,7 @@
 
 import abc
 import json
-import os
+import shutil
 import tempfile
 from typing import (
     Callable,
@@ -97,23 +97,20 @@ class BaseEngine(Engine):
     def _run_test_cases(self, test_cases, test_timeout):
         runnables = [test_case.runnable for test_case in test_cases]
         job_paths = []
-        tmp_paths = []
         output_collectors = []
+        test_directory = tempfile.mkdtemp()
         for test_case in test_cases:
             if test_case.job_path is None:
                 job = test_case.job
                 with tempfile.NamedTemporaryFile(
-                    dir=test_case.tests_directory,
+                    dir=test_directory,
                     suffix=".json",
                     prefix="plnmotmptestjob",
                     delete=False,
                     mode="w+",
                 ) as f:
-                    tmp_path = f.name
-                    job_path = tmp_path
-                    tmp_paths.append(tmp_path)
                     json.dump(job, f)
-                job_paths.append(job_path)
+                job_paths.append(f.name)
             else:
                 job_paths.append(test_case.job_path)
             output_collectors.append(
@@ -122,8 +119,7 @@ class BaseEngine(Engine):
         try:
             run_responses = self._run(runnables, job_paths, output_collectors)
         finally:
-            for tmp_path in tmp_paths:
-                os.remove(tmp_path)
+            shutil.rmtree(test_directory)
         return run_responses
 
 
