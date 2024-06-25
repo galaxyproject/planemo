@@ -144,6 +144,7 @@ CURRENT_CATEGORIES = [
     "RNA",
     "SAM",
     "Sequence Analysis",
+    "Single Cell",
     "Statistics",
     "Structural Materials Analysis",
     "Synthetic Biology",
