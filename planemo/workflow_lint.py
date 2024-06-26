@@ -215,7 +215,7 @@ def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None: 
         lint_context.warn("Workflow does not specify a creator.")
     else:
         creators = workflow_dict.get("creator")
-        if type(creators) != list:
+        if not isinstance(creators, list):
             creators = [creators]
         for creator in creators:
             if creator.get("class", "").lower() == "person" and "identifier" in creator:
