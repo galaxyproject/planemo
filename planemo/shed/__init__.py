@@ -145,6 +145,7 @@ CURRENT_CATEGORIES = [
     "SAM",
     "Sequence Analysis",
     "Single Cell",
+    "Muon spectroscopy",
     "Statistics",
     "Structural Materials Analysis",
     "Synthetic Biology",
