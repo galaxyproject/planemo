@@ -171,6 +171,18 @@ class CmdWorkflowLintTestCase(CliTestCase):
         for warning in warnings:
             assert warning in result.output
 
+    def test_author_identifier_best_practices_linting_ga(self):
+        workflow_path = "/".join((TEST_DATA_DIR, "wf19-unlinted-author-identifier-best-practices.ga"))
+        lint_cmd = ["workflow_lint", workflow_path]
+        result = self._runner.invoke(self._cli.planemo, lint_cmd)
+
+        warnings = [
+            'Creator identifier "0000-0002-1825-0097" should be a fully qualified URI, for example "https://orcid.org/0000-0002-1825-0097".',
+        ]
+
+        for warning in warnings:
+            assert warning in result.output
+
     def test_assertion_linting(self):
         workflow_path = "/".join((TEST_DATA_DIR, "wf15-test-assertions.yml"))
         lint_cmd = ["workflow_lint", workflow_path]

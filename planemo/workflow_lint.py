@@ -14,6 +14,7 @@ from typing import (
     TYPE_CHECKING,
     Union,
 )
+from urllib.parse import urlparse
 
 import requests
 import yaml
@@ -212,6 +213,18 @@ def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None: 
     # creator
     if not len(workflow_dict.get("creator", [])) > 0:
         lint_context.warn("Workflow does not specify a creator.")
+    else:
+        creators = workflow_dict.get("creator")
+        if type(creators) != list:
+            creators = [creators]
+        for creator in creators:
+            if creator.get("class", "").lower() == "person" and "identifier" in creator:
+                identifier = creator["identifier"]
+                parsed_url = urlparse(identifier)
+                if not parsed_url.scheme:
+                    lint_context.warn(
+                        f'Creator identifier "{identifier}" should be a fully qualified URI, for example "https://orcid.org/0000-0002-1825-0097".'
+                    )
 
     # license
     if not workflow_dict.get("license"):
