@@ -523,6 +523,13 @@ def history_name():
         help="Name to give a Galaxy history, if one is created.",
     )
 
+def history_id():
+    return planemo_option(
+        "--history_id",
+        type=str,
+        help="Do not create a new history. Send the results of the run in the history with the provided ID.",
+    )
+
 
 def no_cache_galaxy_option():
     return planemo_option(
@@ -1495,6 +1502,7 @@ def engine_options():
         galaxy_admin_key_option(),
         galaxy_user_key_option(),
         history_name(),
+        history_id(),
         no_wait_option(),
     )
 
