@@ -475,11 +475,11 @@ def _lint_dockstore_workflow_entry(
                            f"Change '{workflow_name}' in {DOCKSTORE_REGISTRY_CONF}.")
 
     # Check there is at least one author
-    if len(workflow_entry.get('authors')) == 0:
-        lint_fun(f"Workflow {workflow_name} should have no "
+    if len(workflow_entry.get('authors', [])) == 0:
+        lint_fun(f"Workflow {workflow_name} have no "
                  "'authors' in the .dockstore.yml.")
     # Check there is not mailto
-    for author in workflow_entry.get('authors'):
+    for author in workflow_entry.get('authors', []):
         if author.get('email', '').startswith('mailto:'):
             lint_context.error("email field of the .dockstore.yml must not "
                                "contain 'mailto:'")
