@@ -468,7 +468,7 @@ def _lint_dockstore_workflow_entry(
             lint_context.error(f"{DOCKSTORE_REGISTRY_CONF} workflow entry references absent file {referenced_file}")
 
     # Check there is no space in name:
-    workflow_name = workflow_entry.get("name")
+    workflow_name = workflow_entry.get("name", "")
     # Check the name has no space
     if ' ' in workflow_name:
         lint_context.error("Dockstore does not accept workflow names with space.",
