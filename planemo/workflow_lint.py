@@ -425,7 +425,7 @@ def _lint_dockstore_config(path: str, lint_context: WorkflowLintContext) -> None
     workflow_names_in_dockstore = []
     for workflow_entry in workflow_entries:
         _lint_dockstore_workflow_entry(lint_context, os.path.dirname(path), workflow_entry)
-        workflow_name = workflow_entry.get("name")
+        workflow_name = workflow_entry.get("name", "")
         if workflow_name in workflow_names_in_dockstore:
             lint_context.error(f"{DOCKSTORE_REGISTRY_CONF} has multiple workflow entries with the same name")
         workflow_names_in_dockstore.append(workflow_name)
@@ -439,7 +439,7 @@ def _lint_dockstore_workflow_entry(
         return
 
     found_errors = False
-    for required_key in ["primaryDescriptorPath", "subclass", "name"]:
+    for required_key in ["primaryDescriptorPath", "subclass"]:
         if required_key not in workflow_entry:
             lint_context.error(f"{DOCKSTORE_REGISTRY_CONF} workflow entry missing required key {required_key}")
             found_errors = True
@@ -448,7 +448,7 @@ def _lint_dockstore_workflow_entry(
         lint_fun = lint_context.error
     else:
         lint_fun = lint_context.warn
-    for recommended_key in ["testParameterFiles"]:
+    for recommended_key in ["testParameterFiles", "name"]:
         if recommended_key not in workflow_entry:
             lint_fun(f"{DOCKSTORE_REGISTRY_CONF} workflow entry missing recommended key {recommended_key}")
 
