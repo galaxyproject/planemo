@@ -159,7 +159,7 @@ def _lint_workflow_artifacts_on_path(
                 workflow_class = workflow_dict.get("class")
                 lint_func = lint_format2 if workflow_class == "GalaxyWorkflow" else lint_ga
                 lint_func(lint_context, workflow_dict, path=path)
-            
+
             lint_context.lint("lint_structure", structure, potential_workflow_artifact_path)
             if lint_context.iwc_grade and lint_context.version is not None:
                 lint_context.lint("lint_version", check_version, potential_workflow_artifact_path)
@@ -476,14 +476,13 @@ def _lint_dockstore_workflow_entry(
 
     # Check there is at least one author
     if len(workflow_entry.get('authors')) == 0:
-        lint_fun(f"Workflow {workflow_name} should have no " \
-                            "'authors' in the .dockstore.yml.")
+        lint_fun(f"Workflow {workflow_name} should have no "
+                 "'authors' in the .dockstore.yml.")
     # Check there is not mailto
     for author in workflow_entry.get('authors'):
-        if 'email' in author:
-            if author['email'].startswith('mailto:'):
-                lint_context.error("email field of the .dockstore.yml must not "
-                                "contain 'mailto:'")
+        if author.get('email', '').startswith('mailto:'):
+            lint_context.error("email field of the .dockstore.yml must not "
+                               "contain 'mailto:'")
 
 
 def looks_like_a_workflow(path: str) -> bool:
@@ -586,14 +585,16 @@ def _lint_tool_ids(path: str, lint_context: WorkflowLintContext) -> None:
         lint_context.valid("All tool ids appear to be valid.")
     return None
 
+
 def _lint_required_files_workflow_dir(path: str, lint_context: WorkflowLintContext) -> None:
     # Check all required files are present
     required_files = \
         ['README.md', 'CHANGELOG.md', '.dockstore.yml']
     for required_file in required_files:
         if not os.path.exists(os.path.join(path, required_file)):
-            lint_context.error(f"The file {required_file} is" \
-                            " missing but required.")
+            lint_context.error(f"The file {required_file} is"
+                               " missing but required.")
+
 
 def _lint_changelog_version(path: str, lint_context: WorkflowLintContext) -> None:
     lint_context.version = None
@@ -607,8 +608,8 @@ def _lint_changelog_version(path: str, lint_context: WorkflowLintContext) -> Non
                 break
 
     if lint_context.version is None:
-        lint_context.error("No version found in CHANGELOG. " \
-                           "The version should be in a line that starts like " \
+        lint_context.error("No version found in CHANGELOG. "
+                           "The version should be in a line that starts like "
                            "'## [version number]'")
 
 
@@ -619,5 +620,5 @@ def check_version(path, lint_context):
         lint_context.error(f"The workflow {path} has no release")
     else:
         if lint_context.version is not None and workflow_dict.get("release") != lint_context.version:
-            lint_context.error(f"The release of workflow {file} does not match " \
-                                "the version in the CHANGELOG.")
+            lint_context.error(f"The release of workflow {path} does not match "
+                               "the version in the CHANGELOG.")
