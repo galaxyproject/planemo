@@ -14,6 +14,12 @@ from planemo.workflow_lint import lint_workflow_artifacts_on_paths
 @options.report_xunit()
 @options.fail_level_option()
 @options.skip_option()
+@click.option(
+    "--iwc",
+    is_flag=True,
+    default=False,
+    help="Check workflows directory with the standards of iwc",
+)
 @command_function
 def cli(ctx, paths, **kwds):
     """Check workflows for syntax errors and best practices."""

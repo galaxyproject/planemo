@@ -18,6 +18,7 @@ def build_lint_args(ctx, **kwds):
     """Handle common report, error, and skip linting arguments."""
     report_level = kwds.get("report_level", "all")
     fail_level = kwds.get("fail_level", "warn")
+    iwc_grade = kwds.get("iwc", False)
     skip = kwds.get("skip", None)
     if skip is None:
         skip = ctx.global_config.get("lint_skip", "")
@@ -42,6 +43,7 @@ def build_lint_args(ctx, **kwds):
         level=report_level,
         fail_level=fail_level,
         skip_types=skip_types,
+        iwc_grade=iwc_grade,
     )
     return lint_args
 
