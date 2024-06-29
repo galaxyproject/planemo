@@ -124,10 +124,11 @@ def generate_dockstore_yaml(directory: str, publish: bool = True) -> str:
 
 
 def lint_workflow_artifacts_on_paths(
-    ctx: "PlanemoCliContext", paths: Iterable[str], lint_args: Dict[str, Union[str, List[str]]]
+    ctx: "PlanemoCliContext", paths: Iterable[str], lint_args: Dict[str, Union[str, List[str]]], iwc_grade: bool
 ) -> int:
     report_level = lint_args["level"]
     lint_context = WorkflowLintContext(report_level, skip_types=lint_args["skip_types"])
+    lint_context.iwc_grade = iwc_grade
     for path in paths:
         _lint_workflow_artifacts_on_path(lint_context, path, lint_args)
 
@@ -140,12 +141,11 @@ def lint_workflow_artifacts_on_paths(
 def _lint_workflow_artifacts_on_path(
     lint_context: WorkflowLintContext, path: str, lint_args: Dict[str, Union[str, List[str]]]
 ) -> None:
-    if lint_args['iwc_grade']:
+    if lint_context.iwc_grade:
         if not os.path.isdir(path):
             raise ValueError("iwc standards can only be checked on directories.")
         lint_context.lint("lint_required_files", _lint_required_files_workflow_dir, path)
         lint_context.lint("lint_changelog", _lint_changelog_version, path)
-        lint_context.iwc_grade = True
 
     for potential_workflow_artifact_path in find_potential_workflow_files(path):
         if os.path.basename(potential_workflow_artifact_path) == DOCKSTORE_REGISTRY_CONF:
