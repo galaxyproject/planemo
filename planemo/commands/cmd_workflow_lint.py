@@ -29,6 +29,6 @@ def cli(ctx, paths, **kwds):
         ctx,
         paths,
         lint_args,
-        iwc_grade = kwds.get("iwc", False)
+        iwc_grade=kwds.get("iwc", False)
     )
     ctx.exit(exit_code)
