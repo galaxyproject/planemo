@@ -407,7 +407,7 @@ def _lint_dockstore_config(path: str, lint_context: WorkflowLintContext) -> None
 
     if "version" not in dockstore_yaml:
         lint_context.error("Invalid YAML contents found in %s, no version defined" % DOCKSTORE_REGISTRY_CONF)
-    if dockstore_yaml.get("version") != DOCKSTORE_REGISTRY_CONF_VERSION:
+    if str(dockstore_yaml.get("version")) != DOCKSTORE_REGISTRY_CONF_VERSION:
         lint_context.error("Invalid YAML version found in %s." % DOCKSTORE_REGISTRY_CONF)
 
     if "workflows" not in dockstore_yaml:
