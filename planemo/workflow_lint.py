@@ -124,11 +124,11 @@ def generate_dockstore_yaml(directory: str, publish: bool = True) -> str:
 
 
 def lint_workflow_artifacts_on_paths(
-    ctx: "PlanemoCliContext", paths: Iterable[str], lint_args: Dict[str, Union[str, List[str]]], iwc_grade: bool
+    ctx: "PlanemoCliContext", paths: Iterable[str], lint_args: Dict[str, Union[str, List[str]]]
 ) -> int:
     report_level = lint_args["level"]
     lint_context = WorkflowLintContext(report_level, skip_types=lint_args["skip_types"])
-    lint_context.iwc_grade = iwc_grade
+    lint_context.iwc_grade = lint_args["iwc_grade"]
     for path in paths:
         _lint_workflow_artifacts_on_path(lint_context, path, lint_args)
 
