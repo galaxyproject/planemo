@@ -4,9 +4,10 @@ import click
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.lint import build_lint_args
-from planemo.workflow_lint import lint_workflow_artifacts_on_paths
-
+from planemo.workflow_lint import (
+    build_wf_lint_args,
+    lint_workflow_artifacts_on_paths
+)
 
 @click.command("workflow_lint")
 @options.optional_tools_or_packages_arg(multiple=True)
@@ -24,8 +25,7 @@ from planemo.workflow_lint import lint_workflow_artifacts_on_paths
 def cli(ctx, paths, **kwds):
     """Check workflows for syntax errors and best practices."""
     # Unlike tools, lets just make this recursive by default.
-    lint_args = build_lint_args(ctx, **kwds)
-    lint_args["iwc_grade"] = str(kwds.get("iwc", False))
+    lint_args = build_wf_lint_args(ctx, **kwds)
     exit_code = lint_workflow_artifacts_on_paths(
         ctx,
         paths,

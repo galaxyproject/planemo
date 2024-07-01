@@ -39,6 +39,7 @@ from planemo.galaxy.workflows import (
     output_labels,
     required_input_labels,
 )
+from planemo.lint import build_lint_args
 from planemo.runnable import (
     cases,
     for_path,
@@ -57,6 +58,12 @@ class WorkflowLintContext(LintContext):
     # Setup training topic for linting - probably should pass this through
     # from click arguments.
     training_topic = None
+
+
+def build_wf_lint_args(ctx, **kwds):
+    lint_args = build_lint_args(ctx, **kwds)
+    lint_args["iwc_grade"] = str(kwds.get("iwc", False))
+    return lint_args
 
 
 def generate_dockstore_yaml(directory: str, publish: bool = True) -> str:
