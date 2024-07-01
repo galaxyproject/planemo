@@ -230,7 +230,7 @@ class CmdWorkflowLintTestCase(CliTestCase):
         # Check the output of workflow_lint --iwc on a basic workflow with .dockstore
         for repo in [
             _wf_repo("basic_format2_dockstore"),
-            _wf_repo(os.path.join("basic_format2_dockstore", "basic_format2.gxwf.yml"))
+            _wf_repo(os.path.join("basic_format2_dockstore", "basic_format2.gxwf.yml")),
         ]:
             lint_cmd = ["workflow_lint", "--skip", "best_practices", "--iwc", repo]
             result = self._runner.invoke(self._cli.planemo, lint_cmd)
