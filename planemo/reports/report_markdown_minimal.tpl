@@ -30,3 +30,26 @@
 | Skipped    | {{ state.skipped }} |
 
 
+{% set display_job_attributes = {'command_line': 'Command Line', 'exit_code': 'Exit Code', 'stderr': 'Standard Error', 'stdout': 'Standard Output', 'traceback': 'Traceback'} %}
+{% for status, desc in {'error': 'Errored', 'failure': 'Failed', 'success': 'Passed'}.items() if state[status]%}
+{% set expanded = "open" if status in ("error", "failure") else "" %}
+<details {{ expanded }}><summary>{{ desc }} {{ execution_type }}s</summary>
+{%   for test in raw_data.tests %}
+{%     if test.data.status == status %}
+{%       if test.data.status == 'success' %}
+
+* <details class="rcorners light-green"><summary class="light-green">&#9989; {{ test.id|replace("#","# ") }}</summary>
+
+{%       else %}
+
+* <details class="rcorners light-red"><summary class="light-red">&#10060; {{ test.id|replace("#","# ") }}</summary>
+
+{%       endif %}
+
+    </details>
+
+{%     endif %}
+{%   endfor %}
+
+</details>
+{% endfor %}
