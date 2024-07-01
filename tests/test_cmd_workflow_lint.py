@@ -237,7 +237,7 @@ class CmdWorkflowLintTestCase(CliTestCase):
             "The file CHANGELOG.md is missing but required.",
             ".dockstore.yml workflow entry missing recommended key name",
             "Workflow  have no 'authors' in the .dockstore.yml.",
-            "The workflow tests/data/wf_repos/basic_format2_dockstore/basic_format2.gxwf.yml has no release"
+            "has no release"
         ]
 
         for error in errors:
