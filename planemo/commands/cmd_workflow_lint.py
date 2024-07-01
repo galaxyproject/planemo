@@ -29,6 +29,6 @@ def cli(ctx, paths, **kwds):
     exit_code = lint_workflow_artifacts_on_paths(
         ctx,
         paths,
-        lint_args
+        lint_args,
     )
     ctx.exit(exit_code)
