@@ -264,6 +264,17 @@ class CmdWorkflowLintTestCase(CliTestCase):
         lint_cmd = ["workflow_lint", "--iwc", "--skip", "release", repo]
         self._check_exit_code(lint_cmd, exit_code=0)
 
+        # Check the output of workflow_lint --iwc on a file raise an error
+        repo = _wf_repo("wf1.ga")
+        lint_cmd = ["workflow_lint", "--iwc", repo]
+        result = self._runner.invoke(self._cli.planemo, lint_cmd)
+
+        errors = [
+            "ValueError: iwc standards can only be checked on directories."
+        ]
+
+        for error in errors:
+            assert error in result.output
 
 def _wf_repo(rel_path):
     return os.path.join(TEST_DATA_DIR, "wf_repos", rel_path)
