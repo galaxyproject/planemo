@@ -621,7 +621,7 @@ def _lint_release(path, lint_context):
         lint_context.error(f"The workflow {path} has no release")
     else:
         # Try to get the version from the CHANGELOG:
-        version = _get_changelog_version(os.path.join(os.path.dirname(path), "CHANGELOG.md"))
+        version = _get_changelog_version(os.path.dirname(path))
         if version != "" and workflow_dict.get("release") != version:
             lint_context.error(f"The release of workflow {path} does not match "
                                "the version in the CHANGELOG.")
