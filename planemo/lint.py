@@ -18,12 +18,13 @@ def build_lint_args(ctx, **kwds):
     """Handle common report, error, and skip linting arguments."""
     report_level = kwds.get("report_level", "all")
     fail_level = kwds.get("fail_level", "warn")
-    skip = kwds.get("skip", None)
+    skip = kwds.get("skip", ctx.global_config.get("lint_skip"))
     if skip is None:
-        skip = ctx.global_config.get("lint_skip", "")
-        if isinstance(skip, list):
-            skip = ",".join(skip)
-    skip_types = [s.strip() for s in skip.split(",") if s.strip()]
+        skip = []
+    if isinstance(skip, list):
+        skip_types = skip
+    else:
+        skip_types = [s.strip() for s in skip.split(",")]
 
     for skip_file in kwds.get("skip_file", []):
         with open(skip_file) as f:
@@ -33,7 +34,7 @@ def build_lint_args(ctx, **kwds):
                     continue
                 skip_types.append(line)
 
-    linters = Linter.list_listers()
+    linters = Linter.list_linters()
     invalid_skip_types = list(set(skip_types) - set(linters))
     if len(invalid_skip_types):
         error(f"Unknown linter type(s) {invalid_skip_types} in list of linters to be skipped. Known linters {linters}")
