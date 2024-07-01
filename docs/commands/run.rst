@@ -212,8 +212,9 @@ Planemo command for running tools and jobs.
       --galaxy_user_key TEXT          User key to use with external Galaxy engine.
       --history_name TEXT             Name to give a Galaxy history, if one is
                                       created.
-	  --history_id TEXT               Do not create a new history. Send the results 
-	  								  of the run in the history with the provided ID.
+      --history_id TEXT               Send the results of the run to the history
+                                      with the provided ID. A history with this ID
+                                      must exist.
       --no_wait                       After invoking a job or workflow, do not wait
                                       for completion.
       --paste_test_data_paths / --no_paste_test_data_paths

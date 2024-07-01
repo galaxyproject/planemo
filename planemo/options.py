@@ -523,11 +523,12 @@ def history_name():
         help="Name to give a Galaxy history, if one is created.",
     )
 
+
 def history_id():
     return planemo_option(
         "--history_id",
         type=str,
-        help="Do not create a new history. Send the results of the run in the history with the provided ID.",
+        help="Send the results of the run to the history with the provided ID. A history with this ID must exist.",
     )
 
 
