@@ -148,7 +148,7 @@ def _lint_workflow_artifacts_on_path(
     iwc_grade = lint_args["iwc_grade"] == "True"
     if iwc_grade:
         if not os.path.isdir(path):
-            raise ValueError("iwc standards can only be checked on directories.")
+            path = os.path.dirname(path)
         lint_context.lint("lint_required_files", _lint_required_files_workflow_dir, path)
         lint_context.lint("lint_changelog", _lint_changelog_version, path)
 

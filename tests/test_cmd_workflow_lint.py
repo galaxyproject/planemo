@@ -228,20 +228,23 @@ class CmdWorkflowLintTestCase(CliTestCase):
 
     def test_workflow_linting_iwc(self):
         # Check the output of workflow_lint --iwc on a basic workflow with .dockstore
-        repo = _wf_repo("basic_format2_dockstore")
-        lint_cmd = ["workflow_lint", "--skip", "best_practices", "--iwc", repo]
-        result = self._runner.invoke(self._cli.planemo, lint_cmd)
+        for repo in [
+            _wf_repo("basic_format2_dockstore"),
+            _wf_repo(os.path.join("basic_format2_dockstore", "basic_format2.gxwf.yml"))
+        ]:
+            lint_cmd = ["workflow_lint", "--skip", "best_practices", "--iwc", repo]
+            result = self._runner.invoke(self._cli.planemo, lint_cmd)
 
-        errors = [
-            "The file README.md is missing but required.",
-            "The file CHANGELOG.md is missing but required.",
-            ".dockstore.yml workflow entry missing recommended key name",
-            "Workflow  have no 'authors' in the .dockstore.yml.",
-            "has no release",
-        ]
+            errors = [
+                "The file README.md is missing but required.",
+                "The file CHANGELOG.md is missing but required.",
+                ".dockstore.yml workflow entry missing recommended key name",
+                "Workflow  have no 'authors' in the .dockstore.yml.",
+                "has no release",
+            ]
 
-        for error in errors:
-            assert error in result.output
+            for error in errors:
+                assert error in result.output
 
         # Check that skipping the good steps makes it work
         lint_cmd = [
@@ -266,14 +269,6 @@ class CmdWorkflowLintTestCase(CliTestCase):
         # Check that skipping the good steps makes it work
         lint_cmd = ["workflow_lint", "--iwc", "--skip", "release", repo]
         self._check_exit_code(lint_cmd, exit_code=0)
-
-        # Check the output of workflow_lint --iwc on a file raise an error
-        repo = _wf_repo("wf1.ga")
-        lint_cmd = ["workflow_lint", "--iwc", repo]
-        result = self._runner.invoke(self._cli.planemo, lint_cmd)
-        assert result.exit_code == 1
-        assert isinstance(result.exception, ValueError)
-        assert str(result.exception) == "iwc standards can only be checked on directories."
 
 
 def _wf_repo(rel_path):
