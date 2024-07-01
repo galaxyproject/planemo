@@ -524,6 +524,14 @@ def history_name():
     )
 
 
+def history_id():
+    return planemo_option(
+        "--history_id",
+        type=str,
+        help="Send the results of the run to the history with the provided ID. A history with this ID must exist.",
+    )
+
+
 def no_cache_galaxy_option():
     return planemo_option(
         "--no_cache_galaxy",
@@ -1495,6 +1503,7 @@ def engine_options():
         galaxy_admin_key_option(),
         galaxy_user_key_option(),
         history_name(),
+        history_id(),
         no_wait_option(),
     )
 

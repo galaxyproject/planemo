@@ -38,10 +38,9 @@ help text for mentioned URLs and checks those.
                                       (e.g. passing --skip 'citations,xml_order'
                                       would skip linting of citations and best-
                                       practice XML ordering.
+      --skip_file FILE                File containing a list of lint tests to skip
       --tools                         Lint tools discovered in the process of
                                       linting repositories.
-      --xsd / --no_xsd                Include tool XSD validation in linting
-                                      process.
       --ensure_metadata               Ensure .shed.yml files contain enough metadata
                                       for each repository to allow automated
                                       creation and/or updates.
