@@ -271,11 +271,9 @@ class CmdWorkflowLintTestCase(CliTestCase):
         repo = _wf_repo("wf1.ga")
         lint_cmd = ["workflow_lint", "--iwc", repo]
         result = self._runner.invoke(self._cli.planemo, lint_cmd)
-
-        errors = ["ValueError: iwc standards can only be checked on directories."]
-
-        for error in errors:
-            assert error in result.output
+        assert result.exit_code == 1
+        assert isinstance(result.exception, ValueError)
+        assert str(result.exception) == "iwc standards can only be checked on directories."
 
 
 def _wf_repo(rel_path):
