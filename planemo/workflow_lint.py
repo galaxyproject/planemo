@@ -127,7 +127,7 @@ def lint_workflow_artifacts_on_paths(
 ) -> int:
     report_level = lint_args["level"]
     lint_context = WorkflowLintContext(report_level, skip_types=lint_args["skip_types"])
-    lint_context.iwc_grade = lint_args["iwc_grade"]
+    lint_context.iwc_grade = lint_args["iwc_grade"] == "True"
     for path in paths:
         _lint_workflow_artifacts_on_path(lint_context, path, lint_args)
 
