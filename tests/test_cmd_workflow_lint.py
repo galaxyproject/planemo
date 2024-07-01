@@ -237,14 +237,20 @@ class CmdWorkflowLintTestCase(CliTestCase):
             "The file CHANGELOG.md is missing but required.",
             ".dockstore.yml workflow entry missing recommended key name",
             "Workflow  have no 'authors' in the .dockstore.yml.",
-            "has no release"
+            "has no release",
         ]
 
         for error in errors:
             assert error in result.output
 
-        # Check that skipping the good steps makes it work        
-        lint_cmd = ["workflow_lint", "--iwc", "--skip", "best_practices,required_files,dockstore_best_practices,release", repo]
+        # Check that skipping the good steps makes it work
+        lint_cmd = [
+            "workflow_lint",
+            "--iwc",
+            "--skip",
+            "best_practices,required_files,dockstore_best_practices,release",
+            repo,
+        ]
         self._check_exit_code(lint_cmd, exit_code=0)
 
         # Check the output of workflow_lint --iwc on a good workflow but with an issue with the release
@@ -252,15 +258,12 @@ class CmdWorkflowLintTestCase(CliTestCase):
         lint_cmd = ["workflow_lint", "--iwc", repo]
         result = self._runner.invoke(self._cli.planemo, lint_cmd)
 
-        errors = [
-            "The release of workflow",
-            " does not match the version in the CHANGELOG."
-        ]
+        errors = ["The release of workflow", " does not match the version in the CHANGELOG."]
 
         for error in errors:
             assert error in result.output
 
-        # Check that skipping the good steps makes it work        
+        # Check that skipping the good steps makes it work
         lint_cmd = ["workflow_lint", "--iwc", "--skip", "release", repo]
         self._check_exit_code(lint_cmd, exit_code=0)
 
@@ -269,12 +272,11 @@ class CmdWorkflowLintTestCase(CliTestCase):
         lint_cmd = ["workflow_lint", "--iwc", repo]
         result = self._runner.invoke(self._cli.planemo, lint_cmd)
 
-        errors = [
-            "ValueError: iwc standards can only be checked on directories."
-        ]
+        errors = ["ValueError: iwc standards can only be checked on directories."]
 
         for error in errors:
             assert error in result.output
+
 
 def _wf_repo(rel_path):
     return os.path.join(TEST_DATA_DIR, "wf_repos", rel_path)

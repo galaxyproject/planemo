@@ -156,7 +156,11 @@ def _lint_workflow_artifacts_on_path(
         if os.path.basename(potential_workflow_artifact_path) == DOCKSTORE_REGISTRY_CONF:
             lint_context.lint("lint_dockstore", _lint_dockstore_config, potential_workflow_artifact_path)
             if iwc_grade:
-                lint_context.lint("lint_dockstore_best_practices", _lint_dockstore_config_best_practices, potential_workflow_artifact_path)
+                lint_context.lint(
+                    "lint_dockstore_best_practices",
+                    _lint_dockstore_config_best_practices,
+                    potential_workflow_artifact_path,
+                )
 
         elif looks_like_a_workflow(potential_workflow_artifact_path):
 
@@ -469,15 +473,16 @@ def _lint_dockstore_workflow_entry(
     # Check there is no space in name:
     workflow_name = workflow_entry.get("name", "")
     # Check the name has no space
-    if ' ' in workflow_name:
-        lint_context.error("Dockstore does not accept workflow names with space.",
-                           f"Change '{workflow_name}' in {DOCKSTORE_REGISTRY_CONF}.")
+    if " " in workflow_name:
+        lint_context.error(
+            "Dockstore does not accept workflow names with space.",
+            f"Change '{workflow_name}' in {DOCKSTORE_REGISTRY_CONF}.",
+        )
 
     # Check there is not mailto
-    for author in workflow_entry.get('authors', []):
-        if author.get('email', '').startswith('mailto:'):
-            lint_context.error("email field of the .dockstore.yml must not "
-                               "contain 'mailto:'")
+    for author in workflow_entry.get("authors", []):
+        if author.get("email", "").startswith("mailto:"):
+            lint_context.error("email field of the .dockstore.yml must not " "contain 'mailto:'")
 
 
 def looks_like_a_workflow(path: str) -> bool:
@@ -583,48 +588,47 @@ def _lint_tool_ids(path: str, lint_context: WorkflowLintContext) -> None:
 
 def _lint_required_files_workflow_dir(path: str, lint_context: WorkflowLintContext) -> None:
     # Check all required files are present
-    required_files = \
-        ['README.md', 'CHANGELOG.md', '.dockstore.yml']
+    required_files = ["README.md", "CHANGELOG.md", ".dockstore.yml"]
     for required_file in required_files:
         if not os.path.exists(os.path.join(path, required_file)):
-            lint_context.error(f"The file {required_file} is"
-                               " missing but required.")
+            lint_context.error(f"The file {required_file} is" " missing but required.")
 
 
 def _get_changelog_version(path: str) -> str:
     # Get the version from the CHANGELOG.md
     version = ""
-    if not os.path.exists(os.path.join(path, 'CHANGELOG.md')):
+    if not os.path.exists(os.path.join(path, "CHANGELOG.md")):
         return version
-    with open(os.path.join(path, 'CHANGELOG.md'), 'r') as f:
+    with open(os.path.join(path, "CHANGELOG.md"), "r") as f:
         for line in f:
-            if line.startswith('## ['):
-                version = line.split(']')[0].replace('## [', '')
+            if line.startswith("## ["):
+                version = line.split("]")[0].replace("## [", "")
                 break
     return version
 
 
 def _lint_changelog_version(path: str, lint_context: WorkflowLintContext) -> None:
     # Check the version can be get from the CHANGELOG.md
-    if not os.path.exists(os.path.join(path, 'CHANGELOG.md')):
+    if not os.path.exists(os.path.join(path, "CHANGELOG.md")):
         return
     if _get_changelog_version(path) == "":
-        lint_context.error("No version found in CHANGELOG. "
-                           "The version should be in a line that starts like "
-                           "'## [version number]'")
+        lint_context.error(
+            "No version found in CHANGELOG. "
+            "The version should be in a line that starts like "
+            "'## [version number]'"
+        )
 
 
 def _lint_release(path, lint_context):
     with open(path) as f:
         workflow_dict = ordered_load(f)
-    if 'release' not in workflow_dict:
+    if "release" not in workflow_dict:
         lint_context.error(f"The workflow {path} has no release")
     else:
         # Try to get the version from the CHANGELOG:
         version = _get_changelog_version(os.path.dirname(path))
         if version != "" and workflow_dict.get("release") != version:
-            lint_context.error(f"The release of workflow {path} does not match "
-                               "the version in the CHANGELOG.")
+            lint_context.error(f"The release of workflow {path} does not match " "the version in the CHANGELOG.")
 
 
 def _lint_dockstore_config_best_practices(path: str, lint_context: WorkflowLintContext) -> None:
@@ -634,7 +638,7 @@ def _lint_dockstore_config_best_practices(path: str, lint_context: WorkflowLintC
             dockstore_yaml = yaml.safe_load(f)
     except Exception:
         return
-    
+
     if not isinstance(dockstore_yaml, dict):
         return
 
@@ -655,6 +659,5 @@ def _lint_dockstore_workflow_entry_best_practices(
 
     workflow_name = workflow_entry.get("name", "")
     # Check there is at least one author
-    if len(workflow_entry.get('authors', [])) == 0:
-        lint_context.error(f"Workflow {workflow_name} have no "
-                            f"'authors' in the {DOCKSTORE_REGISTRY_CONF}.")
+    if len(workflow_entry.get("authors", [])) == 0:
+        lint_context.error(f"Workflow {workflow_name} have no 'authors' in the {DOCKSTORE_REGISTRY_CONF}.")
