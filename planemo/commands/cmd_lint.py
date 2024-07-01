@@ -4,10 +4,13 @@ import click
 
 from planemo import options
 from planemo.cli import command_function
+from planemo.io import error
 from planemo.tool_lint import (
     build_tool_lint_args,
     lint_tools_on_path,
 )
+
+from galaxy.tool_util.lint import Linter
 
 
 @click.command("lint")
@@ -46,6 +49,12 @@ from planemo.tool_lint import (
 def cli(ctx, uris, **kwds):
     """Check for common errors and best practices."""
     lint_args = build_tool_lint_args(ctx, **kwds)
+
+    linters = Linter.list_linters()
+    invalid_skip_types = list(set(lint_args["skip_types"]) - set(linters))
+    if len(invalid_skip_types):
+        error(f"Unknown linter type(s) {invalid_skip_types} in list of linters to be skipped. Known linters {linters}")
+
     exit_code = lint_tools_on_path(ctx, uris, lint_args, recursive=kwds["recursive"])
 
     # TODO: rearchitect XUnit.
