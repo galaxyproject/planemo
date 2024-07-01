@@ -4,7 +4,10 @@ import click
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.workflow_lint import build_wf_lint_args, lint_workflow_artifacts_on_paths
+from planemo.workflow_lint import (
+    build_wf_lint_args,
+    lint_workflow_artifacts_on_paths,
+)
 
 
 @click.command("workflow_lint")
