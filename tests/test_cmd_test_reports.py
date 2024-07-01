@@ -36,4 +36,5 @@ class CmdTestReportsTestCase(CliTestCase):
             assert os.path.isdir(minimal_results_path)
             assert len(os.listdir(minimal_results_path))
 
+            minimal_markdown_results = os.path.join(minimal_results_path, "tool_test_output.md")
             assert os.path.getsize(minimal_markdown_results) < os.path.getsize(markdown_results)
