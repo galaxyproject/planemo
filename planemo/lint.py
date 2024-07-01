@@ -23,7 +23,7 @@ def build_lint_args(ctx, **kwds):
         skip = ctx.global_config.get("lint_skip", "")
         if isinstance(skip, list):
             skip = ",".join(skip)
-    skip_types = [s.strip() for s in skip.split(",")]
+    skip_types = [s.strip() for s in skip.split(",") if s.strip()]
 
     for skip_file in kwds.get("skip_file", []):
         with open(skip_file) as f:
