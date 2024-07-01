@@ -57,7 +57,6 @@ class WorkflowLintContext(LintContext):
     # Setup training topic for linting - probably should pass this through
     # from click arguments.
     training_topic = None
-    release = None
     iwc_grade = False
 
 
@@ -161,8 +160,8 @@ def _lint_workflow_artifacts_on_path(
                 lint_func(lint_context, workflow_dict, path=path)
 
             lint_context.lint("lint_structure", structure, potential_workflow_artifact_path)
-            if lint_context.iwc_grade and lint_context.version is not None:
-                lint_context.lint("lint_version", check_version, potential_workflow_artifact_path)
+            if lint_context.iwc_grade:
+                lint_context.lint("lint_release", _lint_release, potential_workflow_artifact_path)
             lint_context.lint("lint_best_practices", _lint_best_practices, potential_workflow_artifact_path)
             lint_context.lint("lint_tests", _lint_tsts, potential_workflow_artifact_path)
             lint_context.lint("lint_tool_ids", _lint_tool_ids, potential_workflow_artifact_path)
@@ -596,29 +595,37 @@ def _lint_required_files_workflow_dir(path: str, lint_context: WorkflowLintConte
                                " missing but required.")
 
 
-def _lint_changelog_version(path: str, lint_context: WorkflowLintContext) -> None:
-    lint_context.version = None
-    # Check the version can be get from the CHANGELOG.md
+def _get_changelog_version(path: str) -> str:
+    # Get the version from the CHANGELOG.md
+    version = ""
     if not os.path.exists(os.path.join(path, 'CHANGELOG.md')):
-        return
+        return version
     with open(os.path.join(path, 'CHANGELOG.md'), 'r') as f:
         for line in f:
             if line.startswith('## ['):
-                lint_context.version = line.split(']')[0].replace('## [', '')
+                version = line.split(']')[0].replace('## [', '')
                 break
+    return version
 
-    if lint_context.version is None:
+
+def _lint_changelog_version(path: str, lint_context: WorkflowLintContext) -> None:
+    # Check the version can be get from the CHANGELOG.md
+    if not os.path.exists(os.path.join(path, 'CHANGELOG.md')):
+        return
+    if _get_changelog_version(path) == "":
         lint_context.error("No version found in CHANGELOG. "
                            "The version should be in a line that starts like "
                            "'## [version number]'")
 
 
-def check_version(path, lint_context):
+def _lint_release(path, lint_context):
     with open(path) as f:
         workflow_dict = ordered_load(f)
     if 'release' not in workflow_dict:
         lint_context.error(f"The workflow {path} has no release")
     else:
-        if lint_context.version is not None and workflow_dict.get("release") != lint_context.version:
+        # Try to get the version from the CHANGELOG:
+        version = _get_changelog_version(os.path.join(os.path.dirname(path), "CHANGELOG.md"))
+        if version != "" and workflow_dict.get("release") != version:
             lint_context.error(f"The release of workflow {path} does not match "
                                "the version in the CHANGELOG.")
