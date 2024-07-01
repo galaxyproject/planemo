@@ -30,7 +30,9 @@ class CmdTestReportsTestCase(CliTestCase):
 
             # Run minimal version
             minimal_results_path = os.path.join(f, "minimal_markdown_results")
-            self._check_exit_code(["test_reports", "--test_output_markdown_minimal", minimal_results_path, json_path], exit_code=0)
+            self._check_exit_code(
+                ["test_reports", "--test_output_markdown_minimal", minimal_results_path, json_path], exit_code=0
+            )
             assert os.path.exists(minimal_results_path)
             # Make sure minimal markdown is compacted
             assert os.path.getsize(minimal_results_path) < os.path.getsize(results_path)
