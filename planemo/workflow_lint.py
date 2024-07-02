@@ -12,7 +12,6 @@ from typing import (
     Optional,
     Tuple,
     TYPE_CHECKING,
-    Union,
 )
 
 import requests
@@ -128,9 +127,7 @@ def generate_dockstore_yaml(directory: str, publish: bool = True) -> str:
     return contents
 
 
-def lint_workflow_artifacts_on_paths(
-    ctx: "PlanemoCliContext", paths: Iterable[str], lint_args: Dict[str, Any]
-) -> int:
+def lint_workflow_artifacts_on_paths(ctx: "PlanemoCliContext", paths: Iterable[str], lint_args: Dict[str, Any]) -> int:
     report_level = lint_args["level"]
     lint_context = WorkflowLintContext(report_level, skip_types=lint_args["skip_types"])
     for path in paths:
@@ -142,9 +139,7 @@ def lint_workflow_artifacts_on_paths(
         return EXIT_CODE_OK
 
 
-def _lint_workflow_artifacts_on_path(
-    lint_context: WorkflowLintContext, path: str, lint_args: Dict[str, Any]
-) -> None:
+def _lint_workflow_artifacts_on_path(lint_context: WorkflowLintContext, path: str, lint_args: Dict[str, Any]) -> None:
     if lint_args["iwc_grade"]:
         if not os.path.isdir(path):
             path = os.path.dirname(path)
