@@ -1,4 +1,9 @@
 from os.path import basename
+from typing import (
+    Any,
+    Dict,
+    TYPE_CHECKING,
+)
 
 from galaxy.tool_util.lint import lint_tool_source
 
@@ -22,10 +27,13 @@ from planemo.tools import (
     yield_tool_sources_on_paths,
 )
 
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
+
 LINTING_TOOL_MESSAGE = "Linting tool %s"
 
 
-def build_tool_lint_args(ctx, **kwds):
+def build_tool_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
     lint_args = build_lint_args(ctx, **kwds)
     extra_modules = _lint_extra_modules(**kwds)
     lint_args["extra_modules"] = extra_modules

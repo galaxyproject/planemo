@@ -7,7 +7,10 @@ from planemo import (
     shed,
     shed_lint,
 )
-from planemo.cli import command_function
+from planemo.cli import (
+    command_function,
+    PlanemoCliContext,
+)
 
 
 @click.command("shed_lint")
@@ -41,7 +44,7 @@ from planemo.cli import command_function
 #     default=False,
 # )
 @command_function
-def cli(ctx, paths, **kwds):
+def cli(ctx: PlanemoCliContext, paths, **kwds):
     """Check Tool Shed repository for common issues.
 
     With the ``--tools`` flag, this command lints actual Galaxy tools

@@ -226,6 +226,50 @@ class CmdWorkflowLintTestCase(CliTestCase):
         result = self._runner.invoke(self._cli.planemo, lint_cmd)
         assert "ERROR: Invalid assertion in tests: assert_has_line missing a required argument: 'line'" in result.output
 
+    def test_workflow_linting_iwc(self):
+        # Check the output of workflow_lint --iwc on a basic workflow with .dockstore
+        for repo in [
+            _wf_repo("basic_format2_dockstore"),
+            _wf_repo(os.path.join("basic_format2_dockstore", "basic_format2.gxwf.yml")),
+        ]:
+            lint_cmd = ["workflow_lint", "--skip", "best_practices", "--iwc", repo]
+            result = self._runner.invoke(self._cli.planemo, lint_cmd)
+
+            errors = [
+                "The file README.md is missing but required.",
+                "The file CHANGELOG.md is missing but required.",
+                ".dockstore.yml workflow entry missing recommended key name",
+                "Workflow  have no 'authors' in the .dockstore.yml.",
+                "has no release",
+            ]
+
+            for error in errors:
+                assert error in result.output
+
+        # Check that skipping the good steps makes it work
+        lint_cmd = [
+            "workflow_lint",
+            "--iwc",
+            "--skip",
+            "best_practices,required_files,dockstore_best_practices,release",
+            repo,
+        ]
+        self._check_exit_code(lint_cmd, exit_code=0)
+
+        # Check the output of workflow_lint --iwc on a good workflow but with an issue with the release
+        repo = _wf_repo("basic_wf_iwc_invalid_version")
+        lint_cmd = ["workflow_lint", "--iwc", repo]
+        result = self._runner.invoke(self._cli.planemo, lint_cmd)
+
+        errors = ["The release of workflow", " does not match the version in the CHANGELOG."]
+
+        for error in errors:
+            assert error in result.output
+
+        # Check that skipping the good steps makes it work
+        lint_cmd = ["workflow_lint", "--iwc", "--skip", "release", repo]
+        self._check_exit_code(lint_cmd, exit_code=0)
+
 
 def _wf_repo(rel_path):
     return os.path.join(TEST_DATA_DIR, "wf_repos", rel_path)

@@ -1,0 +1,95 @@
+{
+    "a_galaxy_workflow": "true",
+    "annotation": "This workflow generates a file with x lines with 'hello'",
+    "comments": [],
+    "creator": [
+        {
+            "class": "Person",
+            "identifier": "https://orcid.org/0000-0002-1964-4960",
+            "name": "Lucille Delisle"
+        }
+    ],
+    "format-version": "0.1",
+    "license": "MIT",
+    "release": "0.2",
+    "name": "Super simple workflow",
+    "report": {
+        "markdown": "\n# Workflow Execution Report\n\n## Workflow Inputs\n```galaxy\ninvocation_inputs()\n```\n\n## Workflow Outputs\n```galaxy\ninvocation_outputs()\n```\n\n## Workflow\n```galaxy\nworkflow_display()\n```\n"
+    },
+    "steps": {
+        "0": {
+            "annotation": "Number of rows to generate",
+            "content_id": null,
+            "errors": null,
+            "id": 0,
+            "input_connections": {},
+            "inputs": [
+                {
+                    "description": "Number of rows to generate",
+                    "name": "n_rows"
+                }
+            ],
+            "label": "n_rows",
+            "name": "Input parameter",
+            "outputs": [],
+            "position": {
+                "left": 0,
+                "top": 0
+            },
+            "tool_id": null,
+            "tool_state": "{\"parameter_type\": \"integer\", \"optional\": false}",
+            "tool_version": null,
+            "type": "parameter_input",
+            "uuid": "2ee42c13-83f5-4ac4-b35d-74294edf7dea",
+            "when": null
+        },
+        "1": {
+            "annotation": "this creates a file with a given number of lines",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_text_file_with_recurring_lines/9.3+galaxy1",
+            "errors": null,
+            "id": 1,
+            "input_connections": {
+                "token_set_0|repeat_select|times": {
+                    "id": 0,
+                    "output_name": "output"
+                }
+            },
+            "inputs": [],
+            "label": "create file",
+            "name": "Create text file",
+            "outputs": [
+                {
+                    "name": "outfile",
+                    "type": "txt"
+                }
+            ],
+            "position": {
+                "left": 236,
+                "top": 11
+            },
+            "post_job_actions": {},
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_text_file_with_recurring_lines/9.3+galaxy1",
+            "tool_shed_repository": {
+                "changeset_revision": "fbf99087e067",
+                "name": "text_processing",
+                "owner": "bgruening",
+                "tool_shed": "toolshed.g2.bx.psu.edu"
+            },
+            "tool_state": "{\"token_set\": [{\"__index__\": 0, \"line\": \"hello\", \"repeat_select\": {\"repeat_select_opts\": \"user\", \"__current_case__\": 0, \"times\": {\"__class__\": \"ConnectedValue\"}}}], \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+            "tool_version": "9.3+galaxy1",
+            "type": "tool",
+            "uuid": "a86ff433-8dce-417c-baf0-bc106a93ee48",
+            "when": null,
+            "workflow_outputs": [
+                {
+                    "label": "outfile",
+                    "output_name": "outfile",
+                    "uuid": "34572088-8ad8-4661-81a2-6dfe2d83a0fe"
+                }
+            ]
+        }
+    },
+    "tags": [],
+    "uuid": "72c87042-27a8-4bcc-92af-ca74704e6161",
+    "version": 3
+}

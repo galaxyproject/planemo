@@ -2,6 +2,7 @@
 
 import os
 import xml.etree.ElementTree as ET
+from typing import TYPE_CHECKING
 
 import yaml
 from galaxy.tool_util.lint import lint_tool_source_with
@@ -31,6 +32,9 @@ from planemo.tool_lint import (
 from planemo.tools import yield_tool_sources
 from planemo.xml import XSDS_PATH
 
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
+
 TOOL_DEPENDENCIES_XSD = os.path.join(XSDS_PATH, "tool_dependencies.xsd")
 REPO_DEPENDENCIES_XSD = os.path.join(XSDS_PATH, "repository_dependencies.xsd")
 
@@ -50,7 +54,7 @@ SHED_METADATA = [
 ]
 
 
-def lint_repository(ctx, realized_repository, **kwds):
+def lint_repository(ctx: "PlanemoCliContext", realized_repository, **kwds):
     """Lint a realized shed repository.
 
     See :mod:`planemo.shed` for details on constructing a realized
