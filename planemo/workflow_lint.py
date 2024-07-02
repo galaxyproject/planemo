@@ -145,8 +145,7 @@ def lint_workflow_artifacts_on_paths(
 def _lint_workflow_artifacts_on_path(
     lint_context: WorkflowLintContext, path: str, lint_args: Dict[str, Union[str, List[str]]]
 ) -> None:
-    iwc_grade = lint_args["iwc_grade"] == "True"
-    if iwc_grade:
+    if lint_args["iwc_grade"]:
         if not os.path.isdir(path):
             path = os.path.dirname(path)
         lint_context.lint("lint_required_files", _lint_required_files_workflow_dir, path)
@@ -155,7 +154,7 @@ def _lint_workflow_artifacts_on_path(
     for potential_workflow_artifact_path in find_potential_workflow_files(path):
         if os.path.basename(potential_workflow_artifact_path) == DOCKSTORE_REGISTRY_CONF:
             lint_context.lint("lint_dockstore", _lint_dockstore_config, potential_workflow_artifact_path)
-            if iwc_grade:
+            if lint_args["iwc_grade"]:
                 lint_context.lint(
                     "lint_dockstore_best_practices",
                     _lint_dockstore_config_best_practices,
@@ -172,7 +171,7 @@ def _lint_workflow_artifacts_on_path(
                 lint_func(lint_context, workflow_dict, path=path)
 
             lint_context.lint("lint_structure", structure, potential_workflow_artifact_path)
-            if iwc_grade:
+            if lint_args["iwc_grade"]:
                 lint_context.lint("lint_release", _lint_release, potential_workflow_artifact_path)
             lint_context.lint("lint_best_practices", _lint_best_practices, potential_workflow_artifact_path)
             lint_context.lint("lint_tests", _lint_tsts, potential_workflow_artifact_path)
