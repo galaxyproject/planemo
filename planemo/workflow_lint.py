@@ -60,9 +60,9 @@ class WorkflowLintContext(LintContext):
     training_topic = None
 
 
-def build_wf_lint_args(ctx, **kwds):
+def build_wf_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
     lint_args = build_lint_args(ctx, **kwds)
-    lint_args["iwc_grade"] = str(kwds.get("iwc", False))
+    lint_args["iwc_grade"] = kwds.get("iwc", False)
     return lint_args
 
 

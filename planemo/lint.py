@@ -1,6 +1,11 @@
 """Utilities to help linting various targets."""
 
 import os
+from typing import (
+    Any,
+    Dict,
+    TYPE_CHECKING,
+)
 from urllib.request import urlopen
 
 import requests
@@ -13,8 +18,11 @@ from planemo.io import error
 from planemo.shed import find_urls_for_xml
 from planemo.xml import validation
 
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
 
-def build_lint_args(ctx, **kwds):
+
+def build_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
     """Handle common report, error, and skip linting arguments."""
     report_level = kwds.get("report_level", "all")
     fail_level = kwds.get("fail_level", "warn")
@@ -39,7 +47,7 @@ def build_lint_args(ctx, **kwds):
     if len(invalid_skip_types):
         error(f"Unknown linter type(s) {invalid_skip_types} in list of linters to be skipped. Known linters {linters}")
 
-    lint_args = dict(
+    lint_args: Dict[str, Any] = dict(
         level=report_level,
         fail_level=fail_level,
         skip_types=skip_types,

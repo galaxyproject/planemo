@@ -3,7 +3,10 @@
 import click
 
 from planemo import options
-from planemo.cli import command_function
+from planemo.cli import (
+    command_function,
+    PlanemoCliContext,
+)
 from planemo.workflow_lint import (
     build_wf_lint_args,
     lint_workflow_artifacts_on_paths,
@@ -23,7 +26,7 @@ from planemo.workflow_lint import (
     help="Check workflows directory with the standards of iwc",
 )
 @command_function
-def cli(ctx, paths, **kwds):
+def cli(ctx: PlanemoCliContext, paths, **kwds):
     """Check workflows for syntax errors and best practices."""
     # Unlike tools, lets just make this recursive by default.
     lint_args = build_wf_lint_args(ctx, **kwds)
