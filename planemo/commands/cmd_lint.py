@@ -1,6 +1,7 @@
 """Module describing the planemo ``lint`` command."""
 
 import click
+from galaxy.tool_util.lint import Linter
 
 from planemo import options
 from planemo.cli import command_function
@@ -9,8 +10,6 @@ from planemo.tool_lint import (
     build_tool_lint_args,
     lint_tools_on_path,
 )
-
-from galaxy.tool_util.lint import Linter
 
 
 @click.command("lint")
