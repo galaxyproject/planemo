@@ -1,4 +1,4 @@
-__version__ = "0.75.24.dev0"
+__version__ = "0.75.24"
 
 
 PROJECT_NAME = "planemo"

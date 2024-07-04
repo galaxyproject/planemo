@@ -6,6 +6,25 @@ History
 .. to_doc
 
 ---------------------
+0.75.24 (2024-07-04)
+---------------------
+* Workflow best practices: check that creator identifiers are URIs (thanks to
+  `@elichad`_). `Pull Request 1458`_
+* Update pinning for Galaxy 24.1 (thanks to `@bernt-matthias`_). `Pull Request
+  1460`_
+* Add option to create a minimal markdown test report (thanks to
+  `@bernt-matthias`_). `Pull Request 1462`_
+* Increase worflow linting (thanks to `@lldelisle`_). `Pull Request 1463`_
+* Run CI tests against newer Galaxy versions (thanks to `@bernt-matthias`_).
+  `Pull Request 1466`_
+* Add the option to provide a history id to run the workflow in (thanks to
+  `@Delphine-L`_). `Pull Request 1461`_
+* Make sure that skip list does not get `['']` (if no skip is given) (thanks
+  to `@bernt-matthias`_). `Pull Request 1453`_
+* Tool linting add `--skip_file` and remove lxml schema validation (thanks to
+  `@bernt-matthias`_). `Pull Request 1420`_
+
+---------------------
 0.75.23 (2024-05-08)
 ---------------------
 * Implement run/test/workflow_edit/autoupdate from non default tool sheds
@@ -2120,6 +2139,14 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1458: https://github.com/galaxyproject/planemo/pull/1458
+.. _Pull Request 1460: https://github.com/galaxyproject/planemo/pull/1460
+.. _Pull Request 1462: https://github.com/galaxyproject/planemo/pull/1462
+.. _Pull Request 1463: https://github.com/galaxyproject/planemo/pull/1463
+.. _Pull Request 1466: https://github.com/galaxyproject/planemo/pull/1466
+.. _Pull Request 1461: https://github.com/galaxyproject/planemo/pull/1461
+.. _Pull Request 1453: https://github.com/galaxyproject/planemo/pull/1453
+.. _Pull Request 1420: https://github.com/galaxyproject/planemo/pull/1420
 .. _Pull Request 1445: https://github.com/galaxyproject/planemo/pull/1445
 .. _Pull Request 1450: https://github.com/galaxyproject/planemo/pull/1450
 .. _Pull Request 1441: https://github.com/galaxyproject/planemo/pull/1441
@@ -3061,3 +3088,5 @@ History
 .. _@mstabrin: https://github.com/mstabrin
 .. _@paulzierep: https://github.com/paulzierep
 .. _@Kulivox: https://github.com/Kulivox
+.. _@Delphine-L: https://github.com/Delphine-L
+.. _@elichad: https://github.com/elichad

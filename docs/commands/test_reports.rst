@@ -26,6 +26,9 @@ from the structured test output (tool_test_output.json).
                                       in CI)
       --test_output_markdown PATH     Output test report (Markdown style - for
                                       humans & computers)
+      --test_output_markdown_minimal PATH
+                                      Output test report (Minimal markdown style -
+                                      jost the table)
       --test_output_xunit PATH        Output test report (xunit style - for CI
                                       systems
       --test_output_junit PATH        Output test report (jUnit style - for CI
