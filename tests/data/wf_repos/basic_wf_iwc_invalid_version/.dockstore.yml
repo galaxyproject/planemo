@@ -1,0 +1,11 @@
+version: 1.2
+workflows:
+- name: main
+  subclass: Galaxy
+  publish: true
+  primaryDescriptorPath: /Super-simple-workflow.ga
+  testParameterFiles:
+  - /Super-simple-workflow-tests.yml
+  authors:
+  - name: Lucille Delisle
+    orcid: 0000-0002-1964-4960
