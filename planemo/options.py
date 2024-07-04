@@ -1532,6 +1532,13 @@ def test_report_options():
             default=None,
         ),
         planemo_option(
+            "--test_output_markdown_minimal",
+            type=click.Path(file_okay=True, resolve_path=True),
+            use_global_config=True,
+            help=("Output test report (Minimal markdown style - jost the table)"),
+            default=None,
+        ),
+        planemo_option(
             "--test_output_xunit",
             type=click.Path(file_okay=True, resolve_path=True),
             use_global_config=True,
