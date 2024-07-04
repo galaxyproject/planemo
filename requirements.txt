@@ -3,8 +3,8 @@ bioblend>=1.0.0
 click!=8.0.2
 cwltool>=1.0.20191225192155
 ephemeris>=0.10.3
-galaxy-tool-util>=23.1,!=24.0.0,!=24.0.1,<24.1
-galaxy-util[template]>=23.1,<24.1
+galaxy-tool-util[edam]>=23.1,!=24.0.0,!=24.0.1,<24.2
+galaxy-util[template]>=23.1,<24.2
 glob2
 gxformat2>=0.14.0
 h5py
