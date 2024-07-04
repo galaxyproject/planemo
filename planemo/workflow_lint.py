@@ -211,11 +211,13 @@ def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None: 
         lint_context.warn("Workflow is not annotated.")
 
     # creator
-    if not len(workflow_dict.get("creator", [])) > 0:
+    creators = workflow_dict.get("creator", [])
+    if not len(creators) > 0:
         lint_context.warn("Workflow does not specify a creator.")
     else:
-        creators = workflow_dict.get("creator")
         if not isinstance(creators, list):
+            # Don't know if this can happen, if we implement schema validation on the Galaxy side
+            # this won't be needed.
             creators = [creators]
         for creator in creators:
             if creator.get("class", "").lower() == "person" and "identifier" in creator:
