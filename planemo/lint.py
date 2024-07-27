@@ -75,46 +75,6 @@ def handle_lint_complete(lint_ctx, lint_args, failed=False):
     return 1 if failed else 0
 
 
-def lint_dois(tool_xml, lint_ctx):
-    """Find referenced DOIs and check they have valid with https://doi.org."""
-    dois = find_dois_for_xml(tool_xml)
-    for publication in dois:
-        is_doi(publication, lint_ctx)
-
-
-def find_dois_for_xml(tool_xml):
-    dois = []
-    for element in tool_xml.getroot().findall("citations"):
-        for citation in list(element):
-            if citation.tag == "citation" and citation.attrib.get("type", "") == "doi":
-                dois.append(citation.text)
-    return dois
-
-
-def is_doi(publication_id, lint_ctx):
-    """Check if dx.doi knows about the ``publication_id``."""
-    base_url = "https://doi.org"
-    if publication_id is None:
-        lint_ctx.error("Empty DOI citation")
-        return
-    publication_id = publication_id.strip()
-    doiless_publication_id = publication_id.split("doi:", 1)[-1]
-    if not doiless_publication_id:
-        lint_ctx.error("Empty DOI citation")
-        return
-    url = f"{base_url}/{doiless_publication_id}"
-    r = requests.get(url)
-    if r.status_code == 200:
-        if publication_id != doiless_publication_id:
-            lint_ctx.error("%s is valid, but Galaxy expects DOI without 'doi:' prefix" % publication_id)
-        else:
-            lint_ctx.info("%s is a valid DOI" % publication_id)
-    elif r.status_code == 404:
-        lint_ctx.error("%s is not a valid DOI" % publication_id)
-    else:
-        lint_ctx.warn("dx.doi returned unexpected status code %d" % r.status_code)
-
-
 def lint_xsd(lint_ctx, schema_path, path):
     """Lint XML at specified path with supplied schema."""
     name = lint_ctx.object_name or os.path.basename(path)
@@ -199,11 +159,9 @@ def lint_urls(root, lint_ctx):
     for url in docs:
         validate_url(url, lint_ctx, BROWSER_USER_AGENT)
 
-
 __all__ = (
     "build_lint_args",
     "handle_lint_complete",
-    "lint_dois",
     "lint_urls",
     "lint_xsd",
 )
