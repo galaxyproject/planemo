@@ -21,6 +21,7 @@ from planemo.lint import (
 )
 from planemo.shed import (
     CURRENT_CATEGORIES,
+    find_urls_for_xml,
     REPO_TYPE_SUITE,
     REPO_TYPE_TOOL_DEP,
     REPO_TYPE_UNRESTRICTED,
