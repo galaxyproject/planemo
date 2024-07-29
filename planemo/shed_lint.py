@@ -3,7 +3,9 @@
 import os
 import xml.etree.ElementTree as ET
 from typing import TYPE_CHECKING
+from urllib.request import urlopen
 
+import requests
 import yaml
 from galaxy.tool_util.lint import lint_tool_source_with
 from galaxy.tool_util.linters.help import rst_invalid
@@ -17,6 +19,7 @@ from planemo.lint import (
 )
 from planemo.shed import (
     CURRENT_CATEGORIES,
+    find_urls_for_xml,
     REPO_TYPE_SUITE,
     REPO_TYPE_TOOL_DEP,
     REPO_TYPE_UNRESTRICTED,
@@ -188,8 +191,43 @@ def lint_readme(realized_repository, lint_ctx):
 
 
 def lint_tool_dependencies_urls(realized_repository, lint_ctx):
-    
-    
+
+    def lint_urls(root, lint_ctx):
+        """Find referenced URLs and verify they are valid.
+
+        note this function was used previously for tools (URLs in help) and tool dependency files
+        the former has been rewritten and therefore the function has been moved here
+        """
+        urls, _ = find_urls_for_xml(root)
+        for url in urls:
+            is_valid = True
+            if url.startswith("http://") or url.startswith("https://"):
+                headers = None
+                r = None
+                try:
+                    r = requests.get(url, headers=headers, stream=True)
+                    r.raise_for_status()
+                    next(r.iter_content(1000))
+                except Exception as e:
+                    if r is not None and r.status_code == 429:
+                        # too many requests
+                        pass
+                    if r is not None and r.status_code in [403, 503] and "cloudflare" in r.text:
+                        # CloudFlare protection block
+                        pass
+                    else:
+                        is_valid = False
+                        lint_ctx.error(f"Error '{e}' accessing {url}")
+            else:
+                try:
+                    with urlopen(url) as handle:
+                        handle.read(100)
+                except Exception as e:
+                    is_valid = False
+                    lint_ctx.error(f"Error '{e}' accessing {url}")
+            if is_valid:
+                lint_ctx.info("URL OK %s" % url)
+
     path = realized_repository.real_path
     tool_dependencies = os.path.join(path, "tool_dependencies.xml")
     if not os.path.exists(tool_dependencies):

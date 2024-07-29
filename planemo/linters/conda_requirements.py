@@ -8,13 +8,14 @@ from typing import (
 from galaxy.tool_util.deps.conda_util import requirement_to_conda_targets
 from galaxy.tool_util.lint import Linter
 
-from .util import xml_node_from_toolsource
 from planemo.conda import (
     BEST_PRACTICE_CHANNELS,
     best_practice_search,
 )
+from .util import xml_node_from_toolsource
 
 if TYPE_CHECKING:
+    from galaxy.tool_util.deps.conda_util import CondaTarget
     from galaxy.tool_util.lint import LintContext
     from galaxy.tool_util.parser.interface import ToolSource
 
@@ -32,7 +33,7 @@ class CondaRequirementValid(Linter):
             if best_hit and exact:
                 message = f"Requirement [{conda_target_str}] matches target in best practice Conda channel [{best_hit.get('channel')}]."
                 requirements_node = xml_node_from_toolsource(tool_source, "requirements")
-                lint_ctx.info(message, linter=cls.name(), node=requirements_nodes)
+                lint_ctx.info(message, linter=cls.name(), node=requirements_node)
 
 
 class CondaRequirementInexact(Linter):
@@ -63,7 +64,7 @@ class CondaRequirementMissing(Linter):
                 lint_ctx.warn(message, linter=cls.name(), node=requirements_node)
 
 
-def _requirements_conda_targets(tool_source: "ToolSource") -> Generator[CondaTarget]:
+def _requirements_conda_targets(tool_source: "ToolSource") -> Generator["CondaTarget"]:
     requirements, *_ = tool_source.parse_requirements_and_containers()
     for requirement in requirements:
         conda_target = requirement_to_conda_targets(requirement)

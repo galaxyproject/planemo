@@ -2,10 +2,10 @@
 """
 
 from typing import TYPE_CHECKING
+from urllib.request import urlopen
 
 import requests
 from galaxy.tool_util.lint import Linter
-from urllib.request import urlopen
 
 from planemo.shed import _find_urls_in_text
 

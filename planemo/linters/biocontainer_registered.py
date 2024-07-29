@@ -1,6 +1,7 @@
 """Ensure best-practice biocontainer registered for this tool."""
 
 from typing import (
+    List,
     Optional,
     TYPE_CHECKING,
 )
@@ -42,10 +43,12 @@ class BiocontainerMissing(Linter):
         name = mulled_container_name("biocontainers", targets)
         if not name:
             requirements_node = xml_node_from_toolsource(tool_source, "requirements")
-            lint_ctx.warn(MESSAGE_WARN_NO_CONTAINER, linter=cls.name(), node=requirements)
+            lint_ctx.warn(MESSAGE_WARN_NO_CONTAINER, linter=cls.name(), node=requirements_node)
 
 
-def mulled_container_name(namespace: str, targets: List[CondaTarget]) -> Optional[str]:
+def mulled_container_name(namespace: str, targets: List["CondaTarget"]) -> Optional[str]:
     name = targets_to_mulled_name(targets=targets, hash_func="v2", namespace=namespace)
     if name:
         return f"quay.io/{namespace}/{name}"
+    else:
+        return None
