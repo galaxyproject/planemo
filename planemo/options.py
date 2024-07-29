@@ -1425,7 +1425,7 @@ def lint_planemo_defined_tool_linters_options():
     return _compose(
         lint_urls(),
         lint_doi(),
-        lint_conda_requirements,
+        lint_conda_requirements(),
         lint_biocontainers_option(),
     )
 

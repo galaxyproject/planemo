@@ -1,5 +1,6 @@
 """ Tool linting module that lints Galaxy tools for their URLs
 """
+
 from typing import TYPE_CHECKING
 
 import requests
@@ -11,11 +12,12 @@ from planemo.shed import _find_urls_in_text
 if TYPE_CHECKING:
     from galaxy.tool_util.lint import LintContext
     from galaxy.tool_util.parser.interface import ToolSource
+    from galaxy.util import ElementTree
 
 BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36"
 
 
-def find_urls_in_help(root):
+def find_urls_in_help(root: "ElementTree"):
     for help in root.findall("help"):
         for url in _find_urls_in_text(help.text):
             yield url[0], help
@@ -25,6 +27,8 @@ class URLInaccessibleHttp(Linter):
     @classmethod
     def lint(cls, tool_source: "ToolSource", lint_ctx: "LintContext"):
         tool_xml = getattr(tool_source, "xml_tree", None)
+        if not tool_xml:
+            return
         for url, help in find_urls_in_help(tool_xml):
             if url.startswith("http://") or url.startswith("https://"):
                 headers = {"User-Agent": BROWSER_USER_AGENT, "Accept": "*/*"}
@@ -48,6 +52,8 @@ class URLInaccessible(Linter):
     @classmethod
     def lint(cls, tool_source: "ToolSource", lint_ctx: "LintContext"):
         tool_xml = getattr(tool_source, "xml_tree", None)
+        if not tool_xml:
+            return
         for url, help in find_urls_in_help(tool_xml):
             if not url.startswith("http://") and not url.startswith("https://"):
                 try:
@@ -61,6 +67,8 @@ class URLValid(Linter):
     @classmethod
     def lint(cls, tool_source: "ToolSource", lint_ctx: "LintContext"):
         tool_xml = getattr(tool_source, "xml_tree", None)
+        if not tool_xml:
+            return
         for url, help in find_urls_in_help(tool_xml):
             is_valid = True
             if url.startswith("http://") or url.startswith("https://"):

@@ -1,12 +1,18 @@
 """Ensure best-practice biocontainer registered for this tool."""
 
-from typing import TYPE_CHECKING
+from typing import (
+    Optional,
+    TYPE_CHECKING,
+)
 
 from galaxy.tool_util.deps.container_resolvers.mulled import targets_to_mulled_name
 from galaxy.tool_util.deps.mulled.mulled_build_tool import requirements_to_mulled_targets
 from galaxy.tool_util.lint import Linter
 
+from .util import xml_node_from_toolsource
+
 if TYPE_CHECKING:
+    from galaxy.tool_util.deps.conda_util import CondaTarget
     from galaxy.tool_util.lint import LintContext
     from galaxy.tool_util.parser.interface import ToolSource
 
@@ -24,7 +30,8 @@ class BiocontainerValid(Linter):
         targets = requirements_to_mulled_targets(requirements)
         name = mulled_container_name("biocontainers", targets)
         if name:
-            lint_ctx.info(MESSAGE_INFO_FOUND_BIOCONTAINER % name, linter=cls.name(), node=requirements)
+            requirements_node = xml_node_from_toolsource(tool_source, "requirements")
+            lint_ctx.info(MESSAGE_INFO_FOUND_BIOCONTAINER % name, linter=cls.name(), node=requirements_node)
 
 
 class BiocontainerMissing(Linter):
@@ -34,10 +41,11 @@ class BiocontainerMissing(Linter):
         targets = requirements_to_mulled_targets(requirements)
         name = mulled_container_name("biocontainers", targets)
         if not name:
+            requirements_node = xml_node_from_toolsource(tool_source, "requirements")
             lint_ctx.warn(MESSAGE_WARN_NO_CONTAINER, linter=cls.name(), node=requirements)
 
 
-def mulled_container_name(namespace, targets):
+def mulled_container_name(namespace: str, targets: List[CondaTarget]) -> Optional[str]:
     name = targets_to_mulled_name(targets=targets, hash_func="v2", namespace=namespace)
     if name:
         return f"quay.io/{namespace}/{name}"

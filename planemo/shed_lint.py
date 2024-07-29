@@ -12,7 +12,6 @@ from galaxy.util import unicodify
 from planemo.io import info
 from planemo.lint import (
     handle_lint_complete,
-    lint_urls,
     lint_xsd,
     setup_lint,
 )
@@ -189,6 +188,8 @@ def lint_readme(realized_repository, lint_ctx):
 
 
 def lint_tool_dependencies_urls(realized_repository, lint_ctx):
+    
+    
     path = realized_repository.real_path
     tool_dependencies = os.path.join(path, "tool_dependencies.xml")
     if not os.path.exists(tool_dependencies):

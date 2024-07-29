@@ -9,12 +9,15 @@ from galaxy.tool_util.lint import Linter
 if TYPE_CHECKING:
     from galaxy.tool_util.lint import LintContext
     from galaxy.tool_util.parser.interface import ToolSource
+    from galaxy.util import ElementTree
 
 
 class DoiEmptyNone(Linter):
     @classmethod
     def lint(cls, tool_source: "ToolSource", lint_ctx: "LintContext"):
         tool_xml = getattr(tool_source, "xml_tree", None)
+        if not tool_xml:
+            return
         for citation, *_ in _doi_citations(tool_xml):
             if citation.text is None:
                 lint_ctx.error("Empty DOI citation", linter=cls.name(), node=citation)
@@ -24,6 +27,8 @@ class DoiEmpty(Linter):
     @classmethod
     def lint(cls, tool_source: "ToolSource", lint_ctx: "LintContext"):
         tool_xml = getattr(tool_source, "xml_tree", None)
+        if not tool_xml:
+            return
         for citation, publication_id, doiless_publication_id in _doi_citations(tool_xml):
             if citation.text is None:
                 continue
@@ -35,6 +40,8 @@ class DoiValid(Linter):
     @classmethod
     def lint(cls, tool_source: "ToolSource", lint_ctx: "LintContext"):
         tool_xml = getattr(tool_source, "xml_tree", None)
+        if not tool_xml:
+            return
         for citation, publication_id, doiless_publication_id in _doi_citations(tool_xml):
             if citation.text is None or not doiless_publication_id:
                 continue
@@ -48,6 +55,8 @@ class DoiValidWithDoi(Linter):
     @classmethod
     def lint(cls, tool_source: "ToolSource", lint_ctx: "LintContext"):
         tool_xml = getattr(tool_source, "xml_tree", None)
+        if not tool_xml:
+            return
         for citation, publication_id, doiless_publication_id in _doi_citations(tool_xml):
             if citation.text is None or not doiless_publication_id:
                 continue
@@ -65,6 +74,8 @@ class DoiInvalid(Linter):
     @classmethod
     def lint(cls, tool_source: "ToolSource", lint_ctx: "LintContext"):
         tool_xml = getattr(tool_source, "xml_tree", None)
+        if not tool_xml:
+            return
         for citation, publication_id, doiless_publication_id in _doi_citations(tool_xml):
             if citation.text is None or not doiless_publication_id:
                 continue
@@ -78,6 +89,8 @@ class DoiUnexpectedResponse(Linter):
     @classmethod
     def lint(cls, tool_source: "ToolSource", lint_ctx: "LintContext"):
         tool_xml = getattr(tool_source, "xml_tree", None)
+        if not tool_xml:
+            return
         for citation, publication_id, doiless_publication_id in _doi_citations(tool_xml):
             if citation.text is None or not doiless_publication_id:
                 continue
@@ -89,7 +102,7 @@ class DoiUnexpectedResponse(Linter):
                 )
 
 
-def _doi_citations(tool_xml):
+def _doi_citations(tool_xml: "ElementTree"):
     for element in tool_xml.getroot().findall("citations"):
         for citation in list(element):
             if citation.tag == "citation" and citation.attrib.get("type", "") == "doi":
