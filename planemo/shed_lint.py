@@ -16,7 +16,6 @@ from galaxy.util import unicodify
 from planemo.io import info
 from planemo.lint import (
     handle_lint_complete,
-    lint_urls,
     lint_xsd,
     setup_lint,
 )
