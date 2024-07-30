@@ -64,7 +64,7 @@ class CondaRequirementMissing(Linter):
                 lint_ctx.warn(message, linter=cls.name(), node=requirements_node)
 
 
-def _requirements_conda_targets(tool_source: "ToolSource") -> Generator["CondaTarget"]:
+def _requirements_conda_targets(tool_source: "ToolSource") -> Generator["CondaTarget", None, None]:
     requirements, *_ = tool_source.parse_requirements_and_containers()
     for requirement in requirements:
         conda_target = requirement_to_conda_targets(requirement)
