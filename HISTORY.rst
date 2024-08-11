@@ -6,6 +6,14 @@ History
 .. to_doc
 
 ---------------------
+0.75.25 (2024-08-11)
+---------------------
+* Add a new single cell category (thanks to `@pavanvidem`_). `Pull Request
+  1457`_
+* Add extended-assertions requirements (thanks to `@bernt-matthias`_). `Pull
+  Request 1471`_
+
+---------------------
 0.75.24 (2024-07-04)
 ---------------------
 * Workflow best practices: check that creator identifiers are URIs (thanks to
@@ -2139,6 +2147,8 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1457: https://github.com/galaxyproject/planemo/pull/1457
+.. _Pull Request 1471: https://github.com/galaxyproject/planemo/pull/1471
 .. _Pull Request 1458: https://github.com/galaxyproject/planemo/pull/1458
 .. _Pull Request 1460: https://github.com/galaxyproject/planemo/pull/1460
 .. _Pull Request 1462: https://github.com/galaxyproject/planemo/pull/1462
@@ -3090,3 +3100,4 @@ History
 .. _@Kulivox: https://github.com/Kulivox
 .. _@Delphine-L: https://github.com/Delphine-L
 .. _@elichad: https://github.com/elichad
+.. _@pavanvidem: https://github.com/pavanvidem
