@@ -209,6 +209,9 @@ def read_log(ctx, log_path, e: threading.Event):
             e.wait(1)
     finally:
         if log_fh:
+            log_lines = log_fh.read()
+            if log_lines:
+                ctx.log(log_lines)
             log_fh.close()
 
 
