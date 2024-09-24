@@ -128,7 +128,7 @@ class CliTestCase(TestCase):
         with self._isolate() as f:
             repo = os.path.join(TEST_DATA_DIR, relative_path)
             self._copy_directory(repo, f)
-            yield f
+            yield os.path.realpath(f)
 
     def _copy_repo(self, name, dest):
         repo = os.path.join(TEST_REPOS_DIR, name)
