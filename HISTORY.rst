@@ -6,6 +6,15 @@ History
 .. to_doc
 
 ---------------------
+0.75.26 (2024-09-24)
+---------------------
+* Fix up autopygen type annotation (thanks to `@mvdbeek`_). `Pull Request
+  1474`_
+* Fix autoupdate for workflows with overlapping tool updates (thanks to
+  `@bernt-matthias`_). `Pull Request 1452`_
+* Display last lines of logs (thanks to `@mvdbeek`_). `Pull Request 1473`_
+
+---------------------
 0.75.25 (2024-08-11)
 ---------------------
 * Add a new single cell category (thanks to `@pavanvidem`_). `Pull Request
@@ -2147,6 +2156,9 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1474: https://github.com/galaxyproject/planemo/pull/1474
+.. _Pull Request 1452: https://github.com/galaxyproject/planemo/pull/1452
+.. _Pull Request 1473: https://github.com/galaxyproject/planemo/pull/1473
 .. _Pull Request 1457: https://github.com/galaxyproject/planemo/pull/1457
 .. _Pull Request 1471: https://github.com/galaxyproject/planemo/pull/1471
 .. _Pull Request 1458: https://github.com/galaxyproject/planemo/pull/1458
