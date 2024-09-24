@@ -11,7 +11,7 @@ from typing import (
 )
 
 
-class CustomAST(ast.AST):
+class CustomAST(ast.stmt):
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         self.parent = None
@@ -22,13 +22,13 @@ class CustomVisitor(ast.NodeVisitor, abc.ABC):
     def report_findings(self) -> Tuple:
         pass
 
-    def visit_and_report(self, source: ast.AST):
+    def visit_and_report(self, source: ast.Module):
         self.visit(source)
         return self.report_findings()
 
 
 class Discovery(CustomVisitor, abc.ABC):
-    def __init__(self, actions: List[ast.AST]):
+    def __init__(self, actions: List[ast.stmt]):
         self.actions = actions
 
 
