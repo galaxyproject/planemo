@@ -15,8 +15,8 @@ including tools, workflows, and training materials.
    :target: https://pypi.python.org/pypi/planemo/
    :alt: Planemo on the Python Package Index (PyPI)
 
-.. image:: https://github.com/galaxyproject/planemo/workflows/Python%20CI/badge.svg
-   :target: https://github.com/galaxyproject/planemo/actions?query=workflow%3A%22Python+CI%22
+.. image:: https://github.com/galaxyproject/planemo/actions/workflows/ci.yaml/badge.svg
+   :target: https://github.com/galaxyproject/planemo/actions/workflows/ci.yaml?query=branch%3Amaster+event%3Apush
 
 * Free software: MIT License
 * Documentation: https://planemo.readthedocs.io.
