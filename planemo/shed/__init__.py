@@ -655,7 +655,6 @@ def update_repository_for(ctx, tsi, id, repo_config):
     name = repo_config["name"]
     description = repo_config.get("description")
     long_description = repo_config.get("long_description")
-    repo_type = shed_repo_type(repo_config, name)
     remote_repository_url = repo_config.get("remote_repository_url")
     homepage_url = repo_config.get("homepage_url")
     categories = repo_config.get("categories", [])
@@ -663,20 +662,16 @@ def update_repository_for(ctx, tsi, id, repo_config):
 
     _ensure_shed_description(description)
 
-    kwds = dict(
+    repo = tsi.repositories.update_repository_metadata(
+        id,
         name=name,
         synopsis=description,
-        type=repo_type,
+        description=long_description,
+        remote_repository_url=remote_repository_url,
+        homepage_url=homepage_url,
+        category_ids=category_ids,
     )
-    if long_description is not None:
-        kwds["description"] = long_description
-    if remote_repository_url is not None:
-        kwds["remote_repository_url"] = remote_repository_url
-    if homepage_url is not None:
-        kwds["homepage_url"] = homepage_url
-    if category_ids is not None:
-        kwds["category_ids[]"] = category_ids
-    return bioblend.galaxy.client.Client._put(tsi.repositories, id=id, payload=kwds)
+    return repo
 
 
 def create_repository_for(ctx, tsi, name, repo_config):
