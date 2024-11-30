@@ -37,10 +37,12 @@ def build_tool_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
     lint_args = build_lint_args(ctx, **kwds)
     extra_modules = _lint_extra_modules(**kwds)
     lint_args["extra_modules"] = extra_modules
+    print(f"{extra_modules=}")
     return lint_args
 
 
 def lint_tools_on_path(ctx, paths, lint_args, **kwds):
+    print(f"{lint_args}")
     assert_tools = kwds.get("assert_tools", True)
     recursive = kwds.get("recursive", False)
     exit_codes = []
