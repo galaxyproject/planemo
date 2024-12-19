@@ -148,6 +148,8 @@ def lint_shed_metadata(realized_repository, lint_ctx):
         if key not in realized_repository.config:
             found_all = False
             lint_ctx.warn("Missing shed metadata field [%s] for repository" % key)
+        if realized_repository.config[key] is None:
+            lint_ctx.warn("shed metadata field [%s] was given, but is empty" % key)
     if found_all:
         lint_ctx.info("Found all shed metadata fields required for automated repository " "creation and/or updates.")
 
