@@ -2061,7 +2061,7 @@ def mulled_conda_option():
         default=None,
         help=(
             "Install a specific version of Conda before running the command, by "
-            "default the version that comes with the continuumio miniforge image "
+            "default the version that comes with the miniforge image "
             "will be used under Linux and under Mac OS X Conda will be upgraded to "
             "to work around a bug in 4.2."
         ),
