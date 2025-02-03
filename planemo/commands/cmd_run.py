@@ -27,6 +27,7 @@ from planemo.test.results import StructuredData
 @options.run_history_tags_option()
 @options.run_output_directory_option()
 @options.run_output_json_option()
+@options.run_output_metadata_option()
 @options.run_download_outputs_option()
 @options.engine_options()
 @options.test_options()
