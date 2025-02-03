@@ -30,13 +30,7 @@ from planemo.cli import (
         "to allow automated creation and/or updates."
     ),
 )
-@click.option(
-    "--urls",
-    is_flag=True,
-    default=False,
-    help="Check validity of URLs in XML files",
-)
-@options.lint_biocontainers_option()
+@options.lint_planemo_defined_tool_linters_options()
 # @click.option(
 #     "--verify",
 #     is_flag=True,
