@@ -26,6 +26,7 @@ from planemo.runnable import (
     Rerunnable,
     RunnableType,
 )
+from planemo.database.postgres_singularity import SingularityPostgresDatabaseSource
 from .interface import BaseEngine
 
 if TYPE_CHECKING:
@@ -171,6 +172,13 @@ class LocalManagedGalaxyEngine(GalaxyEngine):
         return self._kwds.copy()
 
 
+class LocalManagedGalaxyEngineWithSingularityDB(LocalManagedGalaxyEngine):
+    def run(self, runnables, job_paths, output_collectors: Optional[List[Callable]] = None):
+        with SingularityPostgresDatabaseSource(**self._kwds.copy()):
+            run_responses = super().run(runnables, job_paths, output_collectors)
+        return run_responses
+
+
 class DockerizedManagedGalaxyEngine(LocalManagedGalaxyEngine):
     """An :class:`Engine` implementation backed by Galaxy running in Docker.
 
@@ -225,4 +233,5 @@ __all__ = (
     "DockerizedManagedGalaxyEngine",
     "ExternalGalaxyEngine",
     "LocalManagedGalaxyEngine",
+    "LocalManagedGalaxyEngineWithSingularityDB",
 )
