@@ -23,17 +23,15 @@ DEFAULT_CONTAINER_NAME = "planemopostgres"
 DEFAULT_POSTGRES_DATABASE_NAME = "galaxy"
 DEFAULT_POSTGRES_USER = "galaxy"
 DEFAULT_POSTGRES_PASSWORD = "mysecretpassword"
-DEFAULT_POSTGRES_PORT_EXPOSE = 15432
+DEFAULT_POSTGRES_PORT_EXPOSE = 5432
 DEFAULT_DOCKERIMAGE = "postgres:14.2-alpine3.15"
+DEFAULT_SIF_NAME = "postgres_14_2-alpine3_15.sif"
 
-
-def singularity_fetch_image():
-    fetch_command = singularity_util.pull_singularity_command(DEFAULT_DOCKERIMAGE, "./SINGULARITY_CACHE")
-    execute(fetch_command)
+DEFAULT_CONNECTION_STRING = f"postgresql://{DEFAULT_POSTGRES_USER}:{DEFAULT_POSTGRES_PASSWORD}@localhost:{DEFAULT_POSTGRES_PORT_EXPOSE}/{DEFAULT_POSTGRES_DATABASE_NAME}"   
 
 
 def start_postgres_singularity(
-    singularity_path, container_instance_name, database_location, databasename=DEFAULT_POSTGRES_DATABASE_NAME, user=DEFAULT_POSTGRES_USER, password=DEFAULT_POSTGRES_PASSWORD, port=DEFAULT_POSTGRES_PORT_EXPOSE, **kwds
+    singularity_path, container_instance_name, database_location, databasename=DEFAULT_POSTGRES_DATABASE_NAME, user=DEFAULT_POSTGRES_USER, password=DEFAULT_POSTGRES_PASSWORD, **kwds
 ):
     info(f"Postgres database stored at: {database_location}")
     pgdata_path = os.path.join(database_location, 'pgdata')
@@ -44,8 +42,11 @@ def start_postgres_singularity(
     if not os.path.exists(pgrun_path):
         os.makedirs(pgrun_path)
 
-    if not os.path.exists(os.path.join(pgdata_path, 'PG_VERSION')):
+    version_file = os.path.join(pgdata_path, 'PG_VERSION')
+    if not os.path.exists(version_file):
         # Run container for a short while to initialize the database
+        # The database will not be initilizaed during a
+        # 'singularity instance start' command
         init_database_command = [
             singularity_path,
             'run',
@@ -56,18 +57,21 @@ def start_postgres_singularity(
             '--env', f'POSTGRES_DB={databasename}',
             '--env', f'POSTGRES_USER={user}',
             '--env', f'POSTGRES_PASSWORD={password}',
-            '--env', f'POSTGRES_PORT_EXPOSE={port}',
             '--env', 'POSTGRES_INITDB_ARGS=\'--encoding=UTF-8\'',
-            f'docker://{DEFAULT_DOCKERIMAGE}',
+            f"docker://{DEFAULT_DOCKERIMAGE}",
         ]
-
         info(f"Initilizing postgres database in folder: {pgdata_path}")
         process = subprocess.Popen(init_database_command,
-                                   shell=False,
-                                   stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
         # Give the container time to initialize the database
+        for _ in range(10):
+            if os.path.exists(version_file):
+                break
+            time.sleep(5)
+            info("Waiting for the postgres database to initialize.")
+        else:
+            raise Exception("Failed to initialize the postgres database.")
         time.sleep(10)
         process.terminate()
 
@@ -82,8 +86,8 @@ def start_postgres_singularity(
         '-B', f'{pgrun_path}:/var/run/postgresql',
         '-e',
         '-C',
-        f'docker://{DEFAULT_DOCKERIMAGE}',
-        f'{container_instance_name}',
+        f"docker://{DEFAULT_DOCKERIMAGE}",
+        container_instance_name,
     ]
     info(f"Starting singularity instance named: {container_instance_name}")
     execute(run_command)
