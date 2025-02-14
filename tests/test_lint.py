@@ -15,7 +15,7 @@ class LintTestCase(CliTestCase):
     def test_ok_tools(self):
         ok_tools = glob.glob("%s/ok_*" % TEST_TOOLS_DIR)
         for ok_tool in ok_tools:
-            lint_cmd = ["lint", ok_tool]
+            lint_cmd = ["lint", "--skip", ok_tool]
             self._check_exit_code(lint_cmd)
 
     @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
@@ -80,7 +80,7 @@ class LintTestCase(CliTestCase):
 
     def test_empty_cdata(self):
         empty_cdata = os.path.join(TEST_TOOLS_DIR, "empty_cdata.xml")
-        lint_cmd = ["lint", "--skip", "HelpEmpty,TestsCaseValidation", empty_cdata]
+        lint_cmd = ["lint", "--skip", "HelpEmpty", empty_cdata]
         self._check_exit_code(lint_cmd, exit_code=0)
 
     def test_lint_doi(self):
