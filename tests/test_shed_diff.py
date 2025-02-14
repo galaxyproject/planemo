@@ -1,4 +1,4 @@
-""" Integration tests for shed_diff command. """
+"""Integration tests for shed_diff command."""
 
 import os
 import sys
