@@ -48,18 +48,18 @@ class LintTestCase(CliTestCase):
         names = ["fail_citation.xml", "fail_order.xml"]
         paths = list(map(lambda p: os.path.join(TEST_TOOLS_DIR, p), names))
         self._check_exit_code(["lint"] + paths, exit_code=1)
-        self._check_exit_code(["lint", "--skip", "citations,xml_order"] + paths, exit_code=0)
+        self._check_exit_code(["lint", "--skip", "CitationsMissing,XMLOrder"] + paths, exit_code=0)
 
     def test_skips(self):
         fail_citation = os.path.join(TEST_TOOLS_DIR, "fail_citation.xml")
         lint_cmd = ["lint", fail_citation]
         self._check_exit_code(lint_cmd, exit_code=1)
 
-        lint_cmd = ["lint", "--skip", "citations", fail_citation]
+        lint_cmd = ["lint", "--skip", "CitationsMissing", fail_citation]
         self._check_exit_code(lint_cmd, exit_code=0)
 
         # Check string splitting and stuff.
-        lint_cmd = ["lint", "--skip", "xml_order, citations", fail_citation]
+        lint_cmd = ["lint", "--skip", "XMLOrder, CitationsMissing", fail_citation]
         self._check_exit_code(lint_cmd, exit_code=0)
 
         # Check skip_file (containing the same skips)
@@ -71,16 +71,16 @@ class LintTestCase(CliTestCase):
         nested_dir = os.path.join(TEST_REPOS_DIR, "multi_repos_nested")
 
         # Fails to find any tools without -r.
-        lint_cmd = ["lint", "--skip", "citations", nested_dir]
+        lint_cmd = ["lint", "--skip", "CitationsMissing", nested_dir]
         self._check_exit_code(lint_cmd, exit_code=2)
 
         # Works with -r.
-        lint_cmd = ["lint", "--skip", "citations", "-r", nested_dir]
+        lint_cmd = ["lint", "--skip", "CitationsMissing", "-r", nested_dir]
         self._check_exit_code(lint_cmd, exit_code=0)
 
     def test_empty_cdata(self):
         empty_cdata = os.path.join(TEST_TOOLS_DIR, "empty_cdata.xml")
-        lint_cmd = ["lint", "--skip", "citations,help", empty_cdata]
+        lint_cmd = ["lint", "--skip", "HelpEmpty,TestsCaseValidation", empty_cdata]
         self._check_exit_code(lint_cmd, exit_code=0)
 
     def test_lint_doi(self):
