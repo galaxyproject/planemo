@@ -1,5 +1,4 @@
-""" Utilities for using virtualenv as library and planemo command.
-"""
+"""Utilities for using virtualenv as library and planemo command."""
 
 import os
 import sys

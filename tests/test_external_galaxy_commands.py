@@ -1,5 +1,4 @@
-"""Tests for planemo commands relating to external Galaxy instances
-"""
+"""Tests for planemo commands relating to external Galaxy instances"""
 
 import os
 
