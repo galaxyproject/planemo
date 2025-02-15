@@ -1,6 +1,4 @@
-""" Test app to emulate planemo-relevant portions of the
-the ToolShed API... for now :).
-"""
+"""Test app to emulate planemo-relevant portions of the ToolShedAPI... for now :)."""
 
 import json
 import os

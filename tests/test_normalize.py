@@ -1,5 +1,4 @@
-""" Integration tests for normalize command.
-"""
+"""Integration tests for normalize command."""
 
 import os
 
