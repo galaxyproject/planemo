@@ -617,7 +617,7 @@ def conda_ensure_channels_option():
         use_global_config=True,
         use_env_var=True,
         help=("Ensure conda is configured with specified comma separated " "list of channels."),
-        default="conda-forge,bioconda,defaults",
+        default="conda-forge,bioconda",
     )
 
 
@@ -637,7 +637,7 @@ def conda_auto_init_option():
         default=True,
         help=(
             "Conda dependency resolution for Galaxy will auto install "
-            "conda itself using miniconda if not availabe on conda_prefix."
+            "conda itself using miniforge if not availabe on conda_prefix."
         ),
     )
 
@@ -2061,7 +2061,7 @@ def mulled_conda_option():
         default=None,
         help=(
             "Install a specific version of Conda before running the command, by "
-            "default the version that comes with the continuumio miniconda3 image "
+            "default the version that comes with the continuumio miniforge image "
             "will be used under Linux and under Mac OS X Conda will be upgraded to "
             "to work around a bug in 4.2."
         ),

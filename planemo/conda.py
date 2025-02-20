@@ -40,7 +40,7 @@ from planemo.tools import yield_tool_sources_on_paths
 if TYPE_CHECKING:
     from planemo.cli import PlanemoCliContext
 
-BEST_PRACTICE_CHANNELS = ["conda-forge", "bioconda", "defaults"]
+BEST_PRACTICE_CHANNELS = ["conda-forge", "bioconda"]
 
 
 def build_conda_context(ctx: "PlanemoCliContext", **kwds) -> CondaContext:
