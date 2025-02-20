@@ -13,10 +13,10 @@
     </outputs>
     <tests>
         <test>
-            <param name="select_opt" value="Hello World!" />
+            <param name="select_opt" value="moo" />
             <output name="output">
                 <assert_contents>
-                    <has_line line="Hello World!" />
+                    <has_line line="moo" />
                 </assert_contents>
             </output>
         </test>
