@@ -125,6 +125,7 @@ CURRENT_CATEGORIES = [
     "Genome editing",
     "Genome-Wide Association Study",
     "Genomic Interval Operations",
+    "Geo Science",
     "GIS",
     "Graphics",
     "Imaging",
