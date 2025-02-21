@@ -6,7 +6,7 @@ from typing import Optional
 
 from galaxy.util.commands import which
 
-DEFAULT_PYTHON_VERSION = os.environ.get("PLANEMO_DEFAULT_PYTHON_VERSION", "3")
+DEFAULT_PYTHON_VERSION = os.environ.get("PLANEMO_DEFAULT_PYTHON_VERSION", "3.12")
 
 
 def create_command(virtualenv_path: str, galaxy_python_version: Optional[str] = None) -> str:
