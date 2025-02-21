@@ -85,16 +85,20 @@ def _create_profile_local(ctx, profile_directory, profile_name, kwds):
             database_type = "postgres"
         elif which("docker"):
             database_type = "postgres_docker"
+        elif which("singularity"):
+            database_type = "postgres_singularity"
         else:
             database_type = "sqlite"
 
-    if database_type != "sqlite":
+    if database_type not in ["sqlite", "postgres_singularity"]:
         database_source = create_database_source(**kwds)
         database_identifier = _profile_to_database_identifier(profile_name)
         database_source.create_database(
             database_identifier,
         )
         database_connection = database_source.sqlalchemy_url(database_identifier)
+    elif database_type == "postgres_singularity":
+        database_connection + database_source.sqlalchemy_url(database_identifier)
     else:
         database_location = os.path.join(profile_directory, "galaxy.sqlite")
         database_connection = DATABASE_LOCATION_TEMPLATE % database_location
