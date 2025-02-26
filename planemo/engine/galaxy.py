@@ -12,6 +12,7 @@ from typing import (
 from galaxy.tool_util.verify import interactor
 
 from planemo import io
+from planemo.database.postgres_singularity import SingularityPostgresDatabaseSource
 from planemo.galaxy.activity import (
     execute,
     execute_rerun,
@@ -26,7 +27,6 @@ from planemo.runnable import (
     Rerunnable,
     RunnableType,
 )
-from planemo.database.postgres_singularity import SingularityPostgresDatabaseSource
 from .interface import BaseEngine
 
 if TYPE_CHECKING:
