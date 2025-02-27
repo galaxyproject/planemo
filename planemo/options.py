@@ -1222,6 +1222,7 @@ def galaxy_config_options():
         profile_database_options(),
         file_path_option(),
         database_connection_option(),
+        postgres_database_storage_location_option(),
         shed_tools_conf_option(),
         shed_tools_directory_option(),
         single_user_mode_option(),
@@ -1587,6 +1588,16 @@ def postgres_datatype_type_option():
     )
 
 
+def postgres_database_storage_location_option():
+    return planemo_option(
+        "--postgres-storage-location",
+        type=str,
+        help="storage path for postgres database, used for local singularity postgres.",
+        default=None,
+        use_global_config=True,
+    )
+
+
 def no_wait_option():
     return planemo_option(
         "--no_wait",
@@ -1605,6 +1616,7 @@ def database_type_option():
             [
                 "postgres",
                 "postgres_docker",
+                "postgres_singularity",
                 "sqlite",
                 "auto",
             ]
@@ -1612,10 +1624,11 @@ def database_type_option():
         use_global_config=True,
         help=(
             "Type of database to use for profile - "
-            "'auto', 'sqlite', 'postgres', and 'postgres_docker' are available options. "
+            "'auto', 'sqlite', 'postgres', 'postgres_docker' , and postgres_singularity are available options. "
             "Use postgres to use an existing postgres server you user can "
             "access without a password via the psql command. Use postgres_docker "
-            "to have Planemo manage a docker container running postgres. "
+            "to have Planemo manage a docker container running postgres. . Use "
+            " postgres_singularity to have Planemo run postgres using singularity/apptainer. "
             "Data with postgres_docker is not yet persisted past when you restart "
             "the docker container launched by Planemo so be careful with this option."
         ),
