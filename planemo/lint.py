@@ -129,7 +129,7 @@ def lint_urls(root, lint_ctx):
     urls, docs = find_urls_for_xml(root)
 
     # This is from Google Chome on macOS, current at time of writing:
-    BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36"
+    BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
 
     def validate_url(url, lint_ctx, user_agent=None):
         is_valid = True
