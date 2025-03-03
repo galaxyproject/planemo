@@ -131,7 +131,7 @@ please careful and do not try this against production Galaxy instances.
                                       packages.
       --conda_auto_init / --no_conda_auto_init
                                       Conda dependency resolution for Galaxy will
-                                      auto install conda itself using miniconda if
+                                      auto install conda itself using miniforge if
                                       not availabe on conda_prefix.
       --simultaneous_uploads / --no_simultaneous_uploads
                                       When uploading files to Galaxy for tool or

@@ -31,7 +31,7 @@ target tool(s).
                                       subdirectories.
       --mulled_conda_version TEXT     Install a specific version of Conda before
                                       running the command, by default the version
-                                      that comes with the continuumio miniconda3
+                                      that comes with the continuumio miniforge
                                       image will be used under Linux and under Mac
                                       OS X Conda will be upgraded to to work around
                                       a bug in 4.2.

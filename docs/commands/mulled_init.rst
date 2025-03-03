@@ -22,7 +22,7 @@ be pre-installed in an environment using this command.
 
       --mulled_conda_version TEXT  Install a specific version of Conda before
                                    running the command, by default the version that
-                                   comes with the continuumio miniconda3 image will
+                                   comes with the continuumio miniforge image will
                                    be used under Linux and under Mac OS X Conda will
                                    be upgraded to to work around a bug in 4.2.
       --mulled_namespace TEXT      Build a mulled image with the specified namespace

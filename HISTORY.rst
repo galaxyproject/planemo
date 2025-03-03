@@ -3,7 +3,16 @@
 History
 -------
 
-.. to_doc
+---------------------
+0.75.27 (2025-03-03)
+---------------------
+* Remove usage of `defaults` conda channel (thanks to `@bernt-matthias`_).
+  `Pull Request 1487`_
+* Add category "Geo Science" (thanks to `@bernt-matthias`_). `Pull Request 1483`_
+* Bump requirements for galaxy packages to 24.2 (thanks to `@jdavcs`_). `Pull
+  Request 1491`_
+* Use python 3.13 for deploymen (thanks to `@bernt-matthias`_). `Pull Request 1488`_
+* Fix repository category update (thanks to `@mvdbeek`_). `Pull Request 1481`_
 
 ---------------------
 0.75.26 (2024-09-24)
@@ -2156,6 +2165,11 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1487: https://github.com/galaxyproject/planemo/pull/1487
+.. _Pull Request 1483: https://github.com/galaxyproject/planemo/pull/1483
+.. _Pull Request 1491: https://github.com/galaxyproject/planemo/pull/1491
+.. _Pull Request 1488: https://github.com/galaxyproject/planemo/pull/1488
+.. _Pull Request 1481: https://github.com/galaxyproject/planemo/pull/1481
 .. _Pull Request 1474: https://github.com/galaxyproject/planemo/pull/1474
 .. _Pull Request 1452: https://github.com/galaxyproject/planemo/pull/1452
 .. _Pull Request 1473: https://github.com/galaxyproject/planemo/pull/1473
@@ -3113,3 +3127,4 @@ History
 .. _@Delphine-L: https://github.com/Delphine-L
 .. _@elichad: https://github.com/elichad
 .. _@pavanvidem: https://github.com/pavanvidem
+.. _@jdavcs: https://github.com/jdavcs
