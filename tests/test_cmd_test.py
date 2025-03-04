@@ -384,7 +384,7 @@ class CmdTestTestCase(CliTestCase):
             test_command.append(test_artifact)
             self._check_exit_code(test_command, exit_code=0)
 
-    @skip_if_environ("PLANEMO_SKIP_GALAXY_TEST")
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_scheduling_error_invalid_when_expression(self):
         with self._isolate() as test_dir:
             test_artifact = os.path.join(SCHEDULING_WORKFLOWS_PATH, "invalid_when_expression.yml")
@@ -402,7 +402,7 @@ class CmdTestTestCase(CliTestCase):
                 in markdown_content
             )
 
-    @skip_if_environ("PLANEMO_SKIP_GALAXY_TEST")
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_scheduling_error_output_not_found(self):
         with self._isolate() as test_dir:
             test_artifact = os.path.join(SCHEDULING_WORKFLOWS_PATH, "output_not_found.yml")
@@ -420,7 +420,7 @@ class CmdTestTestCase(CliTestCase):
                 in markdown_content
             )
 
-    @skip_if_environ("PLANEMO_SKIP_GALAXY_TEST")
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_scheduling_error_dataset_failed(self):
         job_properties = os.path.join(FUNCTIONAL_TEST_TOOLS, "job_properties.xml")
         with self._isolate() as test_dir:
