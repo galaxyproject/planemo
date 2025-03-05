@@ -27,7 +27,6 @@ import planemo.conda
 from planemo.galaxy.workflows import (
     get_tool_ids_for_workflow,
     get_toolshed_url_for_tool_id,
-    MAIN_TOOLSHED_URL,
 )
 from planemo.io import (
     error,
@@ -365,53 +364,12 @@ def autoupdate_wf(ctx: "PlanemoCliContext", config: "LocalGalaxyConfig", wf: "Ru
     return config.user_gi.workflows.export_workflow_dict(workflow_id)
 
 
-def fix_workflow_ga(original_wf: Dict[str, Any], updated_wf: Dict[str, Any]) -> Dict[str, Any]:
+def fix_workflow(original_wf: Dict[str, Any], updated_wf: Dict[str, Any]) -> Dict[str, Any]:
     # the Galaxy refactor action can't do everything right now... some manual fixes here
     # * bump release number if present
-    # * order steps numerically, leave everything else sorted as in the original workflow
-    # * recurse over subworkflows
-    edited_wf = original_wf.copy()
-    updated_wf_steps = collections.OrderedDict(sorted(updated_wf["steps"].items(), key=lambda item: int(item[0])))
-    edited_wf["steps"] = updated_wf_steps
     # check release; bump if it exists
-    if edited_wf.get("release"):
-        release = [int(n) for n in edited_wf["release"].split(".")]
+    if original_wf.get("release"):
+        release = [int(n) for n in original_wf["release"].split(".")]
         release[-1] += 1
-        edited_wf["release"] = ".".join([str(n) for n in release])
-    # iterate over the steps
-    for step in edited_wf["steps"]:
-        # recurse over subworkflows
-        if edited_wf["steps"][step].get("type") == "subworkflow":
-            edited_wf["steps"][step]["subworkflow"] = fix_workflow_ga(
-                edited_wf["steps"][step]["subworkflow"], updated_wf["steps"][step]["subworkflow"]
-            )
-    return edited_wf
-
-
-def fix_workflow_gxformat2(original_wf: Dict[str, Any], updated_wf: Dict[str, Any]) -> Dict[str, Any]:
-    # does the same as fix_workflow_ga for gxformat2
-    edited_wf = original_wf.copy()
-    # check release; bump if it exists
-    if edited_wf.get("release"):
-        release = [int(n) for n in edited_wf["release"].split(".")]
-        release[-1] += 1
-        edited_wf["release"] = ".".join([str(n) for n in release])
-    # iterate over the steps
-    for step_index, step in enumerate(edited_wf["steps"]):
-        # recurse over subworkflows
-        if step.get("run", {}).get("class") == "GalaxyWorkflow":  # subworkflow
-            step["run"] = fix_workflow_gxformat2(
-                step["run"], updated_wf["steps"][str(step_index + len(original_wf["inputs"]))]["subworkflow"]
-            )
-        # fix tool_id and content_id to march tool_version
-        elif updated_wf["steps"][str(step_index + len(original_wf["inputs"]))]["type"] == "tool":
-            if (
-                updated_wf["steps"][str(step_index + len(original_wf["inputs"]))]
-                .get("tool_id", "")
-                .startswith(MAIN_TOOLSHED_URL[8:])
-            ):
-                step["tool_version"] = updated_wf["steps"][str(step_index + len(original_wf["inputs"]))]["tool_version"]
-                step["tool_id"] = updated_wf["steps"][str(step_index + len(original_wf["inputs"]))]["tool_id"]
-                step["content_id"] = updated_wf["steps"][str(step_index + len(original_wf["inputs"]))]["content_id"]
-
-    return edited_wf
+        updated_wf["release"] = ".".join([str(n) for n in release])
+    return updated_wf
