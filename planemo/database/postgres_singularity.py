@@ -120,7 +120,7 @@ class SingularityPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource
             self.database_location = kwds["postgres_storage_location"]
         else:
             self.database_location = os.path.join(mkdtemp(suffix="_planemo_postgres_db"))
-        self.container_instance_name = f"{DEFAULT_CONTAINER_NAME} - {int(time.time()*1000000)}"
+        self.container_instance_name = f"{DEFAULT_CONTAINER_NAME} - {int(time.time() * 1000000)}"
         self._kwds = kwds
 
     def __enter__(self):
