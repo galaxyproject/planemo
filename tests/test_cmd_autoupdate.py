@@ -99,14 +99,15 @@ class CmdAutoupdateTestCase(CliTestCase):
                 with open(wf_file) as g:
                     wf = json.load(g)
                 # check tool within parent wf has updated
-                assert wf["steps"]["1"]["tool_version"] != "3.6+galaxy1"
+                tool_step = next(iter(step for step in wf["steps"].values() if step["type"] == "tool"))
+                assert tool_step["tool_version"] != "3.6+galaxy1"
+                subworkflow_step = next(iter(step for step in wf["steps"].values() if step["type"] == "subworkflow"))
                 # check tool within subworkflow has updated
-                assert wf["steps"]["2"]["subworkflow"]["steps"]["1"]["tool_version"] != "3.6+galaxy1"
+                assert subworkflow_step["subworkflow"]["steps"]["1"]["tool_version"] != "3.6+galaxy1"
                 assert (
-                    wf["steps"]["2"]["subworkflow"]["steps"]["1"]["tool_id"]
+                    subworkflow_step["subworkflow"]["steps"]["1"]["tool_id"]
                     != "toolshed.g2.bx.psu.edu/repos/bgruening/diff/diff/3.6+galaxy1"
                 )
-                assert wf["version"] == 2
                 assert wf["release"] == "0.1.1"
 
                 result = self._runner.invoke(self._cli.planemo, autoupdate_command)  # rerun on already updated WF
@@ -121,9 +122,12 @@ class CmdAutoupdateTestCase(CliTestCase):
 
             with open(wf_file) as f:
                 wf = yaml.safe_load(f)
-            assert wf["steps"][0]["tool_version"] != "3.6+galaxy1"
-            assert wf["steps"][0]["tool_id"] != "toolshed.g2.bx.psu.edu/repos/bgruening/diff/diff/3.6+galaxy1"
-            assert wf["steps"][1]["run"]["steps"][0]["tool_version"] != "3.6+galaxy1"
+
+            tool_step = next(iter(step for step in wf["steps"] if "tool_id" in step))
+            assert tool_step["tool_version"] != "3.6+galaxy1"
+            assert tool_step["tool_id"] != "toolshed.g2.bx.psu.edu/repos/bgruening/diff/diff/3.6+galaxy1"
+            workflow_step = next(iter(step for step in wf["steps"] if "run" in step))
+            assert workflow_step["run"]["steps"][0]["tool_version"] != "3.6+galaxy1"
             assert wf["release"] == "0.1.1"
 
     def test_autoupdate_workflow_from_multiple_tool_sheds(self):

@@ -27,7 +27,6 @@ import planemo.conda
 from planemo.galaxy.workflows import (
     get_tool_ids_for_workflow,
     get_toolshed_url_for_tool_id,
-    MAIN_TOOLSHED_URL,
 )
 from planemo.io import (
     error,
