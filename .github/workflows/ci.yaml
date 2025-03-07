@@ -36,15 +36,15 @@ jobs:
           - unit-nonredundant-noclientbuild-noshed-nogx
           - unit-diagnostic-serveclientcmd
         include:
-          - python-version: '3.11'
+          - python-version: '3.12'
             tox-action: lint
-          - python-version: '3.11'
+          - python-version: '3.12'
             tox-action: mypy
-          - python-version: '3.11'
+          - python-version: '3.12'
             tox-action: unit-quick
     services:
       postgres:
-        image: postgres:10.8
+        image: postgres:16
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -63,6 +63,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Test psql
         run: |
+          psql --version  # Needs to be compatible with the postgres container image
           psql --tuples-only --username postgres -P pager=off --list
       - name: Install dependencies
         run: |
