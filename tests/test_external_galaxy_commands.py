@@ -10,11 +10,14 @@ from planemo.runnable import for_path
 from .test_utils import (
     CliTestCase,
     PROJECT_TEMPLATES_DIR,
+    skip_if_environ,
     TEST_DATA_DIR,
 )
 
 
 class ExternalGalaxyCommandsTestCase(CliTestCase):
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_plain_init(self):
         ctx = cli.PlanemoCliContext()
         ctx.planemo_directory = "/tmp/planemo-test-workspace"
