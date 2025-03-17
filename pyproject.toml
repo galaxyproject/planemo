@@ -1,3 +1,52 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "planemo"
+version = "0.75.28.dev0"
+description = "Command-line utilities to assist in building tools for the Galaxy project (http://galaxyproject.org/)."
+readme = {file = "README.rst", content-type = "text/x-rst"}
+license = { text = "MIT" }
+authors = [
+    { name = "Galaxy Project and Community", email = "galaxy-committers@lists.galaxyproject.org" }  # Replace with actual author and email
+]
+dependencies = [
+    # Dependencies will be read from requirements.txt
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Environment :: Console",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Software Development :: Testing",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[tool.setuptools]
+packages = ["planemo"]
+
+[tool.setuptools.package-data]
+"planemo" = [
+    "xml/xsd/repository_dependencies.xsd",
+    "xml/xsd/tool_dependencies.xsd",
+    "reports/*",
+    "scripts/*"
+]
+
+[project.scripts]
+planemo = "planemo.cli:planemo"
+
 [tool.black]
 extend-exclude = '^/(docs/standards)/'
 include = '\.pyi?$'
