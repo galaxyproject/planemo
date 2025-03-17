@@ -8,7 +8,10 @@ from contextlib import contextmanager
 
 import yaml
 
-from .test_utils import CliTestCase
+from .test_utils import (
+    CliTestCase,
+    skip_if_environ,
+)
 
 
 @contextmanager
@@ -43,6 +46,7 @@ class CmdAutoupdateTestCase(CliTestCase):
     def setUp(self):
         super().setUp()
 
+    @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
     def test_autoupdate_dry_run(self):
         """Test autoupdate command with dry run flag."""
         with self._isolate(), create_tmp_test_tool_file("0.6.0") as xmlfile:
@@ -51,6 +55,7 @@ class CmdAutoupdateTestCase(CliTestCase):
             assert f"Update required to {xmlfile}!" in result.output
             assert "Tool main requirement has version 0.6.0, newest conda version is 0.7.3" in result.output
 
+    @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
     def test_autoupdate(self):
         """Test autoupdate command."""
         with self._isolate(), create_tmp_test_tool_file("0.6.0") as xmlfile:
@@ -62,6 +67,7 @@ class CmdAutoupdateTestCase(CliTestCase):
                 xmlfile_contents = f.read()
             assert "2017.11.9" in xmlfile_contents
 
+    @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
     def test_autoupdate_directory(self):
         """Test autoupdate command."""
         with self._isolate(), create_tmp_test_tool_file("0.6.0") as xmlfile:
@@ -74,6 +80,7 @@ class CmdAutoupdateTestCase(CliTestCase):
                 xmlfile_contents = f.read()
             assert "2017.11.9" in xmlfile_contents
 
+    @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
     def test_autoupdate_no_update_needed(self):
         """Test autoupdate command when no update is needed."""
         with self._isolate(), create_tmp_test_tool_file("0.7.3") as xmlfile:
@@ -81,6 +88,7 @@ class CmdAutoupdateTestCase(CliTestCase):
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
             assert f"No updates required or made to {xmlfile}." in result.output
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_autoupdate_multiple_workflows(self):
         """Test autoupdate command for a workflow is needed."""
         with self._isolate_with_test_data("wf_repos/autoupdate_tests") as f, tempfile.TemporaryDirectory(
@@ -113,6 +121,7 @@ class CmdAutoupdateTestCase(CliTestCase):
                 result = self._runner.invoke(self._cli.planemo, autoupdate_command)  # rerun on already updated WF
                 assert "No newer tool versions were found, so the workflow was not updated." in result.output
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_autoupdate_gxformat2_workflow(self):
         with self._isolate_with_test_data("wf_repos/autoupdate_tests") as f:
             wf_file = os.path.join(f, "diff-refactor-test.gxwf.yml")
@@ -130,6 +139,7 @@ class CmdAutoupdateTestCase(CliTestCase):
             assert workflow_step["run"]["steps"][0]["tool_version"] != "3.6+galaxy1"
             assert wf["release"] == "0.1.1"
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_autoupdate_workflow_from_multiple_tool_sheds(self):
         with self._isolate_with_test_data("wf_repos/autoupdate_tests") as f:
             wf_file = os.path.join(f, "wf_autoupdate_test_multiple_repos.ga")
@@ -143,6 +153,7 @@ class CmdAutoupdateTestCase(CliTestCase):
             # Assert testtoolshed tool is updated
             assert wf["steps"]["2"]["tool_version"] != "0.69"
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_autoupdate_workflow_unexisting_version(self):
         """Test autoupdate command for a workflow where the version of the tool is not in the toolshed."""
         with self._isolate_with_test_data("wf_repos/autoupdate_tests") as f:
@@ -153,6 +164,7 @@ class CmdAutoupdateTestCase(CliTestCase):
             # Currently it would write to the output that no update are available
             # In future versions it could be great that it gives the last valid version.
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_autoupdate_workflow_unexisting_tool(self):
         """Test autoupdate command for a workflow where the tool is not in the toolshed."""
         with self._isolate_with_test_data("wf_repos/autoupdate_tests") as f:

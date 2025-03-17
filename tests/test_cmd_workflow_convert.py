@@ -7,11 +7,13 @@ import yaml
 
 from .test_utils import (
     CliTestCase,
+    skip_if_environ,
     TEST_DATA_DIR,
 )
 
 
 class CmdWorkflowConvertTestCase(CliTestCase):
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_gxwf_to_ga(self):
         with self._isolate() as f:
             gx2_wf_path = os.path.join(TEST_DATA_DIR, "wf1.gxwf.yml")
@@ -25,6 +27,7 @@ class CmdWorkflowConvertTestCase(CliTestCase):
             assert isinstance(wf, dict)
             assert wf["steps"]["1"]["tool_id"] == "cat"
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_ga_to_gxwf(self):
         with self._isolate() as f:
             ga_wf_path = os.path.join(TEST_DATA_DIR, "wf1.ga")
