@@ -160,7 +160,7 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
 
         try:
             installable_revisions = tsi.repositories.get_ordered_installable_revisions(repo_name, repo_owner)
-        except ConnectionError as e:
+        except ConnectionError:
             continue
 
         latest_installable_revision = installable_revisions[-1]
