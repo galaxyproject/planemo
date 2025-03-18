@@ -166,22 +166,25 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
         )
 
         # no such tool in the TS -> fine to push any version
-        if len(repo_metadata['valid_tools']) == 0:
+        if len(repo_metadata["valid_tools"]) == 0:
             continue
 
         # case 1 tool per repo
-        if len(repo_metadata['valid_tools']) == 1:
-            assert repo_metadata['valid_tools'][0]['version']
-            ts_tool_version = repo_metadata['valid_tools'][0]['version']
+        if len(repo_metadata["valid_tools"]) == 1:
+            assert repo_metadata["valid_tools"][0]["version"]
+            ts_tool_version = repo_metadata["valid_tools"][0]["version"]
         # case n tools per repo
         else:
-            tool = [_ for _ in repo_metadata['valid_tools'] if _["id"] == tool_id]
+            tool = [_ for _ in repo_metadata["valid_tools"] if _["id"] == tool_id]
             assert len(tool) == 1
-            assert tool[0]['version']
-            ts_tool_version = tool[0]['version']
+            assert tool[0]["version"]
+            ts_tool_version = tool[0]["version"]
 
         if tool_version <= parse_version(ts_tool_version):
-            lint_ctx.error(f"{tool_id}: version {tool_version} is less or equal than version of the latest installable revision {ts_tool_version}", "ShedVersion")
+            lint_ctx.error(
+                f"{tool_id}: version {tool_version} is less or equal than version of the latest installable revision {ts_tool_version}",
+                "ShedVersion",
+            )
 
 
 def lint_expansion(realized_repository: "RealizedRepository", lint_ctx):
