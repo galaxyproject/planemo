@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import yaml
 from galaxy.tool_util.lint import lint_tool_source_with
 from galaxy.tool_util.linters.help import rst_invalid
+from galaxy.tool_util.parser.interface import ToolSource
 from galaxy.tool_util.version import parse_version
 from galaxy.util import unicodify
 
@@ -22,7 +23,6 @@ from planemo.shed import (
     REPO_TYPE_SUITE,
     REPO_TYPE_TOOL_DEP,
     REPO_TYPE_UNRESTRICTED,
-    ShedContext,
     validate_repo_name,
     validate_repo_owner,
 )
