@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 from typing import TYPE_CHECKING
 
 import yaml
+from bioblend import ConnectionError
 from galaxy.tool_util.lint import lint_tool_source_with
 from galaxy.tool_util.linters.help import rst_invalid
 from galaxy.tool_util.parser.interface import ToolSource
@@ -157,9 +158,11 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
         tool_id = tool_source.parse_id()
         tool_version = parse_version(tool_source.parse_version())
 
-        installable_revisions = tsi.repositories.get_ordered_installable_revisions(repo_name, repo_owner)
-        if len(installable_revisions) == 0:
+        try:
+            installable_revisions = tsi.repositories.get_ordered_installable_revisions(repo_name, repo_owner)
+        except ConnectionError as e:
             continue
+
         latest_installable_revision = installable_revisions[-1]
         repo_info, repo_metadata, _ = tsi.repositories.get_repository_revision_install_info(
             repo_name, repo_owner, latest_installable_revision
