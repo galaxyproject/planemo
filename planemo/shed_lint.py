@@ -119,11 +119,7 @@ def lint_repository(ctx: "PlanemoCliContext", realized_repository: "RealizedRepo
         tools_failed = lint_repository_tools(ctx, realized_repository, lint_ctx, lint_args)
         failed = failed or tools_failed
 
-    lint_ctx.lint(
-            "lint_version_bumped",
-            lint_shed_version,
-            realized_repository,
-        )
+    lint_ctx.lint("lint_version_bumped", lint_shed_version, realized_repository)
 
     if kwds["ensure_metadata"]:
         lint_ctx.lint(
@@ -147,10 +143,9 @@ def lint_repository_tools(ctx: "PlanemoCliContext", realized_repository: "Realiz
 def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
     path = realized_repository.path
 
-    shed_context = ShedContext(tool_shed_instance("https://toolshed.g2.bx.psu.edu/"), None, None)
+    tsi = tool_shed_instance("https://toolshed.g2.bx.psu.edu/")
 
     for tool_path, tool_source in yield_tool_sources(ctx=None, path=path, recursive=True):
-        original_path = tool_path.replace(path, realized_repository.real_path)
         if handle_tool_load_error(tool_path, tool_source):
             continue
 
@@ -159,11 +154,11 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
         tool_id = tool_source.parse_id()
         tool_version = parse_version(tool_source.parse_version())
 
-        installable_revisions = shed_context.tsi.repositories.get_ordered_installable_revisions(repo_name, repo_owner)
+        installable_revisions = tsi.repositories.get_ordered_installable_revisions(repo_name, repo_owner)
         if len(installable_revisions) == 0:
             continue
         latest_installable_revision = installable_revisions[-1]
-        repo_info, repo_metadata, _ = shed_context.tsi.repositories.get_repository_revision_install_info(
+        repo_info, repo_metadata, _ = tsi.repositories.get_repository_revision_install_info(
             repo_name, repo_owner, latest_installable_revision
         )
 
@@ -184,6 +179,7 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
 
         if tool_version <= parse_version(ts_tool_version):
             lint_ctx.error(f"{tool_id}: version {tool_version} is less or equal than version of the latest installable revision {ts_tool_version}", "ShedVersion")
+
 
 def lint_expansion(realized_repository: "RealizedRepository", lint_ctx):
     missing = realized_repository.missing
