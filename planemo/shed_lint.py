@@ -26,8 +26,8 @@ from planemo.shed import (
     validate_repo_name,
     validate_repo_owner,
 )
-from planemo.shed.interface import tool_shed_instance
 from planemo.shed2tap import base
+from planemo.shed.interface import tool_shed_instance
 from planemo.tool_lint import (
     build_tool_lint_args,
     handle_tool_load_error,
