@@ -1032,7 +1032,7 @@ class RawRepositoryDirectory:
             with open(path, "w") as f:
                 f.write(contents)
 
-        return RealizedRepositry(
+        return RealizedRepository(
             realized_path=directory,
             real_path=self.path,
             config=config,
@@ -1184,7 +1184,7 @@ class RealizedFile:
         return f"RealizedFile[src={self.src},dest={self.dest},src_root={self.src_root}]"
 
 
-class RealizedRepositry:
+class RealizedRepository:
     def __init__(self, realized_path, real_path, config, multiple, missing):
         self.path = realized_path
         self.real_path = real_path
