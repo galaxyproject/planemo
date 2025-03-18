@@ -43,6 +43,7 @@ def build_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
                 skip_types.append(line)
 
     linters = Linter.list_linters()
+    linters.extend(["version_bumped"])
     invalid_skip_types = list(set(skip_types) - set(linters))
     if len(invalid_skip_types):
         error(f"Unknown linter type(s) {invalid_skip_types} in list of linters to be skipped. Known linters {linters}")

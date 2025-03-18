@@ -1,6 +1,7 @@
 """Interface over bioblend and direct access to ToolShed API via requests."""
 
 import json
+from typing import Optional
 
 from bioblend.toolshed import ToolShedInstance
 from galaxy.util import unicodify
@@ -10,7 +11,7 @@ from planemo.io import untar_to
 REPOSITORY_DOWNLOAD_TEMPLATE = "%s/repository/download?repository_id=%s&changeset_revision=default&file_type=gz"
 
 
-def tool_shed_instance(url, key, email, password):
+def tool_shed_instance(url: str, key: Optional[str]=None, email: Optional[str]=None, password: Optional[str]=None) -> ToolShedInstance:
     return ToolShedInstance(url=url, key=key, email=email, password=password)
 
 
