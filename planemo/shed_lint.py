@@ -149,6 +149,9 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
         if handle_tool_load_error(tool_path, tool_source):
             continue
 
+        if not isinstance(tool_source, ToolSource):
+            continue
+
         repo_owner = realized_repository.owner
         repo_name = realized_repository.name
         tool_id = tool_source.parse_id()
@@ -206,7 +209,7 @@ def lint_readme(realized_repository: "RealizedRepository", lint_ctx):
     readme = os.path.join(path, "README")
     readme_txt = os.path.join(path, "README.txt")
 
-    readme_found = False
+    readme_found = ""
     for readme in [readme_rst, readme, readme_txt]:
         if os.path.exists(readme):
             readme_found = readme
@@ -260,7 +263,7 @@ def lint_tool_dependencies_sha256sum(realized_repository: "RealizedRepository", 
         assert action.tag == "action"
         if action.attrib.get("type", "") not in ["download_by_url", "download_file"]:
             continue
-        url = action.text.strip()
+        url = (action.text or "").strip()
         checksum = action.attrib.get("sha256sum", "")
         if not checksum:
             lint_ctx.warn("Missing checksum for %s" % url)
