@@ -34,7 +34,26 @@ classifiers = [
 ]
 
 [tool.setuptools]
-packages = ["planemo"]
+packages = [
+    "planemo",
+    "planemo.autopygen",
+    "planemo.autopygen.commands",
+    "planemo.autopygen.source_file_parsing",
+    "planemo.autopygen.xml",
+    "planemo.cwl",
+    "planemo.commands",
+    "planemo.database",
+    "planemo.engine",
+    "planemo.galaxy",
+    "planemo.galaxy.test",
+    "planemo.linters",
+    "planemo.reports",
+    "planemo.shed",
+    "planemo.shed2tap",
+    "planemo.test",
+    "planemo.training",
+    "planemo.xml",
+]
 
 [tool.setuptools.package-data]
 "planemo" = [
