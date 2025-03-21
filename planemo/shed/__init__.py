@@ -11,7 +11,10 @@ import shutil
 import sys
 import tarfile
 from tempfile import mkstemp
-from typing import NamedTuple
+from typing import (
+    NamedTuple,
+    TYPE_CHECKING,
+)
 
 import bioblend
 import yaml
@@ -48,6 +51,10 @@ from .interface import (
     tool_shed_instance,
     username,
 )
+
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
+
 
 SHED_CONFIG_NAME = ".shed.yml"
 DOCKSTORE_REGISTRY_CONF = ".dockstore.yml"
@@ -1025,7 +1032,7 @@ class RawRepositoryDirectory:
             with open(path, "w") as f:
                 f.write(contents)
 
-        return RealizedRepositry(
+        return RealizedRepository(
             realized_path=directory,
             real_path=self.path,
             config=config,
@@ -1177,7 +1184,7 @@ class RealizedFile:
         return f"RealizedFile[src={self.src},dest={self.dest},src_root={self.src_root}]"
 
 
-class RealizedRepositry:
+class RealizedRepository:
     def __init__(self, realized_path, real_path, config, multiple, missing):
         self.path = realized_path
         self.real_path = real_path
@@ -1291,7 +1298,7 @@ class RealizedRepositry:
                 error(unicodify(e))
             return None
 
-    def latest_installable_revision(self, ctx, shed_context):
+    def latest_installable_revision(self, ctx: "PlanemoCliContext", shed_context: ShedContext):
         repository_id = self.find_repository_id(ctx, shed_context)
         return latest_installable_revision(shed_context.tsi, repository_id)
 
