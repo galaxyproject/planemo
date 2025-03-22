@@ -1,17 +1,15 @@
 # Default tests run with make test and make quick-tests
 TESTS?=tests planemo
 # Default environment for make tox
-ENV?=py27
+ENV?=py38
 # Extra arguments supplied to tox command
 ARGS?=
 # Location of virtualenv used for development.
 VENV?=.venv
-VENV3?=.venv3
 # Open resource on Mac OS X or Linux
 OPEN_RESOURCE=bash -c 'open $$0 || xdg-open $$0'
 # Source virtualenv to execute command (flake8, sphinx, twine, etc...)
-IN_VENV=if [ -f $(VENV)/bin/activate ]; then . $(VENV)/bin/activate; fi;
-IN_VENV3=if [ -f $(VENV3)/bin/activate ]; then . $(VENV3)/bin/activate; fi;
+IN_VENV=if [ "$(VENV)" != "SKIP" ] && [ -f $(VENV)/bin/activate ]; then . $(VENV)/bin/activate; fi;
 # TODO: add this upstream as a remote if it doesn't already exist.
 UPSTREAM?=galaxyproject
 SOURCE_DIR?=planemo
@@ -57,12 +55,8 @@ install: submodule ## install into Python envirnoment
 	python setup.py install && cd cwl-runner && python setup.py install
 
 setup-venv: ## setup a development virtualenv in current directory
-	if [ ! -d $(VENV) ]; then virtualenv $(VENV); exit; fi;
+	if [ ! -d $(VENV) ]; then python -venv $(VENV); exit; fi;
 	$(IN_VENV) pip install --upgrade pip && pip install -r dev-requirements.txt -r requirements.txt
-
-setup-venv3: ## setup a development virtualenv in current directory
-	if [ ! -d $(VENV3) ]; then virtualenv -p python3 $(VENV3); exit; fi;
-	$(IN_VENV3) pip install --upgrade pip && pip install -r dev-requirements.txt -r requirements.txt
 
 setup-git-hook-lint: ## setup precommit hook for linting project
 	cp $(BUILD_SCRIPTS_DIR)/pre-commit-lint .git/hooks/pre-commit

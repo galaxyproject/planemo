@@ -31,13 +31,12 @@ Obtaining
 
 For a traditional Python installation of Planemo, first set up a virtualenv
 for ``planemo`` (this example creates a new one in ``.venv``) containing
-Python 3.7 or newer and then install with ``pip``. Planemo must be installed
+Python 3.8 or newer and then install with ``pip``. Planemo must be installed
 with pip 7.0 or newer.
 
 ::
 
-    $ virtualenv .venv; . .venv/bin/activate
-    $ pip install "pip>=7" # Upgrade pip if needed.
+    $ python -m venv .venv; . .venv/bin/activate
     $ pip install planemo
 
 For information on updating Planemo, installing the latest development release,
