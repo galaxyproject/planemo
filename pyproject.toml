@@ -6,10 +6,10 @@ build-backend = "setuptools.build_meta"
 name = "planemo"
 version = "0.75.28.dev0"
 description = "Command-line utilities to assist in building tools for the Galaxy project (http://galaxyproject.org/)."
-readme = {file = "README.rst", content-type = "text/x-rst"}
+readme = {file = ["README.rst", "HISTORY.rst"], content-type = "text/x-rst"}
 license = { text = "MIT" }
 authors = [
-    { name = "Galaxy Project and Community", email = "galaxy-committers@lists.galaxyproject.org" }  # Replace with actual author and email
+    { name = "Galaxy Project and Community", email = "galaxy-committers@lists.galaxyproject.org" }
 ]
 dependencies = [
     # Dependencies will be read from requirements.txt
