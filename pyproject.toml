@@ -4,9 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "planemo"
-dynamic = ["version"]
+dynamic = ["version", "readme"]
 description = "Command-line utilities to assist in building tools for the Galaxy project (http://galaxyproject.org/)."
-readme = {file = ["README.rst", "HISTORY.rst"], content-type = "text/x-rst"}
 license = { text = "MIT" }
 authors = [
     { name = "Galaxy Project and Community", email = "galaxy-committers@lists.galaxyproject.org" }
@@ -65,6 +64,7 @@ packages = [
 
 [tool.setuptools.dynamic]
 version = {attr = "planemo.__version__"}
+readme = {file = ["README.rst", "HISTORY.rst"], content-type = "text/x-rst"}
 
 [project.scripts]
 planemo = "planemo.cli:planemo"
