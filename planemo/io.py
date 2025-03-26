@@ -425,3 +425,8 @@ def coalesce_return_codes(ret_codes, assert_at_least_one=False):
         coalesced_return_code = 255 + coalesced_return_code
 
     return coalesced_return_code
+
+
+def launch_if_open_flagged(file, **kwd):
+    if kwd.get("open"):
+        click.launch(file)

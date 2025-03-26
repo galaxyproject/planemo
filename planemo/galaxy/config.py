@@ -19,7 +19,6 @@ from tempfile import (
 from typing import (
     Any,
     Dict,
-    Iterable,
     List,
     Optional,
     Set,
@@ -27,8 +26,13 @@ from typing import (
 )
 
 from galaxy.tool_util.deps import docker_util
-from galaxy.tool_util.deps.container_volumes import DockerVolume
 from galaxy.util.commands import argv_to_str
+from gxjobconfinit.generate import (
+    build_job_config,
+    ConfigArgs,
+    create_docker_volumes,
+    DevelopmentContext,
+)
 from packaging.version import parse as parse_version
 
 from planemo import git
@@ -122,33 +126,6 @@ TOOL_SHEDS_CONF = """<tool_sheds>
 </tool_sheds>
 """
 
-JOB_CONFIG_LOCAL = """<job_conf>
-    <plugins>
-        <plugin id="planemo_runner" type="runner" load="galaxy.jobs.runners.local:LocalJobRunner" workers="4"/>
-    </plugins>
-    <handlers>
-    </handlers>
-    <destinations default="planemo_dest">
-        <destination id="planemo_dest" runner="planemo_runner">
-            <param id="require_container">${require_container}</param>
-            <param id="docker_enabled">${docker_enable}</param>
-            <param id="docker_sudo">${docker_sudo}</param>
-            <param id="docker_sudo_cmd">${docker_sudo_cmd}</param>
-            <param id="docker_cmd">${docker_cmd}</param>
-            <param id="docker_volumes">${docker_volumes}</param>
-            <param id="docker_run_extra_arguments"><![CDATA[${docker_run_extra_arguments}]]></param>
-            ${docker_host_param}
-        </destination>
-        <destination id="upload_dest" runner="planemo_runner">
-            <param id="docker_enabled">false</param>
-        </destination>
-    </destinations>
-    <tools>
-        <tool id="upload1" destination="upload_dest" />
-    </tools>
-</job_conf>
-"""
-
 REFGENIE_CONFIG_TEMPLATE = """
 config_version: %s
 genome_folder: '%s'
@@ -214,22 +191,6 @@ def read_log(ctx, log_path, e: threading.Event):
             if log_lines:
                 ctx.log(log_lines.rstrip())
             log_fh.close()
-
-
-def create_docker_volumes(paths: Iterable[str]) -> Iterable[DockerVolume]:
-    """
-    Creates string of the format "host_path:target_path:mode" and deduplicates overlapping mounts.
-    """
-    docker_volumes: Dict[str, DockerVolume] = {}
-    for path in paths:
-        docker_volume = DockerVolume.from_str(path)
-        if docker_volume.path in docker_volumes:
-            # volume has been specified already, make sure we use "rw" if any of the modes are "rw"
-            if docker_volume.mode == "rw" or docker_volumes[docker_volume.path].mode == "rw":
-                docker_volumes[docker_volume.path].mode = "rw"
-        else:
-            docker_volumes[docker_volume.path] = docker_volume
-    return docker_volumes.values()
 
 
 @contextlib.contextmanager
@@ -570,6 +531,12 @@ def get_refgenie_config(galaxy_root, refgenie_dir):
         if version_major < parse_version("21.09"):
             config_version = 0.3
     return REFGENIE_CONFIG_TEMPLATE % (config_version, refgenie_dir)
+
+
+def get_all_tool_path_from_kwds(runnables: List["Runnable"], **kwds) -> Set[str]:
+    galaxy_root = kwds.get("galaxy_root")
+    extra_tools = kwds.get("extra_tools")
+    return _all_tool_paths(runnables, galaxy_root, extra_tools)
 
 
 def _all_tool_paths(
@@ -1378,40 +1345,15 @@ def _handle_job_config_file(
 ):
     job_config_file = kwds.get("job_config_file", None)
     if not job_config_file:
-        template_str = JOB_CONFIG_LOCAL
+        dev_context = DevelopmentContext(
+            test_data_dir,
+            all_tool_paths,
+        )
+        init_config = ConfigArgs.from_dict(**kwds)
+        conf_contents = build_job_config(init_config, dev_context)
         job_config_file = os.path.join(
             config_directory,
-            "job_conf.xml",
-        )
-        docker_enable = str(kwds.get("docker", False))
-        docker_host = kwds.get("docker_host", docker_util.DEFAULT_HOST)
-        docker_host_param = ""
-        if docker_host:
-            docker_host_param = f"""<param id="docker_host">{docker_host}</param>"""
-
-        volumes = list(kwds.get("docker_extra_volume") or [])
-        if test_data_dir:
-            volumes.append(f"{test_data_dir}:ro")
-
-        docker_volumes_str = "$defaults"
-        if volumes:
-            # exclude tool directories, these are mounted :ro by $defaults
-            all_tool_dirs = {os.path.dirname(tool_path) for tool_path in all_tool_paths}
-            extra_volumes_str = ",".join(str(v) for v in create_docker_volumes(volumes) if v.path not in all_tool_dirs)
-            docker_volumes_str = f"{docker_volumes_str},{extra_volumes_str}"
-
-        conf_contents = Template(template_str).safe_substitute(
-            {
-                "server_name": server_name,
-                "docker_enable": docker_enable,
-                "require_container": "false",
-                "docker_sudo": str(kwds.get("docker_sudo", False)),
-                "docker_sudo_cmd": str(kwds.get("docker_sudo_cmd", docker_util.DEFAULT_SUDO_COMMAND)),
-                "docker_cmd": str(kwds.get("docker_cmd", docker_util.DEFAULT_DOCKER_COMMAND)),
-                "docker_host_param": docker_host_param,
-                "docker_volumes": docker_volumes_str,
-                "docker_run_extra_arguments": kwds.get("docker_run_extra_arguments", ""),
-            }
+            "job_conf.yml",
         )
         write_file(job_config_file, conf_contents)
     kwds["job_config_file"] = job_config_file
