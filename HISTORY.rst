@@ -6,8 +6,9 @@ History
 .. to_doc
 
 ---------------------
-0.75.29.dev0
+0.75.29 (2025-03-27)
 ---------------------
+* Fix dependency specification (thanks to `@mvdbeek`_). `Pull Request 1507`_
 
 ---------------------
 0.75.28 (2025-03-27)
@@ -2190,6 +2191,7 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1507: https://github.com/galaxyproject/planemo/pull/1507
 .. _Pull Request 1505: https://github.com/galaxyproject/planemo/pull/1505
 .. _Pull Request 1504: https://github.com/galaxyproject/planemo/pull/1504
 .. _Pull Request 1503: https://github.com/galaxyproject/planemo/pull/1503
