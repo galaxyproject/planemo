@@ -17,8 +17,8 @@ import planemo as project  # noqa: E402
 
 PROJECT_AUTHOR = project.PROJECT_AUTHOR
 PROJECT_NAME = project.PROJECT_NAME
-PROJECT_URL = f"https://github.com/{PROJECT_OWNER}/{PROJECT_NAME}"
-PROJECT_API = f"https://api.github.com/repos/{PROJECT_OWNER}/{PROJECT_NAME}/"
+PROJECT_URL = f"https://github.com/{PROJECT_AUTHOR}/{PROJECT_NAME}"
+PROJECT_API = f"https://api.github.com/repos/{PROJECT_AUTHOR}/{PROJECT_NAME}/"
 
 
 def main(argv):
