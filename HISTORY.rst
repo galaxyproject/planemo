@@ -6,6 +6,10 @@ History
 .. to_doc
 
 ---------------------
+0.75.29.dev0
+---------------------
+
+---------------------
 0.75.28 (2025-03-27)
 ---------------------
 * Print stdout stderr if install command fails (thanks to `@mvdbeek`_). `Pull
