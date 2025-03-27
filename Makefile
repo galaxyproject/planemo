@@ -52,7 +52,7 @@ submodule:
 	git submodule update
 
 install: submodule ## install into Python envirnoment
-	python setup.py install && cd cwl-runner && python setup.py install
+	pip install && cd cwl-runner && pip install
 
 setup-venv: ## setup a development virtualenv in current directory
 	if [ ! -d $(VENV) ]; then python -venv $(VENV); exit; fi;
@@ -83,7 +83,7 @@ tox: ## run tests with tox in the specified ENV, defaults to py27
 	$(IN_VENV) tox -e $(ENV) -- $(ARGS)
 
 _coverage-report: ## build coverage report with the default Python
-	coverage run --source $(SOURCE_DIR) setup.py $(TEST_DIR)
+	coverage run --source $(SOURCE_DIR) pytest $(TEST_DIR)
 	coverage report -m
 	coverage html
 
@@ -133,7 +133,7 @@ open-project: ## open project on github
 	$(OPEN_RESOURCE) $(PROJECT_URL)
 
 dist: clean submodule ## create and check packages
-	$(IN_VENV) python setup.py sdist bdist_wheel
+	$(IN_VENV) python -m build
 	$(IN_VENV) twine check dist/*
 	ls -l dist
 
