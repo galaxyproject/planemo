@@ -4,14 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "planemo"
-dynamic = ["version", "readme"]
+dynamic = ["version", "readme", "dependencies"]
 description = "Command-line utilities to assist in building tools for the Galaxy project (http://galaxyproject.org/)."
 license = { text = "MIT" }
 authors = [
     { name = "Galaxy Project and Community", email = "galaxy-committers@lists.galaxyproject.org" }
-]
-dependencies = [
-    # Dependencies will be read from requirements.txt
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -65,6 +62,7 @@ packages = [
 [tool.setuptools.dynamic]
 version = {attr = "planemo.__version__"}
 readme = {file = ["README.rst", "HISTORY.rst"], content-type = "text/x-rst"}
+dependencies = {file = "requirements.txt"}
 
 [project.scripts]
 planemo = "planemo.cli:planemo"
