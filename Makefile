@@ -52,7 +52,7 @@ submodule:
 	git submodule update
 
 install: submodule ## install into Python envirnoment
-	pip install && cd cwl-runner && pip install
+	pip install . && cd cwl-runner && pip install .
 
 setup-venv: ## setup a development virtualenv in current directory
 	if [ ! -d $(VENV) ]; then python -venv $(VENV); exit; fi;
