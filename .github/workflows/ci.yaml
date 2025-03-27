@@ -93,7 +93,7 @@ jobs:
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip setuptools
-          python3 -m pip install --upgrade twine wheel
+          python3 -m pip install --upgrade build twine
       - name: Create and check packages
         run: |
           make dist
