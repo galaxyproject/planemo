@@ -9,21 +9,21 @@ planemo.shed.diff module
 
 .. automodule:: planemo.shed.diff
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.shed.interface module
 -----------------------------
 
 .. automodule:: planemo.shed.interface
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
 
 .. automodule:: planemo.shed
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:

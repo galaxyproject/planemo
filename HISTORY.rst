@@ -6,6 +6,25 @@ History
 .. to_doc
 
 ---------------------
+0.75.28 (2025-03-27)
+---------------------
+* Print stdout stderr if install command fails (thanks to `@mvdbeek`_). `Pull
+  Request 1505`_
+* fix: removes that spaces that aren't allowed in the singularity instance
+  name (thanks to `@Smeds`_). `Pull Request 1504`_
+* Build Modernization (thanks to `@jmchilton`_). `Pull Request 1503`_
+* Add linter to check if tool versions are bumped (thanks to `@bernt-matthias`_).
+  `Pull Request 1502`_
+* Fix make quick-test (thanks to `@jmchilton`_). `Pull Request 1501`_
+* Migrate mypy settings to pyproject.toml (thanks to `@jmchilton`_). `Pull
+  Request 1500`_
+* Add support for Python 3.12 (thanks to `@nsoranzo`_). `Pull Request 1496`_
+* Add postgres singularity option (thanks to `@Smeds`_). `Pull Request 1492`_
+* Loosen test assertions (thanks to `@bernt-matthias`_). `Pull Request 1494`_
+* Update browser user agent string (thanks to `@nsoranzo`_). `Pull Request
+  1495`_
+
+---------------------
 0.75.27 (2025-03-03)
 ---------------------
 * Remove usage of `defaults` conda channel (thanks to `@bernt-matthias`_).
@@ -2167,6 +2186,16 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1505: https://github.com/galaxyproject/planemo/pull/1505
+.. _Pull Request 1504: https://github.com/galaxyproject/planemo/pull/1504
+.. _Pull Request 1503: https://github.com/galaxyproject/planemo/pull/1503
+.. _Pull Request 1502: https://github.com/galaxyproject/planemo/pull/1502
+.. _Pull Request 1501: https://github.com/galaxyproject/planemo/pull/1501
+.. _Pull Request 1500: https://github.com/galaxyproject/planemo/pull/1500
+.. _Pull Request 1496: https://github.com/galaxyproject/planemo/pull/1496
+.. _Pull Request 1492: https://github.com/galaxyproject/planemo/pull/1492
+.. _Pull Request 1494: https://github.com/galaxyproject/planemo/pull/1494
+.. _Pull Request 1495: https://github.com/galaxyproject/planemo/pull/1495
 .. _Pull Request 1487: https://github.com/galaxyproject/planemo/pull/1487
 .. _Pull Request 1483: https://github.com/galaxyproject/planemo/pull/1483
 .. _Pull Request 1491: https://github.com/galaxyproject/planemo/pull/1491
@@ -3130,3 +3159,5 @@ History
 .. _@elichad: https://github.com/elichad
 .. _@pavanvidem: https://github.com/pavanvidem
 .. _@jdavcs: https://github.com/jdavcs
+.. _@Smeds: https://github.com/Smeds
+.. _@jmchilton: https://github.com/jmchilton

@@ -9,13 +9,13 @@ planemo.shed2tap.base module
 
 .. automodule:: planemo.shed2tap.base
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
 
 .. automodule:: planemo.shed2tap
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:

@@ -29,213 +29,213 @@ planemo.autoupdate module
 
 .. automodule:: planemo.autoupdate
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.ci module
 -----------------
 
 .. automodule:: planemo.ci
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.cli module
 ------------------
 
 .. automodule:: planemo.cli
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.conda module
 --------------------
 
 .. automodule:: planemo.conda
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.config module
 ---------------------
 
 .. automodule:: planemo.config
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.context module
 ----------------------
 
 .. automodule:: planemo.context
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.deps module
 -------------------
 
 .. automodule:: planemo.deps
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.docker module
 ---------------------
 
 .. automodule:: planemo.docker
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.exit\_codes module
 --------------------------
 
 .. automodule:: planemo.exit_codes
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.git module
 ------------------
 
 .. automodule:: planemo.git
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.github\_util module
 ---------------------------
 
 .. automodule:: planemo.github_util
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.glob module
 -------------------
 
 .. automodule:: planemo.glob
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.io module
 -----------------
 
 .. automodule:: planemo.io
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.lint module
 -------------------
 
 .. automodule:: planemo.lint
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.mulled module
 ---------------------
 
 .. automodule:: planemo.mulled
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.network\_util module
 ----------------------------
 
 .. automodule:: planemo.network_util
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.options module
 ----------------------
 
 .. automodule:: planemo.options
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.runnable module
 -----------------------
 
 .. automodule:: planemo.runnable
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.runnable\_resolve module
 --------------------------------
 
 .. automodule:: planemo.runnable_resolve
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.shed\_lint module
 -------------------------
 
 .. automodule:: planemo.shed_lint
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.templates module
 ------------------------
 
 .. automodule:: planemo.templates
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.tool\_builder module
 ----------------------------
 
 .. automodule:: planemo.tool_builder
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.tool\_lint module
 -------------------------
 
 .. automodule:: planemo.tool_lint
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.tools module
 --------------------
 
 .. automodule:: planemo.tools
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.virtualenv module
 -------------------------
 
 .. automodule:: planemo.virtualenv
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.workflow\_lint module
 -----------------------------
 
 .. automodule:: planemo.workflow_lint
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
 
 .. automodule:: planemo
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:

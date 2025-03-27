@@ -9,37 +9,45 @@ planemo.database.factory module
 
 .. automodule:: planemo.database.factory
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.database.interface module
 ---------------------------------
 
 .. automodule:: planemo.database.interface
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.database.postgres module
 --------------------------------
 
 .. automodule:: planemo.database.postgres
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.database.postgres\_docker module
 ----------------------------------------
 
 .. automodule:: planemo.database.postgres_docker
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
+
+planemo.database.postgres\_singularity module
+---------------------------------------------
+
+.. automodule:: planemo.database.postgres_singularity
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
 
 .. automodule:: planemo.database
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:

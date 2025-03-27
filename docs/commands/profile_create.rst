@@ -17,14 +17,17 @@ Create a profile.
 
 
       --postgres                      Use postgres database type.
-      --database_type [postgres|postgres_docker|sqlite|auto]
+      --database_type [postgres|postgres_docker|postgres_singularity|sqlite|auto]
                                       Type of database to use for profile - 'auto',
-                                      'sqlite', 'postgres', and 'postgres_docker'
-                                      are available options. Use postgres to use an
-                                      existing postgres server you user can access
-                                      without a password via the psql command. Use
-                                      postgres_docker to have Planemo manage a
-                                      docker container running postgres. Data with
+                                      'sqlite', 'postgres', 'postgres_docker' , and
+                                      postgres_singularity are available options.
+                                      Use postgres to use an existing postgres
+                                      server you user can access without a password
+                                      via the psql command. Use postgres_docker to
+                                      have Planemo manage a docker container running
+                                      postgres. . Use  postgres_singularity to have
+                                      Planemo run postgres using
+                                      singularity/apptainer. Data with
                                       postgres_docker is not yet persisted past when
                                       you restart the docker container launched by
                                       Planemo so be careful with this option.

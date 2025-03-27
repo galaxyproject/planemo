@@ -9,13 +9,13 @@ planemo.autopygen.commands.command\_utils module
 
 .. automodule:: planemo.autopygen.commands.command_utils
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
 
 .. automodule:: planemo.autopygen.commands
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:

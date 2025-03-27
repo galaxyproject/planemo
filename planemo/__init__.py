@@ -2,7 +2,7 @@ import importlib.metadata
 
 planemo_metadata = importlib.metadata.metadata("planemo")
 
-__version__ = "0.75.28.dev0"
+__version__ = "0.75.28"
 
 PROJECT_NAME = planemo_metadata["Name"]
 PROJECT_EMAIL = planemo_metadata["Author-email"].split(" ")[-1]
