@@ -1326,9 +1326,7 @@ def _install_with_command(ctx, galaxy_root, env, kwds):
         setup_venv_command,
         COMMAND_STARTUP_COMMAND,
     )
-    exit_code = shell(install_cmd, cwd=galaxy_root, env=env)
-    if exit_code != 0:
-        raise Exception(f"Failed to install Galaxy via command [{install_cmd}]")
+    communicate(install_cmd, default_err_msg="Failed to install Galaxy via command", cwd=galaxy_root, env=env)
     if not os.path.exists(galaxy_root):
         raise Exception(f"Failed to create Galaxy directory [{galaxy_root}]")
     if not os.path.exists(os.path.join(galaxy_root, "lib")):

@@ -33,7 +33,7 @@ def args_to_str(args):
         return commands.argv_to_str(args)
 
 
-def communicate(cmds, **kwds):
+def communicate(cmds, default_err_msg: str = "Problem executing commands", **kwds):
     """Execute shell command and wait for output.
 
     With click-aware I/O handling, pretty display of the command being executed,
@@ -48,7 +48,7 @@ def communicate(cmds, **kwds):
         output = p.communicate()
 
     if p.returncode != 0:
-        msg = f"Problem executing commands {cmd_string} - ({output[0]}, {output[1]})"
+        msg = f"{default_err_msg} [{cmd_string}] - ({output[0]}, {output[1]})"
         raise RuntimeError(msg)
     return output
 
