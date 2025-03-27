@@ -6,6 +6,10 @@ History
 .. to_doc
 
 ---------------------
+0.75.30.dev0
+---------------------
+
+---------------------
 0.75.29 (2025-03-27)
 ---------------------
 * Fix dependency specification (thanks to `@mvdbeek`_). `Pull Request 1507`_
