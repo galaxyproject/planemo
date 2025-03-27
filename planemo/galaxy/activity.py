@@ -52,6 +52,8 @@ from planemo.runnable import (
     RunResponse,
     SuccessfulRunResponse,
 )
+from .workflow_progress import WorkflowProgressDisplay
+
 
 if TYPE_CHECKING:
     from planemo.cli import PlanemoCliContext
@@ -788,23 +790,138 @@ def wait_for_invocation_and_jobs(
             msg = f"Failed to run workflow, at least one job is in [{job_state}] state."
             error_message = msg if not error_message else f"{error_message}. {msg}"
         else:
-            # wait for possible subworkflow invocations
-            invocation = user_gi.invocations.show_invocation(invocation_id)
-            for step in invocation["steps"]:
-                if step.get("subworkflow_invocation_id") is not None:
-                    final_invocation_state, job_state, error_message = wait_for_invocation_and_jobs(
-                        ctx,
-                        invocation_id=step["subworkflow_invocation_id"],
-                        history_id=history_id,
-                        user_gi=user_gi,
-                        no_wait=no_wait,
-                        polling_backoff=polling_backoff,
-                    )
-                    if final_invocation_state != "scheduled" or job_state not in ("ok", "skipped"):
-                        return final_invocation_state, job_state, error_message
+            for subworkflow_invocation_id in subworkflow_invocation_ids(user_gi, invocation_id):
+                final_invocation_state, job_state, error_message = wait_for_invocation_and_jobs(
+                    ctx,
+                    invocation_id=subworkflow_invocation_id,
+                    history_id=history_id,
+                    user_gi=user_gi,
+                    no_wait=no_wait,
+                    polling_backoff=polling_backoff,
+                )
+                if final_invocation_state != "scheduled" or job_state not in ("ok", "skipped"):
+                    return final_invocation_state, job_state, error_message
 
         ctx.vlog(f"The final state of all jobs and subworkflow invocations for invocation [{invocation_id}] is 'ok'")
     return final_invocation_state, job_state, error_message
+
+
+def wait_for_invocation_and_jobs_tracked(
+    ctx,
+    invocation_id: str,
+    history_id: str,
+    user_gi: GalaxyInstance,
+    no_wait: bool,
+    polling_backoff: int,
+    workflow_progress_display: WorkflowProgressDisplay,
+):
+
+    def summary_job_state(job_states_summary: Optional[Dict]):
+        states = (job_states_summary or {}).get("states").copy()
+        states.pop("ok").pop("skipped")
+        if states:
+            return next(states.keys())
+        else:
+            return "ok"
+
+    def summarize(invocation_id: str):
+        invocation = _retry_on_timeouts(ctx, user_gi, lambda gi: gi.invocations.show_invocation(invocation_id))
+        invocation_jobs = _retry_on_timeouts(
+            ctx, user_gi, lambda gi: gi.invocations.get_invocation_summary(invocation_id)
+        )
+        return invocation, invocation_jobs
+
+    ctx.vlog("Waiting for invocation [%s]" % invocation_id)
+    done_polling = False
+    last_invocation = None
+    last_invocation_jobs = None
+    last_exception = None
+    while not done_polling:
+        try:
+            last_invocation, last_invocation_jobs = summarize(invocation_id)
+            workflow_progress_display.handle_invocation(last_invocation, last_invocation_jobs)
+            final_invocation_state = workflow_progress_display.workflow_progress.invocation_state
+            if workflow_progress_display.workflow_progress.invocation_scheduling_terminal and no_wait:
+                done_polling = True
+                break
+            if not no_wait and workflow_progress_display.workflow_progress.jobs_terminal:
+                done_polling = True
+                break
+            time.sleep(1)
+        except Exception as e:
+            last_exception = e
+            done_polling = True
+
+    final_invocation_state = "new" if not last_invocation else last_invocation["state"]
+    job_state = summary_job_state(last_invocation_jobs)
+    ctx.vlog(f"Final state of invocation {invocation_id} is [{final_invocation_state}]")
+
+    def workflow_in_error() -> str:
+        error_message = None
+        if last_exception:
+            ctx.vlog(f"Problem waiting on invocation: {str(last_exception)}")
+            error_message = f"Final state of invocation {invocation_id} is [{final_invocation_state}]"
+
+        if final_invocation_state != "scheduled":
+            msg = f"Failed to run workflow, invocation ended in [{final_invocation_state}] state."
+            ctx.vlog(msg)
+            error_message = msg if not error_message else f"{error_message}. {msg}"
+
+        if job_state != "ok":
+            msg = f"Failed to run workflow, at least one job is in [{job_state}] state."
+            ctx.vlog(msg)
+            error_message = msg if not error_message else f"{error_message}. {msg}"
+
+        return error_message
+
+    error_message = workflow_in_error()
+    if error_message:
+        summarize_history(ctx, user_gi, history_id)
+        return final_invocation_state, job_state, error_message
+
+    if not no_wait:
+        subworkflow_ids = subworkflow_invocation_ids(user_gi, invocation_id)
+        workflow_progress_display.register_subworkflow_invocation_ids(subworkflow_ids)
+        done_polling = workflow_progress_display.all_subworkflows_complete()
+        while not done_polling:
+            try:
+                a_subworkflow_invocation_id = workflow_progress_display.an_incomplete_subworkflow_id()
+                subworkflow_subworkflow_invocation_ids = subworkflow_invocation_ids(
+                    user_gi, a_subworkflow_invocation_id
+                )
+                workflow_progress_display.register_subworkflow_invocation_ids(subworkflow_subworkflow_invocation_ids)
+
+                last_invocation, last_invocation_jobs = summarize(invocation_id)
+                workflow_progress_display.handle_subworkflow_invocation(last_invocation, last_invocation_jobs)
+
+                scheduling_terminal = workflow_progress_display.subworkflow_progress.invocation_scheduling_terminal
+                jobs_terminal = workflow_progress_display.subworkflow_progress.jobs_terminal
+                if scheduling_terminal and jobs_terminal:
+                    workflow_progress_display.complete_subworkflow(a_subworkflow_invocation_id)
+                done_polling = workflow_progress_display.all_subworkflows_complete()
+            except Exception as e:
+                last_exception = e
+                done_polling = True
+
+        final_invocation_state = "new" if not last_invocation else last_invocation["state"]
+        job_state = summary_job_state(last_invocation_jobs)
+        ctx.vlog(f"Final state of invocation {invocation_id} is [{final_invocation_state}]")
+
+        error_message = workflow_in_error()
+        if error_message:
+            summarize_history(ctx, user_gi, history_id)
+            return final_invocation_state, job_state, error_message
+
+    return final_invocation_state, job_state, error_message
+
+
+def subworkflow_invocation_ids(user_gi, invocation_id: str):
+    invocation = user_gi.invocations.show_invocation(invocation_id)
+    subworkflow_invocation_ids = []
+    for step in invocation["steps"]:
+        if step.get("subworkflow_invocation_id") is not None:
+            subworkflow_invocation_ids.append(step["subworkflow_invocation_id"])
+    return subworkflow_invocation_ids
 
 
 def _wait_for_invocation(ctx, gi, invocation_id, polling_backoff=0):
