@@ -15,9 +15,7 @@ from planemo.test.results import StructuredData
 
 @click.command("workflow_test_on_invocation")
 @options.optional_tools_arg(multiple=False, allow_uris=False, metavar="TEST.YML")
-@options.required_invocation_id_arg()
-@options.galaxy_url_option(required=True)
-@options.galaxy_user_key_option(required=True)
+@options.invocation_target_options()
 @options.test_index_option()
 @options.test_output_options()
 @command_function
