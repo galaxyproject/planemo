@@ -6,6 +6,7 @@ from typing import (
     Set,
 )
 
+from io import StringIO
 from rich.console import Group
 from rich.live import Live
 from rich.panel import Panel
@@ -17,11 +18,26 @@ from rich.progress import (
     TaskProgressColumn,
 )
 from rich.theme import Theme
-from io import StringIO
+from typing_extensions import TypedDict
 
 # uses a bit more space but has better visual separation between subworkflows and workflows
 DISPLAY_SUBWORKFLOW_AS_PANEL = True
 DISPLAY_INCLUDE_JOB_STATE_BREAKDOWN = True
+
+# Types for various invocation responses
+class InvocationStep(TypedDict, total=False):
+    state: Optional[str]
+    subworkflow_invocation_id: Optional[str]
+
+
+class Invocation(TypedDict, total=False):
+    id: str
+    state: str
+    steps: List[InvocationStep]
+
+
+class InvocationJobsSummary(TypedDict, total=False):
+    states: Dict[str, int]
 
 
 class WorkflowProgress(Progress):
@@ -65,7 +81,7 @@ class WorkflowProgress(Progress):
     def jobs_terminal(self):
         return self.job_count is not None and self.job_count == self.jobs_terminal_count
 
-    def handle_invocation(self, invocation: Dict, job_state_summary: Dict):
+    def handle_invocation(self, invocation: Invocation, job_state_summary: InvocationJobsSummary):
         self.invocation_state = invocation.get("state") or "new"
         self.step_count = len(invocation.get("steps") or []) or None
         self.step_states = step_states(invocation)
@@ -152,7 +168,7 @@ class WorkflowProgress(Progress):
 
 
 # converted from Galaxy TypeScript (see util.ts next to WorkflowInvocationState.vue)
-def count_states(job_summary: Optional[Dict], query_states: list[str]) -> int:
+def count_states(job_summary: Optional[InvocationJobsSummary], query_states: list[str]) -> int:
     count = 0
     states = job_summary.get("states") if job_summary else None
     if states:
@@ -161,7 +177,7 @@ def count_states(job_summary: Optional[Dict], query_states: list[str]) -> int:
     return count
 
 
-def job_count(job_summary: Optional[Dict]) -> int:
+def job_count(job_summary: Optional[InvocationJobsSummary]) -> int:
     states = job_summary.get("states") if job_summary else None
     count = 0
     if states:
@@ -171,7 +187,7 @@ def job_count(job_summary: Optional[Dict]) -> int:
     return count
 
 
-def step_states(invocation: Dict):
+def step_states(invocation: Invocation):
     step_states = {}
     steps = invocation.get("steps") or []
     for step in steps:
@@ -185,7 +201,7 @@ def step_states(invocation: Dict):
     return step_states
 
 
-def ok_count(job_summary: Dict) -> int:
+def ok_count(job_summary: InvocationJobsSummary) -> int:
     return count_states(job_summary, ["ok", "skipped"])
 
 
@@ -193,11 +209,11 @@ def ok_count(job_summary: Dict) -> int:
 ERROR_STATES = ["error", "deleted", "failed", "stopped", "stop", "deleting"]
 
 
-def error_count(job_summary: Dict) -> int:
+def error_count(job_summary: InvocationJobsSummary) -> int:
     return count_states(job_summary, ERROR_STATES)
 
 
-def running_count(job_summary: Dict) -> int:
+def running_count(job_summary: InvocationJobsSummary) -> int:
     return count_states(job_summary, ["running"])
 
 
@@ -278,11 +294,11 @@ class WorkflowProgressDisplay(Live):
     def _update_panel(self):
         self.update(self._panel())
 
-    def handle_invocation(self, invocation: Dict, job_state_summary: Dict):
+    def handle_invocation(self, invocation: Invocation, job_state_summary: InvocationJobsSummary):
         self.workflow_progress.handle_invocation(invocation, job_state_summary)
         self._update_panel()
 
-    def handle_subworkflow_invocation(self, invocation, job_state_summary):
+    def handle_subworkflow_invocation(self, invocation: Invocation, job_state_summary: InvocationJobsSummary):
         self.subworkflow_invocation_id = invocation["id"]
         self.subworkflow_progress.handle_invocation(invocation, job_state_summary)
         self._update_panel()
