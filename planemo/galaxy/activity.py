@@ -36,12 +36,12 @@ from galaxy.util import (
     unicodify,
 )
 from pathvalidate import sanitize_filename
-from requests.exceptions import (
-    HTTPError,
-    RequestException,
-)
+from requests.exceptions import HTTPError
 
-from planemo.galaxy.api import summarize_history
+from planemo.galaxy.api import (
+    retry_on_timeouts,
+    summarize_history,
+)
 from planemo.io import wait_on
 from planemo.runnable import (
     ErrorRunResponse,
@@ -832,28 +832,9 @@ def wait_for_invocation_and_jobs(
 
 def _wait_for_invocation(ctx, gi, invocation_id, polling_backoff=0):
     def state_func():
-        return _retry_on_timeouts(ctx, gi, lambda gi: gi.invocations.show_invocation(invocation_id))
+        return retry_on_timeouts(ctx, gi, lambda gi: gi.invocations.show_invocation(invocation_id))
 
     return _wait_on_state(state_func, polling_backoff)
-
-
-def _retry_on_timeouts(ctx, gi, f):
-    gi.timeout = 60
-    try_count = 5
-    try:
-        for try_num in range(try_count):
-            start_time = time.time()
-            try:
-                return f(gi)
-            except RequestException:
-                end_time = time.time()
-                if end_time - start_time > 45 and (try_num + 1) < try_count:
-                    ctx.vlog("Galaxy seems to have timed out, retrying to fetch status.")
-                    continue
-                else:
-                    raise
-    finally:
-        gi.timeout = None
 
 
 def has_jobs_in_states(ctx, gi, history_id, states):
@@ -870,7 +851,7 @@ def _wait_for_history(ctx, gi, history_id, polling_backoff=0):
     # no need to wait for active jobs anymore I think.
 
     def state_func():
-        return _retry_on_timeouts(ctx, gi, lambda gi: gi.histories.show_history(history_id))
+        return retry_on_timeouts(ctx, gi, lambda gi: gi.histories.show_history(history_id))
 
     return _wait_on_state(state_func, polling_backoff)
 
@@ -883,7 +864,7 @@ def _wait_for_invocation_jobs(ctx, gi, invocation_id, polling_backoff=0, early_t
     ctx.log(f"waiting for invocation {invocation_id}")
 
     def state_func():
-        return _retry_on_timeouts(ctx, gi, lambda gi: gi.jobs.get_jobs(invocation_id=invocation_id))
+        return retry_on_timeouts(ctx, gi, lambda gi: gi.jobs.get_jobs(invocation_id=invocation_id))
 
     return _wait_on_state(state_func, polling_backoff, early_termination=early_termination)
 
