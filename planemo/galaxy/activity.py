@@ -251,18 +251,24 @@ def invocation_to_run_response(
 
     ctx.vlog("Waiting for invocation [%s]" % invocation_id)
 
-    final_invocation_state, job_state, error_message = wait_for_invocation_and_jobs(
-        ctx,
-        invocation_id=invocation_id,
-        history_id=history_id,
-        user_gi=user_gi,
-        no_wait=no_wait,
-        polling_backoff=polling_backoff,
-    )
-    if final_invocation_state not in ("ok", "skipped", "scheduled"):
-        msg = f"Failed to run workflow [{workflow_id}], at least one job is in [{final_invocation_state}] state."
-        ctx.vlog(msg)
-        summarize_history(ctx, user_gi, history_id)
+    if not no_wait:
+        final_invocation_state, job_state, error_message = wait_for_invocation_and_jobs(
+            ctx,
+            invocation_id=invocation_id,
+            history_id=history_id,
+            user_gi=user_gi,
+            polling_backoff=polling_backoff,
+        )
+
+        if final_invocation_state not in ("ok", "skipped", "scheduled"):
+            msg = f"Failed to run workflow [{workflow_id}], at least one job is in [{final_invocation_state}] state."
+            ctx.vlog(msg)
+            summarize_history(ctx, user_gi, history_id)
+
+    else:
+        final_invocation_state = invocation["state"]
+        job_state = None
+        error_message = None
 
     return GalaxyWorkflowRunResponse(
         ctx,
@@ -766,7 +772,7 @@ def _history_id(gi, **kwds) -> str:
 
 
 def wait_for_invocation_and_jobs(
-    ctx, invocation_id: str, history_id: str, user_gi: GalaxyInstance, no_wait: bool, polling_backoff: int
+    ctx, invocation_id: str, history_id: str, user_gi: GalaxyInstance, polling_backoff: int
 ):
     ctx.vlog("Waiting for invocation [%s]" % invocation_id)
     final_invocation_state = "new"
@@ -784,25 +790,23 @@ def wait_for_invocation_and_jobs(
 
     ctx.vlog(f"Final state of invocation {invocation_id} is [{final_invocation_state}]")
 
-    if not no_wait:
-        job_state = _wait_for_invocation_jobs(ctx, user_gi, invocation_id, polling_backoff)
-        if job_state not in ("ok", "skipped"):
-            msg = f"Failed to run workflow, at least one job is in [{job_state}] state."
-            error_message = msg if not error_message else f"{error_message}. {msg}"
-        else:
-            for subworkflow_invocation_id in subworkflow_invocation_ids(user_gi, invocation_id):
-                final_invocation_state, job_state, error_message = wait_for_invocation_and_jobs(
-                    ctx,
-                    invocation_id=subworkflow_invocation_id,
-                    history_id=history_id,
-                    user_gi=user_gi,
-                    no_wait=no_wait,
-                    polling_backoff=polling_backoff,
-                )
-                if final_invocation_state != "scheduled" or job_state not in ("ok", "skipped"):
-                    return final_invocation_state, job_state, error_message
+    job_state = _wait_for_invocation_jobs(ctx, user_gi, invocation_id, polling_backoff)
+    if job_state not in ("ok", "skipped"):
+        msg = f"Failed to run workflow, at least one job is in [{job_state}] state."
+        error_message = msg if not error_message else f"{error_message}. {msg}"
+    else:
+        for subworkflow_invocation_id in subworkflow_invocation_ids(user_gi, invocation_id):
+            final_invocation_state, job_state, error_message = wait_for_invocation_and_jobs(
+                ctx,
+                invocation_id=subworkflow_invocation_id,
+                history_id=history_id,
+                user_gi=user_gi,
+                polling_backoff=polling_backoff,
+            )
+            if final_invocation_state != "scheduled" or job_state not in ("ok", "skipped"):
+                return final_invocation_state, job_state, error_message
 
-        ctx.vlog(f"The final state of all jobs and subworkflow invocations for invocation [{invocation_id}] is 'ok'")
+    ctx.vlog(f"The final state of all jobs and subworkflow invocations for invocation [{invocation_id}] is 'ok'")
     return final_invocation_state, job_state, error_message
 
 
