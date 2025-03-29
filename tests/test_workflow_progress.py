@@ -1,6 +1,6 @@
 import time
 
-from planemo.galaxy.workflow_progress import (
+from planemo.galaxy.invocations.progress import (
     WorkflowProgress,
     WorkflowProgressDisplay,
 )

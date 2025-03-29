@@ -24,6 +24,7 @@ from typing_extensions import TypedDict
 DISPLAY_SUBWORKFLOW_AS_PANEL = True
 DISPLAY_INCLUDE_JOB_STATE_BREAKDOWN = True
 
+
 # Types for various invocation responses
 class InvocationStep(TypedDict, total=False):
     state: Optional[str]

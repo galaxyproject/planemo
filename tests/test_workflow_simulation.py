@@ -1,10 +1,11 @@
-from planemo.galaxy.workflow_progress import (
+from planemo.galaxy.invocations.progress import (
     WorkflowProgressDisplay,
 )
-from planemo.galaxy.workflow_simulation import (
+from planemo.galaxy.invocations.simulations import (
     parse_workflow_simulation_from_string,
     simple_display,
 )
+
 
 SCENARIO_1 = """
 states: [new, ready:4, scheduled]
