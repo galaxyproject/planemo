@@ -2220,6 +2220,14 @@ def mulled_action_option():
     )
 
 
+def invocation_target_options():
+    return _compose(
+        required_invocation_id_arg(),
+        galaxy_url_option(required=True),
+        galaxy_user_key_option(required=True),
+    )
+
+
 def mulled_options():
     return _compose(
         mulled_conda_option(),
