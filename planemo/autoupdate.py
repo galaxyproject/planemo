@@ -22,6 +22,7 @@ import yaml
 from bioblend.toolshed import ToolShedInstance
 from galaxy.tool_util.deps import conda_util
 from galaxy.tool_util.version import parse_version
+from packaging.version import Version
 
 import planemo.conda
 from planemo.galaxy.workflows import (
@@ -38,6 +39,29 @@ if TYPE_CHECKING:
     from planemo.cli import PlanemoCliContext
     from planemo.galaxy.config import LocalGalaxyConfig
     from planemo.runnable import Runnable
+
+
+def bump_version(version_str: str) -> str:
+    version = Version(version_str)
+
+    # Extract base version and pre-release parts
+    base_version = list(version.release)
+    pre = version.pre
+    post = version.post
+    dev = version.dev
+
+    if pre:
+        # Increment the pre-release number (e.g., beta1 -> beta2)
+        new_pre = (pre[0], pre[1] + 1)
+        return f"{'.'.join(map(str, base_version))}{new_pre[0]}{new_pre[1]}"
+    elif post:
+        return f"{version.base_version}.post{post + 1}"
+    elif dev:
+        return f"{version.base_version}.dev{dev + 1}"
+    else:
+        # Find the most minor specified version part and increment it
+        base_version[-1] += 1
+        return ".".join(map(str, base_version))
 
 
 def find_macros(xml_tree: ElementTree) -> List[Any]:
@@ -369,7 +393,5 @@ def fix_workflow(original_wf: Dict[str, Any], updated_wf: Dict[str, Any]) -> Dic
     # * bump release number if present
     # check release; bump if it exists
     if original_wf.get("release"):
-        release = [int(n) for n in original_wf["release"].split(".")]
-        release[-1] += 1
-        updated_wf["release"] = ".".join([str(n) for n in release])
+        updated_wf["release"] = bump_version(original_wf["release"])
     return updated_wf
