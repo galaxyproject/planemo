@@ -1,3 +1,5 @@
 name: cat2
 owner: iuc
 description: cat2 tool
+categories:
+- Text Manipulation
