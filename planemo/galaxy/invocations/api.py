@@ -26,6 +26,7 @@ class Invocation(TypedDict, total=False):
     id: str
     state: str
     steps: List[InvocationStep]
+    history_id: Optional[str]
 
 
 class InvocationJobsSummary(TypedDict, total=False):
