@@ -56,6 +56,7 @@ def wait_for_invocation_and_jobs(
     last_subworkflow_invocation = None
     last_subworkflow_invocation_jobs = None
     last_exception = None
+    error_message: Optional[str] = None
 
     done_polling = False
     while not done_polling:
@@ -120,6 +121,7 @@ def wait_for_invocation_and_jobs(
 
     ctx.vlog(f"The final state of all jobs and subworkflow invocations for invocation [{invocation_id}] is 'ok'")
     job_state = summary_job_state(last_invocation_jobs)
+    assert last_invocation
     return last_invocation["state"], job_state, error_message
 
 
@@ -152,7 +154,7 @@ def workflow_in_error_message(
 # we're still mocking out the old history state by just picking out a random
 # job state of interest. Seems like we should drop this.
 def summary_job_state(job_states_summary: Optional[InvocationJobsSummary]):
-    states = (job_states_summary or {"states": {}}).get("states").copy()
+    states = (job_states_summary or {"states": {}}).get("states", {}).copy()
     states.pop("ok", None)
     states.pop("skipped", None)
     if states:
@@ -165,6 +167,7 @@ def subworkflow_invocation_ids(invocation_api: InvocationApi, invocation_id: str
     invocation = invocation_api.get_invocation(invocation_id)
     subworkflow_invocation_ids = []
     for step in invocation["steps"]:
-        if step.get("subworkflow_invocation_id") is not None:
-            subworkflow_invocation_ids.append(step["subworkflow_invocation_id"])
+        subworkflow_invocation_id = step.get("subworkflow_invocation_id")
+        if subworkflow_invocation_id:
+            subworkflow_invocation_ids.append(subworkflow_invocation_id)
     return subworkflow_invocation_ids

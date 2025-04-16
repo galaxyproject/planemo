@@ -2,6 +2,7 @@
 
 from collections import deque
 from typing import (
+    Dict,
     List,
     Optional,
 )
@@ -11,6 +12,7 @@ import yaml
 
 from .api import Invocation as InvocationResponse
 from .api import InvocationJobsSummary
+from .api import InvocationStep as InvocationStepResponse
 
 
 class Ticks:
@@ -46,7 +48,7 @@ class HasState(Ticks):
     def __init__(self, after: int, states: List[StateWithDuration]):
         self.after = after or 0
         self.states = deque(states)
-        self.final_state = None
+        self.final_state: Optional[str] = None
 
     def tick_when_active(self) -> None:
         if self.final_state is not None:
@@ -128,13 +130,13 @@ class Invocation(HasState):
                 return step.invocation
         raise Exception(f"Unknown subworkflow invocation id ({subworkflow_invocation_id})")
 
-    def get_subworkflow_invocation_by_step_index(self, index: int) -> "Invocation":
+    def get_subworkflow_invocation_by_step_index(self, index: int) -> Optional["Invocation"]:
         return self.steps[index].invocation
 
     def get_api_invocation(self) -> InvocationResponse:
-        steps = []
+        steps: List[InvocationStepResponse] = []
         for step in self.active_steps:
-            api_step = {
+            api_step: InvocationStepResponse = {
                 "state": step.state,
             }
             if step.invocation:
@@ -148,16 +150,16 @@ class Invocation(HasState):
         }
 
     def get_api_jobs_summary(self) -> InvocationJobsSummary:
-        jobs = []
+        job_states = []
         for step in self.active_steps:
             for job in step.active_jobs:
                 api_job = {
                     "state": job.state,
                 }
-                jobs.append(api_job)
-        by_state = {}
-        for job in jobs:
-            state = job["state"]
+                job_states.append(api_job)
+        by_state: Dict[str, int] = {}
+        for job_state in job_states:
+            state = job_state["state"]
             if state not in by_state:
                 by_state[state] = 0
             by_state[state] += 1
@@ -188,7 +190,7 @@ def parse_workflow_simulation_invocation_step(workflow_simulation_invocation_ste
     jobs = None
     if "jobs" in workflow_simulation_invocation_step:
         jobs = []
-        for job in workflow_simulation_invocation_step.get("jobs"):
+        for job in workflow_simulation_invocation_step.get("jobs") or []:
             jobs.append(parse_workflow_simulation_job(job))
     return InvocationStep(jobs, invocation, after, states)
 
@@ -197,7 +199,7 @@ def parse_workflow_simulation_invocation(workflow_simulation_invocation: dict) -
     states = parse_states_from(workflow_simulation_invocation)
     after = parse_after_from(workflow_simulation_invocation)
     steps = []
-    for step in workflow_simulation_invocation.get("steps"):
+    for step in workflow_simulation_invocation.get("steps") or []:
         steps.append(parse_workflow_simulation_invocation_step(step))
 
     return Invocation(steps, after, states)
