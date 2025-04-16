@@ -42,9 +42,7 @@ from planemo.galaxy.api import (
     summarize_history,
 )
 from planemo.galaxy.invocations.api import BioblendInvocationApi
-from planemo.galaxy.invocations.polling import (
-    PollingTrackerImpl,
-)
+from planemo.galaxy.invocations.polling import PollingTrackerImpl
 from planemo.galaxy.invocations.polling import wait_for_invocation_and_jobs as polling_wait_for_invocation_and_jobs
 from planemo.galaxy.invocations.progress import WorkflowProgressDisplay
 from planemo.io import wait_on
