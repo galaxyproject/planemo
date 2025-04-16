@@ -784,12 +784,7 @@ def _history_id(gi, **kwds) -> str:
 
 
 def wait_for_invocation_and_jobs(
-    ctx,
-    invocation_id: str,
-    history_id: str,
-    user_gi: GalaxyInstance,
-    polling_backoff: int,
-    early_termination: bool,
+    ctx, invocation_id: str, history_id: Optional[str], user_gi: GalaxyInstance, polling_backoff: int, early_termination: bool,
 ):
     polling_tracker = PollingTrackerImpl(polling_backoff)
     invocation_api = BioblendInvocationApi(ctx, user_gi)
@@ -798,6 +793,9 @@ def wait_for_invocation_and_jobs(
             ctx, invocation_id, invocation_api, polling_tracker, workflow_progress_display, early_termination=early_termination
         )
         if error_message:
+            if not history_id:
+                invocation = invocation_api.get_invocation(invocation_id)
+                history_id = invocation["history_id"]
             summarize_history(ctx, user_gi, history_id)
         return final_invocation_state, job_state, error_message
 
