@@ -5,7 +5,7 @@ import click
 from planemo import options
 from planemo.cli import command_function
 from planemo.engine.factory import engine_context
-from planemo.galaxy.workflow_progress import WorkflowProgress
+from planemo.galaxy.invocations.progress import WorkflowProgress
 
 
 @click.command("workflow_track")
