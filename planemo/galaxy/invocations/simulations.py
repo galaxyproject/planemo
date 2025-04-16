@@ -10,9 +10,7 @@ from uuid import uuid4
 import yaml
 
 from .api import Invocation as InvocationResponse
-from .api import (
-    InvocationJobsSummary,
-)
+from .api import InvocationJobsSummary
 
 
 class Ticks:
