@@ -43,37 +43,35 @@ class InvocationJobsSummary(TypedDict, total=False):
 
 
 class WorkflowProgress(Progress):
-    invocation_state: str = "new"
-    step_count: Optional[int] = None
-    job_count: int = 0
-    steps_color: str
-    jobs_color: str
-    subworkflows_color: str
-    step_states: Dict = {}
-    num_ok: int = 0
-    num_new: int = 0
-    num_queued: int = 0
-    num_running: int = 0
-    num_errors: int = 0
-    num_paused: int = 0
-
-    num_subworkflows: int = 0
-    num_subworkflows_complete: int = 0
 
     _jobs_task: TaskID
     _steps_task: TaskID
     _subworkflows_task: Optional[TaskID] = None
 
     def __init__(self, display: DisplayConfiguration):
+        self.invocation_state: str = "new"
+        self.step_count: Optional[int] = None
+        self.job_count: Optional[int] = 0
+        self.jobs_completed: Optional[int] = None
+        self.step_states: Dict[str, int] = {}
+        self.num_ok: int = 0
+        self.num_new: int = 0
+        self.num_queued: int = 0
+        self.num_running: int = 0
+        self.num_errors: int = 0
+        self.num_paused: int = 0
+
+        self.num_subworkflows: int = 0
+        self.num_subworkflows_complete: int = 0
         self.display = display
         bar_column = BarColumn(
             style=self.display.style_bar_back,
             finished_style=self.display.style_bar_finished,
             complete_style=self.display.style_bar_complete,
         )
-        self.jobs_color = self.display.style_initializing
-        self.steps_color = self.display.style_initializing
-        self.subworkflows_color = self.display.style_initializing
+        self.jobs_color: str = self.display.style_initializing
+        self.steps_color: str = self.display.style_initializing
+        self.subworkflows_color: str = self.display.style_initializing
         super().__init__(
             TextColumn("[progress.description]{task.description}"),
             TextColumn(display.divider),
@@ -153,7 +151,7 @@ class WorkflowProgress(Progress):
         self.jobs_completed = self.num_ok + self.num_errors
         self.num_paused = count_states(job_state_summary, ["paused"])
         self.jobs_terminal_count = self.jobs_completed + self.num_paused
-        jobs_total = self.job_count
+        jobs_total: Optional[int] = self.job_count
         if self.num_errors > 0:
             self.jobs_color = self.display.style_error
         elif self.job_count > 0:
@@ -251,18 +249,15 @@ def running_count(job_summary: InvocationJobsSummary) -> int:
 
 
 class WorkflowProgressDisplay(Live):
-    workflow_progress: WorkflowProgress
-    subworkflow_progress: Optional[WorkflowProgress] = None
-    subworkflow_invocation_ids_seen: Set[str] = set()
-    subworkflow_invocation_ids_completed: Set[str] = set()
-    invocation_id: str
-    subworkflow_invocation_id: Optional[str] = None
 
     def __init__(
         self,
         invocation_id: str,
         display_configuration: Optional[DisplayConfiguration] = None,
     ):
+        self.subworkflow_invocation_ids_seen: Set[str] = set()
+        self.subworkflow_invocation_ids_completed: Set[str] = set()
+        self.subworkflow_invocation_id: Optional[str] = None
         self.invocation_id = invocation_id
         display = display_configuration or DisplayConfiguration()
         self.display = display
@@ -271,10 +266,12 @@ class WorkflowProgressDisplay(Live):
         super().__init__(self._panel())
 
     def _register_subworkflow_invocation_ids_from(self, invocation: Invocation):
-        subworkflow_invocation_ids = []
-        for step in invocation["steps"]:
-            if step.get("subworkflow_invocation_id") is not None:
-                subworkflow_invocation_ids.append(step["subworkflow_invocation_id"])
+        subworkflow_invocation_ids: List[str] = []
+        steps = invocation.get("steps") or []
+        for step in steps:
+            subworkflow_invocation_id = step.get("subworkflow_invocation_id")
+            if subworkflow_invocation_id:
+                subworkflow_invocation_ids.append(subworkflow_invocation_id)
         self._register_subworkflow_invocation_ids(subworkflow_invocation_ids)
 
     def _register_subworkflow_invocation_ids(self, ids: List[str]):

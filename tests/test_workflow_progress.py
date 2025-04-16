@@ -4,6 +4,7 @@ from planemo.galaxy.invocations.progress import (
     WorkflowProgress,
     WorkflowProgressDisplay,
 )
+from planemo.galaxy.invocations.progress_display import DisplayConfiguration
 
 STEP_NEW = {"state": "new"}
 STEP_SCHEDULED = {"state": "scheduled"}
@@ -80,7 +81,7 @@ def test_workflow_progress_typical():
 
 
 def test_workflow_progress_scheduling_state_handling():
-    with WorkflowProgress() as workflow_progress:
+    with WorkflowProgress(DisplayConfiguration()) as workflow_progress:
         workflow_progress.handle_invocation({"state": "new", "steps": [STEP_NEW]}, {"states": {"new": 1}})
         assert not workflow_progress.invocation_scheduling_terminal
 
@@ -124,7 +125,7 @@ def test_workflow_progress_scheduling_state_handling():
 def test_workflow_progress_job_state_handling():
     scheduled_invocation = {"state": "scheduled", "steps": [STEP_SCHEDULED]}
 
-    with WorkflowProgress() as workflow_progress:
+    with WorkflowProgress(DisplayConfiguration()) as workflow_progress:
         workflow_progress.handle_invocation(scheduled_invocation, {"states": {"new": 1}})
         assert not workflow_progress.jobs_terminal
 
