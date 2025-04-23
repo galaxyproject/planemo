@@ -215,7 +215,7 @@ def _execute(  # noqa C901
             no_wait=kwds.get("no_wait", False),
             start_datetime=start_datetime,
             log=log_contents_str(config),
-            early_termination=kwds.get("no_early_termination", False),
+            early_termination=not kwds.get("no_early_termination", False),
         )
 
     else:
