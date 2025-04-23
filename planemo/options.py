@@ -2067,6 +2067,19 @@ def tool_init_example_command_option(help=EXAMPLE_COMMAND_HELP):
     )
 
 
+def no_early_termination_option():
+    return planemo_option(
+        "--no_early_termination",
+        is_flag=True,
+        default=False,
+        prompt=False,
+        help=(
+            "Do not terminate when a job of a workflow fails, but other "
+            "jobs are still queued or running."
+        ),
+    )
+
+
 def mulled_conda_option():
     return planemo_option(
         "--mulled_conda_version",

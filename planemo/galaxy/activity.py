@@ -215,6 +215,7 @@ def _execute(  # noqa C901
             no_wait=kwds.get("no_wait", False),
             start_datetime=start_datetime,
             log=log_contents_str(config),
+            early_termination=kwds.get("no_early_termination", False),
         )
 
     else:
@@ -240,7 +241,7 @@ def _execute(  # noqa C901
 
 
 def invocation_to_run_response(
-    ctx, user_gi, runnable, invocation, polling_backoff=0, no_wait=False, start_datetime=None, log=None
+    ctx, user_gi, runnable, invocation, polling_backoff=0, no_wait=False, start_datetime=None, log=None, early_termination=True
 ):
     start_datetime = start_datetime or datetime.now()
     invocation_id = invocation["id"]
@@ -256,6 +257,7 @@ def invocation_to_run_response(
         user_gi=user_gi,
         no_wait=no_wait,
         polling_backoff=polling_backoff,
+        early_termination=early_termination,
     )
     if final_invocation_state not in ("ok", "skipped", "scheduled"):
         msg = f"Failed to run workflow [{workflow_id}], at least one job is in [{final_invocation_state}] state."
@@ -764,7 +766,7 @@ def _history_id(gi, **kwds) -> str:
 
 
 def wait_for_invocation_and_jobs(
-    ctx, invocation_id: str, history_id: str, user_gi: GalaxyInstance, no_wait: bool, polling_backoff: int
+    ctx, invocation_id: str, history_id: str, user_gi: GalaxyInstance, no_wait: bool, polling_backoff: int, early_termination: bool
 ):
     ctx.vlog("Waiting for invocation [%s]" % invocation_id)
     final_invocation_state = "new"
@@ -783,7 +785,7 @@ def wait_for_invocation_and_jobs(
     ctx.vlog(f"Final state of invocation {invocation_id} is [{final_invocation_state}]")
 
     if not no_wait:
-        job_state = _wait_for_invocation_jobs(ctx, user_gi, invocation_id, polling_backoff)
+        job_state = _wait_for_invocation_jobs(ctx, user_gi, invocation_id, polling_backoff, early_termination)
         if job_state not in ("ok", "skipped"):
             msg = f"Failed to run workflow, at least one job is in [{job_state}] state."
             error_message = msg if not error_message else f"{error_message}. {msg}"
@@ -799,6 +801,7 @@ def wait_for_invocation_and_jobs(
                         user_gi=user_gi,
                         no_wait=no_wait,
                         polling_backoff=polling_backoff,
+                        early_termination=early_termination,
                     )
                     if final_invocation_state != "scheduled" or job_state not in ("ok", "skipped"):
                         return final_invocation_state, job_state, error_message
@@ -852,7 +855,7 @@ def _wait_for_history(ctx, gi, history_id, polling_backoff=0):
     return _wait_on_state(state_func, polling_backoff)
 
 
-def _wait_for_invocation_jobs(ctx, gi, invocation_id, polling_backoff=0):
+def _wait_for_invocation_jobs(ctx, gi, invocation_id, polling_backoff=0, early_termination=True):
     # Wait for invocation jobs to finish. Less brittle than waiting for a history to finish,
     # as you could have more than one invocation in a history, or an invocation without
     # steps that produce history items.
@@ -862,7 +865,7 @@ def _wait_for_invocation_jobs(ctx, gi, invocation_id, polling_backoff=0):
     def state_func():
         return _retry_on_timeouts(ctx, gi, lambda gi: gi.jobs.get_jobs(invocation_id=invocation_id))
 
-    return _wait_on_state(state_func, polling_backoff)
+    return _wait_on_state(state_func, polling_backoff, early_termination=early_termination)
 
 
 def _wait_for_job(gi, job_id, timeout=None):
@@ -872,7 +875,7 @@ def _wait_for_job(gi, job_id, timeout=None):
     return _wait_on_state(state_func, timeout=timeout)
 
 
-def _wait_on_state(state_func, polling_backoff=0, timeout=None):
+def _wait_on_state(state_func, polling_backoff=0, timeout=None, early_termination=True):
     def get_state():
         response = state_func()
         if not isinstance(response, list):
@@ -894,10 +897,11 @@ def _wait_on_state(state_func, polling_backoff=0, timeout=None):
             "cancelled",
             "failed",
         ]
-        for terminal_state in hierarchical_fail_states:
-            if terminal_state in current_states:
-                # If we got here something has failed and we can return (early)
-                return terminal_state
+        if early_termination:
+            for terminal_state in hierarchical_fail_states:
+                if terminal_state in current_states:
+                    # If we got here something has failed and we can return (early)
+                    return terminal_state
         if current_non_terminal_states:
             return None
         if len(current_states) > 1:
