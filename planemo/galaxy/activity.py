@@ -897,7 +897,7 @@ def _wait_on_state(state_func, polling_backoff=0, timeout=None, early_terminatio
             "cancelled",
             "failed",
         ]
-        if early_termination:
+        if early_termination or len(current_states & non_terminal_states) == 0:
             for terminal_state in hierarchical_fail_states:
                 if terminal_state in current_states:
                     # If we got here something has failed and we can return (early)
