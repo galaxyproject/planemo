@@ -158,6 +158,10 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
         tool_id = tool_source.parse_id()
         tool_version = parse_version(tool_source.parse_version())
 
+        # check if there is already such a repo (otherwise get_ordered_installable_revisions will log an error for new repos)
+        if len(tsi.repositories.get_repositories(repo_name, repo_owner)) == 0:
+            continue
+
         try:
             installable_revisions = tsi.repositories.get_ordered_installable_revisions(repo_name, repo_owner)
         except ConnectionError:
