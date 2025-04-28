@@ -148,7 +148,7 @@ def cli(ctx, paths, **kwds):  # noqa C901
                     edited_workflow = autoupdate.fix_workflow(original_workflow, updated_workflow)
                     with open(workflow.path, "w") as f:
                         if workflow.path.endswith(".ga"):
-                            json.dump(edited_workflow, f, indent=4)
+                            json.dump(edited_workflow, f, ensure_ascii=False, indent=4)
                         else:
                             gxformat2_wf = from_galaxy_native(edited_workflow)
                             if "release" in edited_workflow:
