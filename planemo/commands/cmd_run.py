@@ -60,7 +60,7 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
         outputs_dict = run_result.outputs_dict
         if output_json:
             with open(output_json, "w") as f:
-                json.dump(outputs_dict, f)
+                json.dump(outputs_dict, f, ensure_ascii=False)
         info("Run completed successfully.")
 
     report_data = StructuredData(data={"tests": [run_result.structured_data()], "version": "0.1"})
