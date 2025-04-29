@@ -2073,10 +2073,7 @@ def no_early_termination_option():
         is_flag=True,
         default=False,
         prompt=False,
-        help=(
-            "Do not terminate when a job of a workflow fails, but other "
-            "jobs are still queued or running."
-        ),
+        help="Wait until all jobs terminate, even if some jobs have failed",
     )
 
 
