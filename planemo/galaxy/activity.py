@@ -241,7 +241,15 @@ def _execute(  # noqa C901
 
 
 def invocation_to_run_response(
-    ctx, user_gi, runnable, invocation, polling_backoff=0, no_wait=False, start_datetime=None, log=None, early_termination=True
+    ctx,
+    user_gi,
+    runnable,
+    invocation,
+    polling_backoff=0,
+    no_wait=False,
+    start_datetime=None,
+    log=None,
+    early_termination=True,
 ):
     start_datetime = start_datetime or datetime.now()
     invocation_id = invocation["id"]
@@ -766,7 +774,13 @@ def _history_id(gi, **kwds) -> str:
 
 
 def wait_for_invocation_and_jobs(
-    ctx, invocation_id: str, history_id: str, user_gi: GalaxyInstance, no_wait: bool, polling_backoff: int, early_termination: bool
+    ctx,
+    invocation_id: str,
+    history_id: str,
+    user_gi: GalaxyInstance,
+    no_wait: bool,
+    polling_backoff: int,
+    early_termination: bool,
 ):
     ctx.vlog("Waiting for invocation [%s]" % invocation_id)
     final_invocation_state = "new"
@@ -865,17 +879,17 @@ def _wait_for_invocation_jobs(ctx, gi, invocation_id, polling_backoff=0, early_t
     def state_func():
         return _retry_on_timeouts(ctx, gi, lambda gi: gi.jobs.get_jobs(invocation_id=invocation_id))
 
-    return _wait_on_state(ctx, state_func, polling_backoff, early_termination=early_termination)
+    return _wait_on_state(state_func, polling_backoff, early_termination=early_termination)
 
 
 def _wait_for_job(gi, job_id, timeout=None):
     def state_func():
         return gi.jobs.show_job(job_id, full_details=True)
 
-    return _wait_on_state(ctx, state_func, timeout=timeout)
+    return _wait_on_state(state_func, timeout=timeout)
 
 
-def _wait_on_state(ctx, state_func, polling_backoff=0, timeout=None, early_termination=True):
+def _wait_on_state(state_func, polling_backoff=0, timeout=None, early_termination=True):
     def get_state():
         response = state_func()
         if not isinstance(response, list):
@@ -902,7 +916,6 @@ def _wait_on_state(ctx, state_func, polling_backoff=0, timeout=None, early_termi
         for terminal_state in hierarchical_fail_states:
             if terminal_state in current_states:
                 # If we got here something has failed and we can return (early)
-                ctx.log(f"Early termination.")
                 return terminal_state
         if current_non_terminal_states:
             return None
