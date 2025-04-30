@@ -1,9 +1,11 @@
 """A high-level interface to local Galaxy instances using bioblend."""
 
+import time
 from io import StringIO
 from typing import Optional
 
 from bioblend.galaxy import GalaxyInstance
+from requests.exceptions import RequestException
 
 DEFAULT_ADMIN_API_KEY = "test_key"
 
@@ -134,6 +136,25 @@ def _format_for_summary(blob, empty_message, prefix="|  "):
 def _dataset_provenance(gi, history_id, id):
     provenance = gi.histories.show_dataset_provenance(history_id, id)
     return provenance
+
+
+def retry_on_timeouts(ctx, gi, f):
+    gi.timeout = 60
+    try_count = 5
+    try:
+        for try_num in range(try_count):
+            start_time = time.time()
+            try:
+                return f(gi)
+            except RequestException:
+                end_time = time.time()
+                if end_time - start_time > 45 and (try_num + 1) < try_count:
+                    ctx.vlog("Galaxy seems to have timed out, retrying to fetch status.")
+                    continue
+                else:
+                    raise
+    finally:
+        gi.timeout = None
 
 
 __all__ = (
