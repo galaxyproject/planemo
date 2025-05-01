@@ -263,7 +263,7 @@ def _execute(  # noqa C901
                     outf=archive
                 )
 
-            if kwds.get("arhicve_file"):
+            if kwds.get("archive_file"):
                 shutil.copy(archive_file_output, archive_file)
                 ctx.vlog(f"Archive {kwds.get('arhicve_file')} created.")
 
