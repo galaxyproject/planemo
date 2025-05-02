@@ -288,6 +288,20 @@ def run_output_directory_option():
     )
 
 
+def run_output_metadata_option():
+    return planemo_option(
+        "output_metadata",
+        "--output_metadata",
+        type=click.Path(
+            file_okay=True,
+            dir_okay=False,
+            resolve_path=True,
+        ),
+        default=None,
+        help=("Where to store JSON dictionary describing the metadata of " "a workflow 'run' task."),
+    )
+
+
 def run_output_json_option():
     return planemo_option(
         "output_json",

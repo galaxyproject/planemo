@@ -1,0 +1,100 @@
+{
+    "a_galaxy_workflow": "true",
+    "annotation": "",
+    "comments": [],
+    "format-version": "0.1",
+    "name": "Testing",
+    "report": {
+        "markdown": "\n# Workflow Execution Report\n\n## Workflow Inputs\n```galaxy\ninvocation_inputs()\n```\n\n## Workflow Outputs\n```galaxy\ninvocation_outputs()\n```\n\r\n```galaxy\nhistory_dataset_peek(output=\"Truncated file\")\n```\r\n\n\n## Workflow\n```galaxy\nworkflow_display()\n```\n"
+    },
+    "steps": {
+        "0": {
+            "annotation": "",
+            "content_id": null,
+            "errors": null,
+            "id": 0,
+            "input_connections": {},
+            "inputs": [
+                {
+                    "description": "",
+                    "name": "File to head"
+                }
+            ],
+            "label": "File to head",
+            "name": "Input dataset",
+            "outputs": [],
+            "position": {
+                "left": 0,
+                "top": 0
+            },
+            "tool_id": null,
+            "tool_state": "{\"optional\": false, \"tag\": null}",
+            "tool_version": null,
+            "type": "data_input",
+            "uuid": "6cada1bd-e96e-43d2-a41b-2f396c9ad2ca",
+            "when": null,
+            "workflow_outputs": []
+        },
+        "1": {
+            "annotation": "",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_head_tool/1.1.0",
+            "errors": null,
+            "id": 1,
+            "input_connections": {
+                "infile": {
+                    "id": 0,
+                    "output_name": "output"
+                }
+            },
+            "inputs": [
+                {
+                    "description": "runtime parameter for tool Select first",
+                    "name": "infile"
+                }
+            ],
+            "label": null,
+            "name": "Select first",
+            "outputs": [
+                {
+                    "name": "outfile",
+                    "type": "input"
+                }
+            ],
+            "position": {
+                "left": 296.265625,
+                "top": 57.5703125
+            },
+            "post_job_actions": {
+                "RenameDatasetActionoutfile": {
+                    "action_arguments": {
+                        "newname": "Truncated_file"
+                    },
+                    "action_type": "RenameDatasetAction",
+                    "output_name": "outfile"
+                }
+            },
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_head_tool/1.1.0",
+            "tool_shed_repository": {
+                "changeset_revision": "ddf54b12c295",
+                "name": "text_processing",
+                "owner": "bgruening",
+                "tool_shed": "toolshed.g2.bx.psu.edu"
+            },
+            "tool_state": "{\"complement\": \"\", \"count\": \"3\", \"infile\": {\"__class__\": \"ConnectedValue\"}, \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+            "tool_version": "1.1.0",
+            "type": "tool",
+            "uuid": "97a55f13-2d30-4ecd-a3fb-d8d433d3b3bb",
+            "when": null,
+            "workflow_outputs": [
+                {
+                    "label": "Truncated file",
+                    "output_name": "outfile",
+                    "uuid": "61afcb1c-d26e-4a98-988f-a73fbb074d0c"
+                }
+            ]
+        }
+    },
+    "tags": [],
+    "uuid": "1649a361-0381-444c-bdb6-b099609f7f62",
+    "version": 4
+}

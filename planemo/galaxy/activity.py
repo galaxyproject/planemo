@@ -1,5 +1,6 @@
 """Module provides generic interface to running Galaxy tools and workflows."""
 
+import json
 import os
 import sys
 import tempfile
@@ -216,6 +217,16 @@ def _execute(  # noqa C901
             start_datetime=start_datetime,
             log=log_contents_str(config),
         )
+        if kwds["engine"] == "galaxy" or kwds["engine"] == "external_galaxy":
+            output_metadata = kwds.get("output_metadata", None)
+            if output_metadata:
+                run_infos = {
+                    "history_id": history_id,
+                    "invocation_id": invocation["id"],
+                    "workflow_id": workflow_id,
+                }
+                with open(output_metadata, "w") as f:
+                    json.dump(run_infos, f)
 
     else:
         raise NotImplementedError()

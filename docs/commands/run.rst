@@ -174,6 +174,8 @@ Planemo command for running tools and jobs.
                                       Where to store outputs of a 'run' task.
       --output_json FILE              Where to store JSON dictionary describing
                                       outputs of a 'run' task.
+      --output_metadata FILE          Where to store JSON dictionary describing
+                                      the metadata of a 'run' task.
       --download_outputs / --no_download_outputs
                                       After tool or workflow runs are complete,
                                       download the output files to the location
