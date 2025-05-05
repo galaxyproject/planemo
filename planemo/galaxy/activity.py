@@ -828,7 +828,7 @@ def _wait_for_invocation(ctx, gi, invocation_id, polling_backoff=0):
     def state_func():
         return _retry_on_timeouts(ctx, gi, lambda gi: gi.invocations.show_invocation(invocation_id))
 
-    return _wait_on_state(ctx, state_func, polling_backoff)
+    return _wait_on_state(state_func, polling_backoff)
 
 
 def _retry_on_timeouts(ctx, gi, f):
@@ -866,7 +866,7 @@ def _wait_for_history(ctx, gi, history_id, polling_backoff=0):
     def state_func():
         return _retry_on_timeouts(ctx, gi, lambda gi: gi.histories.show_history(history_id))
 
-    return _wait_on_state(ctx, state_func, polling_backoff)
+    return _wait_on_state(state_func, polling_backoff)
 
 
 def _wait_for_invocation_jobs(ctx, gi, invocation_id, polling_backoff=0, early_termination=True):
