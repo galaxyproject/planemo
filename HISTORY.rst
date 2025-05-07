@@ -6,6 +6,10 @@ History
 .. to_doc
 
 ---------------------
+0.75.31.dev0
+---------------------
+
+---------------------
 0.75.30 (2025-05-07)
 ---------------------
 * fix lint_shed_version if there are no installable revisions (thanks to
