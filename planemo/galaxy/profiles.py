@@ -9,6 +9,10 @@ import os
 import shutil
 
 from galaxy.util.commands import which
+from gxjobconfinit import (
+    build_job_config,
+    ConfigArgs,
+)
 
 from planemo.database import create_database_source
 from planemo.galaxy.api import test_credentials_valid
@@ -224,6 +228,24 @@ def _stored_profile_options_path(profile_directory):
 
 def _profile_directory(ctx, profile_name):
     return os.path.join(ctx.galaxy_profiles_directory, profile_name)
+
+
+def initialize_job_config(ctx, profile_name, **kwds):
+    profile_directory = _profile_directory(ctx, profile_name)
+    job_config_path = os.path.join(profile_directory, "job_conf.yml")
+    if os.path.exists(job_config_path):
+        raise Exception(f"File '{job_config_path}' already exists, exiting.")
+
+    init_config = ConfigArgs.from_dict(**kwds)
+    job_config = build_job_config(init_config)
+    with open(job_config_path, "w") as f:
+        f.write(job_config)
+
+    config, profile_config_path = _load_profile_to_json(ctx, profile_name)
+    config["job_config_file"] = os.path.abspath(profile_config_path)
+    with open(profile_config_path, "w") as f:
+        json.dump(config, f)
+    return job_config_path
 
 
 __all__ = (
