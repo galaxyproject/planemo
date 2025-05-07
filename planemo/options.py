@@ -314,6 +314,48 @@ def run_download_outputs_option():
     )
 
 
+def run_upload_instance_url_option():
+    return planemo_option(
+        "--upload_instance_url",
+        type=str,
+        default=None,
+        help=(
+            "Upload run to a galaxy instance located at the provided url."
+            "Ex: https://usegalaxy.org."
+        ),
+    )
+
+
+def run_upload_api_key_option():
+    return planemo_option(
+        "--upload_api_key",
+        type=str,
+        default=None,
+        help=(
+            "API key used to upload run to separate instance"
+        ),
+    )
+
+
+def validate_archive_type_callback(ctx, param, value):
+    if value is not None and not value.endswith('.tar.gz'):
+        ctx.fail(f"archive_file ({value}), filename must end with tar.gz")
+    return value
+
+
+def write_run_archive_to_file_option():
+    return planemo_option(
+        "--archive_file",
+        type=click.Path(exists=False, file_okay=True, dir_okay=False, resolve_path=True),
+        default=None,
+        help=(
+            "Compress the run and write it to the provided file path."
+            "The archive can be imported to a Galaxy instance"
+        ),
+        callback=validate_archive_type_callback
+    )
+
+
 def publish_dockstore_option():
     return planemo_option(
         "--publish/--no_publish",
