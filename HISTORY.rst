@@ -6,8 +6,19 @@ History
 .. to_doc
 
 ---------------------
-0.75.30.dev0
+0.75.30 (2025-05-07)
 ---------------------
+* fix lint_shed_version if there are no installable revisions (thanks to
+  `@bernt-matthias`_). `Pull Request 1509`_
+* Fix bumping of dev versions (thanks to `@mvdbeek`_). `Pull Request 1514`_
+* Don't escape non-ascii unicode characters in json.dumps (thanks to
+  `@mvdbeek`_). `Pull Request 1523`_
+* Fix version linter for new repos (thanks to `@bernt-matthias`_). `Pull
+  Request 1519`_
+* Add switch to prevent early termination of workflow runs (thanks to
+  `@kostrykin`_). `Pull Request 1518`_
+* Add missing collection operation tools (thanks to `@mvdbeek`_). `Pull
+  Request 1524`_
 
 ---------------------
 0.75.29 (2025-03-27)
@@ -2195,6 +2206,12 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1509: https://github.com/galaxyproject/planemo/pull/1509
+.. _Pull Request 1514: https://github.com/galaxyproject/planemo/pull/1514
+.. _Pull Request 1523: https://github.com/galaxyproject/planemo/pull/1523
+.. _Pull Request 1519: https://github.com/galaxyproject/planemo/pull/1519
+.. _Pull Request 1518: https://github.com/galaxyproject/planemo/pull/1518
+.. _Pull Request 1524: https://github.com/galaxyproject/planemo/pull/1524
 .. _Pull Request 1507: https://github.com/galaxyproject/planemo/pull/1507
 .. _Pull Request 1505: https://github.com/galaxyproject/planemo/pull/1505
 .. _Pull Request 1504: https://github.com/galaxyproject/planemo/pull/1504
@@ -3171,3 +3188,4 @@ History
 .. _@jdavcs: https://github.com/jdavcs
 .. _@Smeds: https://github.com/Smeds
 .. _@jmchilton: https://github.com/jmchilton
+.. _@kostrykin: https://github.com/kostrykin

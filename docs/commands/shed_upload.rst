@@ -18,15 +18,14 @@ Generally, ``shed_update`` should be used instead since it also updates
 both tool shed contents (via tar ball generation and upload) as well as
 metadata (to handle metadata changes in ``.shed.yml`` files).
 
-::
-
-    % planemo shed_upload --tar_only  ~/
-    % tar -tzf shed_upload.tar.gz
-    test-data/blastdb.loc
-    ...
-    tools/ncbi_blast_plus/tool_dependencies.xml
-    % tar -tzf shed_upload.tar.gz | wc -l
-    117
+
+% planemo shed_upload --tar_only  ~/
+% tar -tzf shed_upload.tar.gz
+test-data/blastdb.loc
+...
+tools/ncbi_blast_plus/tool_dependencies.xml
+% tar -tzf shed_upload.tar.gz | wc -l
+117
 
 
 **Options**::

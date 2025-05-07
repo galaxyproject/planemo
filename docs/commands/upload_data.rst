@@ -14,9 +14,8 @@ This section is auto-generated from the help text for the planemo command
 
 Planemo command for uploading data to an external Galaxy server.
 
-::
-
-    % planemo upload_data wf.ga wf-job.yml new-wf-job.yml --profile profile
+
+% planemo upload_data wf.ga wf-job.yml new-wf-job.yml --profile profile
 
 Running this subcommand requires a workflow file or identifier
 and a job file, just as for ``planemo run``. In addition, a third

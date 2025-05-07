@@ -14,9 +14,8 @@ This section is auto-generated from the help text for the planemo command
 
 Planemo command for running tools and jobs.
 
-::
-
-    % planemo run cat1-tool.cwl cat-job.json
+
+% planemo run cat1-tool.cwl cat-job.json
 
 **Options**::
 
@@ -254,5 +253,7 @@ Planemo command for running tools and jobs.
                                       output (see output reports for more complete
                                       summary). Set to 'none' to disable completely.
       --test_timeout INTEGER          Maximum runtime of a single test in seconds.
+      --no_early_termination          Wait until all jobs terminate, even if some
+                                      jobs have failed
       --help                          Show this message and exit.
     
