@@ -6,7 +6,7 @@ import time
 from tempfile import mkdtemp
 
 from galaxy.util.commands import execute
-
+from packaging import version
 from planemo.io import info
 from .interface import DatabaseSource
 from .postgres import ExecutesPostgresSqlMixin
@@ -20,6 +20,19 @@ DEFAULT_DOCKERIMAGE = "postgres:14.2-alpine3.15"
 DEFAULT_SIF_NAME = "postgres_14_2-alpine3_15.sif"
 
 DEFAULT_CONNECTION_STRING = f"postgresql://{DEFAULT_POSTGRES_USER}:{DEFAULT_POSTGRES_PASSWORD}@localhost:{DEFAULT_POSTGRES_PORT_EXPOSE}/{DEFAULT_POSTGRES_DATABASE_NAME}"
+
+
+def is_singularity_version_at_least(min_version="3.6.0", singularity_path="singularity"):
+    try:
+        # Get the version string from Singularity
+        output = subprocess.check_output([singularity_path, "--version"], text=True).strip()
+        # Example output: "singularity version 3.8.5"
+        ver_str = output.split()[-1]
+        print(ver_str)
+        return version.parse(ver_str) >= version.parse(min_version)
+    except (subprocess.CalledProcessError, FileNotFoundError, IndexError) as e:
+        print(f"Error checking Singularity version: {e}")
+        return False
 
 
 def start_postgres_singularity(
@@ -45,27 +58,46 @@ def start_postgres_singularity(
         # Run container for a short while to initialize the database
         # The database will not be initilizaed during a
         # "singularity instance start" command
-        init_database_command = [
-            singularity_path,
-            "run",
-            "-B",
-            f"{pgdata_path}:/var/lib/postgresql/data",
-            "-B",
-            f"{pgrun_path}:/var/run/postgresql",
-            "-e",
-            "-C",
-            "--env",
-            f"POSTGRES_DB={databasename}",
-            "--env",
-            f"POSTGRES_USER={user}",
-            "--env",
-            f"POSTGRES_PASSWORD={password}",
-            "--env",
-            "POSTGRES_INITDB_ARGS='--encoding=UTF-8'",
-            f"docker://{DEFAULT_DOCKERIMAGE}",
-        ]
+        if is_singularity_version_at_least("3.6.0", singularity_path):
+            env_vars = {}
+            init_database_command = [
+                singularity_path,
+                "run",
+                "-B",
+                f"{pgdata_path}:/var/lib/postgresql/data",
+                "-B",
+                f"{pgrun_path}:/var/run/postgresql",
+                "-e",
+                "-C",
+                "--env",
+                f"POSTGRES_DB={databasename}",
+                "--env",
+                f"POSTGRES_USER={user}",
+                "--env",
+                f"POSTGRES_PASSWORD={password}",
+                "--env",
+                "POSTGRES_INITDB_ARGS='--encoding=UTF-8'",
+                f"docker://{DEFAULT_DOCKERIMAGE}",
+            ]
+        else:
+            env_vars = {
+                "SINGULARITYENV_POSTGRES_DB": databasename,
+                "SINGULARITYENV_POSTGRES_USER": user,
+                "SINGULARITYENV_POSTGRES_PASSWORD": password,
+                "SINGULARITYENV_POSTGRES_INITDB_ARGS": "'--encoding=UTF-8'",
+            }
+            init_database_command = [
+                singularity_path,
+                "run",
+                "-B",
+                f"{pgdata_path}:/var/lib/postgresql/data",
+                "-B",
+                f"{pgrun_path}:/var/run/postgresql",
+                "-C",
+                f"docker://{DEFAULT_DOCKERIMAGE}",
+            ]
         info(f"Initilizing postgres database in folder: {pgdata_path}")
-        process = subprocess.Popen(init_database_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(init_database_command, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         # Give the container time to initialize the database
         for _ in range(10):
             if os.path.exists(version_file):
