@@ -97,6 +97,8 @@ def start_postgres_singularity(
                 f"docker://{DEFAULT_DOCKERIMAGE}",
             ]
         info(f"Initilizing postgres database in folder: {pgdata_path}")
+        env = os.environ.copy()
+        env.update(env_vars)
         process = subprocess.Popen(init_database_command, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         # Give the container time to initialize the database
         for _ in range(10):
