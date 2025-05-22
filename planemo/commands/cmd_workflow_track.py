@@ -12,7 +12,7 @@ from planemo.galaxy.activity import wait_for_invocation_and_jobs
 @options.invocation_target_options()
 @command_function
 def cli(ctx, invocation_id, **kwds):
-    """Run defined tests against existing workflow invocation."""
+    """Follow the progress of a workflow invocation."""
     with engine_context(ctx, engine="external_galaxy", **kwds) as engine, engine.ensure_runnables_served([]) as config:
         user_gi = config.user_gi
         wait_for_invocation_and_jobs(
