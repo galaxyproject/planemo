@@ -789,7 +789,7 @@ def wait_for_invocation_and_jobs(
 ):
     polling_tracker = PollingTrackerImpl(polling_backoff)
     invocation_api = BioblendInvocationApi(ctx, user_gi)
-    with WorkflowProgressDisplay(invocation_id) as workflow_progress_display:
+    with WorkflowProgressDisplay(invocation_id, galaxy_url=user_gi.base_url) as workflow_progress_display:
         final_invocation_state, job_state, error_message = polling_wait_for_invocation_and_jobs(
             ctx,
             invocation_id,
