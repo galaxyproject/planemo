@@ -2067,16 +2067,6 @@ def tool_init_example_command_option(help=EXAMPLE_COMMAND_HELP):
     )
 
 
-def no_early_termination_option():
-    return planemo_option(
-        "--no_early_termination",
-        is_flag=True,
-        default=False,
-        prompt=False,
-        help="Wait until all jobs terminate, even if some jobs have failed",
-    )
-
-
 def mulled_conda_option():
     return planemo_option(
         "--mulled_conda_version",
@@ -2110,6 +2100,14 @@ def mulled_action_option():
         type=click.STRING,
         default="build-and-test",
         help=("Mulled action to perform for targets - this defaults to 'build-and-test'."),
+    )
+
+
+def invocation_target_options():
+    return _compose(
+        required_invocation_id_arg(),
+        galaxy_url_option(required=True),
+        galaxy_user_key_option(required=True),
     )
 
 
