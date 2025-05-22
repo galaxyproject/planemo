@@ -218,7 +218,6 @@ def _execute(  # noqa C901
             no_wait=kwds.get("no_wait", False),
             start_datetime=start_datetime,
             log=log_contents_str(config),
-            early_termination=not kwds.get("no_early_termination", False),
         )
 
     else:
@@ -252,7 +251,6 @@ def invocation_to_run_response(
     no_wait=False,
     start_datetime=None,
     log=None,
-    early_termination=True,
 ):
     start_datetime = start_datetime or datetime.now()
     invocation_id = invocation["id"]
@@ -268,7 +266,6 @@ def invocation_to_run_response(
             history_id=history_id,
             user_gi=user_gi,
             polling_backoff=polling_backoff,
-            early_termination=early_termination,
         )
         if final_invocation_state not in ("ok", "skipped", "scheduled"):
             msg = f"Failed to run workflow [{workflow_id}], at least one job is in [{final_invocation_state}] state."
@@ -784,13 +781,13 @@ def _history_id(gi, **kwds) -> str:
 
 
 def wait_for_invocation_and_jobs(
-    ctx, invocation_id: str, history_id: Optional[str], user_gi: GalaxyInstance, polling_backoff: int, early_termination: bool,
+    ctx, invocation_id: str, history_id: Optional[str], user_gi: GalaxyInstance, polling_backoff: int,
 ):
     polling_tracker = PollingTrackerImpl(polling_backoff)
     invocation_api = BioblendInvocationApi(ctx, user_gi)
     with WorkflowProgressDisplay(invocation_id) as workflow_progress_display:
         final_invocation_state, job_state, error_message = polling_wait_for_invocation_and_jobs(
-            ctx, invocation_id, invocation_api, polling_tracker, workflow_progress_display, early_termination=early_termination
+            ctx, invocation_id, invocation_api, polling_tracker, workflow_progress_display,
         )
         if error_message:
             if not history_id:
@@ -818,7 +815,7 @@ def _wait_for_job(gi, job_id, timeout=None):
     return _wait_on_state(state_func, timeout=timeout)
 
 
-def _wait_on_state(state_func, polling_backoff=0, timeout=None, early_termination=True):
+def _wait_on_state(state_func, polling_backoff=0, timeout=None):
     def get_state():
         response = state_func()
         if not isinstance(response, list):
@@ -840,8 +837,6 @@ def _wait_on_state(state_func, polling_backoff=0, timeout=None, early_terminatio
             "cancelled",
             "failed",
         ]
-        if not early_termination and current_non_terminal_states:
-            return None
         for terminal_state in hierarchical_fail_states:
             if terminal_state in current_states:
                 # If we got here something has failed and we can return (early)

@@ -2174,16 +2174,6 @@ def tool_init_example_command_option(help=EXAMPLE_COMMAND_HELP):
     )
 
 
-def no_early_termination_option():
-    return planemo_option(
-        "--no_early_termination",
-        is_flag=True,
-        default=False,
-        prompt=False,
-        help="Wait until all jobs terminate, even if some jobs have failed",
-    )
-
-
 def mulled_conda_option():
     return planemo_option(
         "--mulled_conda_version",
