@@ -1784,6 +1784,10 @@ def test_index_option():
     return planemo_option("--test_index", default=1, type=int, help="Select which test to check. Counting starts at 1")
 
 
+def fail_fast_option():
+    return planemo_option("--fail_fast", is_flag=True, help="Stop on first job failure.")
+
+
 def test_output_options():
     return _compose(
         planemo_option(
@@ -1829,6 +1833,7 @@ def test_options():
     return _compose(
         paste_test_data_paths_option(),
         test_output_options(),
+        fail_fast_option()
     )
 
 

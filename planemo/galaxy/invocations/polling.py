@@ -42,6 +42,7 @@ def wait_for_invocation_and_jobs(
     invocation_api: InvocationApi,
     polling_tracker: PollingTracker,
     workflow_progress_display: WorkflowProgressDisplay,
+    fail_fast: bool = False,
 ):
     ctx.vlog("Waiting for invocation [%s]" % invocation_id)
 
@@ -78,6 +79,7 @@ def wait_for_invocation_and_jobs(
                 last_exception,
                 last_invocation,
                 last_invocation_jobs,
+                fail_fast=fail_fast,
             )
             if error_message:
                 final_invocation_state = "new" if not last_invocation else last_invocation["state"]
@@ -104,6 +106,7 @@ def wait_for_invocation_and_jobs(
                 last_exception,
                 last_subworkflow_invocation,
                 last_subworkflow_invocation_jobs,
+                fail_fast=fail_fast,
             )
             if error_message:
                 final_invocation_state = (
@@ -126,7 +129,7 @@ def wait_for_invocation_and_jobs(
 
 
 def workflow_in_error_message(
-    ctx, invocation_id, last_exception, last_invocation, last_invocation_jobs
+    ctx, invocation_id, last_exception, last_invocation, last_invocation_jobs, fail_fast=False,
 ) -> Optional[str]:
     """Return an error message if workflow is in an error state."""
 
@@ -143,7 +146,7 @@ def workflow_in_error_message(
         ctx.vlog(msg)
         error_message = msg if not error_message else f"{error_message}. {msg}"
 
-    if job_state in JOB_ERROR_STATES:
+    if fail_fast and job_state in JOB_ERROR_STATES:
         msg = f"Failed to run workflow, at least one job is in [{job_state}] state."
         ctx.vlog(msg)
         error_message = msg if not error_message else f"{error_message}. {msg}"

@@ -69,12 +69,12 @@ ERR_NO_SUCH_TOOL = (
 
 
 def execute(
-    ctx: "PlanemoCliContext", config: "BaseGalaxyConfig", runnable: Runnable, job_path: str, **kwds
+    ctx: "PlanemoCliContext", config: "BaseGalaxyConfig", runnable: Runnable, job_path: str, fail_fast=False, **kwds
 ) -> RunResponse:
     """Execute a Galaxy activity."""
     try:
         start_datetime = datetime.now()
-        return _execute(ctx, config, runnable, job_path, **kwds)
+        return _execute(ctx, config, runnable, job_path, fail_fast=fail_fast, **kwds)
     except Exception as e:
         end_datetime = datetime.now()
         ctx.log("Failed to execute Galaxy activity, throwing ErrorRunResponse")
@@ -151,7 +151,7 @@ class PlanemoStagingInterface(StagingInterface):
 
 
 def _execute(  # noqa C901
-    ctx: "PlanemoCliContext", config: "BaseGalaxyConfig", runnable: Runnable, job_path: str, **kwds
+    ctx: "PlanemoCliContext", config: "BaseGalaxyConfig", runnable: Runnable, job_path: str, fail_fast=False, **kwds
 ) -> "GalaxyBaseRunResponse":
     user_gi = config.user_gi
     admin_gi = config.gi
@@ -218,6 +218,7 @@ def _execute(  # noqa C901
             no_wait=kwds.get("no_wait", False),
             start_datetime=start_datetime,
             log=log_contents_str(config),
+            fail_fast=fail_fast,
         )
 
     else:
@@ -251,6 +252,7 @@ def invocation_to_run_response(
     no_wait=False,
     start_datetime=None,
     log=None,
+    fail_fast=False,
 ):
     start_datetime = start_datetime or datetime.now()
     invocation_id = invocation["id"]
@@ -266,6 +268,7 @@ def invocation_to_run_response(
             history_id=history_id,
             user_gi=user_gi,
             polling_backoff=polling_backoff,
+            fail_fast=fail_fast,
         )
         if final_invocation_state not in ("ok", "skipped", "scheduled"):
             msg = f"Failed to run workflow [{workflow_id}], at least one job is in [{final_invocation_state}] state."
@@ -786,6 +789,7 @@ def wait_for_invocation_and_jobs(
     history_id: Optional[str],
     user_gi: GalaxyInstance,
     polling_backoff: int,
+    fail_fast: bool = False,
 ):
     polling_tracker = PollingTrackerImpl(polling_backoff)
     invocation_api = BioblendInvocationApi(ctx, user_gi)
@@ -796,6 +800,7 @@ def wait_for_invocation_and_jobs(
             invocation_api,
             polling_tracker,
             workflow_progress_display,
+            fail_fast=fail_fast,
         )
         if error_message:
             if not history_id:
