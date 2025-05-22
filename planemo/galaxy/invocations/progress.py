@@ -254,12 +254,14 @@ class WorkflowProgressDisplay(Live):
         self,
         invocation_id: str,
         display_configuration: Optional[DisplayConfiguration] = None,
+        galaxy_url: Optional[str] = None,
     ):
         self.subworkflow_invocation_ids_seen: Set[str] = set()
         self.subworkflow_invocation_ids_completed: Set[str] = set()
         self.subworkflow_invocation_id: Optional[str] = None
         self.invocation_id = invocation_id
         display = display_configuration or DisplayConfiguration()
+        self.galaxy_url = galaxy_url
         self.display = display
         self.workflow_progress = WorkflowProgress(display)
         self.subworkflow_progress = WorkflowProgress(display)
@@ -287,6 +289,12 @@ class WorkflowProgressDisplay(Live):
     def all_subworkflows_complete(self):
         return len(self.subworkflow_invocation_ids_seen) == len(self.subworkflow_invocation_ids_completed)
 
+    def get_invocation_ui_link(self):
+        if self.galaxy_url:
+            return f"{self.galaxy_url}/workflows/invocations/{self.invocation_id}"
+        else:
+            return None
+
     def _panel(self):
         def job_states(workflow_progress):
             if self.display.include_job_state_breakdown:
@@ -294,7 +302,7 @@ class WorkflowProgressDisplay(Live):
             else:
                 return None
 
-        title = f"[{self.display.style_header}]{self.display.label_header_prefix}<{self.invocation_id}>"
+        title = f"[{self.display.style_header}]{self.display.label_header_prefix}<[link={self.get_invocation_ui_link()}]{self.invocation_id}[/link]>"
         subworkflow_title = None
         if self.subworkflow_invocation_id:
             subworkflow_title = f"[{self.display.style_subworkflow_header}]{self.display.label_subworkflow_header_prefix}<{self.subworkflow_invocation_id}>"
