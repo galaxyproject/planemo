@@ -6,6 +6,7 @@ from .test_utils import (
     CliTestCase,
     CWL_DRAFT3_DIR,
     mark,
+    run_verbosely,
     PROJECT_TEMPLATES_DIR,
     skip_if_environ,
     target_galaxy_branch,
@@ -115,3 +116,24 @@ class RunTestCase(CliTestCase):
             assert os.path.exists(output_path)
             with open(output_path) as fh:
                 assert fh.read().startswith("  16  198 1111")
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_run_download_archived_history(self):
+        with self._isolate() as f:
+            archive_file = os.path.join(f, "demo.tar.gz")
+            cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
+            test_workflow = os.path.join(TEST_DATA_DIR, "wf2.ga")
+            test_job = os.path.join(TEST_DATA_DIR, "wf2-job.yml")
+            test_command = ["--verbose", "run"] if run_verbosely() else ["run"]
+            test_command += [
+                "--no_dependency_resolution",
+                "--extra_tools",
+                cat,
+                test_workflow,
+                test_job,
+                "--archive_file",
+                archive_file,
+            ]
+
+            self._check_exit_code(test_command, exit_code=0)
+            assert os.path.exists(archive_file), f"Archive file {archive_file} does not exist"

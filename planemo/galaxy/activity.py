@@ -1,6 +1,8 @@
 """Module provides generic interface to running Galaxy tools and workflows."""
 
 import os
+import requests
+import shutil
 import sys
 import tempfile
 import time
@@ -42,7 +44,11 @@ from requests.exceptions import (
 )
 
 from planemo.galaxy.api import summarize_history
-from planemo.io import wait_on
+from planemo.io import (
+    error,
+    wait_on,
+    warn,
+)
 from planemo.runnable import (
     ErrorRunResponse,
     get_outputs,
@@ -237,6 +243,47 @@ def _execute(  # noqa C901
         ctx.vlog("collecting outputs from run...")
         run_response.collect_outputs(output_directory)
         ctx.vlog("collecting outputs complete")
+
+    if kwds.get("upload_instance_url") or kwds.get("archive_file"):
+        ctx.vlog(f"Preparing galaxy run export, history {history_id}.")
+        archive_file = kwds.get("archive_file")
+
+        jeha_id = user_gi.histories.export_history(
+            history_id=history_id,
+            wait=True,
+            maxwait=3600,
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            archive_file_output = os.path.join(temp_dir, "archive.tar.gz")
+
+            with open(archive_file_output, 'bw') as archive:
+                user_gi.histories.download_history(
+                    history_id=history_id,
+                    jeha_id=jeha_id,
+                    outf=archive
+                )
+
+            if kwds.get("archive_file"):
+                shutil.copy(archive_file_output, archive_file)
+                ctx.vlog(f"Archive {kwds.get('arhicve_file')} created.")
+
+            if kwds.get("upload_instance_url"):
+                upload_url = kwds.get("upload_instance_url", None)
+                upload_key = kwds.get("upload_api_key", None)
+
+                upload_url = f"{upload_url}/api/histories"
+                if upload_key is None:
+                    warn("No API key provided")
+                else:
+                    upload_url = f"{upload_url}?key={upload_key}"
+
+                response = requests.post(upload_url, files={'archive_file': open(archive_file_output, 'rb')})
+                if response.status_code == 200:
+                    ctx.vlog(f"Upload run to {kwds.get('upload_instance_url')}")
+                else:
+                    error(f"Failed to upload run to {kwds.get('upload_instance_url')}, status code: {response.status_code}, error {response.text}")
+
     return run_response
 
 
