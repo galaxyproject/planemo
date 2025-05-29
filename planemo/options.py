@@ -784,6 +784,15 @@ def required_invocation_id_arg():
     )
 
 
+def invocation_export_format_arg():
+    return click.argument(
+        "export_format",
+        default="rocrate.zip",
+        metavar="model store format",
+        type=str,
+    )
+
+
 def split_job_and_test():
     return click.option(
         "--split_test/--no_split_test", default=False, help="Write workflow job and test definitions to separate files."
