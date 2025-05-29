@@ -2,14 +2,11 @@
 
 import click
 
-from bioblend.galaxy import GalaxyInstance
-
 from planemo import options
-from planemo.galaxy.api import export_invocation_as_archive
 from planemo.cli import command_function
-from planemo.io import (
-    info,
-)
+from planemo.galaxy.api import export_invocation_as_archive
+from planemo.io import info
+
 
 @click.command("invocation_export")
 @options.required_invocation_id_arg()
@@ -24,9 +21,8 @@ def cli(ctx, invocation_id, export_format, output, galaxy_url, galaxy_user_key, 
 
     \b
         % planemo invocation_export ID --profile my_profile --output invocation.rocrate.zip
-    """ 
-    
-    info(f"Exported invocation {invocation_id} {type(invocation_id)} to {output}, format: {export_format}")
+    """
+
     export_invocation_as_archive(
         invocation_id=invocation_id,
         export_format=export_format,
@@ -35,7 +31,3 @@ def cli(ctx, invocation_id, export_format, output, galaxy_url, galaxy_user_key, 
         key=galaxy_user_key,
     )
     info(f"Exported invocation {invocation_id} to {output}, format: {export_format}")
-
-
-
-    
