@@ -116,12 +116,21 @@ def summarize_history(ctx, gi, history_id):
         print("|")
 
 
-def get_invocations(url, key, workflow_id):
-    inv_gi = gi(None, url, key)
-    invocations = inv_gi.workflows.get_invocations(workflow_id)
+def get_invocations(gi, workflow_id, instance=False, max_items=100, items_per_request=20, offset_items=0):
+    invocations = []
+    while len(invocations) < max_items:
+        if workflow_id:
+            items = gi.invocations.get_invocations(workflow_id, limit=min(items_per_request, max_items), offset=len(invocations) + offset_items)
+        else:
+            items = gi.invocations.get_invocations(instance=instance, limit=min(items_per_request, max_items), offset=len(invocations) + offset_items)
+        if (items is None) or (len(items) == 0):
+            break
+        else:
+            invocations.extend(items)
     return {
         invocation["id"]: {
-            "states": inv_gi.invocations.get_invocation_summary(invocation["id"])["states"],
+            "states": gi.invocations.get_invocation_summary(invocation["id"])["states"],
+            "workflow_id": invocation["workflow_id"],
             "history_id": invocation["history_id"],
         }
         for invocation in invocations
