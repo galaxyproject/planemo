@@ -120,9 +120,17 @@ def get_invocations(gi, workflow_id, instance=False, max_items=100, items_per_re
     invocations = []
     while len(invocations) < max_items:
         if workflow_id:
-            items = gi.invocations.get_invocations(workflow_id, limit=min(items_per_request, max_items), offset=len(invocations) + offset_items)
+            items = gi.invocations.get_invocations(
+                workflow_id,
+                limit=min(items_per_request, max_items),
+                offset=len(invocations) + offset_items,
+            )
         else:
-            items = gi.invocations.get_invocations(instance=instance, limit=min(items_per_request, max_items), offset=len(invocations) + offset_items)
+            items = gi.invocations.get_invocations(
+                instance=instance,
+                limit=min(items_per_request, max_items),
+                offset=len(invocations) + offset_items,
+            )
         if (items is None) or (len(items) == 0):
             break
         else:
