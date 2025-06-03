@@ -1,4 +1,5 @@
-"""The module contains a class to test the ``cwl_run`` command."""
+"""The module contains a class to test the ``invocation_export`` command."""
+
 import json
 import os
 import tempfile
