@@ -128,6 +128,15 @@ def get_invocations(url, key, workflow_id):
     }
 
 
+def export_invocation_as_archive(url, key, invocation_id, export_format, output):
+    inv_gi = gi(None, url, key)
+    response = inv_gi.invocations.get_invocation_archive(invocation_id=invocation_id, model_store_format=export_format)
+    with open(output, "wb") as archive:
+        for chunk in response.iter_content(chunk_size=8192):
+            archive.write(chunk)
+    return response
+
+
 def _format_for_summary(blob, empty_message, prefix="|  "):
     contents = "\n".join([f"{prefix}{line.strip()}" for line in StringIO(blob).readlines() if line.rstrip("\n\r")])
     return contents or f"{prefix}*{empty_message}*"
