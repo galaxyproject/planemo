@@ -1,6 +1,5 @@
 """Module contains :class:`CmdTestTestCase` - integration tests for the ``test`` command."""
 
-import json
 import os
 import tempfile
 import time
@@ -89,7 +88,7 @@ class CmdTestTestCase(CliTestCase, UsesServeCommand):
                 user_gi.key,
                 "--output_directory",
                 output_path_download,
-                invocations[0]["id"]
+                invocations[0]["id"],
             ]
             self._check_exit_code(download_outputs_cmd)
 

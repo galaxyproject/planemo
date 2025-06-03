@@ -1,16 +1,16 @@
 """Module describing the planemo ``download_run_output`` command."""
 
-import click
+import os
 
+import click
 from bioblend.galaxy import GalaxyInstance
 
 from planemo import options
-from planemo.galaxy.activity import invocation_to_run_response
 from planemo.cli import command_function
 from planemo.galaxy import profiles
+from planemo.galaxy.activity import invocation_to_run_response
 from planemo.io import info
 from planemo.runnable_resolve import for_runnable_identifier
-import os
 
 
 @click.command("download_run_output")
@@ -35,7 +35,7 @@ def cli(ctx, invocation_id, output_directory, ignore_missing_output, **kwds):
     profile = kwds.get("profile")
     if profile is not None:
         profile = profiles.ensure_profile(ctx, profile)
-        key =  profile["galaxy_admin_key"] or profile["galaxy_user_key"]
+        key = profile["galaxy_admin_key"] or profile["galaxy_user_key"]
         url = profile["galaxy_url"]
     else:
         url = kwds.get("galaxy_url")
@@ -44,7 +44,7 @@ def cli(ctx, invocation_id, output_directory, ignore_missing_output, **kwds):
     gi = GalaxyInstance(url=url, key=key)
 
     invocation_data = gi.invocations.show_invocation(invocation_id)
-    workflow_id = gi.workflows.show_workflow(workflow_id=invocation_data["workflow_id"], instance=True)[0]['id']
+    workflow_id = gi.workflows.show_workflow(workflow_id=invocation_data["workflow_id"], instance=True)[0]["id"]
     runnable = for_runnable_identifier(ctx, workflow_id, kwds)
     run_response = invocation_to_run_response(ctx, gi, runnable, invocation_data)
     if output_directory is None:
