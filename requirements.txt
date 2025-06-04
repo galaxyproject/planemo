@@ -3,6 +3,7 @@ bioblend>=1.0.0
 click!=8.0.2
 cwltool>=1.0.20191225192155
 ephemeris>=0.10.3
+galaxy-job-config-init>=0.1.1
 galaxy-tool-util[edam,extended-assertions]>=24.1,<25.0
 galaxy-util[template]>=24.1,<25.0
 glob2

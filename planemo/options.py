@@ -4,8 +4,12 @@ import functools
 import os
 
 import click
-from galaxy.tool_util.deps import docker_util
+from galaxy.tool_util.deps import (
+    docker_util,
+    singularity_util,
+)
 from galaxy.tool_util.verify.interactor import DEFAULT_TOOL_TEST_WAIT
+from gxjobconfinit.types import Runner
 
 from .config import planemo_option
 
@@ -17,6 +21,14 @@ def force_option(what="files"):
         "--force",
         is_flag=True,
         help="Overwrite existing %s if present." % what,
+    )
+
+
+def open_file_option():
+    return planemo_option(
+        "--open",
+        is_flag=True,
+        help="Open the file in your default editor after creation.",
     )
 
 
@@ -177,7 +189,7 @@ def galaxy_python_version():
         "--galaxy_python_version",
         use_global_config=True,
         default=None,
-        type=click.Choice(["3", "3.7", "3.8", "3.9", "3.10", "3.11"]),
+        type=click.Choice(["3", "3.8", "3.9", "3.10", "3.11", "3.12"]),
         help="Python version to start Galaxy under",
     )
 
@@ -190,6 +202,27 @@ def galaxy_root_option():
         use_env_var=True,
         type=click.Path(file_okay=False, dir_okay=True, resolve_path=True),
         help="Root of development galaxy directory to execute command with.",
+    )
+
+
+def galaxy_version_option():
+    return planemo_option(
+        "--galaxy_version",
+        type=str,
+        default="24.2",
+        help="Version of Galaxy to target for configuration (default 24.2).",
+    )
+
+
+def tpv_option():
+    return planemo_option(
+        "--tpv/--no_tpv",
+        is_flag=True,
+        default=False,
+        help=(
+            "Include TPV (Total Perspective Vortex) configuration and shared usegalaxy* "
+            "database of tool cores and memory for allocation purposes. "
+        ),
     )
 
 
@@ -415,6 +448,25 @@ def job_config_option():
     )
 
 
+class EnumType(click.Choice):
+    def __init__(self, enum):
+        self._enum = enum
+        super().__init__([e.value for e in enum])
+
+    def convert(self, value, param, ctx):
+        return self._enum(super().convert(value, param, ctx))
+
+
+def runner_target_option():
+    return planemo_option(
+        "--runner",
+        type=EnumType(Runner),
+        help="Galaxy runner (e.g. DRM) to target.",
+        default=Runner.LOCAL,
+        use_global_config=False,
+    )
+
+
 def tool_data_path_option():
     return planemo_option(
         "--tool_data_path",
@@ -478,6 +530,24 @@ def docker_extra_volume_option():
         use_global_config=True,
         multiple=True,
         help=("Extra path to mount if --engine docker or `--biocontainers` or `--docker`."),
+    )
+
+
+def singularity_extra_volume_option():
+    arg_type = click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=True,
+        readable=True,
+        resolve_path=True,
+    )
+    return planemo_option(
+        "--singularity_extra_volume",
+        type=arg_type,
+        default=None,
+        use_global_config=True,
+        multiple=True,
+        help=("Extra path to mount if --engine docker or `--biocontainers` or `--singularity`."),
     )
 
 
@@ -948,6 +1018,12 @@ def docker_enable_option():
     return planemo_option("--docker/--no_docker", default=False, help=("Run Galaxy tools in Docker if enabled."))
 
 
+def singularity_enable_option():
+    return planemo_option(
+        "--singularity/--no_singularity", default=False, help=("Run Galaxy tools in Singularity if enabled.")
+    )
+
+
 def docker_cmd_option():
     return planemo_option(
         "--docker_cmd",
@@ -956,8 +1032,22 @@ def docker_cmd_option():
     )
 
 
+def singularity_cmd_option():
+    return planemo_option(
+        "--singularity_cmd",
+        default=singularity_util.DEFAULT_SINGULARITY_COMMAND,
+        help="Command used to execute singularity (defaults to 'singularity').",
+    )
+
+
 def docker_sudo_option():
     return planemo_option("--docker_sudo/--no_docker_sudo", is_flag=True, help="Flag to use sudo when running docker.")
+
+
+def singularity_sudo_option():
+    return planemo_option(
+        "--singularity_sudo/--no_singularity_sudo", is_flag=True, help="Flag to use sudo when running docker."
+    )
 
 
 def docker_sudo_cmd_option():
@@ -965,6 +1055,15 @@ def docker_sudo_cmd_option():
         "--docker_sudo_cmd",
         help="sudo command to use when --docker_sudo is enabled " + "(defaults to sudo).",
         default=docker_util.DEFAULT_SUDO_COMMAND,
+        use_global_config=True,
+    )
+
+
+def singularity_sudo_cmd_option():
+    return planemo_option(
+        "--singularity_sudo_cmd",
+        help="sudo command to use when --singularity_sudo is enabled " + "(defaults to sudo).",
+        default=singularity_util.DEFAULT_SUDO_COMMAND,
         use_global_config=True,
     )
 
@@ -994,6 +1093,14 @@ def docker_config_options():
         docker_host_option(),
         docker_sudo_cmd_option(),
         docker_run_extra_arguments_option(),
+    )
+
+
+def singularity_config_options():
+    return _compose(
+        singularity_cmd_option(),
+        singularity_sudo_option(),
+        singularity_sudo_cmd_option(),
     )
 
 
@@ -2118,4 +2225,18 @@ def mulled_options():
         mulled_conda_option(),
         mulled_namespace_option(),
         mulled_action_option(),
+    )
+
+
+def job_config_init_options():
+    return _compose(
+        docker_enable_option(),
+        docker_config_options(),
+        singularity_enable_option(),
+        singularity_config_options(),
+        extra_tools_option(),
+        test_data_option(),
+        tpv_option(),
+        runner_target_option(),
+        galaxy_version_option(),
     )
