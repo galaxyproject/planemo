@@ -21,3 +21,4 @@ executed simply via the command line.
 
 .. include:: _running_intro.rst
 .. include:: _running_external.rst
+.. include:: _running_slurm.rst
