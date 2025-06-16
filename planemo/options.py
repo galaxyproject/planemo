@@ -1830,11 +1830,7 @@ def test_output_options():
 
 
 def test_options():
-    return _compose(
-        paste_test_data_paths_option(),
-        test_output_options(),
-        fail_fast_option()
-    )
+    return _compose(paste_test_data_paths_option(), test_output_options(), fail_fast_option())
 
 
 def _compose(*functions):

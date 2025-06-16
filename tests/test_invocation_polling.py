@@ -38,7 +38,7 @@ class MockPollingTracker(PollingTracker):
 
 
 def test_polling_scenario_1():
-    final_invocation_state, job_state, error_message = run_workflow_simulation(SCENARIO_1)
+    final_invocation_state, job_state, error_message = run_workflow_simulation(SCENARIO_1, fail_fast=True)
     assert final_invocation_state == "scheduled"
     assert job_state == "failed"
     assert error_message
@@ -75,6 +75,7 @@ def test_polling_without_display():
         invocation_api,
         polling_tracker,
         display,
+        fail_fast=True,
     )
     assert final_invocation_state == "scheduled"
     assert job_state == "failed"
@@ -109,7 +110,41 @@ def test_polling_without_invocation_as_full_subpanel():
     assert not error_message
 
 
-def run_workflow_simulation(yaml_str: str, display_configuration: Optional[DisplayConfiguration] = None):
+def test_fail_fast_enabled_with_job_failure():
+    """Test that fail_fast=True returns error when a job fails."""
+    final_invocation_state, job_state, error_message = run_workflow_simulation(SCENARIO_1, fail_fast=True)
+    # Invocation should still be scheduled (workflow scheduling succeeded)
+    assert final_invocation_state == "scheduled"
+    assert job_state == "failed"
+    # fail_fast should detect the failed job and return error message
+    assert error_message
+    assert "Failed to run workflow, at least one job is in [failed] state." in error_message
+
+
+def test_fail_fast_disabled_with_job_failure():
+    """Test that fail_fast=False does not report job failures as errors."""
+    final_invocation_state, job_state, error_message = run_workflow_simulation(SCENARIO_1, fail_fast=False)
+    # Invocation should be scheduled (workflow scheduling succeeded)
+    assert final_invocation_state == "scheduled"
+    assert job_state == "failed"
+    # Without fail_fast, job failures shouldn't cause error messages
+    # (unless invocation itself fails, which it doesn't in this case)
+    assert error_message is None
+
+
+def test_fail_fast_enabled_with_successful_workflow():
+    """Test that fail_fast=True works normally when no jobs fail."""
+    final_invocation_state, job_state, error_message = run_workflow_simulation(
+        SCENARIO_MULTIPLE_OK_SUBWORKFLOWS, fail_fast=True
+    )
+    assert final_invocation_state == "scheduled"
+    assert job_state == "ok"
+    assert not error_message
+
+
+def run_workflow_simulation(
+    yaml_str: str, display_configuration: Optional[DisplayConfiguration] = None, fail_fast: bool = False
+):
     simulation = parse_workflow_simulation_from_string(yaml_str)
     invocation_id = simulation.id
     invocation_api = SimulatedApi(simulation)
@@ -122,6 +157,7 @@ def run_workflow_simulation(yaml_str: str, display_configuration: Optional[Displ
             invocation_api,
             polling_tracker,
             display,
+            fail_fast=fail_fast,
         )
 
 

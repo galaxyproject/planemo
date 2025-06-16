@@ -36,6 +36,75 @@ class PollingTrackerImpl(PollingTracker):
         self.delta += self.polling_backoff
 
 
+def _summarize_invocation(invocation_api: InvocationApi, invocation_id: str):
+    invocation = invocation_api.get_invocation(invocation_id)
+    assert invocation
+    invocation_jobs = invocation_api.get_invocation_summary(invocation_id)
+    return invocation, invocation_jobs
+
+
+def _poll_main_workflow(
+    ctx,
+    invocation_id: str,
+    invocation_api: InvocationApi,
+    workflow_progress_display: WorkflowProgressDisplay,
+    fail_fast: bool,
+):
+    if workflow_progress_display.workflow_progress.terminal:
+        return None, None, None
+
+    try:
+        invocation, invocation_jobs = _summarize_invocation(invocation_api, invocation_id)
+        workflow_progress_display.handle_invocation(invocation, invocation_jobs)
+        return invocation, invocation_jobs, None
+    except Exception as e:
+        print(e)
+        return None, None, e
+
+
+def _poll_subworkflow(
+    ctx,
+    invocation_id: str,
+    invocation_api: InvocationApi,
+    workflow_progress_display: WorkflowProgressDisplay,
+    fail_fast: bool,
+):
+    if workflow_progress_display.all_subworkflows_complete():
+        return None, None, None
+
+    try:
+        subworkflow_id = workflow_progress_display.an_incomplete_subworkflow_id()
+        invocation, invocation_jobs = _summarize_invocation(invocation_api, subworkflow_id)
+        workflow_progress_display.handle_subworkflow_invocation(invocation, invocation_jobs)
+        return invocation, invocation_jobs, None
+    except Exception as e:
+        return None, None, e
+
+
+def _check_for_errors(
+    ctx,
+    invocation_id: str,
+    exception: Optional[Exception],
+    invocation,
+    invocation_jobs,
+    fail_fast: bool,
+):
+    error_message = workflow_in_error_message(
+        ctx, invocation_id, exception, invocation, invocation_jobs, fail_fast=fail_fast
+    )
+    if error_message:
+        final_state = "new" if not invocation else invocation["state"]
+        job_state = summary_job_state(invocation_jobs)
+        return final_state, job_state, error_message
+    return None
+
+
+def _is_polling_complete(workflow_progress_display: WorkflowProgressDisplay) -> bool:
+    return (
+        workflow_progress_display.workflow_progress.terminal and workflow_progress_display.all_subworkflows_complete()
+    )
+
+
 def wait_for_invocation_and_jobs(
     ctx,
     invocation_id: str,
@@ -46,80 +115,34 @@ def wait_for_invocation_and_jobs(
 ):
     ctx.vlog("Waiting for invocation [%s]" % invocation_id)
 
-    def summarize(invocation_id: str):
-        invocation = invocation_api.get_invocation(invocation_id)
-        assert invocation
-        invocation_jobs = invocation_api.get_invocation_summary(invocation_id)
-        return invocation, invocation_jobs
-
     last_invocation = None
     last_invocation_jobs = None
-    last_subworkflow_invocation = None
-    last_subworkflow_invocation_jobs = None
-    last_exception = None
     error_message: Optional[str] = None
 
-    done_polling = False
-    while not done_polling:
-        # loop over the main workflow and one subworkflow each iteration for display,
-
-        # skip the main workflow if it is already tracked as complete - if all steps have been
-        # scheduled there are no new subworkflow invocations to track.
-        if not workflow_progress_display.workflow_progress.terminal:
-            try:
-                last_invocation, last_invocation_jobs = summarize(invocation_id)
-                workflow_progress_display.handle_invocation(last_invocation, last_invocation_jobs)
-            except Exception as e:
-                print(e)
-                last_exception = e
-
-            error_message = workflow_in_error_message(
-                ctx,
-                invocation_id,
-                last_exception,
-                last_invocation,
-                last_invocation_jobs,
-                fail_fast=fail_fast,
-            )
-            if error_message:
-                final_invocation_state = "new" if not last_invocation else last_invocation["state"]
-                job_state = summary_job_state(last_invocation_jobs)
-                return final_invocation_state, job_state, error_message
-
-        assert last_invocation  # if we got here... the first check has passed and we have an invocation
-
-        # grab a subworkflow that isn't complete and check it, also register its subworkflow
-        # invocations so we catch all the children and children of children...
-        if not workflow_progress_display.all_subworkflows_complete():
-            try:
-                a_subworkflow_invocation_id = workflow_progress_display.an_incomplete_subworkflow_id()
-                last_subworkflow_invocation, last_subworkflow_invocation_jobs = summarize(a_subworkflow_invocation_id)
-                workflow_progress_display.handle_subworkflow_invocation(
-                    last_subworkflow_invocation, last_subworkflow_invocation_jobs
-                )
-            except Exception as e:
-                last_exception = e
-
-            error_message = workflow_in_error_message(
-                ctx,
-                invocation_id,
-                last_exception,
-                last_subworkflow_invocation,
-                last_subworkflow_invocation_jobs,
-                fail_fast=fail_fast,
-            )
-            if error_message:
-                final_invocation_state = (
-                    "new" if not last_subworkflow_invocation else last_subworkflow_invocation["state"]
-                )
-                job_state = summary_job_state(last_subworkflow_invocation_jobs)
-                return final_invocation_state, job_state, error_message
-
-        done_polling = (
-            workflow_progress_display.workflow_progress.terminal
-            and workflow_progress_display.all_subworkflows_complete()
+    while not _is_polling_complete(workflow_progress_display):
+        # Poll main workflow
+        main_invocation, main_jobs, main_exception = _poll_main_workflow(
+            ctx, invocation_id, invocation_api, workflow_progress_display, fail_fast
         )
-        if not done_polling:
+
+        if main_invocation:
+            last_invocation = main_invocation
+            last_invocation_jobs = main_jobs
+
+        error_result = _check_for_errors(ctx, invocation_id, main_exception, main_invocation, main_jobs, fail_fast)
+        if error_result:
+            return error_result
+
+        # Poll subworkflow
+        sub_invocation, sub_jobs, sub_exception = _poll_subworkflow(
+            ctx, invocation_id, invocation_api, workflow_progress_display, fail_fast
+        )
+
+        error_result = _check_for_errors(ctx, invocation_id, sub_exception, sub_invocation, sub_jobs, fail_fast)
+        if error_result:
+            return error_result
+
+        if not _is_polling_complete(workflow_progress_display):
             polling_tracker.sleep()
 
     ctx.vlog(f"The final state of all jobs and subworkflow invocations for invocation [{invocation_id}] is 'ok'")
@@ -129,7 +152,12 @@ def wait_for_invocation_and_jobs(
 
 
 def workflow_in_error_message(
-    ctx, invocation_id, last_exception, last_invocation, last_invocation_jobs, fail_fast=False,
+    ctx,
+    invocation_id,
+    last_exception,
+    last_invocation,
+    last_invocation_jobs,
+    fail_fast=False,
 ) -> Optional[str]:
     """Return an error message if workflow is in an error state."""
 
