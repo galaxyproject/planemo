@@ -67,7 +67,7 @@ def bump_version(version_str: str) -> str:
         return ".".join(map(str, base_version))
 
 
-def find_macros(xml_tree: ElementTree[Element[str]]) -> List[Any]:
+def find_macros(xml_tree: "ElementTree[Element[str]]") -> List[Any]:
     """
     Get macros from the XML tree
     """
@@ -77,7 +77,9 @@ def find_macros(xml_tree: ElementTree[Element[str]]) -> List[Any]:
     return macros
 
 
-def get_requirements(xml_tree: ElementTree[Element[str]]) -> Tuple[Dict[str, Dict[str, Optional[str]]], Optional[str]]:
+def get_requirements(
+    xml_tree: "ElementTree[Element[str]]",
+) -> Tuple[Dict[str, Dict[str, Optional[str]]], Optional[str]]:
     """
     Get requirements from the XML tree
     """
@@ -95,7 +97,7 @@ def get_requirements(xml_tree: ElementTree[Element[str]]) -> Tuple[Dict[str, Dic
     return requirements, main_req
 
 
-def get_tokens(xml_tree: ElementTree[Element[str]]) -> Dict[str, Dict[str, Optional[str]]]:
+def get_tokens(xml_tree: "ElementTree[Element[str]]") -> Dict[str, Dict[str, Optional[str]]]:
     """
     Get tokens from the XML tree
     """
@@ -127,7 +129,7 @@ def check_conda(package_name: str, ctx: "PlanemoCliContext", **kwds) -> str:
 
 def update_xml(
     tool_path: str,
-    xml_tree: ElementTree[Element[str]],
+    xml_tree: "ElementTree[Element[str]]",
     tags_to_update: List[Dict[str, str]],
     wrapper_version_token: Optional[Union[int, str]],
     is_macro: bool = False,
@@ -165,7 +167,7 @@ def update_xml(
 
 
 def create_requirement_dict(
-    xml_files: Dict[str, ElementTree[Element[str]]], skip_reqs: List[str]
+    xml_files: Dict[str, "ElementTree[Element[str]]"], skip_reqs: List[str]
 ) -> Tuple[Dict[str, Dict[str, Dict[str, Optional[str]]]], Optional[Tuple[str, str]]]:
     """
     Create dict with requirements and find main requirement
@@ -185,7 +187,7 @@ def create_requirement_dict(
 
 
 def create_token_dict(
-    ctx: "PlanemoCliContext", xml_files: Dict[str, ElementTree[Element[str]]], main_req: Tuple[str, str], **kwds
+    ctx: "PlanemoCliContext", xml_files: Dict[str, "ElementTree[Element[str]]"], main_req: Tuple[str, str], **kwds
 ) -> Tuple[
     Dict[str, Dict[str, Dict[str, Optional[str]]]], DefaultDict[str, List[Dict[str, str]]], Optional[str], Optional[str]
 ]:
@@ -211,7 +213,7 @@ def create_token_dict(
 
 def perform_required_update(
     ctx: "PlanemoCliContext",
-    xml_files: Dict[str, ElementTree[Element[str]]],
+    xml_files: Dict[str, "ElementTree[Element[str]]"],
     tool_path: str,
     requirements: Dict[str, Dict[str, Dict[str, Optional[str]]]],
     tokens: Dict[str, Dict[str, Dict[str, Optional[str]]]],
