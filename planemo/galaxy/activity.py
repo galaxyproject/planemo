@@ -574,7 +574,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         if filename is None:
             local_filename = f'{sanitize_filename(dataset_details.get("cwl_file_name") or dataset_details.get("name"))}__{dataset_details["uuid"]}.{extension}'
         else:
-            local_filename = f"{filename}{extension}"
+            local_filename = f"{filename}.{extension}"
         destination = os.path.join(output_directory, local_filename)
         self._history_content_download(
             ctx,
