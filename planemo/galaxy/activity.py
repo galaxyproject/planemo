@@ -41,7 +41,10 @@ from planemo.galaxy.api import (
     retry_on_timeouts,
     summarize_history,
 )
-from planemo.galaxy.invocations.api import BioblendInvocationApi
+from planemo.galaxy.invocations.api import (
+    BioblendInvocationApi,
+    JOB_ERROR_STATES,
+)
 from planemo.galaxy.invocations.polling import PollingTrackerImpl
 from planemo.galaxy.invocations.polling import wait_for_invocation_and_jobs as polling_wait_for_invocation_and_jobs
 from planemo.galaxy.invocations.progress import WorkflowProgressDisplay
@@ -808,6 +811,10 @@ def wait_for_invocation_and_jobs(
                 invocation = invocation_api.get_invocation(invocation_id)
                 history_id = invocation["history_id"]
             summarize_history(ctx, user_gi, history_id)
+        elif job_state in JOB_ERROR_STATES:
+            workflow_progress_display.workflow_progress.print_job_errors_once(
+                ctx, invocation_api, invocation_id, workflow_progress_display=workflow_progress_display
+            )
         return final_invocation_state, job_state, error_message
 
 

@@ -87,10 +87,19 @@ def _check_for_errors(
     exception: Optional[Exception],
     invocation,
     invocation_jobs,
+    invocation_api: InvocationApi,
+    workflow_progress_display: WorkflowProgressDisplay,
     fail_fast: bool,
 ):
     error_message = workflow_in_error_message(
-        ctx, invocation_id, exception, invocation, invocation_jobs, fail_fast=fail_fast
+        ctx,
+        invocation_id,
+        exception,
+        invocation,
+        invocation_jobs,
+        invocation_api=invocation_api,
+        workflow_progress_display=workflow_progress_display,
+        fail_fast=fail_fast,
     )
     if error_message:
         final_state = "new" if not invocation else invocation["state"]
@@ -129,7 +138,16 @@ def wait_for_invocation_and_jobs(
             last_invocation = main_invocation
             last_invocation_jobs = main_jobs
 
-        error_result = _check_for_errors(ctx, invocation_id, main_exception, main_invocation, main_jobs, fail_fast)
+        error_result = _check_for_errors(
+            ctx,
+            invocation_id,
+            main_exception,
+            main_invocation,
+            main_jobs,
+            invocation_api=invocation_api,
+            workflow_progress_display=workflow_progress_display,
+            fail_fast=fail_fast,
+        )
         if error_result:
             return error_result
 
@@ -138,7 +156,16 @@ def wait_for_invocation_and_jobs(
             ctx, invocation_id, invocation_api, workflow_progress_display, fail_fast
         )
 
-        error_result = _check_for_errors(ctx, invocation_id, sub_exception, sub_invocation, sub_jobs, fail_fast)
+        error_result = _check_for_errors(
+            ctx,
+            invocation_id,
+            sub_exception,
+            sub_invocation,
+            sub_jobs,
+            invocation_api,
+            workflow_progress_display,
+            fail_fast,
+        )
         if error_result:
             return error_result
 
@@ -148,6 +175,20 @@ def wait_for_invocation_and_jobs(
     ctx.vlog(f"The final state of all jobs and subworkflow invocations for invocation [{invocation_id}] is 'ok'")
     job_state = summary_job_state(last_invocation_jobs)
     assert last_invocation
+
+    # Final check for job errors when fail_fast is enabled
+    if fail_fast and job_state in JOB_ERROR_STATES and not error_message:
+        error_message = workflow_in_error_message(
+            ctx,
+            invocation_id,
+            None,
+            last_invocation,
+            last_invocation_jobs,
+            fail_fast=fail_fast,
+            invocation_api=invocation_api,
+            workflow_progress_display=workflow_progress_display,
+        )
+
     return last_invocation["state"], job_state, error_message
 
 
@@ -157,6 +198,8 @@ def workflow_in_error_message(
     last_exception,
     last_invocation,
     last_invocation_jobs,
+    invocation_api: InvocationApi,
+    workflow_progress_display: WorkflowProgressDisplay,
     fail_fast=False,
 ) -> Optional[str]:
     """Return an error message if workflow is in an error state."""
@@ -174,10 +217,20 @@ def workflow_in_error_message(
         ctx.vlog(msg)
         error_message = msg if not error_message else f"{error_message}. {msg}"
 
-    if fail_fast and job_state in JOB_ERROR_STATES:
-        msg = f"Failed to run workflow, at least one job is in [{job_state}] state."
-        ctx.vlog(msg)
-        error_message = msg if not error_message else f"{error_message}. {msg}"
+    # Print job errors when detected, regardless of fail_fast setting
+    if job_state in JOB_ERROR_STATES:
+        # Print failed job details when we detect job failures, using WorkflowProgress to avoid duplicates
+        if invocation_api and workflow_progress_display:
+            # Pass the Live display to print errors above the live panel
+            workflow_progress_display.workflow_progress.print_job_errors_once(
+                ctx, invocation_api, invocation_id, workflow_progress_display=workflow_progress_display
+            )
+
+        # Only return error message (which stops execution) when fail_fast is enabled
+        if fail_fast:
+            msg = f"Failed to run workflow, at least one job is in [{job_state}] state."
+            ctx.vlog(msg)
+            error_message = msg if not error_message else f"{error_message}. {msg}"
 
     return error_message
 
