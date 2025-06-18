@@ -341,6 +341,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         pid_file = f"{server_name}.pid"
         ensure_dependency_resolvers_conf_configured(ctx, kwds, os.path.join(config_directory, "resolvers_conf.xml"))
         all_tool_paths = _all_tool_paths(runnables, galaxy_root=galaxy_root, extra_tools=kwds.get("extra_tools"))
+        kwds["all_in_one_handling"] = True
         _handle_job_config_file(config_directory, server_name, test_data_dir, all_tool_paths, kwds)
         _handle_job_metrics(config_directory, kwds)
         _handle_file_sources(config_directory, test_data_dir, kwds)
@@ -1345,7 +1346,7 @@ def _handle_job_config_file(
     if not job_config_file:
         dev_context = DevelopmentContext(
             test_data_dir,
-            all_tool_paths,
+            list(all_tool_paths),
         )
         init_config = ConfigArgs.from_dict(**kwds)
         conf_contents = build_job_config(init_config, dev_context)
