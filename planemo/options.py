@@ -1784,6 +1784,10 @@ def test_index_option():
     return planemo_option("--test_index", default=1, type=int, help="Select which test to check. Counting starts at 1")
 
 
+def fail_fast_option():
+    return planemo_option("--fail_fast", is_flag=True, help="Stop on first job failure.")
+
+
 def test_output_options():
     return _compose(
         planemo_option(
@@ -1826,10 +1830,7 @@ def test_output_options():
 
 
 def test_options():
-    return _compose(
-        paste_test_data_paths_option(),
-        test_output_options(),
-    )
+    return _compose(paste_test_data_paths_option(), test_output_options(), fail_fast_option())
 
 
 def _compose(*functions):
@@ -2174,16 +2175,6 @@ def tool_init_example_command_option(help=EXAMPLE_COMMAND_HELP):
     )
 
 
-def no_early_termination_option():
-    return planemo_option(
-        "--no_early_termination",
-        is_flag=True,
-        default=False,
-        prompt=False,
-        help="Wait until all jobs terminate, even if some jobs have failed",
-    )
-
-
 def mulled_conda_option():
     return planemo_option(
         "--mulled_conda_version",
@@ -2217,6 +2208,14 @@ def mulled_action_option():
         type=click.STRING,
         default="build-and-test",
         help=("Mulled action to perform for targets - this defaults to 'build-and-test'."),
+    )
+
+
+def invocation_target_options():
+    return _compose(
+        required_invocation_id_arg(),
+        galaxy_url_option(required=True),
+        galaxy_user_key_option(required=True),
     )
 
 

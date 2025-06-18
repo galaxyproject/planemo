@@ -15,9 +15,7 @@ from planemo.test.results import StructuredData
 
 @click.command("workflow_test_on_invocation")
 @options.optional_tools_arg(multiple=False, allow_uris=False, metavar="TEST.YML")
-@options.required_invocation_id_arg()
-@options.galaxy_url_option(required=True)
-@options.galaxy_user_key_option(required=True)
+@options.invocation_target_options()
 @options.test_index_option()
 @options.test_output_options()
 @command_function
@@ -34,7 +32,10 @@ def cli(ctx, path, invocation_id, test_index, **kwds):
             len(test_cases) >= test_index
         ), f"Selected test case {test_index}, but only found {len(test_cases)} test case(s)."
         test_case = test_cases[test_index - 1]
-        run_response = invocation_to_run_response(ctx, user_gi=config.user_gi, runnable=runnable, invocation=invocation)
+        # Hardcode fail_fast, no need to expose the option to the user IMO.
+        run_response = invocation_to_run_response(
+            ctx, user_gi=config.user_gi, runnable=runnable, invocation=invocation, fail_fast=True
+        )
         structured_data = test_case.structured_test_data(run_response)
         test_data = {
             "version": "0.1",

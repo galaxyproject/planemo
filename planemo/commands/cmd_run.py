@@ -30,7 +30,6 @@ from planemo.test.results import StructuredData
 @options.run_download_outputs_option()
 @options.engine_options()
 @options.test_options()
-@options.no_early_termination_option()
 @command_function
 def cli(ctx, runnable_identifier, job_path, **kwds):
     """Planemo command for running tools and jobs.
