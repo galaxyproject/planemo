@@ -128,6 +128,26 @@ def get_invocations(url, key, workflow_id):
     }
 
 
+def get_workflows(url, key):
+    inv_gi = gi(None, url, key)
+    workflows = inv_gi.workflows.get_workflows()
+
+    def get_report_url(workflow):
+        if "source_metadata" in workflow and workflow["source_metadata"] and "url" in workflow["source_metadata"]:
+            return workflow["source_metadata"]["url"]
+        return "N/A"
+
+    return {
+        workflow["id"]: {
+            "name": workflow["name"],
+            "repo_url": get_report_url(workflow),
+            "url": workflow["url"],
+            "published": workflow.get("published", False),
+        }
+        for workflow in workflows
+    }
+
+
 def _format_for_summary(blob, empty_message, prefix="|  "):
     contents = "\n".join([f"{prefix}{line.strip()}" for line in StringIO(blob).readlines() if line.rstrip("\n\r")])
     return contents or f"{prefix}*{empty_message}*"
