@@ -146,7 +146,7 @@ CURRENT_CATEGORIES = [
     "Muon spectroscopy",
     "Nanopore",
     "Next Gen Mappers",
-    "NLP",
+    "Natural Language Processing",
     "Ontology Manipulation",
     "Phylogenetics",
     "Proteomics",
