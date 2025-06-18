@@ -570,10 +570,11 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         return self._outputs_dict[output_id]
 
     def download_output_to(self, ctx, dataset_details, output_directory, filename=None):
+        extension = dataset_details["file_ext"]
         if filename is None:
-            local_filename = f'{sanitize_filename(dataset_details.get("cwl_file_name") or dataset_details.get("name"))}__{dataset_details["uuid"]}'
+            local_filename = f'{sanitize_filename(dataset_details.get("cwl_file_name") or dataset_details.get("name"))}__{dataset_details["uuid"]}.{extension}'
         else:
-            local_filename = filename
+            local_filename = f"{filename}{extension}"
         destination = os.path.join(output_directory, local_filename)
         self._history_content_download(
             ctx,
