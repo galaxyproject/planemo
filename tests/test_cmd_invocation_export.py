@@ -6,6 +6,8 @@ import tempfile
 import time
 import zipfile
 
+import pytest
+
 from planemo import network_util
 from .test_cmd_serve import UsesServeCommand
 from .test_utils import (
@@ -14,6 +16,7 @@ from .test_utils import (
     PROJECT_TEMPLATES_DIR,
     safe_rmtree,
     skip_if_environ,
+    target_galaxy_branch,
     TEST_DATA_DIR,
 )
 
@@ -36,6 +39,10 @@ class GalaxyInvocationExportTestCase(CliTestCase, UsesServeCommand):
         self._port = network_util.get_free_port()
         self._pid_file = os.path.join(self._home, "test.pid")
 
+    @pytest.mark.skipif(
+        target_galaxy_branch() == "release_22.05",
+        reason="Skipping test on Galaxy 22.05, does not support rocrate.zip export.",
+    )
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch
     def test_export_invocation(self):
