@@ -21,6 +21,7 @@ from typing_extensions import TypedDict
 
 from .api import (
     invocation_state_terminal,
+    InvocationApi,
     JOB_ERROR_STATES,
 )
 from .progress_display import DisplayConfiguration
@@ -60,6 +61,7 @@ class WorkflowProgress(Progress):
         self.num_running: int = 0
         self.num_errors: int = 0
         self.num_paused: int = 0
+        self.printed_job_errors: Set[str] = set()  # Track printed job errors by job ID
 
         self.num_subworkflows: int = 0
         self.num_subworkflows_complete: int = 0
@@ -201,6 +203,86 @@ class WorkflowProgress(Progress):
         self._steps_task = self.add_task(f"[{self.steps_color}]{self.display.label_progress_steps}", status="")
         self._jobs_task = self.add_task(f"[{self.jobs_color}]{self.display.label_progress_jobs}", status="")
 
+    def print_job_errors_once(
+        self,
+        ctx,
+        invocation_api: InvocationApi,
+        invocation_id: str,
+        workflow_progress_display: "WorkflowProgressDisplay",
+    ):
+        """Print job errors only if they haven't been printed before, tracking by job ID."""
+
+        # Early exit if no errors detected in current state
+        if self.num_errors == 0:
+            return
+
+        # Get all failed job details and filter for new ones
+        try:
+            new_error_lines = []
+
+            # Use the efficient jobs API to get all failed jobs for this invocation in one call
+            try:
+                # Get all jobs in error state for this invocation
+                failed_jobs = invocation_api.get_invocation_jobs(invocation_id, state="error")
+                ctx.vlog(f"Found {len(failed_jobs)} failed jobs for invocation {invocation_id}")
+
+                # Process each failed job that we haven't seen before
+                for job in failed_jobs:
+                    job_id = job.get("id")
+                    if job_id and job_id not in self.printed_job_errors:
+                        # Mark this job as printed
+                        self.printed_job_errors.add(job_id)
+                        ctx.vlog(f"Processing failed job {job_id}")
+
+                        # Get detailed job information for error details
+                        try:
+                            job_details = invocation_api.get_job(job_id, full_details=True)
+                            job_errors = self._format_job_error_details(job_id, job_details)
+                            new_error_lines.extend(job_errors)
+                        except Exception as e:
+                            ctx.vlog("Failed to get details for job {}: {}".format(job_id, e))
+
+            except Exception as e:
+                ctx.vlog("Failed to get failed jobs: {}".format(e))
+                return
+
+            # Print any new errors found
+            if new_error_lines:
+                workflow_progress_display.console.print("\n".join(new_error_lines))
+
+        except Exception as e:
+            error_msg = "❌ Failed to collect failed job details: {}".format(e)
+            workflow_progress_display.console.print(error_msg)
+
+    def _format_job_error_details(self, job_id, job_details):
+        """Format error details for a single failed job."""
+        error_lines = []
+        exit_code = job_details.get("exit_code")
+        stderr = job_details.get("stderr", "").strip()
+        stdout = job_details.get("stdout", "").strip()
+        command_line = job_details.get("command_line")
+        tool_id = job_details.get("tool_id")
+
+        error_lines.append("❌ Failed job {}:".format(job_id))
+        if tool_id:
+            error_lines.append("   Tool ID: {}".format(tool_id))
+        if exit_code is not None:
+            error_lines.append("   Exit code: {}".format(exit_code))
+        if command_line:
+            error_lines.append("   Command line: {}".format(command_line))
+        if stdout:
+            error_lines.append("   Stdout:")
+            for line in stdout.split("\n"):
+                if line.strip():
+                    error_lines.append("     {}".format(line))
+        if stderr:
+            error_lines.append("   Stderr:")
+            for line in stderr.split("\n"):
+                if line.strip():
+                    error_lines.append("     {}".format(line))
+        error_lines.append("")  # Empty line for spacing
+        return error_lines
+
 
 # converted from Galaxy TypeScript (see util.ts next to WorkflowInvocationState.vue)
 def count_states(job_summary: Optional[InvocationJobsSummary], query_states: list[str]) -> int:
@@ -265,7 +347,7 @@ class WorkflowProgressDisplay(Live):
         self.display = display
         self.workflow_progress = WorkflowProgress(display)
         self.subworkflow_progress = WorkflowProgress(display)
-        super().__init__(self._panel())
+        super().__init__(self._panel(), auto_refresh=False)
 
     def _register_subworkflow_invocation_ids_from(self, invocation: Invocation):
         subworkflow_invocation_ids: List[str] = []
@@ -333,6 +415,7 @@ class WorkflowProgressDisplay(Live):
 
     def _update_panel(self):
         self.update(self._panel())
+        self.refresh()
 
     def handle_invocation(self, invocation: Invocation, job_state_summary: InvocationJobsSummary):
         self.workflow_progress.handle_invocation(invocation, job_state_summary)

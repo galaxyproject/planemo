@@ -1,10 +1,14 @@
 from time import sleep
-from typing import Optional
+from typing import (
+    List,
+    Optional,
+)
 
 from planemo.galaxy.invocations.api import Invocation as InvocationResponse
 from planemo.galaxy.invocations.api import (
     InvocationApi,
     InvocationJobsSummary,
+    Job,
 )
 from planemo.galaxy.invocations.polling import (
     PollingTracker,
@@ -161,18 +165,85 @@ def run_workflow_simulation(
         )
 
 
+class MockGalaxyInstance:
+    """Mock Galaxy instance for testing job detail retrieval."""
+
+    def __init__(self):
+        self.jobs = MockJobsApi()
+        self.invocations = MockInvocationsApi()
+
+
+class MockJobsApi:
+    """Mock jobs API for testing."""
+
+    def show_job(self, job_id, full_details=False):
+        """Return mock job details with exit code and stderr."""
+        return {
+            "id": job_id,
+            "state": "failed",
+            "exit_code": 1,
+            "stderr": f"Error: Mock job {job_id} failed with exit code 1\nAdditional error details here",
+            "stdout": f"Mock job {job_id} output",
+            "command_line": f"python /mock/tool/script.py --input data.txt --output {job_id}_output.txt",
+            "tool_id": f"mock_tool_{job_id.split('_')[-1]}",
+        }
+
+    def get_jobs(self, invocation_id=None, state=None):
+        """Return mock list of jobs with specified state for invocation."""
+        if state == "error" and invocation_id:
+            return [
+                {"id": "failed_job_1", "state": "error"},
+                {"id": "failed_job_2", "state": "error"},
+                {"id": "failed_job_3", "state": "error"},
+                {"id": "failed_job_4", "state": "error"},
+            ]
+        return []
+
+
+class MockInvocationsApi:
+    """Mock invocations API for testing."""
+
+    def show_invocation_step(self, invocation_id, step_id):
+        """Return mock invocation step details."""
+        return {"id": step_id, "jobs": [{"id": f"job_{step_id}", "state": "failed"}]}
+
+
 class SimulatedApi(InvocationApi):
     _simulation: Invocation
 
     def __init__(self, invocation: Invocation):
         self._simulation = invocation
+        self._user_gi = MockGalaxyInstance()
 
     def get_invocation(self, invocation_id: str) -> InvocationResponse:
         invocation = self._simulation.get_invocation_by_id(invocation_id)
         assert invocation, f"Simulation has no invocation_id {invocation_id}"
         return invocation.get_api_invocation()
 
-    def get_invocation_summary(self, invocation_id: str) -> InvocationJobsSummary:
+    def get_invocation_summary(self, invocation_id: str, state: Optional[str] = None) -> InvocationJobsSummary:
         invocation = self._simulation.get_invocation_by_id(invocation_id)
         assert invocation, f"Simulation has no invocation_id {invocation_id}"
         return invocation.get_api_jobs_summary()
+
+    def get_invocation_jobs(self, invocation_id: str, state: Optional[str] = None) -> List[Job]:
+        """Return mock list of jobs for invocation, filtered by state if provided."""
+        if state == "error":
+            return [
+                {"id": "failed_job_1", "state": "error"},
+                {"id": "failed_job_2", "state": "error"},
+                {"id": "failed_job_3", "state": "error"},
+                {"id": "failed_job_4", "state": "error"},
+            ]
+        return []
+
+    def get_job(self, job_id: str, full_details: bool = False) -> Job:
+        """Return mock job details."""
+        return {
+            "id": job_id,
+            "state": "failed",
+            "exit_code": 1,
+            "stderr": f"Error: Mock job {job_id} failed with exit code 1\nAdditional error details here",
+            "stdout": f"Mock job {job_id} output",
+            "command_line": f"python /mock/tool/script.py --input data.txt --output {job_id}_output.txt",
+            "tool_id": f"mock_tool_{job_id.split('_')[-1]}",
+        }
