@@ -388,24 +388,25 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         properties.update(
             dict(
                 server_name="main",
+                enable_celery_tasks="true",
                 ftp_upload_dir_template="${ftp_upload_dir}",
-                ftp_upload_purge="False",
+                ftp_upload_purge="false",
                 ftp_upload_dir=test_data_dir or os.path.abspath("."),
                 ftp_upload_site="Test Data",
-                check_upload_content="False",
+                check_upload_content="false",
                 tool_dependency_dir=dependency_dir,
                 file_path=file_path,
                 new_file_path="${temp_directory}/tmp",
                 tool_config_file=tool_config_file,
                 tool_sheds_config_file=sheds_config_path,
-                manage_dependency_relationships="False",
+                manage_dependency_relationships="false",
                 job_working_directory="${temp_directory}/job_working_directory",
                 template_cache_path="${temp_directory}/compiled_templates",
                 citation_cache_type="file",
                 citation_cache_data_dir="${temp_directory}/citations/data",
                 citation_cache_lock_dir="${temp_directory}/citations/lock",
-                database_auto_migrate="True",
-                enable_beta_tool_formats="True",
+                database_auto_migrate="true",
+                enable_beta_tool_formats="true",
                 id_secret="${id_secret}",
                 log_level="${log_level}",
                 debug="${debug}",
@@ -418,7 +419,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
                 migrated_tools_config=empty_tool_conf,
                 test_data_dir=test_data_dir,  # TODO: make gx respect this
                 shed_data_manager_config_file=shed_data_manager_config_file,
-                outputs_to_working_directory="True",  # this makes Galaxy's files dir RO for dockerized testing
+                outputs_to_working_directory="true",  # this makes Galaxy's files dir RO for dockerized testing
                 object_store_store_by="uuid",
             )
         )
