@@ -44,7 +44,7 @@ def cli(ctx, invocation_id, output_directory, ignore_missing_output, **kwds):
     gi = GalaxyInstance(url=url, key=key)
 
     invocation_data = gi.invocations.show_invocation(invocation_id)
-    workflow_id = gi.workflows.show_workflow(workflow_id=invocation_data["workflow_id"], instance=True)[0]["id"]
+    workflow_id = gi.workflows.show_workflow(workflow_id=invocation_data["workflow_id"], instance=True)["id"]
     runnable = for_runnable_identifier(ctx, workflow_id, kwds)
     run_response = invocation_to_run_response(ctx, gi, runnable, invocation_data)
     if output_directory is None:
