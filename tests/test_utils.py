@@ -11,7 +11,6 @@ from concurrent.futures import (
     as_completed,
     ThreadPoolExecutor,
 )
-from sys import version_info
 from tempfile import mkdtemp
 from typing import (
     Callable,
@@ -45,12 +44,6 @@ from .shed_app_test_utils import (
     mock_shed,
     setup_mock_shed,
 )
-
-PRE_PYTHON_27 = False
-if version_info[0] == 2 and version_info[1] >= 7:
-    PYTHON_27 = True
-else:
-    PYTHON_27 = False
 
 TEST_DIR = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
