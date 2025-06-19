@@ -1,4 +1,4 @@
-"""Module describing the planemo ``download_run_output`` command."""
+"""Module describing the planemo ``invocation_download`` command."""
 
 import os
 
@@ -13,7 +13,7 @@ from planemo.io import info
 from planemo.runnable_resolve import for_runnable_identifier
 
 
-@click.command("download_run_output")
+@click.command("invocation_download")
 @options.run_output_directory_option()
 @options.run_output_json_option()
 @options.profile_option()
@@ -29,7 +29,7 @@ def cli(ctx, invocation_id, output_directory, ignore_missing_output, **kwds):
     through Galaxy's web interface or through planemo.
 
     \b
-        % planemo download_run_output INVOCATION_ID
+        % planemo invocation_download INVOCATION_ID
     """
 
     profile = kwds.get("profile")

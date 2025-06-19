@@ -81,7 +81,7 @@ class CmdTestTestCase(CliTestCase, UsesServeCommand):
             invocations = user_gi.invocations.get_invocations()
             download_outputs_cmd = [
                 "--verbose",
-                "download_run_output",
+                "invocation_download",
                 "--galaxy_url",
                 f"http://localhost:{self._port}",
                 "--galaxy_user_key",
