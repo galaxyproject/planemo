@@ -41,6 +41,7 @@ packages = [
     "planemo.database",
     "planemo.engine",
     "planemo.galaxy",
+    "planemo.galaxy.invocations",
     "planemo.galaxy.test",
     "planemo.linters",
     "planemo.reports",
