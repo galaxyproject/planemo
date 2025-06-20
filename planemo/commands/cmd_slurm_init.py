@@ -37,6 +37,6 @@ def cli(ctx, **kwds):
         link_target = lib_path.readlink()
         target_file = tempdir / "dist" / "lib" / link_target
         shutil.copy(target_file, dest)
-        info(f"SLURM DRMAA library initialized successfully and copied to {dest}.")
+        info(f"SLURM DRMAA library initialized successfully and copied to {dest}")
     finally:
         shutil.rmtree(tempdir)
