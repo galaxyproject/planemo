@@ -87,7 +87,15 @@ class WorkflowProgress(Progress):
 
     @property
     def invocation_scheduling_terminal(self):
-        return invocation_state_terminal(self.invocation_state)
+        # This is a tricky issue, because we might be waiting to schedule a new step whose inputs are paused.
+        # Unlikely that this will ever be unpaused, so we also consider the "ready" invocation state and the presence of paused jobs as terminal.
+        # We might want to tweak the state in Galaxy if we pause jobs because of input errors, so that this hack won't be rquired.
+        return (
+            invocation_state_terminal(self.invocation_state)
+            or self.invocation_state == "ready"
+            and self.num_paused
+            and self.num_errors
+        )
 
     @property
     def jobs_terminal(self):
