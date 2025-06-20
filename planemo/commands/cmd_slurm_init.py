@@ -29,7 +29,6 @@ def cli(ctx, **kwds):
         # this should be restored. The point is to show developers what is happening and how to do it.
         untar_to(DOWNLOAD_URL, tar_args=tar_args, dest_dir=str(tempdir))
         shell(["mkdir", "dest"], cwd=str(tempdir))
-        shell(["./autogen.sh"], cwd=str(tempdir))
         shell(["./configure", f"--prefix={tempdir}/dist"], cwd=str(tempdir))
         shell(["make"], cwd=str(tempdir))
         shell(["make", "install"], cwd=str(tempdir))
