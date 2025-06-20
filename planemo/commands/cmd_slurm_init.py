@@ -31,7 +31,7 @@ def cli(ctx, **kwds):
         shell(["./autogen.sh"], cwd=tempdir)
         shell(["./configure", f"--prefix={tempdir}/dist"], cwd=tempdir)
         shell(["make"], cwd=tempdir)
-        shell(["make install"], cwd=tempdir)
+        shell(["make", "install"], cwd=tempdir)
         shutil.move(f"{tempdir}/dist/lib/libdrmaa.so", dest)
         info(f"SLURM DRMAA library initialized successfully and copied to {dest}.")
     finally:
