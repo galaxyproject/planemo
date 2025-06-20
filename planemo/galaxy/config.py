@@ -204,7 +204,6 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             return os.path.join(config_directory, *args)
 
         ensure_dependency_resolvers_conf_configured(ctx, kwds, os.path.join(config_directory, "resolvers_conf.xml"))
-        _handle_job_metrics(config_directory, kwds)
         galaxy_root = kwds.get("galaxy_root")
         _handle_refgenie_config(config_directory, galaxy_root, kwds)
 
@@ -343,7 +342,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         all_tool_paths = _all_tool_paths(runnables, galaxy_root=galaxy_root, extra_tools=kwds.get("extra_tools"))
         kwds["all_in_one_handling"] = True
         _handle_job_config_file(config_directory, server_name, test_data_dir, all_tool_paths, kwds)
-        _handle_job_metrics(config_directory, kwds)
         _handle_file_sources(config_directory, test_data_dir, kwds)
         _handle_refgenie_config(config_directory, galaxy_root, kwds)
         file_path = kwds.get("file_path") or config_join("files")
@@ -1380,13 +1378,6 @@ def _handle_container_resolution(ctx, kwds, galaxy_properties):
         involucro_context = build_involucro_context(ctx, **kwds)
         galaxy_properties["involucro_auto_init"] = "False"  # Use planemo's
         galaxy_properties["involucro_path"] = involucro_context.involucro_bin
-
-
-def _handle_job_metrics(config_directory, kwds):
-    metrics_conf = os.path.join(config_directory, "job_metrics_conf.xml")
-    with open(metrics_conf, "w") as fh:
-        fh.write(EMPTY_JOB_METRICS_TEMPLATE)
-    kwds["job_metrics_config_file"] = metrics_conf
 
 
 def _handle_file_sources(config_directory, test_data_dir, kwds):
