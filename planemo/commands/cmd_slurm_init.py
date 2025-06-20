@@ -12,7 +12,7 @@ from planemo.io import (
     untar_to,
 )
 
-SLRUM_DRMAA_VERSION = "1.1.4"
+SLRUM_DRMAA_VERSION = "1.1.5"
 DOWNLOAD_URL = f"https://github.com/natefoo/slurm-drmaa/releases/download/{SLRUM_DRMAA_VERSION}/slurm-drmaa-{SLRUM_DRMAA_VERSION}.tar.gz"
 
 
