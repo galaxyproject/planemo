@@ -144,3 +144,34 @@ class RunTestCase(CliTestCase):
             print(f"Files in {output_path}:", output_files)
             assert len(output_files) == 1
             assert output_files[0].endswith(".txt")
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_run_export_invocation(self):
+        with self._isolate() as f:
+            cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
+            wf = os.path.join(TEST_DATA_DIR, "wf2.ga")
+            job_path = os.path.join(TEST_DATA_DIR, "wf2-job.yml")
+            export_path = os.path.join(f, "invocation_export.rocrate.zip")
+            test_cmd = [
+                "--verbose",
+                "run",
+                "--no_dependency_resolution",
+                "--extra_tools",
+                cat,
+                "--export_invocation",
+                export_path,
+                wf,
+                job_path,
+            ]
+            self._check_exit_code(test_cmd)
+
+            # Check that the export file was created
+            assert os.path.exists(export_path)
+            assert os.path.getsize(export_path) > 0
+
+            # Verify it's a valid zip file by checking it can be opened
+            import zipfile
+
+            with zipfile.ZipFile(export_path, "r") as zip_ref:
+                # Should contain some files for a valid RO-Crate
+                assert len(zip_ref.namelist()) > 0

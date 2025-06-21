@@ -347,6 +347,15 @@ def run_download_outputs_option():
     )
 
 
+def run_export_option():
+    return planemo_option(
+        "--export_invocation",
+        help="Export workflow invocation as archive to specified path.",
+        type=click.Path(),
+        default=None,
+    )
+
+
 def publish_dockstore_option():
     return planemo_option(
         "--publish/--no_publish",

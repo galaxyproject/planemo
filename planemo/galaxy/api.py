@@ -128,8 +128,11 @@ def get_invocations(url, key, workflow_id):
     }
 
 
-def export_invocation_as_archive(url, key, invocation_id, export_format, output):
-    inv_gi = gi(None, url, key)
+def export_invocation_as_archive(url=None, key=None, user_gi=None, invocation_id=None, export_format=None, output=None):
+    if user_gi is not None:
+        inv_gi = user_gi
+    else:
+        inv_gi = gi(None, url, key)
     response = inv_gi.invocations.get_invocation_archive(invocation_id=invocation_id, model_store_format=export_format)
     with open(output, "wb") as archive:
         for chunk in response.iter_content(chunk_size=8192):

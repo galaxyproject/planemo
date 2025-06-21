@@ -38,6 +38,7 @@ from pathvalidate import sanitize_filename
 from requests.exceptions import HTTPError
 
 from planemo.galaxy.api import (
+    export_invocation_as_archive,
     retry_on_timeouts,
     summarize_history,
 )
@@ -243,6 +244,16 @@ def _execute(  # noqa C901
         ctx.vlog("collecting outputs from run...")
         run_response.collect_outputs(output_directory)
         ctx.vlog("collecting outputs complete")
+
+    # Export invocation if requested
+    if kwds.get("export_invocation", False):
+        assert isinstance(run_response, GalaxyWorkflowRunResponse), "Only workflow invocations can be exported."
+        export_path = kwds["export_invocation"]
+        export_format = kwds.get("export_format", "rocrate.zip")
+        print("Exporting invocation")
+        run_response.export_invocation(export_path, export_format)
+        print(f"Exported invocation {run_response._invocation_id} to {export_path}, format: {export_format}")
+
     return run_response
 
 
@@ -768,6 +779,17 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
     @property
     def was_successful(self):
         return self.history_state in ["ok", "skipped", None] and self.invocation_state == "scheduled"
+
+    def export_invocation(self, output_path, export_format="rocrate.zip"):
+        """Export workflow invocation as archive."""
+
+        export_invocation_as_archive(
+            user_gi=self._user_gi,
+            invocation_id=self._invocation_id,
+            export_format=export_format,
+            output=output_path,
+        )
+        return output_path
 
 
 def _tool_id(tool_path):
