@@ -331,7 +331,7 @@ def run_output_json_option():
             resolve_path=True,
         ),
         default=None,
-        help=("Where to store JSON dictionary describing outputs of " "a 'run' task."),
+        help=("Where to store JSON dictionary describing outputs of a 'run' task."),
     )
 
 
@@ -384,7 +384,7 @@ def shed_dependency_resolution():
     return planemo_option(
         "--shed_dependency_resolution",
         is_flag=True,
-        help=("Configure Galaxy to use brewed Tool Shed dependency" " resolution."),
+        help=("Configure Galaxy to use brewed Tool Shed dependency resolution."),
     )
 
 
@@ -621,7 +621,7 @@ def galaxy_branch_option():
         default=None,
         use_global_config=True,
         use_env_var=True,
-        help=("Branch of Galaxy to target (defaults to master) if a Galaxy " "root isn't specified."),
+        help=("Branch of Galaxy to target (defaults to master) if a Galaxy root isn't specified."),
     )
 
 
@@ -686,7 +686,7 @@ def conda_ensure_channels_option():
         type=str,
         use_global_config=True,
         use_env_var=True,
-        help=("Ensure conda is configured with specified comma separated " "list of channels."),
+        help=("Ensure conda is configured with specified comma separated list of channels."),
         default="conda-forge,bioconda",
     )
 
@@ -696,7 +696,7 @@ def conda_auto_install_option():
         "--conda_auto_install/--no_conda_auto_install",
         is_flag=True,
         default=True,
-        help=("Conda dependency resolution for Galaxy will attempt to install " "requested but missing packages."),
+        help=("Conda dependency resolution for Galaxy will attempt to install requested but missing packages."),
     )
 
 
@@ -1125,12 +1125,12 @@ def shed_owner_option():
 
 
 def shed_name_option():
-    return planemo_option("--name", help="Tool Shed repository name (defaults to the inferred " "tool directory name).")
+    return planemo_option("--name", help="Tool Shed repository name (defaults to the inferred tool directory name).")
 
 
 def validate_shed_target_callback(ctx, param, value):
     if value is None:
-        ctx.fail("default_shed_target set to None, must specify a value for " "--shed_target to run this command.")
+        ctx.fail("default_shed_target set to None, must specify a value for --shed_target to run this command.")
     return value
 
 
@@ -1163,18 +1163,18 @@ def shed_key_from_env_option():
 
 
 def shed_email_option():
-    return planemo_option("--shed_email", help="E-mail for Tool Shed auth (required unless shed_key is " "specified).")
+    return planemo_option("--shed_email", help="E-mail for Tool Shed auth (required unless shed_key is specified).")
 
 
 def shed_password_option():
     return planemo_option(
-        "--shed_password", help="Password for Tool Shed auth (required unless shed_key is " "specified)."
+        "--shed_password", help="Password for Tool Shed auth (required unless shed_key is specified)."
     )
 
 
 def shed_skip_upload():
     return planemo_option(
-        "--skip_upload", is_flag=True, help=("Skip upload contents as part of operation, only update " "metadata.")
+        "--skip_upload", is_flag=True, help=("Skip upload contents as part of operation, only update metadata.")
     )
 
 
@@ -1182,7 +1182,7 @@ def shed_skip_metadata():
     return planemo_option(
         "--skip_metadata",
         is_flag=True,
-        help=("Skip metadata update as part of operation, only upload " "new contents."),
+        help=("Skip metadata update as part of operation, only upload new contents."),
     )
 
 
@@ -1388,7 +1388,7 @@ def profile_option(required=False):
         type=click.STRING,
         required=required,
         default=None,
-        help=("Name of profile (created with the profile_create command) to use " "with this command."),
+        help=("Name of profile (created with the profile_create command) to use with this command."),
     )
 
 
@@ -1417,7 +1417,7 @@ def training_topic_name_option():
     return planemo_option(
         "--topic_name",
         required=True,
-        help="Name (directory name) of the topic to create or in which " "a tutorial should be created or updates",
+        help="Name (directory name) of the topic to create or in which a tutorial should be created or updates",
     )
 
 
@@ -1632,7 +1632,7 @@ def test_report_options():
             type=click.Path(file_okay=True, resolve_path=True),
             use_global_config=True,
             default="tool_test_output.html",
-            help=("Output test report (HTML - for humans) defaults to " "tool_test_output.html."),
+            help=("Output test report (HTML - for humans) defaults to tool_test_output.html."),
         ),
         planemo_option(
             "--test_output_text",
@@ -1645,7 +1645,7 @@ def test_report_options():
             "--test_output_markdown",
             type=click.Path(file_okay=True, resolve_path=True),
             use_global_config=True,
-            help=("Output test report (Markdown style - for humans & " "computers)"),
+            help=("Output test report (Markdown style - for humans & computers)"),
             default=None,
         ),
         planemo_option(
@@ -1810,7 +1810,7 @@ def test_output_options():
             "--test_output_json",
             type=click.Path(file_okay=True, resolve_path=True),
             use_global_config=True,
-            help=("Output test report (planemo json) defaults to " "tool_test_output.json."),
+            help=("Output test report (planemo json) defaults to tool_test_output.json."),
             default="tool_test_output.json",
         ),
         planemo_option(
@@ -1903,7 +1903,7 @@ def ci_chunk_option():
     return planemo_option(
         "--chunk",
         type=int,
-        help=("When output is split into --chunk_count groups, output the group 0-indexed" "by this option."),
+        help=("When output is split into --chunk_count groups, output the group 0-indexedby this option."),
         default=0,
     )
 
@@ -2009,7 +2009,7 @@ def tool_init_command_option():
         type=click.STRING,
         default=None,
         prompt=False,
-        help=("Command potentially including cheetah variables ()" "(e.g. 'seqtk seq -A $input > $output')"),
+        help=("Command potentially including cheetah variables ()(e.g. 'seqtk seq -A $input > $output')"),
     )
 
 
@@ -2020,9 +2020,7 @@ def tool_init_doi_option():
         default=None,
         multiple=True,
         prompt=False,
-        help=(
-            "Supply a DOI (http://www.doi.org/) easing citation of the tool " "for Galxy users (e.g. 10.1101/014043)."
-        ),
+        help=("Supply a DOI (http://www.doi.org/) easing citation of the tool for Galxy users (e.g. 10.1101/014043)."),
     )
 
 
@@ -2032,7 +2030,7 @@ def tool_init_test_case_option():
         is_flag=True,
         default=None,
         prompt=False,
-        help=("For use with --example_commmand, generate a tool test case from " "the supplied example."),
+        help=("For use with --example_commmand, generate a tool test case from the supplied example."),
     )
 
 
@@ -2070,7 +2068,7 @@ def tool_init_output_option():
         multiple=True,
         default=None,
         prompt=False,
-        help=("An output location (e.g. output.bam), the Galaxy datatype is " "inferred from the extension."),
+        help=("An output location (e.g. output.bam), the Galaxy datatype is inferred from the extension."),
     )
 
 
@@ -2101,7 +2099,7 @@ def tool_init_example_input_option():
         default=None,
         prompt=False,
         multiple=True,
-        help=("For use with --example_command, replace input file (e.g. 2.fastq " "with a data input parameter)."),
+        help=("For use with --example_command, replace input file (e.g. 2.fastq with a data input parameter)."),
     )
 
 
@@ -2112,7 +2110,7 @@ def tool_init_example_output_option():
         default=None,
         prompt=False,
         multiple=True,
-        help=("For use with --example_command, replace input file (e.g. 2.fastq " "with a tool output)."),
+        help=("For use with --example_command, replace input file (e.g. 2.fastq with a tool output)."),
     )
 
 

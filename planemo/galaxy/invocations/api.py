@@ -45,7 +45,6 @@ class Job(TypedDict, total=False):
 
 
 class InvocationApi(Protocol):
-
     def get_invocation(self, invocation_id: str) -> Invocation: ...
 
     def get_invocation_summary(self, invocation_id: str, state: Optional[str] = None) -> InvocationJobsSummary: ...
@@ -56,7 +55,6 @@ class InvocationApi(Protocol):
 
 
 class BioblendInvocationApi(InvocationApi):
-
     def __init__(self, ctx, user_gi):
         self._ctx = ctx
         self._user_gi = user_gi

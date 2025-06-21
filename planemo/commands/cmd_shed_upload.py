@@ -28,7 +28,7 @@ tar_path = click.Path(
 )
 @click.option(
     "--tar",
-    help="Specify a pre-existing tar file instead of automatically building " "one as part of this command.",
+    help="Specify a pre-existing tar file instead of automatically building one as part of this command.",
     type=tar_path,
     default=None,
 )

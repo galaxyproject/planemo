@@ -18,7 +18,6 @@ from .test_utils import (
 
 @skip("Configuring quay.io/bgruening/galaxy:latest is currently broken")
 class ExternalGalaxyCommandsTestCase(CliTestCase):
-
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_plain_init(self):
         ctx = cli.PlanemoCliContext()

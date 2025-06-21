@@ -35,7 +35,7 @@ from planemo.reports.xunit_handler import handle_report_xunit_kwd
 @click.option(
     "--raw",
     is_flag=True,
-    help="Do not attempt smart diff of XML to filter out attributes " "populated by the Tool Shed.",
+    help="Do not attempt smart diff of XML to filter out attributes populated by the Tool Shed.",
 )
 @options.report_xunit()
 @command_function

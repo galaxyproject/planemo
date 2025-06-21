@@ -10,7 +10,7 @@ EXPECTED_HELLO_REV = "1c36390f585f8baa953548c00fc18c58e32fcf8b"
 
 COMMITTER_DATE = "GIT_COMMITTER_DATE='2000-01-01T00:00:00+0000'"
 COMMITTER_NAME = "GIT_COMMITTER_NAME='a' GIT_COMMITTER_EMAIL='a@example.com'"
-COMMIT = "git commit --date='2000-01-01T00:00:00+0000' " "--author='a <a@example.com>' -m 'initial'"
+COMMIT = "git commit --date='2000-01-01T00:00:00+0000' --author='a <a@example.com>' -m 'initial'"
 
 
 def test_rev():

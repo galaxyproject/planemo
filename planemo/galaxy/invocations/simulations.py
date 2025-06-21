@@ -32,7 +32,6 @@ class Ticks:
 
 
 class StateWithDuration(Ticks):
-
     def __init__(self, state: str, duration: int):
         self.after = 0
         self.state = state
@@ -98,7 +97,6 @@ class InvocationStep(HasState):
 
 
 class Invocation(HasState):
-
     def __init__(self, steps: List[InvocationStep], after: int, states: List[StateWithDuration]):
         self.id = str(uuid4())[:8]
         self.steps = steps
