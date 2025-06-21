@@ -62,7 +62,7 @@ def test_store_const():
     inputs, _, _ = extract_xml("store_const")
     assert_equal(
         inputs,
-        '<param argument="--test" type="boolean" truevalue="--test" falsevalue="" checked="false" ' 'label="test"/>\n',
+        '<param argument="--test" type="boolean" truevalue="--test" falsevalue="" checked="false" label="test"/>\n',
     )
 
 
@@ -70,7 +70,7 @@ def test_store_true():
     inputs, _, _ = extract_xml("store_true")
     assert_equal(
         inputs,
-        '<param argument="--test" type="boolean" truevalue="--test" falsevalue="" checked="false" ' 'label="test"/>\n',
+        '<param argument="--test" type="boolean" truevalue="--test" falsevalue="" checked="false" label="test"/>\n',
     )
 
 
@@ -126,19 +126,17 @@ def test_extend():
     assert_equal(inputs, expected)
 
 
-POSITIONAL_COMMAND = "#if $test:\n" "    $test\n" "#end if\n"
+POSITIONAL_COMMAND = "#if $test:\n    $test\n#end if\n"
 
-NON_POSITIONAL_NON_FLAG_TEXT = "#if $test:\n" "    --test '$test'\n" "#end if\n"
+NON_POSITIONAL_NON_FLAG_TEXT = "#if $test:\n    --test '$test'\n#end if\n"
 
 FLAG_COMMAND = "$test\n"
 
 FLAG_COMMAND_TEXT = "$test\n"
 
-REPEAT_COMMAND_TEXT_DATA = (
-    "#for $item in $test:\n" "    #if $item:\n" "        --test '$item'\n" "    #end if\n" "#end for\n"
-)
+REPEAT_COMMAND_TEXT_DATA = "#for $item in $test:\n    #if $item:\n        --test '$item'\n    #end if\n#end for\n"
 
-REPEAT_FLAG_COMMAND = "#for $item in $test:\n" "    $item\n" "#end for\n"
+REPEAT_FLAG_COMMAND = "#for $item in $test:\n    $item\n#end for\n"
 
 
 def test_no_action_positional_command():

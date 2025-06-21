@@ -61,7 +61,7 @@ class CmdAutoupdateTestCase(CliTestCase):
         with self._isolate(), create_tmp_test_tool_file("0.6.0") as xmlfile:
             autoupdate_command = ["autoupdate", xmlfile, "--conda_channels", "bioconda"]
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
-            assert f'Updating {xmlfile.split("/")[-1]} from version 0.6.0 to 0.7.3' in result.output
+            assert f"Updating {xmlfile.split('/')[-1]} from version 0.6.0 to 0.7.3" in result.output
             assert f"Tool {xmlfile} successfully updated." in result.output
             with open(xmlfile) as f:
                 xmlfile_contents = f.read()
@@ -74,7 +74,7 @@ class CmdAutoupdateTestCase(CliTestCase):
             xml_directory = os.path.dirname(xmlfile)
             autoupdate_command = ["autoupdate", xml_directory, "--conda_channels", "bioconda"]
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
-            assert f'Updating {xmlfile.split("/")[-1]} from version 0.6.0 to 0.7.3' in result.output
+            assert f"Updating {xmlfile.split('/')[-1]} from version 0.6.0 to 0.7.3" in result.output
             assert f"Tool {xmlfile} successfully updated." in result.output
             with open(xmlfile) as f:
                 xmlfile_contents = f.read()

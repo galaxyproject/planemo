@@ -73,7 +73,9 @@ lint: ## check style using tox and flake8 for Python 2 and Python 3
 test: ## run tests with the default Python (faster than tox)
 	$(IN_VENV) pytest $(TESTS)
 
-format: ## format Python code with black
+format: ## format Python code with ruff, black and isort
+	$(IN_VENV) ruff format planemo tests
+	$(IN_VENV) isort planemo tests
 	$(IN_VENV) black planemo tests
 
 quick-test: ## run quickest tests with the default Python

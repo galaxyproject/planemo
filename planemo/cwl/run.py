@@ -34,7 +34,7 @@ from planemo.runnable import (
 if TYPE_CHECKING:
     from planemo.cli import PlanemoCliContext
 
-JSON_PARSE_ERROR_MESSAGE = "Failed to parse JSON from cwltool output [%s] " "in file [%s]. cwltool logs [%s]."
+JSON_PARSE_ERROR_MESSAGE = "Failed to parse JSON from cwltool output [%s] in file [%s]. cwltool logs [%s]."
 
 
 class CwlToolRunResponse(SuccessfulRunResponse):

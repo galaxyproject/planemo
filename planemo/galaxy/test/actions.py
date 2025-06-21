@@ -22,20 +22,20 @@ from planemo.test.results import get_dict_value
 from . import structures as test_structures
 
 NO_XUNIT_REPORT_MESSAGE = (
-    "Cannot locate xUnit report [%s] for tests - " "required to build planemo report and summarize " "tests."
+    "Cannot locate xUnit report [%s] for tests - required to build planemo report and summarize tests."
 )
 NO_JSON_REPORT_MESSAGE = (
-    "Cannot locate JSON report [%s] for tests - " "required to build planemo report and summarize " "tests."
+    "Cannot locate JSON report [%s] for tests - required to build planemo report and summarize tests."
 )
 REPORT_NOT_CHANGED = (
-    "Galaxy failed to update test report [%s] for tests - " "required to build planemo report and summarize " "tests."
+    "Galaxy failed to update test report [%s] for tests - required to build planemo report and summarize tests."
 )
 NO_TESTS_MESSAGE = "No tests were executed - see Galaxy output for details."
 ALL_TESTS_PASSED_MESSAGE = "All %d test(s) executed passed."
 PROBLEM_COUNT_MESSAGE = (
-    "There were problems with %d test(s) - out of %d " "test(s) executed. See %s for detailed breakdown."
+    "There were problems with %d test(s) - out of %d test(s) executed. See %s for detailed breakdown."
 )
-GENERIC_PROBLEMS_MESSAGE = "One or more tests failed. See %s for detailed " "breakdown."
+GENERIC_PROBLEMS_MESSAGE = "One or more tests failed. See %s for detailed breakdown."
 GENERIC_TESTS_PASSED_MESSAGE = "No failing tests encountered."
 TEST_DATA_UPDATED_MESSAGE = "Test data were updated and tests were rerun."
 TEST_DATA_NOT_UPDATED_MESSAGE = "%s Therefore, no test data were updated." % ALL_TESTS_PASSED_MESSAGE

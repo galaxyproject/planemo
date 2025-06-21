@@ -9,7 +9,7 @@ from planemo import (
 from planemo.cli import command_function
 from planemo.io import info
 
-PLANEMO_TEST_VIEWER_URL_TEMPLATE = "http://galaxyproject.github.io/planemo/tool_test_viewer.html" "?test_data_url=%s"
+PLANEMO_TEST_VIEWER_URL_TEMPLATE = "http://galaxyproject.github.io/planemo/tool_test_viewer.html?test_data_url=%s"
 
 
 @click.command("share_test")

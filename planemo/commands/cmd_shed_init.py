@@ -16,7 +16,7 @@ from planemo.cli import command_function
 @click.option(
     "--from_workflow",
     type=click.Path(exists=True, file_okay=True, resolve_path=True),
-    help=("Attempt to generate repository dependencies from specified " "workflow."),
+    help=("Attempt to generate repository dependencies from specified workflow."),
 )
 @click.option("--description", help="Specify repository description for .shed.yml.")
 @click.option("--long_description", help="Specify repository long_description for .shed.yml.")

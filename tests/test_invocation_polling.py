@@ -31,7 +31,6 @@ SLEEP = 0
 
 
 class MockPollingTracker(PollingTracker):
-
     def __init__(self, simulation: Invocation):
         self._simulation = simulation
 

@@ -51,8 +51,8 @@ from planemo.tools import yield_tool_sources_on_paths
 TEST_SUFFIXES = ["-tests", "_tests", "-test", "_test"]
 TEST_EXTENSIONS = [".yml", ".yaml", ".json"]
 
-TEST_FILE_NOT_LIST_MESSAGE = "Invalid test definition file [%s] - file must " "contain a list of tests"
-TEST_FIELD_MISSING_MESSAGE = "Invalid test definition [test #%d in %s] -" "defintion must field [%s]."
+TEST_FILE_NOT_LIST_MESSAGE = "Invalid test definition file [%s] - file must contain a list of tests"
+TEST_FIELD_MISSING_MESSAGE = "Invalid test definition [test #%d in %s] -defintion must field [%s]."
 GALAXY_TOOLS_PREFIX = "gxid://tools/"
 
 

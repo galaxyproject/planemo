@@ -44,7 +44,6 @@ class InvocationJobsSummary(TypedDict, total=False):
 
 
 class WorkflowProgress(Progress):
-
     _jobs_task: TaskID
     _steps_task: TaskID
     _subworkflows_task: Optional[TaskID] = None
@@ -339,7 +338,6 @@ def running_count(job_summary: InvocationJobsSummary) -> int:
 
 
 class WorkflowProgressDisplay(Live):
-
     def __init__(
         self,
         invocation_id: str,
