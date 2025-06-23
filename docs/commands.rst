@@ -28,6 +28,9 @@ documentation describes these commands.
 .. include:: commands/docker_shell.rst
 .. include:: commands/dockstore_init.rst
 .. include:: commands/docs.rst
+.. include:: commands/invocation_download.rst
+.. include:: commands/invocation_export.rst
+.. include:: commands/job_config_init.rst
 .. include:: commands/lint.rst
 .. include:: commands/list_alias.rst
 .. include:: commands/list_invocations.rst
@@ -39,6 +42,7 @@ documentation describes these commands.
 .. include:: commands/open.rst
 .. include:: commands/profile_create.rst
 .. include:: commands/profile_delete.rst
+.. include:: commands/profile_job_config_init.rst
 .. include:: commands/profile_list.rst
 .. include:: commands/project_init.rst
 .. include:: commands/pull_request.rst
@@ -55,6 +59,7 @@ documentation describes these commands.
 .. include:: commands/shed_test.rst
 .. include:: commands/shed_update.rst
 .. include:: commands/shed_upload.rst
+.. include:: commands/slurm_init.rst
 .. include:: commands/syntax.rst
 .. include:: commands/test.rst
 .. include:: commands/test_reports.rst
@@ -69,4 +74,5 @@ documentation describes these commands.
 .. include:: commands/workflow_lint.rst
 .. include:: commands/workflow_test_init.rst
 .. include:: commands/workflow_test_on_invocation.rst
+.. include:: commands/workflow_track.rst
 .. include:: commands/workflow_upload.rst

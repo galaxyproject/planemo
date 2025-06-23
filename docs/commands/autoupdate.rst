@@ -63,9 +63,10 @@ Auto-update tool requirements by checking against Conda and updating if newer ve
                                       output (see output reports for more complete
                                       summary). Set to 'none' to disable completely.
       --test_timeout INTEGER          Maximum runtime of a single test in seconds.
+      --fail_fast                     Stop on first job failure.
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
-      --galaxy_python_version [3|3.7|3.8|3.9|3.10|3.11]
+      --galaxy_python_version [3|3.8|3.9|3.10|3.11|3.12]
                                       Python version to start Galaxy under
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be

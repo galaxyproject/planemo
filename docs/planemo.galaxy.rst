@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   planemo.galaxy.invocations
    planemo.galaxy.test
 
 Submodules

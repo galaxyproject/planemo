@@ -180,6 +180,30 @@ planemo.commands.cmd\_docs module
    :show-inheritance:
    :undoc-members:
 
+planemo.commands.cmd\_invocation\_download module
+-------------------------------------------------
+
+.. automodule:: planemo.commands.cmd_invocation_download
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+planemo.commands.cmd\_invocation\_export module
+-----------------------------------------------
+
+.. automodule:: planemo.commands.cmd_invocation_export
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+planemo.commands.cmd\_job\_config\_init module
+----------------------------------------------
+
+.. automodule:: planemo.commands.cmd_job_config_init
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 planemo.commands.cmd\_lint module
 ---------------------------------
 
@@ -264,6 +288,14 @@ planemo.commands.cmd\_profile\_delete module
 --------------------------------------------
 
 .. automodule:: planemo.commands.cmd_profile_delete
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+planemo.commands.cmd\_profile\_job\_config\_init module
+-------------------------------------------------------
+
+.. automodule:: planemo.commands.cmd_profile_job_config_init
    :members:
    :show-inheritance:
    :undoc-members:
@@ -404,6 +436,14 @@ planemo.commands.cmd\_shed\_upload module
    :show-inheritance:
    :undoc-members:
 
+planemo.commands.cmd\_slurm\_init module
+----------------------------------------
+
+.. automodule:: planemo.commands.cmd_slurm_init
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 planemo.commands.cmd\_syntax module
 -----------------------------------
 
@@ -512,6 +552,14 @@ planemo.commands.cmd\_workflow\_test\_on\_invocation module
 -----------------------------------------------------------
 
 .. automodule:: planemo.commands.cmd_workflow_test_on_invocation
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+planemo.commands.cmd\_workflow\_track module
+--------------------------------------------
+
+.. automodule:: planemo.commands.cmd_workflow_track
    :members:
    :show-inheritance:
    :undoc-members:

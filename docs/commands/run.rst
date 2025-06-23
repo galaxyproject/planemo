@@ -8,7 +8,7 @@ This section is auto-generated from the help text for the planemo command
 
 **Usage**::
 
-    planemo run [OPTIONS] RUNNABLE_PATH_OR_ID JOB_PATH
+    planemo run [OPTIONS] RUNNABLE_PATH_OR_ID JOB_PATH model store format
 
 **Help**
 
@@ -22,7 +22,7 @@ Planemo command for running tools and jobs.
 
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
-      --galaxy_python_version [3|3.7|3.8|3.9|3.10|3.11]
+      --galaxy_python_version [3|3.8|3.9|3.10|3.11|3.12]
                                       Python version to start Galaxy under
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be
@@ -177,6 +177,8 @@ Planemo command for running tools and jobs.
                                       After tool or workflow runs are complete,
                                       download the output files to the location
                                       specified by --output_directory.
+      --export_invocation PATH        Export workflow invocation as archive to
+                                      specified path.
       --engine [galaxy|docker_galaxy|cwltool|toil|external_galaxy]
                                       Select an engine to run or test artifacts such
                                       as tools and workflows. Defaults to a local
@@ -253,7 +255,6 @@ Planemo command for running tools and jobs.
                                       output (see output reports for more complete
                                       summary). Set to 'none' to disable completely.
       --test_timeout INTEGER          Maximum runtime of a single test in seconds.
-      --no_early_termination          Wait until all jobs terminate, even if some
-                                      jobs have failed
+      --fail_fast                     Stop on first job failure.
       --help                          Show this message and exit.
     

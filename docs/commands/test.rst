@@ -53,7 +53,7 @@ please careful and do not try this against production Galaxy instances.
                                       generated traffic.
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
-      --galaxy_python_version [3|3.7|3.8|3.9|3.10|3.11]
+      --galaxy_python_version [3|3.8|3.9|3.10|3.11|3.12]
                                       Python version to start Galaxy under
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be
@@ -214,6 +214,7 @@ please careful and do not try this against production Galaxy instances.
                                       output (see output reports for more complete
                                       summary). Set to 'none' to disable completely.
       --test_timeout INTEGER          Maximum runtime of a single test in seconds.
+      --fail_fast                     Stop on first job failure.
       --engine [galaxy|docker_galaxy|cwltool|toil|external_galaxy]
                                       Select an engine to run or test artifacts such
                                       as tools and workflows. Defaults to a local
