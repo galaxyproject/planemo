@@ -368,6 +368,7 @@ def publish_dockstore_option():
 def no_dependency_resolution():
     return planemo_option(
         "--no_dependency_resolution",
+        use_global_config=True,
         is_flag=True,
         help="Configure Galaxy with no dependency resolvers.",
     )
@@ -739,6 +740,7 @@ def simultaneous_upload_option():
     return planemo_option(
         "--simultaneous_uploads/--no_simultaneous_uploads",
         is_flag=True,
+        use_global_config=True,
         default=False,
         help=(
             "When uploading files to Galaxy for tool or workflow tests or runs, "
