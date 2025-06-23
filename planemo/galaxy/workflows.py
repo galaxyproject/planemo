@@ -2,6 +2,7 @@
 
 import json
 import os
+import tempfile
 from collections import namedtuple
 from functools import lru_cache
 from typing import (
@@ -74,10 +75,11 @@ def load_shed_repos(runnable):
         return []
     path = runnable.path
     if path.endswith(".ga"):
-        generate_tool_list_from_ga_workflow_files.generate_tool_list_from_workflow(
-            [path], "Tools from workflows", "tools.yml"
-        )
-        with open("tools.yml") as f:
+        with tempfile.NamedTemporaryFile() as out:
+            generate_tool_list_from_ga_workflow_files.generate_tool_list_from_workflow(
+                [path], "Tools from workflows", out.name
+            )
+        with open(out.name) as f:
             tools = yaml.safe_load(f)["tools"]
 
     else:
