@@ -19,7 +19,33 @@ to build a manifest file.
 
 A tool may also produce a file called ``galaxy.json`` during execution. If 
 upon a job's completion this file is populated, Galaxy will expect to find metadata
-about outputs in it.
+about outputs in it. 
+
+The current format of the metadata file -- which has been introduced in release 17.09 -- 
+is described in the following. The legacy format is described at the end of this section.
+
+----------------------------------------------------------------
+Metadata format
+----------------------------------------------------------------
+
+Original PR https://github.com/galaxyproject/galaxy/pull/4437
+
+Simple data sets:
+
+TODO
+
+Discovered data sets:
+
+TODO
+
+Collections:
+
+https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/collection_creates_dynamic_nested_from_json_elements.xml
+https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/collection_creates_dynamic_nested_from_json.xml
+
+----------------------------------------------------------------
+Legacy metadata format
+----------------------------------------------------------------
 
 The format of this file is a bit quirky - each line of this file should be a JSON
 dictionary. Each such dictionary should contain a ``type`` attribute - this type
@@ -42,10 +68,11 @@ Examples of tools using ``new_primary_dataset`` entries:
 
 The ``type`` of an entry may also be ``dataset``. In this case the metadata 
 descriptions describe an explicit output (one with its own corresponding ``output``
-element definition). In this case, an entry called ``dataset`` should appear in
+element definition). In this case, an entry called ``dataset_id`` should appear in
 the dictionary (in lieu of ``filename`` above) and should be the database id of the 
 output dataset. Such entries may contain all of the other fields described above except
-``metadata``.
+``metadata``. Note that the output needs to set ``format="auto"`` in order to set the
+format.
 
 Example tool using a ``dataset`` entry:
 
