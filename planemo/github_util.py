@@ -27,7 +27,7 @@ except ImportError:
 
 GH_VERSION = "1.5.0"
 
-NO_GITHUB_DEP_ERROR = "Cannot use github functionality - " "PyGithub library not available."
+NO_GITHUB_DEP_ERROR = "Cannot use github functionality - PyGithub library not available."
 FAILED_TO_DOWNLOAD_GH = "No gh executable available and it could not be installed."
 DEFAULT_REMOTE_NAME = "planemo-remote"
 SLEEP_BEFORE_RELEASE = int(os.environ.get("PLANEMO_SLEEP_BEFORE_RELEASE", 60))

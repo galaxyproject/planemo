@@ -15,12 +15,10 @@ from .progress import WorkflowProgressDisplay
 
 
 class PollingTracker(Protocol):
-
     def sleep(self) -> None: ...
 
 
 class PollingTrackerImpl(PollingTracker):
-
     def __init__(self, polling_backoff: int, timeout=None):
         self.polling_backoff = polling_backoff
         self.timeout = timeout

@@ -44,7 +44,7 @@ PRINT_VENV_COMMAND = shell_join(
 )
 
 
-CACHED_VIRTUAL_ENV_COMMAND = "if [ -d .venv ]; " "then GALAXY_VIRTUAL_ENV=.venv; " "else GALAXY_VIRTUAL_ENV=%s; fi"
+CACHED_VIRTUAL_ENV_COMMAND = "if [ -d .venv ]; then GALAXY_VIRTUAL_ENV=.venv; else GALAXY_VIRTUAL_ENV=%s; fi"
 UNCACHED_VIRTUAL_ENV_COMMAND = "GALAXY_VIRTUAL_ENV=.venv"
 
 

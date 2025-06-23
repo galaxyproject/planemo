@@ -413,7 +413,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
                 tool_data_table_config_path=",".join(tool_data_tables) if tool_data_tables else None,
                 data_manager_config_file=",".join(data_manager_config_paths)
                 or None,  # without 'or None' may raise IOError in galaxy (see #946)
-                integrated_tool_panel_config=("${temp_directory}/" "integrated_tool_panel_conf.xml"),
+                integrated_tool_panel_config=("${temp_directory}/integrated_tool_panel_conf.xml"),
                 migrated_tools_config=empty_tool_conf,
                 test_data_dir=test_data_dir,  # TODO: make gx respect this
                 shed_data_manager_config_file=shed_data_manager_config_file,
