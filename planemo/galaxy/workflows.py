@@ -79,8 +79,8 @@ def load_shed_repos(runnable):
             generate_tool_list_from_ga_workflow_files.generate_tool_list_from_workflow(
                 [path], "Tools from workflows", out.name
             )
-        with open(out.name) as f:
-            tools = yaml.safe_load(f)["tools"]
+            with open(out.name) as f:
+                tools = yaml.safe_load(f)["tools"]
 
     else:
         # It'd be better to just infer this from the tool shed ID somehow than
