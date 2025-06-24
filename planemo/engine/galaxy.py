@@ -191,6 +191,26 @@ class DockerizedManagedGalaxyEngine(LocalManagedGalaxyEngine):
         return serve_kwds
 
 
+class UvxManagedGalaxyEngine(LocalManagedGalaxyEngine):
+    """An :class:`Engine` implementation backed by Galaxy running via uvx.
+
+    More information on Galaxy can be found at http://galaxyproject.org/.
+    """
+
+    def _serve_kwds(self):
+        serve_kwds = self._kwds.copy()
+        serve_kwds["uvx_galaxy"] = True
+        return serve_kwds
+
+    @contextlib.contextmanager
+    def ensure_runnables_served(self, runnables):
+        """Ensure runnables are served using uvx Galaxy configuration."""
+        with serve_daemon(self._ctx, runnables, **self._serve_kwds()) as config:
+            if "install_args_list" in self._serve_kwds():
+                self.shed_install(config)
+            yield config
+
+
 class ExternalGalaxyEngine(GalaxyEngine):
     """An :class:`Engine` implementation backed by an external Galaxy instance."""
 
