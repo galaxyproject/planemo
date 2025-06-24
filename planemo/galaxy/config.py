@@ -158,6 +158,8 @@ def galaxy_config(ctx, runnables, **kwds):
         c = docker_galaxy_config
     elif kwds.get("external", False):
         c = external_galaxy_config
+    elif kwds.get("uvx_galaxy", False):
+        c = uvx_galaxy_config
     log_thread = None
     e = threading.Event()
     try:
@@ -1421,7 +1423,286 @@ def _ensure_directory(path):
         os.makedirs(path)
 
 
+class UvxGalaxyConfig(BaseManagedGalaxyConfig):
+    """A uvx-managed implementation of :class:`GalaxyConfig`."""
+
+    def __init__(
+        self,
+        ctx,
+        config_directory,
+        env,
+        test_data_dir,
+        port,
+        server_name,
+        master_api_key,
+        runnables,
+        kwds,
+    ):
+        super().__init__(
+            ctx,
+            config_directory,
+            env,
+            test_data_dir,
+            port,
+            server_name,
+            master_api_key,
+            runnables,
+            kwds,
+        )
+        # Use config directory as placeholder for galaxy_root since uvx manages Galaxy
+        self.galaxy_root = config_directory
+
+    @property
+    def host(self):
+        """Host for uvx Galaxy instance."""
+        return self._kwds.get("host", "127.0.0.1")
+
+    @property
+    def galaxy_config_file(self):
+        """Path to galaxy configuration file."""
+        return self.env.get("GALAXY_CONFIG_FILE", os.path.join(self.config_directory, "galaxy.yml"))
+
+    def kill(self):
+        """Kill uvx Galaxy process."""
+        if self._ctx.verbose:
+            shell(["ps", "ax"])
+            exists = os.path.exists(self.pid_file)
+            print(f"Killing pid file [{self.pid_file}]")
+            print(f"pid_file exists? [{exists}]")
+            if exists:
+                with open(self.pid_file) as f:
+                    print(f"pid_file contents are [{f.read()}]")
+
+        # Kill process using existing utility
+        kill_pid_file(self.pid_file)
+
+    def startup_command(self, ctx, **kwds):
+        """Return a shell command used to startup this uvx Galaxy instance."""
+        daemon = kwds.get("daemon", False)
+        uvx_cmd = self._build_uvx_command(**kwds)
+
+        if daemon:
+            # Use shell background execution for daemon mode - return as single string for shell execution
+            return f"nohup {shell_join(uvx_cmd)} > {self.log_file} 2>&1 & echo $! > {self.pid_file}"
+        else:
+            # Direct foreground execution
+            return shell_join(uvx_cmd)
+
+    def _build_uvx_command(self, **kwds):
+        """Build uvx galaxy command with appropriate flags."""
+        cmd = ["uvx", "galaxy"]
+
+        # Only pass config file - host and port are configured in galaxy.yml
+        cmd.extend(["-c", self.galaxy_config_file])
+
+        return cmd
+
+    @property
+    def log_file(self):
+        """Log file used when planemo serves this uvx Galaxy instance."""
+        file_name = f"{self.server_name}.log"
+        return os.path.join(self.config_directory, file_name)
+
+    @property
+    def pid_file(self):
+        """PID file for uvx Galaxy process."""
+        pid_file_name = f"{self.server_name}.pid"
+        return os.path.join(self.config_directory, pid_file_name)
+
+    @property
+    def log_contents(self):
+        """Return contents of log file."""
+        if not os.path.exists(self.log_file):
+            return ""
+        with open(self.log_file) as f:
+            return f.read()
+
+    def cleanup(self):
+        """Clean up uvx Galaxy configuration."""
+        shutil.rmtree(self.config_directory, CLEANUP_IGNORE_ERRORS)
+
+    @property
+    def default_use_path_paste(self):
+        """Default path paste setting for uvx Galaxy."""
+        return self.user_is_admin
+
+    def _install_galaxy(self):
+        """Override to skip Galaxy installation - uvx manages this."""
+        # No-op for uvx since it manages Galaxy installation
+        return True
+
+    def _ensure_galaxy_repository_available(self):
+        """Override to skip repository cloning - not needed for uvx."""
+        # No-op for uvx since no repository is needed
+        return True
+
+
+@contextlib.contextmanager
+def uvx_galaxy_config(ctx, runnables, for_tests=False, **kwds):
+    """Set up a ``UvxGalaxyConfig`` in an auto-cleaned context."""
+    test_data_dir = _find_test_data(runnables, **kwds)
+
+    with _config_directory(ctx, **kwds) as config_directory:
+
+        def config_join(*args):
+            return os.path.join(config_directory, *args)
+
+        server_name = "main"
+
+        # Ensure dependency resolvers are configured
+        ensure_dependency_resolvers_conf_configured(ctx, kwds, os.path.join(config_directory, "resolvers_conf.xml"))
+
+        # Handle basic galaxy configuration without installation
+        galaxy_root = config_directory  # Use config directory as galaxy root for uvx
+        # Skip refgenie config for uvx since Galaxy is managed by uvx
+
+        # Setup tool paths (but don't require galaxy_root)
+        all_tool_paths = _all_tool_paths(runnables, galaxy_root=None, extra_tools=kwds.get("extra_tools"))
+        kwds["all_in_one_handling"] = True
+        _handle_job_config_file(config_directory, server_name, test_data_dir, all_tool_paths, kwds)
+        _handle_file_sources(config_directory, test_data_dir, kwds)
+
+        # Basic paths setup
+        file_path = kwds.get("file_path") or config_join("files")
+        _ensure_directory(file_path)
+
+        tool_dependency_dir = kwds.get("tool_dependency_dir") or config_join("deps")
+        _ensure_directory(tool_dependency_dir)
+
+        shed_tool_conf = kwds.get("shed_tool_conf") or config_join("shed_tools_conf.xml")
+        empty_tool_conf = config_join("empty_tool_conf.xml")
+        tool_conf = config_join("tool_conf.xml")
+        shed_data_manager_config_file = config_join("shed_data_manager_conf.xml")
+
+        shed_tool_path = kwds.get("shed_tool_path") or config_join("shed_tools")
+        _ensure_directory(shed_tool_path)
+
+        sheds_config_path = _configure_sheds_config_file(ctx, config_directory, runnables, **kwds)
+
+        database_location = config_join("galaxy.sqlite")
+        master_api_key = _get_master_api_key(kwds)
+        dependency_dir = os.path.join(config_directory, "deps")
+        _ensure_directory(dependency_dir)
+        port = _get_port(kwds)
+
+        # Template args for file generation
+        # Use fallback for tool shed URL if none configured
+        shed_target_url = tool_shed_url(ctx, **kwds) or MAIN_TOOLSHED_URL
+
+        template_args = dict(
+            shed_tool_path=shed_tool_path,
+            shed_tool_conf=shed_tool_conf,
+            shed_data_manager_config_file=shed_data_manager_config_file,
+            test_data_dir=test_data_dir,
+            shed_target_url=shed_target_url,
+            dependency_dir=dependency_dir,
+            file_path=file_path,
+            temp_directory=config_directory,
+        )
+
+        # Galaxy properties
+        properties = _shared_galaxy_properties(config_directory, kwds, for_tests=for_tests)
+        properties.update(
+            dict(
+                server_name=server_name,
+                host=kwds.get("host", "127.0.0.1"),
+                port=str(port),
+                enable_celery_tasks="true",
+                ftp_upload_dir_template="${ftp_upload_dir}",
+                ftp_upload_purge="false",
+                ftp_upload_dir=test_data_dir or os.path.abspath("."),
+                ftp_upload_site="Test Data",
+                check_upload_content="false",
+                tool_dependency_dir=dependency_dir,
+                file_path=file_path,
+                new_file_path="${temp_directory}/tmp",
+                tool_config_file=f"{tool_conf},{shed_tool_conf}",
+                tool_sheds_config_file=sheds_config_path,
+                manage_dependency_relationships="false",
+                job_working_directory="${temp_directory}/job_working_directory",
+                template_cache_path="${temp_directory}/compiled_templates",
+                citation_cache_type="file",
+                citation_cache_data_dir="${temp_directory}/citations/data",
+                citation_cache_lock_dir="${temp_directory}/citations/lock",
+                database_auto_migrate="true",
+                enable_beta_tool_formats="true",
+                id_secret="${id_secret}",
+                log_level="DEBUG" if ctx.verbose else "INFO",
+                debug="true" if ctx.verbose else "false",
+                watch_tools="auto",
+                default_job_shell="/bin/bash",
+                integrated_tool_panel_config=("${temp_directory}/integrated_tool_panel_conf.xml"),
+                migrated_tools_config=empty_tool_conf,
+                test_data_dir=test_data_dir,
+                shed_data_manager_config_file=shed_data_manager_config_file,
+                outputs_to_working_directory="true",
+                object_store_store_by="uuid",
+            )
+        )
+
+        _handle_container_resolution(ctx, kwds, properties)
+        properties["database_connection"] = _database_connection(database_location, **kwds)
+
+        if kwds.get("mulled_containers", False):
+            properties["mulled_channels"] = kwds.get("conda_ensure_channels", "")
+
+        _handle_kwd_overrides(properties, kwds)
+
+        # Build environment
+        env = _build_env_for_galaxy(properties, template_args)
+        env["PLANEMO"] = "1"
+        env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
+
+        # Write configuration files (but skip Galaxy installation)
+        # Assume uvx Galaxy is modern (>= 22.01) and write YAML config directly
+        env["GALAXY_CONFIG_FILE"] = config_join("galaxy.yml")
+        env["GRAVITY_STATE_DIR"] = config_join("gravity")
+        with NamedTemporaryFile(suffix=".sock", delete=True) as nt:
+            env["SUPERVISORD_SOCKET"] = nt.name
+        write_file(
+            env["GALAXY_CONFIG_FILE"],
+            json.dumps(
+                {
+                    "galaxy": properties,
+                    "gravity": {
+                        "galaxy_root": galaxy_root,
+                        "gunicorn": {
+                            "bind": f"{kwds.get('host', 'localhost')}:{port}",
+                            "preload": False,
+                        },
+                        "gx-it-proxy": {
+                            "enable": False,
+                        },
+                    },
+                },
+                indent=2,
+            ),
+        )
+
+        # Write tool configurations
+        tool_definition = _tool_conf_entry_for(all_tool_paths)
+        write_file(tool_conf, _sub(TOOL_CONF_TEMPLATE, dict(tool_definition=tool_definition)))
+
+        shed_tool_conf_contents = _sub(SHED_TOOL_CONF_TEMPLATE, template_args)
+        write_file(shed_tool_conf, shed_tool_conf_contents, force=False)
+        write_file(shed_data_manager_config_file, SHED_DATA_MANAGER_CONF_TEMPLATE)
+
+        yield UvxGalaxyConfig(
+            ctx,
+            config_directory,
+            env,
+            test_data_dir,
+            port,
+            server_name,
+            master_api_key,
+            runnables,
+            kwds,
+        )
+
+
 __all__ = (
     "DATABASE_LOCATION_TEMPLATE",
     "galaxy_config",
+    "UvxGalaxyConfig",
+    "uvx_galaxy_config",
 )
