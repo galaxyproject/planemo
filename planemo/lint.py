@@ -148,7 +148,7 @@ def lint_urls(root, lint_ctx):
                 if r is not None and r.status_code == 429:
                     # too many requests
                     pass
-                if r is not None and r.status_code in [403, 503] and "cloudflare" in r.text:
+                elif r is not None and r.status_code in [403, 503] and "cloudflare" in r.text:
                     # CloudFlare protection block
                     pass
                 else:
