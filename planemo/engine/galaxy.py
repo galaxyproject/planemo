@@ -12,7 +12,6 @@ from typing import (
 from galaxy.tool_util.verify import interactor
 
 from planemo import io
-from planemo.database.postgres_singularity import SingularityPostgresDatabaseSource
 from planemo.galaxy.activity import (
     execute,
     execute_rerun,
@@ -172,20 +171,6 @@ class LocalManagedGalaxyEngine(GalaxyEngine):
         return self._kwds.copy()
 
 
-class LocalManagedGalaxyEngineWithSingularityDB(LocalManagedGalaxyEngine):
-    def run(self, runnables, job_paths, output_collectors: Optional[List[Callable]] = None):
-        with SingularityPostgresDatabaseSource(**self._kwds.copy()) as db_source:
-            # Get the actual database connection string from the running database
-            database_identifier = self._kwds.get("database_identifier", "galaxy")
-            database_connection = db_source.sqlalchemy_url(database_identifier)
-
-            # Update kwds with the actual database connection
-            self._kwds["database_connection"] = database_connection
-
-            run_responses = super().run(runnables, job_paths, output_collectors)
-        return run_responses
-
-
 class DockerizedManagedGalaxyEngine(LocalManagedGalaxyEngine):
     """An :class:`Engine` implementation backed by Galaxy running in Docker.
 
@@ -240,5 +225,4 @@ __all__ = (
     "DockerizedManagedGalaxyEngine",
     "ExternalGalaxyEngine",
     "LocalManagedGalaxyEngine",
-    "LocalManagedGalaxyEngineWithSingularityDB",
 )
