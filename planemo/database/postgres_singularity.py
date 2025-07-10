@@ -1,11 +1,10 @@
 """Module describes a :class:`DatabaseSource` for managed, dockerized postgres databases."""
 
 import os
-import subprocess
 import time
 from tempfile import mkdtemp
 
-from galaxy.util.commands import execute
+from galaxy.util.commands import shell_process
 
 from planemo.io import info
 from .interface import DatabaseSource
@@ -16,23 +15,14 @@ DEFAULT_POSTGRES_DATABASE_NAME = "galaxy"
 DEFAULT_POSTGRES_USER = "galaxy"
 DEFAULT_POSTGRES_PASSWORD = "mysecretpassword"
 DEFAULT_DOCKERIMAGE = "postgres:14.2-alpine3.15"
-DEFAULT_SIF_NAME = "postgres_14_2-alpine3_15.sif"
-# DEFAULT_CONNECTION_STRING is used as a fallback when the database source is not active
-# The actual connection string should be obtained from sqlalchemy_url() when the database is running
-DEFAULT_CONNECTION_STRING = "postgresql://%s:%s@/%%s?host=/tmp" % (
-    DEFAULT_POSTGRES_USER,
-    DEFAULT_POSTGRES_PASSWORD,
-)
 
 
 def start_postgres_singularity(
     singularity_path,
-    container_instance_name,
     database_location,
     databasename=DEFAULT_POSTGRES_DATABASE_NAME,
     user=DEFAULT_POSTGRES_USER,
     password=DEFAULT_POSTGRES_PASSWORD,
-    **kwds,
 ):
     info(f"Postgres database stored at: {database_location}")
     pgdata_path = os.path.join(database_location, "pgdata")
@@ -43,66 +33,41 @@ def start_postgres_singularity(
     if not os.path.exists(pgrun_path):
         os.makedirs(pgrun_path)
 
-    version_file = os.path.join(pgdata_path, "PG_VERSION")
-    if not os.path.exists(version_file):
-        # Run container for a short while to initialize the database
-        # The database will not be initilizaed during a
-        # "singularity instance start" command
-        init_database_command = [
-            singularity_path,
-            "run",
-            "-B",
-            f"{pgdata_path}:/var/lib/postgresql/data",
-            "-B",
-            f"{pgrun_path}:/var/run/postgresql",
-            "-e",
-            "-C",
-            "--env",
-            f"POSTGRES_DB={databasename}",
-            "--env",
-            f"POSTGRES_USER={user}",
-            "--env",
-            f"POSTGRES_PASSWORD={password}",
-            "--env",
-            "POSTGRES_INITDB_ARGS='--encoding=UTF-8'",
-            f"docker://{DEFAULT_DOCKERIMAGE}",
-        ]
-        info(f"Initializing postgres database in folder: {pgdata_path}")
-        process = subprocess.Popen(init_database_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        # Give the container time to initialize the database
-        for _ in range(10):
-            if os.path.exists(version_file):
-                break
-            time.sleep(5)
-            info("Waiting for the postgres database to initialize.")
-        else:
-            raise Exception("Failed to initialize the postgres database.")
-        time.sleep(10)
-        process.terminate()
-
-    # Start the singularity instance, assumes the database is
-    # already initialized since the entrypoint will not be run
-    # when starting a instance of the container.
+    VERSION_FILE = os.path.join(pgdata_path, "PG_VERSION")
     run_command = [
         singularity_path,
-        "instance",
-        "start",
+        "run",
         "-B",
         f"{pgdata_path}:/var/lib/postgresql/data",
         "-B",
         f"{pgrun_path}:/var/run/postgresql",
         "-e",
         "-C",
+        "--env",
+        f"POSTGRES_DB={databasename}",
+        "--env",
+        f"POSTGRES_USER={user}",
+        "--env",
+        f"POSTGRES_PASSWORD={password}",
+        "--env",
+        "POSTGRES_INITDB_ARGS='--encoding=UTF-8'",
         f"docker://{DEFAULT_DOCKERIMAGE}",
-        container_instance_name,
     ]
-    info(f"Starting singularity instance named: {container_instance_name}")
-    execute(run_command)
-
-
-def stop_postgress_singularity(container_instance_name, **kwds):
-    info(f"Stopping singularity instance named: {container_instance_name}")
-    execute(["singularity", "instance", "stop", container_instance_name])
+    info("Starting postgres singularity container")
+    p = shell_process(run_command)
+    # Give the container time to initialize the database
+    for _ in range(10):
+        if os.path.exists(VERSION_FILE):
+            break
+        time.sleep(5)
+        info("Waiting for the postgres database to initialize.")
+    else:
+        try:
+            p.terminate()
+        except Exception as e:
+            info(f"Failed to terminate process: {e}")
+        raise Exception("Failed to initialize the postgres database.")
+    return p
 
 
 class SingularityPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource):
@@ -124,20 +89,26 @@ class SingularityPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource
         self.database_socket_dir = os.path.join(self.database_location, "pgrun")
         self.container_instance_name = f"{DEFAULT_CONTAINER_NAME}-{int(time.time() * 1000000)}"
         self._kwds = kwds
+        self.running_process = None
 
     def __enter__(self):
-        start_postgres_singularity(
+        self.running_process = start_postgres_singularity(
             singularity_path=self.singularity_path,
             database_location=self.database_location,
             user=self.database_user,
             password=self.database_password,
-            container_instance_name=self.container_instance_name,
-            **self._kwds,
         )
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        stop_postgress_singularity(self.container_instance_name)
+        if self.running_process:
+            try:
+                self.running_process.terminate()
+                postmaster_pid_file = os.path.join(self.database_location, "pgdata", "postmaster.pid")
+                if os.path.exists(postmaster_pid_file):
+                    os.remove(postmaster_pid_file)
+            except Exception as e:
+                info(f"Failed to terminate process: {e}")
 
     def sqlalchemy_url(self, identifier):
         """Return URL for PostgreSQL connection via Unix socket."""
