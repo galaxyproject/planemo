@@ -43,7 +43,6 @@ from planemo import (
     network_util,
 )
 from planemo.config import OptionSource
-from planemo.database import postgres_singularity
 from planemo.deps import ensure_dependency_resolvers_conf_configured
 from planemo.docker import docker_host_args
 from planemo.galaxy.workflows import (
@@ -1269,10 +1268,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
 
 
 def _database_connection(database_location, **kwds):
-    if "database_type" in kwds and kwds["database_type"] == "postgres_singularity":
-        default_connection = postgres_singularity.DEFAULT_CONNECTION_STRING
-    else:
-        default_connection = DATABASE_LOCATION_TEMPLATE % database_location
+    default_connection = DATABASE_LOCATION_TEMPLATE % database_location
     database_connection = kwds.get("database_connection") or default_connection
     return database_connection
 
