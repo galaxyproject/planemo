@@ -1,6 +1,7 @@
 """Module describes a :class:`DatabaseSource` for managed, dockerized postgres databases."""
 
 import os
+import shutil
 import time
 from tempfile import mkdtemp
 from typing import Optional
@@ -93,6 +94,13 @@ class SingularityPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource
         self.container_instance_name = f"{DEFAULT_CONTAINER_NAME}-{int(time.time() * 1000000)}"
         self._kwds = kwds
         self.running_process = None
+
+    def create_database(self, identifier):
+        # Not needed, we'll create the database automatically when the container starts.
+        pass
+
+    def delete_database(self, identifier):
+        shutil.rmtree(self.database_location, ignore_errors=True)
 
     def __enter__(self):
         self.running_process = start_postgres_singularity(
