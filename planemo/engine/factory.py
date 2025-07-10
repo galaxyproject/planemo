@@ -9,7 +9,6 @@ from .galaxy import (
     DockerizedManagedGalaxyEngine,
     ExternalGalaxyEngine,
     LocalManagedGalaxyEngine,
-    LocalManagedGalaxyEngineWithSingularityDB,
 )
 from .toil import ToilEngine
 
@@ -26,10 +25,7 @@ def build_engine(ctx, **kwds):
     """Build an engine from the supplied planemo configuration."""
     engine_type_str = kwds.get("engine", "galaxy")
     if engine_type_str == "galaxy":
-        if "database_type" in kwds and kwds["database_type"] == "postgres_singularity":
-            engine_type = LocalManagedGalaxyEngineWithSingularityDB
-        else:
-            engine_type = LocalManagedGalaxyEngine
+        engine_type = LocalManagedGalaxyEngine
     elif engine_type_str == "docker_galaxy":
         engine_type = DockerizedManagedGalaxyEngine
     elif engine_type_str == "external_galaxy":
