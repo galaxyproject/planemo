@@ -145,7 +145,10 @@ class LocalManagedGalaxyEngine(GalaxyEngine):
         with serve_daemon(self._ctx, runnables, **self._serve_kwds()) as config:
             if "install_args_list" in self._serve_kwds():
                 self.shed_install(config)
-            yield config
+            try:
+                yield config
+            finally:
+                config.kill()
 
     def shed_install(self, config):
         kwds = self._serve_kwds()
@@ -208,7 +211,10 @@ class UvxManagedGalaxyEngine(LocalManagedGalaxyEngine):
         with serve_daemon(self._ctx, runnables, **self._serve_kwds()) as config:
             if "install_args_list" in self._serve_kwds():
                 self.shed_install(config)
-            yield config
+            try:
+                yield config
+            finally:
+                config.kill()
 
 
 class ExternalGalaxyEngine(GalaxyEngine):
