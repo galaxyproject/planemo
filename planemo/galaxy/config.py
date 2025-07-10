@@ -9,6 +9,7 @@ import os
 import random
 import shlex
 import shutil
+import subprocess
 import threading
 import time
 from string import Template
@@ -1490,7 +1491,22 @@ class UvxGalaxyConfig(BaseManagedGalaxyConfig):
 
     def _build_uvx_command(self, **kwds):
         """Build uvx galaxy command with appropriate flags."""
-        cmd = ["uvx", "galaxy"]
+        with NamedTemporaryFile("wb", prefix="planemo_galaxy_extra_deps", suffix=".txt", delete=False) as extra_deps:
+            p = subprocess.run(
+                [
+                    "uvx",
+                    "--from",
+                    "galaxy",
+                    "galaxy-dependencies",
+                    "--freeze",
+                    "--config_file",
+                    self.galaxy_config_file,
+                ],
+                stdout=extra_deps,
+            )
+            p.check_returncode()
+
+        cmd = ["uvx", "--with-requirements", extra_deps.name, "galaxy"]
 
         # Only pass config file - host and port are configured in galaxy.yml
         cmd.extend(["-c", self.galaxy_config_file])
