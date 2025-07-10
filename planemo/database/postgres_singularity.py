@@ -102,23 +102,22 @@ class SingularityPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource
     def delete_database(self, identifier):
         shutil.rmtree(self.database_location, ignore_errors=True)
 
-    def __enter__(self):
+    def start(self):
         self.running_process = start_postgres_singularity(
             singularity_path=self.singularity_path,
             database_location=self.database_location,
             user=self.database_user,
             password=self.database_password,
         )
-        return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def stop(self):
         if self.running_process:
             try:
                 self.running_process.terminate()
                 postmaster_pid_file = os.path.join(self.database_location, "pgdata", "postmaster.pid")
                 if os.path.exists(postmaster_pid_file):
                     os.remove(postmaster_pid_file)
-                postmaster_lock_file = os.path.join(self.database_location, "pgrun", "pgrun/.s.PGSQL.5432.lock")
+                postmaster_lock_file = os.path.join(self.database_location, "pgrun", ".s.PGSQL.5432.lock")
                 if os.path.exists(postmaster_lock_file):
                     os.remove(postmaster_lock_file)
             except Exception as e:

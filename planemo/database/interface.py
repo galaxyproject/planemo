@@ -22,5 +22,13 @@ class DatabaseSource(metaclass=abc.ABCMeta):
     def sqlalchemy_url(self, identifier) -> Optional[str]:
         """Return a URL string for use by sqlalchemy."""
 
+    def start(self):
+        """Start the database source, if necessary."""
+        pass
+
+    def stop(self):
+        """Stop the database source, if necessary."""
+        pass
+
 
 __all__ = ("DatabaseSource",)
