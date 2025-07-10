@@ -3,6 +3,7 @@
 import os
 import time
 from tempfile import mkdtemp
+from typing import Optional
 
 from galaxy.util.commands import shell_process
 
@@ -76,14 +77,16 @@ class SingularityPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource
     "with" statements to automatically start and stop the container.
     """
 
-    def __init__(self, **kwds):
+    def __init__(self, profile_directory: Optional[str] = None, **kwds):
         """Construct a postgres database source from planemo configuration."""
 
         self.singularity_path = "singularity"
         self.database_user = DEFAULT_POSTGRES_USER
         self.database_password = DEFAULT_POSTGRES_PASSWORD
-        if "postgres_storage_location" in kwds and kwds["postgres_storage_location"] is not None:
+        if kwds.get("postgres_storage_location") is not None:
             self.database_location = kwds["postgres_storage_location"]
+        elif profile_directory:
+            self.database_location = os.path.join(profile_directory, "postgres")
         else:
             self.database_location = os.path.join(mkdtemp(suffix="_planemo_postgres_db"))
         self.database_socket_dir = os.path.join(self.database_location, "pgrun")

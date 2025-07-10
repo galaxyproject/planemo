@@ -1,5 +1,7 @@
 """Create a DatabaseSource from supplied planemo configuration."""
 
+from typing import Optional
+
 from galaxy.util.commands import which
 
 from .interface import DatabaseSource
@@ -8,7 +10,7 @@ from .postgres_docker import DockerPostgresDatabaseSource
 from .postgres_singularity import SingularityPostgresDatabaseSource
 
 
-def create_database_source(**kwds) -> DatabaseSource:
+def create_database_source(profile_directory: Optional[str] = None, **kwds) -> DatabaseSource:
     """Return a :class:`planemo.database.interface.DatabaseSource` for configuration."""
     database_type = kwds.get("database_type", "auto")
     if database_type == "auto":
@@ -26,7 +28,7 @@ def create_database_source(**kwds) -> DatabaseSource:
     elif database_type == "postgres_docker":
         return DockerPostgresDatabaseSource(**kwds)
     elif database_type == "postgres_singularity":
-        return SingularityPostgresDatabaseSource(**kwds)
+        return SingularityPostgresDatabaseSource(profile_directory=profile_directory, **kwds)
     # TODO
     # from .sqlite import SqliteDatabaseSource
     # elif database_type == "sqlite":
