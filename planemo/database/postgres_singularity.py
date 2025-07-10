@@ -15,11 +15,14 @@ DEFAULT_CONTAINER_NAME = "planemopostgres"
 DEFAULT_POSTGRES_DATABASE_NAME = "galaxy"
 DEFAULT_POSTGRES_USER = "galaxy"
 DEFAULT_POSTGRES_PASSWORD = "mysecretpassword"
-DEFAULT_POSTGRES_PORT_EXPOSE = 5432
 DEFAULT_DOCKERIMAGE = "postgres:14.2-alpine3.15"
 DEFAULT_SIF_NAME = "postgres_14_2-alpine3_15.sif"
-
-DEFAULT_CONNECTION_STRING = f"postgresql://{DEFAULT_POSTGRES_USER}:{DEFAULT_POSTGRES_PASSWORD}@localhost:{DEFAULT_POSTGRES_PORT_EXPOSE}/{DEFAULT_POSTGRES_DATABASE_NAME}"
+# DEFAULT_CONNECTION_STRING is used as a fallback when the database source is not active
+# The actual connection string should be obtained from sqlalchemy_url() when the database is running
+DEFAULT_CONNECTION_STRING = "postgresql://%s:%s@/%%s?host=/tmp" % (
+    DEFAULT_POSTGRES_USER,
+    DEFAULT_POSTGRES_PASSWORD,
+)
 
 
 def start_postgres_singularity(
@@ -64,7 +67,7 @@ def start_postgres_singularity(
             "POSTGRES_INITDB_ARGS='--encoding=UTF-8'",
             f"docker://{DEFAULT_DOCKERIMAGE}",
         ]
-        info(f"Initilizing postgres database in folder: {pgdata_path}")
+        info(f"Initializing postgres database in folder: {pgdata_path}")
         process = subprocess.Popen(init_database_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         # Give the container time to initialize the database
         for _ in range(10):
@@ -114,12 +117,11 @@ class SingularityPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource
         self.singularity_path = "singularity"
         self.database_user = DEFAULT_POSTGRES_USER
         self.database_password = DEFAULT_POSTGRES_PASSWORD
-        self.database_host = "localhost"  # TODO: Make docker host
-        self.database_port = DEFAULT_POSTGRES_PORT_EXPOSE
         if "postgres_storage_location" in kwds and kwds["postgres_storage_location"] is not None:
             self.database_location = kwds["postgres_storage_location"]
         else:
             self.database_location = os.path.join(mkdtemp(suffix="_planemo_postgres_db"))
+        self.database_socket_dir = os.path.join(self.database_location, "pgrun")
         self.container_instance_name = f"{DEFAULT_CONTAINER_NAME}-{int(time.time() * 1000000)}"
         self._kwds = kwds
 
@@ -132,18 +134,18 @@ class SingularityPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource
             container_instance_name=self.container_instance_name,
             **self._kwds,
         )
+        return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         stop_postgress_singularity(self.container_instance_name)
 
     def sqlalchemy_url(self, identifier):
-        """Return URL or form postgresql://username:password@localhost/mydatabase."""
-        return "postgresql://%s:%s@%s:%d/%s" % (
+        """Return URL for PostgreSQL connection via Unix socket."""
+        return "postgresql://%s:%s@/%s?host=%s" % (
             self.database_user,
             self.database_password,
-            self.database_host,
-            self.database_port,
             identifier,
+            self.database_socket_dir,
         )
 
 
