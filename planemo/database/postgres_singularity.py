@@ -110,6 +110,9 @@ class SingularityPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource
                 postmaster_pid_file = os.path.join(self.database_location, "pgdata", "postmaster.pid")
                 if os.path.exists(postmaster_pid_file):
                     os.remove(postmaster_pid_file)
+                postmaster_lock_file = os.path.join(self.database_location, "pgrun", "pgrun/.s.PGSQL.5432.lock")
+                if os.path.exists(postmaster_lock_file):
+                    os.remove(postmaster_lock_file)
             except Exception as e:
                 info(f"Failed to terminate process: {e}")
 
