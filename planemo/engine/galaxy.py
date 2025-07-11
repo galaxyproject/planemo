@@ -205,17 +205,6 @@ class UvxManagedGalaxyEngine(LocalManagedGalaxyEngine):
         serve_kwds["uvx_galaxy"] = True
         return serve_kwds
 
-    @contextlib.contextmanager
-    def ensure_runnables_served(self, runnables):
-        """Ensure runnables are served using uvx Galaxy configuration."""
-        with serve_daemon(self._ctx, runnables, **self._serve_kwds()) as config:
-            if "install_args_list" in self._serve_kwds():
-                self.shed_install(config)
-            try:
-                yield config
-            finally:
-                config.kill()
-
 
 class ExternalGalaxyEngine(GalaxyEngine):
     """An :class:`Engine` implementation backed by an external Galaxy instance."""
