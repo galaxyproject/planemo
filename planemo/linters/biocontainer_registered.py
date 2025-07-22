@@ -15,7 +15,9 @@ lint_tool_types = ["*"]
 def lint_biocontainer_registered(tool_source, lint_ctx):
     conda_targets = tool_source_conda_targets(tool_source)
     if not conda_targets:
-        lint_ctx.warn(MESSAGE_WARN_NO_REQUIREMENTS)
+        _, containers, *_ = tool_source.parse_requirements_and_containers()
+        if not containers:
+            lint_ctx.warn(MESSAGE_WARN_NO_REQUIREMENTS)
         return
 
     mulled_targets = [build_target(c.package, c.version) for c in conda_targets]
