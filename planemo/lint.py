@@ -1,6 +1,7 @@
 """Utilities to help linting various targets."""
 
 import os
+import re
 from typing import (
     Any,
     Dict,
@@ -134,7 +135,15 @@ def lint_urls(root, lint_ctx):
 
     def validate_url(url, lint_ctx, user_agent=None):
         is_valid = True
-        if url.startswith("http://") or url.startswith("https://"):
+        if (match := re.match("https?://doi.org/(.*)$", url)) is not None:
+            doi = match.group(1)
+            xref_url = f"https://api.crossref.org/works/{doi}"
+            try:
+                requests.get(xref_url, timeout=5)
+            except Exception as e:
+                is_valid = False
+                lint_ctx.error(f"Error '{e}' accessing {url}")
+        elif url.startswith("http://") or url.startswith("https://"):
             if user_agent:
                 headers = {"User-Agent": user_agent, "Accept": "*/*"}
             else:
