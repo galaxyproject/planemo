@@ -156,7 +156,7 @@ def wait_for_invocation_and_jobs(
 
         error_result = _check_for_errors(
             ctx,
-            invocation_id,
+            sub_invocation["id"] if sub_invocation else invocation_id,
             sub_exception,
             sub_invocation,
             sub_jobs,
