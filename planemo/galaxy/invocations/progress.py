@@ -29,6 +29,7 @@ from .progress_display import DisplayConfiguration
 
 # Types for various invocation responses
 class InvocationStep(TypedDict, total=False):
+    id: str
     state: Optional[str]
     subworkflow_invocation_id: Optional[str]
 
@@ -347,6 +348,7 @@ class WorkflowProgressDisplay(Live):
         self.subworkflow_invocation_ids_seen: Set[str] = set()
         self.subworkflow_invocation_ids_completed: Set[str] = set()
         self.subworkflow_invocation_id: Optional[str] = None
+        self.new_steps: List[str] = []
         self.invocation_id = invocation_id
         display = display_configuration or DisplayConfiguration()
         self.galaxy_url = galaxy_url
@@ -358,10 +360,14 @@ class WorkflowProgressDisplay(Live):
     def _register_subworkflow_invocation_ids_from(self, invocation: Invocation):
         subworkflow_invocation_ids: List[str] = []
         steps = invocation.get("steps") or []
+        new_steps: List[str] = []
         for step in steps:
+            if step["state"] == "new":
+                new_steps.append(step["id"])
             subworkflow_invocation_id = step.get("subworkflow_invocation_id")
             if subworkflow_invocation_id:
                 subworkflow_invocation_ids.append(subworkflow_invocation_id)
+        self.new_steps = new_steps
         self._register_subworkflow_invocation_ids(subworkflow_invocation_ids)
 
     def _register_subworkflow_invocation_ids(self, ids: List[str]):
@@ -375,6 +381,9 @@ class WorkflowProgressDisplay(Live):
         return random.choice(tuple(self.subworkflow_invocation_ids_seen - self.subworkflow_invocation_ids_completed))
 
     def all_subworkflows_complete(self):
+        if self.new_steps:
+            # These don't have subworkflow invocation ids yet, we can't know if they're all complete
+            return False
         return len(self.subworkflow_invocation_ids_seen) == len(self.subworkflow_invocation_ids_completed)
 
     def get_invocation_ui_link(self):

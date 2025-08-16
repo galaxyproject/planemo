@@ -6,8 +6,8 @@ from planemo.galaxy.invocations.progress import (
 )
 from planemo.galaxy.invocations.progress_display import DisplayConfiguration
 
-STEP_NEW = {"state": "new"}
-STEP_SCHEDULED = {"state": "scheduled"}
+STEP_NEW = {"state": "new", "id": "1"}
+STEP_SCHEDULED = {"state": "scheduled", "id": "1"}
 SLEEP = 0.8
 
 
