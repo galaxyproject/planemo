@@ -154,18 +154,19 @@ def wait_for_invocation_and_jobs(
             ctx, invocation_id, invocation_api, workflow_progress_display, fail_fast
         )
 
-        error_result = _check_for_errors(
-            ctx,
-            sub_invocation["id"] if sub_invocation else invocation_id,
-            sub_exception,
-            sub_invocation,
-            sub_jobs,
-            invocation_api,
-            workflow_progress_display,
-            fail_fast,
-        )
-        if error_result:
-            return error_result
+        if sub_invocation:
+            error_result = _check_for_errors(
+                ctx,
+                sub_invocation["id"] if sub_invocation else invocation_id,
+                sub_exception,
+                sub_invocation,
+                sub_jobs,
+                invocation_api,
+                workflow_progress_display,
+                fail_fast,
+            )
+            if error_result:
+                return error_result
 
         if not _is_polling_complete(workflow_progress_display):
             polling_tracker.sleep()
