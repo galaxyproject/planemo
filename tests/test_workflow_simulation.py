@@ -1,5 +1,23 @@
 from planemo.galaxy.invocations.simulations import parse_workflow_simulation_from_string
 
+# These scenario simulates a workflow execution timeline with the following structure:
+#
+# Field explanations:
+# - states: Array defining the main workflow invocation's state progression over time
+#   Format: [initial_state, intermediate_state:duration, final_state]
+#   - "new": Workflow just created
+#   - "ready:4": Workflow in ready state for 4 time ticks
+#   - "scheduled": Workflow is running/scheduled
+#
+# - steps: Array of workflow steps that execute in sequence
+#   - Each step has a "state" and may contain "jobs" or nested "invocation" (subworkflow)
+#   - "after: N": This step starts after N time ticks
+#
+# - jobs: Array of jobs within a step
+#   - states: Job state progression over time
+#   - Common states: new -> queued -> running -> ok/failed
+#   - Format with duration: "queued:2" means job stays queued for 2 ticks
+
 SCENARIO_1 = """
 states: [new, ready:4, scheduled]
 steps:
@@ -154,6 +172,29 @@ steps:
       jobs:
         - states: [new, queued, ok]
         - states: [new, running:5, ok]
+"""
+
+
+SCENARIO_SUBWORKFLOW_WITH_FAILED_JOBS = """
+states: [new, ready:4]
+steps:
+- state: scheduled
+  jobs:
+  - states: [new, queued:2, running:2, ok]
+- after: 2
+  state: scheduled
+  jobs:
+  - states: [new, queued, running:2, ok]
+  - states: [new, queued, running:4, ok]
+- after: 3
+  state: scheduled
+  invocation:
+    states: [new, ready]
+    steps:
+    - state: scheduled
+      jobs:
+        - states: [new, queued, error]
+        - states: [new:2, paused]
 """
 
 

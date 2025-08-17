@@ -45,6 +45,7 @@ from planemo.galaxy.api import (
 from planemo.galaxy.invocations.api import (
     BioblendInvocationApi,
     JOB_ERROR_STATES,
+    NON_TERMINAL_JOB_STATES,
 )
 from planemo.galaxy.invocations.polling import PollingTrackerImpl
 from planemo.galaxy.invocations.polling import wait_for_invocation_and_jobs as polling_wait_for_invocation_and_jobs
@@ -866,9 +867,8 @@ def _wait_on_state(state_func, polling_backoff=0, timeout=None):
         if not response:
             # invocation may not have any attached jobs, that's fine
             return "ok"
-        non_terminal_states = {"running", "queued", "new", "ready", "resubmitted", "upload", "waiting"}
         current_states = set(item["state"] for item in response)
-        current_non_terminal_states = non_terminal_states.intersection(current_states)
+        current_non_terminal_states = NON_TERMINAL_JOB_STATES.intersection(current_states)
         # Mix of "error"-ish terminal job, dataset, invocation terminal states, so we can use this for whatever we throw at it
         hierarchical_fail_states = [
             "error",
