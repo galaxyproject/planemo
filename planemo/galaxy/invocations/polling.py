@@ -240,6 +240,7 @@ def summary_job_state(job_states_summary: Optional[InvocationJobsSummary]):
     states = (job_states_summary or {"states": {}}).get("states", {}).copy()
     states.pop("ok", None)
     states.pop("skipped", None)
+    states.pop("paused", None)
     if states:
         return next(iter(states.keys()))
     else:
