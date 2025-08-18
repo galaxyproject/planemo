@@ -44,9 +44,9 @@ class MockPollingTracker(PollingTracker):
 def test_polling_scenario_1():
     final_invocation_state, job_state, error_message = run_workflow_simulation(SCENARIO_1, fail_fast=True)
     assert final_invocation_state == "ready"  # early job error and fail fast, invocation doesn't advance to scheduled
-    assert job_state == "failed"
+    assert job_state == "error"
     assert error_message
-    assert "failed" in error_message
+    assert "error" in error_message
 
 
 def test_polling_scenario_three_ok_subworkflows():
@@ -82,9 +82,9 @@ def test_polling_without_display():
         fail_fast=True,
     )
     assert final_invocation_state == "ready"
-    assert job_state == "failed"
+    assert job_state == "error"
     assert error_message
-    assert "failed" in error_message
+    assert "error" in error_message
 
 
 def test_polling_with_compact_display():
@@ -119,10 +119,10 @@ def test_fail_fast_enabled_with_job_failure():
     final_invocation_state, job_state, error_message = run_workflow_simulation(SCENARIO_1, fail_fast=True)
     # Invocation should still be scheduled (workflow scheduling succeeded)
     assert final_invocation_state == "ready"
-    assert job_state == "failed"
+    assert job_state == "error"
     # fail_fast should detect the failed job and return error message
     assert error_message
-    assert "Failed to run workflow, at least one job is in [failed] state." in error_message
+    assert "Failed to run workflow, at least one job is in [error] state." in error_message
 
 
 def test_fail_fast_disabled_with_job_failure():
@@ -130,7 +130,7 @@ def test_fail_fast_disabled_with_job_failure():
     final_invocation_state, job_state, error_message = run_workflow_simulation(SCENARIO_1, fail_fast=False)
     # Invocation should be scheduled (workflow scheduling succeeded)
     assert final_invocation_state == "scheduled"
-    assert job_state == "failed"
+    assert job_state == "error"
     # Without fail_fast, job failures shouldn't cause error messages
     # (unless invocation itself fails, which it doesn't in this case)
     assert error_message is None
@@ -193,7 +193,7 @@ class MockJobsApi:
         """Return mock job details with exit code and stderr."""
         return {
             "id": job_id,
-            "state": "failed",
+            "state": "error",
             "exit_code": 1,
             "stderr": f"Error: Mock job {job_id} failed with exit code 1\nAdditional error details here",
             "stdout": f"Mock job {job_id} output",
@@ -218,7 +218,7 @@ class MockInvocationsApi:
 
     def show_invocation_step(self, invocation_id, step_id):
         """Return mock invocation step details."""
-        return {"id": step_id, "jobs": [{"id": f"job_{step_id}", "state": "failed"}]}
+        return {"id": step_id, "jobs": [{"id": f"job_{step_id}", "state": "error"}]}
 
 
 class SimulatedApi(InvocationApi):
@@ -253,7 +253,7 @@ class SimulatedApi(InvocationApi):
         """Return mock job details."""
         return {
             "id": job_id,
-            "state": "failed",
+            "state": "error",
             "exit_code": 1,
             "stderr": f"Error: Mock job {job_id} failed with exit code 1\nAdditional error details here",
             "stdout": f"Mock job {job_id} output",

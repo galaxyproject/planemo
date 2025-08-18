@@ -27,7 +27,7 @@ steps:
 - after: 2
   state: scheduled
   jobs:
-  - states: [new, queued, failed]
+  - states: [new, queued, error]
   - states: [new, queued, ok]
 - after: 3
   state: scheduled
@@ -268,7 +268,7 @@ def test_parse_scenario_1_invocation_job_states():
     assert len(states) == 3
     assert states["ok"] == 1
     assert states["running"] == 1
-    assert states["failed"] == 1
+    assert states["error"] == 1
 
 
 def test_parse_scenario_1_subworkflow_invocation_state():
