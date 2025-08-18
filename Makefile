@@ -137,6 +137,8 @@ open-rtd: docs ## open docs on readthedocs.org
 open-project: ## open project on github
 	$(OPEN_RESOURCE) $(PROJECT_URL)
 
+check-dist: clean-build dist clean-build
+
 dist: clean submodule ## create and check packages
 	$(IN_VENV) python -m build
 	$(IN_VENV) twine check dist/*
@@ -169,7 +171,7 @@ push-release: ## Push a tagged release to github
 	git push $(UPSTREAM) master
 	git push --tags $(UPSTREAM)
 
-release: release-local push-release ## package, review, and upload a release
+release: release-local check-dist push-release ## package, review, and upload a release
 
 add-history: ## Reformat HISTORY.rst with data from Github's API
 	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/bootstrap_history.py --acknowledgements
