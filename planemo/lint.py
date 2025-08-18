@@ -22,6 +22,8 @@ from planemo.xml import validation
 if TYPE_CHECKING:
     from planemo.cli import PlanemoCliContext
 
+REQUEST_TIMEOUT = 5
+
 
 def build_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
     """Handle common report, error, and skip linting arguments."""
@@ -134,12 +136,7 @@ def _validate_doi_url(url, lint_ctx):
 
     doi = match.group(1)
     xref_url = f"https://api.crossref.org/works/{doi}"
-    try:
-        requests.get(xref_url, timeout=5)
-        return True
-    except Exception as e:
-        lint_ctx.error(f"Error '{e}' accessing {url}")
-        return False
+    return _validate_http_url(xref_url, lint_ctx=lint_ctx)
 
 
 def _validate_http_url(url, lint_ctx, user_agent=None):
@@ -147,7 +144,7 @@ def _validate_http_url(url, lint_ctx, user_agent=None):
     headers = {"User-Agent": user_agent, "Accept": "*/*"} if user_agent else None
     r = None
     try:
-        r = requests.get(url, headers=headers, stream=True)
+        r = requests.get(url, headers=headers, stream=True, timeout=REQUEST_TIMEOUT)
         r.raise_for_status()
         next(r.iter_content(1000))
         return True
