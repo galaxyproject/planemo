@@ -107,10 +107,16 @@ def main(argv):
         acknowledgements = generate_acknowledgements()
         if acknowledgements:
             print("Generated acknowledgement lines:")
+
+            # Find the unreleased section (current dev version)
+            current_version = project.__version__
+            unreleased_section_marker = f"---------------------\n{current_version}\n---------------------"
+
             for ack in acknowledgements:
                 if ack.startswith("*"):
                     print(ack)
-                    history = extend(".. to_doc", ack)
+                    # Place acknowledgement lines in the unreleased section
+                    history = extend(unreleased_section_marker, ack)
                 elif ack.startswith(".."):
                     print(ack)
                     history = extend(".. github_links", ack)
