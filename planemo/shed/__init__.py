@@ -792,7 +792,7 @@ def shed_repo_type(config, name):
 
 def _shed_config_to_url(shed_config):
     url = shed_config["url"]
-    if not url.startswith("http"):
+    if url and not url.startswith("http"):
         message = f"Invalid shed url specified [{url}]. Please specify a valid HTTP address or one of {list(SHED_SHORT_NAMES.keys())}"
         raise ValueError(message)
     return url
