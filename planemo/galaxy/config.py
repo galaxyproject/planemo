@@ -441,6 +441,16 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         properties["amqp_internal_connection"] = f"sqlalchemy+sqlite:///{amqp_broker_path}"
         if kwds.get("mulled_containers", False):
             properties["mulled_channels"] = kwds.get("conda_ensure_channels", "")
+        if kwds.get("enable_gxits", True):
+            properties.update(
+                dict(
+                    interactivetools_enable="True",
+                    interactivetools_map="database/interactivetools_map.sqlite",
+                    galaxy_infrastructure_url= "http://localhost:8080",
+                    interactivetools_upstream_proxy= "False",
+                    interactivetools_proxy_host="localhost:4002",
+                )
+            )
 
         _handle_kwd_overrides(properties, kwds)
 
@@ -509,23 +519,26 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
         # and doesn't depend on GALAXY_CONFIG_OVERRIDE_* env vars being propagated
         # by Gravity to gunicorn workers.
         resolved_properties = {k: _sub(v, template_args) if isinstance(v, str) else v for k, v in properties.items()}
+        config = {
+            "galaxy": resolved_properties,
+            "gravity": {
+                "galaxy_root": galaxy_root,
+                "gunicorn": {
+                    "bind": f"{kwds.get('host', 'localhost')}:{template_args['port']}",
+                    "preload": False,
+                },
+                "gx_it_proxy": {
+                    "enable": False,
+                },
+            },
+        }
+        if kwds.get("enable_gxits", True):
+            config["gravity"]["gx_it_proxy"].update({
+                "enable": True,
+                "port": "4002",
+            })
         write_file(
-            env["GALAXY_CONFIG_FILE"],
-            json.dumps(
-                {
-                    "galaxy": resolved_properties,
-                    "gravity": {
-                        "galaxy_root": galaxy_root,
-                        "gunicorn": {
-                            "bind": f"{kwds.get('host', 'localhost')}:{template_args['port']}",
-                            "preload": False,
-                        },
-                        "gx_it_proxy": {
-                            "enable": False,
-                        },
-                    },
-                }
-            ),
+            env["GALAXY_CONFIG_FILE"], json.dumps(config)
         )
 
 
