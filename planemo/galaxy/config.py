@@ -434,8 +434,8 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
                 dict(
                     interactivetools_enable="True",
                     interactivetools_map="database/interactivetools_map.sqlite",
-                    galaxy_infrastructure_url= "http://localhost:8080",
-                    interactivetools_upstream_proxy= "False",
+                    galaxy_infrastructure_url="http://localhost:8080",
+                    interactivetools_upstream_proxy="False",
                     interactivetools_proxy_host="localhost:4002",
                 )
             )
