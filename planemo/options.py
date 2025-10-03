@@ -1429,6 +1429,7 @@ def galaxy_serve_options():
         install_prebuilt_client_option(),
         skip_client_build_option(),
         shed_install_option(),
+        enable_interactive_tools(),
     )
 
 
@@ -2260,4 +2261,14 @@ def job_config_init_options():
         tpv_option(),
         runner_target_option(),
         galaxy_version_option(),
+    )
+
+def enable_interactive_tools():
+    return planemo_option(
+        "--enable_gxits",
+        is_flag=True,
+        default=False,
+        help=(
+            "Configure Galaxy to enable interactive tools."
+        ),
     )
