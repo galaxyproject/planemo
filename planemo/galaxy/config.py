@@ -535,7 +535,7 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
                     "gravity": {
                         "galaxy_root": galaxy_root,
                         "gunicorn": {"bind": f"{kwds.get('host', 'localhost')}:{template_args['port']}"},
-                        "gx-it-proxy": {
+                        "gx_it_proxy": {
                             "enable": False,
                         },
                     },
