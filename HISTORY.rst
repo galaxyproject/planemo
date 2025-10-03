@@ -6,8 +6,66 @@ History
 .. to_doc
 
 ---------------------
-0.75.30.dev0
+0.75.32 (2025-08-18)
 ---------------------
+* Fixing 429 url error (thanks to `@arash77`_). `Pull Request 1556`_
+* Fix subworkflow invocation tracking (thanks to `@mvdbeek`_). `Pull Request 1560`_
+
+---------------------
+0.75.31 (2025-06-23)
+---------------------
+
+* Don't pollute working directory with tools.yaml file (thanks to
+  `@mvdbeek`_). `Pull Request 1554`_
+* Add ruff and isort to `make format` and tox, add pre-commit config (thanks
+  to `@mvdbeek`_). `Pull Request 1552`_
+* Make ``no_dependency_resolution`` and ``simultaneous_upload`` global options
+  (thanks to `@mvdbeek`_). `Pull Request 1553`_
+* Add flag to export invocation from run command (thanks to `@mvdbeek`_).
+  `Pull Request 1551`_
+* Load default job metrics (thanks to `@mvdbeek`_). `Pull Request 1548`_
+* Drop unnecessary autogen in cmd_slurm_init (thanks to `@mvdbeek`_). `Pull
+  Request 1549`_
+* Terminate polling if we can't advance invocation (thanks to `@mvdbeek`_).
+  `Pull Request 1547`_
+* Don't do preload in managed instance (thanks to `@mvdbeek`_). `Pull Request
+  1546`_
+* Add a slurm_init command (thanks to `@jmchilton`_). `Pull Request 1543`_
+* Add missing module to pyproject.toml (thanks to `@mvdbeek`_). `Pull Request
+  1545`_
+* Add the option to download the outputs of a completed workflow run (thanks
+  to `@Smeds`_). `Pull Request 1532`_
+* update shed categories (thanks to `@bgruening`_). `Pull Request 1539`_
+* cmd to export an existing invocations as an archive for storage or later
+  import (thanks to `@Smeds`_). `Pull Request 1534`_
+* Bump requirements for galaxy packages to 25.0 (thanks to
+  `@ahmedhamidawan`_). `Pull Request 1542`_
+* Print job errors in workflow invocation as they occur (thanks to
+  `@mvdbeek`_). `Pull Request 1540`_
+* Enable celery tasks (thanks to `@mvdbeek`_). `Pull Request 1541`_
+* add file extension to downloaded output (thanks to `@Smeds`_). `Pull Request
+  1531`_
+* Workflow progress bar (thanks to `@jmchilton`_). `Pull Request 1510`_
+* Fix job handler setup (thanks to `@mvdbeek`_). `Pull Request 1538`_
+* Overhaul Galaxy job config handling (thanks to `@jmchilton`_). `Pull Request
+  1506`_
+* create provided output_directory if it doesn't exist (thanks to `@Smeds`_).
+  `Pull Request 1526`_
+
+---------------------
+0.75.30 (2025-05-07)
+---------------------
+* fix lint_shed_version if there are no installable revisions (thanks to
+  `@bernt-matthias`_). `Pull Request 1509`_
+* Fix bumping of dev versions (thanks to `@mvdbeek`_). `Pull Request 1514`_
+* Don't escape non-ascii unicode characters in json.dumps (thanks to
+  `@mvdbeek`_). `Pull Request 1523`_
+* Fix version linter for new repos (thanks to `@bernt-matthias`_). `Pull
+  Request 1519`_
+* Add switch to prevent early termination of workflow runs (thanks to
+  `@kostrykin`_). `Pull Request 1518`_
+* Add missing collection operation tools (thanks to `@mvdbeek`_). `Pull
+  Request 1524`_
 
 ---------------------
 0.75.29 (2025-03-27)
@@ -2195,6 +2253,35 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1556: https://github.com/galaxyproject/planemo/pull/1556
+.. _Pull Request 1560: https://github.com/galaxyproject/planemo/pull/1560
+.. _Pull Request 1554: https://github.com/galaxyproject/planemo/pull/1554
+.. _Pull Request 1552: https://github.com/galaxyproject/planemo/pull/1552
+.. _Pull Request 1553: https://github.com/galaxyproject/planemo/pull/1553
+.. _Pull Request 1551: https://github.com/galaxyproject/planemo/pull/1551
+.. _Pull Request 1548: https://github.com/galaxyproject/planemo/pull/1548
+.. _Pull Request 1549: https://github.com/galaxyproject/planemo/pull/1549
+.. _Pull Request 1547: https://github.com/galaxyproject/planemo/pull/1547
+.. _Pull Request 1546: https://github.com/galaxyproject/planemo/pull/1546
+.. _Pull Request 1543: https://github.com/galaxyproject/planemo/pull/1543
+.. _Pull Request 1545: https://github.com/galaxyproject/planemo/pull/1545
+.. _Pull Request 1532: https://github.com/galaxyproject/planemo/pull/1532
+.. _Pull Request 1539: https://github.com/galaxyproject/planemo/pull/1539
+.. _Pull Request 1534: https://github.com/galaxyproject/planemo/pull/1534
+.. _Pull Request 1542: https://github.com/galaxyproject/planemo/pull/1542
+.. _Pull Request 1540: https://github.com/galaxyproject/planemo/pull/1540
+.. _Pull Request 1541: https://github.com/galaxyproject/planemo/pull/1541
+.. _Pull Request 1531: https://github.com/galaxyproject/planemo/pull/1531
+.. _Pull Request 1510: https://github.com/galaxyproject/planemo/pull/1510
+.. _Pull Request 1538: https://github.com/galaxyproject/planemo/pull/1538
+.. _Pull Request 1506: https://github.com/galaxyproject/planemo/pull/1506
+.. _Pull Request 1526: https://github.com/galaxyproject/planemo/pull/1526
+.. _Pull Request 1509: https://github.com/galaxyproject/planemo/pull/1509
+.. _Pull Request 1514: https://github.com/galaxyproject/planemo/pull/1514
+.. _Pull Request 1523: https://github.com/galaxyproject/planemo/pull/1523
+.. _Pull Request 1519: https://github.com/galaxyproject/planemo/pull/1519
+.. _Pull Request 1518: https://github.com/galaxyproject/planemo/pull/1518
+.. _Pull Request 1524: https://github.com/galaxyproject/planemo/pull/1524
 .. _Pull Request 1507: https://github.com/galaxyproject/planemo/pull/1507
 .. _Pull Request 1505: https://github.com/galaxyproject/planemo/pull/1505
 .. _Pull Request 1504: https://github.com/galaxyproject/planemo/pull/1504
@@ -3171,3 +3258,6 @@ History
 .. _@jdavcs: https://github.com/jdavcs
 .. _@Smeds: https://github.com/Smeds
 .. _@jmchilton: https://github.com/jmchilton
+.. _@kostrykin: https://github.com/kostrykin
+.. _@ahmedhamidawan: https://github.com/ahmedhamidawan
+.. _@arash77: https://github.com/arash77

@@ -19,18 +19,17 @@ would be uploaded to the Tool Shed with the `shed_upload` command - but
 this command can be made to compare other combinations of repositories.
 Here are some examples
 
-::
-
-    $ # diff for this repository and the main Tool Shed
-    $ planemo shed_diff
-    $ # diff for this repository and the test Tool Shed
-    $ planemo shed_diff --shed_target testtoolshed
-    $ # diff for the test Tool Shed and main Tool Shed
-    $ planemo shed_diff --shed_target_source testtoolshed
-    $ # diff for two an explicitly specified repositories (ignores
-    $ # current project's shed YAML file.)
-    $ planemo shed_diff --owner peterjc --name blast_rbh
-        --shed_target_source testtoolshed
+
+$ # diff for this repository and the main Tool Shed
+$ planemo shed_diff
+$ # diff for this repository and the test Tool Shed
+$ planemo shed_diff --shed_target testtoolshed
+$ # diff for the test Tool Shed and main Tool Shed
+$ planemo shed_diff --shed_target_source testtoolshed
+$ # diff for two an explicitly specified repositories (ignores
+$ # current project's shed YAML file.)
+$ planemo shed_diff --owner peterjc --name blast_rbh
+    --shed_target_source testtoolshed
 
 This command will return an exit code of:
 

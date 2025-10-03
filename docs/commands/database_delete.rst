@@ -33,14 +33,13 @@ distros this file is in /etc/postgresql/<postgres_version>/main/ directory).
 Adding the following lines to that file will allow planemo and Galaxy to
 access the databases without a password.
 
-::
-
-    # "local" is for Unix domain socket connections only
-    local   all   all                    trust
-    # IPv4 local connections:
-    host    all   all    127.0.0.1/32    trust
-    # IPv6 local connections:
-    host    all   all    ::1/128         trust
+
+# "local" is for Unix domain socket connections only
+local   all   all                    trust
+# IPv4 local connections:
+host    all   all    127.0.0.1/32    trust
+# IPv6 local connections:
+host    all   all    ::1/128         trust
 
 More information on the ``pg_hda.conf`` configuration file can be found at
 http://www.postgresql.org/docs/9.3/static/auth-pg-hba-conf.html.
@@ -50,9 +49,8 @@ http://www.postgresql.org/docs/9.4/static/libpq-pgpass.html. In Ubuntu and
 Debian distros - a postgres user likely already exists and its password can
 be set by setting up a file ``~/.pgpass`` file with the following contents.
 
-::
-
-    *:*:*:postgres:<postgres_password>
+
+*:*:*:postgres:<postgres_password>
 
 **Options**::
 

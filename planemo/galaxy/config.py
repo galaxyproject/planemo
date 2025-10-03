@@ -19,7 +19,6 @@ from tempfile import (
 from typing import (
     Any,
     Dict,
-    Iterable,
     List,
     Optional,
     Set,
@@ -27,8 +26,13 @@ from typing import (
 )
 
 from galaxy.tool_util.deps import docker_util
-from galaxy.tool_util.deps.container_volumes import DockerVolume
 from galaxy.util.commands import argv_to_str
+from gxjobconfinit.generate import (
+    build_job_config,
+    ConfigArgs,
+    create_docker_volumes,
+    DevelopmentContext,
+)
 from packaging.version import parse as parse_version
 
 from planemo import git
@@ -122,33 +126,6 @@ TOOL_SHEDS_CONF = """<tool_sheds>
 </tool_sheds>
 """
 
-JOB_CONFIG_LOCAL = """<job_conf>
-    <plugins>
-        <plugin id="planemo_runner" type="runner" load="galaxy.jobs.runners.local:LocalJobRunner" workers="4"/>
-    </plugins>
-    <handlers>
-    </handlers>
-    <destinations default="planemo_dest">
-        <destination id="planemo_dest" runner="planemo_runner">
-            <param id="require_container">${require_container}</param>
-            <param id="docker_enabled">${docker_enable}</param>
-            <param id="docker_sudo">${docker_sudo}</param>
-            <param id="docker_sudo_cmd">${docker_sudo_cmd}</param>
-            <param id="docker_cmd">${docker_cmd}</param>
-            <param id="docker_volumes">${docker_volumes}</param>
-            <param id="docker_run_extra_arguments"><![CDATA[${docker_run_extra_arguments}]]></param>
-            ${docker_host_param}
-        </destination>
-        <destination id="upload_dest" runner="planemo_runner">
-            <param id="docker_enabled">false</param>
-        </destination>
-    </destinations>
-    <tools>
-        <tool id="upload1" destination="upload_dest" />
-    </tools>
-</job_conf>
-"""
-
 REFGENIE_CONFIG_TEMPLATE = """
 config_version: %s
 genome_folder: '%s'
@@ -216,22 +193,6 @@ def read_log(ctx, log_path, e: threading.Event):
             log_fh.close()
 
 
-def create_docker_volumes(paths: Iterable[str]) -> Iterable[DockerVolume]:
-    """
-    Creates string of the format "host_path:target_path:mode" and deduplicates overlapping mounts.
-    """
-    docker_volumes: Dict[str, DockerVolume] = {}
-    for path in paths:
-        docker_volume = DockerVolume.from_str(path)
-        if docker_volume.path in docker_volumes:
-            # volume has been specified already, make sure we use "rw" if any of the modes are "rw"
-            if docker_volume.mode == "rw" or docker_volumes[docker_volume.path].mode == "rw":
-                docker_volumes[docker_volume.path].mode = "rw"
-        else:
-            docker_volumes[docker_volume.path] = docker_volume
-    return docker_volumes.values()
-
-
 @contextlib.contextmanager
 def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
     """Set up a ``GalaxyConfig`` for Docker container."""
@@ -243,7 +204,6 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             return os.path.join(config_directory, *args)
 
         ensure_dependency_resolvers_conf_configured(ctx, kwds, os.path.join(config_directory, "resolvers_conf.xml"))
-        _handle_job_metrics(config_directory, kwds)
         galaxy_root = kwds.get("galaxy_root")
         _handle_refgenie_config(config_directory, galaxy_root, kwds)
 
@@ -380,8 +340,8 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         pid_file = f"{server_name}.pid"
         ensure_dependency_resolvers_conf_configured(ctx, kwds, os.path.join(config_directory, "resolvers_conf.xml"))
         all_tool_paths = _all_tool_paths(runnables, galaxy_root=galaxy_root, extra_tools=kwds.get("extra_tools"))
+        kwds["all_in_one_handling"] = True
         _handle_job_config_file(config_directory, server_name, test_data_dir, all_tool_paths, kwds)
-        _handle_job_metrics(config_directory, kwds)
         _handle_file_sources(config_directory, test_data_dir, kwds)
         _handle_refgenie_config(config_directory, galaxy_root, kwds)
         file_path = kwds.get("file_path") or config_join("files")
@@ -426,24 +386,25 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         properties.update(
             dict(
                 server_name="main",
+                enable_celery_tasks="true",
                 ftp_upload_dir_template="${ftp_upload_dir}",
-                ftp_upload_purge="False",
+                ftp_upload_purge="false",
                 ftp_upload_dir=test_data_dir or os.path.abspath("."),
                 ftp_upload_site="Test Data",
-                check_upload_content="False",
+                check_upload_content="false",
                 tool_dependency_dir=dependency_dir,
                 file_path=file_path,
                 new_file_path="${temp_directory}/tmp",
                 tool_config_file=tool_config_file,
                 tool_sheds_config_file=sheds_config_path,
-                manage_dependency_relationships="False",
+                manage_dependency_relationships="false",
                 job_working_directory="${temp_directory}/job_working_directory",
                 template_cache_path="${temp_directory}/compiled_templates",
                 citation_cache_type="file",
                 citation_cache_data_dir="${temp_directory}/citations/data",
                 citation_cache_lock_dir="${temp_directory}/citations/lock",
-                database_auto_migrate="True",
-                enable_beta_tool_formats="True",
+                database_auto_migrate="true",
+                enable_beta_tool_formats="true",
                 id_secret="${id_secret}",
                 log_level="${log_level}",
                 debug="${debug}",
@@ -452,11 +413,11 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
                 tool_data_table_config_path=",".join(tool_data_tables) if tool_data_tables else None,
                 data_manager_config_file=",".join(data_manager_config_paths)
                 or None,  # without 'or None' may raise IOError in galaxy (see #946)
-                integrated_tool_panel_config=("${temp_directory}/" "integrated_tool_panel_conf.xml"),
+                integrated_tool_panel_config=("${temp_directory}/integrated_tool_panel_conf.xml"),
                 migrated_tools_config=empty_tool_conf,
                 test_data_dir=test_data_dir,  # TODO: make gx respect this
                 shed_data_manager_config_file=shed_data_manager_config_file,
-                outputs_to_working_directory="True",  # this makes Galaxy's files dir RO for dockerized testing
+                outputs_to_working_directory="true",  # this makes Galaxy's files dir RO for dockerized testing
                 object_store_store_by="uuid",
             )
         )
@@ -534,7 +495,10 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
                     "galaxy": properties,
                     "gravity": {
                         "galaxy_root": galaxy_root,
-                        "gunicorn": {"bind": f"{kwds.get('host', 'localhost')}:{template_args['port']}"},
+                        "gunicorn": {
+                            "bind": f"{kwds.get('host', 'localhost')}:{template_args['port']}",
+                            "preload": False,
+                        },
                         "gx_it_proxy": {
                             "enable": False,
                         },
@@ -570,6 +534,12 @@ def get_refgenie_config(galaxy_root, refgenie_dir):
         if version_major < parse_version("21.09"):
             config_version = 0.3
     return REFGENIE_CONFIG_TEMPLATE % (config_version, refgenie_dir)
+
+
+def get_all_tool_path_from_kwds(runnables: List["Runnable"], **kwds) -> Set[str]:
+    galaxy_root = kwds.get("galaxy_root")
+    extra_tools = kwds.get("extra_tools")
+    return _all_tool_paths(runnables, galaxy_root, extra_tools)
 
 
 def _all_tool_paths(
@@ -1376,40 +1346,15 @@ def _handle_job_config_file(
 ):
     job_config_file = kwds.get("job_config_file", None)
     if not job_config_file:
-        template_str = JOB_CONFIG_LOCAL
+        dev_context = DevelopmentContext(
+            test_data_dir,
+            list(all_tool_paths),
+        )
+        init_config = ConfigArgs.from_dict(**kwds)
+        conf_contents = build_job_config(init_config, dev_context)
         job_config_file = os.path.join(
             config_directory,
-            "job_conf.xml",
-        )
-        docker_enable = str(kwds.get("docker", False))
-        docker_host = kwds.get("docker_host", docker_util.DEFAULT_HOST)
-        docker_host_param = ""
-        if docker_host:
-            docker_host_param = f"""<param id="docker_host">{docker_host}</param>"""
-
-        volumes = list(kwds.get("docker_extra_volume") or [])
-        if test_data_dir:
-            volumes.append(f"{test_data_dir}:ro")
-
-        docker_volumes_str = "$defaults"
-        if volumes:
-            # exclude tool directories, these are mounted :ro by $defaults
-            all_tool_dirs = {os.path.dirname(tool_path) for tool_path in all_tool_paths}
-            extra_volumes_str = ",".join(str(v) for v in create_docker_volumes(volumes) if v.path not in all_tool_dirs)
-            docker_volumes_str = f"{docker_volumes_str},{extra_volumes_str}"
-
-        conf_contents = Template(template_str).safe_substitute(
-            {
-                "server_name": server_name,
-                "docker_enable": docker_enable,
-                "require_container": "false",
-                "docker_sudo": str(kwds.get("docker_sudo", False)),
-                "docker_sudo_cmd": str(kwds.get("docker_sudo_cmd", docker_util.DEFAULT_SUDO_COMMAND)),
-                "docker_cmd": str(kwds.get("docker_cmd", docker_util.DEFAULT_DOCKER_COMMAND)),
-                "docker_host_param": docker_host_param,
-                "docker_volumes": docker_volumes_str,
-                "docker_run_extra_arguments": kwds.get("docker_run_extra_arguments", ""),
-            }
+            "job_conf.yml",
         )
         write_file(job_config_file, conf_contents)
     kwds["job_config_file"] = job_config_file
@@ -1433,13 +1378,6 @@ def _handle_container_resolution(ctx, kwds, galaxy_properties):
         involucro_context = build_involucro_context(ctx, **kwds)
         galaxy_properties["involucro_auto_init"] = "False"  # Use planemo's
         galaxy_properties["involucro_path"] = involucro_context.involucro_bin
-
-
-def _handle_job_metrics(config_directory, kwds):
-    metrics_conf = os.path.join(config_directory, "job_metrics_conf.xml")
-    with open(metrics_conf, "w") as fh:
-        fh.write(EMPTY_JOB_METRICS_TEMPLATE)
-    kwds["job_metrics_config_file"] = metrics_conf
 
 
 def _handle_file_sources(config_directory, test_data_dir, kwds):

@@ -491,7 +491,7 @@ def _lint_dockstore_workflow_entry(
     # Check there is not mailto
     for author in workflow_entry.get("authors", []):
         if author.get("email", "").startswith("mailto:"):
-            lint_context.error("email field of the .dockstore.yml must not " "contain 'mailto:'")
+            lint_context.error("email field of the .dockstore.yml must not contain 'mailto:'")
 
 
 def looks_like_a_workflow(path: str) -> bool:
@@ -540,7 +540,7 @@ def find_repos_from_tool_id(tool_id: str, ts: ToolShedInstance) -> Tuple[str, Di
 
     try:
         repo = ts.repositories.get_repositories(name, owner)[0]
-        repos = ts.repositories._get(url=f'{ts.repositories._make_url()}/{repo["id"]}/metadata')
+        repos = ts.repositories._get(url=f"{ts.repositories._make_url()}/{repo['id']}/metadata")
     except Exception as e:
         return (f"The ToolShed returned an error when searching for the most recent version of {tool_id}: {e}", {})
     if len(repos) == 0:
@@ -600,7 +600,7 @@ def _lint_required_files_workflow_dir(path: str, lint_context: WorkflowLintConte
     required_files = ["README.md", "CHANGELOG.md", ".dockstore.yml"]
     for required_file in required_files:
         if not os.path.exists(os.path.join(path, required_file)):
-            lint_context.error(f"The file {required_file} is" " missing but required.")
+            lint_context.error(f"The file {required_file} is missing but required.")
 
 
 def _get_changelog_version(path: str) -> str:
@@ -622,9 +622,7 @@ def _lint_changelog_version(path: str, lint_context: WorkflowLintContext) -> Non
         return
     if _get_changelog_version(path) == "":
         lint_context.error(
-            "No version found in CHANGELOG. "
-            "The version should be in a line that starts like "
-            "'## [version number]'"
+            "No version found in CHANGELOG. The version should be in a line that starts like '## [version number]'"
         )
 
 
@@ -637,7 +635,7 @@ def _lint_release(path, lint_context):
         # Try to get the version from the CHANGELOG:
         version = _get_changelog_version(os.path.dirname(path))
         if version != "" and workflow_dict.get("release") != version:
-            lint_context.error(f"The release of workflow {path} does not match " "the version in the CHANGELOG.")
+            lint_context.error(f"The release of workflow {path} does not match the version in the CHANGELOG.")
 
 
 def _lint_dockstore_config_best_practices(path: str, lint_context: WorkflowLintContext) -> None:

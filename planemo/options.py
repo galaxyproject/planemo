@@ -4,8 +4,12 @@ import functools
 import os
 
 import click
-from galaxy.tool_util.deps import docker_util
+from galaxy.tool_util.deps import (
+    docker_util,
+    singularity_util,
+)
 from galaxy.tool_util.verify.interactor import DEFAULT_TOOL_TEST_WAIT
+from gxjobconfinit.types import Runner
 
 from .config import planemo_option
 
@@ -17,6 +21,14 @@ def force_option(what="files"):
         "--force",
         is_flag=True,
         help="Overwrite existing %s if present." % what,
+    )
+
+
+def open_file_option():
+    return planemo_option(
+        "--open",
+        is_flag=True,
+        help="Open the file in your default editor after creation.",
     )
 
 
@@ -177,7 +189,7 @@ def galaxy_python_version():
         "--galaxy_python_version",
         use_global_config=True,
         default=None,
-        type=click.Choice(["3", "3.7", "3.8", "3.9", "3.10", "3.11"]),
+        type=click.Choice(["3", "3.8", "3.9", "3.10", "3.11", "3.12"]),
         help="Python version to start Galaxy under",
     )
 
@@ -190,6 +202,27 @@ def galaxy_root_option():
         use_env_var=True,
         type=click.Path(file_okay=False, dir_okay=True, resolve_path=True),
         help="Root of development galaxy directory to execute command with.",
+    )
+
+
+def galaxy_version_option():
+    return planemo_option(
+        "--galaxy_version",
+        type=str,
+        default="24.2",
+        help="Version of Galaxy to target for configuration (default 24.2).",
+    )
+
+
+def tpv_option():
+    return planemo_option(
+        "--tpv/--no_tpv",
+        is_flag=True,
+        default=False,
+        help=(
+            "Include TPV (Total Perspective Vortex) configuration and shared usegalaxy* "
+            "database of tool cores and memory for allocation purposes. "
+        ),
     )
 
 
@@ -298,7 +331,7 @@ def run_output_json_option():
             resolve_path=True,
         ),
         default=None,
-        help=("Where to store JSON dictionary describing outputs of " "a 'run' task."),
+        help=("Where to store JSON dictionary describing outputs of a 'run' task."),
     )
 
 
@@ -314,6 +347,15 @@ def run_download_outputs_option():
     )
 
 
+def run_export_option():
+    return planemo_option(
+        "--export_invocation",
+        help="Export workflow invocation as archive to specified path.",
+        type=click.Path(),
+        default=None,
+    )
+
+
 def publish_dockstore_option():
     return planemo_option(
         "--publish/--no_publish",
@@ -326,6 +368,7 @@ def publish_dockstore_option():
 def no_dependency_resolution():
     return planemo_option(
         "--no_dependency_resolution",
+        use_global_config=True,
         is_flag=True,
         help="Configure Galaxy with no dependency resolvers.",
     )
@@ -351,7 +394,7 @@ def shed_dependency_resolution():
     return planemo_option(
         "--shed_dependency_resolution",
         is_flag=True,
-        help=("Configure Galaxy to use brewed Tool Shed dependency" " resolution."),
+        help=("Configure Galaxy to use brewed Tool Shed dependency resolution."),
     )
 
 
@@ -412,6 +455,25 @@ def job_config_option():
         help="Job configuration file for Galaxy to target.",
         default=None,
         use_global_config=True,
+    )
+
+
+class EnumType(click.Choice):
+    def __init__(self, enum):
+        self._enum = enum
+        super().__init__([e.value for e in enum])
+
+    def convert(self, value, param, ctx):
+        return self._enum(super().convert(value, param, ctx))
+
+
+def runner_target_option():
+    return planemo_option(
+        "--runner",
+        type=EnumType(Runner),
+        help="Galaxy runner (e.g. DRM) to target.",
+        default=Runner.LOCAL,
+        use_global_config=False,
     )
 
 
@@ -478,6 +540,24 @@ def docker_extra_volume_option():
         use_global_config=True,
         multiple=True,
         help=("Extra path to mount if --engine docker or `--biocontainers` or `--docker`."),
+    )
+
+
+def singularity_extra_volume_option():
+    arg_type = click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=True,
+        readable=True,
+        resolve_path=True,
+    )
+    return planemo_option(
+        "--singularity_extra_volume",
+        type=arg_type,
+        default=None,
+        use_global_config=True,
+        multiple=True,
+        help=("Extra path to mount if --engine docker or `--biocontainers` or `--singularity`."),
     )
 
 
@@ -551,7 +631,7 @@ def galaxy_branch_option():
         default=None,
         use_global_config=True,
         use_env_var=True,
-        help=("Branch of Galaxy to target (defaults to master) if a Galaxy " "root isn't specified."),
+        help=("Branch of Galaxy to target (defaults to master) if a Galaxy root isn't specified."),
     )
 
 
@@ -616,7 +696,7 @@ def conda_ensure_channels_option():
         type=str,
         use_global_config=True,
         use_env_var=True,
-        help=("Ensure conda is configured with specified comma separated " "list of channels."),
+        help=("Ensure conda is configured with specified comma separated list of channels."),
         default="conda-forge,bioconda",
     )
 
@@ -626,7 +706,7 @@ def conda_auto_install_option():
         "--conda_auto_install/--no_conda_auto_install",
         is_flag=True,
         default=True,
-        help=("Conda dependency resolution for Galaxy will attempt to install " "requested but missing packages."),
+        help=("Conda dependency resolution for Galaxy will attempt to install requested but missing packages."),
     )
 
 
@@ -660,6 +740,7 @@ def simultaneous_upload_option():
     return planemo_option(
         "--simultaneous_uploads/--no_simultaneous_uploads",
         is_flag=True,
+        use_global_config=True,
         default=False,
         help=(
             "When uploading files to Galaxy for tool or workflow tests or runs, "
@@ -780,6 +861,15 @@ def required_invocation_id_arg():
     return click.argument(
         "invocation_id",
         metavar="INVOCATION_ID",
+        type=str,
+    )
+
+
+def invocation_export_format_arg():
+    return click.argument(
+        "export_format",
+        default="rocrate.zip",
+        metavar="model store format",
         type=str,
     )
 
@@ -948,6 +1038,12 @@ def docker_enable_option():
     return planemo_option("--docker/--no_docker", default=False, help=("Run Galaxy tools in Docker if enabled."))
 
 
+def singularity_enable_option():
+    return planemo_option(
+        "--singularity/--no_singularity", default=False, help=("Run Galaxy tools in Singularity if enabled.")
+    )
+
+
 def docker_cmd_option():
     return planemo_option(
         "--docker_cmd",
@@ -956,8 +1052,22 @@ def docker_cmd_option():
     )
 
 
+def singularity_cmd_option():
+    return planemo_option(
+        "--singularity_cmd",
+        default=singularity_util.DEFAULT_SINGULARITY_COMMAND,
+        help="Command used to execute singularity (defaults to 'singularity').",
+    )
+
+
 def docker_sudo_option():
     return planemo_option("--docker_sudo/--no_docker_sudo", is_flag=True, help="Flag to use sudo when running docker.")
+
+
+def singularity_sudo_option():
+    return planemo_option(
+        "--singularity_sudo/--no_singularity_sudo", is_flag=True, help="Flag to use sudo when running docker."
+    )
 
 
 def docker_sudo_cmd_option():
@@ -965,6 +1075,15 @@ def docker_sudo_cmd_option():
         "--docker_sudo_cmd",
         help="sudo command to use when --docker_sudo is enabled " + "(defaults to sudo).",
         default=docker_util.DEFAULT_SUDO_COMMAND,
+        use_global_config=True,
+    )
+
+
+def singularity_sudo_cmd_option():
+    return planemo_option(
+        "--singularity_sudo_cmd",
+        help="sudo command to use when --singularity_sudo is enabled " + "(defaults to sudo).",
+        default=singularity_util.DEFAULT_SUDO_COMMAND,
         use_global_config=True,
     )
 
@@ -997,6 +1116,14 @@ def docker_config_options():
     )
 
 
+def singularity_config_options():
+    return _compose(
+        singularity_cmd_option(),
+        singularity_sudo_option(),
+        singularity_sudo_cmd_option(),
+    )
+
+
 def galaxy_docker_options():
     return _compose(
         docker_enable_option(),
@@ -1009,12 +1136,12 @@ def shed_owner_option():
 
 
 def shed_name_option():
-    return planemo_option("--name", help="Tool Shed repository name (defaults to the inferred " "tool directory name).")
+    return planemo_option("--name", help="Tool Shed repository name (defaults to the inferred tool directory name).")
 
 
 def validate_shed_target_callback(ctx, param, value):
     if value is None:
-        ctx.fail("default_shed_target set to None, must specify a value for " "--shed_target to run this command.")
+        ctx.fail("default_shed_target set to None, must specify a value for --shed_target to run this command.")
     return value
 
 
@@ -1047,18 +1174,18 @@ def shed_key_from_env_option():
 
 
 def shed_email_option():
-    return planemo_option("--shed_email", help="E-mail for Tool Shed auth (required unless shed_key is " "specified).")
+    return planemo_option("--shed_email", help="E-mail for Tool Shed auth (required unless shed_key is specified).")
 
 
 def shed_password_option():
     return planemo_option(
-        "--shed_password", help="Password for Tool Shed auth (required unless shed_key is " "specified)."
+        "--shed_password", help="Password for Tool Shed auth (required unless shed_key is specified)."
     )
 
 
 def shed_skip_upload():
     return planemo_option(
-        "--skip_upload", is_flag=True, help=("Skip upload contents as part of operation, only update " "metadata.")
+        "--skip_upload", is_flag=True, help=("Skip upload contents as part of operation, only update metadata.")
     )
 
 
@@ -1066,7 +1193,7 @@ def shed_skip_metadata():
     return planemo_option(
         "--skip_metadata",
         is_flag=True,
-        help=("Skip metadata update as part of operation, only upload " "new contents."),
+        help=("Skip metadata update as part of operation, only upload new contents."),
     )
 
 
@@ -1272,7 +1399,7 @@ def profile_option(required=False):
         type=click.STRING,
         required=required,
         default=None,
-        help=("Name of profile (created with the profile_create command) to use " "with this command."),
+        help=("Name of profile (created with the profile_create command) to use with this command."),
     )
 
 
@@ -1301,7 +1428,7 @@ def training_topic_name_option():
     return planemo_option(
         "--topic_name",
         required=True,
-        help="Name (directory name) of the topic to create or in which " "a tutorial should be created or updates",
+        help="Name (directory name) of the topic to create or in which a tutorial should be created or updates",
     )
 
 
@@ -1516,7 +1643,7 @@ def test_report_options():
             type=click.Path(file_okay=True, resolve_path=True),
             use_global_config=True,
             default="tool_test_output.html",
-            help=("Output test report (HTML - for humans) defaults to " "tool_test_output.html."),
+            help=("Output test report (HTML - for humans) defaults to tool_test_output.html."),
         ),
         planemo_option(
             "--test_output_text",
@@ -1529,7 +1656,7 @@ def test_report_options():
             "--test_output_markdown",
             type=click.Path(file_okay=True, resolve_path=True),
             use_global_config=True,
-            help=("Output test report (Markdown style - for humans & " "computers)"),
+            help=("Output test report (Markdown style - for humans & computers)"),
             default=None,
         ),
         planemo_option(
@@ -1677,6 +1804,10 @@ def test_index_option():
     return planemo_option("--test_index", default=1, type=int, help="Select which test to check. Counting starts at 1")
 
 
+def fail_fast_option():
+    return planemo_option("--fail_fast", is_flag=True, help="Stop on first job failure.")
+
+
 def test_output_options():
     return _compose(
         planemo_option(
@@ -1690,7 +1821,7 @@ def test_output_options():
             "--test_output_json",
             type=click.Path(file_okay=True, resolve_path=True),
             use_global_config=True,
-            help=("Output test report (planemo json) defaults to " "tool_test_output.json."),
+            help=("Output test report (planemo json) defaults to tool_test_output.json."),
             default="tool_test_output.json",
         ),
         planemo_option(
@@ -1719,10 +1850,7 @@ def test_output_options():
 
 
 def test_options():
-    return _compose(
-        paste_test_data_paths_option(),
-        test_output_options(),
-    )
+    return _compose(paste_test_data_paths_option(), test_output_options(), fail_fast_option())
 
 
 def _compose(*functions):
@@ -1786,7 +1914,7 @@ def ci_chunk_option():
     return planemo_option(
         "--chunk",
         type=int,
-        help=("When output is split into --chunk_count groups, output the group 0-indexed" "by this option."),
+        help=("When output is split into --chunk_count groups, output the group 0-indexedby this option."),
         default=0,
     )
 
@@ -1892,7 +2020,7 @@ def tool_init_command_option():
         type=click.STRING,
         default=None,
         prompt=False,
-        help=("Command potentially including cheetah variables ()" "(e.g. 'seqtk seq -A $input > $output')"),
+        help=("Command potentially including cheetah variables ()(e.g. 'seqtk seq -A $input > $output')"),
     )
 
 
@@ -1903,9 +2031,7 @@ def tool_init_doi_option():
         default=None,
         multiple=True,
         prompt=False,
-        help=(
-            "Supply a DOI (http://www.doi.org/) easing citation of the tool " "for Galxy users (e.g. 10.1101/014043)."
-        ),
+        help=("Supply a DOI (http://www.doi.org/) easing citation of the tool for Galxy users (e.g. 10.1101/014043)."),
     )
 
 
@@ -1915,7 +2041,7 @@ def tool_init_test_case_option():
         is_flag=True,
         default=None,
         prompt=False,
-        help=("For use with --example_commmand, generate a tool test case from " "the supplied example."),
+        help=("For use with --example_commmand, generate a tool test case from the supplied example."),
     )
 
 
@@ -1953,7 +2079,7 @@ def tool_init_output_option():
         multiple=True,
         default=None,
         prompt=False,
-        help=("An output location (e.g. output.bam), the Galaxy datatype is " "inferred from the extension."),
+        help=("An output location (e.g. output.bam), the Galaxy datatype is inferred from the extension."),
     )
 
 
@@ -1984,7 +2110,7 @@ def tool_init_example_input_option():
         default=None,
         prompt=False,
         multiple=True,
-        help=("For use with --example_command, replace input file (e.g. 2.fastq " "with a data input parameter)."),
+        help=("For use with --example_command, replace input file (e.g. 2.fastq with a data input parameter)."),
     )
 
 
@@ -1995,7 +2121,7 @@ def tool_init_example_output_option():
         default=None,
         prompt=False,
         multiple=True,
-        help=("For use with --example_command, replace input file (e.g. 2.fastq " "with a tool output)."),
+        help=("For use with --example_command, replace input file (e.g. 2.fastq with a tool output)."),
     )
 
 
@@ -2103,9 +2229,31 @@ def mulled_action_option():
     )
 
 
+def invocation_target_options():
+    return _compose(
+        required_invocation_id_arg(),
+        galaxy_url_option(required=True),
+        galaxy_user_key_option(required=True),
+    )
+
+
 def mulled_options():
     return _compose(
         mulled_conda_option(),
         mulled_namespace_option(),
         mulled_action_option(),
+    )
+
+
+def job_config_init_options():
+    return _compose(
+        docker_enable_option(),
+        docker_config_options(),
+        singularity_enable_option(),
+        singularity_config_options(),
+        extra_tools_option(),
+        test_data_option(),
+        tpv_option(),
+        runner_target_option(),
+        galaxy_version_option(),
     )

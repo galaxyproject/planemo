@@ -46,7 +46,7 @@ install these artifacts, and run the tool tests for these commands.
                                       mappings defined ~/.planemo.yml.
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
-      --galaxy_python_version [3|3.7|3.8|3.9|3.10|3.11]
+      --galaxy_python_version [3|3.8|3.9|3.10|3.11|3.12]
                                       Python version to start Galaxy under
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be
@@ -207,7 +207,16 @@ install these artifacts, and run the tool tests for these commands.
                                       output (see output reports for more complete
                                       summary). Set to 'none' to disable completely.
       --test_timeout INTEGER          Maximum runtime of a single test in seconds.
+      --fail_fast                     Stop on first job failure.
       --skip_dependencies             Do not install shed dependencies as part of
                                       repository installation.
       --help                          Show this message and exit.
+    /Users/mvandenb/src/planemo/.venv/lib/python3.13/site-packages/click/core.py:1193: UserWarning: The parameter --fail_fast is used more than once. Remove its duplicate as parameters should be unique.
+      parser = self.make_parser(ctx)
+    /Users/mvandenb/src/planemo/.venv/lib/python3.13/site-packages/click/core.py:1186: UserWarning: The parameter --fail_fast is used more than once. Remove its duplicate as parameters should be unique.
+      self.parse_args(ctx, args)
+    /Users/mvandenb/src/planemo/.venv/lib/python3.13/site-packages/click/core.py:1002: UserWarning: The parameter --fail_fast is used more than once. Remove its duplicate as parameters should be unique.
+      pieces = self.collect_usage_pieces(ctx)
+    /Users/mvandenb/src/planemo/.venv/lib/python3.13/site-packages/click/core.py:1104: UserWarning: The parameter --fail_fast is used more than once. Remove its duplicate as parameters should be unique.
+      self.format_options(ctx, formatter)
     

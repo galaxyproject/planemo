@@ -7,6 +7,7 @@ from tempfile import (
     NamedTemporaryFile,
     TemporaryDirectory,
 )
+from unittest import skip
 
 from .test_utils import (
     assert_exists,
@@ -134,6 +135,7 @@ class CmdTestTestCase(CliTestCase):
                     "Timed out after" in tool_test_json["tests"][0]["data"]["output_problems"][0]
                 ), "Time out did not happen"
 
+    @skip("Configuring quay.io/bgruening/galaxy:latest is currently broken")
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_workflow_test_simple_yaml_dockerized(self):
         """Test testing a simple YAML workflow with Galaxy in Docker."""

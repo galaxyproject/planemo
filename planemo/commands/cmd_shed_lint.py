@@ -26,8 +26,7 @@ from planemo.cli import (
     is_flag=True,
     default=False,
     help=(
-        "Ensure .shed.yml files contain enough metadata for each repository "
-        "to allow automated creation and/or updates."
+        "Ensure .shed.yml files contain enough metadata for each repository to allow automated creation and/or updates."
     ),
 )
 @click.option(

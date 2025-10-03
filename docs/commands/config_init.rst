@@ -19,6 +19,7 @@ Helps initialize global configuration (in home directory) for Planemo.
 **Options**::
 
 
+      --open           Open the file in your default editor after creation.
       --template TEXT
       --help           Show this message and exit.
     

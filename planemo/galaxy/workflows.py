@@ -2,6 +2,7 @@
 
 import json
 import os
+import tempfile
 from collections import namedtuple
 from functools import lru_cache
 from typing import (
@@ -74,11 +75,12 @@ def load_shed_repos(runnable):
         return []
     path = runnable.path
     if path.endswith(".ga"):
-        generate_tool_list_from_ga_workflow_files.generate_tool_list_from_workflow(
-            [path], "Tools from workflows", "tools.yml"
-        )
-        with open("tools.yml") as f:
-            tools = yaml.safe_load(f)["tools"]
+        with tempfile.NamedTemporaryFile() as out:
+            generate_tool_list_from_ga_workflow_files.generate_tool_list_from_workflow(
+                [path], "Tools from workflows", out.name
+            )
+            with open(out.name) as f:
+                tools = yaml.safe_load(f)["tools"]
 
     else:
         # It'd be better to just infer this from the tool shed ID somehow than
@@ -358,7 +360,7 @@ def get_workflow_from_invocation_id(invocation_id, galaxy_url, galaxy_api_key):
     workflow = get_dict_from_workflow(user_gi, workflow_id, instance=True)
     workflow_name = "-".join(workflow["name"].split())
     with open(f"{workflow_name}.ga", "w") as workflow_out:
-        json.dump(workflow, workflow_out, indent=4)
+        json.dump(workflow, workflow_out, ensure_ascii=False, indent=4)
     return workflow_name
 
 

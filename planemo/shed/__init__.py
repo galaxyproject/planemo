@@ -62,18 +62,18 @@ REPO_METADATA_FILES = (SHED_CONFIG_NAME, DOCKSTORE_REGISTRY_CONF)
 REPO_DEPENDENCIES_CONFIG_NAME = "repository_dependencies.xml"
 TOOL_DEPENDENCIES_CONFIG_NAME = "tool_dependencies.xml"
 
-NO_REPOSITORIES_MESSAGE = "Could not find any .shed.yml files or a --name to " "describe the target repository."
-NAME_INVALID_MESSAGE = "Cannot use --name argument when multiple directories " "in target contain .shed.yml files."
+NO_REPOSITORIES_MESSAGE = "Could not find any .shed.yml files or a --name to describe the target repository."
+NAME_INVALID_MESSAGE = "Cannot use --name argument when multiple directories in target contain .shed.yml files."
 NAME_REQUIRED_MESSAGE = "No repository name discovered but one is required."
-CONFLICTING_NAMES_MESSAGE = "The supplied name argument --name conflicts " "with value discovered in .shed.yml."
-PARSING_PROBLEM = "Problem parsing file .shed.yml in directory %s, skipping " "repository. Message: [%s]."
-AUTO_REPO_CONFLICT_MESSAGE = "Cannot specify both auto_tool_repositories and " "repositories in .shed.yml at this time."
+CONFLICTING_NAMES_MESSAGE = "The supplied name argument --name conflicts with value discovered in .shed.yml."
+PARSING_PROBLEM = "Problem parsing file .shed.yml in directory %s, skipping repository. Message: [%s]."
+AUTO_REPO_CONFLICT_MESSAGE = "Cannot specify both auto_tool_repositories and repositories in .shed.yml at this time."
 AUTO_NAME_CONFLICT_MESSAGE = (
-    "Cannot specify both auto_tool_repositories and " "in .shed.yml and --name on the command-line."
+    "Cannot specify both auto_tool_repositories and in .shed.yml and --name on the command-line."
 )
-REALIZAION_PROBLEMS_MESSAGE = "Problem encountered executing action for one or more " "repositories."
+REALIZAION_PROBLEMS_MESSAGE = "Problem encountered executing action for one or more repositories."
 INCORRECT_OWNER_MESSAGE = (
-    "Attempting to create a repository with configured " "owner [%s] that does not match API user [%s]."
+    "Attempting to create a repository with configured owner [%s] that does not match API user [%s]."
 )
 PROBLEM_PROCESSING_REPOSITORY_MESSAGE = "Problem processing repositories, exiting."
 
@@ -136,7 +136,7 @@ CURRENT_CATEGORIES = [
     "GIS",
     "Graphics",
     "Imaging",
-    "InteractiveTools",
+    "Interactive Tools",
     "Machine Learning",
     "Materials science",
     "Metabolomics",
@@ -145,8 +145,8 @@ CURRENT_CATEGORIES = [
     "Molecular Dynamics",
     "Muon spectroscopy",
     "Nanopore",
+    "Natural Language Processing",
     "Next Gen Mappers",
-    "NLP",
     "Ontology Manipulation",
     "Phylogenetics",
     "Proteomics",
@@ -1337,7 +1337,7 @@ def _handle_realization_error(exception, **kwds):
 def _ensure_shed_description(description):
     # description is required, as is name.
     if description is None:
-        message = "description required for automatic creation or update of " "shed metadata."
+        message = "description required for automatic creation or update of shed metadata."
         raise ValueError(message)
 
 
@@ -1351,7 +1351,7 @@ def validate_repo_name(name):
     if len(name) > 80:
         msg = _build_error("Repository names cannot be more than 80 characters in length.")
     if not VALID_REPOSITORYNAME_RE.match(name):
-        msg = _build_error("Repository names must contain only lower-case letters, " "numbers and underscore.")
+        msg = _build_error("Repository names must contain only lower-case letters, numbers and underscore.")
     return msg
 
 

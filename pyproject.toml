@@ -41,6 +41,7 @@ packages = [
     "planemo.database",
     "planemo.engine",
     "planemo.galaxy",
+    "planemo.galaxy.invocations",
     "planemo.galaxy.test",
     "planemo.linters",
     "planemo.reports",
@@ -75,3 +76,38 @@ target-version = ['py37']
 
 [tool.darker]
 isort = true
+
+[tool.ruff]
+# Match flake8 configuration from setup.cfg
+line-length = 120  # Match black configuration
+target-version = "py37"
+exclude = [
+    ".eggs",
+    ".git",
+    ".tox",
+    ".venv",
+    "build",
+    "docs/conf.py",
+    "docs/standards",
+    "project_templates/cwl_draft3_spec/",
+    "planemo/autopygen/",
+    "*.ipynb",
+]
+
+[tool.ruff.lint]
+# Only enable rules that flake8 would check by default
+# This corresponds to the default flake8 ruleset minus ignored codes
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+]
+ignore = [
+    "E203",  # whitespace before ':' (conflicts with black)
+    "E501",  # line too long (managed by black)
+    "E701",  # multiple statements on one line (conflicts with black)
+]
+
+[tool.ruff.lint.mccabe]
+# Match flake8 max-complexity setting
+max-complexity = 14

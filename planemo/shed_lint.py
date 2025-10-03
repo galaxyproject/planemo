@@ -158,6 +158,10 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
         tool_id = tool_source.parse_id()
         tool_version = parse_version(tool_source.parse_version())
 
+        # check if there is already such a repo (otherwise get_ordered_installable_revisions will log an error for new repos)
+        if len(tsi.repositories.get_repositories(repo_name, repo_owner)) == 0:
+            continue
+
         try:
             installable_revisions = tsi.repositories.get_ordered_installable_revisions(repo_name, repo_owner)
         except ConnectionError:
@@ -209,7 +213,7 @@ def lint_shed_metadata(realized_repository: "RealizedRepository", lint_ctx):
             found_all = False
             lint_ctx.warn("Missing shed metadata field [%s] for repository" % key)
     if found_all:
-        lint_ctx.info("Found all shed metadata fields required for automated repository " "creation and/or updates.")
+        lint_ctx.info("Found all shed metadata fields required for automated repository creation and/or updates.")
 
 
 def lint_readme(realized_repository: "RealizedRepository", lint_ctx):
@@ -320,11 +324,11 @@ def lint_tool_dependencies_actions(realized_repository: "RealizedRepository", li
 def lint_expected_files(realized_repository: "RealizedRepository", lint_ctx):
     if realized_repository.is_package:
         if not os.path.exists(realized_repository.tool_dependencies_path):
-            lint_ctx.warn("Package repository does not contain a " "tool_dependencies.xml file.")
+            lint_ctx.warn("Package repository does not contain a tool_dependencies.xml file.")
 
     if realized_repository.is_suite:
         if not os.path.exists(realized_repository.repo_dependencies_path):
-            lint_ctx.warn("Suite repository does not contain a " "repository_dependencies.xml file.")
+            lint_ctx.warn("Suite repository does not contain a repository_dependencies.xml file.")
 
 
 def lint_repository_dependencies(realized_repository: "RealizedRepository", lint_ctx):
@@ -375,12 +379,12 @@ def _validate_repo_type(repo_type, name):
     is_dep = repo_type == "tool_dependency_definition"
     is_suite = repo_type == "repository_suite_definition"
     if is_dep and not name.startswith("package_"):
-        return "Tool dependency definition repositories should have names " "starting with package_"
+        return "Tool dependency definition repositories should have names starting with package_"
     if is_suite and not name.startswith("suite_"):
-        return "Repository suite definition repositories should have names " "starting with suite_"
+        return "Repository suite definition repositories should have names starting with suite_"
     if name.startswith("package_") or name.startswith("suite_"):
         if repo_type == "unrestricted":
-            return "Repository name indicated specialized repository type " "but repository is listed as unrestricted."
+            return "Repository name indicated specialized repository type but repository is listed as unrestricted."
 
 
 def _validate_categories(categories, realized_repository: "RealizedRepository"):
@@ -396,9 +400,7 @@ def _validate_categories(categories, realized_repository: "RealizedRepository"):
                 msg = "Categories [%s] unknown." % unknown_categories
         if realized_repository.is_package:
             if "Tool Dependency Packages" not in categories:
-                msg = (
-                    "Packages should be placed and should only be placed " "in the category 'Tool Dependency Packages'."
-                )
+                msg = "Packages should be placed and should only be placed in the category 'Tool Dependency Packages'."
 
     return msg
 

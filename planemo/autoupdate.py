@@ -15,7 +15,10 @@ from typing import (
     TYPE_CHECKING,
     Union,
 )
-from xml.etree.ElementTree import ElementTree
+from xml.etree.ElementTree import (
+    Element,
+    ElementTree,
+)
 
 import requests
 import yaml
@@ -64,7 +67,7 @@ def bump_version(version_str: str) -> str:
         return ".".join(map(str, base_version))
 
 
-def find_macros(xml_tree: ElementTree) -> List[Any]:
+def find_macros(xml_tree: "ElementTree[Element[str]]") -> List[Any]:
     """
     Get macros from the XML tree
     """
@@ -74,7 +77,9 @@ def find_macros(xml_tree: ElementTree) -> List[Any]:
     return macros
 
 
-def get_requirements(xml_tree: ElementTree) -> Tuple[Dict[str, Dict[str, Optional[str]]], Optional[str]]:
+def get_requirements(
+    xml_tree: "ElementTree[Element[str]]",
+) -> Tuple[Dict[str, Dict[str, Optional[str]]], Optional[str]]:
     """
     Get requirements from the XML tree
     """
@@ -92,7 +97,7 @@ def get_requirements(xml_tree: ElementTree) -> Tuple[Dict[str, Dict[str, Optiona
     return requirements, main_req
 
 
-def get_tokens(xml_tree: ElementTree) -> Dict[str, Dict[str, Optional[str]]]:
+def get_tokens(xml_tree: "ElementTree[Element[str]]") -> Dict[str, Dict[str, Optional[str]]]:
     """
     Get tokens from the XML tree
     """
@@ -124,7 +129,7 @@ def check_conda(package_name: str, ctx: "PlanemoCliContext", **kwds) -> str:
 
 def update_xml(
     tool_path: str,
-    xml_tree: ElementTree,
+    xml_tree: "ElementTree[Element[str]]",
     tags_to_update: List[Dict[str, str]],
     wrapper_version_token: Optional[Union[int, str]],
     is_macro: bool = False,
@@ -162,7 +167,7 @@ def update_xml(
 
 
 def create_requirement_dict(
-    xml_files: Dict[str, ElementTree], skip_reqs: List[str]
+    xml_files: Dict[str, "ElementTree[Element[str]]"], skip_reqs: List[str]
 ) -> Tuple[Dict[str, Dict[str, Dict[str, Optional[str]]]], Optional[Tuple[str, str]]]:
     """
     Create dict with requirements and find main requirement
@@ -182,7 +187,7 @@ def create_requirement_dict(
 
 
 def create_token_dict(
-    ctx: "PlanemoCliContext", xml_files: Dict[str, ElementTree], main_req: Tuple[str, str], **kwds
+    ctx: "PlanemoCliContext", xml_files: Dict[str, "ElementTree[Element[str]]"], main_req: Tuple[str, str], **kwds
 ) -> Tuple[
     Dict[str, Dict[str, Dict[str, Optional[str]]]], DefaultDict[str, List[Dict[str, str]]], Optional[str], Optional[str]
 ]:
@@ -208,7 +213,7 @@ def create_token_dict(
 
 def perform_required_update(
     ctx: "PlanemoCliContext",
-    xml_files: Dict[str, ElementTree],
+    xml_files: Dict[str, "ElementTree[Element[str]]"],
     tool_path: str,
     requirements: Dict[str, Dict[str, Dict[str, Optional[str]]]],
     tokens: Dict[str, Dict[str, Dict[str, Optional[str]]]],
@@ -253,9 +258,9 @@ def autoupdate_tool(ctx: "PlanemoCliContext", tool_path: str, modified_files: Se
     xml_files = {tool_path: ET.parse(tool_path)}
 
     # get name of token which defines the wrapper version; if just an integer, None
-    versions = xml_files[tool_path].getroot().attrib.get("version")
-    if versions:
-        versions = versions.split("+galaxy")
+    version_str = xml_files[tool_path].getroot().attrib.get("version")
+    if version_str:
+        versions = version_str.split("+galaxy")
         if versions[0] != "@TOOL_VERSION@":
             error("Tool version does not contain @TOOL_VERSION@ as required by autoupdate.")
             return None
@@ -265,14 +270,16 @@ def autoupdate_tool(ctx: "PlanemoCliContext", tool_path: str, modified_files: Se
             if versions[1][0] == versions[1][-1] == "@":
                 wrapper_version_token = versions[1]
             else:
-                wrapper_version_token = 0  # assume an int, reset to 0
+                wrapper_version_token = "0"  # assume an int, reset to 0
     else:
         wrapper_version_token = None
 
     # add macros to xml_files
-    for macro in find_macros(xml_files[tool_path]):
-        macro_path = "/".join(tool_path.split("/")[:-1] + [macro])
-        xml_files[macro_path] = ET.parse(macro_path)
+    macro_paths = xml_files[tool_path]
+    if macro_paths:
+        for macro in find_macros(macro_paths):
+            macro_path = "/".join(tool_path.split("/")[:-1] + [macro])
+            xml_files[macro_path] = ET.parse(macro_path)
 
     requirements, main_req = create_requirement_dict(xml_files, kwds.get("skip_requirements", "").split(","))
     if main_req is None:

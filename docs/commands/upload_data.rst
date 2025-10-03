@@ -14,9 +14,8 @@ This section is auto-generated from the help text for the planemo command
 
 Planemo command for uploading data to an external Galaxy server.
 
-::
-
-    % planemo upload_data wf.ga wf-job.yml new-wf-job.yml --profile profile
+
+% planemo upload_data wf.ga wf-job.yml new-wf-job.yml --profile profile
 
 Running this subcommand requires a workflow file or identifier
 and a job file, just as for ``planemo run``. In addition, a third
@@ -33,7 +32,7 @@ the already completed data upload.
 
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
-      --galaxy_python_version [3|3.7|3.8|3.9|3.10|3.11]
+      --galaxy_python_version [3|3.8|3.9|3.10|3.11|3.12]
                                       Python version to start Galaxy under
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be

@@ -73,6 +73,11 @@ lint: ## check style using tox and flake8 for Python 2 and Python 3
 test: ## run tests with the default Python (faster than tox)
 	$(IN_VENV) pytest $(TESTS)
 
+format: ## format Python code with ruff, black and isort
+	$(IN_VENV) ruff format planemo scripts tests
+	$(IN_VENV) isort planemo scripts tests
+	$(IN_VENV) black planemo scripts tests
+
 quick-test: ## run quickest tests with the default Python
 	$(IN_VENV) PLANEMO_SKIP_SLOW_TESTS=1 PLANEMO_SKIP_GALAXY_TESTS=1 pytest $(TESTS)
 
@@ -132,6 +137,8 @@ open-rtd: docs ## open docs on readthedocs.org
 open-project: ## open project on github
 	$(OPEN_RESOURCE) $(PROJECT_URL)
 
+check-dist: clean-build dist clean-build
+
 dist: clean submodule ## create and check packages
 	$(IN_VENV) python -m build
 	$(IN_VENV) twine check dist/*
@@ -164,10 +171,10 @@ push-release: ## Push a tagged release to github
 	git push $(UPSTREAM) master
 	git push --tags $(UPSTREAM)
 
-release: release-local push-release ## package, review, and upload a release
+release: release-local check-dist push-release ## package, review, and upload a release
 
 add-history: ## Reformat HISTORY.rst with data from Github's API
-	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/bootstrap_history.py $(ITEM)
+	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/bootstrap_history.py --acknowledgements
 
 update-extern: ## update external artifacts copied locally
 	sh scripts/update_extern.sh

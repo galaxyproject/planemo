@@ -47,5 +47,5 @@ def cli(ctx, workflow_identifier, output=None, force=False, **kwds):
                 workflow_id = config.workflow_id(workflow_identifier)
                 output_dict = config.gi.workflows.export_workflow_dict(workflow_id)
 
-                output_contents = json.dumps(output_dict, indent=4, sort_keys=True)
+                output_contents = json.dumps(output_dict, ensure_ascii=False, indent=4, sort_keys=True)
                 write_file(output, output_contents, force=force)

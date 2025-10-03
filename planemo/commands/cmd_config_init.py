@@ -12,6 +12,7 @@ from planemo import (
 from planemo.cli import command_function
 from planemo.io import (
     info,
+    launch_if_open_flagged,
     warn,
 )
 
@@ -44,6 +45,7 @@ SUCCESS_MESSAGE = "Wrote configuration template to %s, please open with editor a
 
 @click.command("config_init")
 @options.optional_project_arg(exists=None)
+@options.open_file_option()
 @click.option("--template", default=None)
 @command_function
 def cli(ctx, path, template=None, **kwds):
@@ -59,3 +61,4 @@ def cli(ctx, path, template=None, **kwds):
     with open(config_path, "w") as f:
         f.write(CONFIG_TEMPLATE)
         info(SUCCESS_MESSAGE % config_path)
+    launch_if_open_flagged(config_path, **kwds)
