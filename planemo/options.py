@@ -1706,12 +1706,18 @@ def database_identifier_argument():
     )
 
 
+def postgres_option_callback(ctx, param, value):
+    if value:
+        ctx.fail("The `--postgres` option is deprecated, use `--database_type postgres` instead.")
+    return value
+
+
 def postgres_datatype_type_option():
-    return planemo_option(
+    return click.option(
         "--postgres",
-        "database_type",
-        flag_value="postgres",
-        help=("Use postgres database type."),
+        is_flag=True,
+        hidden=True,
+        callback=postgres_option_callback,
     )
 
 
