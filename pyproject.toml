@@ -1,12 +1,15 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=77.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "planemo"
 dynamic = ["version", "readme", "dependencies"]
 description = "Command-line utilities to assist in building tools for the Galaxy project (http://galaxyproject.org/)."
-license = { text = "MIT" }
+license = "MIT"
+license-files = [
+    "LICENSE",
+]
 authors = [
     { name = "Galaxy Project and Community", email = "galaxy-committers@lists.galaxyproject.org" }
 ]
@@ -14,7 +17,6 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Environment :: Console",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: POSIX",
     "Topic :: Software Development",
     "Topic :: Software Development :: Code Generators",
