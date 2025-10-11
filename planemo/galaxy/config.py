@@ -37,7 +37,7 @@ from packaging.version import parse as parse_version
 
 from planemo import git
 from planemo.config import OptionSource
-from planemo.database import postgres_singularity
+from planemo.database import create_database_source
 from planemo.deps import ensure_dependency_resolvers_conf_configured
 from planemo.docker import docker_host_args
 from planemo.galaxy.workflows import (
@@ -422,7 +422,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             )
         )
         _handle_container_resolution(ctx, kwds, properties)
-        properties["database_connection"] = _database_connection(database_location, **kwds)
         if kwds.get("mulled_containers", False):
             properties["mulled_channels"] = kwds.get("conda_ensure_channels", "")
 
@@ -445,15 +444,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         # https://github.com/galaxyproject/planemo/issues/788
         env["GALAXY_LOG"] = log_file
         env["GALAXY_PID"] = pid_file
-        write_galaxy_config(
-            galaxy_root=galaxy_root,
-            properties=properties,
-            env=env,
-            kwds=kwds,
-            template_args=template_args,
-            config_join=config_join,
-        )
-
         _write_tool_conf(ctx, all_tool_paths, tool_conf)
         write_file(empty_tool_conf, EMPTY_TOOL_CONF_TEMPLATE)
 
@@ -462,19 +452,29 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         write_file(shed_tool_conf, shed_tool_conf_contents, force=False)
 
         write_file(shed_data_manager_config_file, SHED_DATA_MANAGER_CONF_TEMPLATE)
+        with _database_connection(database_location, **kwds) as database_connection:
+            properties["database_connection"] = database_connection
+            write_galaxy_config(
+                galaxy_root=galaxy_root,
+                properties=properties,
+                env=env,
+                kwds=kwds,
+                template_args=template_args,
+                config_join=config_join,
+            )
 
-        yield LocalGalaxyConfig(
-            ctx,
-            config_directory,
-            env,
-            test_data_dir,
-            port,
-            server_name,
-            master_api_key,
-            runnables,
-            galaxy_root,
-            kwds,
-        )
+            yield LocalGalaxyConfig(
+                ctx,
+                config_directory,
+                env,
+                test_data_dir,
+                port,
+                server_name,
+                master_api_key,
+                runnables,
+                galaxy_root,
+                kwds,
+            )
 
 
 def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, config_join):
@@ -1105,13 +1105,17 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         return self.user_is_admin
 
 
+@contextlib.contextmanager
 def _database_connection(database_location, **kwds):
-    if "database_type" in kwds and kwds["database_type"] == "postgres_singularity":
-        default_connection = postgres_singularity.DEFAULT_CONNECTION_STRING
+    if kwds.get("database_type") != "sqlite":
+        database_source = create_database_source(**kwds)
+        try:
+            database_source.start()
+            yield database_source.sqlalchemy_url(kwds.get("database_identifier", "galaxy"))
+        finally:
+            database_source.stop()
     else:
-        default_connection = DATABASE_LOCATION_TEMPLATE % database_location
-    database_connection = kwds.get("database_connection") or default_connection
-    return database_connection
+        yield DATABASE_LOCATION_TEMPLATE % database_location
 
 
 def _find_galaxy_root(ctx, **kwds):
