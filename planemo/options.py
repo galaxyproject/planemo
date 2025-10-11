@@ -70,13 +70,13 @@ def run_engine_option():
     """Annotate click command as consume the --engine option."""
     return planemo_option(
         "--engine",
-        type=click.Choice(["galaxy", "docker_galaxy", "cwltool", "toil", "external_galaxy"]),
+        type=click.Choice(["galaxy", "docker_galaxy", "cwltool", "toil", "external_galaxy", "uvx_galaxy"]),
         default=None,
         use_global_config=True,
         help=(
             "Select an engine to run or test artifacts such as tools "
             "and workflows. Defaults to a local Galaxy, but running Galaxy within "
-            "a Docker container or the CWL reference implementation 'cwltool' and "
+            "a Docker container, via uvx, or the CWL reference implementation 'cwltool' and "
             "'toil' be selected."
         ),
     )
@@ -100,14 +100,14 @@ def serve_engine_option():
     """
     return planemo_option(
         "--engine",
-        type=click.Choice(["galaxy", "docker_galaxy", "external_galaxy"]),
+        type=click.Choice(["galaxy", "docker_galaxy", "external_galaxy", "uvx_galaxy"]),
         default="galaxy",
         use_global_config=True,
         use_env_var=True,
         help=(
             "Select an engine to serve artifacts such as tools "
             "and workflows. Defaults to a local Galaxy, but running Galaxy within "
-            "a Docker container."
+            "a Docker container or via uvx is also supported."
         ),
     )
 
