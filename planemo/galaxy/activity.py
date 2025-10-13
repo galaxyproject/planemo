@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import (
     Any,
     Dict,
+    List,
     Optional,
     Tuple,
     Type,
@@ -125,6 +126,7 @@ class PlanemoStagingInterface(StagingInterface):
         self._runnable = runnable
         self._version_major = version_major
         self._simultaneous_uploads = simultaneous_uploads
+        self._upload_jobs: List[Dict[str, Any]] = []
 
     def _post(self, api_path: str, payload: Dict[str, Any], files_attached: bool = False) -> Dict[str, Any]:
         # Keep the files_attached argument because StagingInterface._post() had
@@ -140,10 +142,34 @@ class PlanemoStagingInterface(StagingInterface):
     def _attach_file(self, path):
         return attach_file(path)
 
-    def _handle_job(self, job_response):
+    def _handle_job(self, job_response: Dict[str, Any]) -> None:
+        # Track upload jobs for later waiting
+        self._upload_jobs.append(job_response)
         if not self._simultaneous_uploads:
             job_id = job_response["id"]
             _wait_for_job(self._user_gi, job_id)
+
+    def wait_for_uploads(self, check_ok: bool = True) -> None:
+        for upload_job in self._upload_jobs:
+            job_id = upload_job["id"]
+            final_state = _wait_for_job(self._user_gi, job_id)
+            if check_ok:
+                job_response = self._user_gi.jobs.show_job(job_id, full_details=True)
+                if final_state != "ok":
+                    stderr = job_response["stderr"]
+                    raise Exception(f"Upload job [{job_id}] failed with state [{final_state}]: {stderr}")
+                for output in job_response["outputs"].values():
+                    hda = self._user_gi.datasets.show_dataset(output["id"])
+                    if hda["state"] not in ("ok", "deferred"):
+                        raise Exception(
+                            f"Upload job [{job_id}] produced output [{hda['hid']}: {hda['name']}] in state [{hda['state']}]"
+                        )
+                for output in job_response["output_collections"].values():
+                    hdca = self._user_gi.histories.show_dataset_collection(job_response["history_id"], output["id"])
+                    if hdca["state"] not in ("ok",):
+                        raise Exception(
+                            f"Upload job [{job_id}] produced output collection [{hdca['hid']}: {hdca['name']}] in state [{hdca['state']}]"
+                        )
 
     @property
     def use_fetch_api(self):
@@ -328,18 +354,7 @@ def stage_in(
         to_posix_lines=to_posix_lines,
     )
 
-    if datasets and kwds.get("check_uploads_ok", True):
-        ctx.vlog(f"Uploaded datasets [{datasets}] for activity, checking history state")
-        final_state = _wait_for_history(ctx, user_gi, history_id)
-    else:
-        # Mark uploads as ok because nothing to do.
-        final_state = "ok"
-
-    ctx.vlog(f"Final state is {final_state}")
-    if final_state != "ok":
-        msg = "Failed to upload data, upload state is [%s]." % final_state
-        summarize_history(ctx, user_gi, history_id)
-        raise Exception(msg)
+    psi.wait_for_uploads(kwds.get("check_uploads_ok", True))
     return job_dict, history_id
 
 
