@@ -142,14 +142,14 @@ class PlanemoStagingInterface(StagingInterface):
     def _attach_file(self, path):
         return attach_file(path)
 
-    def _handle_job(self, job_response):
+    def _handle_job(self, job_response: Dict[str, Any]) -> None:
         # Track upload jobs for later waiting
         self._upload_jobs.append(job_response)
         if not self._simultaneous_uploads:
             job_id = job_response["id"]
             _wait_for_job(self._user_gi, job_id)
 
-    def wait_for_uploads(self, check_ok=True):
+    def wait_for_uploads(self, check_ok: bool = True) -> None:
         for upload_job in self._upload_jobs:
             job_id = upload_job["id"]
             final_state = _wait_for_job(self._user_gi, job_id)
@@ -160,13 +160,13 @@ class PlanemoStagingInterface(StagingInterface):
                     raise Exception(f"Upload job [{job_id}] failed with state [{final_state}]: {stderr}")
                 for output in job_response["outputs"].values():
                     hda = self._user_gi.datasets.show_dataset(output["id"])
-                    if hda["state"] != ("ok", "deferred"):
+                    if hda["state"] not in ("ok", "deferred"):
                         raise Exception(
                             f"Upload job [{job_id}] produced output [{hda['hid']}: {hda['name']}] in state [{hda['state']}]"
                         )
                 for output in job_response["output_collections"].values():
                     hdca = self._user_gi.histories.show_dataset_collection(job_response["history_id"], output["id"])
-                    if hdca["state"] != ("ok"):
+                    if hdca["state"] not in ("ok",):
                         raise Exception(
                             f"Upload job [{job_id}] produced output collection [{hdca['hid']}: {hdca['name']}] in state [{hdca['state']}]"
                         )
