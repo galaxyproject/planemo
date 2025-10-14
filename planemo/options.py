@@ -2263,6 +2263,7 @@ def job_config_init_options():
         galaxy_version_option(),
     )
 
+
 def enable_interactive_tools():
     return planemo_option(
         "--enable_gxits",
