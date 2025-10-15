@@ -85,6 +85,7 @@ def _create_profile_docker(ctx, profile_directory, profile_name, kwds):
 
 def _create_profile_local(ctx, profile_directory, profile_name, kwds):
     database_type = kwds.get("database_type", "auto")
+    allow_sqlite_fallback = database_type == "auto"
     if database_type == "auto":
         if which("psql"):
             database_type = "postgres"
@@ -98,13 +99,22 @@ def _create_profile_local(ctx, profile_directory, profile_name, kwds):
     if database_type not in ["sqlite", "postgres_singularity"]:
         database_source = create_database_source(**kwds)
         database_identifier = _profile_to_database_identifier(profile_name)
-        database_source.create_database(
-            database_identifier,
-        )
-        database_connection = database_source.sqlalchemy_url(database_identifier)
+        try:
+            database_source.create_database(
+                database_identifier,
+            )
+        except RuntimeError:
+            if allow_sqlite_fallback:
+                # If postgres database creation fails (e.g., role doesn't exist, connection issues),
+                # fall back to sqlite
+                database_type = "sqlite"
+            else:
+                raise
+        else:
+            database_connection = database_source.sqlalchemy_url(database_identifier)
     elif database_type == "postgres_singularity":
         database_connection + database_source.sqlalchemy_url(database_identifier)
-    else:
+    if database_type == "sqlite":
         database_location = os.path.join(profile_directory, "galaxy.sqlite")
         database_connection = DATABASE_LOCATION_TEMPLATE % database_location
 
