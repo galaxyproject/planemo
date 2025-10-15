@@ -8,6 +8,7 @@ import json
 import os
 import shutil
 
+import click
 from galaxy.util.commands import which
 from gxjobconfinit import (
     build_job_config,
@@ -131,7 +132,16 @@ def _create_profile_external(ctx, profile_directory, profile_name, kwds):
 def ensure_profile(ctx, profile_name, **kwds):
     """Ensure a Galaxy profile exists and return profile defaults."""
     if not profile_exists(ctx, profile_name, **kwds):
-        create_profile(ctx, profile_name, **kwds)
+        available_profiles = list_profiles(ctx, **kwds)
+        error_message = f"Profile '{profile_name}' does not exist."
+        if available_profiles:
+            error_message += f"\n\nAvailable profiles: {', '.join(available_profiles)}"
+            error_message += f"\n\nTo create a new profile, use: planemo profile_create {profile_name}"
+        else:
+            error_message += (
+                f"\n\nNo profiles found. To create a new profile, use: planemo profile_create {profile_name}"
+            )
+        raise click.UsageError(error_message)
 
     return _profile_options(ctx, profile_name, **kwds)
 
