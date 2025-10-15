@@ -107,15 +107,13 @@ def _create_profile_local(ctx, profile_directory, profile_name, kwds):
                 # If postgres database creation fails (e.g., role doesn't exist, connection issues),
                 # fall back to sqlite
                 database_type = "sqlite"
-                database_location = os.path.join(profile_directory, "galaxy.sqlite")
-                database_connection = DATABASE_LOCATION_TEMPLATE % database_location
             else:
                 raise
         else:
             database_connection = database_source.sqlalchemy_url(database_identifier)
     elif database_type == "postgres_singularity":
         database_connection + database_source.sqlalchemy_url(database_identifier)
-    else:
+    if database_type == "sqlite":
         database_location = os.path.join(profile_directory, "galaxy.sqlite")
         database_connection = DATABASE_LOCATION_TEMPLATE % database_location
 
