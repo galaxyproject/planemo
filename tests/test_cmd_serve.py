@@ -224,6 +224,12 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
 
     def _test_serve_profile(self, *db_options):
         new_profile = "planemo_test_profile_%s" % uuid.uuid4()
+        # Create the profile first
+        profile_create_command = ["profile_create", new_profile]
+        if db_options:
+            profile_create_command.extend(db_options)
+        self._check_exit_code(profile_create_command, exit_code=0)
+
         extra_args = [
             "--daemon",
             "--skip_client_build",
