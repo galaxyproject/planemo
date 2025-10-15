@@ -8,6 +8,7 @@ import json
 import os
 import shutil
 
+import click
 from galaxy.util.commands import which
 from gxjobconfinit import (
     build_job_config,
@@ -56,7 +57,7 @@ def create_profile(ctx, profile_name, **kwds):
     profile_directory = _profile_directory(ctx, profile_name)
     if profile_exists(ctx, profile_name, **kwds):
         message = ALREADY_EXISTS_EXCEPTION % (profile_name, profile_directory)
-        raise Exception(message)
+        raise click.ClickException(message)
 
     os.makedirs(profile_directory)
 
@@ -177,7 +178,7 @@ def translate_alias(ctx, alias, profile_name):
 
 def _load_profile_to_json(ctx, profile_name):
     if not profile_exists(ctx, profile_name):
-        raise Exception("That profile does not exist. Create it with `planemo profile_create`")
+        raise click.ClickException("That profile does not exist. Create it with `planemo profile_create`")
     profile_directory = _profile_directory(ctx, profile_name)
     profile_options_path = _stored_profile_options_path(profile_directory)
     with open(profile_options_path) as f:
@@ -234,7 +235,7 @@ def initialize_job_config(ctx, profile_name, **kwds):
     profile_directory = _profile_directory(ctx, profile_name)
     job_config_path = os.path.join(profile_directory, "job_conf.yml")
     if os.path.exists(job_config_path):
-        raise Exception(f"File '{job_config_path}' already exists, exiting.")
+        raise click.ClickException(f"File '{job_config_path}' already exists, exiting.")
 
     init_config = ConfigArgs.from_dict(**kwds)
     job_config = build_job_config(init_config)
