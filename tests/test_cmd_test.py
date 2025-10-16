@@ -9,6 +9,7 @@ from tempfile import (
 )
 from unittest import skip
 
+from planemo import cli
 from .test_utils import (
     assert_exists,
     CliTestCase,
@@ -338,13 +339,23 @@ class CmdTestTestCase(CliTestCase):
         # Hook into tests to allow leveraging postgres databases to prevent Galaxy locking errors
         # while running tests.
         profile_name = os.getenv("PLANEMO_TEST_WORKFLOW_RUN_PROFILE", None)
+        database_type = os.getenv("PLANEMO_TEST_WORKFLOW_RUN_PROFILE_DATABASE_TYPE", None)
 
         if profile_name:
-            command += ["--profile", profile_name]
-
-            database_type = os.getenv("PLANEMO_TEST_WORKFLOW_RUN_PROFILE_DATABASE_TYPE", None)
+            # Try to create the profile; if it already exists, ignore the error
+            profile_create_command = ["profile_create", profile_name]
             if database_type:
-                command += ["--database_type", database_type]
+                profile_create_command.extend(["--database_type", database_type])
+
+            # Try creating the profile - ignore error if it already exists
+            result = self._runner.invoke(cli.planemo, profile_create_command)
+            if result.exit_code != 0 and "already exists" not in result.output:
+                # If it failed for a reason other than already existing, that's a real error
+                raise AssertionError(f"Failed to create profile: {result.output}")
+
+            command += ["--profile", profile_name]
+            if database_type:
+                command.extend(["--database_type", database_type])
 
         return command
 
