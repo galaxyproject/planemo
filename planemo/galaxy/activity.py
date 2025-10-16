@@ -333,6 +333,7 @@ def invocation_to_run_response(
         log=log,
         start_datetime=start_datetime,
         end_datetime=datetime.now(),
+        no_wait=no_wait,
     )
 
 
@@ -707,6 +708,7 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         error_message=None,
         start_datetime=None,
         end_datetime=None,
+        no_wait=False,
     ):
         super().__init__(
             ctx=ctx,
@@ -724,6 +726,7 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         self.history_state = history_state
         self.invocation_state = invocation_state
         self.error_message = error_message
+        self._no_wait = no_wait
         self._invocation_details = self.collect_invocation_details(invocation_id)
 
     def to_galaxy_output(self, runnable_output):
@@ -794,6 +797,10 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
 
     @property
     def was_successful(self):
+        # When --no_wait is used, we haven't waited for completion, so we consider it successful
+        # if the invocation was created without error (i.e., not in a failed/cancelled state)
+        if self._no_wait:
+            return self.invocation_state not in ["failed", "cancelled"]
         return self.history_state in ["ok", "skipped", None] and self.invocation_state == "scheduled"
 
     def export_invocation(self, output_path, export_format="rocrate.zip"):
