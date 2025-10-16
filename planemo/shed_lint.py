@@ -195,6 +195,13 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
 
 
 def lint_shed_remote_repository_url(realized_repository: "RealizedRepository", lint_ctx):
+    """
+    Check if the remote_repository_url has a common prefix with the path to the repo and 
+    that it contains at least one '/'. Rationale remote_repository_url is supposed to have
+    the form https://gitserver/organisation/tree/main/path where the path in the suffix
+    should be the same as the path to the repository
+    """
+    # rstrip trailing space and slashes just in case they are given in only one of path/url
     path = realized_repository.real_path.rstrip(" /")
     remote_repository_url = realized_repository.config.get("remote_repository_url", "").rstrip(" /")
     i = -1
