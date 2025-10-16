@@ -64,6 +64,14 @@ class DockerPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource):
         self._kwds = kwds
         self._docker_host_kwds = dockerfiles.docker_host_args(**kwds)
 
+    def create_database(self, identifier):
+        # Not needed for profile creation, database will be created when Galaxy starts.
+        pass
+
+    def delete_database(self, identifier):
+        # Not needed for profile deletion, just remove the profile directory.
+        pass
+
     def start(self):
         if not is_running_container(**self._docker_host_kwds):
             start_postgres_docker(**self._docker_host_kwds)
