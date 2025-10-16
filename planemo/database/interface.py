@@ -1,17 +1,11 @@
 """Describe the interface classes of the planemo.database package."""
 
 import abc
+from typing import Optional
 
 
 class DatabaseSource(metaclass=abc.ABCMeta):
     """Interface describing a source of profile databases."""
-
-    @abc.abstractmethod
-    def create_database(self, identifier):
-        """Create a database with specified short identifier.
-
-        Throw an exception if it already exists.
-        """
 
     @abc.abstractmethod
     def delete_database(self, identifier):
@@ -25,8 +19,16 @@ class DatabaseSource(metaclass=abc.ABCMeta):
         """Return identifiers associated with database source."""
 
     @abc.abstractmethod
-    def sqlalchemy_url(self, identifier):
+    def sqlalchemy_url(self, identifier) -> Optional[str]:
         """Return a URL string for use by sqlalchemy."""
+
+    def start(self):
+        """Start the database source, if necessary."""
+        pass
+
+    def stop(self):
+        """Stop the database source, if necessary."""
+        pass
 
 
 __all__ = ("DatabaseSource",)

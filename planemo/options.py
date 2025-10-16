@@ -1723,7 +1723,7 @@ def postgres_datatype_type_option():
 
 def postgres_database_storage_location_option():
     return planemo_option(
-        "--postgres-storage-location",
+        "--postgres_storage_location",
         type=str,
         help="storage path for postgres database, used for local singularity postgres.",
         default=None,

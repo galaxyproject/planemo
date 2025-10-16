@@ -63,10 +63,24 @@ class DockerPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource):
         self.database_port = DEFAULT_POSTGRES_PORT_EXPOSE
         self._kwds = kwds
         self._docker_host_kwds = dockerfiles.docker_host_args(**kwds)
+
+    def create_database(self, identifier):
+        # Not needed for profile creation, database will be created when Galaxy starts.
+        pass
+
+    def delete_database(self, identifier):
+        # Not needed for profile deletion, just remove the profile directory.
+        pass
+
+    def start(self):
         if not is_running_container(**self._docker_host_kwds):
             start_postgres_docker(**self._docker_host_kwds)
             # Hack to give docker a bit of time to boot up and allow psql to start.
             time.sleep(30)
+
+    def stop(self):
+        if is_running_container(**self._docker_host_kwds):
+            stop_postgres_docker(**self._docker_host_kwds)
 
     def sqlalchemy_url(self, identifier):
         """Return URL or form postgresql://username:password@localhost/mydatabase."""

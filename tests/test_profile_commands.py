@@ -1,4 +1,3 @@
-from planemo.database.postgres_docker import stop_postgres_docker
 from .test_utils import (
     CliTestCase,
     skip_unless_environ,
@@ -25,7 +24,4 @@ class ProfileCommandsTestCase(CliTestCase):
 
     @skip_unless_executable("docker")
     def test_profile_commands_docker(self):
-        try:
-            self._profile_commands(database_type="postgres_docker")
-        finally:
-            stop_postgres_docker()
+        self._profile_commands(database_type="postgres_docker")
