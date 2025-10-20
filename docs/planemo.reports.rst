@@ -9,29 +9,29 @@ planemo.reports.allure module
 
 .. automodule:: planemo.reports.allure
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.reports.build\_report module
 ------------------------------------
 
 .. automodule:: planemo.reports.build_report
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.reports.xunit\_handler module
 -------------------------------------
 
 .. automodule:: planemo.reports.xunit_handler
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
 
 .. automodule:: planemo.reports
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:

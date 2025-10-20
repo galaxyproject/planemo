@@ -6,6 +6,32 @@ History
 .. to_doc
 
 ---------------------
+0.75.33 (2025-10-20)
+---------------------
+* Fail when pointing at a profile that doesn't exist (thanks to `@mvdbeek`_).
+  `Pull Request 1578`_
+* Don't report failed workflow run with --no_wait (thanks to `@mvdbeek`_).
+  `Pull Request 1579`_
+* Delay toil import and use or fail when actually used (thanks to
+  `@mvdbeek`_). `Pull Request 1580`_
+* Improve command not found handling (thanks to `@mvdbeek`_). `Pull Request
+  1575`_
+* Fall back to sqlite when database creation fails (thanks to `@mvdbeek`_).
+  `Pull Request 1576`_
+* Raise click exception where we don't need a full traceback (thanks to
+  `@mvdbeek`_). `Pull Request 1577`_
+* Wait for upload job and make sure uploads are ok (thanks to `@mvdbeek`_).
+  `Pull Request 1574`_
+* Updates to ``pyproject.toml`` and CI workflows (thanks to `@nsoranzo`_).
+  `Pull Request 1572`_
+* Enable dependabot version updates for GitHub actions (thanks to
+  `@nsoranzo`_). `Pull Request 1566`_
+* Fix underscores in config option (thanks to `@bernt-matthias`_). `Pull
+  Request 1567`_
+* Build and release script updates (thanks to `@mvdbeek`_). `Pull Request
+  1561`_
+
+---------------------
 0.75.32 (2025-08-18)
 ---------------------
 * Fixing 429 url error (thanks to `@arash77`_). `Pull Request 1556`_
@@ -2253,6 +2279,20 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1578: https://github.com/galaxyproject/planemo/pull/1578
+.. _Pull Request 1579: https://github.com/galaxyproject/planemo/pull/1579
+.. _Pull Request 1580: https://github.com/galaxyproject/planemo/pull/1580
+.. _Pull Request 1575: https://github.com/galaxyproject/planemo/pull/1575
+.. _Pull Request 1576: https://github.com/galaxyproject/planemo/pull/1576
+.. _Pull Request 1577: https://github.com/galaxyproject/planemo/pull/1577
+.. _Pull Request 1574: https://github.com/galaxyproject/planemo/pull/1574
+.. _Pull Request 1572: https://github.com/galaxyproject/planemo/pull/1572
+.. _Pull Request 1571: https://github.com/galaxyproject/planemo/pull/1571
+.. _Pull Request 1570: https://github.com/galaxyproject/planemo/pull/1570
+.. _Pull Request 1569: https://github.com/galaxyproject/planemo/pull/1569
+.. _Pull Request 1566: https://github.com/galaxyproject/planemo/pull/1566
+.. _Pull Request 1567: https://github.com/galaxyproject/planemo/pull/1567
+.. _Pull Request 1561: https://github.com/galaxyproject/planemo/pull/1561
 .. _Pull Request 1556: https://github.com/galaxyproject/planemo/pull/1556
 .. _Pull Request 1560: https://github.com/galaxyproject/planemo/pull/1560
 .. _Pull Request 1554: https://github.com/galaxyproject/planemo/pull/1554

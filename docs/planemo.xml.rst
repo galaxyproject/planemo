@@ -9,21 +9,21 @@ planemo.xml.diff module
 
 .. automodule:: planemo.xml.diff
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.xml.validation module
 -----------------------------
 
 .. automodule:: planemo.xml.validation
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
 
 .. automodule:: planemo.xml
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:

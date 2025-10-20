@@ -9,37 +9,37 @@ planemo.training.tool\_input module
 
 .. automodule:: planemo.training.tool_input
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.training.topic module
 -----------------------------
 
 .. automodule:: planemo.training.topic
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.training.tutorial module
 --------------------------------
 
 .. automodule:: planemo.training.tutorial
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.training.utils module
 -----------------------------
 
 .. automodule:: planemo.training.utils
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
 
 .. automodule:: planemo.training
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:

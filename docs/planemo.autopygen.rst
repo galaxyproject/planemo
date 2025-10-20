@@ -19,21 +19,21 @@ planemo.autopygen.argument\_parser\_conversion module
 
 .. automodule:: planemo.autopygen.argument_parser_conversion
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.autopygen.param\_info module
 ------------------------------------
 
 .. automodule:: planemo.autopygen.param_info
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
 
 .. automodule:: planemo.autopygen
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:

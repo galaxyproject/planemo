@@ -18,77 +18,77 @@ planemo.galaxy.activity module
 
 .. automodule:: planemo.galaxy.activity
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.galaxy.api module
 -------------------------
 
 .. automodule:: planemo.galaxy.api
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.galaxy.config module
 ----------------------------
 
 .. automodule:: planemo.galaxy.config
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.galaxy.distro\_tools module
 -----------------------------------
 
 .. automodule:: planemo.galaxy.distro_tools
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.galaxy.ephemeris\_sleep module
 --------------------------------------
 
 .. automodule:: planemo.galaxy.ephemeris_sleep
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.galaxy.profiles module
 ------------------------------
 
 .. automodule:: planemo.galaxy.profiles
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.galaxy.run module
 -------------------------
 
 .. automodule:: planemo.galaxy.run
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.galaxy.serve module
 ---------------------------
 
 .. automodule:: planemo.galaxy.serve
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 planemo.galaxy.workflows module
 -------------------------------
 
 .. automodule:: planemo.galaxy.workflows
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
 
 .. automodule:: planemo.galaxy
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:

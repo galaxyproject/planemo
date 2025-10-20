@@ -139,7 +139,6 @@ install these artifacts, and run the tool tests for these commands.
       --profile TEXT                  Name of profile (created with the
                                       profile_create command) to use with this
                                       command.
-      --postgres                      Use postgres database type.
       --database_type [postgres|postgres_docker|postgres_singularity|sqlite|auto]
                                       Type of database to use for profile - 'auto',
                                       'sqlite', 'postgres', 'postgres_docker' , and
@@ -211,12 +210,4 @@ install these artifacts, and run the tool tests for these commands.
       --skip_dependencies             Do not install shed dependencies as part of
                                       repository installation.
       --help                          Show this message and exit.
-    /Users/mvandenb/src/planemo/.venv/lib/python3.13/site-packages/click/core.py:1193: UserWarning: The parameter --fail_fast is used more than once. Remove its duplicate as parameters should be unique.
-      parser = self.make_parser(ctx)
-    /Users/mvandenb/src/planemo/.venv/lib/python3.13/site-packages/click/core.py:1186: UserWarning: The parameter --fail_fast is used more than once. Remove its duplicate as parameters should be unique.
-      self.parse_args(ctx, args)
-    /Users/mvandenb/src/planemo/.venv/lib/python3.13/site-packages/click/core.py:1002: UserWarning: The parameter --fail_fast is used more than once. Remove its duplicate as parameters should be unique.
-      pieces = self.collect_usage_pieces(ctx)
-    /Users/mvandenb/src/planemo/.venv/lib/python3.13/site-packages/click/core.py:1104: UserWarning: The parameter --fail_fast is used more than once. Remove its duplicate as parameters should be unique.
-      self.format_options(ctx, formatter)
     

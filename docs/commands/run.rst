@@ -14,8 +14,9 @@ This section is auto-generated from the help text for the planemo command
 
 Planemo command for running tools and jobs.
 
-
-% planemo run cat1-tool.cwl cat-job.json
+::
+
+    % planemo run cat1-tool.cwl cat-job.json
 
 **Options**::
 
@@ -121,7 +122,6 @@ Planemo command for running tools and jobs.
       --profile TEXT                  Name of profile (created with the
                                       profile_create command) to use with this
                                       command.
-      --postgres                      Use postgres database type.
       --database_type [postgres|postgres_docker|postgres_singularity|sqlite|auto]
                                       Type of database to use for profile - 'auto',
                                       'sqlite', 'postgres', 'postgres_docker' , and
