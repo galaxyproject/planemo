@@ -431,31 +431,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         if kwds.get("mulled_containers", False):
             properties["mulled_channels"] = kwds.get("conda_ensure_channels", "")
 
-        # Enable GxITs by default
-        gx_it_port = network_util.get_free_port()
-        properties.update(
-            dict(
-                interactivetools_enable="true",
-                galaxy_infrastructure_url=f"http://localhost:{port}",
-                interactivetools_upstream_proxy="false",
-                interactivetools_proxy_host=f"localhost:{gx_it_port}",
-            )
-        )
-        gx_it_config = dict(
-            enable="true",
-            port=gx_it_port,
-        )
-        if kwds.get("disable_gxits", True):
-            properties.update(
-                dict(
-                    interactivetools_enable="false",
-                )
-            )
-            gx_it_config.update(
-                dict(
-                    enable="false",
-                )
-            )
 
         _handle_kwd_overrides(properties, kwds)
 
@@ -479,7 +454,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         write_galaxy_config(
             galaxy_root=galaxy_root,
             properties=properties,
-            gx_it_config=gx_it_config,
             env=env,
             kwds=kwds,
             template_args=template_args,
@@ -509,7 +483,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         )
 
 
-def write_galaxy_config(galaxy_root, properties, gx_it_config, env, kwds, template_args, config_join):
+def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, config_join):
     if get_galaxy_major_version(galaxy_root) < parse_version("22.01"):
         # Legacy .ini setup
         env["GALAXY_CONFIG_FILE"] = config_join("galaxy.ini")
@@ -520,6 +494,31 @@ def write_galaxy_config(galaxy_root, properties, gx_it_config, env, kwds, templa
         env["GRAVITY_STATE_DIR"] = config_join("gravity")
         with NamedTemporaryFile(suffix=".sock", delete=True) as nt:
             env["SUPERVISORD_SOCKET"] = nt.name
+        # Enable GxITs by default
+        gx_it_port = network_util.get_free_port()
+        properties.update(
+            dict(
+                interactivetools_enable="true",
+                galaxy_infrastructure_url=f"http://localhost:{template_args['port']}",
+                interactivetools_upstream_proxy="false",
+                interactivetools_proxy_host=f"localhost:{gx_it_port}",
+            )
+        )
+        gx_it_config = dict(
+            enable="true",
+            port=gx_it_port,
+        )
+        if kwds.get("disable_gxits", True):
+            properties.update(
+                dict(
+                    interactivetools_enable="false",
+                )
+            )
+            gx_it_config.update(
+                dict(
+                    enable="false",
+                )
+            )
         config = {
             "galaxy": properties,
             "gravity": {
