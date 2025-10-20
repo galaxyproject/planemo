@@ -16,7 +16,6 @@ Delete a profile.
 **Options**::
 
 
-      --postgres                      Use postgres database type.
       --database_type [postgres|postgres_docker|postgres_singularity|sqlite|auto]
                                       Type of database to use for profile - 'auto',
                                       'sqlite', 'postgres', 'postgres_docker' , and

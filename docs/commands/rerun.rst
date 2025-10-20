@@ -21,8 +21,9 @@ jobs cannot be remapped more than once, running this command two or more times w
 history or job IDs will therefore return an exit code of 1. If avoiding this is important,
 you should specify the invocation ID instead if possible.
 
-
-% planemo rerun --invocation / --history / --job RERUNNABLE_IDS
+::
+
+    % planemo rerun --invocation / --history / --job RERUNNABLE_IDS
 
 **Options**::
 

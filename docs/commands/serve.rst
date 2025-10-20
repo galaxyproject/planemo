@@ -150,7 +150,6 @@ Galaxy instance.
       --profile TEXT                  Name of profile (created with the
                                       profile_create command) to use with this
                                       command.
-      --postgres                      Use postgres database type.
       --database_type [postgres|postgres_docker|postgres_singularity|sqlite|auto]
                                       Type of database to use for profile - 'auto',
                                       'sqlite', 'postgres', 'postgres_docker' , and

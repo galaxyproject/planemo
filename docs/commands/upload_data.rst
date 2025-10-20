@@ -14,8 +14,9 @@ This section is auto-generated from the help text for the planemo command
 
 Planemo command for uploading data to an external Galaxy server.
 
-
-% planemo upload_data wf.ga wf-job.yml new-wf-job.yml --profile profile
+::
+
+    % planemo upload_data wf.ga wf-job.yml new-wf-job.yml --profile profile
 
 Running this subcommand requires a workflow file or identifier
 and a job file, just as for ``planemo run``. In addition, a third
@@ -131,7 +132,6 @@ the already completed data upload.
       --profile TEXT                  Name of profile (created with the
                                       profile_create command) to use with this
                                       command.
-      --postgres                      Use postgres database type.
       --database_type [postgres|postgres_docker|postgres_singularity|sqlite|auto]
                                       Type of database to use for profile - 'auto',
                                       'sqlite', 'postgres', 'postgres_docker' , and

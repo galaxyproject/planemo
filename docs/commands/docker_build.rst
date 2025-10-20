@@ -24,9 +24,10 @@ This command will then build and tag the image so it is ready to be tested
 and published. The docker_shell command be used to test out the built
 image.
 
-
-% planemo docker_build bowtie2.xml # asssumes Dockerfile in same dir
-% planemo docker_shell --from_tag bowtie2.xml
+::
+
+    % planemo docker_build bowtie2.xml # asssumes Dockerfile in same dir
+    % planemo docker_shell --from_tag bowtie2.xml
 
 This can optionally also cache the images.
 

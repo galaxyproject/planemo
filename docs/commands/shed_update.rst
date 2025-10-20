@@ -18,8 +18,9 @@ By default this command will update both repository metadata
 from ``.shed.yml`` and upload new contents from the repository
 directory.
 
-
-% planemo shed_update
+::
+
+    % planemo shed_update
 
 This will update the main tool shed with the repository defined
 by a ``.shed.yml`` file in the current working directory. Both
@@ -28,8 +29,9 @@ can be easily configured. For instance, the following command can
 be used if ``.shed.yml`` if contained in ``path/to/repo`` and the
 desire is to update the test tool shed.
 
-
-% planemo shed_update --shed_target testtoolshed path/to/repo
+::
+
+    % planemo shed_update --shed_target testtoolshed path/to/repo
 
 Another important option is ``--check_diff`` - this doesn't affect the
 updating of shed metadata but it will check for differences before

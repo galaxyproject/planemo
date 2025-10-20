@@ -22,16 +22,17 @@ the output as is - it frequently makes tool less readable not more.
 The top-level blocks will be reordered and whitespace fixed according to
 the tool development best practices outlined on the Galaxy wiki.
 
-
-% # Print normalized version of tool.
-% planemo normalize tool.xml
-<tool>
-...
-% # Print a variant of tool with all macros expanded out, useful for
-% # debugging complex macros.
-% planemo normalize --expand_macros tool.xml
-<tool>
-...
+::
+
+    % # Print normalized version of tool.
+    % planemo normalize tool.xml
+    <tool>
+    ...
+    % # Print a variant of tool with all macros expanded out, useful for
+    % # debugging complex macros.
+    % planemo normalize --expand_macros tool.xml
+    <tool>
+    ...
 
 **Options**::
 
