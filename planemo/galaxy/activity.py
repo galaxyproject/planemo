@@ -375,7 +375,10 @@ def execute_rerun(
     if rerunnable.rerunnable_type == "history":
         job_ids = [job["id"] for job in user_gi.jobs.get_jobs(history_id=rerunnable.rerunnable_id, state="error")]
     elif rerunnable.rerunnable_type == "invocation":
-        job_ids = [job["id"] for job in user_gi.jobs.get_jobs(invocation_id=rerunnable.rerunnable_id, state="error")]
+        request = user_gi.invocations._get(f"{rerunnable.rerunnable_id}/request")
+        request["use_cached_job"] = True
+        invocation = user_gi.workflows._post(id=f"{request['workflow_id']}/invocations", payload=request)
+        return invocation_to_run_response(ctx, user_gi=user_gi, runnable=rerunnable, invocation=invocation)
     elif rerunnable.rerunnable_type == "job":
         job_ids = [rerunnable.rerunnable_id]
     # elif rerunnable.rerunnable_type = 'collection':
