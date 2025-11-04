@@ -201,9 +201,9 @@ class ExternalGalaxyEngine(GalaxyEngine):
             config.install_workflows()
             yield config
 
-    def rerun(self, ctx: "PlanemoCliContext", rerunnable: Rerunnable, **kwds) -> GalaxyBaseRunResponse:
+    def rerun(self, ctx: "PlanemoCliContext", rerunnable: Rerunnable, use_cache: bool, **kwds) -> GalaxyBaseRunResponse:
         with self.ensure_runnables_served([]) as config:
-            rerun_response = execute_rerun(ctx, config, rerunnable, **kwds)
+            rerun_response = execute_rerun(ctx, config, rerunnable, use_cache=use_cache, **kwds)
             return rerun_response
 
 

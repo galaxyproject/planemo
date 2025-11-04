@@ -321,6 +321,15 @@ def run_output_directory_option():
     )
 
 
+def run_use_cache_option():
+    return planemo_option(
+        "--use_cache/--no_use_cache",
+        is_flag=True,
+        default=True,
+        help=("Use cached job results if available."),
+    )
+
+
 def run_output_json_option():
     return planemo_option(
         "output_json",

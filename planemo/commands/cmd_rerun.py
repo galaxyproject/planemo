@@ -40,6 +40,7 @@ if TYPE_CHECKING:
 @click.option(
     "--job", "rerunnable_type", flag_value="job", help=("Rerun failed jobs specified by one or more job IDs.")
 )
+@options.run_use_cache_option()
 @click.argument(
     "rerunnable_ids",
     metavar="RERUNNABLE_IDS",
@@ -47,13 +48,18 @@ if TYPE_CHECKING:
     nargs=-1,
 )
 @command_function
-def cli(ctx: "PlanemoCliContext", rerunnable_ids: Tuple[str], **kwds) -> None:
-    """Planemo command for rerunning and remapping failed jobs on an external Galaxy server.
+def cli(ctx: "PlanemoCliContext", rerunnable_ids: Tuple[str], use_cache: bool = True, **kwds) -> None:
+    """
+    Planemo command for rerunning failed jobs on an external Galaxy server.
     Supply a list of history, invocation or job IDs, identifying the ID type using the
-    --invocation, --history or --job flag, and all associated failed jobs will be rerun.
+    --invocation, --history or --job flag.
 
-    Please note: attempting to rerun non-remappable jobs will result in an exit code of 1. As
-    jobs cannot be remapped more than once, running this command two or more times with the same
+    When passing the --invocation flag, the associated workflow will be rerun.
+    When using `--use_cache` (the default), successful jobs will be reused when available, so only failed jobs will actually
+    be executed on the compute node(s).
+
+    When not rerunning invocations, please note that attempting to rerun non-remappable jobs will result in an exit code of 1.
+    As jobs cannot be remapped more than once, running this command two or more times with the same
     history or job IDs will therefore return an exit code of 1. If avoiding this is important,
     you should specify the invocation ID instead if possible.
 
@@ -70,9 +76,10 @@ def cli(ctx: "PlanemoCliContext", rerunnable_ids: Tuple[str], **kwds) -> None:
         assert isinstance(engine, ExternalGalaxyEngine)
         for rerunnable_id in rerunnable_ids:
             rerunnable = Rerunnable(rerunnable_id, kwds["rerunnable_type"], kwds["galaxy_url"])
-            rerun_result = engine.rerun(ctx, rerunnable, **kwds)
+            rerun_result = engine.rerun(ctx, rerunnable, use_cache=use_cache, **kwds)
             if not rerun_result.was_successful:
                 rerun_successful = False
+    info("Run completed successfully.")
 
     if rerun_successful:
         info("All requested jobs were rerun successfully.")
