@@ -377,7 +377,8 @@ def execute_rerun(
     elif rerunnable.rerunnable_type == "invocation":
         request = user_gi.invocations._get(f"{rerunnable.rerunnable_id}/request")
         request["use_cached_job"] = use_cache
-        invocation = user_gi.workflows._post(id=f"{request['workflow_id']}/invocations", payload=request)
+        url = "/".join((user_gi.url, "workflows", request["workflow_id"], "invocations"))
+        invocation = user_gi.workflows._post(url=url, payload=request)
         return invocation_to_run_response(ctx, user_gi=user_gi, runnable=rerunnable, invocation=invocation)
     elif rerunnable.rerunnable_type == "job":
         job_ids = [rerunnable.rerunnable_id]
