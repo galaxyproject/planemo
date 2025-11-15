@@ -121,6 +121,7 @@ def lint_repository(ctx: "PlanemoCliContext", realized_repository: "RealizedRepo
         failed = failed or tools_failed
 
     lint_ctx.lint("lint_version_bumped", lint_shed_version, realized_repository)
+    lint_ctx.lint("lint_shed_remote_repository_url", lint_shed_remote_repository_url, realized_repository)
 
     if kwds["ensure_metadata"]:
         lint_ctx.lint(
@@ -195,6 +196,28 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
                 f"{tool_id}: version {tool_version} is less or equal than version of the latest installable revision {ts_tool_version}",
                 "ShedVersion",
             )
+
+
+def lint_shed_remote_repository_url(realized_repository: "RealizedRepository", lint_ctx):
+    """
+    Check if the remote_repository_url has a common prefix with the path to the repo and 
+    that it contains at least one '/'. Rationale remote_repository_url is supposed to have
+    the form https://gitserver/organisation/tree/main/path where the path in the suffix
+    should be the same as the path to the repository
+    """
+    # rstrip trailing space and slashes just in case they are given in only one of path/url
+    path = realized_repository.real_path.rstrip(" /")
+    remote_repository_url = realized_repository.config.get("remote_repository_url", "").rstrip(" /")
+    i = -1
+    longest_common_suffix = ""
+    while abs(i) < len(path) and abs(i) < len(remote_repository_url):
+        if path[i] == remote_repository_url[i]:
+            longest_common_suffix = path[i:]
+            i -= 1
+        else:
+            break
+    if "/" not in longest_common_suffix:
+        lint_ctx.warn("remote_repository_url probably wrong: seems not to contain the path to the tool")
 
 
 def lint_expansion(realized_repository: "RealizedRepository", lint_ctx):
