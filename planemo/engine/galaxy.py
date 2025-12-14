@@ -145,7 +145,10 @@ class LocalManagedGalaxyEngine(GalaxyEngine):
         with serve_daemon(self._ctx, runnables, **self._serve_kwds()) as config:
             if "install_args_list" in self._serve_kwds():
                 self.shed_install(config)
-            yield config
+            try:
+                yield config
+            finally:
+                config.kill()
 
     def shed_install(self, config):
         kwds = self._serve_kwds()
@@ -188,6 +191,18 @@ class DockerizedManagedGalaxyEngine(LocalManagedGalaxyEngine):
     def _serve_kwds(self):
         serve_kwds = self._kwds.copy()
         serve_kwds["dockerize"] = True
+        return serve_kwds
+
+
+class UvxManagedGalaxyEngine(LocalManagedGalaxyEngine):
+    """An :class:`Engine` implementation backed by Galaxy running via uvx.
+
+    More information on Galaxy can be found at http://galaxyproject.org/.
+    """
+
+    def _serve_kwds(self):
+        serve_kwds = self._kwds.copy()
+        serve_kwds["uvx_galaxy"] = True
         return serve_kwds
 
 

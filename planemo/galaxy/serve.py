@@ -31,6 +31,8 @@ def _serve(ctx, runnables, **kwds):
     engine = kwds.get("engine", "galaxy")
     if engine == "docker_galaxy":
         kwds["dockerize"] = True
+    elif engine == "uvx_galaxy":
+        kwds["uvx_galaxy"] = True
 
     daemon = kwds.get("daemon", False)
     if daemon:
