@@ -10,6 +10,7 @@ from .api import (
     InvocationApi,
     InvocationJobsSummary,
     JOB_ERROR_STATES,
+    NON_TERMINAL_JOB_STATES,
 )
 from .progress import WorkflowProgressDisplay
 
@@ -101,7 +102,7 @@ def _check_for_errors(
     )
     if error_message:
         final_state = "new" if not invocation else invocation["state"]
-        job_state = summary_job_state(invocation_jobs)
+        job_state = summary_job_state(invocation_jobs, fail_fast)
         return final_state, job_state, error_message
     return None
 
@@ -154,24 +155,25 @@ def wait_for_invocation_and_jobs(
             ctx, invocation_id, invocation_api, workflow_progress_display, fail_fast
         )
 
-        error_result = _check_for_errors(
-            ctx,
-            invocation_id,
-            sub_exception,
-            sub_invocation,
-            sub_jobs,
-            invocation_api,
-            workflow_progress_display,
-            fail_fast,
-        )
-        if error_result:
-            return error_result
+        if sub_invocation:
+            error_result = _check_for_errors(
+                ctx,
+                sub_invocation["id"] if sub_invocation else invocation_id,
+                sub_exception,
+                sub_invocation,
+                sub_jobs,
+                invocation_api,
+                workflow_progress_display,
+                fail_fast,
+            )
+            if error_result:
+                return error_result
 
         if not _is_polling_complete(workflow_progress_display):
             polling_tracker.sleep()
 
     ctx.vlog(f"The final state of all jobs and subworkflow invocations for invocation [{invocation_id}] is 'ok'")
-    job_state = summary_job_state(last_invocation_jobs)
+    job_state = summary_job_state(last_invocation_jobs, fail_fast)
     assert last_invocation
 
     # Final check for job errors when fail_fast is enabled
@@ -203,7 +205,7 @@ def workflow_in_error_message(
     """Return an error message if workflow is in an error state."""
 
     invocation_state = "new" if not last_invocation else last_invocation["state"]
-    job_state = summary_job_state(last_invocation_jobs)
+    job_state = summary_job_state(last_invocation_jobs, fail_fast)
 
     error_message = None
     if last_exception:
@@ -233,14 +235,19 @@ def workflow_in_error_message(
     return error_message
 
 
-# we're still mocking out the old history state by just picking out a random
-# job state of interest. Seems like we should drop this.
-def summary_job_state(job_states_summary: Optional[InvocationJobsSummary]):
-    states = (job_states_summary or {"states": {}}).get("states", {}).copy()
-    states.pop("ok", None)
-    states.pop("skipped", None)
+def summary_job_state(job_states_summary: Optional[InvocationJobsSummary], fail_fast: bool = False):
+    states = {state for state in (job_states_summary or {"states": {}})["states"]}
+    if not fail_fast:
+        current_non_terminal_states = NON_TERMINAL_JOB_STATES.intersection(states)
+        if current_non_terminal_states:
+            # ensure all non-terminal states advance, then return the first failing state, if any.
+            return next(iter(current_non_terminal_states))
     if states:
-        return next(iter(states.keys()))
+        # We have ensured that that all jobs are terminal, we want to return failed jobs in the summary if there are any.
+        for error_state in JOB_ERROR_STATES:
+            if error_state in states:
+                return error_state
+        return next(iter(states))
     else:
         return "ok"
 

@@ -22,5 +22,6 @@ flake8
 isort
 
 # For release
+build
 wheel
 twine

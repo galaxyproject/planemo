@@ -321,6 +321,15 @@ def run_output_directory_option():
     )
 
 
+def run_use_cache_option():
+    return planemo_option(
+        "--use_cache/--no_use_cache",
+        is_flag=True,
+        default=True,
+        help=("Use cached job results if available."),
+    )
+
+
 def run_output_json_option():
     return planemo_option(
         "output_json",
@@ -1706,12 +1715,18 @@ def database_identifier_argument():
     )
 
 
+def postgres_option_callback(ctx, param, value):
+    if value:
+        ctx.fail("The `--postgres` option is deprecated, use `--database_type postgres` instead.")
+    return value
+
+
 def postgres_datatype_type_option():
-    return planemo_option(
+    return click.option(
         "--postgres",
-        "database_type",
-        flag_value="postgres",
-        help=("Use postgres database type."),
+        is_flag=True,
+        hidden=True,
+        callback=postgres_option_callback,
     )
 
 

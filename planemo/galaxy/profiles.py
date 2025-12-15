@@ -8,6 +8,7 @@ import json
 import os
 import shutil
 
+import click
 from galaxy.util.commands import which
 from gxjobconfinit import (
     build_job_config,
@@ -56,7 +57,7 @@ def create_profile(ctx, profile_name, **kwds):
     profile_directory = _profile_directory(ctx, profile_name)
     if profile_exists(ctx, profile_name, **kwds):
         message = ALREADY_EXISTS_EXCEPTION % (profile_name, profile_directory)
-        raise Exception(message)
+        raise click.ClickException(message)
 
     os.makedirs(profile_directory)
 
@@ -84,6 +85,7 @@ def _create_profile_docker(ctx, profile_directory, profile_name, kwds):
 
 def _create_profile_local(ctx, profile_directory, profile_name, kwds):
     database_type = kwds.get("database_type", "auto")
+    allow_sqlite_fallback = database_type == "auto"
     if database_type == "auto":
         if which("psql"):
             database_type = "postgres"
@@ -97,13 +99,22 @@ def _create_profile_local(ctx, profile_directory, profile_name, kwds):
     if database_type not in ["sqlite", "postgres_singularity"]:
         database_source = create_database_source(**kwds)
         database_identifier = _profile_to_database_identifier(profile_name)
-        database_source.create_database(
-            database_identifier,
-        )
-        database_connection = database_source.sqlalchemy_url(database_identifier)
+        try:
+            database_source.create_database(
+                database_identifier,
+            )
+        except RuntimeError:
+            if allow_sqlite_fallback:
+                # If postgres database creation fails (e.g., role doesn't exist, connection issues),
+                # fall back to sqlite
+                database_type = "sqlite"
+            else:
+                raise
+        else:
+            database_connection = database_source.sqlalchemy_url(database_identifier)
     elif database_type == "postgres_singularity":
         database_connection + database_source.sqlalchemy_url(database_identifier)
-    else:
+    if database_type == "sqlite":
         database_location = os.path.join(profile_directory, "galaxy.sqlite")
         database_connection = DATABASE_LOCATION_TEMPLATE % database_location
 
@@ -131,7 +142,16 @@ def _create_profile_external(ctx, profile_directory, profile_name, kwds):
 def ensure_profile(ctx, profile_name, **kwds):
     """Ensure a Galaxy profile exists and return profile defaults."""
     if not profile_exists(ctx, profile_name, **kwds):
-        create_profile(ctx, profile_name, **kwds)
+        available_profiles = list_profiles(ctx, **kwds)
+        error_message = f"Profile '{profile_name}' does not exist."
+        if available_profiles:
+            error_message += f"\n\nAvailable profiles: {', '.join(available_profiles)}"
+            error_message += f"\n\nTo create a new profile, use: planemo profile_create {profile_name}"
+        else:
+            error_message += (
+                f"\n\nNo profiles found. To create a new profile, use: planemo profile_create {profile_name}"
+            )
+        raise click.UsageError(error_message)
 
     return _profile_options(ctx, profile_name, **kwds)
 
@@ -177,7 +197,7 @@ def translate_alias(ctx, alias, profile_name):
 
 def _load_profile_to_json(ctx, profile_name):
     if not profile_exists(ctx, profile_name):
-        raise Exception("That profile does not exist. Create it with `planemo profile_create`")
+        raise click.ClickException("That profile does not exist. Create it with `planemo profile_create`")
     profile_directory = _profile_directory(ctx, profile_name)
     profile_options_path = _stored_profile_options_path(profile_directory)
     with open(profile_options_path) as f:
@@ -234,7 +254,7 @@ def initialize_job_config(ctx, profile_name, **kwds):
     profile_directory = _profile_directory(ctx, profile_name)
     job_config_path = os.path.join(profile_directory, "job_conf.yml")
     if os.path.exists(job_config_path):
-        raise Exception(f"File '{job_config_path}' already exists, exiting.")
+        raise click.ClickException(f"File '{job_config_path}' already exists, exiting.")
 
     init_config = ConfigArgs.from_dict(**kwds)
     job_config = build_job_config(init_config)

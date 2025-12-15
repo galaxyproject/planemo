@@ -499,7 +499,7 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
                             "bind": f"{kwds.get('host', 'localhost')}:{template_args['port']}",
                             "preload": False,
                         },
-                        "gx-it-proxy": {
+                        "gx_it_proxy": {
                             "enable": False,
                         },
                     },

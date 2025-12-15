@@ -74,8 +74,51 @@ def name_to_command(name: str) -> Command:
         mod_name = "planemo.commands.cmd_" + name
         mod = __import__(mod_name, None, None, ["cli"])
     except ImportError as e:
-        raise Exception(f"Problem loading command {name}, exception {e}")
+        # Check if this is an unknown command vs. a real import error
+        available_commands = list_cmds()
+        if name not in available_commands:
+            # User tried to run a command that doesn't exist
+            error_msg = f"No such command '{name}'."
+
+            # Try to find similar commands to suggest
+            similar_commands = _find_similar_commands(name, available_commands)
+            if similar_commands:
+                error_msg += "\n\nDid you mean one of these?\n"
+                for cmd in similar_commands[:5]:  # Show at most 5 suggestions
+                    error_msg += f"  - {cmd}\n"
+
+            error_msg += "\nRun 'planemo --help' to see all available commands."
+            raise click.UsageError(error_msg)
+        else:
+            # This is a real import error for a command that should exist
+            raise Exception(f"Problem loading command {name}, exception {e}")
     return mod.cli
+
+
+def _find_similar_commands(name: str, available_commands: List[str]) -> List[str]:
+    """Find commands similar to the given name using simple string matching."""
+    similar = []
+
+    # First, find commands that start with the same prefix
+    for cmd in available_commands:
+        if cmd.startswith(name[:3]) or name.startswith(cmd[:3]):
+            similar.append(cmd)
+
+    # If we didn't find any prefix matches, look for substring matches
+    if not similar:
+        for cmd in available_commands:
+            if name in cmd or cmd in name:
+                similar.append(cmd)
+
+    # If still no matches, look for commands with similar words
+    if not similar:
+        name_parts = set(name.split("_"))
+        for cmd in available_commands:
+            cmd_parts = set(cmd.split("_"))
+            if name_parts & cmd_parts:  # Check if there's any word overlap
+                similar.append(cmd)
+
+    return similar
 
 
 class PlanemoCLI(click.MultiCommand):

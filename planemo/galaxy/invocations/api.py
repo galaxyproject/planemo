@@ -77,3 +77,4 @@ def invocation_state_terminal(state: str):
 
 
 JOB_ERROR_STATES = ["error", "deleted", "failed", "stopped", "stop", "deleting"]
+NON_TERMINAL_JOB_STATES = {"running", "queued", "new", "ready", "resubmitted", "upload", "waiting"}

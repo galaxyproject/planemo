@@ -6,8 +6,10 @@ History
 .. to_doc
 
 ---------------------
-0.75.32.dev0
+0.75.32 (2025-08-18)
 ---------------------
+* Fixing 429 url error (thanks to `@arash77`_). `Pull Request 1556`_
+* Fix subworkflow invocation tracking (thanks to `@mvdbeek`_). `Pull Request 1560`_
 
 ---------------------
 0.75.31 (2025-06-23)
@@ -2251,6 +2253,8 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1556: https://github.com/galaxyproject/planemo/pull/1556
+.. _Pull Request 1560: https://github.com/galaxyproject/planemo/pull/1560
 .. _Pull Request 1554: https://github.com/galaxyproject/planemo/pull/1554
 .. _Pull Request 1552: https://github.com/galaxyproject/planemo/pull/1552
 .. _Pull Request 1553: https://github.com/galaxyproject/planemo/pull/1553
@@ -3256,3 +3260,4 @@ History
 .. _@jmchilton: https://github.com/jmchilton
 .. _@kostrykin: https://github.com/kostrykin
 .. _@ahmedhamidawan: https://github.com/ahmedhamidawan
+.. _@arash77: https://github.com/arash77

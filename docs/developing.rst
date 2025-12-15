@@ -5,11 +5,11 @@ Release Checklist
 This page describes the process of releasing new versions of Planemo.
 
 * Review ``git status`` for missing files.
-* Verify the latest Travis CI builds pass.
-* Update ``HISTORY.rst`` with the help of ``scripts/bootstrap_history.py``
-* ``make open-docs`` and review changelog.
+* Verify the latest github workflows pass.
 * Ensure the target release is set correctly in ``planemo/__init__.py`` (
   ``version`` will be a ``devN`` variant of target release).
+* Update ``HISTORY.rst`` with the help of ``make add-history`` ``scripts/bootstrap_history.py``
+* ``make open-docs`` and review changelog.
 * ``make clean && make lint && make test``
 * Commit outstanding changes.
 * Update version and history, commit, add tag, mint a new version and push
