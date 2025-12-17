@@ -25,6 +25,7 @@ from galaxy.tool_util.deps.conda_util import (
     CondaContext,
     CondaTarget,
 )
+from galaxy.tool_util.deps.mulled.mulled_build import target_str_to_targets
 from galaxy.util import unicodify
 
 from planemo.exit_codes import (
@@ -87,7 +88,7 @@ def build_conda_context(ctx: "PlanemoCliContext", **kwds) -> CondaContext:
     return conda_context
 
 
-def collect_conda_targets(ctx, paths, recursive=False, found_tool_callback=None):
+def collect_conda_targets(ctx, paths: List[str], recursive=False, found_tool_callback=None):
     """Load CondaTarget objects from supplied artifact sources.
 
     If a tool contains more than one requirement, the requirements will each
@@ -96,6 +97,7 @@ def collect_conda_targets(ctx, paths, recursive=False, found_tool_callback=None)
     conda_targets = set()
     real_paths = []
     for path in paths:
+        # case: path is not a path, but a comma separated list of target strings
         if not os.path.exists(path):
             targets = target_str_to_targets(path)
             for _ in targets:
@@ -111,21 +113,6 @@ def collect_conda_targets(ctx, paths, recursive=False, found_tool_callback=None)
         for target in tool_source_conda_targets(tool_source):
             conda_targets.add(target)
     return conda_targets
-
-
-# Copied and modified from mulled stuff - need to syncronize these concepts.
-def target_str_to_targets(targets_raw: str) -> List[CondaTarget]:
-    def parse_target(target_str: str) -> CondaTarget:
-        if "=" in target_str:
-            package_name, version = target_str.split("=", 1)
-        else:
-            package_name = target_str
-            version = None
-        target = CondaTarget(package_name, version)
-        return target
-
-    targets = [parse_target(_) for _ in targets_raw.split(",")]
-    return targets
 
 
 def collect_conda_target_lists(
