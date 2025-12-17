@@ -1,7 +1,6 @@
 """Ensure best-practice biocontainer registered for this tool."""
 
 from galaxy.tool_util.deps.container_resolvers.mulled import targets_to_mulled_name
-from galaxy.tool_util.deps.mulled.util import build_target
 
 from planemo.conda import tool_source_conda_targets
 
@@ -18,8 +17,7 @@ def lint_biocontainer_registered(tool_source, lint_ctx):
         lint_ctx.warn(MESSAGE_WARN_NO_REQUIREMENTS)
         return
 
-    mulled_targets = [build_target(c.package, c.version) for c in conda_targets]
-    name = mulled_container_name("biocontainers", mulled_targets)
+    name = mulled_container_name("biocontainers", conda_targets)
     if name:
         lint_ctx.info(MESSAGE_INFO_FOUND_BIOCONTAINER % name)
     else:
