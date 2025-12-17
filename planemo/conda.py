@@ -170,7 +170,7 @@ def collect_conda_target_lists_and_tool_paths(
 
 def tool_source_conda_targets(tool_source):
     """Load CondaTarget object from supplied abstract tool source."""
-    requirements, *_ = tool_source.parse_requirements_and_containers()
+    requirements, *_ = tool_source.parse_requirements()
     return conda_util.requirements_to_conda_targets(requirements)
 
 
