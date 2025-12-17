@@ -34,3 +34,4 @@ def mulled_container_name(namespace: str, targets: List[CondaTarget]) -> Optiona
     name = targets_to_mulled_name(targets=targets, hash_func="v2", namespace=namespace)
     if name:
         return f"quay.io/{namespace}/{name}"
+    return None
