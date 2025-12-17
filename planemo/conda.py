@@ -88,7 +88,7 @@ def build_conda_context(ctx: "PlanemoCliContext", **kwds) -> CondaContext:
     return conda_context
 
 
-def collect_conda_targets(ctx, paths: List[str], recursive=False, found_tool_callback=None):
+def collect_conda_targets(ctx, paths: Iterable[str], recursive=False, found_tool_callback=None):
     """Load CondaTarget objects from supplied artifact sources.
 
     If a tool contains more than one requirement, the requirements will each

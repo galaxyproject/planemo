@@ -146,7 +146,7 @@ def cli(ctx: "PlanemoCliContext", paths, **kwds) -> None:
                 ctx.log(f"{conda_target} requires '{base_image}' as base image")
                 break
 
-        registry_target.write_targets(ctx, target_filename, list(conda_targets), tag, base_image)
+        registry_target.write_targets(ctx, target_filename, conda_targets, tag, base_image)
         tools_str = "\n".join(map(lambda p: "- " + os.path.basename(p), tool_paths))
         registry_target.handle_pull_request(
             ctx, name, target_filename, conda_targets_str, tools_str, base_image, **kwds
@@ -223,7 +223,7 @@ class RegistryTarget:
         self,
         ctx: "PlanemoCliContext",
         target_filename: str,
-        conda_targets: List[CondaTarget],
+        conda_targets: Iterable[CondaTarget],
         tag: str,
         base_image: str,
     ) -> None:

@@ -1,5 +1,8 @@
 """Ensure best-practice biocontainer registered for this tool."""
 
+from typing import List
+
+from galaxy.tool_util.deps.conda_util import CondaTarget
 from galaxy.tool_util.deps.container_resolvers.mulled import targets_to_mulled_name
 
 from planemo.conda import tool_source_conda_targets
