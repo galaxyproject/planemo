@@ -98,7 +98,8 @@ def collect_conda_targets(ctx, paths, recursive=False, found_tool_callback=None)
     for path in paths:
         if not os.path.exists(path):
             targets = target_str_to_targets(path)
-            [conda_targets.add(_) for _ in targets]
+            for _ in targets:
+                conda_targets.add(_)
         else:
             real_paths.append(path)
 
