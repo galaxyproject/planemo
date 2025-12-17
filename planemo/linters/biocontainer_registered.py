@@ -27,7 +27,7 @@ def lint_biocontainer_registered(tool_source, lint_ctx):
         lint_ctx.warn(MESSAGE_WARN_NO_CONTAINER)
 
 
-def mulled_container_name(namespace, targets):
+def mulled_container_name(namespace: str, targets: List[CondaTarget]) -> str:
     name = targets_to_mulled_name(targets=targets, hash_func="v2", namespace=namespace)
     if name:
         return f"quay.io/{namespace}/{name}"

@@ -2,7 +2,10 @@
 
 import os
 import string
-from typing import List
+from typing import (
+    Iterable,
+    List,
+)
 
 import click
 from galaxy.tool_util.deps.container_resolvers.mulled import targets_to_mulled_name
@@ -233,7 +236,7 @@ class RegistryTarget:
             ctx.log(f"Wrote requirements [{targets}] to file [{target_filename}]")
 
 
-def to_target_str(targets: List[CondaTarget]) -> str:
+def to_target_str(targets: Iterable[CondaTarget]) -> str:
     target_strings = []
     for target in targets:
         if target.version:
