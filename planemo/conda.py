@@ -88,20 +88,18 @@ def build_conda_context(ctx: "PlanemoCliContext", **kwds) -> CondaContext:
     return conda_context
 
 
-def collect_conda_targets(ctx, paths: Iterable[str], recursive=False, found_tool_callback=None):
+def collect_conda_targets(ctx, paths: Iterable[str], recursive: bool = False, found_tool_callback=None) -> Set[CondaTarget]:
     """Load CondaTarget objects from supplied artifact sources.
 
     If a tool contains more than one requirement, the requirements will each
     appear once in the output.
     """
-    conda_targets = set()
+    conda_targets: Set[CondaTarget] = set()
     real_paths = []
     for path in paths:
         # case: path is not a path, but a comma separated list of target strings
         if not os.path.exists(path):
-            targets = target_str_to_targets(path)
-            for _ in targets:
-                conda_targets.add(_)
+            conda_targets.update(target_str_to_targets(path))
         else:
             real_paths.append(path)
 
@@ -111,7 +109,7 @@ def collect_conda_targets(ctx, paths: Iterable[str], recursive=False, found_tool
         if found_tool_callback:
             found_tool_callback(tool_path)
         for target in tool_source_conda_targets(tool_source):
-            conda_targets.add(target)
+            conda_targets.update(tool_source_conda_targets(tool_source))
     return conda_targets
 
 
