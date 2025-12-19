@@ -108,7 +108,7 @@ def collect_conda_targets(ctx, paths: Iterable[str], recursive: bool = False, fo
     ):
         if found_tool_callback:
             found_tool_callback(tool_path)
-            conda_targets.update(tool_source_conda_targets(tool_source))
+        conda_targets.update(tool_source_conda_targets(tool_source))
     return conda_targets
 
 
