@@ -4,31 +4,14 @@ The extend galaxy-tool-util's features with planemo specific idioms.
 """
 
 import os
-from typing import (
-    Iterable,
-    List,
-)
 
 from galaxy.tool_util.deps.mulled.mulled_build import (
     DEFAULT_CHANNELS,
     ensure_installed,
     InvolucroContext,
 )
-from galaxy.tool_util.deps.mulled.util import (
-    build_target,
-    CondaTarget,
-)
 
-from planemo.conda import collect_conda_target_lists
 from planemo.io import shell
-
-
-def conda_to_mulled_targets(conda_targets: Iterable[CondaTarget]) -> List[CondaTarget]:
-    return list(map(lambda c: build_target(c.package, c.version), conda_targets))
-
-
-def collect_mulled_target_lists(ctx, paths: Iterable[str], recursive: bool = False) -> List[List[CondaTarget]]:
-    return list(map(conda_to_mulled_targets, collect_conda_target_lists(ctx, paths, recursive=recursive)))
 
 
 def build_involucro_context(ctx, **kwds):
@@ -67,6 +50,4 @@ def build_mull_target_kwds(ctx, **kwds):
 __all__ = (
     "build_involucro_context",
     "build_mull_target_kwds",
-    "collect_mulled_target_lists",
-    "conda_to_mulled_targets",
 )
