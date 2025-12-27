@@ -1,5 +1,6 @@
 """Module provides generic interface to running Galaxy tools and workflows."""
 
+import contextlib
 import os
 import sys
 import tempfile
@@ -13,6 +14,7 @@ from typing import (
     Tuple,
     Type,
     TYPE_CHECKING,
+    Union,
 )
 from urllib.parse import urljoin
 
@@ -51,6 +53,10 @@ from planemo.galaxy.invocations.api import (
 from planemo.galaxy.invocations.polling import PollingTrackerImpl
 from planemo.galaxy.invocations.polling import wait_for_invocation_and_jobs as polling_wait_for_invocation_and_jobs
 from planemo.galaxy.invocations.progress import WorkflowProgressDisplay
+from planemo.galaxy.upload_progress import (
+    _aggregate_job_states,
+    UploadProgressDisplay,
+)
 from planemo.io import wait_on
 from planemo.runnable import (
     ErrorRunResponse,
@@ -120,12 +126,14 @@ class PlanemoStagingInterface(StagingInterface):
         user_gi: GalaxyInstance,
         version_major: str,
         simultaneous_uploads: bool,
+        upload_progress_display: Optional["UploadProgressDisplay"] = None,
     ) -> None:
         self._ctx = ctx
         self._user_gi = user_gi
         self._runnable = runnable
         self._version_major = version_major
         self._simultaneous_uploads = simultaneous_uploads
+        self._upload_progress_display = upload_progress_display
         self._upload_jobs: List[Dict[str, Any]] = []
 
     def _post(self, api_path: str, payload: Dict[str, Any], files_attached: bool = False) -> Dict[str, Any]:
@@ -145,31 +153,100 @@ class PlanemoStagingInterface(StagingInterface):
     def _handle_job(self, job_response: Dict[str, Any]) -> None:
         # Track upload jobs for later waiting
         self._upload_jobs.append(job_response)
-        if not self._simultaneous_uploads:
+
+        # Update progress display if available
+        if self._upload_progress_display:
+            job_summary = _aggregate_job_states(self._upload_jobs, self._user_gi)
+            self._upload_progress_display.update_jobs(self._upload_jobs, job_summary)
+
+        # In sequential mode, wait for each job immediately if not using progress display
+        if not self._simultaneous_uploads and not self._upload_progress_display:
             job_id = job_response["id"]
             _wait_for_job(self._user_gi, job_id)
 
     def wait_for_uploads(self, check_ok: bool = True) -> None:
+        """Wait for all upload jobs to complete.
+
+        Args:
+            check_ok: Whether to verify upload success and raise exceptions on failure
+        """
+        if not self._upload_jobs:
+            return
+
+        # If we have a progress display (created in stage_in), use it for polling
+        if self._upload_progress_display:
+            self._wait_for_uploads_with_progress(check_ok, self._upload_progress_display)
+        else:
+            # No progress display - use original behavior
+            self._wait_for_uploads_without_progress(check_ok)
+
+    def _wait_for_uploads_with_progress(self, check_ok: bool, display: UploadProgressDisplay) -> None:
+        """Wait for uploads with progress display.
+
+        Args:
+            check_ok: Whether to verify upload success
+            display: Upload progress display instance
+        """
+        polling_tracker = PollingTrackerImpl(polling_backoff=0)
+
+        while not display.upload_progress.terminal:
+            # Aggregate current job states
+            job_summary = _aggregate_job_states(self._upload_jobs, self._user_gi)
+            display.update_jobs(self._upload_jobs, job_summary)
+
+            # Print any new errors
+            display.upload_progress.print_job_errors_once(self._user_gi, display)
+
+            if not display.upload_progress.terminal:
+                polling_tracker.sleep()
+
+        # Verify uploads if requested
+        if check_ok:
+            self._verify_uploads_ok()
+
+    def _wait_for_uploads_without_progress(self, check_ok: bool) -> None:
+        """Wait for uploads without progress display (original behavior).
+
+        Args:
+            check_ok: Whether to verify upload success
+        """
         for upload_job in self._upload_jobs:
             job_id = upload_job["id"]
-            final_state = _wait_for_job(self._user_gi, job_id)
-            if check_ok:
-                job_response = self._user_gi.jobs.show_job(job_id, full_details=True)
-                if final_state != "ok":
-                    stderr = job_response["stderr"]
-                    raise Exception(f"Upload job [{job_id}] failed with state [{final_state}]: {stderr}")
-                for output in job_response["outputs"].values():
-                    hda = self._user_gi.datasets.show_dataset(output["id"])
-                    if hda["state"] not in ("ok", "deferred"):
-                        raise Exception(
-                            f"Upload job [{job_id}] produced output [{hda['hid']}: {hda['name']}] in state [{hda['state']}]"
-                        )
-                for output in job_response["output_collections"].values():
-                    hdca = self._user_gi.histories.show_dataset_collection(job_response["history_id"], output["id"])
-                    if hdca["state"] not in ("ok",):
-                        raise Exception(
-                            f"Upload job [{job_id}] produced output collection [{hdca['hid']}: {hdca['name']}] in state [{hdca['state']}]"
-                        )
+            _wait_for_job(self._user_gi, job_id)
+
+        if check_ok:
+            self._verify_uploads_ok()
+
+    def _verify_uploads_ok(self) -> None:
+        """Verify that all upload jobs completed successfully.
+
+        Raises:
+            Exception: If any upload job failed or produced outputs in error state
+        """
+        for upload_job in self._upload_jobs:
+            job_id = upload_job["id"]
+            job_response = self._user_gi.jobs.show_job(job_id, full_details=True)
+            final_state = job_response.get("state", "unknown")
+
+            if final_state != "ok":
+                stderr = job_response.get("stderr", "")
+                raise Exception(f"Upload job [{job_id}] failed with state [{final_state}]: {stderr}")
+
+            # Check dataset outputs
+            for output in job_response.get("outputs", {}).values():
+                hda = self._user_gi.datasets.show_dataset(output["id"])
+                if hda["state"] not in ("ok", "deferred"):
+                    raise Exception(
+                        f"Upload job [{job_id}] produced output [{hda['hid']}: {hda['name']}] in state [{hda['state']}]"
+                    )
+
+            # Check collection outputs
+            for output in job_response.get("output_collections", {}).values():
+                hdca = self._user_gi.histories.show_dataset_collection(job_response["history_id"], output["id"])
+                if hdca["state"] not in ("ok",):
+                    raise Exception(
+                        f"Upload job [{job_id}] produced output collection [{hdca['hid']}: {hdca['name']}] in state [{hdca['state']}]"
+                    )
 
     @property
     def use_fetch_api(self):
@@ -346,16 +423,27 @@ def stage_in(
     simultaneous_uploads = kwds.get("simultaneous_uploads", False)
     user_gi = config.user_gi
     history_id = _history_id(user_gi, **kwds)
-    psi = PlanemoStagingInterface(ctx, runnable, user_gi, config.version_major, simultaneous_uploads)
-    job_dict, datasets = psi.stage(
-        tool_or_workflow,
-        history_id=history_id,
-        job_path=job_path,
-        use_path_paste=config.use_path_paste,
-        to_posix_lines=to_posix_lines,
-    )
 
-    psi.wait_for_uploads(kwds.get("check_uploads_ok", True))
+    # Create upload progress display context manager (or nullcontext if disabled)
+    progress_context: Union[UploadProgressDisplay, contextlib.nullcontext]
+    if sys.stdout.isatty():
+        progress_context = UploadProgressDisplay(history_id, galaxy_url=user_gi.base_url)
+    else:
+        progress_context = contextlib.nullcontext(None)
+
+    with progress_context as upload_progress:
+        psi = PlanemoStagingInterface(
+            ctx, runnable, user_gi, config.version_major, simultaneous_uploads, upload_progress
+        )
+        job_dict, datasets = psi.stage(
+            tool_or_workflow,
+            history_id=history_id,
+            job_path=job_path,
+            use_path_paste=config.use_path_paste,
+            to_posix_lines=to_posix_lines,
+        )
+        psi.wait_for_uploads(kwds.get("check_uploads_ok", True))
+
     return job_dict, history_id
 
 
