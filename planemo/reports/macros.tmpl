@@ -1,13 +1,14 @@
 {% macro render_steps(steps, display_job_attributes, summary_label="Steps") %}
    * <details><summary>{{summary_label}}</summary>
-{%    for step_data in steps %}
+{%    for step_data in steps | sort(attribute='order_index') %}
 
      - **Step {{step_data.order_index + 1}}: {{step_data.workflow_step_label or (step_data.jobs[0].tool_id if step_data.jobs[0] else 'Unlabelled step')|replace("_", "\_")}}**:
 
         * step_state: {{step_data.state}}
 
 {%      if step_data.jobs %}
-        * <details><summary>Jobs</summary>
+{%        set has_failed_jobs = step_data.jobs | rejectattr('state', 'in', ['ok', 'skipped', 'paused']) | list %}
+        * <details{% if has_failed_jobs %} open{% endif %}><summary>Jobs</summary>
 
 {{      render_step_jobs(step_data, display_job_attributes) }}
 
