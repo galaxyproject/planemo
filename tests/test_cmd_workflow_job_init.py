@@ -129,6 +129,6 @@ class CmdWorkflowJobInitTestCase(CliTestCase):
 
             with open(job_path) as stream:
                 job = yaml.safe_load(stream)
-            # Boolean without default should have placeholder
-            assert job.get("should_run") == "todo_param_value"
+            # Boolean without default should use false
+            assert job.get("should_run") is False
 

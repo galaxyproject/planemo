@@ -382,8 +382,13 @@ def job_template_with_metadata(workflow_path, **kwds):
                 ],
             }
         elif input_type in ["string", "int", "float", "boolean", "color"]:
-            # Use default value if available, otherwise use placeholder
-            template[i_label] = default_value if has_default else "todo_param_value"
+            # Use default value if available, otherwise use placeholder or false for booleans
+            if has_default:
+                template[i_label] = default_value
+            elif input_type == "boolean":
+                template[i_label] = False
+            else:
+                template[i_label] = "todo_param_value"
         else:
             template[i_label] = {
                 "TODO",  # Does this work yet?
