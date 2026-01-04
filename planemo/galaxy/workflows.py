@@ -329,6 +329,55 @@ def job_template(workflow_path, **kwds):
     return template
 
 
+def job_template_with_metadata(workflow_path, **kwds):
+    """Return a job template with metadata for each input.
+
+    Returns a tuple of (template_dict, metadata_dict) where metadata_dict
+    contains type and doc (description) for each input label.
+    """
+    if kwds.get("from_invocation"):
+        # For invocation-based templates, we don't have metadata
+        return _job_inputs_template_from_invocation(workflow_path, kwds["galaxy_url"], kwds["galaxy_user_key"]), {}
+
+    template = {}
+    metadata = {}
+    for required_input_step in required_input_steps(workflow_path):
+        i_label = input_label(required_input_step)
+        input_type = required_input_step["type"]
+        input_doc = required_input_step.get("doc", "")
+
+        # Store metadata for this input
+        metadata[i_label] = {
+            "type": input_type,
+            "doc": input_doc,
+        }
+
+        if input_type == "data":
+            template[i_label] = {
+                "class": "File",
+                "path": "todo_test_data_path.ext",
+            }
+        elif input_type == "collection":
+            template[i_label] = {
+                "class": "Collection",
+                "collection_type": "list",
+                "elements": [
+                    {
+                        "class": "File",
+                        "identifier": "todo_element_name",
+                        "path": "todo_test_data_path.ext",
+                    }
+                ],
+            }
+        elif input_type in ["string", "int", "float", "boolean", "color"]:
+            template[i_label] = "todo_param_value"
+        else:
+            template[i_label] = {
+                "TODO",  # Does this work yet?
+            }
+    return template, metadata
+
+
 def new_workflow_associated_path(workflow_path, suffix="tests"):
     """Generate path for test or job YAML file next to workflow."""
     base, input_ext = os.path.splitext(workflow_path)

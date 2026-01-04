@@ -9,10 +9,39 @@ from planemo import options
 from planemo.cli import command_function
 from planemo.galaxy.workflows import (
     get_workflow_from_invocation_id,
-    job_template,
+    job_template_with_metadata,
     new_workflow_associated_path,
 )
 from planemo.io import can_write_to_path
+
+
+def _dump_with_comments(job, metadata):
+    """Dump job template as YAML with metadata comments for each input.
+
+    Since PyYAML doesn't support comments, we manually construct the YAML
+    output with comment lines for type and description.
+    """
+    lines = []
+    for label, value in job.items():
+        # Add comment with type and description if metadata is available
+        meta = metadata.get(label, {})
+        input_type = meta.get("type", "")
+        input_doc = meta.get("doc", "")
+
+        if input_type or input_doc:
+            comment_parts = []
+            if input_type:
+                comment_parts.append(f"type: {input_type}")
+            if input_doc:
+                comment_parts.append(f"doc: {input_doc}")
+            lines.append(f"# {', '.join(comment_parts)}")
+
+        # Serialize this single key-value pair
+        single_item = {label: value}
+        yaml_str = yaml.dump(single_item, default_flow_style=False)
+        lines.append(yaml_str.rstrip())
+
+    return "\n".join(lines) + "\n"
 
 
 @click.command("workflow_job_init")
@@ -44,7 +73,7 @@ def cli(ctx, workflow_identifier, output=None, **kwds):
             workflow_identifier, kwds["galaxy_url"], kwds["galaxy_user_key"]
         )
 
-    job = job_template(workflow_identifier, **kwds)
+    job, metadata = job_template_with_metadata(workflow_identifier, **kwds)
 
     if output is None:
         output = new_workflow_associated_path(
@@ -53,4 +82,4 @@ def cli(ctx, workflow_identifier, output=None, **kwds):
     if not can_write_to_path(output, **kwds):
         ctx.exit(1)
     with open(output, "w") as f_job:
-        yaml.dump(job, f_job)
+        f_job.write(_dump_with_comments(job, metadata))

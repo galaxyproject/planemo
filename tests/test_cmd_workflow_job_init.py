@@ -19,6 +19,10 @@ class CmdWorkflowJobInitTestCase(CliTestCase):
             assert isinstance(job, dict)
             assert "the_input" in job
             assert job.get("the_input").get("path") == "todo_test_data_path.ext"
+            # Check that comments with type and doc are present
+            with open(job_path) as stream:
+                content = stream.read()
+            assert "# type: data, doc: input doc" in content
 
     def test_cannot_overwrite(self):
         with self._isolate_with_test_data("wf_repos/from_format2/0_basic_native") as f:
