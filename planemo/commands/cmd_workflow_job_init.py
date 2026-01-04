@@ -20,7 +20,7 @@ def _build_commented_yaml(job, metadata):
     """Build a CommentedMap with metadata comments for each input.
 
     Uses ruamel.yaml to properly add YAML comments with type, description,
-    optionality, and default value information for each input parameter.
+    optionality, default value, and format information for each input parameter.
     """
     commented = CommentedMap()
 
@@ -37,17 +37,20 @@ def _build_commented_yaml(job, metadata):
         else:
             commented[label] = value
 
-        # Add comment with type, description, optionality, and default if metadata is available
+        # Add comment with type, description, optionality, default, and format if metadata is available
         meta = metadata.get(label, {})
         input_type = meta.get("type", "")
         input_doc = meta.get("doc", "")
         is_optional = meta.get("optional", False)
         default_value = meta.get("default")
+        input_format = meta.get("format", "")
 
-        if input_type or input_doc or is_optional or default_value is not None:
+        if input_type or input_doc or is_optional or default_value is not None or input_format:
             comment_parts = []
             if input_type:
                 comment_parts.append(f"type: {input_type}")
+            if input_format:
+                comment_parts.append(f"format: {input_format}")
             if input_doc:
                 comment_parts.append(f"doc: {input_doc}")
             if is_optional:
