@@ -333,26 +333,33 @@ def job_template_with_metadata(workflow_path, **kwds):
     """Return a job template with metadata for each input.
 
     Returns a tuple of (template_dict, metadata_dict) where metadata_dict
-    contains type, doc (description), and optional status for each input label.
+    contains type, doc (description), optional status, and default value for each input label.
     """
     if kwds.get("from_invocation"):
         # For invocation-based templates, we don't have metadata
         return _job_inputs_template_from_invocation(workflow_path, kwds["galaxy_url"], kwds["galaxy_user_key"]), {}
 
+    try:
+        all_inputs = inputs_normalized(workflow_path=workflow_path)
+    except Exception:
+        raise Exception("Input workflow could not be successfully normalized - try linting with planemo workflow_lint.")
+
     template = {}
     metadata = {}
-    for input_step in required_input_steps(workflow_path):
+    for input_step in all_inputs:
         i_label = input_label(input_step)
         input_type = input_step["type"]
         input_doc = input_step.get("doc", "")
         is_optional = input_step.get("optional", False)
-        has_default = input_step.get("default") is not None
+        default_value = input_step.get("default")
+        has_default = default_value is not None
 
         # Store metadata for this input
         metadata[i_label] = {
             "type": input_type,
             "doc": input_doc,
             "optional": is_optional or has_default,
+            "default": default_value,
         }
 
         if input_type == "data":
@@ -373,7 +380,8 @@ def job_template_with_metadata(workflow_path, **kwds):
                 ],
             }
         elif input_type in ["string", "int", "float", "boolean", "color"]:
-            template[i_label] = "todo_param_value"
+            # Use default value if available, otherwise use placeholder
+            template[i_label] = default_value if has_default else "todo_param_value"
         else:
             template[i_label] = {
                 "TODO",  # Does this work yet?
