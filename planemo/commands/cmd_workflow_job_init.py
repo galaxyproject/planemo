@@ -3,7 +3,8 @@
 import os
 
 import click
-import yaml
+from ruamel.yaml import YAML
+from ruamel.yaml.comments import CommentedMap
 
 from planemo import options
 from planemo.cli import command_function
@@ -15,33 +16,45 @@ from planemo.galaxy.workflows import (
 from planemo.io import can_write_to_path
 
 
-def _dump_with_comments(job, metadata):
-    """Dump job template as YAML with metadata comments for each input.
+def _build_commented_yaml(job, metadata):
+    """Build a CommentedMap with metadata comments for each input.
 
-    Since PyYAML doesn't support comments, we manually construct the YAML
-    output with comment lines for type and description.
+    Uses ruamel.yaml to properly add YAML comments with type, description,
+    and optionality information for each input parameter.
     """
-    lines = []
+    commented = CommentedMap()
+
     for label, value in job.items():
-        # Add comment with type and description if metadata is available
+        # Convert nested dicts to CommentedMap for proper YAML output
+        if isinstance(value, dict):
+            commented_value = CommentedMap(value)
+            # Handle nested elements list for collections
+            if "elements" in value and isinstance(value["elements"], list):
+                commented_value["elements"] = [
+                    CommentedMap(elem) if isinstance(elem, dict) else elem for elem in value["elements"]
+                ]
+            commented[label] = commented_value
+        else:
+            commented[label] = value
+
+        # Add comment with type, description, and optionality if metadata is available
         meta = metadata.get(label, {})
         input_type = meta.get("type", "")
         input_doc = meta.get("doc", "")
+        is_optional = meta.get("optional", False)
 
-        if input_type or input_doc:
+        if input_type or input_doc or is_optional:
             comment_parts = []
             if input_type:
                 comment_parts.append(f"type: {input_type}")
             if input_doc:
                 comment_parts.append(f"doc: {input_doc}")
-            lines.append(f"# {', '.join(comment_parts)}")
+            if is_optional:
+                comment_parts.append("optional: true")
+            comment_text = ", ".join(comment_parts)
+            commented.yaml_set_comment_before_after_key(label, before=comment_text)
 
-        # Serialize this single key-value pair
-        single_item = {label: value}
-        yaml_str = yaml.dump(single_item, default_flow_style=False)
-        lines.append(yaml_str.rstrip())
-
-    return "\n".join(lines) + "\n"
+    return commented
 
 
 @click.command("workflow_job_init")
@@ -81,5 +94,9 @@ def cli(ctx, workflow_identifier, output=None, **kwds):
         )
     if not can_write_to_path(output, **kwds):
         ctx.exit(1)
+
+    commented_job = _build_commented_yaml(job, metadata)
+    yaml = YAML()
+    yaml.default_flow_style = False
     with open(output, "w") as f_job:
-        f_job.write(_dump_with_comments(job, metadata))
+        yaml.dump(commented_job, f_job)

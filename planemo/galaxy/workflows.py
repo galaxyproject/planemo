@@ -333,7 +333,7 @@ def job_template_with_metadata(workflow_path, **kwds):
     """Return a job template with metadata for each input.
 
     Returns a tuple of (template_dict, metadata_dict) where metadata_dict
-    contains type and doc (description) for each input label.
+    contains type, doc (description), and optional status for each input label.
     """
     if kwds.get("from_invocation"):
         # For invocation-based templates, we don't have metadata
@@ -341,15 +341,18 @@ def job_template_with_metadata(workflow_path, **kwds):
 
     template = {}
     metadata = {}
-    for required_input_step in required_input_steps(workflow_path):
-        i_label = input_label(required_input_step)
-        input_type = required_input_step["type"]
-        input_doc = required_input_step.get("doc", "")
+    for input_step in required_input_steps(workflow_path):
+        i_label = input_label(input_step)
+        input_type = input_step["type"]
+        input_doc = input_step.get("doc", "")
+        is_optional = input_step.get("optional", False)
+        has_default = input_step.get("default") is not None
 
         # Store metadata for this input
         metadata[i_label] = {
             "type": input_type,
             "doc": input_doc,
+            "optional": is_optional or has_default,
         }
 
         if input_type == "data":

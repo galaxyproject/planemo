@@ -14,6 +14,7 @@ lxml
 oyaml
 pathvalidate
 pyyaml
+ruamel.yaml
 virtualenv
 stdlib-list; python_version < '3.10'
 tabulate
