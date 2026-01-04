@@ -132,3 +132,50 @@ class CmdWorkflowJobInitTestCase(CliTestCase):
             # Boolean without default should use false
             assert job.get("should_run") is False
 
+    def test_collection_types(self):
+        """Test that collection types generate appropriate sample entries."""
+        with self._isolate_with_test_data("") as f:
+            init_cmd = ["workflow_job_init", "wf_collection_types.gxwf.yml"]
+            self._check_exit_code(init_cmd)
+            job_path = os.path.join(f, "wf_collection_types.gxwf_job.yml")
+            assert os.path.exists(job_path)
+
+            with open(job_path) as stream:
+                content = stream.read()
+
+            # Check collection_type is shown in comments
+            assert "collection_type: list" in content
+            assert "collection_type: paired" in content
+            assert "collection_type: list:paired" in content
+
+            with open(job_path) as stream:
+                job = yaml.safe_load(stream)
+
+            # Check list collection
+            list_input = job.get("list_input")
+            assert list_input.get("class") == "Collection"
+            assert list_input.get("collection_type") == "list"
+            assert len(list_input.get("elements")) == 1
+            assert list_input["elements"][0]["identifier"] == "todo_element_name"
+
+            # Check paired collection - should have forward and reverse
+            paired_input = job.get("paired_input")
+            assert paired_input.get("class") == "Collection"
+            assert paired_input.get("collection_type") == "paired"
+            assert len(paired_input.get("elements")) == 2
+            identifiers = [e["identifier"] for e in paired_input["elements"]]
+            assert "forward" in identifiers
+            assert "reverse" in identifiers
+
+            # Check list:paired collection - should have nested structure
+            list_paired_input = job.get("list_paired_input")
+            assert list_paired_input.get("class") == "Collection"
+            assert list_paired_input.get("collection_type") == "list:paired"
+            assert len(list_paired_input.get("elements")) == 1
+            nested = list_paired_input["elements"][0]
+            assert nested.get("class") == "Collection"
+            assert nested.get("type") == "paired"
+            assert len(nested.get("elements")) == 2
+            nested_identifiers = [e["identifier"] for e in nested["elements"]]
+            assert "forward" in nested_identifiers
+            assert "reverse" in nested_identifiers

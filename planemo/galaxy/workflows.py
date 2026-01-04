@@ -329,6 +329,52 @@ def job_template(workflow_path, **kwds):
     return template
 
 
+def _collection_elements_for_type(collection_type):
+    """Generate appropriate sample elements for a collection type."""
+    if collection_type == "paired":
+        return [
+            {
+                "class": "File",
+                "identifier": "forward",
+                "path": "todo_test_data_path_forward.ext",
+            },
+            {
+                "class": "File",
+                "identifier": "reverse",
+                "path": "todo_test_data_path_reverse.ext",
+            },
+        ]
+    elif collection_type == "list:paired":
+        return [
+            {
+                "class": "Collection",
+                "type": "paired",
+                "identifier": "todo_element_name",
+                "elements": [
+                    {
+                        "class": "File",
+                        "identifier": "forward",
+                        "path": "todo_test_data_path_forward.ext",
+                    },
+                    {
+                        "class": "File",
+                        "identifier": "reverse",
+                        "path": "todo_test_data_path_reverse.ext",
+                    },
+                ],
+            }
+        ]
+    else:
+        # Default to list
+        return [
+            {
+                "class": "File",
+                "identifier": "todo_element_name",
+                "path": "todo_test_data_path.ext",
+            }
+        ]
+
+
 def job_template_with_metadata(workflow_path, **kwds):
     """Return a job template with metadata for each input.
 
@@ -354,6 +400,7 @@ def job_template_with_metadata(workflow_path, **kwds):
         default_value = input_step.get("default")
         has_default = default_value is not None
         input_format = input_step.get("format", "")
+        collection_type = input_step.get("collection_type", "")
 
         # Store metadata for this input
         metadata[i_label] = {
@@ -362,6 +409,7 @@ def job_template_with_metadata(workflow_path, **kwds):
             "optional": is_optional or has_default,
             "default": default_value,
             "format": input_format,
+            "collection_type": collection_type,
         }
 
         if input_type == "data":
@@ -370,16 +418,11 @@ def job_template_with_metadata(workflow_path, **kwds):
                 "path": "todo_test_data_path.ext",
             }
         elif input_type == "collection":
+            coll_type = collection_type or "list"
             template[i_label] = {
                 "class": "Collection",
-                "collection_type": "list",
-                "elements": [
-                    {
-                        "class": "File",
-                        "identifier": "todo_element_name",
-                        "path": "todo_test_data_path.ext",
-                    }
-                ],
+                "collection_type": coll_type,
+                "elements": _collection_elements_for_type(coll_type),
             }
         elif input_type in ["string", "int", "float", "boolean", "color"]:
             # Use default value if available, otherwise use placeholder or false for booleans
