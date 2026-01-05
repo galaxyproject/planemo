@@ -175,3 +175,36 @@ class RunTestCase(CliTestCase):
             with zipfile.ZipFile(export_path, "r") as zip_ref:
                 # Should contain some files for a valid RO-Crate
                 assert len(zip_ref.namelist()) > 0
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @mark.tests_galaxy_branch
+    def test_run_trs_id(self):
+        """Test running a workflow using a TRS ID from GitHub."""
+        with self._isolate() as f:
+            # Use a TRS ID format: workflow/github.com/org/repo/workflow_name
+            # Testing with a simple workflow from IWC
+            trs_id = "workflow/github.com/iwc-workflows/parallel-accession-download/main"
+
+            # Create job file with proper input
+            job_path = os.path.join(f, "trs_job.yml")
+            job_content = """Run accessions:
+  class: File
+  path: test-data/input_accession_single_end.txt
+"""
+            with open(job_path, "w") as job_file:
+                job_file.write(job_content)
+
+            test_cmd = [
+                "--verbose",
+                "run",
+                "--no_dependency_resolution",
+                "--galaxy_branch",
+                target_galaxy_branch(),
+                "--test_data",
+                TEST_DATA_DIR,
+                trs_id,
+                job_path,
+            ]
+            self._check_exit_code(test_cmd)
+            assert os.path.exists(os.path.join(f, "tool_test_output.html"))
+            assert os.path.exists(os.path.join(f, "tool_test_output.json"))

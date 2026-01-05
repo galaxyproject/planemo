@@ -41,8 +41,11 @@ from planemo.database import postgres_singularity
 from planemo.deps import ensure_dependency_resolvers_conf_configured
 from planemo.docker import docker_host_args
 from planemo.galaxy.workflows import (
+    GALAXY_WORKFLOW_INSTANCE_PREFIX,
+    GALAXY_WORKFLOWS_PREFIX,
     get_toolshed_url_for_tool_id,
     remote_runnable_to_workflow_id,
+    TRS_WORKFLOWS_PREFIX,
 )
 from planemo.io import (
     communicate,
@@ -68,8 +71,10 @@ from .run import setup_venv
 from .workflows import (
     find_tool_ids,
     import_workflow,
+    import_workflow_from_trs,
     install_shed_repos,
     MAIN_TOOLSHED_URL,
+    TRS_WORKFLOWS_PREFIX,
 )
 
 if TYPE_CHECKING:
@@ -814,10 +819,22 @@ class BaseGalaxyConfig(GalaxyInterface):
 
     def install_workflows(self):
         for runnable in self.runnables:
-            if runnable.type.name in ["galaxy_workflow", "cwl_workflow"] and not runnable.is_remote_workflow_uri:
+            # Install local workflows and TRS workflows, but skip already-imported Galaxy workflows
+            is_importable = runnable.type.name in ["galaxy_workflow", "cwl_workflow"]
+            is_trs = runnable.uri.startswith(TRS_WORKFLOWS_PREFIX)
+            is_galaxy_remote = runnable.uri.startswith((GALAXY_WORKFLOWS_PREFIX, GALAXY_WORKFLOW_INSTANCE_PREFIX))
+
+            if is_importable and (not runnable.is_remote_workflow_uri or is_trs):
                 self._install_workflow(runnable)
 
     def _install_workflow(self, runnable):
+        # Check if this is a TRS workflow
+        if runnable.uri.startswith(TRS_WORKFLOWS_PREFIX):
+            # Import from TRS using Galaxy's TRS API
+            workflow = import_workflow_from_trs(runnable.uri, user_gi=self.user_gi)
+            self._workflow_ids[runnable.uri] = workflow["id"]
+            return
+
         if self._kwds.get("shed_install") and (
             self._kwds.get("engine") != "external_galaxy" or self._kwds.get("galaxy_admin_key")
         ):
@@ -839,7 +856,12 @@ class BaseGalaxyConfig(GalaxyInterface):
         self._workflow_ids[runnable.path] = workflow["id"]
 
     def workflow_id_for_runnable(self, runnable):
-        if runnable.is_remote_workflow_uri:
+        if runnable.uri.startswith(TRS_WORKFLOWS_PREFIX):
+            # TRS workflows are imported and their IDs are stored by URI
+            workflow_id = self._workflow_ids.get(runnable.uri)
+            if not workflow_id:
+                raise ValueError(f"TRS workflow not imported: {runnable.uri}")
+        elif runnable.is_remote_workflow_uri:
             workflow_id = remote_runnable_to_workflow_id(runnable)
         else:
             workflow_id = self.workflow_id(runnable.path)

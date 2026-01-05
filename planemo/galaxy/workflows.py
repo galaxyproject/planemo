@@ -39,7 +39,133 @@ from planemo.io import warn
 FAILED_REPOSITORIES_MESSAGE = "Failed to install one or more repositories."
 GALAXY_WORKFLOWS_PREFIX = "gxid://workflows/"
 GALAXY_WORKFLOW_INSTANCE_PREFIX = "gxid://workflow-instance/"
+TRS_WORKFLOWS_PREFIX = "trs://"
 MAIN_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
+
+
+def parse_trs_id(trs_id: str) -> Optional[Dict[str, str]]:
+    """Parse a TRS ID into a full TRS URL.
+
+    Args:
+        trs_id: TRS ID in format: [#]workflow/github.com/org/repo/workflow_name[/version]
+                Examples:
+                - workflow/github.com/org/repo/main
+                - #workflow/github.com/org/repo/main/v0.1.14
+                - workflow/github.com/iwc-workflows/parallel-accession-download/main
+
+    Returns:
+        Dict with key 'trs_url' containing the full TRS API URL,
+        or None if invalid
+    """
+    # Remove leading # if present
+    if trs_id.startswith("#"):
+        trs_id = trs_id[1:]
+
+    # Expected format: workflow/github.com/org/repo/workflow_name[/version]
+    parts = trs_id.split("/")
+    if len(parts) < 5:
+        return None
+
+    artifact_type = parts[0]  # workflow or tool
+    service = parts[1]  # github.com
+    owner = parts[2]
+    repo = parts[3]
+    workflow_name = parts[4]
+
+    # Check if a specific version is provided
+    version = parts[5] if len(parts) > 5 else None
+
+    # Build the TRS tool ID
+    # Format: #workflow/github.com/org/repo/workflow_name
+    trs_tool_id = f"#{artifact_type}/{service}/{owner}/{repo}/{workflow_name}"
+
+    # Build the full TRS URL
+    # Dockstore is the primary TRS server for GitHub workflows
+    trs_base_url = "https://dockstore.org/api/ga4gh/trs/v2/tools/"
+
+    if version:
+        # Specific version requested
+        trs_url = f"{trs_base_url}{trs_tool_id}/versions/{version}"
+    else:
+        # No version specified - fetch latest version from Dockstore
+        try:
+            # Query Dockstore API to get available versions
+            versions_url = f"{trs_base_url}{trs_tool_id}/versions"
+            response = requests.get(versions_url, timeout=10)
+            response.raise_for_status()
+            versions = response.json()
+
+            if versions and len(versions) > 0:
+                # Get the first version (usually the latest/default)
+                latest_version = versions[0].get("name") or versions[0].get("id")
+                if latest_version:
+                    trs_url = f"{trs_base_url}{trs_tool_id}/versions/{latest_version}"
+                else:
+                    # Fallback to just the tool ID without version
+                    trs_url = f"{trs_base_url}{trs_tool_id}"
+            else:
+                # No versions found, use tool ID without version
+                trs_url = f"{trs_base_url}{trs_tool_id}"
+        except Exception:
+            # If we can't fetch versions, just use the tool ID without version
+            # Galaxy might handle this gracefully
+            trs_url = f"{trs_base_url}{trs_tool_id}"
+
+    return {"trs_url": trs_url}
+
+
+def parse_trs_uri(trs_uri: str) -> Optional[Dict[str, str]]:
+    """Parse a TRS URI into a full TRS URL.
+
+    Args:
+        trs_uri: TRS URI in format: trs://[#]workflow/github.com/org/repo/workflow_name[/version]
+                 or trs://<full_dockstore_url>
+
+    Returns:
+        Dict with key 'trs_url' containing the full TRS API URL,
+        or None if invalid
+    """
+    if not trs_uri.startswith(TRS_WORKFLOWS_PREFIX):
+        return None
+
+    # Remove trs:// prefix
+    trs_content = trs_uri[len(TRS_WORKFLOWS_PREFIX) :]
+
+    # Check if it's already a full URL that was wrapped
+    # This happens when user provides the full Dockstore URL directly
+    trs_base_url = "https://dockstore.org/api/ga4gh/trs/v2/tools/"
+    if trs_content.startswith("#workflow/") or trs_content.startswith("#tool/"):
+        # It's a TRS tool ID path extracted from a full URL, reconstruct it
+        return {"trs_url": f"{trs_base_url}{trs_content}"}
+
+    # Otherwise, parse as a TRS ID (workflow/... or #workflow/...)
+    return parse_trs_id(trs_content)
+
+
+def import_workflow_from_trs(trs_uri: str, user_gi):
+    """Import a workflow from a TRS endpoint using Galaxy's TRS import API.
+
+    Args:
+        trs_uri: TRS URI in format: trs://[#]workflow/github.com/org/repo/workflow_name[/version]
+                 Example: trs://workflow/github.com/iwc-workflows/parallel-accession-download/main
+        user_gi: BioBlend GalaxyInstance for user API
+
+    Returns:
+        Workflow dict with 'id' and other metadata
+    """
+    trs_info = parse_trs_uri(trs_uri)
+    if not trs_info:
+        raise ValueError(f"Invalid TRS URI: {trs_uri}")
+
+    # Create TRS import payload with full TRS URL
+    # Example TRS URL: https://dockstore.org/api/ga4gh/trs/v2/tools/#workflow/github.com/iwc-workflows/parallel-accession-download/main/versions/v0.1.14
+    trs_payload = {"trs_url": trs_info["trs_url"]}
+
+    # Use bioblend's _post method to import from TRS
+    url = user_gi.workflows._make_url() + "/upload"
+    workflow = user_gi.workflows._post(url=url, payload=trs_payload)
+
+    return workflow
 
 
 @lru_cache(maxsize=None)

@@ -54,6 +54,7 @@ TEST_EXTENSIONS = [".yml", ".yaml", ".json"]
 TEST_FILE_NOT_LIST_MESSAGE = "Invalid test definition file [%s] - file must contain a list of tests"
 TEST_FIELD_MISSING_MESSAGE = "Invalid test definition [test #%d in %s] -defintion must field [%s]."
 GALAXY_TOOLS_PREFIX = "gxid://tools/"
+TRS_WORKFLOWS_PREFIX = "trs://"
 
 
 class RunnableType(Enum):
@@ -115,7 +116,12 @@ class Runnable(NamedTuple):
 
     @property
     def is_remote_workflow_uri(self) -> bool:
-        return self.uri.startswith((GALAXY_WORKFLOWS_PREFIX, GALAXY_WORKFLOW_INSTANCE_PREFIX))
+        return self.uri.startswith((GALAXY_WORKFLOWS_PREFIX, GALAXY_WORKFLOW_INSTANCE_PREFIX, TRS_WORKFLOWS_PREFIX))
+
+    @property
+    def is_trs_workflow_uri(self) -> bool:
+        """Check if this is a TRS workflow URI."""
+        return self.uri.startswith(TRS_WORKFLOWS_PREFIX)
 
     @property
     def test_data_search_path(self) -> str:
