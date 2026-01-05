@@ -329,6 +329,116 @@ def job_template(workflow_path, **kwds):
     return template
 
 
+def _collection_elements_for_type(collection_type):
+    """Generate appropriate sample elements for a collection type."""
+    if collection_type == "paired":
+        return [
+            {
+                "class": "File",
+                "identifier": "forward",
+                "path": "todo_test_data_path_forward.ext",
+            },
+            {
+                "class": "File",
+                "identifier": "reverse",
+                "path": "todo_test_data_path_reverse.ext",
+            },
+        ]
+    elif collection_type == "list:paired":
+        return [
+            {
+                "class": "Collection",
+                "type": "paired",
+                "identifier": "todo_element_name",
+                "elements": [
+                    {
+                        "class": "File",
+                        "identifier": "forward",
+                        "path": "todo_test_data_path_forward.ext",
+                    },
+                    {
+                        "class": "File",
+                        "identifier": "reverse",
+                        "path": "todo_test_data_path_reverse.ext",
+                    },
+                ],
+            }
+        ]
+    else:
+        # Default to list
+        return [
+            {
+                "class": "File",
+                "identifier": "todo_element_name",
+                "path": "todo_test_data_path.ext",
+            }
+        ]
+
+
+def job_template_with_metadata(workflow_path, **kwds):
+    """Return a job template with metadata for each input.
+
+    Returns a tuple of (template_dict, metadata_dict) where metadata_dict
+    contains type, doc (description), optional status, default value, and format for each input label.
+    """
+    if kwds.get("from_invocation"):
+        # For invocation-based templates, we don't have metadata
+        return _job_inputs_template_from_invocation(workflow_path, kwds["galaxy_url"], kwds["galaxy_user_key"]), {}
+
+    try:
+        all_inputs = inputs_normalized(workflow_path=workflow_path)
+    except Exception:
+        raise Exception("Input workflow could not be successfully normalized - try linting with planemo workflow_lint.")
+
+    template = {}
+    metadata = {}
+    for input_step in all_inputs:
+        i_label = input_label(input_step)
+        input_type = input_step["type"]
+        input_doc = input_step.get("doc", "")
+        is_optional = input_step.get("optional", False)
+        default_value = input_step.get("default")
+        has_default = default_value is not None
+        input_format = input_step.get("format", "")
+        collection_type = input_step.get("collection_type", "")
+
+        # Store metadata for this input
+        metadata[i_label] = {
+            "type": input_type,
+            "doc": input_doc,
+            "optional": is_optional or has_default,
+            "default": default_value,
+            "format": input_format,
+            "collection_type": collection_type,
+        }
+
+        if input_type == "data":
+            template[i_label] = {
+                "class": "File",
+                "path": "todo_test_data_path.ext",
+            }
+        elif input_type == "collection":
+            coll_type = collection_type or "list"
+            template[i_label] = {
+                "class": "Collection",
+                "collection_type": coll_type,
+                "elements": _collection_elements_for_type(coll_type),
+            }
+        elif input_type in ["string", "int", "float", "boolean", "color"]:
+            # Use default value if available, otherwise use placeholder or false for booleans
+            if has_default:
+                template[i_label] = default_value
+            elif input_type == "boolean":
+                template[i_label] = False
+            else:
+                template[i_label] = "todo_param_value"
+        else:
+            template[i_label] = {
+                "TODO",  # Does this work yet?
+            }
+    return template, metadata
+
+
 def new_workflow_associated_path(workflow_path, suffix="tests"):
     """Generate path for test or job YAML file next to workflow."""
     base, input_ext = os.path.splitext(workflow_path)

@@ -1,0 +1,28 @@
+class: GalaxyWorkflow
+doc: Test workflow with various parameter types
+inputs:
+  required_file:
+    type: File
+    doc: A required file input
+  optional_file:
+    type: File
+    optional: true
+    doc: An optional file input
+  fastq_input:
+    type: File
+    format: fastq
+    doc: Input FASTQ file
+  int_param:
+    type: int
+    doc: An integer parameter
+  int_with_default:
+    type: int
+    default: 10
+    doc: Integer with default value
+  string_param:
+    type: string
+  bool_param:
+    type: boolean
+    default: true
+outputs: {}
+steps: {}

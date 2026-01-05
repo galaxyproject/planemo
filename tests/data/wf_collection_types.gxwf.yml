@@ -1,0 +1,17 @@
+class: GalaxyWorkflow
+doc: Test workflow with various collection types
+inputs:
+  list_input:
+    type: collection
+    collection_type: list
+    doc: A list collection
+  paired_input:
+    type: collection
+    collection_type: paired
+    doc: A paired collection
+  list_paired_input:
+    type: collection
+    collection_type: "list:paired"
+    doc: A list of paired collections
+outputs: {}
+steps: {}
