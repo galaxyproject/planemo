@@ -11,8 +11,12 @@ from typing import (
     Dict,
     List,
     Optional,
+    Tuple,
 )
-from urllib.parse import urlparse
+from urllib.parse import (
+    quote,
+    urlparse,
+)
 
 import requests
 import yaml
@@ -78,6 +82,8 @@ def parse_trs_id(trs_id: str) -> Optional[Dict[str, str]]:
     # Build the TRS tool ID
     # Format: #workflow/github.com/org/repo/workflow_name
     trs_tool_id = f"#{artifact_type}/{service}/{owner}/{repo}/{workflow_name}"
+    # URL-encode the tool ID for API calls
+    encoded_tool_id = quote(trs_tool_id, safe="")
 
     # Build the full TRS URL
     # Dockstore is the primary TRS server for GitHub workflows
@@ -89,8 +95,8 @@ def parse_trs_id(trs_id: str) -> Optional[Dict[str, str]]:
     else:
         # No version specified - fetch latest version from Dockstore
         try:
-            # Query Dockstore API to get available versions
-            versions_url = f"{trs_base_url}{trs_tool_id}/versions"
+            # Query Dockstore API to get available versions (using encoded URL)
+            versions_url = f"{trs_base_url}{encoded_tool_id}/versions"
             response = requests.get(versions_url, timeout=10)
             response.raise_for_status()
             versions = response.json()
@@ -166,6 +172,89 @@ def import_workflow_from_trs(trs_uri: str, user_gi):
     workflow = user_gi.workflows._post(url=url, payload=trs_payload)
 
     return workflow
+
+
+DOCKSTORE_TRS_BASE = "https://dockstore.org/api/ga4gh/trs/v2/tools/"
+
+
+def _resolve_trs_url(trs_id: str) -> str:
+    """Resolve a TRS identifier to a full TRS URL."""
+    if trs_id.startswith(DOCKSTORE_TRS_BASE):
+        return trs_id
+    if trs_id.startswith(TRS_WORKFLOWS_PREFIX):
+        trs_info = parse_trs_uri(trs_id)
+        if not trs_info:
+            raise ValueError(f"Invalid TRS URI: {trs_id}")
+        return trs_info["trs_url"]
+    # It's a short TRS ID
+    trs_info = parse_trs_id(trs_id)
+    if not trs_info:
+        raise ValueError(f"Invalid TRS ID: {trs_id}")
+    return trs_info["trs_url"]
+
+
+def _encode_trs_url(trs_url: str) -> str:
+    """URL-encode the tool ID portion of a TRS URL for API calls."""
+    if not trs_url.startswith(DOCKSTORE_TRS_BASE):
+        return trs_url
+    tool_id_and_version = trs_url[len(DOCKSTORE_TRS_BASE) :]
+    if "/versions/" in tool_id_and_version:
+        tool_id, version = tool_id_and_version.split("/versions/", 1)
+        return f"{DOCKSTORE_TRS_BASE}{quote(tool_id, safe='')}/versions/{version}"
+    return f"{DOCKSTORE_TRS_BASE}{quote(tool_id_and_version, safe='')}"
+
+
+def _find_primary_descriptor(files: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    """Find the primary descriptor file from a list of TRS files."""
+    for f in files:
+        if f.get("file_type") == "PRIMARY_DESCRIPTOR":
+            return f
+    for f in files:
+        if f.get("path", "").endswith((".ga", ".gxwf.yml", ".gxwf.yaml")):
+            return f
+    return files[0] if files else None
+
+
+def fetch_workflow_from_trs(trs_id: str) -> Dict[str, Any]:
+    """Fetch a workflow definition directly from a TRS endpoint.
+
+    Args:
+        trs_id: TRS ID in format: [#]workflow/github.com/org/repo/workflow_name[/version]
+                or a full TRS URL
+
+    Returns:
+        Workflow definition dict (gxformat2 or GA format)
+
+    Raises:
+        ValueError: If the TRS ID is invalid or workflow cannot be fetched
+    """
+    trs_url = _encode_trs_url(_resolve_trs_url(trs_id))
+    files_url = f"{trs_url}/GALAXY/files"
+
+    try:
+        response = requests.get(files_url, timeout=30)
+        response.raise_for_status()
+        files = response.json()
+
+        primary_file = _find_primary_descriptor(files)
+        if not primary_file:
+            raise ValueError(f"No workflow file found at TRS endpoint: {trs_url}")
+
+        descriptor_url = f"{trs_url}/GALAXY/descriptor/{primary_file.get('path', '')}"
+        file_response = requests.get(descriptor_url, timeout=30)
+        file_response.raise_for_status()
+        content = file_response.json().get("content", "")
+
+        if not content:
+            raise ValueError(f"Empty workflow content from TRS endpoint: {trs_url}")
+
+        try:
+            return json.loads(content)
+        except json.JSONDecodeError:
+            return yaml.safe_load(content)
+
+    except requests.RequestException as e:
+        raise ValueError(f"Failed to fetch workflow from TRS endpoint {trs_url}: {e}")
 
 
 @lru_cache(maxsize=None)
@@ -311,13 +400,13 @@ def install_shed_repos_for_workflow_id(
     workflow_dict = user_gi.workflows.export_workflow_dict(workflow_id)
 
     # Use ephemeris to generate the tool list from the workflow
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.ga', delete=False) as wf_file:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".ga", delete=False) as wf_file:
         json.dump(workflow_dict, wf_file)
         wf_file.flush()
         wf_path = wf_file.name
 
     try:
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as tool_file:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as tool_file:
             tool_path = tool_file.name
 
         try:
@@ -589,23 +678,19 @@ def _collection_elements_for_type(collection_type):
         ]
 
 
-def job_template_with_metadata(workflow_path, **kwds):
-    """Return a job template with metadata for each input.
+def _build_template_and_metadata_from_inputs(
+    all_inputs: List[Dict[str, Any]],
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Build job template and metadata from normalized workflow inputs.
 
-    Returns a tuple of (template_dict, metadata_dict) where metadata_dict
-    contains type, doc (description), optional status, default value, and format for each input label.
+    Args:
+        all_inputs: List of normalized input step definitions from gxformat2
+
+    Returns:
+        Tuple of (template_dict, metadata_dict)
     """
-    if kwds.get("from_invocation"):
-        # For invocation-based templates, we don't have metadata
-        return _job_inputs_template_from_invocation(workflow_path, kwds["galaxy_url"], kwds["galaxy_user_key"]), {}
-
-    try:
-        all_inputs = inputs_normalized(workflow_path=workflow_path)
-    except Exception:
-        raise Exception("Input workflow could not be successfully normalized - try linting with planemo workflow_lint.")
-
-    template = {}
-    metadata = {}
+    template: Dict[str, Any] = {}
+    metadata: Dict[str, Any] = {}
     for input_step in all_inputs:
         i_label = input_label(input_step)
         input_type = input_step["type"]
@@ -651,6 +736,97 @@ def job_template_with_metadata(workflow_path, **kwds):
                 "TODO",  # Does this work yet?
             }
     return template, metadata
+
+
+def _job_template_with_metadata_from_dict(workflow_dict: Dict[str, Any]):
+    """Generate job template and metadata from a workflow dictionary.
+
+    This handles both GA format (.ga) and gxformat2 format workflows.
+
+    Args:
+        workflow_dict: Workflow definition dict
+
+    Returns:
+        Tuple of (template_dict, metadata_dict)
+    """
+    # Write workflow to temp file and use inputs_normalized
+    # This handles both GA and gxformat2 formats consistently
+    is_ga_format = (
+        workflow_dict.get("a_galaxy_workflow", False)
+        or "steps" in workflow_dict
+        and isinstance(workflow_dict.get("steps"), dict)
+    )
+
+    suffix = ".ga" if is_ga_format else ".gxwf.yml"
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=suffix, delete=False) as wf_file:
+        if is_ga_format:
+            json.dump(workflow_dict, wf_file)
+        else:
+            yaml.dump(workflow_dict, wf_file)
+        wf_file.flush()
+        wf_path = wf_file.name
+
+    try:
+        all_inputs = inputs_normalized(workflow_path=wf_path)
+    except Exception:
+        raise Exception("Input workflow could not be successfully normalized from TRS endpoint.")
+    finally:
+        if os.path.exists(wf_path):
+            os.unlink(wf_path)
+
+    return _build_template_and_metadata_from_inputs(all_inputs)
+
+
+def is_trs_identifier(identifier: str) -> bool:
+    """Check if the identifier is a TRS ID or TRS URI.
+
+    Args:
+        identifier: The workflow identifier to check
+
+    Returns:
+        True if it's a TRS ID or URI, False otherwise
+    """
+    # Full Dockstore TRS URL
+    if identifier.startswith(DOCKSTORE_TRS_BASE):
+        return True
+    # TRS URI
+    if identifier.startswith(TRS_WORKFLOWS_PREFIX):
+        return True
+    # Short TRS ID format
+    if identifier.startswith(("workflow/", "tool/", "#workflow/", "#tool/")) and "/github.com/" in identifier:
+        return True
+    return False
+
+
+def job_template_with_metadata(workflow_path, **kwds):
+    """Return a job template with metadata for each input.
+
+    Returns a tuple of (template_dict, metadata_dict) where metadata_dict
+    contains type, doc (description), optional status, default value, and format for each input label.
+
+    The workflow_path can be:
+    - A local file path to a workflow file
+    - A TRS ID (e.g., workflow/github.com/org/repo/workflow_name)
+    - A TRS URI (e.g., trs://workflow/github.com/org/repo/workflow_name)
+    - A full Dockstore TRS URL
+    """
+    if kwds.get("from_invocation"):
+        # For invocation-based templates, we don't have metadata
+        return _job_inputs_template_from_invocation(workflow_path, kwds["galaxy_url"], kwds["galaxy_user_key"]), {}
+
+    # Check if this is a TRS identifier
+    if is_trs_identifier(workflow_path):
+        # Fetch workflow from TRS and write to temp file for processing
+        workflow_dict = fetch_workflow_from_trs(workflow_path)
+        return _job_template_with_metadata_from_dict(workflow_dict)
+
+    try:
+        all_inputs = inputs_normalized(workflow_path=workflow_path)
+    except Exception:
+        raise Exception("Input workflow could not be successfully normalized - try linting with planemo workflow_lint.")
+
+    return _build_template_and_metadata_from_inputs(all_inputs)
 
 
 def new_workflow_associated_path(workflow_path, suffix="tests"):
@@ -794,6 +970,11 @@ def _job_outputs_template_from_invocation(invocation_id, galaxy_url, galaxy_api_
 
 
 __all__ = (
-    "import_workflow",
     "describe_outputs",
+    "DOCKSTORE_TRS_BASE",
+    "fetch_workflow_from_trs",
+    "import_workflow",
+    "import_workflow_from_trs",
+    "is_trs_identifier",
+    "TRS_WORKFLOWS_PREFIX",
 )

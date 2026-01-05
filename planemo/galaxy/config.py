@@ -41,8 +41,6 @@ from planemo.database import postgres_singularity
 from planemo.deps import ensure_dependency_resolvers_conf_configured
 from planemo.docker import docker_host_args
 from planemo.galaxy.workflows import (
-    GALAXY_WORKFLOW_INSTANCE_PREFIX,
-    GALAXY_WORKFLOWS_PREFIX,
     get_toolshed_url_for_tool_id,
     install_shed_repos_for_workflow_id,
     remote_runnable_to_workflow_id,
@@ -75,7 +73,6 @@ from .workflows import (
     import_workflow_from_trs,
     install_shed_repos,
     MAIN_TOOLSHED_URL,
-    TRS_WORKFLOWS_PREFIX,
 )
 
 if TYPE_CHECKING:
@@ -823,7 +820,6 @@ class BaseGalaxyConfig(GalaxyInterface):
             # Install local workflows and TRS workflows, but skip already-imported Galaxy workflows
             is_importable = runnable.type.name in ["galaxy_workflow", "cwl_workflow"]
             is_trs = runnable.uri.startswith(TRS_WORKFLOWS_PREFIX)
-            is_galaxy_remote = runnable.uri.startswith((GALAXY_WORKFLOWS_PREFIX, GALAXY_WORKFLOW_INSTANCE_PREFIX))
 
             if is_importable and (not runnable.is_remote_workflow_uri or is_trs):
                 self._install_workflow(runnable)

@@ -9,9 +9,12 @@ from ruamel.yaml.comments import CommentedMap
 from planemo import options
 from planemo.cli import command_function
 from planemo.galaxy.workflows import (
+    DOCKSTORE_TRS_BASE,
     get_workflow_from_invocation_id,
+    is_trs_identifier,
     job_template_with_metadata,
     new_workflow_associated_path,
+    TRS_WORKFLOWS_PREFIX,
 )
 from planemo.io import can_write_to_path
 
@@ -70,6 +73,41 @@ def _build_commented_yaml(job, metadata):
     return commented
 
 
+def _trs_id_to_job_filename(trs_id: str) -> str:
+    """Generate a job filename from a TRS ID.
+
+    Args:
+        trs_id: TRS ID in various formats:
+            - workflow/github.com/org/repo/name[/version]
+            - #workflow/github.com/org/repo/name[/version]
+            - trs://workflow/github.com/org/repo/name[/version]
+            - https://dockstore.org/api/ga4gh/trs/v2/tools/#workflow/...
+
+    Returns:
+        A job filename like "workflow-name-job.yml"
+    """
+    # Strip common prefixes
+    identifier = trs_id
+    if identifier.startswith(DOCKSTORE_TRS_BASE):
+        identifier = identifier[len(DOCKSTORE_TRS_BASE) :]
+    if identifier.startswith(TRS_WORKFLOWS_PREFIX):
+        identifier = identifier[len(TRS_WORKFLOWS_PREFIX) :]
+    if identifier.startswith("#"):
+        identifier = identifier[1:]
+
+    # Parse the TRS ID path: workflow/github.com/org/repo/name[/version]
+    parts = identifier.split("/")
+    if len(parts) >= 5:
+        # Get the workflow name (5th element) and optionally version
+        workflow_name = parts[4]
+        # Sanitize the name for use as filename
+        workflow_name = workflow_name.replace(" ", "-").replace("/", "-")
+        return f"{workflow_name}-job.yml"
+    else:
+        # Fallback to a generic name
+        return "workflow-job.yml"
+
+
 @click.command("workflow_job_init")
 @options.required_workflow_arg()
 @options.force_option()
@@ -102,9 +140,14 @@ def cli(ctx, workflow_identifier, output=None, **kwds):
     job, metadata = job_template_with_metadata(workflow_identifier, **kwds)
 
     if output is None:
-        output = new_workflow_associated_path(
-            path_basename if kwds["from_invocation"] else workflow_identifier, suffix="job"
-        )
+        if kwds["from_invocation"]:
+            output = new_workflow_associated_path(path_basename, suffix="job")
+        elif is_trs_identifier(workflow_identifier):
+            # Generate output filename from TRS ID
+            # Extract workflow name from TRS ID (e.g., workflow/github.com/org/repo/name -> name-job.yml)
+            output = _trs_id_to_job_filename(workflow_identifier)
+        else:
+            output = new_workflow_associated_path(workflow_identifier, suffix="job")
     if not can_write_to_path(output, **kwds):
         ctx.exit(1)
 

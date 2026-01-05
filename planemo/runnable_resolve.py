@@ -39,14 +39,17 @@ def for_runnable_identifier(ctx, runnable_identifier, kwds: Dict[str, Any]):
     # Check if it's a TRS ID - convert to TRS URI (don't download)
     # Support both formats: workflow/... and #workflow/...
     is_trs_id = (
-        runnable_identifier.startswith(("workflow/", "tool/", "#workflow/", "#tool/")) and "/github.com/" in runnable_identifier
+        runnable_identifier.startswith(("workflow/", "tool/", "#workflow/", "#tool/"))
+        and "/github.com/" in runnable_identifier
     )
     if is_trs_id:
         # This is a TRS ID, convert to TRS URI
         runnable_identifier = f"{TRS_WORKFLOWS_PREFIX}{runnable_identifier}"
         return for_uri(runnable_identifier)
 
-    if not runnable_identifier.startswith((GALAXY_WORKFLOWS_PREFIX, GALAXY_WORKFLOW_INSTANCE_PREFIX, TRS_WORKFLOWS_PREFIX)):
+    if not runnable_identifier.startswith(
+        (GALAXY_WORKFLOWS_PREFIX, GALAXY_WORKFLOW_INSTANCE_PREFIX, TRS_WORKFLOWS_PREFIX)
+    ):
         runnable_identifier = uri_to_path(ctx, runnable_identifier)
     if os.path.exists(runnable_identifier):
         runnable = for_path(runnable_identifier)
