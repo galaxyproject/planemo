@@ -12,11 +12,15 @@ from typing import (
     List,
     Optional,
     Tuple,
+    TYPE_CHECKING,
 )
 from urllib.parse import (
     quote,
     urlparse,
 )
+
+if TYPE_CHECKING:
+    from bioblend.galaxy import GalaxyInstance
 
 import requests
 import yaml
@@ -148,7 +152,7 @@ def parse_trs_uri(trs_uri: str) -> Optional[Dict[str, str]]:
     return parse_trs_id(trs_content)
 
 
-def import_workflow_from_trs(trs_uri: str, user_gi):
+def import_workflow_from_trs(trs_uri: str, user_gi: "GalaxyInstance") -> Dict[str, Any]:
     """Import a workflow from a TRS endpoint using Galaxy's TRS import API.
 
     Args:
@@ -321,14 +325,14 @@ def load_shed_repos(runnable):
 
 
 def _install_shed_repos_from_tools_info(
-    tools_info,
-    admin_gi,
-    ignore_dependency_problems,
-    install_tool_dependencies=False,
-    install_resolver_dependencies=True,
-    install_repository_dependencies=True,
-    install_most_recent_revision=False,
-):
+    tools_info: List[Dict[str, Any]],
+    admin_gi: "GalaxyInstance",
+    ignore_dependency_problems: bool,
+    install_tool_dependencies: bool = False,
+    install_resolver_dependencies: bool = True,
+    install_repository_dependencies: bool = True,
+    install_most_recent_revision: bool = False,
+) -> Tuple[Optional[List[Any]], Optional[List[Any]]]:
     """Common logic for installing tool shed repositories from a tools_info list."""
     if not tools_info:
         return None, None
@@ -382,15 +386,15 @@ def install_shed_repos(
 
 
 def install_shed_repos_for_workflow_id(
-    workflow_id,
-    user_gi,
-    admin_gi,
-    ignore_dependency_problems,
-    install_tool_dependencies=False,
-    install_resolver_dependencies=True,
-    install_repository_dependencies=True,
-    install_most_recent_revision=False,
-):
+    workflow_id: str,
+    user_gi: "GalaxyInstance",
+    admin_gi: "GalaxyInstance",
+    ignore_dependency_problems: bool,
+    install_tool_dependencies: bool = False,
+    install_resolver_dependencies: bool = True,
+    install_repository_dependencies: bool = True,
+    install_most_recent_revision: bool = False,
+) -> Tuple[Optional[List[Any]], Optional[List[Any]]]:
     """Install tool shed repositories for a workflow that's already in Galaxy.
 
     This is used for TRS workflows that are imported via Galaxy's TRS API.
