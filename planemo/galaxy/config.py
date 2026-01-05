@@ -44,6 +44,7 @@ from planemo.galaxy.workflows import (
     GALAXY_WORKFLOW_INSTANCE_PREFIX,
     GALAXY_WORKFLOWS_PREFIX,
     get_toolshed_url_for_tool_id,
+    install_shed_repos_for_workflow_id,
     remote_runnable_to_workflow_id,
     TRS_WORKFLOWS_PREFIX,
 )
@@ -833,6 +834,22 @@ class BaseGalaxyConfig(GalaxyInterface):
             # Import from TRS using Galaxy's TRS API
             workflow = import_workflow_from_trs(runnable.uri, user_gi=self.user_gi)
             self._workflow_ids[runnable.uri] = workflow["id"]
+
+            # Install required tools from the toolshed if shed_install is enabled
+            if self._kwds.get("shed_install") and (
+                self._kwds.get("engine") != "external_galaxy" or self._kwds.get("galaxy_admin_key")
+            ):
+                workflow_repos = install_shed_repos_for_workflow_id(
+                    workflow["id"],
+                    self.user_gi,
+                    self.gi,
+                    self._kwds.get("ignore_dependency_problems", False),
+                    self._kwds.get("install_tool_dependencies", False),
+                    self._kwds.get("install_resolver_dependencies", True),
+                    self._kwds.get("install_repository_dependencies", True),
+                    self._kwds.get("install_most_recent_revision", False),
+                )
+                self.installed_repos[runnable.uri], self.updated_repos[runnable.uri] = workflow_repos
             return
 
         if self._kwds.get("shed_install") and (

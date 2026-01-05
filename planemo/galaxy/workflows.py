@@ -231,6 +231,46 @@ def load_shed_repos(runnable):
     return tools
 
 
+def _install_shed_repos_from_tools_info(
+    tools_info,
+    admin_gi,
+    ignore_dependency_problems,
+    install_tool_dependencies=False,
+    install_resolver_dependencies=True,
+    install_repository_dependencies=True,
+    install_most_recent_revision=False,
+):
+    """Common logic for installing tool shed repositories from a tools_info list."""
+    if not tools_info:
+        return None, None
+
+    install_tool_manager = shed_tools.InstallRepositoryManager(admin_gi)
+    install_results = install_tool_manager.install_repositories(
+        tools_info,
+        default_install_tool_dependencies=install_tool_dependencies,
+        default_install_resolver_dependencies=install_resolver_dependencies,
+        default_install_repository_dependencies=install_repository_dependencies,
+    )
+    if install_most_recent_revision:  # for workflow autoupdates we also need the most recent tool versions
+        update_results = install_tool_manager.update_repositories(
+            tools_info,
+            default_install_tool_dependencies=install_tool_dependencies,
+            default_install_resolver_dependencies=install_resolver_dependencies,
+            default_install_repository_dependencies=install_repository_dependencies,
+        )
+        install_results.errored_repositories.extend(update_results.errored_repositories)
+        updated_repos = update_results.installed_repositories
+    else:
+        updated_repos = None
+
+    if install_results.errored_repositories:
+        if ignore_dependency_problems:
+            warn(FAILED_REPOSITORIES_MESSAGE)
+        else:
+            raise Exception(FAILED_REPOSITORIES_MESSAGE)
+    return install_results.installed_repositories, updated_repos
+
+
 def install_shed_repos(
     runnable,
     admin_gi,
@@ -241,34 +281,82 @@ def install_shed_repos(
     install_most_recent_revision=False,
 ):
     tools_info = load_shed_repos(runnable)
-    if tools_info:
-        install_tool_manager = shed_tools.InstallRepositoryManager(admin_gi)
-        install_results = install_tool_manager.install_repositories(
-            tools_info,
-            default_install_tool_dependencies=install_tool_dependencies,
-            default_install_resolver_dependencies=install_resolver_dependencies,
-            default_install_repository_dependencies=install_repository_dependencies,
-        )
-        if install_most_recent_revision:  # for workflow autoupdates we also need the most recent tool versions
-            update_results = install_tool_manager.update_repositories(
-                tools_info,
-                default_install_tool_dependencies=install_tool_dependencies,
-                default_install_resolver_dependencies=install_resolver_dependencies,
-                default_install_repository_dependencies=install_repository_dependencies,
-            )
-            install_results.errored_repositories.extend(update_results.errored_repositories)
-            updated_repos = update_results.installed_repositories
-        else:
-            updated_repos = None
+    return _install_shed_repos_from_tools_info(
+        tools_info,
+        admin_gi,
+        ignore_dependency_problems,
+        install_tool_dependencies,
+        install_resolver_dependencies,
+        install_repository_dependencies,
+        install_most_recent_revision,
+    )
 
-        if install_results.errored_repositories:
-            if ignore_dependency_problems:
-                warn(FAILED_REPOSITORIES_MESSAGE)
-            else:
-                raise Exception(FAILED_REPOSITORIES_MESSAGE)
-        return install_results.installed_repositories, updated_repos
-    else:
-        return None, None
+
+def install_shed_repos_for_workflow_id(
+    workflow_id,
+    user_gi,
+    admin_gi,
+    ignore_dependency_problems,
+    install_tool_dependencies=False,
+    install_resolver_dependencies=True,
+    install_repository_dependencies=True,
+    install_most_recent_revision=False,
+):
+    """Install tool shed repositories for a workflow that's already in Galaxy.
+
+    This is used for TRS workflows that are imported via Galaxy's TRS API.
+    We fetch the workflow definition from Galaxy and extract tool requirements.
+    """
+    # Fetch the workflow from Galaxy to get the GA format
+    workflow_dict = user_gi.workflows.export_workflow_dict(workflow_id)
+
+    # Use ephemeris to generate the tool list from the workflow
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.ga', delete=False) as wf_file:
+        json.dump(workflow_dict, wf_file)
+        wf_file.flush()
+        wf_path = wf_file.name
+
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as tool_file:
+            tool_path = tool_file.name
+
+        try:
+            # Generate tool list from the GA workflow
+            generate_tool_list_from_ga_workflow_files.generate_tool_list_from_workflow(
+                [wf_path], "Tools from TRS workflow", tool_path
+            )
+
+            # Load the generated tool list
+            with open(tool_path) as f:
+                tools_data = yaml.safe_load(f)
+                tools_info = tools_data.get("tools", []) if tools_data else []
+
+            # Add tool shed URLs
+            for repo in tools_info:
+                tool_shed = repo.get("tool_shed")
+                if tool_shed:
+                    tool_shed_url = guess_tool_shed_url(tool_shed)
+                    if tool_shed_url:
+                        repo["tool_shed_url"] = tool_shed_url
+
+            # Use common installation logic
+            return _install_shed_repos_from_tools_info(
+                tools_info,
+                admin_gi,
+                ignore_dependency_problems,
+                install_tool_dependencies,
+                install_resolver_dependencies,
+                install_repository_dependencies,
+                install_most_recent_revision,
+            )
+        finally:
+            # Clean up tool list file
+            if os.path.exists(tool_path):
+                os.unlink(tool_path)
+    finally:
+        # Clean up workflow file
+        if os.path.exists(wf_path):
+            os.unlink(wf_path)
 
 
 def import_workflow(path, admin_gi, user_gi, from_path=False):
