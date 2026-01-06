@@ -56,19 +56,34 @@ for command in list_cmds():
     function = command_obj.callback
     raw_rst = function.__doc__
 
-    def clean_rst_line(line):
-        # Check for that click \b.
-        if line.startswith("    \x08"):
-            return "::\n"
-        if line.startswith("    "):
-            return line[4:]
-        else:
-            return line
+    def clean_rst_lines(lines):
+        """Clean RST lines, handling click's \\b code block markers."""
+        result = []
+        in_code_block = False
+        for line in lines:
+            # Check for that click \b (code block marker).
+            # Handle both with and without leading spaces (inspect.cleandoc strips common indent)
+            if line.startswith("    \x08") or line == "\x08":
+                result.append("::\n")
+                in_code_block = True
+            elif in_code_block:
+                # Inside code block: keep indentation, but if line is empty/whitespace only, end block
+                if line.strip() == "":
+                    in_code_block = False
+                    result.append(line)
+                else:
+                    # Preserve indentation for code block content
+                    result.append("    " + line.lstrip() if line.strip() else line)
+            elif line.startswith("    "):
+                result.append(line[4:])
+            else:
+                result.append(line)
+        return result
 
     assert raw_rst, f"Documentation of {command} is empty"
     all_lines = raw_rst.split("\n")
     all_lines[0] = all_lines[0].lstrip()  # """ Fix docs like this.
-    clean_rst = "\n".join(map(clean_rst_line, all_lines))
+    clean_rst = "\n".join(clean_rst_lines(all_lines))
 
     result = runner.invoke(planemo_cli, [command, "--help"])
     output = result.output
