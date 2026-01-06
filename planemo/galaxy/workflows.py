@@ -69,23 +69,42 @@ def parse_trs_id(trs_id: str) -> Optional[Dict[str, str]]:
     if trs_id.startswith("#"):
         trs_id = trs_id[1:]
 
-    # Expected format: workflow/github.com/org/repo/workflow_name[/version]
+    # Expected format: workflow/github.com/org/repo[/workflow_name][/version]
+    # Some workflows use the repo name as the workflow name (4 parts for tool ID)
+    # Others have a separate workflow name (5 parts for tool ID)
     parts = trs_id.split("/")
-    if len(parts) < 5:
+    if len(parts) < 4:
         return None
 
     artifact_type = parts[0]  # workflow or tool
     service = parts[1]  # github.com
     owner = parts[2]
     repo = parts[3]
-    workflow_name = parts[4]
 
-    # Check if a specific version is provided
-    version = parts[5] if len(parts) > 5 else None
+    # Determine if we have a workflow name and/or version
+    # Format could be:
+    #   workflow/github.com/org/repo (4 parts) - no workflow name, no version
+    #   workflow/github.com/org/repo/version (5 parts) - no workflow name, with version
+    #   workflow/github.com/org/repo/workflow_name (5 parts) - with workflow name, no version
+    #   workflow/github.com/org/repo/workflow_name/version (6 parts) - with both
+    if len(parts) == 4:
+        workflow_name = None
+        version = None
+    elif len(parts) == 5:
+        # Could be either workflow_name or version - assume version for 4-part tool IDs
+        # We'll try to fetch from Dockstore to determine
+        workflow_name = None
+        version = parts[4]
+    else:
+        workflow_name = parts[4]
+        version = parts[5] if len(parts) > 5 else None
 
     # Build the TRS tool ID
-    # Format: #workflow/github.com/org/repo/workflow_name
-    trs_tool_id = f"#{artifact_type}/{service}/{owner}/{repo}/{workflow_name}"
+    # Format: #workflow/github.com/org/repo[/workflow_name]
+    if workflow_name:
+        trs_tool_id = f"#{artifact_type}/{service}/{owner}/{repo}/{workflow_name}"
+    else:
+        trs_tool_id = f"#{artifact_type}/{service}/{owner}/{repo}"
     # URL-encode the tool ID for API calls
     encoded_tool_id = quote(trs_tool_id, safe="")
 
@@ -141,14 +160,7 @@ def parse_trs_uri(trs_uri: str) -> Optional[Dict[str, str]]:
     # Remove trs:// prefix
     trs_content = trs_uri[len(TRS_WORKFLOWS_PREFIX) :]
 
-    # Check if it's already a full URL that was wrapped
-    # This happens when user provides the full Dockstore URL directly
-    trs_base_url = "https://dockstore.org/api/ga4gh/trs/v2/tools/"
-    if trs_content.startswith("#workflow/") or trs_content.startswith("#tool/"):
-        # It's a TRS tool ID path extracted from a full URL, reconstruct it
-        return {"trs_url": f"{trs_base_url}{trs_content}"}
-
-    # Otherwise, parse as a TRS ID (workflow/... or #workflow/...)
+    # Parse as a TRS ID (workflow/... or #workflow/...) to resolve versions
     return parse_trs_id(trs_content)
 
 
@@ -157,7 +169,8 @@ def import_workflow_from_trs(trs_uri: str, user_gi: "GalaxyInstance") -> Dict[st
 
     Args:
         trs_uri: TRS URI in format: trs://[#]workflow/github.com/org/repo/workflow_name[/version]
-                 Example: trs://workflow/github.com/iwc-workflows/parallel-accession-download/main
+            Example: trs://workflow/github.com/iwc-workflows/parallel-accession-download/main
+
         user_gi: BioBlend GalaxyInstance for user API
 
     Returns:
@@ -169,10 +182,10 @@ def import_workflow_from_trs(trs_uri: str, user_gi: "GalaxyInstance") -> Dict[st
 
     # Create TRS import payload with full TRS URL
     # Example TRS URL: https://dockstore.org/api/ga4gh/trs/v2/tools/#workflow/github.com/iwc-workflows/parallel-accession-download/main/versions/v0.1.14
-    trs_payload = {"trs_url": trs_info["trs_url"]}
+    trs_payload = {"archive_source": "trs_tool", "trs_url": trs_info["trs_url"]}
 
     # Use bioblend's _post method to import from TRS
-    url = user_gi.workflows._make_url() + "/upload"
+    url = user_gi.workflows._make_url()
     workflow = user_gi.workflows._post(url=url, payload=trs_payload)
 
     return workflow

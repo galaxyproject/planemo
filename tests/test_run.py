@@ -179,31 +179,26 @@ class RunTestCase(CliTestCase):
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch
     def test_run_trs_id(self):
-        """Test running a workflow using a TRS ID from GitHub."""
+        """Test importing and running a workflow using a TRS ID from GitHub."""
         with self._isolate() as f:
-            # Use a TRS ID format: workflow/github.com/org/repo/workflow_name
-            # Testing with a simple workflow from IWC
-            trs_id = "workflow/github.com/iwc-workflows/parallel-accession-download/main"
-
-            # Create job file with proper input
-            job_path = os.path.join(f, "trs_job.yml")
-            job_content = """Run accessions:
-  class: File
-  path: test-data/input_accession_single_end.txt
-"""
-            with open(job_path, "w") as job_file:
-                job_file.write(job_content)
+            # Use a TRS ID format: #workflow/github.com/org/repo[/version]
+            # Testing with a simple workflow that uses the cat tool (version 1.0)
+            trs_id = "#workflow/github.com/jmchilton/galaxy-workflow-dockstore-example-3/main"
+            cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
+            wf_job = os.path.join(TEST_DATA_DIR, "wf3-job.yml")
 
             test_cmd = [
                 "--verbose",
                 "run",
                 "--no_dependency_resolution",
+                "--extra_tools",
+                cat,
                 "--galaxy_branch",
                 target_galaxy_branch(),
                 "--test_data",
                 TEST_DATA_DIR,
                 trs_id,
-                job_path,
+                wf_job,
             ]
             self._check_exit_code(test_cmd)
             assert os.path.exists(os.path.join(f, "tool_test_output.html"))
