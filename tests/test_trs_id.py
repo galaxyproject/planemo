@@ -86,7 +86,10 @@ class TestTRSIdParsing:
 
         assert result is not None
         # Should fallback to using workflow_name as default version (Galaxy requires /versions/)
-        assert result["trs_url"] == "https://dockstore.org/api/ga4gh/trs/v2/tools/#workflow/github.com/org/repo/main/versions/main"
+        assert (
+            result["trs_url"]
+            == "https://dockstore.org/api/ga4gh/trs/v2/tools/#workflow/github.com/org/repo/main/versions/main"
+        )
 
     def test_parse_trs_id_invalid(self):
         """Test parsing invalid TRS IDs."""

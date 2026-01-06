@@ -2,6 +2,8 @@
 
 import os
 
+import pytest
+
 from .test_utils import (
     CliTestCase,
     CWL_DRAFT3_DIR,
@@ -176,6 +178,10 @@ class RunTestCase(CliTestCase):
                 # Should contain some files for a valid RO-Crate
                 assert len(zip_ref.namelist()) > 0
 
+    @pytest.mark.skipif(
+        target_galaxy_branch() == "release_22.05",
+        reason="Skipping test on Galaxy 22.05, TRS import not supported.",
+    )
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch
     def test_run_trs_id(self):
