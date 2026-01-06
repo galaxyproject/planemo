@@ -84,20 +84,29 @@ def parse_trs_id(trs_id: str) -> Optional[Dict[str, str]]:
     # Determine if we have a workflow name and/or version
     # Format could be:
     #   workflow/github.com/org/repo (4 parts) - no workflow name, no version
-    #   workflow/github.com/org/repo/version (5 parts) - no workflow name, with version
     #   workflow/github.com/org/repo/workflow_name (5 parts) - with workflow name, no version
     #   workflow/github.com/org/repo/workflow_name/version (6 parts) - with both
+    #   workflow/github.com/org/repo/workflow_name/versions/version (7 parts) - full URL format
     if len(parts) == 4:
         workflow_name = None
         version = None
     elif len(parts) == 5:
-        # Could be either workflow_name or version - assume version for 4-part tool IDs
-        # We'll try to fetch from Dockstore to determine
-        workflow_name = None
-        version = parts[4]
-    else:
+        # 5th part is the workflow name (e.g., "main" in most cases)
         workflow_name = parts[4]
-        version = parts[5] if len(parts) > 5 else None
+        version = None
+    elif len(parts) >= 6:
+        # 6+ parts: 5th is workflow name, 6th might be "versions" keyword or version
+        workflow_name = parts[4]
+        # Check if this is full URL format with "versions" keyword
+        if len(parts) >= 7 and parts[5] == "versions":
+            # Full URL format: .../workflow_name/versions/version
+            version = parts[6]
+        else:
+            # Short format: .../workflow_name/version
+            version = parts[5]
+    else:
+        workflow_name = None
+        version = None
 
     # Build the TRS tool ID
     # Format: #workflow/github.com/org/repo[/workflow_name]
