@@ -181,9 +181,10 @@ class RunTestCase(CliTestCase):
     def test_run_trs_id(self):
         """Test importing and running a workflow using a TRS ID from GitHub."""
         with self._isolate() as f:
-            # Use a TRS ID format: #workflow/github.com/org/repo[/version]
-            # Testing with a simple workflow that uses the cat tool (version 1.0)
-            trs_id = "#workflow/github.com/jmchilton/galaxy-workflow-dockstore-example-3/main"
+            # Use a TRS ID format: #workflow/github.com/org/repo/workflow_name[/version]
+            # Testing with a simple workflow that uses the cat tool
+            # This workflow exists on Dockstore and has a "master" version
+            trs_id = "#workflow/github.com/jmchilton/galaxy-workflow-dockstore-example-1/mycoolworkflow"
             cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
             wf_job = os.path.join(TEST_DATA_DIR, "wf3-job.yml")
 
