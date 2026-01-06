@@ -2,6 +2,8 @@
 
 import os
 
+import pytest
+
 from .test_utils import (
     CliTestCase,
     CWL_DRAFT3_DIR,
@@ -175,3 +177,36 @@ class RunTestCase(CliTestCase):
             with zipfile.ZipFile(export_path, "r") as zip_ref:
                 # Should contain some files for a valid RO-Crate
                 assert len(zip_ref.namelist()) > 0
+
+    @pytest.mark.skipif(
+        target_galaxy_branch() == "release_22.05",
+        reason="Skipping test on Galaxy 22.05, TRS import not supported.",
+    )
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @mark.tests_galaxy_branch
+    def test_run_trs_id(self):
+        """Test importing and running a workflow using a TRS ID from GitHub."""
+        with self._isolate() as f:
+            # Use a TRS ID format: #workflow/github.com/org/repo/workflow_name[/version]
+            # Testing with a simple workflow that uses the cat tool
+            # This workflow exists on Dockstore and has a "master" version
+            trs_id = "#workflow/github.com/jmchilton/galaxy-workflow-dockstore-example-1/mycoolworkflow"
+            cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
+            wf_job = os.path.join(TEST_DATA_DIR, "wf3-job.yml")
+
+            test_cmd = [
+                "--verbose",
+                "run",
+                "--no_dependency_resolution",
+                "--extra_tools",
+                cat,
+                "--galaxy_branch",
+                target_galaxy_branch(),
+                "--test_data",
+                TEST_DATA_DIR,
+                trs_id,
+                wf_job,
+            ]
+            self._check_exit_code(test_cmd)
+            assert os.path.exists(os.path.join(f, "tool_test_output.html"))
+            assert os.path.exists(os.path.join(f, "tool_test_output.json"))

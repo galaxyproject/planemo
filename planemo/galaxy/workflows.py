@@ -11,8 +11,18 @@ from typing import (
     Dict,
     List,
     Optional,
+    Protocol,
+    runtime_checkable,
+    Tuple,
+    TYPE_CHECKING,
 )
-from urllib.parse import urlparse
+from urllib.parse import (
+    quote,
+    urlparse,
+)
+
+if TYPE_CHECKING:
+    from bioblend.galaxy import GalaxyInstance
 
 import requests
 import yaml
@@ -39,7 +49,274 @@ from planemo.io import warn
 FAILED_REPOSITORIES_MESSAGE = "Failed to install one or more repositories."
 GALAXY_WORKFLOWS_PREFIX = "gxid://workflows/"
 GALAXY_WORKFLOW_INSTANCE_PREFIX = "gxid://workflow-instance/"
+TRS_WORKFLOWS_PREFIX = "trs://"
 MAIN_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
+
+
+def parse_trs_id(trs_id: str) -> Optional[Dict[str, str]]:
+    """Parse a TRS ID into a full TRS URL.
+
+    Args:
+        trs_id: TRS ID in format: [#]workflow/github.com/org/repo/workflow_name[/version]
+                Examples:
+                - workflow/github.com/org/repo/main
+                - #workflow/github.com/org/repo/main/v0.1.14
+                - workflow/github.com/iwc-workflows/parallel-accession-download/main
+
+    Returns:
+        Dict with key 'trs_url' containing the full TRS API URL,
+        or None if invalid
+    """
+    # Remove leading # if present
+    if trs_id.startswith("#"):
+        trs_id = trs_id[1:]
+
+    # Expected format: workflow/github.com/org/repo[/workflow_name][/version]
+    # Some workflows use the repo name as the workflow name (4 parts for tool ID)
+    # Others have a separate workflow name (5 parts for tool ID)
+    parts = trs_id.split("/")
+    if len(parts) < 4:
+        return None
+
+    artifact_type = parts[0]  # workflow or tool
+    service = parts[1]  # github.com
+    owner = parts[2]
+    repo = parts[3]
+
+    # Determine if we have a workflow name and/or version
+    # Format could be:
+    #   workflow/github.com/org/repo (4 parts) - no workflow name, no version
+    #   workflow/github.com/org/repo/workflow_name (5 parts) - with workflow name, no version
+    #   workflow/github.com/org/repo/workflow_name/version (6 parts) - with both
+    #   workflow/github.com/org/repo/workflow_name/versions/version (7 parts) - full URL format
+    if len(parts) == 4:
+        workflow_name = None
+        version = None
+    elif len(parts) == 5:
+        # 5th part is the workflow name (e.g., "main" in most cases)
+        workflow_name = parts[4]
+        version = None
+    elif len(parts) >= 6:
+        # 6+ parts: 5th is workflow name, 6th might be "versions" keyword or version
+        workflow_name = parts[4]
+        # Check if this is full URL format with "versions" keyword
+        if len(parts) >= 7 and parts[5] == "versions":
+            # Full URL format: .../workflow_name/versions/version
+            version = parts[6]
+        else:
+            # Short format: .../workflow_name/version
+            version = parts[5]
+    else:
+        workflow_name = None
+        version = None
+
+    # Build the TRS tool ID
+    # Format: #workflow/github.com/org/repo[/workflow_name]
+    if workflow_name:
+        trs_tool_id = f"#{artifact_type}/{service}/{owner}/{repo}/{workflow_name}"
+    else:
+        trs_tool_id = f"#{artifact_type}/{service}/{owner}/{repo}"
+    # URL-encode the tool ID for API calls
+    encoded_tool_id = quote(trs_tool_id, safe="")
+
+    # Build the full TRS URL
+    # Dockstore is the primary TRS server for GitHub workflows
+    trs_base_url = "https://dockstore.org/api/ga4gh/trs/v2/tools/"
+
+    if version:
+        # Specific version requested
+        trs_url = f"{trs_base_url}{trs_tool_id}/versions/{version}"
+    else:
+        # No version specified - fetch latest version from Dockstore
+        # Galaxy requires /versions/{version_id} in TRS URLs, so we must provide a version
+        default_version = workflow_name if workflow_name else "main"
+
+        try:
+            # Query Dockstore API to get available versions (using encoded URL)
+            versions_url = f"{trs_base_url}{encoded_tool_id}/versions"
+            response = requests.get(versions_url, timeout=10)
+            response.raise_for_status()
+            versions = response.json()
+
+            if versions and len(versions) > 0:
+                # Get the first version (usually the latest/default)
+                latest_version = versions[0].get("name") or versions[0].get("id")
+                if latest_version:
+                    trs_url = f"{trs_base_url}{trs_tool_id}/versions/{latest_version}"
+                else:
+                    # Use default version as fallback
+                    trs_url = f"{trs_base_url}{trs_tool_id}/versions/{default_version}"
+            else:
+                # No versions found, use default version
+                trs_url = f"{trs_base_url}{trs_tool_id}/versions/{default_version}"
+        except Exception:
+            # If we can't fetch versions, use default version
+            # Galaxy requires the /versions/ part in TRS URLs
+            trs_url = f"{trs_base_url}{trs_tool_id}/versions/{default_version}"
+
+    return {"trs_url": trs_url}
+
+
+def parse_trs_uri(trs_uri: str) -> Optional[Dict[str, str]]:
+    """Parse a TRS URI into a full TRS URL.
+
+    Args:
+        trs_uri: TRS URI in format: trs://[#]workflow/github.com/org/repo/workflow_name[/version]
+                 or trs://<full_dockstore_url>
+
+    Returns:
+        Dict with key 'trs_url' containing the full TRS API URL,
+        or None if invalid
+    """
+    if not trs_uri.startswith(TRS_WORKFLOWS_PREFIX):
+        return None
+
+    # Remove trs:// prefix
+    trs_content = trs_uri[len(TRS_WORKFLOWS_PREFIX) :]
+
+    # Parse as a TRS ID (workflow/... or #workflow/...) to resolve versions
+    return parse_trs_id(trs_content)
+
+
+@runtime_checkable
+class TrsImporter(Protocol):
+    """Interface for importing workflows from TRS."""
+
+    def import_from_trs(self, trs_url: str) -> Dict[str, Any]:
+        """Import a workflow from a TRS URL.
+
+        Args:
+            trs_url: Full TRS URL to import from
+
+        Returns:
+            Workflow dict with 'id' and other metadata
+        """
+        ...
+
+
+class GalaxyTrsImporter:
+    """Import TRS workflows via Galaxy API."""
+
+    def __init__(self, gi: "GalaxyInstance"):
+        """Initialize with Galaxy instance.
+
+        Args:
+            gi: BioBlend GalaxyInstance for API access
+        """
+        self._gi = gi
+
+    def import_from_trs(self, trs_url: str) -> Dict[str, Any]:
+        """Import a workflow from a TRS URL via Galaxy API.
+
+        Args:
+            trs_url: Full TRS URL to import from
+
+        Returns:
+            Workflow dict with 'id' and other metadata
+        """
+        trs_payload = {"archive_source": "trs_tool", "trs_url": trs_url}
+        url = self._gi.workflows._make_url()
+        return self._gi.workflows._post(url=url, payload=trs_payload)
+
+
+def import_workflow_from_trs(trs_uri: str, importer: TrsImporter) -> Dict[str, Any]:
+    """Import a workflow from a TRS endpoint.
+
+    Args:
+        trs_uri: TRS URI in format trs://[#]workflow/github.com/org/repo/workflow_name[/version]
+        importer: TrsImporter implementation to use for importing
+
+    Returns:
+        Workflow dict with 'id' and other metadata
+    """
+    trs_info = parse_trs_uri(trs_uri)
+    if not trs_info:
+        raise ValueError(f"Invalid TRS URI: {trs_uri}")
+
+    return importer.import_from_trs(trs_info["trs_url"])
+
+
+DOCKSTORE_TRS_BASE = "https://dockstore.org/api/ga4gh/trs/v2/tools/"
+
+
+def _resolve_trs_url(trs_id: str) -> str:
+    """Resolve a TRS identifier to a full TRS URL."""
+    if trs_id.startswith(DOCKSTORE_TRS_BASE):
+        return trs_id
+    if trs_id.startswith(TRS_WORKFLOWS_PREFIX):
+        trs_info = parse_trs_uri(trs_id)
+        if not trs_info:
+            raise ValueError(f"Invalid TRS URI: {trs_id}")
+        return trs_info["trs_url"]
+    # It's a short TRS ID
+    trs_info = parse_trs_id(trs_id)
+    if not trs_info:
+        raise ValueError(f"Invalid TRS ID: {trs_id}")
+    return trs_info["trs_url"]
+
+
+def _encode_trs_url(trs_url: str) -> str:
+    """URL-encode the tool ID portion of a TRS URL for API calls."""
+    if not trs_url.startswith(DOCKSTORE_TRS_BASE):
+        return trs_url
+    tool_id_and_version = trs_url[len(DOCKSTORE_TRS_BASE) :]
+    if "/versions/" in tool_id_and_version:
+        tool_id, version = tool_id_and_version.split("/versions/", 1)
+        return f"{DOCKSTORE_TRS_BASE}{quote(tool_id, safe='')}/versions/{version}"
+    return f"{DOCKSTORE_TRS_BASE}{quote(tool_id_and_version, safe='')}"
+
+
+def _find_primary_descriptor(files: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    """Find the primary descriptor file from a list of TRS files."""
+    for f in files:
+        if f.get("file_type") == "PRIMARY_DESCRIPTOR":
+            return f
+    for f in files:
+        if f.get("path", "").endswith((".ga", ".gxwf.yml", ".gxwf.yaml")):
+            return f
+    return files[0] if files else None
+
+
+def fetch_workflow_from_trs(trs_id: str) -> Dict[str, Any]:
+    """Fetch a workflow definition directly from a TRS endpoint.
+
+    Args:
+        trs_id: TRS ID in format: [#]workflow/github.com/org/repo/workflow_name[/version]
+                or a full TRS URL
+
+    Returns:
+        Workflow definition dict (gxformat2 or GA format)
+
+    Raises:
+        ValueError: If the TRS ID is invalid or workflow cannot be fetched
+    """
+    trs_url = _encode_trs_url(_resolve_trs_url(trs_id))
+    files_url = f"{trs_url}/GALAXY/files"
+
+    try:
+        response = requests.get(files_url, timeout=30)
+        response.raise_for_status()
+        files = response.json()
+
+        primary_file = _find_primary_descriptor(files)
+        if not primary_file:
+            raise ValueError(f"No workflow file found at TRS endpoint: {trs_url}")
+
+        descriptor_url = f"{trs_url}/GALAXY/descriptor/{primary_file.get('path', '')}"
+        file_response = requests.get(descriptor_url, timeout=30)
+        file_response.raise_for_status()
+        content = file_response.json().get("content", "")
+
+        if not content:
+            raise ValueError(f"Empty workflow content from TRS endpoint: {trs_url}")
+
+        try:
+            return json.loads(content)
+        except json.JSONDecodeError:
+            return yaml.safe_load(content)
+
+    except requests.RequestException as e:
+        raise ValueError(f"Failed to fetch workflow from TRS endpoint {trs_url}: {e}")
 
 
 @lru_cache(maxsize=None)
@@ -105,6 +382,46 @@ def load_shed_repos(runnable):
     return tools
 
 
+def _install_shed_repos_from_tools_info(
+    tools_info: List[Dict[str, Any]],
+    admin_gi: "GalaxyInstance",
+    ignore_dependency_problems: bool,
+    install_tool_dependencies: bool = False,
+    install_resolver_dependencies: bool = True,
+    install_repository_dependencies: bool = True,
+    install_most_recent_revision: bool = False,
+) -> Tuple[Optional[List[Any]], Optional[List[Any]]]:
+    """Common logic for installing tool shed repositories from a tools_info list."""
+    if not tools_info:
+        return None, None
+
+    install_tool_manager = shed_tools.InstallRepositoryManager(admin_gi)
+    install_results = install_tool_manager.install_repositories(
+        tools_info,
+        default_install_tool_dependencies=install_tool_dependencies,
+        default_install_resolver_dependencies=install_resolver_dependencies,
+        default_install_repository_dependencies=install_repository_dependencies,
+    )
+    if install_most_recent_revision:  # for workflow autoupdates we also need the most recent tool versions
+        update_results = install_tool_manager.update_repositories(
+            tools_info,
+            default_install_tool_dependencies=install_tool_dependencies,
+            default_install_resolver_dependencies=install_resolver_dependencies,
+            default_install_repository_dependencies=install_repository_dependencies,
+        )
+        install_results.errored_repositories.extend(update_results.errored_repositories)
+        updated_repos = update_results.installed_repositories
+    else:
+        updated_repos = None
+
+    if install_results.errored_repositories:
+        if ignore_dependency_problems:
+            warn(FAILED_REPOSITORIES_MESSAGE)
+        else:
+            raise Exception(FAILED_REPOSITORIES_MESSAGE)
+    return install_results.installed_repositories, updated_repos
+
+
 def install_shed_repos(
     runnable,
     admin_gi,
@@ -115,34 +432,82 @@ def install_shed_repos(
     install_most_recent_revision=False,
 ):
     tools_info = load_shed_repos(runnable)
-    if tools_info:
-        install_tool_manager = shed_tools.InstallRepositoryManager(admin_gi)
-        install_results = install_tool_manager.install_repositories(
-            tools_info,
-            default_install_tool_dependencies=install_tool_dependencies,
-            default_install_resolver_dependencies=install_resolver_dependencies,
-            default_install_repository_dependencies=install_repository_dependencies,
-        )
-        if install_most_recent_revision:  # for workflow autoupdates we also need the most recent tool versions
-            update_results = install_tool_manager.update_repositories(
-                tools_info,
-                default_install_tool_dependencies=install_tool_dependencies,
-                default_install_resolver_dependencies=install_resolver_dependencies,
-                default_install_repository_dependencies=install_repository_dependencies,
-            )
-            install_results.errored_repositories.extend(update_results.errored_repositories)
-            updated_repos = update_results.installed_repositories
-        else:
-            updated_repos = None
+    return _install_shed_repos_from_tools_info(
+        tools_info,
+        admin_gi,
+        ignore_dependency_problems,
+        install_tool_dependencies,
+        install_resolver_dependencies,
+        install_repository_dependencies,
+        install_most_recent_revision,
+    )
 
-        if install_results.errored_repositories:
-            if ignore_dependency_problems:
-                warn(FAILED_REPOSITORIES_MESSAGE)
-            else:
-                raise Exception(FAILED_REPOSITORIES_MESSAGE)
-        return install_results.installed_repositories, updated_repos
-    else:
-        return None, None
+
+def install_shed_repos_for_workflow_id(
+    workflow_id: str,
+    user_gi: "GalaxyInstance",
+    admin_gi: "GalaxyInstance",
+    ignore_dependency_problems: bool,
+    install_tool_dependencies: bool = False,
+    install_resolver_dependencies: bool = True,
+    install_repository_dependencies: bool = True,
+    install_most_recent_revision: bool = False,
+) -> Tuple[Optional[List[Any]], Optional[List[Any]]]:
+    """Install tool shed repositories for a workflow that's already in Galaxy.
+
+    This is used for TRS workflows that are imported via Galaxy's TRS API.
+    We fetch the workflow definition from Galaxy and extract tool requirements.
+    """
+    # Fetch the workflow from Galaxy to get the GA format
+    workflow_dict = user_gi.workflows.export_workflow_dict(workflow_id)
+
+    # Use ephemeris to generate the tool list from the workflow
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".ga", delete=False) as wf_file:
+        json.dump(workflow_dict, wf_file)
+        wf_file.flush()
+        wf_path = wf_file.name
+
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as tool_file:
+            tool_path = tool_file.name
+
+        try:
+            # Generate tool list from the GA workflow
+            generate_tool_list_from_ga_workflow_files.generate_tool_list_from_workflow(
+                [wf_path], "Tools from TRS workflow", tool_path
+            )
+
+            # Load the generated tool list
+            with open(tool_path) as f:
+                tools_data = yaml.safe_load(f)
+                tools_info = tools_data.get("tools", []) if tools_data else []
+
+            # Add tool shed URLs
+            for repo in tools_info:
+                tool_shed = repo.get("tool_shed")
+                if tool_shed:
+                    tool_shed_url = guess_tool_shed_url(tool_shed)
+                    if tool_shed_url:
+                        repo["tool_shed_url"] = tool_shed_url
+
+            # Use common installation logic
+            return _install_shed_repos_from_tools_info(
+                tools_info,
+                admin_gi,
+                ignore_dependency_problems,
+                install_tool_dependencies,
+                install_resolver_dependencies,
+                install_repository_dependencies,
+                install_most_recent_revision,
+            )
+        finally:
+            # Clean up tool list file
+            if os.path.exists(tool_path):
+                os.unlink(tool_path)
+    finally:
+        # Clean up workflow file
+        if os.path.exists(wf_path):
+            os.unlink(wf_path)
 
 
 def import_workflow(path, admin_gi, user_gi, from_path=False):
@@ -375,23 +740,19 @@ def _collection_elements_for_type(collection_type):
         ]
 
 
-def job_template_with_metadata(workflow_path, **kwds):
-    """Return a job template with metadata for each input.
+def _build_template_and_metadata_from_inputs(
+    all_inputs: List[Dict[str, Any]],
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Build job template and metadata from normalized workflow inputs.
 
-    Returns a tuple of (template_dict, metadata_dict) where metadata_dict
-    contains type, doc (description), optional status, default value, and format for each input label.
+    Args:
+        all_inputs: List of normalized input step definitions from gxformat2
+
+    Returns:
+        Tuple of (template_dict, metadata_dict)
     """
-    if kwds.get("from_invocation"):
-        # For invocation-based templates, we don't have metadata
-        return _job_inputs_template_from_invocation(workflow_path, kwds["galaxy_url"], kwds["galaxy_user_key"]), {}
-
-    try:
-        all_inputs = inputs_normalized(workflow_path=workflow_path)
-    except Exception:
-        raise Exception("Input workflow could not be successfully normalized - try linting with planemo workflow_lint.")
-
-    template = {}
-    metadata = {}
+    template: Dict[str, Any] = {}
+    metadata: Dict[str, Any] = {}
     for input_step in all_inputs:
         i_label = input_label(input_step)
         input_type = input_step["type"]
@@ -437,6 +798,97 @@ def job_template_with_metadata(workflow_path, **kwds):
                 "TODO",  # Does this work yet?
             }
     return template, metadata
+
+
+def _job_template_with_metadata_from_dict(workflow_dict: Dict[str, Any]):
+    """Generate job template and metadata from a workflow dictionary.
+
+    This handles both GA format (.ga) and gxformat2 format workflows.
+
+    Args:
+        workflow_dict: Workflow definition dict
+
+    Returns:
+        Tuple of (template_dict, metadata_dict)
+    """
+    # Write workflow to temp file and use inputs_normalized
+    # This handles both GA and gxformat2 formats consistently
+    is_ga_format = (
+        workflow_dict.get("a_galaxy_workflow", False)
+        or "steps" in workflow_dict
+        and isinstance(workflow_dict.get("steps"), dict)
+    )
+
+    suffix = ".ga" if is_ga_format else ".gxwf.yml"
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=suffix, delete=False) as wf_file:
+        if is_ga_format:
+            json.dump(workflow_dict, wf_file)
+        else:
+            yaml.dump(workflow_dict, wf_file)
+        wf_file.flush()
+        wf_path = wf_file.name
+
+    try:
+        all_inputs = inputs_normalized(workflow_path=wf_path)
+    except Exception:
+        raise Exception("Input workflow could not be successfully normalized from TRS endpoint.")
+    finally:
+        if os.path.exists(wf_path):
+            os.unlink(wf_path)
+
+    return _build_template_and_metadata_from_inputs(all_inputs)
+
+
+def is_trs_identifier(identifier: str) -> bool:
+    """Check if the identifier is a TRS ID or TRS URI.
+
+    Args:
+        identifier: The workflow identifier to check
+
+    Returns:
+        True if it's a TRS ID or URI, False otherwise
+    """
+    # Full Dockstore TRS URL
+    if identifier.startswith(DOCKSTORE_TRS_BASE):
+        return True
+    # TRS URI
+    if identifier.startswith(TRS_WORKFLOWS_PREFIX):
+        return True
+    # Short TRS ID format
+    if identifier.startswith(("workflow/", "tool/", "#workflow/", "#tool/")) and "/github.com/" in identifier:
+        return True
+    return False
+
+
+def job_template_with_metadata(workflow_path, **kwds):
+    """Return a job template with metadata for each input.
+
+    Returns a tuple of (template_dict, metadata_dict) where metadata_dict
+    contains type, doc (description), optional status, default value, and format for each input label.
+
+    The workflow_path can be:
+    - A local file path to a workflow file
+    - A TRS ID (e.g., workflow/github.com/org/repo/workflow_name)
+    - A TRS URI (e.g., trs://workflow/github.com/org/repo/workflow_name)
+    - A full Dockstore TRS URL
+    """
+    if kwds.get("from_invocation"):
+        # For invocation-based templates, we don't have metadata
+        return _job_inputs_template_from_invocation(workflow_path, kwds["galaxy_url"], kwds["galaxy_user_key"]), {}
+
+    # Check if this is a TRS identifier
+    if is_trs_identifier(workflow_path):
+        # Fetch workflow from TRS and write to temp file for processing
+        workflow_dict = fetch_workflow_from_trs(workflow_path)
+        return _job_template_with_metadata_from_dict(workflow_dict)
+
+    try:
+        all_inputs = inputs_normalized(workflow_path=workflow_path)
+    except Exception:
+        raise Exception("Input workflow could not be successfully normalized - try linting with planemo workflow_lint.")
+
+    return _build_template_and_metadata_from_inputs(all_inputs)
 
 
 def new_workflow_associated_path(workflow_path, suffix="tests"):
@@ -580,6 +1032,11 @@ def _job_outputs_template_from_invocation(invocation_id, galaxy_url, galaxy_api_
 
 
 __all__ = (
-    "import_workflow",
     "describe_outputs",
+    "DOCKSTORE_TRS_BASE",
+    "fetch_workflow_from_trs",
+    "import_workflow",
+    "import_workflow_from_trs",
+    "is_trs_identifier",
+    "TRS_WORKFLOWS_PREFIX",
 )

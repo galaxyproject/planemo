@@ -42,7 +42,9 @@ from planemo.deps import ensure_dependency_resolvers_conf_configured
 from planemo.docker import docker_host_args
 from planemo.galaxy.workflows import (
     get_toolshed_url_for_tool_id,
+    install_shed_repos_for_workflow_id,
     remote_runnable_to_workflow_id,
+    TRS_WORKFLOWS_PREFIX,
 )
 from planemo.io import (
     communicate,
@@ -67,7 +69,9 @@ from .distro_tools import DISTRO_TOOLS_ID_TO_PATH
 from .run import setup_venv
 from .workflows import (
     find_tool_ids,
+    GalaxyTrsImporter,
     import_workflow,
+    import_workflow_from_trs,
     install_shed_repos,
     MAIN_TOOLSHED_URL,
 )
@@ -546,7 +550,9 @@ def _all_tool_paths(
     runnables: List["Runnable"], galaxy_root: Optional[str] = None, extra_tools: Optional[List[str]] = None
 ) -> Set[str]:
     extra_tools = extra_tools or []
-    all_tool_paths = {r.path for r in runnables if r.has_tools and not r.data_manager_conf_path}
+    all_tool_paths = {
+        r.path for r in runnables if r.has_tools and not r.data_manager_conf_path and not r.is_remote_workflow_uri
+    }
     extra_tools = _expand_paths(galaxy_root, extra_tools=extra_tools)
     all_tool_paths.update(extra_tools)
     for tool_id in get_tool_ids_for_runnables(runnables):
@@ -814,10 +820,38 @@ class BaseGalaxyConfig(GalaxyInterface):
 
     def install_workflows(self):
         for runnable in self.runnables:
-            if runnable.type.name in ["galaxy_workflow", "cwl_workflow"] and not runnable.is_remote_workflow_uri:
+            # Install local workflows and TRS workflows, but skip already-imported Galaxy workflows
+            is_importable = runnable.type.name in ["galaxy_workflow", "cwl_workflow"]
+            is_trs = runnable.uri.startswith(TRS_WORKFLOWS_PREFIX)
+
+            if is_importable and (not runnable.is_remote_workflow_uri or is_trs):
                 self._install_workflow(runnable)
 
     def _install_workflow(self, runnable):
+        # Check if this is a TRS workflow
+        if runnable.uri.startswith(TRS_WORKFLOWS_PREFIX):
+            # Import from TRS using Galaxy's TRS API
+            importer = GalaxyTrsImporter(self.user_gi)
+            workflow = import_workflow_from_trs(runnable.uri, importer)
+            self._workflow_ids[runnable.uri] = workflow["id"]
+
+            # Install required tools from the toolshed if shed_install is enabled
+            if self._kwds.get("shed_install") and (
+                self._kwds.get("engine") != "external_galaxy" or self._kwds.get("galaxy_admin_key")
+            ):
+                workflow_repos = install_shed_repos_for_workflow_id(
+                    workflow["id"],
+                    self.user_gi,
+                    self.gi,
+                    self._kwds.get("ignore_dependency_problems", False),
+                    self._kwds.get("install_tool_dependencies", False),
+                    self._kwds.get("install_resolver_dependencies", True),
+                    self._kwds.get("install_repository_dependencies", True),
+                    self._kwds.get("install_most_recent_revision", False),
+                )
+                self.installed_repos[runnable.uri], self.updated_repos[runnable.uri] = workflow_repos
+            return
+
         if self._kwds.get("shed_install") and (
             self._kwds.get("engine") != "external_galaxy" or self._kwds.get("galaxy_admin_key")
         ):
@@ -839,7 +873,12 @@ class BaseGalaxyConfig(GalaxyInterface):
         self._workflow_ids[runnable.path] = workflow["id"]
 
     def workflow_id_for_runnable(self, runnable):
-        if runnable.is_remote_workflow_uri:
+        if runnable.uri.startswith(TRS_WORKFLOWS_PREFIX):
+            # TRS workflows are imported and their IDs are stored by URI
+            workflow_id = self._workflow_ids.get(runnable.uri)
+            if not workflow_id:
+                raise ValueError(f"TRS workflow not imported: {runnable.uri}")
+        elif runnable.is_remote_workflow_uri:
             workflow_id = remote_runnable_to_workflow_id(runnable)
         else:
             workflow_id = self.workflow_id(runnable.path)
@@ -1137,43 +1176,43 @@ def _find_galaxy_root(ctx, **kwds):
 
 
 def _find_test_data(runnables, **kwds):
-    test_data_search_path = "."
-    runnables = [r for r in runnables if r.has_tools]
-    if len(runnables) > 0:
-        test_data_search_path = runnables[0].test_data_search_path
-
     # Find test data directory associated with path.
     test_data = kwds.get("test_data", None)
     if test_data:
         return os.path.abspath(test_data)
-    else:
-        test_data = _search_tool_path_for(test_data_search_path, "test-data")
-        if test_data:
-            return test_data
+
+    test_data_search_path = "."
+    runnables = [r for r in runnables if r.has_tools and not r.is_remote_workflow_uri]
+    if len(runnables) > 0:
+        test_data_search_path = runnables[0].test_data_search_path
+
+    test_data = _search_tool_path_for(test_data_search_path, "test-data")
+    if test_data:
+        return test_data
     warn(NO_TEST_DATA_MESSAGE)
     return None
 
 
 def _find_tool_data_table(runnables, test_data_dir, **kwds) -> Optional[List[str]]:
-    tool_data_search_path = "."
-    runnables = [r for r in runnables if r.has_tools]
-    if len(runnables) > 0:
-        tool_data_search_path = runnables[0].tool_data_search_path
-
     tool_data_table = kwds.get("tool_data_table", None)
     if tool_data_table:
         return [os.path.abspath(table_path) for table_path in tool_data_table]
-    else:
-        extra_paths = [test_data_dir] if test_data_dir else []
-        tool_data_table = _search_tool_path_for(
-            tool_data_search_path,
-            "tool_data_table_conf.xml.test",
-            extra_paths,
-        ) or _search_tool_path_for(  # if all else fails just use sample
-            tool_data_search_path, "tool_data_table_conf.xml.sample"
-        )
-        if tool_data_table:
-            return [tool_data_table]
+
+    tool_data_search_path = "."
+    runnables = [r for r in runnables if r.has_tools and not r.is_remote_workflow_uri]
+    if len(runnables) > 0:
+        tool_data_search_path = runnables[0].tool_data_search_path
+
+    extra_paths = [test_data_dir] if test_data_dir else []
+    tool_data_table = _search_tool_path_for(
+        tool_data_search_path,
+        "tool_data_table_conf.xml.test",
+        extra_paths,
+    ) or _search_tool_path_for(  # if all else fails just use sample
+        tool_data_search_path, "tool_data_table_conf.xml.sample"
+    )
+    if tool_data_table:
+        return [tool_data_table]
     return None
 
 
