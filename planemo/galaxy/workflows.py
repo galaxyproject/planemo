@@ -126,6 +126,9 @@ def parse_trs_id(trs_id: str) -> Optional[Dict[str, str]]:
         trs_url = f"{trs_base_url}{trs_tool_id}/versions/{version}"
     else:
         # No version specified - fetch latest version from Dockstore
+        # Galaxy requires /versions/{version_id} in TRS URLs, so we must provide a version
+        default_version = workflow_name if workflow_name else "main"
+
         try:
             # Query Dockstore API to get available versions (using encoded URL)
             versions_url = f"{trs_base_url}{encoded_tool_id}/versions"
@@ -139,15 +142,15 @@ def parse_trs_id(trs_id: str) -> Optional[Dict[str, str]]:
                 if latest_version:
                     trs_url = f"{trs_base_url}{trs_tool_id}/versions/{latest_version}"
                 else:
-                    # Fallback to just the tool ID without version
-                    trs_url = f"{trs_base_url}{trs_tool_id}"
+                    # Use default version as fallback
+                    trs_url = f"{trs_base_url}{trs_tool_id}/versions/{default_version}"
             else:
-                # No versions found, use tool ID without version
-                trs_url = f"{trs_base_url}{trs_tool_id}"
+                # No versions found, use default version
+                trs_url = f"{trs_base_url}{trs_tool_id}/versions/{default_version}"
         except Exception:
-            # If we can't fetch versions, just use the tool ID without version
-            # Galaxy might handle this gracefully
-            trs_url = f"{trs_base_url}{trs_tool_id}"
+            # If we can't fetch versions, use default version
+            # Galaxy requires the /versions/ part in TRS URLs
+            trs_url = f"{trs_base_url}{trs_tool_id}/versions/{default_version}"
 
     return {"trs_url": trs_url}
 

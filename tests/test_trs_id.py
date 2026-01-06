@@ -77,7 +77,7 @@ class TestTRSIdParsing:
 
     @patch("planemo.galaxy.workflows.requests.get")
     def test_parse_trs_id_version_fetch_failure(self, mock_get):
-        """Test parsing when version fetch fails falls back gracefully."""
+        """Test parsing when version fetch fails falls back to default version."""
         # Mock a failed API request
         mock_get.side_effect = Exception("API error")
 
@@ -85,8 +85,8 @@ class TestTRSIdParsing:
         result = parse_trs_id(trs_id)
 
         assert result is not None
-        # Should fallback to URL without version
-        assert result["trs_url"] == "https://dockstore.org/api/ga4gh/trs/v2/tools/#workflow/github.com/org/repo/main"
+        # Should fallback to using workflow_name as default version (Galaxy requires /versions/)
+        assert result["trs_url"] == "https://dockstore.org/api/ga4gh/trs/v2/tools/#workflow/github.com/org/repo/main/versions/main"
 
     def test_parse_trs_id_invalid(self):
         """Test parsing invalid TRS IDs."""
