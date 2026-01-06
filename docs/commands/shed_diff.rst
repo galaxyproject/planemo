@@ -30,7 +30,7 @@ Here are some examples
     $ # diff for two an explicitly specified repositories (ignores
     $ # current project's shed YAML file.)
     $ planemo shed_diff --owner peterjc --name blast_rbh
-        --shed_target_source testtoolshed
+    --shed_target_source testtoolshed
 
 This command will return an exit code of:
 
@@ -48,7 +48,7 @@ uploaded to the repository.
 
       -r, --recursive            Recursively perform command for nested repository
                                  directories.
-      --fail_fast                If multiple repositories are specified and an error
+      --shed_fail_fast           If multiple repositories are specified and an error
                                  occurs stop immediately instead of processing
                                  remaining repositories.
       --owner TEXT               Tool Shed repository owner (username).

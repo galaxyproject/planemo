@@ -24,7 +24,7 @@ install these artifacts, and run the tool tests for these commands.
 
       -r, --recursive                 Recursively perform command for nested
                                       repository directories.
-      --fail_fast                     If multiple repositories are specified and an
+      --shed_fail_fast                If multiple repositories are specified and an
                                       error occurs stop immediately instead of
                                       processing remaining repositories.
       --owner TEXT                    Tool Shed repository owner (username).

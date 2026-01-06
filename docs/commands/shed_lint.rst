@@ -29,7 +29,7 @@ help text for mentioned URLs and checks those.
 
       -r, --recursive                 Recursively perform command for nested
                                       repository directories.
-      --fail_fast                     If multiple repositories are specified and an
+      --shed_fail_fast                If multiple repositories are specified and an
                                       error occurs stop immediately instead of
                                       processing remaining repositories.
       --report_level [all|warn|error]

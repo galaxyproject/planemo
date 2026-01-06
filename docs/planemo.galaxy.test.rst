@@ -9,21 +9,21 @@ planemo.galaxy.test.actions module
 
 .. automodule:: planemo.galaxy.test.actions
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 planemo.galaxy.test.structures module
 -------------------------------------
 
 .. automodule:: planemo.galaxy.test.structures
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: planemo.galaxy.test
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

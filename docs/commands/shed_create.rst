@@ -21,7 +21,7 @@ This will read the settings from the ``.shed.yml`` file.
 
       -r, --recursive           Recursively perform command for nested repository
                                 directories.
-      --fail_fast               If multiple repositories are specified and an error
+      --shed_fail_fast          If multiple repositories are specified and an error
                                 occurs stop immediately instead of processing
                                 remaining repositories.
       --owner TEXT              Tool Shed repository owner (username).
