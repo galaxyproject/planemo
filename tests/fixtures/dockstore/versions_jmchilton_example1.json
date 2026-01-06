@@ -1,0 +1,24 @@
+[
+  {
+    "author": [],
+    "containerfile": false,
+    "descriptor_type": [
+      "GALAXY"
+    ],
+    "descriptor_type_version": {
+      "GALAXY": [
+        "gxformat2"
+      ]
+    },
+    "id": "#workflow/github.com/jmchilton/galaxy-workflow-dockstore-example-1/mycoolworkflow:master",
+    "images": [],
+    "included_apps": [],
+    "is_production": false,
+    "meta_version": "2019-11-25 18:25:53.0",
+    "name": "master",
+    "signed": false,
+    "url": "https://dockstore.org/api/ga4gh/trs/v2/tools/%23workflow%2Fgithub.com%2Fjmchilton%2Fgalaxy-workflow-dockstore-example-1%2Fmycoolworkflow/versions/master",
+    "verified": false,
+    "verified_source": []
+  }
+]

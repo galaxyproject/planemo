@@ -69,6 +69,7 @@ from .distro_tools import DISTRO_TOOLS_ID_TO_PATH
 from .run import setup_venv
 from .workflows import (
     find_tool_ids,
+    GalaxyTrsImporter,
     import_workflow,
     import_workflow_from_trs,
     install_shed_repos,
@@ -830,7 +831,8 @@ class BaseGalaxyConfig(GalaxyInterface):
         # Check if this is a TRS workflow
         if runnable.uri.startswith(TRS_WORKFLOWS_PREFIX):
             # Import from TRS using Galaxy's TRS API
-            workflow = import_workflow_from_trs(runnable.uri, user_gi=self.user_gi)
+            importer = GalaxyTrsImporter(self.user_gi)
+            workflow = import_workflow_from_trs(runnable.uri, importer)
             self._workflow_ids[runnable.uri] = workflow["id"]
 
             # Install required tools from the toolshed if shed_install is enabled

@@ -11,6 +11,8 @@ from typing import (
     Dict,
     List,
     Optional,
+    Protocol,
+    runtime_checkable,
     Tuple,
     TYPE_CHECKING,
 )
@@ -176,14 +178,53 @@ def parse_trs_uri(trs_uri: str) -> Optional[Dict[str, str]]:
     return parse_trs_id(trs_content)
 
 
-def import_workflow_from_trs(trs_uri: str, user_gi: "GalaxyInstance") -> Dict[str, Any]:
-    """Import a workflow from a TRS endpoint using Galaxy's TRS import API.
+@runtime_checkable
+class TrsImporter(Protocol):
+    """Interface for importing workflows from TRS."""
+
+    def import_from_trs(self, trs_url: str) -> Dict[str, Any]:
+        """Import a workflow from a TRS URL.
+
+        Args:
+            trs_url: Full TRS URL to import from
+
+        Returns:
+            Workflow dict with 'id' and other metadata
+        """
+        ...
+
+
+class GalaxyTrsImporter:
+    """Import TRS workflows via Galaxy API."""
+
+    def __init__(self, gi: "GalaxyInstance"):
+        """Initialize with Galaxy instance.
+
+        Args:
+            gi: BioBlend GalaxyInstance for API access
+        """
+        self._gi = gi
+
+    def import_from_trs(self, trs_url: str) -> Dict[str, Any]:
+        """Import a workflow from a TRS URL via Galaxy API.
+
+        Args:
+            trs_url: Full TRS URL to import from
+
+        Returns:
+            Workflow dict with 'id' and other metadata
+        """
+        trs_payload = {"archive_source": "trs_tool", "trs_url": trs_url}
+        url = self._gi.workflows._make_url()
+        return self._gi.workflows._post(url=url, payload=trs_payload)
+
+
+def import_workflow_from_trs(trs_uri: str, importer: TrsImporter) -> Dict[str, Any]:
+    """Import a workflow from a TRS endpoint.
 
     Args:
-        trs_uri: TRS URI in format: trs://[#]workflow/github.com/org/repo/workflow_name[/version]
-            Example: trs://workflow/github.com/iwc-workflows/parallel-accession-download/main
-
-        user_gi: BioBlend GalaxyInstance for user API
+        trs_uri: TRS URI in format trs://[#]workflow/github.com/org/repo/workflow_name[/version]
+        importer: TrsImporter implementation to use for importing
 
     Returns:
         Workflow dict with 'id' and other metadata
@@ -192,15 +233,7 @@ def import_workflow_from_trs(trs_uri: str, user_gi: "GalaxyInstance") -> Dict[st
     if not trs_info:
         raise ValueError(f"Invalid TRS URI: {trs_uri}")
 
-    # Create TRS import payload with full TRS URL
-    # Example TRS URL: https://dockstore.org/api/ga4gh/trs/v2/tools/#workflow/github.com/iwc-workflows/parallel-accession-download/main/versions/v0.1.14
-    trs_payload = {"archive_source": "trs_tool", "trs_url": trs_info["trs_url"]}
-
-    # Use bioblend's _post method to import from TRS
-    url = user_gi.workflows._make_url()
-    workflow = user_gi.workflows._post(url=url, payload=trs_payload)
-
-    return workflow
+    return importer.import_from_trs(trs_info["trs_url"])
 
 
 DOCKSTORE_TRS_BASE = "https://dockstore.org/api/ga4gh/trs/v2/tools/"

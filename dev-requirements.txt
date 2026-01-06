@@ -8,7 +8,9 @@ Werkzeug
 # For testing
 tox
 pytest
+pytest-mock
 coverage
+responses>=0.23.0
 
 #Building Docs
 docutils

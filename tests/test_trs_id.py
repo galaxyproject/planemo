@@ -1,10 +1,15 @@
 """Tests for TRS ID resolution functionality."""
 
+import json
+from pathlib import Path
 from unittest.mock import (
     Mock,
     patch,
 )
 
+import responses
+
+import planemo.cli
 from planemo.galaxy.workflows import (
     import_workflow_from_trs,
     parse_trs_id,
@@ -13,34 +18,37 @@ from planemo.galaxy.workflows import (
 )
 from planemo.runnable import RunnableType
 from planemo.runnable_resolve import for_runnable_identifier
+from .fake_trs import FakeTrsImporter
+
+FIXTURES = Path(__file__).parent / "fixtures" / "dockstore"
 
 
 class TestTRSIdParsing:
     """Test TRS ID parsing to full URLs."""
 
-    @patch("planemo.galaxy.workflows.requests.get")
-    def test_parse_trs_id_workflow_without_version(self, mock_get):
+    @responses.activate
+    def test_parse_trs_id_workflow_without_version(self):
         """Test parsing a workflow TRS ID without specific version fetches latest."""
-        # Mock the Dockstore API response for versions
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = [
-            {"name": "v0.2.0", "id": "version1"},
-            {"name": "v0.1.14", "id": "version2"},
-        ]
-        mock_get.return_value = mock_response
+        # Load fixture data from recorded API response
+        fixture = json.loads((FIXTURES / "versions_iwc_parallel_accession.json").read_text())
+
+        responses.add(
+            responses.GET,
+            "https://dockstore.org/api/ga4gh/trs/v2/tools/%23workflow%2Fgithub.com%2Fiwc-workflows%2Fparallel-accession-download%2Fmain/versions",
+            json=fixture,
+            status=200,
+        )
 
         trs_id = "workflow/github.com/iwc-workflows/parallel-accession-download/main"
         result = parse_trs_id(trs_id)
 
         assert result is not None
         # Should fetch the first version from the list
+        first_version = fixture[0]["name"]
         assert (
             result["trs_url"]
-            == "https://dockstore.org/api/ga4gh/trs/v2/tools/#workflow/github.com/iwc-workflows/parallel-accession-download/main/versions/v0.2.0"
+            == f"https://dockstore.org/api/ga4gh/trs/v2/tools/#workflow/github.com/iwc-workflows/parallel-accession-download/main/versions/{first_version}"
         )
-        # Verify API was called to fetch versions
-        mock_get.assert_called_once()
 
     def test_parse_trs_id_workflow_with_version(self):
         """Test parsing a workflow TRS ID with specific version."""
@@ -75,11 +83,16 @@ class TestTRSIdParsing:
             == "https://dockstore.org/api/ga4gh/trs/v2/tools/#tool/github.com/galaxyproject/example-tool/main/versions/v1.0"
         )
 
-    @patch("planemo.galaxy.workflows.requests.get")
-    def test_parse_trs_id_version_fetch_failure(self, mock_get):
+    @responses.activate
+    def test_parse_trs_id_version_fetch_failure(self):
         """Test parsing when version fetch fails falls back to default version."""
-        # Mock a failed API request
-        mock_get.side_effect = Exception("API error")
+        # Simulate a failed API request
+        responses.add(
+            responses.GET,
+            "https://dockstore.org/api/ga4gh/trs/v2/tools/%23workflow%2Fgithub.com%2Forg%2Frepo%2Fmain/versions",
+            json={"error": "Not found"},
+            status=404,
+        )
 
         trs_id = "workflow/github.com/org/repo/main"
         result = parse_trs_id(trs_id)
@@ -149,81 +162,59 @@ class TestTRSUriParsing:
 class TestTRSWorkflowImport:
     """Test TRS workflow import."""
 
-    @patch("planemo.galaxy.workflows.parse_trs_uri")
-    def test_import_workflow_from_trs(self, mock_parse):
+    def test_import_workflow_from_trs(self):
         """Test importing a workflow from TRS."""
-        # Mock parse_trs_uri to return a full TRS URL
-        expected_trs_url = "https://dockstore.org/api/ga4gh/trs/v2/tools/#workflow/github.com/org/repo/main"
-        mock_parse.return_value = {"trs_url": expected_trs_url}
-
-        # Mock Galaxy instance
-        mock_gi = Mock()
-        mock_workflows = Mock()
-        mock_gi.workflows = mock_workflows
-
-        # Mock the _make_url and _post methods
-        mock_workflows._make_url.return_value = "https://galaxy.example.com/api/workflows"
-        mock_workflows._post.return_value = {"id": "test_workflow_id", "name": "Test Workflow"}
-
-        # Call import_workflow_from_trs
-        trs_uri = "trs://workflow/github.com/org/repo/main"
-        result = import_workflow_from_trs(trs_uri, mock_gi)
-
-        # Verify the result
-        assert result is not None
-        assert result["id"] == "test_workflow_id"
-
-        # Verify _post was called with correct payload
-        mock_workflows._post.assert_called_once()
-        call_args = mock_workflows._post.call_args
-        assert call_args[1]["payload"]["trs_url"] == expected_trs_url
-
-    @patch("planemo.galaxy.workflows.parse_trs_uri")
-    def test_import_workflow_from_trs_with_version(self, mock_parse):
-        """Test importing a workflow from TRS with specific version."""
-        expected_trs_url = (
-            "https://dockstore.org/api/ga4gh/trs/v2/tools/#workflow/github.com/org/repo/main/versions/v0.1.14"
-        )
-        mock_parse.return_value = {"trs_url": expected_trs_url}
-
-        mock_gi = Mock()
-        mock_workflows = Mock()
-        mock_gi.workflows = mock_workflows
-        mock_workflows._make_url.return_value = "https://galaxy.example.com/api/workflows"
-        mock_workflows._post.return_value = {"id": "test_workflow_id"}
-
+        fake = FakeTrsImporter(return_workflow={"id": "test_wf_id", "name": "Test Workflow"})
         trs_uri = "trs://workflow/github.com/org/repo/main/v0.1.14"
-        result = import_workflow_from_trs(trs_uri, mock_gi)
+
+        result = import_workflow_from_trs(trs_uri, fake)
 
         assert result is not None
-        call_args = mock_workflows._post.call_args
-        assert call_args[1]["payload"]["trs_url"] == expected_trs_url
+        assert result["id"] == "test_wf_id"
+        assert result["name"] == "Test Workflow"
+        # Verify the importer was called with the correct URL
+        assert len(fake.imported_urls) == 1
+        assert (
+            fake.imported_urls[0]
+            == "https://dockstore.org/api/ga4gh/trs/v2/tools/#workflow/github.com/org/repo/main/versions/v0.1.14"
+        )
 
-    @patch("planemo.galaxy.workflows.parse_trs_uri")
-    def test_import_workflow_from_trs_invalid_uri(self, mock_parse):
+    def test_import_workflow_from_trs_with_version(self):
+        """Test importing a workflow from TRS with specific version."""
+        fake = FakeTrsImporter(return_workflow={"id": "test_wf_id"})
+        trs_uri = "trs://workflow/github.com/org/repo/main/v0.1.14"
+
+        result = import_workflow_from_trs(trs_uri, fake)
+
+        assert result is not None
+        assert len(fake.imported_urls) == 1
+        assert (
+            fake.imported_urls[0]
+            == "https://dockstore.org/api/ga4gh/trs/v2/tools/#workflow/github.com/org/repo/main/versions/v0.1.14"
+        )
+
+    def test_import_workflow_from_trs_invalid_uri(self):
         """Test importing from an invalid TRS URI raises ValueError."""
-        mock_parse.return_value = None
-
-        mock_gi = Mock()
+        fake = FakeTrsImporter()
         trs_uri = "invalid_uri"
 
         try:
-            import_workflow_from_trs(trs_uri, mock_gi)
+            import_workflow_from_trs(trs_uri, fake)
             assert False, "Should have raised ValueError"
         except ValueError as e:
             assert "Invalid TRS URI" in str(e)
+        # Verify no imports were attempted
+        assert len(fake.imported_urls) == 0
 
 
 class TestTRSIdIntegration:
     """Test TRS ID integration with for_runnable_identifier."""
 
-    @patch("planemo.runnable_resolve.translate_alias")
-    def test_for_runnable_identifier_with_trs_id(self, mock_translate_alias):
+    def test_for_runnable_identifier_with_trs_id(self, tmp_path):
         """Test that for_runnable_identifier creates TRS URIs."""
-        # Mock translate_alias to return the input unchanged
-        mock_translate_alias.side_effect = lambda ctx, identifier, profile: identifier
+        ctx = planemo.cli.PlanemoCliContext()
+        ctx.planemo_directory = str(tmp_path)
 
-        ctx = Mock()
         trs_id = "workflow/github.com/iwc-workflows/parallel-accession-download/main"
         runnable = for_runnable_identifier(ctx, trs_id, {})
 
@@ -233,12 +224,11 @@ class TestTRSIdIntegration:
         assert runnable.is_trs_workflow_uri is True
         assert runnable.is_remote_workflow_uri is True
 
-    @patch("planemo.runnable_resolve.translate_alias")
-    def test_for_runnable_identifier_with_hash_prefix(self, mock_translate_alias):
+    def test_for_runnable_identifier_with_hash_prefix(self, tmp_path):
         """Test that for_runnable_identifier handles # prefix."""
-        mock_translate_alias.side_effect = lambda ctx, identifier, profile: identifier
+        ctx = planemo.cli.PlanemoCliContext()
+        ctx.planemo_directory = str(tmp_path)
 
-        ctx = Mock()
         trs_id = "#workflow/github.com/iwc-workflows/parallel-accession-download/main/v0.1.14"
         runnable = for_runnable_identifier(ctx, trs_id, {})
 
@@ -247,12 +237,11 @@ class TestTRSIdIntegration:
         assert runnable.uri == f"{TRS_WORKFLOWS_PREFIX}{trs_id}"
         assert runnable.is_trs_workflow_uri is True
 
-    @patch("planemo.runnable_resolve.translate_alias")
-    def test_for_runnable_identifier_with_tool_trs_id(self, mock_translate_alias):
+    def test_for_runnable_identifier_with_tool_trs_id(self, tmp_path):
         """Test that for_runnable_identifier handles tool TRS IDs."""
-        mock_translate_alias.side_effect = lambda ctx, identifier, profile: identifier
+        ctx = planemo.cli.PlanemoCliContext()
+        ctx.planemo_directory = str(tmp_path)
 
-        ctx = Mock()
         trs_id = "tool/github.com/galaxyproject/example/v1.0"
         runnable = for_runnable_identifier(ctx, trs_id, {})
 
@@ -260,12 +249,11 @@ class TestTRSIdIntegration:
         assert runnable.uri == f"{TRS_WORKFLOWS_PREFIX}{trs_id}"
         assert runnable.is_trs_workflow_uri is True
 
-    @patch("planemo.runnable_resolve.translate_alias")
-    def test_for_runnable_identifier_with_full_dockstore_url(self, mock_translate_alias):
+    def test_for_runnable_identifier_with_full_dockstore_url(self, tmp_path):
         """Test that for_runnable_identifier handles full Dockstore URLs."""
-        mock_translate_alias.side_effect = lambda ctx, identifier, profile: identifier
+        ctx = planemo.cli.PlanemoCliContext()
+        ctx.planemo_directory = str(tmp_path)
 
-        ctx = Mock()
         full_url = "https://dockstore.org/api/ga4gh/trs/v2/tools/#workflow/github.com/iwc-workflows/parallel-accession-download/main/versions/v0.1.14"
         runnable = for_runnable_identifier(ctx, full_url, {})
 
