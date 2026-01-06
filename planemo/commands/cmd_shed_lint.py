@@ -15,6 +15,7 @@ from planemo.cli import (
 
 @click.command("shed_lint")
 @options.shed_realization_options()
+@options.fail_fast_option()
 @options.report_level_option()
 @options.fail_level_option()
 @options.skip_options()

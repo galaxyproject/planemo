@@ -18,6 +18,7 @@ from planemo.reports.xunit_handler import handle_report_xunit_kwd
 
 @click.command("shed_diff")
 @options.shed_read_options()
+@options.fail_fast_option()
 @click.option(
     "-o",
     "--output",

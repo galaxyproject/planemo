@@ -20,6 +20,7 @@ from planemo.reports.xunit_handler import handle_report_xunit_kwd
 @click.command("shed_update")
 @options.report_xunit()
 @options.shed_publish_options()
+@options.fail_fast_option()
 @options.shed_upload_options()
 @options.shed_skip_upload()
 @options.shed_skip_metadata()

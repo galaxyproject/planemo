@@ -20,6 +20,7 @@ tar_path = click.Path(
 
 @click.command("shed_upload")
 @options.shed_publish_options()
+@options.fail_fast_option()
 @options.shed_upload_options()
 @click.option(
     "--tar_only",
