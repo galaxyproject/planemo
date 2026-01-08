@@ -467,6 +467,16 @@ def job_config_option():
     )
 
 
+def vault_config_file_option():
+    return planemo_option(
+        "--vault_config_file",
+        type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True),
+        help="Vault configuration file for Galaxy to use.",
+        default=None,
+        use_global_config=True,
+    )
+
+
 class EnumType(click.Choice):
     def __init__(self, enum):
         self._enum = enum
@@ -1361,6 +1371,7 @@ def galaxy_config_options():
         shed_tools_conf_option(),
         shed_tools_directory_option(),
         single_user_mode_option(),
+        vault_config_file_option(),
     )
 
 

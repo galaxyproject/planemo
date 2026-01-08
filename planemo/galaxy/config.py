@@ -1442,6 +1442,7 @@ def _handle_kwd_overrides(properties, kwds):
         "job_config_file",
         "job_metrics_config_file",
         "dependency_resolvers_config_file",
+        "vault_config_file",
     ]
     for prop in kwds_gx_properties:
         val = kwds.get(prop, None)
