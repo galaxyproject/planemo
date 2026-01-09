@@ -2,6 +2,7 @@
 
 import os
 import xml.etree.ElementTree as ET
+from pathlib import PurePosixPath
 from typing import TYPE_CHECKING
 
 import yaml
@@ -211,13 +212,13 @@ def lint_shed_remote_repository_url(realized_repository: "RealizedRepository", l
     path_parts = path.parts
 
     min_segments = min(2, len(path_parts))
-    
+
     for i in range(len(path_parts) - min_segments + 1):
         suffix = "/".join(path_parts[i:])
         if remote_repository_url.endswith(suffix):
             # Found a match with at least min_segments
             return
-    
+
     # If no match found, issue warning
     lint_ctx.warn(
         f"remote_repository_url may be incorrect: expected it to end with a significant part of '{path}'"
