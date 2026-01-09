@@ -220,9 +220,7 @@ def lint_shed_remote_repository_url(realized_repository: "RealizedRepository", l
             return
 
     # If no match found, issue warning
-    lint_ctx.warn(
-        f"remote_repository_url may be incorrect: expected it to end with a significant part of '{path}'"
-    )
+    lint_ctx.warn(f"remote_repository_url may be incorrect: expected it to end with a significant part of '{path}'")
 
 
 def lint_expansion(realized_repository: "RealizedRepository", lint_ctx):
