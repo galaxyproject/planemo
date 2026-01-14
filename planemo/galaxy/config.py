@@ -35,8 +35,10 @@ from gxjobconfinit.generate import (
 )
 from packaging.version import parse as parse_version
 
-from planemo import git
-from planemo import network_util
+from planemo import (
+    git,
+    network_util,
+)
 from planemo.config import OptionSource
 from planemo.database import postgres_singularity
 from planemo.deps import ensure_dependency_resolvers_conf_configured
@@ -431,7 +433,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         if kwds.get("mulled_containers", False):
             properties["mulled_channels"] = kwds.get("conda_ensure_channels", "")
 
-
         _handle_kwd_overrides(properties, kwds)
 
         # TODO: consider following property
@@ -531,13 +532,13 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
             },
         }
         if kwds.get("enable_gxits", True):
-            config["gravity"]["gx_it_proxy"].update({
-                "enable": True,
-                "port": "4002",
-            })
-        write_file(
-            env["GALAXY_CONFIG_FILE"], json.dumps(config)
-        )
+            config["gravity"]["gx_it_proxy"].update(
+                {
+                    "enable": True,
+                    "port": "4002",
+                }
+            )
+        write_file(env["GALAXY_CONFIG_FILE"], json.dumps(config))
 
 
 def _expand_paths(galaxy_root: Optional[str], extra_tools: List[str]) -> List[str]:
