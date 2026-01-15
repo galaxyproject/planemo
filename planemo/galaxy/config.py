@@ -36,7 +36,10 @@ from gxjobconfinit.generate import (
 )
 from packaging.version import parse as parse_version
 
-from planemo import git
+from planemo import (
+    git,
+    network_util,
+)
 from planemo.config import OptionSource
 from planemo.database import postgres_singularity
 from planemo.deps import ensure_dependency_resolvers_conf_configured
@@ -500,24 +503,50 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
         env["GRAVITY_STATE_DIR"] = config_join("gravity")
         with NamedTemporaryFile(suffix=".sock", delete=True) as nt:
             env["SUPERVISORD_SOCKET"] = nt.name
-        write_file(
-            env["GALAXY_CONFIG_FILE"],
-            json.dumps(
-                {
-                    "galaxy": properties,
-                    "gravity": {
-                        "galaxy_root": galaxy_root,
-                        "gunicorn": {
-                            "bind": f"{kwds.get('host', 'localhost')}:{template_args['port']}",
-                            "preload": False,
-                        },
-                        "gx_it_proxy": {
-                            "enable": False,
-                        },
-                    },
-                }
-            ),
+        # Enable GxITs by default
+        gx_it_port = network_util.get_free_port()
+        properties.update(
+            dict(
+                interactivetools_enable="true",
+                galaxy_infrastructure_url=f"http://localhost:{template_args['port']}",
+                interactivetools_upstream_proxy="false",
+                interactivetools_proxy_host=f"localhost:{gx_it_port}",
+            )
         )
+        gx_it_config = dict(
+            enable="true",
+            port=gx_it_port,
+        )
+        if kwds.get("disable_gxits", True):
+            properties.update(
+                dict(
+                    interactivetools_enable="false",
+                )
+            )
+            gx_it_config.update(
+                dict(
+                    enable="false",
+                )
+            )
+        config = {
+            "galaxy": properties,
+            "gravity": {
+                "galaxy_root": galaxy_root,
+                "gunicorn": {
+                    "bind": f"{kwds.get('host', 'localhost')}:{template_args['port']}",
+                    "preload": "false",
+                },
+                "gx_it_proxy": gx_it_config,
+            },
+        }
+        if kwds.get("enable_gxits", True):
+            config["gravity"]["gx_it_proxy"].update(
+                {
+                    "enable": True,
+                    "port": "4002",
+                }
+            )
+        write_file(env["GALAXY_CONFIG_FILE"], json.dumps(config))
 
 
 def _expand_paths(galaxy_root: Optional[str], extra_tools: List[str]) -> List[str]:
