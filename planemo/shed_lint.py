@@ -2,6 +2,7 @@
 
 import os
 import xml.etree.ElementTree as ET
+from pathlib import PurePosixPath
 from typing import TYPE_CHECKING
 
 import yaml
@@ -121,6 +122,7 @@ def lint_repository(ctx: "PlanemoCliContext", realized_repository: "RealizedRepo
         failed = failed or tools_failed
 
     lint_ctx.lint("lint_version_bumped", lint_shed_version, realized_repository)
+    lint_ctx.lint("lint_shed_remote_repository_url", lint_shed_remote_repository_url, realized_repository)
 
     if kwds["ensure_metadata"]:
         lint_ctx.lint(
@@ -195,6 +197,34 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
                 f"{tool_id}: version {tool_version} is less or equal than version of the latest installable revision {ts_tool_version}",
                 "ShedVersion",
             )
+
+
+def lint_shed_remote_repository_url(realized_repository: "RealizedRepository", lint_ctx):
+    """
+    Check if the remote_repository_url has a common suffix with the path to the repo.
+    Rationale remote_repository_url is supposed to have
+    the form https://gitserver/organisation/tree/main/path where the path in the suffix
+    should be the same as the path to the repository
+    """
+
+    remote_repository_url = realized_repository.config.get("remote_repository_url", "").rstrip(" /")
+    if not remote_repository_url:
+        return
+
+    # rstrip trailing space and slashes just in case they are given in only one of path/url
+    path = PurePosixPath(realized_repository.real_path)
+    path_parts = path.parts
+
+    min_segments = min(2, len(path_parts))
+
+    for i in range(len(path_parts) - min_segments + 1):
+        suffix = "/".join(path_parts[i:])
+        if remote_repository_url.endswith(suffix):
+            # Found a match with at least min_segments
+            return
+
+    # If no match found, issue warning
+    lint_ctx.warn(f"remote_repository_url may be incorrect: expected it to end with a significant part of '{path}'")
 
 
 def lint_expansion(realized_repository: "RealizedRepository", lint_ctx):
