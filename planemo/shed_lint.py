@@ -343,14 +343,14 @@ def lint_repository_dependencies(realized_repository: "RealizedRepository", lint
 def lint_shed_yaml(realized_repository: "RealizedRepository", lint_ctx):
     path = realized_repository.real_path
     shed_yaml = os.path.join(path, ".shed.yml")
-    if not os.path.exists(shed_yaml):
-        lint_ctx.info("No .shed.yml file found, skipping.")
+    if not os.path.exists(shed_yaml) and realized_repository.repository_type != REPO_TYPE_UNRESTRICTED:
+        lint_ctx.error("No .shed.yml file found, skipping.")
         return
     try:
         with open(shed_yaml) as fh:
             yaml.safe_load(fh)
     except Exception as e:
-        lint_ctx.warn("Failed to parse .shed.yml file [%s]" % unicodify(e))
+        lint_ctx.error("Failed to parse .shed.yml file [%s]" % unicodify(e))
         return
     lint_ctx.info(".shed.yml found and appears to be valid YAML.")
     _lint_shed_contents(lint_ctx, realized_repository)
@@ -364,12 +364,17 @@ def _lint_shed_contents(lint_ctx, realized_repository: "RealizedRepository"):
         if value is not None:
             msg = func(value, *args)
             if msg:
-                lint_ctx.warn(msg)
+                lint_ctx.error(msg)
+        return value
 
-    _lint_if_present("owner", validate_repo_owner)
-    _lint_if_present("name", validate_repo_name)
+    def _lint(key, func, *args):
+        if _lint_if_present(key, func, *args) is None:
+            lint_ctx.error("Repository does not define: %s" % key)
+
+    _lint("owner", validate_repo_owner)
+    _lint("name", validate_repo_name)
     _lint_if_present("type", _validate_repo_type, config["name"])
-    _lint_if_present("categories", _validate_categories, realized_repository)
+    _lint("categories", _validate_categories, realized_repository)
 
 
 def _validate_repo_type(repo_type, name):
