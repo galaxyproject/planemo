@@ -156,7 +156,7 @@ def _validate_http_url(url, lint_ctx, user_agent=None):
             # CloudFlare protection block
             return True
         else:
-            lint_ctx.error(f"Error '{e}' accessing {url}")
+            lint_ctx.error(f"Error '{e}' accessing {url} response was {r.text}")
             return False
 
 
