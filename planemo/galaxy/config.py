@@ -25,6 +25,7 @@ from typing import (
     TYPE_CHECKING,
 )
 
+from cryptography.fernet import Fernet
 from galaxy.tool_util.deps import docker_util
 from galaxy.util.commands import argv_to_str
 from gxjobconfinit.generate import (
@@ -135,6 +136,12 @@ config_version: %s
 genome_folder: '%s'
 genome_servers: ['http://refgenomes.databio.org']
 genomes: null
+"""
+
+VAULT_CONFIG_TEMPLATE = """
+type: database
+encryption_keys:
+  - ${encryption_key}
 """
 
 EMPTY_TOOL_CONF_TEMPLATE = """<toolbox></toolbox>"""
@@ -348,6 +355,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         _handle_job_config_file(config_directory, server_name, test_data_dir, all_tool_paths, kwds)
         _handle_file_sources(config_directory, test_data_dir, kwds)
         _handle_refgenie_config(config_directory, galaxy_root, kwds)
+        _handle_vault_config(config_directory, kwds)
         file_path = kwds.get("file_path") or config_join("files")
         _ensure_directory(file_path)
 
@@ -1436,12 +1444,25 @@ def _handle_refgenie_config(config_directory, galaxy_root, kwds):
     kwds["refgenie_config_file"] = refgenie_config_file
 
 
+def _handle_vault_config(config_directory, kwds):
+    """Generate a default vault configuration file if not provided."""
+    vault_config_file = kwds.get("vault_config_file", None)
+    if not vault_config_file:
+        # Generate a Fernet encryption key for the database vault
+        encryption_key = Fernet.generate_key().decode("utf-8")
+        vault_config_contents = _sub(VAULT_CONFIG_TEMPLATE, {"encryption_key": encryption_key})
+        vault_config_file = os.path.join(config_directory, "vault_conf.yml")
+        write_file(vault_config_file, vault_config_contents)
+    kwds["vault_config_file"] = vault_config_file
+
+
 def _handle_kwd_overrides(properties, kwds):
     kwds_gx_properties = [
         "tool_data_path",
         "job_config_file",
         "job_metrics_config_file",
         "dependency_resolvers_config_file",
+        "vault_config_file",
     ]
     for prop in kwds_gx_properties:
         val = kwds.get(prop, None)

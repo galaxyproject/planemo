@@ -1,6 +1,7 @@
 allure-python-commons
 bioblend>=1.6.0
 click!=8.0.2
+cryptography>=46.0.3
 cwltool>=1.0.20191225192155
 ephemeris>=0.10.3
 galaxy-job-config-init>=0.1.3
