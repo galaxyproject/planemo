@@ -271,6 +271,69 @@ This indicates the number of datasets created, as well as the state they are in
 (running, errored, paused, etc.)
 
 
+Tracking workflow progress
+===============================================
+
+When you run a workflow on an external Galaxy server, you may want to monitor
+its progress from the command line without using the web interface. The
+``workflow_track`` command follows the progress of a workflow invocation,
+displaying status updates as jobs complete:
+
+::
+
+    $ planemo workflow_track INVOCATION_ID --galaxy_url SERVER_URL --galaxy_user_key YOUR_API_KEY
+
+Or using a profile:
+
+::
+
+    $ planemo workflow_track INVOCATION_ID --profile tutorial_profile
+
+The command polls the Galaxy server periodically and reports the status of
+each job in the invocation. You can also use the ``--fail_fast`` option to
+stop tracking immediately when any job fails, rather than waiting for the
+entire invocation to complete.
+
+
+Downloading invocation outputs
+===============================================
+
+After a workflow has completed (whether run via Planemo or the Galaxy web
+interface), you can download all output files using the ``invocation_download``
+command:
+
+::
+
+    $ planemo invocation_download INVOCATION_ID --profile tutorial_profile
+
+By default, outputs are saved to a directory named ``output_{invocation_id}``.
+You can specify a different location with the ``--output_directory`` option:
+
+::
+
+    $ planemo invocation_download INVOCATION_ID --profile tutorial_profile --output_directory ./my_outputs
+
+The command also supports ``--output_json`` to write a JSON file containing
+metadata about the downloaded outputs.
+
+
+Exporting invocations as archives
+===============================================
+
+For reproducibility and sharing purposes, you can export a completed workflow
+invocation as an archive using the ``invocation_export`` command. The default
+format is `RO-Crate <https://www.researchobject.org/ro-crate/>`_, a community
+standard for packaging research data with their metadata:
+
+::
+
+    $ planemo invocation_export INVOCATION_ID --profile tutorial_profile --output invocation.rocrate.zip
+
+The RO-Crate archive includes the workflow definition, input and output
+datasets, and provenance information, making it suitable for long-term
+archival and sharing with collaborators.
+
+
 Profile configuration files
 ===============================================
 
