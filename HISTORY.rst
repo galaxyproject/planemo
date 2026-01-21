@@ -6,8 +6,15 @@ History
 .. to_doc
 
 ---------------------
-0.75.35.dev0
+0.75.35 (2026-01-21)
 ---------------------
+* Add documentation for workflow_track, invocation_download, and invoca…
+  (thanks to `@mvdbeek`_). `Pull Request 1601`_
+* Add vault configuration file option (thanks to `@arash77`_). `Pull Request
+  1599`_
+* add response to error message (thanks to `@bernt-matthias`_). `Pull Request
+  1598`_
+* Allow to skip url check (thanks to `@bernt-matthias`_). `Pull Request 1597`_
 
 ---------------------
 0.75.34 (2026-01-06)
@@ -2303,6 +2310,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1601: https://github.com/galaxyproject/planemo/pull/1601
+.. _Pull Request 1599: https://github.com/galaxyproject/planemo/pull/1599
+.. _Pull Request 1598: https://github.com/galaxyproject/planemo/pull/1598
+.. _Pull Request 1597: https://github.com/galaxyproject/planemo/pull/1597
 .. _Pull Request 1596: https://github.com/galaxyproject/planemo/pull/1596
 .. _Pull Request 1593: https://github.com/galaxyproject/planemo/pull/1593
 .. _Pull Request 1595: https://github.com/galaxyproject/planemo/pull/1595

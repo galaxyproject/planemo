@@ -25,9 +25,6 @@ logged into and explored interactively.
 
       -r, --recursive                 Recursively perform command for nested
                                       repository directories.
-      --shed_fail_fast                If multiple repositories are specified and an
-                                      error occurs stop immediately instead of
-                                      processing remaining repositories.
       --owner TEXT                    Tool Shed repository owner (username).
       --name TEXT                     Tool Shed repository name (defaults to the
                                       inferred tool directory name).
@@ -45,6 +42,7 @@ logged into and explored interactively.
                                       'testtoolshed', 'local' (alias for
                                       http://localhost:9009/), an arbitrary url or
                                       mappings defined ~/.planemo.yml.
+      --fail_fast                     Stop on first job failure.
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
       --galaxy_python_version [3|3.8|3.9|3.10|3.11|3.12]

@@ -21,9 +21,6 @@ This will read the settings from the ``.shed.yml`` file.
 
       -r, --recursive           Recursively perform command for nested repository
                                 directories.
-      --shed_fail_fast          If multiple repositories are specified and an error
-                                occurs stop immediately instead of processing
-                                remaining repositories.
       --owner TEXT              Tool Shed repository owner (username).
       --name TEXT               Tool Shed repository name (defaults to the inferred
                                 tool directory name).
@@ -41,6 +38,7 @@ This will read the settings from the ``.shed.yml`` file.
                                 'testtoolshed', 'local' (alias for
                                 http://localhost:9009/), an arbitrary url or
                                 mappings defined ~/.planemo.yml.
+      --fail_fast               Stop on first job failure.
       -m, --message TEXT        Commit message for tool shed upload.
       --skip_upload             Skip upload contents as part of operation, only
                                 update metadata.
