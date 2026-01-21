@@ -6,6 +6,10 @@ History
 .. to_doc
 
 ---------------------
+0.75.36.dev0
+---------------------
+
+---------------------
 0.75.35 (2026-01-21)
 ---------------------
 * Add documentation for workflow_track, invocation_download, and invoca…
