@@ -626,9 +626,9 @@ def _shared_galaxy_properties(config_directory, kwds, for_tests):
 def external_galaxy_config(ctx, runnables, for_tests=False, **kwds):
     yield BaseGalaxyConfig(
         ctx=ctx,
-        galaxy_url=kwds.get("galaxy_url", None),
-        master_api_key=_get_master_api_key(kwds),
-        user_api_key=kwds.get("galaxy_user_key", None),
+        galaxy_url=kwds.get("galaxy_url"),
+        master_api_key=kwds.get("galaxy_admin_key"),
+        user_api_key=kwds.get("galaxy_user_key"),
         runnables=runnables,
         kwds=kwds,
     )
