@@ -148,6 +148,7 @@ CURRENT_CATEGORIES = [
     "Natural Language Processing",
     "Next Gen Mappers",
     "Ontology Manipulation",
+    "Pangenomics",
     "Phylogenetics",
     "Proteomics",
     "RNA",
