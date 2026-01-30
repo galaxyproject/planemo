@@ -22,8 +22,7 @@ INTERNAL_COMMANDS = [
     "shed_download",
 ]
 
-COMMAND_TEMPLATE = Template(
-    """
+COMMAND_TEMPLATE = Template("""
 ``${command}`` command
 ========================================
 
@@ -32,8 +31,7 @@ This section is auto-generated from the help text for the planemo command
 --help``.
 
 ${command_help}
-"""
-)
+""")
 
 COMMANDS_TEMPLATE = """========
 Commands

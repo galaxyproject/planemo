@@ -252,14 +252,12 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         with tempfile.NamedTemporaryFile(
             "w", suffix=".xml.test", delete=False
         ) as tool_data_table, tempfile.NamedTemporaryFile("w", suffix="bla.loc", delete=False) as loc_file:
-            tool_data_table.write(
-                f"""<tables>
+            tool_data_table.write(f"""<tables>
     <table name="__dbkeys__" comment_char="#">
         <columns>value, name, len_path</columns>
         <file path="{loc_file.name}" />
     </table>
-</tables>"""
-            )
+</tables>""")
             loc_file.write(f"{dbkey}\t{dbkey}\t{dbkey}.len")
             tool_data_table.flush()
             loc_file.flush()

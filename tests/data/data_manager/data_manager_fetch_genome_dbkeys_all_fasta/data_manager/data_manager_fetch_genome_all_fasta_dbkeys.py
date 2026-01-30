@@ -135,7 +135,7 @@ def _sort_fasta_as_is(fasta_filename, params):
 
 
 def _sort_fasta_lexicographical(fasta_filename, params):
-    (unsorted_filename, fasta_offsets, current_order) = _move_and_index_fasta_for_sorting(fasta_filename)
+    unsorted_filename, fasta_offsets, current_order = _move_and_index_fasta_for_sorting(fasta_filename)
     sorted_names = sorted(fasta_offsets.keys())
     if sorted_names == current_order:
         shutil.move(unsorted_filename, fasta_filename)
@@ -144,7 +144,7 @@ def _sort_fasta_lexicographical(fasta_filename, params):
 
 
 def _sort_fasta_gatk(fasta_filename, params):
-    (unsorted_filename, fasta_offsets, current_order) = _move_and_index_fasta_for_sorting(fasta_filename)
+    unsorted_filename, fasta_offsets, current_order = _move_and_index_fasta_for_sorting(fasta_filename)
     sorted_names = list(map(str, range(1, 23))) + ["X", "Y"]
     # detect if we have chrN, or just N
     has_chr = False
@@ -176,7 +176,7 @@ def _sort_fasta_gatk(fasta_filename, params):
 
 
 def _sort_fasta_custom(fasta_filename, params):
-    (unsorted_filename, fasta_offsets, current_order) = _move_and_index_fasta_for_sorting(fasta_filename)
+    unsorted_filename, fasta_offsets, current_order = _move_and_index_fasta_for_sorting(fasta_filename)
     sorted_names = []
     for id_repeat in params["param_dict"]["sorting"]["sequence_identifiers"]:
         sorted_names.append(id_repeat["identifier"])
@@ -478,7 +478,7 @@ def main():
         default=None,
         help="dbkey_description",
     )
-    (options, args) = parser.parse_args()
+    options, args = parser.parse_args()
 
     filename = args[0]
 
