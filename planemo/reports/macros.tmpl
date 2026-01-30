@@ -29,7 +29,8 @@
 
             * Job state is {{ job.state }}
 {%          set ns = namespace(container_id=None) %}
-{%          for metric in job.get('job_metrics', []) %}
+{%          set job_metrics = job.get('job_metrics') or [] %}
+{%          for metric in job_metrics %}
 {%            if metric.get('name') == 'container_id' %}
 {%              set ns.container_id = metric.get('value') %}
 {%            endif %}
