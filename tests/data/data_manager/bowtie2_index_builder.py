@@ -92,7 +92,7 @@ def main():
         default=None,
         help="data_table_name",
     )
-    (options, args) = parser.parse_args()
+    options, args = parser.parse_args()
 
     filename = args[0]
 

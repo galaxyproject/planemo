@@ -15,8 +15,7 @@ from .test_utils import (
     TEST_DIR,
 )
 
-SHED_TEMPLATE = string.Template(
-    """owner: ${owner}
+SHED_TEMPLATE = string.Template("""owner: ${owner}
 name: ${name}
 description: Planemo test repository.
 homepage_url: https://planemo.readthedocs.org/
@@ -24,8 +23,7 @@ remote_repository_url: https://github.com/galaxyproject/planemo/
 type: tool_dependency_definition
 categories:
   - cooltools
-"""
-)
+""")
 
 
 class ShedTestCase(CliTestCase):
