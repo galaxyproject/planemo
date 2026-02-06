@@ -4,6 +4,13 @@ History
 -------
 
 .. to_doc
+---------------------
+0.75.37 (2026-02-06)
+---------------------
+* Move deploy to a separate workflow for trusted publishing (thanks to `@nsoranzo`_). `Pull Request 1608`_
+* Finish release and fix release process (thanks to `@bernt-matthias`_). `Pull Request 1607`_
+* Set default mulled_resolution_cache_data_dir in planemo workspace (thanks to `@mvdbeek`_). `Pull Request 1610`_
+* Fix commit_version.py (thanks to `@bernt-matthias`_). `Pull Request 1609`_
 
 ---------------------
 0.75.36 (2026-02-03)
@@ -2319,6 +2326,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1608: https://github.com/galaxyproject/planemo/pull/1608
+.. _Pull Request 1607: https://github.com/galaxyproject/planemo/pull/1607
+.. _Pull Request 1610: https://github.com/galaxyproject/planemo/pull/1610
+.. _Pull Request 1609: https://github.com/galaxyproject/planemo/pull/1609
 .. _Pull Request 1603: https://github.com/galaxyproject/planemo/pull/1603
 .. _Pull Request 1606: https://github.com/galaxyproject/planemo/pull/1606
 .. _Pull Request 1605: https://github.com/galaxyproject/planemo/pull/1605
