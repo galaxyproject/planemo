@@ -6,7 +6,6 @@ from .test_utils import (
     TEST_TOOLS_DIR,
 )
 
-
 UNFORMATTED_XML = """\
 <tool id="test" name="Test" version="1.0">
 <description>A test tool</description>
@@ -127,5 +126,6 @@ class FormatTestCase(CliTestCase):
             self._check_exit_code(["format", copy_path])
             # verify the result is valid XML
             from lxml import etree
+
             with open(copy_path) as f:
                 etree.fromstring(f.read())
