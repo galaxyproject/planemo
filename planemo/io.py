@@ -5,6 +5,7 @@ import errno
 import fnmatch
 import os
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -228,18 +229,19 @@ def kill_posix(pid: int):
 
     def _check_pid():
         try:
-            os.kill(pid, 0)
+            os.kill(pid, signal.SIGTERM)
             return True
         except OSError:
             return False
 
     if _check_pid():
-        for sig in [15, 9]:
+        for sig in [signal.SIGTERM, signal.SIGKILL]:
             try:
                 # gunicorn (unlike paste), seem to require killing process
                 # group
                 os.killpg(os.getpgid(pid), sig)
-            except OSError:
+            except OSError as e:
+                print(f"Failed to kill process group for pid {pid} with signal {sig}: {e}")
                 return
             time.sleep(1)
             if not _check_pid():
