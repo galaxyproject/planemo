@@ -87,8 +87,8 @@ def sleep(galaxy_url, verbose=False, timeout=0, sleep_condition=None):
             sys.stderr.flush()
 
         # If we cannot talk to galaxy and are over the timeout
-        if timeout != 0 and count > timeout:
-            elapsed = time.time() - start_time
+        elapsed = time.time() - start_time
+        if timeout != 0 and elapsed > timeout:
             sys.stderr.write(f"Failed to contact Galaxy after {elapsed:.0f}s ({count} attempts)\n")
             return False
 
