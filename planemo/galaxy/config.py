@@ -504,11 +504,16 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
         env["GRAVITY_STATE_DIR"] = config_join("gravity")
         with NamedTemporaryFile(suffix=".sock", delete=True) as nt:
             env["SUPERVISORD_SOCKET"] = nt.name
+        # Resolve template variables (like ${temp_directory}) in properties
+        # before writing to YAML. This ensures the config file is self-contained
+        # and doesn't depend on GALAXY_CONFIG_OVERRIDE_* env vars being propagated
+        # by Gravity to gunicorn workers.
+        resolved_properties = {k: _sub(v, template_args) if isinstance(v, str) else v for k, v in properties.items()}
         write_file(
             env["GALAXY_CONFIG_FILE"],
             json.dumps(
                 {
-                    "galaxy": properties,
+                    "galaxy": resolved_properties,
                     "gravity": {
                         "galaxy_root": galaxy_root,
                         "gunicorn": {
