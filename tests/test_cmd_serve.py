@@ -38,6 +38,14 @@ class UsesServeCommand:
         if "--daemon" not in serve_cmd:
             self._run_subprocess(serve_cmd)
         else:
+            # Register cleanup hook to kill the daemon process group before
+            # other cleanup hooks run (which may delete temp files the daemon
+            # still references). kill_pid_file sends SIGTERM/SIGKILL to the
+            # entire process group (gravity supervisor + gunicorn + workers).
+            if "--pid_file" in serve_cmd:
+                pid_file_index = serve_cmd.index("--pid_file") + 1
+                pid_file = serve_cmd[pid_file_index]
+                self._cleanup_hooks.insert(0, lambda: kill_pid_file(pid_file))
             self._check_exit_code(serve_cmd)
 
     def _run_subprocess(self, serve_cmd):
@@ -140,7 +148,6 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         user_gi = self._user_gi
         assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0
         user_gi.histories.create_history(TEST_HISTORY_NAME)
-        kill_pid_file(self._pid_file)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch
@@ -210,7 +217,6 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
             time.sleep(5)
 
         assert found, "Failed to find fastqc id in %s" % tool_ids
-        kill_pid_file(self._pid_file)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_serve_profile(self):
