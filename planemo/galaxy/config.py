@@ -435,6 +435,10 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         )
         _handle_container_resolution(ctx, kwds, properties)
         properties["database_connection"] = _database_connection(database_location, **kwds)
+        # Use a separate SQLite database for the Celery message broker to avoid
+        # write lock contention between gunicorn and Celery workers during startup.
+        amqp_broker_path = config_join("celery_broker.sqlite")
+        properties["amqp_internal_connection"] = f"sqlalchemy+sqlite:///{amqp_broker_path}"
         if kwds.get("mulled_containers", False):
             properties["mulled_channels"] = kwds.get("conda_ensure_channels", "")
 

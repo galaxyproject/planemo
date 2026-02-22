@@ -59,6 +59,7 @@ def sleep(galaxy_url, verbose=False, timeout=0, sleep_condition=None):
         sleep_condition = SleepCondition()
 
     count = 0
+    start_time = time.time()
     while sleep_condition.sleep:
         try:
             result = requests.get(galaxy_url + "/api/version", timeout=CONNECT_TIMEOUT)
@@ -78,9 +79,17 @@ def sleep(galaxy_url, verbose=False, timeout=0, sleep_condition=None):
                 sys.stdout.flush()
         count += 1
 
+        if count % 30 == 0:
+            elapsed = time.time() - start_time
+            sys.stderr.write(
+                f"[galaxy-wait] Still waiting for Galaxy at {galaxy_url} after {elapsed:.0f}s ({count} attempts)\n"
+            )
+            sys.stderr.flush()
+
         # If we cannot talk to galaxy and are over the timeout
         if timeout != 0 and count > timeout:
-            sys.stderr.write("Failed to contact Galaxy\n")
+            elapsed = time.time() - start_time
+            sys.stderr.write(f"Failed to contact Galaxy after {elapsed:.0f}s ({count} attempts)\n")
             return False
 
         time.sleep(DEFAULT_SLEEP_WAIT)
