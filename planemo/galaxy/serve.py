@@ -60,8 +60,10 @@ def _serve(ctx, runnables, **kwds):
         galaxy_url = f"http://{host}:{port}"
         galaxy_alive = sleep(galaxy_url, verbose=ctx.verbose, timeout=startup_timeout)
         if not galaxy_alive:
+            log_contents = config.log_contents
             raise Exception(
                 f"Attempted to serve Galaxy at {galaxy_url}, but it failed to start in {startup_timeout} seconds."
+                f"\nGalaxy log contents:\n{log_contents}"
             )
         config.install_workflows()
         if kwds.get("pid_file"):
