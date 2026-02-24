@@ -47,6 +47,11 @@ please careful and do not try this against production Galaxy instances.
                                       tests failed so this file must have been
                                       produced with the same set of tool ids
                                       previously.
+      --test_index INTEGER            Index(es) of specific test(s) to run
+                                      (0-based). Can be specified multiple times
+                                      (e.g., --test_index 0 --test_index 2) to run
+                                      specific tests. If not specified, all tests
+                                      are run.
       --polling_backoff INTEGER       Poll resources with an increasing interval
                                       between requests. Useful when testing against
                                       remote and/or production instances to limit

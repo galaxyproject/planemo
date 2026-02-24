@@ -6,9 +6,13 @@ History
 .. to_doc
 
 ---------------------
-0.75.38.dev0
+0.75.38 (2026-02-24)
 ---------------------
-
+* Display job metric container in test results (thanks to `@mvdbeek`_). `Pull Request 1612`_
+* Accept completed as terminal invocation state (thanks to `@mvdbeek`_). `Pull Request 1615`_
+* Added testing with index (thanks to `@dadrasarmin`_). `Pull Request 1614`_
+* Speed up planemo tests by providing uv (thanks to `@mvdbeek`_). `Pull Request 1616`_
+* Replace distutils (removed in Python 3.12) (thanks to `@nsoranzo`_). `Pull Request 1618`_
 
 ---------------------
 0.75.37 (2026-02-06)
@@ -2332,6 +2336,11 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1612: https://github.com/galaxyproject/planemo/pull/1612
+.. _Pull Request 1615: https://github.com/galaxyproject/planemo/pull/1615
+.. _Pull Request 1614: https://github.com/galaxyproject/planemo/pull/1614
+.. _Pull Request 1616: https://github.com/galaxyproject/planemo/pull/1616
+.. _Pull Request 1618: https://github.com/galaxyproject/planemo/pull/1618
 .. _Pull Request 1608: https://github.com/galaxyproject/planemo/pull/1608
 .. _Pull Request 1607: https://github.com/galaxyproject/planemo/pull/1607
 .. _Pull Request 1610: https://github.com/galaxyproject/planemo/pull/1610
@@ -3378,3 +3387,4 @@ History
 .. _@ahmedhamidawan: https://github.com/ahmedhamidawan
 .. _@arash77: https://github.com/arash77
 .. _@SaimMomin12: https://github.com/SaimMomin12
+.. _@dadrasarmin: https://github.com/dadrasarmin
