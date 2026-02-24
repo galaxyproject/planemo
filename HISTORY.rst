@@ -6,6 +6,11 @@ History
 .. to_doc
 
 ---------------------
+0.75.39.dev0
+---------------------
+
+
+---------------------
 0.75.38 (2026-02-24)
 ---------------------
 * Display job metric container in test results (thanks to `@mvdbeek`_). `Pull Request 1612`_
