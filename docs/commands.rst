@@ -28,6 +28,7 @@ documentation describes these commands.
 .. include:: commands/docker_shell.rst
 .. include:: commands/dockstore_init.rst
 .. include:: commands/docs.rst
+.. include:: commands/format.rst
 .. include:: commands/invocation_download.rst
 .. include:: commands/invocation_export.rst
 .. include:: commands/job_config_init.rst

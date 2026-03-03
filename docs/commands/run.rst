@@ -69,6 +69,8 @@ Planemo command for running tools and jobs.
                                       Wait for galaxy to start before assuming
                                       Galaxy did not start.  [x>=1]
       --job_config_file FILE          Job configuration file for Galaxy to target.
+      --job_workers INTEGER           Number of workers for the local job runner
+                                      (default 1).
       --tool_dependency_dir DIRECTORY
                                       Tool dependency dir for Galaxy to target.
       --tool_data_path DIRECTORY      Directory where data used by tools is located.

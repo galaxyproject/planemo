@@ -180,6 +180,14 @@ planemo.commands.cmd\_docs module
    :show-inheritance:
    :undoc-members:
 
+planemo.commands.cmd\_format module
+-----------------------------------
+
+.. automodule:: planemo.commands.cmd_format
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 planemo.commands.cmd\_invocation\_download module
 -------------------------------------------------
 

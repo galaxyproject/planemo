@@ -8,6 +8,8 @@ History
 ---------------------
 0.75.39.dev0
 ---------------------
+* Add planemo format command (thanks to `@dannon`_). `Pull Request 1617`_
+* Add --job_workers option to limit parallel local jobs (default 1) (thanks to `@mvdbeek`_). `Pull Request 1620`_
 
 
 ---------------------
@@ -2341,6 +2343,10 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1617: https://github.com/galaxyproject/planemo/pull/1617
+.. _Pull Request 1622: https://github.com/galaxyproject/planemo/pull/1622
+.. _Pull Request 1623: https://github.com/galaxyproject/planemo/pull/1623
+.. _Pull Request 1620: https://github.com/galaxyproject/planemo/pull/1620
 .. _Pull Request 1612: https://github.com/galaxyproject/planemo/pull/1612
 .. _Pull Request 1615: https://github.com/galaxyproject/planemo/pull/1615
 .. _Pull Request 1614: https://github.com/galaxyproject/planemo/pull/1614
@@ -3393,3 +3399,4 @@ History
 .. _@arash77: https://github.com/arash77
 .. _@SaimMomin12: https://github.com/SaimMomin12
 .. _@dadrasarmin: https://github.com/dadrasarmin
+.. _@dannon: https://github.com/dannon
