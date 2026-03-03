@@ -1406,6 +1406,9 @@ def _handle_job_config_file(
             test_data_dir,
             list(all_tool_paths),
         )
+        job_workers = kwds.pop("job_workers", None)
+        if job_workers is not None:
+            kwds["local_workers"] = job_workers
         init_config = ConfigArgs.from_dict(**kwds)
         conf_contents = build_job_config(init_config, dev_context)
         job_config_file = os.path.join(

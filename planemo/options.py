@@ -467,6 +467,16 @@ def job_config_option():
     )
 
 
+def job_workers_option():
+    return planemo_option(
+        "--job_workers",
+        type=int,
+        default=1,
+        help="Number of workers for the local job runner (default 1).",
+        use_global_config=True,
+    )
+
+
 class EnumType(click.Choice):
     def __init__(self, enum):
         self._enum = enum
@@ -1381,6 +1391,7 @@ def galaxy_target_options():
         galaxy_startup_timeout_option(),
         # Profile options...
         job_config_option(),
+        job_workers_option(),
         tool_dependency_dir_option(),
         tool_data_path_option(),
     )
