@@ -46,7 +46,10 @@ def test_refgenie_config_version():
     with TempDirectoryContext() as tdc:
         galaxy_lib_path = os.path.join(tdc.temp_directory, "lib", "galaxy")
         os.makedirs(galaxy_lib_path)
-        version_path = os.path.join(galaxy_lib_path, "version.py")
+        if os.path.isdir(os.path.join(galaxy_lib_path, "version")):
+            version_path = os.path.join(galaxy_lib_path, "version", "__init__.py")
+        else:
+            version_path = os.path.join(galaxy_lib_path, "version.py")
         with open(version_path, "w") as version_fh:
             version_fh.write('VERSION_MAJOR = "21.05"')
         refgenie_config = get_refgenie_config(galaxy_root=tdc.temp_directory, refgenie_dir="/")
