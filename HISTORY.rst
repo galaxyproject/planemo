@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.75.39.dev0
+0.75.39 (2026-03-03)
 ---------------------
 * Add planemo format command (thanks to `@dannon`_). `Pull Request 1617`_
 * Add --job_workers option to limit parallel local jobs (default 1) (thanks to `@mvdbeek`_). `Pull Request 1620`_
