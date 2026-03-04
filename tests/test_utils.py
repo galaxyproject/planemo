@@ -6,6 +6,7 @@ import functools
 import os
 import shutil
 import signal
+import time
 import traceback
 from concurrent.futures import (
     as_completed,
@@ -13,8 +14,10 @@ from concurrent.futures import (
 )
 from tempfile import mkdtemp
 from typing import (
+    Any,
     Callable,
     List,
+    Optional,
 )
 from unittest import (
     skip,
@@ -23,6 +26,7 @@ from unittest import (
 
 import psutil
 import pytest
+import requests as requests_lib
 from click.testing import CliRunner
 from galaxy.util import (
     asbool,
@@ -426,6 +430,57 @@ def load_function_body(path: str, func_name: str) -> ast.Module:
                 return ast.Module(body=item.body, type_ignores=[])
 
         raise ModuleNotFoundError()
+
+
+def wait_for_active_entry_points(gi, job_id: str, timeout: int = 120) -> list[dict[str, Any]]:
+    """Poll GET /api/entry_points?job_id={job_id} until all entry points are active."""
+    end = time.time() + timeout
+    while time.time() < end:
+        resp = gi.make_get_request(f"{gi.url}/entry_points?job_id={job_id}")
+        resp.raise_for_status()
+        entry_points = resp.json()
+        if entry_points and all(ep.get("active") for ep in entry_points):
+            return entry_points
+        # Check if job errored
+        job_resp = gi.make_get_request(f"{gi.url}/jobs/{job_id}?full=true")
+        job_resp.raise_for_status()
+        if job_resp.json().get("state") == "error":
+            raise Exception(f"Interactive tool job {job_id} failed: {job_resp.json()}")
+        time.sleep(3)
+    raise TimeoutError(f"Entry points for job {job_id} did not become active within {timeout}s")
+
+
+def get_entry_point_target(gi, entry_point_id: str) -> str:
+    """Get the target URL for an entry point via /api/entry_points/{id}/access."""
+    resp = gi.make_get_request(f"{gi.url}/entry_points/{entry_point_id}/access")
+    resp.raise_for_status()
+    return resp.json()["target"]
+
+
+def wait_for_proxied_content(target_url: str, timeout: int = 30) -> str:
+    """Request content through the GxIT proxy using the Host header trick.
+
+    The target URL looks like: http://{key}-{token}.ep.interactivetool.localhost:{port}/
+    We parse out the subdomain host and make a request to localhost:{port} with
+    the Host header set to the full subdomain hostname.
+    """
+    end = time.time() + timeout
+    last_error: Optional[Exception] = None
+    while time.time() < end:
+        try:
+            scheme, rest = target_url.split("://", 1)
+            faked_host = rest.split("/", 1)[0] if "/" in rest else rest
+            _prefix, host_and_port = rest.split(".interactivetool.", 1)
+            # host_and_port is like "localhost:8090/" - strip trailing path
+            host_and_port = host_and_port.split("/", 1)[0]
+            url = f"{scheme}://{host_and_port}"
+            response = requests_lib.get(url, timeout=5, headers={"Host": faked_host})
+            response.raise_for_status()
+            return response.text
+        except Exception as e:
+            last_error = e
+            time.sleep(2)
+    raise TimeoutError(f"Failed to get proxied content from {target_url} within {timeout}s: {last_error}")
 
 
 # TODO: everything should be considered "exported".
