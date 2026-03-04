@@ -540,12 +540,20 @@ def _expand_paths(galaxy_root: Optional[str], extra_tools: List[str]) -> List[st
 
 
 def get_galaxy_major_version(galaxy_root):
-    spec = importlib.util.spec_from_file_location(
-        "__galaxy_version", os.path.join(galaxy_root, "lib", "galaxy", "version.py")
-    )
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return parse_version(module.VERSION_MAJOR)
+    try:
+        spec = importlib.util.spec_from_file_location(
+            "__galaxy_version", os.path.join(galaxy_root, "lib", "galaxy", "version.py")
+        )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return parse_version(module.VERSION_MAJOR)
+    except FileNotFoundError:
+        spec = importlib.util.spec_from_file_location(
+            "__galaxy_version", os.path.join(galaxy_root, "lib", "galaxy", "version", "__init__.py")
+        )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return parse_version(module.VERSION_MAJOR)
 
 
 def get_refgenie_config(galaxy_root, refgenie_dir):
