@@ -509,7 +509,11 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
             env["SUPERVISORD_SOCKET"] = nt.name
         host = kwds.get("host", "localhost")
         port = template_args["port"]
-        galaxy_infrastructure_url = f"http://{host}:{port}"
+        # Use "localhost" for infrastructure URL when bound to 127.0.0.1,
+        # so that interactive tool subdomain URLs resolve correctly
+        # (e.g. *.interactivetool.localhost instead of *.interactivetool.127.0.0.1).
+        infrastructure_host = "localhost" if host == "127.0.0.1" else host
+        galaxy_infrastructure_url = f"http://{infrastructure_host}:{port}"
         if kwds.get("disable_gxits"):
             gx_it_proxy_config = {
                 "enable": False,
@@ -523,7 +527,7 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
             properties["interactivetools_enable"] = True
             properties["galaxy_infrastructure_url"] = galaxy_infrastructure_url
             properties["interactivetools_upstream_proxy"] = False
-            properties["interactivetools_proxy_host"] = f"{host}:{gx_it_proxy_port}"
+            properties["interactivetools_proxy_host"] = f"{infrastructure_host}:{gx_it_proxy_port}"
         # Resolve template variables (like ${temp_directory}) in properties
         # before writing to YAML. This ensures the config file is self-contained
         # and doesn't depend on GALAXY_CONFIG_OVERRIDE_* env vars being propagated

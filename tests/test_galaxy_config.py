@@ -102,6 +102,13 @@ def test_gxits_infrastructure_url_uses_host_and_port():
         assert properties["interactivetools_proxy_host"].startswith("0.0.0.0:")
 
 
+def test_gxits_infrastructure_url_remaps_127_0_0_1_to_localhost():
+    """Test that 127.0.0.1 is remapped to localhost for infrastructure URLs."""
+    with _test_write_galaxy_config(host="127.0.0.1", port=9090) as (config_data, properties, env):
+        assert properties["galaxy_infrastructure_url"] == "http://localhost:9090"
+        assert properties["interactivetools_proxy_host"].startswith("localhost:")
+
+
 @contextlib.contextmanager
 def _test_galaxy_config(tool_paths=[], **kwargs):
     ctx = create_test_context()
