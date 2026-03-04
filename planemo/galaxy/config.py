@@ -9,6 +9,7 @@ import os
 import random
 import shlex
 import shutil
+import sqlite3
 import threading
 import time
 from string import Template
@@ -496,6 +497,16 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         )
 
 
+def _init_interactivetools_db(path):
+    """Pre-create the gxitproxy SQLite database.
+
+    This ensures the file exists so the proxy's file watcher doesn't crash.
+    """
+    conn = sqlite3.connect(path)
+    conn.commit()
+    conn.close()
+
+
 def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, config_join):
     if get_galaxy_major_version(galaxy_root) < parse_version("22.01"):
         # Legacy .ini setup
@@ -520,11 +531,18 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
             }
         else:
             gx_it_proxy_port = network_util.get_free_port()
+            interactivetools_map = os.path.realpath(
+                os.path.join(galaxy_root, "database", "interactivetools_map.sqlite")
+            )
+            os.makedirs(os.path.dirname(interactivetools_map), exist_ok=True)
+            _init_interactivetools_db(interactivetools_map)
             gx_it_proxy_config = {
                 "enable": True,
                 "port": gx_it_proxy_port,
+                "sessions": interactivetools_map,
             }
             properties["interactivetools_enable"] = True
+            properties["interactivetools_map"] = interactivetools_map
             properties["galaxy_infrastructure_url"] = galaxy_infrastructure_url
             properties["interactivetools_upstream_proxy"] = False
             properties["interactivetools_proxy_host"] = f"{infrastructure_host}:{gx_it_proxy_port}"

@@ -68,6 +68,8 @@ def test_gxits_enabled_by_default():
         assert gx_it_proxy["enable"] is True
         assert "port" in gx_it_proxy
         assert isinstance(gx_it_proxy["port"], int)
+        assert "sessions" in gx_it_proxy
+        assert gx_it_proxy["sessions"].endswith("interactivetools_map.sqlite")
 
 
 def test_gxits_sets_galaxy_properties():
@@ -77,9 +79,13 @@ def test_gxits_sets_galaxy_properties():
         assert properties["interactivetools_upstream_proxy"] is False
         assert "galaxy_infrastructure_url" in properties
         assert "interactivetools_proxy_host" in properties
+        assert "interactivetools_map" in properties
+        assert properties["interactivetools_map"].endswith("interactivetools_map.sqlite")
         # The proxy host should include the gx_it_proxy port
         gx_it_port = config_data["gravity"]["gx_it_proxy"]["port"]
         assert properties["interactivetools_proxy_host"] == f"localhost:{gx_it_port}"
+        # sessions and interactivetools_map should point to the same file
+        assert config_data["gravity"]["gx_it_proxy"]["sessions"] == properties["interactivetools_map"]
 
 
 def test_gxits_disabled_with_flag():
@@ -93,6 +99,7 @@ def test_gxits_disabled_with_flag():
         assert "interactivetools_enable" not in properties
         assert "interactivetools_upstream_proxy" not in properties
         assert "interactivetools_proxy_host" not in properties
+        assert "interactivetools_map" not in properties
 
 
 def test_gxits_infrastructure_url_uses_host_and_port():
