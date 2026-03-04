@@ -507,55 +507,44 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
         env["GRAVITY_STATE_DIR"] = config_join("gravity")
         with NamedTemporaryFile(suffix=".sock", delete=True) as nt:
             env["SUPERVISORD_SOCKET"] = nt.name
-        # Enable GxITs by default
-        gx_it_port = network_util.get_free_port()
-        properties.update(
-            dict(
-                interactivetools_enable="true",
-                galaxy_infrastructure_url=f"http://localhost:{template_args['port']}",
-                interactivetools_upstream_proxy="false",
-                interactivetools_proxy_host=f"localhost:{gx_it_port}",
-            )
-        )
-        gx_it_config = dict(
-            enable="true",
-            port=gx_it_port,
-        )
-        if kwds.get("disable_gxits", True):
-            properties.update(
-                dict(
-                    interactivetools_enable="false",
-                )
-            )
-            gx_it_config.update(
-                dict(
-                    enable="false",
-                )
-            )
+        host = kwds.get("host", "localhost")
+        port = template_args["port"]
+        galaxy_infrastructure_url = f"http://{host}:{port}"
+        if kwds.get("disable_gxits"):
+            gx_it_proxy_config = {
+                "enable": False,
+            }
+        else:
+            gx_it_proxy_port = network_util.get_free_port()
+            gx_it_proxy_config = {
+                "enable": True,
+                "port": gx_it_proxy_port,
+            }
+            properties["interactivetools_enable"] = True
+            properties["galaxy_infrastructure_url"] = galaxy_infrastructure_url
+            properties["interactivetools_upstream_proxy"] = False
+            properties["interactivetools_proxy_host"] = f"{host}:{gx_it_proxy_port}"
         # Resolve template variables (like ${temp_directory}) in properties
         # before writing to YAML. This ensures the config file is self-contained
         # and doesn't depend on GALAXY_CONFIG_OVERRIDE_* env vars being propagated
         # by Gravity to gunicorn workers.
         resolved_properties = {k: _sub(v, template_args) if isinstance(v, str) else v for k, v in properties.items()}
-        config = {
-            "galaxy": resolved_properties,
-            "gravity": {
-                "galaxy_root": galaxy_root,
-                "gunicorn": {
-                    "bind": f"{kwds.get('host', 'localhost')}:{template_args['port']}",
-                    "preload": "false",
-                },
-                "gx_it_proxy": gx_it_config,
-            },
-        }
-        if kwds.get("enable_gxits", True):
-            config["gravity"]["gx_it_proxy"].update(
+        write_file(
+            env["GALAXY_CONFIG_FILE"],
+            json.dumps(
                 {
-                    "enable": True,
-                    "port": "4002",
+                    "galaxy": resolved_properties,
+                    "gravity": {
+                        "galaxy_root": galaxy_root,
+                        "gunicorn": {
+                            "bind": f"{host}:{port}",
+                            "preload": False,
+                        },
+                        "gx_it_proxy": gx_it_proxy_config,
+                    },
                 }
-            )
-        write_file(env["GALAXY_CONFIG_FILE"], json.dumps(config))
+            ),
+        )
 
 
 def _expand_paths(galaxy_root: Optional[str], extra_tools: List[str]) -> List[str]:
