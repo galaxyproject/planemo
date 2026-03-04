@@ -2269,7 +2269,5 @@ def disable_interactive_tools():
         "--disable_gxits",
         is_flag=True,
         default=False,
-        help=(
-            "Configure Galaxy to disable interactive tools."
-        ),
+        help=("Configure Galaxy to disable interactive tools."),
     )
