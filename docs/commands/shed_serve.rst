@@ -213,6 +213,7 @@ logged into and explored interactively.
                                       may not be appropriate for production servers
                                       and so this can disabled by calling planemo
                                       with --no_shed_install.
+      --disable_gxits                 Configure Galaxy to disable interactive tools.
       --skip_dependencies             Do not install shed dependencies as part of
                                       repository installation.
       --help                          Show this message and exit.

@@ -8,6 +8,8 @@ History
 ---------------------
 0.75.40.dev0
 ---------------------
+* Support new path for galaxy's version file (thanks to `@mr-c`_). `Pull Request 1624`_
+* Enable GxITs in planemo serve (thanks to `@pavanvidem`_). `Pull Request 1568`_
 
 
 ---------------------
@@ -2348,6 +2350,8 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1624: https://github.com/galaxyproject/planemo/pull/1624
+.. _Pull Request 1568: https://github.com/galaxyproject/planemo/pull/1568
 .. _Pull Request 1617: https://github.com/galaxyproject/planemo/pull/1617
 .. _Pull Request 1622: https://github.com/galaxyproject/planemo/pull/1622
 .. _Pull Request 1623: https://github.com/galaxyproject/planemo/pull/1623

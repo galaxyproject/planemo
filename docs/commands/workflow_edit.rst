@@ -186,5 +186,6 @@ Open a synchronized Galaxy workflow editor.
                                       may not be appropriate for production servers
                                       and so this can disabled by calling planemo
                                       with --no_shed_install.
+      --disable_gxits                 Configure Galaxy to disable interactive tools.
       --help                          Show this message and exit.
     
