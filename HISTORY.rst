@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.75.40.dev0
+0.75.40 (2026-03-05)
 ---------------------
 * Support new path for galaxy's version file (thanks to `@mr-c`_). `Pull Request 1624`_
 * Enable GxITs in planemo serve (thanks to `@pavanvidem`_). `Pull Request 1568`_
