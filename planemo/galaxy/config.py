@@ -9,6 +9,7 @@ import os
 import random
 import shlex
 import shutil
+import sqlite3
 import threading
 import time
 from string import Template
@@ -36,7 +37,10 @@ from gxjobconfinit.generate import (
 )
 from packaging.version import parse as parse_version
 
-from planemo import git
+from planemo import (
+    git,
+    network_util,
+)
 from planemo.config import OptionSource
 from planemo.database import postgres_singularity
 from planemo.deps import ensure_dependency_resolvers_conf_configured
@@ -493,6 +497,16 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         )
 
 
+def _init_interactivetools_db(path):
+    """Pre-create the gxitproxy SQLite database.
+
+    This ensures the file exists so the proxy's file watcher doesn't crash.
+    """
+    conn = sqlite3.connect(path)
+    conn.commit()
+    conn.close()
+
+
 def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, config_join):
     if get_galaxy_major_version(galaxy_root) < parse_version("22.01"):
         # Legacy .ini setup
@@ -504,6 +518,34 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
         env["GRAVITY_STATE_DIR"] = config_join("gravity")
         with NamedTemporaryFile(suffix=".sock", delete=True) as nt:
             env["SUPERVISORD_SOCKET"] = nt.name
+        host = kwds.get("host", "localhost")
+        port = template_args["port"]
+        # Use "localhost" for infrastructure URL when bound to 127.0.0.1,
+        # so that interactive tool subdomain URLs resolve correctly
+        # (e.g. *.interactivetool.localhost instead of *.interactivetool.127.0.0.1).
+        infrastructure_host = "localhost" if host == "127.0.0.1" else host
+        galaxy_infrastructure_url = f"http://{infrastructure_host}:{port}"
+        if kwds.get("disable_gxits"):
+            gx_it_proxy_config = {
+                "enable": False,
+            }
+        else:
+            gx_it_proxy_port = network_util.get_free_port()
+            interactivetools_map = os.path.realpath(
+                os.path.join(galaxy_root, "database", "interactivetools_map.sqlite")
+            )
+            os.makedirs(os.path.dirname(interactivetools_map), exist_ok=True)
+            _init_interactivetools_db(interactivetools_map)
+            gx_it_proxy_config = {
+                "enable": True,
+                "port": gx_it_proxy_port,
+                "sessions": interactivetools_map,
+            }
+            properties["interactivetools_enable"] = True
+            properties["interactivetools_map"] = interactivetools_map
+            properties["galaxy_infrastructure_url"] = galaxy_infrastructure_url
+            properties["interactivetools_upstream_proxy"] = False
+            properties["interactivetools_proxy_host"] = f"{infrastructure_host}:{gx_it_proxy_port}"
         # Resolve template variables (like ${temp_directory}) in properties
         # before writing to YAML. This ensures the config file is self-contained
         # and doesn't depend on GALAXY_CONFIG_OVERRIDE_* env vars being propagated
@@ -517,12 +559,10 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
                     "gravity": {
                         "galaxy_root": galaxy_root,
                         "gunicorn": {
-                            "bind": f"{kwds.get('host', 'localhost')}:{template_args['port']}",
+                            "bind": f"{host}:{port}",
                             "preload": False,
                         },
-                        "gx_it_proxy": {
-                            "enable": False,
-                        },
+                        "gx_it_proxy": gx_it_proxy_config,
                     },
                 }
             ),

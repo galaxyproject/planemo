@@ -13,6 +13,7 @@ from planemo.io import kill_pid_file
 from .test_utils import (
     cli_daemon_galaxy,
     CliTestCase,
+    get_entry_point_target,
     launch_and_wait_for_galaxy,
     mark,
     PROJECT_TEMPLATES_DIR,
@@ -24,6 +25,9 @@ from .test_utils import (
     target_galaxy_branch,
     TEST_DATA_DIR,
     TEST_REPOS_DIR,
+    TEST_TOOLS_DIR,
+    wait_for_active_entry_points,
+    wait_for_proxied_content,
 )
 
 TEST_HISTORY_NAME = "Cool History 42"
@@ -148,6 +152,40 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         user_gi = self._user_gi
         assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0
         user_gi.histories.create_history(TEST_HISTORY_NAME)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_unless_executable("docker")
+    @mark.tests_galaxy_branch
+    def test_serve_interactivetool(self):
+        self._serve_artifact = os.path.join(TEST_TOOLS_DIR, "interactivetool_simple.xml")
+        extra_args = [
+            "--daemon",
+            "--skip_client_build",
+            "--pid_file",
+            self._pid_file,
+            "--biocontainers",
+        ]
+        self._launch_thread_and_wait(self._run, extra_args)
+
+        user_gi = self._user_gi
+
+        history_id = user_gi.histories.create_history("IT Test")["id"]
+        tool_run = user_gi.tools._post(
+            payload={
+                "tool_id": "interactivetool_simple",
+                "history_id": history_id,
+                "inputs": {},
+            }
+        )
+        assert "jobs" in tool_run, tool_run
+        job_id = tool_run["jobs"][0]["id"]
+
+        entry_points = wait_for_active_entry_points(user_gi, job_id, timeout=120)
+        assert len(entry_points) == 1
+
+        target = get_entry_point_target(user_gi, entry_points[0]["id"])
+        content = wait_for_proxied_content(target, timeout=30)
+        assert content == "moo cow\n", f"Expected 'moo cow\\n', got: {content!r}"
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch

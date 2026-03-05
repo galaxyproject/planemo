@@ -1426,6 +1426,15 @@ def alias_option(required=False):
     return planemo_option("--alias", type=click.STRING, required=required, default=None, help=("Name of an alias."))
 
 
+def disable_gxits_option():
+    return planemo_option(
+        "--disable_gxits",
+        is_flag=True,
+        default=False,
+        help="Configure Galaxy to disable interactive tools.",
+    )
+
+
 def galaxy_serve_options():
     return _compose(
         galaxy_run_options(),
@@ -1440,6 +1449,7 @@ def galaxy_serve_options():
         install_prebuilt_client_option(),
         skip_client_build_option(),
         shed_install_option(),
+        disable_gxits_option(),
     )
 
 
