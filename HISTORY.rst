@@ -6,6 +6,11 @@ History
 .. to_doc
 
 ---------------------
+0.75.41.dev0
+---------------------
+
+
+---------------------
 0.75.40 (2026-03-05)
 ---------------------
 * Support new path for galaxy's version file (thanks to `@mr-c`_). `Pull Request 1624`_
