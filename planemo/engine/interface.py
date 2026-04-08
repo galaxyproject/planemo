@@ -81,9 +81,7 @@ class BaseEngine(Engine):
         # Filter test cases by specified indices if provided
         test_indices = self._kwds.get("test_index", ())
         if test_indices:
-            filtered_test_cases = [
-                tc for i, tc in enumerate(test_cases) if (i + 1) in test_indices
-            ]
+            filtered_test_cases = [tc for i, tc in enumerate(test_cases) if (i + 1) in test_indices]
             if filtered_test_cases:
                 test_cases = filtered_test_cases
             else:
