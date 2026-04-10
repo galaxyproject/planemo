@@ -146,7 +146,7 @@ class CmdTestTestCase(CliTestCase):
             test_command += [
                 "--no_dependency_resolution",
                 "--test_index",
-                "0",
+                "1",
                 test_artifact,
             ]
             self._check_exit_code(test_command, exit_code=0)

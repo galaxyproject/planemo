@@ -24,8 +24,8 @@ from planemo.runnable_resolve import for_runnable_identifiers
     "--test_index",
     type=int,
     multiple=True,
-    help="Index(es) of specific test(s) to run (0-based). "
-    "Can be specified multiple times (e.g., --test_index 0 --test_index 2) "
+    help="Index(es) of specific test(s) to run (1-based). "
+    "Can be specified multiple times (e.g., --test_index 1 --test_index 3) "
     "to run specific tests. If not specified, all tests are run.",
     default=(),
 )
