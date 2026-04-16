@@ -4,15 +4,6 @@ uuid: 66708ffe-c08c-4647-a7e9-fc7f731206a1
 inputs:
   input1:
     optional: false
-    position:
-      bottom: 730.3166656494141
-      height: 82.55000305175781
-      left: 1155
-      right: 1355
-      top: 647.7666625976562
-      width: 200
-      x: 1155
-      y: 647.7666625976562
     type: data
 outputs:
   _anonymous_output_1:

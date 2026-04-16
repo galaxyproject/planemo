@@ -1,8 +1,6 @@
 import inspect
-import json
 import os
 import re
-from collections import OrderedDict
 from typing import (
     Any,
     Dict,
@@ -13,7 +11,6 @@ from typing import (
     Tuple,
     TYPE_CHECKING,
 )
-from urllib.parse import urlparse
 
 import requests
 import yaml
@@ -24,8 +21,11 @@ from galaxy.tool_util.loader_directory import EXCLUDE_WALK_DIRS
 from galaxy.tool_util.parser.yaml import __to_test_assert_list
 from galaxy.tool_util.verify import asserts
 from gxformat2.lint import (
-    lint_format2,
-    lint_ga,
+    lint_best_practices_format2,
+    lint_best_practices_ga,
+    lint_format2_path,
+    lint_ga_path,
+    lint_pydantic_validation,
 )
 from gxformat2.yaml import ordered_load
 
@@ -58,6 +58,17 @@ class WorkflowLintContext(LintContext):
     # Setup training topic for linting - probably should pass this through
     # from click arguments.
     training_topic = None
+
+    def warn(self, message, linter=None, *args, **kwargs):
+        # gxformat2 lint rules pass Linter subclasses; galaxy LintMessage expects a name string.
+        if isinstance(linter, type):
+            linter = linter.__name__
+        super().warn(message, linter, *args, **kwargs)
+
+    def error(self, message, linter=None, *args, **kwargs):
+        if isinstance(linter, type):
+            linter = linter.__name__
+        super().error(message, linter, *args, **kwargs)
 
 
 def build_wf_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
@@ -158,15 +169,8 @@ def _lint_workflow_artifacts_on_path(lint_context: WorkflowLintContext, path: st
                 )
 
         elif looks_like_a_workflow(potential_workflow_artifact_path):
-
-            def structure(path, lint_context):
-                with open(path) as f:
-                    workflow_dict = ordered_load(f)
-                workflow_class = workflow_dict.get("class")
-                lint_func = lint_format2 if workflow_class == "GalaxyWorkflow" else lint_ga
-                lint_func(lint_context, workflow_dict, path=path)
-
-            lint_context.lint("lint_structure", structure, potential_workflow_artifact_path)
+            lint_context.lint("lint_structure", _lint_structure, potential_workflow_artifact_path)
+            lint_context.lint("lint_schema_validation", _lint_schema_validation, potential_workflow_artifact_path)
             if lint_args["iwc_grade"]:
                 lint_context.lint("lint_release", _lint_release, potential_workflow_artifact_path)
             lint_context.lint("lint_best_practices", _lint_best_practices, potential_workflow_artifact_path)
@@ -200,91 +204,31 @@ def _lint_tsts(path: str, lint_context: WorkflowLintContext) -> None:
             lint_context.valid(f"Tests appear structurally correct for {runnable.path}")
 
 
-def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None:  # noqa: C901
-    """
-    This function duplicates the checks made by Galaxy's best practices panel:
-    https://github.com/galaxyproject/galaxy/blob/5396bb15fe8cfcf2e89d46c1d061c49b60e2f0b1/client/src/components/Workflow/Editor/Lint.vue
-    """
-
-    def check_json_for_untyped_params(j):
-        values = j.values() if isinstance(j, dict) else j
-        for value in values:
-            if type(value) in [list, dict, OrderedDict]:
-                if check_json_for_untyped_params(value):
-                    return True
-            elif isinstance(value, str):
-                if re.match(r"\$\{.+?\}", value):
-                    return True
-        return False
-
-    with open(path) as f:
-        workflow_dict = ordered_load(f)
-
-    steps = workflow_dict.get("steps", {})
-
-    # annotation
-    if not workflow_dict.get("annotation"):
-        lint_context.warn("Workflow is not annotated.")
-
-    # creator
-    creators = workflow_dict.get("creator", [])
-    if not len(creators) > 0:
-        lint_context.warn("Workflow does not specify a creator.")
+def _lint_structure(path: str, lint_context: WorkflowLintContext) -> None:
+    workflow_dict = _load_workflow_dict(path)
+    if workflow_dict.get("class") == "GalaxyWorkflow":
+        lint_format2_path(lint_context, path)
     else:
-        if not isinstance(creators, list):
-            # Don't know if this can happen, if we implement schema validation on the Galaxy side
-            # this won't be needed.
-            creators = [creators]
-        for creator in creators:
-            if creator.get("class", "").lower() == "person" and "identifier" in creator:
-                identifier = creator["identifier"]
-                parsed_url = urlparse(identifier)
-                if not parsed_url.scheme:
-                    lint_context.warn(
-                        f'Creator identifier "{identifier}" should be a fully qualified URI, for example "https://orcid.org/0000-0002-1825-0097".'
-                    )
+        lint_ga_path(lint_context, path)
 
-    # license
-    if not workflow_dict.get("license"):
-        lint_context.warn("Workflow does not specify a license.")
 
-    # checks on individual steps
-    for step in steps.values():
-        # disconnected inputs
-        if step.get("type") not in ["data_collection_input", "parameter_input"]:
-            for input in step.get("inputs", []):
-                if input.get("name") not in step.get("input_connections"):  # TODO: check optional
-                    lint_context.warn(
-                        f"Input {input.get('name')} of workflow step {step.get('annotation') or step.get('id')} is disconnected."
-                    )
+def _lint_schema_validation(path: str, lint_context: WorkflowLintContext) -> None:
+    workflow_dict = _load_workflow_dict(path)
+    is_format2 = workflow_dict.get("class") == "GalaxyWorkflow"
+    lint_pydantic_validation(lint_context, workflow_dict, format2=is_format2)
 
-        # missing metadata
-        if not step.get("annotation"):
-            lint_context.warn(f"Workflow step with ID {step.get('id')} has no annotation.")
-        if not step.get("label"):
-            lint_context.warn(f"Workflow step with ID {step.get('id')} has no label.")
 
-        # untyped parameters
-        if workflow_dict.get("class") == "GalaxyWorkflow":
-            tool_state = step.get("tool_state", {})
-            pjas = step.get("out", {})
-        else:
-            raw_tool_state = step.get("tool_state", {})
-            if isinstance(raw_tool_state, str):
-                tool_state = json.loads(raw_tool_state)
-            else:
-                tool_state = raw_tool_state
-            pjas = step.get("post_job_actions", {})
+def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None:
+    workflow_dict = _load_workflow_dict(path)
+    if workflow_dict.get("class") == "GalaxyWorkflow":
+        lint_best_practices_format2(lint_context, workflow_dict)
+    else:
+        lint_best_practices_ga(lint_context, workflow_dict)
 
-        if check_json_for_untyped_params(tool_state):
-            lint_context.warn(f"Workflow step with ID {step.get('id')} specifies an untyped parameter as an input.")
 
-        if check_json_for_untyped_params(pjas):
-            lint_context.warn(
-                f"Workflow step with ID {step.get('id')} specifies an untyped parameter in the post-job actions."
-            )
-
-        # unlabeled outputs are checked by gxformat2, no need to check here
+def _load_workflow_dict(path: str) -> Dict[str, Any]:
+    with open(path) as f:
+        return ordered_load(f)
 
 
 def _lint_case(path: str, test_case: TestCase, lint_context: WorkflowLintContext) -> bool:
