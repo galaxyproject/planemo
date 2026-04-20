@@ -940,7 +940,7 @@ class BaseGalaxyConfig(GalaxyInterface):
         # TODO: Allow serialization so this doesn't need to assume a
         # shared filesystem with Galaxy server.
         from_path = default_from_path or (runnable.type.name == "cwl_workflow")
-        workflow = import_workflow(runnable.path, admin_gi=self.gi, user_gi=self.user_gi, from_path=from_path)
+        workflow = import_workflow(runnable.path, user_gi=self.user_gi, from_path=from_path)
         self._workflow_ids[runnable.path] = workflow["id"]
 
     def workflow_id_for_runnable(self, runnable):
