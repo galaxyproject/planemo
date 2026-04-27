@@ -666,6 +666,12 @@ def _shared_galaxy_properties(config_directory, kwds, for_tests):
     else:
         properties["cleanup_job"] = "always"
 
+    tool_evaluation_strategy = kwds.get("tool_evaluation_strategy", None)
+    if tool_evaluation_strategy:
+        properties["tool_evaluation_strategy"] = tool_evaluation_strategy
+        if tool_evaluation_strategy == "remote":
+            properties["metadata_strategy"] = "extended"
+
     if kwds.get("galaxy_single_user", True):
         properties["single_user"] = user_email
 
