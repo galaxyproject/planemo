@@ -6,6 +6,7 @@ from typing import Any
 
 from planemo import __version__
 from planemo.output_models import (
+    PlanemoInvocationDownloadManifest,
     PlanemoRunOutputs,
     PlanemoTestReport,
 )
@@ -13,6 +14,7 @@ from planemo.output_models import (
 SCHEMA_VERSION = "0.1"
 
 SCHEMA_MODELS = {
+    "invocation-download-manifest": PlanemoInvocationDownloadManifest,
     "run-outputs": PlanemoRunOutputs,
     "test-report": PlanemoTestReport,
 }

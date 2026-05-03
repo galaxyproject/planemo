@@ -36,6 +36,14 @@ planemo.commands.cmd\_ci\_setup module
    :show-inheritance:
    :undoc-members:
 
+planemo.commands.cmd\_cli\_metadata module
+------------------------------------------
+
+.. automodule:: planemo.commands.cmd_cli_metadata
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 planemo.commands.cmd\_clone module
 ----------------------------------
 
@@ -280,6 +288,14 @@ planemo.commands.cmd\_open module
 ---------------------------------
 
 .. automodule:: planemo.commands.cmd_open
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+planemo.commands.cmd\_output\_schema module
+-------------------------------------------
+
+.. automodule:: planemo.commands.cmd_output_schema
    :members:
    :show-inheritance:
    :undoc-members:

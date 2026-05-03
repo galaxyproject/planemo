@@ -65,10 +65,19 @@ class TestCliMetadata(CliTestCase):
         assert "output_json" in params
         assert "--output_json" in params["output_json"]["opts"]
 
+    def test_cli_metadata_for_invocation_download_command(self):
+        result = self._check_exit_code(["cli_metadata", "--format", "json", "--command", "invocation_download"])
+        metadata = json.loads(result.output)
+
+        params = {param["name"]: param for param in metadata["params"]}
+        assert "invocation_id" in params
+        assert "output_json" in params
+        assert "output_json_path_type" in params
+        assert params["output_json_path_type"]["type"]["choices"] == ["relative", "absolute"]
+        assert "--no_ignore_missing_output" in params["ignore_missing_output"]["secondary_opts"]
+
     def test_cli_metadata_for_workflow_test_on_invocation_command(self):
-        result = self._check_exit_code(
-            ["cli_metadata", "--format", "json", "--command", "workflow_test_on_invocation"]
-        )
+        result = self._check_exit_code(["cli_metadata", "--format", "json", "--command", "workflow_test_on_invocation"])
         metadata = json.loads(result.output)
 
         arguments = [param for param in metadata["params"] if param["kind"] == "argument"]

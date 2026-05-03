@@ -29,7 +29,7 @@ class PlanemoTestSummary(BaseModel):
 class PlanemoTestCaseData(BaseModel):
     model_config = ConfigDict(extra="allow")
 
-    status: PlanemoTestStatus | None = None
+    status: PlanemoTestStatus
     inputs: dict[str, Any] | None = None
     job: dict[str, Any] | None = None
     invocation_details: dict[str, Any] | None = None

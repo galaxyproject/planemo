@@ -5,6 +5,7 @@ import time
 
 from planemo import network_util
 from planemo.galaxy import api
+from planemo.test.models import PlanemoTestReport
 from .test_cmd_serve import UsesServeCommand
 from .test_utils import (
     CliTestCase,
@@ -94,3 +95,5 @@ class CmdsWithWorkflowIdTestCase(CliTestCase, UsesServeCommand):
                 invocation_id,
             ]
             self._check_exit_code(workflow_test_on_invocation_command, exit_code=0)
+            with open(output_json_path) as f:
+                PlanemoTestReport.model_validate(json.load(f))

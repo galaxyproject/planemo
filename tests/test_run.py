@@ -6,6 +6,7 @@ import os
 import pytest
 
 from planemo.output_models import PlanemoRunOutputs
+from planemo.test.models import PlanemoTestReport
 
 from .test_utils import (
     CliTestCase,
@@ -43,6 +44,8 @@ class RunTestCase(CliTestCase):
             self._check_exit_code(test_cmd)
             assert os.path.exists(os.path.join(f, "tool_test_output.html"))
             assert os.path.exists(os.path.join(f, "tool_test_output.json"))
+            with open(os.path.join(f, "tool_test_output.json")) as test_report:
+                PlanemoTestReport.model_validate(json.load(test_report))
             with open(os.path.join(f, "run_outputs.json")) as run_outputs:
                 PlanemoRunOutputs.model_validate(json.load(run_outputs))
 
