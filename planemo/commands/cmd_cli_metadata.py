@@ -20,4 +20,4 @@ def cli(output_format, command_name, include_internal):
         metadata = load_command_metadata(command_name)
     else:
         metadata = load_planemo_metadata(include_internal=include_internal)
-    click.echo(json.dumps(metadata, indent=2, sort_keys=True))
+    click.echo(json.dumps(metadata.model_dump(mode="json"), indent=2, sort_keys=True))

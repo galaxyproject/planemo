@@ -21,7 +21,7 @@ class DummyContext:
 
 class TestOutputSchema(CliTestCase):
     def test_output_schema_exports_test_report_schema(self):
-        result = self._check_exit_code(["output_schema", "--format", "json", "--schema", "test-report"])
+        result = self._check_exit_code(["output_schema", "--schema", "test-report"])
         metadata = json.loads(result.output)
 
         assert metadata["schema_version"] == "0.1"
@@ -29,7 +29,7 @@ class TestOutputSchema(CliTestCase):
         assert metadata["schemas"]["test-report"]["$schema"] == "https://json-schema.org/draft/2020-12/schema"
 
     def test_output_schema_exports_run_outputs_schema(self):
-        result = self._check_exit_code(["output_schema", "--format", "json", "--schema", "run-outputs"])
+        result = self._check_exit_code(["output_schema", "--schema", "run-outputs"])
         metadata = json.loads(result.output)
 
         assert list(metadata["schemas"]) == ["run-outputs"]
@@ -37,7 +37,7 @@ class TestOutputSchema(CliTestCase):
 
     def test_output_schema_exports_invocation_download_manifest_schema(self):
         result = self._check_exit_code(
-            ["output_schema", "--format", "json", "--schema", "invocation-download-manifest"]
+            ["output_schema", "--schema", "invocation-download-manifest"]
         )
         metadata = json.loads(result.output)
 
@@ -46,6 +46,13 @@ class TestOutputSchema(CliTestCase):
             metadata["schemas"]["invocation-download-manifest"]["$schema"]
             == "https://json-schema.org/draft/2020-12/schema"
         )
+
+    def test_output_schema_exports_cli_metadata_schema(self):
+        result = self._check_exit_code(["output_schema", "--schema", "cli-metadata"])
+        metadata = json.loads(result.output)
+
+        assert list(metadata["schemas"]) == ["cli-metadata"]
+        assert metadata["schemas"]["cli-metadata"]["$schema"] == "https://json-schema.org/draft/2020-12/schema"
 
     def test_invocation_download_manifest_relative_paths(self):
         output_directory = os.path.join(os.getcwd(), "outputs")

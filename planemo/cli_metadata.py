@@ -6,6 +6,11 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 import click
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+)
 
 from planemo import __version__
 from planemo.cli import (
@@ -18,6 +23,57 @@ from planemo.cli import (
 SCHEMA_VERSION = "0.1"
 
 
+class PlanemoClickTypeMetadata(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    name: str
+
+
+class PlanemoCliParamMetadata(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    kind: str
+    name: str | None
+    opts: list[str] = Field(default_factory=list)
+    secondary_opts: list[str] = Field(default_factory=list)
+    help: str | None = None
+    required: bool
+    human_readable_name: str
+    multiple: bool
+    nargs: int
+    type: PlanemoClickTypeMetadata
+    default: Any = None
+    is_flag: bool = False
+    flag_value: Any = None
+    envvar: Any = None
+    hidden: bool = False
+    prompt: str | bool | None = None
+    planemo_config: dict[str, Any] = Field(default_factory=dict)
+
+
+class PlanemoCommandMetadata(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    name: str
+    module: str
+    help: str | None = None
+    short_help: str | None = None
+    usage: str
+    internal: bool
+    hidden: bool = False
+    params: list[PlanemoCliParamMetadata] = Field(default_factory=list)
+
+
+class PlanemoCliMetadata(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    schema_version: str = SCHEMA_VERSION
+    program: str = "planemo"
+    planemo_version: str
+    commands: list[PlanemoCommandMetadata] = Field(default_factory=list)
+    aliases: dict[str, str] = Field(default_factory=dict)
+
+
 def iter_command_names(include_internal: bool = False) -> list[str]:
     """Return command names included in public CLI metadata."""
     commands = list_cmds()
@@ -26,38 +82,36 @@ def iter_command_names(include_internal: bool = False) -> list[str]:
     return commands
 
 
-def load_command_metadata(command_name: str) -> dict[str, Any]:
+def load_command_metadata(command_name: str) -> PlanemoCommandMetadata:
     """Load metadata for one Planemo command."""
     return serialize_click_command(command_name, name_to_command(command_name))
 
 
-def load_planemo_metadata(include_internal: bool = False) -> dict[str, Any]:
+def load_planemo_metadata(include_internal: bool = False) -> PlanemoCliMetadata:
     """Load metadata for the Planemo command line interface."""
-    return {
-        "schema_version": SCHEMA_VERSION,
-        "program": "planemo",
-        "planemo_version": __version__,
-        "commands": [load_command_metadata(command_name) for command_name in iter_command_names(include_internal)],
-        "aliases": dict(sorted(COMMAND_ALIASES.items())),
-    }
+    return PlanemoCliMetadata(
+        planemo_version=__version__,
+        commands=[load_command_metadata(command_name) for command_name in iter_command_names(include_internal)],
+        aliases=dict(sorted(COMMAND_ALIASES.items())),
+    )
 
 
-def serialize_click_command(command_name: str, command: click.Command) -> dict[str, Any]:
+def serialize_click_command(command_name: str, command: click.Command) -> PlanemoCommandMetadata:
     """Serialize one Click command into JSON-compatible metadata."""
     context = click.Context(command, info_name=command_name)
-    return {
-        "name": command_name,
-        "module": f"planemo.commands.cmd_{command_name}",
-        "help": command.help,
-        "short_help": command.short_help,
-        "usage": command.get_usage(context).removeprefix("Usage: "),
-        "internal": command_name in INTERNAL_COMMANDS,
-        "hidden": getattr(command, "hidden", False),
-        "params": [serialize_click_param(param) for param in command.params],
-    }
+    return PlanemoCommandMetadata(
+        name=command_name,
+        module=f"planemo.commands.cmd_{command_name}",
+        help=command.help,
+        short_help=command.short_help,
+        usage=command.get_usage(context).removeprefix("Usage: "),
+        internal=command_name in INTERNAL_COMMANDS,
+        hidden=getattr(command, "hidden", False),
+        params=[serialize_click_param(param) for param in command.params],
+    )
 
 
-def serialize_click_param(param: click.Parameter) -> dict[str, Any]:
+def serialize_click_param(param: click.Parameter) -> PlanemoCliParamMetadata:
     """Serialize one Click parameter into JSON-compatible metadata."""
     planemo_config = getattr(param, "planemo_config", {})
     metadata = {
@@ -81,10 +135,10 @@ def serialize_click_param(param: click.Parameter) -> dict[str, Any]:
     }
     if isinstance(param, click.Option):
         metadata["is_bool_flag"] = param.is_bool_flag
-    return metadata
+    return PlanemoCliParamMetadata.model_validate(metadata)
 
 
-def serialize_click_type(param_type: click.ParamType) -> dict[str, Any]:
+def serialize_click_type(param_type: click.ParamType) -> PlanemoClickTypeMetadata:
     """Serialize Click parameter type details where Click exposes them."""
     metadata: dict[str, Any] = {"name": param_type.name}
     if isinstance(param_type, click.Choice):
@@ -112,7 +166,7 @@ def serialize_click_type(param_type: click.ParamType) -> dict[str, Any]:
         for attr in ("exists", "file_okay", "dir_okay", "writable", "readable", "resolve_path", "allow_dash"):
             if hasattr(param_type, attr):
                 metadata[attr] = getattr(param_type, attr)
-    return _json_value(metadata)
+    return PlanemoClickTypeMetadata.model_validate(_json_value(metadata))
 
 
 def _json_value(value: Any) -> Any:

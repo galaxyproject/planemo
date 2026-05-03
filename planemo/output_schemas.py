@@ -5,6 +5,10 @@ from __future__ import annotations
 from typing import Any
 
 from planemo import __version__
+from planemo.cli_metadata import (
+    PlanemoCliMetadata,
+    PlanemoCommandMetadata,
+)
 from planemo.output_models import (
     PlanemoInvocationDownloadManifest,
     PlanemoRunOutputs,
@@ -14,6 +18,8 @@ from planemo.output_models import (
 SCHEMA_VERSION = "0.1"
 
 SCHEMA_MODELS = {
+    "cli-command-metadata": PlanemoCommandMetadata,
+    "cli-metadata": PlanemoCliMetadata,
     "invocation-download-manifest": PlanemoInvocationDownloadManifest,
     "run-outputs": PlanemoRunOutputs,
     "test-report": PlanemoTestReport,
