@@ -65,7 +65,9 @@ def test_refgenie_config_version():
 
 def test_all_tool_paths_excludes_remote_galaxy_tools():
     local_tool = os.path.join(os.path.dirname(__file__), "data", "tools", "two_tests.xml")
-    remote_tool_id = "toolshed.g2.bx.psu.edu/repos/iuc/collection_element_identifiers/collection_element_identifiers/0.0.3"
+    remote_tool_id = (
+        "toolshed.g2.bx.psu.edu/repos/iuc/collection_element_identifiers/collection_element_identifiers/0.0.3"
+    )
 
     tool_paths = _all_tool_paths([for_path(local_tool), for_uri(f"gxid://tools/{remote_tool_id}")])
 
