@@ -10,6 +10,7 @@ import yaml
 
 from .test_utils import (
     CliTestCase,
+    mark,
     skip_if_environ,
 )
 
@@ -124,6 +125,7 @@ class CmdAutoupdateTestCase(CliTestCase):
                 assert "No newer tool versions were found, so the workflow was not updated." in result.output
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @mark.tests_galaxy_branch
     def test_autoupdate_gxformat2_workflow(self):
         with self._isolate_with_test_data("wf_repos/autoupdate_tests") as f:
             wf_file = os.path.join(f, "diff-refactor-test.gxwf.yml")
