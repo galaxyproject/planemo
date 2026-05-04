@@ -4,10 +4,9 @@ import json
 import os
 
 from planemo.commands.cmd_invocation_download import invocation_download_manifest
-from planemo.output_models import PlanemoInvocationDownloadManifest
 from planemo.galaxy.test.actions import handle_reports
+from planemo.output_models import PlanemoInvocationDownloadManifest
 from planemo.test.models import PlanemoTestReport
-
 from .test_utils import (
     CliTestCase,
     TEST_DATA_DIR,
@@ -36,9 +35,7 @@ class TestOutputSchema(CliTestCase):
         assert metadata["schemas"]["run-outputs"]["$schema"] == "https://json-schema.org/draft/2020-12/schema"
 
     def test_output_schema_exports_invocation_download_manifest_schema(self):
-        result = self._check_exit_code(
-            ["output_schema", "--schema", "invocation-download-manifest"]
-        )
+        result = self._check_exit_code(["output_schema", "--schema", "invocation-download-manifest"])
         metadata = json.loads(result.output)
 
         assert list(metadata["schemas"]) == ["invocation-download-manifest"]

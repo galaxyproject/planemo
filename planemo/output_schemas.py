@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from pydantic import BaseModel
+
 from planemo import __version__
 from planemo.cli_metadata import (
     PlanemoCliMetadata,
@@ -17,7 +19,7 @@ from planemo.output_models import (
 
 SCHEMA_VERSION = "0.1"
 
-SCHEMA_MODELS = {
+SCHEMA_MODELS: dict[str, type[BaseModel]] = {
     "cli-command-metadata": PlanemoCommandMetadata,
     "cli-metadata": PlanemoCliMetadata,
     "invocation-download-manifest": PlanemoInvocationDownloadManifest,

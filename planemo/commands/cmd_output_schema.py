@@ -5,8 +5,8 @@ import json
 import click
 
 from planemo.output_schemas import (
-    SCHEMA_MODELS,
     load_output_schemas,
+    SCHEMA_MODELS,
 )
 
 
