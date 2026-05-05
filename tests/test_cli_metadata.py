@@ -3,7 +3,6 @@
 import json
 
 from planemo.cli import INTERNAL_COMMANDS
-
 from .test_utils import CliTestCase
 
 

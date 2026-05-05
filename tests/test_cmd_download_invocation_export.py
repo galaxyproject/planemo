@@ -7,7 +7,6 @@ import time
 
 from planemo import network_util
 from planemo.output_models import PlanemoInvocationDownloadManifest
-
 from .test_cmd_serve import UsesServeCommand
 from .test_utils import (
     CliTestCase,

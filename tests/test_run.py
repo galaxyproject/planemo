@@ -7,7 +7,6 @@ import pytest
 
 from planemo.output_models import PlanemoRunOutputs
 from planemo.test.models import PlanemoTestReport
-
 from .test_utils import (
     CliTestCase,
     CWL_DRAFT3_DIR,

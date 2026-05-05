@@ -23,8 +23,8 @@ from planemo.reports import (
     build_report,
 )
 from planemo.test.results import (
-    StructuredData,
     get_dict_value,
+    StructuredData,
 )
 from . import structures as test_structures
 

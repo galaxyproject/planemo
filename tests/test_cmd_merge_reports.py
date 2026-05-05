@@ -2,7 +2,6 @@ import json
 import os
 
 from planemo.test.models import PlanemoTestReport
-
 from .test_utils import (
     CliTestCase,
     TEST_DATA_DIR,
