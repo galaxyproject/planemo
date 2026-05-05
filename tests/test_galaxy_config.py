@@ -7,6 +7,7 @@ import os
 import yaml
 
 from planemo.galaxy.config import (
+    _shared_galaxy_properties,
     galaxy_config,
     get_refgenie_config,
     write_galaxy_config,
@@ -117,6 +118,21 @@ def test_gxits_infrastructure_url_remaps_127_0_0_1_to_localhost():
     with _test_write_galaxy_config(host="127.0.0.1", port=9090) as (config_data, properties, env):
         assert properties["galaxy_infrastructure_url"] == "http://localhost:9090"
         assert properties["interactivetools_proxy_host"].startswith("localhost:")
+
+
+def test_tool_evaluation_strategy_remote_sets_metadata_strategy():
+    """Test that --tool_evaluation_strategy remote also sets metadata_strategy to extended."""
+    with TempDirectoryContext() as tdc:
+        props = _shared_galaxy_properties(tdc.temp_directory, {"tool_evaluation_strategy": "remote"}, for_tests=False)
+    assert props["tool_evaluation_strategy"] == "remote"
+    assert props["metadata_strategy"] == "extended"
+
+
+def test_tool_evaluation_strategy_default_not_set():
+    """Test that tool_evaluation_strategy is not set when not specified."""
+    with TempDirectoryContext() as tdc:
+        props = _shared_galaxy_properties(tdc.temp_directory, {}, for_tests=False)
+    assert "tool_evaluation_strategy" not in props
 
 
 @contextlib.contextmanager

@@ -1053,6 +1053,22 @@ def no_cleanup_option():
     return planemo_option("--no_cleanup", is_flag=True, help=("Do not cleanup temp files created for and by Galaxy."))
 
 
+def tool_evaluation_strategy_option():
+    return planemo_option(
+        "--tool_evaluation_strategy",
+        type=click.Choice(["local", "remote"]),
+        default=None,
+        use_global_config=True,
+        help=(
+            "Determines which process will evaluate the tool command line. "
+            "If set to 'local' the tool command line will be templated in the job handler process. "
+            "If set to 'remote' the tool command line will be built as part of the submitted job "
+            "(beta). Setting this to 'remote' will also implicitly set metadata_strategy to "
+            "'extended', which is required for remote tool evaluation."
+        ),
+    )
+
+
 def docker_enable_option():
     return planemo_option("--docker/--no_docker", default=False, help=("Run Galaxy tools in Docker if enabled."))
 
@@ -1371,6 +1387,7 @@ def galaxy_config_options():
         shed_tools_conf_option(),
         shed_tools_directory_option(),
         single_user_mode_option(),
+        tool_evaluation_strategy_option(),
     )
 
 
