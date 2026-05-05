@@ -60,6 +60,8 @@ def _build_commented_yaml(job, metadata):
             if collection_type:
                 comment_parts.append(f"collection_type: {collection_type}")
             if input_format:
+                if isinstance(input_format, list):
+                    input_format = ", ".join(input_format)
                 comment_parts.append(f"format: {input_format}")
             if input_doc:
                 comment_parts.append(f"doc: {input_doc}")

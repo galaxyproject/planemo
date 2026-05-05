@@ -2,7 +2,7 @@ class: GalaxyWorkflow
 label: bp (imported from uploaded file)
 uuid: 66708ffe-c08c-4647-a7e9-fc7f731206a1
 inputs:
-  null:
+  input1:
     optional: false
     position:
       bottom: 730.3166656494141
