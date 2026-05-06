@@ -125,7 +125,7 @@ The ``--check_diff`` option here will ensure there are significant differnces
 before uploading new contents to the tool shed.
 
 Once tools and required dependency files have been published to the tool shed,
-the actual shed dependencies can be automatically and installed and tool 
+the actual shed dependencies can be automatically installed and tool 
 tests ran using the command::
 
     planemo shed_test --shed_target testtoolshed
