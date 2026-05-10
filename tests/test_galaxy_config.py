@@ -7,10 +7,15 @@ import os
 import yaml
 
 from planemo.galaxy.config import (
+    _all_tool_paths,
     _shared_galaxy_properties,
     galaxy_config,
     get_refgenie_config,
     write_galaxy_config,
+)
+from planemo.runnable import (
+    for_path,
+    for_uri,
 )
 from .test_utils import (
     create_test_context,
@@ -57,6 +62,18 @@ def test_refgenie_config_version():
             version_fh.write('VERSION_MAJOR = "21.05"')
         refgenie_config = get_refgenie_config(galaxy_root=tdc.temp_directory, refgenie_dir="/")
     assert yaml.load(refgenie_config, Loader=yaml.SafeLoader)["config_version"] == 0.3
+
+
+def test_all_tool_paths_excludes_remote_galaxy_tools():
+    local_tool = os.path.join(os.path.dirname(__file__), "data", "tools", "two_tests.xml")
+    remote_tool_id = (
+        "toolshed.g2.bx.psu.edu/repos/iuc/collection_element_identifiers/collection_element_identifiers/0.0.3"
+    )
+
+    tool_paths = _all_tool_paths([for_path(local_tool), for_uri(f"gxid://tools/{remote_tool_id}")])
+
+    assert local_tool in tool_paths
+    assert f"gxid://tools/{remote_tool_id}" not in tool_paths
 
 
 def _assert_property_is(config, prop, value):

@@ -63,7 +63,10 @@ from planemo.io import (
     write_file,
 )
 from planemo.mulled import build_involucro_context
-from planemo.runnable import RunnableType
+from planemo.runnable import (
+    GALAXY_TOOLS_PREFIX,
+    RunnableType,
+)
 from planemo.shed import tool_shed_url
 from .api import (
     DEFAULT_ADMIN_API_KEY,
@@ -616,7 +619,12 @@ def _all_tool_paths(
 ) -> Set[str]:
     extra_tools = extra_tools or []
     all_tool_paths = {
-        r.path for r in runnables if r.has_tools and not r.data_manager_conf_path and not r.is_remote_workflow_uri
+        r.path
+        for r in runnables
+        if r.has_tools
+        and not r.data_manager_conf_path
+        and not r.is_remote_workflow_uri
+        and not r.uri.startswith(GALAXY_TOOLS_PREFIX)
     }
     extra_tools = _expand_paths(galaxy_root, extra_tools=extra_tools)
     all_tool_paths.update(extra_tools)
@@ -940,7 +948,7 @@ class BaseGalaxyConfig(GalaxyInterface):
         # TODO: Allow serialization so this doesn't need to assume a
         # shared filesystem with Galaxy server.
         from_path = default_from_path or (runnable.type.name == "cwl_workflow")
-        workflow = import_workflow(runnable.path, admin_gi=self.gi, user_gi=self.user_gi, from_path=from_path)
+        workflow = import_workflow(runnable.path, user_gi=self.user_gi, from_path=from_path)
         self._workflow_ids[runnable.path] = workflow["id"]
 
     def workflow_id_for_runnable(self, runnable):
