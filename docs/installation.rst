@@ -32,7 +32,7 @@ use the following ``pip install`` idiom instead:
 If your ``PATH`` contains a Python installed through Conda it should likely not be used to run Planemo,
 please consider using a tool such uv_ to manage native Python installations and environments.
 
-Planemo runs on Python 3.8 or newer. Planemo can be used to run multiple versions of Galaxy,
+Planemo runs on Python 3.10 or newer. Planemo can be used to run multiple versions of Galaxy,
 but please note that the last Galaxy release that fully supports Python 2.7 is 19.09.
 
 Conda_ (Experimental)

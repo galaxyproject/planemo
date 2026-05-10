@@ -31,7 +31,7 @@ Obtaining
 
 For a traditional Python installation of Planemo, first set up a virtualenv
 for ``planemo`` (this example creates a new one in ``.venv``) containing
-Python 3.8 or newer and then install with ``pip``. Planemo must be installed
+Python 3.10 or newer and then install with ``pip``. Planemo must be installed
 with pip 7.0 or newer.
 
 ::
@@ -202,7 +202,6 @@ scientific workflows. Check out the `Galaxy <http://planemo.readthedocs.io/en/la
 .. _Conda: http://conda.pydata.org/
 .. _Docker: https://www.docker.com/
 .. _Vagrant: https://www.vagrantup.com/
-.. _Travis CI: http://travis-ci.org/
 .. _`tools-devteam`: https://github.com/galaxyproject/tools-devteam
 .. _`tools-iuc`: https://github.com/galaxyproject/tools-iuc
 .. _Building Galaxy Tools Using Planemo: http://planemo.readthedocs.io/en/latest/writing_standalone.html
