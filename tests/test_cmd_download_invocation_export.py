@@ -1,10 +1,12 @@
 """Module contains :class:`CmdTestTestCase` - integration tests for the ``test`` command."""
 
+import json
 import os
 import tempfile
 import time
 
 from planemo import network_util
+from planemo.output_models import PlanemoInvocationDownloadManifest
 from .test_cmd_serve import UsesServeCommand
 from .test_utils import (
     CliTestCase,
@@ -59,6 +61,7 @@ class CmdTestTestCase(CliTestCase, UsesServeCommand):
             output_path_download = os.path.join(f, "output_download")
             if not os.path.exists(output_path_download):
                 os.makedirs(output_path_download)
+            output_json = os.path.join(output_path_download, "manifest.json")
             run_workflow_cmd = [
                 "--verbose",
                 "run",
@@ -88,11 +91,15 @@ class CmdTestTestCase(CliTestCase, UsesServeCommand):
                 user_gi.key,
                 "--output_directory",
                 output_path_download,
+                "--output_json",
+                output_json,
+                "--output_json_path_type",
+                "absolute",
                 invocations[0]["id"],
             ]
             self._check_exit_code(download_outputs_cmd)
 
-            output_download_run_files = os.listdir(output_path_download)
+            output_download_run_files = [path for path in os.listdir(output_path_download) if path != "manifest.json"]
             output_run_files = os.listdir(output_path_org)
 
             # Compare downloading result at runtime with download the output
@@ -100,3 +107,12 @@ class CmdTestTestCase(CliTestCase, UsesServeCommand):
             assert len(output_download_run_files) == len(output_run_files)
             for i in range(len(output_download_run_files)):
                 assert output_download_run_files[i] == output_run_files[i]
+
+            with open(output_json) as f:
+                manifest = PlanemoInvocationDownloadManifest.model_validate(json.load(f))
+
+            assert manifest.invocation_id == invocations[0]["id"]
+            assert manifest.output_directory == os.path.realpath(output_path_download)
+            assert manifest.path_type == "absolute"
+            assert manifest.outputs
+            assert not manifest.missing_outputs

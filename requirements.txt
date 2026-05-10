@@ -15,6 +15,7 @@ lxml
 oyaml
 packaging
 pathvalidate
+pydantic>=2
 pyyaml
 ruamel.yaml
 virtualenv

@@ -7,6 +7,8 @@ from jinja2 import (
     PackageLoader,
 )
 
+from planemo.test.results import normalize_test_status
+
 TITLE = "Results (powered by Planemo)"
 
 cancel_fragment = "Invocation scheduling cancelled because"
@@ -111,12 +113,13 @@ def __inject_summary(environment):
         total += 1
         test_data = execution.get("data")
         if test_data:
-            status = test_data.get("status")
+            status = normalize_test_status(test_data.get("status"))
+            test_data["status"] = status
             if status == "error":
                 errors += 1
             elif status == "failure":
                 failures += 1
-            elif status == "skipped":
+            elif status == "skip":
                 skips += 1
     environment["raw_data"]["results"] = {
         "total": total,

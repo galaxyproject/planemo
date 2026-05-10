@@ -1,9 +1,12 @@
 """The module contains a class to test the ``cwl_run`` command."""
 
+import json
 import os
 
 import pytest
 
+from planemo.output_models import PlanemoRunOutputs
+from planemo.test.models import PlanemoTestReport
 from .test_utils import (
     CliTestCase,
     CWL_DRAFT3_DIR,
@@ -32,12 +35,18 @@ class RunTestCase(CliTestCase):
                 "--engine",
                 "cwltool",
                 "--no_container",
+                "--output_json",
+                "run_outputs.json",
                 tool_path,
                 job_path,
             ]
             self._check_exit_code(test_cmd)
             assert os.path.exists(os.path.join(f, "tool_test_output.html"))
             assert os.path.exists(os.path.join(f, "tool_test_output.json"))
+            with open(os.path.join(f, "tool_test_output.json")) as test_report:
+                PlanemoTestReport.model_validate(json.load(test_report))
+            with open(os.path.join(f, "run_outputs.json")) as run_outputs:
+                PlanemoRunOutputs.model_validate(json.load(run_outputs))
 
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_run_cat_cwltool_more_options(self):

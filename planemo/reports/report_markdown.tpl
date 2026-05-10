@@ -8,7 +8,7 @@
 {% set state.success = raw_data.results.total - raw_data.results.errors - raw_data.results.failures - raw_data.results.skips | default(0) %}
 {% set state.error = raw_data.results.errors | default(0) %}
 {% set state.failure = raw_data.results.failures | default(0) %}
-{% set state.skipped = raw_data.results.skipped | default(0) %}
+{% set state.skipped = raw_data.results.skips | default(0) %}
 
 {% if raw_data.results.total %}
 <div class="progress">

@@ -9,6 +9,8 @@ History
 0.75.42.dev0
 ---------------------
 
+* Add structured CLI metadata and output schema exports, validate Planemo JSON
+  outputs, and write full merged test reports.
 
 ---------------------
 0.75.41 (2026-03-19)

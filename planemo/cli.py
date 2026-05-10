@@ -32,6 +32,10 @@ COMMAND_ALIASES = {
     "t": "test",
     "s": "serve",
 }
+INTERNAL_COMMANDS = [
+    "create_gist",
+    "shed_download",
+]
 
 
 class PlanemoCliContext(PlanemoContext):
@@ -186,6 +190,7 @@ def planemo(ctx, config, directory, verbose, configure_logging=True):
 
 __all__ = (
     "command_function",
+    "INTERNAL_COMMANDS",
     "list_cmds",
     "name_to_command",
     "planemo",

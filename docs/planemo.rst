@@ -48,6 +48,14 @@ planemo.cli module
    :show-inheritance:
    :undoc-members:
 
+planemo.cli\_metadata module
+----------------------------
+
+.. automodule:: planemo.cli_metadata
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 planemo.conda module
 --------------------
 
@@ -156,6 +164,22 @@ planemo.options module
 ----------------------
 
 .. automodule:: planemo.options
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+planemo.output\_models module
+-----------------------------
+
+.. automodule:: planemo.output_models
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+planemo.output\_schemas module
+------------------------------
+
+.. automodule:: planemo.output_schemas
    :members:
    :show-inheritance:
    :undoc-members:

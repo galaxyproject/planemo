@@ -11,6 +11,7 @@ documentation describes these commands.
 .. include:: commands/ci_find_repos.rst
 .. include:: commands/ci_find_tools.rst
 .. include:: commands/ci_setup.rst
+.. include:: commands/cli_metadata.rst
 .. include:: commands/clone.rst
 .. include:: commands/conda_build.rst
 .. include:: commands/conda_env.rst
@@ -41,6 +42,7 @@ documentation describes these commands.
 .. include:: commands/mulled_init.rst
 .. include:: commands/normalize.rst
 .. include:: commands/open.rst
+.. include:: commands/output_schema.rst
 .. include:: commands/profile_create.rst
 .. include:: commands/profile_delete.rst
 .. include:: commands/profile_job_config_init.rst

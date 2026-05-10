@@ -313,8 +313,20 @@ You can specify a different location with the ``--output_directory`` option:
 
     $ planemo invocation_download INVOCATION_ID --profile tutorial_profile --output_directory ./my_outputs
 
-The command also supports ``--output_json`` to write a JSON file containing
-metadata about the downloaded outputs.
+The command also supports ``--output_json`` to write a JSON manifest containing
+metadata about the downloaded outputs:
+
+::
+
+    $ planemo invocation_download INVOCATION_ID --profile tutorial_profile --output_directory ./my_outputs --output_json ./my_outputs/manifest.json
+
+The manifest includes the invocation ID, output directory, downloaded outputs,
+and outputs that were not downloaded. Optional workflow outputs that are absent
+are reported as ``skipped``; required outputs that are absent while missing
+outputs are ignored are reported as ``missing``. Paths in the manifest are
+relative to ``--output_directory`` by default. Use
+``--output_json_path_type absolute`` when absolute paths are more useful for
+automation.
 
 
 Exporting invocations as archives
