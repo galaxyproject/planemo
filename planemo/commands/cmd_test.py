@@ -38,6 +38,7 @@ from planemo.runnable_resolve import for_runnable_identifiers
     default="0",
 )
 @options.galaxy_target_options()
+@options.galaxy_port_option()
 @options.galaxy_config_options()
 @options.test_options()
 @options.engine_options()

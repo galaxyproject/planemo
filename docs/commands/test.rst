@@ -103,6 +103,7 @@ please careful and do not try this against production Galaxy instances.
       --galaxy_startup_timeout INTEGER RANGE
                                       Wait for galaxy to start before assuming
                                       Galaxy did not start.  [x>=1]
+      --port INTEGER                  Port to serve Galaxy on (default is 9090).
       --job_config_file FILE          Job configuration file for Galaxy to target.
       --job_workers INTEGER           Number of workers for the local job runner
                                       (default 1).

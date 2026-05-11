@@ -42,6 +42,27 @@ class CmdTestTestCase(CliTestCase):
             )
             self._check_exit_code(test_command, exit_code=1)
 
+    def test_port_option_is_passed_to_test_runnables(self):
+        """Test --port is accepted by test and forwarded to the Galaxy engine."""
+        import planemo.commands.cmd_test as cmd_test
+
+        captured_ports = []
+        original_test_runnables = cmd_test.test_runnables
+
+        def capture_test_runnables(ctx, runnables, original_paths=None, **kwds):
+            captured_ports.append(kwds["port"])
+            return 0
+
+        try:
+            cmd_test.test_runnables = capture_test_runnables
+            test_artifact = os.path.join(TEST_TOOLS_DIR, "ok_test_assert_command.xml")
+            self._check_exit_code(self._test_command(test_artifact), exit_code=0)
+            self._check_exit_code(self._test_command("--port", "12345", test_artifact), exit_code=0)
+        finally:
+            cmd_test.test_runnables = original_test_runnables
+
+        assert captured_ports == [9090, 12345]
+
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_tool_in_directory(self):
         """Test with (single) tool in directory."""
