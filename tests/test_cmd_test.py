@@ -10,6 +10,7 @@ from tempfile import (
 from unittest import skip
 
 from planemo import cli
+from planemo.test.models import PlanemoTestReport
 from .test_utils import (
     assert_exists,
     CliTestCase,
@@ -272,7 +273,10 @@ class CmdTestTestCase(CliTestCase):
             test_artifact = os.path.join(TEST_DATA_DIR, "int_tool.cwl")
             test_command = self._test_command(test_artifact)
             self._check_exit_code(test_command, exit_code=0)
-            assert_exists(os.path.join(f, "tool_test_output.json"))
+            output_json_path = os.path.join(f, "tool_test_output.json")
+            assert_exists(output_json_path)
+            with open(output_json_path) as test_json:
+                PlanemoTestReport.model_validate(json.load(test_json))
 
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_cwltool_tool_url_inputs_test(self):

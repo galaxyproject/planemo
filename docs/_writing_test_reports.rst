@@ -5,4 +5,12 @@ in certain `continuous integration`_ environments. See ``planemo test --help`` f
 more options, as well as the ``test_reports`` `command
 <http://planemo.readthedocs.io/en/latest/commands.html#test-reports-command>`__.
 
+The machine-readable JSON report written by ``--test_output_json`` uses the
+Planemo test report shape: a top-level ``version``, ``tests``, optional
+``summary``, and optional ``exit_code``. ``test_reports`` validates this JSON
+before rendering derived reports. ``merge_test_reports`` also validates each
+input report and writes the same full report shape, including recalculated
+``summary`` and ``exit_code`` fields. Older reports without ``summary`` are
+still accepted and summarized during rendering.
+
 .. _continuous integration: https://en.wikipedia.org/wiki/Continuous_integration

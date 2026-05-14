@@ -13,6 +13,7 @@ from planemo.io import (
     info,
     warn,
 )
+from planemo.output_models import validated_run_outputs
 from planemo.runnable import RunnableType
 from planemo.runnable_resolve import for_runnable_identifier
 from planemo.test.results import StructuredData
@@ -67,6 +68,7 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
         output_json = kwds.get("output_json", None)
         outputs_dict = run_result.outputs_dict
         if output_json:
+            outputs_dict = validated_run_outputs(outputs_dict)
             with open(output_json, "w") as f:
                 json.dump(outputs_dict, f, ensure_ascii=False)
         info("Run completed successfully.")
