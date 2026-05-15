@@ -685,7 +685,7 @@ def job_template(workflow_path, **kwds):
                     }
                 ],
             }
-        elif input_type in ["string", "int", "float", "boolean", "color"]:
+        elif input_type in ["string", "int", "integer", "float", "boolean", "color"]:
             template[i_label] = "todo_param_value"
         else:
             template[i_label] = {
@@ -785,7 +785,7 @@ def _build_template_and_metadata_from_inputs(
                 "collection_type": coll_type,
                 "elements": _collection_elements_for_type(coll_type),
             }
-        elif input_type in ["string", "int", "float", "boolean", "color"]:
+        elif input_type in ["string", "int", "integer", "float", "boolean", "color"]:
             # Use default value if available, otherwise use placeholder or false for booleans
             if has_default:
                 template[i_label] = default_value
