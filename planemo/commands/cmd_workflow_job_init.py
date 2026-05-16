@@ -64,6 +64,8 @@ def _build_commented_yaml(job, metadata):
                     input_format = ", ".join(input_format)
                 comment_parts.append(f"format: {input_format}")
             if input_doc:
+                if isinstance(input_doc, list):
+                    input_doc = " ".join(input_doc)
                 comment_parts.append(f"doc: {input_doc}")
             if is_optional:
                 comment_parts.append("optional: true")

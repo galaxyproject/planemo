@@ -179,3 +179,16 @@ class CmdWorkflowJobInitTestCase(CliTestCase):
             nested_identifiers = [e["identifier"] for e in nested["elements"]]
             assert "forward" in nested_identifiers
             assert "reverse" in nested_identifiers
+
+    def test_list_doc(self):
+        """A list-valued input ``doc`` is joined for the comment, not rendered as a Python list."""
+        with self._isolate_with_test_data("") as f:
+            init_cmd = ["workflow_job_init", "wf_list_doc.gxwf.yml"]
+            self._check_exit_code(init_cmd)
+            job_path = os.path.join(f, "wf_list_doc.gxwf_job.yml")
+            assert os.path.exists(job_path)
+
+            with open(job_path) as stream:
+                content = stream.read()
+            assert "doc: First line of docs. Second line of docs." in content
+            assert "doc: ['First line of docs." not in content

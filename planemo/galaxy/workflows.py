@@ -30,6 +30,10 @@ from ephemeris import (
     generate_tool_list_from_ga_workflow_files,
     shed_tools,
 )
+
+# Labels lives in a private gxformat2 module; reuse its canonical anonymous/
+# unlabeled predicates rather than re-deriving the sentinel conventions here.
+from gxformat2._labels import Labels
 from gxformat2.converter import python_to_workflow
 from gxformat2.interface import (
     BioBlendImporterGalaxyInterface,
@@ -621,7 +625,7 @@ def required_input_steps(workflow_path):
         raise Exception("Input workflow could not be successfully normalized - try linting with planemo workflow_lint.")
     required_steps = []
     for input_step in steps:
-        if input_step.get("optional", False) or input_step.get("default"):
+        if input_step.get("optional", False) or input_step.get("default") is not None:
             continue
         required_steps.append(input_step)
     return required_steps
@@ -632,7 +636,12 @@ def required_input_labels(workflow_path):
 
 
 def input_label(input_step):
-    """Get the normalized label of a step returned from inputs_normalized."""
+    """Get the normalized label of a step returned from inputs_normalized.
+
+    Relies on gxformat2's canonical id contract: every normalized input has a
+    stable ``id`` (including synthetic ``_unlabeled_input_*`` sentinels for
+    unlabeled inputs), so no anonymity heuristic is re-derived here.
+    """
     step_id = input_step.get("id") or input_step.get("label")
     return step_id
 
@@ -650,7 +659,7 @@ def output_stubs_for_workflow(workflow_path, **kwds):
         return _job_outputs_template_from_invocation(workflow_path, kwds["galaxy_url"], kwds["galaxy_user_key"])
     outputs = {}
     for label in output_labels(workflow_path):
-        if not label.startswith("_anonymous_"):
+        if not Labels.is_anonymous_output_label(label):
             outputs[label] = {"class": ""}
     return outputs
 
