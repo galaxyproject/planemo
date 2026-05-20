@@ -142,11 +142,10 @@ class CmdWorkflowLintTestCase(CliTestCase):
             "Workflow is not annotated.",
             "Workflow does not specify a creator.",
             "Workflow does not specify a license.",
-            "Workflow step with ID None has no annotation.",
-            "Workflow step with ID None has no label.",
+            "Workflow step input has no annotation.",
             "Workflow missing test cases.",
-            "Workflow step with ID None specifies an untyped parameter as an input.",
-            "Workflow step with ID None specifies an untyped parameter in the post-job actions.",
+            "Workflow step input specifies an untyped parameter as an input.",
+            "Workflow step input specifies an untyped parameter in the post-job actions.",
         ]
 
         for warning in warnings:
@@ -161,11 +160,11 @@ class CmdWorkflowLintTestCase(CliTestCase):
             "Workflow is not annotated.",
             "Workflow does not specify a creator.",
             "Workflow does not specify a license.",
-            "Workflow step with ID 0 has no annotation.",
-            "Workflow step with ID 0 has no label.",
+            "Workflow step 0 has no annotation.",
+            "Workflow step 0 has no label.",
             "Workflow missing test cases.",
-            "Workflow step with ID 1 specifies an untyped parameter as an input.",
-            "Workflow step with ID 1 specifies an untyped parameter in the post-job actions.",
+            "Workflow step 1 specifies an untyped parameter as an input.",
+            "Workflow step 1 specifies an untyped parameter in the post-job actions.",
         ]
 
         for warning in warnings:
@@ -180,11 +179,11 @@ class CmdWorkflowLintTestCase(CliTestCase):
             "Workflow is not annotated.",
             "Workflow does not specify a creator.",
             "Workflow does not specify a license.",
-            "Workflow step with ID 0 has no annotation.",
-            "Workflow step with ID 0 has no label.",
+            "Workflow step 0 has no annotation.",
+            "Workflow step 0 has no label.",
             "Workflow missing test cases.",
-            "Workflow step with ID 1 specifies an untyped parameter as an input.",
-            "Workflow step with ID 1 specifies an untyped parameter in the post-job actions.",
+            "Workflow step 1 specifies an untyped parameter as an input.",
+            "Workflow step 1 specifies an untyped parameter in the post-job actions.",
         ]
 
         for warning in warnings:

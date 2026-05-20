@@ -1,11 +1,3 @@
-inputs:
-  the_input:
-    type: File
-    doc: input doc
-    id: the_input
-outputs:
-  the_output:
-    outputSource: cat/out_file1
 steps:
   '0':
     type: data_input

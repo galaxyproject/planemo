@@ -31,10 +31,6 @@ from ephemeris import (
     shed_tools,
 )
 from gxformat2.converter import python_to_workflow
-from gxformat2.interface import (
-    BioBlendImporterGalaxyInterface,
-    ImporterGalaxyInterface,
-)
 from gxformat2.normalize import (
     inputs_normalized,
     outputs_normalized,
@@ -510,11 +506,10 @@ def install_shed_repos_for_workflow_id(
             os.unlink(wf_path)
 
 
-def import_workflow(path, admin_gi, user_gi, from_path=False):
+def import_workflow(path, user_gi, from_path=False):
     """Import a workflow path to specified Galaxy instance."""
     if not from_path:
-        importer = BioBlendImporterGalaxyInterface(admin_gi=admin_gi, user_gi=user_gi)
-        workflow = _raw_dict(path, importer)
+        workflow = _raw_dict(path)
         return user_gi.workflows.import_workflow_dict(workflow)
     else:
         path = os.path.abspath(path)
@@ -522,19 +517,15 @@ def import_workflow(path, admin_gi, user_gi, from_path=False):
         return workflow
 
 
-def _raw_dict(path, importer=None):
+def _raw_dict(path):
     if path.endswith(".ga"):
         with open(path) as f:
             workflow = json.load(f)
     else:
-        if importer is None:
-            importer = DummyImporterGalaxyInterface()
-
-        workflow_directory = os.path.dirname(path)
-        workflow_directory = os.path.abspath(workflow_directory)
+        workflow_directory = os.path.abspath(os.path.dirname(path))
         with open(path) as f:
             workflow = yaml.safe_load(f)
-            workflow = python_to_workflow(workflow, importer, workflow_directory)
+            workflow = python_to_workflow(workflow, workflow_directory=workflow_directory)
 
     return workflow
 
@@ -596,11 +587,6 @@ def describe_outputs(runnable, gi=None):
             )
             outputs.append(output)
     return outputs
-
-
-class DummyImporterGalaxyInterface(ImporterGalaxyInterface):
-    def import_workflow(self, workflow, **kwds):
-        return None
 
 
 def input_labels(workflow_path):
@@ -685,7 +671,7 @@ def job_template(workflow_path, **kwds):
                     }
                 ],
             }
-        elif input_type in ["string", "int", "integer", "float", "boolean", "color"]:
+        elif input_type in ["string", "text", "int", "integer", "long", "float", "double", "boolean", "color"]:
             template[i_label] = "todo_param_value"
         else:
             template[i_label] = {
@@ -761,6 +747,8 @@ def _build_template_and_metadata_from_inputs(
         default_value = input_step.get("default")
         has_default = default_value is not None
         input_format = input_step.get("format", "")
+        if isinstance(input_format, list):
+            input_format = ", ".join(input_format)
         collection_type = input_step.get("collection_type", "")
 
         # Store metadata for this input
@@ -785,7 +773,7 @@ def _build_template_and_metadata_from_inputs(
                 "collection_type": coll_type,
                 "elements": _collection_elements_for_type(coll_type),
             }
-        elif input_type in ["string", "int", "integer", "float", "boolean", "color"]:
+        elif input_type in ["string", "text", "int", "integer", "long", "float", "double", "boolean", "color"]:
             # Use default value if available, otherwise use placeholder or false for booleans
             if has_default:
                 template[i_label] = default_value
