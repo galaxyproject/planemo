@@ -9,6 +9,7 @@ from typing import (
 
 from rich.console import Group
 from rich.live import Live
+from rich.markup import escape
 from rich.panel import Panel
 from rich.progress import (
     BarColumn,
@@ -259,7 +260,7 @@ class WorkflowProgress(Progress):
                 workflow_progress_display.console.print("\n".join(new_error_lines))
 
         except Exception as e:
-            error_msg = "❌ Failed to collect failed job details: {}".format(e)
+            error_msg = "❌ Failed to collect failed job details: {}".format(escape(str(e)))
             workflow_progress_display.console.print(error_msg)
 
     def _format_job_error_details(self, job_id, job_details):
@@ -271,23 +272,23 @@ class WorkflowProgress(Progress):
         command_line = job_details.get("command_line")
         tool_id = job_details.get("tool_id")
 
-        error_lines.append("❌ Failed job {}:".format(job_id))
+        error_lines.append("❌ Failed job {}:".format(escape(str(job_id))))
         if tool_id:
-            error_lines.append("   Tool ID: {}".format(tool_id))
+            error_lines.append("   Tool ID: {}".format(escape(tool_id)))
         if exit_code is not None:
             error_lines.append("   Exit code: {}".format(exit_code))
         if command_line:
-            error_lines.append("   Command line: {}".format(command_line))
+            error_lines.append("   Command line: {}".format(escape(command_line)))
         if stdout:
             error_lines.append("   Stdout:")
             for line in stdout.split("\n"):
                 if line.strip():
-                    error_lines.append("     {}".format(line))
+                    error_lines.append("     {}".format(escape(line)))
         if stderr:
             error_lines.append("   Stderr:")
             for line in stderr.split("\n"):
                 if line.strip():
-                    error_lines.append("     {}".format(line))
+                    error_lines.append("     {}".format(escape(line)))
         error_lines.append("")  # Empty line for spacing
         return error_lines
 
