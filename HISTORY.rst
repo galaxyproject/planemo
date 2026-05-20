@@ -6,8 +6,19 @@ History
 .. to_doc
 
 ---------------------
-0.75.42.dev0
+0.75.42 (2026-05-20)
 ---------------------
+* Adjust test_index indexing (thanks to `@RZ9082`_). `Pull Request 1628`_
+* Add nest_collection and other recent distro tools (thanks to `@mvdbeek`_). `Pull Request 1634`_
+* add option to trigger tool evaluation stradegy = remote (thanks to `@bgruening`_). `Pull Request 1635`_
+* Fix typo in docs (thanks to `@RZ9082`_). `Pull Request 1639`_
+* Update Python support docs (thanks to `@jmchilton`_). `Pull Request 1637`_
+* Allow structured reasoning of Planemo command-line interface and certain outputs (thanks to `@jmchilton`_). `Pull Request 1636`_
+* Fix workflow init metadata handling (thanks to `@jmchilton`_). `Pull Request 1638`_
+* Bring in gxformat2 Linting Improvements (add some agent assistance files) (thanks to `@jmchilton`_). `Pull Request 1633`_
+* Harden gxformat2-normalized input/output handling (thanks to `@jmchilton`_). `Pull Request 1642`_
+* Escape rich markup in failed-job error reporting (thanks to `@mvdbeek`_). `Pull Request 1643`_
+* Add Claude slash command for release workflow (thanks to `@jmchilton`_). `Pull Request 1627`_
 
 * Add structured CLI metadata and output schema exports, validate Planemo JSON
   outputs, and write full merged test reports.
@@ -2363,6 +2374,17 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1628: https://github.com/galaxyproject/planemo/pull/1628
+.. _Pull Request 1634: https://github.com/galaxyproject/planemo/pull/1634
+.. _Pull Request 1635: https://github.com/galaxyproject/planemo/pull/1635
+.. _Pull Request 1639: https://github.com/galaxyproject/planemo/pull/1639
+.. _Pull Request 1637: https://github.com/galaxyproject/planemo/pull/1637
+.. _Pull Request 1636: https://github.com/galaxyproject/planemo/pull/1636
+.. _Pull Request 1638: https://github.com/galaxyproject/planemo/pull/1638
+.. _Pull Request 1633: https://github.com/galaxyproject/planemo/pull/1633
+.. _Pull Request 1642: https://github.com/galaxyproject/planemo/pull/1642
+.. _Pull Request 1643: https://github.com/galaxyproject/planemo/pull/1643
+.. _Pull Request 1627: https://github.com/galaxyproject/planemo/pull/1627
 .. _Pull Request 1626: https://github.com/galaxyproject/planemo/pull/1626
 .. _Pull Request 1624: https://github.com/galaxyproject/planemo/pull/1624
 .. _Pull Request 1568: https://github.com/galaxyproject/planemo/pull/1568
@@ -3396,7 +3418,7 @@ History
 .. _@bedroesb: https://github.com/bedroesb
 .. _@ic4f: https://github.com/ic4f
 .. _@martin-raden: https://github.com/martin-raden
-.. _@andreassko: https://github.com/andreassko
+.. _@AndreasSko: https://github.com/AndreasSko
 .. _@mblue9: https://github.com/mblue9
 .. _@TMiguelT: https://github.com/TMiguelT
 .. _@bedroesb: https://github.com/bedroesb
@@ -3423,3 +3445,4 @@ History
 .. _@SaimMomin12: https://github.com/SaimMomin12
 .. _@dadrasarmin: https://github.com/dadrasarmin
 .. _@dannon: https://github.com/dannon
+.. _@RZ9082: https://github.com/RZ9082
