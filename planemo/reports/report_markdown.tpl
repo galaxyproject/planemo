@@ -47,12 +47,12 @@
 {%       endif %}
 {%       if test.data.output_problems %}
     **Problems**:
-{%       endif %}
-{%       for problem in test.data.output_problems %}
+{%         for problem in test.data.output_problems %}
     * ```
       {{problem|indent(6)}}
       ```
-{%       endfor %}
+{%         endfor %}
+{%       endif %}
 {%       if test.data.execution_problem %}
     **Execution Problem:**
     * ```

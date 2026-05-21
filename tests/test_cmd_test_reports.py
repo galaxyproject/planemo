@@ -83,6 +83,35 @@ class CmdTestReportsTestCase(CliTestCase):
 
             assert os.path.exists(results_path)
 
+    def test_markdown_passing_test_with_null_output_problems(self):
+        # Regression: report_markdown.tpl iterated test.data.output_problems
+        # outside its `if`-guard, so a passing test (where the typed model
+        # leaves output_problems as None) crashed the Jinja render with
+        # "TypeError: 'NoneType' object is not iterable".
+        with self._isolate() as f:
+            json_path = os.path.join(f, "passing.json")
+            markdown_path = os.path.join(f, "markdown_results")
+            report = {
+                "version": "0.1",
+                "tests": [
+                    {
+                        "id": "passing-test",
+                        "has_data": True,
+                        "data": {"status": "success", "output_problems": None},
+                    }
+                ],
+            }
+            with open(json_path, "w") as handle:
+                json.dump(report, handle)
+
+            self._check_exit_code(["test_reports", "--test_output_markdown", markdown_path, json_path], exit_code=0)
+
+            with open(markdown_path) as handle:
+                markdown = handle.read()
+
+            assert "passing-test" in markdown
+            assert "**Problems**" not in markdown
+
     def test_invalid_report_fails_with_friendly_error(self):
         with self._isolate() as f:
             json_path = os.path.join(f, "invalid.json")
