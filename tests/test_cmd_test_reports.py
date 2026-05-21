@@ -112,6 +112,53 @@ class CmdTestReportsTestCase(CliTestCase):
             assert "passing-test" in markdown
             assert "**Problems**" not in markdown
 
+    def test_junit_xunit_errored_test_without_job_uses_execution_problem(self):
+        # Regression: report_junit.tpl and report_xunit.tpl gated on
+        # `'job' in testcase.data` to decide whether to emit a per-job failure
+        # or fall back to a per-test execution_problem failure. After typed-
+        # model round-trip, `job` is always present (as None for tests with no
+        # job), so the guard was always true and the execution_problem branch
+        # became unreachable -- producing JUnit/xUnit reports with an empty
+        # "Tool exit code: " message instead of the real failure reason.
+        with self._isolate() as f:
+            json_path = os.path.join(f, "errored.json")
+            junit_path = os.path.join(f, "junit.xml")
+            xunit_path = os.path.join(f, "xunit.xml")
+            report = {
+                "version": "0.1",
+                "tests": [
+                    {
+                        "id": "errored-test",
+                        "has_data": True,
+                        "data": {
+                            "status": "error",
+                            "execution_problem": "input staging failed: boom",
+                            "job": None,
+                        },
+                    }
+                ],
+            }
+            with open(json_path, "w") as handle:
+                json.dump(report, handle)
+
+            self._check_exit_code(
+                [
+                    "test_reports",
+                    "--test_output_junit",
+                    junit_path,
+                    "--test_output_xunit",
+                    xunit_path,
+                    json_path,
+                ],
+                exit_code=0,
+            )
+
+            for path in (junit_path, xunit_path):
+                with open(path) as handle:
+                    xml = handle.read()
+                assert "input staging failed: boom" in xml, path
+                assert "Tool exit code:" not in xml, path
+
     def test_invalid_report_fails_with_friendly_error(self):
         with self._isolate() as f:
             json_path = os.path.join(f, "invalid.json")

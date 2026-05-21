@@ -7,7 +7,7 @@
               skipped="{{ raw_data.results.skips }}">
         {% for testcase in raw_data.tests %}
         <testcase classname="{{ testcase.id }}" name="{{ testcase.data.test_index }}" time="{{ testcase.data.time_seconds }}">
-            {% if 'job' in testcase.data %}
+            {% if testcase.data.job %}
                 {% if testcase.data.status != 'success' %}
                     <failure message="Tool exit code: {{ testcase.data.job.exit_code }}"><![CDATA[
                         {{ testcase.data | tojson(indent=True)| strip_control_characters }}
