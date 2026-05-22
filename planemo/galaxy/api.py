@@ -16,8 +16,6 @@ def get_dict_from_workflow(gi: GalaxyInstance, workflow_id: str, instance: bool 
 
 def gi(port: Optional[int] = None, url: Optional[str] = None, key: Optional[str] = None) -> GalaxyInstance:
     """Return a bioblend ``GalaxyInstance`` for Galaxy on this port."""
-    if key is None:
-        key = DEFAULT_ADMIN_API_KEY
     if port is not None and url is not None:
         raise ValueError("Either port or url parameter needs to be None")
     if port is None:
@@ -116,7 +114,7 @@ def summarize_history(ctx, gi, history_id):
         print("|")
 
 
-def get_invocations(url, key, workflow_id):
+def get_invocations(url, key: Optional[str], workflow_id):
     inv_gi = gi(None, url, key)
     invocations = inv_gi.workflows.get_invocations(workflow_id)
     return {
