@@ -6,6 +6,11 @@ History
 .. to_doc
 
 ---------------------
+0.75.44.dev0
+---------------------
+
+
+---------------------
 0.75.43 (2026-05-22)
 ---------------------
 * Bump requirement for galaxy packages to 26.0 (thanks to `@guerler`_). `Pull Request 1630`_
