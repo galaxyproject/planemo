@@ -6,8 +6,10 @@ History
 .. to_doc
 
 ---------------------
-0.75.43.dev0
+0.75.43 (2026-05-22)
 ---------------------
+* Bump requirement for galaxy packages to 26.0 (thanks to `@guerler`_). `Pull Request 1630`_
+* Make report templates resilient to typed-model null defaults (thanks to `@mvdbeek`_). `Pull Request 1644`_
 
 
 ---------------------
@@ -2379,6 +2381,8 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1630: https://github.com/galaxyproject/planemo/pull/1630
+.. _Pull Request 1644: https://github.com/galaxyproject/planemo/pull/1644
 .. _Pull Request 1628: https://github.com/galaxyproject/planemo/pull/1628
 .. _Pull Request 1634: https://github.com/galaxyproject/planemo/pull/1634
 .. _Pull Request 1635: https://github.com/galaxyproject/planemo/pull/1635
@@ -3451,3 +3455,4 @@ History
 .. _@dadrasarmin: https://github.com/dadrasarmin
 .. _@dannon: https://github.com/dannon
 .. _@RZ9082: https://github.com/RZ9082
+.. _@guerler: https://github.com/guerler
