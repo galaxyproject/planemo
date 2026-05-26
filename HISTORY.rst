@@ -6,8 +6,9 @@ History
 .. to_doc
 
 ---------------------
-0.75.44.dev0
+0.75.44 (2026-05-26)
 ---------------------
+* Fix false-positive RequiredFilesExist lint in shed_lint (#1646) (thanks to `@mvdbeek`_). `Pull Request 1647`_
 
 
 ---------------------
@@ -2386,6 +2387,7 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1647: https://github.com/galaxyproject/planemo/pull/1647
 .. _Pull Request 1630: https://github.com/galaxyproject/planemo/pull/1630
 .. _Pull Request 1644: https://github.com/galaxyproject/planemo/pull/1644
 .. _Pull Request 1628: https://github.com/galaxyproject/planemo/pull/1628
