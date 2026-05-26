@@ -198,6 +198,23 @@ steps:
 """
 
 
+# Regression for the hang in galaxyproject/iwc job 77835961979: an errored step pauses a
+# downstream step while a third step is still "new". With a paused + errored job and "ready"
+# state, the invocation counts as terminal, so polling stops refreshing it and new_steps stays
+# non-empty. all_subworkflows_complete() then used to block on it forever.
+SCENARIO_TERMINAL_WITH_NEW_STEP = """
+states: [new, ready, scheduled]
+steps:
+- state: scheduled
+  jobs:
+  - states: [new, error]
+- state: scheduled
+  jobs:
+  - states: [new, paused]
+- state: new
+"""
+
+
 def test_parse_scenario_1_invocation_state_evolution():
     invocation = parse_workflow_simulation_from_string(SCENARIO_1)
     invocation_dict = invocation.get_api_invocation()
