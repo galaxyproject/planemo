@@ -44,6 +44,13 @@ class ShedLintTestCase(CliTestCase):
         with self._isolate_repo("bad_tool_no_citations"):
             self._check_exit_code(["shed_lint", "--tools"], exit_code=1)
 
+    def test_tool_linting_required_files(self):
+        # Regression test for https://github.com/galaxyproject/planemo/issues/1646:
+        # a sibling file declared in <required_files> must be found in the
+        # realized repository even though shed_lint copies files into a temp dir.
+        with self._isolate_repo("single_tool_required_files"):
+            self._check_exit_code(["shed_lint", "--tools", "--skip", "shed_remote_repository_url"])
+
     def test_invalid_nested(self):
         # Created a nested repository with one good and one
         # invalid repository and make sure it runs and produces

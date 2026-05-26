@@ -1139,7 +1139,7 @@ class RealizedFile:
             if os.path.isdir(source_path):
                 os.makedirs(target_path)
             else:
-                os.symlink(source_path, target_path)
+                shutil.copy2(source_path, target_path)
 
     @staticmethod
     def realized_files_for(path, include_info):
