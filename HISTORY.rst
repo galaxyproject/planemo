@@ -6,6 +6,11 @@ History
 .. to_doc
 
 ---------------------
+0.75.45.dev0
+---------------------
+
+
+---------------------
 0.75.44 (2026-05-26)
 ---------------------
 * Fix false-positive RequiredFilesExist lint in shed_lint (#1646) (thanks to `@mvdbeek`_). `Pull Request 1647`_
