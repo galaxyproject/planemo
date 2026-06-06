@@ -4,6 +4,7 @@ import contextlib
 import os
 import sys
 import tempfile
+import time
 import traceback
 from datetime import datetime
 from typing import (
@@ -27,6 +28,7 @@ try:
 except ImportError:
     from galaxy.tool_util.client.staging import StagingInterace as StagingInterface
 
+import yaml
 from galaxy.tool_util.cwl.util import (
     invocation_to_output,
     output_to_cwl_json,
@@ -57,9 +59,21 @@ from planemo.galaxy.upload_progress import (
     _aggregate_job_states,
     UploadProgressDisplay,
 )
-from planemo.io import wait_on
+from planemo.galaxy.wes import (
+    detect_workflow_type,
+    is_failure,
+    is_success,
+    is_terminal,
+    WesClient,
+)
+from planemo.io import (
+    info,
+    wait_on,
+    warn,
+)
 from planemo.runnable import (
     ErrorRunResponse,
+    GALAXY_WORKFLOW_INSTANCE_PREFIX,
     get_outputs,
     Rerunnable,
     Runnable,
@@ -92,6 +106,177 @@ def execute(
         ctx.log("Failed to execute Galaxy activity, throwing ErrorRunResponse")
         traceback.print_exc(file=sys.stdout)
         return ErrorRunResponse(unicodify(e), start_datetime=start_datetime, end_datetime=end_datetime)
+
+
+WES_WORKFLOW_TYPE_VERSION = "1.0.0"
+DEFAULT_WES_POLL_INTERVAL = 3.0
+
+
+def wes_execute(
+    ctx: "PlanemoCliContext", config: "BaseGalaxyConfig", runnable: Runnable, job_path: str, **kwds
+) -> RunResponse:
+    """Execute a Galaxy workflow through the GA4GH WES API."""
+    start_datetime = datetime.now()
+    try:
+        return _wes_execute(ctx, config, runnable, job_path, start_datetime=start_datetime, **kwds)
+    except Exception as e:
+        end_datetime = datetime.now()
+        ctx.log("Failed to execute Galaxy activity via WES, throwing ErrorRunResponse")
+        traceback.print_exc(file=sys.stdout)
+        return ErrorRunResponse(unicodify(e), start_datetime=start_datetime, end_datetime=end_datetime)
+
+
+def _wes_execute(
+    ctx: "PlanemoCliContext",
+    config: "BaseGalaxyConfig",
+    runnable: Runnable,
+    job_path: str,
+    start_datetime: Optional[datetime] = None,
+    **kwds,
+) -> RunResponse:
+    if runnable.type != RunnableType.galaxy_workflow:
+        raise NotImplementedError("WES execution currently only supports Galaxy workflows.")
+    start_datetime = start_datetime or datetime.now()
+
+    client = WesClient(config.galaxy_url, config.user_api_key)
+    workflow_type = _wes_workflow_type(runnable)
+    params = _wes_workflow_params(job_path)
+
+    engine_parameters: Dict[str, Any] = {}
+    history_name = kwds.get("history_name")
+    if history_name:
+        engine_parameters["history_name"] = history_name
+    if kwds.get("history_id"):
+        engine_parameters["history_id"] = kwds["history_id"]
+
+    # Reference the workflow already loaded into Galaxy (via ensure_runnables_served)
+    # rather than re-uploading it as a WES attachment. workflow_id_for_runnable returns
+    # a Workflow instance id for workflow-instance URIs and a StoredWorkflow id otherwise;
+    # gxworkflow:// defaults to StoredWorkflow, so flag the instance case explicitly.
+    workflow_ref_id = config.workflow_id_for_runnable(runnable)
+    workflow_url = f"gxworkflow://{workflow_ref_id}"
+    if runnable.uri.startswith(GALAXY_WORKFLOW_INSTANCE_PREFIX):
+        workflow_url += "?instance=true"
+    ctx.vlog(f"Submitting workflow [{workflow_url}] to WES endpoint [{config.galaxy_url}] as type [{workflow_type}]")
+    submit_response = client.submit_run(
+        workflow_type=workflow_type,
+        workflow_type_version=WES_WORKFLOW_TYPE_VERSION,
+        workflow_url=workflow_url,
+        params=params,
+        engine_parameters=engine_parameters or None,
+    )
+    run_id = submit_response["run_id"]
+    ctx.vlog(f"WES run submitted with run_id [{run_id}]")
+
+    user_gi = config.user_gi
+    # WES run_id is the Galaxy workflow invocation id - use the native API to
+    # recover history/workflow ids for output collection (WES has no such endpoint).
+    invocation = user_gi.invocations.show_invocation(run_id)
+    history_id = invocation["history_id"]
+    workflow_id = invocation["workflow_id"]
+    no_wait = kwds.get("no_wait", False)
+
+    if no_wait:
+        wes_state = client.get_run_status(run_id)["state"]
+    else:
+        wes_state = _wait_for_wes_run(ctx, client, run_id, **kwds)
+        if is_failure(wes_state):
+            # Summarize before building the response - detail collection in the
+            # response constructor can itself fail on a broken invocation.
+            summarize_history(ctx, user_gi, history_id)
+
+    run_response = WesRunResponse(
+        ctx=ctx,
+        runnable=runnable,
+        user_gi=user_gi,
+        history_id=history_id,
+        workflow_id=workflow_id,
+        invocation_id=run_id,
+        wes_state=wes_state,
+        log=log_contents_str(config),
+        start_datetime=start_datetime,
+        end_datetime=datetime.now(),
+        no_wait=no_wait,
+    )
+
+    if kwds.get("download_outputs"):
+        warn(
+            "Downloading outputs via the Galaxy API - the GA4GH WES API has no "
+            "output-download endpoint, so --download_outputs does not use WES."
+        )
+        output_directory = kwds.get("output_directory", None)
+        ctx.vlog("collecting outputs from WES run...")
+        run_response.collect_outputs(output_directory)
+        ctx.vlog("collecting outputs complete")
+
+    return run_response
+
+
+def _wes_workflow_type(runnable: Runnable) -> str:
+    """Determine the WES ``workflow_type`` form value for a runnable.
+
+    Galaxy ignores this when the run references an already-stored workflow via a
+    ``gxworkflow://`` URI, but the field is required by the WES API, so detect it
+    from the workflow document when a local path is available.
+    """
+    if runnable.has_path:
+        with open(runnable.path) as f:
+            return detect_workflow_type(f.read())
+    return "gx_workflow_ga"
+
+
+def _wes_workflow_params(job_path: str) -> Dict[str, Any]:
+    """Load a planemo job file into WES ``workflow_params``.
+
+    Phase 1 supports parameter-only workflows and inputs that already exist on
+    the target Galaxy (referenced as ``{"src": "hda", "id": ...}``). Inputs that
+    would require data staging (local files via ``class: File`` / ``path`` /
+    ``location``) are rejected - WES has no data-staging endpoint.
+    """
+    with open(job_path) as f:
+        job = yaml.safe_load(f) or {}
+    if not isinstance(job, dict):
+        raise Exception(f"Job file [{job_path}] must define a mapping of input names to values.")
+
+    for input_name, value in job.items():
+        if _is_unstaged_file_input(value):
+            raise Exception(
+                f"Input [{input_name}] looks like a local file input, which WES execution does not "
+                "support yet (WES has no data-staging endpoint). Stage the data into Galaxy first and "
+                'reference it as {"src": "hda", "id": "..."}.'
+            )
+    return job
+
+
+def _is_unstaged_file_input(value: Any) -> bool:
+    if isinstance(value, dict):
+        if value.get("class") in ("File", "Directory"):
+            return True
+        if "path" in value or "location" in value:
+            return True
+    if isinstance(value, list):
+        return any(_is_unstaged_file_input(item) for item in value)
+    return False
+
+
+def _wait_for_wes_run(ctx: "PlanemoCliContext", client: WesClient, run_id: str, **kwds) -> str:
+    timeout = kwds.get("test_timeout") or 60 * 60 * 24
+    interval = DEFAULT_WES_POLL_INTERVAL
+    waited = 0.0
+    last_reported_state = None
+    while True:
+        state = client.get_run_status(run_id)["state"]
+        ctx.vlog(f"WES run [{run_id}] state [{state}]")
+        if is_terminal(state):
+            return state
+        # Surface state transitions (and a first heartbeat) without flooding output.
+        if state != last_reported_state:
+            info(f"WES run [{run_id}] state [{state}]")
+            last_reported_state = state
+        if waited > timeout:
+            raise Exception(f"Timed out waiting on WES run {run_id} (last state [{state}]).")
+        time.sleep(interval)
+        waited += interval
 
 
 def _verified_tool_id(runnable, user_gi):
@@ -907,6 +1092,55 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         return output_path
 
 
+class WesRunResponse(GalaxyWorkflowRunResponse):
+    """Run response for a workflow executed through the GA4GH WES API.
+
+    Submission and completion are tracked over the WES protocol and success is
+    derived from the terminal WES state (rather than per-job exit codes). The WES
+    run id is the Galaxy workflow invocation id, so output collection, downloads,
+    and invocation details reuse the Galaxy API machinery of the superclass - WES
+    itself has no data-staging or output-download endpoint.
+    """
+
+    def __init__(
+        self,
+        ctx,
+        runnable,
+        user_gi,
+        history_id,
+        workflow_id,
+        invocation_id,
+        wes_state,
+        log,
+        start_datetime=None,
+        end_datetime=None,
+        no_wait=False,
+    ):
+        self._wes_state = wes_state
+        super().__init__(
+            ctx=ctx,
+            runnable=runnable,
+            user_gi=user_gi,
+            history_id=history_id,
+            log=log,
+            workflow_id=workflow_id,
+            invocation_id=invocation_id,
+            history_state=None,
+            invocation_state=wes_state,
+            error_message=None,
+            start_datetime=start_datetime,
+            end_datetime=end_datetime,
+            no_wait=no_wait,
+        )
+
+    @property
+    def was_successful(self):
+        if self._no_wait:
+            # Submission succeeded; we did not wait to learn the terminal state.
+            return True
+        return is_success(self._wes_state)
+
+
 def _tool_id(tool_path):
     tool_source = get_tool_source(tool_path)
     return tool_source.parse_id()
@@ -1010,4 +1244,8 @@ def _wait_on_state(state_func, polling_backoff=0, timeout=None):
     return final_state
 
 
-__all__ = ("execute",)
+__all__ = (
+    "execute",
+    "wes_execute",
+    "WesRunResponse",
+)

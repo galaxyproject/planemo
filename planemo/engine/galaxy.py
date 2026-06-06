@@ -17,6 +17,7 @@ from planemo.galaxy.activity import (
     execute,
     execute_rerun,
     GalaxyBaseRunResponse,
+    wes_execute,
 )
 from planemo.galaxy.config import external_galaxy_config
 from planemo.galaxy.serve import serve_daemon
@@ -62,7 +63,10 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
             for runnable, job_path, collect_output in zip(runnables, job_paths, output_collectors):
                 self._ctx.vlog(f"Serving artifact [{runnable}] with Galaxy.")
                 self._ctx.vlog(f"Running job path [{job_path}]")
-                run_response = execute(self._ctx, config, runnable, job_path, **self._kwds)
+                if self._kwds.get("wes"):
+                    run_response = wes_execute(self._ctx, config, runnable, job_path, **self._kwds)
+                else:
+                    run_response = execute(self._ctx, config, runnable, job_path, **self._kwds)
                 results.append(run_response)
                 if collect_output is not None:
                     collect_output(run_response)
