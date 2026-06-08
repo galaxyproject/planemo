@@ -49,28 +49,6 @@ class WesError(Exception):
         self.status_code = status_code
 
 
-def detect_workflow_type(workflow_text: str) -> str:
-    """Guess the Galaxy WES ``workflow_type`` from a workflow document.
-
-    Returns ``gx_workflow_format2`` for Format2 (``class: GalaxyWorkflow``) or
-    ``gx_workflow_ga`` for native ``.ga`` workflows. Galaxy re-validates the type
-    against the referenced workflow, so this only needs to be approximately right.
-    """
-    text = workflow_text.lstrip()
-    if text.startswith("{"):
-        try:
-            parsed = json.loads(workflow_text)
-        except ValueError:
-            parsed = {}
-        if isinstance(parsed, dict) and parsed.get("class") == "GalaxyWorkflow":
-            return "gx_workflow_format2"
-        return "gx_workflow_ga"
-    # YAML-ish: Format2 documents declare ``class: GalaxyWorkflow``.
-    if "class: GalaxyWorkflow" in workflow_text or "class: 'GalaxyWorkflow'" in workflow_text:
-        return "gx_workflow_format2"
-    return "gx_workflow_ga"
-
-
 class WesClient:
     """Minimal Galaxy GA4GH WES client."""
 
@@ -130,7 +108,6 @@ class WesClient:
 
 
 __all__ = (
-    "detect_workflow_type",
     "FAILURE_STATES",
     "is_failure",
     "is_success",

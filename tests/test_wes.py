@@ -1,6 +1,5 @@
 """Tests for the GA4GH WES client and ``planemo run --wes`` plumbing."""
 
-import json
 from pathlib import Path
 from unittest import mock
 
@@ -15,12 +14,10 @@ from planemo.galaxy.activity import (
     _wait_for_wes_run,
     _wes_execute,
     _wes_workflow_params,
-    _wes_workflow_type,
     GalaxyWorkflowRunResponse,
     WesRunResponse,
 )
 from planemo.galaxy.wes import (
-    detect_workflow_type,
     FAILURE_STATES,
     is_failure,
     is_success,
@@ -41,20 +38,6 @@ DATA_DIR = Path(__file__).parent / "data"
 GA_WORKFLOW = str(DATA_DIR / "test_workflow_1.ga")
 CWL_WORKFLOW = str(DATA_DIR / "count-lines2-wf.cwl")
 TOOL_XML = str(DATA_DIR / "cat_list.xml")
-
-
-class TestDetectWorkflowType:
-    def test_format2_yaml(self):
-        assert detect_workflow_type("class: GalaxyWorkflow\nsteps: {}") == "gx_workflow_format2"
-
-    def test_format2_json(self):
-        assert detect_workflow_type(json.dumps({"class": "GalaxyWorkflow"})) == "gx_workflow_format2"
-
-    def test_native_ga_json(self):
-        assert detect_workflow_type(json.dumps({"a_galaxy_workflow": "true", "steps": {}})) == "gx_workflow_ga"
-
-    def test_native_ga_default(self):
-        assert detect_workflow_type("steps:\n  0: {}") == "gx_workflow_ga"
 
 
 class TestWesClient:
@@ -160,28 +143,11 @@ class TestStateHelpers:
         assert not is_terminal("RUNNING")
 
 
-class TestWesWorkflowType:
-    def test_native_ga_path(self):
-        runnable = Runnable(GA_WORKFLOW, RunnableType.galaxy_workflow)
-        assert _wes_workflow_type(runnable) == "gx_workflow_ga"
-
-    def test_format2_path(self, tmp_path):
-        wf = tmp_path / "wf.gxwf.yml"
-        wf.write_text("class: GalaxyWorkflow\nsteps: {}\n")
-        runnable = Runnable(str(wf), RunnableType.galaxy_workflow)
-        assert _wes_workflow_type(runnable) == "gx_workflow_format2"
-
-    def test_remote_instance_uri_without_path_defaults_to_ga(self):
-        runnable = Runnable("gxid://workflow-instance/abc123", RunnableType.galaxy_workflow)
-        assert not runnable.has_path
-        assert _wes_workflow_type(runnable) == "gx_workflow_ga"
-
-
 class TestWaitForWesRun:
     def test_returns_terminal_state(self):
         client = mock.Mock()
         client.get_run_status.side_effect = [{"state": "RUNNING"}, {"state": "COMPLETE"}]
-        with mock.patch("planemo.galaxy.activity.time.sleep"):
+        with mock.patch("planemo.io.time.sleep"):
             state = _wait_for_wes_run(mock.MagicMock(), client, "run1")
         assert state == "COMPLETE"
         assert client.get_run_status.call_count == 2
@@ -189,7 +155,7 @@ class TestWaitForWesRun:
     def test_times_out(self):
         client = mock.Mock()
         client.get_run_status.return_value = {"state": "RUNNING"}
-        with mock.patch("planemo.galaxy.activity.time.sleep"):
+        with mock.patch("planemo.io.time.sleep"):
             with pytest.raises(Exception, match="Timed out"):
                 _wait_for_wes_run(mock.MagicMock(), client, "run1", test_timeout=0)
 
@@ -220,6 +186,14 @@ class TestWesRunResponseSuccess:
 
     def test_no_wait_is_successful_regardless(self):
         assert self._response("RUNNING", no_wait=True).was_successful
+
+    def test_invocation_state_not_conflated_with_wes_state(self):
+        # Galaxy invocation/history states are left untracked; the WES terminal
+        # state is surfaced separately so reports don't mix the two vocabularies.
+        response = self._response("COMPLETE")
+        assert response.invocation_state is None
+        assert response.history_state is None
+        assert response.invocation_details["details"]["wes_state"] == "COMPLETE"
 
 
 def _fake_config(workflow_ref_id="wfid", history_id="hist1"):
