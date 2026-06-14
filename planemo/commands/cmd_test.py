@@ -13,12 +13,19 @@ from planemo.runnable_resolve import for_runnable_identifiers
 @options.optional_tools_arg(multiple=True, allow_uris=True)
 @click.option(
     "--failed",
+    "--lf",
     is_flag=True,
-    help="Re-run only failed tests. This command will read "
-    "tool_test_output.json to determine which tests failed so this "
-    "file must have been produced with the same set of tool ids "
-    "previously.",
+    help="Re-run only failed tests from the previous run. Reads from "
+    "--failed_json (or --test_output_json if not set) to determine "
+    "which tests failed.",
     default=False,
+)
+@click.option(
+    "--failed_json",
+    type=click.Path(),
+    help="JSON file from a previous planemo test run to read failed test IDs "
+    "from when using --failed/--lf. Defaults to --test_output_json.",
+    default=None,
 )
 @click.option(
     "--test_index",
