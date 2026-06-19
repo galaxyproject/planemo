@@ -579,7 +579,11 @@ def describe_outputs(runnable, gi=None):
         optional = False
         if not step.get("tool_id"):
             # One of the parameter types ... need eliminate this guesswork on the Galaxy side
-            tool_state = json.loads(step.get("tool_state", "{}"))
+            raw_tool_state = step.get("tool_state", {})
+            if isinstance(raw_tool_state, str):
+                tool_state = json.loads(raw_tool_state)
+            else:
+                tool_state = raw_tool_state
             optional = tool_state.get("optional", False)
         step_outputs = step.get("workflow_outputs", [])
         for step_output in step_outputs:
