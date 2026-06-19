@@ -10,6 +10,8 @@ from typing import (
     Optional,
 )
 
+import click
+
 from planemo.exit_codes import EXIT_CODE_UNSUPPORTED_FILE_TYPE
 from planemo.io import error
 from planemo.runnable import (
@@ -89,6 +91,25 @@ class BaseEngine(Engine):
             else:
                 # If no tests match the specified indices, log a warning and use original
                 self._ctx.log(f"Warning: No tests found with indices {test_indices}. Running all tests instead.")
+
+        # Filter test cases to only previously-failed ones when --failed/--lf is set
+        if self._kwds.get("failed"):
+            failed_json = self._kwds.get("failed_json") or self._kwds.get("test_output_json")
+            if not failed_json or not os.path.exists(failed_json):
+                raise click.ClickException(
+                    "--failed/--lf requires a previous test output JSON. "
+                    "Set --failed_json or ensure --test_output_json exists from a prior run."
+                )
+            previous = StructuredData(json_path=failed_json)
+            failed_ids = previous.failed_ids
+            if not failed_ids:
+                self._ctx.log("No failed tests in previous run — nothing to re-run.")
+                empty = StructuredData(data={"version": "0.1", "tests": []})
+                empty.calculate_summary_data()
+                return empty
+            test_cases = [
+                tc for tc in test_cases if hasattr(tc, "_test_id") and f"{tc._test_id}_{tc.index}" in failed_ids
+            ]
 
         test_results = self._collect_test_results(test_cases, test_timeout)
         tests = []
