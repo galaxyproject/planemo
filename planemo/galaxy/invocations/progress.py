@@ -382,8 +382,10 @@ class WorkflowProgressDisplay(Live):
         return random.choice(tuple(self.subworkflow_invocation_ids_seen - self.subworkflow_invocation_ids_completed))
 
     def all_subworkflows_complete(self):
-        if self.new_steps:
-            # These don't have subworkflow invocation ids yet, we can't know if they're all complete
+        if self.new_steps and not self.workflow_progress.invocation_scheduling_terminal:
+            # new steps may still become subworkflows, so we can't tell if all are complete yet.
+            # Once scheduling is terminal _poll_main_workflow stops refreshing the invocation, so
+            # new_steps is frozen - blocking on it then would never return.
             return False
         return len(self.subworkflow_invocation_ids_seen) == len(self.subworkflow_invocation_ids_completed)
 

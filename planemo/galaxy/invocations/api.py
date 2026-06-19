@@ -18,6 +18,7 @@ from planemo.galaxy.api import retry_on_timeouts
 
 
 class InvocationStep(TypedDict, total=False):
+    id: str
     state: Optional[str]
     subworkflow_invocation_id: Optional[str]
 

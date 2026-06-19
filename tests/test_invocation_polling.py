@@ -26,16 +26,26 @@ from .test_workflow_simulation import (
     SCENARIO_MULTIPLE_OK_SUBWORKFLOWS,
     SCENARIO_NESTED_SUBWORKFLOWS,
     SCENARIO_SUBWORKFLOW_WITH_FAILED_JOBS,
+    SCENARIO_TERMINAL_WITH_NEW_STEP,
 )
 
 SLEEP = 0
 
 
 class MockPollingTracker(PollingTracker):
+    # The poll loop has no timeout, so cap ticks to fail fast instead of hanging the suite
+    # if polling ever stops terminating.
+    MAX_TICKS = 1000
+
     def __init__(self, simulation: Invocation):
         self._simulation = simulation
+        self._ticks = 0
 
     def sleep(self) -> None:
+        self._ticks += 1
+        assert (
+            self._ticks <= self.MAX_TICKS
+        ), f"invocation poll loop did not terminate after {self.MAX_TICKS} ticks - likely deadlocked"
         self._simulation.tick()
         if SLEEP > 0:
             sleep(SLEEP)
@@ -157,6 +167,18 @@ def test_fail_fast_enabled_with_subworkflow_job_failure():
     # fail_fast should detect the failed job in the subworkflow and return error message
     assert error_message
     assert "Failed to run workflow, at least one job is in [error] state." in error_message
+
+
+def test_polling_terminates_with_new_step_and_paused_job():
+    """Polling must terminate when a step stays 'new' behind a paused/errored branch.
+
+    Without the fix this never returns and trips MockPollingTracker.MAX_TICKS.
+    """
+    final_invocation_state, job_state, error_message = run_workflow_simulation(
+        SCENARIO_TERMINAL_WITH_NEW_STEP, fail_fast=False
+    )
+    assert final_invocation_state == "ready"
+    assert job_state == "error"
 
 
 def run_workflow_simulation(

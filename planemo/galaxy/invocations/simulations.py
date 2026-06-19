@@ -80,6 +80,7 @@ class InvocationStep(HasState):
         self, jobs: List[Job], invocation: Optional["Invocation"], after: int, states: List[StateWithDuration]
     ):
         super().__init__(after, states)
+        self.id = "step_id"
         self.jobs = jobs
         self.invocation = invocation
 
@@ -135,6 +136,7 @@ class Invocation(HasState):
         steps: List[InvocationStepResponse] = []
         for step in self.active_steps:
             api_step: InvocationStepResponse = {
+                "id": step.id,
                 "state": step.state,
             }
             if step.invocation:
