@@ -13,14 +13,16 @@ test results (pass or fail for each test) in the console and creates an HTML rep
 directory. Additional bells and whistles include the ability to generate XUnit reports, publish
 test results and get embedded Markdown to link to them for PRs, and test remote artifacts in Git repositories.
 
+For more information about testing Galaxy tools using embedded tool XML tests see the tutorial-style chapter
+`Test-Driven Development <https://planemo.readthedocs.io/en/latest/writing_advanced.html#test-driven-development>`__
+of Galaxy tools.
+
 Much of this same functionality is now also available for Galaxy_ Workflows as well as `Common Workflow Language`_
-(CWL) tools and workflows. The rest of this page describes this testing format and testing options for these
-artifacts - for information about testing Galaxy tools specifically using the embedded tool XML tests see
-`Test-Driven Development <http://planemo.readthedocs.io/en/latest/writing_advanced.html#test-driven-development>`__
-of Galaxy tools tutorial.
+(CWL) tools and workflows. The rest of this page describes the test format and testing options for these
+artifacts.
 
 Unlike the traditional Galaxy tool approach, these newer types of artifacts should define tests in files
-located next artifact. For instance, if ``planemo test`` is called on a Galaxy workflow called ``ref-rnaseq.ga``
+located next to the artifact. For instance, if ``planemo test`` is called on a Galaxy workflow called ``ref-rnaseq.ga``
 tests should be defined in ``ref-rnaseq-tests.yml`` or ``ref-rnaseq-tests.yaml``. If instead it is called on a
 CWL_ tool called ``seqtk_seq.cwl``, tests can be defined in ``seqtk_seq_tests.yml`` for instance.
 
@@ -103,7 +105,7 @@ runnable artifact outside the context of testing with ``planemo run``.
 
         $ planemo run --engine=<engine_type> [ENGINE_OPTIONS] [ARTIFACT_PATH] [JOB_PATH]
 
-    This should be familar to CWL developers - and indeed if ``--engine=cwltool`` this works as a formal CWL
+    This should be familar to CWL developers - and indeed with ``--engine=cwltool`` this works as a formal CWL
     runner. Planemo provides a uniform interface to Galaxy for Galaxy workflows and tools though using the same
     CLI invocation if ``--engine=galaxy`` (for a Planemo managed Galaxy instance), ``--engine=docker_galaxy``
     (for a Docker instance of Galaxy launched by Planemo), or ``--engine=external_galaxy`` (for a running
@@ -168,7 +170,7 @@ your workflows should be labeled anyway to work with Galaxy subworkflows and mor
 
 If an output is known, fixed, and small it makes a lot of sense to just include a copy of the output next
 to your test and set ``file: relative/path/to/output`` in your output definition block as show in the first
-example above. For completely reproducible processes this is a great guarentee that results are fixed over
+example above. For completely reproducible processes this is a great guarantee that results are fixed over
 time, across CWL_ engines and engine versions. If the results are fixed but large - it may make sense to just
 describe the outputs by a SHA1_ checksum_.
 
@@ -180,34 +182,28 @@ describe the outputs by a SHA1_ checksum_.
         wf_output_1:
           checksum: "sha1$a0b65939670bc2c010f4d5d6a0b3e4e4590fb92b"
 
-One advantage of included an exact file instead of a checksum is that Planemo can produce very nice line
+One advantage of including an exact file instead of a checksum is that Planemo can produce very nice line
 by line diffs for incorrect test results by comparing an expected output to an actual output.
 
-There are reasons one may not be able to write such exact test assertions about outputs however, perhaps
-date or time information is incorporated into the result, unseeded random numbers are used, small numeric
-differences occur across runtimes of interest, etc.. For these cases, a variety of other assertions can
-be executed against the execution results to verify outputs. The types and implementation of these test
-assertions match those available to Galaxy_ tool outputs in XML but have equivalent YAML formulations that
-should be used in test descriptions.
-
-Even if one can write exact tests, a really useful technique is to write sanity checks on outputs as one
-builds up workflows that may be changing rapidly and developing complex tools or worklflows via a
+There are reasons one may not be able to write exact test assertions about outputs however.
+Perhaps date or time information is incorporated into a result, unseeded random numbers are used, small numeric
+differences occur across runtimes of interest, etc..
+Even if one can write exact tests, a really useful technique is to write more liberal sanity checks on outputs as one
+builds up workflows that may be changing rapidly and develops complex tools or workflows via a
 `Test-Driven Development cycle
 <https://en.wikipedia.org/wiki/Test-driven_development#Test-driven_development_cycle>`__
 using Planemo. *Tests shouldn't just be an extra step you have to do after development is done, they should
 guide development as well.*
 
-The workflow example all the way above demonstrates some assertions one can make about the contents of
-files. The full list of assertions available is only documented for the Galaxy XML format but it is
-straightforward to adapt to the YAML format above - check out the
-`Galaxy XSD <https://docs.galaxyproject.org/en/latest/dev/schema.html#tool-tests-test-output-assert-contents>`__
-for more information.
-
-Some examples of inexact file comparisons derived from an artificial test case in the Planemo test suite is shown below,
-these are more options available for checking outputs that may change in small ways over time.
+In all of these cases, a variety of other assertions can be run against the execution results to verify outputs.
+The "Microbial variant calling workflow" example at the beginning of this chapter demonstrates some assertions one can make about the contents of result files.
+Some additional examples of inexact file comparisons taken from an artificial test case in the Planemo test suite are shown below.
 
 .. literalinclude:: example_assertions.yml
    :language: yaml
+
+Currently, the full list of available assertions is only documented as part of the `Galaxy Tool XML format <https://docs.galaxyproject.org/en/latest/dev/schema.html>`__ definition in the section on `asserting the contents of Galaxy tool outputs <https://docs.galaxyproject.org/en/latest/dev/schema.html#tool-tests-test-output-assert-contents>`__, but it should be fairly easy to translate this XML syntax into the YAML format above.
+
 
 Engines for Testing
 ---------------------
@@ -333,7 +329,7 @@ doesn't need to exist, but it is used to find ``wf11-remote.gxwf-test.yml``.
 Galaxy Testing Template
 -------------------------
 
-The following a script that can be used with `continuous integration`_ (CI) services such
+The following is a script that can be used with `continuous integration`_ (CI) services such
 Travis_ to test Galaxy workflows in a Github repository. This shell script can be configured via
 various environment variables and shows off some of the modalities Planemo ``test`` should work in
 (there may be bugs but we are trying to stablize this functionality).
