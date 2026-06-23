@@ -30,6 +30,7 @@ from planemo.test.results import StructuredData
 @options.run_output_directory_option()
 @options.run_output_json_option()
 @options.run_download_outputs_option()
+@options.wes_option()
 @options.run_export_option()
 @options.invocation_export_format_arg()
 @options.engine_options()
@@ -50,6 +51,19 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
         )
     kwds["cwl"] = is_cwl
     kwds["execution_type"] = "Run"
+    if kwds.get("wes"):
+        # WES execution is Galaxy-only - validate before engine defaulting so CWL
+        # runnables don't get steered to the cwltool engine and a confusing error.
+        if runnable.type != RunnableType.galaxy_workflow:
+            raise click.UsageError(
+                "--wes execution is only supported for Galaxy workflows, "
+                "but the provided runnable is of type: %s" % runnable.type
+            )
+        if kwds.get("engine") not in (None, "galaxy", "external_galaxy"):
+            raise click.UsageError(
+                "--wes execution is only supported with the 'galaxy' or "
+                "'external_galaxy' engines, not engine [%s]." % kwds["engine"]
+            )
     if kwds.get("engine", None) is None:
         if is_cwl:
             kwds["engine"] = "cwltool"

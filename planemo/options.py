@@ -356,6 +356,20 @@ def run_download_outputs_option():
     )
 
 
+def wes_option():
+    return planemo_option(
+        "--wes/--no_wes",
+        is_flag=True,
+        default=False,
+        help=(
+            "Execute the workflow against the target Galaxy's GA4GH WES "
+            "(Workflow Execution Service) endpoint instead of the native "
+            "invocation API. Works with both planemo-managed and external "
+            "(--galaxy_url) Galaxy servers."
+        ),
+    )
+
+
 def run_export_option():
     return planemo_option(
         "--export_invocation",
