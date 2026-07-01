@@ -22,6 +22,15 @@ def test_describe_outputs():
     assert output.label == "wf_output_1"
 
 
+def test_describe_outputs_dict_tool_state():
+    """A .ga with dict (not JSON-string) tool_state must not crash describe_outputs."""
+    wf_path = os.path.join(TEST_DATA_DIR, "wf14-unlinted-best-practices-dict-tool-state.ga")
+    runnable = for_path(wf_path)
+    outputs = describe_outputs(runnable)
+    assert len(outputs) == 1
+    assert outputs[0].output_name == "outfile"
+
+
 def test_required_input_steps_excludes_falsy_defaults():
     """Inputs with a default are not required, even when the default is falsy (boolean false, int 0)."""
     wf_path = os.path.join(TEST_DATA_DIR, "wf_required_defaults.gxwf.yml")
