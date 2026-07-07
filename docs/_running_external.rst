@@ -398,3 +398,40 @@ using the ``planemo rerun`` command:
 In the first two cases, all failed, remappable jobs which are associated with
 the specified history(s) or invocation(s) will be rerun. In the third case,
 the specified jobs will simply be rerun.
+
+
+Executing workflows via GA4GH WES
+===============================================
+
+Galaxy exposes a `GA4GH Workflow Execution Service (WES)
+<https://ga4gh.github.io/workflow-execution-service-schemas/>`_ endpoint. Adding
+the ``--wes`` flag to ``planemo run`` submits the workflow to that endpoint
+instead of the native Galaxy invocation API:
+
+::
+
+    $ planemo run tutorial.ga tutorial-job.yml --wes --galaxy_url SERVER_URL --galaxy_user_key YOUR_API_KEY
+
+The ``--wes`` flag is a modifier on the Galaxy execution path rather than a
+separate engine - it reuses the usual Galaxy connection options and targets
+whichever server you are already pointing at. With ``--galaxy_url`` it runs
+against an external Galaxy; without it, it runs against a Planemo-managed Galaxy.
+A profile works too:
+
+::
+
+    $ planemo run tutorial.ga tutorial-job.yml --wes --profile tutorial_profile
+
+WES has no data-staging or output-download endpoint of its own, so this initial
+support is intentionally limited:
+
+- Only workflows are supported (not single tools).
+- Inputs must be parameters or reference data that already exists on the target
+  Galaxy (e.g. ``galaxy_id``/``{"src": "hda", "id": ...}``). Inputs that point at
+  local files (``class: File`` with ``path``/``location``) are rejected, since
+  there is nowhere for WES to upload them.
+- ``--download_outputs`` still works, but downloads happen through the native
+  Galaxy API (Planemo prints a warning noting this), as WES does not define a
+  download mechanism.
+
+Run success is reported from the terminal WES state.
