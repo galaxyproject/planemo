@@ -46,8 +46,13 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
     Job results are reused from a cache by default. A tool that exits
     successfully but produces bad output will have that bad output reused, so
     ``--no_use_cache`` is the escape hatch when a run is meant to actually
-    re-compute. See "Caching job results" in the Planemo documentation for what
-    each engine can and cannot reuse.
+    re-compute.
+
+    With the cwltool engine this maps onto cwltool's ``--cachedir``, which caches
+    individual computed steps under ``--cwltool_cache_directory``. Planemo never
+    prunes that directory, and cwltool leaves scratch directories beside it if a
+    run crashes. With the Galaxy engines, see "Caching job results" in the
+    Planemo documentation for what can actually be reused.
     """
     runnable = for_runnable_identifier(ctx, runnable_identifier, kwds)
     is_cwl = runnable.type.is_cwl_artifact
