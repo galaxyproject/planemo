@@ -398,3 +398,30 @@ using the ``planemo rerun`` command:
 In the first two cases, all failed, remappable jobs which are associated with
 the specified history(s) or invocation(s) will be rerun. In the third case,
 the specified jobs will simply be rerun.
+
+
+Caching job results
+===============================================
+
+``planemo run`` reuses previously computed results by default. Pass
+``--no_use_cache`` to force a run to actually re-compute - note that a tool which
+exited successfully but produced bad output will have that bad output reused
+until you do.
+
+For the Galaxy engines this sets ``use_cached_job`` on the job or invocation
+request, so Galaxy looks for an equivalent job of yours to copy outputs from.
+Two things limit how often that succeeds:
+
+- The Galaxy needs a persistent database. The ephemeral local Galaxy planemo
+  starts by default gets a fresh database every run, so caching only pays off
+  against ``--galaxy_url`` or a ``--profile``.
+- Inputs given as local file paths are uploaded afresh on every run, and Galaxy
+  does not consider jobs consuming distinct uploads equivalent. Caching helps
+  most when the job file refers to datasets already on the server.
+
+For the cwltool engine this maps onto cwltool's ``--cachedir``, which caches
+individual computed steps keyed on the command line and input checksums. The
+cache lives in ``cwltool_cache`` within the planemo workspace unless
+``--cwltool_cache_directory`` says otherwise. Planemo never prunes it, and
+cwltool writes scratch directories beside it that a crashed run can leave
+behind.

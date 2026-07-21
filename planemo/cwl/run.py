@@ -91,6 +91,10 @@ def run_cwltool(
     if kwds.get("non_strict_cwl", False):
         args.append("--non-strict")
 
+    if kwds.get("use_cache", False):
+        cache_directory = kwds.get("cwltool_cache_directory") or ctx.cwltool_cache_directory
+        args.extend(["--cachedir", cache_directory])
+
     args.extend([runnable.path, job_path])
     ctx.vlog("Calling cwltool with arguments %s" % args)
     with tempfile.NamedTemporaryFile("w") as tmp_stdout, tempfile.NamedTemporaryFile("w") as tmp_stderr:

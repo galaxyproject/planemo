@@ -2,6 +2,7 @@
 
 import json
 import os
+from uuid import uuid4
 
 import pytest
 
@@ -66,6 +67,43 @@ class RunTestCase(CliTestCase):
             assert os.path.exists(os.path.join(f, "tool_test_output.html"))
             assert os.path.exists(os.path.join(f, "tool_test_output.json"))
 
+    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
+    def test_run_cwltool_use_cache(self):
+        with self._isolate() as f:
+            cache_directory = os.path.join(f, "cwltool_cache")
+            test_cmd = [
+                "run",
+                "--engine",
+                "cwltool",
+                "--no_container",
+                "--cwltool_cache_directory",
+                cache_directory,
+                _cwl_file("cat1-tool.cwl"),
+                _cwl_file("cat-job.json"),
+            ]
+            self._check_exit_code(test_cmd)
+            assert os.listdir(cache_directory)
+            result = self._check_exit_code(test_cmd)
+            assert "Using cached output in" in result.output
+
+    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
+    def test_run_cwltool_no_use_cache(self):
+        with self._isolate() as f:
+            cache_directory = os.path.join(f, "cwltool_cache")
+            test_cmd = [
+                "run",
+                "--engine",
+                "cwltool",
+                "--no_container",
+                "--no_use_cache",
+                "--cwltool_cache_directory",
+                cache_directory,
+                _cwl_file("cat1-tool.cwl"),
+                _cwl_file("cat-job.json"),
+            ]
+            self._check_exit_code(test_cmd)
+            assert not os.path.exists(cache_directory)
+
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch
     def test_run_gxtool_randomlines(self):
@@ -86,6 +124,51 @@ class RunTestCase(CliTestCase):
             self._check_exit_code(test_cmd)
             assert os.path.exists(os.path.join(f, "tool_test_output.html"))
             assert os.path.exists(os.path.join(f, "tool_test_output.json"))
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @mark.tests_galaxy_branch
+    def test_run_gxtool_use_cache(self):
+        # Galaxy only reuses a job if it finds an equivalent one belonging to the same
+        # user - so this needs a profile to keep the database and files around between
+        # runs. job_properties takes no data inputs, if it did each run would upload a
+        # fresh copy of the input and Galaxy would never consider the jobs equivalent.
+        tool_path = os.path.join(TEST_DATA_DIR, "tools", "functional_test_tools", "job_properties.xml")
+        job_path = os.path.join(TEST_DATA_DIR, "job_properties_job.json")
+        # unique so an interrupted run does not leave a profile behind that blocks the next one
+        profile_name = f"planemo_test_use_cache_{uuid4().hex[:8]}"
+
+        with self._isolate() as f:
+            self._check_exit_code(["profile_create", profile_name, "--database_type", "sqlite"])
+            try:
+
+                def run(label, *extra_args):
+                    report_path = os.path.join(f, f"{label}_report.json")
+                    self._check_exit_code(
+                        [
+                            "run",
+                            "--no_dependency_resolution",
+                            "--galaxy_branch",
+                            target_galaxy_branch(),
+                            "--profile",
+                            profile_name,
+                            "--test_output_json",
+                            report_path,
+                            *extra_args,
+                            tool_path,
+                            job_path,
+                        ]
+                    )
+                    with open(report_path) as report_f:
+                        return json.load(report_f)["tests"][0]["data"]["job"]
+
+                first_job = run("first")
+                assert first_job["copied_from_job_id"] is None, first_job
+                cached_job = run("cached")
+                assert cached_job["copied_from_job_id"] is not None, cached_job
+                uncached_job = run("uncached", "--no_use_cache")
+                assert uncached_job["copied_from_job_id"] is None, uncached_job
+            finally:
+                self._check_exit_code(["profile_delete", profile_name])
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
