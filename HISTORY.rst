@@ -6,9 +6,27 @@ History
 .. to_doc
 
 ---------------------
-0.75.46.dev0
+0.75.46 (2026-08-04)
 ---------------------
-* Behavior change: add ``--use_cache`` to ``planemo run``, which now reuses cached job results by default (#1665).
+* Skip bot authors in bootstrap_history acknowledgements (thanks to
+  `@jmchilton`_). `Pull Request 1657`_
+* Stop loading workflow .ga files as tools (thanks to `@mvdbeek`_). `Pull
+  Request 1660`_
+* Lint that a workflow's pinned changeset_revision provides the referenced
+  tool version (thanks to `@mvdbeek`_). `Pull Request 1659`_
+* GitHub workflow improvements (thanks to `@nsoranzo`_). `Pull Request 1663`_
+* Bump actions/setup-python from 6 to 6.3.0 in the actions group. `Pull Request
+  1664`_
+* Bump the actions group with 2 updates. `Pull Request 1670`_
+* Surface Galaxy service logs when a tool test fails (thanks to `@jmchilton`_).
+  `Pull Request 1669`_
+* Raise an actionable error for untranslatable collection outputs (thanks to
+  `@mvdbeek`_). `Pull Request 1661`_
+* Bump the actions group with 3 updates. `Pull Request 1673`_
+* Bump minimum galaxy pin (thanks to `@mvdbeek`_). `Pull Request 1674`_
+* Behavior change: add ``--use_cache`` to ``planemo run``, which now reuses
+  cached job results by default (#1665) (thanks to `@jmchilton`_). `Pull
+  Request 1666`_
 
 
 ---------------------
@@ -2403,6 +2421,17 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1657: https://github.com/galaxyproject/planemo/pull/1657
+.. _Pull Request 1659: https://github.com/galaxyproject/planemo/pull/1659
+.. _Pull Request 1660: https://github.com/galaxyproject/planemo/pull/1660
+.. _Pull Request 1661: https://github.com/galaxyproject/planemo/pull/1661
+.. _Pull Request 1663: https://github.com/galaxyproject/planemo/pull/1663
+.. _Pull Request 1664: https://github.com/galaxyproject/planemo/pull/1664
+.. _Pull Request 1666: https://github.com/galaxyproject/planemo/pull/1666
+.. _Pull Request 1669: https://github.com/galaxyproject/planemo/pull/1669
+.. _Pull Request 1670: https://github.com/galaxyproject/planemo/pull/1670
+.. _Pull Request 1673: https://github.com/galaxyproject/planemo/pull/1673
+.. _Pull Request 1674: https://github.com/galaxyproject/planemo/pull/1674
 .. _Pull Request 1653: https://github.com/galaxyproject/planemo/pull/1653
 .. _Pull Request 1648: https://github.com/galaxyproject/planemo/pull/1648
 .. _Pull Request 1655: https://github.com/galaxyproject/planemo/pull/1655
