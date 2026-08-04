@@ -6,6 +6,11 @@ History
 .. to_doc
 
 ---------------------
+0.75.47.dev0
+---------------------
+
+
+---------------------
 0.75.46 (2026-08-04)
 ---------------------
 * Skip bot authors in bootstrap_history acknowledgements (thanks to
