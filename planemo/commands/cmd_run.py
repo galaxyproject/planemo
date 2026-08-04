@@ -30,6 +30,8 @@ from planemo.test.results import StructuredData
 @options.run_output_directory_option()
 @options.run_output_json_option()
 @options.run_download_outputs_option()
+@options.run_use_cache_option()
+@options.cwltool_cache_directory_option()
 @options.run_export_option()
 @options.invocation_export_format_arg()
 @options.engine_options()
@@ -40,6 +42,17 @@ def cli(ctx, runnable_identifier, job_path, **kwds):
 
     \b
         % planemo run cat1-tool.cwl cat-job.json
+
+    Job results are reused from a cache by default. A tool that exits
+    successfully but produces bad output will have that bad output reused, so
+    ``--no_use_cache`` is the escape hatch when a run is meant to actually
+    re-compute.
+
+    With the cwltool engine this maps onto cwltool's ``--cachedir``, which caches
+    individual computed steps under ``--cwltool_cache_directory``. Planemo never
+    prunes that directory, and cwltool leaves scratch directories beside it if a
+    run crashes. With the Galaxy engines, see "Caching job results" in the
+    Planemo documentation for what can actually be reused.
     """
     runnable = for_runnable_identifier(ctx, runnable_identifier, kwds)
     is_cwl = runnable.type.is_cwl_artifact

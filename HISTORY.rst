@@ -8,6 +8,7 @@ History
 ---------------------
 0.75.46.dev0
 ---------------------
+* Behavior change: add ``--use_cache`` to ``planemo run``, which now reuses cached job results by default (#1665).
 
 
 ---------------------

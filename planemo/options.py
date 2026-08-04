@@ -330,6 +330,24 @@ def run_use_cache_option():
     )
 
 
+def cwltool_cache_directory_option():
+    return planemo_option(
+        "--cwltool_cache_directory",
+        type=click.Path(
+            file_okay=False,
+            dir_okay=True,
+            resolve_path=True,
+        ),
+        default=None,
+        use_global_config=True,
+        use_env_var=True,
+        help=(
+            "Directory the cwltool engine caches computed steps in when --use_cache "
+            "is enabled (defaults to a directory in the planemo workspace)."
+        ),
+    )
+
+
 def run_output_json_option():
     return planemo_option(
         "output_json",

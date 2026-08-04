@@ -18,6 +18,17 @@ Planemo command for running tools and jobs.
 
     % planemo run cat1-tool.cwl cat-job.json
 
+Job results are reused from a cache by default. A tool that exits
+successfully but produces bad output will have that bad output reused, so
+``--no_use_cache`` is the escape hatch when a run is meant to actually
+re-compute.
+
+With the cwltool engine this maps onto cwltool's ``--cachedir``, which caches
+individual computed steps under ``--cwltool_cache_directory``. Planemo never
+prunes that directory, and cwltool leaves scratch directories beside it if a
+run crashes. With the Galaxy engines, see "Caching job results" in the
+Planemo documentation for what can actually be reused.
+
 **Options**::
 
 
@@ -154,12 +165,36 @@ Planemo command for running tools and jobs.
                                       local singularity postgres.
       --shed_tool_conf TEXT           Location of shed tools conf file for Galaxy.
       --shed_tool_path TEXT           Location of shed tools directory for Galaxy.
+      --shed_tool_data_table_config TEXT
+                                      Location of the shed tool data table config
+                                      file for Galaxy (records data tables
+                                      registered by shed-installed repositories).
+      --shed_data_manager_config TEXT
+                                      Location of the shed data manager config file
+                                      for Galaxy.
+      --shed_data_dir DIRECTORY       Persistent base directory for shed-install
+                                      state (local Galaxy engine). Seeds defaults
+                                      for --shed_tool_conf, --shed_tool_path,
+                                      --shed_tool_data_table_config and
+                                      --shed_data_manager_config so shed installs
+                                      (tools and their data tables) survive Galaxy
+                                      restarts. Individual options still override.
       --galaxy_single_user / --no_galaxy_single_user
                                       By default Planemo will configure Galaxy to
                                       run in single-user mode where there is just
                                       one user and this user is automatically logged
                                       it. Use --no_galaxy_single_user to prevent
                                       Galaxy from running this way.
+      --tool_evaluation_strategy [local|remote]
+                                      Determines which process will evaluate the
+                                      tool command line. If set to 'local' the tool
+                                      command line will be templated in the job
+                                      handler process. If set to 'remote' the tool
+                                      command line will be built as part of the
+                                      submitted job (beta). Setting this to 'remote'
+                                      will also implicitly set metadata_strategy to
+                                      'extended', which is required for remote tool
+                                      evaluation.
       --cwl                           Configure Galaxy for use with CWL tool. (this
                                       option is experimental and will be replaced
                                       when and if CWL support is merged into
@@ -179,6 +214,11 @@ Planemo command for running tools and jobs.
                                       After tool or workflow runs are complete,
                                       download the output files to the location
                                       specified by --output_directory.
+      --use_cache / --no_use_cache    Use cached job results if available.
+      --cwltool_cache_directory DIRECTORY
+                                      Directory the cwltool engine caches computed
+                                      steps in when --use_cache is enabled (defaults
+                                      to a directory in the planemo workspace).
       --export_invocation PATH        Export workflow invocation as archive to
                                       specified path.
       --engine [galaxy|docker_galaxy|cwltool|toil|external_galaxy]

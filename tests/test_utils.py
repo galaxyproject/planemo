@@ -57,6 +57,7 @@ TEST_TOOLS_DIR = os.path.join(TEST_DATA_DIR, "tools")
 PROJECT_TEMPLATES_DIR = os.path.join(TEST_DIR, os.path.pardir, "project_templates")
 CWL_DRAFT3_DIR = os.path.join(PROJECT_TEMPLATES_DIR, "cwl_draft3_spec")
 NON_ZERO_EXIT_CODE = object()
+CWLTOOL_CACHE_ENV_PROP = "PLANEMO_CWLTOOL_CACHE_DIRECTORY"
 
 
 class MarkGenerator:
@@ -79,6 +80,11 @@ class CliTestCase(TestCase):
         self._cleanup_hooks: List[Callable] = []
         self._port = None
         os.environ[PLANEMO_CONFIG_ENV_PROP] = self.planemo_yaml_path
+        # The whole workspace cannot be isolated - it caches the Galaxy repository and
+        # virtualenv shared by the Galaxy tests. Isolate the cwltool cache though, else
+        # repeated local test runs replay cached results instead of running cwltool.
+        self._old_cwltool_cache = os.environ.get(CWLTOOL_CACHE_ENV_PROP, None)
+        os.environ[CWLTOOL_CACHE_ENV_PROP] = os.path.join(self._home, "cwltool_cache")
 
     def tearDown(self):  # noqa
         for cleanup_hook in self._cleanup_hooks:
@@ -92,6 +98,10 @@ class CliTestCase(TestCase):
             os.environ[PLANEMO_CONFIG_ENV_PROP] = self._old_config
         else:
             del os.environ[PLANEMO_CONFIG_ENV_PROP]
+        if self._old_cwltool_cache is not None:
+            os.environ[CWLTOOL_CACHE_ENV_PROP] = self._old_cwltool_cache
+        else:
+            del os.environ[CWLTOOL_CACHE_ENV_PROP]
         safe_rmtree(self._home)
 
     @property
