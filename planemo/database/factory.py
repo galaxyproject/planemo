@@ -37,4 +37,19 @@ def create_database_source(profile_directory: Optional[str] = None, **kwds) -> D
         raise Exception("Unknown database type [%s]." % database_type)
 
 
-__all__ = ("create_database_source",)
+def started_database_source(profile_directory: Optional[str] = None, **kwds) -> DatabaseSource:
+    """Return a running :class:`planemo.database.interface.DatabaseSource` for configuration.
+
+    Callers that administer databases rather than run a Galaxy against one need the
+    server up but must not shut it down again - ``postgres_docker`` runs its container
+    with ``--rm``, so stopping it would discard the database that was just created.
+    """
+    database_source = create_database_source(profile_directory=profile_directory, **kwds)
+    database_source.start()
+    return database_source
+
+
+__all__ = (
+    "create_database_source",
+    "started_database_source",
+)

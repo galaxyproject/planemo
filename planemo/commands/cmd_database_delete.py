@@ -4,7 +4,7 @@ import click
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.database import create_database_source
+from planemo.database import started_database_source
 
 
 @click.command("database_delete")
@@ -53,4 +53,4 @@ def cli(ctx, identifier, **kwds):
     \b
         *:*:*:postgres:<postgres_password>
     """
-    create_database_source(**kwds).delete_database(identifier)
+    started_database_source(**kwds).delete_database(identifier)

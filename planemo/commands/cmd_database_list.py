@@ -4,7 +4,7 @@ import click
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.database import create_database_source
+from planemo.database import started_database_source
 
 
 @click.command("database_list")
@@ -52,4 +52,4 @@ def cli(ctx, **kwds):
     \b
         *:*:*:postgres:<postgres_password>
     """
-    print(create_database_source(**kwds).list_databases())
+    print(started_database_source(**kwds).list_databases())

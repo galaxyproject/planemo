@@ -5,6 +5,12 @@ should not be used for production data - and should not even be connnected
 to a production database server.
 """
 
-from .factory import create_database_source
+from .factory import (
+    create_database_source,
+    started_database_source,
+)
 
-__all__ = ("create_database_source",)
+__all__ = (
+    "create_database_source",
+    "started_database_source",
+)
