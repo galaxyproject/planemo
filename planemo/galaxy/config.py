@@ -1218,6 +1218,10 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
 
     @property
     def service_log_contents(self) -> Dict[str, str]:
+        if self.use_multiprocessing:
+            # Multiprocessing services inherit the foreground process's
+            # stdout/stderr, which start_daemon redirects to the main log.
+            return {}
         if not self.env.get("GRAVITY_STATE_DIR"):
             return {}
         return tail_log_directory(os.path.join(self.gravity_state_dir, "log"))

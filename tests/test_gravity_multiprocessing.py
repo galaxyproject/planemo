@@ -127,7 +127,9 @@ import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 record_path = os.environ["TEST_RECORD"]
-child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(300)"])
+child = subprocess.Popen(
+    [sys.executable, "-c", 'import time; print("modern child output", flush=True); time.sleep(300)']
+)
 with open(record_path, "w") as record:
     json.dump({
         "args": sys.argv[1:],
@@ -304,6 +306,8 @@ def test_multiprocessing_daemon_uses_foreground_process_and_cleans_group(tmp_pat
         assert record["env"]["GALAXY_LOG"] == config.log_file
         assert record["env"]["SUPERVISORD_SOCKET"] is None
         assert "modern daemon started" in config.log_contents
+        assert "modern child output" in config.log_contents
+        assert config.service_log_contents == {}
         assert os.path.islink(external_pid)
         assert int(external_pid.read_text()) == config._daemon_process.pid
         assert _pid_exists(record["pid"])
