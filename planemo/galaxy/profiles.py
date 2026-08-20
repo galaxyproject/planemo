@@ -43,7 +43,7 @@ def delete_profile(ctx, profile_name, **kwds):
         database_type = profile_options.get("database_type")
         kwds["database_type"] = database_type
         if database_type != "sqlite":
-            database_source = create_database_source(**kwds)
+            database_source = create_database_source(profile_directory=profile_directory, **kwds)
             database_identifier = _profile_to_database_identifier(profile_name)
             database_source.delete_database(
                 database_identifier,
@@ -97,7 +97,7 @@ def _create_profile_local(ctx, profile_directory, profile_name, kwds):
             database_type = "sqlite"
 
     if database_type != "sqlite":
-        database_source = create_database_source(**kwds)
+        database_source = create_database_source(profile_directory=profile_directory, **kwds)
         database_identifier = _profile_to_database_identifier(profile_name)
         try:
             database_source.create_database(
