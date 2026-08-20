@@ -380,6 +380,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             galaxy_root = config_join("galaxy-dev")
         if not os.path.isdir(galaxy_root):
             _install_galaxy(ctx, galaxy_root, install_env, kwds)
+        galaxy_version = get_galaxy_version(galaxy_root)
 
         server_name = "main"
         # Once we don't have to support earlier than 18.01 - try putting these files
@@ -391,7 +392,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         kwds["all_in_one_handling"] = True
         _handle_job_config_file(config_directory, server_name, test_data_dir, all_tool_paths, kwds)
         _handle_file_sources(config_directory, test_data_dir, kwds)
-        _handle_refgenie_config(config_directory, galaxy_root, kwds)
+        _handle_refgenie_config(config_directory, galaxy_root, kwds, galaxy_version)
         _handle_vault_config(config_directory, kwds)
         file_path = kwds.get("file_path") or config_join("files")
         _ensure_directory(file_path)
@@ -508,6 +509,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             kwds=kwds,
             template_args=template_args,
             config_join=config_join,
+            galaxy_version=galaxy_version,
         )
 
         _write_tool_conf(ctx, all_tool_paths, tool_conf)
@@ -532,6 +534,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             runnables,
             galaxy_root,
             kwds,
+            galaxy_version,
         )
 
 
@@ -545,8 +548,9 @@ def _init_interactivetools_db(path):
     conn.close()
 
 
-def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, config_join):
-    if get_galaxy_major_version(galaxy_root) < parse_version("22.01"):
+def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, config_join, galaxy_version=None):
+    galaxy_version = galaxy_version or get_galaxy_version(galaxy_root)
+    if get_galaxy_major_version(galaxy_version=galaxy_version) < parse_version("22.01"):
         # Legacy .ini setup
         env["GALAXY_CONFIG_FILE"] = config_join("galaxy.ini")
         web_config = _sub(WEB_SERVER_CONFIG_TEMPLATE, template_args)
@@ -554,7 +558,7 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
     else:
         env["GALAXY_CONFIG_FILE"] = config_join("galaxy.yml")
         env["GRAVITY_STATE_DIR"] = config_join("gravity")
-        use_multiprocessing = gravity_supports_multiprocessing(galaxy_root)
+        use_multiprocessing = gravity_supports_multiprocessing(galaxy_version=galaxy_version)
         if use_multiprocessing:
             env.pop("SUPERVISORD_SOCKET", None)
         else:
@@ -614,9 +618,10 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
         )
 
 
-def gravity_supports_multiprocessing(galaxy_root):
+def gravity_supports_multiprocessing(galaxy_root=None, galaxy_version=None):
     """Return whether Galaxy includes a multiprocessing-capable Gravity."""
-    return get_galaxy_version(galaxy_root) >= MINIMUM_MULTIPROCESSING_GALAXY_VERSION
+    galaxy_version = galaxy_version or get_galaxy_version(galaxy_root)
+    return galaxy_version >= MINIMUM_MULTIPROCESSING_GALAXY_VERSION
 
 
 def _expand_paths(galaxy_root: Optional[str], extra_tools: List[str]) -> List[str]:
@@ -641,15 +646,15 @@ def get_galaxy_version(galaxy_root):
     return parse_version(version)
 
 
-def get_galaxy_major_version(galaxy_root):
-    version = get_galaxy_version(galaxy_root)
+def get_galaxy_major_version(galaxy_root=None, galaxy_version=None):
+    version = galaxy_version or get_galaxy_version(galaxy_root)
     return parse_version(f"{version.major}.{version.minor}")
 
 
-def get_refgenie_config(galaxy_root, refgenie_dir):
+def get_refgenie_config(galaxy_root, refgenie_dir, galaxy_version=None):
     config_version = 0.4
     if galaxy_root:
-        version_major = get_galaxy_major_version(galaxy_root=galaxy_root)
+        version_major = get_galaxy_major_version(galaxy_root=galaxy_root, galaxy_version=galaxy_version)
         if version_major < parse_version("21.09"):
             config_version = 0.3
     return REFGENIE_CONFIG_TEMPLATE % (config_version, refgenie_dir)
@@ -1184,6 +1189,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         runnables,
         galaxy_root,
         kwds,
+        galaxy_version=None,
     ):
         super().__init__(
             ctx,
@@ -1198,7 +1204,8 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         )
         self.galaxy_root = galaxy_root
         self._virtual_env_locs = []
-        self.use_multiprocessing = gravity_supports_multiprocessing(galaxy_root)
+        self.galaxy_version = galaxy_version or get_galaxy_version(galaxy_root)
+        self.use_multiprocessing = gravity_supports_multiprocessing(galaxy_version=self.galaxy_version)
         self._daemon_process = None
         self._daemon_control_fd = None
 
@@ -1641,11 +1648,13 @@ def _handle_file_sources(config_directory, test_data_dir, kwds):
     kwds["file_sources_config_file"] = file_sources_conf
 
 
-def _handle_refgenie_config(config_directory, galaxy_root, kwds):
+def _handle_refgenie_config(config_directory, galaxy_root, kwds, galaxy_version=None):
     refgenie_dir = os.path.join(config_directory, "refgenie")
     _ensure_directory(refgenie_dir)
     refgenie_config_file = os.path.join(refgenie_dir, "genome_config.yaml")
-    refgenie_config = get_refgenie_config(galaxy_root=galaxy_root, refgenie_dir=refgenie_dir)
+    refgenie_config = get_refgenie_config(
+        galaxy_root=galaxy_root, refgenie_dir=refgenie_dir, galaxy_version=galaxy_version
+    )
     with open(refgenie_config_file, "w") as fh:
         fh.write(refgenie_config)
     kwds["refgenie_config_file"] = refgenie_config_file
