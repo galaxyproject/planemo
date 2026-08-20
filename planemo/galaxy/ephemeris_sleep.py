@@ -87,7 +87,7 @@ def sleep(galaxy_url, verbose=False, timeout=0, sleep_condition=None, startup_pr
                 if verbose:
                     sys.stdout.write("[%02d] No valid json returned... %s\n" % (count, result.__str__()))
                     sys.stdout.flush()
-        except requests.exceptions.RequestException as e:
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             if verbose:
                 sys.stdout.write("[%02d] Galaxy not up yet... %s\n" % (count, unicodify(e)[:100]))
                 sys.stdout.flush()

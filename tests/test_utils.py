@@ -60,6 +60,11 @@ NON_ZERO_EXIT_CODE = object()
 CWLTOOL_CACHE_ENV_PROP = "PLANEMO_CWLTOOL_CACHE_DIRECTORY"
 
 
+def test_sleep_fails_immediately_for_invalid_url():
+    with pytest.raises(requests_lib.exceptions.InvalidURL):
+        sleep("http://::1:9090")
+
+
 class MarkGenerator:
     def __getattr__(self, name):
         return getattr(pytest.mark, name)
