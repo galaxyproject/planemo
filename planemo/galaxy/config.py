@@ -469,45 +469,45 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             )
         )
         _handle_container_resolution(ctx, kwds, properties)
-        # Use a separate SQLite database for the Celery message broker to avoid
-        # write lock contention between gunicorn and Celery workers during startup.
-        amqp_broker_path = config_join("celery_broker.sqlite")
-        properties["amqp_internal_connection"] = f"sqlalchemy+sqlite:///{amqp_broker_path}"
-        if kwds.get("mulled_containers", False):
-            properties["mulled_channels"] = kwds.get("conda_ensure_channels", "")
-
-        _handle_kwd_overrides(properties, kwds)
-
-        # TODO: consider following property
-        # watch_tool = False
-        # datatypes_config_file = config/datatypes_conf.xml
-        # welcome_url = /static/welcome.html
-        # logo_url = /
-        # sanitize_all_html = True
-        # serve_xss_vulnerable_mimetypes = False
-        # track_jobs_in_database = None
-        # retry_job_output_collection = 0
-
-        env = _build_env_for_galaxy(properties, template_args)
-        env.update(install_env)
-        env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
-        # Following are needed in 18.01 to prevent Galaxy from changing log and pid.
-        # https://github.com/galaxyproject/planemo/issues/788
-        env["GALAXY_LOG"] = log_file
-        env["GALAXY_PID"] = pid_file
-        _write_tool_conf(ctx, all_tool_paths, tool_conf)
-        write_file(empty_tool_conf, EMPTY_TOOL_CONF_TEMPLATE)
-
-        shed_tool_conf_contents = _sub(SHED_TOOL_CONF_TEMPLATE, template_args)
-        _write_shed_config_files(
-            shed_tool_conf,
-            shed_tool_conf_contents,
-            shed_tool_data_table_config,
-            shed_data_manager_config_file,
-        )
-
         with _database_connection(database_location, **kwds) as database_connection:
             properties["database_connection"] = database_connection
+            # Use a separate SQLite database for the Celery message broker to avoid
+            # write lock contention between gunicorn and Celery workers during startup.
+            amqp_broker_path = config_join("celery_broker.sqlite")
+            properties["amqp_internal_connection"] = f"sqlalchemy+sqlite:///{amqp_broker_path}"
+            if kwds.get("mulled_containers", False):
+                properties["mulled_channels"] = kwds.get("conda_ensure_channels", "")
+
+            _handle_kwd_overrides(properties, kwds)
+
+            # TODO: consider following property
+            # watch_tool = False
+            # datatypes_config_file = config/datatypes_conf.xml
+            # welcome_url = /static/welcome.html
+            # logo_url = /
+            # sanitize_all_html = True
+            # serve_xss_vulnerable_mimetypes = False
+            # track_jobs_in_database = None
+            # retry_job_output_collection = 0
+
+            env = _build_env_for_galaxy(properties, template_args)
+            env.update(install_env)
+            env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
+            # Following are needed in 18.01 to prevent Galaxy from changing log and pid.
+            # https://github.com/galaxyproject/planemo/issues/788
+            env["GALAXY_LOG"] = log_file
+            env["GALAXY_PID"] = pid_file
+            _write_tool_conf(ctx, all_tool_paths, tool_conf)
+            write_file(empty_tool_conf, EMPTY_TOOL_CONF_TEMPLATE)
+
+            shed_tool_conf_contents = _sub(SHED_TOOL_CONF_TEMPLATE, template_args)
+            _write_shed_config_files(
+                shed_tool_conf,
+                shed_tool_conf_contents,
+                shed_tool_data_table_config,
+                shed_data_manager_config_file,
+            )
+
             write_galaxy_config(
                 galaxy_root=galaxy_root,
                 properties=properties,
