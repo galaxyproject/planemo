@@ -166,6 +166,13 @@ CWL_GALAXY_SOURCE = "https://github.com/common-workflow-language/galaxy"
 
 DATABASE_LOCATION_TEMPLATE = "sqlite:///%s?isolation_level=IMMEDIATE"
 
+# Database types ``_database_connection`` will bring up a server for. "auto" is
+# deliberately not listed: a run that never named a backend stays on the sqlite
+# file in its config directory. Adding "auto" here would make planemo prefer a
+# local postgres whenever psql happens to be on PATH, which is a policy call
+# rather than a bug fix - see the discussion on #1679.
+MANAGED_DATABASE_TYPES = ("postgres", "postgres_docker", "postgres_singularity")
+
 COMMAND_STARTUP_COMMAND = "./scripts/common_startup.sh ${COMMON_STARTUP_ARGS}"
 
 CLEANUP_IGNORE_ERRORS = True
@@ -1271,7 +1278,17 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
 
 @contextlib.contextmanager
 def _database_connection(database_location, **kwds):
-    if kwds.get("database_type") != "sqlite":
+    """Yield the ``database_connection`` a managed Galaxy should run against.
+
+    An explicit connection string wins - it is what a profile stores once it has
+    resolved a database of its own. Otherwise only an explicitly named postgres
+    backend is worth standing a server up for; everything else gets the sqlite
+    file in the config directory.
+    """
+    database_connection = kwds.get("database_connection")
+    if database_connection:
+        yield database_connection
+    elif kwds.get("database_type") in MANAGED_DATABASE_TYPES:
         database_source = create_database_source(**kwds)
         try:
             database_source.start()
