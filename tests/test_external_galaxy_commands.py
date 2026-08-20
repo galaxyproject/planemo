@@ -96,9 +96,7 @@ class ExternalGalaxyCommandsTestCase(CliTestCase):
                 assert "Run successfully executed" in result.output
                 result = self._check_exit_code(list_invocs_cmd)
                 assert "2 invocations found." in result.output
-                assert (
-                    "1 jobs ok" in result.output or '"ok": 1' in result.output
-                )  # so it passes regardless if tabulate is installed or not
+                assert "1 jobs ok" in result.output
 
                 # test rerun
                 invocation_id = config.user_gi.workflows.get_invocations(wfid)[0]["id"]
