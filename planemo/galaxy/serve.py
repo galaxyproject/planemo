@@ -10,7 +10,10 @@ from planemo import (
 )
 from .config import galaxy_config
 from .ephemeris_sleep import sleep
-from .run import run_galaxy_command
+from .run import (
+    log_galaxy_command,
+    run_galaxy_command,
+)
 
 
 @contextlib.contextmanager
@@ -29,7 +32,7 @@ def serve(ctx, runnables=None, **kwds):
 def _start_galaxy(ctx, config, command, daemon):
     action = "Starting Galaxy"
     if daemon and getattr(config, "use_multiprocessing", False):
-        ctx.vlog(f"{action} with command [{command}]")
+        log_galaxy_command(ctx, command, config.env, action)
         startup_process = config.start_daemon(command)
         return startup_process, startup_process.poll()
     exit_code = run_galaxy_command(ctx, command, config.env, action)

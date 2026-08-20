@@ -281,11 +281,20 @@ def _wait_for_json(path):
     raise AssertionError(f"Valid JSON was not written to {path}")
 
 
-def test_multiprocessing_daemon_uses_foreground_process_and_cleans_group(tmp_path, monkeypatch):
+def _wait_for_log(config, text):
+    for _ in range(100):
+        if text in config.log_contents:
+            return
+        time.sleep(0.05)
+    raise AssertionError(f"{text!r} was not written to {config.log_file}")
+
+
+def test_multiprocessing_daemon_uses_foreground_process_and_cleans_group(tmp_path, monkeypatch, capsys):
     galaxy_root = _make_galaxy_root(tmp_path, "25.0.1")
     _write_executable(galaxy_root / "run.sh", MODERN_RUN_SH)
     port = network_util.get_free_port()
     config = _make_local_config(galaxy_root, port)
+    config._ctx.verbose = True
     config.env["TEST_PORT"] = str(port)
     external_pid = tmp_path / "external.pid"
     monkeypatch.setattr(serve_module, "galaxy_config", lambda *args, **kwds: _configured_galaxy(config))
@@ -299,6 +308,8 @@ def test_multiprocessing_daemon_uses_foreground_process_and_cleans_group(tmp_pat
         skip_venv=True,
         galaxy_startup_timeout=200,
     ):
+        captured = capsys.readouterr()
+        config._ctx.verbose = False
         with open(config.env["TEST_RECORD"]) as record_file:
             record = json.load(record_file)
         assert "--daemon" not in record["args"]
@@ -306,8 +317,10 @@ def test_multiprocessing_daemon_uses_foreground_process_and_cleans_group(tmp_pat
         assert record["env"]["GALAXY_LOG"] == config.log_file
         assert record["env"]["SUPERVISORD_SOCKET"] is None
         assert "modern daemon started" in config.log_contents
-        assert "modern child output" in config.log_contents
+        _wait_for_log(config, "modern child output")
         assert config.service_log_contents == {}
+        assert "Starting Galaxy with command [" in captured.out
+        assert f'GALAXY_LOG="{config.log_file}"' in captured.err
         assert os.path.islink(external_pid)
         assert int(external_pid.read_text()) == config._daemon_process.pid
         assert _pid_exists(record["pid"])
