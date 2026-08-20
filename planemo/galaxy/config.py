@@ -9,6 +9,7 @@ import os
 import random
 import shlex
 import shutil
+import signal
 import sqlite3
 import subprocess
 import sys
@@ -57,7 +58,6 @@ from planemo.galaxy.workflows import (
 from planemo.io import (
     communicate,
     kill_pid_file,
-    kill_process_group,
     shell,
     shell_join,
     stop_gravity,
@@ -1236,7 +1236,11 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
                 os.close(self._daemon_control_fd)
                 self._daemon_control_fd = None
             if self._daemon_process is not None:
-                kill_process_group(self._daemon_process)
+                try:
+                    self._daemon_process.wait(timeout=2)
+                except subprocess.TimeoutExpired:
+                    self._daemon_process.send_signal(signal.SIGTERM)
+                    self._daemon_process.wait(timeout=2)
             else:
                 kill_pid_file(self.pid_file)
         elif self.env.get("GRAVITY_STATE_DIR"):

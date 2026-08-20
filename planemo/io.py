@@ -247,38 +247,6 @@ def kill_posix(pid: int):
                 return
 
 
-def kill_process_group(process: subprocess.Popen):
-    """Terminate a subprocess session and reap its group leader."""
-    # start_new_session=True makes the subprocess PID its process group ID.
-    # Keep using that known ID even if the leader has already exited, since
-    # one of its children may still be running in the group.
-    process_group = process.pid
-
-    for process_signal in (signal.SIGTERM, signal.SIGKILL):
-        try:
-            os.killpg(process_group, process_signal)
-        except ProcessLookupError:
-            break
-        try:
-            process.wait(timeout=1)
-        except subprocess.TimeoutExpired:
-            pass
-        if process_signal == signal.SIGTERM:
-            deadline = time.monotonic() + 1
-            while time.monotonic() < deadline:
-                try:
-                    os.killpg(process_group, 0)
-                except ProcessLookupError:
-                    break
-                time.sleep(0.05)
-            else:
-                continue
-            break
-
-    if process.poll() is None:
-        process.wait()
-
-
 @contextlib.contextmanager
 def conditionally_captured_io(capture, tee=False):
     """If capture is True, capture stdout and stderr for logging."""

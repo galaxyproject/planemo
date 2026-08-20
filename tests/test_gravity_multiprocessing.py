@@ -166,6 +166,29 @@ server.serve_forever()
 """
 
 
+STUBBORN_RUN_SH = r"""#!/usr/bin/env python3
+import json
+import os
+import signal
+import subprocess
+import sys
+import time
+
+child = subprocess.Popen(
+    [
+        sys.executable,
+        "-c",
+        "import signal, time; signal.signal(signal.SIGTERM, signal.SIG_IGN); time.sleep(300)",
+    ]
+)
+with open(os.environ["TEST_RECORD"], "w") as record:
+    json.dump({"child_pid": child.pid, "pid": os.getpid()}, record)
+signal.signal(signal.SIGTERM, signal.SIG_IGN)
+while True:
+    time.sleep(60)
+"""
+
+
 LEGACY_RUN_SH = r"""#!/usr/bin/env python3
 import json
 import os
@@ -245,6 +268,15 @@ def _wait_for_path(path):
             return
         time.sleep(0.05)
     raise AssertionError(f"Path {path} was not created")
+
+
+def _wait_for_json(path):
+    for _ in range(100):
+        try:
+            return json.loads(path.read_text())
+        except (FileNotFoundError, json.JSONDecodeError):
+            time.sleep(0.05)
+    raise AssertionError(f"Valid JSON was not written to {path}")
 
 
 def test_multiprocessing_daemon_uses_foreground_process_and_cleans_group(tmp_path, monkeypatch):
@@ -428,12 +460,46 @@ def test_sigkill_of_planemo_cleans_multiprocessing_process_group(tmp_path):
     monitor_pid = None
     try:
         _wait_for_path(ready_path)
-        _wait_for_path(record_path)
         monitor_pid = int(ready_path.read_text())
-        record = json.loads(record_path.read_text())
+        record = _wait_for_json(record_path)
         assert _pid_exists(monitor_pid)
         assert _pid_exists(record["pid"])
         assert _pid_exists(record["child_pid"])
+
+        os.kill(parent.pid, signal.SIGKILL)
+        parent.wait()
+
+        _wait_for_pid_exit(monitor_pid)
+        _wait_for_pid_exit(record["pid"])
+        _wait_for_pid_exit(record["child_pid"])
+    finally:
+        if parent.poll() is None:
+            parent.kill()
+            parent.wait()
+        if monitor_pid is not None and _pid_exists(monitor_pid):
+            os.killpg(monitor_pid, signal.SIGKILL)
+
+
+def test_monitor_escalates_for_sigterm_ignoring_process_group(tmp_path):
+    galaxy_root = _make_galaxy_root(tmp_path, "25.0.1")
+    _write_executable(galaxy_root / "run.sh", STUBBORN_RUN_SH)
+    config_directory = galaxy_root / "planemo-config"
+    config_directory.mkdir()
+    port = network_util.get_free_port()
+    ready_path = tmp_path / "parent-ready"
+    record_path = galaxy_root / "record.json"
+    repository_root = os.path.dirname(os.path.dirname(__file__))
+    environ = os.environ.copy()
+    environ["PYTHONPATH"] = repository_root
+    parent = subprocess.Popen(
+        [sys.executable, "-c", PARENT_PROCESS, str(galaxy_root), str(config_directory), str(port), str(ready_path)],
+        env=environ,
+    )
+    monitor_pid = None
+    try:
+        _wait_for_path(ready_path)
+        monitor_pid = int(ready_path.read_text())
+        record = _wait_for_json(record_path)
 
         os.kill(parent.pid, signal.SIGKILL)
         parent.wait()
