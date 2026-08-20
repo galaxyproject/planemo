@@ -26,6 +26,31 @@ def serve(ctx, runnables=None, **kwds):
         raise
 
 
+def _start_galaxy(ctx, config, command, daemon):
+    action = "Starting Galaxy"
+    if daemon and getattr(config, "use_multiprocessing", False):
+        ctx.vlog(f"{action} with command [{command}]")
+        startup_process = config.start_daemon(command)
+        return startup_process, startup_process.poll()
+    exit_code = run_galaxy_command(ctx, command, config.env, action)
+    return None, exit_code
+
+
+def _check_startup_command(config, startup_process, exit_code):
+    if startup_process is not None and exit_code is not None:
+        message = (
+            f"Galaxy process exited with code {startup_process.returncode} during startup. "
+            f"Galaxy log: [{config.log_contents}]"
+        )
+        io.warn(message)
+        config.kill()
+        raise Exception(message)
+    if exit_code:
+        message = "Problem running Galaxy command [%s]." % config.log_contents
+        io.warn(message)
+        raise Exception(message)
+
+
 @contextlib.contextmanager
 def _serve(ctx, runnables, **kwds):
     engine = kwds.get("engine", "galaxy")
@@ -43,24 +68,29 @@ def _serve(ctx, runnables, **kwds):
 
     with galaxy_config(ctx, runnables, **kwds) as config:
         cmd = config.startup_command(ctx, **kwds)
-        action = "Starting Galaxy"
-        exit_code = run_galaxy_command(
-            ctx,
-            cmd,
-            config.env,
-            action,
-        )
-        if exit_code:
-            message = "Problem running Galaxy command [%s]." % config.log_contents
-            io.warn(message)
-            raise Exception(message)
+        startup_process, exit_code = _start_galaxy(ctx, config, cmd, daemon)
+        _check_startup_command(config, startup_process, exit_code)
         host = kwds.get("host", "127.0.0.1")
 
         startup_timeout = kwds.get("galaxy_startup_timeout", 900)
         galaxy_url = f"http://{host}:{port}"
-        galaxy_alive = sleep(galaxy_url, verbose=ctx.verbose, timeout=startup_timeout)
+        galaxy_alive = sleep(
+            galaxy_url,
+            verbose=ctx.verbose,
+            timeout=startup_timeout,
+            startup_process=startup_process,
+        )
         if not galaxy_alive:
             log_contents = config.log_contents
+            if startup_process is not None and startup_process.poll() is not None:
+                message = (
+                    f"Galaxy process exited with code {startup_process.returncode} during startup. "
+                    f"Galaxy log: [{log_contents}]"
+                )
+                config.kill()
+                raise Exception(message)
+            if startup_process is not None:
+                config.kill()
             raise Exception(
                 f"Attempted to serve Galaxy at {galaxy_url}, but it failed to start in {startup_timeout} seconds."
                 f"\nGalaxy log contents:\n{log_contents}"
@@ -72,7 +102,15 @@ def _serve(ctx, runnables, **kwds):
                 os.symlink(real_pid_file, kwds["pid_file"])
             else:
                 io.warn("Can't find Galaxy pid file [%s] to link" % real_pid_file)
-        yield config
+        try:
+            yield config
+        except BaseException:
+            if startup_process is not None:
+                config.kill()
+            raise
+        else:
+            if startup_process is not None:
+                config.detach_daemon()
 
 
 @contextlib.contextmanager

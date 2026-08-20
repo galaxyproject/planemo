@@ -10,6 +10,8 @@ import random
 import shlex
 import shutil
 import sqlite3
+import subprocess
+import sys
 import threading
 import time
 from collections import deque
@@ -55,6 +57,7 @@ from planemo.galaxy.workflows import (
 from planemo.io import (
     communicate,
     kill_pid_file,
+    kill_process_group,
     shell,
     shell_join,
     stop_gravity,
@@ -130,6 +133,8 @@ EMPTY_JOB_METRICS_TEMPLATE = """<?xml version="1.0"?>
 <job_metrics>
 </job_metrics>
 """
+
+MINIMUM_MULTIPROCESSING_GALAXY_VERSION = parse_version("25.0.1")
 
 FILE_SOURCES_TEMPLATE = """
 - type: posix
@@ -549,8 +554,12 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
     else:
         env["GALAXY_CONFIG_FILE"] = config_join("galaxy.yml")
         env["GRAVITY_STATE_DIR"] = config_join("gravity")
-        with NamedTemporaryFile(suffix=".sock", delete=True) as nt:
-            env["SUPERVISORD_SOCKET"] = nt.name
+        use_multiprocessing = gravity_supports_multiprocessing(galaxy_root)
+        if use_multiprocessing:
+            env.pop("SUPERVISORD_SOCKET", None)
+        else:
+            with NamedTemporaryFile(suffix=".sock", delete=True) as nt:
+                env["SUPERVISORD_SOCKET"] = nt.name
         host = kwds.get("host", "localhost")
         port = template_args["port"]
         # Use "localhost" for infrastructure URL when bound to 127.0.0.1,
@@ -584,22 +593,30 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
         # and doesn't depend on GALAXY_CONFIG_OVERRIDE_* env vars being propagated
         # by Gravity to gunicorn workers.
         resolved_properties = {k: _sub(v, template_args) if isinstance(v, str) else v for k, v in properties.items()}
+        gravity = {
+            "galaxy_root": galaxy_root,
+            "gunicorn": {
+                "bind": f"{host}:{port}",
+                "preload": False,
+            },
+            "gx_it_proxy": gx_it_proxy_config,
+        }
+        if use_multiprocessing:
+            gravity["process_manager"] = "multiprocessing"
         write_file(
             env["GALAXY_CONFIG_FILE"],
             json.dumps(
                 {
                     "galaxy": resolved_properties,
-                    "gravity": {
-                        "galaxy_root": galaxy_root,
-                        "gunicorn": {
-                            "bind": f"{host}:{port}",
-                            "preload": False,
-                        },
-                        "gx_it_proxy": gx_it_proxy_config,
-                    },
+                    "gravity": gravity,
                 }
             ),
         )
+
+
+def gravity_supports_multiprocessing(galaxy_root):
+    """Return whether Galaxy includes a multiprocessing-capable Gravity."""
+    return get_galaxy_version(galaxy_root) >= MINIMUM_MULTIPROCESSING_GALAXY_VERSION
 
 
 def _expand_paths(galaxy_root: Optional[str], extra_tools: List[str]) -> List[str]:
@@ -612,21 +629,21 @@ def _expand_paths(galaxy_root: Optional[str], extra_tools: List[str]) -> List[st
     return extra_tools
 
 
+def get_galaxy_version(galaxy_root):
+    galaxy_lib = os.path.join(galaxy_root, "lib", "galaxy")
+    version_path = os.path.join(galaxy_lib, "version.py")
+    if not os.path.isfile(version_path):
+        version_path = os.path.join(galaxy_lib, "version", "__init__.py")
+    spec = importlib.util.spec_from_file_location("__galaxy_version", version_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    version = getattr(module, "VERSION", None) or module.VERSION_MAJOR
+    return parse_version(version)
+
+
 def get_galaxy_major_version(galaxy_root):
-    try:
-        spec = importlib.util.spec_from_file_location(
-            "__galaxy_version", os.path.join(galaxy_root, "lib", "galaxy", "version.py")
-        )
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        return parse_version(module.VERSION_MAJOR)
-    except FileNotFoundError:
-        spec = importlib.util.spec_from_file_location(
-            "__galaxy_version", os.path.join(galaxy_root, "lib", "galaxy", "version", "__init__.py")
-        )
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        return parse_version(module.VERSION_MAJOR)
+    version = get_galaxy_version(galaxy_root)
+    return parse_version(f"{version.major}.{version.minor}")
 
 
 def get_refgenie_config(galaxy_root, refgenie_dir):
@@ -1181,6 +1198,9 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         )
         self.galaxy_root = galaxy_root
         self._virtual_env_locs = []
+        self.use_multiprocessing = gravity_supports_multiprocessing(galaxy_root)
+        self._daemon_process = None
+        self._daemon_control_fd = None
 
     @property
     def virtual_env_dir(self):
@@ -1211,13 +1231,68 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
             if exists:
                 with open(self.pid_file) as f:
                     print(f"pid_file contents are [{f.read()}]")
-        if self.env.get("GRAVITY_STATE_DIR"):
+        if self.use_multiprocessing:
+            if self._daemon_control_fd is not None:
+                os.close(self._daemon_control_fd)
+                self._daemon_control_fd = None
+            if self._daemon_process is not None:
+                kill_process_group(self._daemon_process)
+            else:
+                kill_pid_file(self.pid_file)
+        elif self.env.get("GRAVITY_STATE_DIR"):
             stop_gravity(
                 virtual_env=self.virtual_env_dir or os.path.join(self.galaxy_root, ".venv"),
                 gravity_state_dir=self.gravity_state_dir,
                 env=self.env,
             )
-        kill_pid_file(self.pid_file)
+        if not self.use_multiprocessing:
+            kill_pid_file(self.pid_file)
+        else:
+            try:
+                os.unlink(self.pid_file)
+            except FileNotFoundError:
+                pass
+
+    def start_daemon(self, command):
+        """Run foreground Galaxy in a detached session and record its PID."""
+        environ = os.environ.copy()
+        environ.update(self.env)
+        monitor_read_fd, monitor_write_fd = os.pipe()
+        try:
+            with open(self.log_file, "ab", buffering=0) as log:
+                process = subprocess.Popen(
+                    [sys.executable, "-m", "planemo.galaxy.daemon_monitor", str(monitor_read_fd), command],
+                    env=environ,
+                    pass_fds=[monitor_read_fd],
+                    stdout=log,
+                    stderr=subprocess.STDOUT,
+                    start_new_session=True,
+                )
+        except BaseException:
+            os.close(monitor_write_fd)
+            raise
+        finally:
+            os.close(monitor_read_fd)
+        self._daemon_process = process
+        self._daemon_control_fd = monitor_write_fd
+        try:
+            with open(self.pid_file, "w") as pid_file:
+                pid_file.write(str(process.pid))
+        except BaseException:
+            self.kill()
+            raise
+        return process
+
+    def detach_daemon(self):
+        """Allow a successfully launched daemon to outlive Planemo."""
+        if self._daemon_control_fd is not None:
+            try:
+                os.write(self._daemon_control_fd, b"D")
+            except BrokenPipeError:
+                pass
+            finally:
+                os.close(self._daemon_control_fd)
+                self._daemon_control_fd = None
 
     def startup_command(self, ctx, **kwds):
         """Return a shell command used to startup this instance.
@@ -1229,7 +1304,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         # TODO: Allow running dockerized Galaxy here instead.
         setup_venv_command = setup_venv(ctx, kwds, self)
         run_script = f"{shlex.quote(os.path.join(self.galaxy_root, 'run.sh'))} $COMMON_STARTUP_ARGS"
-        if daemon:
+        if daemon and not self.use_multiprocessing:
             run_script += " --daemon"
         else:
             run_script += f" --server-name {shlex.quote(self.server_name)}"
