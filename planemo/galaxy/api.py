@@ -141,18 +141,17 @@ def export_invocation_as_archive(url=None, key=None, user_gi=None, invocation_id
 
 
 def get_workflows(url, key):
-    inv_gi = gi(None, url, key)
-    workflows = inv_gi.workflows.get_workflows()
+    wf_gi = gi(None, url, key)
+    workflows = wf_gi.workflows.get_workflows()
 
-    def get_report_url(workflow):
-        if "source_metadata" in workflow and workflow["source_metadata"] and "url" in workflow["source_metadata"]:
-            return workflow["source_metadata"]["url"]
-        return "N/A"
+    def get_repo_url(workflow):
+        source_metadata = workflow.get("source_metadata") or {}
+        return source_metadata.get("url")
 
     return {
         workflow["id"]: {
             "name": workflow["name"],
-            "repo_url": get_report_url(workflow),
+            "repo_url": get_repo_url(workflow),
             "url": workflow["url"],
             "published": workflow.get("published", False),
         }

@@ -9,20 +9,22 @@ from planemo.cli import command_function
 from planemo.galaxy import profiles
 from planemo.galaxy.api import get_workflows
 from planemo.io import (
-    error,
     info,
+    print_table,
 )
 
-try:
-    from tabulate import tabulate
-except ImportError:
-    tabulate = None  # type: ignore
 
+def workflow_display_url(galaxy_url, workflow_id, published):
+    """Build a browsable URL for a workflow.
 
-def format_url(url):
-    if url == "N/A":
-        return ""
-    return url
+    The API URL returned by Galaxy renders JSON rather than something a user can
+    usefully open, so point at the editor - or the published view when the
+    workflow has been shared.
+    """
+    base = galaxy_url.rstrip("/")
+    if published:
+        return f"{base}/published/workflow?id={workflow_id}"
+    return f"{base}/workflows/edit?id={workflow_id}"
 
 
 @click.command("list_workflows")
@@ -33,6 +35,7 @@ def format_url(url):
     default=False,
 )
 @options.galaxy_url_option()
+@options.galaxy_admin_key_option()
 @options.galaxy_user_key_option()
 @options.profile_option()
 @command_function
@@ -40,8 +43,6 @@ def cli(ctx, raw, **kwds):
     """
     Display available workflows.
     """
-    if not raw:
-        info("Looking for workflows...")
     profile = kwds.get("profile")
     if profile is not None:
         profile = profiles.ensure_profile(ctx, profile)
@@ -50,30 +51,30 @@ def cli(ctx, raw, **kwds):
     else:
         url = kwds.get("galaxy_url")
         key = kwds.get("galaxy_admin_key") or kwds.get("galaxy_user_key")
+    if not url:
+        raise click.UsageError(
+            "Please specify --galaxy_url or --profile to indicate which Galaxy to list workflows from."
+        )
 
+    if not raw:
+        info("Looking for workflows...")
     workflows = get_workflows(
         url=url,
         key=key,
     )
-    if tabulate is not None:
-        if raw:
-            print(json.dumps(workflows, indent=4, sort_keys=True))
-            return
-        else:
-            print(
-                tabulate(
-                    {
-                        "Workflow ID": workflows.keys(),
-                        "Name": [workflow["name"] for _, workflow in workflows.items()],
-                        "Url": [format_url(f"{url}/{workflow['url'].strip('/')}") for _, workflow in workflows.items()],
-                        "Repo Url": [format_url(workflow["repo_url"]) for _, workflow in workflows.items()],
-                    },
-                    headers="keys",
-                )
-            )
-    else:
-        error("The tabulate package is not installed, invocations could not be listed correctly.")
+    if raw:
         print(json.dumps(workflows, indent=4, sort_keys=True))
-    if not raw:
-        info(f"{len(workflows)} workflows found.")
-    return
+        return
+    print_table(
+        {
+            "Workflow ID": list(workflows.keys()),
+            "Name": [workflow["name"] for workflow in workflows.values()],
+            "Published": ["yes" if workflow["published"] else "no" for workflow in workflows.values()],
+            "Url": [
+                workflow_display_url(url, workflow_id, workflow["published"])
+                for workflow_id, workflow in workflows.items()
+            ],
+            "Repo Url": [workflow["repo_url"] or "" for workflow in workflows.values()],
+        }
+    )
+    info(f"{len(workflows)} workflows found.")
