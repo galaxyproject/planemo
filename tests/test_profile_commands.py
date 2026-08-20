@@ -25,3 +25,6 @@ class ProfileCommandsTestCase(CliTestCase):
     @skip_unless_executable("docker")
     def test_profile_commands_docker(self):
         self._profile_commands(database_type="postgres_docker")
+
+    def test_profile_commands_sqlite(self):
+        self._profile_commands(database_type="sqlite")
