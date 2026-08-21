@@ -18,7 +18,11 @@ from planemo.galaxy.config import (
     LocalGalaxyConfig,
     write_galaxy_config,
 )
-from planemo.io import TERMINATION_TIMEOUT_ENVIRON_KEY
+from planemo.io import (
+    KILL_SETTLE_TIMEOUT,
+    TERMINATION_POLL_INTERVAL,
+    TERMINATION_TIMEOUT_ENVIRON_KEY,
+)
 from .test_utils import (
     create_test_context,
     sigterm_ignoring_group,
@@ -559,6 +563,21 @@ def test_daemon_monitor_shutdown_waits_for_a_monitor_that_exits(tmp_path, monkey
         if process.poll() is None:
             process.kill()
             process.wait()
+
+
+def test_daemon_monitor_shutdown_allows_the_monitor_full_escalation_budget(monkeypatch):
+    """The parent waits for both monitor escalation stages and their polling overhead."""
+    monkeypatch.setenv(TERMINATION_TIMEOUT_ENVIRON_KEY, "0.5")
+
+    class ImmediateProcess:
+        timeout = None
+
+        def wait(self, timeout):
+            self.timeout = timeout
+
+    process = ImmediateProcess()
+    _shut_down_daemon_monitor(process)
+    assert process.timeout == 0.5 + KILL_SETTLE_TIMEOUT + 2 * TERMINATION_POLL_INTERVAL
 
 
 def test_daemon_monitor_shutdown_signals_a_detached_daemon_immediately(tmp_path, monkeypatch):

@@ -58,10 +58,12 @@ from planemo.galaxy.workflows import (
 from planemo.io import (
     communicate,
     kill_pid_file,
+    KILL_SETTLE_TIMEOUT,
     shell,
     shell_join,
     stop_gravity,
     terminate_process_group,
+    TERMINATION_POLL_INTERVAL,
     termination_timeout,
     untar_to,
     wait_on,
@@ -1197,9 +1199,10 @@ def _shut_down_daemon_monitor(process, asked_to_stop=True):
     """
     if asked_to_stop:
         # The monitor's own escalation is bounded by a grace period plus the
-        # settle after SIGKILL; allow both before concluding it is stuck.
+        # settle after SIGKILL. Each wait loop may overshoot by one poll, so
+        # allow both polls before concluding it is stuck.
         try:
-            process.wait(timeout=2 * termination_timeout())
+            process.wait(timeout=termination_timeout() + KILL_SETTLE_TIMEOUT + 2 * TERMINATION_POLL_INTERVAL)
             return
         except subprocess.TimeoutExpired:
             pass

@@ -3,6 +3,7 @@
 import contextlib
 import errno
 import fnmatch
+import math
 import os
 import shutil
 import signal
@@ -52,10 +53,14 @@ def termination_timeout() -> float:
     if configured is None:
         return DEFAULT_TERMINATION_TIMEOUT
     try:
-        return float(configured)
+        timeout = float(configured)
     except ValueError:
-        warn(f"Ignoring non-numeric {TERMINATION_TIMEOUT_ENVIRON_KEY} [{configured}]")
+        warn(f"Ignoring invalid {TERMINATION_TIMEOUT_ENVIRON_KEY} [{configured}]")
         return DEFAULT_TERMINATION_TIMEOUT
+    if not math.isfinite(timeout) or timeout < 0:
+        warn(f"Ignoring invalid {TERMINATION_TIMEOUT_ENVIRON_KEY} [{configured}]")
+        return DEFAULT_TERMINATION_TIMEOUT
+    return timeout
 
 
 def args_to_str(args):

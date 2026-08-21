@@ -5,6 +5,8 @@ import subprocess
 import sys
 import tempfile
 
+import pytest
+
 from planemo import io
 from .test_utils import (
     assert_equal,
@@ -87,11 +89,17 @@ def test_kill_posix_tolerates_missing_process():
     io.kill_posix(process.pid)
 
 
-def test_termination_timeout_honours_the_environment(monkeypatch):
+@pytest.mark.parametrize("configured", ["soon", "nan", "inf", "-1"])
+def test_termination_timeout_rejects_invalid_environment_values(monkeypatch, configured):
     """The grace period is tunable, and a bad value falls back rather than raising."""
+    monkeypatch.setenv(io.TERMINATION_TIMEOUT_ENVIRON_KEY, configured)
+    assert io.termination_timeout() == io.DEFAULT_TERMINATION_TIMEOUT
+
+
+def test_termination_timeout_honours_the_environment(monkeypatch):
     monkeypatch.delenv(io.TERMINATION_TIMEOUT_ENVIRON_KEY, raising=False)
     assert io.termination_timeout() == io.DEFAULT_TERMINATION_TIMEOUT
     monkeypatch.setenv(io.TERMINATION_TIMEOUT_ENVIRON_KEY, "0.25")
     assert io.termination_timeout() == 0.25
-    monkeypatch.setenv(io.TERMINATION_TIMEOUT_ENVIRON_KEY, "soon")
-    assert io.termination_timeout() == io.DEFAULT_TERMINATION_TIMEOUT
+    monkeypatch.setenv(io.TERMINATION_TIMEOUT_ENVIRON_KEY, "0")
+    assert io.termination_timeout() == 0
