@@ -113,8 +113,9 @@ def test_terminate_process_group_does_not_escalate_for_a_willing_process(tmp_pat
             process.wait()
 
 
-def test_kill_posix_escalates_to_sigkill(tmp_path):
+def test_kill_posix_escalates_to_sigkill(tmp_path, monkeypatch):
     """:func:`planemo.io.kill_posix` escalates rather than giving up on SIGTERM."""
+    monkeypatch.setenv(io.TERMINATION_TIMEOUT_ENVIRON_KEY, "0.5")
     with _sigterm_ignoring_group(tmp_path / "ready") as process:
         io.kill_posix(process.pid)
         assert process.wait(timeout=5) == -signal.SIGKILL
@@ -125,3 +126,13 @@ def test_kill_posix_tolerates_missing_process():
     process = subprocess.Popen([sys.executable, "-c", ""], start_new_session=True)
     process.wait()
     io.kill_posix(process.pid)
+
+
+def test_termination_timeout_honours_the_environment(monkeypatch):
+    """The grace period is tunable, and a bad value falls back rather than raising."""
+    monkeypatch.delenv(io.TERMINATION_TIMEOUT_ENVIRON_KEY, raising=False)
+    assert io.termination_timeout() == io.DEFAULT_TERMINATION_TIMEOUT
+    monkeypatch.setenv(io.TERMINATION_TIMEOUT_ENVIRON_KEY, "0.25")
+    assert io.termination_timeout() == 0.25
+    monkeypatch.setenv(io.TERMINATION_TIMEOUT_ENVIRON_KEY, "soon")
+    assert io.termination_timeout() == io.DEFAULT_TERMINATION_TIMEOUT

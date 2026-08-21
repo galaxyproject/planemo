@@ -32,13 +32,30 @@ IS_OS_X = _platform == "darwin"
 
 # How long a process group gets to honour SIGTERM before it is SIGKILLed, and how
 # often it is checked in the meantime.
-TERMINATION_TIMEOUT = 0.5
+DEFAULT_TERMINATION_TIMEOUT = 10.0
 TERMINATION_POLL_INTERVAL = 0.1
+TERMINATION_TIMEOUT_ENVIRON_KEY = "PLANEMO_TERMINATION_TIMEOUT"
+# SIGKILL cannot be caught, so anything still in the group afterwards is either
+# a zombie nobody has reaped or a process wedged in uninterruptible IO. Neither
+# is worth a second full grace period.
+KILL_SETTLE_TIMEOUT = 1.0
 
 
 def termination_timeout() -> float:
-    """Return the grace period a process group gets to exit on SIGTERM."""
-    return TERMINATION_TIMEOUT
+    """Return the grace period a process group gets to exit on SIGTERM.
+
+    Read from the environment on every call rather than captured at import, so
+    that the daemon monitor - which Planemo runs as a subprocess - honours the
+    same value without it being threaded through argv.
+    """
+    configured = os.environ.get(TERMINATION_TIMEOUT_ENVIRON_KEY)
+    if configured is None:
+        return DEFAULT_TERMINATION_TIMEOUT
+    try:
+        return float(configured)
+    except ValueError:
+        warn(f"Ignoring non-numeric {TERMINATION_TIMEOUT_ENVIRON_KEY} [{configured}]")
+        return DEFAULT_TERMINATION_TIMEOUT
 
 
 def args_to_str(args):
@@ -281,7 +298,7 @@ def terminate_process_group(
     """
     if timeout is None:
         timeout = termination_timeout()
-    for process_signal in (signal.SIGTERM, signal.SIGKILL):
+    for process_signal, grace in ((signal.SIGTERM, timeout), (signal.SIGKILL, KILL_SETTLE_TIMEOUT)):
         try:
             os.killpg(pgid, process_signal)
         except ProcessLookupError:
@@ -289,7 +306,7 @@ def terminate_process_group(
         except OSError:
             # Not ours to signal - there is nothing further we can do.
             return False
-        if _wait_for_process_group_exit(pgid, timeout, reap):
+        if _wait_for_process_group_exit(pgid, grace, reap):
             return True
     return not process_group_exists(pgid)
 

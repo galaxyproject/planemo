@@ -16,6 +16,7 @@ from planemo.galaxy.config import (
     LocalGalaxyConfig,
     write_galaxy_config,
 )
+from planemo.io import TERMINATION_TIMEOUT_ENVIRON_KEY
 from .test_utils import create_test_context
 
 serve_module = importlib.import_module("planemo.galaxy.serve")
@@ -508,6 +509,8 @@ def test_monitor_escalates_for_sigterm_ignoring_process_group(tmp_path):
     repository_root = os.path.dirname(os.path.dirname(__file__))
     environ = os.environ.copy()
     environ["PYTHONPATH"] = repository_root
+    # Escalation is what is under test, not how long Galaxy is given first.
+    environ[TERMINATION_TIMEOUT_ENVIRON_KEY] = "0.5"
     parent = subprocess.Popen(
         [sys.executable, "-c", PARENT_PROCESS, str(galaxy_root), str(config_directory), str(port), str(ready_path)],
         env=environ,
