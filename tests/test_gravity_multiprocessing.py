@@ -13,6 +13,7 @@ from packaging.version import InvalidVersion
 from planemo import network_util
 from planemo.galaxy.config import (
     _shut_down_daemon_monitor,
+    get_galaxy_version,
     gravity_supports_multiprocessing,
     LocalGalaxyConfig,
     write_galaxy_config,
@@ -573,3 +574,42 @@ def test_daemon_monitor_shutdown_signals_a_detached_daemon_immediately(tmp_path,
         if process.poll() is None:
             process.kill()
             process.wait()
+
+
+def test_galaxy_version_is_read_once_per_configuration(tmp_path):
+    """Building a configuration asks the version repeatedly; Galaxy's module runs once."""
+    galaxy_root = _make_galaxy_root(tmp_path, "25.0.1")
+    config_directory = tmp_path / "config"
+    config_directory.mkdir()
+    get_galaxy_version.cache_clear()
+    try:
+        write_galaxy_config(
+            str(galaxy_root),
+            {},
+            {},
+            {},
+            {"port": 12345},
+            lambda name: str(config_directory / name),
+        )
+        cache_info = get_galaxy_version.cache_info()
+        assert cache_info.misses == 1
+        assert cache_info.hits >= 1
+    finally:
+        get_galaxy_version.cache_clear()
+
+
+def test_galaxy_version_cache_is_keyed_on_the_root(tmp_path):
+    """Two checkouts do not share an answer, and reinstalling invalidates one."""
+    first = _make_galaxy_root(tmp_path / "first", "24.2.4")
+    second = _make_galaxy_root(tmp_path / "second", "25.0.1")
+    get_galaxy_version.cache_clear()
+    try:
+        assert not gravity_supports_multiprocessing(str(first))
+        assert gravity_supports_multiprocessing(str(second))
+        version_file = first / "lib" / "galaxy" / "version" / "__init__.py"
+        version_file.write_text('VERSION_MAJOR = "25.0"\nVERSION_MINOR = "1"\nVERSION = "25.0.1"\n')
+        assert not gravity_supports_multiprocessing(str(first))
+        get_galaxy_version.cache_clear()
+        assert gravity_supports_multiprocessing(str(first))
+    finally:
+        get_galaxy_version.cache_clear()
