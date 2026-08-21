@@ -1,265 +1,206 @@
-Running workflow on a server or cluster
-============================================
+Running workflows on a server or Slurm cluster
+==============================================
 
-In some situations, users may be unable to upload data to public Galaxy instances due to legal or policy restrictions.
-Even if they have access to local cluster systems, these environments often do not permit hosting web servers or lack
-dedicated personnel to maintain a Galaxy instance.
-Planemo addresses this challenge by enabling users to launch a temporary local Galaxy instance, allowing workflow
-execution without the need for a permanent server setup.
-Jobs can be executed directly on the server or submitted to a workload manager such as Slurm.
+Some data cannot be uploaded to a public Galaxy instance because of legal,
+policy, or storage constraints. Planemo can launch a temporary Galaxy instance
+on a server or cluster login node and run workflow jobs either locally or
+through a workload manager such as Slurm. This avoids maintaining a permanent
+Galaxy service while keeping data inside the local environment.
 
-This guide explains how to run a workflow:
- 1. On a standalone server
- 2. On a Slurm cluster using DRMAA
+This guide uses the ``tutorial.ga`` workflow and ``tutorial-job.yml`` job file
+introduced in `The Basics`_ and covers:
 
+#. running the workflow on one server;
+#. generating a Slurm job configuration;
+#. submitting jobs through Slurm with or without TPV; and
+#. choosing a database for concurrent workflows.
 
 Requirements
----------------------
+------------
 
-- planemo: install instructions are available at :doc:`readme`
-- DRMAA library
-- Tools dependencies
-- Database (optional)
+The server or cluster needs:
 
-DRMAA library
-~~~~~~~~~~~~~~~~~~
-To enable Galaxy to submit jobs to a cluster via Slurm, you need the DRMAA
-(Distributed Resource Management Application API) library, which provides a standard interface 
-for job submission. If your system does not already have the DRMAA library installed, you must
-compile it manually. For Slurm, the recommended implementation is 
-`slurm-drmaa <https://github.com/natefoo/slurm-drmaa>`__.
+* Planemo, installed as described in :doc:`readme`;
+* a Slurm client configured for the cluster;
+* a DRMAA implementation for Slurm;
+* Conda, Docker, or Singularity/Apptainer for tool dependencies; and
+* a filesystem visible to both the login node and compute nodes.
 
-Follow these steps to download and build the DRMAA library for Slurm:
+PostgreSQL is optional but recommended for workflows that run many jobs
+concurrently.
 
-:: 
-   
-   # Download and extract source code
-   wget https://github.com/natefoo/slurm-drmaa/releases/download/1.1.4/slurm-drmaa-1.1.4.tar.gz 
-   tar -xvzf  slurm-drmaa-1.1.4.tar.gz
-   cd slurm-drmaa-1.1.4 && mkdir dist
-   
-   # Configure build
-   ./autogen.sh
-   ./configure --prefix=${PWD}/dist
-   
-   # Compile and install
-   make
-   make install
-   
-   # print path to library
-   LIBDRMAA=`ls ${PWD}/dist/lib/libdrmaa.so`
-   echo "Library: ${LIBDRMAA}"
+Slurm and DRMAA
+~~~~~~~~~~~~~~~
 
+Galaxy's Slurm runner uses the Distributed Resource Management Application API
+(DRMAA). Ask the cluster administrators whether a DRMAA library is already
+available. If it is not, `slurm-drmaa`_ is the recommended implementation.
+
+For example, build slurm-drmaa 1.1.4 in a user-writable directory with:
+
+.. code-block:: console
+
+    $ wget https://github.com/natefoo/slurm-drmaa/releases/download/1.1.4/slurm-drmaa-1.1.4.tar.gz
+    $ tar -xzf slurm-drmaa-1.1.4.tar.gz
+    $ cd slurm-drmaa-1.1.4
+    $ ./configure --prefix="$PWD/dist"
+    $ make
+    $ make install
+
+Note the absolute path to the installed ``libdrmaa`` library. You will add it
+to the generated job configuration below.
+
+.. _slurm-drmaa: https://github.com/natefoo/slurm-drmaa
 
 Tool dependencies
-~~~~~~~~~~~~~~~~~~
-To run a tool/workflow on a server or cluster, the required tools must
-be available on the system. Galaxy can manage dependencies
-using Conda, Docker or Singularity. While Conda is an option, Docker or 
-Singularity is recommended for its greater reliability. One of the following
-environments need to be available on the system:
+~~~~~~~~~~~~~~~~~
 
-- Conda
-- Docker
-- Singularity
-
+Galaxy can resolve tool dependencies with Conda or run tools in Docker or
+Singularity/Apptainer containers. Containers are generally more reproducible,
+but the available runtime and mount configuration depend on the cluster. The
+examples below use Singularity because it is commonly available on HPC systems.
 
 Database
-~~~~~~~~~~~~~~~~~~
-Galaxy tracks jobs and their statuses using a database, with SQLite as the default option.
-However, when running complex workflows, SQLite can encounter issues if multiple jobs attempt
-to update the database simultaneously. This can lead to database locking and premature workflow
-termination.
+~~~~~~~~
 
-To prevent these issues, it's recommended to use a PostgreSQL database instead of SQLite. If a
-PostgreSQL database isn't readily available, Planemo can launch a temporary PostgreSQL instance
-using Singularity by adding the ``--database_type postgres_singularity`` to the run command.
+Planemo uses SQLite by default. SQLite is sufficient for small runs, but a
+workflow with many simultaneous jobs can encounter database-locking errors.
+Use an existing PostgreSQL service when one is available. Alternatively,
+Planemo can launch a temporary PostgreSQL instance in a Singularity/Apptainer
+container with ``--database_type postgres_singularity``.
 
+Run on one server
+-----------------
 
-Running on workflow
-------------------
-Planemo can be configured in many ways to suit different user needs. In this guide, we'll demonstrate
-how to run a workflow on both a local laptop/server and a SLURM cluster, using the same example workflow
-introduced in `the basic <http://127.0.0.1:8000/running.html#the-basics>`_
+Run the example workflow locally with:
 
-Laptop/server
-~~~~~~~~~~~~~~~~~~
-::
+.. code-block:: console
 
-  planemo run tutorial.ga tutorial-job.yml \
-    --download_outputs \
-    --output_directory . \
-    --output_json output.json \
-    --biocontainers
+    $ planemo run tutorial.ga tutorial-job.yml \
+        --download_outputs \
+        --output_directory . \
+        --output_json output.json
 
-This command runs the workflow locally and attempts to resolve tool dependencies using containers. If the
-workflow completes successfully, the output files will be downloaded to the current directory.
+Planemo launches a temporary Galaxy instance, runs the workflow, downloads its
+outputs, and records their paths in ``output.json``.
 
-Slurm
-~~~~~~~~~~~~~~~~~~
+Run through Slurm
+-----------------
 
-To run the workflow on a SLURM cluster, you’ll need to configure the ``job_config.yaml`` file to set up a job
-runner that uses the DRMAA library for job submission.
+Generate the job configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Use :doc:`commands/job_config_init` instead of maintaining a complete Galaxy
+job configuration by hand:
 
-**job_config.yaml**
-::
-   
-  runners:
-    local:
-      load: galaxy.jobs.runners.local:LocalJobRunner
-    slurm:
-      load: galaxy.jobs.runners.slurm:SlurmJobRunner
-      drmaa_library_path: PATH/slurm-drmaa-1.1.4/dist/lib/libdrmaa.so
+.. code-block:: console
 
-  execution:
-    default: slurm
-    environments:
-      local:
-        runner: local
-      slurm:
-        runner: slurm
-        native_specification: "-p PARTITION_NAME --time=02:00:00 --nodes=1"
-        singularity_enabled: true
-        singularity_volumes: $defaults
-  tools:
-    - class: local
-      environment: local
+    $ planemo job_config_init \
+        --runner slurm \
+        --singularity \
+        --galaxy_version 25.0
 
-This example runs the workflow on a SLURM cluster, using Singularity to resolve tool dependencies. However, it
-can be easily adapted to use Docker or Conda instead. For more details on configuring the ``job_config.yaml`` file,
-refer to the `job configuration documentation <https://docs.galaxyproject.org/en/master/admin/jobs.html>`__
+The command writes ``job_conf.yml`` in the current directory. Review that file
+and customize the generated Slurm runner and environment:
 
-**Note:** before using the example remember to update ``PATH`` and ``PARTITION_NAME`` values to match your system’s configuration.
+* uncomment ``drmaa_library_path`` and set it to the absolute path of the
+  cluster's ``libdrmaa`` library;
+* set ``native_specification`` to the partition, time, memory, and other Slurm
+  options required by the cluster; and
+* adjust the generated Singularity command, volumes, or environment variables
+  when the cluster requires them.
 
-Run using the default SQLite database
-^^^^^^^^^^^^^^
-:: 
-  
-  planemo run tutorial.ga tutorial-job.yml \
-    --download_outputs \
-    --output_directory . \
-    --output_json output.json \
-    --job_config_file job_config.yaml \
-    --biocontainers
+The generator sets ``tmp_dir: true`` by default. This asks Galaxy to manage a
+temporary directory for each job and normally removes the need to set a shared
+``TMPDIR`` manually. The Galaxy job working directories and input data still
+need to reside on storage visible to the compute nodes.
 
-Run using a temporary PostgreSQL database
-^^^^^^^^^^^^^^
-:: 
-  
-  planemo run tutorial.ga tutorial-job.yml \
-    --download_outputs \
-    --output_directory . \
-    --output_json output.json \
-    --job_config_file job_config.yaml \
-    --biocontainers \
-    --database_type postgres_singularity
+Run the workflow
+~~~~~~~~~~~~~~~~
+
+Pass the generated file to ``planemo run``:
+
+.. code-block:: console
+
+    $ planemo run tutorial.ga tutorial-job.yml \
+        --download_outputs \
+        --output_directory . \
+        --output_json output.json \
+        --job_config_file job_conf.yml
+
+For a temporary PostgreSQL database, add:
+
+.. code-block:: console
+
+    $ planemo run tutorial.ga tutorial-job.yml \
+        --download_outputs \
+        --output_directory . \
+        --output_json output.json \
+        --job_config_file job_conf.yml \
+        --database_type postgres_singularity
+
+This database mode requires a working Singularity/Apptainer installation and
+storage suitable for the database container.
 
 Slurm with TPV
-~~~~~~~~~~~~~~~~~~
-To make it easier to configure resource used by the different tools we can 
-use `TPV (Total Perspective Vortex) <https://total-perspective-vortex.readthedocs.io/en/latest/>`_ to
-set the resources used by each individual tool. This well require some changes to the 
-``job_config.yaml``.
+--------------
 
-**job_config.yaml**
-::
+`Total Perspective Vortex (TPV)`_ maps individual tools to job destinations
+and resource requirements. Planemo can generate the surrounding Galaxy and TPV
+configuration while retaining the Slurm and container settings from the
+previous example:
 
-  runners:
-    local:
-      load: galaxy.jobs.runners.local:LocalJobRunner
+.. code-block:: console
 
-    drmaa:
-      load: galaxy.jobs.runners.drmaa:DRMAAJobRunner
-      drmaa_library_path: PATH/slurm-drmaa-1.1.4/dist/lib/libdrmaa.so
+    $ planemo job_config_init \
+        --runner slurm \
+        --tpv \
+        --singularity \
+        --galaxy_version 25.0
 
-  execution:
-    default: tpv
-    environments:
-      local:
-        runner: local
-      tpv:
-        runner: dynamic
-        function: map_tool_to_destination
-        rules_module: tpv.rules
-        tpv_config_files:
-        - https://gxy.io/tpv/db.yml
-        - PATH/destinations.yaml
+Edit the generated ``job_conf.yml`` to configure ``drmaa_library_path`` and
+the ``tpvdb_slurm`` destination for the local cluster. In particular, set its
+``native_specification`` template to translate TPV's ``{cores}``, ``{mem}``,
+and other resource values into the Slurm options used by the site. The
+generated configuration includes the shared Galaxy TPV database at
+``https://gxy.io/tpv/db.yml``; local configuration can override entries from
+that database.
 
-  tools:
-    - class: local
-      environment: local
+Even when the scheduler does not require ``--ntasks``, make sure the native
+specification communicates the requested core count. Otherwise a
+multithreaded tool may be scheduled with only one core.
 
-**destinations.yaml**
-::
+For configuration details and examples, see the `TPV documentation`_ and the
+Galaxy Training Network's `job destination tutorial`_.
 
-  destinations:
-    tpvdb_drmaa:
-      runner: drmaa
-      params:
-        native_specification: "-p PARTION_NAME --time=02:00:00 --nodes=1  --ntasks={cores} --ntasks-per-node={cores}"
-        singularity_enabled: true
-        singularity_volumes: $defaults
-
-Like the previous example, this setup submits jobs to a SLURM cluster and uses Singularity to resolve dependencies. The
-key difference is the use of **TPV**, which allows you to define resource requirements—such as the number of cores used
-by bwa mem—based on settings from the shared configuration a ``https://gxy.io/tpv/db.yml``
-
-These defaults can be customized either by providing an entirely new db.yaml file or by overriding specific tool settings
-in a separate YAML file. For more details, see the , see `using-the-shared-database <https://total-perspective-vortex.readthedocs.io/en/latest/topics/tpv_by_example.html#using-the-shared-database>`__ section of the TPV documentation.
-
-**Note:** even if your SLURM scheduler does not use ntasks, you should still set it when a tool is intended to use more
-than one core. If not specified, Galaxy will default to using a single core for that tool.
+.. _Total Perspective Vortex (TPV): https://total-perspective-vortex.readthedocs.io/
+.. _TPV documentation: https://total-perspective-vortex.readthedocs.io/en/latest/topics/tpv_by_example.html
+.. _job destination tutorial: https://training.galaxyproject.org/training-material/topics/admin/tutorials/job-destinations/tutorial.html
 
 Troubleshooting
-------------------
+---------------
 
-**Temp direcory not shared between nodes**
+Database is locked
+~~~~~~~~~~~~~~~~~~
 
-Galaxy uses a temporary directory when creating and running jobs.
-This directory must be accessible to both the server that creates
-the job and the compute node that executes it. If this folder is
-not shared, local jobs will succeed, while those submitted to a
-separate compute node will fail. To resolve this issue, configure
-a shared folder as the temporary directory.
+Errors containing ``sqlite3.OperationalError: database is locked`` usually
+mean the workflow has more concurrent database activity than SQLite can
+comfortably handle. Re-run with PostgreSQL, using either an existing database
+or ``--database_type postgres_singularity``.
 
-::
-  
-  TMPDIR=PATH_TO_SHARED_TEMPORARY_FOLDER planemo run ...
+Galaxy exits during tool installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Locked database**
+A later ``bioblend.ConnectionError`` can mean the temporary Galaxy process
+exited while Planemo was waiting for a Tool Shed installation; it is not
+necessarily a network failure in BioBlend. Inspect Planemo's Galaxy log for the
+earlier server error. On a slow cluster, also check filesystem performance,
+available memory, and the scheduler or container runtime logs.
 
-While running jobs, Galaxy tracks their status using a database. 
-The default database is SQLite, which may encounter issues when 
-handling a high number of concurrent jobs. In such cases, you may see errors like this:
+Port already in use
+~~~~~~~~~~~~~~~~~~~
 
-
-::
-  
-  cursor.execute(statement, parameters)
-  sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) database is locked
-  [SQL: SELECT kombu_queue.id AS kombu_queue_id, kombu_queue.name AS kombu_queue_name 
-  FROM kombu_queue 
-  WHERE kombu_queue.name = ?
-    LIMIT ? OFFSET ?]
-
-The solution is to switch to a more robust database, such as PostgreSQL.
-
-**Multiple galaxy instances**
-
-When you run ``planemo run`` a temporary Galaxy instance is created and 
-in some cases that instance my not be properly shut down. This can cause 
-the following error:
-
-:: 
-
-  bioblend.ConnectionError: Unexpected HTTP status code: 500: Internal Server Error: make sure that you don't already have a running galaxy instance.
-
-You will be able to see if instances are still running using the following commands:
-
-::
-  
-    # Find running galaxy instances
-    ps aux | grep galaxy
-    # Find running planemo commands
-    ps aux | grep planemo
+If an earlier Planemo or Galaxy process is still using the configured port,
+stop that process or select another port with ``--port``. Use the cluster's
+normal process-monitoring tools to identify old ``planemo`` and Galaxy
+processes before terminating them.
