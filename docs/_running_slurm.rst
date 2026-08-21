@@ -34,21 +34,19 @@ Slurm and DRMAA
 
 Galaxy's Slurm runner uses the Distributed Resource Management Application API
 (DRMAA). Ask the cluster administrators whether a DRMAA library is already
-available. If it is not, `slurm-drmaa`_ is the recommended implementation.
-
-For example, build slurm-drmaa 1.1.4 in a user-writable directory with:
+available. If it is not, Planemo can download and build the supported
+`slurm-drmaa`_ release:
 
 .. code-block:: console
 
-    $ wget https://github.com/natefoo/slurm-drmaa/releases/download/1.1.4/slurm-drmaa-1.1.4.tar.gz
-    $ tar -xzf slurm-drmaa-1.1.4.tar.gz
-    $ cd slurm-drmaa-1.1.4
-    $ ./configure --prefix="$PWD/dist"
-    $ make
-    $ make install
+    $ planemo slurm_init
 
-Note the absolute path to the installed ``libdrmaa`` library. You will add it
-to the generated job configuration below.
+The command copies ``libdrmaa.so`` into the Planemo workspace, which defaults
+to ``~/.planemo/libdrmaa.so``. It requires a working compiler toolchain and the
+Slurm development files. See :doc:`commands/slurm_init` for command details.
+
+Note the absolute path to this or an administrator-provided ``libdrmaa``
+library. You will add it to the generated job configuration below.
 
 .. _slurm-drmaa: https://github.com/natefoo/slurm-drmaa
 
