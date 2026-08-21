@@ -9,7 +9,6 @@ import os
 import random
 import shlex
 import shutil
-import signal
 import sqlite3
 import subprocess
 import sys
@@ -61,6 +60,8 @@ from planemo.io import (
     shell,
     shell_join,
     stop_gravity,
+    terminate_process_group,
+    termination_timeout,
     untar_to,
     wait_on,
     warn,
@@ -1174,6 +1175,36 @@ class DockerGalaxyConfig(BaseManagedGalaxyConfig):
         shutil.rmtree(self.config_directory, CLEANUP_IGNORE_ERRORS)
 
 
+def _shut_down_daemon_monitor(process, asked_to_stop=True):
+    """Wait for the daemon monitor to tear Galaxy down, then insist that it exit.
+
+    Closing the control pipe is what asks the monitor to stop Galaxy, so when it
+    has just been closed give the monitor time to run its own
+    SIGTERM-then-SIGKILL escalation before signalling it. A daemon that was
+    already detached has no pipe left and has not been asked for anything, so
+    waiting there only burns a grace period it was never told to observe.
+
+    Signalling the monitor's group reaches the monitor alone - Galaxy leads a
+    separate group whose ID only the monitor holds - so escalate rather than
+    wait forever, and say so if Galaxy might be left behind.
+
+    Never raises. This runs while a config is being torn down, frequently with
+    another exception already in flight, and masking that would be worse than
+    whatever went wrong here.
+    """
+    if asked_to_stop:
+        # The monitor's own escalation is bounded by a grace period plus the
+        # settle after SIGKILL; allow both before concluding it is stuck.
+        try:
+            process.wait(timeout=2 * termination_timeout())
+            return
+        except subprocess.TimeoutExpired:
+            pass
+    terminate_process_group(process.pid, reap=process.poll)
+    if process.poll() is None:
+        warn(f"Galaxy daemon monitor [{process.pid}] would not exit; Galaxy may still be running.")
+
+
 class LocalGalaxyConfig(BaseManagedGalaxyConfig):
     """A local, non-containerized implementation of :class:`GalaxyConfig`."""
 
@@ -1243,15 +1274,12 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
                 with open(self.pid_file) as f:
                     print(f"pid_file contents are [{f.read()}]")
         if self.use_multiprocessing:
-            if self._daemon_control_fd is not None:
+            asked_to_stop = self._daemon_control_fd is not None
+            if asked_to_stop:
                 os.close(self._daemon_control_fd)
                 self._daemon_control_fd = None
             if self._daemon_process is not None:
-                try:
-                    self._daemon_process.wait(timeout=2)
-                except subprocess.TimeoutExpired:
-                    self._daemon_process.send_signal(signal.SIGTERM)
-                    self._daemon_process.wait(timeout=2)
+                _shut_down_daemon_monitor(self._daemon_process, asked_to_stop=asked_to_stop)
             else:
                 kill_pid_file(self.pid_file)
         elif self.env.get("GRAVITY_STATE_DIR"):

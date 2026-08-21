@@ -12,12 +12,16 @@ from packaging.version import InvalidVersion
 
 from planemo import network_util
 from planemo.galaxy.config import (
+    _shut_down_daemon_monitor,
     gravity_supports_multiprocessing,
     LocalGalaxyConfig,
     write_galaxy_config,
 )
 from planemo.io import TERMINATION_TIMEOUT_ENVIRON_KEY
-from .test_utils import create_test_context
+from .test_utils import (
+    create_test_context,
+    sigterm_ignoring_group,
+)
 
 serve_module = importlib.import_module("planemo.galaxy.serve")
 
@@ -533,3 +537,39 @@ def test_monitor_escalates_for_sigterm_ignoring_process_group(tmp_path):
             parent.wait()
         if monitor_pid is not None and _pid_exists(monitor_pid):
             os.killpg(monitor_pid, signal.SIGKILL)
+
+
+def test_daemon_monitor_shutdown_escalates_without_raising(tmp_path, monkeypatch):
+    """A monitor that will not exit is killed, and teardown still returns cleanly."""
+    monkeypatch.setenv(TERMINATION_TIMEOUT_ENVIRON_KEY, "0.5")
+    with sigterm_ignoring_group(tmp_path / "ready") as process:
+        _shut_down_daemon_monitor(process)
+        assert process.returncode == -signal.SIGKILL
+
+
+def test_daemon_monitor_shutdown_waits_for_a_monitor_that_exits(tmp_path, monkeypatch):
+    """A monitor that stops on its own is never signalled."""
+    monkeypatch.setenv(TERMINATION_TIMEOUT_ENVIRON_KEY, "5")
+    process = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(0.2)"], start_new_session=True)
+    try:
+        _shut_down_daemon_monitor(process)
+        assert process.returncode == 0
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait()
+
+
+def test_daemon_monitor_shutdown_signals_a_detached_daemon_immediately(tmp_path, monkeypatch):
+    """A detached daemon was never asked to stop, so do not wait for it to."""
+    monkeypatch.setenv(TERMINATION_TIMEOUT_ENVIRON_KEY, "30")
+    process = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(300)"], start_new_session=True)
+    try:
+        started = time.monotonic()
+        _shut_down_daemon_monitor(process, asked_to_stop=False)
+        assert time.monotonic() - started < 5
+        assert process.returncode == -signal.SIGTERM
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait()
