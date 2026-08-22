@@ -1,9 +1,17 @@
 """Test utilities from :module:`planemo.io`."""
 
+import signal
+import subprocess
+import sys
 import tempfile
 
+import pytest
+
 from planemo import io
-from .test_utils import assert_equal
+from .test_utils import (
+    assert_equal,
+    sigterm_ignoring_group,
+)
 
 
 def test_io_capture():
@@ -44,3 +52,54 @@ def test_filter_paths():
         tmp.write("#exclude c\n\nc\n")
         tmp.flush()
         assert_filtered_is(["/a/b/c", "/a/b/d"], ["/a/b/d"], exclude_from=[tmp.name])
+
+
+def test_terminate_process_group_escalates_to_sigkill(tmp_path):
+    """A group that ignores SIGTERM is still killed."""
+    with sigterm_ignoring_group(tmp_path / "ready") as process:
+        assert io.terminate_process_group(process.pid, timeout=0.2, reap=process.poll)
+        assert not io.process_group_exists(process.pid)
+        assert process.returncode == -signal.SIGKILL
+
+
+def test_terminate_process_group_does_not_escalate_for_a_willing_process(tmp_path):
+    """A group that honours SIGTERM is never SIGKILLed."""
+    process = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(300)"], start_new_session=True)
+    try:
+        assert io.terminate_process_group(process.pid, timeout=5, reap=process.poll)
+        assert process.returncode == -signal.SIGTERM
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait()
+
+
+def test_kill_posix_escalates_to_sigkill(tmp_path, monkeypatch):
+    """:func:`planemo.io.kill_posix` escalates rather than giving up on SIGTERM."""
+    monkeypatch.setenv(io.TERMINATION_TIMEOUT_ENVIRON_KEY, "0.5")
+    with sigterm_ignoring_group(tmp_path / "ready") as process:
+        io.kill_posix(process.pid)
+        assert process.wait(timeout=5) == -signal.SIGKILL
+
+
+def test_kill_posix_tolerates_missing_process():
+    """Killing an already-reaped pid is a no-op rather than an error."""
+    process = subprocess.Popen([sys.executable, "-c", ""], start_new_session=True)
+    process.wait()
+    io.kill_posix(process.pid)
+
+
+@pytest.mark.parametrize("configured", ["soon", "nan", "inf", "-1"])
+def test_termination_timeout_rejects_invalid_environment_values(monkeypatch, configured):
+    """The grace period is tunable, and a bad value falls back rather than raising."""
+    monkeypatch.setenv(io.TERMINATION_TIMEOUT_ENVIRON_KEY, configured)
+    assert io.termination_timeout() == io.DEFAULT_TERMINATION_TIMEOUT
+
+
+def test_termination_timeout_honours_the_environment(monkeypatch):
+    monkeypatch.delenv(io.TERMINATION_TIMEOUT_ENVIRON_KEY, raising=False)
+    assert io.termination_timeout() == io.DEFAULT_TERMINATION_TIMEOUT
+    monkeypatch.setenv(io.TERMINATION_TIMEOUT_ENVIRON_KEY, "0.25")
+    assert io.termination_timeout() == 0.25
+    monkeypatch.setenv(io.TERMINATION_TIMEOUT_ENVIRON_KEY, "0")
+    assert io.termination_timeout() == 0

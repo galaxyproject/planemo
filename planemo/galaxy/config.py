@@ -2,6 +2,7 @@
 
 import abc
 import contextlib
+import functools
 import hashlib
 import importlib.util
 import json
@@ -10,6 +11,8 @@ import random
 import shlex
 import shutil
 import sqlite3
+import subprocess
+import sys
 import threading
 import time
 from collections import deque
@@ -55,9 +58,13 @@ from planemo.galaxy.workflows import (
 from planemo.io import (
     communicate,
     kill_pid_file,
+    KILL_SETTLE_TIMEOUT,
     shell,
     shell_join,
     stop_gravity,
+    terminate_process_group,
+    TERMINATION_POLL_INTERVAL,
+    termination_timeout,
     untar_to,
     wait_on,
     warn,
@@ -130,6 +137,8 @@ EMPTY_JOB_METRICS_TEMPLATE = """<?xml version="1.0"?>
 <job_metrics>
 </job_metrics>
 """
+
+MINIMUM_MULTIPROCESSING_GALAXY_VERSION = parse_version("25.0.1")
 
 FILE_SOURCES_TEMPLATE = """
 - type: posix
@@ -549,8 +558,12 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
     else:
         env["GALAXY_CONFIG_FILE"] = config_join("galaxy.yml")
         env["GRAVITY_STATE_DIR"] = config_join("gravity")
-        with NamedTemporaryFile(suffix=".sock", delete=True) as nt:
-            env["SUPERVISORD_SOCKET"] = nt.name
+        use_multiprocessing = gravity_supports_multiprocessing(galaxy_root)
+        if use_multiprocessing:
+            env.pop("SUPERVISORD_SOCKET", None)
+        else:
+            with NamedTemporaryFile(suffix=".sock", delete=True) as nt:
+                env["SUPERVISORD_SOCKET"] = nt.name
         host = kwds.get("host", "localhost")
         port = template_args["port"]
         # Use "localhost" for infrastructure URL when bound to 127.0.0.1,
@@ -584,22 +597,30 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
         # and doesn't depend on GALAXY_CONFIG_OVERRIDE_* env vars being propagated
         # by Gravity to gunicorn workers.
         resolved_properties = {k: _sub(v, template_args) if isinstance(v, str) else v for k, v in properties.items()}
+        gravity = {
+            "galaxy_root": galaxy_root,
+            "gunicorn": {
+                "bind": f"{host}:{port}",
+                "preload": False,
+            },
+            "gx_it_proxy": gx_it_proxy_config,
+        }
+        if use_multiprocessing:
+            gravity["process_manager"] = "multiprocessing"
         write_file(
             env["GALAXY_CONFIG_FILE"],
             json.dumps(
                 {
                     "galaxy": resolved_properties,
-                    "gravity": {
-                        "galaxy_root": galaxy_root,
-                        "gunicorn": {
-                            "bind": f"{host}:{port}",
-                            "preload": False,
-                        },
-                        "gx_it_proxy": gx_it_proxy_config,
-                    },
+                    "gravity": gravity,
                 }
             ),
         )
+
+
+def gravity_supports_multiprocessing(galaxy_root):
+    """Return whether Galaxy includes a multiprocessing-capable Gravity."""
+    return get_galaxy_version(galaxy_root) >= MINIMUM_MULTIPROCESSING_GALAXY_VERSION
 
 
 def _expand_paths(galaxy_root: Optional[str], extra_tools: List[str]) -> List[str]:
@@ -612,27 +633,34 @@ def _expand_paths(galaxy_root: Optional[str], extra_tools: List[str]) -> List[st
     return extra_tools
 
 
+@functools.lru_cache(maxsize=None)
+def get_galaxy_version(galaxy_root):
+    """Return the parsed version of the Galaxy checkout at ``galaxy_root``.
+
+    Cached because reading it means executing Galaxy's version module, and a
+    single configuration build asks several independent questions of it.
+    ``_install_galaxy`` clears the cache, since that is what changes the answer.
+    """
+    galaxy_lib = os.path.join(galaxy_root, "lib", "galaxy")
+    version_path = os.path.join(galaxy_lib, "version.py")
+    if not os.path.isfile(version_path):
+        version_path = os.path.join(galaxy_lib, "version", "__init__.py")
+    spec = importlib.util.spec_from_file_location("__galaxy_version", version_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    version = getattr(module, "VERSION", None) or module.VERSION_MAJOR
+    return parse_version(version)
+
+
 def get_galaxy_major_version(galaxy_root):
-    try:
-        spec = importlib.util.spec_from_file_location(
-            "__galaxy_version", os.path.join(galaxy_root, "lib", "galaxy", "version.py")
-        )
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        return parse_version(module.VERSION_MAJOR)
-    except FileNotFoundError:
-        spec = importlib.util.spec_from_file_location(
-            "__galaxy_version", os.path.join(galaxy_root, "lib", "galaxy", "version", "__init__.py")
-        )
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        return parse_version(module.VERSION_MAJOR)
+    version = get_galaxy_version(galaxy_root)
+    return parse_version(f"{version.major}.{version.minor}")
 
 
 def get_refgenie_config(galaxy_root, refgenie_dir):
     config_version = 0.4
     if galaxy_root:
-        version_major = get_galaxy_major_version(galaxy_root=galaxy_root)
+        version_major = get_galaxy_major_version(galaxy_root)
         if version_major < parse_version("21.09"):
             config_version = 0.3
     return REFGENIE_CONFIG_TEMPLATE % (config_version, refgenie_dir)
@@ -1152,6 +1180,37 @@ class DockerGalaxyConfig(BaseManagedGalaxyConfig):
         shutil.rmtree(self.config_directory, CLEANUP_IGNORE_ERRORS)
 
 
+def _shut_down_daemon_monitor(process, asked_to_stop=True):
+    """Wait for the daemon monitor to tear Galaxy down, then insist that it exit.
+
+    Closing the control pipe is what asks the monitor to stop Galaxy, so when it
+    has just been closed give the monitor time to run its own
+    SIGTERM-then-SIGKILL escalation before signalling it. A daemon that was
+    already detached has no pipe left and has not been asked for anything, so
+    waiting there only burns a grace period it was never told to observe.
+
+    Signalling the monitor's group reaches the monitor alone - Galaxy leads a
+    separate group whose ID only the monitor holds - so escalate rather than
+    wait forever, and say so if Galaxy might be left behind.
+
+    Never raises. This runs while a config is being torn down, frequently with
+    another exception already in flight, and masking that would be worse than
+    whatever went wrong here.
+    """
+    if asked_to_stop:
+        # The monitor's own escalation is bounded by a grace period plus the
+        # settle after SIGKILL. Each wait loop may overshoot by one poll, so
+        # allow both polls before concluding it is stuck.
+        try:
+            process.wait(timeout=termination_timeout() + KILL_SETTLE_TIMEOUT + 2 * TERMINATION_POLL_INTERVAL)
+            return
+        except subprocess.TimeoutExpired:
+            pass
+    terminate_process_group(process.pid, reap=process.poll)
+    if process.poll() is None:
+        warn(f"Galaxy daemon monitor [{process.pid}] would not exit; Galaxy may still be running.")
+
+
 class LocalGalaxyConfig(BaseManagedGalaxyConfig):
     """A local, non-containerized implementation of :class:`GalaxyConfig`."""
 
@@ -1181,6 +1240,10 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         )
         self.galaxy_root = galaxy_root
         self._virtual_env_locs = []
+        self.galaxy_version = get_galaxy_version(galaxy_root)
+        self.use_multiprocessing = gravity_supports_multiprocessing(galaxy_root)
+        self._daemon_process = None
+        self._daemon_control_fd = None
 
     @property
     def virtual_env_dir(self):
@@ -1198,6 +1261,10 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
 
     @property
     def service_log_contents(self) -> Dict[str, str]:
+        if self.use_multiprocessing:
+            # Multiprocessing services inherit the foreground process's
+            # stdout/stderr, which start_daemon redirects to the main log.
+            return {}
         if not self.env.get("GRAVITY_STATE_DIR"):
             return {}
         return tail_log_directory(os.path.join(self.gravity_state_dir, "log"))
@@ -1211,13 +1278,69 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
             if exists:
                 with open(self.pid_file) as f:
                     print(f"pid_file contents are [{f.read()}]")
-        if self.env.get("GRAVITY_STATE_DIR"):
+        if self.use_multiprocessing:
+            asked_to_stop = self._daemon_control_fd is not None
+            if asked_to_stop:
+                os.close(self._daemon_control_fd)
+                self._daemon_control_fd = None
+            if self._daemon_process is not None:
+                _shut_down_daemon_monitor(self._daemon_process, asked_to_stop=asked_to_stop)
+            else:
+                kill_pid_file(self.pid_file)
+        elif self.env.get("GRAVITY_STATE_DIR"):
             stop_gravity(
                 virtual_env=self.virtual_env_dir or os.path.join(self.galaxy_root, ".venv"),
                 gravity_state_dir=self.gravity_state_dir,
                 env=self.env,
             )
-        kill_pid_file(self.pid_file)
+        if not self.use_multiprocessing:
+            kill_pid_file(self.pid_file)
+        else:
+            try:
+                os.unlink(self.pid_file)
+            except FileNotFoundError:
+                pass
+
+    def start_daemon(self, command):
+        """Run foreground Galaxy in a detached session and record its PID."""
+        environ = os.environ.copy()
+        environ.update(self.env)
+        monitor_read_fd, monitor_write_fd = os.pipe()
+        try:
+            with open(self.log_file, "ab", buffering=0) as log:
+                process = subprocess.Popen(
+                    [sys.executable, "-m", "planemo.galaxy.daemon_monitor", str(monitor_read_fd), command],
+                    env=environ,
+                    pass_fds=[monitor_read_fd],
+                    stdout=log,
+                    stderr=subprocess.STDOUT,
+                    start_new_session=True,
+                )
+        except BaseException:
+            os.close(monitor_write_fd)
+            raise
+        finally:
+            os.close(monitor_read_fd)
+        self._daemon_process = process
+        self._daemon_control_fd = monitor_write_fd
+        try:
+            with open(self.pid_file, "w") as pid_file:
+                pid_file.write(str(process.pid))
+        except BaseException:
+            self.kill()
+            raise
+        return process
+
+    def detach_daemon(self):
+        """Allow a successfully launched daemon to outlive Planemo."""
+        if self._daemon_control_fd is not None:
+            try:
+                os.write(self._daemon_control_fd, b"D")
+            except BrokenPipeError:
+                pass
+            finally:
+                os.close(self._daemon_control_fd)
+                self._daemon_control_fd = None
 
     def startup_command(self, ctx, **kwds):
         """Return a shell command used to startup this instance.
@@ -1229,7 +1352,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         # TODO: Allow running dockerized Galaxy here instead.
         setup_venv_command = setup_venv(ctx, kwds, self)
         run_script = f"{shlex.quote(os.path.join(self.galaxy_root, 'run.sh'))} $COMMON_STARTUP_ARGS"
-        if daemon:
+        if daemon and not self.use_multiprocessing:
             run_script += " --daemon"
         else:
             run_script += f" --server-name {shlex.quote(self.server_name)}"
@@ -1402,6 +1525,7 @@ def _tool_conf_entry_for(tool_paths):
 
 
 def _install_galaxy(ctx, galaxy_root, env, kwds):
+    get_galaxy_version.cache_clear()
     if not kwds.get("no_cache_galaxy", False):
         _install_galaxy_via_git(ctx, galaxy_root, env, kwds)
     else:

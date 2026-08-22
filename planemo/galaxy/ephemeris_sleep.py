@@ -7,6 +7,7 @@ The script functions by making repeated requests to
 ``http(s)://fqdn/api/version``, an API which requires no authentication
 to access."""
 
+import subprocess
 import sys
 import time
 from argparse import ArgumentParser
@@ -54,13 +55,26 @@ class SleepCondition:
         self.sleep = False
 
 
-def sleep(galaxy_url, verbose=False, timeout=0, sleep_condition=None):
+def _wait_for_retry(startup_process):
+    if startup_process is None:
+        time.sleep(DEFAULT_SLEEP_WAIT)
+        return False
+    try:
+        startup_process.wait(timeout=DEFAULT_SLEEP_WAIT)
+    except subprocess.TimeoutExpired:
+        return False
+    return True
+
+
+def sleep(galaxy_url, verbose=False, timeout=0, sleep_condition=None, startup_process=None):
     if sleep_condition is None:
         sleep_condition = SleepCondition()
 
     count = 0
     start_time = time.time()
     while sleep_condition.sleep:
+        if startup_process is not None and startup_process.poll() is not None:
+            return False
         try:
             result = requests.get(galaxy_url + "/api/version", timeout=CONNECT_TIMEOUT)
             try:
@@ -92,7 +106,8 @@ def sleep(galaxy_url, verbose=False, timeout=0, sleep_condition=None):
             sys.stderr.write(f"Failed to contact Galaxy after {elapsed:.0f}s ({count} attempts)\n")
             return False
 
-        time.sleep(DEFAULT_SLEEP_WAIT)
+        if _wait_for_retry(startup_process):
+            return False
 
     return True
 
