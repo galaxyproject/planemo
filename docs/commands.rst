@@ -37,6 +37,7 @@ documentation describes these commands.
 .. include:: commands/list_alias.rst
 .. include:: commands/list_invocations.rst
 .. include:: commands/list_repos.rst
+.. include:: commands/list_workflows.rst
 .. include:: commands/merge_test_reports.rst
 .. include:: commands/mull.rst
 .. include:: commands/mulled_init.rst

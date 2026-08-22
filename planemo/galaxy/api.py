@@ -140,6 +140,25 @@ def export_invocation_as_archive(url=None, key=None, user_gi=None, invocation_id
     return response
 
 
+def get_workflows(url, key):
+    wf_gi = gi(None, url, key)
+    workflows = wf_gi.workflows.get_workflows()
+
+    def get_repo_url(workflow):
+        source_metadata = workflow.get("source_metadata") or {}
+        return source_metadata.get("url")
+
+    return {
+        workflow["id"]: {
+            "name": workflow["name"],
+            "repo_url": get_repo_url(workflow),
+            "url": workflow["url"],
+            "published": workflow.get("published", False),
+        }
+        for workflow in workflows
+    }
+
+
 def _format_for_summary(blob, empty_message, prefix="|  "):
     contents = "\n".join([f"{prefix}{line.strip()}" for line in StringIO(blob).readlines() if line.rstrip("\n\r")])
     return contents or f"{prefix}*{empty_message}*"

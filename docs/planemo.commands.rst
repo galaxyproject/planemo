@@ -252,6 +252,14 @@ planemo.commands.cmd\_list\_repos module
    :show-inheritance:
    :undoc-members:
 
+planemo.commands.cmd\_list\_workflows module
+---------------------------------------------
+
+.. automodule:: planemo.commands.cmd_list_workflows
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 planemo.commands.cmd\_merge\_test\_reports module
 -------------------------------------------------
 

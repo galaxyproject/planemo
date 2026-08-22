@@ -10,11 +10,6 @@ from planemo.io import (
     info,
 )
 
-try:
-    from tabulate import tabulate
-except ImportError:
-    tabulate = None  # type: ignore
-
 
 @click.command("delete_alias")
 @options.alias_option(required=True)

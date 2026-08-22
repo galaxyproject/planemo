@@ -16,6 +16,7 @@ from xml.sax.saxutils import escape
 import click
 from galaxy.util import commands
 from galaxy.util.commands import download_command
+from tabulate import tabulate
 
 from .exit_codes import (
     EXIT_CODE_NO_SUCH_TARGET,
@@ -72,6 +73,15 @@ def error(message, *args):
     if args:
         message = message % args
     click.echo(click.style(message, bold=True, fg="red"), err=True)
+
+
+def print_table(columns):
+    """Print a mapping of column header to column values as a text table.
+
+    Centralized so the table rendering used by the various ``list_*`` commands
+    can be restyled in one place.
+    """
+    print(tabulate(columns, headers="keys"))
 
 
 def warn(message, *args):
