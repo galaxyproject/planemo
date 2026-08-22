@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.75.47.dev0
+0.75.47 (2026-08-22)
 ---------------------
 * use target_str_to_targets from tool-util package (thanks to `@bernt-matthias`_). `Pull Request 1467`_
 * Check for empty shed fields (thanks to `@bernt-matthias`_). `Pull Request 1486`_
