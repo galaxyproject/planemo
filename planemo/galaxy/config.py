@@ -2,6 +2,7 @@
 
 import abc
 import contextlib
+import functools
 import hashlib
 import importlib.util
 import json
@@ -9,7 +10,6 @@ import os
 import random
 import shlex
 import shutil
-import signal
 import sqlite3
 import subprocess
 import sys
@@ -58,9 +58,13 @@ from planemo.galaxy.workflows import (
 from planemo.io import (
     communicate,
     kill_pid_file,
+    KILL_SETTLE_TIMEOUT,
     shell,
     shell_join,
     stop_gravity,
+    terminate_process_group,
+    TERMINATION_POLL_INTERVAL,
+    termination_timeout,
     untar_to,
     wait_on,
     warn,
@@ -380,7 +384,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             galaxy_root = config_join("galaxy-dev")
         if not os.path.isdir(galaxy_root):
             _install_galaxy(ctx, galaxy_root, install_env, kwds)
-        galaxy_version = get_galaxy_version(galaxy_root)
 
         server_name = "main"
         # Once we don't have to support earlier than 18.01 - try putting these files
@@ -392,7 +395,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         kwds["all_in_one_handling"] = True
         _handle_job_config_file(config_directory, server_name, test_data_dir, all_tool_paths, kwds)
         _handle_file_sources(config_directory, test_data_dir, kwds)
-        _handle_refgenie_config(config_directory, galaxy_root, kwds, galaxy_version)
+        _handle_refgenie_config(config_directory, galaxy_root, kwds)
         _handle_vault_config(config_directory, kwds)
         file_path = kwds.get("file_path") or config_join("files")
         _ensure_directory(file_path)
@@ -509,7 +512,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             kwds=kwds,
             template_args=template_args,
             config_join=config_join,
-            galaxy_version=galaxy_version,
         )
 
         _write_tool_conf(ctx, all_tool_paths, tool_conf)
@@ -534,7 +536,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             runnables,
             galaxy_root,
             kwds,
-            galaxy_version,
         )
 
 
@@ -548,9 +549,8 @@ def _init_interactivetools_db(path):
     conn.close()
 
 
-def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, config_join, galaxy_version=None):
-    galaxy_version = galaxy_version or get_galaxy_version(galaxy_root)
-    if get_galaxy_major_version(galaxy_version=galaxy_version) < parse_version("22.01"):
+def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, config_join):
+    if get_galaxy_major_version(galaxy_root) < parse_version("22.01"):
         # Legacy .ini setup
         env["GALAXY_CONFIG_FILE"] = config_join("galaxy.ini")
         web_config = _sub(WEB_SERVER_CONFIG_TEMPLATE, template_args)
@@ -558,7 +558,7 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
     else:
         env["GALAXY_CONFIG_FILE"] = config_join("galaxy.yml")
         env["GRAVITY_STATE_DIR"] = config_join("gravity")
-        use_multiprocessing = gravity_supports_multiprocessing(galaxy_version=galaxy_version)
+        use_multiprocessing = gravity_supports_multiprocessing(galaxy_root)
         if use_multiprocessing:
             env.pop("SUPERVISORD_SOCKET", None)
         else:
@@ -618,10 +618,9 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
         )
 
 
-def gravity_supports_multiprocessing(galaxy_root=None, galaxy_version=None):
+def gravity_supports_multiprocessing(galaxy_root):
     """Return whether Galaxy includes a multiprocessing-capable Gravity."""
-    galaxy_version = galaxy_version or get_galaxy_version(galaxy_root)
-    return galaxy_version >= MINIMUM_MULTIPROCESSING_GALAXY_VERSION
+    return get_galaxy_version(galaxy_root) >= MINIMUM_MULTIPROCESSING_GALAXY_VERSION
 
 
 def _expand_paths(galaxy_root: Optional[str], extra_tools: List[str]) -> List[str]:
@@ -634,7 +633,14 @@ def _expand_paths(galaxy_root: Optional[str], extra_tools: List[str]) -> List[st
     return extra_tools
 
 
+@functools.lru_cache(maxsize=None)
 def get_galaxy_version(galaxy_root):
+    """Return the parsed version of the Galaxy checkout at ``galaxy_root``.
+
+    Cached because reading it means executing Galaxy's version module, and a
+    single configuration build asks several independent questions of it.
+    ``_install_galaxy`` clears the cache, since that is what changes the answer.
+    """
     galaxy_lib = os.path.join(galaxy_root, "lib", "galaxy")
     version_path = os.path.join(galaxy_lib, "version.py")
     if not os.path.isfile(version_path):
@@ -646,15 +652,15 @@ def get_galaxy_version(galaxy_root):
     return parse_version(version)
 
 
-def get_galaxy_major_version(galaxy_root=None, galaxy_version=None):
-    version = galaxy_version or get_galaxy_version(galaxy_root)
+def get_galaxy_major_version(galaxy_root):
+    version = get_galaxy_version(galaxy_root)
     return parse_version(f"{version.major}.{version.minor}")
 
 
-def get_refgenie_config(galaxy_root, refgenie_dir, galaxy_version=None):
+def get_refgenie_config(galaxy_root, refgenie_dir):
     config_version = 0.4
     if galaxy_root:
-        version_major = get_galaxy_major_version(galaxy_root=galaxy_root, galaxy_version=galaxy_version)
+        version_major = get_galaxy_major_version(galaxy_root)
         if version_major < parse_version("21.09"):
             config_version = 0.3
     return REFGENIE_CONFIG_TEMPLATE % (config_version, refgenie_dir)
@@ -1174,6 +1180,37 @@ class DockerGalaxyConfig(BaseManagedGalaxyConfig):
         shutil.rmtree(self.config_directory, CLEANUP_IGNORE_ERRORS)
 
 
+def _shut_down_daemon_monitor(process, asked_to_stop=True):
+    """Wait for the daemon monitor to tear Galaxy down, then insist that it exit.
+
+    Closing the control pipe is what asks the monitor to stop Galaxy, so when it
+    has just been closed give the monitor time to run its own
+    SIGTERM-then-SIGKILL escalation before signalling it. A daemon that was
+    already detached has no pipe left and has not been asked for anything, so
+    waiting there only burns a grace period it was never told to observe.
+
+    Signalling the monitor's group reaches the monitor alone - Galaxy leads a
+    separate group whose ID only the monitor holds - so escalate rather than
+    wait forever, and say so if Galaxy might be left behind.
+
+    Never raises. This runs while a config is being torn down, frequently with
+    another exception already in flight, and masking that would be worse than
+    whatever went wrong here.
+    """
+    if asked_to_stop:
+        # The monitor's own escalation is bounded by a grace period plus the
+        # settle after SIGKILL. Each wait loop may overshoot by one poll, so
+        # allow both polls before concluding it is stuck.
+        try:
+            process.wait(timeout=termination_timeout() + KILL_SETTLE_TIMEOUT + 2 * TERMINATION_POLL_INTERVAL)
+            return
+        except subprocess.TimeoutExpired:
+            pass
+    terminate_process_group(process.pid, reap=process.poll)
+    if process.poll() is None:
+        warn(f"Galaxy daemon monitor [{process.pid}] would not exit; Galaxy may still be running.")
+
+
 class LocalGalaxyConfig(BaseManagedGalaxyConfig):
     """A local, non-containerized implementation of :class:`GalaxyConfig`."""
 
@@ -1189,7 +1226,6 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         runnables,
         galaxy_root,
         kwds,
-        galaxy_version=None,
     ):
         super().__init__(
             ctx,
@@ -1204,8 +1240,8 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         )
         self.galaxy_root = galaxy_root
         self._virtual_env_locs = []
-        self.galaxy_version = galaxy_version or get_galaxy_version(galaxy_root)
-        self.use_multiprocessing = gravity_supports_multiprocessing(galaxy_version=self.galaxy_version)
+        self.galaxy_version = get_galaxy_version(galaxy_root)
+        self.use_multiprocessing = gravity_supports_multiprocessing(galaxy_root)
         self._daemon_process = None
         self._daemon_control_fd = None
 
@@ -1243,15 +1279,12 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
                 with open(self.pid_file) as f:
                     print(f"pid_file contents are [{f.read()}]")
         if self.use_multiprocessing:
-            if self._daemon_control_fd is not None:
+            asked_to_stop = self._daemon_control_fd is not None
+            if asked_to_stop:
                 os.close(self._daemon_control_fd)
                 self._daemon_control_fd = None
             if self._daemon_process is not None:
-                try:
-                    self._daemon_process.wait(timeout=2)
-                except subprocess.TimeoutExpired:
-                    self._daemon_process.send_signal(signal.SIGTERM)
-                    self._daemon_process.wait(timeout=2)
+                _shut_down_daemon_monitor(self._daemon_process, asked_to_stop=asked_to_stop)
             else:
                 kill_pid_file(self.pid_file)
         elif self.env.get("GRAVITY_STATE_DIR"):
@@ -1492,6 +1525,7 @@ def _tool_conf_entry_for(tool_paths):
 
 
 def _install_galaxy(ctx, galaxy_root, env, kwds):
+    get_galaxy_version.cache_clear()
     if not kwds.get("no_cache_galaxy", False):
         _install_galaxy_via_git(ctx, galaxy_root, env, kwds)
     else:
@@ -1648,13 +1682,11 @@ def _handle_file_sources(config_directory, test_data_dir, kwds):
     kwds["file_sources_config_file"] = file_sources_conf
 
 
-def _handle_refgenie_config(config_directory, galaxy_root, kwds, galaxy_version=None):
+def _handle_refgenie_config(config_directory, galaxy_root, kwds):
     refgenie_dir = os.path.join(config_directory, "refgenie")
     _ensure_directory(refgenie_dir)
     refgenie_config_file = os.path.join(refgenie_dir, "genome_config.yaml")
-    refgenie_config = get_refgenie_config(
-        galaxy_root=galaxy_root, refgenie_dir=refgenie_dir, galaxy_version=galaxy_version
-    )
+    refgenie_config = get_refgenie_config(galaxy_root=galaxy_root, refgenie_dir=refgenie_dir)
     with open(refgenie_config_file, "w") as fh:
         fh.write(refgenie_config)
     kwds["refgenie_config_file"] = refgenie_config_file

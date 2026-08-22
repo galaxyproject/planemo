@@ -3,6 +3,7 @@
 import contextlib
 import errno
 import fnmatch
+import math
 import os
 import shutil
 import signal
@@ -12,6 +13,11 @@ import tempfile
 import time
 from io import StringIO
 from sys import platform as _platform
+from typing import (
+    Any,
+    Callable,
+    Optional,
+)
 from xml.sax.saxutils import escape
 
 import click
@@ -24,6 +30,37 @@ from .exit_codes import (
 )
 
 IS_OS_X = _platform == "darwin"
+
+# How long a process group gets to honour SIGTERM before it is SIGKILLed, and how
+# often it is checked in the meantime.
+DEFAULT_TERMINATION_TIMEOUT = 10.0
+TERMINATION_POLL_INTERVAL = 0.1
+TERMINATION_TIMEOUT_ENVIRON_KEY = "PLANEMO_TERMINATION_TIMEOUT"
+# SIGKILL cannot be caught, so anything still in the group afterwards is either
+# a zombie nobody has reaped or a process wedged in uninterruptible IO. Neither
+# is worth a second full grace period.
+KILL_SETTLE_TIMEOUT = 1.0
+
+
+def termination_timeout() -> float:
+    """Return the grace period a process group gets to exit on SIGTERM.
+
+    Read from the environment on every call rather than captured at import, so
+    that the daemon monitor - which Planemo runs as a subprocess - honours the
+    same value without it being threaded through argv.
+    """
+    configured = os.environ.get(TERMINATION_TIMEOUT_ENVIRON_KEY)
+    if configured is None:
+        return DEFAULT_TERMINATION_TIMEOUT
+    try:
+        timeout = float(configured)
+    except ValueError:
+        warn(f"Ignoring invalid {TERMINATION_TIMEOUT_ENVIRON_KEY} [{configured}]")
+        return DEFAULT_TERMINATION_TIMEOUT
+    if not math.isfinite(timeout) or timeout < 0:
+        warn(f"Ignoring invalid {TERMINATION_TIMEOUT_ENVIRON_KEY} [{configured}]")
+        return DEFAULT_TERMINATION_TIMEOUT
+    return timeout
 
 
 def args_to_str(args):
@@ -224,27 +261,69 @@ def kill_pid_file(pid_file: str):
         pass
 
 
-def kill_posix(pid: int):
-    """Kill process group corresponding to specified pid."""
+def process_group_exists(pgid: int) -> bool:
+    """Return whether any process remains in the specified process group."""
+    try:
+        os.killpg(pgid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        # Something is still there, it just isn't ours to signal.
+        return True
+    return True
 
-    def _check_pid():
+
+def _wait_for_process_group_exit(pgid: int, timeout: float, reap: Optional[Callable[[], Any]]) -> bool:
+    deadline = time.monotonic() + timeout
+    while True:
+        if reap is not None:
+            reap()
+        if not process_group_exists(pgid):
+            return True
+        if time.monotonic() >= deadline:
+            return False
+        time.sleep(TERMINATION_POLL_INTERVAL)
+
+
+def terminate_process_group(
+    pgid: int, timeout: Optional[float] = None, reap: Optional[Callable[[], Any]] = None
+) -> bool:
+    """SIGTERM a process group, escalating to SIGKILL if it outlives ``timeout``.
+
+    ``pgid`` is a process group ID rather than a PID. A process started with
+    ``start_new_session=True`` leads a group of its own, so its PID doubles as a
+    group ID that stays valid even once the leader itself has been reaped.
+
+    Pass ``reap`` - typically ``Popen.poll`` - when the caller owns the group
+    leader. An unreaped leader lingers as a zombie that still answers signal 0,
+    so without it the group never looks empty, the grace period is always spent
+    in full, and SIGKILL is always sent to a group that already did as it was told.
+
+    Returns whether the group is gone.
+    """
+    if timeout is None:
+        timeout = termination_timeout()
+    for process_signal, grace in ((signal.SIGTERM, timeout), (signal.SIGKILL, KILL_SETTLE_TIMEOUT)):
         try:
-            os.kill(pid, 0)
+            os.killpg(pgid, process_signal)
+        except ProcessLookupError:
             return True
         except OSError:
+            # Not ours to signal - there is nothing further we can do.
             return False
+        if _wait_for_process_group_exit(pgid, grace, reap):
+            return True
+    return not process_group_exists(pgid)
 
-    if _check_pid():
-        for process_signal in (signal.SIGTERM, signal.SIGKILL):
-            try:
-                # gunicorn (unlike paste), seem to require killing process
-                # group
-                os.killpg(os.getpgid(pid), process_signal)
-            except OSError:
-                return
-            time.sleep(1)
-            if not _check_pid():
-                return
+
+def kill_posix(pid: int):
+    """Kill process group corresponding to specified pid."""
+    try:
+        # gunicorn (unlike paste), seem to require killing process group
+        pgid = os.getpgid(pid)
+    except ProcessLookupError:
+        return
+    terminate_process_group(pgid)
 
 
 @contextlib.contextmanager

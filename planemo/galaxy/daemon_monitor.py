@@ -1,4 +1,9 @@
-"""Keep a foreground Galaxy process tied to Planemo until detached."""
+"""Keep a foreground Galaxy process tied to Planemo until detached.
+
+Planemo runs this as ``python -m planemo.galaxy.daemon_monitor``, which imports
+the ``planemo.galaxy`` package first - so all of Planemo is already loaded here
+and sharing its process-group helpers costs nothing.
+"""
 
 import os
 import select
@@ -7,39 +12,19 @@ import subprocess
 import sys
 import time
 
+from planemo.io import terminate_process_group
+
 DETACH = b"D"
 POLL_INTERVAL = 0.1
-TERMINATION_TIMEOUT = 0.5
-
-
-def _process_group_exists(process_group):
-    try:
-        os.killpg(process_group, 0)
-    except ProcessLookupError:
-        return False
-    return True
-
-
-def _wait_for_process_group(process_group):
-    deadline = time.monotonic() + TERMINATION_TIMEOUT
-    while time.monotonic() < deadline:
-        if not _process_group_exists(process_group):
-            return True
-        time.sleep(POLL_INTERVAL)
-    return not _process_group_exists(process_group)
 
 
 def _terminate_process_group(child):
-    process_group = child.pid
-    for process_signal in (signal.SIGTERM, signal.SIGKILL):
-        try:
-            os.killpg(process_group, process_signal)
-        except ProcessLookupError:
-            break
-        if _wait_for_process_group(process_group):
-            break
-    child.wait()
-    return child.returncode
+    """Stop Galaxy's process group and reap its leader."""
+    # start_new_session=True made the child a process group leader, so its PID
+    # doubles as a group ID that stays valid even after the leader is reaped.
+    if terminate_process_group(child.pid, reap=child.poll):
+        return child.wait()
+    return 1
 
 
 def main():

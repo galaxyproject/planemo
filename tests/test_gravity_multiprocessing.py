@@ -12,11 +12,21 @@ from packaging.version import InvalidVersion
 
 from planemo import network_util
 from planemo.galaxy.config import (
+    _shut_down_daemon_monitor,
+    get_galaxy_version,
     gravity_supports_multiprocessing,
     LocalGalaxyConfig,
     write_galaxy_config,
 )
-from .test_utils import create_test_context
+from planemo.io import (
+    KILL_SETTLE_TIMEOUT,
+    TERMINATION_POLL_INTERVAL,
+    TERMINATION_TIMEOUT_ENVIRON_KEY,
+)
+from .test_utils import (
+    create_test_context,
+    sigterm_ignoring_group,
+)
 
 serve_module = importlib.import_module("planemo.galaxy.serve")
 
@@ -508,6 +518,8 @@ def test_monitor_escalates_for_sigterm_ignoring_process_group(tmp_path):
     repository_root = os.path.dirname(os.path.dirname(__file__))
     environ = os.environ.copy()
     environ["PYTHONPATH"] = repository_root
+    # Escalation is what is under test, not how long Galaxy is given first.
+    environ[TERMINATION_TIMEOUT_ENVIRON_KEY] = "0.5"
     parent = subprocess.Popen(
         [sys.executable, "-c", PARENT_PROCESS, str(galaxy_root), str(config_directory), str(port), str(ready_path)],
         env=environ,
@@ -530,3 +542,93 @@ def test_monitor_escalates_for_sigterm_ignoring_process_group(tmp_path):
             parent.wait()
         if monitor_pid is not None and _pid_exists(monitor_pid):
             os.killpg(monitor_pid, signal.SIGKILL)
+
+
+def test_daemon_monitor_shutdown_escalates_without_raising(tmp_path, monkeypatch):
+    """A monitor that will not exit is killed, and teardown still returns cleanly."""
+    monkeypatch.setenv(TERMINATION_TIMEOUT_ENVIRON_KEY, "0.5")
+    with sigterm_ignoring_group(tmp_path / "ready") as process:
+        _shut_down_daemon_monitor(process)
+        assert process.returncode == -signal.SIGKILL
+
+
+def test_daemon_monitor_shutdown_waits_for_a_monitor_that_exits(tmp_path, monkeypatch):
+    """A monitor that stops on its own is never signalled."""
+    monkeypatch.setenv(TERMINATION_TIMEOUT_ENVIRON_KEY, "5")
+    process = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(0.2)"], start_new_session=True)
+    try:
+        _shut_down_daemon_monitor(process)
+        assert process.returncode == 0
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait()
+
+
+def test_daemon_monitor_shutdown_allows_the_monitor_full_escalation_budget(monkeypatch):
+    """The parent waits for both monitor escalation stages and their polling overhead."""
+    monkeypatch.setenv(TERMINATION_TIMEOUT_ENVIRON_KEY, "0.5")
+
+    class ImmediateProcess:
+        timeout = None
+
+        def wait(self, timeout):
+            self.timeout = timeout
+
+    process = ImmediateProcess()
+    _shut_down_daemon_monitor(process)
+    assert process.timeout == 0.5 + KILL_SETTLE_TIMEOUT + 2 * TERMINATION_POLL_INTERVAL
+
+
+def test_daemon_monitor_shutdown_signals_a_detached_daemon_immediately(tmp_path, monkeypatch):
+    """A detached daemon was never asked to stop, so do not wait for it to."""
+    monkeypatch.setenv(TERMINATION_TIMEOUT_ENVIRON_KEY, "30")
+    process = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(300)"], start_new_session=True)
+    try:
+        started = time.monotonic()
+        _shut_down_daemon_monitor(process, asked_to_stop=False)
+        assert time.monotonic() - started < 5
+        assert process.returncode == -signal.SIGTERM
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait()
+
+
+def test_galaxy_version_is_read_once_per_configuration(tmp_path):
+    """Building a configuration asks the version repeatedly; Galaxy's module runs once."""
+    galaxy_root = _make_galaxy_root(tmp_path, "25.0.1")
+    config_directory = tmp_path / "config"
+    config_directory.mkdir()
+    get_galaxy_version.cache_clear()
+    try:
+        write_galaxy_config(
+            str(galaxy_root),
+            {},
+            {},
+            {},
+            {"port": 12345},
+            lambda name: str(config_directory / name),
+        )
+        cache_info = get_galaxy_version.cache_info()
+        assert cache_info.misses == 1
+        assert cache_info.hits >= 1
+    finally:
+        get_galaxy_version.cache_clear()
+
+
+def test_galaxy_version_cache_is_keyed_on_the_root(tmp_path):
+    """Two checkouts do not share an answer, and reinstalling invalidates one."""
+    first = _make_galaxy_root(tmp_path / "first", "24.2.4")
+    second = _make_galaxy_root(tmp_path / "second", "25.0.1")
+    get_galaxy_version.cache_clear()
+    try:
+        assert not gravity_supports_multiprocessing(str(first))
+        assert gravity_supports_multiprocessing(str(second))
+        version_file = first / "lib" / "galaxy" / "version" / "__init__.py"
+        version_file.write_text('VERSION_MAJOR = "25.0"\nVERSION_MINOR = "1"\nVERSION = "25.0.1"\n')
+        assert not gravity_supports_multiprocessing(str(first))
+        get_galaxy_version.cache_clear()
+        assert gravity_supports_multiprocessing(str(first))
+    finally:
+        get_galaxy_version.cache_clear()

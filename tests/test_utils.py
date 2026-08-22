@@ -6,6 +6,8 @@ import functools
 import os
 import shutil
 import signal
+import subprocess
+import sys
 import time
 import traceback
 from concurrent.futures import (
@@ -63,6 +65,49 @@ CWLTOOL_CACHE_ENV_PROP = "PLANEMO_CWLTOOL_CACHE_DIRECTORY"
 def test_sleep_fails_immediately_for_invalid_url():
     with pytest.raises(requests_lib.exceptions.InvalidURL):
         sleep("http://::1:9090")
+
+
+SIGTERM_IGNORING_PROCESS = """
+import signal
+import sys
+import time
+
+signal.signal(signal.SIGTERM, signal.SIG_IGN)
+with open(sys.argv[1], "w") as ready_file:
+    ready_file.write("ready")
+time.sleep(300)
+"""
+
+
+def _spawn_sigterm_ignoring_group(ready_path):
+    """Start a leader that ignores SIGTERM, in a process group of its own.
+
+    Waits for the handler to actually be installed - signalling before that
+    point would kill the process outright and prove nothing.
+    """
+    process = subprocess.Popen(
+        [sys.executable, "-c", SIGTERM_IGNORING_PROCESS, str(ready_path)],
+        start_new_session=True,
+    )
+    for _ in range(200):
+        if ready_path.exists():
+            return process
+        time.sleep(0.05)
+    process.kill()
+    process.wait()
+    raise AssertionError("Process never began ignoring SIGTERM")
+
+
+@contextlib.contextmanager
+def sigterm_ignoring_group(ready_path):
+    """Yield a running process group that refuses to die on SIGTERM."""
+    process = _spawn_sigterm_ignoring_group(ready_path)
+    try:
+        yield process
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait()
 
 
 class MarkGenerator:
