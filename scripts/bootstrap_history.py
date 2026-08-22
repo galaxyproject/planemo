@@ -23,6 +23,14 @@ PROJECT_URL = f"https://github.com/{PROJECT_AUTHOR}/{PROJECT_NAME}"
 PROJECT_API = f"https://api.github.com/repos/{PROJECT_AUTHOR}/{PROJECT_NAME}/"
 
 
+def github_api_get(api_url):
+    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    headers = {"Authorization": f"Bearer {token}"} if token else {}
+    response = requests.get(api_url, headers=headers)
+    response.raise_for_status()
+    return response.json()
+
+
 def get_last_release_tag():
     """Get the last release tag based on the current version in __init__.py"""
     version = project.__version__
@@ -44,7 +52,10 @@ def get_merge_commits_since_tag(tag):
     """Get merge commits since the specified tag"""
     try:
         result = subprocess.run(
-            ["git", "log", "--merges", "--oneline", f"{tag}..HEAD"], capture_output=True, text=True, check=True
+            ["git", "log", "--first-parent", "--merges", "--oneline", f"{tag}..HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
         )
         return result.stdout.strip().split("\n") if result.stdout.strip() else []
     except subprocess.CalledProcessError:
@@ -75,7 +86,7 @@ def generate_acknowledgements():
                 try:
                     # Get PR details from GitHub API
                     api_url = urljoin(PROJECT_API, f"pulls/{pr_number}")
-                    req = requests.get(api_url).json()
+                    req = github_api_get(api_url)
                     title = req.get("title", "")
                     login = req["user"]["login"]
                     is_bot = req["user"].get("type") == "Bot" or login.endswith("[bot]")
@@ -145,14 +156,14 @@ def main(argv):
         message = argv[2]
     elif not (ident.startswith("pr") or ident.startswith("issue")):
         api_url = urljoin(PROJECT_API, "commits/%s" % ident)
-        req = requests.get(api_url).json()
+        req = github_api_get(api_url)
         commit = req["commit"]
         message = commit["message"]
         message = get_first_sentence(message)
     elif requests is not None and ident.startswith("pr"):
         pull_request = ident[len("pr") :]
         api_url = urljoin(PROJECT_API, "pulls/%s" % pull_request)
-        req = requests.get(api_url).json()
+        req = github_api_get(api_url)
         message = req["title"]
         login = req["user"]["login"]
         message = message.rstrip(".")
@@ -160,7 +171,7 @@ def main(argv):
     elif requests is not None and ident.startswith("issue"):
         issue = ident[len("issue") :]
         api_url = urljoin(PROJECT_API, "issues/%s" % issue)
-        req = requests.get(api_url).json()
+        req = github_api_get(api_url)
         message = req["title"]
     else:
         message = ""

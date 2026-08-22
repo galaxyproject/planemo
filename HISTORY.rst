@@ -8,6 +8,11 @@ History
 ---------------------
 0.75.47.dev0
 ---------------------
+* use target_str_to_targets from tool-util package (thanks to `@bernt-matthias`_). `Pull Request 1467`_
+* Check for empty shed fields (thanks to `@bernt-matthias`_). `Pull Request 1486`_
+* Declare rich as a direct dependency (thanks to `@jmchilton`_). `Pull Request 1682`_
+* command used to list available workflows (rebase + fixes) (thanks to `@jmchilton`_). `Pull Request 1681`_
+* Use Gravity multiprocessing for modern Galaxy (thanks to `@mvdbeek`_). `Pull Request 1678`_
 
 
 ---------------------
@@ -2426,6 +2431,11 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1467: https://github.com/galaxyproject/planemo/pull/1467
+.. _Pull Request 1486: https://github.com/galaxyproject/planemo/pull/1486
+.. _Pull Request 1682: https://github.com/galaxyproject/planemo/pull/1682
+.. _Pull Request 1681: https://github.com/galaxyproject/planemo/pull/1681
+.. _Pull Request 1678: https://github.com/galaxyproject/planemo/pull/1678
 .. _Pull Request 1657: https://github.com/galaxyproject/planemo/pull/1657
 .. _Pull Request 1659: https://github.com/galaxyproject/planemo/pull/1659
 .. _Pull Request 1660: https://github.com/galaxyproject/planemo/pull/1660
