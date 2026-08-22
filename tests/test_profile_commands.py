@@ -29,3 +29,6 @@ class ProfileCommandsTestCase(CliTestCase):
             self._profile_commands(database_type="postgres_docker")
         finally:
             stop_postgres_docker()
+
+    def test_profile_commands_sqlite(self):
+        self._profile_commands(database_type="sqlite")

@@ -43,7 +43,7 @@ from planemo import (
     network_util,
 )
 from planemo.config import OptionSource
-from planemo.database import postgres_singularity
+from planemo.database import create_database_source
 from planemo.deps import ensure_dependency_resolvers_conf_configured
 from planemo.docker import docker_host_args
 from planemo.galaxy.workflows import (
@@ -165,6 +165,13 @@ DEFAULT_GALAXY_SOURCE = "https://github.com/galaxyproject/galaxy"
 CWL_GALAXY_SOURCE = "https://github.com/common-workflow-language/galaxy"
 
 DATABASE_LOCATION_TEMPLATE = "sqlite:///%s?isolation_level=IMMEDIATE"
+
+# Database types ``_database_connection`` will bring up a server for. "auto" is
+# deliberately not listed: a run that never named a backend stays on the sqlite
+# file in its config directory. Adding "auto" here would make planemo prefer a
+# local postgres whenever psql happens to be on PATH, which is a policy call
+# rather than a bug fix - see the discussion on #1679.
+MANAGED_DATABASE_TYPES = ("postgres", "postgres_docker", "postgres_singularity")
 
 COMMAND_STARTUP_COMMAND = "./scripts/common_startup.sh ${COMMON_STARTUP_ARGS}"
 
@@ -469,65 +476,66 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
             )
         )
         _handle_container_resolution(ctx, kwds, properties)
-        properties["database_connection"] = _database_connection(database_location, **kwds)
-        # Use a separate SQLite database for the Celery message broker to avoid
-        # write lock contention between gunicorn and Celery workers during startup.
-        amqp_broker_path = config_join("celery_broker.sqlite")
-        properties["amqp_internal_connection"] = f"sqlalchemy+sqlite:///{amqp_broker_path}"
-        if kwds.get("mulled_containers", False):
-            properties["mulled_channels"] = kwds.get("conda_ensure_channels", "")
+        with _database_connection(database_location, **kwds) as database_connection:
+            properties["database_connection"] = database_connection
+            # Use a separate SQLite database for the Celery message broker to avoid
+            # write lock contention between gunicorn and Celery workers during startup.
+            amqp_broker_path = config_join("celery_broker.sqlite")
+            properties["amqp_internal_connection"] = f"sqlalchemy+sqlite:///{amqp_broker_path}"
+            if kwds.get("mulled_containers", False):
+                properties["mulled_channels"] = kwds.get("conda_ensure_channels", "")
 
-        _handle_kwd_overrides(properties, kwds)
+            _handle_kwd_overrides(properties, kwds)
 
-        # TODO: consider following property
-        # watch_tool = False
-        # datatypes_config_file = config/datatypes_conf.xml
-        # welcome_url = /static/welcome.html
-        # logo_url = /
-        # sanitize_all_html = True
-        # serve_xss_vulnerable_mimetypes = False
-        # track_jobs_in_database = None
-        # retry_job_output_collection = 0
+            # TODO: consider following property
+            # watch_tool = False
+            # datatypes_config_file = config/datatypes_conf.xml
+            # welcome_url = /static/welcome.html
+            # logo_url = /
+            # sanitize_all_html = True
+            # serve_xss_vulnerable_mimetypes = False
+            # track_jobs_in_database = None
+            # retry_job_output_collection = 0
 
-        env = _build_env_for_galaxy(properties, template_args)
-        env.update(install_env)
-        env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
-        # Following are needed in 18.01 to prevent Galaxy from changing log and pid.
-        # https://github.com/galaxyproject/planemo/issues/788
-        env["GALAXY_LOG"] = log_file
-        env["GALAXY_PID"] = pid_file
-        write_galaxy_config(
-            galaxy_root=galaxy_root,
-            properties=properties,
-            env=env,
-            kwds=kwds,
-            template_args=template_args,
-            config_join=config_join,
-        )
+            env = _build_env_for_galaxy(properties, template_args)
+            env.update(install_env)
+            env["GALAXY_DEVELOPMENT_ENVIRONMENT"] = "1"
+            # Following are needed in 18.01 to prevent Galaxy from changing log and pid.
+            # https://github.com/galaxyproject/planemo/issues/788
+            env["GALAXY_LOG"] = log_file
+            env["GALAXY_PID"] = pid_file
+            _write_tool_conf(ctx, all_tool_paths, tool_conf)
+            write_file(empty_tool_conf, EMPTY_TOOL_CONF_TEMPLATE)
 
-        _write_tool_conf(ctx, all_tool_paths, tool_conf)
-        write_file(empty_tool_conf, EMPTY_TOOL_CONF_TEMPLATE)
+            shed_tool_conf_contents = _sub(SHED_TOOL_CONF_TEMPLATE, template_args)
+            _write_shed_config_files(
+                shed_tool_conf,
+                shed_tool_conf_contents,
+                shed_tool_data_table_config,
+                shed_data_manager_config_file,
+            )
 
-        shed_tool_conf_contents = _sub(SHED_TOOL_CONF_TEMPLATE, template_args)
-        _write_shed_config_files(
-            shed_tool_conf,
-            shed_tool_conf_contents,
-            shed_tool_data_table_config,
-            shed_data_manager_config_file,
-        )
+            write_galaxy_config(
+                galaxy_root=galaxy_root,
+                properties=properties,
+                env=env,
+                kwds=kwds,
+                template_args=template_args,
+                config_join=config_join,
+            )
 
-        yield LocalGalaxyConfig(
-            ctx,
-            config_directory,
-            env,
-            test_data_dir,
-            port,
-            server_name,
-            master_api_key,
-            runnables,
-            galaxy_root,
-            kwds,
-        )
+            yield LocalGalaxyConfig(
+                ctx,
+                config_directory,
+                env,
+                test_data_dir,
+                port,
+                server_name,
+                master_api_key,
+                runnables,
+                galaxy_root,
+                kwds,
+            )
 
 
 def _init_interactivetools_db(path):
@@ -1268,13 +1276,27 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         return self.user_is_admin
 
 
+@contextlib.contextmanager
 def _database_connection(database_location, **kwds):
-    if "database_type" in kwds and kwds["database_type"] == "postgres_singularity":
-        default_connection = postgres_singularity.DEFAULT_CONNECTION_STRING
+    """Yield the ``database_connection`` a managed Galaxy should run against.
+
+    An explicit connection string wins - it is what a profile stores once it has
+    resolved a database of its own. Otherwise only an explicitly named postgres
+    backend is worth standing a server up for; everything else gets the sqlite
+    file in the config directory.
+    """
+    database_connection = kwds.get("database_connection")
+    if database_connection:
+        yield database_connection
+    elif kwds.get("database_type") in MANAGED_DATABASE_TYPES:
+        database_source = create_database_source(**kwds)
+        try:
+            database_source.start()
+            yield database_source.sqlalchemy_url(kwds.get("database_identifier", "galaxy"))
+        finally:
+            database_source.stop()
     else:
-        default_connection = DATABASE_LOCATION_TEMPLATE % database_location
-    database_connection = kwds.get("database_connection") or default_connection
-    return database_connection
+        yield DATABASE_LOCATION_TEMPLATE % database_location
 
 
 def _find_galaxy_root(ctx, **kwds):

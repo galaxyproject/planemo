@@ -3,13 +3,16 @@
 import contextlib
 import json
 import os
+from unittest import mock
 
 import yaml
 
 from planemo.galaxy.config import (
     _all_tool_paths,
+    _database_connection,
     _shared_galaxy_properties,
     _shed_config_paths,
+    DATABASE_LOCATION_TEMPLATE,
     galaxy_config,
     get_refgenie_config,
     tail_log_directory,
@@ -103,6 +106,39 @@ def test_runnable_delegated_properties_are_booleans():
     assert Runnable("t.xml", RunnableType.galaxy_tool).has_tools is True
     assert Runnable("w.ga", RunnableType.galaxy_workflow).has_tools is False
     assert Runnable("d", RunnableType.directory).is_single_artifact is False
+
+
+DATABASE_LOCATION = "/tmp/planemo-test-config/galaxy.sqlite"
+
+
+def test_database_connection_defaults_to_sqlite():
+    """A run that never named a postgres backend stays on the config directory's sqlite file."""
+    for kwds in ({}, {"database_type": None}, {"database_type": "auto"}, {"database_type": "sqlite"}):
+        with _database_connection(DATABASE_LOCATION, **kwds) as connection:
+            assert connection == DATABASE_LOCATION_TEMPLATE % DATABASE_LOCATION, kwds
+
+
+def test_database_connection_override_wins():
+    """An explicit connection string is used whatever the database type says."""
+    conn = "postgresql://username:password@localhost/mydatabase"
+    for database_type in (None, "auto", "postgres"):
+        with _database_connection(DATABASE_LOCATION, database_type=database_type, database_connection=conn) as (
+            connection
+        ):
+            assert connection == conn, database_type
+
+
+def test_database_connection_manages_named_postgres_backend():
+    """A named postgres backend is started for the life of the config and stopped after."""
+    database_source = mock.Mock()
+    database_source.sqlalchemy_url.return_value = "postgresql://galaxy@localhost/galaxy"
+    with mock.patch("planemo.galaxy.config.create_database_source", return_value=database_source):
+        with _database_connection(DATABASE_LOCATION, database_type="postgres") as connection:
+            assert connection == "postgresql://galaxy@localhost/galaxy"
+            database_source.start.assert_called_once_with()
+            database_source.stop.assert_not_called()
+    database_source.stop.assert_called_once_with()
+    database_source.sqlalchemy_url.assert_called_once_with("galaxy")
 
 
 def _assert_property_is(config, prop, value):

@@ -27,6 +27,8 @@ class DatabaseCommandsTestCase(CliTestCase):
     @skip_unless_environ("PLANEMO_ENABLE_POSTGRES_TESTS")
     @skip_unless_executable("docker")
     def test_database_commands_docker(self):
+        # The database_* commands leave the container running on purpose - it is
+        # started with --rm, so stopping it would discard the databases they manage.
         try:
             self._database_commands(database_type="postgres_docker")
         finally:
