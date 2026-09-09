@@ -12,7 +12,10 @@ from unittest import mock
 
 import pytest
 
-from planemo.database import create_database_source
+from planemo.database import (
+    create_database_source,
+    database_source_context,
+)
 from planemo.galaxy.config import DATABASE_LOCATION_TEMPLATE
 from planemo.galaxy.profiles import (
     _create_profile_local,
@@ -33,6 +36,18 @@ def test_create_database_source_requires_a_named_backend():
 def test_create_database_source_dispatches_on_the_named_backend():
     source = create_database_source(database_type="postgres")
     assert type(source).__name__ == "LocalPostgresDatabaseSource"
+
+
+def test_database_source_context_stops_sources_that_do_not_stay_running(tmp_path):
+    source = mock.Mock(keep_running_after_database_commands=False)
+    with mock.patch("planemo.database.factory.started_database_source", return_value=source):
+        with database_source_context(
+            database_type="postgres_singularity",
+            postgres_storage_location=str(tmp_path / "postgres"),
+        ) as yielded:
+            assert yielded is source
+            source.stop.assert_not_called()
+    source.stop.assert_called_once_with()
 
 
 def test_profile_defaults_to_its_own_sqlite_file():

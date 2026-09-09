@@ -1,10 +1,10 @@
 """Unit coverage for the managed PostgreSQL Singularity lifecycle."""
 
-import contextlib
-import importlib
+import json
 import os
 import signal
 import subprocess
+import sys
 from types import SimpleNamespace
 from unittest import mock
 
@@ -14,20 +14,20 @@ from click.testing import CliRunner
 
 from planemo import options
 from planemo.cli import planemo
-from planemo.database.factory import (
-    database_source_context,
-    started_database_source,
-)
+from planemo.database.factory import started_database_source
 from planemo.database.interface import DatabaseConfigurationError
 from planemo.database.postgres_singularity import (
     CONTAINER_SOCKET_DIRECTORY,
     DEFAULT_DOCKERIMAGE,
     POSTGRES_SOCKET_NAME,
     SingularityPostgresDatabaseSource,
+    start_postgres_singularity,
 )
-from .test_utils import create_test_context
-
-serve_module = importlib.import_module("planemo.galaxy.serve")
+from planemo.io import TERMINATION_TIMEOUT_ENVIRON_KEY
+from .test_utils import (
+    create_test_context,
+    sigterm_ignoring_group,
+)
 
 
 def _source(tmp_path, **kwds):
@@ -36,8 +36,40 @@ def _source(tmp_path, **kwds):
         **kwds,
     )
     source.startup_timeout = 5
-    source.stop_timeout = 2
     return source
+
+
+@pytest.fixture
+def singularity_stub(tmp_path):
+    """Provide an executable stand-in that records the Singularity CLI contract."""
+    calls_path = tmp_path / "singularity-calls.jsonl"
+    release_path = tmp_path / "release-container"
+    executable = tmp_path / "singularity"
+    executable.write_text(f"""#!{sys.executable}
+import json
+import os
+import sys
+import time
+
+with open({str(calls_path)!r}, "a") as calls:
+    calls.write(json.dumps(sys.argv[1:]) + "\\n")
+if "--list" in sys.argv:
+    print("postgres | galaxy")
+    print("test1234 | galaxy")
+elif "run" in sys.argv:
+    print("stub container stderr", file=sys.stderr, flush=True)
+    print("stub container stdout", flush=True)
+    while not os.path.exists({str(release_path)!r}):
+        time.sleep(0.01)
+""")
+    executable.chmod(0o755)
+
+    def calls():
+        if not calls_path.exists():
+            return []
+        return [json.loads(line) for line in calls_path.read_text().splitlines()]
+
+    return SimpleNamespace(command=str(executable), calls=calls, release=release_path)
 
 
 @click.command()
@@ -81,8 +113,32 @@ def test_profile_options_are_owned_by_the_singularity_backend(tmp_path):
     }
 
 
+def test_container_command_uses_persistent_mounts_environment_and_log(tmp_path, singularity_stub):
+    storage = tmp_path / "postgres"
+    process = start_postgres_singularity([singularity_stub.command], str(storage))
+
+    try:
+        assert os.getpgid(process.pid) == process.pid
+    finally:
+        singularity_stub.release.touch()
+    assert process.wait(timeout=5) == 0
+    command = singularity_stub.calls()[0]
+    assert command[:2] == ["run", "-B"]
+    assert f"{storage / 'pgdata'}:/var/lib/postgresql/data" in command
+    assert f"{storage / 'pgrun'}:/var/run/postgresql" in command
+    assert "POSTGRES_DB=galaxy" in command
+    assert "POSTGRES_USER=galaxy" in command
+    assert "POSTGRES_PASSWORD=mysecretpassword" in command
+    assert "POSTGRES_INITDB_ARGS=--encoding=UTF-8" in command
+    assert f"docker://{DEFAULT_DOCKERIMAGE}" in command
+    assert (storage / "postgres.log").read_text().splitlines() == [
+        "stub container stderr",
+        "stub container stdout",
+    ]
+
+
 def test_start_waits_for_pg_isready_not_just_initialized_cluster(tmp_path):
-    source = _source(tmp_path, singularity_cmd="apptainer")
+    source = _source(tmp_path)
     pgdata = tmp_path / "postgres" / "pgdata"
     pgdata.mkdir(parents=True)
     (pgdata / "PG_VERSION").write_text("14")
@@ -90,7 +146,7 @@ def test_start_waits_for_pg_isready_not_just_initialized_cluster(tmp_path):
     process.poll.return_value = None
 
     with (
-        mock.patch("planemo.database.postgres_singularity.shell_process", return_value=process) as shell_process,
+        mock.patch("planemo.database.postgres_singularity.start_postgres_singularity", return_value=process),
         mock.patch.object(source, "_database_is_ready", side_effect=(False, True)) as database_is_ready,
         mock.patch("planemo.database.postgres_singularity.time.sleep") as sleep,
     ):
@@ -98,25 +154,17 @@ def test_start_waits_for_pg_isready_not_just_initialized_cluster(tmp_path):
 
     assert database_is_ready.call_count == 2
     sleep.assert_called_once_with(1)
-    command = shell_process.call_args.args[0]
-    assert command[:2] == ["apptainer", "run"]
-    assert "POSTGRES_INITDB_ARGS=--encoding=UTF-8" in command
-    assert shell_process.call_args.kwargs["start_new_session"] is True
-    assert shell_process.call_args.kwargs["stderr"] is subprocess.STDOUT
-    assert shell_process.call_args.kwargs["stdout"].name == str(tmp_path / "postgres" / "postgres.log")
 
 
-def test_readiness_probe_uses_containerized_pg_isready_over_socket(tmp_path):
-    source = _source(tmp_path, singularity_cmd="apptainer")
+def test_readiness_probe_uses_containerized_pg_isready_over_socket(tmp_path, singularity_stub):
+    source = _source(tmp_path, singularity_cmd=singularity_stub.command)
     os.makedirs(source.database_socket_dir)
     open(os.path.join(source.database_socket_dir, POSTGRES_SOCKET_NAME), "w").close()
-    completed = subprocess.CompletedProcess([], 0)
 
-    with mock.patch("planemo.database.postgres_singularity.subprocess.run", return_value=completed) as run:
-        assert source._database_is_ready()
+    assert source._database_is_ready()
 
-    command = run.call_args.args[0]
-    assert command[:2] == ["apptainer", "exec"]
+    command = singularity_stub.calls()[0]
+    assert command[:2] == ["exec", "-B"]
     assert f"{source.database_socket_dir}:{CONTAINER_SOCKET_DIRECTORY}" in command
     assert f"docker://{DEFAULT_DOCKERIMAGE}" in command
     assert command[-7:] == [
@@ -135,7 +183,7 @@ def test_start_reports_container_exit(tmp_path):
     process = mock.Mock(pid=42)
     process.poll.return_value = 17
 
-    with mock.patch("planemo.database.postgres_singularity.shell_process", return_value=process):
+    with mock.patch("planemo.database.postgres_singularity.start_postgres_singularity", return_value=process):
         with pytest.raises(RuntimeError, match="code 17"):
             source.start()
 
@@ -144,125 +192,50 @@ def test_start_reports_container_exit(tmp_path):
 
 def test_startup_timeout_stops_the_container(tmp_path):
     source = _source(tmp_path)
-    process = mock.Mock(pid=42)
-    process.poll.return_value = None
+    source.startup_timeout = 0
+    process = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(300)"], start_new_session=True)
+    try:
+        with (
+            mock.patch("planemo.database.postgres_singularity.start_postgres_singularity", return_value=process),
+            mock.patch.object(source, "_database_is_ready", return_value=False),
+        ):
+            with pytest.raises(RuntimeError, match="did not become ready"):
+                source.start()
 
-    with (
-        mock.patch("planemo.database.postgres_singularity.shell_process", return_value=process),
-        mock.patch.object(source, "_database_is_ready", return_value=False),
-        mock.patch.object(source, "stop") as stop,
-        mock.patch("planemo.database.postgres_singularity.time.monotonic", side_effect=(0, 6)),
-    ):
-        with pytest.raises(RuntimeError, match="did not become ready"):
-            source.start()
-
-    stop.assert_called_once_with()
+        assert process.returncode == -signal.SIGTERM
+        assert source.running_process is None
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait()
 
 
-def test_stop_waits_then_escalates_the_owned_process_group(tmp_path):
+def test_stop_waits_then_escalates_the_owned_process_group(tmp_path, monkeypatch):
     source = _source(tmp_path)
-    process = mock.Mock(pid=42)
-    process.poll.return_value = None
-    process.wait.side_effect = (subprocess.TimeoutExpired("singularity", 2), 0)
-    source.running_process = process
-
-    with mock.patch("planemo.database.postgres_singularity.os.killpg") as killpg:
+    monkeypatch.setenv(TERMINATION_TIMEOUT_ENVIRON_KEY, "0.2")
+    with sigterm_ignoring_group(tmp_path / "ready") as process:
+        source.running_process = process
         source.stop()
 
-    assert killpg.call_args_list == [mock.call(42, signal.SIGTERM), mock.call(42, signal.SIGKILL)]
-    assert process.wait.call_args_list == [mock.call(timeout=2), mock.call(timeout=2)]
+    assert process.returncode == -signal.SIGKILL
     assert source.running_process is None
 
 
-def test_create_list_and_delete_target_named_databases(tmp_path):
-    source = _source(tmp_path)
+def test_create_list_and_delete_target_named_databases(tmp_path, singularity_stub):
+    source = _source(tmp_path, singularity_cmd=singularity_stub.command)
     storage = tmp_path / "postgres"
     storage.mkdir()
     marker = storage / "must-not-be-deleted"
     marker.write_text("persistent cluster")
-    commands = []
-
-    def communicate(command_builder):
-        commands.append(command_builder.command)
-        if "--list" in command_builder.command:
-            return b"postgres | galaxy\ntest1234 | galaxy\n"
-        return b""
-
-    source._communicate = communicate
-
     source.create_database("test1234")
     assert source.list_databases() == ["postgres", "test1234"]
     source.delete_database("test1234")
 
+    commands = singularity_stub.calls()
     assert commands[0][-2:] == ["--command", "create database test1234;"]
     assert commands[1][-1] == "--list"
     assert commands[2][-2:] == ["--command", "drop database test1234;"]
     assert marker.read_text() == "persistent cluster"
     for command in commands:
-        assert command[:2] == ["singularity", "exec"]
+        assert command[0] == "exec"
         assert ["--dbname", "postgres"] == command[command.index("--dbname") : command.index("--dbname") + 2]
-
-
-def test_database_source_context_stops_singularity_source(tmp_path):
-    source = mock.Mock()
-    source.keep_running_after_database_commands = False
-    with mock.patch("planemo.database.factory.started_database_source", return_value=source):
-        with database_source_context(
-            database_type="postgres_singularity",
-            postgres_storage_location=str(tmp_path / "postgres"),
-        ) as yielded:
-            assert yielded is source
-            source.stop.assert_not_called()
-    source.stop.assert_called_once_with()
-
-
-def test_managed_galaxy_stops_before_its_database_context_exits(monkeypatch):
-    events = []
-    config = SimpleNamespace(
-        kill=lambda: events.append("galaxy stopped"),
-        cleanup=lambda: events.append("configuration cleaned"),
-    )
-
-    @contextlib.contextmanager
-    def configured_serve(*args, **kwds):
-        events.append("database started")
-        try:
-            yield config
-        finally:
-            if kwds.get("stop_daemon_after_serve"):
-                config.kill()
-            events.append("database stopped")
-
-    monkeypatch.setattr(serve_module, "serve", configured_serve)
-
-    with serve_module.serve_daemon(SimpleNamespace(verbose=False)):
-        events.append("caller finished")
-
-    assert events == [
-        "database started",
-        "caller finished",
-        "galaxy stopped",
-        "database stopped",
-        "configuration cleaned",
-    ]
-
-
-def test_managed_galaxy_exception_has_single_shutdown_owner(monkeypatch):
-    config = SimpleNamespace(kill=mock.Mock(), cleanup=mock.Mock())
-
-    @contextlib.contextmanager
-    def configured_serve(*args, **kwds):
-        try:
-            yield config
-        finally:
-            if kwds.get("stop_daemon_after_serve"):
-                config.kill()
-
-    monkeypatch.setattr(serve_module, "serve", configured_serve)
-
-    with pytest.raises(RuntimeError, match="caller failed"):
-        with serve_module.serve_daemon(SimpleNamespace(verbose=False)):
-            raise RuntimeError("caller failed")
-
-    config.kill.assert_called_once_with()
-    config.cleanup.assert_called_once_with()
