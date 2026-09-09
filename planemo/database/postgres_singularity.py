@@ -26,6 +26,7 @@ DEFAULT_POSTGRES_USER = "galaxy"
 DEFAULT_POSTGRES_PASSWORD = "mysecretpassword"
 DEFAULT_DOCKERIMAGE = "postgres:14.2-alpine3.15"
 DEFAULT_STARTUP_TIMEOUT = 120
+DEFAULT_STOP_TIMEOUT = 15
 CONTAINER_SOCKET_DIRECTORY = "/var/run/postgresql"
 POSTGRES_SOCKET_NAME = ".s.PGSQL.5432"
 
@@ -107,6 +108,7 @@ class SingularityPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource
         self.database_socket_dir = os.path.join(self.database_location, "pgrun")
         self.log_file = os.path.join(self.database_location, "postgres.log")
         self.startup_timeout = DEFAULT_STARTUP_TIMEOUT
+        self.stop_timeout = DEFAULT_STOP_TIMEOUT
         self._kwds = kwds
         self.running_process = None
 
@@ -149,7 +151,7 @@ class SingularityPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource
         if process.poll() is not None:
             process.wait()
             return
-        if terminate_process_group(process.pid, reap=process.poll):
+        if terminate_process_group(process.pid, timeout=self.stop_timeout, reap=process.poll):
             process.wait()
         else:
             info("PostgreSQL Singularity container process group could not be stopped.")

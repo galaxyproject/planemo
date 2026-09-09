@@ -23,7 +23,6 @@ from planemo.database.postgres_singularity import (
     SingularityPostgresDatabaseSource,
     start_postgres_singularity,
 )
-from planemo.io import TERMINATION_TIMEOUT_ENVIRON_KEY
 from .test_utils import (
     create_test_context,
     sigterm_ignoring_group,
@@ -210,9 +209,9 @@ def test_startup_timeout_stops_the_container(tmp_path):
             process.wait()
 
 
-def test_stop_waits_then_escalates_the_owned_process_group(tmp_path, monkeypatch):
+def test_stop_waits_then_escalates_the_owned_process_group(tmp_path):
     source = _source(tmp_path)
-    monkeypatch.setenv(TERMINATION_TIMEOUT_ENVIRON_KEY, "0.2")
+    source.stop_timeout = 0.2
     with sigterm_ignoring_group(tmp_path / "ready") as process:
         source.running_process = process
         source.stop()
