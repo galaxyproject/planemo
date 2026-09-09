@@ -51,6 +51,7 @@ if TYPE_CHECKING:
     from planemo.cli import PlanemoCliContext
 
 POTENTIAL_WORKFLOW_FILES = re.compile(r"^.*(\.yml|\.yaml|\.ga)$")
+WORKFLOW_FILE_SUFFIXES = (".gxwf.yml", ".gxwf.yaml", ".ga")
 DOCKSTORE_REGISTRY_CONF_VERSION = "1.2"
 
 
@@ -84,7 +85,7 @@ def generate_dockstore_yaml(directory: str, publish: bool = True) -> str:
         test_parameter_path = f"{workflow_path.rsplit('.', 1)[0]}-tests.yml"
         workflow_entry: Dict[str, Any] = {
             # TODO: support CWL
-            "name": "main" if len(all_workflow_paths) == 1 else os.path.basename(workflow_path).split(".ga")[0],
+            "name": "main" if len(all_workflow_paths) == 1 else _workflow_name(workflow_path),
             "subclass": "Galaxy",
             "publish": publish,
             "primaryDescriptorPath": f"/{os.path.relpath(workflow_path, directory)}",
@@ -137,6 +138,14 @@ def generate_dockstore_yaml(directory: str, publish: bool = True) -> str:
     contents = "version: %s\n" % DOCKSTORE_REGISTRY_CONF_VERSION
     contents += yaml.dump({"workflows": workflows}, sort_keys=False)
     return contents
+
+
+def _workflow_name(workflow_path: str) -> str:
+    basename = os.path.basename(workflow_path)
+    for suffix in WORKFLOW_FILE_SUFFIXES:
+        if basename.endswith(suffix):
+            return basename[: -len(suffix)]
+    return basename
 
 
 def lint_workflow_artifacts_on_paths(ctx: "PlanemoCliContext", paths: Iterable[str], lint_args: Dict[str, Any]) -> int:
