@@ -12,9 +12,11 @@ from click.testing import CliRunner
 from planemo.cli import planemo
 from planemo.config import OptionSource
 from planemo.database.postgres_docker import DockerPostgresDatabaseSource
+from planemo.galaxy.api import DEFAULT_ADMIN_API_KEY
 from planemo.galaxy.config import (
     _all_tool_paths,
     _database_connection,
+    _get_master_api_key,
     _handle_job_config_file,
     _handle_kwd_overrides,
     _handle_mulled_container_kwds,
@@ -22,6 +24,7 @@ from planemo.galaxy.config import (
     _shed_config_paths,
     _validate_database_daemon,
     DATABASE_LOCATION_TEMPLATE,
+    external_galaxy_config,
     galaxy_config,
     get_refgenie_config,
     tail_log_directory,
@@ -90,6 +93,32 @@ def test_all_tool_paths_excludes_remote_galaxy_tools():
 
     assert local_tool in tool_paths
     assert f"gxid://tools/{remote_tool_id}" not in tool_paths
+
+
+def test_external_galaxy_config_defaults_to_anonymous_access():
+    ctx = create_test_context()
+
+    with external_galaxy_config(ctx, [], galaxy_url="https://example.org") as config:
+        assert config.master_api_key is None
+        assert config.gi.key is None
+
+
+def test_external_galaxy_config_preserves_explicit_keys():
+    ctx = create_test_context()
+
+    with external_galaxy_config(
+        ctx,
+        [],
+        galaxy_url="https://example.org",
+        galaxy_admin_key="admin-key",
+        galaxy_user_key="user-key",
+    ) as config:
+        assert config.gi.key == "admin-key"
+        assert config.user_gi.key == "user-key"
+
+
+def test_managed_galaxy_config_retains_default_admin_key():
+    assert _get_master_api_key({}) == DEFAULT_ADMIN_API_KEY
 
 
 def test_all_tool_paths_excludes_workflows():
