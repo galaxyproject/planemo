@@ -15,7 +15,7 @@ def get_dict_from_workflow(gi: GalaxyInstance, workflow_id: str, instance: bool 
 
 
 def gi(port: Optional[int] = None, url: Optional[str] = None, key: Optional[str] = None) -> GalaxyInstance:
-    """Return a bioblend ``GalaxyInstance`` for Galaxy on this port."""
+    """Return a BioBlend client for Galaxy at a local port or explicit URL."""
     if port is not None and url is not None:
         raise ValueError("Either port or url parameter needs to be None")
     if port is None:
