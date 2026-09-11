@@ -7,13 +7,16 @@ from unittest import mock
 
 import pytest
 import yaml
+from click.testing import CliRunner
 
+from planemo.cli import planemo
 from planemo.database.postgres_docker import DockerPostgresDatabaseSource
 from planemo.galaxy.config import (
     _all_tool_paths,
     _database_connection,
     _shared_galaxy_properties,
     _shed_config_paths,
+    _validate_database_daemon,
     DATABASE_LOCATION_TEMPLATE,
     galaxy_config,
     get_refgenie_config,
@@ -114,6 +117,31 @@ def test_runnable_delegated_properties_are_booleans():
 def _database_location():
     with TempDirectoryContext() as temp_directory_context:
         yield os.path.join(temp_directory_context.temp_directory, "galaxy.sqlite")
+
+
+def test_detached_singularity_serve_fails_before_configuration(tmp_path):
+    storage = tmp_path / "postgres"
+    result = CliRunner().invoke(
+        planemo,
+        ["serve", "--daemon", "--database_type", "postgres_singularity", "--postgres-storage-location", str(storage)],
+    )
+    assert result.exit_code == 2, result.output
+    assert "Omit --daemon or supply --database_connection" in result.output
+    assert not storage.exists()
+
+
+@pytest.mark.parametrize(
+    "kwds",
+    (
+        {"database_type": "postgres_singularity"},
+        {"database_type": "postgres_singularity", "daemon": True, "stop_daemon_after_serve": True},
+        {"database_type": "postgres_singularity", "daemon": True, "database_connection": "postgresql:///galaxy"},
+        {"database_type": "postgres_docker", "daemon": True},
+        {"database_type": "sqlite", "daemon": True},
+    ),
+)
+def test_supported_database_serving_modes(kwds):
+    _validate_database_daemon(kwds)
 
 
 def test_database_connection_defaults_to_sqlite():

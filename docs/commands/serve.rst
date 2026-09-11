@@ -18,6 +18,11 @@ The Galaxy tool panel will include just the referenced tool or tools (by
 default all the tools in the current working directory) and the upload
 tool.
 
+Detached serving with ``--daemon`` does not support
+``--database_type postgres_singularity``. Omit ``--daemon`` or use
+``--database_connection`` for an independently managed PostgreSQL server.
+Singularity databases remain supported for foreground serving and tests.
+
 planemo will search parent directories to see if any is a Galaxy instance
 - but one can pick the Galaxy instance to use with the ``--galaxy_root``
 option or force planemo to download a disposable instance with the
@@ -250,4 +255,3 @@ Galaxy instance.
                                       and will be replaced with --galaxy_root when
                                       and if CWL support is merged into Galaxy.
       --help                          Show this message and exit.
-

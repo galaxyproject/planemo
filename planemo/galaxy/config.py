@@ -30,6 +30,7 @@ from typing import (
     TYPE_CHECKING,
 )
 
+import click
 from cryptography.fernet import Fernet
 from galaxy.tool_util.deps import docker_util
 from galaxy.util.commands import argv_to_str
@@ -346,6 +347,8 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 @contextlib.contextmanager
 def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
     """Set up a ``GalaxyConfig`` in an auto-cleaned context."""
+
+    _validate_database_daemon(kwds)
 
     test_data_dir = _find_test_data(runnables, **kwds)
     tool_data_tables = _find_tool_data_table(runnables, test_data_dir=test_data_dir, **kwds)
@@ -1393,6 +1396,19 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         # If Planemo started a local, native Galaxy instance assume files URLs can be
         # pasted.
         return self.user_is_admin
+
+
+def _validate_database_daemon(kwds):
+    if (
+        kwds.get("database_type") == "postgres_singularity"
+        and not kwds.get("database_connection")
+        and kwds.get("daemon")
+        and not kwds.get("stop_daemon_after_serve")
+    ):
+        raise click.UsageError(
+            "Detached serving with --database_type postgres_singularity is not supported. "
+            "Omit --daemon or supply --database_connection for an independently managed PostgreSQL server."
+        )
 
 
 @contextlib.contextmanager
