@@ -5,6 +5,9 @@ import os
 import signal
 import subprocess
 import sys
+import time
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FutureTimeoutError
 from types import SimpleNamespace
 from unittest import mock
 
@@ -43,21 +46,38 @@ def singularity_stub(tmp_path):
     """Provide an executable stand-in that records the Singularity CLI contract."""
     calls_path = tmp_path / "singularity-calls.jsonl"
     release_path = tmp_path / "release-container"
+    phase_path = tmp_path / "postgres-phase"
+    rejected_probe = tmp_path / "rejected-probe"
     executable = tmp_path / "singularity"
     executable.write_text(f"""#!{sys.executable}
 import json
 import os
 import sys
 import time
+from pathlib import Path
 
+phase_path = Path({str(phase_path)!r})
 with open({str(calls_path)!r}, "a") as calls:
     calls.write(json.dumps(sys.argv[1:]) + "\\n")
 if "--list" in sys.argv:
     print("postgres | galaxy")
     print("test1234 | galaxy")
+elif "pg_isready" in sys.argv and phase_path.exists():
+    ready = phase_path.read_text() in ("initializing", "ready")
+    if not ready:
+        Path({str(rejected_probe)!r}).touch()
+    sys.exit(0 if ready else 1)
 elif "run" in sys.argv:
     print("stub container stderr", file=sys.stderr, flush=True)
     print("stub container stdout", flush=True)
+    if phase_path.exists():
+        mounts = dict(sys.argv[i + 1].rsplit(":", 1)[::-1] for i, arg in enumerate(sys.argv) if arg == "-B")
+        (Path(mounts["/var/lib/postgresql/data"]) / "PG_VERSION").write_text("14")
+        print("PostgreSQL init process complete; ", end="", flush=True)
+        (Path(mounts["/var/run/postgresql"]) / ".s.PGSQL.5432").touch()
+        while phase_path.read_text() == "initializing":
+            time.sleep(0.01)
+        print("ready for start up.", flush=True)
     while not os.path.exists({str(release_path)!r}):
         time.sleep(0.01)
 """)
@@ -68,7 +88,17 @@ elif "run" in sys.argv:
             return []
         return [json.loads(line) for line in calls_path.read_text().splitlines()]
 
-    return SimpleNamespace(command=str(executable), calls=calls, release=release_path)
+    return SimpleNamespace(
+        command=str(executable), calls=calls, release=release_path, phase=phase_path, rejected_probe=rejected_probe
+    )
+
+
+def _wait_for_path(path):
+    deadline = time.monotonic() + 5
+    while not path.exists():
+        if time.monotonic() >= deadline:
+            raise TimeoutError(f"Timed out waiting for {path}")
+        time.sleep(0.01)
 
 
 @click.command()
@@ -155,6 +185,40 @@ def test_start_waits_for_pg_isready_not_just_initialized_cluster(tmp_path):
     sleep.assert_called_once_with(1)
 
 
+@pytest.mark.parametrize("stale_log", (False, True))
+def test_fresh_cluster_waits_for_current_initialization_and_final_server(tmp_path, singularity_stub, stale_log):
+    source = _source(tmp_path, singularity_cmd=singularity_stub.command)
+    source.startup_timeout = 15
+    storage = tmp_path / "postgres"
+    storage.mkdir()
+    if stale_log:
+        (storage / "postgres.log").write_text("PostgreSQL init process complete; ready for start up.\n")
+    singularity_stub.phase.write_text("initializing")
+
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        started = executor.submit(source.start)
+        try:
+            _wait_for_path(storage / "pgrun" / POSTGRES_SOCKET_NAME)
+            assert source._database_is_ready(), "The temporary server accepts connections"
+            with pytest.raises(FutureTimeoutError):
+                started.result(timeout=1.5)
+
+            singularity_stub.phase.write_text("starting")
+            _wait_for_path(singularity_stub.rejected_probe)
+            assert not started.done(), "Initialization alone does not make the final server ready"
+
+            singularity_stub.phase.write_text("ready")
+            started.result(timeout=5)
+            assert source._database_is_ready()
+        finally:
+            singularity_stub.phase.write_text("ready")
+            # Let the startup thread finish before stopping the process it owns.
+            try:
+                started.result(timeout=20)
+            finally:
+                source.stop()
+
+
 def test_readiness_probe_uses_containerized_pg_isready_over_socket(tmp_path, singularity_stub):
     source = _source(tmp_path, singularity_cmd=singularity_stub.command)
     os.makedirs(source.database_socket_dir)
@@ -189,8 +253,13 @@ def test_start_reports_container_exit(tmp_path):
     assert source.running_process is None
 
 
-def test_startup_timeout_stops_the_container(tmp_path):
+@pytest.mark.parametrize("initialized", (False, True))
+def test_startup_timeout_stops_the_container(tmp_path, initialized):
     source = _source(tmp_path)
+    if initialized:
+        pgdata = tmp_path / "postgres" / "pgdata"
+        pgdata.mkdir(parents=True)
+        (pgdata / "PG_VERSION").write_text("14")
     source.startup_timeout = 0
     process = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(300)"], start_new_session=True)
     try:

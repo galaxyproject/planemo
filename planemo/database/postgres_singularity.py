@@ -29,6 +29,7 @@ DEFAULT_STARTUP_TIMEOUT = 120
 DEFAULT_STOP_TIMEOUT = 15
 CONTAINER_SOCKET_DIRECTORY = "/var/run/postgresql"
 POSTGRES_SOCKET_NAME = ".s.PGSQL.5432"
+POSTGRES_INIT_COMPLETE = b"PostgreSQL init process complete; ready for start up."
 
 
 def start_postgres_singularity(
@@ -115,6 +116,8 @@ class SingularityPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource
     def start(self):
         if self.running_process is not None and self.running_process.poll() is None:
             return
+        initialized = os.path.exists(os.path.join(self.database_location, "pgdata", "PG_VERSION"))
+        log_offset = os.path.getsize(self.log_file) if os.path.exists(self.log_file) else 0
         self.running_process = start_postgres_singularity(
             singularity_command=self.singularity_command,
             database_location=self.database_location,
@@ -131,7 +134,16 @@ class SingularityPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource
                         f"PostgreSQL Singularity container exited during startup with code {return_code}; "
                         f"see {self.log_file}."
                     )
-                if self._database_is_ready():
+                if not initialized:
+                    # The image starts a temporary socket server during initialization.
+                    # Its completion message is emitted only after that server stops.
+                    try:
+                        with open(self.log_file, "rb") as log:
+                            log.seek(log_offset)
+                            initialized = POSTGRES_INIT_COMPLETE in log.read()
+                    except FileNotFoundError:
+                        pass
+                if initialized and self._database_is_ready():
                     return
                 if time.monotonic() >= deadline:
                     raise RuntimeError(
