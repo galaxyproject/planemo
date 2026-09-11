@@ -96,66 +96,81 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
     def ensure_runnables_served(self, runnables):
         """Use a context manager and describe Galaxy instance with runnables being served."""
 
-    def _run_test_cases(self, test_cases, test_timeout):
-        test_results = []
-        file_based_test_cases = []
-        embedded_test_cases = []
+    def _collect_test_results(self, test_cases, test_timeout):
+        indexed_file_based_test_cases = []
+        indexed_embedded_test_cases = []
         # TODO: unify interface so we don't need to split test cases
-        for test_case in test_cases:
+        for index, test_case in enumerate(test_cases):
             if isinstance(test_case, ExternalGalaxyToolTestCase):
-                embedded_test_cases.append(test_case)
+                indexed_embedded_test_cases.append((index, test_case))
             else:
-                file_based_test_cases.append(test_case)
-        if file_based_test_cases:
-            test_results.extend(super()._run_test_cases(file_based_test_cases, test_timeout))
-        if embedded_test_cases:
-            runnables = [test_case.runnable for test_case in embedded_test_cases]
+                indexed_file_based_test_cases.append((index, test_case))
+
+        # Galaxy tool tests and workflow/job-file tests use different runners.
+        # Keep the association with the original case explicit: batching the two
+        # groups otherwise reorders their results before BaseEngine pairs them.
+        indexed_results = [[] for _ in test_cases]
+        if indexed_file_based_test_cases:
+            file_based_test_cases = [test_case for _, test_case in indexed_file_based_test_cases]
+            file_based_results = super()._run_test_cases(file_based_test_cases, test_timeout)
+            for (index, test_case), result in zip(indexed_file_based_test_cases, file_based_results):
+                indexed_results[index].append((test_case, result))
+
+        if indexed_embedded_test_cases:
+            runnables = [test_case.runnable for _, test_case in indexed_embedded_test_cases]
             with self.ensure_runnables_served(runnables) as config:
-                expanded_test_cases = expand_test_cases(config, embedded_test_cases)
-                for test_case in expanded_test_cases:
-                    galaxy_interactor_kwds = {
-                        "galaxy_url": config.galaxy_url,
-                        "master_api_key": config.master_api_key,
-                        "api_key": config.user_api_key,
-                        "keep_outputs_dir": self._kwds.get("test_data_target_dir"),
-                    }
-                    tool_id = test_case.tool_id
-                    test_index = test_case.test_index
-                    tool_version = test_case.tool_version
-                    galaxy_interactor = interactor.GalaxyInteractorApi(**galaxy_interactor_kwds)
+                for index, original_test_case in indexed_embedded_test_cases:
+                    expanded_test_cases = expand_test_cases(config, [original_test_case])
+                    for test_case in expanded_test_cases:
+                        case_results = []
+                        self._run_galaxy_tool_test_case(config, test_case, test_timeout, case_results.append)
+                        indexed_results[index].extend((test_case, result) for result in case_results)
 
-                    def _register_job_data(job_data):
-                        test_results.append(
-                            {
-                                "id": tool_id + "-" + str(test_index),
-                                "has_data": True,
-                                "data": job_data,
-                            }
-                        )
+        return [case_and_result for results in indexed_results for case_and_result in results]
 
-                    verbose = self._ctx.verbose
-                    result_index = len(test_results)
-                    try:
-                        if verbose:
-                            # TODO: this is pretty hacky, it'd be better to send a stream
-                            # and capture the output information somehow.
-                            interactor.VERBOSE_GALAXY_ERRORS = True
+    def _run_galaxy_tool_test_case(self, config, test_case, test_timeout, register_job_data):
+        galaxy_interactor_kwds = {
+            "galaxy_url": config.galaxy_url,
+            "master_api_key": config.master_api_key,
+            "api_key": config.user_api_key,
+            "keep_outputs_dir": self._kwds.get("test_data_target_dir"),
+        }
+        tool_id = test_case.tool_id
+        test_index = test_case.test_index
+        tool_version = test_case.tool_version
+        galaxy_interactor = interactor.GalaxyInteractorApi(**galaxy_interactor_kwds)
 
-                        interactor.verify_tool(
-                            tool_id,
-                            galaxy_interactor,
-                            test_index=test_index,
-                            tool_version=tool_version,
-                            register_job_data=_register_job_data,
-                            maxseconds=test_timeout,
-                            quiet=not verbose,
-                        )
-                    except Exception:
-                        pass
+        case_results = []
 
-                    log_service_logs_on_failure(self._ctx, config, test_results[result_index:])
+        def register_result(job_data):
+            result = {
+                "id": tool_id + "-" + str(test_index),
+                "has_data": True,
+                "data": job_data,
+            }
+            case_results.append(result)
+            register_job_data(result)
 
-        return test_results
+        verbose = self._ctx.verbose
+        try:
+            if verbose:
+                # TODO: this is pretty hacky, it'd be better to send a stream
+                # and capture the output information somehow.
+                interactor.VERBOSE_GALAXY_ERRORS = True
+
+            interactor.verify_tool(
+                tool_id,
+                galaxy_interactor,
+                test_index=test_index,
+                tool_version=tool_version,
+                register_job_data=register_result,
+                maxseconds=test_timeout,
+                quiet=not verbose,
+            )
+        except Exception:
+            pass
+
+        log_service_logs_on_failure(self._ctx, config, case_results)
 
 
 class LocalManagedGalaxyEngine(GalaxyEngine):
@@ -190,12 +205,17 @@ class LocalManagedGalaxyEngine(GalaxyEngine):
             if self._ctx.verbose:
                 print("Failed to install tool repositories, Galaxy log:")
                 print(config.log_contents)
-                print("Galaxy root:")
-                io.shell(["ls", config.galaxy_root])
+                if config.galaxy_root:
+                    print("Galaxy root:")
+                    io.shell(["ls", config.galaxy_root])
             raise
 
     def _serve_kwds(self):
         return self._kwds.copy()
+
+
+class InstalledGalaxyEngine(LocalManagedGalaxyEngine):
+    """A managed, package-installed Galaxy launched through Gravity."""
 
 
 class DockerizedManagedGalaxyEngine(LocalManagedGalaxyEngine):
@@ -253,5 +273,6 @@ def expand_test_cases(config, test_cases):
 __all__ = (
     "DockerizedManagedGalaxyEngine",
     "ExternalGalaxyEngine",
+    "InstalledGalaxyEngine",
     "LocalManagedGalaxyEngine",
 )
