@@ -8,6 +8,7 @@ from unittest import mock
 import pytest
 import yaml
 
+from planemo.database.postgres_docker import DockerPostgresDatabaseSource
 from planemo.galaxy.config import (
     _all_tool_paths,
     _database_connection,
@@ -136,29 +137,33 @@ def test_database_connection_override_wins():
 
 @pytest.mark.parametrize("database_type", ("postgres", "postgres_docker", "postgres_singularity"))
 def test_database_connection_manages_named_postgres_backend(database_type):
-    """A named postgres backend is started for the life of the config and stopped after."""
-    database_source = mock.Mock()
+    """Database cleanup follows the backend persistence policy."""
+    database_source = mock.Mock(keep_running_after_database_commands=False)
+    database_source.keep_running_after_database_commands = database_type == "postgres_docker"
     database_source.list_databases.return_value = ["postgres"]
     database_source.sqlalchemy_url.return_value = "postgresql://galaxy@localhost/galaxy"
-    with mock.patch("planemo.galaxy.config.create_database_source", return_value=database_source):
+    with mock.patch("planemo.database.factory.create_database_source", return_value=database_source):
         with _database_location() as database_location:
             with _database_connection(database_location, database_type=database_type) as connection:
                 assert connection == "postgresql://galaxy@localhost/galaxy"
                 database_source.start.assert_called_once_with()
                 database_source.stop.assert_not_called()
-    database_source.stop.assert_called_once_with()
+    if database_type == "postgres_docker":
+        database_source.stop.assert_not_called()
+    else:
+        database_source.stop.assert_called_once_with()
     database_source.list_databases.assert_called_once_with()
     database_source.create_database.assert_called_once_with("galaxy")
     database_source.sqlalchemy_url.assert_called_once_with("galaxy")
 
 
 def test_database_connection_restarts_singularity_profile_database():
-    database_source = mock.Mock()
+    database_source = mock.Mock(keep_running_after_database_commands=False)
     database_source.list_databases.return_value = ["postgres", "plnmoprof_profile1234"]
     database_source.sqlalchemy_url.return_value = (
         "postgresql://galaxy:mysecretpassword@/plnmoprof_profile1234?host=/profiles/profile1234/postgres/pgrun"
     )
-    with mock.patch("planemo.galaxy.config.create_database_source", return_value=database_source) as create_source:
+    with mock.patch("planemo.database.factory.create_database_source", return_value=database_source) as create_source:
         with _database_location() as database_location:
             with _database_connection(
                 database_location,
@@ -172,6 +177,8 @@ def test_database_connection_restarts_singularity_profile_database():
                 database_source.stop.assert_not_called()
 
     create_source.assert_called_once_with(
+        profile_directory=None,
+        for_database_commands=False,
         database_type="postgres_singularity",
         database_identifier="plnmoprof_profile1234",
         postgres_storage_location="/profiles/profile1234/postgres",
@@ -180,6 +187,36 @@ def test_database_connection_restarts_singularity_profile_database():
     database_source.sqlalchemy_url.assert_called_once_with("plnmoprof_profile1234")
     database_source.create_database.assert_not_called()
     database_source.stop.assert_called_once_with()
+
+
+@pytest.mark.parametrize("already_running", (False, True))
+@pytest.mark.parametrize("failure", (None, "database setup", "Galaxy run"))
+def test_galaxy_preserves_shared_docker_databases(already_running, failure):
+    with (
+        mock.patch("planemo.database.postgres_docker.is_running_container", return_value=already_running),
+        mock.patch("planemo.database.postgres_docker.start_postgres_docker") as start,
+        mock.patch("planemo.database.postgres_docker.stop_postgres_docker") as stop,
+        mock.patch("planemo.database.postgres_docker.time.sleep"),
+        mock.patch.object(DockerPostgresDatabaseSource, "list_databases") as list_databases,
+    ):
+        list_databases.return_value = ["galaxy", "plnmoprof_other_profile"]
+        if failure == "database setup":
+            list_databases.side_effect = RuntimeError(failure)
+        expected = pytest.raises(RuntimeError, match=failure) if failure else contextlib.nullcontext()
+        with expected:
+            with _database_connection(
+                "/unused.sqlite",
+                database_type="postgres_docker",
+                docker_cmd="docker",
+                docker_sudo=False,
+                docker_sudo_cmd="sudo",
+                docker_host=None,
+            ) as connection:
+                assert connection.endswith("/galaxy")
+                if failure == "Galaxy run":
+                    raise RuntimeError(failure)
+        assert start.call_count == (0 if already_running else 1)
+        stop.assert_not_called()
 
 
 def _assert_property_is(config, prop, value):

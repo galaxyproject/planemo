@@ -55,7 +55,7 @@ class DockerPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource):
     """Postgres database running inside a Docker container."""
 
     # This container uses --rm and has no persistent volume. Database
-    # administration commands therefore leave it running between invocations.
+    # commands therefore leave it running between invocations.
     keep_running_after_database_commands = True
 
     def __init__(self, **kwds):

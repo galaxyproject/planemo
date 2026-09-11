@@ -47,7 +47,7 @@ from planemo import (
 )
 from planemo.config import OptionSource
 from planemo.database import (
-    create_database_source,
+    database_source_context,
     is_managed_database_type,
 )
 from planemo.deps import ensure_dependency_resolvers_conf_configured
@@ -1406,15 +1406,11 @@ def _database_connection(
     if database_connection:
         yield database_connection
     elif is_managed_database_type(database_type):
-        database_source = create_database_source(database_type=database_type, **kwds)
-        try:
-            database_source.start()
+        with database_source_context(database_type=database_type, **kwds) as database_source:
             database_identifier = kwds.get("database_identifier", "galaxy")
             if database_identifier not in database_source.list_databases():
                 database_source.create_database(database_identifier)
             yield database_source.sqlalchemy_url(database_identifier)
-        finally:
-            database_source.stop()
     else:
         yield DATABASE_LOCATION_TEMPLATE % database_location
 
