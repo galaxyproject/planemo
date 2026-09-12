@@ -348,6 +348,21 @@ def cwltool_cache_directory_option():
     )
 
 
+def test_use_cache_option():
+    return planemo_option(
+        "--use_cache/--no_use_cache",
+        is_flag=True,
+        default=False,
+        help=(
+            "Reuse cached job results if available. Off by default - Galaxy replays "
+            "the outputs of an equivalent job, so a tool edited without a version bump "
+            "is never actually re-run and the test passes against stale results. Only "
+            "honored for tests defined in a test file; tests embedded in a tool's "
+            "<tests> block run through the Galaxy test interactor, which ignores this."
+        ),
+    )
+
+
 def run_output_json_option():
     return planemo_option(
         "output_json",

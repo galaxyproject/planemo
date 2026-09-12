@@ -39,14 +39,23 @@ to attempt to shield this execution of Galaxy from manually launched runs
 against that same Galaxy root - but this may not be bullet proof yet so
 please careful and do not try this against production Galaxy instances.
 
+Tests do not reuse cached job results unless ``--use_cache`` is passed.
+Opting in speeds up an edit-and-re-test loop over a fixed set of tools, but
+Galaxy decides equivalence from the tool id, tool version and inputs - edit
+a tool without bumping its version and the cached outputs are replayed, so
+the test never exercises the change. See "Caching job results" in the
+Planemo documentation.
+
 **Options**::
 
 
-      --failed                        Re-run only failed tests. This command will
-                                      read tool_test_output.json to determine which
-                                      tests failed so this file must have been
-                                      produced with the same set of tool ids
-                                      previously.
+      --failed, --lf                  Re-run only failed tests from the previous
+                                      run. Reads from --failed_json (or
+                                      --test_output_json if not set) to determine
+                                      which tests failed.
+      --failed_json PATH              JSON file from a previous planemo test run to
+                                      read failed test IDs from when using
+                                      --failed/--lf. Defaults to --test_output_json.
       --test_index INTEGER            Index(es) of specific test(s) to run
                                       (1-based). Can be specified multiple times
                                       (e.g., --test_index 1 --test_index 3) to run
@@ -56,6 +65,19 @@ please careful and do not try this against production Galaxy instances.
                                       between requests. Useful when testing against
                                       remote and/or production instances to limit
                                       generated traffic.
+      --use_cache / --no_use_cache    Reuse cached job results if available. Off by
+                                      default - Galaxy replays the outputs of an
+                                      equivalent job, so a tool edited without a
+                                      version bump is never actually re-run and the
+                                      test passes against stale results. Only
+                                      honored for tests defined in a test file;
+                                      tests embedded in a tool's <tests> block run
+                                      through the Galaxy test interactor, which
+                                      ignores this.
+      --cwltool_cache_directory DIRECTORY
+                                      Directory the cwltool engine caches computed
+                                      steps in when --use_cache is enabled (defaults
+                                      to a directory in the planemo workspace).
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
       --galaxy_python_version [3|3.8|3.9|3.10|3.11|3.12]
@@ -183,12 +205,36 @@ please careful and do not try this against production Galaxy instances.
                                       local singularity postgres.
       --shed_tool_conf TEXT           Location of shed tools conf file for Galaxy.
       --shed_tool_path TEXT           Location of shed tools directory for Galaxy.
+      --shed_tool_data_table_config TEXT
+                                      Location of the shed tool data table config
+                                      file for Galaxy (records data tables
+                                      registered by shed-installed repositories).
+      --shed_data_manager_config TEXT
+                                      Location of the shed data manager config file
+                                      for Galaxy.
+      --shed_data_dir DIRECTORY       Persistent base directory for shed-install
+                                      state (local Galaxy engine). Seeds defaults
+                                      for --shed_tool_conf, --shed_tool_path,
+                                      --shed_tool_data_table_config and
+                                      --shed_data_manager_config so shed installs
+                                      (tools and their data tables) survive Galaxy
+                                      restarts. Individual options still override.
       --galaxy_single_user / --no_galaxy_single_user
                                       By default Planemo will configure Galaxy to
                                       run in single-user mode where there is just
                                       one user and this user is automatically logged
                                       it. Use --no_galaxy_single_user to prevent
                                       Galaxy from running this way.
+      --tool_evaluation_strategy [local|remote]
+                                      Determines which process will evaluate the
+                                      tool command line. If set to 'local' the tool
+                                      command line will be templated in the job
+                                      handler process. If set to 'remote' the tool
+                                      command line will be built as part of the
+                                      submitted job (beta). Setting this to 'remote'
+                                      will also implicitly set metadata_strategy to
+                                      'extended', which is required for remote tool
+                                      evaluation.
       --paste_test_data_paths / --no_paste_test_data_paths
                                       By default Planemo will use or not use
                                       Galaxy's path paste option to load test data

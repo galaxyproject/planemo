@@ -289,7 +289,8 @@ def _execute(  # noqa C901
             tool_id=tool_id,
             inputs=job_dict,
             inputs_representation=inputs_representation,
-            # ``planemo test`` never sets use_cache, so tests never silently reuse results
+            # Off unless the caller opts in - ``planemo run`` defaults it on,
+            # ``planemo test`` defaults it off so tests never silently reuse results.
             use_cached_job=kwds.get("use_cache", False),
         )
         ctx.vlog("Post to Galaxy tool API with payload [%s]" % run_tool_payload)

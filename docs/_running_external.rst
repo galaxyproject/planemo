@@ -418,3 +418,18 @@ that succeeds:
 - Inputs given as local file paths are uploaded afresh on every run, and Galaxy
   does not consider jobs consuming distinct uploads equivalent. Caching helps
   most when the job file refers to datasets already on the server.
+
+``planemo test`` accepts the same ``--use_cache`` flag but defaults it **off**,
+because the two commands want different things. A run wants results; a test
+wants the work done again. Galaxy decides equivalence from the tool id, tool
+version and inputs, so a tool edited without a version bump looks equivalent to
+its previous self and its old outputs are replayed - the test then passes
+without ever exercising the edit. Opt in when the tools under a workflow are
+fixed and the iteration is on the workflow or its assertions, and leave it off
+when the tool wrappers themselves are what changed.
+
+``--use_cache`` is only honored for tests defined in a separate test file
+(workflow tests, CWL tests, and tool tests with an accompanying ``-tests.yml``).
+Tests embedded in a tool's ``<tests>`` block are executed by the Galaxy test
+interactor rather than the job and invocation requests described above, and
+ignore the flag.
