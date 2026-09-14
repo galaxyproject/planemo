@@ -65,6 +65,31 @@ def test_doi_linter_can_be_skipped_by_module_name():
     assert lint_ctx.message_list == []
 
 
+def test_doi_linter_reports_request_failures_without_crashing():
+    tool_source = _tool_source(TEST_TOOLS_DIR, "invalid_doi.xml")
+    lint_ctx = LintContext("all")
+
+    with mock.patch(
+        "planemo.linters.doi.requests.get",
+        side_effect=doi.requests.ConnectionError("offline"),
+    ) as get:
+        lint_tool_source_with_modules(lint_ctx, tool_source, [doi])
+
+    assert get.call_count == 2
+    assert _messages(lint_ctx) == [
+        (
+            "warning",
+            "Error 'offline' accessing https://doi.org/10.1101/014043",
+            "DoiUnexpectedResponse",
+        ),
+        (
+            "warning",
+            "Error 'offline' accessing https://doi.org/10.1101/666666",
+            "DoiUnexpectedResponse",
+        ),
+    ]
+
+
 def test_url_linter_checks_each_help_url_once():
     tool_source = _tool_source(TEST_TOOLS_DIR, "url.xml")
     response = mock.Mock(status_code=200)
@@ -128,6 +153,28 @@ def test_conda_linter_checks_each_requirement_once():
     ]
 
 
+def test_conda_linter_distinguishes_inexact_from_missing_requirements():
+    tool_source = _tool_source(TEST_TOOLS_DIR, "bwa_invalid_version.xml")
+    lint_ctx = LintContext("all")
+    best_hit = {"channel": "bioconda", "version": "0.7.10"}
+
+    with mock.patch(
+        "planemo.linters.conda_requirements.best_practice_search",
+        return_value=(best_hit, False),
+    ) as search:
+        lint_tool_source_with_modules(lint_ctx, tool_source, [conda_requirements])
+
+    search.assert_called_once()
+    assert _messages(lint_ctx) == [
+        (
+            "warning",
+            "Requirement [bwa@0.4.12] doesn't exactly match available version "
+            "[0.7.10] in best practice Conda channel [bioconda].",
+            "CondaRequirementInexact",
+        )
+    ]
+
+
 def test_conda_linter_reports_missing_requirements_without_searching():
     tool_source = _tool_source(TEST_TOOLS_DIR, "bwa_without_requirements.xml")
     lint_ctx = LintContext("all")
@@ -178,5 +225,25 @@ def test_biocontainer_linter_reports_missing_requirements_without_resolving():
             "warning",
             "No valid package requirement tags found to infer BioContainer from.",
             "BiocontainerRequirementsMissing",
+        )
+    ]
+
+
+def test_biocontainer_linter_reports_missing_container_once():
+    tool_source = _tool_source(Path(PROJECT_TEMPLATES_DIR) / "seqtk_complete", "seqtk_seq.xml")
+    lint_ctx = LintContext("all")
+
+    with mock.patch(
+        "planemo.linters.biocontainer_registered.mulled_container_name",
+        return_value=None,
+    ) as resolve:
+        lint_tool_source_with_modules(lint_ctx, tool_source, [biocontainer_registered])
+
+    resolve.assert_called_once()
+    assert _messages(lint_ctx) == [
+        (
+            "warning",
+            "Failed to find a BioContainer registered for these requirements.",
+            "BiocontainerMissing",
         )
     ]
