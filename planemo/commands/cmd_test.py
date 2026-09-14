@@ -44,6 +44,8 @@ from planemo.runnable_resolve import for_runnable_identifiers
     "instances to limit generated traffic.",
     default="0",
 )
+@options.test_use_cache_option()
+@options.cwltool_cache_directory_option()
 @options.galaxy_target_options()
 @options.galaxy_config_options()
 @options.test_options()
@@ -76,6 +78,13 @@ def cli(ctx, uris, **kwds):
     to attempt to shield this execution of Galaxy from manually launched runs
     against that same Galaxy root - but this may not be bullet proof yet so
     please careful and do not try this against production Galaxy instances.
+
+    Tests do not reuse cached job results unless ``--use_cache`` is passed.
+    Opting in speeds up an edit-and-re-test loop over a fixed set of tools, but
+    Galaxy decides equivalence from the tool id, tool version and inputs - edit
+    a tool without bumping its version and the cached outputs are replayed, so
+    the test never exercises the change. See "Caching job results" in the
+    Planemo documentation.
     """
     runnables = for_runnable_identifiers(ctx, uris, kwds)
 

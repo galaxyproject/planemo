@@ -7,7 +7,10 @@ from tempfile import (
     NamedTemporaryFile,
     TemporaryDirectory,
 )
-from unittest import skip
+from unittest import (
+    mock,
+    skip,
+)
 
 from planemo import cli
 from planemo.test.models import PlanemoTestReport
@@ -28,6 +31,30 @@ FETCH_DATA_DATA_MANAGER_TEST_PATH = "data_manager/data_manager_fetch_genome_dbke
 BOWTIE2_DATA_MANAGER_TEST_PATH = (
     "data_manager/data_manager_bowtie2_index_builder/data_manager/bowtie2_index_builder.xml"
 )
+
+
+class CmdTestUseCacheTestCase(CliTestCase):
+    """Unit coverage for the ``test`` command's ``--use_cache`` flag.
+
+    Only checks that the flag reaches the engine layer - ``tests/test_galaxy_activity.py``
+    covers turning that keyword into ``use_cached_job`` on the Galaxy requests.
+    """
+
+    def _forwarded_use_cache(self, *extra_args):
+        artifact = os.path.join(TEST_TOOLS_DIR, "ok_test_assert_command.xml")
+        with self._isolate(), mock.patch("planemo.commands.cmd_test.test_runnables") as mock_test_runnables:
+            mock_test_runnables.return_value = 0
+            self._check_exit_code(["test", *extra_args, artifact])
+            return mock_test_runnables.call_args.kwargs["use_cache"]
+
+    def test_use_cache_defaults_off(self):
+        assert self._forwarded_use_cache() is False
+
+    def test_use_cache_opt_in(self):
+        assert self._forwarded_use_cache("--use_cache") is True
+
+    def test_no_use_cache_explicit(self):
+        assert self._forwarded_use_cache("--no_use_cache") is False
 
 
 class CmdTestTestCase(CliTestCase):

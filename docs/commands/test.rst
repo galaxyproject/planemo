@@ -39,6 +39,13 @@ to attempt to shield this execution of Galaxy from manually launched runs
 against that same Galaxy root - but this may not be bullet proof yet so
 please careful and do not try this against production Galaxy instances.
 
+Tests do not reuse cached job results unless ``--use_cache`` is passed.
+Opting in speeds up an edit-and-re-test loop over a fixed set of tools, but
+Galaxy decides equivalence from the tool id, tool version and inputs - edit
+a tool without bumping its version and the cached outputs are replayed, so
+the test never exercises the change. See "Caching job results" in the
+Planemo documentation.
+
 **Options**::
 
 
@@ -58,6 +65,19 @@ please careful and do not try this against production Galaxy instances.
                                       between requests. Useful when testing against
                                       remote and/or production instances to limit
                                       generated traffic.
+      --use_cache / --no_use_cache    Reuse cached job results if available. Off by
+                                      default - Galaxy replays the outputs of an
+                                      equivalent job, so a tool edited without a
+                                      version bump is never actually re-run and the
+                                      test passes against stale results. Only
+                                      honored for tests defined in a test file;
+                                      tests embedded in a tool's <tests> block run
+                                      through the Galaxy test interactor, which
+                                      ignores this.
+      --cwltool_cache_directory DIRECTORY
+                                      Directory the cwltool engine caches computed
+                                      steps in when --use_cache is enabled (defaults
+                                      to a directory in the planemo workspace).
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
       --galaxy_python_version [3|3.8|3.9|3.10|3.11|3.12]

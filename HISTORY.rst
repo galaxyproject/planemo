@@ -8,6 +8,8 @@ History
 ---------------------
 0.75.48.dev0
 ---------------------
+* Add ``--use_cache`` to ``planemo test``, off by default - follow-up to #1665
+  which added it to ``planemo run``.
 
 
 ---------------------

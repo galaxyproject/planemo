@@ -51,6 +51,6 @@ def test_execute_workflow_forwards_use_cache(use_cache):
 
 
 def test_execute_does_not_cache_without_use_cache():
-    """Callers other than ``planemo run`` (e.g. ``planemo test``) never set use_cache."""
+    """A caller that leaves use_cache unset gets no caching - e.g. ``planemo test`` by default."""
     assert _execute_capturing_request(TOOL_RUNNABLE)["use_cached_job"] is False
     assert _execute_capturing_request(WORKFLOW_RUNNABLE)["use_cached_job"] is False

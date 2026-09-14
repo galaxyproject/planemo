@@ -418,3 +418,9 @@ that succeeds:
 - Inputs given as local file paths are uploaded afresh on every run, and Galaxy
   does not consider jobs consuming distinct uploads equivalent. Caching helps
   most when the job file refers to datasets already on the server.
+
+``planemo test`` takes the same flag but defaults it **off** - a test wants the
+work done again, and a tool edited without a version bump still looks equivalent
+to Galaxy, so its stale outputs would be replayed. It is also only honored for
+tests defined in a separate test file; tests embedded in a tool's ``<tests>``
+block are run by the Galaxy test interactor and ignore it.
