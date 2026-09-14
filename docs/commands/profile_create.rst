@@ -20,10 +20,12 @@ Create a profile.
                                       Type of database to use for profile - 'auto',
                                       'sqlite', 'postgres', 'postgres_docker' , and
                                       postgres_singularity are available options.
-                                      Use postgres to use an existing postgres
-                                      server you user can access without a password
-                                      via the psql command. Use postgres_docker to
-                                      have Planemo manage a docker container running
+                                      The default 'auto' means sqlite - a postgres
+                                      server is only stood up when named. Use
+                                      postgres to use an existing postgres server
+                                      you user can access without a password via the
+                                      psql command. Use postgres_docker to have
+                                      Planemo manage a docker container running
                                       postgres. . Use  postgres_singularity to have
                                       Planemo run postgres using
                                       singularity/apptainer. Data with
@@ -38,6 +40,15 @@ Create a profile.
                                       databases.
       --postgres_database_port TEXT   Postgres port for managed development
                                       databases.
+      --postgres-storage-location, --postgres_storage_location DIRECTORY
+                                      Storage path for PostgreSQL data managed
+                                      through Singularity.
+      --singularity_cmd TEXT          Command used to execute singularity (defaults
+                                      to 'singularity').
+      --singularity_sudo / --no_singularity_sudo
+                                      Flag to use sudo when running Singularity.
+      --singularity_sudo_cmd TEXT     sudo command to use when --singularity_sudo is
+                                      enabled (defaults to sudo).
       --engine [galaxy|docker_galaxy|external_galaxy]
                                       Select an engine to serve artifacts such as
                                       tools and workflows. Defaults to a local
@@ -58,4 +69,4 @@ Create a profile.
       --galaxy_user_key TEXT          User key to use with external Galaxy engine.
       --galaxy_admin_key TEXT         Admin key to use with external Galaxy engine.
       --help                          Show this message and exit.
-    
+

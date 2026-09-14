@@ -34,7 +34,7 @@ Initialize an small Galaxy job config file for hosted workflow runs.
       --singularity_cmd TEXT          Command used to execute singularity (defaults
                                       to 'singularity').
       --singularity_sudo / --no_singularity_sudo
-                                      Flag to use sudo when running docker.
+                                      Flag to use sudo when running Singularity.
       --singularity_sudo_cmd TEXT     sudo command to use when --singularity_sudo is
                                       enabled (defaults to sudo).
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
@@ -53,4 +53,4 @@ Initialize an small Galaxy job config file for hosted workflow runs.
                                       (defaults to the newest Galaxy the generator
                                       knows).
       --help                          Show this message and exit.
-    
+

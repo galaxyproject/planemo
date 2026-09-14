@@ -3,13 +3,21 @@
 import contextlib
 import json
 import os
+from unittest import mock
 
+import pytest
 import yaml
+from click.testing import CliRunner
 
+from planemo.cli import planemo
+from planemo.database.postgres_docker import DockerPostgresDatabaseSource
 from planemo.galaxy.config import (
     _all_tool_paths,
+    _database_connection,
     _shared_galaxy_properties,
     _shed_config_paths,
+    _validate_database_daemon,
+    DATABASE_LOCATION_TEMPLATE,
     galaxy_config,
     get_refgenie_config,
     tail_log_directory,
@@ -103,6 +111,140 @@ def test_runnable_delegated_properties_are_booleans():
     assert Runnable("t.xml", RunnableType.galaxy_tool).has_tools is True
     assert Runnable("w.ga", RunnableType.galaxy_workflow).has_tools is False
     assert Runnable("d", RunnableType.directory).is_single_artifact is False
+
+
+@contextlib.contextmanager
+def _database_location():
+    with TempDirectoryContext() as temp_directory_context:
+        yield os.path.join(temp_directory_context.temp_directory, "galaxy.sqlite")
+
+
+def test_detached_singularity_serve_fails_before_configuration(tmp_path):
+    storage = tmp_path / "postgres"
+    result = CliRunner().invoke(
+        planemo,
+        ["serve", "--daemon", "--database_type", "postgres_singularity", "--postgres-storage-location", str(storage)],
+    )
+    assert result.exit_code == 2, result.output
+    assert "Omit --daemon or supply --database_connection" in result.output
+    assert not storage.exists()
+
+
+@pytest.mark.parametrize(
+    "kwds",
+    (
+        {"database_type": "postgres_singularity"},
+        {"database_type": "postgres_singularity", "daemon": True, "stop_daemon_after_serve": True},
+        {"database_type": "postgres_singularity", "daemon": True, "database_connection": "postgresql:///galaxy"},
+        {"database_type": "postgres_docker", "daemon": True},
+        {"database_type": "sqlite", "daemon": True},
+    ),
+)
+def test_supported_database_serving_modes(kwds):
+    _validate_database_daemon(kwds)
+
+
+def test_database_connection_defaults_to_sqlite():
+    """A run that never named a postgres backend stays on the config directory's sqlite file."""
+    with _database_location() as database_location:
+        for kwds in ({}, {"database_type": None}, {"database_type": "auto"}, {"database_type": "sqlite"}):
+            with _database_connection(database_location, **kwds) as connection:
+                assert connection == DATABASE_LOCATION_TEMPLATE % database_location, kwds
+
+
+def test_database_connection_override_wins():
+    """An explicit connection string is used whatever the database type says."""
+    conn = "postgresql://username:password@localhost/mydatabase"
+    with _database_location() as database_location:
+        for database_type in (None, "auto", "postgres"):
+            with _database_connection(database_location, database_type=database_type, database_connection=conn) as (
+                connection
+            ):
+                assert connection == conn, database_type
+
+
+@pytest.mark.parametrize("database_type", ("postgres", "postgres_docker", "postgres_singularity"))
+def test_database_connection_manages_named_postgres_backend(database_type):
+    """Database cleanup follows the backend persistence policy."""
+    database_source = mock.Mock(keep_running_after_database_commands=False)
+    database_source.keep_running_after_database_commands = database_type == "postgres_docker"
+    database_source.list_databases.return_value = ["postgres"]
+    database_source.sqlalchemy_url.return_value = "postgresql://galaxy@localhost/galaxy"
+    with mock.patch("planemo.database.factory.create_database_source", return_value=database_source):
+        with _database_location() as database_location:
+            with _database_connection(database_location, database_type=database_type) as connection:
+                assert connection == "postgresql://galaxy@localhost/galaxy"
+                database_source.start.assert_called_once_with()
+                database_source.stop.assert_not_called()
+    if database_type == "postgres_docker":
+        database_source.stop.assert_not_called()
+    else:
+        database_source.stop.assert_called_once_with()
+    database_source.list_databases.assert_called_once_with()
+    database_source.create_database.assert_called_once_with("galaxy")
+    database_source.sqlalchemy_url.assert_called_once_with("galaxy")
+
+
+def test_database_connection_restarts_singularity_profile_database():
+    database_source = mock.Mock(keep_running_after_database_commands=False)
+    database_source.list_databases.return_value = ["postgres", "plnmoprof_profile1234"]
+    database_source.sqlalchemy_url.return_value = (
+        "postgresql://galaxy:mysecretpassword@/plnmoprof_profile1234?host=/profiles/profile1234/postgres/pgrun"
+    )
+    with mock.patch("planemo.database.factory.create_database_source", return_value=database_source) as create_source:
+        with _database_location() as database_location:
+            with _database_connection(
+                database_location,
+                database_type="postgres_singularity",
+                database_identifier="plnmoprof_profile1234",
+                postgres_storage_location="/profiles/profile1234/postgres",
+                singularity_cmd="apptainer",
+            ) as connection:
+                assert connection == database_source.sqlalchemy_url.return_value
+                database_source.start.assert_called_once_with()
+                database_source.stop.assert_not_called()
+
+    create_source.assert_called_once_with(
+        profile_directory=None,
+        for_database_commands=False,
+        database_type="postgres_singularity",
+        database_identifier="plnmoprof_profile1234",
+        postgres_storage_location="/profiles/profile1234/postgres",
+        singularity_cmd="apptainer",
+    )
+    database_source.sqlalchemy_url.assert_called_once_with("plnmoprof_profile1234")
+    database_source.create_database.assert_not_called()
+    database_source.stop.assert_called_once_with()
+
+
+@pytest.mark.parametrize("already_running", (False, True))
+@pytest.mark.parametrize("failure", (None, "database setup", "Galaxy run"))
+def test_galaxy_preserves_shared_docker_databases(already_running, failure):
+    with (
+        mock.patch("planemo.database.postgres_docker.is_running_container", return_value=already_running),
+        mock.patch("planemo.database.postgres_docker.start_postgres_docker") as start,
+        mock.patch("planemo.database.postgres_docker.stop_postgres_docker") as stop,
+        mock.patch("planemo.database.postgres_docker.time.sleep"),
+        mock.patch.object(DockerPostgresDatabaseSource, "list_databases") as list_databases,
+    ):
+        list_databases.return_value = ["galaxy", "plnmoprof_other_profile"]
+        if failure == "database setup":
+            list_databases.side_effect = RuntimeError(failure)
+        expected = pytest.raises(RuntimeError, match=failure) if failure else contextlib.nullcontext()
+        with expected:
+            with _database_connection(
+                "/unused.sqlite",
+                database_type="postgres_docker",
+                docker_cmd="docker",
+                docker_sudo=False,
+                docker_sudo_cmd="sudo",
+                docker_host=None,
+            ) as connection:
+                assert connection.endswith("/galaxy")
+                if failure == "Galaxy run":
+                    raise RuntimeError(failure)
+        assert start.call_count == (0 if already_running else 1)
+        stop.assert_not_called()
 
 
 def _assert_property_is(config, prop, value):

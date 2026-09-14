@@ -1154,7 +1154,7 @@ def docker_sudo_option():
 
 def singularity_sudo_option():
     return planemo_option(
-        "--singularity_sudo/--no_singularity_sudo", is_flag=True, help="Flag to use sudo when running docker."
+        "--singularity_sudo/--no_singularity_sudo", is_flag=True, help="Flag to use sudo when running Singularity."
     )
 
 
@@ -1436,7 +1436,6 @@ def galaxy_config_options():
         profile_database_options(),
         file_path_option(),
         database_connection_option(),
-        postgres_database_storage_location_option(),
         shed_tools_conf_option(),
         shed_tools_directory_option(),
         shed_tool_data_table_config_option(),
@@ -1816,8 +1815,10 @@ def postgres_datatype_type_option():
 def postgres_database_storage_location_option():
     return planemo_option(
         "--postgres-storage-location",
-        type=str,
-        help="storage path for postgres database, used for local singularity postgres.",
+        "--postgres_storage_location",
+        "postgres_storage_location",
+        type=click.Path(file_okay=False, dir_okay=True, resolve_path=True),
+        help="Storage path for PostgreSQL data managed through Singularity.",
         default=None,
         use_global_config=True,
     )
@@ -1850,6 +1851,7 @@ def database_type_option():
         help=(
             "Type of database to use for profile - "
             "'auto', 'sqlite', 'postgres', 'postgres_docker' , and postgres_singularity are available options. "
+            "The default 'auto' means sqlite - a postgres server is only stood up when named. "
             "Use postgres to use an existing postgres server you user can "
             "access without a password via the psql command. Use postgres_docker "
             "to have Planemo manage a docker container running postgres. . Use "
@@ -1895,6 +1897,8 @@ def profile_database_options():
         postgres_datatype_type_option(),
         database_type_option(),
         database_source_options(),
+        postgres_database_storage_location_option(),
+        singularity_config_options(),
     )
 
 

@@ -253,7 +253,7 @@ planemo.commands.cmd\_list\_repos module
    :undoc-members:
 
 planemo.commands.cmd\_list\_workflows module
----------------------------------------------
+--------------------------------------------
 
 .. automodule:: planemo.commands.cmd_list_workflows
    :members:

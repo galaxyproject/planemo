@@ -46,4 +46,4 @@ the tool development best practices outlined on the Galaxy wiki.
                        best practices as part of this command, this flag will
                        disable that behavior.
       --help           Show this message and exit.
-    
+

@@ -4,7 +4,10 @@ import click
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.database import create_database_source
+from planemo.database import (
+    database_source_context,
+    DatabaseConfigurationError,
+)
 
 
 @click.command("database_create")
@@ -53,7 +56,10 @@ def cli(ctx, identifier, **kwds):
     \b
         *:*:*:postgres:<postgres_password>
     """
-    datasource = create_database_source(**kwds)
-    datasource.create_database(identifier)
-    url = datasource.sqlalchemy_url(identifier)
+    try:
+        with database_source_context(for_database_commands=True, **kwds) as datasource:
+            datasource.create_database(identifier)
+            url = datasource.sqlalchemy_url(identifier)
+    except DatabaseConfigurationError as e:
+        raise click.UsageError(str(e)) from e
     print("Database with URL %s created." % url)

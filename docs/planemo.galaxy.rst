@@ -37,6 +37,14 @@ planemo.galaxy.config module
    :show-inheritance:
    :undoc-members:
 
+planemo.galaxy.daemon\_monitor module
+-------------------------------------
+
+.. automodule:: planemo.galaxy.daemon_monitor
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 planemo.galaxy.distro\_tools module
 -----------------------------------
 

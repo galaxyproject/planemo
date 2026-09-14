@@ -139,10 +139,12 @@ Planemo documentation for what can actually be reused.
                                       Type of database to use for profile - 'auto',
                                       'sqlite', 'postgres', 'postgres_docker' , and
                                       postgres_singularity are available options.
-                                      Use postgres to use an existing postgres
-                                      server you user can access without a password
-                                      via the psql command. Use postgres_docker to
-                                      have Planemo manage a docker container running
+                                      The default 'auto' means sqlite - a postgres
+                                      server is only stood up when named. Use
+                                      postgres to use an existing postgres server
+                                      you user can access without a password via the
+                                      psql command. Use postgres_docker to have
+                                      Planemo manage a docker container running
                                       postgres. . Use  postgres_singularity to have
                                       Planemo run postgres using
                                       singularity/apptainer. Data with
@@ -157,12 +159,18 @@ Planemo documentation for what can actually be reused.
                                       databases.
       --postgres_database_port TEXT   Postgres port for managed development
                                       databases.
+      --postgres-storage-location, --postgres_storage_location DIRECTORY
+                                      Storage path for PostgreSQL data managed
+                                      through Singularity.
+      --singularity_cmd TEXT          Command used to execute singularity (defaults
+                                      to 'singularity').
+      --singularity_sudo / --no_singularity_sudo
+                                      Flag to use sudo when running Singularity.
+      --singularity_sudo_cmd TEXT     sudo command to use when --singularity_sudo is
+                                      enabled (defaults to sudo).
       --file_path DIRECTORY           Location for files created by Galaxy (e.g.
                                       database/files).
       --database_connection TEXT      Database connection string to use for Galaxy.
-      --postgres-storage-location TEXT
-                                      storage path for postgres database, used for
-                                      local singularity postgres.
       --shed_tool_conf TEXT           Location of shed tools conf file for Galaxy.
       --shed_tool_path TEXT           Location of shed tools directory for Galaxy.
       --shed_tool_data_table_config TEXT
@@ -299,4 +307,4 @@ Planemo documentation for what can actually be reused.
       --test_timeout INTEGER          Maximum runtime of a single test in seconds.
       --fail_fast                     Stop on first job failure.
       --help                          Show this message and exit.
-    
+

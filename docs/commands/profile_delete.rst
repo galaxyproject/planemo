@@ -20,10 +20,12 @@ Delete a profile.
                                       Type of database to use for profile - 'auto',
                                       'sqlite', 'postgres', 'postgres_docker' , and
                                       postgres_singularity are available options.
-                                      Use postgres to use an existing postgres
-                                      server you user can access without a password
-                                      via the psql command. Use postgres_docker to
-                                      have Planemo manage a docker container running
+                                      The default 'auto' means sqlite - a postgres
+                                      server is only stood up when named. Use
+                                      postgres to use an existing postgres server
+                                      you user can access without a password via the
+                                      psql command. Use postgres_docker to have
+                                      Planemo manage a docker container running
                                       postgres. . Use  postgres_singularity to have
                                       Planemo run postgres using
                                       singularity/apptainer. Data with
@@ -38,6 +40,15 @@ Delete a profile.
                                       databases.
       --postgres_database_port TEXT   Postgres port for managed development
                                       databases.
+      --postgres-storage-location, --postgres_storage_location DIRECTORY
+                                      Storage path for PostgreSQL data managed
+                                      through Singularity.
+      --singularity_cmd TEXT          Command used to execute singularity (defaults
+                                      to 'singularity').
+      --singularity_sudo / --no_singularity_sudo
+                                      Flag to use sudo when running Singularity.
+      --singularity_sudo_cmd TEXT     sudo command to use when --singularity_sudo is
+                                      enabled (defaults to sudo).
       --docker_cmd TEXT               Command used to launch docker (defaults to
                                       docker).
       --docker_sudo / --no_docker_sudo
@@ -49,4 +60,4 @@ Delete a profile.
       --docker_run_extra_arguments TEXT
                                       Extra arguments to pass to docker run.
       --help                          Show this message and exit.
-    
+

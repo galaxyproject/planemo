@@ -108,11 +108,13 @@ def _serve(ctx, runnables, **kwds):
         try:
             yield config
         except BaseException:
-            if startup_process is not None:
+            if startup_process is not None or kwds.get("stop_daemon_after_serve"):
                 config.kill()
             raise
         else:
-            if startup_process is not None:
+            if kwds.get("stop_daemon_after_serve"):
+                config.kill()
+            elif startup_process is not None:
                 config.detach_daemon()
 
 
@@ -123,17 +125,21 @@ def serve_daemon(ctx, runnables=None, **kwds):
         runnables = []
     config = None
     kwds["daemon"] = True
+    # Let _serve stop Galaxy before its galaxy_config context (and therefore a
+    # managed database context) exits. Keeping ownership in one layer also
+    # avoids a second kill when the caller raises.
+    kwds["stop_daemon_after_serve"] = True
     try:
         with serve(ctx, runnables, **kwds) as config:
-            yield config
+            try:
+                yield config
+            finally:
+                if ctx.verbose:
+                    print("Galaxy Log:")
+                    print(config.log_contents)
     finally:
-        if config:
-            if ctx.verbose:
-                print("Galaxy Log:")
-                print(config.log_contents)
-            config.kill()
-            if not kwds.get("no_cleanup", False):
-                config.cleanup()
+        if config and not kwds.get("no_cleanup", False):
+            config.cleanup()
 
 
 def sleep_for_serve():

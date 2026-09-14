@@ -1,3 +1,5 @@
+import os
+
 from planemo.database.postgres_docker import stop_postgres_docker
 from .test_utils import (
     CliTestCase,
@@ -8,14 +10,15 @@ from .test_utils import (
 
 class ProfileCommandsTestCase(CliTestCase):
     def _profile_commands(self, database_type="postgres"):
-        with self._isolate():
-            result = self._check_exit_code(["profile_list"])
+        with self._isolate() as test_directory:
+            global_options = ["--directory", os.path.join(test_directory, "planemo-workspace")]
+            result = self._check_exit_code([*global_options, "profile_list"])
             assert "profile1234" not in result.output
-            self._check_exit_code(["profile_create", "profile1234", "--database_type", database_type])
-            result = self._check_exit_code(["profile_list"])
+            self._check_exit_code([*global_options, "profile_create", "profile1234", "--database_type", database_type])
+            result = self._check_exit_code([*global_options, "profile_list"])
             assert "profile1234" in result.output
-            self._check_exit_code(["profile_delete", "profile1234"])
-            result = self._check_exit_code(["profile_list"])
+            self._check_exit_code([*global_options, "profile_delete", "profile1234"])
+            result = self._check_exit_code([*global_options, "profile_list"])
             assert "profile1234" not in result.output, result.output
 
     @skip_unless_environ("PLANEMO_ENABLE_POSTGRES_TESTS")
@@ -29,3 +32,11 @@ class ProfileCommandsTestCase(CliTestCase):
             self._profile_commands(database_type="postgres_docker")
         finally:
             stop_postgres_docker()
+
+    @skip_unless_environ("PLANEMO_ENABLE_POSTGRES_TESTS")
+    @skip_unless_executable("singularity")
+    def test_profile_commands_singularity(self):
+        self._profile_commands(database_type="postgres_singularity")
+
+    def test_profile_commands_sqlite(self):
+        self._profile_commands(database_type="sqlite")
