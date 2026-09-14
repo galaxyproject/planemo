@@ -1,16 +1,20 @@
-"""Ensure best-practice biocontainer registered for this tool."""
+"""Ensure a best-practice BioContainer is registered for a tool."""
 
 from typing import (
     List,
+    NamedTuple,
     Optional,
     TYPE_CHECKING,
 )
 
 from galaxy.tool_util.deps.container_resolvers.mulled import targets_to_mulled_name
-from galaxy.tool_util.deps.mulled.mulled_build_tool import requirements_to_mulled_targets
 from galaxy.tool_util.lint import Linter
 
-from .util import xml_node_from_toolsource
+from planemo.conda import tool_source_conda_targets
+from planemo.linters.util import (
+    cached_lint_result,
+    xml_node_from_toolsource,
+)
 
 if TYPE_CHECKING:
     from galaxy.tool_util.deps.conda_util import CondaTarget
@@ -24,25 +28,48 @@ MESSAGE_INFO_FOUND_BIOCONTAINER = "BioContainer best-practice container found [%
 lint_tool_types = ["*"]
 
 
-class BiocontainerValid(Linter):
-    @classmethod
-    def lint(cls, tool_source: "ToolSource", lint_ctx: "LintContext"):
-        requirements, *_ = tool_source.parse_requirements_and_containers()
-        targets = requirements_to_mulled_targets(requirements)
-        name = mulled_container_name("biocontainers", targets)
-        if name:
-            requirements_node = xml_node_from_toolsource(tool_source, "requirements")
-            lint_ctx.info(MESSAGE_INFO_FOUND_BIOCONTAINER % name, linter=cls.name(), node=requirements_node)
+class BiocontainerCheck(NamedTuple):
+    targets: List["CondaTarget"]
+    name: Optional[str]
+
+
+def _biocontainer_check(tool_source: "ToolSource") -> BiocontainerCheck:
+    def calculate() -> BiocontainerCheck:
+        targets = tool_source_conda_targets(tool_source)
+        name = mulled_container_name("biocontainers", targets) if targets else None
+        return BiocontainerCheck(targets, name)
+
+    return cached_lint_result(tool_source, "biocontainer_registered", calculate)
+
 
 class BiocontainerMissing(Linter):
     @classmethod
     def lint(cls, tool_source: "ToolSource", lint_ctx: "LintContext"):
-        requirements, *_ = tool_source.parse_requirements_and_containers()
-        targets = requirements_to_mulled_targets(requirements)
-        name = mulled_container_name("biocontainers", targets)
-        if not name:
+        check = _biocontainer_check(tool_source)
+        if check.targets and not check.name:
             requirements_node = xml_node_from_toolsource(tool_source, "requirements")
             lint_ctx.warn(MESSAGE_WARN_NO_CONTAINER, linter=cls.name(), node=requirements_node)
+
+
+class BiocontainerRequirementsMissing(Linter):
+    @classmethod
+    def lint(cls, tool_source: "ToolSource", lint_ctx: "LintContext"):
+        if not _biocontainer_check(tool_source).targets:
+            requirements_node = xml_node_from_toolsource(tool_source, "requirements")
+            lint_ctx.warn(MESSAGE_WARN_NO_REQUIREMENTS, linter=cls.name(), node=requirements_node)
+
+
+class BiocontainerValid(Linter):
+    @classmethod
+    def lint(cls, tool_source: "ToolSource", lint_ctx: "LintContext"):
+        check = _biocontainer_check(tool_source)
+        if check.name:
+            requirements_node = xml_node_from_toolsource(tool_source, "requirements")
+            lint_ctx.info(
+                MESSAGE_INFO_FOUND_BIOCONTAINER % check.name,
+                linter=cls.name(),
+                node=requirements_node,
+            )
 
 
 def mulled_container_name(namespace: str, targets: List["CondaTarget"]) -> Optional[str]:

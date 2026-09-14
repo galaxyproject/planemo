@@ -5,6 +5,7 @@ import re
 from typing import (
     Any,
     Dict,
+    Optional,
     TYPE_CHECKING,
 )
 from urllib.request import urlopen
@@ -23,6 +24,7 @@ if TYPE_CHECKING:
     from planemo.cli import PlanemoCliContext
 
 REQUEST_TIMEOUT = 5
+BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
 
 
 def build_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
@@ -47,6 +49,7 @@ def build_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
 
     linters = Linter.list_linters()
     linters.extend(["version_bumped", "requirements_in_conda", "biocontainer_registered", "tool_urls"])
+    linters.extend(kwds.get("extra_linter_names", []))
     invalid_skip_types = list(set(skip_types) - set(linters))
     if len(invalid_skip_types):
         error(f"Unknown linter type(s) {invalid_skip_types} in list of linters to be skipped. Known linters {linters}")
@@ -88,18 +91,18 @@ def lint_xsd(lint_ctx, schema_path, path):
         lint_ctx.info("File validates against XML schema.")
 
 
-def _validate_doi_url(url, lint_ctx):
+def _validate_doi_url(url) -> Optional[str]:
     """Validate DOI URL by checking CrossRef API."""
     match = re.match("https?://doi.org/(.*)$", url)
     if match is None:
-        return False
+        return f"Invalid DOI URL {url}"
 
     doi = match.group(1)
     xref_url = f"https://api.crossref.org/works/{doi}"
-    return _validate_http_url(xref_url, lint_ctx=lint_ctx)
+    return _validate_http_url(xref_url)
 
 
-def _validate_http_url(url, lint_ctx, user_agent=None):
+def _validate_http_url(url, user_agent=None) -> Optional[str]:
     """Validate HTTP/HTTPS URL."""
     headers = {"User-Agent": user_agent, "Accept": "*/*"} if user_agent else None
     r = None
@@ -107,61 +110,63 @@ def _validate_http_url(url, lint_ctx, user_agent=None):
         r = requests.get(url, headers=headers, stream=True, timeout=REQUEST_TIMEOUT)
         r.raise_for_status()
         next(r.iter_content(1000))
-        return True
+        return None
     except Exception as e:
         if r is not None:
             if r.status_code == 429:
                 # too many requests
-                return True
+                return None
             elif r.status_code in [403, 503] and "cloudflare" in r.text:
                 # CloudFlare protection block
-                return True
-            else:
-                lint_ctx.error(f"Error '{e}' accessing {url} response was {r.text}")
-                return False
-        else:
-            lint_ctx.error(f"Error '{e}' accessing {url}")
-            return False
+                return None
+            return f"Error '{e}' accessing {url} response was {r.text}"
+        return f"Error '{e}' accessing {url}"
 
 
-def _validate_other_url(url, lint_ctx):
+def _validate_other_url(url) -> Optional[str]:
     """Validate non-HTTP URLs."""
     try:
         with urlopen(url) as handle:
             handle.read(100)
-        return True
+        return None
     except Exception as e:
-        lint_ctx.error(f"Error '{e}' accessing {url}")
-        return False
+        return f"Error '{e}' accessing {url}"
+
+
+def validate_url(url, user_agent=None) -> Optional[str]:
+    """Return an error message when a URL cannot be validated."""
+    if re.match("https?://doi.org/(.*)$", url):
+        return _validate_doi_url(url)
+    if url.startswith("http://") or url.startswith("https://"):
+        return _validate_http_url(url, user_agent)
+    return _validate_other_url(url)
+
+
+def lint_url(url, lint_ctx, user_agent=None, **message_kwds):
+    """Validate and report one URL."""
+    error_message = validate_url(url, user_agent)
+    if error_message:
+        lint_ctx.error(error_message, **message_kwds)
+    else:
+        lint_ctx.info(f"URL OK {url}", **message_kwds)
 
 
 def lint_urls(root, lint_ctx):
     """Find referenced URLs and verify they are valid."""
     urls, docs = find_urls_for_xml(root)
 
-    # This is from Google Chome on macOS, current at time of writing:
-    BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
-
-    def validate_url(url, lint_ctx, user_agent=None):
-        is_valid = False
-        if re.match("https?://doi.org/(.*)$", url):
-            is_valid = _validate_doi_url(url, lint_ctx)
-        elif url.startswith("http://") or url.startswith("https://"):
-            is_valid = _validate_http_url(url, lint_ctx, user_agent)
-        else:
-            is_valid = _validate_other_url(url, lint_ctx)
-
-        if is_valid:
-            lint_ctx.info("URL OK %s" % url)
-
     for url in urls:
-        validate_url(url, lint_ctx)
+        lint_url(url, lint_ctx)
     for url in docs:
-        validate_url(url, lint_ctx, BROWSER_USER_AGENT)
+        lint_url(url, lint_ctx, BROWSER_USER_AGENT)
+
 
 __all__ = (
+    "BROWSER_USER_AGENT",
     "build_lint_args",
     "handle_lint_complete",
+    "lint_url",
     "lint_urls",
     "lint_xsd",
+    "validate_url",
 )

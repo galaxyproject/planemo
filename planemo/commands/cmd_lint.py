@@ -30,7 +30,6 @@ from planemo.tool_lint import (
 @command_function
 def cli(ctx: PlanemoCliContext, uris, **kwds):
     """Check for common errors and best practices."""
-    print("LINT")
     lint_args = build_tool_lint_args(ctx, **kwds)
     exit_code = lint_tools_on_path(ctx, uris, lint_args, recursive=kwds["recursive"])
 

@@ -16,12 +16,12 @@ from galaxy.util import unicodify
 from planemo.io import info
 from planemo.lint import (
     handle_lint_complete,
+    lint_urls,
     lint_xsd,
     setup_lint,
 )
 from planemo.shed import (
     CURRENT_CATEGORIES,
-    find_urls_for_xml,
     REPO_TYPE_SUITE,
     REPO_TYPE_TOOL_DEP,
     REPO_TYPE_UNRESTRICTED,
@@ -59,6 +59,21 @@ SHED_METADATA = [
     "categories",
 ]
 
+REPOSITORY_LINTER_NAMES = [
+    "expansion",
+    "expected_files",
+    "tool_dependencies_xsd",
+    "tool_dependencies_sha256sum",
+    "tool_dependencies_actions",
+    "repository_dependencies",
+    "shed_yaml",
+    "readme",
+    "urls",
+    "version_bumped",
+    "shed_remote_repository_url",
+    "shed_metadata",
+]
+
 
 def lint_repository(ctx: "PlanemoCliContext", realized_repository: "RealizedRepository", **kwds):
     """Lint a realized shed repository.
@@ -69,7 +84,7 @@ def lint_repository(ctx: "PlanemoCliContext", realized_repository: "RealizedRepo
     failed = False
     path = realized_repository.real_path
     info("Linting repository %s" % path)
-    lint_args = build_tool_lint_args(ctx, **kwds)
+    lint_args = build_tool_lint_args(ctx, extra_linter_names=REPOSITORY_LINTER_NAMES, **kwds)
     lint_args, lint_ctx = setup_lint(ctx, lint_args=lint_args, **kwds)
     lint_ctx.lint(
         "lint_expansion",

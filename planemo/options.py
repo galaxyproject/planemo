@@ -1628,7 +1628,7 @@ def lint_biocontainers_option():
     )
 
 
-def lint_urls():
+def lint_urls_option():
     return planemo_option(
         "--urls",
         is_flag=True,
@@ -1637,7 +1637,7 @@ def lint_urls():
     )
 
 
-def lint_doi():
+def lint_doi_option():
     return planemo_option(
         "--doi",
         is_flag=True,
@@ -1646,7 +1646,7 @@ def lint_doi():
     )
 
 
-def lint_conda_requirements():
+def lint_conda_requirements_option():
     return planemo_option(
         "--conda_requirements",
         is_flag=True,
@@ -1657,9 +1657,9 @@ def lint_conda_requirements():
 
 def lint_planemo_defined_tool_linters_options():
     return _compose(
-        lint_urls(),
-        lint_doi(),
-        lint_conda_requirements(),
+        lint_urls_option(),
+        lint_doi_option(),
+        lint_conda_requirements_option(),
         lint_biocontainers_option(),
     )
 
