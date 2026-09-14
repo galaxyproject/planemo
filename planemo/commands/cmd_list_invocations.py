@@ -18,7 +18,6 @@ from planemo.io import (
 )
 from planemo.runnable_resolve import for_runnable_identifier
 
-
 STATE_COLORS = {
     "ok": "\033[92m",  # green
     "running": "\033[93m",  # yellow
@@ -49,7 +48,7 @@ def _format_job_state(state, count):
 @click.option(
     "--raw",
     is_flag=True,
-    help="output will be a json structure.",
+    help="Output invocations as JSON.",
     default=False,
 )
 @click.option(
@@ -75,7 +74,8 @@ def cli(ctx, workflow_identifier, raw, max_items, offset_items, **kwds):
     Get invocations, optionally filtering by workflow ID or alias.
     """
     if not raw:
-        info(f"Looking for invocations for workflow {workflow_identifier}...")
+        scope = f"workflow {workflow_identifier}" if workflow_identifier else "all workflows"
+        info(f"Looking for invocations for {scope}...")
     profile = profiles.ensure_profile(ctx, kwds.get("profile"))
     if workflow_identifier:
         runnable = for_runnable_identifier(ctx, workflow_identifier, kwds)
@@ -122,9 +122,7 @@ def cli(ctx, workflow_identifier, raw, max_items, offset_items, **kwds):
                     for invocation in workflow_invocations.values()
                 ],
                 "Jobs status": [
-                    ", ".join(
-                        _format_job_state(state, count) for state, count in invocation["states"].items()
-                    )
+                    ", ".join(_format_job_state(state, count) for state, count in invocation["states"].items())
                     for invocation in workflow_invocations.values()
                 ],
             }
