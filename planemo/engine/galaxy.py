@@ -11,6 +11,7 @@ from typing import (
     TYPE_CHECKING,
 )
 
+import click
 from galaxy.tool_util.verify import interactor
 
 from planemo import io
@@ -20,7 +21,10 @@ from planemo.galaxy.activity import (
     GalaxyBaseRunResponse,
 )
 from planemo.galaxy.config import external_galaxy_config
-from planemo.galaxy.serve import serve_daemon
+from planemo.galaxy.serve import (
+    serve_daemon,
+    sleep_for_serve,
+)
 from planemo.runnable import (
     DelayedGalaxyToolTestCase,
     ExternalGalaxyToolTestCase,
@@ -64,6 +68,39 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
         RunnableType.directory,
     ]
 
+    def __init__(self, ctx, **kwds):
+        super().__init__(ctx, **kwds)
+        self._active_test_config = None
+        self._preserve_test_histories = False
+
+    @contextlib.contextmanager
+    def test_context(self, runnables, test_timeout, keep_alive=False):
+        """Keep one managed Galaxy available through test reporting and serving."""
+        if not keep_alive:
+            with super().test_context(runnables, test_timeout, keep_alive=False) as test_data:
+                yield test_data
+            return
+        if not self.can_serve_test_results:
+            raise click.UsageError("--serve is only supported by a managed Galaxy engine.")
+
+        with self.ensure_runnables_served(runnables) as config:
+            self._active_test_config = config
+            self._preserve_test_histories = True
+            try:
+                with super().test_context(runnables, test_timeout, keep_alive=True) as test_data:
+                    yield test_data
+            finally:
+                self._preserve_test_histories = False
+                self._active_test_config = None
+
+    @contextlib.contextmanager
+    def _served_config(self, runnables):
+        if self._active_test_config is not None:
+            yield self._active_test_config
+        else:
+            with self.ensure_runnables_served(runnables) as config:
+                yield config
+
     def _run(
         self,
         runnables,
@@ -76,7 +113,7 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
         if not output_collectors:
             output_collectors = [lambda x: None] * len(runnables)
 
-        with self.ensure_runnables_served(runnables) as config:
+        with self._served_config(runnables) as config:
             if self._ctx.verbose:
                 self._ctx.log(f"Running Galaxy with API configuration [{config.user_api_config}]")
             for runnable, job_path, collect_output in zip(runnables, job_paths, output_collectors):
@@ -118,7 +155,7 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
 
         if indexed_embedded_test_cases:
             runnables = [test_case.runnable for _, test_case in indexed_embedded_test_cases]
-            with self.ensure_runnables_served(runnables) as config:
+            with self._served_config(runnables) as config:
                 for index, original_test_case in indexed_embedded_test_cases:
                     expanded_test_cases = expand_test_cases(config, [original_test_case])
                     for test_case in expanded_test_cases:
@@ -166,6 +203,7 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
                 register_job_data=register_result,
                 maxseconds=test_timeout,
                 quiet=not verbose,
+                no_history_cleanup=self._preserve_test_histories,
             )
         except Exception:
             pass
@@ -178,6 +216,8 @@ class LocalManagedGalaxyEngine(GalaxyEngine):
 
     More information on Galaxy can be found at http://galaxyproject.org/.
     """
+
+    can_serve_test_results = True
 
     @contextlib.contextmanager
     def ensure_runnables_served(self, runnables):
@@ -212,6 +252,16 @@ class LocalManagedGalaxyEngine(GalaxyEngine):
 
     def _serve_kwds(self):
         return self._kwds.copy()
+
+    def serve_test_results(self):
+        config = self._active_test_config
+        if config is None:
+            raise RuntimeError("Galaxy test results can only be served from an active test context.")
+        io.info(f"Galaxy is serving the test histories at {config.galaxy_url}. Press Ctrl-C to stop.")
+        try:
+            sleep_for_serve()
+        except KeyboardInterrupt:
+            pass
 
 
 class InstalledGalaxyEngine(LocalManagedGalaxyEngine):

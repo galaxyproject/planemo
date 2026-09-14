@@ -78,6 +78,9 @@ Planemo documentation.
                                       Directory the cwltool engine caches computed
                                       steps in when --use_cache is enabled (defaults
                                       to a directory in the planemo workspace).
+      --serve                         After testing with a managed Galaxy engine,
+                                      keep that Galaxy and its test histories
+                                      available for inspection until interrupted.
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
       --galaxy_python_version [3|3.8|3.9|3.10|3.11|3.12]
@@ -133,6 +136,12 @@ Planemo documentation.
       --tool_data_path DIRECTORY      Directory where data used by tools is located.
                                       Required if tests are run in docker and should
                                       make use of external reference data.
+      --port INTEGER                  Port to serve Galaxy on (default is 9090).
+      --host TEXT                     Host to bind Galaxy to. Default is 127.0.0.1
+                                      that is restricted to localhost connections
+                                      for security reasons set to 0.0.0.0 to bind
+                                      Galaxy to all ports including potentially
+                                      publicly accessible ones.
       --test_data DIRECTORY           test-data directory to for specified tool(s).
       --tool_data_table PATH          tool_data_table_conf.xml file to for specified
                                       tool(s).
@@ -322,4 +331,3 @@ Planemo documentation.
       --no_wait                       After invoking a job or workflow, do not wait
                                       for completion.
       --help                          Show this message and exit.
-

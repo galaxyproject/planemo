@@ -9,10 +9,16 @@ import os
 import shutil
 import signal
 import socket
+import time
 
 import pytest
+from bioblend.galaxy import GalaxyInstance
 
 from planemo import network_util
+from planemo.galaxy.api import (
+    DEFAULT_ADMIN_API_KEY,
+    user_api_key,
+)
 from planemo.galaxy.ephemeris_sleep import sleep
 from planemo.io import process_group_exists
 from .test_utils import (
@@ -83,6 +89,67 @@ class InstalledGalaxyIntegrationTestCase(CliTestCase):
             "scheduled",
             "completed",
         }
+
+    @skip_unless_environ("PLANEMO_TEST_INSTALLED_GALAXY")
+    def test_cli_test_serve_keeps_galaxy_and_test_history_until_interrupted(self):
+        xml_tool_path = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
+
+        with self._isolate() as test_directory:
+            port = network_util.get_free_port()
+            report_path = os.path.join(test_directory, "installed-serve-report.json")
+            process_log = os.path.join(test_directory, "planemo-test-serve.log")
+            command = [
+                "test",
+                "--serve",
+                "--engine",
+                "installed_galaxy",
+                "--no_dependency_resolution",
+                "--port",
+                str(port),
+                "--test_output_json",
+                report_path,
+                xml_tool_path,
+            ]
+            with planemo_subprocess(command, test_directory, process_log) as managed_process:
+                process = managed_process.process
+                galaxy_url = f"http://127.0.0.1:{port}"
+                if not sleep(galaxy_url, timeout=SUBPROCESS_STARTUP_TIMEOUT):
+                    raise AssertionError(f"Installed Galaxy did not become ready.\n{managed_process.read_output()}")
+
+                deadline = time.monotonic() + SUBPROCESS_TEST_TIMEOUT
+                report = None
+                while time.monotonic() < deadline:
+                    if process.poll() is not None:
+                        raise AssertionError(
+                            f"Planemo exited before serving the test results.\n{managed_process.read_output()}"
+                        )
+                    try:
+                        with open(report_path) as report_fh:
+                            report = json.load(report_fh)
+                    except (FileNotFoundError, json.JSONDecodeError):
+                        time.sleep(0.5)
+                        continue
+                    break
+                assert report is not None, managed_process.read_output()
+                assert report["summary"]["num_tests"] == 1
+                assert report["summary"]["num_failures"] == 0
+
+                admin_galaxy = GalaxyInstance(url=galaxy_url, key=DEFAULT_ADMIN_API_KEY)
+                galaxy = GalaxyInstance(url=galaxy_url, key=user_api_key(admin_galaxy))
+                histories = galaxy.histories.get_histories()
+                test_histories = [
+                    history for history in histories if history["name"].startswith("Tool Test History for cat/")
+                ]
+                assert test_histories, "The embedded tool test history was deleted before Galaxy was served."
+
+                os.killpg(process.pid, signal.SIGINT)
+                return_code = process.wait(timeout=SUBPROCESS_EXIT_TIMEOUT)
+                process_output = managed_process.read_output()
+                assert return_code == 0, process_output
+                assert "Galaxy is serving the test histories" in process_output
+                assert not process_group_exists(process.pid), process_output
+                with pytest.raises(OSError):
+                    socket.create_connection(("127.0.0.1", port), timeout=1)
 
     @skip_unless_environ("PLANEMO_TEST_INSTALLED_GALAXY")
     @pytest.mark.installed_galaxy_toolshed

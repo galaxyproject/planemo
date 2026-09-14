@@ -57,6 +57,46 @@ class CmdTestUseCacheTestCase(CliTestCase):
         assert self._forwarded_use_cache("--no_use_cache") is False
 
 
+class CmdTestServeTestCase(CliTestCase):
+    """Unit coverage for the ``test`` command's ``--serve`` options."""
+
+    def _forwarded_options(self, *extra_args):
+        artifact = os.path.join(TEST_TOOLS_DIR, "ok_test_assert_command.xml")
+        with self._isolate(), mock.patch("planemo.commands.cmd_test.test_runnables") as mock_test_runnables:
+            mock_test_runnables.return_value = 0
+            self._check_exit_code(["test", *extra_args, artifact])
+            return mock_test_runnables.call_args.kwargs
+
+    def test_serve_defaults_off_without_claiming_a_port(self):
+        options = self._forwarded_options()
+
+        assert options["serve"] is False
+        assert options["port"] is None
+
+    def test_serve_defaults_to_the_standard_galaxy_port(self):
+        options = self._forwarded_options("--serve")
+
+        assert options["serve"] is True
+        assert options["host"] == "127.0.0.1"
+        assert options["port"] == 9090
+
+    def test_serve_accepts_an_explicit_address(self):
+        options = self._forwarded_options("--serve", "--host", "0.0.0.0", "--port", "9101")
+
+        assert options["host"] == "0.0.0.0"
+        assert options["port"] == 9101
+
+    def test_serve_rejects_an_engine_without_a_managed_server(self):
+        artifact = os.path.join(TEST_TOOLS_DIR, "ok_test_assert_command.xml")
+        with self._isolate():
+            result = self._check_exit_code(
+                ["test", "--serve", "--engine", "cwltool", artifact],
+                exit_code=2,
+            )
+
+        assert "--serve is only supported by a managed Galaxy engine" in result.output
+
+
 class CmdTestTestCase(CliTestCase):
     """Integration tests for the ``test`` command."""
 

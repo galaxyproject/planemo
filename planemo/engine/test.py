@@ -10,6 +10,10 @@ def test_runnables(ctx, runnables, original_paths=None, **kwds):
         non_copied_runnables = for_paths(original_paths)
         kwds["test_data_target_dir"] = _find_test_data(non_copied_runnables, **kwds)
     with engine_context(ctx, **kwds) as engine:
-        test_data = engine.test(runnables, test_timeout=kwds.get("test_timeout"))
-        ctx.vlog(f"engine.test returning [{test_data}]")
-        return handle_reports_and_summary(ctx, test_data.structured_data, kwds=kwds)
+        keep_alive = kwds.get("serve", False)
+        with engine.test_context(runnables, test_timeout=kwds.get("test_timeout"), keep_alive=keep_alive) as test_data:
+            ctx.vlog(f"engine.test returning [{test_data}]")
+            return_code = handle_reports_and_summary(ctx, test_data.structured_data, kwds=kwds)
+            if keep_alive:
+                engine.serve_test_results()
+            return return_code

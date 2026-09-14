@@ -243,11 +243,11 @@ def galaxy_cwl_root_option():
     )
 
 
-def galaxy_port_option():
+def galaxy_port_option(default="9090"):
     return planemo_option(
         "--port",
         type=int,
-        default="9090",
+        default=default,
         use_global_config=True,
         help="Port to serve Galaxy on (default is 9090).",
     )
@@ -1444,10 +1444,10 @@ def github_branch():
     )
 
 
-def galaxy_run_options():
+def galaxy_run_options(port_default="9090"):
     return _compose(
         galaxy_target_options(),
-        galaxy_port_option(),
+        galaxy_port_option(default=port_default),
         galaxy_host_option(),
     )
 
@@ -1518,6 +1518,18 @@ def pid_file_option():
 
 def daemon_option():
     return planemo_option("--daemon", is_flag=True, help="Serve Galaxy process as a daemon.")
+
+
+def test_serve_option():
+    return planemo_option(
+        "--serve",
+        is_flag=True,
+        default=False,
+        help=(
+            "After testing with a managed Galaxy engine, keep that Galaxy and its test histories "
+            "available for inspection until interrupted."
+        ),
+    )
 
 
 def profile_option(required=False):
