@@ -1,14 +1,20 @@
 """Module contianing the :class:`Engine` abstraction."""
 
 import abc
+import copy
 import json
 import os
 import tempfile
+from contextlib import contextmanager
 from typing import (
+    Any,
     Callable,
+    Dict,
+    Iterator,
     List,
     Optional,
 )
+from urllib.parse import urlparse
 
 import click
 
@@ -17,8 +23,74 @@ from planemo.io import error
 from planemo.runnable import (
     cases,
     RunnableType,
+    TestCase,
 )
 from planemo.test.results import StructuredData
+
+
+def _absolute_test_data_path(path: Any, tests_directory: str) -> Any:
+    if not isinstance(path, str) or os.path.isabs(path) or urlparse(path).scheme or path.startswith("#"):
+        return path
+    return os.path.abspath(os.path.join(tests_directory, path))
+
+
+def _absolutize_composite_data(file_value: Dict[str, Any], tests_directory: str) -> None:
+    composite_data = file_value.get("composite_data") or []
+    for composite_index, composite_item in enumerate(composite_data):
+        if isinstance(composite_item, dict):
+            for path_key in ("path", "location"):
+                if path_key in composite_item:
+                    composite_item[path_key] = _absolute_test_data_path(composite_item[path_key], tests_directory)
+        elif isinstance(composite_item, str):
+            composite_data[composite_index] = _absolute_test_data_path(composite_item, tests_directory)
+
+
+def _absolutize_nested_job_paths(value: Any, tests_directory: str) -> None:
+    if isinstance(value, list):
+        for item in value:
+            _absolutize_nested_job_paths(item, tests_directory)
+    elif isinstance(value, dict):
+        if value.get("class") in ("File", "Directory"):
+            for path_key in ("path", "location"):
+                if path_key in value:
+                    value[path_key] = _absolute_test_data_path(value[path_key], tests_directory)
+            _absolutize_composite_data(value, tests_directory)
+
+        for item in value.values():
+            _absolutize_nested_job_paths(item, tests_directory)
+
+
+def _absolutize_job_paths(job: Dict[str, Any], tests_directory: str) -> Dict[str, Any]:
+    """Copy a test job and resolve its local data paths against the test directory."""
+    prepared_job = copy.deepcopy(job)
+    _absolutize_nested_job_paths(prepared_job, tests_directory)
+    return prepared_job
+
+
+@contextmanager
+def materialized_job_paths(test_cases: List[TestCase]) -> Iterator[List[str]]:
+    """Yield a job file path for each test case, for the duration of the context.
+
+    Jobs defined inline in a test definition get written to a temporary directory
+    rather than beside the definition, so the source directory is left untouched and
+    need not be writable. Their relative data paths are resolved against the test
+    definition's directory first so they survive the move - the test case's own job
+    is not modified. Test cases that already point at a job file are passed through
+    untouched.
+    """
+    with tempfile.TemporaryDirectory(prefix="planemo-test-jobs-") as job_directory:
+        job_paths = []
+        for index, test_case in enumerate(test_cases):
+            if test_case.job_path is not None:
+                job_paths.append(test_case.job_path)
+                continue
+            # a test case defines exactly one of job_path and job
+            assert test_case.job is not None
+            job_path = os.path.join(job_directory, f"job-{index}.json")
+            with open(job_path, "w") as f:
+                json.dump(_absolutize_job_paths(test_case.job, test_case.tests_directory), f)
+            job_paths.append(job_path)
+        yield job_paths
 
 
 class Engine(metaclass=abc.ABCMeta):
@@ -136,38 +208,16 @@ class BaseEngine(Engine):
 
     def _run_test_cases(self, test_cases, test_timeout):
         runnables = [test_case.runnable for test_case in test_cases]
-        job_paths = []
-        tmp_paths = []
-        output_collectors = []
-        for test_case in test_cases:
-            if test_case.job_path is None:
-                job = test_case.job
-                with tempfile.NamedTemporaryFile(
-                    dir=test_case.tests_directory,
-                    suffix=".json",
-                    prefix="plnmotmptestjob",
-                    delete=False,
-                    mode="w+",
-                ) as f:
-                    tmp_path = f.name
-                    job_path = tmp_path
-                    tmp_paths.append(tmp_path)
-                    json.dump(job, f)
-                job_paths.append(job_path)
-            else:
-                job_paths.append(test_case.job_path)
-            output_collectors.append(
-                lambda run_response, test_case=test_case: test_case.structured_test_data(run_response)
-            )
-        try:
-            run_responses = self._run(runnables, job_paths, output_collectors, test_timeout=test_timeout)
-        finally:
-            for tmp_path in tmp_paths:
-                os.remove(tmp_path)
-        return run_responses
+        output_collectors = [
+            lambda run_response, test_case=test_case: test_case.structured_test_data(run_response)
+            for test_case in test_cases
+        ]
+        with materialized_job_paths(test_cases) as job_paths:
+            return self._run(runnables, job_paths, output_collectors, test_timeout=test_timeout)
 
 
 __all__ = (
     "Engine",
     "BaseEngine",
+    "materialized_job_paths",
 )
