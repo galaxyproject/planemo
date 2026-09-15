@@ -2,6 +2,7 @@
 
 import json
 import os
+from unittest import mock
 from uuid import uuid4
 
 import pytest
@@ -26,6 +27,32 @@ def _cwl_file(name):
 # TODO: Improve these tests so they actually check something instead
 # of just arbitrarily exercising the code.
 class RunTestCase(CliTestCase):
+    def test_run_reports_engine_error(self):
+        from planemo.runnable import ErrorRunResponse
+
+        with self._isolate() as directory:
+            tool_path = _cwl_file("cat1-tool.cwl")
+            job_path = _cwl_file("cat-job.json")
+            engine = mock.MagicMock()
+            engine.run.return_value = [ErrorRunResponse("simulated engine failure")]
+
+            with mock.patch("planemo.commands.cmd_run.engine_context") as engine_context:
+                engine_context.return_value.__enter__.return_value = engine
+                result = self._check_exit_code(
+                    ["run", "--engine", "cwltool", tool_path, job_path],
+                    exit_code=1,
+                )
+
+            assert "Run failed" in result.output
+            with open(os.path.join(directory, "tool_test_output.json")) as test_report:
+                report = PlanemoTestReport.model_validate(json.load(test_report))
+            test_result = report.tests[0]
+            assert test_result.id == tool_path
+            assert test_result.test_type == "cwl_tool"
+            assert test_result.data is not None
+            assert test_result.data.status == "error"
+            assert test_result.data.execution_problem == "simulated engine failure"
+
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_run_cat_cwltool(self):
         with self._isolate() as f:
