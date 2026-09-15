@@ -34,6 +34,7 @@ import click
 from cryptography.fernet import Fernet
 from galaxy.tool_util.deps import docker_util
 from galaxy.util.commands import argv_to_str
+from galaxy.util.wait import wait_on
 from gxjobconfinit.generate import (
     build_job_config,
     ConfigArgs,
@@ -70,7 +71,6 @@ from planemo.io import (
     TERMINATION_POLL_INTERVAL,
     termination_timeout,
     untar_to,
-    wait_on,
     warn,
     write_file,
 )
