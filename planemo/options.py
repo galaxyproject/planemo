@@ -551,6 +551,8 @@ class EnumType(click.Choice):
         super().__init__([e.value for e in enum])
 
     def convert(self, value, param, ctx):
+        if isinstance(value, self._enum):
+            return value
         return self._enum(super().convert(value, param, ctx))
 
 
