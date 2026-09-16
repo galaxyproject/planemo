@@ -44,6 +44,11 @@ from planemo.runnable_resolve import for_runnable_identifiers
     "instances to limit generated traffic.",
     default="0",
 )
+@click.option(
+    "--use_async_submission/--no_use_async_submission",
+    default=False,
+    help="Submit tool test jobs to POST /api/jobs instead of the legacy POST /api/tools endpoint.",
+)
 @options.test_use_cache_option()
 @options.cwltool_cache_directory_option()
 @options.galaxy_target_options()
