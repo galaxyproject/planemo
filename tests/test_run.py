@@ -2,7 +2,6 @@
 
 import json
 import os
-from unittest import mock
 from uuid import uuid4
 
 import pytest
@@ -27,21 +26,15 @@ def _cwl_file(name):
 # TODO: Improve these tests so they actually check something instead
 # of just arbitrarily exercising the code.
 class RunTestCase(CliTestCase):
+    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_run_reports_engine_error(self):
-        from planemo.runnable import ErrorRunResponse
-
         with self._isolate() as directory:
-            tool_path = _cwl_file("cat1-tool.cwl")
-            job_path = _cwl_file("cat-job.json")
-            engine = mock.MagicMock()
-            engine.run.return_value = [ErrorRunResponse("simulated engine failure")]
-
-            with mock.patch("planemo.commands.cmd_run.engine_context") as engine_context:
-                engine_context.return_value.__enter__.return_value = engine
-                result = self._check_exit_code(
-                    ["run", "--engine", "cwltool", tool_path, job_path],
-                    exit_code=1,
-                )
+            tool_path = os.path.join(TEST_DATA_DIR, "fail_tool.cwl")
+            job_path = os.path.join(TEST_DATA_DIR, "fail_tool_job.json")
+            result = self._check_exit_code(
+                ["run", "--engine", "cwltool", "--no_container", "--no_use_cache", tool_path, job_path],
+                exit_code=1,
+            )
 
             assert "Run failed" in result.output
             with open(os.path.join(directory, "tool_test_output.json")) as test_report:
@@ -51,7 +44,9 @@ class RunTestCase(CliTestCase):
             assert test_result.test_type == "cwl_tool"
             assert test_result.data is not None
             assert test_result.data.status == "error"
-            assert test_result.data.execution_problem == "simulated engine failure"
+            assert test_result.data.execution_problem == "Error running cwltool"
+            assert test_result.data.problem_log is not None
+            assert "permanentFail" in test_result.data.problem_log
 
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_run_cat_cwltool(self):
