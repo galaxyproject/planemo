@@ -27,7 +27,8 @@ A tool can generate the file from a config file:
         <configfile name="c1">{"out1": {"name": "Result"}}</configfile>
     </configfiles>
 
-Starting with profile 26.2, Galaxy loads this file only when the tool opts in.
+Starting with profile 26.2, Galaxy loads this file only when the tool opts in
+(`Galaxy PR #23404 <https://github.com/galaxyproject/galaxy/pull/23404>`__).
 The four opt-ins are an explicit ``provided_metadata_file`` or
 ``provided_metadata_style`` on ``outputs``, an output with ``format="auto"``,
 or a dataset collector with ``discover_via="tool_provided_metadata"`` (including
@@ -149,7 +150,7 @@ and
 Collection Elements
 -------------------
 
-Collection elements can be described with nested ``elements``:
+Collection elements are described with nested ``elements``:
 
 .. code-block:: json
 
@@ -167,31 +168,7 @@ Collection elements can be described with nested ``elements``:
       }
     }
 
-The equivalent flat form uses ``datasets`` and one ``identifier_<level>`` key
-for each nesting level:
-
-.. code-block:: json
-
-    {
-      "list_output": {
-        "datasets": [
-          {
-            "identifier_0": "oe1",
-            "identifier_1": "ie1",
-            "filename": "oe1_ie1.fq"
-          },
-          {
-            "identifier_0": "oe1",
-            "identifier_1": "ie2",
-            "filename": "oe1_ie2.fq"
-          }
-        ]
-      }
-    }
-
-Galaxy converts nested ``elements`` to the flat representation internally,
-using each element's ``name`` as its level identifier. The collection declares
-that its elements come from provided metadata:
+The collection declares that its elements come from provided metadata:
 
 .. code-block:: xml
 
@@ -203,13 +180,8 @@ that its elements come from provided metadata:
         </collection>
     </outputs>
 
-Do not mix ``datasets`` and ``elements`` in one output entry. Galaxy consults
-``elements`` only when ``datasets`` is absent or empty.
-
 See the
-`nested elements example <https://github.com/galaxyproject/galaxy/blob/c6c3b6df49ff0f17d393fb0c60326d98f3f0251e/test/functional/tools/collection_creates_dynamic_nested_from_json_elements.xml>`__
-and the
-`flat datasets example <https://github.com/galaxyproject/galaxy/blob/c6c3b6df49ff0f17d393fb0c60326d98f3f0251e/test/functional/tools/collection_creates_dynamic_nested_from_json.xml>`__.
+`nested elements example <https://github.com/galaxyproject/galaxy/blob/c6c3b6df49ff0f17d393fb0c60326d98f3f0251e/test/functional/tools/collection_creates_dynamic_nested_from_json_elements.xml>`__.
 
 Output Failures and Reserved Keys
 ---------------------------------
