@@ -6,6 +6,7 @@ from .test_utils import (
     CliTestCase,
     mark,
     skip_if_environ,
+    skip_if_zenodo_down,
     TEST_DATA_DIR,
 )
 
@@ -78,6 +79,7 @@ class CmdTrainingInitTestCase(CliTestCase):
             self._check_exit_code(training_init_command, exit_code=0)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_if_zenodo_down
     def test_training_init_command_tutorial_zenodo(self):
         """Test training_init command to create new tutorial with zenodo."""
         with self._isolate():

@@ -35,6 +35,7 @@ from galaxy.util import (
     unicodify,
     which,
 )
+from galaxy.util.unittest_utils import skip_if_site_down
 
 from planemo import (
     cli,
@@ -59,6 +60,8 @@ TEST_TOOLS_DIR = os.path.join(TEST_DATA_DIR, "tools")
 PROJECT_TEMPLATES_DIR = os.path.join(TEST_DIR, os.path.pardir, "project_templates")
 CWL_DRAFT3_DIR = os.path.join(PROJECT_TEMPLATES_DIR, "cwl_draft3_spec")
 NON_ZERO_EXIT_CODE = object()
+ZENODO_TEST_RECORD_API_URL = "https://zenodo.org/api/records/1321885"
+skip_if_zenodo_down = skip_if_site_down(ZENODO_TEST_RECORD_API_URL)
 CWLTOOL_CACHE_ENV_PROP = "PLANEMO_CWLTOOL_CACHE_DIRECTORY"
 
 
