@@ -354,13 +354,11 @@ def _handle_mulled_container_kwds(ctx, kwds):
     if not kwds.get("mulled_containers", False):
         return
     if not (kwds.get("docker", False) or kwds.get("singularity", False)):
-        if (
-            ctx.get_option_source("docker") != OptionSource.cli
-            and ctx.get_option_source("singularity") != OptionSource.cli
-        ):
+        # Neither runtime is on, so Docker is the fallback unless it was refused explicitly.
+        if ctx.get_option_source("docker") != OptionSource.cli:
             kwds["docker"] = True
         else:
-            raise Exception("Specified --no_docker/--no_singularity and mulled containers together.")
+            raise Exception("Specified --no_docker and mulled containers together.")
     conda_default_options = ("conda_auto_init", "conda_auto_install")
     use_conda_options = ("dependency_resolution", "conda_use_local", "conda_prefix", "conda_exec")
     if not any(kwds.get(_) for _ in use_conda_options) and all(
@@ -1716,9 +1714,6 @@ def _handle_container_resolution(ctx, kwds, galaxy_properties):
         involucro_context = build_involucro_context(ctx, **kwds)
         galaxy_properties["involucro_auto_init"] = "False"  # Use planemo's
         galaxy_properties["involucro_path"] = involucro_context.involucro_bin
-    container_resolvers_config_file = kwds.get("container_resolvers_config_file")
-    if container_resolvers_config_file:
-        galaxy_properties["container_resolvers_config_file"] = container_resolvers_config_file
 
 
 def _handle_file_sources(config_directory, test_data_dir, kwds):
@@ -1756,6 +1751,7 @@ def _handle_kwd_overrides(properties, kwds):
         "job_config_file",
         "job_metrics_config_file",
         "dependency_resolvers_config_file",
+        "container_resolvers_config_file",
         "vault_config_file",
     ]
     for prop in kwds_gx_properties:

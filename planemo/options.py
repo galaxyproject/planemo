@@ -656,7 +656,7 @@ def singularity_extra_volume_option():
         default=None,
         use_global_config=True,
         multiple=True,
-        help=("Extra path to mount if --engine docker or `--biocontainers` or `--singularity`."),
+        help=("Extra path to mount if `--biocontainers` or `--singularity`."),
     )
 
 
@@ -1239,6 +1239,13 @@ def singularity_config_options():
     )
 
 
+def galaxy_singularity_options():
+    return _compose(
+        singularity_enable_option(),
+        singularity_config_options(),
+    )
+
+
 def galaxy_docker_options():
     return _compose(
         docker_enable_option(),
@@ -1486,7 +1493,6 @@ def galaxy_target_options():
         no_cleanup_option(),
         galaxy_email_option(),
         galaxy_docker_options(),
-        singularity_enable_option(),
         mulled_containers_option(),
         container_resolvers_config_file_option(),
         galaxy_startup_timeout_option(),
@@ -1929,7 +1935,7 @@ def profile_database_options():
         database_type_option(),
         database_source_options(),
         postgres_database_storage_location_option(),
-        singularity_config_options(),
+        galaxy_singularity_options(),
     )
 
 

@@ -15,8 +15,8 @@ from planemo.database.postgres_docker import DockerPostgresDatabaseSource
 from planemo.galaxy.config import (
     _all_tool_paths,
     _database_connection,
-    _handle_container_resolution,
     _handle_job_config_file,
+    _handle_kwd_overrides,
     _handle_mulled_container_kwds,
     _shared_galaxy_properties,
     _shed_config_paths,
@@ -482,8 +482,22 @@ def test_mulled_containers_respects_explicit_singularity():
     assert kwds["singularity"] is True
 
 
-def test_mulled_containers_rejects_explicit_opt_out():
-    """Asking for mulled containers while disabling both runtimes is an error."""
+def test_mulled_containers_rejects_explicit_no_docker():
+    """--biocontainers --no_docker has no runtime left to fall back to."""
+    kwds = {"mulled_containers": True, "docker": False}
+    ctx = _container_test_context(docker=OptionSource.cli)
+    with pytest.raises(Exception, match="mulled containers together"):
+        _handle_mulled_container_kwds(ctx, kwds)
+
+
+def test_mulled_containers_falls_back_to_docker_when_only_singularity_refused():
+    """--biocontainers --no_singularity still gets Docker, as it did before."""
+    kwds = {"mulled_containers": True, "singularity": False}
+    _handle_mulled_container_kwds(_container_test_context(singularity=OptionSource.cli), kwds)
+    assert kwds["docker"] is True
+
+
+def test_mulled_containers_rejects_both_runtimes_refused():
     kwds = {"mulled_containers": True, "docker": False, "singularity": False}
     ctx = _container_test_context(docker=OptionSource.cli, singularity=OptionSource.cli)
     with pytest.raises(Exception, match="mulled containers together"):
@@ -535,13 +549,11 @@ def test_job_config_docker_unaffected_by_singularity_support(tmp_path):
 
 def test_container_resolvers_config_file_sets_galaxy_property():
     properties = {}
-    _handle_container_resolution(
-        create_test_context(), {"container_resolvers_config_file": "/tmp/resolvers.yml"}, properties
-    )
+    _handle_kwd_overrides(properties, {"container_resolvers_config_file": "/tmp/resolvers.yml"})
     assert properties["container_resolvers_config_file"] == "/tmp/resolvers.yml"
 
 
 def test_container_resolvers_config_file_absent_by_default():
     properties = {}
-    _handle_container_resolution(create_test_context(), {}, properties)
+    _handle_kwd_overrides(properties, {})
     assert "container_resolvers_config_file" not in properties
