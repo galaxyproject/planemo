@@ -344,6 +344,31 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         )
 
 
+def _handle_mulled_container_kwds(ctx, kwds):
+    """Reconcile --biocontainers with the container and conda options.
+
+    Mulled containers need a container runtime, so enable Docker unless the user
+    asked for a runtime explicitly. Conda resolution is disabled unless the user
+    configured conda themselves.
+    """
+    if not kwds.get("mulled_containers", False):
+        return
+    if not (kwds.get("docker", False) or kwds.get("singularity", False)):
+        if (
+            ctx.get_option_source("docker") != OptionSource.cli
+            and ctx.get_option_source("singularity") != OptionSource.cli
+        ):
+            kwds["docker"] = True
+        else:
+            raise Exception("Specified --no_docker/--no_singularity and mulled containers together.")
+    conda_default_options = ("conda_auto_init", "conda_auto_install")
+    use_conda_options = ("dependency_resolution", "conda_use_local", "conda_prefix", "conda_exec")
+    if not any(kwds.get(_) for _ in use_conda_options) and all(
+        ctx.get_option_source(_) == OptionSource.default for _ in conda_default_options
+    ):
+        kwds["no_dependency_resolution"] = kwds["no_conda_auto_init"] = True
+
+
 @contextlib.contextmanager
 def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
     """Set up a ``GalaxyConfig`` in an auto-cleaned context."""
@@ -361,20 +386,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         if os.path.isdir(galaxy_root) and install_galaxy:
             raise Exception(f"{galaxy_root} is an existing non-empty directory, cannot install Galaxy again")
 
-    # Duplicate block in docker variant above.
-    if kwds.get("mulled_containers", False):
-        if not kwds.get("docker", False):
-            if ctx.get_option_source("docker") != OptionSource.cli:
-                kwds["docker"] = True
-            else:
-                raise Exception("Specified no docker and mulled containers together.")
-        conda_default_options = ("conda_auto_init", "conda_auto_install")
-        use_conda_options = ("dependency_resolution", "conda_use_local", "conda_prefix", "conda_exec")
-        if not any(kwds.get(_) for _ in use_conda_options) and all(
-            ctx.get_option_source(_) == OptionSource.default for _ in conda_default_options
-        ):
-            # If using mulled_containers and default conda options disable conda resolution
-            kwds["no_dependency_resolution"] = kwds["no_conda_auto_init"] = True
+    _handle_mulled_container_kwds(ctx, kwds)
 
     with _config_directory(ctx, **kwds) as config_directory:
 
@@ -1704,6 +1716,9 @@ def _handle_container_resolution(ctx, kwds, galaxy_properties):
         involucro_context = build_involucro_context(ctx, **kwds)
         galaxy_properties["involucro_auto_init"] = "False"  # Use planemo's
         galaxy_properties["involucro_path"] = involucro_context.involucro_bin
+    container_resolvers_config_file = kwds.get("container_resolvers_config_file")
+    if container_resolvers_config_file:
+        galaxy_properties["container_resolvers_config_file"] = container_resolvers_config_file
 
 
 def _handle_file_sources(config_directory, test_data_dir, kwds):
