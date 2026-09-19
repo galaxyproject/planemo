@@ -105,7 +105,7 @@ runnable artifact outside the context of testing with ``planemo run``.
 
         $ planemo run --engine=<engine_type> [ENGINE_OPTIONS] [ARTIFACT_PATH] [JOB_PATH]
 
-    This should be familar to CWL developers - and indeed with ``--engine=cwltool`` this works as a formal CWL
+    This should be familiar to CWL developers - and indeed with ``--engine=cwltool`` this works as a formal CWL
     runner. Planemo provides a uniform interface to Galaxy for Galaxy workflows and tools though using the same
     CLI invocation if ``--engine=galaxy`` (for a Planemo managed Galaxy instance), ``--engine=docker_galaxy``
     (for a Docker instance of Galaxy launched by Planemo), or ``--engine=external_galaxy`` (for a running
