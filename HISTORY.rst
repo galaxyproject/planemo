@@ -10,6 +10,9 @@ History
 ---------------------
 * Add ``--use_cache`` to ``planemo test``, off by default - follow-up to #1665
   which added it to ``planemo run``.
+* Add ``--extended_git_diff`` to ``ci_find_repos``, ``ci_find_tools`` and
+  ``list_repos``, resolving each file changed in ``--changed_in_commit_range``
+  to the tools and repositories that own it - fixes #1129.
 
 
 ---------------------

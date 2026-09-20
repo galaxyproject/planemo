@@ -2032,8 +2032,22 @@ def filter_exclude_from_option():
 def filter_changed_in_commit_option():
     return planemo_option(
         "--changed_in_commit_range",
-        help="Include only tools (resp. repositories) contained in (non-root)"
-        "directories that include a file that changed in the given commit range.",
+        help="Exclude paths unchanged in git commit range.",
+    )
+
+
+def filter_extended_git_diff_option():
+    return planemo_option(
+        "--extended_git_diff",
+        is_flag=True,
+        default=False,
+        help=(
+            "Map each file changed in --changed_in_commit_range to the tools and "
+            "repositories that own it: selects a tool whose test-data or helper "
+            "scripts changed, and every repository of a tool collection whose "
+            "shared macros changed. Requires the working directory to be the "
+            "repository root."
+        ),
     )
 
 
@@ -2072,6 +2086,7 @@ def ci_find_options():
         filter_exclude_option(),
         filter_exclude_from_option(),
         filter_changed_in_commit_option(),
+        filter_extended_git_diff_option(),
         ci_chunk_count_option(),
         ci_chunk_option(),
         ci_output_option(),
