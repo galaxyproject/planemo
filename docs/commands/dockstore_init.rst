@@ -26,5 +26,6 @@ https://docs.dockstore.org/en/develop/getting-started/dockstore-workflows.html.
 
 
       --publish / --no_publish  Set publish attribute to true in .dockstore.yml file
+      --open                    Open the file in your default editor after creation.
       --help                    Show this message and exit.
     

@@ -23,7 +23,7 @@ from planemo.autopygen.argument_parser_conversion import (
 )
 
 REUSING_MACROS_MESSAGE = (
-    "Macros file macros.xml already exists, assuming " " it has relevant planemo-generated definitions."
+    "Macros file macros.xml already exists, assuming  it has relevant planemo-generated definitions."
 )
 DEFAULT_CWL_VERSION = "v1.0"
 

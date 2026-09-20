@@ -9,21 +9,29 @@ planemo.test.data module
 
 .. automodule:: planemo.test.data
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
+
+planemo.test.models module
+--------------------------
+
+.. automodule:: planemo.test.models
+   :members:
+   :show-inheritance:
+   :undoc-members:
 
 planemo.test.results module
 ---------------------------
 
 .. automodule:: planemo.test.results
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: planemo.test
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

@@ -1,11 +1,13 @@
 import base64
 
 from galaxy.util import strip_control_characters
+from galaxy.util.resources import resource_string
 from jinja2 import (
     Environment,
     PackageLoader,
 )
-from pkg_resources import resource_string
+
+from planemo.test.results import normalize_test_status
 
 TITLE = "Results (powered by Planemo)"
 
@@ -111,12 +113,13 @@ def __inject_summary(environment):
         total += 1
         test_data = execution.get("data")
         if test_data:
-            status = test_data.get("status")
+            status = normalize_test_status(test_data.get("status"))
+            test_data["status"] = status
             if status == "error":
                 errors += 1
             elif status == "failure":
                 failures += 1
-            elif status == "skipped":
+            elif status == "skip":
                 skips += 1
     environment["raw_data"]["results"] = {
         "total": total,
@@ -130,14 +133,10 @@ def __inject_summary(environment):
 
 
 def __style(filename):
-    resource = __load_resource(filename)
+    resource = resource_string("planemo.reports", filename)
     return "<style>%s</style>" % resource
 
 
 def __script(short_name):
-    resource = __load_resource("%s.js" % short_name)
+    resource = resource_string("planemo.reports", "%s.js" % short_name)
     return "<script>%s</script>" % resource
-
-
-def __load_resource(name):
-    return resource_string(__name__, name).decode("UTF-8")

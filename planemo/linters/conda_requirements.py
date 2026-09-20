@@ -17,7 +17,7 @@ def lint_requirements_in_conda(tool_source, lint_ctx):
         return
 
     for conda_target in conda_targets:
-        (best_hit, exact) = best_practice_search(conda_target)
+        best_hit, exact = best_practice_search(conda_target)
         conda_target_str = conda_target.package
         if conda_target.version:
             conda_target_str += "@%s" % (conda_target.version)

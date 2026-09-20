@@ -1,8 +1,6 @@
 import inspect
-import json
 import os
 import re
-from collections import OrderedDict
 from typing import (
     Any,
     Dict,
@@ -12,7 +10,6 @@ from typing import (
     Optional,
     Tuple,
     TYPE_CHECKING,
-    Union,
 )
 
 import requests
@@ -24,8 +21,11 @@ from galaxy.tool_util.loader_directory import EXCLUDE_WALK_DIRS
 from galaxy.tool_util.parser.yaml import __to_test_assert_list
 from galaxy.tool_util.verify import asserts
 from gxformat2.lint import (
-    lint_format2,
-    lint_ga,
+    lint_best_practices_format2,
+    lint_best_practices_ga,
+    lint_format2_path,
+    lint_ga_path,
+    lint_pydantic_validation,
 )
 from gxformat2.yaml import ordered_load
 
@@ -39,6 +39,7 @@ from planemo.galaxy.workflows import (
     output_labels,
     required_input_labels,
 )
+from planemo.lint import build_lint_args
 from planemo.runnable import (
     cases,
     for_path,
@@ -50,6 +51,7 @@ if TYPE_CHECKING:
     from planemo.cli import PlanemoCliContext
 
 POTENTIAL_WORKFLOW_FILES = re.compile(r"^.*(\.yml|\.yaml|\.ga)$")
+WORKFLOW_FILE_SUFFIXES = (".gxwf.yml", ".gxwf.yaml", ".ga")
 DOCKSTORE_REGISTRY_CONF_VERSION = "1.2"
 
 
@@ -57,6 +59,23 @@ class WorkflowLintContext(LintContext):
     # Setup training topic for linting - probably should pass this through
     # from click arguments.
     training_topic = None
+
+    def warn(self, message, linter=None, *args, **kwargs):
+        # gxformat2 lint rules pass Linter subclasses; galaxy LintMessage expects a name string.
+        if isinstance(linter, type):
+            linter = linter.__name__
+        super().warn(message, linter, *args, **kwargs)
+
+    def error(self, message, linter=None, *args, **kwargs):
+        if isinstance(linter, type):
+            linter = linter.__name__
+        super().error(message, linter, *args, **kwargs)
+
+
+def build_wf_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
+    lint_args = build_lint_args(ctx, **kwds)
+    lint_args["iwc_grade"] = kwds.get("iwc", False)
+    return lint_args
 
 
 def generate_dockstore_yaml(directory: str, publish: bool = True) -> str:
@@ -66,7 +85,7 @@ def generate_dockstore_yaml(directory: str, publish: bool = True) -> str:
         test_parameter_path = f"{workflow_path.rsplit('.', 1)[0]}-tests.yml"
         workflow_entry: Dict[str, Any] = {
             # TODO: support CWL
-            "name": "main" if len(all_workflow_paths) == 1 else os.path.basename(workflow_path).split(".ga")[0],
+            "name": "main" if len(all_workflow_paths) == 1 else _workflow_name(workflow_path),
             "subclass": "Galaxy",
             "publish": publish,
             "primaryDescriptorPath": f"/{os.path.relpath(workflow_path, directory)}",
@@ -121,9 +140,15 @@ def generate_dockstore_yaml(directory: str, publish: bool = True) -> str:
     return contents
 
 
-def lint_workflow_artifacts_on_paths(
-    ctx: "PlanemoCliContext", paths: Iterable[str], lint_args: Dict[str, Union[str, List[str]]]
-) -> int:
+def _workflow_name(workflow_path: str) -> str:
+    basename = os.path.basename(workflow_path)
+    for suffix in WORKFLOW_FILE_SUFFIXES:
+        if basename.endswith(suffix):
+            return basename[: -len(suffix)]
+    return basename
+
+
+def lint_workflow_artifacts_on_paths(ctx: "PlanemoCliContext", paths: Iterable[str], lint_args: Dict[str, Any]) -> int:
     report_level = lint_args["level"]
     lint_context = WorkflowLintContext(report_level, skip_types=lint_args["skip_types"])
     for path in paths:
@@ -135,26 +160,32 @@ def lint_workflow_artifacts_on_paths(
         return EXIT_CODE_OK
 
 
-def _lint_workflow_artifacts_on_path(
-    lint_context: WorkflowLintContext, path: str, lint_args: Dict[str, Union[str, List[str]]]
-) -> None:
+def _lint_workflow_artifacts_on_path(lint_context: WorkflowLintContext, path: str, lint_args: Dict[str, Any]) -> None:
+    if lint_args["iwc_grade"]:
+        if not os.path.isdir(path):
+            path = os.path.dirname(path)
+        lint_context.lint("lint_required_files", _lint_required_files_workflow_dir, path)
+        lint_context.lint("lint_changelog", _lint_changelog_version, path)
+
     for potential_workflow_artifact_path in find_potential_workflow_files(path):
         if os.path.basename(potential_workflow_artifact_path) == DOCKSTORE_REGISTRY_CONF:
             lint_context.lint("lint_dockstore", _lint_dockstore_config, potential_workflow_artifact_path)
+            if lint_args["iwc_grade"]:
+                lint_context.lint(
+                    "lint_dockstore_best_practices",
+                    _lint_dockstore_config_best_practices,
+                    potential_workflow_artifact_path,
+                )
 
         elif looks_like_a_workflow(potential_workflow_artifact_path):
-
-            def structure(path, lint_context):
-                with open(path) as f:
-                    workflow_dict = ordered_load(f)
-                workflow_class = workflow_dict.get("class")
-                lint_func = lint_format2 if workflow_class == "GalaxyWorkflow" else lint_ga
-                lint_func(lint_context, workflow_dict, path=path)
-
-            lint_context.lint("lint_structure", structure, potential_workflow_artifact_path)
+            lint_context.lint("lint_structure", _lint_structure, potential_workflow_artifact_path)
+            lint_context.lint("lint_schema_validation", _lint_schema_validation, potential_workflow_artifact_path)
+            if lint_args["iwc_grade"]:
+                lint_context.lint("lint_release", _lint_release, potential_workflow_artifact_path)
             lint_context.lint("lint_best_practices", _lint_best_practices, potential_workflow_artifact_path)
             lint_context.lint("lint_tests", _lint_tsts, potential_workflow_artifact_path)
             lint_context.lint("lint_tool_ids", _lint_tool_ids, potential_workflow_artifact_path)
+            lint_context.lint("lint_tool_versions", _lint_tool_versions, potential_workflow_artifact_path)
         else:
             # Allow linting ro crates and such also
             pass
@@ -183,73 +214,31 @@ def _lint_tsts(path: str, lint_context: WorkflowLintContext) -> None:
             lint_context.valid(f"Tests appear structurally correct for {runnable.path}")
 
 
-def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None:  # noqa: C901
-    """
-    This function duplicates the checks made by Galaxy's best practices panel:
-    https://github.com/galaxyproject/galaxy/blob/5396bb15fe8cfcf2e89d46c1d061c49b60e2f0b1/client/src/components/Workflow/Editor/Lint.vue
-    """
+def _lint_structure(path: str, lint_context: WorkflowLintContext) -> None:
+    workflow_dict = _load_workflow_dict(path)
+    if workflow_dict.get("class") == "GalaxyWorkflow":
+        lint_format2_path(lint_context, path)
+    else:
+        lint_ga_path(lint_context, path)
 
-    def check_json_for_untyped_params(j):
-        values = j.values() if isinstance(j, dict) else j
-        for value in values:
-            if type(value) in [list, dict, OrderedDict]:
-                if check_json_for_untyped_params(value):
-                    return True
-            elif isinstance(value, str):
-                if re.match(r"\$\{.+?\}", value):
-                    return True
-        return False
 
+def _lint_schema_validation(path: str, lint_context: WorkflowLintContext) -> None:
+    workflow_dict = _load_workflow_dict(path)
+    is_format2 = workflow_dict.get("class") == "GalaxyWorkflow"
+    lint_pydantic_validation(lint_context, workflow_dict, format2=is_format2)
+
+
+def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None:
+    workflow_dict = _load_workflow_dict(path)
+    if workflow_dict.get("class") == "GalaxyWorkflow":
+        lint_best_practices_format2(lint_context, workflow_dict)
+    else:
+        lint_best_practices_ga(lint_context, workflow_dict)
+
+
+def _load_workflow_dict(path: str) -> Dict[str, Any]:
     with open(path) as f:
-        workflow_dict = ordered_load(f)
-
-    steps = workflow_dict.get("steps", {})
-
-    # annotation
-    if not workflow_dict.get("annotation"):
-        lint_context.warn("Workflow is not annotated.")
-
-    # creator
-    if not len(workflow_dict.get("creator", [])) > 0:
-        lint_context.warn("Workflow does not specify a creator.")
-
-    # license
-    if not workflow_dict.get("license"):
-        lint_context.warn("Workflow does not specify a license.")
-
-    # checks on individual steps
-    for step in steps.values():
-        # disconnected inputs
-        if step.get("type") not in ["data_collection_input", "parameter_input"]:
-            for input in step.get("inputs", []):
-                if input.get("name") not in step.get("input_connections"):  # TODO: check optional
-                    lint_context.warn(
-                        f"Input {input.get('name')} of workflow step {step.get('annotation') or step.get('id')} is disconnected."
-                    )
-
-        # missing metadata
-        if not step.get("annotation"):
-            lint_context.warn(f"Workflow step with ID {step.get('id')} has no annotation.")
-        if not step.get("label"):
-            lint_context.warn(f"Workflow step with ID {step.get('id')} has no label.")
-
-        # untyped parameters
-        if workflow_dict.get("class") == "GalaxyWorkflow":
-            tool_state = step.get("tool_state", {})
-            pjas = step.get("out", {})
-        else:
-            tool_state = json.loads(step.get("tool_state", "{}"))
-            pjas = step.get("post_job_actions", {})
-
-        if check_json_for_untyped_params(tool_state):
-            lint_context.warn(f"Workflow step with ID {step.get('id')} specifies an untyped parameter as an input.")
-
-        if check_json_for_untyped_params(pjas):
-            lint_context.warn(
-                f"Workflow step with ID {step.get('id')} specifies an untyped parameter in the post-job actions."
-            )
-
-        # unlabeled outputs are checked by gxformat2, no need to check here
+        return ordered_load(f)
 
 
 def _lint_case(path: str, test_case: TestCase, lint_context: WorkflowLintContext) -> bool:
@@ -394,6 +383,11 @@ def _lint_dockstore_config(path: str, lint_context: WorkflowLintContext) -> None
         lint_context.error("Invalid YAML contents found in %s" % DOCKSTORE_REGISTRY_CONF)
         return
 
+    if "version" not in dockstore_yaml:
+        lint_context.error("Invalid YAML contents found in %s, no version defined" % DOCKSTORE_REGISTRY_CONF)
+    if str(dockstore_yaml.get("version")) != DOCKSTORE_REGISTRY_CONF_VERSION:
+        lint_context.error("Invalid YAML version found in %s." % DOCKSTORE_REGISTRY_CONF)
+
     if "workflows" not in dockstore_yaml:
         lint_context.error("Invalid YAML contents found in %s, no workflows defined" % DOCKSTORE_REGISTRY_CONF)
         return
@@ -403,8 +397,16 @@ def _lint_dockstore_config(path: str, lint_context: WorkflowLintContext) -> None
         lint_context.error("Invalid YAML contents found in %s, workflows not a list" % DOCKSTORE_REGISTRY_CONF)
         return
 
+    if len(workflow_entries) == 0:
+        lint_context.error("No workflow specified in the .dockstore.yml.")
+
+    workflow_names_in_dockstore = []
     for workflow_entry in workflow_entries:
         _lint_dockstore_workflow_entry(lint_context, os.path.dirname(path), workflow_entry)
+        workflow_name = workflow_entry.get("name", "")
+        if workflow_name in workflow_names_in_dockstore:
+            lint_context.error(f"{DOCKSTORE_REGISTRY_CONF} has multiple workflow entries with the same name")
+        workflow_names_in_dockstore.append(workflow_name)
 
 
 def _lint_dockstore_workflow_entry(
@@ -420,15 +422,13 @@ def _lint_dockstore_workflow_entry(
             lint_context.error(f"{DOCKSTORE_REGISTRY_CONF} workflow entry missing required key {required_key}")
             found_errors = True
 
-    for recommended_key in ["testParameterFiles"]:
-        if recommended_key not in workflow_entry:
-            lint_context.warn(f"{DOCKSTORE_REGISTRY_CONF} workflow entry missing recommended key {recommended_key}")
-
     if found_errors:
         # Don't do the rest of the validation for a broken file.
         return
 
-    # TODO: validate subclass
+    if workflow_entry.get("subclass") != "Galaxy":
+        lint_context.error(f"{DOCKSTORE_REGISTRY_CONF} workflow entry subclass must be 'Galaxy'.")
+
     descriptor_path = workflow_entry["primaryDescriptorPath"]
     test_files = workflow_entry.get("testParameterFiles", [])
 
@@ -436,6 +436,20 @@ def _lint_dockstore_workflow_entry(
         referenced_path = os.path.join(directory, referenced_file[1:])
         if not os.path.exists(referenced_path):
             lint_context.error(f"{DOCKSTORE_REGISTRY_CONF} workflow entry references absent file {referenced_file}")
+
+    # Check there is no space in name:
+    workflow_name = workflow_entry.get("name", "")
+    # Check the name has no space
+    if " " in workflow_name:
+        lint_context.error(
+            "Dockstore does not accept workflow names with space.",
+            f"Change '{workflow_name}' in {DOCKSTORE_REGISTRY_CONF}.",
+        )
+
+    # Check there is not mailto
+    for author in workflow_entry.get("authors", []):
+        if author.get("email", "").startswith("mailto:"):
+            lint_context.error("email field of the .dockstore.yml must not contain 'mailto:'")
 
 
 def looks_like_a_workflow(path: str) -> bool:
@@ -484,7 +498,7 @@ def find_repos_from_tool_id(tool_id: str, ts: ToolShedInstance) -> Tuple[str, Di
 
     try:
         repo = ts.repositories.get_repositories(name, owner)[0]
-        repos = ts.repositories._get(url=f'{ts.repositories._make_url()}/{repo["id"]}/metadata')
+        repos = ts.repositories._get(url=f"{ts.repositories._make_url()}/{repo['id']}/metadata")
     except Exception as e:
         return (f"The ToolShed returned an error when searching for the most recent version of {tool_id}: {e}", {})
     if len(repos) == 0:
@@ -493,47 +507,205 @@ def find_repos_from_tool_id(tool_id: str, ts: ToolShedInstance) -> Tuple[str, Di
         return ("", repos)
 
 
-def assert_valid_tool_id_in_tool_shed(tool_id: str, ts: ToolShedInstance) -> Optional[str]:
+def assert_valid_tool_id_in_tool_shed(
+    tool_id: str, ts: ToolShedInstance, changeset_revision: Optional[str] = None
+) -> Optional[str]:
     if "/repos" not in tool_id:
         return None
     warning_msg, repos = find_repos_from_tool_id(tool_id, ts)
     if warning_msg:
         return warning_msg
+
+    tool_found = any(
+        tool_id == tool.get("guid")
+        for repo in repos.values()
+        if isinstance(repo, dict)
+        for tool in repo.get("tools", [])
+    )
+    if not tool_found:
+        return f"The tool {tool_id} is not in the toolshed (may have been tagged as invalid)."
+
+    if changeset_revision is not None:
+        # The tool version exists in the toolshed; make sure the pinned revision provides it.
+        return _assert_tool_id_in_changeset(tool_id, changeset_revision, repos)
+
+    return None
+
+
+def _assert_tool_id_in_changeset(tool_id: str, changeset_revision: str, repos: Dict[str, Any]) -> Optional[str]:
+    """Check that the pinned ``changeset_revision`` actually provides ``tool_id``.
+
+    When a native ``.ga`` workflow references a tool it also pins a
+    ``tool_shed_repository`` changeset revision, and that is the exact revision
+    Galaxy installs when bootstrapping the workflow's tests. If the pinned
+    revision does not provide the referenced tool version the tool is never
+    installed and the workflow fails to run, so verify the two agree.
+    """
+    matching_revision = None
     for repo in repos.values():
-        tools = repo.get("tools", [])
-        for tool in tools:
-            if tool_id == tool.get("guid"):
-                return None
-    return f"The tool {tool_id} is not in the toolshed (may have been tagged as invalid)."
+        if not isinstance(repo, dict):
+            continue
+        if repo.get("changeset_revision") == changeset_revision:
+            matching_revision = repo
+            break
+
+    if matching_revision is None:
+        return (
+            f"The tool {tool_id} references changeset_revision {changeset_revision}, "
+            "which is not an installable revision of the repository."
+        )
+
+    for tool in matching_revision.get("tools", []):
+        if tool_id == tool.get("guid"):
+            return None
+
+    # The referenced version is not provided by the pinned changeset. Point at
+    # the revision(s) that do provide it so the mismatch is actionable.
+    providing_revisions = [
+        repo["changeset_revision"]
+        for repo in repos.values()
+        if isinstance(repo, dict)
+        and repo.get("changeset_revision")
+        and any(tool_id == tool.get("guid") for tool in repo.get("tools", []))
+    ]
+    message = (
+        f"The tool {tool_id} is not provided by the pinned changeset_revision "
+        f"{changeset_revision} of the repository (the tool_shed_repository revision "
+        "and the tool version in the workflow do not match)."
+    )
+    if providing_revisions:
+        message += f" This version is provided by changeset_revision {', '.join(providing_revisions)}."
+    return message
+
+
+def _iter_tool_steps(wf_dict: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
+    """Yield every tool step in a workflow, recursing into subworkflows."""
+    steps = wf_dict.get("steps", {})
+    if isinstance(steps, dict):
+        steps = steps.values()
+    for step in steps:
+        if step.get("type", "tool") == "tool" and not step.get("run", {}).get("class") == "GalaxyWorkflow":
+            yield step
+        elif step.get("type") == "subworkflow":  # GA SWF
+            yield from _iter_tool_steps(step["subworkflow"])
+        elif step.get("run", {}).get("class") == "GalaxyWorkflow":  # gxformat2 SWF
+            yield from _iter_tool_steps(step["run"])
 
 
 def _lint_tool_ids(path: str, lint_context: WorkflowLintContext) -> None:
-    def _lint_tool_ids_steps(lint_context: WorkflowLintContext, wf_dict: Dict, ts: ToolShedInstance) -> bool:
-        """Returns whether a single tool_id was invalid"""
-        failed = False
-        steps = wf_dict.get("steps", {})
-        for step in steps.values():
-            if step.get("type", "tool") == "tool" and not step.get("run", {}).get("class") == "GalaxyWorkflow":
-                warning_msg = assert_valid_tool_id_in_tool_shed(step["tool_id"], ts)
-                if warning_msg:
-                    lint_context.error(warning_msg)
-                    failed = True
-            elif step.get("type") == "subworkflow":  # GA SWF
-                sub_failed = _lint_tool_ids_steps(lint_context, step["subworkflow"], ts)
-                if sub_failed:
-                    failed = True
-            elif step.get("run", {}).get("class") == "GalaxyWorkflow":  # gxformat2 SWF
-                sub_failed = _lint_tool_ids_steps(lint_context, step["run"], ts)
-                if sub_failed:
-                    failed = True
-            else:
-                continue
-        return failed
-
     with open(path) as f:
         workflow_dict = ordered_load(f)
     ts = toolshed.ToolShedInstance(url=MAIN_TOOLSHED_URL)
-    failed = _lint_tool_ids_steps(lint_context, workflow_dict, ts)
+    failed = False
+    for step in _iter_tool_steps(workflow_dict):
+        tool_shed_repository = step.get("tool_shed_repository")
+        if not tool_shed_repository:
+            # Nothing to validate the tool_id/version against (e.g. built-in tools
+            # or gxformat2 steps without a pinned repository), so skip the check.
+            continue
+        changeset_revision = tool_shed_repository.get("changeset_revision")
+        warning_msg = assert_valid_tool_id_in_tool_shed(step["tool_id"], ts, changeset_revision)
+        if warning_msg:
+            lint_context.error(warning_msg)
+            failed = True
     if not failed:
         lint_context.valid("All tool ids appear to be valid.")
     return None
+
+
+def _lint_tool_versions(path: str, lint_context: WorkflowLintContext) -> None:
+    """Check that each step's tool_version matches the version encoded in its tool_id."""
+    with open(path) as f:
+        workflow_dict = ordered_load(f)
+    failed = False
+    for step in _iter_tool_steps(workflow_dict):
+        tool_id = step.get("tool_id")
+        tool_version = step.get("tool_version")
+        if not tool_id or "/repos/" not in tool_id:
+            # Only tool shed tool ids encode the version, so nothing to compare against.
+            continue
+        version_in_tool_id = tool_id.rsplit("/", 1)[1]
+        if tool_version is not None and tool_version != version_in_tool_id:
+            lint_context.error(
+                f"The tool_version '{tool_version}' does not match the version '{version_in_tool_id}' "
+                f"encoded in tool_id {tool_id}."
+            )
+            failed = True
+    if not failed:
+        lint_context.valid("Tool versions appear to match tool ids.")
+    return None
+
+
+def _lint_required_files_workflow_dir(path: str, lint_context: WorkflowLintContext) -> None:
+    # Check all required files are present
+    required_files = ["README.md", "CHANGELOG.md", ".dockstore.yml"]
+    for required_file in required_files:
+        if not os.path.exists(os.path.join(path, required_file)):
+            lint_context.error(f"The file {required_file} is missing but required.")
+
+
+def _get_changelog_version(path: str) -> str:
+    # Get the version from the CHANGELOG.md
+    version = ""
+    if not os.path.exists(os.path.join(path, "CHANGELOG.md")):
+        return version
+    with open(os.path.join(path, "CHANGELOG.md"), "r") as f:
+        for line in f:
+            if line.startswith("## ["):
+                version = line.split("]")[0].replace("## [", "")
+                break
+    return version
+
+
+def _lint_changelog_version(path: str, lint_context: WorkflowLintContext) -> None:
+    # Check the version can be get from the CHANGELOG.md
+    if not os.path.exists(os.path.join(path, "CHANGELOG.md")):
+        return
+    if _get_changelog_version(path) == "":
+        lint_context.error(
+            "No version found in CHANGELOG. The version should be in a line that starts like '## [version number]'"
+        )
+
+
+def _lint_release(path, lint_context):
+    with open(path) as f:
+        workflow_dict = ordered_load(f)
+    if "release" not in workflow_dict:
+        lint_context.error(f"The workflow {path} has no release")
+    else:
+        # Try to get the version from the CHANGELOG:
+        version = _get_changelog_version(os.path.dirname(path))
+        if version != "" and workflow_dict.get("release") != version:
+            lint_context.error(f"The release of workflow {path} does not match the version in the CHANGELOG.")
+
+
+def _lint_dockstore_config_best_practices(path: str, lint_context: WorkflowLintContext) -> None:
+    dockstore_yaml = None
+    try:
+        with open(path) as f:
+            dockstore_yaml = yaml.safe_load(f)
+    except Exception:
+        return
+
+    if not isinstance(dockstore_yaml, dict):
+        return
+
+    workflow_entries = dockstore_yaml.get("workflows")
+    if not isinstance(workflow_entries, list):
+        return
+
+    for workflow_entry in workflow_entries:
+        _lint_dockstore_workflow_entry_best_practices(lint_context, os.path.dirname(path), workflow_entry)
+
+
+def _lint_dockstore_workflow_entry_best_practices(
+    lint_context: WorkflowLintContext, directory: str, workflow_entry: Dict[str, Any]
+) -> None:
+    for recommended_key in ["testParameterFiles", "name"]:
+        if recommended_key not in workflow_entry:
+            lint_context.error(f"{DOCKSTORE_REGISTRY_CONF} workflow entry missing recommended key {recommended_key}")
+
+    workflow_name = workflow_entry.get("name", "")
+    # Check there is at least one author
+    if len(workflow_entry.get("authors", [])) == 0:
+        lint_context.error(f"Workflow {workflow_name} have no 'authors' in the {DOCKSTORE_REGISTRY_CONF}.")

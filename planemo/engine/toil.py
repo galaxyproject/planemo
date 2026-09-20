@@ -19,7 +19,13 @@ class ToilEngine(BaseEngine):
 
     handled_runnable_types = [RunnableType.cwl_tool, RunnableType.cwl_workflow]
 
-    def _run(self, runnables, job_paths, output_collectors: Optional[List[Callable]] = None):
+    def _run(
+        self,
+        runnables,
+        job_paths,
+        output_collectors: Optional[List[Callable]] = None,
+        test_timeout: Optional[int] = None,
+    ):
         """Run CWL job using Toil."""
         results = []
         for runnable, job_path in zip(runnables, job_paths):

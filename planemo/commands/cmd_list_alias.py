@@ -1,18 +1,14 @@
 """Module describing the planemo ``list_alias`` command."""
 
-import json
-
 import click
 
 from planemo import options
 from planemo.cli import command_function
 from planemo.galaxy import profiles
-from planemo.io import info
-
-try:
-    from tabulate import tabulate
-except ImportError:
-    tabulate = None  # type: ignore
+from planemo.io import (
+    info,
+    print_table,
+)
 
 
 @click.command("list_alias")
@@ -24,10 +20,7 @@ def cli(ctx, profile, **kwds):
     """
     info("Looking for profiles...")
     aliases = profiles.list_alias(ctx, profile)
-    if tabulate is not None:
-        print(tabulate({"Alias": aliases.keys(), "Object": aliases.values()}, headers="keys"))
-    else:
-        print(json.dumps(aliases, indent=4, sort_keys=True))
+    print_table({"Alias": list(aliases.keys()), "Object": list(aliases.values())})
 
     info(f"{len(aliases)} aliases were found for profile {profile}.")
 

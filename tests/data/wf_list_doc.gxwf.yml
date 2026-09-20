@@ -1,0 +1,9 @@
+class: GalaxyWorkflow
+inputs:
+  the_input:
+    type: data
+    doc:
+      - First line of docs.
+      - Second line of docs.
+outputs: {}
+steps: {}

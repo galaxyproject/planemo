@@ -2,7 +2,10 @@
 
 import os
 import string
-from typing import List
+from typing import (
+    Iterable,
+    List,
+)
 
 import click
 from galaxy.tool_util.deps.container_resolvers.mulled import targets_to_mulled_name
@@ -38,7 +41,6 @@ from planemo.github_util import (
     get_repository_object,
     pull_request,
 )
-from planemo.mulled import conda_to_mulled_targets
 
 REGISTRY_TARGET_NAME = "multi-package-containers"
 REGISTRY_TARGET_PATH = "combinations"
@@ -101,14 +103,12 @@ def cli(ctx: "PlanemoCliContext", paths, **kwds) -> None:
     )
     for conda_targets, tool_paths in zip(conda_targets_list, tool_paths_list):
         ctx.vlog("Handling conda_targets [%s]" % conda_targets)
-        mulled_targets = conda_to_mulled_targets(conda_targets)
-        mulled_targets_str = "- " + "\n- ".join(map(conda_build_target_str, mulled_targets))
-
-        if len(mulled_targets) < 1:
+        conda_targets_str = "- " + "\n- ".join(map(conda_build_target_str, conda_targets))
+        if len(conda_targets) < 1:
             ctx.log("Skipping registration, no targets discovered.")
             continue
 
-        name = v2_image_name(mulled_targets)
+        name = v2_image_name(conda_targets)
         tag = "0"
         name_and_tag = f"{name}-{tag}"
         target_filename = os.path.join(registry_target.output_directory, "%s.tsv" % name_and_tag)
@@ -116,7 +116,7 @@ def cli(ctx: "PlanemoCliContext", paths, **kwds) -> None:
             ctx.log("Target file '%s' already exists, skipping" % target_filename)
             continue
 
-        if targets_to_mulled_name(mulled_targets, hash_func="v2", namespace=kwds["mulled_namespace"]):
+        if targets_to_mulled_name(conda_targets, hash_func="v2", namespace=kwds["mulled_namespace"]):
             ctx.vlog("quay repository already exists, skipping")
             continue
 
@@ -149,10 +149,10 @@ def cli(ctx: "PlanemoCliContext", paths, **kwds) -> None:
                 ctx.log(f"{conda_target} requires '{base_image}' as base image")
                 break
 
-        registry_target.write_targets(ctx, target_filename, mulled_targets, tag, base_image)
+        registry_target.write_targets(ctx, target_filename, conda_targets, tag, base_image)
         tools_str = "\n".join(map(lambda p: "- " + os.path.basename(p), tool_paths))
         registry_target.handle_pull_request(
-            ctx, name, target_filename, mulled_targets_str, tools_str, base_image, **kwds
+            ctx, name, target_filename, conda_targets_str, tools_str, base_image, **kwds
         )
         combinations_added += 1
 
@@ -226,17 +226,17 @@ class RegistryTarget:
         self,
         ctx: "PlanemoCliContext",
         target_filename: str,
-        mulled_targets: List[CondaTarget],
+        conda_targets: Iterable[CondaTarget],
         tag: str,
         base_image: str,
     ) -> None:
         with open(target_filename, "w") as f:
-            targets = to_target_str(mulled_targets)
+            targets = to_target_str(conda_targets)
             f.write(string.Template(CONTENTS).safe_substitute(targets=targets, base_image=base_image, image_build=tag))
             ctx.log(f"Wrote requirements [{targets}] to file [{target_filename}]")
 
 
-def to_target_str(targets: List[CondaTarget]) -> str:
+def to_target_str(targets: Iterable[CondaTarget]) -> str:
     target_strings = []
     for target in targets:
         if target.version:

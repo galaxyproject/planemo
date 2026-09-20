@@ -70,8 +70,11 @@ class StructuredData:
 
         for test in self.structured_data_tests:
             test_data = get_dict_value("data", test)
-            status = get_dict_value("status", test_data)
             num_tests += 1
+            if test_data is None:
+                continue
+            status = normalize_test_status(get_dict_value("status", test_data))
+            test_data["status"] = status
             if status == "skip":
                 num_skips += 1
             elif status == "failure":
@@ -122,7 +125,14 @@ def get_dict_value(key, data):
         raise KeyError(f"No key [{key}] in [{data}]")
 
 
+def normalize_test_status(status):
+    if status == "skipped":
+        return "skip"
+    return status
+
+
 __all__ = (
     "StructuredData",
     "get_dict_value",
+    "normalize_test_status",
 )

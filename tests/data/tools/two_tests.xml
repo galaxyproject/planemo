@@ -1,0 +1,39 @@
+<tool id="two_tests" name="Two Tests" version="1.0">
+    <description>tool with two tests</description>
+    <command><![CDATA[
+        echo "$select_opt" > $output
+    ]]></command>
+    <inputs>
+        <param name="select_opt" type="select" label="Option">
+            <option value="moo">Cow</option>
+            <option value="baa">Sheep</option>
+        </param>
+    </inputs>
+    <outputs>
+        <data name="output" format="txt"/>
+    </outputs>
+    <tests>
+        <test>
+            <param name="select_opt" value="moo" />
+            <output name="output">
+                <assert_contents>
+                    <has_line line="moo" />
+                </assert_contents>
+            </output>
+        </test>
+        <test>
+            <param name="select_opt" value="baa" />
+            <output name="output">
+                <assert_contents>
+                    <has_line line="baa" />
+                </assert_contents>
+            </output>
+        </test>
+    </tests>
+    <help>
+        Tool with two tests for testing --test_index.
+    </help>
+    <citations>
+        <citation type="doi">10.1101/014043</citation>
+    </citations>
+</tool>

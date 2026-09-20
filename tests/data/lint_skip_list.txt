@@ -1,4 +1,4 @@
 # check that comments work
-xml_order
+XMLOrder
 # check the white spaces are ignored
- citations 
+ CitationsMissing 

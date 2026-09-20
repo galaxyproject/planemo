@@ -7,11 +7,15 @@ from planemo import (
     shed,
     shed_lint,
 )
-from planemo.cli import command_function
+from planemo.cli import (
+    command_function,
+    PlanemoCliContext,
+)
 
 
 @click.command("shed_lint")
 @options.shed_realization_options()
+@options.fail_fast_option()
 @options.report_level_option()
 @options.fail_level_option()
 @options.skip_options()
@@ -23,8 +27,7 @@ from planemo.cli import command_function
     is_flag=True,
     default=False,
     help=(
-        "Ensure .shed.yml files contain enough metadata for each repository "
-        "to allow automated creation and/or updates."
+        "Ensure .shed.yml files contain enough metadata for each repository to allow automated creation and/or updates."
     ),
 )
 @click.option(
@@ -41,7 +44,7 @@ from planemo.cli import command_function
 #     default=False,
 # )
 @command_function
-def cli(ctx, paths, **kwds):
+def cli(ctx: PlanemoCliContext, paths, **kwds):
     """Check Tool Shed repository for common issues.
 
     With the ``--tools`` flag, this command lints actual Galaxy tools

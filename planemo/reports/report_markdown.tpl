@@ -8,7 +8,7 @@
 {% set state.success = raw_data.results.total - raw_data.results.errors - raw_data.results.failures - raw_data.results.skips | default(0) %}
 {% set state.error = raw_data.results.errors | default(0) %}
 {% set state.failure = raw_data.results.failures | default(0) %}
-{% set state.skipped = raw_data.results.skipped | default(0) %}
+{% set state.skipped = raw_data.results.skips | default(0) %}
 
 {% if raw_data.results.total %}
 <div class="progress">
@@ -47,12 +47,12 @@
 {%       endif %}
 {%       if test.data.output_problems %}
     **Problems**:
-{%       endif %}
-{%       for problem in test.data.output_problems %}
+{%         for problem in test.data.output_problems %}
     * ```
       {{problem|indent(6)}}
       ```
-{%       endfor %}
+{%         endfor %}
+{%       endif %}
 {%       if test.data.execution_problem %}
     **Execution Problem:**
     * ```
@@ -60,6 +60,20 @@
       ```
 {%       endif %}
 {%       if test.data.job %}
+{%         set ns = namespace(container_id=None) %}
+{%         set job_metrics = test.data.job.get('job_metrics') or [] %}
+{%         for metric in job_metrics %}
+{%           if metric.get('name') == 'container_id' %}
+{%             set ns.container_id = metric.get('value') %}
+{%           endif %}
+{%         endfor %}
+{%         if ns.container_id %}
+    **Container:**
+
+    * ```console
+      {{ ns.container_id|indent(6) }}
+      ```
+{%         endif %}
 {%         for key, description in display_job_attributes.items() %}
 {%           if test.data.job[key] not in ("", None) %}
     **{{ description }}:**

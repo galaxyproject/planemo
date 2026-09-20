@@ -54,6 +54,10 @@ def stop_postgres_docker(name=DEFAULT_CONTAINER_NAME, **kwds):
 class DockerPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource):
     """Postgres database running inside a Docker container."""
 
+    # This container uses --rm and has no persistent volume. Database
+    # commands therefore leave it running between invocations.
+    keep_running_after_database_commands = True
+
     def __init__(self, **kwds):
         """Construct a postgres database source from planemo configuration."""
         self.psql_path = "psql"
@@ -63,10 +67,16 @@ class DockerPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource):
         self.database_port = DEFAULT_POSTGRES_PORT_EXPOSE
         self._kwds = kwds
         self._docker_host_kwds = dockerfiles.docker_host_args(**kwds)
+
+    def start(self):
         if not is_running_container(**self._docker_host_kwds):
             start_postgres_docker(**self._docker_host_kwds)
             # Hack to give docker a bit of time to boot up and allow psql to start.
             time.sleep(30)
+
+    def stop(self):
+        if is_running_container(**self._docker_host_kwds):
+            stop_postgres_docker(**self._docker_host_kwds)
 
     def sqlalchemy_url(self, identifier):
         """Return URL or form postgresql://username:password@localhost/mydatabase."""

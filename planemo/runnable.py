@@ -51,9 +51,10 @@ from planemo.tools import yield_tool_sources_on_paths
 TEST_SUFFIXES = ["-tests", "_tests", "-test", "_test"]
 TEST_EXTENSIONS = [".yml", ".yaml", ".json"]
 
-TEST_FILE_NOT_LIST_MESSAGE = "Invalid test definition file [%s] - file must " "contain a list of tests"
-TEST_FIELD_MISSING_MESSAGE = "Invalid test definition [test #%d in %s] -" "defintion must field [%s]."
+TEST_FILE_NOT_LIST_MESSAGE = "Invalid test definition file [%s] - file must contain a list of tests"
+TEST_FIELD_MISSING_MESSAGE = "Invalid test definition [test #%d in %s] -defintion must field [%s]."
 GALAXY_TOOLS_PREFIX = "gxid://tools/"
+TRS_WORKFLOWS_PREFIX = "trs://"
 
 
 class RunnableType(Enum):
@@ -115,7 +116,12 @@ class Runnable(NamedTuple):
 
     @property
     def is_remote_workflow_uri(self) -> bool:
-        return self.uri.startswith((GALAXY_WORKFLOWS_PREFIX, GALAXY_WORKFLOW_INSTANCE_PREFIX))
+        return self.uri.startswith((GALAXY_WORKFLOWS_PREFIX, GALAXY_WORKFLOW_INSTANCE_PREFIX, TRS_WORKFLOWS_PREFIX))
+
+    @property
+    def is_trs_workflow_uri(self) -> bool:
+        """Check if this is a TRS workflow URI."""
+        return self.uri.startswith(TRS_WORKFLOWS_PREFIX)
 
     @property
     def test_data_search_path(self) -> str:
@@ -138,17 +144,17 @@ class Runnable(NamedTuple):
         return None
 
     @property
-    def has_tools(self) -> property:
+    def has_tools(self) -> bool:
         """Boolean indicating if this runnable corresponds to one or more tools."""
-        return _runnable_delegate_attribute("has_tools")
+        return self.type.has_tools
 
     @property
-    def is_single_artifact(self) -> property:
+    def is_single_artifact(self) -> bool:
         """Boolean indicating if this runnable is a single artifact.
 
         Currently only directories are considered not a single artifact.
         """
-        return _runnable_delegate_attribute("is_single_artifact")
+        return self.type.is_single_artifact
 
 
 class Rerunnable(NamedTuple):
@@ -157,13 +163,6 @@ class Rerunnable(NamedTuple):
     rerunnable_id: str
     rerunnable_type: str
     server_url: str
-
-
-def _runnable_delegate_attribute(attribute: str) -> property:
-    def getter(runnable):
-        return getattr(runnable.type, attribute)
-
-    return property(getter)
 
 
 def workflows_from_dockstore_yaml(path):

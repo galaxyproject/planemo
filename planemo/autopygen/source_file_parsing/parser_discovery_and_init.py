@@ -48,7 +48,7 @@ class ImportDiscovery(Discovery):
     Class responsible for discovery and extraction of import statements
     """
 
-    def __init__(self, actions: List[ast.AST]):
+    def __init__(self, actions: List[ast.stmt]):
         super(ImportDiscovery, self).__init__(actions)
         self.argparse_module_alias: Optional[str] = None
         self.argument_parser_alias: Optional[str] = None
@@ -80,7 +80,7 @@ class ImportDiscovery(Discovery):
                     if name == ARGPARSE_MODULE_NAME and item.name == ARGUMENT_PARSER_CLASS_NAME:
                         self.argument_parser_alias = alias
 
-    def report_findings(self) -> Tuple[List[ast.AST], Optional[str], Optional[str], Set[str]]:
+    def report_findings(self) -> Tuple[List[ast.stmt], Optional[str], Optional[str], Set[str]]:
         if self.argparse_module_alias is None and self.argument_parser_alias is None:
             raise ArgParseImportNotFound("No argparse import found")
 
@@ -95,7 +95,7 @@ class SimpleParserDiscoveryAndReplacement(Discovery):
     """
 
     def __init__(
-        self, actions: List[ast.AST], argparse_alias: str, argument_parser_alias: str, custom_parser_def: ast.ClassDef
+        self, actions: List[ast.stmt], argparse_alias: str, argument_parser_alias: str, custom_parser_def: ast.ClassDef
     ):
         self.argument_parser_alias = argument_parser_alias
         self.argparse_module_alias = argparse_alias
@@ -179,7 +179,7 @@ class GroupAndSubparsersDiscovery(Discovery):
     groups and subparsers
     """
 
-    def __init__(self, actions: List[ast.AST], known_names: Set[str], main_name: str):
+    def __init__(self, actions: List[ast.stmt], known_names: Set[str], main_name: str):
         self.main_name = main_name
         self.known_names = known_names
         super(GroupAndSubparsersDiscovery, self).__init__(actions)
@@ -205,7 +205,7 @@ class ArgumentCreationDiscovery(Discovery):
     and on the argument groups extracted by GroupDiscovery
     """
 
-    def __init__(self, actions: List[ast.AST], main_name: str):
+    def __init__(self, actions: List[ast.stmt], main_name: str):
         self.main_name = main_name
         super(ArgumentCreationDiscovery, self).__init__(actions)
 
@@ -219,11 +219,11 @@ class ArgumentCreationDiscovery(Discovery):
 
         self.generic_visit(node)
 
-    def report_findings(self) -> Tuple[List[ast.AST]]:
+    def report_findings(self) -> Tuple[List[ast.stmt]]:
         return (self.actions,)
 
 
-def get_parser_init_and_actions(source: ast.Module) -> Tuple[List[ast.AST], str, Set[str]]:
+def get_parser_init_and_actions(source: ast.Module) -> Tuple[List[ast.stmt], str, Set[str]]:
     """
     Function used to extract necessary imports, parser and argument creation
      function calls
@@ -239,7 +239,7 @@ def get_parser_init_and_actions(source: ast.Module) -> Tuple[List[ast.AST], str,
     section names
     """
 
-    actions: List[ast.AST] = []
+    actions: List[ast.stmt] = []
     custom_parser_class_def = obtain_class_def()
 
     if custom_parser_class_def is None:

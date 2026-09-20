@@ -15,6 +15,7 @@ from planemo.runnable_resolve import install_args_list_to_runnables
 
 @click.command("shed_serve")
 @options.shed_read_options()
+@options.fail_fast_option()
 @options.galaxy_serve_options()
 @click.option(
     "--skip_dependencies", is_flag=True, help="Do not install shed dependencies as part of repository installation."

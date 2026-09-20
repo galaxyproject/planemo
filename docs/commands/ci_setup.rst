@@ -22,7 +22,7 @@ Useful for populating a CI cache.
 
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
-      --galaxy_python_version [3|3.7|3.8|3.9|3.10|3.11]
+      --galaxy_python_version [3|3.8|3.9|3.10|3.11|3.12]
                                       Python version to start Galaxy under
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be
@@ -68,6 +68,8 @@ Useful for populating a CI cache.
                                       Wait for galaxy to start before assuming
                                       Galaxy did not start.  [x>=1]
       --job_config_file FILE          Job configuration file for Galaxy to target.
+      --job_workers INTEGER           Number of workers for the local job runner
+                                      (default 1).
       --tool_dependency_dir DIRECTORY
                                       Tool dependency dir for Galaxy to target.
       --tool_data_path DIRECTORY      Directory where data used by tools is located.

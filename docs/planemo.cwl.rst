@@ -9,21 +9,21 @@ planemo.cwl.run module
 
 .. automodule:: planemo.cwl.run
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 planemo.cwl.toil module
 -----------------------
 
 .. automodule:: planemo.cwl.toil
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: planemo.cwl
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

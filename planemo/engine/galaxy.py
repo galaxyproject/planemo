@@ -3,7 +3,9 @@
 import abc
 import contextlib
 from typing import (
+    Any,
     Callable,
+    Dict,
     List,
     Optional,
     TYPE_CHECKING,
@@ -34,6 +36,19 @@ if TYPE_CHECKING:
 INSTALLING_MESSAGE = "Installing repositories - this may take some time..."
 
 
+def log_service_logs_on_failure(ctx: "PlanemoCliContext", config, results: List[Dict[str, Any]]) -> None:
+    """Dump logs of services running alongside Galaxy if a test didn't succeed.
+
+    Galaxy's own log covers only the web process, but uploads run in Celery - so
+    a test that dies staging its inputs otherwise leaves no trace at all in the
+    log Planemo streams.
+    """
+    if results and all(result["data"].get("status") == "success" for result in results):
+        return
+    for name, contents in config.service_log_contents.items():
+        ctx.log(f"Tail of Galaxy service log [{name}]:\n{contents}")
+
+
 class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
     """An :class:`Engine` implementation backed by a managed Galaxy.
 
@@ -49,7 +64,13 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
         RunnableType.directory,
     ]
 
-    def _run(self, runnables, job_paths, output_collectors: Optional[List[Callable]] = None):
+    def _run(
+        self,
+        runnables,
+        job_paths,
+        output_collectors: Optional[List[Callable]] = None,
+        test_timeout: Optional[int] = None,
+    ):
         """Run job in Galaxy."""
         results = []
         if not output_collectors:
@@ -61,7 +82,10 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
             for runnable, job_path, collect_output in zip(runnables, job_paths, output_collectors):
                 self._ctx.vlog(f"Serving artifact [{runnable}] with Galaxy.")
                 self._ctx.vlog(f"Running job path [{job_path}]")
-                run_response = execute(self._ctx, config, runnable, job_path, **self._kwds)
+                execution_kwds = self._kwds.copy()
+                if test_timeout is not None:
+                    execution_kwds["test_timeout"] = test_timeout
+                run_response = execute(self._ctx, config, runnable, job_path, **execution_kwds)
                 results.append(run_response)
                 if collect_output is not None:
                     collect_output(run_response)
@@ -110,6 +134,7 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
                         )
 
                     verbose = self._ctx.verbose
+                    result_index = len(test_results)
                     try:
                         if verbose:
                             # TODO: this is pretty hacky, it'd be better to send a stream
@@ -127,6 +152,8 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
                         )
                     except Exception:
                         pass
+
+                    log_service_logs_on_failure(self._ctx, config, test_results[result_index:])
 
         return test_results
 
@@ -193,9 +220,11 @@ class ExternalGalaxyEngine(GalaxyEngine):
             config.install_workflows()
             yield config
 
-    def rerun(self, ctx: "PlanemoCliContext", rerunnable: Rerunnable, **kwds) -> GalaxyBaseRunResponse:
+    def rerun(
+        self, ctx: "PlanemoCliContext", rerunnable: Rerunnable, use_cache: bool = True, **kwds
+    ) -> GalaxyBaseRunResponse:
         with self.ensure_runnables_served([]) as config:
-            rerun_response = execute_rerun(ctx, config, rerunnable, **kwds)
+            rerun_response = execute_rerun(ctx, config, rerunnable, use_cache=use_cache, **kwds)
             return rerun_response
 
 

@@ -271,6 +271,81 @@ This indicates the number of datasets created, as well as the state they are in
 (running, errored, paused, etc.)
 
 
+Tracking workflow progress
+===============================================
+
+When you run a workflow on an external Galaxy server, you may want to monitor
+its progress from the command line without using the web interface. The
+``workflow_track`` command follows the progress of a workflow invocation,
+displaying status updates as jobs complete:
+
+::
+
+    $ planemo workflow_track INVOCATION_ID --galaxy_url SERVER_URL --galaxy_user_key YOUR_API_KEY
+
+Or using a profile:
+
+::
+
+    $ planemo workflow_track INVOCATION_ID --profile tutorial_profile
+
+The command polls the Galaxy server periodically and reports the status of
+each job in the invocation. You can also use the ``--fail_fast`` option to
+stop tracking immediately when any job fails, rather than waiting for the
+entire invocation to complete.
+
+
+Downloading invocation outputs
+===============================================
+
+After a workflow has completed (whether run via Planemo or the Galaxy web
+interface), you can download all output files using the ``invocation_download``
+command:
+
+::
+
+    $ planemo invocation_download INVOCATION_ID --profile tutorial_profile
+
+By default, outputs are saved to a directory named ``output_{invocation_id}``.
+You can specify a different location with the ``--output_directory`` option:
+
+::
+
+    $ planemo invocation_download INVOCATION_ID --profile tutorial_profile --output_directory ./my_outputs
+
+The command also supports ``--output_json`` to write a JSON manifest containing
+metadata about the downloaded outputs:
+
+::
+
+    $ planemo invocation_download INVOCATION_ID --profile tutorial_profile --output_directory ./my_outputs --output_json ./my_outputs/manifest.json
+
+The manifest includes the invocation ID, output directory, downloaded outputs,
+and outputs that were not downloaded. Optional workflow outputs that are absent
+are reported as ``skipped``; required outputs that are absent while missing
+outputs are ignored are reported as ``missing``. Paths in the manifest are
+relative to ``--output_directory`` by default. Use
+``--output_json_path_type absolute`` when absolute paths are more useful for
+automation.
+
+
+Exporting invocations as archives
+===============================================
+
+For reproducibility and sharing purposes, you can export a completed workflow
+invocation as an archive using the ``invocation_export`` command. The default
+format is `RO-Crate <https://www.researchobject.org/ro-crate/>`_, a community
+standard for packaging research data with their metadata:
+
+::
+
+    $ planemo invocation_export INVOCATION_ID --profile tutorial_profile --output invocation.rocrate.zip
+
+The RO-Crate archive includes the workflow definition, input and output
+datasets, and provenance information, making it suitable for long-term
+archival and sharing with collaborators.
+
+
 Profile configuration files
 ===============================================
 
@@ -323,3 +398,29 @@ using the ``planemo rerun`` command:
 In the first two cases, all failed, remappable jobs which are associated with
 the specified history(s) or invocation(s) will be rerun. In the third case,
 the specified jobs will simply be rerun.
+
+
+Caching job results
+===============================================
+
+``planemo run`` reuses previously computed results by default. Pass
+``--no_use_cache`` to force a run to actually re-compute - note that a tool which
+exited successfully but produced bad output will have that bad output reused
+until you do.
+
+This sets ``use_cached_job`` on the job or invocation request, so Galaxy looks
+for an equivalent job of yours to copy outputs from. Two things limit how often
+that succeeds:
+
+- The Galaxy needs a persistent database. The ephemeral local Galaxy planemo
+  starts by default gets a fresh database every run, so caching only pays off
+  against ``--galaxy_url`` or a ``--profile``.
+- Inputs given as local file paths are uploaded afresh on every run, and Galaxy
+  does not consider jobs consuming distinct uploads equivalent. Caching helps
+  most when the job file refers to datasets already on the server.
+
+``planemo test`` takes the same flag but defaults it **off** - a test wants the
+work done again, and a tool edited without a version bump still looks equivalent
+to Galaxy, so its stale outputs would be replayed. It is also only honored for
+tests defined in a separate test file; tests embedded in a tool's ``<tests>``
+block are run by the Galaxy test interactor and ignore it.

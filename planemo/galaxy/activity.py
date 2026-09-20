@@ -1,5 +1,6 @@
 """Module provides generic interface to running Galaxy tools and workflows."""
 
+import contextlib
 import os
 import sys
 import tempfile
@@ -9,10 +10,12 @@ from datetime import datetime
 from typing import (
     Any,
     Dict,
+    List,
     Optional,
     Tuple,
     Type,
     TYPE_CHECKING,
+    Union,
 )
 from urllib.parse import urljoin
 
@@ -36,13 +39,25 @@ from galaxy.util import (
     unicodify,
 )
 from pathvalidate import sanitize_filename
-from requests.exceptions import (
-    HTTPError,
-    RequestException,
-)
+from requests.exceptions import HTTPError
 
-from planemo.galaxy.api import summarize_history
-from planemo.io import wait_on
+from planemo.galaxy.api import (
+    export_invocation_as_archive,
+    retry_on_timeouts,
+    summarize_history,
+)
+from planemo.galaxy.invocations.api import (
+    BioblendInvocationApi,
+    JOB_ERROR_STATES,
+    NON_TERMINAL_JOB_STATES,
+)
+from planemo.galaxy.invocations.polling import PollingTrackerImpl
+from planemo.galaxy.invocations.polling import wait_for_invocation_and_jobs as polling_wait_for_invocation_and_jobs
+from planemo.galaxy.invocations.progress import WorkflowProgressDisplay
+from planemo.galaxy.upload_progress import (
+    _aggregate_job_states,
+    UploadProgressDisplay,
+)
 from planemo.runnable import (
     ErrorRunResponse,
     get_outputs,
@@ -66,12 +81,12 @@ ERR_NO_SUCH_TOOL = (
 
 
 def execute(
-    ctx: "PlanemoCliContext", config: "BaseGalaxyConfig", runnable: Runnable, job_path: str, **kwds
+    ctx: "PlanemoCliContext", config: "BaseGalaxyConfig", runnable: Runnable, job_path: str, fail_fast=False, **kwds
 ) -> RunResponse:
     """Execute a Galaxy activity."""
     try:
         start_datetime = datetime.now()
-        return _execute(ctx, config, runnable, job_path, **kwds)
+        return _execute(ctx, config, runnable, job_path, fail_fast=fail_fast, **kwds)
     except Exception as e:
         end_datetime = datetime.now()
         ctx.log("Failed to execute Galaxy activity, throwing ErrorRunResponse")
@@ -111,12 +126,17 @@ class PlanemoStagingInterface(StagingInterface):
         user_gi: GalaxyInstance,
         version_major: str,
         simultaneous_uploads: bool,
+        upload_progress_display: Optional["UploadProgressDisplay"] = None,
+        deadline: Optional[float] = None,
     ) -> None:
         self._ctx = ctx
         self._user_gi = user_gi
         self._runnable = runnable
         self._version_major = version_major
         self._simultaneous_uploads = simultaneous_uploads
+        self._upload_progress_display = upload_progress_display
+        self._deadline = deadline
+        self._upload_jobs: List[Dict[str, Any]] = []
 
     def _post(self, api_path: str, payload: Dict[str, Any], files_attached: bool = False) -> Dict[str, Any]:
         # Keep the files_attached argument because StagingInterface._post() had
@@ -132,10 +152,107 @@ class PlanemoStagingInterface(StagingInterface):
     def _attach_file(self, path):
         return attach_file(path)
 
-    def _handle_job(self, job_response):
-        if not self._simultaneous_uploads:
+    def _handle_job(self, job_response: Dict[str, Any]) -> None:
+        # Track upload jobs for later waiting
+        self._upload_jobs.append(job_response)
+
+        # Update progress display if available
+        if self._upload_progress_display:
+            job_summary = _aggregate_job_states(self._upload_jobs, self._user_gi)
+            self._upload_progress_display.update_jobs(self._upload_jobs, job_summary)
+
+        # In sequential mode, wait for each job immediately if not using progress display
+        if not self._simultaneous_uploads and not self._upload_progress_display:
             job_id = job_response["id"]
-            _wait_for_job(self._user_gi, job_id)
+            _wait_for_job(self._user_gi, job_id, deadline=self._deadline)
+
+    def wait_for_uploads(self, check_ok: bool = True) -> None:
+        """Wait for all upload jobs to complete.
+
+        Args:
+            check_ok: Whether to verify upload success and raise exceptions on failure
+        """
+        if not self._upload_jobs:
+            return
+
+        # If we have a progress display (created in stage_in), use it for polling
+        if self._upload_progress_display:
+            self._wait_for_uploads_with_progress(check_ok, self._upload_progress_display)
+        else:
+            # No progress display - use original behavior
+            self._wait_for_uploads_without_progress(check_ok)
+
+    def _wait_for_uploads_with_progress(self, check_ok: bool, display: UploadProgressDisplay) -> None:
+        """Wait for uploads with progress display.
+
+        Args:
+            check_ok: Whether to verify upload success
+            display: Upload progress display instance
+        """
+        polling_tracker = PollingTrackerImpl(
+            polling_backoff=0,
+            deadline=self._deadline,
+            timeout_message="Timed out waiting for Galaxy uploads.",
+        )
+
+        while not display.upload_progress.terminal:
+            # Aggregate current job states
+            job_summary = _aggregate_job_states(self._upload_jobs, self._user_gi)
+            display.update_jobs(self._upload_jobs, job_summary)
+
+            # Print any new errors
+            display.upload_progress.print_job_errors_once(self._user_gi, display)
+
+            if not display.upload_progress.terminal:
+                polling_tracker.sleep()
+
+        # Verify uploads if requested
+        if check_ok:
+            self._verify_uploads_ok()
+
+    def _wait_for_uploads_without_progress(self, check_ok: bool) -> None:
+        """Wait for uploads without progress display (original behavior).
+
+        Args:
+            check_ok: Whether to verify upload success
+        """
+        for upload_job in self._upload_jobs:
+            job_id = upload_job["id"]
+            _wait_for_job(self._user_gi, job_id, deadline=self._deadline)
+
+        if check_ok:
+            self._verify_uploads_ok()
+
+    def _verify_uploads_ok(self) -> None:
+        """Verify that all upload jobs completed successfully.
+
+        Raises:
+            Exception: If any upload job failed or produced outputs in error state
+        """
+        for upload_job in self._upload_jobs:
+            job_id = upload_job["id"]
+            job_response = self._user_gi.jobs.show_job(job_id, full_details=True)
+            final_state = job_response.get("state", "unknown")
+
+            if final_state != "ok":
+                stderr = job_response.get("stderr", "")
+                raise Exception(f"Upload job [{job_id}] failed with state [{final_state}]: {stderr}")
+
+            # Check dataset outputs
+            for output in job_response.get("outputs", {}).values():
+                hda = self._user_gi.datasets.show_dataset(output["id"])
+                if hda["state"] not in ("ok", "deferred"):
+                    raise Exception(
+                        f"Upload job [{job_id}] produced output [{hda['hid']}: {hda['name']}] in state [{hda['state']}]"
+                    )
+
+            # Check collection outputs
+            for output in job_response.get("output_collections", {}).values():
+                hdca = self._user_gi.histories.show_dataset_collection(job_response["history_id"], output["id"])
+                if hdca["state"] not in ("ok",):
+                    raise Exception(
+                        f"Upload job [{job_id}] produced output collection [{hdca['hid']}: {hdca['name']}] in state [{hdca['state']}]"
+                    )
 
     @property
     def use_fetch_api(self):
@@ -148,15 +265,18 @@ class PlanemoStagingInterface(StagingInterface):
 
 
 def _execute(  # noqa C901
-    ctx: "PlanemoCliContext", config: "BaseGalaxyConfig", runnable: Runnable, job_path: str, **kwds
+    ctx: "PlanemoCliContext", config: "BaseGalaxyConfig", runnable: Runnable, job_path: str, fail_fast=False, **kwds
 ) -> "GalaxyBaseRunResponse":
+    test_timeout = kwds.get("test_timeout")
+    test_deadline = time.monotonic() + test_timeout if test_timeout is not None else None
+
     user_gi = config.user_gi
     admin_gi = config.gi
     run_response = None
 
     start_datetime = datetime.now()
     try:
-        job_dict, history_id = stage_in(ctx, runnable, config, job_path, **kwds)
+        job_dict, history_id = stage_in(ctx, runnable, config, job_path, deadline=test_deadline, **kwds)
     except Exception:
         ctx.vlog("Problem with staging in data for Galaxy activities...")
         raise
@@ -169,6 +289,7 @@ def _execute(  # noqa C901
             tool_id=tool_id,
             inputs=job_dict,
             inputs_representation=inputs_representation,
+            use_cached_job=kwds.get("use_cache", False),
         )
         ctx.vlog("Post to Galaxy tool API with payload [%s]" % run_tool_payload)
         tool_run_response = user_gi.tools._post(run_tool_payload)
@@ -177,7 +298,7 @@ def _execute(  # noqa C901
             job = tool_run_response["jobs"][0]
             job_id = job["id"]
             try:
-                final_state = _wait_for_job(user_gi, job_id, timeout=kwds.get("test_timeout"))
+                final_state = _wait_for_job(user_gi, job_id, deadline=test_deadline)
             except Exception:
                 summarize_history(ctx, user_gi, history_id)
                 raise
@@ -205,6 +326,7 @@ def _execute(  # noqa C901
             history_id=history_id,
             allow_tool_state_corrections=True,
             inputs_by="name",
+            use_cached_job=kwds.get("use_cache", False),
         )
         run_response = invocation_to_run_response(
             ctx,
@@ -215,6 +337,9 @@ def _execute(  # noqa C901
             no_wait=kwds.get("no_wait", False),
             start_datetime=start_datetime,
             log=log_contents_str(config),
+            fail_fast=fail_fast,
+            timeout=test_timeout,
+            deadline=test_deadline,
         )
 
     else:
@@ -236,11 +361,31 @@ def _execute(  # noqa C901
         ctx.vlog("collecting outputs from run...")
         run_response.collect_outputs(output_directory)
         ctx.vlog("collecting outputs complete")
+
+    # Export invocation if requested
+    if kwds.get("export_invocation", False):
+        assert isinstance(run_response, GalaxyWorkflowRunResponse), "Only workflow invocations can be exported."
+        export_path = kwds["export_invocation"]
+        export_format = kwds.get("export_format", "rocrate.zip")
+        print("Exporting invocation")
+        run_response.export_invocation(export_path, export_format)
+        print(f"Exported invocation {run_response._invocation_id} to {export_path}, format: {export_format}")
+
     return run_response
 
 
 def invocation_to_run_response(
-    ctx, user_gi, runnable, invocation, polling_backoff=0, no_wait=False, start_datetime=None, log=None
+    ctx,
+    user_gi,
+    runnable,
+    invocation,
+    polling_backoff=0,
+    no_wait=False,
+    start_datetime=None,
+    log=None,
+    fail_fast=False,
+    timeout: Optional[float] = None,
+    deadline: Optional[float] = None,
 ):
     start_datetime = start_datetime or datetime.now()
     invocation_id = invocation["id"]
@@ -249,18 +394,25 @@ def invocation_to_run_response(
 
     ctx.vlog("Waiting for invocation [%s]" % invocation_id)
 
-    final_invocation_state, job_state, error_message = wait_for_invocation_and_jobs(
-        ctx,
-        invocation_id=invocation_id,
-        history_id=history_id,
-        user_gi=user_gi,
-        no_wait=no_wait,
-        polling_backoff=polling_backoff,
-    )
-    if final_invocation_state not in ("ok", "skipped", "scheduled"):
-        msg = f"Failed to run workflow [{workflow_id}], at least one job is in [{final_invocation_state}] state."
-        ctx.vlog(msg)
-        summarize_history(ctx, user_gi, history_id)
+    if not no_wait:
+        final_invocation_state, job_state, error_message = wait_for_invocation_and_jobs(
+            ctx,
+            invocation_id=invocation_id,
+            history_id=history_id,
+            user_gi=user_gi,
+            polling_backoff=polling_backoff,
+            fail_fast=fail_fast,
+            timeout=timeout,
+            deadline=deadline,
+        )
+        if final_invocation_state not in ("ok", "skipped", "scheduled", "completed"):
+            msg = f"Failed to run workflow [{workflow_id}], at least one job is in [{final_invocation_state}] state."
+            ctx.vlog(msg)
+            summarize_history(ctx, user_gi, history_id)
+    else:
+        final_invocation_state = invocation["state"]
+        job_state = None
+        error_message = None
 
     return GalaxyWorkflowRunResponse(
         ctx,
@@ -275,11 +427,17 @@ def invocation_to_run_response(
         log=log,
         start_datetime=start_datetime,
         end_datetime=datetime.now(),
+        no_wait=no_wait,
     )
 
 
 def stage_in(
-    ctx: "PlanemoCliContext", runnable: Runnable, config: "BaseGalaxyConfig", job_path: str, **kwds
+    ctx: "PlanemoCliContext",
+    runnable: Runnable,
+    config: "BaseGalaxyConfig",
+    job_path: str,
+    deadline: Optional[float] = None,
+    **kwds,
 ) -> Tuple[Dict[str, Any], str]:
     # only upload objects as files/collections for CWL workflows...
     tool_or_workflow = "tool" if runnable.type != RunnableType.cwl_workflow else "workflow"
@@ -287,27 +445,33 @@ def stage_in(
     simultaneous_uploads = kwds.get("simultaneous_uploads", False)
     user_gi = config.user_gi
     history_id = _history_id(user_gi, **kwds)
-    psi = PlanemoStagingInterface(ctx, runnable, user_gi, config.version_major, simultaneous_uploads)
-    job_dict, datasets = psi.stage(
-        tool_or_workflow,
-        history_id=history_id,
-        job_path=job_path,
-        use_path_paste=config.use_path_paste,
-        to_posix_lines=to_posix_lines,
-    )
 
-    if datasets and kwds.get("check_uploads_ok", True):
-        ctx.vlog(f"Uploaded datasets [{datasets}] for activity, checking history state")
-        final_state = _wait_for_history(ctx, user_gi, history_id)
+    # Create upload progress display context manager (or nullcontext if disabled)
+    progress_context: Union[UploadProgressDisplay, contextlib.nullcontext]
+    if sys.stdout.isatty():
+        progress_context = UploadProgressDisplay(history_id, galaxy_url=user_gi.base_url)
     else:
-        # Mark uploads as ok because nothing to do.
-        final_state = "ok"
+        progress_context = contextlib.nullcontext(None)
 
-    ctx.vlog(f"Final state is {final_state}")
-    if final_state != "ok":
-        msg = "Failed to upload data, upload state is [%s]." % final_state
-        summarize_history(ctx, user_gi, history_id)
-        raise Exception(msg)
+    with progress_context as upload_progress:
+        psi = PlanemoStagingInterface(
+            ctx,
+            runnable,
+            user_gi,
+            config.version_major,
+            simultaneous_uploads,
+            upload_progress,
+            deadline=deadline,
+        )
+        job_dict, datasets = psi.stage(
+            tool_or_workflow,
+            history_id=history_id,
+            job_path=job_path,
+            use_path_paste=config.use_path_paste,
+            to_posix_lines=to_posix_lines,
+        )
+        psi.wait_for_uploads(kwds.get("check_uploads_ok", True))
+
     return job_dict, history_id
 
 
@@ -320,14 +484,18 @@ def _file_path_to_name(file_path):
 
 
 def execute_rerun(
-    ctx: "PlanemoCliContext", config: "BaseGalaxyConfig", rerunnable: Rerunnable, **kwds
+    ctx: "PlanemoCliContext", config: "BaseGalaxyConfig", rerunnable: Rerunnable, use_cache: bool = True, **kwds
 ) -> "GalaxyBaseRunResponse":
     rerun_successful = True
     user_gi = config.user_gi
     if rerunnable.rerunnable_type == "history":
         job_ids = [job["id"] for job in user_gi.jobs.get_jobs(history_id=rerunnable.rerunnable_id, state="error")]
     elif rerunnable.rerunnable_type == "invocation":
-        job_ids = [job["id"] for job in user_gi.jobs.get_jobs(invocation_id=rerunnable.rerunnable_id, state="error")]
+        request = user_gi.invocations._get(f"{rerunnable.rerunnable_id}/request")
+        request["use_cached_job"] = use_cache
+        url = "/".join((user_gi.url, "workflows", request["workflow_id"], "invocations"))
+        invocation = user_gi.workflows._post(url=url, payload=request)
+        return invocation_to_run_response(ctx, user_gi=user_gi, runnable=rerunnable, invocation=invocation)
     elif rerunnable.rerunnable_type == "job":
         job_ids = [rerunnable.rerunnable_id]
     # elif rerunnable.rerunnable_type = 'collection':
@@ -439,6 +607,32 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         else:
             raise Exception("Unknown history content type encountered [%s]" % history_content_type)
 
+    def _collect_collection_output(self, runnable_output_id, output_dataset_id, cwl_output):
+        def attach_file_properties(collection, cwl_output):
+            elements = collection["elements"]
+            assert len(elements) == len(cwl_output)
+            for element, cwl_output_element in zip(elements, cwl_output):
+                element["_output_object"] = cwl_output_element
+                if isinstance(cwl_output_element, list):
+                    assert "elements" in element["object"]
+                    attach_file_properties(element["object"], cwl_output_element)
+
+        output_metadata = self._get_metadata("dataset_collection", output_dataset_id)
+        if cwl_output is None:
+            # galaxy-tool-util's output_to_cwl_json returns None for collection types it
+            # cannot translate (anything whose outermost type is not list, paired or
+            # record - e.g. sample_sheet). Without this guard attach_file_properties
+            # fails with "object of type 'NoneType' has no len()", which names neither
+            # the output nor the collection type responsible.
+            raise Exception(
+                f"Cannot collect output '{runnable_output_id}': collection type "
+                f"'{output_metadata.get('collection_type')}' is not supported by the "
+                "installed galaxy-tool-util's output_to_cwl_json. Upgrading "
+                "galaxy-tool-util may resolve this."
+            )
+        attach_file_properties(output_metadata, cwl_output)
+        return output_metadata
+
     def collect_outputs(
         self,
         output_directory: Optional[str] = None,
@@ -449,7 +643,10 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         # TODO: rather than creating a directory just use
         # Galaxy paths if they are available in this
         # configuration.
-        output_directory = output_directory or tempfile.mkdtemp()
+        if output_directory:
+            os.makedirs(output_directory, exist_ok=True)
+        else:
+            output_directory = tempfile.mkdtemp()
 
         self._ctx.log("collecting outputs to directory %s" % output_directory)
 
@@ -504,19 +701,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             if is_cwl or output_src["src"] == "hda":
                 output_dict_value = cwl_output
             else:
-
-                def attach_file_properties(collection, cwl_output):
-                    elements = collection["elements"]
-                    assert len(elements) == len(cwl_output)
-                    for element, cwl_output_element in zip(elements, cwl_output):
-                        element["_output_object"] = cwl_output_element
-                        if isinstance(cwl_output_element, list):
-                            assert "elements" in element["object"]
-                            attach_file_properties(element["object"], cwl_output_element)
-
-                output_metadata = self._get_metadata("dataset_collection", output_dataset_id)
-                attach_file_properties(output_metadata, cwl_output)
-                output_dict_value = output_metadata
+                output_dict_value = self._collect_collection_output(runnable_output_id, output_dataset_id, cwl_output)
 
             if output_id:
                 return output_dict_value
@@ -531,12 +716,13 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
 
     @property
     def job_info(self):
-        print(self._job_info)
         if self._job_info is not None:
             return dict(
                 stdout=self._job_info.get("stdout"),
                 stderr=self._job_info.get("stderr"),
                 command_line=self._job_info.get("command_line"),
+                # set when Galaxy reused a cached job instead of running this one
+                copied_from_job_id=self._job_info.get("copied_from_job_id"),
             )
         return None
 
@@ -550,10 +736,11 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         return self._outputs_dict[output_id]
 
     def download_output_to(self, ctx, dataset_details, output_directory, filename=None):
+        extension = dataset_details["file_ext"]
         if filename is None:
-            local_filename = f'{sanitize_filename(dataset_details.get("cwl_file_name") or dataset_details.get("name"))}__{dataset_details["uuid"]}'
+            local_filename = f"{sanitize_filename(dataset_details.get('cwl_file_name') or dataset_details.get('name'))}__{dataset_details['uuid']}.{extension}"
         else:
-            local_filename = filename
+            local_filename = f"{filename}.{extension}"
         destination = os.path.join(output_directory, local_filename)
         self._history_content_download(
             ctx,
@@ -656,6 +843,7 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         error_message=None,
         start_datetime=None,
         end_datetime=None,
+        no_wait=False,
     ):
         super().__init__(
             ctx=ctx,
@@ -673,6 +861,7 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         self.history_state = history_state
         self.invocation_state = invocation_state
         self.error_message = error_message
+        self._no_wait = no_wait
         self._invocation_details = self.collect_invocation_details(invocation_id)
 
     def to_galaxy_output(self, runnable_output):
@@ -743,7 +932,22 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
 
     @property
     def was_successful(self):
-        return self.history_state in ["ok", "skipped", None] and self.invocation_state == "scheduled"
+        # When --no_wait is used, we haven't waited for completion, so we consider it successful
+        # if the invocation was created without error (i.e., not in a failed/cancelled state)
+        if self._no_wait:
+            return self.invocation_state not in ["failed", "cancelled"]
+        return self.history_state in ["ok", "skipped", None] and self.invocation_state in ["scheduled", "completed"]
+
+    def export_invocation(self, output_path, export_format="rocrate.zip"):
+        """Export workflow invocation as archive."""
+
+        export_invocation_as_archive(
+            user_gi=self._user_gi,
+            invocation_id=self._invocation_id,
+            export_format=export_format,
+            output=output_path,
+        )
+        return output_path
 
 
 def _tool_id(tool_path):
@@ -764,81 +968,41 @@ def _history_id(gi, **kwds) -> str:
 
 
 def wait_for_invocation_and_jobs(
-    ctx, invocation_id: str, history_id: str, user_gi: GalaxyInstance, no_wait: bool, polling_backoff: int
+    ctx,
+    invocation_id: str,
+    history_id: Optional[str],
+    user_gi: GalaxyInstance,
+    polling_backoff: int,
+    fail_fast: bool = False,
+    timeout: Optional[float] = None,
+    deadline: Optional[float] = None,
 ):
-    ctx.vlog("Waiting for invocation [%s]" % invocation_id)
-    final_invocation_state = "new"
-
-    # TODO: hook in invocation["messages"]
-    error_message = ""
-    job_state = "ok"
-    try:
-        final_invocation_state = _wait_for_invocation(ctx, user_gi, invocation_id, polling_backoff)
-        assert final_invocation_state == "scheduled"
-    except Exception as e:
-        ctx.vlog(f"Problem waiting on invocation: {str(e)}")
-        summarize_history(ctx, user_gi, history_id)
-        error_message = f"Final state of invocation {invocation_id} is [{final_invocation_state}]"
-
-    ctx.vlog(f"Final state of invocation {invocation_id} is [{final_invocation_state}]")
-
-    if not no_wait:
-        job_state = _wait_for_invocation_jobs(ctx, user_gi, invocation_id, polling_backoff)
-        if job_state not in ("ok", "skipped"):
-            msg = f"Failed to run workflow, at least one job is in [{job_state}] state."
-            error_message = msg if not error_message else f"{error_message}. {msg}"
-        else:
-            # wait for possible subworkflow invocations
-            invocation = user_gi.invocations.show_invocation(invocation_id)
-            for step in invocation["steps"]:
-                if step.get("subworkflow_invocation_id") is not None:
-                    final_invocation_state, job_state, error_message = wait_for_invocation_and_jobs(
-                        ctx,
-                        invocation_id=step["subworkflow_invocation_id"],
-                        history_id=history_id,
-                        user_gi=user_gi,
-                        no_wait=no_wait,
-                        polling_backoff=polling_backoff,
-                    )
-                    if final_invocation_state != "scheduled" or job_state not in ("ok", "skipped"):
-                        return final_invocation_state, job_state, error_message
-
-        ctx.vlog(f"The final state of all jobs and subworkflow invocations for invocation [{invocation_id}] is 'ok'")
-    return final_invocation_state, job_state, error_message
-
-
-def _wait_for_invocation(ctx, gi, invocation_id, polling_backoff=0):
-    def state_func():
-        return _retry_on_timeouts(ctx, gi, lambda gi: gi.invocations.show_invocation(invocation_id))
-
-    return _wait_on_state(state_func, polling_backoff)
-
-
-def _retry_on_timeouts(ctx, gi, f):
-    gi.timeout = 60
-    try_count = 5
-    try:
-        for try_num in range(try_count):
-            start_time = time.time()
-            try:
-                return f(gi)
-            except RequestException:
-                end_time = time.time()
-                if end_time - start_time > 45 and (try_num + 1) < try_count:
-                    ctx.vlog("Galaxy seems to have timed out, retrying to fetch status.")
-                    continue
-                else:
-                    raise
-    finally:
-        gi.timeout = None
-
-
-def has_jobs_in_states(ctx, gi, history_id, states):
-    params = {"history_id": history_id}
-    jobs_url = gi.url + "/jobs"
-    jobs = gi.jobs._get(url=jobs_url, params=params)
-    target_jobs = [j for j in jobs if j["state"] in states]
-    return len(target_jobs) > 0
+    polling_tracker = PollingTrackerImpl(
+        polling_backoff,
+        timeout=timeout,
+        deadline=deadline,
+        timeout_message=f"Timed out waiting for Galaxy workflow invocation [{invocation_id}].",
+    )
+    invocation_api = BioblendInvocationApi(ctx, user_gi)
+    with WorkflowProgressDisplay(invocation_id, galaxy_url=user_gi.base_url) as workflow_progress_display:
+        final_invocation_state, job_state, error_message = polling_wait_for_invocation_and_jobs(
+            ctx,
+            invocation_id,
+            invocation_api,
+            polling_tracker,
+            workflow_progress_display,
+            fail_fast=fail_fast,
+        )
+        if error_message:
+            if not history_id:
+                invocation = invocation_api.get_invocation(invocation_id)
+                history_id = invocation["history_id"]
+            summarize_history(ctx, user_gi, history_id)
+        elif job_state in JOB_ERROR_STATES:
+            workflow_progress_display.workflow_progress.print_job_errors_once(
+                ctx, invocation_api, invocation_id, workflow_progress_display=workflow_progress_display
+            )
+        return final_invocation_state, job_state, error_message
 
 
 def _wait_for_history(ctx, gi, history_id, polling_backoff=0):
@@ -847,32 +1011,35 @@ def _wait_for_history(ctx, gi, history_id, polling_backoff=0):
     # no need to wait for active jobs anymore I think.
 
     def state_func():
-        return _retry_on_timeouts(ctx, gi, lambda gi: gi.histories.show_history(history_id))
+        return retry_on_timeouts(ctx, gi, lambda gi: gi.histories.show_history(history_id))
 
     return _wait_on_state(state_func, polling_backoff)
 
 
-def _wait_for_invocation_jobs(ctx, gi, invocation_id, polling_backoff=0):
-    # Wait for invocation jobs to finish. Less brittle than waiting for a history to finish,
-    # as you could have more than one invocation in a history, or an invocation without
-    # steps that produce history items.
-
-    ctx.log(f"waiting for invocation {invocation_id}")
-
-    def state_func():
-        return _retry_on_timeouts(ctx, gi, lambda gi: gi.jobs.get_jobs(invocation_id=invocation_id))
-
-    return _wait_on_state(state_func, polling_backoff)
-
-
-def _wait_for_job(gi, job_id, timeout=None):
+def _wait_for_job(
+    gi,
+    job_id,
+    timeout: Optional[float] = None,
+    deadline: Optional[float] = None,
+):
     def state_func():
         return gi.jobs.show_job(job_id, full_details=True)
 
-    return _wait_on_state(state_func, timeout=timeout)
+    return _wait_on_state(
+        state_func,
+        timeout=timeout,
+        deadline=deadline,
+        timeout_message=f"Timed out waiting for Galaxy job [{job_id}].",
+    )
 
 
-def _wait_on_state(state_func, polling_backoff=0, timeout=None):
+def _wait_on_state(
+    state_func,
+    polling_backoff=0,
+    timeout: Optional[float] = None,
+    deadline: Optional[float] = None,
+    timeout_message: str = "Timed out while polling Galaxy.",
+):
     def get_state():
         response = state_func()
         if not isinstance(response, list):
@@ -880,9 +1047,8 @@ def _wait_on_state(state_func, polling_backoff=0, timeout=None):
         if not response:
             # invocation may not have any attached jobs, that's fine
             return "ok"
-        non_terminal_states = {"running", "queued", "new", "ready", "resubmitted", "upload", "waiting"}
         current_states = set(item["state"] for item in response)
-        current_non_terminal_states = non_terminal_states.intersection(current_states)
+        current_non_terminal_states = NON_TERMINAL_JOB_STATES.intersection(current_states)
         # Mix of "error"-ish terminal job, dataset, invocation terminal states, so we can use this for whatever we throw at it
         hierarchical_fail_states = [
             "error",
@@ -905,9 +1071,19 @@ def _wait_on_state(state_func, polling_backoff=0, timeout=None):
         assert len(current_states) == 1, f"unexpected state(s) found: {current_states}"
         return current_states.pop()
 
-    timeout = timeout or 60 * 60 * 24
-    final_state = wait_on(get_state, "state", timeout, polling_backoff)
-    return final_state
+    if timeout is None and deadline is None:
+        timeout = 60 * 60 * 24
+    polling_tracker = PollingTrackerImpl(
+        polling_backoff,
+        timeout=timeout,
+        deadline=deadline,
+        timeout_message=timeout_message,
+    )
+    while True:
+        state = get_state()
+        if state is not None:
+            return state
+        polling_tracker.sleep()
 
 
 __all__ = ("execute",)

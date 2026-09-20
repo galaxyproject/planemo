@@ -3,7 +3,10 @@
 import click
 
 from planemo import options
-from planemo.cli import command_function
+from planemo.cli import (
+    command_function,
+    PlanemoCliContext,
+)
 from planemo.tool_lint import (
     build_tool_lint_args,
     lint_tools_on_path,
@@ -43,7 +46,7 @@ from planemo.tool_lint import (
 # default=False,
 # )
 @command_function
-def cli(ctx, uris, **kwds):
+def cli(ctx: PlanemoCliContext, uris, **kwds):
     """Check for common errors and best practices."""
     lint_args = build_tool_lint_args(ctx, **kwds)
     exit_code = lint_tools_on_path(ctx, uris, lint_args, recursive=kwds["recursive"])

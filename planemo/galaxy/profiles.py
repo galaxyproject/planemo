@@ -8,9 +8,16 @@ import json
 import os
 import shutil
 
-from galaxy.util.commands import which
+import click
+from gxjobconfinit import (
+    build_job_config,
+    ConfigArgs,
+)
 
-from planemo.database import create_database_source
+from planemo.database import (
+    database_source_class,
+    database_source_context,
+)
 from planemo.galaxy.api import test_credentials_valid
 from .config import DATABASE_LOCATION_TEMPLATE
 
@@ -32,17 +39,20 @@ def list_profiles(ctx, **kwds):
 def delete_profile(ctx, profile_name, **kwds):
     """Delete profile with the specified name."""
     profile_directory = _profile_directory(ctx, profile_name)
-    profile_options = _read_profile_options(profile_directory)
-    profile_options, profile_options_path = _load_profile_to_json(ctx, profile_name)
+    profile_options, _ = _load_profile_to_json(ctx, profile_name)
     if profile_options["engine"] != "external_galaxy":
         database_type = profile_options.get("database_type")
         kwds["database_type"] = database_type
         if database_type != "sqlite":
-            database_source = create_database_source(**kwds)
-            database_identifier = _profile_to_database_identifier(profile_name)
-            database_source.delete_database(
-                database_identifier,
+            source_class = database_source_class(database_type)
+            for option in source_class.PROFILE_OPTIONS:
+                if option in profile_options:
+                    kwds[option] = profile_options[option]
+            database_identifier = profile_options.get(
+                "database_identifier", _profile_to_database_identifier(profile_name)
             )
+            with database_source_context(profile_directory=profile_directory, **kwds) as database_source:
+                database_source.delete_database(database_identifier)
     shutil.rmtree(profile_directory)
 
 
@@ -52,22 +62,26 @@ def create_profile(ctx, profile_name, **kwds):
     profile_directory = _profile_directory(ctx, profile_name)
     if profile_exists(ctx, profile_name, **kwds):
         message = ALREADY_EXISTS_EXCEPTION % (profile_name, profile_directory)
-        raise Exception(message)
+        raise click.ClickException(message)
 
     os.makedirs(profile_directory)
 
-    if engine_type == "docker_galaxy":
-        create_for_engine = _create_profile_docker
-    elif engine_type == "external_galaxy" or kwds.get("galaxy_url"):
-        create_for_engine = _create_profile_external
-    else:
-        create_for_engine = _create_profile_local
+    try:
+        if engine_type == "docker_galaxy":
+            create_for_engine = _create_profile_docker
+        elif engine_type == "external_galaxy" or kwds.get("galaxy_url"):
+            create_for_engine = _create_profile_external
+        else:
+            create_for_engine = _create_profile_local
 
-    stored_profile_options = create_for_engine(ctx, profile_directory, profile_name, kwds)
+        stored_profile_options = create_for_engine(ctx, profile_directory, profile_name, kwds)
 
-    profile_options_path = _stored_profile_options_path(profile_directory)
-    with open(profile_options_path, "w") as f:
-        json.dump(stored_profile_options, f)
+        profile_options_path = _stored_profile_options_path(profile_directory)
+        with open(profile_options_path, "w") as f:
+            json.dump(stored_profile_options, f)
+    except BaseException:
+        shutil.rmtree(profile_directory, ignore_errors=True)
+        raise
 
 
 def _create_profile_docker(ctx, profile_directory, profile_name, kwds):
@@ -79,31 +93,35 @@ def _create_profile_docker(ctx, profile_directory, profile_name, kwds):
 
 
 def _create_profile_local(ctx, profile_directory, profile_name, kwds):
-    database_type = kwds.get("database_type", "auto")
+    # A profile that named no backend gets its own sqlite file. Standing a postgres
+    # server up is only worth it when the user asked for one by name.
+    database_type = kwds.get("database_type") or "auto"
     if database_type == "auto":
-        if which("psql"):
-            database_type = "postgres"
-        elif which("docker"):
-            database_type = "postgres_docker"
-        else:
-            database_type = "sqlite"
+        database_type = "sqlite"
 
-    if database_type != "sqlite":
-        database_source = create_database_source(**kwds)
-        database_identifier = _profile_to_database_identifier(profile_name)
-        database_source.create_database(
-            database_identifier,
-        )
-        database_connection = database_source.sqlalchemy_url(database_identifier)
-    else:
+    if database_type == "sqlite":
         database_location = os.path.join(profile_directory, "galaxy.sqlite")
         database_connection = DATABASE_LOCATION_TEMPLATE % database_location
+    else:
+        database_identifier = _profile_to_database_identifier(profile_name)
+        with database_source_context(profile_directory=profile_directory, **kwds) as database_source:
+            database_source.create_database(database_identifier)
+            database_connection = database_source.sqlalchemy_url(database_identifier)
 
-    return {
-        "database_type": database_type,
-        "database_connection": database_connection,
-        "engine": "galaxy",
-    }
+        stored_options = {
+            "database_type": database_type,
+            "engine": "galaxy",
+        }
+        if database_source.store_connection_in_profile:
+            stored_options["database_connection"] = database_connection
+        else:
+            # This connection is derived again for each run so a managed server
+            # is started instead of being mistaken for an always-available one.
+            stored_options["database_identifier"] = database_identifier
+            stored_options.update(database_source.profile_options())
+        return stored_options
+
+    return {"database_type": database_type, "database_connection": database_connection, "engine": "galaxy"}
 
 
 def _create_profile_external(ctx, profile_directory, profile_name, kwds):
@@ -123,7 +141,16 @@ def _create_profile_external(ctx, profile_directory, profile_name, kwds):
 def ensure_profile(ctx, profile_name, **kwds):
     """Ensure a Galaxy profile exists and return profile defaults."""
     if not profile_exists(ctx, profile_name, **kwds):
-        create_profile(ctx, profile_name, **kwds)
+        available_profiles = list_profiles(ctx, **kwds)
+        error_message = f"Profile '{profile_name}' does not exist."
+        if available_profiles:
+            error_message += f"\n\nAvailable profiles: {', '.join(available_profiles)}"
+            error_message += f"\n\nTo create a new profile, use: planemo profile_create {profile_name}"
+        else:
+            error_message += (
+                f"\n\nNo profiles found. To create a new profile, use: planemo profile_create {profile_name}"
+            )
+        raise click.UsageError(error_message)
 
     return _profile_options(ctx, profile_name, **kwds)
 
@@ -169,7 +196,7 @@ def translate_alias(ctx, alias, profile_name):
 
 def _load_profile_to_json(ctx, profile_name):
     if not profile_exists(ctx, profile_name):
-        raise Exception("That profile does not exist. Create it with `planemo profile_create`")
+        raise click.ClickException("That profile does not exist. Create it with `planemo profile_create`")
     profile_directory = _profile_directory(ctx, profile_name)
     profile_options_path = _stored_profile_options_path(profile_directory)
     with open(profile_options_path) as f:
@@ -179,7 +206,7 @@ def _load_profile_to_json(ctx, profile_name):
 
 def _profile_options(ctx, profile_name, **kwds):
     profile_directory = _profile_directory(ctx, profile_name)
-    profile_options = _read_profile_options(profile_directory)
+    profile_options, _ = _load_profile_to_json(ctx, profile_name)
 
     if profile_options["engine"] == "docker_galaxy":
         engine_options = dict(export_directory=os.path.join(profile_directory, "export"))
@@ -187,14 +214,21 @@ def _profile_options(ctx, profile_name, **kwds):
         file_path = os.path.join(profile_directory, "files")
         shed_tool_path = os.path.join(profile_directory, "shed_tools")
         shed_tool_conf = os.path.join(profile_directory, "shed_tool_conf.xml")
+        shed_tool_data_table_config = os.path.join(profile_directory, "shed_tool_data_table_conf.xml")
+        shed_data_manager_config = os.path.join(profile_directory, "shed_data_manager_conf.xml")
         tool_dependency_dir = os.path.join(profile_directory, "deps")
+
+        mulled_resolution_cache_data_dir = os.path.join(profile_directory, "mulled_resolution_cache")
 
         engine_options = dict(
             file_path=file_path,
             tool_dependency_dir=tool_dependency_dir,
             shed_tool_conf=shed_tool_conf,
             shed_tool_path=shed_tool_path,
+            shed_tool_data_table_config=shed_tool_data_table_config,
+            shed_data_manager_config=shed_data_manager_config,
             galaxy_brand=profile_name,
+            mulled_resolution_cache_data_dir=mulled_resolution_cache_data_dir,
         )
     profile_options.update(engine_options)
     profile_options["galaxy_brand"] = profile_name
@@ -206,13 +240,6 @@ def _profile_to_database_identifier(profile_name):
     return "plnmoprof_%s" % "".join(char_lst)
 
 
-def _read_profile_options(profile_directory):
-    profile_options_path = _stored_profile_options_path(profile_directory)
-    with open(profile_options_path) as f:
-        profile_options = json.load(f)
-    return profile_options
-
-
 def _stored_profile_options_path(profile_directory):
     profile_options_path = os.path.join(profile_directory, PROFILE_OPTIONS_JSON_NAME)
     return profile_options_path
@@ -220,6 +247,24 @@ def _stored_profile_options_path(profile_directory):
 
 def _profile_directory(ctx, profile_name):
     return os.path.join(ctx.galaxy_profiles_directory, profile_name)
+
+
+def initialize_job_config(ctx, profile_name, **kwds):
+    profile_directory = _profile_directory(ctx, profile_name)
+    job_config_path = os.path.join(profile_directory, "job_conf.yml")
+    if os.path.exists(job_config_path):
+        raise click.ClickException(f"File '{job_config_path}' already exists, exiting.")
+
+    init_config = ConfigArgs.from_dict(**kwds)
+    job_config = build_job_config(init_config)
+    with open(job_config_path, "w") as f:
+        f.write(job_config)
+
+    config, profile_config_path = _load_profile_to_json(ctx, profile_name)
+    config["job_config_file"] = os.path.abspath(job_config_path)
+    with open(profile_config_path, "w") as f:
+        json.dump(config, f)
+    return job_config_path
 
 
 __all__ = (

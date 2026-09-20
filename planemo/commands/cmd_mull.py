@@ -5,9 +5,9 @@ from galaxy.tool_util.deps.mulled.mulled_build import mull_targets
 
 from planemo import options
 from planemo.cli import command_function
+from planemo.conda import collect_conda_target_lists
 from planemo.mulled import (
     build_mull_target_kwds,
-    collect_mulled_target_lists,
 )
 
 
@@ -30,7 +30,7 @@ def cli(ctx, paths, **kwds):
     This can be verified by running ``planemo lint --conda_requirements`` on the
     target tool(s).
     """
-    for mulled_targets in collect_mulled_target_lists(ctx, paths, recursive=kwds["recursive"]):
+    for conda_targets in collect_conda_target_lists(ctx, paths, recursive=kwds["recursive"]):
         mull_target_kwds = build_mull_target_kwds(ctx, **kwds)
         command = kwds["mulled_command"]
-        mull_targets(mulled_targets, command=command, **mull_target_kwds)
+        mull_targets(list(conda_targets), command=command, **mull_target_kwds)

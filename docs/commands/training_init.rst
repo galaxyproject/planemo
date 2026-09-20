@@ -36,7 +36,7 @@ Build training template from workflow.
       --zenodo_link TEXT              Zenodo URL with the input data
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
-      --galaxy_python_version [3|3.7|3.8|3.9|3.10|3.11]
+      --galaxy_python_version [3|3.8|3.9|3.10|3.11|3.12]
                                       Python version to start Galaxy under
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be
@@ -82,6 +82,8 @@ Build training template from workflow.
                                       Wait for galaxy to start before assuming
                                       Galaxy did not start.  [x>=1]
       --job_config_file FILE          Job configuration file for Galaxy to target.
+      --job_workers INTEGER           Number of workers for the local job runner
+                                      (default 1).
       --tool_dependency_dir DIRECTORY
                                       Tool dependency dir for Galaxy to target.
       --tool_data_path DIRECTORY      Directory where data used by tools is located.
@@ -132,7 +134,7 @@ Build training template from workflow.
                                       packages.
       --conda_auto_init / --no_conda_auto_init
                                       Conda dependency resolution for Galaxy will
-                                      auto install conda itself using miniconda if
+                                      auto install conda itself using miniforge if
                                       not availabe on conda_prefix.
       --simultaneous_uploads / --no_simultaneous_uploads
                                       When uploading files to Galaxy for tool or
@@ -147,15 +149,19 @@ Build training template from workflow.
       --profile TEXT                  Name of profile (created with the
                                       profile_create command) to use with this
                                       command.
-      --postgres                      Use postgres database type.
-      --database_type [postgres|postgres_docker|sqlite|auto]
+      --database_type [postgres|postgres_docker|postgres_singularity|sqlite|auto]
                                       Type of database to use for profile - 'auto',
-                                      'sqlite', 'postgres', and 'postgres_docker'
-                                      are available options. Use postgres to use an
-                                      existing postgres server you user can access
-                                      without a password via the psql command. Use
-                                      postgres_docker to have Planemo manage a
-                                      docker container running postgres. Data with
+                                      'sqlite', 'postgres', 'postgres_docker' , and
+                                      postgres_singularity are available options.
+                                      The default 'auto' means sqlite - a postgres
+                                      server is only stood up when named. Use
+                                      postgres to use an existing postgres server
+                                      you user can access without a password via the
+                                      psql command. Use postgres_docker to have
+                                      Planemo manage a docker container running
+                                      postgres. . Use  postgres_singularity to have
+                                      Planemo run postgres using
+                                      singularity/apptainer. Data with
                                       postgres_docker is not yet persisted past when
                                       you restart the docker container launched by
                                       Planemo so be careful with this option.
@@ -167,17 +173,50 @@ Build training template from workflow.
                                       databases.
       --postgres_database_port TEXT   Postgres port for managed development
                                       databases.
+      --postgres-storage-location, --postgres_storage_location DIRECTORY
+                                      Storage path for PostgreSQL data managed
+                                      through Singularity.
+      --singularity_cmd TEXT          Command used to execute singularity (defaults
+                                      to 'singularity').
+      --singularity_sudo / --no_singularity_sudo
+                                      Flag to use sudo when running Singularity.
+      --singularity_sudo_cmd TEXT     sudo command to use when --singularity_sudo is
+                                      enabled (defaults to sudo).
       --file_path DIRECTORY           Location for files created by Galaxy (e.g.
                                       database/files).
       --database_connection TEXT      Database connection string to use for Galaxy.
       --shed_tool_conf TEXT           Location of shed tools conf file for Galaxy.
       --shed_tool_path TEXT           Location of shed tools directory for Galaxy.
+      --shed_tool_data_table_config TEXT
+                                      Location of the shed tool data table config
+                                      file for Galaxy (records data tables
+                                      registered by shed-installed repositories).
+      --shed_data_manager_config TEXT
+                                      Location of the shed data manager config file
+                                      for Galaxy.
+      --shed_data_dir DIRECTORY       Persistent base directory for shed-install
+                                      state (local Galaxy engine). Seeds defaults
+                                      for --shed_tool_conf, --shed_tool_path,
+                                      --shed_tool_data_table_config and
+                                      --shed_data_manager_config so shed installs
+                                      (tools and their data tables) survive Galaxy
+                                      restarts. Individual options still override.
       --galaxy_single_user / --no_galaxy_single_user
                                       By default Planemo will configure Galaxy to
                                       run in single-user mode where there is just
                                       one user and this user is automatically logged
                                       it. Use --no_galaxy_single_user to prevent
                                       Galaxy from running this way.
+      --tool_evaluation_strategy [local|remote]
+                                      Determines which process will evaluate the
+                                      tool command line. If set to 'local' the tool
+                                      command line will be templated in the job
+                                      handler process. If set to 'remote' the tool
+                                      command line will be built as part of the
+                                      submitted job (beta). Setting this to 'remote'
+                                      will also implicitly set metadata_strategy to
+                                      'extended', which is required for remote tool
+                                      evaluation.
       --daemon                        Serve Galaxy process as a daemon.
       --pid_file FILE                 Location of pid file is executed with
                                       --daemon.
@@ -197,5 +236,6 @@ Build training template from workflow.
                                       may not be appropriate for production servers
                                       and so this can disabled by calling planemo
                                       with --no_shed_install.
+      --disable_gxits                 Configure Galaxy to disable interactive tools.
       --help                          Show this message and exit.
-    
+

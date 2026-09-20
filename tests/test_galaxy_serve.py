@@ -4,7 +4,13 @@ This tests this as a library functionality - additional integration
 style tests are available in ``test_cmd_serve.py``.
 """
 
+import contextlib
+import importlib
 import os
+from types import SimpleNamespace
+from unittest import mock
+
+import pytest
 
 from planemo import network_util
 from planemo.galaxy import galaxy_serve
@@ -18,6 +24,53 @@ from .test_utils import (
     TEST_DATA_DIR,
     TEST_REPOS_DIR,
 )
+
+serve_module = importlib.import_module("planemo.galaxy.serve")
+
+
+@pytest.mark.parametrize("caller_raises", (False, True))
+def test_managed_galaxy_stops_once_before_database_context_exits(monkeypatch, caller_raises):
+    """Galaxy stops exactly once while its managed database is still available."""
+    events = []
+    config = SimpleNamespace(
+        env={},
+        startup_command=lambda *args, **kwds: "true",
+        install_workflows=lambda: None,
+        kill=mock.Mock(side_effect=lambda: events.append("galaxy stopped")),
+        cleanup=lambda: events.append("configuration cleaned"),
+    )
+
+    @contextlib.contextmanager
+    def configured_galaxy(*args, **kwds):
+        events.append("database started")
+        try:
+            yield config
+        finally:
+            events.append("database stopped")
+
+    monkeypatch.setattr(serve_module, "galaxy_config", configured_galaxy)
+    monkeypatch.setattr(serve_module, "sleep", lambda *args, **kwds: True)
+
+    expected_exception = (
+        pytest.raises(RuntimeError, match="caller failed") if caller_raises else contextlib.nullcontext()
+    )
+    with expected_exception:
+        with serve_module.serve_daemon(
+            SimpleNamespace(verbose=False, vlog=lambda *args, **kwds: None),
+            port=12345,
+        ):
+            events.append("caller finished")
+            if caller_raises:
+                raise RuntimeError("caller failed")
+
+    assert events == [
+        "database started",
+        "caller finished",
+        "galaxy stopped",
+        "database stopped",
+        "configuration cleaned",
+    ]
+    config.kill.assert_called_once_with()
 
 
 class GalaxyServeTestCase(CliTestCase):

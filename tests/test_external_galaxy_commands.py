@@ -1,7 +1,7 @@
-"""Tests for planemo commands relating to external Galaxy instances
-"""
+"""Tests for planemo commands relating to external Galaxy instances"""
 
 import os
+from unittest import skip
 
 import yaml
 
@@ -11,11 +11,14 @@ from planemo.runnable import for_path
 from .test_utils import (
     CliTestCase,
     PROJECT_TEMPLATES_DIR,
+    skip_if_environ,
     TEST_DATA_DIR,
 )
 
 
+@skip("Configuring quay.io/bgruening/galaxy:latest is currently broken")
 class ExternalGalaxyCommandsTestCase(CliTestCase):
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_plain_init(self):
         ctx = cli.PlanemoCliContext()
         ctx.planemo_directory = "/tmp/planemo-test-workspace"
@@ -93,9 +96,7 @@ class ExternalGalaxyCommandsTestCase(CliTestCase):
                 assert "Run successfully executed" in result.output
                 result = self._check_exit_code(list_invocs_cmd)
                 assert "2 invocations found." in result.output
-                assert (
-                    "1 jobs ok" in result.output or '"ok": 1' in result.output
-                )  # so it passes regardless if tabulate is installed or not
+                assert "1 jobs ok" in result.output
 
                 # test rerun
                 invocation_id = config.user_gi.workflows.get_invocations(wfid)[0]["id"]
