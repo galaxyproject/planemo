@@ -1,17 +1,3 @@
-.. note::
-
-    Some features described in this tutorial are currently available only in
-    the development version of Planemo and may not work correctly when installing
-    the latest version from PyPI or bioconda. To install the development versions
-    of Planemo and galaxy-tool-util required, run the following commands:
-
-    ::
-
-        $ # install latest galaxy-tool-util pre-release
-        $ pip install --pre galaxy-tool-util
-        $ # install dev version of planemo
-        $ pip install https://github.com/galaxyproject/planemo/archive/master.tar.gz
-
 The Basics
 ================================
 
@@ -42,22 +28,25 @@ the ``Number of lines`` parameter) are randomly selected. If you want to view
 it in the Galaxy interface, you can do so with the command
 ``planemo workflow_edit tutorial.ga``.
 
+Running a workflow
+--------------------------------
+
 The simplest way to run a workflow with planemo is on a locally hosted Galaxy
 instance, just like executing a tool test with ``planemo test``. This can be
 achieved with the command
 
 ::
 
-    $ planemo run tutorial.ga tutorial-job.yml --output_directory . --output_json output.json
+    $ planemo run tutorial.ga tutorial-job.yml --download_outputs --output_directory . --output_json output.json
 
 
 You can optionally (and probably should) add the ``--galaxy_root`` flag with
 the location of a local copy of the Galaxy source code, which will allow the
 instance to be spun up considerably faster.
 
-Note that the ``--output_directory`` and ``--output_json`` flags are optional,
-but allow saving the output to a local file. The contents should be something
-like:
+Note that ``--download_outputs --output_directory . --output_json output.json``
+is optional, but allow saving the output to a local file. The contents should
+be something like:
 
 ::
 
@@ -76,7 +65,7 @@ significantly longer to complete than the previous command.
 
 ::
 
-    $ planemo run tutorial.ga tutorial-job.yml --output_directory . --output_json output.json --engine docker_galaxy --ignore_dependency_problems
+    $ planemo run tutorial.ga tutorial-job.yml --download_outputs --output_directory . --output_json output.json --engine docker_galaxy --ignore_dependency_problems
 
 
 This introduces the concept of an engine, which Planemo provides to allow
@@ -85,7 +74,14 @@ of the user's choice. The full list of engines provided by Galaxy is:
 ``galaxy`` (the default, used in the first example above), ``docker_galaxy``,
 ``cwltool``, ``toil`` and ``external_galaxy``.
 
-As a final example to demonstrate workflow testing, try:
+Testing a workflow
+--------------------------------
+
+Testing a workflow can be thought of as an extension of running a workflow where,
+after the run finishes, planemo asserts specified expectations about defined outputs.
+Workflow tests, like tool tests, are performed with ``planemo test``.
+
+As an example, try:
 
 ::
 
@@ -114,11 +110,13 @@ If you inspect its contents:
           path: "data/output.txt"
 
 
-you see that the job parameters are defined identically to the ``tutorial-job.yml``
-file, with the addition of an output. For the test to pass, the output file
-produced by the workflow must be identical to that stored in ``data/output.txt``.
+you see that the ``job`` parameters, used to run the workflow, are defined identically to the
+``tutorial-job.yml`` file, but that the test definition has an additional ``outputs`` section.
+For the test to pass, the output file produced by the workflow must be identical to that stored in ``data/output.txt``.
 
-The three commands above demonstrate the basics of workflow execution with
+More details about workflow testing can be found in the dedicated `Test Format <https://planemo.readthedocs.io/en/latest/test_format.html>`__ chapter.
+
+The examples above demonstrate the basics of workflow execution with
 Planemo. For large scale workflow execution, however, it's likely that you would
 prefer to use the more extensive resources provided by a public Galaxy server,
 rather than running on a local instance. The tutorial therefore now turns to the

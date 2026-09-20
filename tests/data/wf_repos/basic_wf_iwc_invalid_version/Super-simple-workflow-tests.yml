@@ -1,0 +1,10 @@
+- doc: Test outline for Super-simple-workflow
+  job:
+    n_rows: 5
+  outputs:
+    outfile:
+      asserts:
+        has_n_lines:
+          n: 5
+        has_line:
+          line: "hello"

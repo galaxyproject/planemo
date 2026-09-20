@@ -1,13 +1,16 @@
-"""Module describing the planemo ``database_create`` command."""
+"""Module describing the planemo ``database_delete`` command."""
 
 import click
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.database import create_database_source
+from planemo.database import (
+    database_source_context,
+    DatabaseConfigurationError,
+)
 
 
-@click.command('database_delete')
+@click.command("database_delete")
 @options.database_identifier_argument()
 @options.profile_database_options()
 @options.docker_config_options()
@@ -53,4 +56,8 @@ def cli(ctx, identifier, **kwds):
     \b
         *:*:*:postgres:<postgres_password>
     """
-    create_database_source(**kwds).delete_database(identifier)
+    try:
+        with database_source_context(for_database_commands=True, **kwds) as datasource:
+            datasource.delete_database(identifier)
+    except DatabaseConfigurationError as e:
+        raise click.UsageError(str(e)) from e

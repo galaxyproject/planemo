@@ -8,21 +8,22 @@ Werkzeug
 # For testing
 tox
 pytest
+pytest-mock
 coverage
+responses>=0.23.0
 
 #Building Docs
+docutils
 sphinx
 sphinx_rtd_theme
 recommonmark
 
-# Used to check readme.
-readme
-
 # Used for code checking.
-pyflakes
+black
 flake8
-flake8-import-order
+isort
 
 # For release
+build
 wheel
 twine

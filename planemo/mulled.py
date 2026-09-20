@@ -2,7 +2,6 @@
 
 The extend galaxy-tool-util's features with planemo specific idioms.
 """
-from __future__ import absolute_import
 
 import os
 
@@ -11,18 +10,8 @@ from galaxy.tool_util.deps.mulled.mulled_build import (
     ensure_installed,
     InvolucroContext,
 )
-from galaxy.tool_util.deps.mulled.util import build_target
 
-from planemo.conda import collect_conda_target_lists
 from planemo.io import shell
-
-
-def conda_to_mulled_targets(conda_targets):
-    return list(map(lambda c: build_target(c.package, c.version), conda_targets))
-
-
-def collect_mulled_target_lists(ctx, paths, recursive=False):
-    return list(map(conda_to_mulled_targets, collect_conda_target_lists(ctx, paths, recursive=recursive)))
 
 
 def build_involucro_context(ctx, **kwds):
@@ -34,8 +23,7 @@ def build_involucro_context(ctx, **kwds):
     involucro_path = kwds.get("involucro_path", involucro_path_default)
     use_planemo_shell = kwds.get("use_planemo_shell_exec", True)
     shell_exec = shell if use_planemo_shell else None
-    involucro_context = InvolucroContext(involucro_bin=involucro_path,
-                                         shell_exec=shell_exec)
+    involucro_context = InvolucroContext(involucro_bin=involucro_path, shell_exec=shell_exec)
     if not ensure_installed(involucro_context, True):
         raise Exception("Failed to install involucro for Planemo.")
     return involucro_context
@@ -47,10 +35,10 @@ def build_mull_target_kwds(ctx, **kwds):
     channels = kwds.get("conda_ensure_channels", ",".join(DEFAULT_CHANNELS))
     namespace = kwds.get("mulled_namespace", "biocontainers")
     target_kwds = {
-        'involucro_context': involucro_context,
-        'channels': channels.split(","),
-        'namespace': namespace,
-        'verbose': ctx.verbose,
+        "involucro_context": involucro_context,
+        "channels": channels.split(","),
+        "namespace": namespace,
+        "verbose": ctx.verbose,
     }
 
     conda_version = kwds.get("mulled_conda_version", None)
@@ -62,6 +50,4 @@ def build_mull_target_kwds(ctx, **kwds):
 __all__ = (
     "build_involucro_context",
     "build_mull_target_kwds",
-    "collect_mulled_target_lists",
-    "conda_to_mulled_targets",
 )

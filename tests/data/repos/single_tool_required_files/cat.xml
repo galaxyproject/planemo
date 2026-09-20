@@ -1,0 +1,27 @@
+<tool id="cat_required" name="Concatenate with helper" version="1.0" profile="22.05">
+    <description>tail-to-head, depends on a helper script</description>
+    <required_files>
+        <include path="helper.py" />
+    </required_files>
+    <command>
+        python '$__tool_directory__/helper.py' &amp;&amp; cat $input1 > $out_file1
+    </command>
+    <inputs>
+        <param name="input1" type="data" label="Concatenate Dataset" format="data" />
+    </inputs>
+    <outputs>
+        <data name="out_file1" format_source="input1" metadata_source="input1"/>
+    </outputs>
+    <tests>
+      <test>
+        <param name="input1" value="1.bed"/>
+        <output name="out_file1" file="1.bed"/>
+      </test>
+    </tests>
+    <help>
+        Concatenate datasets via a helper script.
+    </help>
+    <citations>
+        <citation type="doi">10.1093/bioinformatics/bts573</citation>
+    </citations>
+</tool>

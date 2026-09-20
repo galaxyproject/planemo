@@ -1,5 +1,4 @@
 """Abstractions for serving out development Galaxy servers."""
-from __future__ import print_function
 
 import contextlib
 import os
@@ -7,27 +6,55 @@ import time
 
 from planemo import (
     io,
-    network_util
+    network_util,
 )
 from .config import galaxy_config
 from .ephemeris_sleep import sleep
 from .run import (
+    log_galaxy_command,
     run_galaxy_command,
 )
-INSTALLING_MESSAGE = "Installing repositories - this may take some time..."
 
 
+@contextlib.contextmanager
 def serve(ctx, runnables=None, **kwds):
     if runnables is None:
         runnables = []
     """Serve a Galaxy instance with artifacts defined by paths."""
     try:
-        return _serve(ctx, runnables, **kwds)
+        with _serve(ctx, runnables, **kwds) as config:
+            yield config
     except Exception as e:
         ctx.vlog("Problem serving Galaxy", exception=e)
         raise
 
 
+def _start_galaxy(ctx, config, command, daemon):
+    action = "Starting Galaxy"
+    if daemon and getattr(config, "use_multiprocessing", False):
+        log_galaxy_command(ctx, command, config.env, action)
+        startup_process = config.start_daemon(command)
+        return startup_process, startup_process.poll()
+    exit_code = run_galaxy_command(ctx, command, config.env, action)
+    return None, exit_code
+
+
+def _check_startup_command(config, startup_process, exit_code):
+    if startup_process is not None and exit_code is not None:
+        message = (
+            f"Galaxy process exited with code {startup_process.returncode} during startup. "
+            f"Galaxy log: [{config.log_contents}]"
+        )
+        io.warn(message)
+        config.kill()
+        raise Exception(message)
+    if exit_code:
+        message = "Problem running Galaxy command [%s]." % config.log_contents
+        io.warn(message)
+        raise Exception(message)
+
+
+@contextlib.contextmanager
 def _serve(ctx, runnables, **kwds):
     engine = kwds.get("engine", "galaxy")
     if engine == "docker_galaxy":
@@ -44,24 +71,33 @@ def _serve(ctx, runnables, **kwds):
 
     with galaxy_config(ctx, runnables, **kwds) as config:
         cmd = config.startup_command(ctx, **kwds)
-        action = "Starting Galaxy"
-        exit_code = run_galaxy_command(
-            ctx,
-            cmd,
-            config.env,
-            action,
-        )
-        if exit_code:
-            message = "Problem running Galaxy command [%s]." % config.log_contents
-            io.warn(message)
-            raise Exception(message)
+        startup_process, exit_code = _start_galaxy(ctx, config, cmd, daemon)
+        _check_startup_command(config, startup_process, exit_code)
         host = kwds.get("host", "127.0.0.1")
 
-        timeout = 500
-        galaxy_url = "http://%s:%s" % (host, port)
-        galaxy_alive = sleep(galaxy_url, verbose=ctx.verbose, timeout=timeout)
+        startup_timeout = kwds.get("galaxy_startup_timeout", 900)
+        galaxy_url = f"http://{host}:{port}"
+        galaxy_alive = sleep(
+            galaxy_url,
+            verbose=ctx.verbose,
+            timeout=startup_timeout,
+            startup_process=startup_process,
+        )
         if not galaxy_alive:
-            raise Exception("Attempted to serve Galaxy at %s, but it failed to start in %d seconds." % (galaxy_url, timeout))
+            log_contents = config.log_contents
+            if startup_process is not None and startup_process.poll() is not None:
+                message = (
+                    f"Galaxy process exited with code {startup_process.returncode} during startup. "
+                    f"Galaxy log: [{log_contents}]"
+                )
+                config.kill()
+                raise Exception(message)
+            if startup_process is not None:
+                config.kill()
+            raise Exception(
+                f"Attempted to serve Galaxy at {galaxy_url}, but it failed to start in {startup_timeout} seconds."
+                f"\nGalaxy log contents:\n{log_contents}"
+            )
         config.install_workflows()
         if kwds.get("pid_file"):
             real_pid_file = config.pid_file
@@ -69,33 +105,17 @@ def _serve(ctx, runnables, **kwds):
                 os.symlink(real_pid_file, kwds["pid_file"])
             else:
                 io.warn("Can't find Galaxy pid file [%s] to link" % real_pid_file)
-        return config
-
-
-@contextlib.contextmanager
-def shed_serve(ctx, install_args_list, **kwds):
-    """Serve a daemon instance of Galaxy with specified repositories installed."""
-    with serve_daemon(ctx, **kwds) as config:
-        install_deps = not kwds.get("skip_dependencies", False)
-        print(INSTALLING_MESSAGE)
-        io.info(INSTALLING_MESSAGE)
-        for install_args in install_args_list:
-            install_args["install_tool_dependencies"] = install_deps
-            install_args["install_repository_dependencies"] = True
-            install_args["new_tool_panel_section_label"] = "Shed Installs"
-            config.install_repo(
-                **install_args
-            )
         try:
-            config.wait_for_all_installed()
-        except Exception:
-            if ctx.verbose:
-                print("Failed to install tool repositories, Galaxy log:")
-                print(config.log_contents)
-                print("Galaxy root:")
-                io.shell(['ls', config.galaxy_root])
+            yield config
+        except BaseException:
+            if startup_process is not None or kwds.get("stop_daemon_after_serve"):
+                config.kill()
             raise
-        yield config
+        else:
+            if kwds.get("stop_daemon_after_serve"):
+                config.kill()
+            elif startup_process is not None:
+                config.detach_daemon()
 
 
 @contextlib.contextmanager
@@ -104,27 +124,31 @@ def serve_daemon(ctx, runnables=None, **kwds):
     if runnables is None:
         runnables = []
     config = None
+    kwds["daemon"] = True
+    # Let _serve stop Galaxy before its galaxy_config context (and therefore a
+    # managed database context) exits. Keeping ownership in one layer also
+    # avoids a second kill when the caller raises.
+    kwds["stop_daemon_after_serve"] = True
     try:
-        kwds["daemon"] = True
-        config = serve(ctx, runnables, **kwds)
-        yield config
+        with serve(ctx, runnables, **kwds) as config:
+            try:
+                yield config
+            finally:
+                if ctx.verbose:
+                    print("Galaxy Log:")
+                    print(config.log_contents)
     finally:
-        if config:
-            if ctx.verbose:
-                print("Galaxy Log:")
-                print(config.log_contents)
-            config.kill()
-            if not kwds.get("no_cleanup", False):
-                config.cleanup()
+        if config and not kwds.get("no_cleanup", False):
+            config.cleanup()
 
 
 def sleep_for_serve():
     # This is bad, do something better...
-    time.sleep(1000000)
+    for _ in range(3600 * 24):
+        time.sleep(1)
 
 
 __all__ = (
     "serve",
     "serve_daemon",
-    "shed_serve",
 )

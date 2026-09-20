@@ -10,9 +10,9 @@ tool's runtime environment. If the tool you are working on allows configuring
 the number of processes or threads that should be spawned, this variable
 should be used.
 
-For example, the StringTie (tool available `here
-<https://github.com/galaxyproject/tools-iuc/blob/master/tools/stringtie/stringtie.xml>`__)
-binary ``stringtie`` can take an argument ``-p`` that allows specification
+For example, for the `StringTie tool
+<https://github.com/galaxyproject/tools-iuc/blob/main/tools/stringtie/stringtie.xml>`__
+the binary ``stringtie`` can take an argument ``-p`` that allows specification
 of the number of threads to be used. The Galaxy tool sets this up as follows
 
 ::
@@ -35,7 +35,7 @@ environment variables in a Galaxy tool's runtime environment that can be used
 to specify the amount of memory that a tool can use overall and per slot,
 respectively. 
 
-For an example see the samtools sort tool (`here <https://github.com/galaxyproject/tools-iuc/blob/master/tool_collections/samtools/samtools_sort/samtools_sort.xml>`__) which allows to specify the
+For an example see the `samtools sort tool <https://github.com/galaxyproject/tools-iuc/blob/main/tool_collections/samtools/samtools_sort/samtools_sort.xml>`__ which allows to specify the
 total memory with the -m parameter.
 
 -----------------------------------------------

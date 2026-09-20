@@ -1,44 +1,58 @@
 """Module describing the planemo ``test`` command."""
+
 import click
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.engine.test import (
-    test_runnables,
-)
-from planemo.io import temp_directory
-from planemo.runnable import (
-    RunnableType,
-)
+from planemo.engine.test import test_runnables
+from planemo.runnable import RunnableType
 from planemo.runnable_resolve import for_runnable_identifiers
 
 
-@click.command('test')
+@click.command("test")
 @options.optional_tools_arg(multiple=True, allow_uris=True)
 @click.option(
     "--failed",
+    "--lf",
     is_flag=True,
-    help="Re-run only failed tests. This command will read "
-         "tool_test_output.json to determine which tests failed so this "
-         "file must have been produced with the same set of tool ids "
-         "previously.",
+    help="Re-run only failed tests from the previous run. Reads from "
+    "--failed_json (or --test_output_json if not set) to determine "
+    "which tests failed.",
     default=False,
+)
+@click.option(
+    "--failed_json",
+    type=click.Path(),
+    help="JSON file from a previous planemo test run to read failed test IDs "
+    "from when using --failed/--lf. Defaults to --test_output_json.",
+    default=None,
+)
+@click.option(
+    "--test_index",
+    type=int,
+    multiple=True,
+    help="Index(es) of specific test(s) to run (1-based). "
+    "Can be specified multiple times (e.g., --test_index 1 --test_index 3) "
+    "to run specific tests. If not specified, all tests are run.",
+    default=(),
 )
 @click.option(
     "--polling_backoff",
     type=int,
     help="Poll resources with an increasing interval between requests. "
-         "Useful when testing against remote and/or production "
-         "instances to limit generated traffic.",
+    "Useful when testing against remote and/or production "
+    "instances to limit generated traffic.",
     default="0",
 )
+@options.test_use_cache_option()
+@options.cwltool_cache_directory_option()
 @options.galaxy_target_options()
 @options.galaxy_config_options()
 @options.test_options()
 @options.engine_options()
 @command_function
 def cli(ctx, uris, **kwds):
-    """Run specified tool's tests within Galaxy.
+    """Run specified tool or workflow tests within Galaxy.
 
     All referenced tools (by default all the tools in the current working
     directory) will be tested and the results quickly summarized.
@@ -64,21 +78,26 @@ def cli(ctx, uris, **kwds):
     to attempt to shield this execution of Galaxy from manually launched runs
     against that same Galaxy root - but this may not be bullet proof yet so
     please careful and do not try this against production Galaxy instances.
+
+    Tests do not reuse cached job results unless ``--use_cache`` is passed.
+    Opting in speeds up an edit-and-re-test loop over a fixed set of tools, but
+    Galaxy decides equivalence from the tool id, tool version and inputs - edit
+    a tool without bumping its version and the cached outputs are replayed, so
+    the test never exercises the change. See "Caching job results" in the
+    Planemo documentation.
     """
-    with temp_directory(dir=ctx.planemo_directory) as temp_path:
-        # Create temp dir(s) outside of temp, docker can't mount $TEMPDIR on OSX
-        runnables = for_runnable_identifiers(ctx, uris, kwds, temp_path=temp_path)
+    runnables = for_runnable_identifiers(ctx, uris, kwds)
 
-        # pick a default engine type if needed
-        is_cwl = all(r.type in {RunnableType.cwl_tool, RunnableType.cwl_workflow} for r in runnables)
-        if kwds.get("engine", None) is None:
-            if is_cwl:
-                kwds["engine"] = "cwltool"
-            elif kwds.get('galaxy_url', None):
-                kwds["engine"] = "external_galaxy"
-            else:
-                kwds["engine"] = "galaxy"
+    # pick a default engine type if needed
+    is_cwl = all(r.type in {RunnableType.cwl_tool, RunnableType.cwl_workflow} for r in runnables)
+    if kwds.get("engine", None) is None:
+        if is_cwl:
+            kwds["engine"] = "cwltool"
+        elif kwds.get("galaxy_url", None):
+            kwds["engine"] = "external_galaxy"
+        else:
+            kwds["engine"] = "galaxy"
 
-        return_value = test_runnables(ctx, runnables, original_paths=uris, **kwds)
+    return_value = test_runnables(ctx, runnables, original_paths=uris, **kwds)
 
     ctx.exit(return_value)

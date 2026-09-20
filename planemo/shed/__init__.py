@@ -1,4 +1,5 @@
 """Abstractions for shed related interactions used by the rest of planemo."""
+
 import contextlib
 import copy
 import fnmatch
@@ -9,22 +10,25 @@ import re
 import shutil
 import sys
 import tarfile
-from collections import namedtuple
-from tempfile import (
-    mkstemp,
+from tempfile import mkstemp
+from typing import (
+    NamedTuple,
+    TYPE_CHECKING,
 )
 
 import bioblend
-import six
 import yaml
+from bioblend.toolshed import ToolShedInstance
 from galaxy.util import (
     odict,
     unicodify,
 )
 
-from planemo import git
-from planemo import glob
-from planemo import templates
+from planemo import (
+    git,
+    glob,
+    templates,
+)
 from planemo.io import (
     can_write_to_path,
     coalesce_return_codes,
@@ -48,29 +52,29 @@ from .interface import (
     username,
 )
 
-SHED_CONFIG_NAME = '.shed.yml'
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
+
+
+SHED_CONFIG_NAME = ".shed.yml"
 DOCKSTORE_REGISTRY_CONF = ".dockstore.yml"
 REPO_METADATA_FILES = (SHED_CONFIG_NAME, DOCKSTORE_REGISTRY_CONF)
 REPO_DEPENDENCIES_CONFIG_NAME = "repository_dependencies.xml"
 TOOL_DEPENDENCIES_CONFIG_NAME = "tool_dependencies.xml"
 
-NO_REPOSITORIES_MESSAGE = ("Could not find any .shed.yml files or a --name to "
-                           "describe the target repository.")
-NAME_INVALID_MESSAGE = ("Cannot use --name argument when multiple directories "
-                        "in target contain .shed.yml files.")
-NAME_REQUIRED_MESSAGE = ("No repository name discovered but one is required.")
-CONFLICTING_NAMES_MESSAGE = ("The supplied name argument --name conflicts "
-                             "with value discovered in .shed.yml.")
-PARSING_PROBLEM = ("Problem parsing file .shed.yml in directory %s, skipping "
-                   "repository. Message: [%s].")
-AUTO_REPO_CONFLICT_MESSAGE = ("Cannot specify both auto_tool_repositories and "
-                              "repositories in .shed.yml at this time.")
-AUTO_NAME_CONFLICT_MESSAGE = ("Cannot specify both auto_tool_repositories and "
-                              "in .shed.yml and --name on the command-line.")
-REALIZAION_PROBLEMS_MESSAGE = ("Problem encountered executing action for one or more "
-                               "repositories.")
-INCORRECT_OWNER_MESSAGE = ("Attempting to create a repository with configured "
-                           "owner [%s] that does not match API user [%s].")
+NO_REPOSITORIES_MESSAGE = "Could not find any .shed.yml files or a --name to describe the target repository."
+NAME_INVALID_MESSAGE = "Cannot use --name argument when multiple directories in target contain .shed.yml files."
+NAME_REQUIRED_MESSAGE = "No repository name discovered but one is required."
+CONFLICTING_NAMES_MESSAGE = "The supplied name argument --name conflicts with value discovered in .shed.yml."
+PARSING_PROBLEM = "Problem parsing file .shed.yml in directory %s, skipping repository. Message: [%s]."
+AUTO_REPO_CONFLICT_MESSAGE = "Cannot specify both auto_tool_repositories and repositories in .shed.yml at this time."
+AUTO_NAME_CONFLICT_MESSAGE = (
+    "Cannot specify both auto_tool_repositories and in .shed.yml and --name on the command-line."
+)
+REALIZAION_PROBLEMS_MESSAGE = "Problem encountered executing action for one or more repositories."
+INCORRECT_OWNER_MESSAGE = (
+    "Attempting to create a repository with configured owner [%s] that does not match API user [%s]."
+)
 PROBLEM_PROCESSING_REPOSITORY_MESSAGE = "Problem processing repositories, exiting."
 
 # Planemo generated or consumed files that do not need to be uploaded to the
@@ -107,7 +111,10 @@ VALID_PUBLICNAME_RE = re.compile(r"^[a-z0-9._\-]+$")
 # Generate with python scripts/categories.py
 CURRENT_CATEGORIES = [
     "Assembly",
+    "Astronomy",
     "ChIP-seq",
+    "Climate Analysis",
+    "CLIP-seq",
     "Combinatorial Selections",
     "Computational chemistry",
     "Constructive Solid Geometry",
@@ -115,6 +122,7 @@ CURRENT_CATEGORIES = [
     "Data Export",
     "Data Managers",
     "Data Source",
+    "Ecology",
     "Entomology",
     "Epigenetics",
     "Fasta Manipulation",
@@ -124,22 +132,33 @@ CURRENT_CATEGORIES = [
     "Genome editing",
     "Genome-Wide Association Study",
     "Genomic Interval Operations",
+    "Geo Science",
+    "GIS",
     "Graphics",
     "Imaging",
+    "Interactive Tools",
     "Machine Learning",
+    "Materials science",
     "Metabolomics",
     "Metagenomics",
     "Micro-array Analysis",
     "Molecular Dynamics",
+    "Muon spectroscopy",
+    "Nanopore",
+    "Natural Language Processing",
     "Next Gen Mappers",
-    "NLP",
     "Ontology Manipulation",
+    "Pangenomics",
     "Phylogenetics",
     "Proteomics",
     "RNA",
     "SAM",
     "Sequence Analysis",
+    "Single Cell",
+    "Spatial Omics",
     "Statistics",
+    "Structural Materials Analysis",
+    "Synthetic Biology",
     "Systems Biology",
     "Text Manipulation",
     "Tool Dependency Packages",
@@ -156,11 +175,7 @@ HTTP_REGEX_PATTERN = re.compile(
 
 
 def _is_url(url):
-    return '://' in url and \
-        (
-            url.startswith('http') or
-            url.startswith('ftp')
-        )
+    return "://" in url and (url.startswith("http") or url.startswith("ftp"))
 
 
 def _find_urls_in_text(text):
@@ -173,14 +188,14 @@ def construct_yaml_str(self, node):
     return self.construct_scalar(node)
 
 
-yaml.Loader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
-yaml.SafeLoader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
+yaml.Loader.add_constructor("tag:yaml.org,2002:str", construct_yaml_str)
+yaml.SafeLoader.add_constructor("tag:yaml.org,2002:str", construct_yaml_str)
 
 
-_ShedContext = namedtuple("ShedContext", ["tsi", "shed_config", "config_owner"])
-
-
-class ShedContext(_ShedContext):
+class ShedContext(NamedTuple):
+    tsi: ToolShedInstance
+    shed_config: dict
+    config_owner: str
 
     def owner(self):
         owner = self.config_owner
@@ -234,9 +249,23 @@ def install_arg_lists(ctx, paths, **kwds):
         install_args_list.append(realized_repository.install_args(ctx, shed_context))
         return 0
 
-    exit_code = for_each_repository(ctx, process_repo, paths, **kwds)
-    if exit_code:
-        raise RuntimeError(PROBLEM_PROCESSING_REPOSITORY_MESSAGE)
+    if not kwds.get("name"):
+        exit_code = for_each_repository(ctx, process_repo, paths, **kwds)
+        if exit_code:
+            raise RuntimeError(PROBLEM_PROCESSING_REPOSITORY_MESSAGE)
+    else:
+        # Can only provide a single tool shed artifact to test
+        name = kwds["name"]
+        owner = kwds["owner"]
+        changeset_revision = shed_context.tsi.repositories.get_ordered_installable_revisions(owner=owner, name=name)[-1]
+        install_args_list.append(
+            {
+                "name": name,
+                "owner": owner,
+                "tool_shed_url": shed_context.tsi.base_url,
+                "changeset_revision": changeset_revision,
+            }
+        )
 
     return install_args_list
 
@@ -261,7 +290,7 @@ def find_urls_for_xml(root):
             urls.extend([dl.url for dl in action.downloads()])
 
             for subaction in action.actions:
-                if hasattr(subaction, 'packages'):
+                if hasattr(subaction, "packages"):
                     urls.extend(subaction.packages)
 
     docs = []
@@ -314,12 +343,9 @@ def upload_repository(ctx, realized_repository, **kwds):
 
     # TODO: support updating repo information if it changes in the config file
     try:
-        shed_context.tsi.repositories.update_repository(
-            str(repo_id), tar_path, **update_kwds
-        )
+        shed_context.tsi.repositories.update_repository(str(repo_id), tar_path, **update_kwds)
     except Exception as e:
-        if isinstance(e, bioblend.ConnectionError) and e.status_code == 400 and \
-                '"No changes to repository."' in e.body:
+        if isinstance(e, bioblend.ConnectionError) and e.status_code == 400 and '"No changes to repository."' in e.body:
             warn("Repository %s was not updated because there were no changes" % realized_repository.name)
             return 0
         message = api_exception_to_message(e)
@@ -370,20 +396,13 @@ def _diff_in(ctx, working, realized_repository, **kwds):
     # In order to download the tarball, require repository ID...
     repo_id = realized_repository.find_repository_id(ctx, shed_context)
     if repo_id is None:
-        error("shed_diff: Repository [%s] does not exist in the targeted Tool Shed."
-              % realized_repository.name)
+        error("shed_diff: Repository [%s] does not exist in the targeted Tool Shed." % realized_repository.name)
         # $ diff README.rst not_a_file 2&>1 /dev/null; echo $?
         # 2
         return 2
     info("Diffing repository [%s]" % realized_repository.name)
     download_tarball(
-        ctx,
-        shed_context,
-        realized_repository,
-        destination=other,
-        clean=True,
-        destination_is_pattern=False,
-        **kwds
+        ctx, shed_context, realized_repository, destination=other, clean=True, destination_is_pattern=False, **kwds
     )
     if shed_target_source:
         new_kwds = kwds.copy()
@@ -396,12 +415,12 @@ def _diff_in(ctx, working, realized_repository, **kwds):
             destination=mine,
             clean=True,
             destination_is_pattern=False,
-            **new_kwds
+            **new_kwds,
         )
     else:
         tar_path = build_tarball(path)
         os.mkdir(mine)
-        shell(['tar', '-xzf', tar_path, '-C', mine])
+        shell(["tar", "-xzf", tar_path, "-C", mine])
         shutil.rmtree(tar_path, ignore_errors=True)
 
     output = kwds.get("output")
@@ -414,9 +433,9 @@ def _diff_in(ctx, working, realized_repository, **kwds):
         else:
             xml_diff = diff_and_remove(working, label_a, label_b, sys.stdout)
 
-    cmd = ['diff', '-r', label_a, label_b]
+    cmd = ["diff", "-r", label_a, label_b]
     if output:
-        with open(output, 'ab') as fh:
+        with open(output, "ab") as fh:
             raw_diff = shell(cmd, cwd=working, stdout=fh)
     else:
         raw_diff = shell(cmd, cwd=working)
@@ -435,7 +454,7 @@ def shed_repo_config(ctx, path, name=None):
     shed_yaml_path = os.path.join(path, SHED_CONFIG_NAME)
     config = {}
     if os.path.exists(shed_yaml_path):
-        with open(shed_yaml_path, "r") as f:
+        with open(shed_yaml_path) as f:
             config = yaml.safe_load(f)
 
     if config is None:  # yaml may yield None
@@ -530,11 +549,7 @@ def _find_repository_id(ctx, shed_context, name, repo_config, **kwds):
     owner = _owner(ctx, repo_config, shed_context, **kwds)
     matching_repository = find_repository(shed_context.tsi, owner, name)
     if matching_repository is None:
-        if not kwds.get("allow_none", False):
-            message = "Failed to find repository for owner/name %s/%s"
-            raise Exception(message % (owner, name))
-        else:
-            return None
+        raise Exception(f"Failed to find repository for owner/name {owner}/{name}")
     else:
         repo_id = matching_repository["id"]
         return repo_id
@@ -576,11 +591,7 @@ def _expand_raw_config(ctx, config, path, name=None):
     # one based on calculated name and including everything
     # by default.
     if repos is None:
-        repos = {
-            config["name"]: {
-                "include": default_include
-            }
-        }
+        repos = {config["name"]: {"include": default_include}}
     config["repositories"] = repos
 
 
@@ -629,18 +640,16 @@ def _build_suite_repo(config, repos, suite_config):
     description = suite_config.get("description", "")
     long_description = suite_config.get("long_description")
     owner = config["owner"]
-    repo_type = suite_config.get('type', REPO_TYPE_SUITE)
+    repo_type = suite_config.get("type", REPO_TYPE_SUITE)
 
-    repo_pairs = [(repo_dict.get('owner') or owner, repo_name) for repo_name, repo_dict in repos.items()]
+    repo_pairs = [(repo_dict.get("owner") or owner, repo_name) for repo_name, repo_dict in repos.items()]
     extra_repos = suite_config.get("include_repositories", {})
     repo_pairs += [(_["owner"], _["name"]) for _ in extra_repos]
 
     repository_dependencies = RepositoryDependencies(repo_pairs, description)
 
     repo = {
-        "_files": {
-            REPO_DEPENDENCIES_CONFIG_NAME: str(repository_dependencies)
-        },
+        "_files": {REPO_DEPENDENCIES_CONFIG_NAME: str(repository_dependencies)},
         "include": [],
         "name": name,
         "description": description,
@@ -655,7 +664,6 @@ def update_repository_for(ctx, tsi, id, repo_config):
     name = repo_config["name"]
     description = repo_config.get("description")
     long_description = repo_config.get("long_description")
-    repo_type = shed_repo_type(repo_config, name)
     remote_repository_url = repo_config.get("remote_repository_url")
     homepage_url = repo_config.get("homepage_url")
     categories = repo_config.get("categories", [])
@@ -663,20 +671,16 @@ def update_repository_for(ctx, tsi, id, repo_config):
 
     _ensure_shed_description(description)
 
-    kwds = dict(
+    repo = tsi.repositories.update_repository_metadata(
+        id,
         name=name,
         synopsis=description,
-        type=repo_type,
+        description=long_description,
+        remote_repository_url=remote_repository_url,
+        homepage_url=homepage_url,
+        category_ids=category_ids,
     )
-    if long_description is not None:
-        kwds["description"] = long_description
-    if remote_repository_url is not None:
-        kwds["remote_repository_url"] = remote_repository_url
-    if homepage_url is not None:
-        kwds["homepage_url"] = homepage_url
-    if category_ids is not None:
-        kwds['category_ids[]'] = category_ids
-    return bioblend.galaxy.client.Client._put(tsi.repositories, id=id, payload=kwds)
+    return repo
 
 
 def create_repository_for(ctx, tsi, name, repo_config):
@@ -697,7 +701,7 @@ def create_repository_for(ctx, tsi, name, repo_config):
         type=repo_type,
         remote_repository_url=remote_repository_url,
         homepage_url=homepage_url,
-        category_ids=category_ids
+        category_ids=category_ids,
     )
     return repo
 
@@ -708,7 +712,7 @@ def download_tarball(ctx, shed_context, realized_repository, **kwds):
         message = "Unable to find repository id, cannot download."
         error(message)
         raise Exception(message)
-    destination_pattern = kwds.get('destination', 'shed_download.tar.gz')
+    destination_pattern = kwds.get("destination", "shed_download.tar.gz")
     if kwds.get("destination_is_pattern", True):
         destination = realized_repository.pattern_to_file_name(destination_pattern)
     else:
@@ -730,7 +734,7 @@ def build_tarball(realized_path, **kwds):
 
     # Simplest solution to sorting the files is to use a list,
     files = []
-    for dirpath, dirnames, filenames in os.walk(realized_path):
+    for dirpath, _dirnames, filenames in os.walk(realized_path):
         for f in filenames:
             files.append(os.path.join(dirpath, f))
     files.sort()
@@ -762,12 +766,8 @@ def for_each_repository(ctx, function, paths, **kwds):
     for path in paths:
         with _path_on_disk(ctx, path) as raw_path:
             try:
-                for realized_repository in _realize_effective_repositories(
-                    ctx, raw_path, **kwds
-                ):
-                    ret_codes.append(
-                        function(realized_repository)
-                    )
+                for realized_repository in _realize_effective_repositories(ctx, raw_path, **kwds):
+                    ret_codes.append(function(realized_repository))
             except RealizationException:
                 error(REALIZAION_PROBLEMS_MESSAGE)
                 return 254
@@ -794,16 +794,13 @@ def shed_repo_type(config, name):
 def _shed_config_to_url(shed_config):
     url = shed_config["url"]
     if not url.startswith("http"):
-        message = (
-            "Invalid shed url specified [{0}]. Please specify a valid "
-            "HTTP address or one of {1}"
-        ).format(url, list(SHED_SHORT_NAMES.keys()))
+        message = f"Invalid shed url specified [{url}]. Please specify a valid HTTP address or one of {list(SHED_SHORT_NAMES.keys())}"
         raise ValueError(message)
     return url
 
 
 def _realize_effective_repositories(ctx, path, **kwds):
-    """ Expands folders in a source code repository into tool shed
+    """Expands folders in a source code repository into tool shed
     repositories.
 
     Each folder may have nested repositories and each folder may corresponding
@@ -820,11 +817,7 @@ def _realize_effective_repositories(ctx, path, **kwds):
                 failed = True
                 continue
 
-            realized_repos = raw_repo_object.realizations(
-                ctx,
-                base_dir,
-                **kwds
-            )
+            realized_repos = raw_repo_object.realizations(ctx, base_dir, **kwds)
             for realized_repo in realized_repos:
                 if isinstance(realized_repo, Exception):
                     _handle_realization_error(realized_repo, **kwds)
@@ -873,7 +866,7 @@ def _create_shed_config(ctx, path, **kwds):
 
 
 def _parse_repos_from_workflow(path):
-    with open(path, "r") as f:
+    with open(path) as f:
         workflow_json = json.load(f)
     steps = workflow_json["steps"]
     tool_ids = set()
@@ -902,7 +895,7 @@ def _path_on_disk(ctx, path):
     if path.startswith("git:"):
         git_path = path
     elif path.startswith("git+"):
-        git_path = path[len("git+"):]
+        git_path = path[len("git+") :]
     if git_path is None:
         yield path
     else:
@@ -917,9 +910,7 @@ def _find_raw_repositories(ctx, path, **kwds):
 
     shed_file_dirs = []
     for pattern in REPO_METADATA_FILES:
-        shed_file_dirs.extend(find_matching_directories(
-            path, pattern, recursive=recursive
-        ))
+        shed_file_dirs.extend(find_matching_directories(path, pattern, recursive=recursive))
     config_name = None
     if len(shed_file_dirs) == 1:
         shed_file_dir = shed_file_dirs[0]
@@ -969,10 +960,8 @@ def _build_raw_repo_objects(ctx, raw_dirs, **kwds):
     return raw_repo_objects
 
 
-@six.python_2_unicode_compatible
-class RepositoryDependencies(object):
-    """ Abstraction for shed repository_dependencies.xml files.
-    """
+class RepositoryDependencies:
+    """Abstraction for shed repository_dependencies.xml files."""
 
     def __init__(self, repo_pairs, description=None):
         self.repo_pairs = repo_pairs
@@ -981,18 +970,17 @@ class RepositoryDependencies(object):
     def __str__(self):
         contents = '<repositories description="%s">' % self.description
         line_template = '  <repository owner="%s" name="%s" />\n'
-        for (owner, name) in self.repo_pairs:
+        for owner, name in self.repo_pairs:
             contents += line_template % (owner, name)
         contents += "</repositories>"
         return contents
 
     def write_to_path(self, path):
         with open(path, "w") as f:
-            f.write(six.text_type(self))
+            f.write(str(self))
 
 
-class RawRepositoryDirectory(object):
-
+class RawRepositoryDirectory:
     def __init__(self, path, config, multiple):
         self.path = path
         self.config = config
@@ -1001,7 +989,7 @@ class RawRepositoryDirectory(object):
         self.multiple = multiple  # operation over many repos?
 
     def _hash(self, name):
-        return hashlib.md5(name.encode('utf-8')).hexdigest()
+        return hashlib.md5(name.encode("utf-8")).hexdigest()
 
     def realizations(self, ctx, parent_directory, **kwds):
         names = self._repo_names()
@@ -1035,17 +1023,17 @@ class RawRepositoryDirectory(object):
         for realized_file in realized_files.files:
             relative_dest = realized_file.dest
             implicit_ignore = self._implicit_ignores(relative_dest)
-            explicit_ignore = (realized_file.absolute_src in ignore_list)
+            explicit_ignore = realized_file.absolute_src in ignore_list
             if implicit_ignore or explicit_ignore:
                 continue
             realized_file.realize_to(directory)
 
-        for (name, contents) in six.iteritems(config.get("_files", {})):
+        for name, contents in config.get("_files", {}).items():
             path = os.path.join(directory, name)
             with open(path, "w") as f:
                 f.write(contents)
 
-        return RealizedRepositry(
+        return RealizedRepository(
             realized_path=directory,
             real_path=self.path,
             config=config,
@@ -1112,11 +1100,12 @@ class RawRepositoryDirectory(object):
         return False
 
 
-RealizedFiles = namedtuple("RealizedFiles", ["files", "include_failures"])
+class RealizedFiles(NamedTuple):
+    files: list
+    include_failures: list
 
 
-class RealizedFile(object):
-
+class RealizedFile:
     def __init__(self, src_root, src, dest):
         """Create object mapping from file system to tar-ball.
 
@@ -1150,7 +1139,7 @@ class RealizedFile(object):
             if os.path.isdir(source_path):
                 os.makedirs(target_path)
             else:
-                os.symlink(source_path, target_path)
+                shutil.copy2(source_path, target_path)
 
     @staticmethod
     def realized_files_for(path, include_info):
@@ -1166,7 +1155,9 @@ class RealizedFile(object):
             # Check if source using wildcards (directory gets implicit wildcard)
             # Should we use a regular exoression to catch [A-Z] style patterns?
             if "*" in source or "?" in source or os.path.isdir(abs_source):
-                raise ValueError("destination must be a directory (with trailing slash) if source is a folder or uses wildcards")
+                raise ValueError(
+                    "destination must be a directory (with trailing slash) if source is a folder or uses wildcards"
+                )
         realized_files = []
         for globbed_file in _glob(path, source):
             src = os.path.relpath(globbed_file, path)
@@ -1182,24 +1173,19 @@ class RealizedFile(object):
                 elif "/../" in globbed_file:
                     # Can't work from src=os.path.relpath(globbed_file, path) as lost any '..'
                     assert globbed_file.startswith(path + "/")
-                    dest = "/".join(globbed_file[len(path) + 1:].split("/")[strip_components:])
+                    dest = "/".join(globbed_file[len(path) + 1 :].split("/")[strip_components:])
                 else:
                     dest = "/".join(src.split("/")[strip_components:])
                 # Now apply the specified output directory:
                 dest = os.path.join(destination, dest)
-            realized_files.append(
-                RealizedFile(path, src, os.path.normpath(dest))
-            )
+            realized_files.append(RealizedFile(path, src, os.path.normpath(dest)))
         return realized_files
 
     def __str__(self):
-        return "RealizedFile[src={},dest={},src_root={}]".format(
-            self.src, self.dest, self.src_root
-        )
+        return f"RealizedFile[src={self.src},dest={self.dest},src_root={self.src_root}]"
 
 
-class RealizedRepositry(object):
-
+class RealizedRepository:
     def __init__(self, realized_path, real_path, config, multiple, missing):
         self.path = realized_path
         self.real_path = real_path
@@ -1258,7 +1244,6 @@ class RealizedRepositry(object):
                 shed_context,
                 name=self.name,
                 repo_config=self.config,
-                allow_none=True,
             )
             return repo_id
         except Exception as e:
@@ -1268,8 +1253,7 @@ class RealizedRepositry(object):
         return None
 
     def create(self, ctx, shed_context):
-        """Wrapper for creating the endpoint if it doesn't exist
-        """
+        """Wrapper for creating the endpoint if it doesn't exist"""
         context_owner = shed_context.owner()
         config_owner = self.config.get("owner")
         if context_owner and config_owner and context_owner != config_owner:
@@ -1285,13 +1269,12 @@ class RealizedRepositry(object):
                 self.name,
                 self.config,
             )
-            return repo['id']
+            return repo["id"]
 
         return self._with_ts_exception_handling(_create)
 
     def update(self, ctx, shed_context, id):
-        """Wrapper for update the repository metadata.
-        """
+        """Wrapper for update the repository metadata."""
 
         def _update():
             repo = update_repository_for(
@@ -1311,17 +1294,17 @@ class RealizedRepositry(object):
             # TODO: galaxyproject/bioblend#126
             try:
                 upstream_error = json.loads(e.read())
-                error(upstream_error['err_msg'])
+                error(upstream_error["err_msg"])
             except Exception:
                 error(unicodify(e))
             return None
 
-    def latest_installable_revision(self, ctx, shed_context):
+    def latest_installable_revision(self, ctx: "PlanemoCliContext", shed_context: ShedContext):
         repository_id = self.find_repository_id(ctx, shed_context)
         return latest_installable_revision(shed_context.tsi, repository_id)
 
     def install_args(self, ctx, shed_context):
-        """ Arguments for bioblend's install_repository_revision
+        """Arguments for bioblend's install_repository_revision
         to install this repository against supplied tsi.
         """
         tool_shed_url = shed_context.tsi.base_url
@@ -1329,9 +1312,7 @@ class RealizedRepositry(object):
             tool_shed_url=tool_shed_url,
             name=self.name,
             owner=self.owner,
-            changeset_revision=self.latest_installable_revision(
-                ctx, shed_context
-            ),
+            changeset_revision=self.latest_installable_revision(ctx, shed_context),
         )
 
 
@@ -1343,7 +1324,7 @@ def _glob(path, pattern):
 
 
 def _shed_config_excludes(config):
-    return config.get('ignore', []) + config.get('exclude', [])
+    return config.get("ignore", []) + config.get("exclude", [])
 
 
 def _handle_realization_error(exception, **kwds):
@@ -1357,69 +1338,58 @@ def _handle_realization_error(exception, **kwds):
 def _ensure_shed_description(description):
     # description is required, as is name.
     if description is None:
-        message = ("description required for automatic creation or update of "
-                   "shed metadata.")
+        message = "description required for automatic creation or update of shed metadata."
         raise ValueError(message)
 
 
 def validate_repo_name(name):
     def _build_error(descript):
-        return "Repository name [%s] invalid. %s" % (name, descript)
+        return f"Repository name [{name}] invalid. {descript}"
 
     msg = None
     if len(name) < 2:
-        msg = _build_error(
-            "Repository names must be at least 2 characters in length."
-        )
+        msg = _build_error("Repository names must be at least 2 characters in length.")
     if len(name) > 80:
-        msg = _build_error(
-            "Repository names cannot be more than 80 characters in length."
-        )
+        msg = _build_error("Repository names cannot be more than 80 characters in length.")
     if not VALID_REPOSITORYNAME_RE.match(name):
-        msg = _build_error(
-            "Repository names must contain only lower-case letters, "
-            "numbers and underscore."
-        )
+        msg = _build_error("Repository names must contain only lower-case letters, numbers and underscore.")
     return msg
 
 
 def validate_repo_owner(owner):
     def _build_error(descript):
-        return "Owner [%s] invalid. %s" % (owner, descript)
+        return f"Owner [{owner}] invalid. {descript}"
+
     msg = None
     if len(owner) < 3:
         msg = _build_error("Owner must be at least 3 characters in length")
     if len(owner) > 255:
-        msg = _build_error(
-            "Owner cannot be more than 255 characters in length"
-        )
-    if not(VALID_PUBLICNAME_RE.match(owner)):
-        msg = _build_error(
-            "Owner must contain only lower-case letters, numbers, dots, underscores, and '-'"
-        )
+        msg = _build_error("Owner cannot be more than 255 characters in length")
+    if not (VALID_PUBLICNAME_RE.match(owner)):
+        msg = _build_error("Owner must contain only lower-case letters, numbers, dots, underscores, and '-'")
     return msg
 
 
 class RealizationException(Exception):
-    """ This exception indicates there was a problem while
+    """This exception indicates there was a problem while
     realizing effective repositories for a shed command. As a
     precondition - the user has already been informed with error().
     """
 
 
 __all__ = (
-    'api_exception_to_message',
-    'CURRENT_CATEGORIES',
-    'diff_repo',
-    'download_tarball',
-    'find_raw_repositories',
-    'for_each_repository',
-    'get_shed_context',
-    'path_to_repo_name',
-    'REPO_TYPE_SUITE',
-    'REPO_TYPE_TOOL_DEP',
-    'REPO_TYPE_UNRESTRICTED',
-    'shed_init',
-    'tool_shed_client',  # Deprecated...
-    'tool_shed_url',
+    "api_exception_to_message",
+    "CURRENT_CATEGORIES",
+    "diff_repo",
+    "download_tarball",
+    "find_raw_repositories",
+    "for_each_repository",
+    "get_shed_context",
+    "path_to_repo_name",
+    "REPO_TYPE_SUITE",
+    "REPO_TYPE_TOOL_DEP",
+    "REPO_TYPE_UNRESTRICTED",
+    "shed_init",
+    "tool_shed_client",  # Deprecated...
+    "tool_shed_url",
 )

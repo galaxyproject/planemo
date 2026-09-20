@@ -1,18 +1,24 @@
 """Module describing the planemo ``lint`` command."""
+
 import click
 
 from planemo import options
-from planemo.cli import command_function
-from planemo.tool_lint import build_tool_lint_args, lint_tools_on_path
+from planemo.cli import (
+    command_function,
+    PlanemoCliContext,
+)
+from planemo.tool_lint import (
+    build_tool_lint_args,
+    lint_tools_on_path,
+)
 
 
-@click.command('lint')
+@click.command("lint")
 @options.optional_tools_arg(multiple=True, allow_uris=True)
 @options.report_level_option()
 @options.report_xunit()
 @options.fail_level_option()
-@options.skip_option()
-@options.lint_xsd_option()
+@options.skip_options()
 @options.recursive_option()
 @click.option(
     "--urls",
@@ -32,14 +38,7 @@ from planemo.tool_lint import build_tool_lint_args, lint_tools_on_path
     default=False,
     help="Check tool requirements for availability in best practice Conda channels.",
 )
-@click.option(
-    "biocontainer",
-    "--biocontainer",
-    "--biocontainers",
-    is_flag=True,
-    default=False,
-    help="Check best practice BioContainer namespaces for a container definition applicable for this tool.",
-)
+@options.lint_biocontainers_option()
 # @click.option(
 # "--verify",
 # is_flag=True,
@@ -47,15 +46,10 @@ from planemo.tool_lint import build_tool_lint_args, lint_tools_on_path
 # default=False,
 # )
 @command_function
-def cli(ctx, uris, **kwds):
+def cli(ctx: PlanemoCliContext, uris, **kwds):
     """Check for common errors and best practices."""
     lint_args = build_tool_lint_args(ctx, **kwds)
-    exit_code = lint_tools_on_path(
-        ctx,
-        uris,
-        lint_args,
-        recursive=kwds["recursive"]
-    )
+    exit_code = lint_tools_on_path(ctx, uris, lint_args, recursive=kwds["recursive"])
 
     # TODO: rearchitect XUnit.
     # if kwds['urls']:

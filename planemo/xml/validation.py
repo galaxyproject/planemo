@@ -1,25 +1,27 @@
 """Module describing abstractions for validating XML content."""
+
 import abc
 import subprocess
 from collections import namedtuple
 
-from galaxy.tool_util.deps.commands import which
 from galaxy.util import unicodify
+from galaxy.util.commands import which
+
 try:
     from lxml import etree
 except ImportError:
-    etree = None
-from six import add_metaclass
+    etree = None  # type: ignore
 
 XMLLINT_COMMAND = "xmllint --noout --schema {0} {1} 2>&1"
-INSTALL_VALIDATOR_MESSAGE = ("This feature requires an external dependency "
-                             "to function, pleaes install xmllint (e.g 'brew "
-                             "install libxml2' or 'apt-get install "
-                             "libxml2-utils'.")
+INSTALL_VALIDATOR_MESSAGE = (
+    "This feature requires an external dependency "
+    "to function, pleaes install xmllint (e.g 'brew "
+    "install libxml2' or 'apt-get install "
+    "libxml2-utils'."
+)
 
 
-@add_metaclass(abc.ABCMeta)
-class XsdValidator(object):
+class XsdValidator(metaclass=abc.ABCMeta):
     """Class allowing validation of XML files against XSD schema."""
 
     @abc.abstractmethod

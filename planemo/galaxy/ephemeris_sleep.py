@@ -1,12 +1,13 @@
 #!/usr/bin/env python
-'''Utility to do a blocking sleep until a Galaxy instance is responsive.
+"""Utility to do a blocking sleep until a Galaxy instance is responsive.
 This is useful in docker images, in RUN steps, where one needs to wait
 for a currently starting Galaxy to be alive, before API requests can be
 made successfully.
 The script functions by making repeated requests to
 ``http(s)://fqdn/api/version``, an API which requires no authentication
-to access.'''
+to access."""
 
+import subprocess
 import sys
 import time
 from argparse import ArgumentParser
@@ -21,16 +22,20 @@ except ImportError:
     get_common_args = None
 
 DEFAULT_SLEEP_WAIT = 1
+CONNECT_TIMEOUT = 0.5
 
 
 def _parser():
-    '''Constructs the parser object'''
+    """Constructs the parser object"""
     parent = get_common_args(login_required=False)
-    parser = ArgumentParser(parents=[parent], usage="usage: python %(prog)s <options>",
-                            description="Script to sleep and wait for Galaxy to be alive.")
-    parser.add_argument("--timeout",
-                        default=0, type=int,
-                        help="Galaxy startup timeout in seconds. The default value of 0 waits forever")
+    parser = ArgumentParser(
+        parents=[parent],
+        usage="usage: python %(prog)s <options>",
+        description="Script to sleep and wait for Galaxy to be alive.",
+    )
+    parser.add_argument(
+        "--timeout", default=0, type=int, help="Galaxy startup timeout in seconds. The default value of 0 waits forever"
+    )
     return parser
 
 
@@ -42,8 +47,7 @@ def _parse_cli_options():
     return parser.parse_args()
 
 
-class SleepCondition(object):
-
+class SleepCondition:
     def __init__(self):
         self.sleep = True
 
@@ -51,36 +55,59 @@ class SleepCondition(object):
         self.sleep = False
 
 
-def sleep(galaxy_url, verbose=False, timeout=0, sleep_condition=None):
+def _wait_for_retry(startup_process):
+    if startup_process is None:
+        time.sleep(DEFAULT_SLEEP_WAIT)
+        return False
+    try:
+        startup_process.wait(timeout=DEFAULT_SLEEP_WAIT)
+    except subprocess.TimeoutExpired:
+        return False
+    return True
+
+
+def sleep(galaxy_url, verbose=False, timeout=0, sleep_condition=None, startup_process=None):
     if sleep_condition is None:
         sleep_condition = SleepCondition()
 
     count = 0
+    start_time = time.time()
     while sleep_condition.sleep:
+        if startup_process is not None and startup_process.poll() is not None:
+            return False
         try:
-            result = requests.get(galaxy_url + '/api/version')
+            result = requests.get(galaxy_url + "/api/version", timeout=CONNECT_TIMEOUT)
             try:
                 result = result.json()
                 if verbose:
-                    sys.stdout.write("Galaxy Version: %s\n" % result['version_major'])
+                    sys.stdout.write("Galaxy Version: %s\n" % result["version_major"])
                     sys.stdout.flush()
                 break
             except ValueError:
                 if verbose:
                     sys.stdout.write("[%02d] No valid json returned... %s\n" % (count, result.__str__()))
                     sys.stdout.flush()
-        except requests.exceptions.ConnectionError as e:
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             if verbose:
                 sys.stdout.write("[%02d] Galaxy not up yet... %s\n" % (count, unicodify(e)[:100]))
                 sys.stdout.flush()
         count += 1
 
+        if count % 30 == 0:
+            elapsed = time.time() - start_time
+            sys.stderr.write(
+                f"[galaxy-wait] Still waiting for Galaxy at {galaxy_url} after {elapsed:.0f}s ({count} attempts)\n"
+            )
+            sys.stderr.flush()
+
         # If we cannot talk to galaxy and are over the timeout
-        if timeout != 0 and count > timeout:
-            sys.stderr.write("Failed to contact Galaxy\n")
+        elapsed = time.time() - start_time
+        if timeout != 0 and elapsed > timeout:
+            sys.stderr.write(f"Failed to contact Galaxy after {elapsed:.0f}s ({count} attempts)\n")
             return False
 
-        time.sleep(DEFAULT_SLEEP_WAIT)
+        if _wait_for_retry(startup_process):
+            return False
 
     return True
 

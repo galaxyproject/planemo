@@ -1,8 +1,19 @@
 """Module contains :class:`CmdTestTestCase` - integration tests for the ``test`` command."""
+
 import json
 import os
-from tempfile import NamedTemporaryFile
+import shutil
+from tempfile import (
+    NamedTemporaryFile,
+    TemporaryDirectory,
+)
+from unittest import (
+    mock,
+    skip,
+)
 
+from planemo import cli
+from planemo.test.models import PlanemoTestReport
 from .test_utils import (
     assert_exists,
     CliTestCase,
@@ -11,35 +22,170 @@ from .test_utils import (
     skip_if_environ,
     skip_unless_module,
     TEST_DATA_DIR,
+    TEST_TOOLS_DIR,
 )
 
-DATA_MANAGER_TEST_PATH = "data_manager/data_manager_fetch_genome_dbkeys_all_fasta/data_manager/data_manager_fetch_genome_all_fasta_dbkeys.xml"
+SCHEDULING_WORKFLOWS_PATH = os.path.join(TEST_DATA_DIR, "scheduling_failure_workflows")
+FUNCTIONAL_TEST_TOOLS = os.path.join(TEST_DATA_DIR, "tools", "functional_test_tools")
+FETCH_DATA_DATA_MANAGER_TEST_PATH = "data_manager/data_manager_fetch_genome_dbkeys_all_fasta/data_manager/data_manager_fetch_genome_all_fasta_dbkeys.xml"
+BOWTIE2_DATA_MANAGER_TEST_PATH = (
+    "data_manager/data_manager_bowtie2_index_builder/data_manager/bowtie2_index_builder.xml"
+)
+
+
+class CmdTestUseCacheTestCase(CliTestCase):
+    """Unit coverage for the ``test`` command's ``--use_cache`` flag.
+
+    Only checks that the flag reaches the engine layer - ``tests/test_galaxy_activity.py``
+    covers turning that keyword into ``use_cached_job`` on the Galaxy requests.
+    """
+
+    def _forwarded_use_cache(self, *extra_args):
+        artifact = os.path.join(TEST_TOOLS_DIR, "ok_test_assert_command.xml")
+        with self._isolate(), mock.patch("planemo.commands.cmd_test.test_runnables") as mock_test_runnables:
+            mock_test_runnables.return_value = 0
+            self._check_exit_code(["test", *extra_args, artifact])
+            return mock_test_runnables.call_args.kwargs["use_cache"]
+
+    def test_use_cache_defaults_off(self):
+        assert self._forwarded_use_cache() is False
+
+    def test_use_cache_opt_in(self):
+        assert self._forwarded_use_cache("--use_cache") is True
+
+    def test_no_use_cache_explicit(self):
+        assert self._forwarded_use_cache("--no_use_cache") is False
 
 
 class CmdTestTestCase(CliTestCase):
     """Integration tests for the ``test`` command."""
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_startup_timeout(self):
+        """Test --galaxy_startup_timeout."""
+        with self._isolate():
+            test_artifact = os.path.join(TEST_DATA_DIR, FETCH_DATA_DATA_MANAGER_TEST_PATH)
+            test_command = self._test_command(
+                "--galaxy_startup_timeout", "1", test_artifact, "--no_dependency_resolution"
+            )
+            self._check_exit_code(test_command, exit_code=1)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_tool_in_directory(self):
+        """Test with (single) tool in directory."""
+        with self._isolate(), TemporaryDirectory() as tempdir:
+            test_artifact = os.path.join(TEST_DATA_DIR, "tools", "ok_test_assert_command.xml")
+            shutil.copy(test_artifact, tempdir)
+            test_command = self._test_command(tempdir, "--no_dependency_resolution")
+            self._check_exit_code(test_command, exit_code=0)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_data_manager(self):
         """Test testing a data manager test."""
         with self._isolate(), NamedTemporaryFile(prefix="data_manager_test_json") as json_out:
-            test_artifact = os.path.join(TEST_DATA_DIR, DATA_MANAGER_TEST_PATH)
-            test_command = self._test_command(
-                "--test_output_json",
-                json_out.name
-            )
+            test_artifact = os.path.join(TEST_DATA_DIR, FETCH_DATA_DATA_MANAGER_TEST_PATH)
+            test_command = self._test_command("--test_output_json", json_out.name)
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
                 "--no_dependency_resolution",
                 test_artifact,
             ]
             self._check_exit_code(test_command, exit_code=0)
-            with open(json_out.name, 'r') as fh:
-                assert json.load(fh)['summary']['num_tests'] == 1
+            with open(json_out.name) as fh:
+                assert json.load(fh)["summary"]["num_tests"] == 1
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_data_manager_docker_mount(self):
+        """Test testing a data manager that needs (ro) access to the test-data folder."""
+        with self._isolate(), NamedTemporaryFile(prefix="data_manager_test_json") as json_out:
+            test_artifact = os.path.join(TEST_DATA_DIR, BOWTIE2_DATA_MANAGER_TEST_PATH)
+            test_command = self._test_command("--test_output_json", json_out.name)
+            test_command = self.append_profile_argument_if_needed(test_command)
+            # data manager script is symlinked out of directory, will only work with `--docker_extra_volume`
+            # we'll also add a bunch more to test multi path handling
+            extra_volume = os.path.join(TEST_DATA_DIR, "data_manager")
+            test_command += [
+                "--no_dependency_resolution",
+                "--biocontainers",
+                "--docker_extra_volume",
+                extra_volume,
+                "--docker_extra_volume",
+                extra_volume,
+                test_artifact,
+            ]
+            self._check_exit_code(test_command, exit_code=0)
+            with open(json_out.name) as fh:
+                assert json.load(fh)["summary"]["num_tests"] == 1
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_workflow_test_simple_yaml(self):
         """Test testing a simple YAML workflow with Galaxy."""
+        with self._isolate() as test_dir:
+            random_lines = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "randomlines.xml")
+            cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
+            test_artifact = os.path.join(TEST_DATA_DIR, "wf1.gxwf.yml")
+            test_command = self._test_command()
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command += [
+                "--no_dependency_resolution",
+                "--extra_tools",
+                random_lines,
+                "--extra_tools",
+                cat,
+                test_artifact,
+            ]
+            self._check_exit_code(test_command, exit_code=0)
+            with open(os.path.join(test_dir, "tool_test_output.json")) as test_json:
+                tests_dict = json.load(test_json)
+            assert tests_dict["tests"][0]["id"] != tests_dict["tests"][1]["id"]
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_tool_test_timeout(self):
+        """Test if --test_timeout parameter is working."""
+        with self._isolate(), NamedTemporaryFile(prefix="timeout_test_json") as json_out:
+            test_artifact = os.path.join(TEST_TOOLS_DIR, "timeout.xml")
+            test_command = self._test_command("--test_output_json", json_out.name)
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command += [
+                "--test_timeout",
+                "1",
+                test_artifact,
+            ]
+            self._check_exit_code(test_command, exit_code=1)
+            with open(json_out.name) as fh:
+                tool_test_json = json.load(fh)
+                assert tool_test_json["summary"]["num_tests"] == 1
+                # check run time, for smaller 4 since the test will take a bit longer than 1s
+                # the important bit is that it's not about 5s (since the test tool calls `sleep 5`)
+                assert (
+                    float(tool_test_json["tests"][0]["data"]["time_seconds"]) <= 4
+                ), "Test needed more than 10 sec but should time out after 1"
+                assert (
+                    "Timed out after" in tool_test_json["tests"][0]["data"]["output_problems"][0]
+                ), "Time out did not happen"
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_test_index(self):
+        """Test --test_index selects a single test from a tool with two tests."""
+        with self._isolate(), NamedTemporaryFile(prefix="test_index_json") as json_out:
+            test_artifact = os.path.join(TEST_TOOLS_DIR, "two_tests.xml")
+            test_command = self._test_command("--test_output_json", json_out.name)
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command += [
+                "--no_dependency_resolution",
+                "--test_index",
+                "1",
+                test_artifact,
+            ]
+            self._check_exit_code(test_command, exit_code=0)
+            with open(json_out.name) as fh:
+                tool_test_json = json.load(fh)
+                assert tool_test_json["summary"]["num_tests"] == 1
+
+    @skip("Configuring quay.io/bgruening/galaxy:latest is currently broken")
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_test_simple_yaml_dockerized(self):
+        """Test testing a simple YAML workflow with Galaxy in Docker."""
         with self._isolate():
             random_lines = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "randomlines.xml")
             cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
@@ -48,8 +194,12 @@ class CmdTestTestCase(CliTestCase):
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
                 "--no_dependency_resolution",
-                "--extra_tools", random_lines,
-                "--extra_tools", cat,
+                "--engine",
+                "docker_galaxy",
+                "--extra_tools",
+                random_lines,
+                "--extra_tools",
+                cat,
                 test_artifact,
             ]
             self._check_exit_code(test_command, exit_code=0)
@@ -64,7 +214,8 @@ class CmdTestTestCase(CliTestCase):
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
                 "--no_dependency_resolution",
-                "--extra_tools", cat,
+                "--extra_tools",
+                cat,
                 test_artifact,
             ]
             # try:
@@ -102,7 +253,8 @@ class CmdTestTestCase(CliTestCase):
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
                 "--no_dependency_resolution",
-                "--extra_tools", composite_input_imzml,
+                "--extra_tools",
+                composite_input_imzml,
                 test_artifact,
             ]
             self._check_exit_code(test_command, exit_code=0)
@@ -117,7 +269,8 @@ class CmdTestTestCase(CliTestCase):
             test_command = self.append_profile_argument_if_needed(test_command)
             test_command += [
                 "--no_dependency_resolution",
-                "--extra_tools", cat_list,
+                "--extra_tools",
+                cat_list,
                 test_artifact,
             ]
             # try:
@@ -127,6 +280,19 @@ class CmdTestTestCase(CliTestCase):
             #        print(o.read())
             #    raise
 
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_test_repository_installation_gxformat2(self):
+        """Test testing a workflow with collection inputs Galaxy."""
+        with self._isolate():
+            test_artifact = os.path.join(TEST_DATA_DIR, "wf13_tool_shed_repository_gxformat2.yml")
+            test_command = self._test_command()
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command += [
+                "--biocontainers",
+                test_artifact,
+            ]
+            self._check_exit_code(test_command, exit_code=0)
+
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_cwltool_tool_test(self):
         """Test testing a CWL tool with cwltool."""
@@ -134,7 +300,10 @@ class CmdTestTestCase(CliTestCase):
             test_artifact = os.path.join(TEST_DATA_DIR, "int_tool.cwl")
             test_command = self._test_command(test_artifact)
             self._check_exit_code(test_command, exit_code=0)
-            assert_exists(os.path.join(f, "tool_test_output.json"))
+            output_json_path = os.path.join(f, "tool_test_output.json")
+            assert_exists(output_json_path)
+            with open(output_json_path) as test_json:
+                PlanemoTestReport.model_validate(json.load(test_json))
 
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_cwltool_tool_url_inputs_test(self):
@@ -155,7 +324,8 @@ class CmdTestTestCase(CliTestCase):
         with self._isolate() as f:
             test_artifact = os.path.join(TEST_DATA_DIR, "int_tool.cwl")
             test_command = self._test_command(
-                "--engine", "toil",
+                "--engine",
+                "toil",
                 test_artifact,
             )
             self._check_exit_code(test_command, exit_code=0)
@@ -190,7 +360,7 @@ class CmdTestTestCase(CliTestCase):
             test_command.append(test_artifact)
             self._check_exit_code(test_command, exit_code=1)
             output_json_path = os.path.join(f, "tool_test_output.json")
-            with open(output_json_path, "r") as f:
+            with open(output_json_path) as f:
                 output = json.load(f)
             assert "tests" in output
             tests = output["tests"]
@@ -218,12 +388,115 @@ class CmdTestTestCase(CliTestCase):
         # Hook into tests to allow leveraging postgres databases to prevent Galaxy locking errors
         # while running tests.
         profile_name = os.getenv("PLANEMO_TEST_WORKFLOW_RUN_PROFILE", None)
+        database_type = os.getenv("PLANEMO_TEST_WORKFLOW_RUN_PROFILE_DATABASE_TYPE", None)
 
         if profile_name:
-            command += ["--profile", profile_name]
-
-            database_type = os.getenv("PLANEMO_TEST_WORKFLOW_RUN_PROFILE_DATABASE_TYPE", None)
+            # Try to create the profile; if it already exists, ignore the error
+            profile_create_command = ["profile_create", profile_name]
             if database_type:
-                command += ["--database_type", database_type]
+                profile_create_command.extend(["--database_type", database_type])
+
+            # Try creating the profile - ignore error if it already exists
+            result = self._runner.invoke(cli.planemo, profile_create_command)
+            if result.exit_code != 0 and "already exists" not in result.output:
+                # If it failed for a reason other than already existing, that's a real error
+                raise AssertionError(f"Failed to create profile: {result.output}")
+
+            command += ["--profile", profile_name]
+            if database_type:
+                command.extend(["--database_type", database_type])
 
         return command
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_with_optional_input_output_not_provided(self):
+        with self._isolate():
+            test_artifact = os.path.join(TEST_DATA_DIR, "wf16_optional_input_output_label.ga")
+            test_command = self._test_command()
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command.append(test_artifact)
+            self._check_exit_code(test_command, exit_code=0)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_test_output_sanitization(self):
+        cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
+        with self._isolate():
+            test_artifact = os.path.join(TEST_DATA_DIR, "wf17_sanitize_output_paths.yml")
+            test_command = self._test_command("--extra_tools", cat)
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command.append(test_artifact)
+            self._check_exit_code(test_command, exit_code=0)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_test_skipped_invocation(self):
+        cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
+        with self._isolate():
+            test_artifact = os.path.join(TEST_DATA_DIR, "wf18_simple_conditional.yml")
+            test_command = self._test_command("--extra_tools", cat)
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command.append(test_artifact)
+            self._check_exit_code(test_command, exit_code=0)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_with_identical_output_names(self):
+        with self._isolate():
+            test_artifact = os.path.join(TEST_DATA_DIR, "wf_same_name_outputs.ga")
+            test_command = self._test_command()
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command.append(test_artifact)
+            self._check_exit_code(test_command, exit_code=0)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_scheduling_error_invalid_when_expression(self):
+        with self._isolate() as test_dir:
+            test_artifact = os.path.join(SCHEDULING_WORKFLOWS_PATH, "invalid_when_expression.yml")
+            markdown_output_path = os.path.join(test_dir, "test_output.md")
+            test_command = self._test_command()
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command.append(test_artifact)
+            test_command.append("--test_output_markdown")
+            test_command.append(markdown_output_path)
+            self._check_exit_code(test_command, exit_code=1)
+            with open(markdown_output_path) as out:
+                markdown_content = out.read()
+            assert (
+                "Invocation scheduling failed because step 3 contains an expression that could not be evaluated"
+                in markdown_content
+            )
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_scheduling_error_output_not_found(self):
+        with self._isolate() as test_dir:
+            test_artifact = os.path.join(SCHEDULING_WORKFLOWS_PATH, "output_not_found.yml")
+            markdown_output_path = os.path.join(test_dir, "test_output.md")
+            test_command = self._test_command()
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command.append(test_artifact)
+            test_command.append("--test_output_markdown")
+            test_command.append(markdown_output_path)
+            self._check_exit_code(test_command, exit_code=1)
+            with open(markdown_output_path) as out:
+                markdown_content = out.read()
+            assert (
+                "Invocation scheduling failed because step 3 depends on output 'does_not_exist' of step 2, but this step did not produce an output of that name"
+                in markdown_content
+            )
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_scheduling_error_dataset_failed(self):
+        job_properties = os.path.join(FUNCTIONAL_TEST_TOOLS, "job_properties.xml")
+        with self._isolate() as test_dir:
+            test_artifact = os.path.join(SCHEDULING_WORKFLOWS_PATH, "dataset_failed.yml")
+            markdown_output_path = os.path.join(test_dir, "test_output.md")
+            test_command = test_command = self._test_command("--extra_tools", job_properties)
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command.append(test_artifact)
+            test_command.append("--test_output_markdown")
+            test_command.append(markdown_output_path)
+            self._check_exit_code(test_command, exit_code=1)
+            with open(markdown_output_path) as out:
+                markdown_content = out.read()
+            assert (
+                "Invocation scheduling failed because step 2 requires a dataset, but dataset entered a failed state."
+                in markdown_content
+            )

@@ -1,5 +1,4 @@
 """Module describing the planemo ``conda_search`` command."""
-from __future__ import print_function
 
 import click
 import packaging.version
@@ -11,7 +10,7 @@ from planemo.conda import build_conda_context
 VERSION_4_DOT_4 = packaging.version.Version("4.4")
 
 
-@click.command('conda_search')
+@click.command("conda_search")
 @options.conda_target_options(include_local=False)
 @click.argument(
     "term",
@@ -31,4 +30,5 @@ def cli(ctx, term, **kwds):
     if conda_context.conda_version >= VERSION_4_DOT_4:
         term = "*%s*" % term
     args = conda_context._override_channels_args + [term]
-    conda_context.exec_command("search", args)
+    exit_code = conda_context.exec_command("search", args)
+    ctx.exit(exit_code)

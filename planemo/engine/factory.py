@@ -1,7 +1,9 @@
 """Module contains factory method for building class:`Engine` objects."""
 
 import contextlib
+from typing import Generator
 
+from planemo.engine.interface import BaseEngine
 from .cwltool import CwlToolEngine
 from .galaxy import (
     DockerizedManagedGalaxyEngine,
@@ -9,7 +11,6 @@ from .galaxy import (
     LocalManagedGalaxyEngine,
 )
 from .toil import ToilEngine
-
 
 UNKNOWN_ENGINE_TYPE_MESSAGE = "Unknown engine type specified [%s]."
 
@@ -40,7 +41,7 @@ def build_engine(ctx, **kwds):
 
 
 @contextlib.contextmanager
-def engine_context(ctx, **kwds):
+def engine_context(ctx, **kwds) -> Generator[BaseEngine, None, None]:
     """A :func:`contextlib.contextmanager` engine builder for use with ``with`` statements.
 
     https://docs.python.org/2/library/contextlib.html

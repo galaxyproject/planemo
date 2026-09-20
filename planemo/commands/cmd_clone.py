@@ -1,11 +1,15 @@
-"""Module describing the planemo ``recipe_init`` command."""
+"""Module describing the planemo ``clone`` command."""
+
+from typing import Callable
+
 import click
 
-from planemo import github_util
-from planemo import options
+from planemo import (
+    github_util,
+    options,
+)
 from planemo.cli import command_function
 from planemo.config import planemo_option
-
 
 CLONE_GITHUB_TARGETS = {
     "tools-iuc": "galaxyproject/tools-iuc",
@@ -19,7 +23,7 @@ CLONE_GITHUB_TARGETS = {
 }
 
 
-def clone_target_arg():
+def clone_target_arg() -> Callable:
     """Represent target to clone/branch."""
     return click.argument(
         "target",
@@ -28,18 +32,13 @@ def clone_target_arg():
     )
 
 
-@click.command('clone')
+@click.command("clone")
 @planemo_option(
     "--fork/--skip_fork",
     default=True,
     is_flag=True,
 )
-@planemo_option(
-    "--branch",
-    type=click.STRING,
-    default=None,
-    help="Create a named branch on result."
-)
+@planemo_option("--branch", type=click.STRING, default=None, help="Create a named branch on result.")
 @clone_target_arg()
 @options.optional_project_arg(exists=None, default="__NONE__")
 @command_function

@@ -1,6 +1,6 @@
 
 ``docker_build`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``docker_build``. This help message can be generated with ``planemo docker_build
@@ -38,14 +38,11 @@ This can optionally also cache the images.
       --docker_image_cache TEXT
       --docker_cmd TEXT               Command used to launch docker (defaults to
                                       docker).
-    
       --docker_sudo / --no_docker_sudo
                                       Flag to use sudo when running docker.
       --docker_sudo_cmd TEXT          sudo command to use when --docker_sudo is
                                       enabled (defaults to sudo).
-    
       --docker_host TEXT              Docker host to target when executing docker
                                       commands (defaults to localhost).
-    
       --help                          Show this message and exit.
     

@@ -1,9 +1,7 @@
 import os
 
 from planemo.workflow_lint import input_labels
-from .test_utils import (
-    TEST_DATA_DIR,
-)
+from .test_utils import TEST_DATA_DIR
 
 
 def test_input_labels():

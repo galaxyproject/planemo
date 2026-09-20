@@ -1,7 +1,12 @@
 """Test cases for the CommandIO abstraction in tool_builder."""
 
+import os
+
 from planemo.tool_builder import CommandIO
-from .test_utils import assert_equal
+from .test_utils import (
+    assert_equal,
+    TEST_AUTOPYGEN_DATA,
+)
 
 
 def test_simplest_command():
@@ -66,9 +71,7 @@ def test_example_cwl_simple_redirect():
 
 def test_prefixes_separated():
     command_io = _example(
-        "seqtk convert -i '1.bed' --output '1.bam'",
-        example_outputs=["1.bam"],
-        example_inputs=["1.bed"]
+        "seqtk convert -i '1.bed' --output '1.bam'", example_outputs=["1.bam"], example_inputs=["1.bed"]
     )
     cwl_properties = command_io.cwl_properties()
     assert_equal(cwl_properties["base_command"], ["seqtk", "convert"])
@@ -83,11 +86,7 @@ def test_prefixes_separated():
 
 
 def test_prefixes_joined():
-    command_io = _example(
-        "seqtk convert INPUT=1.bed OUTPUT=1.bam",
-        example_outputs=["1.bam"],
-        example_inputs=["1.bed"]
-    )
+    command_io = _example("seqtk convert INPUT=1.bed OUTPUT=1.bam", example_outputs=["1.bam"], example_inputs=["1.bed"])
     cwl_properties = command_io.cwl_properties()
     assert_equal(cwl_properties["base_command"], ["seqtk", "convert"])
     assert_equal(cwl_properties["inputs"][0].position, 1)
@@ -104,7 +103,7 @@ def test_integer_parameters():
     command_io = _example(
         "seqtk convert --size 100 -i '1.bed' --threshold 2.0 --output_type bam > '1.bam'",
         example_outputs=["1.bam"],
-        example_inputs=["1.bed"]
+        example_inputs=["1.bed"],
     )
     cwl_properties = command_io.cwl_properties()
     assert_equal(cwl_properties["base_command"], ["seqtk", "convert"])
@@ -127,6 +126,38 @@ def test_integer_parameters():
 
     assert_equal(cwl_properties["outputs"][0].glob, "out")
     assert_equal(cwl_properties["stdout"], "out")
+
+
+def test_autogen_without_other_inputs():
+    command_io = CommandIO(autopygen=os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_end_to_end_test_case.py"))
+
+    expected_inputs = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_generated_inputs.xml"))
+    expected_commands = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_generated_commands.txt"))
+    expected_version_command = "[TODO exec name] --version"
+
+    assert_equal(command_io.auto_inputs, expected_inputs)
+    assert_equal(command_io.auto_commands, expected_commands)
+    assert_equal(command_io.version_command, expected_version_command)
+
+
+def test_autogen_subparsers():
+    command_io = CommandIO(autopygen=os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_end_to_end_sub.py"))
+
+    expected_inputs = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_end_to_end_sub_inputs.xml"))
+    expected_commands = _open_and_read(os.path.join(TEST_AUTOPYGEN_DATA, "autopygen_end_to_end_sub_commands.txt"))
+    expected_version_command = "[TODO exec name] --version"
+
+    assert_equal(command_io.auto_inputs, expected_inputs)
+    assert_equal(command_io.auto_commands, expected_commands)
+    assert_equal(command_io.version_command, expected_version_command)
+
+
+def _open_and_read(path: str) -> str:
+    file = open(path, "r")
+    result = str(file.read())
+    file.close()
+
+    return result
 
 
 def _example(example_command, example_outputs=[], example_inputs=[]):

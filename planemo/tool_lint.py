@@ -1,6 +1,9 @@
-from __future__ import absolute_import
-
 from os.path import basename
+from typing import (
+    Any,
+    Dict,
+    TYPE_CHECKING,
+)
 
 from galaxy.tool_util.lint import lint_tool_source
 
@@ -24,10 +27,13 @@ from planemo.tools import (
     yield_tool_sources_on_paths,
 )
 
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
+
 LINTING_TOOL_MESSAGE = "Linting tool %s"
 
 
-def build_tool_lint_args(ctx, **kwds):
+def build_tool_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
     lint_args = build_lint_args(ctx, **kwds)
     extra_modules = _lint_extra_modules(**kwds)
     lint_args["extra_modules"] = extra_modules
@@ -38,7 +44,7 @@ def lint_tools_on_path(ctx, paths, lint_args, **kwds):
     assert_tools = kwds.get("assert_tools", True)
     recursive = kwds.get("recursive", False)
     exit_codes = []
-    for (tool_path, tool_xml) in yield_tool_sources_on_paths(ctx, paths, recursive):
+    for tool_path, tool_xml in yield_tool_sources_on_paths(ctx, paths, recursive):
         if handle_tool_load_error(tool_path, tool_xml):
             exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
             continue
@@ -53,8 +59,6 @@ def lint_tools_on_path(ctx, paths, lint_args, **kwds):
 
 def _lint_extra_modules(**kwds):
     linters = []
-    if kwds.get("xsd", True):
-        linters.append(planemo.linters.xsd)
 
     if kwds.get("doi", False):
         linters.append(planemo.linters.doi)
@@ -72,7 +76,7 @@ def _lint_extra_modules(**kwds):
 
 
 def handle_tool_load_error(tool_path, tool_xml):
-    """ Return True if tool_xml is tool load error (invalid XML), and
+    """Return True if tool_xml is tool load error (invalid XML), and
     print a helpful error message.
     """
     is_error = False

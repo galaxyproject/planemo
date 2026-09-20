@@ -3,11 +3,17 @@
 This tests this as a library functionality - additional integration
 style tests are available in ``test_cmd_serve.py``.
 """
+
+import contextlib
+import importlib
 import os
+from types import SimpleNamespace
+from unittest import mock
+
+import pytest
 
 from planemo import network_util
-from planemo import shed
-from planemo.galaxy import galaxy_serve, shed_serve
+from planemo.galaxy import galaxy_serve
 from planemo.runnable import for_path
 from .test_utils import (
     CliTestCase,
@@ -18,6 +24,53 @@ from .test_utils import (
     TEST_DATA_DIR,
     TEST_REPOS_DIR,
 )
+
+serve_module = importlib.import_module("planemo.galaxy.serve")
+
+
+@pytest.mark.parametrize("caller_raises", (False, True))
+def test_managed_galaxy_stops_once_before_database_context_exits(monkeypatch, caller_raises):
+    """Galaxy stops exactly once while its managed database is still available."""
+    events = []
+    config = SimpleNamespace(
+        env={},
+        startup_command=lambda *args, **kwds: "true",
+        install_workflows=lambda: None,
+        kill=mock.Mock(side_effect=lambda: events.append("galaxy stopped")),
+        cleanup=lambda: events.append("configuration cleaned"),
+    )
+
+    @contextlib.contextmanager
+    def configured_galaxy(*args, **kwds):
+        events.append("database started")
+        try:
+            yield config
+        finally:
+            events.append("database stopped")
+
+    monkeypatch.setattr(serve_module, "galaxy_config", configured_galaxy)
+    monkeypatch.setattr(serve_module, "sleep", lambda *args, **kwds: True)
+
+    expected_exception = (
+        pytest.raises(RuntimeError, match="caller failed") if caller_raises else contextlib.nullcontext()
+    )
+    with expected_exception:
+        with serve_module.serve_daemon(
+            SimpleNamespace(verbose=False, vlog=lambda *args, **kwds: None),
+            port=12345,
+        ):
+            events.append("caller finished")
+            if caller_raises:
+                raise RuntimeError("caller failed")
+
+    assert events == [
+        "database started",
+        "caller finished",
+        "galaxy stopped",
+        "database stopped",
+        "configuration cleaned",
+    ]
+    config.kill.assert_called_once_with()
 
 
 class GalaxyServeTestCase(CliTestCase):
@@ -30,7 +83,7 @@ class GalaxyServeTestCase(CliTestCase):
         """Test serving a galaxy tool via a daemon Galaxy process."""
         port = network_util.get_free_port()
         cat_path = os.path.join(TEST_REPOS_DIR, "single_tool", "cat.xml")
-        config = galaxy_serve(
+        with galaxy_serve(
             self.test_context,
             [for_path(cat_path)],
             install_galaxy=True,
@@ -38,9 +91,9 @@ class GalaxyServeTestCase(CliTestCase):
             port=port,
             daemon=True,
             no_dependency_resolution=True,
-        )
-        _assert_service_up(config)
-        config.kill()
+        ) as config:
+            _assert_service_up(config)
+            config.kill()
         _assert_service_down(config)
 
     @skip_if_environ("PLANEMO_SKIP_REDUNDANT_TESTS")  # redundant with test_cmd_serve -> test_serve_workflow
@@ -53,7 +106,7 @@ class GalaxyServeTestCase(CliTestCase):
         cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
         workflow = os.path.join(TEST_DATA_DIR, "wf1.gxwf.yml")
         extra_tools = [random_lines, cat]
-        config = galaxy_serve(
+        with galaxy_serve(
             self.test_context,
             [for_path(workflow)],
             install_galaxy=True,
@@ -62,43 +115,20 @@ class GalaxyServeTestCase(CliTestCase):
             daemon=True,
             extra_tools=extra_tools,
             no_dependency_resolution=True,
-        )
-        _assert_service_up(config)
-        user_gi = config.user_gi
-        assert user_gi.tools.get_tools(tool_id="random_lines1")
-        assert len(user_gi.workflows.get_workflows()) == 1
-        config.kill()
-        _assert_service_down(config)
-
-    @skip_if_environ("PLANEMO_SKIP_REDUNDANT_TESTS")  # redundant with test_cmd_serve -> test_shed_serve
-    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-    @skip_if_environ("PLANEMO_SKIP_SHED_TESTS")
-    @mark.tests_galaxy_branch
-    def test_shed_serve_daemon(self):
-        """Test serving FASTQC from the tool shed via a daemon Galaxy process."""
-        port = network_util.get_free_port()
-        fastqc_path = os.path.join(TEST_REPOS_DIR, "fastqc")
-        ctx = self.test_context
-        install_args_list = shed.install_arg_lists(
-            ctx, [fastqc_path],
-            shed_target="toolshed",
-        )
-        with shed_serve(
-            ctx, install_args_list,
-            port=port,
-            skip_dependencies=True,
-            install_galaxy=True,
-            galaxy_branch=target_galaxy_branch(),
         ) as config:
             _assert_service_up(config)
-            # TODO: verify it is in the tool list!
+            user_gi = config.user_gi
+            assert user_gi.tools.show_tool("random_lines1")
+            assert len(user_gi.workflows.get_workflows()) == 1
+            config.kill()
+            _assert_service_down(config)
 
 
 def _assert_service_up(config):
     assert network_util.wait_net_service(
         "localhost",
         config.port,
-        timeout=.1,
+        timeout=0.1,
     )
     galaxy_config_api = config.gi.config
     config_dict = galaxy_config_api.get_config()
@@ -109,5 +139,5 @@ def _assert_service_down(config):
     assert not network_util.wait_net_service(
         "localhost",
         config.port,
-        timeout=.1,
+        timeout=0.1,
     )

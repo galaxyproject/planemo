@@ -1,4 +1,6 @@
 import os
+import signal
+import subprocess
 import tempfile
 import time
 import uuid
@@ -11,6 +13,7 @@ from planemo.io import kill_pid_file
 from .test_utils import (
     cli_daemon_galaxy,
     CliTestCase,
+    get_entry_point_target,
     launch_and_wait_for_galaxy,
     mark,
     PROJECT_TEMPLATES_DIR,
@@ -22,6 +25,9 @@ from .test_utils import (
     target_galaxy_branch,
     TEST_DATA_DIR,
     TEST_REPOS_DIR,
+    TEST_TOOLS_DIR,
+    wait_for_active_entry_points,
+    wait_for_proxied_content,
 )
 
 TEST_HISTORY_NAME = "Cool History 42"
@@ -29,30 +35,68 @@ SERVE_TEST_VERBOSE = True
 
 
 class UsesServeCommand:
-
     def _run(self, serve_args=[], serve_cmd="serve"):
         serve_cmd = self._serve_command_list(serve_args, serve_cmd)
         if run_verbosely():
             print("Running command for test [%s]" % serve_cmd)
-        self._check_exit_code(serve_cmd)
+        if "--daemon" not in serve_cmd:
+            self._run_subprocess(serve_cmd)
+        else:
+            # Register cleanup hook to kill the daemon process group before
+            # other cleanup hooks run (which may delete temp files the daemon
+            # still references). kill_pid_file sends SIGTERM/SIGKILL to the
+            # entire process group (gravity supervisor + gunicorn + workers).
+            if "--pid_file" in serve_cmd:
+                pid_file_index = serve_cmd.index("--pid_file") + 1
+                pid_file = serve_cmd[pid_file_index]
+                self._cleanup_hooks.insert(0, lambda: kill_pid_file(pid_file))
+            self._check_exit_code(serve_cmd)
+
+    def _run_subprocess(self, serve_cmd):
+        serve_cmd.insert(0, "planemo")
+        stdout_file = tempfile.NamedTemporaryFile(mode="wb+", suffix="_planemo_stdout")
+        popen = subprocess.Popen(
+            serve_cmd, env=os.environ.copy(), stdout=stdout_file, stderr=stdout_file, preexec_fn=os.setsid
+        )
+        if popen.poll() is not None:
+            stdout_file.seek(0)
+            raise Exception(
+                f"planemo serve command failed. exit_code: {popen.returncode}, output: {stdout_file.read().decode('utf-8')}"
+            )
+
+        def cleanup():
+            pgrp = os.getpgid(popen.pid)
+            os.killpg(pgrp, signal.SIGINT)
+            stdout_file.seek(0)
+            print(stdout_file.read().decode("utf-8"))
+            popen.terminate()
+            popen.kill()
+
+        self._cleanup_hooks.append(cleanup)
 
     def _serve_command_list(self, serve_args=[], serve_cmd="serve"):
         test_cmd = ["--verbose"] if run_verbosely() else []
-        test_cmd.extend([
-            serve_cmd,
-            "--galaxy_root", self.galaxy_root,
-            "--galaxy_branch", target_galaxy_branch(),
-            "--no_dependency_resolution",
-            "--port", str(self._port),
-            self._serve_artifact,
-        ])
+        test_cmd.extend(
+            [
+                serve_cmd,
+                "--galaxy_root",
+                self.galaxy_root,
+                "--galaxy_branch",
+                target_galaxy_branch(),
+                "--no_dependency_resolution",
+                "--port",
+                str(self._port),
+                self._serve_artifact,
+            ]
+        )
         test_cmd.extend(serve_args)
         return test_cmd
 
-    def _launch_thread_and_wait(self, func, args=[], **kwd):
-        future = launch_and_wait_for_galaxy(self._port, func, [args], **kwd)
-        if future is not None:
-            self._futures.append(future)
+    def _launch_thread_and_wait(self, func, args=None, run_as_subprocess=False, **kwd):
+        args = args or []
+        future = launch_and_wait_for_galaxy(self._port, func, [args], run_as_subprocess=run_as_subprocess, **kwd)
+        if future:
+            self._cleanup_hooks.append(lambda: future.cancel())
 
     @property
     def _user_gi(self):
@@ -63,7 +107,6 @@ class UsesServeCommand:
 
 
 class ServeTestCase(CliTestCase, UsesServeCommand):
-
     @classmethod
     def setUpClass(cls):
         cls.galaxy_root = tempfile.mkdtemp()
@@ -73,7 +116,7 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         safe_rmtree(cls.galaxy_root)
 
     def setUp(self):
-        super(ServeTestCase, self).setUp()
+        super().setUp()
         self._port = network_util.get_free_port()
         self._pid_file = os.path.join(self._home, "test.pid")
         self._serve_artifact = os.path.join(TEST_REPOS_DIR, "single_tool", "cat.xml")
@@ -84,18 +127,18 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         extra_args = [
             "--skip_client_build",
         ]
-        self._launch_thread_and_wait(self._run, extra_args)
+        self._launch_thread_and_wait(self._run, extra_args, run_as_subprocess=True)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @skip_if_environ("PLANEMO_SKIP_GALAXY_CLIENT_TESTS")
     @skip_unless_executable("python3")
     def test_serve_client_python3(self):
-        extra_args = [
-            "--galaxy_python_version", "3"
-        ]
+        extra_args = ["--galaxy_python_version", "3"]
         # Given the client build - give this more time.
         timeout_multiplier = 3
-        self._launch_thread_and_wait(self._run, extra_args, timeout_multiplier=timeout_multiplier)
+        self._launch_thread_and_wait(
+            self._run, extra_args, timeout_multiplier=timeout_multiplier, run_as_subprocess=True
+        )
         # Check that the client was correctly built
         url = "http://localhost:%d/static/dist/analysis.bundled.js" % int(self._port)
         r = requests.get(url)
@@ -104,15 +147,45 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch
     def test_serve_daemon(self):
-        extra_args = [
-            "--daemon",
-            "--skip_client_build",
-            "--pid_file", self._pid_file]
+        extra_args = ["--daemon", "--skip_client_build", "--pid_file", self._pid_file]
         self._launch_thread_and_wait(self._run, extra_args)
         user_gi = self._user_gi
         assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0
         user_gi.histories.create_history(TEST_HISTORY_NAME)
-        kill_pid_file(self._pid_file)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_unless_executable("docker")
+    @mark.tests_galaxy_branch
+    def test_serve_interactivetool(self):
+        self._serve_artifact = os.path.join(TEST_TOOLS_DIR, "interactivetool_simple.xml")
+        extra_args = [
+            "--daemon",
+            "--skip_client_build",
+            "--pid_file",
+            self._pid_file,
+            "--biocontainers",
+        ]
+        self._launch_thread_and_wait(self._run, extra_args)
+
+        user_gi = self._user_gi
+
+        history_id = user_gi.histories.create_history("IT Test")["id"]
+        tool_run = user_gi.tools._post(
+            payload={
+                "tool_id": "interactivetool_simple",
+                "history_id": history_id,
+                "inputs": {},
+            }
+        )
+        assert "jobs" in tool_run, tool_run
+        job_id = tool_run["jobs"][0]["id"]
+
+        entry_points = wait_for_active_entry_points(user_gi, job_id, timeout=120)
+        assert len(entry_points) == 1
+
+        target = get_entry_point_target(user_gi, entry_points[0]["id"])
+        content = wait_for_proxied_content(target, timeout=30)
+        assert content == "moo cow\n", f"Expected 'moo cow\\n', got: {content!r}"
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch
@@ -123,16 +196,19 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         extra_args = [
             "--daemon",
             "--skip_client_build",
-            "--pid_file", self._pid_file,
-            "--extra_tools", random_lines,
-            "--extra_tools", cat,
+            "--pid_file",
+            self._pid_file,
+            "--extra_tools",
+            random_lines,
+            "--extra_tools",
+            cat,
         ]
         self._launch_thread_and_wait(self._run, extra_args)
         time.sleep(30)
         user_gi = self._user_gi
         assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0
         user_gi.histories.create_history(TEST_HISTORY_NAME)
-        assert user_gi.tools.get_tools(tool_id="random_lines1")
+        assert user_gi.tools.show_tool("random_lines1")
         workflows = user_gi.workflows.get_workflows()
         assert len(workflows) == 1
         workflow = workflows[0]
@@ -140,14 +216,31 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         assert workflow_id
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-    @skip_if_environ("PLANEMO_SKIP_SHED_TESTS")
     @mark.tests_galaxy_branch
-    def test_shed_serve(self):
+    def test_serve_multiple_tool_data_tables(self):
+        tool_data_table_path_1 = self._tool_data_table("planemo1")
+        tool_data_table_path_2 = self._tool_data_table("planemo2")
         extra_args = [
             "--daemon",
             "--skip_client_build",
-            "--pid_file", self._pid_file,
-            "--shed_target", "toolshed"]
+            "--pid_file",
+            self._pid_file,
+            "--tool_data_table",
+            tool_data_table_path_1,
+            "--tool_data_table",
+            tool_data_table_path_2,
+        ]
+        self._launch_thread_and_wait(self._run, extra_args)
+        admin_gi = api.gi(self._port)
+        table_contents = admin_gi.tool_data.show_data_table("__dbkeys__")
+        assert any("planemo1" in field[0] for field in table_contents["fields"]), table_contents
+        assert any("planemo2" in field[0] for field in table_contents["fields"]), table_contents
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_if_environ("PLANEMO_SKIP_SHED_TESTS")
+    @mark.tests_galaxy_branch
+    def test_shed_serve(self):
+        extra_args = ["--daemon", "--skip_client_build", "--pid_file", self._pid_file, "--shed_target", "toolshed"]
         fastqc_path = os.path.join(TEST_REPOS_DIR, "fastqc")
         self._serve_artifact = fastqc_path
         self._launch_thread_and_wait(self._run_shed, extra_args)
@@ -162,7 +255,6 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
             time.sleep(5)
 
         assert found, "Failed to find fastqc id in %s" % tool_ids
-        kill_pid_file(self._pid_file)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_serve_profile(self):
@@ -176,11 +268,19 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
 
     def _test_serve_profile(self, *db_options):
         new_profile = "planemo_test_profile_%s" % uuid.uuid4()
+        # Create the profile first
+        profile_create_command = ["profile_create", new_profile]
+        if db_options:
+            profile_create_command.extend(db_options)
+        self._check_exit_code(profile_create_command, exit_code=0)
+
         extra_args = [
             "--daemon",
             "--skip_client_build",
-            "--pid_file", self._pid_file,
-            "--profile", new_profile,
+            "--pid_file",
+            self._pid_file,
+            "--profile",
+            new_profile,
         ]
         serve_cmd = self._serve_command_list(extra_args)
         with cli_daemon_galaxy(self._runner, self._pid_file, self._port, serve_cmd):
@@ -191,6 +291,23 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         # TODO: Pretty sure this is getting killed, but we should verify.
         with cli_daemon_galaxy(self._runner, self._pid_file, self._port, serve_cmd):
             assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 1
+
+    def _tool_data_table(self, dbkey):
+        with (
+            tempfile.NamedTemporaryFile("w", suffix=".xml.test", delete=False) as tool_data_table,
+            tempfile.NamedTemporaryFile("w", suffix="bla.loc", delete=False) as loc_file,
+        ):
+            tool_data_table.write(f"""<tables>
+    <table name="__dbkeys__" comment_char="#">
+        <columns>value, name, len_path</columns>
+        <file path="{loc_file.name}" />
+    </table>
+</tables>""")
+            loc_file.write(f"{dbkey}\t{dbkey}\t{dbkey}.len")
+            tool_data_table.flush()
+            loc_file.flush()
+        self._cleanup_hooks.extend([lambda: os.remove(loc_file.name), lambda: os.remove(tool_data_table.name)])
+        return tool_data_table.name
 
     def _run_shed(self, serve_args=[]):
         return self._run(serve_args=serve_args, serve_cmd="shed_serve")

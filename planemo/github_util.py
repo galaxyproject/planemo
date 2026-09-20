@@ -1,16 +1,15 @@
 """Utilities for interacting with Github."""
-from __future__ import absolute_import
 
 import io
 import os
 import stat
 import tarfile
 import tempfile
-from distutils.dir_util import copy_tree
+import time
 from pathlib import Path
+from shutil import copytree
 
 import requests
-from galaxy.tool_util.deps.commands import which
 
 from planemo import git
 from planemo.io import (
@@ -20,16 +19,18 @@ from planemo.io import (
 
 try:
     import github
+
     has_github_lib = True
 except ImportError:
     github = None
     has_github_lib = False
 
-GH_VERSION = "1.1.0"
+GH_VERSION = "1.5.0"
 
-NO_GITHUB_DEP_ERROR = ("Cannot use github functionality - "
-                       "PyGithub library not available.")
+NO_GITHUB_DEP_ERROR = "Cannot use github functionality - PyGithub library not available."
 FAILED_TO_DOWNLOAD_GH = "No gh executable available and it could not be installed."
+DEFAULT_REMOTE_NAME = "planemo-remote"
+SLEEP_BEFORE_RELEASE = int(os.environ.get("PLANEMO_SLEEP_BEFORE_RELEASE", 60))
 
 
 def get_github_config(ctx, allow_anonymous=False):
@@ -38,40 +39,50 @@ def get_github_config(ctx, allow_anonymous=False):
     return GithubConfig(global_github_config, allow_anonymous=allow_anonymous)
 
 
-def clone_fork_branch(ctx, target, path, **kwds):
+def clone_fork_branch(ctx, target, path, remote_name=DEFAULT_REMOTE_NAME, **kwds):
     """Clone, fork, and branch a repository ahead of building a pull request."""
-    git.checkout(
-        ctx,
-        target,
-        path,
-        branch=kwds.get("branch", None),
-        remote="origin",
-        from_branch="master"
-    )
+    git.checkout(ctx, target, path, branch=kwds.get("branch", None), remote="origin", from_branch="master")
     if kwds.get("fork"):
         try:
-            fork(ctx, path, **kwds)
+            fork(ctx, path, remote_name=remote_name, **kwds)
         except Exception:
             pass
+    if "GITHUB_USER" in os.environ:
+        # On CI systems fork doesn't add a local remote under circumstances I don't quite understand,
+        # but that's probably linked to https://github.com/cli/cli/issues/2722
+        cmd = [
+            "git",
+            "remote",
+            "add",
+            remote_name,
+            f"https://github.com/{os.environ['GITHUB_USER']}/{os.path.basename(target)}",
+        ]
+        try:
+            communicate(cmd, cwd=path)
+        except RuntimeError:
+            # Can add the remote only once
+            pass
+    return remote_name
 
 
-def fork(ctx, path, **kwds):
-    """Fork the target repository using ``hub``."""
+def fork(ctx, path, remote_name=DEFAULT_REMOTE_NAME, **kwds):
+    """Fork the target repository using ``gh``."""
     gh_path = ensure_gh(ctx, **kwds)
     gh_env = get_gh_env(ctx, path, **kwds)
-    cmd = [gh_path, "repo", "fork"]
-    communicate(cmd, env=gh_env)
+    cmd = [gh_path, "repo", "fork", "--remote=true", "--remote-name", remote_name]
+    communicate(cmd, cwd=path, env=gh_env)
+    return remote_name
 
 
 def get_or_create_repository(ctx, owner, repo, dry_run=True, **kwds):
     """Clones or creates a repository and returns path on disk"""
     target = os.path.realpath(tempfile.mkdtemp())
-    remote_repo = "https://github.com/{owner}/{repo}".format(owner=owner, repo=repo)
+    remote_repo = f"https://github.com/{owner}/{repo}"
     try:
-        ctx.log('Cloning {}'.format(remote_repo))
+        ctx.log(f"Cloning {remote_repo}")
         git.clone(ctx, src=remote_repo, dest=target)
     except Exception:
-        ctx.log('Creating repository {}'.format(remote_repo))
+        ctx.log(f"Creating repository {remote_repo}")
         target = create_repository(ctx, owner=owner, repo=repo, dest=target, dry_run=dry_run)
     return target
 
@@ -79,7 +90,7 @@ def get_or_create_repository(ctx, owner, repo, dry_run=True, **kwds):
 def create_repository(ctx, owner, repo, dest, dry_run, **kwds):
     gh_path = ensure_gh(ctx, **kwds)
     gh_env = get_gh_env(ctx, dry_run=dry_run, **kwds)
-    cmd = [gh_path, 'repo', 'create', '-y', '--public', "{owner}/{repo}".format(owner=owner, repo=repo)]
+    cmd = [gh_path, "repo", "create", "-y", "--public", f"{owner}/{repo}"]
     if dry_run:
         "Would run command '{}'".format(" ".join(cmd))
         git.init(ctx, dest)
@@ -98,86 +109,108 @@ def rm_dir_contents(directory, ignore_dirs=(".git")):
                 item.unlink()
 
 
-def add_dir_contents_to_repo(ctx, from_dir, target_dir, target_repository_path, version, dry_run, notes=""):
-    ctx.log("From {} to {}".format(from_dir, target_repository_path))
+def add_dir_contents_to_repo(
+    ctx, from_dir, target_dir, target_repository_path, version, dry_run, branch="main", notes=""
+):
+    ctx.log(f"From {from_dir} to {target_repository_path}")
     rm_dir_contents(target_repository_path)
-    copy_tree(from_dir, target_repository_path)
+    copytree(from_dir, target_repository_path, dirs_exist_ok=True)
     git.add(ctx, target_repository_path, target_repository_path)
-    message = "Update for version {version}".format(version=version)
+    message = f"Update for version {version}"
     if notes:
-        message += "\n{notes}".format(notes=notes)
+        message += f"\n{notes}"
     git.commit(ctx, repo_path=target_repository_path, message=message)
     if not dry_run:
-        git.push(ctx, target_repository_path)
+        git.push(ctx, target_repository_path, to="origin", branch=branch)
 
 
 def assert_new_version(ctx, version, owner, repo):
-    remote_repo = "https://github.com/{owner}/{repo}".format(owner=owner, repo=repo)
+    remote_repo = f"https://github.com/{owner}/{repo}"
     try:
         tags_and_versions = git.ls_remote(ctx, remote_repo=remote_repo)
-        if "refs/tags/v{}".format(version) in tags_and_versions or "refs/tags/{}".format(version) in tags_and_versions:
-            raise Exception("Version '{}' for {}/{} exists already. Please change the version.".format(version, owner, repo))
+        if f"refs/tags/v{version}" in tags_and_versions or f"refs/tags/{version}" in tags_and_versions:
+            raise Exception(f"Version '{version}' for {owner}/{repo} exists already. Please change the version.")
     except RuntimeError:
         # repo doesn't exist
         pass
 
 
 def changelog_in_repo(target_repository_path):
+    """
+    Parse the changelog for the current version.
+
+    The changelog should be written following the conventions in https://keepachangelog.com/en/0.3.0/.
+    This means we will assume that individual versions are announced using `##`.
+    """
     changelog = []
     for path in os.listdir(target_repository_path):
-        if 'changelog.md' in path.lower():
-            header_seen = False
-            header_chars = ('---', '===', '~~~')
-            with(open(os.path.join(target_repository_path, path))) as changelog_fh:
+        if "changelog.md" in path.lower():
+            version_header_seen = False
+            version_header_prefix = "## "
+            top_level_header_seen = False
+            top_level_header_prefix = "# "
+            with open(os.path.join(target_repository_path, path)) as changelog_fh:
                 for line in changelog_fh:
-                    if line.startswith(header_chars):
-                        if header_seen:
+                    if line.startswith(top_level_header_prefix):
+                        top_level_header_seen = True
+                        continue
+                    if line.startswith(version_header_prefix):
+                        if version_header_seen:
                             return "\n".join(changelog[:-1])
                         else:
-                            header_seen = True
-    return "\n".join(changelog)
+                            version_header_seen = True
+                    if top_level_header_seen and not line or not version_header_seen:
+                        continue
+                    changelog.append(line.rstrip())
+    return "\n".join(changelog).rstrip()
 
 
-def create_release(ctx, from_dir, target_dir, owner, repo, version, dry_run, notes="", **kwds):
+def create_release(ctx, from_dir, target_dir, owner, repo, version, dry_run, branch, notes="", **kwds):
     assert_new_version(ctx, version, owner=owner, repo=repo)
     target_repository_path = get_or_create_repository(ctx, owner=owner, repo=repo, dry_run=dry_run)
-    add_dir_contents_to_repo(ctx, from_dir, target_dir, target_repository_path, version=version, dry_run=dry_run, notes=notes)
+    add_dir_contents_to_repo(
+        ctx, from_dir, target_dir, target_repository_path, version=version, dry_run=dry_run, branch=branch, notes=notes
+    )
     gh_path = ensure_gh(ctx, **kwds)
     gh_env = get_gh_env(ctx, dry_run=dry_run, **kwds)
     cmd = [
         gh_path,
-        'release',
-        '-R',
-        "{}/{}".format(owner, repo),
-        'create',
-        "v{version}".format(version=version),
-        '--title',
+        "release",
+        "-R",
+        f"{owner}/{repo}",
+        "create",
+        f"v{version}",
+        "--title",
         str(version),
     ]
-    cmd.extend(['--notes', notes or changelog_in_repo(target_repository_path)])
+    cmd.extend(["--notes", notes or changelog_in_repo(target_repository_path)])
     if not dry_run:
+        # For new repositories dockstore needs a bit of time to register the new workflow.
+        time.sleep(SLEEP_BEFORE_RELEASE)
         communicate(cmd, env=gh_env)
     else:
         ctx.log("Would run command '{}'".format(" ".join(cmd)))
 
 
-def pull_request(ctx, path, message=None, **kwds):
+def pull_request(ctx, path, message=None, repo=None, **kwds):
     """Create a pull request against the origin of the path using ``gh``."""
     gh_path = ensure_gh(ctx, **kwds)
     gh_env = get_gh_env(ctx, path, **kwds)
     cmd = [gh_path, "pr", "create"]
     if message is None:
-        cmd.append('--fill')
+        cmd.append("--fill")
     else:
         lines = message.splitlines()
-        cmd.extend(['--title', lines[0]])
+        cmd.extend(["--title", lines[0]])
         if len(lines) > 1:
             cmd.extend(["--body", "\n".join(lines[1:])])
+    if repo:
+        cmd.extend(["--repo", repo])
     communicate(cmd, env=gh_env)
 
 
 def get_gh_env(ctx, path=None, dry_run=False, **kwds):
-    """Return a environment dictionary to run hub with given user and repository target."""
+    """Return a environment dictionary to run gh with given user and repository target."""
     if path is None:
         env = {}
     else:
@@ -192,32 +225,29 @@ def get_gh_env(ctx, path=None, dry_run=False, **kwds):
 
 
 def ensure_gh(ctx, **kwds):
-    """Ensure ``hub`` is on the system ``PATH``.
+    """Ensure gh is available for planemo
 
-    This method will ensure ``hub`` is installed if it isn't available.
+    This method will ensure ``gh`` is installed at the correct version.
 
-    For more information on ``hub`` checkout ...
+    For more information on ``gh`` checkout https://cli.github.com/
     """
-    gh_path = which("gh")
-    if not gh_path:
-        planemo_gh_path = os.path.join(ctx.workspace, "gh")
-        if not os.path.exists(planemo_gh_path):
-            _try_download_gh(planemo_gh_path)
+    planemo_gh_path = os.path.join(ctx.workspace, f"gh-{GH_VERSION}")
+    if not os.path.exists(planemo_gh_path):
+        _try_download_gh(planemo_gh_path)
 
-        if not os.path.exists(planemo_gh_path):
-            raise Exception(FAILED_TO_DOWNLOAD_GH)
+    if not os.path.exists(planemo_gh_path):
+        raise Exception(FAILED_TO_DOWNLOAD_GH)
 
-        gh_path = planemo_gh_path
-    return gh_path
+    return planemo_gh_path
 
 
 def _try_download_gh(planemo_gh_path):
     link = _gh_link()
     path = Path(planemo_gh_path)
     resp = requests.get(link)
-    with tarfile.open(fileobj=io.BytesIO(resp.content)) as tf, path.open('wb') as outfile:
+    with tarfile.open(fileobj=io.BytesIO(resp.content)) as tf, path.open("wb") as outfile:
         for member in tf.getmembers():
-            if member.name.endswith('bin/gh'):
+            if member.name.endswith("bin/gh"):
                 outfile.write(tf.extractfile(member).read())
     path.chmod(path.stat().st_mode | stat.S_IEXEC)
 
@@ -234,7 +264,7 @@ def _get_raw_github_config(ctx):
     return ctx.global_config["github"]
 
 
-class GithubConfig(object):
+class GithubConfig:
     """Abstraction around a Github account.
 
     Required to use ``github`` module methods that require authorization.
@@ -267,7 +297,7 @@ def publish_as_gist_file(ctx, path, name="index"):
     """
     github_config = get_github_config(ctx, allow_anonymous=False)
     user = github_config._github.get_user()
-    with open(path, "r") as fh:
+    with open(path) as fh:
         content = fh.read()
     content_file = github.InputFileContent(content)
     gist = user.create_gist(False, {name: content_file})

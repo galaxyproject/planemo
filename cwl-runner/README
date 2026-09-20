@@ -1,9 +1,9 @@
-This an optional companion package to planemo which provides provides
+This an optional companion package to planemo which provides
 an additional entry point under the alias "cwl-runner", which is the
 implementation-agnostic name for the default CWL interpreter installed
 on a host.
 
 This package is based on the CWL reference implementation package of
 the same name, see
-https://github.com/common-workflow-language/cwltool/tree/master/cwl-runner
+https://github.com/common-workflow-language/cwltool/tree/main/cwlref-runner
 for more information.

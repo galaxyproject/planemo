@@ -1,54 +1,119 @@
 """Provide abstractions over click testing of the app and unittest."""
-from __future__ import print_function
 
+import ast
 import contextlib
 import functools
 import os
-import re
 import shutil
 import signal
+import subprocess
+import sys
+import time
 import traceback
-from concurrent.futures import as_completed, ThreadPoolExecutor
-from sys import version_info
+from concurrent.futures import (
+    as_completed,
+    ThreadPoolExecutor,
+)
 from tempfile import mkdtemp
-from unittest import skip, TestCase
+from typing import (
+    Any,
+    Callable,
+    List,
+    Optional,
+)
+from unittest import (
+    skip,
+    TestCase,
+)
 
 import psutil
-import py.code
 import pytest
+import requests as requests_lib
 from click.testing import CliRunner
-from galaxy.util import asbool, unicodify, which
+from galaxy.util import (
+    asbool,
+    unicodify,
+    which,
+)
+from galaxy.util.unittest_utils import skip_if_site_down
 
-from planemo import cli
-from planemo import io
-from planemo import shed
+from planemo import (
+    cli,
+    io,
+    shed,
+)
 from planemo.config import PLANEMO_CONFIG_ENV_PROP
-from planemo.galaxy.ephemeris_sleep import sleep, SleepCondition
+from planemo.galaxy.ephemeris_sleep import (
+    sleep,
+    SleepCondition,
+)
 from .shed_app_test_utils import (
     mock_shed,
     setup_mock_shed,
 )
 
-PRE_PYTHON_27 = False
-if version_info[0] == 2 and version_info[1] >= 7:
-    PYTHON_27 = True
-else:
-    PYTHON_27 = False
-
 TEST_DIR = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
+TEST_AUTOPYGEN_DATA = os.path.join(TEST_DATA_DIR, "autopygen")
 TEST_REPOS_DIR = os.path.join(TEST_DATA_DIR, "repos")
-TEST_RECIPES_DIR = os.path.join(TEST_DATA_DIR, "recipes")
 TEST_TOOLS_DIR = os.path.join(TEST_DATA_DIR, "tools")
 PROJECT_TEMPLATES_DIR = os.path.join(TEST_DIR, os.path.pardir, "project_templates")
-EXIT_CODE_MESSAGE = ("Planemo command [%s] resulted in unexpected exit code "
-                     "[%s], expected exit code [%s]]. Command output [%s]")
 CWL_DRAFT3_DIR = os.path.join(PROJECT_TEMPLATES_DIR, "cwl_draft3_spec")
 NON_ZERO_EXIT_CODE = object()
+ZENODO_TEST_RECORD_API_URL = "https://zenodo.org/api/records/1321885"
+skip_if_zenodo_down = skip_if_site_down(ZENODO_TEST_RECORD_API_URL)
+CWLTOOL_CACHE_ENV_PROP = "PLANEMO_CWLTOOL_CACHE_DIRECTORY"
 
 
-class MarkGenerator(object):
+def test_sleep_fails_immediately_for_invalid_url():
+    with pytest.raises(requests_lib.exceptions.InvalidURL):
+        sleep("http://::1:9090")
 
+
+SIGTERM_IGNORING_PROCESS = """
+import signal
+import sys
+import time
+
+signal.signal(signal.SIGTERM, signal.SIG_IGN)
+with open(sys.argv[1], "w") as ready_file:
+    ready_file.write("ready")
+time.sleep(300)
+"""
+
+
+def _spawn_sigterm_ignoring_group(ready_path):
+    """Start a leader that ignores SIGTERM, in a process group of its own.
+
+    Waits for the handler to actually be installed - signalling before that
+    point would kill the process outright and prove nothing.
+    """
+    process = subprocess.Popen(
+        [sys.executable, "-c", SIGTERM_IGNORING_PROCESS, str(ready_path)],
+        start_new_session=True,
+    )
+    for _ in range(200):
+        if ready_path.exists():
+            return process
+        time.sleep(0.05)
+    process.kill()
+    process.wait()
+    raise AssertionError("Process never began ignoring SIGTERM")
+
+
+@contextlib.contextmanager
+def sigterm_ignoring_group(ready_path):
+    """Yield a running process group that refuses to die on SIGTERM."""
+    process = _spawn_sigterm_ignoring_group(ready_path)
+    try:
+        yield process
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait()
+
+
+class MarkGenerator:
     def __getattr__(self, name):
         return getattr(pytest.mark, name)
 
@@ -61,27 +126,35 @@ mark = MarkGenerator()
 class CliTestCase(TestCase):
     non_zero_exit_code = NON_ZERO_EXIT_CODE
 
-    def setUp(self):  # noqa
+    def setUp(self) -> None:
         self._runner = CliRunner()
         self._home = mkdtemp()
         self._old_config = os.environ.get(PLANEMO_CONFIG_ENV_PROP, None)
-        self._futures = []
+        self._cleanup_hooks: List[Callable] = []
         self._port = None
         os.environ[PLANEMO_CONFIG_ENV_PROP] = self.planemo_yaml_path
+        # The whole workspace cannot be isolated - it caches the Galaxy repository and
+        # virtualenv shared by the Galaxy tests. Isolate the cwltool cache though, else
+        # repeated local test runs replay cached results instead of running cwltool.
+        self._old_cwltool_cache = os.environ.get(CWLTOOL_CACHE_ENV_PROP, None)
+        os.environ[CWLTOOL_CACHE_ENV_PROP] = os.path.join(self._home, "cwltool_cache")
 
     def tearDown(self):  # noqa
-        for future in self._futures:
-            future.cancel()
+        for cleanup_hook in self._cleanup_hooks:
             try:
-                future.result(timeout=10)
+                cleanup_hook()
             except Exception as e:
-                print("Failed to dispose of future driven resource [%s]" % e)
+                print(f"Failed to run cleanup hook: [{e}]")
         if self._port:
             kill_process_on_port(self._port)
         if self._old_config:
             os.environ[PLANEMO_CONFIG_ENV_PROP] = self._old_config
         else:
             del os.environ[PLANEMO_CONFIG_ENV_PROP]
+        if self._old_cwltool_cache is not None:
+            os.environ[CWLTOOL_CACHE_ENV_PROP] = self._old_cwltool_cache
+        else:
+            del os.environ[CWLTOOL_CACHE_ENV_PROP]
         safe_rmtree(self._home)
 
     @property
@@ -105,32 +178,41 @@ class CliTestCase(TestCase):
             yield f
 
     @contextlib.contextmanager
+    def _isolate_workflow(self, name):
+        with self._isolate() as f:
+            self._copy_workflow(name, f)
+            yield f
+
+    @contextlib.contextmanager
     def _isolate_with_test_data(self, relative_path):
         with self._isolate() as f:
             repo = os.path.join(TEST_DATA_DIR, relative_path)
             self._copy_directory(repo, f)
-            yield f
+            yield os.path.realpath(f)
 
     def _copy_repo(self, name, dest):
         repo = os.path.join(TEST_REPOS_DIR, name)
         self._copy_directory(repo, dest)
 
+    def _copy_workflow(self, name, dest):
+        workflow = os.path.join(TEST_DATA_DIR, name)
+        io.shell(["cp", workflow, dest])
+
     def _copy_directory(self, path, dest):
-        io.shell(['cp', '-r', "%s/." % path, dest])
+        io.shell(["cp", "-r", f"{path}/.", dest])
 
     @property
     def test_context(self):
-        return test_context()
+        return create_test_context()
 
 
 class CliShedTestCase(CliTestCase):
-
     def setUp(self):  # noqa
-        super(CliShedTestCase, self).setUp()
+        super().setUp()
         self.mock_shed = setup_mock_shed()
 
     def tearDown(self):  # noqa
-        super(CliShedTestCase, self).tearDown()
+        super().tearDown()
         self.mock_shed.shutdown()
 
     def _shed_create(self, recursive=False):
@@ -142,7 +224,8 @@ class CliShedTestCase(CliTestCase):
 
     def _shed_args(self, read_only=False):
         args = [
-            "--shed_target", self.mock_shed.url,
+            "--shed_target",
+            self.mock_shed.url,
         ]
         if not read_only:
             args.extend(["--shed_key", "ignored"])
@@ -175,7 +258,6 @@ def mock_shed_context():
 
 
 class TempDirectoryTestCase(TestCase):
-
     def setUp(self):  # noqa
         self.temp_directory = mkdtemp()
 
@@ -183,7 +265,7 @@ class TempDirectoryTestCase(TestCase):
         safe_rmtree(self.temp_directory)
 
 
-class TempDirectoryContext(object):
+class TempDirectoryContext:
     def __init__(self):
         self.temp_directory = mkdtemp()
 
@@ -197,15 +279,13 @@ class TempDirectoryContext(object):
 def skip_unless_environ(var):
     if var in os.environ:
         return lambda func: func
-    template = "Environment variable %s not found, dependent test skipped."
-    return skip(template % var)
+    return skip(f"Environment variable {var} not found, dependent test skipped.")
 
 
 def skip_if_environ(var):
     if var not in os.environ:
         return lambda func: func
-    template = "Environment variable %s set, dependent test skipped."
-    return skip(template % var)
+    return skip(f"Environment variable {var} set, dependent test skipped.")
 
 
 def skip_unless_module(module):
@@ -216,63 +296,54 @@ def skip_unless_module(module):
         available = False
     if available:
         return lambda func: func
-    template = "Module %s could not be loaded, dependent test skipped."
-    return skip(template % module)
+    return skip(f"Module {module} could not be loaded, dependent test skipped.")
 
 
 def skip_unless_executable(executable):
     if which(executable):
         return lambda func: func
-    return skip("PATH doesn't contain executable %s" % executable)
-
-
-def skip_unless_python_2_7():
-    if PYTHON_27:
-        return lambda func: func
-    return skip("Python 2.7 required for test.")
+    return skip(f"PATH doesn't contain executable {executable}")
 
 
 def target_galaxy_branch():
     return os.environ.get("PLANEMO_TEST_GALAXY_BRANCH", "master")
 
 
-# Taken from Galaxy's test/unit/tools/test_tool_deps.py
+# Taken from Galaxy's test/unit/tool_util/util.py
 @contextlib.contextmanager
-def modify_environ(values, remove=[]):
+def modify_environ(values, keys_to_remove=None):
     """
     Modify the environment for a test, adding/updating values in dict `values` and
     removing any environment variables mentioned in list `remove`.
     """
-    new_keys = set(values.keys()) - set(os.environ.keys())
     old_environ = os.environ.copy()
     try:
-        os.environ.update(values)
-        for to_remove in remove:
-            try:
-                del os.environ[remove]
-            except KeyError:
-                pass
+        if values:
+            os.environ.update(values)
+        if keys_to_remove:
+            for key in keys_to_remove:
+                if key in os.environ:
+                    del os.environ[key]
         yield
     finally:
+        os.environ.clear()
         os.environ.update(old_environ)
-        for key in new_keys:
-            del os.environ[key]
 
 
 def run_verbosely():
     return asbool(os.environ.get("PLANEMO_TEST_VERBOSE", "false"))
 
 
-def test_context():
+def create_test_context():
     context = cli.PlanemoCliContext()
     context.planemo_directory = "/tmp/planemo-test-workspace"
     context.verbose = run_verbosely()
     return context
 
 
-def assert_equal(a, b):
+def assert_equal(a: object, b: object) -> None:
     """Assert two things are equal."""
-    assert a == b, "%s != %s" % (a, b)
+    assert a == b, f"{a} != {b}"
 
 
 def assert_exists(path):
@@ -283,12 +354,10 @@ def assert_exists(path):
     dir_path = os.path.dirname(path)
     msg = None
     if not os.path.exists(dir_path):
-        template = "Expected path [%s] to exist, but parent absent."
-        msg = template % path
+        msg = f"Expected path [{path}] to exist, but parent absent."
     if not os.path.exists(path):
         contents = os.listdir(dir_path)
-        template = "Expected path [%s] to exist. Directory contents %s."
-        msg = template % (path, contents)
+        msg = f"Expected path [{path}] to exist. Directory contents {contents}."
     if msg is not None:
         raise AssertionError(msg)
 
@@ -297,30 +366,27 @@ def check_exit_code(runner, command_list, exit_code=0):
     expected_exit_code = exit_code
     planemo_cli = cli.planemo
     if run_verbosely():
-        print("Invoking command [%s]" % command_list)
+        print(f"Invoking command [{command_list}]")
     result = runner.invoke(planemo_cli, command_list)
     if run_verbosely():
-        print("Command list output is [%s]" % result.output)
+        print(f"Command list output is [{result.output}]")
     result_exit_code = result.exit_code
     if expected_exit_code is NON_ZERO_EXIT_CODE:
         matches_expectation = result_exit_code != 0
     else:
         matches_expectation = result_exit_code == expected_exit_code
     if not matches_expectation:
-        message = EXIT_CODE_MESSAGE % (
-            " ".join(command_list),
-            result_exit_code,
-            expected_exit_code,
-            result.output,
+        message = (
+            f"Planemo command [{' '.join(command_list)}] resulted in unexpected exit code [{result_exit_code}], "
+            f"expected exit code [{expected_exit_code}]]. Command output [{result.output}]"
         )
         if result.exception:
-            message += " Exception [%s], " % unicodify(result.exception)
+            message += f" Exception [{unicodify(result.exception)}], "
             exc_type, exc_value, exc_traceback = result.exc_info
-            tb = traceback.format_exception(exc_type, exc_value,
-                                            exc_traceback)
-            message += "Traceback [%s]" % tb
+            tb = traceback.format_exception(exc_type, exc_value, exc_traceback)
+            message += f"Traceback [{tb}]"
         if run_verbosely():
-            print("Raising assertion error for unexpected exit code [%s]" % message)
+            print(f"Raising assertion error for unexpected exit code [{message}]")
         raise AssertionError(message)
     return result
 
@@ -330,7 +396,7 @@ def kill_process_on_port(port):
     processes = []
     for proc in psutil.process_iter():
         try:
-            for conns in proc.connections(kind='inet'):
+            for conns in proc.connections(kind="inet"):
                 if conns.laddr.port == port:
                     proc.send_signal(signal.SIGINT)
                     processes.append(proc)
@@ -347,35 +413,50 @@ def cli_daemon_galaxy(runner, pid_file, port, command_list, exit_code=0):
     _wait_on_future_suppress_exception(future)
 
 
-def launch_and_wait_for_galaxy(port, func, args=[], timeout=600, timeout_multiplier=1):
+def launch_and_wait_for_galaxy(port, func, args=[], timeout=600, timeout_multiplier=1, run_as_subprocess=False):
     """Run func(args) in a thread and wait on port for service.
 
     Service should remain up so check network a few times, this prevents
     the code that finds a free port from causing a false positive when
     detecting that the port is bound to.
     """
-    target = functools.partial(func, *args)
+    target = None
+    if run_as_subprocess:
+        # func is responsible for starting subprocess registering a subprocess.Popen instance for cleanup.
+        # Should return immediately.
+        func(*args)
+    else:
+        target = functools.partial(func, *args)
 
     wait_sleep_condition = SleepCondition()
 
     def wait():
         effective_timeout = timeout * timeout_multiplier
-        if not sleep("http://localhost:%d" % port, verbose=True, timeout=effective_timeout, sleep_condition=wait_sleep_condition):
-            raise Exception('Galaxy failed to start on port %d' % port)
+        if not sleep(
+            f"http://localhost:{port}", verbose=True, timeout=effective_timeout, sleep_condition=wait_sleep_condition
+        ):
+            raise Exception(f"Galaxy failed to start on port {port}")
 
     executor = ThreadPoolExecutor(max_workers=2)
     try:
-        target_future = executor.submit(target)
+        futures = []
+        if target:
+            target_future = executor.submit(target)
+            futures.append(target_future)
+        else:
+            target_future = None
         wait_future = executor.submit(wait)
-        for first in as_completed([target_future, wait_future]):
+        futures.append(wait_future)
+
+        for _ in as_completed(futures):
             break
 
-        if target_future.running():
+        if target_future and target_future.running():
             # If wait timed out re-throw.
             wait_future.result()
             return target_future
         else:
-            if target_future.exception() is not None:
+            if target_future and target_future.exception() is not None:
                 wait_future.cancel()
                 wait_sleep_condition.cancel()
                 _wait_on_future_suppress_exception(wait_future)
@@ -393,49 +474,76 @@ def _wait_on_future_suppress_exception(future):
     try:
         future.result(timeout=30)
     except Exception as e:
-        print("Problem waiting on future %s" % e)
-
-
-# From pytest-raisesregexp
-class assert_raises_regexp(object):
-    def __init__(self, expected_exception, regexp, *args, **kwargs):
-        __tracebackhide__ = True
-        self.exception = expected_exception
-        self.regexp = regexp
-        self.excinfo = None
-
-        if args:
-            with self:
-                args[0](*args[1:], **kwargs)
-
-    def __enter__(self):
-        self.excinfo = object.__new__(py.code.ExceptionInfo)
-        return self.excinfo
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        __tracebackhide__ = True
-
-        if exc_type is None:
-            pytest.fail('DID NOT RAISE {0}'.format(self.exception))
-
-        self.excinfo.__init__((exc_type, exc_val, exc_tb))
-
-        if not issubclass(exc_type, self.exception):
-            pytest.fail('{0} RAISED instead of {1}\n{2!r}'
-                        .format(exc_type, self.exception, exc_val))
-
-        if not re.search(self.regexp, str(exc_val)):
-            pytest.fail('Pattern "{0}" not found in "{1!s}"'
-                        .format(self.regexp, exc_val))
-
-        return True
+        print(f"Problem waiting on future {e}")
 
 
 def safe_rmtree(path):
     try:
         shutil.rmtree(path)
     except Exception as e:
-        print("Failed to cleanup test directory [%s]: [%s]" % (path, e))
+        print(f"Failed to cleanup test directory [{path}]: [{e}]")
+
+
+def load_function_body(path: str, func_name: str) -> ast.Module:
+    with open(path) as file:
+        module = ast.parse(file.read())
+
+        for item in module.body:
+            if isinstance(item, ast.FunctionDef) and item.name == func_name:
+                return ast.Module(body=item.body, type_ignores=[])
+
+        raise ModuleNotFoundError()
+
+
+def wait_for_active_entry_points(gi, job_id: str, timeout: int = 120) -> list[dict[str, Any]]:
+    """Poll GET /api/entry_points?job_id={job_id} until all entry points are active."""
+    end = time.time() + timeout
+    while time.time() < end:
+        resp = gi.make_get_request(f"{gi.url}/entry_points?job_id={job_id}")
+        resp.raise_for_status()
+        entry_points = resp.json()
+        if entry_points and all(ep.get("active") for ep in entry_points):
+            return entry_points
+        # Check if job errored
+        job_resp = gi.make_get_request(f"{gi.url}/jobs/{job_id}?full=true")
+        job_resp.raise_for_status()
+        if job_resp.json().get("state") == "error":
+            raise Exception(f"Interactive tool job {job_id} failed: {job_resp.json()}")
+        time.sleep(3)
+    raise TimeoutError(f"Entry points for job {job_id} did not become active within {timeout}s")
+
+
+def get_entry_point_target(gi, entry_point_id: str) -> str:
+    """Get the target URL for an entry point via /api/entry_points/{id}/access."""
+    resp = gi.make_get_request(f"{gi.url}/entry_points/{entry_point_id}/access")
+    resp.raise_for_status()
+    return resp.json()["target"]
+
+
+def wait_for_proxied_content(target_url: str, timeout: int = 30) -> str:
+    """Request content through the GxIT proxy using the Host header trick.
+
+    The target URL looks like: http://{key}-{token}.ep.interactivetool.localhost:{port}/
+    We parse out the subdomain host and make a request to localhost:{port} with
+    the Host header set to the full subdomain hostname.
+    """
+    end = time.time() + timeout
+    last_error: Optional[Exception] = None
+    while time.time() < end:
+        try:
+            scheme, rest = target_url.split("://", 1)
+            faked_host = rest.split("/", 1)[0] if "/" in rest else rest
+            _prefix, host_and_port = rest.split(".interactivetool.", 1)
+            # host_and_port is like "localhost:8090/" - strip trailing path
+            host_and_port = host_and_port.split("/", 1)[0]
+            url = f"{scheme}://{host_and_port}"
+            response = requests_lib.get(url, timeout=5, headers={"Host": faked_host})
+            response.raise_for_status()
+            return response.text
+        except Exception as e:
+            last_error = e
+            time.sleep(2)
+    raise TimeoutError(f"Failed to get proxied content from {target_url} within {timeout}s: {last_error}")
 
 
 # TODO: everything should be considered "exported".

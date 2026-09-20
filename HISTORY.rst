@@ -6,7 +6,771 @@ History
 .. to_doc
 
 ---------------------
-0.74.1 (2020-01-03)
+0.75.48.dev0
+---------------------
+* Add ``--use_cache`` to ``planemo test``, off by default - follow-up to #1665
+  which added it to ``planemo run``.
+
+
+---------------------
+0.75.47 (2026-08-22)
+---------------------
+* use target_str_to_targets from tool-util package (thanks to `@bernt-matthias`_). `Pull Request 1467`_
+* Check for empty shed fields (thanks to `@bernt-matthias`_). `Pull Request 1486`_
+* Declare rich as a direct dependency (thanks to `@jmchilton`_). `Pull Request 1682`_
+* command used to list available workflows (rebase + fixes) (thanks to `@jmchilton`_). `Pull Request 1681`_
+* Use Gravity multiprocessing for modern Galaxy (thanks to `@mvdbeek`_). `Pull Request 1678`_
+
+
+---------------------
+0.75.46 (2026-08-04)
+---------------------
+* Skip bot authors in bootstrap_history acknowledgements (thanks to
+  `@jmchilton`_). `Pull Request 1657`_
+* Stop loading workflow .ga files as tools (thanks to `@mvdbeek`_). `Pull
+  Request 1660`_
+* Lint that a workflow's pinned changeset_revision provides the referenced
+  tool version (thanks to `@mvdbeek`_). `Pull Request 1659`_
+* GitHub workflow improvements (thanks to `@nsoranzo`_). `Pull Request 1663`_
+* Bump actions/setup-python from 6 to 6.3.0 in the actions group. `Pull Request
+  1664`_
+* Bump the actions group with 2 updates. `Pull Request 1670`_
+* Surface Galaxy service logs when a tool test fails (thanks to `@jmchilton`_).
+  `Pull Request 1669`_
+* Raise an actionable error for untranslatable collection outputs (thanks to
+  `@mvdbeek`_). `Pull Request 1661`_
+* Bump the actions group with 3 updates. `Pull Request 1673`_
+* Bump minimum galaxy pin (thanks to `@mvdbeek`_). `Pull Request 1674`_
+* Behavior change: add ``--use_cache`` to ``planemo run``, which now reuses
+  cached job results by default (#1665) (thanks to `@jmchilton`_). `Pull
+  Request 1666`_
+
+
+---------------------
+0.75.45 (2026-07-15)
+---------------------
+* Add --lf/--failed to re-run only previously-failed tests (thanks to `@mvdbeek`_). `Pull Request 1653`_
+* Fix workflow polling hang when a step stays new behind a paused branch (thanks to `@mvdbeek`_). `Pull Request 1648`_
+* Bump actions/checkout from 6 to 7. `Pull Request 1655`_
+* Fix describe_outputs crash when tool_state is a dict not a JSON string (thanks to `@jmchilton`_). `Pull Request 1654`_
+* Persist shed-installed data table config across Galaxy restarts (thanks to `@jmchilton`_). `Pull Request 1656`_
+
+
+---------------------
+0.75.44 (2026-05-26)
+---------------------
+* Fix false-positive RequiredFilesExist lint in shed_lint (#1646) (thanks to `@mvdbeek`_). `Pull Request 1647`_
+
+
+---------------------
+0.75.43 (2026-05-22)
+---------------------
+* Bump requirement for galaxy packages to 26.0 (thanks to `@guerler`_). `Pull Request 1630`_
+* Make report templates resilient to typed-model null defaults (thanks to `@mvdbeek`_). `Pull Request 1644`_
+
+
+---------------------
+0.75.42 (2026-05-20)
+---------------------
+* Adjust test_index indexing (thanks to `@RZ9082`_). `Pull Request 1628`_
+* Add nest_collection and other recent distro tools (thanks to `@mvdbeek`_). `Pull Request 1634`_
+* add option to trigger tool evaluation stradegy = remote (thanks to `@bgruening`_). `Pull Request 1635`_
+* Fix typo in docs (thanks to `@RZ9082`_). `Pull Request 1639`_
+* Update Python support docs (thanks to `@jmchilton`_). `Pull Request 1637`_
+* Allow structured reasoning of Planemo command-line interface and certain outputs (thanks to `@jmchilton`_). `Pull Request 1636`_
+* Fix workflow init metadata handling (thanks to `@jmchilton`_). `Pull Request 1638`_
+* Bring in gxformat2 Linting Improvements (add some agent assistance files) (thanks to `@jmchilton`_). `Pull Request 1633`_
+* Harden gxformat2-normalized input/output handling (thanks to `@jmchilton`_). `Pull Request 1642`_
+* Escape rich markup in failed-job error reporting (thanks to `@mvdbeek`_). `Pull Request 1643`_
+* Add Claude slash command for release workflow (thanks to `@jmchilton`_). `Pull Request 1627`_
+
+* Add structured CLI metadata and output schema exports, validate Planemo JSON
+  outputs, and write full merged test reports.
+
+---------------------
+0.75.41 (2026-03-19)
+---------------------
+* Fix workflow lint crash when tool_state is dict instead of JSON string (thanks to `@jmchilton`_). `Pull Request 1626`_
+
+
+---------------------
+0.75.40 (2026-03-05)
+---------------------
+* Support new path for galaxy's version file (thanks to `@mr-c`_). `Pull Request 1624`_
+* Enable GxITs in planemo serve (thanks to `@pavanvidem`_). `Pull Request 1568`_
+
+
+---------------------
+0.75.39 (2026-03-03)
+---------------------
+* Add planemo format command (thanks to `@dannon`_). `Pull Request 1617`_
+* Add --job_workers option to limit parallel local jobs (default 1) (thanks to `@mvdbeek`_). `Pull Request 1620`_
+
+
+---------------------
+0.75.38 (2026-02-24)
+---------------------
+* Display job metric container in test results (thanks to `@mvdbeek`_). `Pull Request 1612`_
+* Accept completed as terminal invocation state (thanks to `@mvdbeek`_). `Pull Request 1615`_
+* Added testing with index (thanks to `@dadrasarmin`_). `Pull Request 1614`_
+* Speed up planemo tests by providing uv (thanks to `@mvdbeek`_). `Pull Request 1616`_
+* Replace distutils (removed in Python 3.12) (thanks to `@nsoranzo`_). `Pull Request 1618`_
+
+---------------------
+0.75.37 (2026-02-06)
+---------------------
+* Move deploy to a separate workflow for trusted publishing (thanks to `@nsoranzo`_). `Pull Request 1608`_
+* Finish release and fix release process (thanks to `@bernt-matthias`_). `Pull Request 1607`_
+* Set default mulled_resolution_cache_data_dir in planemo workspace (thanks to `@mvdbeek`_). `Pull Request 1610`_
+* Fix commit_version.py (thanks to `@bernt-matthias`_). `Pull Request 1609`_
+
+---------------------
+0.75.36 (2026-02-03)
+---------------------
+* Add new pangenomics category (thanks to `@SaimMomin12`_). `Pull Request 1603`_
+* Fix exception handling in case of ReadTimeout errors (thanks to `@nsoranzo`_). `Pull Request 1606`_
+* Apply new black formatting (thanks to `@mvdbeek`_). `Pull Request 1605`_
+* Fix error in reports macro file (thanks to `@bernt-matthias`_). `Pull Request 1604`_
+* Add linter checking remote_repository_url (thanks to `@bernt-matthias`_). `Pull Request 1581`_
+
+---------------------
+0.75.35 (2026-01-21)
+---------------------
+* Add documentation for workflow_track, invocation_download, and invoca…
+  (thanks to `@mvdbeek`_). `Pull Request 1601`_
+* Add vault configuration file option (thanks to `@arash77`_). `Pull Request
+  1599`_
+* add response to error message (thanks to `@bernt-matthias`_). `Pull Request
+  1598`_
+* Allow to skip url check (thanks to `@bernt-matthias`_). `Pull Request 1597`_
+
+---------------------
+0.75.34 (2026-01-06)
+---------------------
+* Add TRS ID support for ``run`` and ``workflow_job_init`` (thanks to
+  `@mvdbeek`_). `Pull Request 1596`_
+* Implement upload progress bar (thanks to `@mvdbeek`_). `Pull Request 1593`_
+* Make output of planemo workflow_job_init more helpful (thanks to
+  `@mvdbeek`_). `Pull Request 1595`_
+* Expand failed workflow jobs by default and sort steps numerically  (thanks
+  to `@mvdbeek`_). `Pull Request 1594`_
+* Allow `requirements_in_conda` and `biocontainer_registered` in skip_file
+  (thanks to `@kostrykin`_). `Pull Request 1588`_
+* Fix for method that is renamed in 25.1 (thanks to `@bernt-matthias`_). `Pull
+  Request 1591`_
+* Some refactoring and fixes for handing of conda packages
+  (thanks to `@bernt-matthias`_). `Pull Request 1592`_
+  Request 1586`_
+* Use job cache in planemo rerun (thanks to `@mvdbeek`_). `Pull Request 1583`_
+  Request 1582`_
+
+---------------------
+0.75.33 (2025-10-20)
+---------------------
+* Fail when pointing at a profile that doesn't exist (thanks to `@mvdbeek`_).
+  `Pull Request 1578`_
+* Don't report failed workflow run with --no_wait (thanks to `@mvdbeek`_).
+  `Pull Request 1579`_
+* Delay toil import and use or fail when actually used (thanks to
+  `@mvdbeek`_). `Pull Request 1580`_
+* Improve command not found handling (thanks to `@mvdbeek`_). `Pull Request
+  1575`_
+* Fall back to sqlite when database creation fails (thanks to `@mvdbeek`_).
+  `Pull Request 1576`_
+* Raise click exception where we don't need a full traceback (thanks to
+  `@mvdbeek`_). `Pull Request 1577`_
+* Wait for upload job and make sure uploads are ok (thanks to `@mvdbeek`_).
+  `Pull Request 1574`_
+* Updates to ``pyproject.toml`` and CI workflows (thanks to `@nsoranzo`_).
+  `Pull Request 1572`_
+* Enable dependabot version updates for GitHub actions (thanks to
+  `@nsoranzo`_). `Pull Request 1566`_
+* Fix underscores in config option (thanks to `@bernt-matthias`_). `Pull
+  Request 1567`_
+* Build and release script updates (thanks to `@mvdbeek`_). `Pull Request
+  1561`_
+
+---------------------
+0.75.32 (2025-08-18)
+---------------------
+* Fixing 429 url error (thanks to `@arash77`_). `Pull Request 1556`_
+* Fix subworkflow invocation tracking (thanks to `@mvdbeek`_). `Pull Request 1560`_
+
+---------------------
+0.75.31 (2025-06-23)
+---------------------
+
+* Don't pollute working directory with tools.yaml file (thanks to
+  `@mvdbeek`_). `Pull Request 1554`_
+* Add ruff and isort to `make format` and tox, add pre-commit config (thanks
+  to `@mvdbeek`_). `Pull Request 1552`_
+* Make ``no_dependency_resolution`` and ``simultaneous_upload`` global options
+  (thanks to `@mvdbeek`_). `Pull Request 1553`_
+* Add flag to export invocation from run command (thanks to `@mvdbeek`_).
+  `Pull Request 1551`_
+* Load default job metrics (thanks to `@mvdbeek`_). `Pull Request 1548`_
+* Drop unnecessary autogen in cmd_slurm_init (thanks to `@mvdbeek`_). `Pull
+  Request 1549`_
+* Terminate polling if we can't advance invocation (thanks to `@mvdbeek`_).
+  `Pull Request 1547`_
+* Don't do preload in managed instance (thanks to `@mvdbeek`_). `Pull Request
+  1546`_
+* Add a slurm_init command (thanks to `@jmchilton`_). `Pull Request 1543`_
+* Add missing module to pyproject.toml (thanks to `@mvdbeek`_). `Pull Request
+  1545`_
+* Add the option to download the outputs of a completed workflow run (thanks
+  to `@Smeds`_). `Pull Request 1532`_
+* update shed categories (thanks to `@bgruening`_). `Pull Request 1539`_
+* cmd to export an existing invocations as an archive for storage or later
+  import (thanks to `@Smeds`_). `Pull Request 1534`_
+* Bump requirements for galaxy packages to 25.0 (thanks to
+  `@ahmedhamidawan`_). `Pull Request 1542`_
+* Print job errors in workflow invocation as they occur (thanks to
+  `@mvdbeek`_). `Pull Request 1540`_
+* Enable celery tasks (thanks to `@mvdbeek`_). `Pull Request 1541`_
+* add file extension to downloaded output (thanks to `@Smeds`_). `Pull Request
+  1531`_
+* Workflow progress bar (thanks to `@jmchilton`_). `Pull Request 1510`_
+* Fix job handler setup (thanks to `@mvdbeek`_). `Pull Request 1538`_
+* Overhaul Galaxy job config handling (thanks to `@jmchilton`_). `Pull Request
+  1506`_
+* create provided output_directory if it doesn't exist (thanks to `@Smeds`_).
+  `Pull Request 1526`_
+
+---------------------
+0.75.30 (2025-05-07)
+---------------------
+* fix lint_shed_version if there are no installable revisions (thanks to
+  `@bernt-matthias`_). `Pull Request 1509`_
+* Fix bumping of dev versions (thanks to `@mvdbeek`_). `Pull Request 1514`_
+* Don't escape non-ascii unicode characters in json.dumps (thanks to
+  `@mvdbeek`_). `Pull Request 1523`_
+* Fix version linter for new repos (thanks to `@bernt-matthias`_). `Pull
+  Request 1519`_
+* Add switch to prevent early termination of workflow runs (thanks to
+  `@kostrykin`_). `Pull Request 1518`_
+* Add missing collection operation tools (thanks to `@mvdbeek`_). `Pull
+  Request 1524`_
+
+---------------------
+0.75.29 (2025-03-27)
+---------------------
+* Fix dependency specification (thanks to `@mvdbeek`_). `Pull Request 1507`_
+
+---------------------
+0.75.28 (2025-03-27)
+---------------------
+* Print stdout stderr if install command fails (thanks to `@mvdbeek`_). `Pull
+  Request 1505`_
+* fix: removes that spaces that aren't allowed in the singularity instance
+  name (thanks to `@Smeds`_). `Pull Request 1504`_
+* Build Modernization (thanks to `@jmchilton`_). `Pull Request 1503`_
+* Add linter to check if tool versions are bumped (thanks to `@bernt-matthias`_).
+  `Pull Request 1502`_
+* Fix make quick-test (thanks to `@jmchilton`_). `Pull Request 1501`_
+* Migrate mypy settings to pyproject.toml (thanks to `@jmchilton`_). `Pull
+  Request 1500`_
+* Add support for Python 3.12 (thanks to `@nsoranzo`_). `Pull Request 1496`_
+* Add postgres singularity option (thanks to `@Smeds`_). `Pull Request 1492`_
+* Loosen test assertions (thanks to `@bernt-matthias`_). `Pull Request 1494`_
+* Update browser user agent string (thanks to `@nsoranzo`_). `Pull Request
+  1495`_
+
+---------------------
+0.75.27 (2025-03-03)
+---------------------
+* Remove usage of `defaults` conda channel (thanks to `@bernt-matthias`_).
+  `Pull Request 1487`_
+* Add category "Geo Science" (thanks to `@bernt-matthias`_). `Pull Request 1483`_
+* Bump requirements for galaxy packages to 24.2 (thanks to `@jdavcs`_). `Pull
+  Request 1491`_
+* Use python 3.13 for deploymen (thanks to `@bernt-matthias`_). `Pull Request 1488`_
+* Fix repository category update (thanks to `@mvdbeek`_). `Pull Request 1481`_
+
+---------------------
+0.75.26 (2024-09-24)
+---------------------
+* Fix up autopygen type annotation (thanks to `@mvdbeek`_). `Pull Request
+  1474`_
+* Fix autoupdate for workflows with overlapping tool updates (thanks to
+  `@bernt-matthias`_). `Pull Request 1452`_
+* Display last lines of logs (thanks to `@mvdbeek`_). `Pull Request 1473`_
+
+---------------------
+0.75.25 (2024-08-11)
+---------------------
+* Add a new single cell category (thanks to `@pavanvidem`_). `Pull Request
+  1457`_
+* Add extended-assertions requirements (thanks to `@bernt-matthias`_). `Pull
+  Request 1471`_
+
+---------------------
+0.75.24 (2024-07-04)
+---------------------
+* Workflow best practices: check that creator identifiers are URIs (thanks to
+  `@elichad`_). `Pull Request 1458`_
+* Update pinning for Galaxy 24.1 (thanks to `@bernt-matthias`_). `Pull Request
+  1460`_
+* Add option to create a minimal markdown test report (thanks to
+  `@bernt-matthias`_). `Pull Request 1462`_
+* Increase worflow linting (thanks to `@lldelisle`_). `Pull Request 1463`_
+* Run CI tests against newer Galaxy versions (thanks to `@bernt-matthias`_).
+  `Pull Request 1466`_
+* Add the option to provide a history id to run the workflow in (thanks to
+  `@Delphine-L`_). `Pull Request 1461`_
+* Make sure that skip list does not get `['']` (if no skip is given) (thanks
+  to `@bernt-matthias`_). `Pull Request 1453`_
+* Tool linting add `--skip_file` and remove lxml schema validation (thanks to
+  `@bernt-matthias`_). `Pull Request 1420`_
+
+---------------------
+0.75.23 (2024-05-08)
+---------------------
+* Implement run/test/workflow_edit/autoupdate from non default tool sheds
+  (thanks to `@mvdbeek`_). `Pull Request 1445`_
+* Install prebuilt client by default (thanks to `@mvdbeek`_). `Pull Request
+  1450`_
+* Bump galaxy packages to allow for 24.0 (thanks to `@bernt-matthias`_). `Pull
+  Request 1441`_
+* replace dead link in conclusions (thanks to `@martenson`_). `Pull Request
+  1447`_
+* Add text to autopygen exceptions (thanks to `@bernt-matthias`_). `Pull
+  Request 1444`_
+* Drop circleci config (thanks to `@mvdbeek`_). `Pull Request 1443`_
+* Fix linting of asserts with children (thanks to `@bernt-matthias`_). `Pull
+  Request 1442`_
+
+---------------------
+0.75.22 (2024-04-04)
+---------------------
+* Fix parsing of training ``metadata.yaml`` files (thanks to `@nsoranzo`_).
+  `Pull Request 1439`_
+* Fix markdown template: add missing closing details tag (thanks to `@bernt-matthias`_). `Pull Request 1440`_
+* Misc workflow linting improvements (thanks to `@bernt-matthias`_). `Pull
+  Request 1437`_
+* Don't skip requirements with an environment marker (thanks to `@nsoranzo`_).
+  `Pull Request 1433`_
+* Add `--host` parameter to allow listening on non-default hosts (thanks to
+  `@selten`_). `Pull Request 1430`_
+
+---------------------
+0.75.21 (2024-02-01)
+---------------------
+* Add option to pass extra arguments to `docker run` (thanks to `@bernt-matthias`_). `Pull Request 1428`_
+* Fix workflow_edit (thanks to `@mvdbeek`_). `Pull Request 1427`_
+* Update to black 2024 stable style (thanks to `@nsoranzo`_). `Pull Request
+  1425`_
+
+---------------------
+0.75.20 (2024-01-30)
+---------------------
+* Fix use of `package_name` attribute on `CondaTarget` objects (thanks to
+  `@nsoranzo`_). `Pull Request 1424`_
+* Don't crash autoupdate on non-PEP440-compliant tool versions (thanks to
+  `@nsoranzo`_). `Pull Request 1422`_
+* Add now mandatory readthedocs config files (thanks to `@nsoranzo`_). `Pull
+  Request 1419`_
+* Update action versions (thanks to `@nsoranzo`_). `Pull Request 1416`_
+
+---------------------
+0.75.19 (2023-12-06)
+---------------------
+
+* Update upper bound for galaxy packages to < 23.2 (thanks to `@bernt-matthias`_). `Pull Request 1388`_
+* Fix workflow download when using instance id (thanks to `@mvdbeek`_). `Pull
+  Request 1412`_
+* Remove introduction header from training init (thanks to `@hexylena`_).
+  `Pull Request 1410`_
+
+---------------------
+0.75.18 (2023-11-16)
+---------------------
+
+* Pretty-print workflow and use correct version of linked workflow in
+  ``workflow_test_init`` (thanks to `@mvdbeek`_). `Pull Request 1408`_
+* Fix running workflow tests when there are multiple tests (thanks to
+  `@mvdbeek`_). `Pull Request 1407`_
+* Fix matching of tool ids to autoupdate (thanks to `@nsoranzo`_). `Pull
+  Request 1406`_
+
+---------------------
+0.75.17 (2023-11-01)
+---------------------
+* Implement running tests against existing invocation (thanks to `@mvdbeek`_).
+  `Pull Request 1401`_
+* Fix test result download (thanks to `@mvdbeek`_). `Pull Request 1402`_
+
+---------------------
+0.75.16 (2023-11-01)
+---------------------
+* No changes
+
+---------------------
+0.75.15 (2023-10-29)
+---------------------
+* Change info message for markdown readme in repo
+  (thanks to `@bernt-matthias`_). `Pull Request 1398`_
+* Make test reports more resilient to failing invocations (thanks to
+  `@mvdbeek`_). `Pull Request 1400`_
+* Fix zenodo test, drop explicit datatype mapping (thanks to `@mvdbeek`_).
+  `Pull Request 1399`_
+* Fix linting rule selection (thanks to `@bernt-matthias`_). `Pull Request
+  1396`_
+* Add missing ``Astronomy``, ``CLIP-seq`` and ``Materials science`` TS
+  categories (thanks to `@bernt-matthias`_). `Pull Request 1397`_
+
+---------------------
+0.75.14 (2023-10-19)
+---------------------
+* Fix workflow_lint for json output values (thanks to `@mvdbeek`_). `Pull
+  Request 1395`_
+
+---------------------
+0.75.13 (2023-10-18)
+---------------------
+* Add --skip to shed_lint (thanks to `@bernt-matthias`_). `Pull Request 1394`_
+* Remove API key requirement from training_init (thanks to `@hexylena`_).
+  `Pull Request 1393`_
+* Try to fix planemo test workflow when output is collection with identical
+  name (thanks to `@lldelisle`_). `Pull Request 1391`_
+
+---------------------
+0.75.12 (2023-09-18)
+---------------------
+* Track subworkflow invocations after main invocation is scheduled (thanks to
+  `@mvdbeek`_). `Pull Request 1389`_
+
+---------------------
+0.75.11 (2023-09-14)
+---------------------
+
+* Implement automatic tool generation based on the source code of the tool
+  (thanks to `@Kulivox`_). `Pull Request 1263`_
+* Support for testing workflows with conditional steps (thanks to
+  `@mvdbeek`_). `Pull Request 1387`_
+
+---------------------
+0.75.10 (2023-09-01)
+---------------------
+
+* Add pick_value to distro_tools (thanks to `@mvdbeek`_). `Pull Request 1385`_
+* Allow missing conda_exec (thanks to `@mstabrin`_). `Pull Request 1384`_
+* Fix profile version test (thanks to `@bernt-matthias`_). `Pull Request
+  1383`_
+* Fix type comparisons (thanks to `@bernt-matthias`_). `Pull Request 1382`_
+* Added a note that docker is required for docker and biocontainers option
+  (thanks to `@paulzierep`_). `Pull Request 1355`_
+* Optimize disk space usage for `planemo test` (thanks to `@bernt-matthias`_).
+  `Pull Request 1378`_
+* Fix for change of base_url in BioBlend 1.2.0 (thanks to `@nsoranzo`_). `Pull
+  Request 1379`_
+
+---------------------
+0.75.9 (2023-06-29)
+---------------------
+
+* Update collection operation tool list (thanks to `@mvdbeek`_). `Pull Request
+  1377`_
+* Officially support Python 3.10 and 3.11 (thanks to `@nsoranzo`_). `Pull
+  Request 1375`_
+* Fix links (thanks to `@nsoranzo`_). `Pull Request 1374`_
+* Fix ``test_run_gxtool_randomlines`` test on Galaxy dev branch (thanks to
+  `@nsoranzo`_). `Pull Request 1373`_
+
+---------------------
+0.75.8 (2023-06-09)
+---------------------
+
+* Bump galaxy package requirements to allow for 23.0 (thanks to `@bernt-matthias`_). `Pull Request 1372`_
+* Sanitize and make output names unique (thanks to `@mvdbeek`_). `Pull Request 1371`_
+* Increase bioblend retries for bad networks (thanks to `@hexylena`_). `Pull Request 1369`_
+* Add ``--biocontainers`` option to shed_lint (thanks to `@mvdbeek`_). `Pull Request 1370`_
+* fix regex of orcid + add test (thanks to `@lldelisle`_). `Pull Request 1364`_
+* Drop `allow_none` for finding repository (thanks to `@mvdbeek`_). `Pull Request 1358`_
+
+---------------------
+0.75.7 (2023-03-01)
+---------------------
+* Drop call to ``escape_non_unicode_symbols`` (thanks to `@nsoranzo`_). `Pull
+  Request 1357`_
+
+---------------------
+0.75.6 (2023-02-22)
+---------------------
+* Allow running autoupdate against external server (thanks to `@mvdbeek`_).
+  `Pull Request 1265`_
+* Fix extraction of orcid identifiers for .dockstore.yml (thanks to
+  `@lldelisle`_). `Pull Request 1350`_
+
+---------------------
+0.75.5 (2023-02-10)
+---------------------
+* Bump galaxy packages to 22.05 (thanks to `@bernt-matthias`_). `Pull Request
+  1275`_
+
+---------------------
+0.75.4 (2023-02-09)
+---------------------
+
+* Store datasets by UUID (thanks to `@bernt-matthias`_). `Pull Request 1347`_
+* Fix orcid regex for dockstore_init (thanks to `@lldelisle`_). `Pull Request
+  1348`_
+* Fix virtualenv dir bookkeeping (thanks to `@wm75`_). `Pull Request 1346`_
+* Deprecate introduction slides folder (thanks to `@hexylena`_). `Pull Request
+  1344`_
+* Remove note recommending installing dev versions from `planemo run` tutorial
+  (thanks to `@simonbray`_). `Pull Request 1338`_
+* Rename configuration option removed in tox 4.0 (thanks to `@nsoranzo`_).
+  `Pull Request 1337`_
+* Remove travis-ci.org badge from README.rst (thanks to `@SimonWaldherr`_).
+  `Pull Request 1334`_
+
+---------------------
+0.75.3 (2022-11-30)
+---------------------
+
+* Mount test data dir read-only in docker (thanks to `@mvdbeek`_). `Pull
+  Request 1327`_
+* Add traceback to report template (thanks to `@bernt-matthias`_). `Pull
+  Request 1332`_
+* Add indent and sort_keys to tool_test_json (thanks to `@simonbray`_). `Pull
+  Request 1330`_
+* Fix ``planemo shed_test`` (thanks to `@mvdbeek`_). `Pull Request 1329`_
+* Add h5py dependency, required for comparing h5 files (thanks to
+  `@mvdbeek`_). `Pull Request 1326`_
+* Update GitHub action versions (thanks to `@nsoranzo`_). `Pull Request 1322`_
+* Fix "glone" typo in error message (thanks to `@bernt-matthias`_). `Pull
+  Request 1325`_
+* Type annotation for input staging-related code (thanks to `@nsoranzo`_).
+  `Pull Request 1320`_
+* Add creator dockstore (thanks to `@lldelisle`_). `Pull Request 1314`_
+
+---------------------
+0.75.2 (2022-11-02)
+---------------------
+
+* Compare versions, not tool ids to find latest tool ids (thanks to
+  `@mvdbeek`_). `Pull Request 1313`_
+* Fix ``for_paths`` when path is directory of tools (thanks to `@mvdbeek`_).
+  `Pull Request 1312`_
+* Fix workflow_lint with list + check elements in collection (thanks to
+  `@lldelisle`_). `Pull Request 1310`_
+* Drop copy_tree workaround for tool sources (thanks to `@mvdbeek`_). `Pull
+  Request 1308`_
+
+---------------------
+0.75.1 (2022-10-31)
+---------------------
+
+* Use `pytest.raises()` instead of ad-hoc `assert_raises_regexp()` context
+  manager (thanks to `@nsoranzo`_). `Pull Request 1302`_
+* Add planemo_ci_setup command (thanks to `@mvdbeek`_). `Pull Request 1304`_
+* Don't fail planemo autoupdate if tool version not found in tool shed (thanks
+  to `@lldelisle`_). `Pull Request 1305`_
+* workflow_lint: ensure that tool shed tool ids are valid (thanks to
+  `@lldelisle`_). `Pull Request 1306`_
+* Fix recording of virtual_env_dir (thanks to `@mvdbeek`_). `Pull Request
+  1307`_
+
+---------------------
+0.75.0 (2022-10-28)
+---------------------
+
+* Restore running tool tests against directory (thanks to `@mvdbeek`_). `Pull
+  Request 1303`_
+* Update outdated cuffmerge url (thanks to `@martenson`_). `Pull Request
+  1247`_
+* Set upstream branch when pushing workflows to GitHub (thanks to
+  `@simonbray`_). `Pull Request 1249`_
+* restore --no_cleanup to set cleanup_job to never (thanks to `@bernt-matthias`_). `Pull Request 1255`_
+* Drop support for Python 3.6 (thanks to `@simonbray`_). `Pull Request 1257`_
+* Replace CoC with link to GalaxyProject's one (thanks to `@nsoranzo`_). `Pull
+  Request 1259`_
+* Mains resource selector must be skipped (thanks to `@hexylena`_). `Pull
+  Request 1260`_
+* Ignore cloudflare 503 status when checking links (thanks to `@bernt-matthias`_). `Pull Request 1262`_
+* Document the use of mandatory macro parameters and add named macro tokens
+  (thanks to `@bernt-matthias`_). `Pull Request 1212`_
+* Bump galaxy package requirements to 22.01 (thanks to `@bernt-matthias`_).
+  `Pull Request 1264`_
+* Run local galaxy via gravity (thanks to `@mvdbeek`_). `Pull Request 1232`_
+* Lint randomlines.xml file (thanks to `@simonbray`_). `Pull Request 1270`_
+* Check if main requirement is `None` (thanks to `@bernt-matthias`_). `Pull
+  Request 1274`_
+* Planemo type annotation: module planemo.commands.cmd_autoupdate (thanks to
+  `@gallardoalba`_). `Pull Request 1278`_
+* Planemo type annotation: module planemo.cli (thanks to `@gallardoalba`_).
+  `Pull Request 1277`_
+* Planemo type annotation: module cmd_clone (thanks to `@gallardoalba`_).
+  `Pull Request 1279`_
+* Planemo type annotation: module cmd_tool_init (thanks to `@gallardoalba`_).
+  `Pull Request 1281`_
+* Add type annotations to ``planemo.autoupdate`` module (thanks to
+  `@nsoranzo`_). `Pull Request 1283`_
+* Planemo type annotation: module cmd_normalize (thanks to `@gallardoalba`_).
+  `Pull Request 1280`_
+* Planemo type annotation: module planemo.conda (thanks to `@gallardoalba`_).
+  `Pull Request 1284`_
+* Add type annotations to ``planemo.glob`` and ``planemo.virtualenv`` (thanks
+  to `@nsoranzo`_). `Pull Request 1287`_
+* Drop ``conda_lint`` command (thanks to `@nsoranzo`_). `Pull Request 1288`_
+* Type annotations for planemo.bioblend, planemo.git, and planemo.cwl.run
+  (thanks to `@adRn-s`_). `Pull Request 1285`_
+* Add FAQ page to docs (thanks to `@simonbray`_). `Pull Request 1271`_
+* Add type annotations to ``planemo.runnable`` and ``planemo.workflow_lint``
+  (thanks to `@nsoranzo`_). `Pull Request 1291`_
+* Make `--channels` also affect mulled channels and update/extend howto use
+  bioconda artifacts (thanks to `@bernt-matthias`_). `Pull Request 1227`_
+* Planemo type annotation: config, context and factory (thanks to
+  `@gallardoalba`_). `Pull Request 1292`_
+* [Training] update templates to use new, more accessible box style (thanks to
+  `@shiltemann`_). `Pull Request 1293`_
+* Pre-create expected output file on disk (thanks to `@mvdbeek`_). `Pull
+  Request 1276`_
+* Control publish setting in .dockstore.yml, fix first release not appearing
+  on dockstore (thanks to `@mvdbeek`_). `Pull Request 1295`_
+* Fix disclosure css for summary elements (thanks to `@mvdbeek`_). `Pull
+  Request 1294`_
+* Enable providing multiple `--tool_data_table` options (thanks to
+  `@mvdbeek`_). `Pull Request 1296`_
+* Make startup timeout configurable (thanks to `@mvdbeek`_). `Pull Request
+  1298`_
+* Fix printing planemo test logs (thanks to `@mvdbeek`_). `Pull Request 1299`_
+* Fix workflow test when input is optional but also workflow output (thanks to
+  `@mvdbeek`_). `Pull Request 1297`_
+
+---------------------
+0.74.11 (2022-06-08)
+---------------------
+
+* Removing broken link, update it to current doc (thanks to `@profgiuseppe`_).
+  `Pull Request 1244`_
+* Implement nested collection inputs and outputs in workflow_test_init `Pull
+  Request 1242`_
+* More fixes for auto-generating workflow tests `Pull Request 1241`_
+* Fix workflow_test_init for collection outputs `Pull Request 1239`_
+
+---------------------
+0.74.10 (2022-05-31)
+---------------------
+* Allow specifying URL and API key with workflow autoupdate and docs
+  improvements (thanks to `@simonbray`_). `Pull Request 1237`_
+* Pin planemo to last known working major galaxy version `Pull Request 1230`_
+* Drop unused Python dependencies and upgrade syntax to Python 3.6 `Pull Request 1228`_
+* Update `best_practice_search()` for changes in galaxy-tool-util `Pull Request 1224`_
+* Make galaxy config `cleanup_job` depend on `--no_cleanup`
+  (thanks to `@bernt-matthias`_). `Pull Request 1226`_
+* Tool builder: add profile and suffix version
+  (thanks to `@gallardoalba`_). `Pull Request 1222`_
+* training-init: add the FAQ index page to tutorial folder
+  (thanks to `@shiltemann`_). `Pull Request 1217`_
+* Adding best practices and assertion checks to workflow_lint
+  (thanks to `@simonbray`_). `Pull Request 1213`_
+* Updates to workflow autoupdate required for IWC bot
+  (thanks to `@simonbray`_). `Pull Request 1214`_
+* Add test and fix for failing docker_galaxy engine
+  (thanks to `@simonbray`_). `Pull Request 1215`_
+* Generate workflow test from invocation id
+  (thanks to `@simonbray`_). `Pull Request 1209`_
+* Fixed minor typo in documentation
+  (thanks to `@stain`_). `Pull Request 1206`_
+* Add missing ToolShed categories `Pull Request 1207`_
+* Use WorkflowId rather than StoredWorkflowId when autoupdating subworkflows
+  (thanks to `@simonbray`_). `Pull Request 1205`_
+* Always use random id_secret for testing (thanks to `@bernt-matthias`_). `Pull Request 1198`_
+* Add rerun subcommand for rerunning jobs (thanks to `@simonbray`_). `Pull Request 1140`_
+
+---------------------
+0.74.9 (2021-11-03)
+---------------------
+* Fix rendering of subworkflow steps for workflow testing report (thanks to
+  `@simonbray`_). `Pull Request 1200`_
+* Replace Galaxy interactor galaxy_requests_post with make_post_request from
+  BioBlend (thanks to `@simonbray`_). `Pull Request 1201`_
+
+---------------------
+0.74.8 (2021-10-10)
+---------------------
+
+* Exclude click 8.0.2. `Pull Request 1196`_
+* Add tool version numbers to autoupdate logging (thanks to `@simonbray`_).
+  `Pull Request 1188`_
+* Allow tool autoupdate without conda installation (thanks to `@simonbray`_).
+  `Pull Request 1193`_
+* use correct key execution_problem in template (thanks to `@bernt-matthias`_).
+  `Pull Request 1195`_
+
+---------------------
+0.74.7 (2021-09-21)
+---------------------
+
+* Fix documentation to include ``--download_outputs`` flag (thanks to
+  `@simonbray`_). `Pull Request 1184`_
+* Select refgenie config based on Galaxy version `Pull Request 1187`_
+* Extend autoupdate subcommand to workflows (thanks to `@simonbray`_). `Pull
+  Request 1151`_
+
+---------------------
+0.74.6 (2021-07-23)
+---------------------
+
+* Add JSON report for planemo run invocations (thanks to `@simonbray`_). `Pull
+  Request 1153`_
+* Ignore failure to download output datasets `Pull Request 1179`_
+* Allow location to point to url for outputs `Pull Request 1180`_
+* Fix --shed_install for gxformat2 workflows `Pull Request 1182`_
+    
+---------------------    
+0.74.5 (2021-06-25)
+---------------------
+
+* Remove iuc from default channels `Pull Request 1170`_
+* Fix parsing of changelog for git release `Pull Request 1171`_
+* Remove legacy commands, egg handling `Pull Request 1172`_
+* Use bioblend's invoke_workflow `Pull Request 1173`_
+* Create more useful output for failed invocations `Pull Request 1174`_
+* Improve dockstore_init `Pull Request 1177`_
+
+---------------------
+0.74.4 (2021-06-01)
+---------------------
+
+* Relicense under the MIT license `Pull Request 1169`_
+* Revise log levels (thanks to `@bernt-matthias`_). `Pull Request 1165`_
+* Create upload_data subcommand (thanks to `@simonbray`_). `Pull Request
+  1164`_
+* Create ``--download_outputs`` flag for the ``run`` command
+  (thanks to `@simonbray`_).
+  `Pull Request 1157`_
+* Make simultaneous file upload configurable for the run and test commands
+  (thanks to `@simonbray`_).
+  `Pull Request 1156`_
+* Add option to add tags to a history with the ``run`` command
+  (thanks to `@simonbray`_). `Pull Request 1154`_
+* Revise Allure_ reporting experience for workflows. `Pull Request 1152`_
+
+---------------------
+0.74.3 (2021-02-25)
+---------------------
+
+* Load both cat1 versions when testing workflows `Pull Request 1146`_
+* Fix isolated virtualenv not getting activated `Pull Request 1145`_
+* Use bioblend's make_get_request for authenticated request `Pull Request 1144`_
+* Display live logs when Galaxy is run in background `Pull Request 1142`_
+
+---------------------
+0.74.2 (2021-02-21)
+---------------------
+
+* Allow testing dir of workflows `Pull Request 1095`_
+* Fix container register for gh workflow `Pull Request 1135`_, `Pull Request 1133`_
+* Don't fail URL linting if blocked by CloudFlare `Pull Request 1134`_
+  1133`_
+* Allow planemo run to stage exisiting datasets and relative paths (thanks to `@simonbray`_).
+  `Pull Request 1128`_
+
+---------------------
+0.74.1 (2021-01-03)
 ---------------------
 
 * Fix ``ci_find_tools`` and ``ci_find_repos`` commands. `Pull Request 1127`_
@@ -1674,6 +2438,323 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1467: https://github.com/galaxyproject/planemo/pull/1467
+.. _Pull Request 1486: https://github.com/galaxyproject/planemo/pull/1486
+.. _Pull Request 1682: https://github.com/galaxyproject/planemo/pull/1682
+.. _Pull Request 1681: https://github.com/galaxyproject/planemo/pull/1681
+.. _Pull Request 1678: https://github.com/galaxyproject/planemo/pull/1678
+.. _Pull Request 1657: https://github.com/galaxyproject/planemo/pull/1657
+.. _Pull Request 1659: https://github.com/galaxyproject/planemo/pull/1659
+.. _Pull Request 1660: https://github.com/galaxyproject/planemo/pull/1660
+.. _Pull Request 1661: https://github.com/galaxyproject/planemo/pull/1661
+.. _Pull Request 1663: https://github.com/galaxyproject/planemo/pull/1663
+.. _Pull Request 1664: https://github.com/galaxyproject/planemo/pull/1664
+.. _Pull Request 1666: https://github.com/galaxyproject/planemo/pull/1666
+.. _Pull Request 1669: https://github.com/galaxyproject/planemo/pull/1669
+.. _Pull Request 1670: https://github.com/galaxyproject/planemo/pull/1670
+.. _Pull Request 1673: https://github.com/galaxyproject/planemo/pull/1673
+.. _Pull Request 1674: https://github.com/galaxyproject/planemo/pull/1674
+.. _Pull Request 1653: https://github.com/galaxyproject/planemo/pull/1653
+.. _Pull Request 1648: https://github.com/galaxyproject/planemo/pull/1648
+.. _Pull Request 1655: https://github.com/galaxyproject/planemo/pull/1655
+.. _Pull Request 1654: https://github.com/galaxyproject/planemo/pull/1654
+.. _Pull Request 1656: https://github.com/galaxyproject/planemo/pull/1656
+.. _Pull Request 1647: https://github.com/galaxyproject/planemo/pull/1647
+.. _Pull Request 1630: https://github.com/galaxyproject/planemo/pull/1630
+.. _Pull Request 1644: https://github.com/galaxyproject/planemo/pull/1644
+.. _Pull Request 1628: https://github.com/galaxyproject/planemo/pull/1628
+.. _Pull Request 1634: https://github.com/galaxyproject/planemo/pull/1634
+.. _Pull Request 1635: https://github.com/galaxyproject/planemo/pull/1635
+.. _Pull Request 1639: https://github.com/galaxyproject/planemo/pull/1639
+.. _Pull Request 1637: https://github.com/galaxyproject/planemo/pull/1637
+.. _Pull Request 1636: https://github.com/galaxyproject/planemo/pull/1636
+.. _Pull Request 1638: https://github.com/galaxyproject/planemo/pull/1638
+.. _Pull Request 1633: https://github.com/galaxyproject/planemo/pull/1633
+.. _Pull Request 1642: https://github.com/galaxyproject/planemo/pull/1642
+.. _Pull Request 1643: https://github.com/galaxyproject/planemo/pull/1643
+.. _Pull Request 1627: https://github.com/galaxyproject/planemo/pull/1627
+.. _Pull Request 1626: https://github.com/galaxyproject/planemo/pull/1626
+.. _Pull Request 1624: https://github.com/galaxyproject/planemo/pull/1624
+.. _Pull Request 1568: https://github.com/galaxyproject/planemo/pull/1568
+.. _Pull Request 1617: https://github.com/galaxyproject/planemo/pull/1617
+.. _Pull Request 1622: https://github.com/galaxyproject/planemo/pull/1622
+.. _Pull Request 1623: https://github.com/galaxyproject/planemo/pull/1623
+.. _Pull Request 1620: https://github.com/galaxyproject/planemo/pull/1620
+.. _Pull Request 1612: https://github.com/galaxyproject/planemo/pull/1612
+.. _Pull Request 1615: https://github.com/galaxyproject/planemo/pull/1615
+.. _Pull Request 1614: https://github.com/galaxyproject/planemo/pull/1614
+.. _Pull Request 1616: https://github.com/galaxyproject/planemo/pull/1616
+.. _Pull Request 1618: https://github.com/galaxyproject/planemo/pull/1618
+.. _Pull Request 1608: https://github.com/galaxyproject/planemo/pull/1608
+.. _Pull Request 1607: https://github.com/galaxyproject/planemo/pull/1607
+.. _Pull Request 1610: https://github.com/galaxyproject/planemo/pull/1610
+.. _Pull Request 1609: https://github.com/galaxyproject/planemo/pull/1609
+.. _Pull Request 1603: https://github.com/galaxyproject/planemo/pull/1603
+.. _Pull Request 1606: https://github.com/galaxyproject/planemo/pull/1606
+.. _Pull Request 1605: https://github.com/galaxyproject/planemo/pull/1605
+.. _Pull Request 1604: https://github.com/galaxyproject/planemo/pull/1604
+.. _Pull Request 1581: https://github.com/galaxyproject/planemo/pull/1581
+.. _Pull Request 1601: https://github.com/galaxyproject/planemo/pull/1601
+.. _Pull Request 1599: https://github.com/galaxyproject/planemo/pull/1599
+.. _Pull Request 1598: https://github.com/galaxyproject/planemo/pull/1598
+.. _Pull Request 1597: https://github.com/galaxyproject/planemo/pull/1597
+.. _Pull Request 1596: https://github.com/galaxyproject/planemo/pull/1596
+.. _Pull Request 1593: https://github.com/galaxyproject/planemo/pull/1593
+.. _Pull Request 1595: https://github.com/galaxyproject/planemo/pull/1595
+.. _Pull Request 1594: https://github.com/galaxyproject/planemo/pull/1594
+.. _Pull Request 1588: https://github.com/galaxyproject/planemo/pull/1588
+.. _Pull Request 1591: https://github.com/galaxyproject/planemo/pull/1591
+.. _Pull Request 1592: https://github.com/galaxyproject/planemo/pull/1592
+.. _Pull Request 1586: https://github.com/galaxyproject/planemo/pull/1586
+.. _Pull Request 1583: https://github.com/galaxyproject/planemo/pull/1583
+.. _Pull Request 1582: https://github.com/galaxyproject/planemo/pull/1582
+.. _Pull Request 1578: https://github.com/galaxyproject/planemo/pull/1578
+.. _Pull Request 1579: https://github.com/galaxyproject/planemo/pull/1579
+.. _Pull Request 1580: https://github.com/galaxyproject/planemo/pull/1580
+.. _Pull Request 1575: https://github.com/galaxyproject/planemo/pull/1575
+.. _Pull Request 1576: https://github.com/galaxyproject/planemo/pull/1576
+.. _Pull Request 1577: https://github.com/galaxyproject/planemo/pull/1577
+.. _Pull Request 1574: https://github.com/galaxyproject/planemo/pull/1574
+.. _Pull Request 1572: https://github.com/galaxyproject/planemo/pull/1572
+.. _Pull Request 1571: https://github.com/galaxyproject/planemo/pull/1571
+.. _Pull Request 1570: https://github.com/galaxyproject/planemo/pull/1570
+.. _Pull Request 1569: https://github.com/galaxyproject/planemo/pull/1569
+.. _Pull Request 1566: https://github.com/galaxyproject/planemo/pull/1566
+.. _Pull Request 1567: https://github.com/galaxyproject/planemo/pull/1567
+.. _Pull Request 1561: https://github.com/galaxyproject/planemo/pull/1561
+.. _Pull Request 1556: https://github.com/galaxyproject/planemo/pull/1556
+.. _Pull Request 1560: https://github.com/galaxyproject/planemo/pull/1560
+.. _Pull Request 1554: https://github.com/galaxyproject/planemo/pull/1554
+.. _Pull Request 1552: https://github.com/galaxyproject/planemo/pull/1552
+.. _Pull Request 1553: https://github.com/galaxyproject/planemo/pull/1553
+.. _Pull Request 1551: https://github.com/galaxyproject/planemo/pull/1551
+.. _Pull Request 1548: https://github.com/galaxyproject/planemo/pull/1548
+.. _Pull Request 1549: https://github.com/galaxyproject/planemo/pull/1549
+.. _Pull Request 1547: https://github.com/galaxyproject/planemo/pull/1547
+.. _Pull Request 1546: https://github.com/galaxyproject/planemo/pull/1546
+.. _Pull Request 1543: https://github.com/galaxyproject/planemo/pull/1543
+.. _Pull Request 1545: https://github.com/galaxyproject/planemo/pull/1545
+.. _Pull Request 1532: https://github.com/galaxyproject/planemo/pull/1532
+.. _Pull Request 1539: https://github.com/galaxyproject/planemo/pull/1539
+.. _Pull Request 1534: https://github.com/galaxyproject/planemo/pull/1534
+.. _Pull Request 1542: https://github.com/galaxyproject/planemo/pull/1542
+.. _Pull Request 1540: https://github.com/galaxyproject/planemo/pull/1540
+.. _Pull Request 1541: https://github.com/galaxyproject/planemo/pull/1541
+.. _Pull Request 1531: https://github.com/galaxyproject/planemo/pull/1531
+.. _Pull Request 1510: https://github.com/galaxyproject/planemo/pull/1510
+.. _Pull Request 1538: https://github.com/galaxyproject/planemo/pull/1538
+.. _Pull Request 1506: https://github.com/galaxyproject/planemo/pull/1506
+.. _Pull Request 1526: https://github.com/galaxyproject/planemo/pull/1526
+.. _Pull Request 1509: https://github.com/galaxyproject/planemo/pull/1509
+.. _Pull Request 1514: https://github.com/galaxyproject/planemo/pull/1514
+.. _Pull Request 1523: https://github.com/galaxyproject/planemo/pull/1523
+.. _Pull Request 1519: https://github.com/galaxyproject/planemo/pull/1519
+.. _Pull Request 1518: https://github.com/galaxyproject/planemo/pull/1518
+.. _Pull Request 1524: https://github.com/galaxyproject/planemo/pull/1524
+.. _Pull Request 1507: https://github.com/galaxyproject/planemo/pull/1507
+.. _Pull Request 1505: https://github.com/galaxyproject/planemo/pull/1505
+.. _Pull Request 1504: https://github.com/galaxyproject/planemo/pull/1504
+.. _Pull Request 1503: https://github.com/galaxyproject/planemo/pull/1503
+.. _Pull Request 1502: https://github.com/galaxyproject/planemo/pull/1502
+.. _Pull Request 1501: https://github.com/galaxyproject/planemo/pull/1501
+.. _Pull Request 1500: https://github.com/galaxyproject/planemo/pull/1500
+.. _Pull Request 1496: https://github.com/galaxyproject/planemo/pull/1496
+.. _Pull Request 1492: https://github.com/galaxyproject/planemo/pull/1492
+.. _Pull Request 1494: https://github.com/galaxyproject/planemo/pull/1494
+.. _Pull Request 1495: https://github.com/galaxyproject/planemo/pull/1495
+.. _Pull Request 1487: https://github.com/galaxyproject/planemo/pull/1487
+.. _Pull Request 1483: https://github.com/galaxyproject/planemo/pull/1483
+.. _Pull Request 1491: https://github.com/galaxyproject/planemo/pull/1491
+.. _Pull Request 1488: https://github.com/galaxyproject/planemo/pull/1488
+.. _Pull Request 1481: https://github.com/galaxyproject/planemo/pull/1481
+.. _Pull Request 1474: https://github.com/galaxyproject/planemo/pull/1474
+.. _Pull Request 1452: https://github.com/galaxyproject/planemo/pull/1452
+.. _Pull Request 1473: https://github.com/galaxyproject/planemo/pull/1473
+.. _Pull Request 1457: https://github.com/galaxyproject/planemo/pull/1457
+.. _Pull Request 1471: https://github.com/galaxyproject/planemo/pull/1471
+.. _Pull Request 1458: https://github.com/galaxyproject/planemo/pull/1458
+.. _Pull Request 1460: https://github.com/galaxyproject/planemo/pull/1460
+.. _Pull Request 1462: https://github.com/galaxyproject/planemo/pull/1462
+.. _Pull Request 1463: https://github.com/galaxyproject/planemo/pull/1463
+.. _Pull Request 1466: https://github.com/galaxyproject/planemo/pull/1466
+.. _Pull Request 1461: https://github.com/galaxyproject/planemo/pull/1461
+.. _Pull Request 1453: https://github.com/galaxyproject/planemo/pull/1453
+.. _Pull Request 1420: https://github.com/galaxyproject/planemo/pull/1420
+.. _Pull Request 1445: https://github.com/galaxyproject/planemo/pull/1445
+.. _Pull Request 1450: https://github.com/galaxyproject/planemo/pull/1450
+.. _Pull Request 1441: https://github.com/galaxyproject/planemo/pull/1441
+.. _Pull Request 1447: https://github.com/galaxyproject/planemo/pull/1447
+.. _Pull Request 1444: https://github.com/galaxyproject/planemo/pull/1444
+.. _Pull Request 1443: https://github.com/galaxyproject/planemo/pull/1443
+.. _Pull Request 1442: https://github.com/galaxyproject/planemo/pull/1442
+.. _Pull Request 1439: https://github.com/galaxyproject/planemo/pull/1439
+.. _Pull Request 1440: https://github.com/galaxyproject/planemo/pull/1440
+.. _Pull Request 1437: https://github.com/galaxyproject/planemo/pull/1437
+.. _Pull Request 1433: https://github.com/galaxyproject/planemo/pull/1433
+.. _Pull Request 1430: https://github.com/galaxyproject/planemo/pull/1430
+.. _Pull Request 1428: https://github.com/galaxyproject/planemo/pull/1428
+.. _Pull Request 1427: https://github.com/galaxyproject/planemo/pull/1427
+.. _Pull Request 1425: https://github.com/galaxyproject/planemo/pull/1425
+.. _Pull Request 1424: https://github.com/galaxyproject/planemo/pull/1424
+.. _Pull Request 1422: https://github.com/galaxyproject/planemo/pull/1422
+.. _Pull Request 1419: https://github.com/galaxyproject/planemo/pull/1419
+.. _Pull Request 1416: https://github.com/galaxyproject/planemo/pull/1416
+.. _Pull Request 1388: https://github.com/galaxyproject/planemo/pull/1388
+.. _Pull Request 1412: https://github.com/galaxyproject/planemo/pull/1412
+.. _Pull Request 1410: https://github.com/galaxyproject/planemo/pull/1410
+.. _Pull Request 1408: https://github.com/galaxyproject/planemo/pull/1408
+.. _Pull Request 1407: https://github.com/galaxyproject/planemo/pull/1407
+.. _Pull Request 1406: https://github.com/galaxyproject/planemo/pull/1406
+.. _Pull Request 1401: https://github.com/galaxyproject/planemo/pull/1401
+.. _Pull Request 1402: https://github.com/galaxyproject/planemo/pull/1402
+.. _Pull Request 1398: https://github.com/galaxyproject/planemo/pull/1398
+.. _Pull Request 1400: https://github.com/galaxyproject/planemo/pull/1400
+.. _Pull Request 1399: https://github.com/galaxyproject/planemo/pull/1399
+.. _Pull Request 1396: https://github.com/galaxyproject/planemo/pull/1396
+.. _Pull Request 1397: https://github.com/galaxyproject/planemo/pull/1397
+.. _Pull Request 1395: https://github.com/galaxyproject/planemo/pull/1395
+.. _Pull Request 1394: https://github.com/galaxyproject/planemo/pull/1394
+.. _Pull Request 1393: https://github.com/galaxyproject/planemo/pull/1393
+.. _Pull Request 1391: https://github.com/galaxyproject/planemo/pull/1391
+.. _Pull Request 1389: https://github.com/galaxyproject/planemo/pull/1389
+.. _Pull Request 1263: https://github.com/galaxyproject/planemo/pull/1263
+.. _Pull Request 1387: https://github.com/galaxyproject/planemo/pull/1387
+.. _Pull Request 1385: https://github.com/galaxyproject/planemo/pull/1385
+.. _Pull Request 1384: https://github.com/galaxyproject/planemo/pull/1384
+.. _Pull Request 1383: https://github.com/galaxyproject/planemo/pull/1383
+.. _Pull Request 1382: https://github.com/galaxyproject/planemo/pull/1382
+.. _Pull Request 1355: https://github.com/galaxyproject/planemo/pull/1355
+.. _Pull Request 1378: https://github.com/galaxyproject/planemo/pull/1378
+.. _Pull Request 1379: https://github.com/galaxyproject/planemo/pull/1379
+.. _Pull Request 1377: https://github.com/galaxyproject/planemo/pull/1377
+.. _Pull Request 1375: https://github.com/galaxyproject/planemo/pull/1375
+.. _Pull Request 1374: https://github.com/galaxyproject/planemo/pull/1374
+.. _Pull Request 1373: https://github.com/galaxyproject/planemo/pull/1373
+.. _Pull Request 1372: https://github.com/galaxyproject/planemo/pull/1372
+.. _Pull Request 1371: https://github.com/galaxyproject/planemo/pull/1371
+.. _Pull Request 1369: https://github.com/galaxyproject/planemo/pull/1369
+.. _Pull Request 1370: https://github.com/galaxyproject/planemo/pull/1370
+.. _Pull Request 1364: https://github.com/galaxyproject/planemo/pull/1364
+.. _Pull Request 1358: https://github.com/galaxyproject/planemo/pull/1358
+.. _Pull Request 1357: https://github.com/galaxyproject/planemo/pull/1357
+.. _Pull Request 1265: https://github.com/galaxyproject/planemo/pull/1265
+.. _Pull Request 1350: https://github.com/galaxyproject/planemo/pull/1350
+.. _Pull Request 1275: https://github.com/galaxyproject/planemo/pull/1275
+.. _Pull Request 1347: https://github.com/galaxyproject/planemo/pull/1347
+.. _Pull Request 1348: https://github.com/galaxyproject/planemo/pull/1348
+.. _Pull Request 1346: https://github.com/galaxyproject/planemo/pull/1346
+.. _Pull Request 1344: https://github.com/galaxyproject/planemo/pull/1344
+.. _Pull Request 1338: https://github.com/galaxyproject/planemo/pull/1338
+.. _Pull Request 1337: https://github.com/galaxyproject/planemo/pull/1337
+.. _Pull Request 1334: https://github.com/galaxyproject/planemo/pull/1334
+.. _Pull Request 1327: https://github.com/galaxyproject/planemo/pull/1327
+.. _Pull Request 1332: https://github.com/galaxyproject/planemo/pull/1332
+.. _Pull Request 1330: https://github.com/galaxyproject/planemo/pull/1330
+.. _Pull Request 1329: https://github.com/galaxyproject/planemo/pull/1329
+.. _Pull Request 1326: https://github.com/galaxyproject/planemo/pull/1326
+.. _Pull Request 1322: https://github.com/galaxyproject/planemo/pull/1322
+.. _Pull Request 1325: https://github.com/galaxyproject/planemo/pull/1325
+.. _Pull Request 1320: https://github.com/galaxyproject/planemo/pull/1320
+.. _Pull Request 1314: https://github.com/galaxyproject/planemo/pull/1314
+.. _Pull Request 1313: https://github.com/galaxyproject/planemo/pull/1313
+.. _Pull Request 1312: https://github.com/galaxyproject/planemo/pull/1312
+.. _Pull Request 1310: https://github.com/galaxyproject/planemo/pull/1310
+.. _Pull Request 1308: https://github.com/galaxyproject/planemo/pull/1308
+.. _Pull Request 1302: https://github.com/galaxyproject/planemo/pull/1302
+.. _Pull Request 1303: https://github.com/galaxyproject/planemo/pull/1303
+.. _Pull Request 1304: https://github.com/galaxyproject/planemo/pull/1304
+.. _Pull Request 1305: https://github.com/galaxyproject/planemo/pull/1305
+.. _Pull Request 1306: https://github.com/galaxyproject/planemo/pull/1306
+.. _Pull Request 1307: https://github.com/galaxyproject/planemo/pull/1307
+.. _Pull Request 1247: https://github.com/galaxyproject/planemo/pull/1247
+.. _Pull Request 1249: https://github.com/galaxyproject/planemo/pull/1249
+.. _Pull Request 1255: https://github.com/galaxyproject/planemo/pull/1255
+.. _Pull Request 1257: https://github.com/galaxyproject/planemo/pull/1257
+.. _Pull Request 1259: https://github.com/galaxyproject/planemo/pull/1259
+.. _Pull Request 1260: https://github.com/galaxyproject/planemo/pull/1260
+.. _Pull Request 1262: https://github.com/galaxyproject/planemo/pull/1262
+.. _Pull Request 1212: https://github.com/galaxyproject/planemo/pull/1212
+.. _Pull Request 1264: https://github.com/galaxyproject/planemo/pull/1264
+.. _Pull Request 1232: https://github.com/galaxyproject/planemo/pull/1232
+.. _Pull Request 1270: https://github.com/galaxyproject/planemo/pull/1270
+.. _Pull Request 1274: https://github.com/galaxyproject/planemo/pull/1274
+.. _Pull Request 1278: https://github.com/galaxyproject/planemo/pull/1278
+.. _Pull Request 1277: https://github.com/galaxyproject/planemo/pull/1277
+.. _Pull Request 1279: https://github.com/galaxyproject/planemo/pull/1279
+.. _Pull Request 1281: https://github.com/galaxyproject/planemo/pull/1281
+.. _Pull Request 1283: https://github.com/galaxyproject/planemo/pull/1283
+.. _Pull Request 1280: https://github.com/galaxyproject/planemo/pull/1280
+.. _Pull Request 1284: https://github.com/galaxyproject/planemo/pull/1284
+.. _Pull Request 1287: https://github.com/galaxyproject/planemo/pull/1287
+.. _Pull Request 1288: https://github.com/galaxyproject/planemo/pull/1288
+.. _Pull Request 1285: https://github.com/galaxyproject/planemo/pull/1285
+.. _Pull Request 1271: https://github.com/galaxyproject/planemo/pull/1271
+.. _Pull Request 1291: https://github.com/galaxyproject/planemo/pull/1291
+.. _Pull Request 1227: https://github.com/galaxyproject/planemo/pull/1227
+.. _Pull Request 1292: https://github.com/galaxyproject/planemo/pull/1292
+.. _Pull Request 1293: https://github.com/galaxyproject/planemo/pull/1293
+.. _Pull Request 1276: https://github.com/galaxyproject/planemo/pull/1276
+.. _Pull Request 1295: https://github.com/galaxyproject/planemo/pull/1295
+.. _Pull Request 1294: https://github.com/galaxyproject/planemo/pull/1294
+.. _Pull Request 1296: https://github.com/galaxyproject/planemo/pull/1296
+.. _Pull Request 1298: https://github.com/galaxyproject/planemo/pull/1298
+.. _Pull Request 1299: https://github.com/galaxyproject/planemo/pull/1299
+.. _Pull Request 1297: https://github.com/galaxyproject/planemo/pull/1297
+.. _Pull Request 1244: https://github.com/galaxyproject/planemo/pull/1244
+.. _Pull Request 1242: https://github.com/galaxyproject/planemo/pull/1242
+.. _Pull Request 1241: https://github.com/galaxyproject/planemo/pull/1241
+.. _Pull Request 1239: https://github.com/galaxyproject/planemo/pull/1239
+.. _Pull Request 1237: https://github.com/galaxyproject/planemo/pull/1237
+.. _Pull Request 1230: https://github.com/galaxyproject/planemo/pull/1230
+.. _Pull Request 1228: https://github.com/galaxyproject/planemo/pull/1228
+.. _Pull Request 1224: https://github.com/galaxyproject/planemo/pull/1224
+.. _Pull Request 1226: https://github.com/galaxyproject/planemo/pull/1226
+.. _Pull Request 1222: https://github.com/galaxyproject/planemo/pull/1222
+.. _Pull Request 1217: https://github.com/galaxyproject/planemo/pull/1217
+.. _Pull Request 1213: https://github.com/galaxyproject/planemo/pull/1213
+.. _Pull Request 1214: https://github.com/galaxyproject/planemo/pull/1214
+.. _Pull Request 1215: https://github.com/galaxyproject/planemo/pull/1215
+.. _Pull Request 1209: https://github.com/galaxyproject/planemo/pull/1209
+.. _Pull Request 1206: https://github.com/galaxyproject/planemo/pull/1206
+.. _Pull Request 1207: https://github.com/galaxyproject/planemo/pull/1207
+.. _Pull Request 1205: https://github.com/galaxyproject/planemo/pull/1205
+.. _Pull Request 1198: https://github.com/galaxyproject/planemo/pull/1198
+.. _Pull Request 1140: https://github.com/galaxyproject/planemo/pull/1140
+.. _Pull Request 1200: https://github.com/galaxyproject/planemo/pull/1200
+.. _Pull Request 1201: https://github.com/galaxyproject/planemo/pull/1201
+.. _Pull Request 1188: https://github.com/galaxyproject/planemo/pull/1188
+.. _Pull Request 1193: https://github.com/galaxyproject/planemo/pull/1193
+.. _Pull Request 1195: https://github.com/galaxyproject/planemo/pull/1195
+.. _Pull Request 1196: https://github.com/galaxyproject/planemo/pull/1196
+.. _Pull Request 1184: https://github.com/galaxyproject/planemo/pull/1184
+.. _Pull Request 1187: https://github.com/galaxyproject/planemo/pull/1187
+.. _Pull Request 1151: https://github.com/galaxyproject/planemo/pull/1151
+.. _Pull Request 1153: https://github.com/galaxyproject/planemo/pull/1153
+.. _Pull Request 1179: https://github.com/galaxyproject/planemo/pull/1179
+.. _Pull Request 1180: https://github.com/galaxyproject/planemo/pull/1180
+.. _Pull Request 1182: https://github.com/galaxyproject/planemo/pull/1182
+.. _Pull Request 1170: https://github.com/galaxyproject/planemo/pull/1170
+.. _Pull Request 1171: https://github.com/galaxyproject/planemo/pull/1171
+.. _Pull Request 1172: https://github.com/galaxyproject/planemo/pull/1172
+.. _Pull Request 1173: https://github.com/galaxyproject/planemo/pull/1173
+.. _Pull Request 1174: https://github.com/galaxyproject/planemo/pull/1174
+.. _Pull Request 1177: https://github.com/galaxyproject/planemo/pull/1177
+.. _Pull Request 1169: https://github.com/galaxyproject/planemo/pull/1169
+.. _Pull Request 1165: https://github.com/galaxyproject/planemo/pull/1165
+.. _Pull Request 1164: https://github.com/galaxyproject/planemo/pull/1164
+.. _Pull Request 1157: https://github.com/galaxyproject/planemo/pull/1157
+.. _Pull Request 1156: https://github.com/galaxyproject/planemo/pull/1156
+.. _Pull Request 1154: https://github.com/galaxyproject/planemo/pull/1154
+.. _Pull Request 1152: https://github.com/galaxyproject/planemo/pull/1152
+.. _Pull Request 1146: https://github.com/galaxyproject/planemo/pull/1146
+.. _Pull Request 1145: https://github.com/galaxyproject/planemo/pull/1145
+.. _Pull Request 1144: https://github.com/galaxyproject/planemo/pull/1144
+.. _Pull Request 1142: https://github.com/galaxyproject/planemo/pull/1142
+.. _Pull Request 1095: https://github.com/galaxyproject/planemo/pull/1095
+.. _Pull Request 1135: https://github.com/galaxyproject/planemo/pull/1135
+.. _Pull Request 1134: https://github.com/galaxyproject/planemo/pull/1134
+.. _Pull Request 1133: https://github.com/galaxyproject/planemo/pull/1133
+.. _Pull Request 1128: https://github.com/galaxyproject/planemo/pull/1128
 .. _Pull Request 1127: https://github.com/galaxyproject/planemo/pull/1127
 .. _Pull Request 1126: https://github.com/galaxyproject/planemo/pull/1126
 .. _Pull Request 1125: https://github.com/galaxyproject/planemo/pull/1125
@@ -2425,8 +3506,32 @@ History
 .. _@bedroesb: https://github.com/bedroesb
 .. _@ic4f: https://github.com/ic4f
 .. _@martin-raden: https://github.com/martin-raden
-.. _@andreassko: https://github.com/andreassko
+.. _@AndreasSko: https://github.com/AndreasSko
 .. _@mblue9: https://github.com/mblue9
 .. _@TMiguelT: https://github.com/TMiguelT
 .. _@bedroesb: https://github.com/bedroesb
 .. _@simonbray: https://github.com/simonbray
+.. _@gallardoalba: https://github.com/gallardoalba
+.. _@stain: https://github.com/stain
+.. _@profgiuseppe: https://github.com/profgiuseppe
+.. _@adRn-s: https://github.com/adRn-s
+.. _@lldelisle: https://github.com/lldelisle
+.. _@wm75: https://github.com/wm75
+.. _@SimonWaldherr: https://github.com/SimonWaldherr
+.. _@mstabrin: https://github.com/mstabrin
+.. _@paulzierep: https://github.com/paulzierep
+.. _@Kulivox: https://github.com/Kulivox
+.. _@Delphine-L: https://github.com/Delphine-L
+.. _@elichad: https://github.com/elichad
+.. _@pavanvidem: https://github.com/pavanvidem
+.. _@jdavcs: https://github.com/jdavcs
+.. _@Smeds: https://github.com/Smeds
+.. _@jmchilton: https://github.com/jmchilton
+.. _@kostrykin: https://github.com/kostrykin
+.. _@ahmedhamidawan: https://github.com/ahmedhamidawan
+.. _@arash77: https://github.com/arash77
+.. _@SaimMomin12: https://github.com/SaimMomin12
+.. _@dadrasarmin: https://github.com/dadrasarmin
+.. _@dannon: https://github.com/dannon
+.. _@RZ9082: https://github.com/RZ9082
+.. _@guerler: https://github.com/guerler

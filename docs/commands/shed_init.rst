@@ -1,6 +1,6 @@
 
 ``shed_init`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``shed_init``. This help message can be generated with ``planemo shed_init
@@ -23,23 +23,18 @@ to manage repositories in a Galaxy Tool Shed.
 
       --from_workflow PATH            Attempt to generate repository dependencies
                                       from specified workflow.
-    
       --description TEXT              Specify repository description for .shed.yml.
       --long_description TEXT         Specify repository long_description for
                                       .shed.yml.
-    
       --remote_repository_url TEXT    Specify repository remote_repository_url for
                                       .shed.yml.
-    
       --homepage_url TEXT             Specify repository homepage_url for .shed.yml.
-      --category [Assembly|ChIP-seq|Combinatorial Selections|Computational chemistry|Constructive Solid Geometry|Convert Formats|Data Export|Data Managers|Data Source|Entomology|Epigenetics|Fasta Manipulation|Fastq Manipulation|Flow Cytometry Analysis|Genome annotation|Genome editing|Genome-Wide Association Study|Genomic Interval Operations|Graphics|Imaging|Machine Learning|Metabolomics|Metagenomics|Micro-array Analysis|Molecular Dynamics|Next Gen Mappers|NLP|Ontology Manipulation|Phylogenetics|Proteomics|RNA|SAM|Sequence Analysis|Statistics|Systems Biology|Text Manipulation|Tool Dependency Packages|Tool Generators|Transcriptomics|Variant Analysis|Visualization|Web Services]
+      --category [Assembly|Astronomy|ChIP-seq|Climate Analysis|CLIP-seq|Combinatorial Selections|Computational chemistry|Constructive Solid Geometry|Convert Formats|Data Export|Data Managers|Data Source|Ecology|Entomology|Epigenetics|Fasta Manipulation|Fastq Manipulation|Flow Cytometry Analysis|Genome annotation|Genome editing|Genome-Wide Association Study|Genomic Interval Operations|Geo Science|GIS|Graphics|Imaging|Interactive Tools|Machine Learning|Materials science|Metabolomics|Metagenomics|Micro-array Analysis|Molecular Dynamics|Muon spectroscopy|Nanopore|Natural Language Processing|Next Gen Mappers|Ontology Manipulation|Pangenomics|Phylogenetics|Proteomics|RNA|SAM|Sequence Analysis|Single Cell|Spatial Omics|Statistics|Structural Materials Analysis|Synthetic Biology|Systems Biology|Text Manipulation|Tool Dependency Packages|Tool Generators|Transcriptomics|Variant Analysis|Visualization|Web Services]
                                       Specify repository category for .shed.yml (may
                                       specify multiple).
-    
       --owner TEXT                    Tool Shed repository owner (username).
       --name TEXT                     Tool Shed repository name (defaults to the
                                       inferred tool directory name).
-    
       -f, --force                     Overwrite existing files if present.
       --help                          Show this message and exit.
     

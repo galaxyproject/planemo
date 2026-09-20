@@ -3,13 +3,14 @@
 import collections
 import os
 
+from galaxy.util import listify
+
 from planemo import templates
 from .utils import (
     load_yaml,
     Requirement,
-    save_to_yaml
+    save_to_yaml,
 )
-
 
 INDEX_FILE_TEMPLATE = """---
 layout: topic
@@ -54,24 +55,7 @@ ENTRYPOINT ["/data_libarary_download.sh"]
 """
 
 
-INTRO_SLIDES_FILE_TEMPLATE = """---
-layout: introduction_slides
-logo: "GTN"
-
-title: {{ title }}
-type: {{ type }}
-contributors:
-- contributor
----
-
-### How to fill the slide decks?
-
-Please follow our
-[tutorial to learn how to fill the slides]({{ '{{' }} site.baseurl {{ '}}' }}/topics/contributing/tutorials/create-new-tutorial-slides/slides.html)
-"""
-
-
-class Topic(object):
+class Topic:
     """Class to describe a training topic."""
 
     def __init__(self, name="new_topic", target="use", title="The new topic", summary="Summary", parent_dir="topics"):
@@ -81,7 +65,7 @@ class Topic(object):
         self.title = title
         self.summary = summary
         self.docker_image = ""
-        self.maintainers = ["maintainers"]
+        self.editorial_board = []
         self.parent_dir = parent_dir
         self.set_default_requirement()
         self.set_paths()
@@ -98,19 +82,19 @@ class Topic(object):
     def init_from_metadata(self):
         """Init a topic instance from the metadata file."""
         metadata = load_yaml(self.metadata_fp)
-        self.name = metadata['name']
-        self.type = metadata['type']
-        self.title = metadata['title']
-        self.summary = metadata['summary']
+        self.name = metadata["name"]
+        self.type = metadata["type"]
+        self.title = metadata["title"]
+        self.summary = metadata["summary"]
         self.requirements = []
-        if 'requirements' in metadata:
-            for r in metadata['requirements']:
+        if "requirements" in metadata:
+            for r in listify(metadata["requirements"]):
                 req = Requirement()
                 req.init_from_dict(r)
                 self.requirements.append(req)
-        if 'docker_image' in metadata:
-            self.docker_image = metadata['docker_image']
-        self.maintainers = metadata['maintainers']
+        if "docker_image" in metadata:
+            self.docker_image = metadata["docker_image"]
+        self.editorial_board = metadata["editorial_board"]
         self.set_paths()
 
     # GETTERS
@@ -124,20 +108,20 @@ class Topic(object):
     def export_metadata_to_ordered_dict(self):
         """Export the topic metadata into an ordered dictionary."""
         metadata = collections.OrderedDict()
-        metadata['name'] = self.name
-        metadata['type'] = self.type
-        metadata['title'] = self.title
-        metadata['summary'] = self.summary
-        metadata['requirements'] = self.get_requirements()
-        metadata['docker_image'] = self.docker_image
-        metadata['maintainers'] = self.maintainers
+        metadata["name"] = self.name
+        metadata["type"] = self.type
+        metadata["title"] = self.title
+        metadata["summary"] = self.summary
+        metadata["requirements"] = self.get_requirements()
+        metadata["docker_image"] = self.docker_image
+        metadata["editorial_board"] = self.editorial_board
         return metadata
 
     # SETTERS
     def set_default_requirement(self):
         """Set default requirement: Galaxy introduction."""
         self.requirements = []
-        if self.type == 'use':
+        if self.type == "use":
             self.requirements.append(Requirement())
 
     def set_paths(self):
@@ -150,7 +134,6 @@ class Topic(object):
         self.metadata_fp = os.path.join(self.dir, "metadata.yaml")
         self.docker_folder = os.path.join(self.dir, "docker")
         self.dockerfile_fp = os.path.join(self.docker_folder, "Dockerfile")
-        self.slides_folder = os.path.join(self.dir, "slides")
 
     # TESTS
     def exists(self):
@@ -175,15 +158,13 @@ class Topic(object):
 
         # create the index.md and add the topic name
         self.index_fp = os.path.join(self.dir, "index.md")
-        with open(self.index_fp, 'w') as index_f:
-            index_f.write(
-                templates.render(INDEX_FILE_TEMPLATE, **{'topic': self.name}))
+        with open(self.index_fp, "w") as index_f:
+            index_f.write(templates.render(INDEX_FILE_TEMPLATE, **{"topic": self.name}))
 
         # create the README file
         self.readme_fp = os.path.join(self.dir, "README.md")
-        with open(self.readme_fp, 'w') as readme_f:
-            readme_f.write(
-                templates.render(README_FILE_TEMPLATE, **{'topic': self.title}))
+        with open(self.readme_fp, "w") as readme_f:
+            readme_f.write(templates.render(README_FILE_TEMPLATE, **{"topic": self.title}))
 
         # create the metadata file
         self.metadata_fp = os.path.join(self.dir, "metadata.yaml")
@@ -193,21 +174,10 @@ class Topic(object):
         self.docker_folder = os.path.join(self.dir, "docker")
         os.makedirs(self.docker_folder)
         self.dockerfile_fp = os.path.join(self.docker_folder, "Dockerfile")
-        with open(self.dockerfile_fp, 'w') as dockerfile:
+        with open(self.dockerfile_fp, "w") as dockerfile:
             dockerfile.write(
-                templates.render(
-                    DOCKER_FILE_TEMPLATE,
-                    **{'topic_name': self.name, 'topic_title': self.title}))
-
-        # create empty introduction slides
-        self.slides_folder = os.path.join(self.dir, "slides")
-        os.makedirs(self.slides_folder)
-        self.intro_slide_fp = os.path.join(self.slides_folder, "introduction.html")
-        with open(self.intro_slide_fp, 'w') as intro_slide_f:
-            intro_slide_f.write(
-                templates.render(
-                    INTRO_SLIDES_FILE_TEMPLATE,
-                    **{'title': "Introduction to %s" % self.title, 'type': "introduction"}))
+                templates.render(DOCKER_FILE_TEMPLATE, **{"topic_name": self.name, "topic_title": self.title})
+            )
 
         # add a symbolic link to the metadata.yaml
         metadata_dir = "metadata"

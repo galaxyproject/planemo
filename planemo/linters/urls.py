@@ -1,5 +1,4 @@
-""" Tool linting module that lints Galaxy tools for their URLs
-"""
+"""Tool linting module that lints Galaxy tools for their URLs"""
 
 import planemo.lint
 

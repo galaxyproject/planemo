@@ -7,7 +7,7 @@ from planemo.cli import command_function
 from planemo.training import Training
 
 
-@click.command('training_init')
+@click.command("training_init")
 @options.optional_tools_arg(multiple=True, allow_uris=True)
 @options.training_init_options()
 # @options.force_option()

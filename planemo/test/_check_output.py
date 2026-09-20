@@ -1,7 +1,9 @@
 """Check an output file from a generalize artifact test."""
 
 import os
+import tempfile
 
+import requests
 from galaxy.tool_util.parser.interface import TestCollectionOutputDef
 from galaxy.tool_util.verify import verify
 from galaxy.tool_util.verify.interactor import verify_collection
@@ -55,13 +57,19 @@ def _verify_output_file(runnable, output_properties, test_properties, **kwds):
     if expected_file is None:
         expected_file = test_properties.get("path", None)
     if expected_file is None:
-        expected_file = test_properties.get("location", None)
+        location = test_properties.get("location")
+        if location:
+            if location.startswith(("http://", "https://")):
+                expected_file = _get_location(location)
+            else:
+                expected_file = location.split("file://", 1)[-1]
 
-    job_output_files = kwds.get("job_output_files", None)
+    test_data_target_dir = kwds.get("test_data_target_dir", None)
     item_label = "Output with path %s" % path
     if "asserts" in test_properties:
         # TODO: break fewer abstractions here...
         from galaxy.tool_util.parser.yaml import __to_test_assert_list
+
         test_properties["assert_list"] = __to_test_assert_list(test_properties["asserts"])
     verify(
         item_label,
@@ -69,7 +77,7 @@ def _verify_output_file(runnable, output_properties, test_properties, **kwds):
         attributes=test_properties,
         filename=expected_file,
         get_filename=get_filename,
-        keep_outputs_dir=job_output_files,
+        keep_outputs_dir=test_data_target_dir,
         verify_extra_files=None,
     )
 
@@ -84,8 +92,18 @@ def _check_output_file(runnable, output_properties, test_properties, **kwds):
     return problems
 
 
-def _test_filename_getter(runnable):
+def _get_location(location):
+    data_file = tempfile.NamedTemporaryFile(prefix="planemo_test_file_", delete=False)
+    with requests.get(location, stream=True) as r:
+        r.raise_for_status()
 
+        for chunk in r.iter_content():
+            if chunk:
+                data_file.write(chunk)
+        return data_file.name
+
+
+def _test_filename_getter(runnable):
     def get_filename(name):
         artifact_directory = os.path.dirname(runnable.path)
         return os.path.join(artifact_directory, name)
@@ -93,6 +111,4 @@ def _test_filename_getter(runnable):
     return get_filename
 
 
-__all__ = (
-    "check_output",
-)
+__all__ = ("check_output",)

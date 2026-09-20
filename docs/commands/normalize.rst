@@ -1,6 +1,6 @@
 
 ``normalize`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``normalize``. This help message can be generated with ``planemo normalize
@@ -39,14 +39,11 @@ the tool development best practices outlined on the Galaxy wiki.
 
       --expand_macros  Expand macros while normalizing tool XML - useful to see how
                        macros are evaluated.
-    
       --skip_reorder   Planemo will reorder top-level tool blocks according to tool
                        development best practices as part of this command, this flag
                        will disable that behavior.
-    
       --skip_reindent  Planemo will reindent the XML according to tool development
                        best practices as part of this command, this flag will
                        disable that behavior.
-    
       --help           Show this message and exit.
-    
+
