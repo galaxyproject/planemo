@@ -375,8 +375,8 @@ def lint_repository_dependencies(realized_repository: "RealizedRepository", lint
 def lint_shed_yaml(realized_repository: "RealizedRepository", lint_ctx):
     path = realized_repository.real_path
     shed_yaml = os.path.join(path, ".shed.yml")
-    if not os.path.exists(shed_yaml) and realized_repository.repository_type != REPO_TYPE_UNRESTRICTED:
-        lint_ctx.error("No .shed.yml file found, skipping.")
+    if not os.path.exists(shed_yaml):
+        lint_ctx.info("No .shed.yml file found, skipping.")
         return
     try:
         with open(shed_yaml) as fh:
@@ -391,55 +391,58 @@ def lint_shed_yaml(realized_repository: "RealizedRepository", lint_ctx):
 def _lint_shed_contents(lint_ctx, realized_repository: "RealizedRepository"):
     config = realized_repository.config
 
-    def _lint_if_present(key, func, *args):
+    def _lint_if_present(key, func, *args, fatal=False):
+        """Report ``func``'s complaint about ``config[key]``, if there is one.
+
+        ``fatal`` marks metadata the tool shed itself refuses to accept. Those
+        must be errors so that CI running ``--fail_level error`` -- the usual
+        way to tolerate style warnings -- still catches them. Conventions stay
+        warnings.
+        """
         value = config.get(key, None)
         if value is not None:
             msg = func(value, *args)
             if msg:
-                lint_ctx.error(msg)
-        return value
+                (lint_ctx.error if fatal else lint_ctx.warn)(msg)
 
-    def _lint(key, func, *args):
-        if _lint_if_present(key, func, *args) is None:
-            lint_ctx.error("Repository does not define: %s" % key)
-
-    _lint("owner", validate_repo_owner)
-    _lint("name", validate_repo_name)
-    _lint_if_present("type", _validate_repo_type, config["name"])
-    _lint("categories", _validate_categories, realized_repository)
+    _lint_if_present("owner", validate_repo_owner, fatal=True)
+    _lint_if_present("name", validate_repo_name, fatal=True)
+    _lint_if_present("type", _validate_repo_type, fatal=True)
+    _lint_if_present("type", _validate_repo_type_conventions, config["name"])
+    _lint_if_present("categories", _validate_categories, fatal=True)
+    _lint_if_present("categories", _validate_category_conventions, realized_repository)
 
 
-def _validate_repo_type(repo_type, name):
+def _validate_repo_type(repo_type):
+    """Repository types the tool shed does not know about."""
     if repo_type not in VALID_REPOSITORY_TYPES:
         return "Invalid repository type specified [%s]" % repo_type
 
-    is_dep = repo_type == "tool_dependency_definition"
-    is_suite = repo_type == "repository_suite_definition"
+
+def _validate_repo_type_conventions(repo_type, name):
+    is_dep = repo_type == REPO_TYPE_TOOL_DEP
+    is_suite = repo_type == REPO_TYPE_SUITE
     if is_dep and not name.startswith("package_"):
         return "Tool dependency definition repositories should have names starting with package_"
     if is_suite and not name.startswith("suite_"):
         return "Repository suite definition repositories should have names starting with suite_"
     if name.startswith("package_") or name.startswith("suite_"):
-        if repo_type == "unrestricted":
+        if repo_type == REPO_TYPE_UNRESTRICTED:
             return "Repository name indicated specialized repository type but repository is listed as unrestricted."
 
 
-def _validate_categories(categories, realized_repository: "RealizedRepository"):
-    msg = None
-    if len(categories) == 0:
-        msg = "Repository should specify one or more categories."
-    else:
-        for category in categories:
-            unknown_categories = []
-            if category not in CURRENT_CATEGORIES:
-                unknown_categories.append(category)
-            if unknown_categories:
-                msg = "Categories [%s] unknown." % unknown_categories
-        if realized_repository.is_package:
-            if "Tool Dependency Packages" not in categories:
-                msg = "Packages should be placed and should only be placed in the category 'Tool Dependency Packages'."
+def _validate_categories(categories):
+    """Categories the tool shed cannot resolve -- ``find_category_ids`` raises on these."""
+    unknown_categories = [c for c in categories if c not in CURRENT_CATEGORIES]
+    if unknown_categories:
+        return "Categories [%s] unknown." % unknown_categories
 
-    return msg
+
+def _validate_category_conventions(categories, realized_repository: "RealizedRepository"):
+    if len(categories) == 0:
+        return "Repository should specify one or more categories."
+    if realized_repository.is_package and "Tool Dependency Packages" not in categories:
+        return "Packages should be placed and should only be placed in the category 'Tool Dependency Packages'."
 
 
 __all__ = ("lint_repository",)
