@@ -6,7 +6,7 @@ except ImportError:
     Template = None  # type: ignore
 
 NO_JINJA2_MESSAGE = (
-    "This functionality requires Jinja2 but this library is " "unavailable. Install with `pip install jinja2`."
+    "This functionality requires Jinja2 but this library is unavailable. Install with `pip install jinja2`."
 )
 
 

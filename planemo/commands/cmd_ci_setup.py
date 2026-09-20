@@ -17,5 +17,6 @@ def cli(ctx, **kwds):
     Useful for populating a CI cache.
     """
     kwds["galaxy_skip_client_build"] = True
+    kwds["no_dependency_resolution"] = True
     with serve_daemon(ctx, **kwds):
         return

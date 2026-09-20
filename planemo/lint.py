@@ -1,28 +1,57 @@
 """Utilities to help linting various targets."""
 
 import os
+import re
+from typing import (
+    Any,
+    Dict,
+    TYPE_CHECKING,
+)
 from urllib.request import urlopen
 
 import requests
-from galaxy.tool_util.lint import LintContext
+from galaxy.tool_util.lint import (
+    LintContext,
+    Linter,
+)
 
 from planemo.io import error
 from planemo.shed import find_urls_for_xml
 from planemo.xml import validation
 
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
 
-def build_lint_args(ctx, **kwds):
+REQUEST_TIMEOUT = 5
+
+
+def build_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
     """Handle common report, error, and skip linting arguments."""
     report_level = kwds.get("report_level", "all")
     fail_level = kwds.get("fail_level", "warn")
-    skip = kwds.get("skip", None)
+    skip = kwds.get("skip", ctx.global_config.get("lint_skip"))
     if skip is None:
-        skip = ctx.global_config.get("lint_skip", "")
-        if isinstance(skip, list):
-            skip = ",".join(skip)
+        skip = []
+    if isinstance(skip, list):
+        skip_types = skip
+    else:
+        skip_types = [s.strip() for s in skip.split(",")]
 
-    skip_types = [s.strip() for s in skip.split(",")]
-    lint_args = dict(
+    for skip_file in kwds.get("skip_file", []):
+        with open(skip_file) as f:
+            for line in f.readlines():
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                skip_types.append(line)
+
+    linters = Linter.list_linters()
+    linters.extend(["version_bumped", "requirements_in_conda", "biocontainer_registered", "tool_urls"])
+    invalid_skip_types = list(set(skip_types) - set(linters))
+    if len(invalid_skip_types):
+        error(f"Unknown linter type(s) {invalid_skip_types} in list of linters to be skipped. Known linters {linters}")
+
+    lint_args: Dict[str, Any] = dict(
         level=report_level,
         fail_level=fail_level,
         skip_types=skip_types,
@@ -99,42 +128,69 @@ def lint_xsd(lint_ctx, schema_path, path):
         lint_ctx.info("File validates against XML schema.")
 
 
+def _validate_doi_url(url, lint_ctx):
+    """Validate DOI URL by checking CrossRef API."""
+    match = re.match("https?://doi.org/(.*)$", url)
+    if match is None:
+        return False
+
+    doi = match.group(1)
+    xref_url = f"https://api.crossref.org/works/{doi}"
+    return _validate_http_url(xref_url, lint_ctx=lint_ctx)
+
+
+def _validate_http_url(url, lint_ctx, user_agent=None):
+    """Validate HTTP/HTTPS URL."""
+    headers = {"User-Agent": user_agent, "Accept": "*/*"} if user_agent else None
+    r = None
+    try:
+        r = requests.get(url, headers=headers, stream=True, timeout=REQUEST_TIMEOUT)
+        r.raise_for_status()
+        next(r.iter_content(1000))
+        return True
+    except Exception as e:
+        if r is not None:
+            if r.status_code == 429:
+                # too many requests
+                return True
+            elif r.status_code in [403, 503] and "cloudflare" in r.text:
+                # CloudFlare protection block
+                return True
+            else:
+                lint_ctx.error(f"Error '{e}' accessing {url} response was {r.text}")
+                return False
+        else:
+            lint_ctx.error(f"Error '{e}' accessing {url}")
+            return False
+
+
+def _validate_other_url(url, lint_ctx):
+    """Validate non-HTTP URLs."""
+    try:
+        with urlopen(url) as handle:
+            handle.read(100)
+        return True
+    except Exception as e:
+        lint_ctx.error(f"Error '{e}' accessing {url}")
+        return False
+
+
 def lint_urls(root, lint_ctx):
     """Find referenced URLs and verify they are valid."""
     urls, docs = find_urls_for_xml(root)
 
     # This is from Google Chome on macOS, current at time of writing:
-    BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36"
+    BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
 
     def validate_url(url, lint_ctx, user_agent=None):
-        is_valid = True
-        if url.startswith("http://") or url.startswith("https://"):
-            if user_agent:
-                headers = {"User-Agent": user_agent, "Accept": "*/*"}
-            else:
-                headers = None
-            r = None
-            try:
-                r = requests.get(url, headers=headers, stream=True)
-                r.raise_for_status()
-                next(r.iter_content(1000))
-            except Exception as e:
-                if r is not None and r.status_code == 429:
-                    # too many requests
-                    pass
-                if r is not None and r.status_code in [403, 503] and "cloudflare" in r.text:
-                    # CloudFlare protection block
-                    pass
-                else:
-                    is_valid = False
-                    lint_ctx.error(f"Error '{e}' accessing {url}")
+        is_valid = False
+        if re.match("https?://doi.org/(.*)$", url):
+            is_valid = _validate_doi_url(url, lint_ctx)
+        elif url.startswith("http://") or url.startswith("https://"):
+            is_valid = _validate_http_url(url, lint_ctx, user_agent)
         else:
-            try:
-                with urlopen(url) as handle:
-                    handle.read(100)
-            except Exception as e:
-                is_valid = False
-                lint_ctx.error(f"Error '{e}' accessing {url}")
+            is_valid = _validate_other_url(url, lint_ctx)
+
         if is_valid:
             lint_ctx.info("URL OK %s" % url)
 

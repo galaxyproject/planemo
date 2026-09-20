@@ -10,6 +10,7 @@ env:
   GIT_AUTHOR_EMAIL: planemo@galaxyproject.org
   GIT_COMMITTER_NAME: planemo
   GIT_COMMITTER_EMAIL: planemo@galaxyproject.org
+permissions: {}
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -17,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.8']
+        python-version: ['3.10']
         tox-action:
           - lint
           - lint_docs
@@ -30,21 +31,21 @@ jobs:
           #- unit-diagnostic-servetraining
           #- unit-diagnostic-servecmd
           #- unit-diagnostic-trainingwfcmd
-          - unit-nonredundant-noclientbuild-noshed-gx-2109
-          - unit-nonredundant-noclientbuild-noshed-gx-2205
+          - unit-nonredundant-noclientbuild-noshed-gx-231
+          - unit-nonredundant-noclientbuild-noshed-gx-250
           - unit-nonredundant-noclientbuild-noshed-gx-dev
           - unit-nonredundant-noclientbuild-noshed-nogx
           - unit-diagnostic-serveclientcmd
         include:
-          - python-version: '3.11'
+          - python-version: '3.13'
             tox-action: lint
-          - python-version: '3.11'
+          - python-version: '3.13'
             tox-action: mypy
-          - python-version: '3.11'
+          - python-version: '3.13'
             tox-action: unit-quick
     services:
       postgres:
-        image: postgres:10.8
+        image: postgres:16
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -54,21 +55,24 @@ jobs:
         # needed because the postgres container does not provide a healthcheck
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
         with:
-          fetch-depth: 1
+          persist-credentials: false
           submodules: true
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7.0.0
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.1.0
       - name: Test psql
         run: |
+          psql --version  # Needs to be compatible with the postgres container image
           psql --tuples-only --username postgres -P pager=off --list
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools
           python -m pip install tox coveralls
-      - name: Checkout system space
+      - name: Check system space
         run: |
           df
       - name: Test with tox
@@ -76,28 +80,3 @@ jobs:
           TOXENV=$(echo $TOXENV | sed 's/\.//') tox
         env:
           TOXENV: py${{ matrix.python-version }}-${{ matrix.tox-action }}
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-          submodules: true
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '18.12.1'
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.7'
-      - name: Install dependencies
-        run: |
-          python3 -m pip install --upgrade pip setuptools
-          python3 -m pip install --upgrade twine wheel
-      - name: Create and check packages
-        run: |
-          make dist
-      - name: Publish to PyPI
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.pypi_password }}

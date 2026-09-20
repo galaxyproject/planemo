@@ -24,7 +24,7 @@ def main(argv):
     planemo_mod_path = os.path.join(PROJECT_DIRECTORY, source_dir, "__init__.py")
     with open(planemo_mod_path) as fh:
         mod = fh.read()
-    mod = re.sub(r"__version__ = '[\d\.]*\.dev0'", "__version__ = '%s'" % version, mod)
+    mod = re.sub(r'__version__ = "[\d\.]*\.dev0"', f'__version__ = "{version}"', mod)
     with open(planemo_mod_path, "w") as fh:
         mod = fh.write(mod)
     shell(["git", "commit", "-m", "Version %s" % version, "HISTORY.rst", "%s/__init__.py" % source_dir])

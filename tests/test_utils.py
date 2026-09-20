@@ -6,16 +6,20 @@ import functools
 import os
 import shutil
 import signal
+import subprocess
+import sys
+import time
 import traceback
 from concurrent.futures import (
     as_completed,
     ThreadPoolExecutor,
 )
-from sys import version_info
 from tempfile import mkdtemp
 from typing import (
+    Any,
     Callable,
     List,
+    Optional,
 )
 from unittest import (
     skip,
@@ -24,12 +28,14 @@ from unittest import (
 
 import psutil
 import pytest
+import requests as requests_lib
 from click.testing import CliRunner
 from galaxy.util import (
     asbool,
     unicodify,
     which,
 )
+from galaxy.util.unittest_utils import skip_if_site_down
 
 from planemo import (
     cli,
@@ -46,21 +52,65 @@ from .shed_app_test_utils import (
     setup_mock_shed,
 )
 
-PRE_PYTHON_27 = False
-if version_info[0] == 2 and version_info[1] >= 7:
-    PYTHON_27 = True
-else:
-    PYTHON_27 = False
-
 TEST_DIR = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
 TEST_AUTOPYGEN_DATA = os.path.join(TEST_DATA_DIR, "autopygen")
-TEST_DATA_DIR = os.path.join(TEST_DIR, "data")
 TEST_REPOS_DIR = os.path.join(TEST_DATA_DIR, "repos")
 TEST_TOOLS_DIR = os.path.join(TEST_DATA_DIR, "tools")
 PROJECT_TEMPLATES_DIR = os.path.join(TEST_DIR, os.path.pardir, "project_templates")
 CWL_DRAFT3_DIR = os.path.join(PROJECT_TEMPLATES_DIR, "cwl_draft3_spec")
 NON_ZERO_EXIT_CODE = object()
+ZENODO_TEST_RECORD_API_URL = "https://zenodo.org/api/records/1321885"
+skip_if_zenodo_down = skip_if_site_down(ZENODO_TEST_RECORD_API_URL)
+CWLTOOL_CACHE_ENV_PROP = "PLANEMO_CWLTOOL_CACHE_DIRECTORY"
+
+
+def test_sleep_fails_immediately_for_invalid_url():
+    with pytest.raises(requests_lib.exceptions.InvalidURL):
+        sleep("http://::1:9090")
+
+
+SIGTERM_IGNORING_PROCESS = """
+import signal
+import sys
+import time
+
+signal.signal(signal.SIGTERM, signal.SIG_IGN)
+with open(sys.argv[1], "w") as ready_file:
+    ready_file.write("ready")
+time.sleep(300)
+"""
+
+
+def _spawn_sigterm_ignoring_group(ready_path):
+    """Start a leader that ignores SIGTERM, in a process group of its own.
+
+    Waits for the handler to actually be installed - signalling before that
+    point would kill the process outright and prove nothing.
+    """
+    process = subprocess.Popen(
+        [sys.executable, "-c", SIGTERM_IGNORING_PROCESS, str(ready_path)],
+        start_new_session=True,
+    )
+    for _ in range(200):
+        if ready_path.exists():
+            return process
+        time.sleep(0.05)
+    process.kill()
+    process.wait()
+    raise AssertionError("Process never began ignoring SIGTERM")
+
+
+@contextlib.contextmanager
+def sigterm_ignoring_group(ready_path):
+    """Yield a running process group that refuses to die on SIGTERM."""
+    process = _spawn_sigterm_ignoring_group(ready_path)
+    try:
+        yield process
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait()
 
 
 class MarkGenerator:
@@ -83,6 +133,11 @@ class CliTestCase(TestCase):
         self._cleanup_hooks: List[Callable] = []
         self._port = None
         os.environ[PLANEMO_CONFIG_ENV_PROP] = self.planemo_yaml_path
+        # The whole workspace cannot be isolated - it caches the Galaxy repository and
+        # virtualenv shared by the Galaxy tests. Isolate the cwltool cache though, else
+        # repeated local test runs replay cached results instead of running cwltool.
+        self._old_cwltool_cache = os.environ.get(CWLTOOL_CACHE_ENV_PROP, None)
+        os.environ[CWLTOOL_CACHE_ENV_PROP] = os.path.join(self._home, "cwltool_cache")
 
     def tearDown(self):  # noqa
         for cleanup_hook in self._cleanup_hooks:
@@ -96,6 +151,10 @@ class CliTestCase(TestCase):
             os.environ[PLANEMO_CONFIG_ENV_PROP] = self._old_config
         else:
             del os.environ[PLANEMO_CONFIG_ENV_PROP]
+        if self._old_cwltool_cache is not None:
+            os.environ[CWLTOOL_CACHE_ENV_PROP] = self._old_cwltool_cache
+        else:
+            del os.environ[CWLTOOL_CACHE_ENV_PROP]
         safe_rmtree(self._home)
 
     @property
@@ -129,7 +188,7 @@ class CliTestCase(TestCase):
         with self._isolate() as f:
             repo = os.path.join(TEST_DATA_DIR, relative_path)
             self._copy_directory(repo, f)
-            yield f
+            yield os.path.realpath(f)
 
     def _copy_repo(self, name, dest):
         repo = os.path.join(TEST_REPOS_DIR, name)
@@ -434,6 +493,57 @@ def load_function_body(path: str, func_name: str) -> ast.Module:
                 return ast.Module(body=item.body, type_ignores=[])
 
         raise ModuleNotFoundError()
+
+
+def wait_for_active_entry_points(gi, job_id: str, timeout: int = 120) -> list[dict[str, Any]]:
+    """Poll GET /api/entry_points?job_id={job_id} until all entry points are active."""
+    end = time.time() + timeout
+    while time.time() < end:
+        resp = gi.make_get_request(f"{gi.url}/entry_points?job_id={job_id}")
+        resp.raise_for_status()
+        entry_points = resp.json()
+        if entry_points and all(ep.get("active") for ep in entry_points):
+            return entry_points
+        # Check if job errored
+        job_resp = gi.make_get_request(f"{gi.url}/jobs/{job_id}?full=true")
+        job_resp.raise_for_status()
+        if job_resp.json().get("state") == "error":
+            raise Exception(f"Interactive tool job {job_id} failed: {job_resp.json()}")
+        time.sleep(3)
+    raise TimeoutError(f"Entry points for job {job_id} did not become active within {timeout}s")
+
+
+def get_entry_point_target(gi, entry_point_id: str) -> str:
+    """Get the target URL for an entry point via /api/entry_points/{id}/access."""
+    resp = gi.make_get_request(f"{gi.url}/entry_points/{entry_point_id}/access")
+    resp.raise_for_status()
+    return resp.json()["target"]
+
+
+def wait_for_proxied_content(target_url: str, timeout: int = 30) -> str:
+    """Request content through the GxIT proxy using the Host header trick.
+
+    The target URL looks like: http://{key}-{token}.ep.interactivetool.localhost:{port}/
+    We parse out the subdomain host and make a request to localhost:{port} with
+    the Host header set to the full subdomain hostname.
+    """
+    end = time.time() + timeout
+    last_error: Optional[Exception] = None
+    while time.time() < end:
+        try:
+            scheme, rest = target_url.split("://", 1)
+            faked_host = rest.split("/", 1)[0] if "/" in rest else rest
+            _prefix, host_and_port = rest.split(".interactivetool.", 1)
+            # host_and_port is like "localhost:8090/" - strip trailing path
+            host_and_port = host_and_port.split("/", 1)[0]
+            url = f"{scheme}://{host_and_port}"
+            response = requests_lib.get(url, timeout=5, headers={"Host": faked_host})
+            response.raise_for_status()
+            return response.text
+        except Exception as e:
+            last_error = e
+            time.sleep(2)
+    raise TimeoutError(f"Failed to get proxied content from {target_url} within {timeout}s: {last_error}")
 
 
 # TODO: everything should be considered "exported".

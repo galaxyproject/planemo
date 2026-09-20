@@ -1,0 +1,4 @@
+# check that comments work
+XMLOrder
+# check the white spaces are ignored
+ CitationsMissing 

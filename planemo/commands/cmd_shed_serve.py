@@ -15,6 +15,7 @@ from planemo.runnable_resolve import install_args_list_to_runnables
 
 @click.command("shed_serve")
 @options.shed_read_options()
+@options.fail_fast_option()
 @options.galaxy_serve_options()
 @click.option(
     "--skip_dependencies", is_flag=True, help="Do not install shed dependencies as part of repository installation."
@@ -29,7 +30,6 @@ def cli(ctx, paths, **kwds):
     install these artifacts, and serve a Galaxy instances that can be
     logged into and explored interactively.
     """
-    kwds["galaxy_skip_client_build"] = kwds.pop("skip_client_build", False)
     install_args_list = kwds["install_args_list"] = shed.install_arg_lists(ctx, paths, **kwds)
     runnables = install_args_list_to_runnables(ctx, install_args_list, kwds)
     with engine_context(ctx, **kwds) as engine:

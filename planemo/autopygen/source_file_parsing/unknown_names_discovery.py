@@ -77,7 +77,7 @@ class UnknownNameInit(CustomVisitor):
         return self.variable_definitions, self.class_definitions, self.new_known_names
 
 
-def _insert_into_actions(actions: List[ast.AST], assignments: List[ast.Assign], class_defs: List[ast.ClassDef]):
+def _insert_into_actions(actions: List[ast.stmt], assignments: List[ast.Assign], class_defs: List[ast.ClassDef]):
     def find_end_of_imports():
         index = 0
         for item in actions:
@@ -111,8 +111,8 @@ def _insert_into_actions(actions: List[ast.AST], assignments: List[ast.Assign], 
 
 
 def initialize_variables_in_module(
-    original_module: ast.Module, parser_name: str, actions: List[ast.AST], imported_names: Set[str]
-) -> Tuple[List[ast.AST], Set[str]]:
+    original_module: ast.Module, parser_name: str, actions: List[ast.stmt], imported_names: Set[str]
+) -> Tuple[List[ast.stmt], Set[str]]:
     """
     Function used to initialize variables that have constant values
 
@@ -123,7 +123,7 @@ def initialize_variables_in_module(
      AST of the original source file
     parser_name : str
      default name of the parser
-    actions : List[ast.AST]
+    actions : List[ast.stmt]
      list of actions extracted so far
     imported_names : Set[str]
      list of names imported from modules

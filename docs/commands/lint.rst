@@ -23,8 +23,7 @@ Check for common errors and best practices.
                                       (e.g. passing --skip 'citations,xml_order'
                                       would skip linting of citations and best-
                                       practice XML ordering.
-      --xsd / --no_xsd                Include tool XSD validation in linting
-                                      process.
+      --skip_file FILE                File containing a list of lint tests to skip
       -r, --recursive                 Recursively perform command for
                                       subdirectories.
       --urls                          Check validity of URLs in XML files

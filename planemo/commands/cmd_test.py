@@ -13,12 +13,28 @@ from planemo.runnable_resolve import for_runnable_identifiers
 @options.optional_tools_arg(multiple=True, allow_uris=True)
 @click.option(
     "--failed",
+    "--lf",
     is_flag=True,
-    help="Re-run only failed tests. This command will read "
-    "tool_test_output.json to determine which tests failed so this "
-    "file must have been produced with the same set of tool ids "
-    "previously.",
+    help="Re-run only failed tests from the previous run. Reads from "
+    "--failed_json (or --test_output_json if not set) to determine "
+    "which tests failed.",
     default=False,
+)
+@click.option(
+    "--failed_json",
+    type=click.Path(),
+    help="JSON file from a previous planemo test run to read failed test IDs "
+    "from when using --failed/--lf. Defaults to --test_output_json.",
+    default=None,
+)
+@click.option(
+    "--test_index",
+    type=int,
+    multiple=True,
+    help="Index(es) of specific test(s) to run (1-based). "
+    "Can be specified multiple times (e.g., --test_index 1 --test_index 3) "
+    "to run specific tests. If not specified, all tests are run.",
+    default=(),
 )
 @click.option(
     "--polling_backoff",
@@ -28,6 +44,8 @@ from planemo.runnable_resolve import for_runnable_identifiers
     "instances to limit generated traffic.",
     default="0",
 )
+@options.test_use_cache_option()
+@options.cwltool_cache_directory_option()
 @options.galaxy_target_options()
 @options.galaxy_config_options()
 @options.test_options()
@@ -60,6 +78,13 @@ def cli(ctx, uris, **kwds):
     to attempt to shield this execution of Galaxy from manually launched runs
     against that same Galaxy root - but this may not be bullet proof yet so
     please careful and do not try this against production Galaxy instances.
+
+    Tests do not reuse cached job results unless ``--use_cache`` is passed.
+    Opting in speeds up an edit-and-re-test loop over a fixed set of tools, but
+    Galaxy decides equivalence from the tool id, tool version and inputs - edit
+    a tool without bumping its version and the cached outputs are replayed, so
+    the test never exercises the change. See "Caching job results" in the
+    Planemo documentation.
     """
     runnables = for_runnable_identifiers(ctx, uris, kwds)
 

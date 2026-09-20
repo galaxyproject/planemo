@@ -29,12 +29,16 @@ from .test_training import (
     wf_param_values,
     zenodo_link,
 )
-from .test_utils import skip_if_environ
+from .test_utils import (
+    skip_if_environ,
+    skip_if_zenodo_down,
+)
 
 topic = Topic()
 training = Training(KWDS)
 
 
+@skip_if_zenodo_down
 def test_get_zenodo_record() -> None:
     """Test :func:`planemo.training.tutorial.get_zenodo_record`."""
     z_record, req_res = get_zenodo_record(zenodo_link)
@@ -276,6 +280,7 @@ def test_tutorial_export_workflow_file() -> None:
     shutil.rmtree("topics")
 
 
+@skip_if_zenodo_down
 def test_tutorial_get_files_from_zenodo() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.get_files_from_zenodo`."""
     tuto = Tutorial(training=training, topic=topic, zenodo_link=zenodo_link)
@@ -290,6 +295,7 @@ def test_tutorial_get_files_from_zenodo() -> None:
     assert ".csv" in files[1]["url"]
 
 
+@skip_if_zenodo_down
 def test_tutorial_prepare_data_library_from_zenodo() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.prepare_data_library_from_zenodo`."""
     # without zenodo link
@@ -351,6 +357,7 @@ def test_tutorial_create_hands_on_tutorial() -> None:
 
 
 @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+@skip_if_zenodo_down
 def test_tutorial_create_tutorial() -> None:
     """Test :func:`planemo.training.tutorial.tutorial.create_tutorial`."""
     tuto = Tutorial(training=training, topic=topic)

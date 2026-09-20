@@ -142,11 +142,10 @@ class CmdWorkflowLintTestCase(CliTestCase):
             "Workflow is not annotated.",
             "Workflow does not specify a creator.",
             "Workflow does not specify a license.",
-            "Workflow step with ID None has no annotation.",
-            "Workflow step with ID None has no label.",
+            "Workflow step input has no annotation.",
             "Workflow missing test cases.",
-            "Workflow step with ID None specifies an untyped parameter as an input.",
-            "Workflow step with ID None specifies an untyped parameter in the post-job actions.",
+            "Workflow step input specifies an untyped parameter as an input.",
+            "Workflow step input specifies an untyped parameter in the post-job actions.",
         ]
 
         for warning in warnings:
@@ -161,11 +160,42 @@ class CmdWorkflowLintTestCase(CliTestCase):
             "Workflow is not annotated.",
             "Workflow does not specify a creator.",
             "Workflow does not specify a license.",
-            "Workflow step with ID 0 has no annotation.",
-            "Workflow step with ID 0 has no label.",
+            "Workflow step 0 has no annotation.",
+            "Workflow step 0 has no label.",
             "Workflow missing test cases.",
-            "Workflow step with ID 1 specifies an untyped parameter as an input.",
-            "Workflow step with ID 1 specifies an untyped parameter in the post-job actions.",
+            "Workflow step 1 specifies an untyped parameter as an input.",
+            "Workflow step 1 specifies an untyped parameter in the post-job actions.",
+        ]
+
+        for warning in warnings:
+            assert warning in result.output
+
+    def test_best_practices_linting_ga_dict_tool_state(self):
+        workflow_path = "/".join((TEST_DATA_DIR, "wf14-unlinted-best-practices-dict-tool-state.ga"))
+        lint_cmd = ["workflow_lint", workflow_path]
+        result = self._runner.invoke(self._cli.planemo, lint_cmd)
+
+        warnings = [
+            "Workflow is not annotated.",
+            "Workflow does not specify a creator.",
+            "Workflow does not specify a license.",
+            "Workflow step 0 has no annotation.",
+            "Workflow step 0 has no label.",
+            "Workflow missing test cases.",
+            "Workflow step 1 specifies an untyped parameter as an input.",
+            "Workflow step 1 specifies an untyped parameter in the post-job actions.",
+        ]
+
+        for warning in warnings:
+            assert warning in result.output
+
+    def test_author_identifier_best_practices_linting_ga(self):
+        workflow_path = "/".join((TEST_DATA_DIR, "wf19-unlinted-author-identifier-best-practices.ga"))
+        lint_cmd = ["workflow_lint", workflow_path]
+        result = self._runner.invoke(self._cli.planemo, lint_cmd)
+
+        warnings = [
+            'Creator identifier "0000-0002-1825-0097" should be a fully qualified URI, for example "https://orcid.org/0000-0002-1825-0097".',
         ]
 
         for warning in warnings:
@@ -202,6 +232,57 @@ class CmdWorkflowLintTestCase(CliTestCase):
         result = self._runner.invoke(self._cli.planemo, lint_cmd)
         assert "ERROR: The ToolShed returned an error when searching" in result.output
 
+    def test_tool_id_linting_mismatched_changeset(self):
+        # tp_easyjoin_tool/1.1.0 is a valid tool version, but the pinned
+        # changeset_revision (288462ec2630) only provides version 1.0.0.
+        workflow_path = "/".join(
+            (TEST_DATA_DIR, "wf_repos", "autoupdate_tests", "workflow_with_mismatched_changeset.ga")
+        )
+        lint_cmd = ["workflow_lint", workflow_path]
+        result = self._runner.invoke(self._cli.planemo, lint_cmd)
+        assert (
+            "ERROR: The tool toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_easyjoin_tool/1.1.0 "
+            "is not provided by the pinned changeset_revision 288462ec2630" in result.output
+        )
+
+    def test_tool_id_linting_matching_changeset(self):
+        # tp_easyjoin_tool/1.1.0 is provided by changeset_revision 20344ce0c811.
+        workflow_path = "/".join((TEST_DATA_DIR, "wf_repos", "autoupdate_tests", "workflow_with_matching_changeset.ga"))
+        lint_cmd = ["workflow_lint", "--skip", "best_practices", workflow_path]
+        result = self._runner.invoke(self._cli.planemo, lint_cmd)
+        assert "All tool ids appear to be valid." in result.output
+
+    def test_tool_id_linting_without_tool_shed_repository(self):
+        # A tool step without a tool_shed_repository has nothing to validate the
+        # tool_id/version against, so the check is skipped even for an otherwise
+        # invalid toolshed tool_id.
+        workflow_path = "/".join(
+            (TEST_DATA_DIR, "wf_repos", "autoupdate_tests", "workflow_without_tool_shed_repository.ga")
+        )
+        lint_cmd = ["workflow_lint", "--skip", "best_practices", workflow_path]
+        result = self._runner.invoke(self._cli.planemo, lint_cmd)
+        assert "not in the toolshed" not in result.output
+        assert "All tool ids appear to be valid." in result.output
+
+    def test_tool_version_linting_mismatch(self):
+        # tool_id encodes version 1.1.0 but the step's tool_version is 1.0.0.
+        workflow_path = "/".join(
+            (TEST_DATA_DIR, "wf_repos", "autoupdate_tests", "workflow_with_mismatched_tool_version.ga")
+        )
+        lint_cmd = ["workflow_lint", "--skip", "best_practices", workflow_path]
+        result = self._runner.invoke(self._cli.planemo, lint_cmd)
+        assert (
+            "ERROR: The tool_version '1.0.0' does not match the version '1.1.0' encoded in tool_id "
+            "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_easyjoin_tool/1.1.0" in result.output
+        )
+
+    def test_tool_version_linting_match(self):
+        # tool_id and tool_version agree in this fixture.
+        workflow_path = "/".join((TEST_DATA_DIR, "wf_repos", "autoupdate_tests", "workflow_with_matching_changeset.ga"))
+        lint_cmd = ["workflow_lint", "--skip", "best_practices", workflow_path]
+        result = self._runner.invoke(self._cli.planemo, lint_cmd)
+        assert "Tool versions appear to match tool ids." in result.output
+
     def test_workflow_linting_asserts(self):
         repo = _wf_repo("basic_format2_ok_collection")
         lint_cmd = ["workflow_lint", "--skip", "best_practices", repo]
@@ -225,6 +306,50 @@ class CmdWorkflowLintTestCase(CliTestCase):
         lint_cmd = ["workflow_lint", "--skip", "best_practices", repo]
         result = self._runner.invoke(self._cli.planemo, lint_cmd)
         assert "ERROR: Invalid assertion in tests: assert_has_line missing a required argument: 'line'" in result.output
+
+    def test_workflow_linting_iwc(self):
+        # Check the output of workflow_lint --iwc on a basic workflow with .dockstore
+        for repo in [
+            _wf_repo("basic_format2_dockstore"),
+            _wf_repo(os.path.join("basic_format2_dockstore", "basic_format2.gxwf.yml")),
+        ]:
+            lint_cmd = ["workflow_lint", "--skip", "best_practices", "--iwc", repo]
+            result = self._runner.invoke(self._cli.planemo, lint_cmd)
+
+            errors = [
+                "The file README.md is missing but required.",
+                "The file CHANGELOG.md is missing but required.",
+                ".dockstore.yml workflow entry missing recommended key name",
+                "Workflow  have no 'authors' in the .dockstore.yml.",
+                "has no release",
+            ]
+
+            for error in errors:
+                assert error in result.output
+
+        # Check that skipping the good steps makes it work
+        lint_cmd = [
+            "workflow_lint",
+            "--iwc",
+            "--skip",
+            "best_practices,required_files,dockstore_best_practices,release",
+            repo,
+        ]
+        self._check_exit_code(lint_cmd, exit_code=0)
+
+        # Check the output of workflow_lint --iwc on a good workflow but with an issue with the release
+        repo = _wf_repo("basic_wf_iwc_invalid_version")
+        lint_cmd = ["workflow_lint", "--iwc", repo]
+        result = self._runner.invoke(self._cli.planemo, lint_cmd)
+
+        errors = ["The release of workflow", " does not match the version in the CHANGELOG."]
+
+        for error in errors:
+            assert error in result.output
+
+        # Check that skipping the good steps makes it work
+        lint_cmd = ["workflow_lint", "--iwc", "--skip", "release", repo]
+        self._check_exit_code(lint_cmd, exit_code=0)
 
 
 def _wf_repo(rel_path):

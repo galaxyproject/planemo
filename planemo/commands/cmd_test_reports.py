@@ -1,6 +1,7 @@
 """Module describing the planemo ``test_reports`` command."""
 
 import datetime
+import json
 import pathlib
 
 import click
@@ -12,8 +13,9 @@ from planemo import (
 from planemo.cli import command_function
 from planemo.galaxy.test import (
     handle_reports,
-    StructuredData,
 )
+from planemo.output_models import PlanemoTestReport
+from planemo.test.results import StructuredData
 
 
 @click.command("test_reports")
@@ -31,8 +33,15 @@ def cli(ctx, path, **kwds):
         io.error("Failed to tool test json file at %s" % path)
         return 1
 
-    test_data = StructuredData(path)
-    test_data.calculate_summary_data_if_needed()
+    try:
+        with open(path, encoding="utf-8") as f:
+            report_data = json.load(f)
+        PlanemoTestReport.model_validate(report_data)
+    except (OSError, ValueError) as e:
+        raise click.ClickException("Invalid Planemo test report JSON at %s: %s" % (path, e)) from e
+
+    test_data = StructuredData(data=report_data)
+    test_data.calculate_summary_data()
     file_modication_datatime = datetime.datetime.fromtimestamp(fname.stat().st_mtime)
     kwds["file_modication_datatime"] = file_modication_datatime
     handle_reports(ctx, test_data.structured_data, kwds)

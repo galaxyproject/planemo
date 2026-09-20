@@ -1,7 +1,5 @@
 """Module describing the planemo ``list_invocations`` command."""
 
-import json
-
 import click
 
 from planemo import options
@@ -10,15 +8,10 @@ from planemo.galaxy import profiles
 from planemo.galaxy.api import get_invocations
 from planemo.galaxy.workflows import remote_runnable_to_workflow_id
 from planemo.io import (
-    error,
     info,
+    print_table,
 )
 from planemo.runnable_resolve import for_runnable_identifier
-
-try:
-    from tabulate import tabulate
-except ImportError:
-    tabulate = None  # type: ignore
 
 
 @click.command("list_invocations")
@@ -43,41 +36,29 @@ def cli(ctx, workflow_identifier, **kwds):
         key=profile["galaxy_admin_key"] or profile["galaxy_user_key"],
         workflow_id=workflow_id,
     )
-    if tabulate is not None:
-        state_colors = {
-            "ok": "\033[92m",  # green
-            "running": "\033[93m",  # yellow
-            "error": "\033[91m",  # red
-            "paused": "\033[96m",  # cyan
-            "deleted": "\033[95m",  # magenta
-            "deleted_new": "\033[95m",  # magenta
-            "new": "\033[96m",  # cyan
-            "queued": "\033[93m",  # yellow
+    state_colors = {
+        "ok": "\033[92m",  # green
+        "running": "\033[93m",  # yellow
+        "error": "\033[91m",  # red
+        "paused": "\033[96m",  # cyan
+        "deleted": "\033[95m",  # magenta
+        "deleted_new": "\033[95m",  # magenta
+        "new": "\033[96m",  # cyan
+        "queued": "\033[93m",  # yellow
+    }
+    galaxy_url = profile["galaxy_url"].rstrip("/")
+    print_table(
+        {
+            "Invocation ID": list(invocations.keys()),
+            "Jobs status": [
+                ", ".join([f"{state_colors[k]}{v} jobs {k}\033[0m" for k, v in inv["states"].items()])
+                for inv in invocations.values()
+            ],
+            "Invocation report URL": [
+                f"{galaxy_url}/workflows/invocations/report?id={inv_id}" for inv_id in invocations
+            ],
+            "History URL": [f"{galaxy_url}/histories/view?id={inv['history_id']}" for inv in invocations.values()],
         }
-        print(
-            tabulate(
-                {
-                    "Invocation ID": invocations.keys(),
-                    "Jobs status": [
-                        ", ".join([f"{state_colors[k]}{v} jobs {k}\033[0m" for k, v in inv["states"].items()])
-                        for inv in invocations.values()
-                    ],
-                    "Invocation report URL": [
-                        "{}/workflows/invocations/report?id={}".format(profile["galaxy_url"].strip("/"), inv_id)
-                        for inv_id in invocations
-                    ],
-                    "History URL": [
-                        "{}/histories/view?id={}".format(
-                            profile["galaxy_url"].strip("/"), invocations[inv_id]["history_id"]
-                        )
-                        for inv_id in invocations
-                    ],
-                },
-                headers="keys",
-            )
-        )
-    else:
-        error("The tabulate package is not installed, invocations could not be listed correctly.")
-        print(json.dumps(invocations, indent=4, sort_keys=True))
+    )
     info(f"{len(invocations)} invocations found.")
     return

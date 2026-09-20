@@ -36,7 +36,7 @@ class UnknownNamesRemoval(ast.NodeVisitor):
 
     # currently able to resolve add_argument calls containing unknown names,
     # and list comprehension assignment
-    def _reach_top(self, node: ast.Name) -> Tuple[ast.Call, ast.AST]:
+    def _reach_top(self, node: ast.Name) -> Tuple[ast.Call, ast.Name]:
         current = node
         parent = current.parent  # type: ignore
 
@@ -99,14 +99,14 @@ class UnknownNamesRemoval(ast.NodeVisitor):
             )
 
 
-def handle_local_module_names(actions: List[ast.AST], unknown_names: Set[str]) -> ast.Module:
+def handle_local_module_names(actions: List[ast.stmt], unknown_names: Set[str]) -> ast.Module:
     """
     Function used to remove assignments and list comprehensions which can't be
     resolved
 
     Parameters
     ----------
-    actions: List[ast.AST]
+    actions: List[ast.stmt]
       list of actions extracted so far
     unknown_names:
       set of unknown names that have to be extracted
