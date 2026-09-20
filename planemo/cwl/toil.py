@@ -1,11 +1,6 @@
 import json
 import tempfile
 
-try:
-    from toil.cwl import cwltoil
-except ImportError:
-    cwltoil = None
-
 from planemo.deps import ensure_dependency_resolvers_conf_configured
 from planemo.io import (
     error,
@@ -25,7 +20,7 @@ TOIL_REQUIRED_MESSAGE = "This functionality requires Toil, please install with '
 
 def run_toil(ctx, runnable: "Runnable", job_path: str, **kwds):
     """Translate planemo kwds to cwltool kwds and run cwltool main function."""
-    _ensure_toil_available()
+    cwltoil = _ensure_toil_available()
 
     args = []
     if not ctx.verbose:
@@ -75,5 +70,9 @@ def run_toil(ctx, runnable: "Runnable", job_path: str, **kwds):
 
 
 def _ensure_toil_available():
-    if cwltoil is None:
+    try:
+        from toil.cwl import cwltoil
+
+        return cwltoil
+    except ImportError:
         raise Exception(TOIL_REQUIRED_MESSAGE)

@@ -1,6 +1,6 @@
 
 ``clone`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``clone``. This help message can be generated with ``planemo clone

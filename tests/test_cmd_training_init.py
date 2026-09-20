@@ -1,9 +1,12 @@
 """Tests for the ``training_init`` command."""
+
 import os
 
 from .test_utils import (
     CliTestCase,
+    mark,
     skip_if_environ,
+    skip_if_zenodo_down,
     TEST_DATA_DIR,
 )
 
@@ -76,21 +79,10 @@ class CmdTrainingInitTestCase(CliTestCase):
             self._check_exit_code(training_init_command, exit_code=0)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_if_zenodo_down
     def test_training_init_command_tutorial_zenodo(self):
         """Test training_init command to create new tutorial with zenodo."""
         with self._isolate():
-            datatype = os.path.join(TEST_DATA_DIR, "training_datatypes.yaml")
-            # not working test
-            training_init_command = [
-                "training_init",
-                "--topic_name",
-                "test",
-                "--tutorial_name",
-                "test",
-                "--zenodo_link",
-                "https://zenodo.org/record/1321885",
-            ]
-            self._check_exit_code(training_init_command, exit_code=1)
             # working
             training_init_command = [
                 "training_init",
@@ -100,12 +92,11 @@ class CmdTrainingInitTestCase(CliTestCase):
                 "test",
                 "--zenodo_link",
                 "https://zenodo.org/record/1321885",
-                "--datatypes",
-                datatype,
             ]
             self._check_exit_code(training_init_command, exit_code=0)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @mark.tests_galaxy_branch
     def test_training_init_command_tutorial_local_wf(self):
         """Test training_init command to create new tutorial with local workflow."""
         with self._isolate():

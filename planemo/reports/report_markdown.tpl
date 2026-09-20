@@ -1,4 +1,4 @@
-{% from 'macros.tmpl' import render_invocation_details, render_job_parameters, render_steps %}
+{% from 'macros.tmpl' import render_invocation_details, render_invocation_messages, render_job_parameters, render_steps %}
 {% if title %}
 # {{ execution_type }} {{ title }}
 
@@ -8,7 +8,7 @@
 {% set state.success = raw_data.results.total - raw_data.results.errors - raw_data.results.failures - raw_data.results.skips | default(0) %}
 {% set state.error = raw_data.results.errors | default(0) %}
 {% set state.failure = raw_data.results.failures | default(0) %}
-{% set state.skipped = raw_data.results.skipped | default(0) %}
+{% set state.skipped = raw_data.results.skips | default(0) %}
 
 {% if raw_data.results.total %}
 <div class="progress">
@@ -32,26 +32,27 @@
 
 {% set display_job_attributes = {'command_line': 'Command Line', 'exit_code': 'Exit Code', 'stderr': 'Standard Error', 'stdout': 'Standard Output', 'traceback': 'Traceback'} %}
 {% for status, desc in {'error': 'Errored', 'failure': 'Failed', 'success': 'Passed'}.items() if state[status]%}
-<details><summary>{{ desc }} {{ execution_type }}s</summary>
+{% set expanded = "open" if status in ("error", "failure") else "" %}
+<details {{ expanded }}><summary>{{ desc }} {{ execution_type }}s</summary>
 {%   for test in raw_data.tests %}
 {%     if test.data.status == status %}
 {%       if test.data.status == 'success' %}
 
-* <details class="rcorners light-green"><summary class="light-green">&#9989; {{ test.id }}</summary><div class="padded">
+* <details class="rcorners light-green"><summary class="light-green">&#9989; {{ test.id|replace("#","# ") }}</summary><div class="padded">
 
 {%       else %}
 
-* <details class="rcorners light-red"><summary class="light-red">&#10060; {{ test.id }}</summary><div class="padded">
+* <details class="rcorners light-red"><summary class="light-red">&#10060; {{ test.id|replace("#","# ") }}</summary><div class="padded">
 
 {%       endif %}
 {%       if test.data.output_problems %}
     **Problems**:
-{%       endif %}
-{%       for problem in test.data.output_problems %}
+{%         for problem in test.data.output_problems %}
     * ```
       {{problem|indent(6)}}
       ```
-{%       endfor %}
+{%         endfor %}
+{%       endif %}
 {%       if test.data.execution_problem %}
     **Execution Problem:**
     * ```
@@ -59,6 +60,20 @@
       ```
 {%       endif %}
 {%       if test.data.job %}
+{%         set ns = namespace(container_id=None) %}
+{%         set job_metrics = test.data.job.get('job_metrics') or [] %}
+{%         for metric in job_metrics %}
+{%           if metric.get('name') == 'container_id' %}
+{%             set ns.container_id = metric.get('value') %}
+{%           endif %}
+{%         endfor %}
+{%         if ns.container_id %}
+    **Container:**
+
+    * ```console
+      {{ ns.container_id|indent(6) }}
+      ```
+{%         endif %}
 {%         for key, description in display_job_attributes.items() %}
 {%           if test.data.job[key] not in ("", None) %}
     **{{ description }}:**
@@ -75,13 +90,15 @@
 
     #### Workflow invocation details
 
+{{render_invocation_messages(test.data.invocation_details.details.messages)}}
+
 {{render_steps(test.data.invocation_details.steps.values(), display_job_attributes)}}
 
 {{render_invocation_details(test.data.invocation_details.details)}}
 
 {%       endif %}
 
-  </div></details>
+    </div></details>
 
 {%     endif %}
 {%   endfor %}

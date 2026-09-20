@@ -76,7 +76,7 @@ def test_add_dir_contents_to_repo():
                 notes="The big release!",
                 dry_run=False,
             )
-        assert "Problem executing commands git push" in str(excinfo.value)
+        assert "Problem executing commands [git push" in str(excinfo.value)
 
 
 def test_add_dir_contents_to_repo_dry_run():

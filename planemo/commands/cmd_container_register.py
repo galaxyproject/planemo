@@ -1,6 +1,11 @@
 """Module describing the planemo ``container_register`` command."""
+
 import os
 import string
+from typing import (
+    Iterable,
+    List,
+)
 
 import click
 from galaxy.tool_util.deps.container_resolvers.mulled import targets_to_mulled_name
@@ -10,11 +15,15 @@ from galaxy.tool_util.deps.mulled.mulled_build import (
 )
 from galaxy.tool_util.deps.mulled.util import (
     conda_build_target_str,
+    CondaTarget,
     v2_image_name,
 )
 
 from planemo import options
-from planemo.cli import command_function
+from planemo.cli import (
+    command_function,
+    PlanemoCliContext,
+)
 from planemo.conda import (
     best_practice_search,
     build_conda_context,
@@ -32,7 +41,6 @@ from planemo.github_util import (
     get_repository_object,
     pull_request,
 )
-from planemo.mulled import conda_to_mulled_targets
 
 REGISTRY_TARGET_NAME = "multi-package-containers"
 REGISTRY_TARGET_PATH = "combinations"
@@ -78,7 +86,7 @@ BIOCONTAINERS_PLATFORM = "linux-64"
     help="Force push branch for pull request in case it already exists.",
 )
 @command_function
-def cli(ctx, paths, **kwds):
+def cli(ctx: "PlanemoCliContext", paths, **kwds) -> None:
     """Register multi-requirement containers as needed.
 
     BioContainers publishes all Bioconda packages automatically as individual
@@ -95,14 +103,12 @@ def cli(ctx, paths, **kwds):
     )
     for conda_targets, tool_paths in zip(conda_targets_list, tool_paths_list):
         ctx.vlog("Handling conda_targets [%s]" % conda_targets)
-        mulled_targets = conda_to_mulled_targets(conda_targets)
-        mulled_targets_str = "- " + "\n- ".join(map(conda_build_target_str, mulled_targets))
-
-        if len(mulled_targets) < 1:
+        conda_targets_str = "- " + "\n- ".join(map(conda_build_target_str, conda_targets))
+        if len(conda_targets) < 1:
             ctx.log("Skipping registration, no targets discovered.")
             continue
 
-        name = v2_image_name(mulled_targets)
+        name = v2_image_name(conda_targets)
         tag = "0"
         name_and_tag = f"{name}-{tag}"
         target_filename = os.path.join(registry_target.output_directory, "%s.tsv" % name_and_tag)
@@ -110,7 +116,7 @@ def cli(ctx, paths, **kwds):
             ctx.log("Target file '%s' already exists, skipping" % target_filename)
             continue
 
-        if targets_to_mulled_name(mulled_targets, hash_func="v2", namespace=kwds["mulled_namespace"]):
+        if targets_to_mulled_name(conda_targets, hash_func="v2", namespace=kwds["mulled_namespace"]):
             ctx.vlog("quay repository already exists, skipping")
             continue
 
@@ -143,10 +149,10 @@ def cli(ctx, paths, **kwds):
                 ctx.log(f"{conda_target} requires '{base_image}' as base image")
                 break
 
-        registry_target.write_targets(ctx, target_filename, mulled_targets, tag, base_image)
+        registry_target.write_targets(ctx, target_filename, conda_targets, tag, base_image)
         tools_str = "\n".join(map(lambda p: "- " + os.path.basename(p), tool_paths))
         registry_target.handle_pull_request(
-            ctx, name, target_filename, mulled_targets_str, tools_str, base_image, **kwds
+            ctx, name, target_filename, conda_targets_str, tools_str, base_image, **kwds
         )
         combinations_added += 1
 
@@ -154,7 +160,7 @@ def cli(ctx, paths, **kwds):
 class RegistryTarget:
     """Abstraction around mulled container registry (both directory and Github repo)."""
 
-    def __init__(self, ctx, **kwds):
+    def __init__(self, ctx: "PlanemoCliContext", **kwds):
         output_directory = kwds["output_directory"]
         pr_titles = []
         target_repository = None
@@ -179,7 +185,7 @@ class RegistryTarget:
         self.output_directory = output_directory
         self.target_repository = target_repository
 
-    def has_pull_request_for(self, name):
+    def has_pull_request_for(self, name: str) -> bool:
         has_pr = False
         if self.do_pull_request:
             if any([name in t for t in self.pr_titles]):
@@ -187,7 +193,16 @@ class RegistryTarget:
 
         return has_pr
 
-    def handle_pull_request(self, ctx, name, target_filename, packages_str, tools_str, base_image, **kwds):
+    def handle_pull_request(
+        self,
+        ctx: "PlanemoCliContext",
+        name: str,
+        target_filename: str,
+        packages_str: str,
+        tools_str: str,
+        base_image: str,
+        **kwds,
+    ) -> None:
         if self.do_pull_request:
             message = kwds["message"]
             message = string.Template(message).safe_substitute(
@@ -199,6 +214,7 @@ class RegistryTarget:
                 }
             )
             branch_name = name.replace(":", "-")
+            assert self.target_repository
             branch(ctx, self.target_repository, branch_name, from_branch="master")
             add(ctx, self.target_repository, target_filename)
             commit(ctx, self.target_repository, message=message)
@@ -206,25 +222,32 @@ class RegistryTarget:
             push(ctx, repo_path=self.target_repository, to=self.remote_name, branch=branch_name, force=force_push)
             pull_request(ctx, self.target_repository, message=message, repo=REGISTRY_REPOSITORY)
 
-    def write_targets(self, ctx, target_filename, mulled_targets, tag, base_image):
+    def write_targets(
+        self,
+        ctx: "PlanemoCliContext",
+        target_filename: str,
+        conda_targets: Iterable[CondaTarget],
+        tag: str,
+        base_image: str,
+    ) -> None:
         with open(target_filename, "w") as f:
-            targets = to_target_str(mulled_targets)
+            targets = to_target_str(conda_targets)
             f.write(string.Template(CONTENTS).safe_substitute(targets=targets, base_image=base_image, image_build=tag))
             ctx.log(f"Wrote requirements [{targets}] to file [{target_filename}]")
 
 
-def to_target_str(targets):
+def to_target_str(targets: Iterable[CondaTarget]) -> str:
     target_strings = []
     for target in targets:
         if target.version:
-            target_str = f"{target.package_name}={target.version}"
+            target_str = f"{target.package}={target.version}"
         else:
-            target_str = target.package_name
+            target_str = target.package
         target_strings.append(target_str)
     return ",".join(target_strings)
 
 
-def open_prs(ctx):
+def open_prs(ctx: "PlanemoCliContext") -> List:
     repo = get_repository_object(ctx, REGISTRY_REPOSITORY)
     prs = [pr for pr in repo.get_pulls()]
     return prs

@@ -2,7 +2,7 @@
     <description>just wastes time</description>
     <command detect_errors="exit_code"><![CDATA[
         echo "output" > '$output' &&
-        sleep 30;
+        sleep 5;
     ]]></command>
     <inputs>
     </inputs>

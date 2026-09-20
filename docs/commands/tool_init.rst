@@ -1,6 +1,6 @@
 
 ``tool_init`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``tool_init``. This help message can be generated with ``planemo tool_init
@@ -51,5 +51,9 @@ Generate tool outline from given arguments.
                                 'seqtk@1.68').
       --container TEXT          Add a Docker image identifier for this tool.
       --cwl                     Build a CWL tool instead of a Galaxy tool.
+      --autopygen TEXT          Option for automatic generation of tool file, from
+                                python source code that uses argparse. Parameter is
+                                a path to source file containing definition of the
+                                parser
       --help                    Show this message and exit.
     

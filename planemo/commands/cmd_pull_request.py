@@ -1,4 +1,5 @@
 """Module describing the planemo ``pull_request`` command."""
+
 import click
 
 from planemo import (

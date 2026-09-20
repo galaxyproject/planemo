@@ -1,11 +1,12 @@
 """Templating abstraction around jinja2 for Planemo."""
+
 try:
     from jinja2 import Template
 except ImportError:
     Template = None  # type: ignore
 
 NO_JINJA2_MESSAGE = (
-    "This functionality requires Jinja2 but this library is " "unavailable. Install with `pip install jinja2`."
+    "This functionality requires Jinja2 but this library is unavailable. Install with `pip install jinja2`."
 )
 
 

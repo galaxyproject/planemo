@@ -1,6 +1,6 @@
 
 ``workflow_upload`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``workflow_upload``. This help message can be generated with ``planemo workflow_upload

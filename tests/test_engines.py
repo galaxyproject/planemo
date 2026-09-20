@@ -3,6 +3,7 @@
 import os
 
 from planemo.engine import engine_context
+from planemo.engine.galaxy import log_service_logs_on_failure
 from planemo.runnable import (
     for_path,
     get_outputs,
@@ -58,3 +59,36 @@ def test_runnable_types():
     assert RunnableType.galaxy_workflow.is_galaxy_artifact
     assert not RunnableType.cwl_tool.is_galaxy_artifact
     assert not RunnableType.cwl_workflow.is_galaxy_artifact
+
+
+class _RecordingContext:
+    def __init__(self):
+        self.messages = []
+
+    def log(self, msg, *args):
+        self.messages.append(msg)
+
+
+class _ConfigWithServiceLogs:
+    service_log_contents = {"celery.log": "Task galaxy.fetch_data raised unexpected"}
+
+
+def test_service_logs_not_logged_when_tests_pass():
+    ctx = _RecordingContext()
+    log_service_logs_on_failure(ctx, _ConfigWithServiceLogs(), [{"data": {"status": "success"}}])
+    assert ctx.messages == []
+
+
+def test_service_logs_logged_when_test_fails():
+    ctx = _RecordingContext()
+    log_service_logs_on_failure(ctx, _ConfigWithServiceLogs(), [{"data": {"status": "error"}}])
+    assert len(ctx.messages) == 1
+    assert "celery.log" in ctx.messages[0]
+    assert "raised unexpected" in ctx.messages[0]
+
+
+def test_service_logs_logged_when_no_result_registered():
+    """verify_tool blew up before registering anything - still want the logs."""
+    ctx = _RecordingContext()
+    log_service_logs_on_failure(ctx, _ConfigWithServiceLogs(), [])
+    assert len(ctx.messages) == 1

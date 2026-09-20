@@ -13,6 +13,7 @@ if you have not already installed it.
 .. include:: _writing_publish_intro.rst
 .. include:: _writing_scripts.rst
 .. include:: _writing_suites.rst
+.. include:: _writing_argparse.rst
 .. include:: _writing_conclusion.rst
 
 .. _Galaxy: http://galaxyproject.org/
@@ -22,3 +23,4 @@ if you have not already installed it.
 .. _linuxbrew: https://github.com/Homebrew/linuxbrew
 .. _Vagrant: https://www.vagrantup.com/
 .. _Planemo: http://planemo.readthedocs.org/
+

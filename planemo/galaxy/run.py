@@ -1,4 +1,5 @@
 """Utilities for calling Galaxy scripts."""
+
 import os
 import shlex
 import string
@@ -43,7 +44,7 @@ PRINT_VENV_COMMAND = shell_join(
 )
 
 
-CACHED_VIRTUAL_ENV_COMMAND = "if [ -d .venv ]; " "then GALAXY_VIRTUAL_ENV=.venv; " "else GALAXY_VIRTUAL_ENV=%s; fi"
+CACHED_VIRTUAL_ENV_COMMAND = "if [ -d .venv ]; then GALAXY_VIRTUAL_ENV=.venv; else GALAXY_VIRTUAL_ENV=%s; fi"
 UNCACHED_VIRTUAL_ENV_COMMAND = "GALAXY_VIRTUAL_ENV=.venv"
 
 
@@ -96,8 +97,8 @@ def locate_galaxy_virtualenv(ctx, kwds: Dict[str, Any], config: Optional["LocalG
     )
 
 
-def run_galaxy_command(ctx, command, env, action):
-    """Run Galaxy command with informative verbose logging."""
+def log_galaxy_command(ctx, command, env, action):
+    """Log a Galaxy command and its environment consistently."""
     message = f"{action} with command [{command}]"
     # info not working in pytest+Github actions the way it did in nose?
     info(message)
@@ -106,12 +107,18 @@ def run_galaxy_command(ctx, command, env, action):
     for key, value in env.items():
         ctx.vlog(f'{key}="{value}"')
     ctx.vlog("============================")
+
+
+def run_galaxy_command(ctx, command, env, action):
+    """Run Galaxy command with informative verbose logging."""
+    log_galaxy_command(ctx, command, env, action)
     exit_code = shell(command, env=env)
     ctx.vlog("run command exited with return code %s" % exit_code)
     return exit_code
 
 
 __all__ = (
+    "log_galaxy_command",
     "setup_venv",
     "run_galaxy_command",
 )

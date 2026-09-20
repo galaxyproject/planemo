@@ -1,10 +1,11 @@
 """Module describing the planemo ``open`` command."""
+
 import click
 
 from planemo.cli import command_function
 
 
-@click.command("docs")
+@click.command("open")
 @click.argument(
     "path",
     metavar="PATH",

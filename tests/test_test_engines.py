@@ -158,6 +158,7 @@ def test_galaxy_workflow_step_failed():
             "extra_tools": ["$GALAXY_FUNCTIONAL_TEST_TOOLS"],
             "test_output_json": json_out.name,
             "galaxy_branch": target_galaxy_branch(),
+            "fail_fast": True,
         }
         exit_code = t_runnables(ctx, runnables, **kwds)
         assert exit_code == 1

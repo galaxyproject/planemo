@@ -1,6 +1,6 @@
 
 ``delete_alias`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``delete_alias``. This help message can be generated with ``planemo delete_alias

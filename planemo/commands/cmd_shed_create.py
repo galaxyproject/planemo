@@ -1,4 +1,5 @@
 """Module describing the planemo ``shed_create`` command."""
+
 import sys
 
 import click
@@ -13,6 +14,7 @@ from planemo.io import info
 
 @click.command("shed_create")
 @options.shed_publish_options()
+@options.fail_fast_option()
 @options.shed_message_option()
 @options.shed_skip_upload()
 @command_function

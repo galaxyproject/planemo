@@ -13,10 +13,10 @@
     </outputs>
     <tests>
         <test>
-            <param name="select_opt" value="Hello World!" />
+            <param name="select_opt" value="moo" />
             <output name="output">
                 <assert_contents>
-                    <has_line line="Hello World!" />
+                    <has_line line="moo" />
                 </assert_contents>
             </output>
         </test>
@@ -24,8 +24,8 @@
     <help>
 These should work:
 
-http://example.org/
-https://example.org/
+http://galaxyproject.org/
+https://galaxyproject.org/
 
 And these should not be fetched (or will throw an error if they are):
 

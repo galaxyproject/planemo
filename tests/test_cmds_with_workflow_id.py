@@ -5,6 +5,7 @@ import time
 
 from planemo import network_util
 from planemo.galaxy import api
+from planemo.test.models import PlanemoTestReport
 from .test_cmd_serve import UsesServeCommand
 from .test_utils import (
     CliTestCase,
@@ -78,3 +79,21 @@ class CmdsWithWorkflowIdTestCase(CliTestCase, UsesServeCommand):
             with open(output_json_path) as f:
                 output = json.load(f)
             assert "tests" in output
+
+            test_index = 1
+            invocation_id = output["tests"][test_index]["data"]["invocation_details"]["details"]["invocation_id"]
+            test_path = os.path.join(TEST_DATA_DIR, "wf11-remote.gxwf-test.yml")
+            workflow_test_on_invocation_command = [
+                "workflow_test_on_invocation",
+                "--galaxy_url",
+                f"http://localhost:{self._port}",
+                "--galaxy_user_key",
+                api.DEFAULT_ADMIN_API_KEY,
+                "--test_index",
+                str(test_index),
+                test_path,
+                invocation_id,
+            ]
+            self._check_exit_code(workflow_test_on_invocation_command, exit_code=0)
+            with open(output_json_path) as f:
+                PlanemoTestReport.model_validate(json.load(f))

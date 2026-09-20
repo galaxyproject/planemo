@@ -1,4 +1,5 @@
 """Module describing the planemo ``delete_alias`` command."""
+
 import click
 
 from planemo import options
@@ -8,11 +9,6 @@ from planemo.io import (
     error,
     info,
 )
-
-try:
-    from tabulate import tabulate
-except ImportError:
-    tabulate = None  # type: ignore
 
 
 @click.command("delete_alias")

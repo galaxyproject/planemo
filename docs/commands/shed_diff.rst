@@ -1,6 +1,6 @@
 
 ``shed_diff`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``shed_diff``. This help message can be generated with ``planemo shed_diff
@@ -30,7 +30,7 @@ Here are some examples
     $ # diff for two an explicitly specified repositories (ignores
     $ # current project's shed YAML file.)
     $ planemo shed_diff --owner peterjc --name blast_rbh
-        --shed_target_source testtoolshed
+    --shed_target_source testtoolshed
 
 This command will return an exit code of:
 
@@ -48,9 +48,6 @@ uploaded to the repository.
 
       -r, --recursive            Recursively perform command for nested repository
                                  directories.
-      --fail_fast                If multiple repositories are specified and an error
-                                 occurs stop immediately instead of processing
-                                 remaining repositories.
       --owner TEXT               Tool Shed repository owner (username).
       --name TEXT                Tool Shed repository name (defaults to the inferred
                                  tool directory name).
@@ -68,6 +65,7 @@ uploaded to the repository.
                                  'testtoolshed', 'local' (alias for
                                  http://localhost:9009/), an arbitrary url or
                                  mappings defined ~/.planemo.yml.
+      --fail_fast                Stop on first job failure.
       -o, --output PATH          Send diff output to specified file.
       --shed_target_source TEXT  Source Tool Shed to diff against (will ignore local
                                  project info specified). To compare the main Tool

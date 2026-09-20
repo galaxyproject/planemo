@@ -1,6 +1,6 @@
 
 ``conda_install`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``conda_install``. This help message can be generated with ``planemo conda_install
@@ -34,7 +34,7 @@ Install conda packages for tool requirements.
                                       and debugging.
       --conda_auto_init / --no_conda_auto_init
                                       Conda dependency resolution for Galaxy will
-                                      auto install conda itself using miniconda if
+                                      auto install conda itself using miniforge if
                                       not availabe on conda_prefix.
       --help                          Show this message and exit.
     

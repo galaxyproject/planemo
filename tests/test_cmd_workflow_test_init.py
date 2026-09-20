@@ -1,4 +1,5 @@
 """Tests for the ``workflow_test_init`` command."""
+
 import os
 
 import yaml

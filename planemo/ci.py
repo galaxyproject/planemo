@@ -1,6 +1,5 @@
 """Utilities for dealing with continous integration systems."""
 
-
 import copy
 import math
 import os

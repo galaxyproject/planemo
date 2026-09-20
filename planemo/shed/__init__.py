@@ -1,4 +1,5 @@
 """Abstractions for shed related interactions used by the rest of planemo."""
+
 import contextlib
 import copy
 import fnmatch
@@ -10,7 +11,10 @@ import shutil
 import sys
 import tarfile
 from tempfile import mkstemp
-from typing import NamedTuple
+from typing import (
+    NamedTuple,
+    TYPE_CHECKING,
+)
 
 import bioblend
 import yaml
@@ -48,24 +52,28 @@ from .interface import (
     username,
 )
 
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
+
+
 SHED_CONFIG_NAME = ".shed.yml"
 DOCKSTORE_REGISTRY_CONF = ".dockstore.yml"
 REPO_METADATA_FILES = (SHED_CONFIG_NAME, DOCKSTORE_REGISTRY_CONF)
 REPO_DEPENDENCIES_CONFIG_NAME = "repository_dependencies.xml"
 TOOL_DEPENDENCIES_CONFIG_NAME = "tool_dependencies.xml"
 
-NO_REPOSITORIES_MESSAGE = "Could not find any .shed.yml files or a --name to " "describe the target repository."
-NAME_INVALID_MESSAGE = "Cannot use --name argument when multiple directories " "in target contain .shed.yml files."
+NO_REPOSITORIES_MESSAGE = "Could not find any .shed.yml files or a --name to describe the target repository."
+NAME_INVALID_MESSAGE = "Cannot use --name argument when multiple directories in target contain .shed.yml files."
 NAME_REQUIRED_MESSAGE = "No repository name discovered but one is required."
-CONFLICTING_NAMES_MESSAGE = "The supplied name argument --name conflicts " "with value discovered in .shed.yml."
-PARSING_PROBLEM = "Problem parsing file .shed.yml in directory %s, skipping " "repository. Message: [%s]."
-AUTO_REPO_CONFLICT_MESSAGE = "Cannot specify both auto_tool_repositories and " "repositories in .shed.yml at this time."
+CONFLICTING_NAMES_MESSAGE = "The supplied name argument --name conflicts with value discovered in .shed.yml."
+PARSING_PROBLEM = "Problem parsing file .shed.yml in directory %s, skipping repository. Message: [%s]."
+AUTO_REPO_CONFLICT_MESSAGE = "Cannot specify both auto_tool_repositories and repositories in .shed.yml at this time."
 AUTO_NAME_CONFLICT_MESSAGE = (
-    "Cannot specify both auto_tool_repositories and " "in .shed.yml and --name on the command-line."
+    "Cannot specify both auto_tool_repositories and in .shed.yml and --name on the command-line."
 )
-REALIZAION_PROBLEMS_MESSAGE = "Problem encountered executing action for one or more " "repositories."
+REALIZAION_PROBLEMS_MESSAGE = "Problem encountered executing action for one or more repositories."
 INCORRECT_OWNER_MESSAGE = (
-    "Attempting to create a repository with configured " "owner [%s] that does not match API user [%s]."
+    "Attempting to create a repository with configured owner [%s] that does not match API user [%s]."
 )
 PROBLEM_PROCESSING_REPOSITORY_MESSAGE = "Problem processing repositories, exiting."
 
@@ -103,8 +111,10 @@ VALID_PUBLICNAME_RE = re.compile(r"^[a-z0-9._\-]+$")
 # Generate with python scripts/categories.py
 CURRENT_CATEGORIES = [
     "Assembly",
+    "Astronomy",
     "ChIP-seq",
     "Climate Analysis",
+    "CLIP-seq",
     "Combinatorial Selections",
     "Computational chemistry",
     "Constructive Solid Geometry",
@@ -122,24 +132,30 @@ CURRENT_CATEGORIES = [
     "Genome editing",
     "Genome-Wide Association Study",
     "Genomic Interval Operations",
+    "Geo Science",
     "GIS",
     "Graphics",
     "Imaging",
-    "InteractiveTools",
+    "Interactive Tools",
     "Machine Learning",
+    "Materials science",
     "Metabolomics",
     "Metagenomics",
     "Micro-array Analysis",
     "Molecular Dynamics",
+    "Muon spectroscopy",
     "Nanopore",
+    "Natural Language Processing",
     "Next Gen Mappers",
-    "NLP",
     "Ontology Manipulation",
+    "Pangenomics",
     "Phylogenetics",
     "Proteomics",
     "RNA",
     "SAM",
     "Sequence Analysis",
+    "Single Cell",
+    "Spatial Omics",
     "Statistics",
     "Structural Materials Analysis",
     "Synthetic Biology",
@@ -648,7 +664,6 @@ def update_repository_for(ctx, tsi, id, repo_config):
     name = repo_config["name"]
     description = repo_config.get("description")
     long_description = repo_config.get("long_description")
-    repo_type = shed_repo_type(repo_config, name)
     remote_repository_url = repo_config.get("remote_repository_url")
     homepage_url = repo_config.get("homepage_url")
     categories = repo_config.get("categories", [])
@@ -656,20 +671,16 @@ def update_repository_for(ctx, tsi, id, repo_config):
 
     _ensure_shed_description(description)
 
-    kwds = dict(
+    repo = tsi.repositories.update_repository_metadata(
+        id,
         name=name,
         synopsis=description,
-        type=repo_type,
+        description=long_description,
+        remote_repository_url=remote_repository_url,
+        homepage_url=homepage_url,
+        category_ids=category_ids,
     )
-    if long_description is not None:
-        kwds["description"] = long_description
-    if remote_repository_url is not None:
-        kwds["remote_repository_url"] = remote_repository_url
-    if homepage_url is not None:
-        kwds["homepage_url"] = homepage_url
-    if category_ids is not None:
-        kwds["category_ids[]"] = category_ids
-    return bioblend.galaxy.client.Client._put(tsi.repositories, id=id, payload=kwds)
+    return repo
 
 
 def create_repository_for(ctx, tsi, name, repo_config):
@@ -1022,7 +1033,7 @@ class RawRepositoryDirectory:
             with open(path, "w") as f:
                 f.write(contents)
 
-        return RealizedRepositry(
+        return RealizedRepository(
             realized_path=directory,
             real_path=self.path,
             config=config,
@@ -1128,7 +1139,7 @@ class RealizedFile:
             if os.path.isdir(source_path):
                 os.makedirs(target_path)
             else:
-                os.symlink(source_path, target_path)
+                shutil.copy2(source_path, target_path)
 
     @staticmethod
     def realized_files_for(path, include_info):
@@ -1174,7 +1185,7 @@ class RealizedFile:
         return f"RealizedFile[src={self.src},dest={self.dest},src_root={self.src_root}]"
 
 
-class RealizedRepositry:
+class RealizedRepository:
     def __init__(self, realized_path, real_path, config, multiple, missing):
         self.path = realized_path
         self.real_path = real_path
@@ -1288,7 +1299,7 @@ class RealizedRepositry:
                 error(unicodify(e))
             return None
 
-    def latest_installable_revision(self, ctx, shed_context):
+    def latest_installable_revision(self, ctx: "PlanemoCliContext", shed_context: ShedContext):
         repository_id = self.find_repository_id(ctx, shed_context)
         return latest_installable_revision(shed_context.tsi, repository_id)
 
@@ -1327,7 +1338,7 @@ def _handle_realization_error(exception, **kwds):
 def _ensure_shed_description(description):
     # description is required, as is name.
     if description is None:
-        message = "description required for automatic creation or update of " "shed metadata."
+        message = "description required for automatic creation or update of shed metadata."
         raise ValueError(message)
 
 
@@ -1341,7 +1352,7 @@ def validate_repo_name(name):
     if len(name) > 80:
         msg = _build_error("Repository names cannot be more than 80 characters in length.")
     if not VALID_REPOSITORYNAME_RE.match(name):
-        msg = _build_error("Repository names must contain only lower-case letters, " "numbers and underscore.")
+        msg = _build_error("Repository names must contain only lower-case letters, numbers and underscore.")
     return msg
 
 

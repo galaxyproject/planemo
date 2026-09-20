@@ -13,6 +13,7 @@ from planemo import (
     tool_builder,
 )
 from planemo.cli import command_function
+from planemo.options import tool_init_autopygen_option
 
 
 @click.command("tool_init")
@@ -39,6 +40,7 @@ from planemo.cli import command_function
 @options.tool_init_requirement_option()
 @options.tool_init_container_option()
 @options.build_cwl_option()
+@tool_init_autopygen_option()
 @command_function
 def cli(ctx, **kwds):
     """Generate tool outline from given arguments."""

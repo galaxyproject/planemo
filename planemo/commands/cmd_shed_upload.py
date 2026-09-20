@@ -1,4 +1,5 @@
 """Module describing the planemo ``shed_upload`` command."""
+
 import sys
 
 import click
@@ -19,6 +20,7 @@ tar_path = click.Path(
 
 @click.command("shed_upload")
 @options.shed_publish_options()
+@options.fail_fast_option()
 @options.shed_upload_options()
 @click.option(
     "--tar_only",
@@ -27,7 +29,7 @@ tar_path = click.Path(
 )
 @click.option(
     "--tar",
-    help="Specify a pre-existing tar file instead of automatically building " "one as part of this command.",
+    help="Specify a pre-existing tar file instead of automatically building one as part of this command.",
     type=tar_path,
     default=None,
 )

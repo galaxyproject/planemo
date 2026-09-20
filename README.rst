@@ -15,8 +15,8 @@ including tools, workflows, and training materials.
    :target: https://pypi.python.org/pypi/planemo/
    :alt: Planemo on the Python Package Index (PyPI)
 
-.. image:: https://github.com/galaxyproject/planemo/workflows/Python%20CI/badge.svg
-   :target: https://github.com/galaxyproject/planemo/actions?query=workflow%3A%22Python+CI%22
+.. image:: https://github.com/galaxyproject/planemo/actions/workflows/ci.yaml/badge.svg
+   :target: https://github.com/galaxyproject/planemo/actions/workflows/ci.yaml?query=branch%3Amaster+event%3Apush
 
 * Free software: MIT License
 * Documentation: https://planemo.readthedocs.io.
@@ -31,13 +31,12 @@ Obtaining
 
 For a traditional Python installation of Planemo, first set up a virtualenv
 for ``planemo`` (this example creates a new one in ``.venv``) containing
-Python 3.7 or newer and then install with ``pip``. Planemo must be installed
+Python 3.10 or newer and then install with ``pip``. Planemo must be installed
 with pip 7.0 or newer.
 
 ::
 
-    $ virtualenv .venv; . .venv/bin/activate
-    $ pip install "pip>=7" # Upgrade pip if needed.
+    $ python -m venv .venv; . .venv/bin/activate
     $ pip install planemo
 
 For information on updating Planemo, installing the latest development release,
@@ -203,7 +202,6 @@ scientific workflows. Check out the `Galaxy <http://planemo.readthedocs.io/en/la
 .. _Conda: http://conda.pydata.org/
 .. _Docker: https://www.docker.com/
 .. _Vagrant: https://www.vagrantup.com/
-.. _Travis CI: http://travis-ci.org/
 .. _`tools-devteam`: https://github.com/galaxyproject/tools-devteam
 .. _`tools-iuc`: https://github.com/galaxyproject/tools-iuc
 .. _Building Galaxy Tools Using Planemo: http://planemo.readthedocs.io/en/latest/writing_standalone.html

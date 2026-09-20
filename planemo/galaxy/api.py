@@ -1,10 +1,17 @@
 """A high-level interface to local Galaxy instances using bioblend."""
+
+import time
 from io import StringIO
 from typing import Optional
 
 from bioblend.galaxy import GalaxyInstance
+from requests.exceptions import RequestException
 
 DEFAULT_ADMIN_API_KEY = "test_key"
+
+
+def get_dict_from_workflow(gi: GalaxyInstance, workflow_id: str, instance: bool = False):
+    return gi.workflows._get(f"{workflow_id}/download", params={"instance": instance})
 
 
 def gi(port: Optional[int] = None, url: Optional[str] = None, key: Optional[str] = None) -> GalaxyInstance:
@@ -121,6 +128,37 @@ def get_invocations(url, key, workflow_id):
     }
 
 
+def export_invocation_as_archive(url=None, key=None, user_gi=None, invocation_id=None, export_format=None, output=None):
+    if user_gi is not None:
+        inv_gi = user_gi
+    else:
+        inv_gi = gi(None, url, key)
+    response = inv_gi.invocations.get_invocation_archive(invocation_id=invocation_id, model_store_format=export_format)
+    with open(output, "wb") as archive:
+        for chunk in response.iter_content(chunk_size=8192):
+            archive.write(chunk)
+    return response
+
+
+def get_workflows(url, key):
+    wf_gi = gi(None, url, key)
+    workflows = wf_gi.workflows.get_workflows()
+
+    def get_repo_url(workflow):
+        source_metadata = workflow.get("source_metadata") or {}
+        return source_metadata.get("url")
+
+    return {
+        workflow["id"]: {
+            "name": workflow["name"],
+            "repo_url": get_repo_url(workflow),
+            "url": workflow["url"],
+            "published": workflow.get("published", False),
+        }
+        for workflow in workflows
+    }
+
+
 def _format_for_summary(blob, empty_message, prefix="|  "):
     contents = "\n".join([f"{prefix}{line.strip()}" for line in StringIO(blob).readlines() if line.rstrip("\n\r")])
     return contents or f"{prefix}*{empty_message}*"
@@ -129,6 +167,25 @@ def _format_for_summary(blob, empty_message, prefix="|  "):
 def _dataset_provenance(gi, history_id, id):
     provenance = gi.histories.show_dataset_provenance(history_id, id)
     return provenance
+
+
+def retry_on_timeouts(ctx, gi, f):
+    gi.timeout = 60
+    try_count = 5
+    try:
+        for try_num in range(try_count):
+            start_time = time.time()
+            try:
+                return f(gi)
+            except RequestException:
+                end_time = time.time()
+                if end_time - start_time > 45 and (try_num + 1) < try_count:
+                    ctx.vlog("Galaxy seems to have timed out, retrying to fetch status.")
+                    continue
+                else:
+                    raise
+    finally:
+        gi.timeout = None
 
 
 __all__ = (

@@ -1,4 +1,5 @@
 """Module describing the planemo ``shed_download`` command."""
+
 import sys
 
 import click
@@ -18,6 +19,7 @@ target_path = click.Path(
 
 @click.command("shed_download")
 @options.shed_read_options()
+@options.fail_fast_option()
 @click.option(
     "--destination",
     default="shed_download.tar.gz",

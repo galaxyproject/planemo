@@ -1,6 +1,6 @@
 
 ``list_repos`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``list_repos``. This help message can be generated with ``planemo list_repos

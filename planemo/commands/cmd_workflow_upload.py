@@ -1,4 +1,5 @@
 """Module describing the planemo ``workflow_upload`` command."""
+
 from collections import defaultdict
 from pathlib import Path
 

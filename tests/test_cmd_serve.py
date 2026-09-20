@@ -13,6 +13,7 @@ from planemo.io import kill_pid_file
 from .test_utils import (
     cli_daemon_galaxy,
     CliTestCase,
+    get_entry_point_target,
     launch_and_wait_for_galaxy,
     mark,
     PROJECT_TEMPLATES_DIR,
@@ -24,6 +25,9 @@ from .test_utils import (
     target_galaxy_branch,
     TEST_DATA_DIR,
     TEST_REPOS_DIR,
+    TEST_TOOLS_DIR,
+    wait_for_active_entry_points,
+    wait_for_proxied_content,
 )
 
 TEST_HISTORY_NAME = "Cool History 42"
@@ -38,6 +42,14 @@ class UsesServeCommand:
         if "--daemon" not in serve_cmd:
             self._run_subprocess(serve_cmd)
         else:
+            # Register cleanup hook to kill the daemon process group before
+            # other cleanup hooks run (which may delete temp files the daemon
+            # still references). kill_pid_file sends SIGTERM/SIGKILL to the
+            # entire process group (gravity supervisor + gunicorn + workers).
+            if "--pid_file" in serve_cmd:
+                pid_file_index = serve_cmd.index("--pid_file") + 1
+                pid_file = serve_cmd[pid_file_index]
+                self._cleanup_hooks.insert(0, lambda: kill_pid_file(pid_file))
             self._check_exit_code(serve_cmd)
 
     def _run_subprocess(self, serve_cmd):
@@ -140,7 +152,40 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
         user_gi = self._user_gi
         assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 0
         user_gi.histories.create_history(TEST_HISTORY_NAME)
-        kill_pid_file(self._pid_file)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_unless_executable("docker")
+    @mark.tests_galaxy_branch
+    def test_serve_interactivetool(self):
+        self._serve_artifact = os.path.join(TEST_TOOLS_DIR, "interactivetool_simple.xml")
+        extra_args = [
+            "--daemon",
+            "--skip_client_build",
+            "--pid_file",
+            self._pid_file,
+            "--biocontainers",
+        ]
+        self._launch_thread_and_wait(self._run, extra_args)
+
+        user_gi = self._user_gi
+
+        history_id = user_gi.histories.create_history("IT Test")["id"]
+        tool_run = user_gi.tools._post(
+            payload={
+                "tool_id": "interactivetool_simple",
+                "history_id": history_id,
+                "inputs": {},
+            }
+        )
+        assert "jobs" in tool_run, tool_run
+        job_id = tool_run["jobs"][0]["id"]
+
+        entry_points = wait_for_active_entry_points(user_gi, job_id, timeout=120)
+        assert len(entry_points) == 1
+
+        target = get_entry_point_target(user_gi, entry_points[0]["id"])
+        content = wait_for_proxied_content(target, timeout=30)
+        assert content == "moo cow\n", f"Expected 'moo cow\\n', got: {content!r}"
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch
@@ -210,7 +255,6 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
             time.sleep(5)
 
         assert found, "Failed to find fastqc id in %s" % tool_ids
-        kill_pid_file(self._pid_file)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_serve_profile(self):
@@ -224,6 +268,12 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
 
     def _test_serve_profile(self, *db_options):
         new_profile = "planemo_test_profile_%s" % uuid.uuid4()
+        # Create the profile first
+        profile_create_command = ["profile_create", new_profile]
+        if db_options:
+            profile_create_command.extend(db_options)
+        self._check_exit_code(profile_create_command, exit_code=0)
+
         extra_args = [
             "--daemon",
             "--skip_client_build",
@@ -243,17 +293,16 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
             assert len(user_gi.histories.get_histories(name=TEST_HISTORY_NAME)) == 1
 
     def _tool_data_table(self, dbkey):
-        with tempfile.NamedTemporaryFile(
-            "w", suffix=".xml.test", delete=False
-        ) as tool_data_table, tempfile.NamedTemporaryFile("w", suffix="bla.loc", delete=False) as loc_file:
-            tool_data_table.write(
-                f"""<tables>
+        with (
+            tempfile.NamedTemporaryFile("w", suffix=".xml.test", delete=False) as tool_data_table,
+            tempfile.NamedTemporaryFile("w", suffix="bla.loc", delete=False) as loc_file,
+        ):
+            tool_data_table.write(f"""<tables>
     <table name="__dbkeys__" comment_char="#">
         <columns>value, name, len_path</columns>
         <file path="{loc_file.name}" />
     </table>
-</tables>"""
-            )
+</tables>""")
             loc_file.write(f"{dbkey}\t{dbkey}\t{dbkey}.len")
             tool_data_table.flush()
             loc_file.flush()

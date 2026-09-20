@@ -1,6 +1,5 @@
 """Describe artifacts that can be run, tested, and linted."""
 
-
 import abc
 import os
 from enum import (
@@ -37,6 +36,7 @@ from planemo.exit_codes import (
 )
 from planemo.galaxy.workflows import (
     describe_outputs,
+    GALAXY_WORKFLOW_INSTANCE_PREFIX,
     GALAXY_WORKFLOWS_PREFIX,
     WorkflowOutput,
 )
@@ -51,9 +51,10 @@ from planemo.tools import yield_tool_sources_on_paths
 TEST_SUFFIXES = ["-tests", "_tests", "-test", "_test"]
 TEST_EXTENSIONS = [".yml", ".yaml", ".json"]
 
-TEST_FILE_NOT_LIST_MESSAGE = "Invalid test definition file [%s] - file must " "contain a list of tests"
-TEST_FIELD_MISSING_MESSAGE = "Invalid test definition [test #%d in %s] -" "defintion must field [%s]."
+TEST_FILE_NOT_LIST_MESSAGE = "Invalid test definition file [%s] - file must contain a list of tests"
+TEST_FIELD_MISSING_MESSAGE = "Invalid test definition [test #%d in %s] -defintion must field [%s]."
 GALAXY_TOOLS_PREFIX = "gxid://tools/"
+TRS_WORKFLOWS_PREFIX = "trs://"
 
 
 class RunnableType(Enum):
@@ -115,7 +116,12 @@ class Runnable(NamedTuple):
 
     @property
     def is_remote_workflow_uri(self) -> bool:
-        return self.uri.startswith(GALAXY_WORKFLOWS_PREFIX)
+        return self.uri.startswith((GALAXY_WORKFLOWS_PREFIX, GALAXY_WORKFLOW_INSTANCE_PREFIX, TRS_WORKFLOWS_PREFIX))
+
+    @property
+    def is_trs_workflow_uri(self) -> bool:
+        """Check if this is a TRS workflow URI."""
+        return self.uri.startswith(TRS_WORKFLOWS_PREFIX)
 
     @property
     def test_data_search_path(self) -> str:
@@ -138,17 +144,17 @@ class Runnable(NamedTuple):
         return None
 
     @property
-    def has_tools(self) -> property:
+    def has_tools(self) -> bool:
         """Boolean indicating if this runnable corresponds to one or more tools."""
-        return _runnable_delegate_attribute("has_tools")
+        return self.type.has_tools
 
     @property
-    def is_single_artifact(self) -> property:
+    def is_single_artifact(self) -> bool:
         """Boolean indicating if this runnable is a single artifact.
 
         Currently only directories are considered not a single artifact.
         """
-        return _runnable_delegate_attribute("is_single_artifact")
+        return self.type.is_single_artifact
 
 
 class Rerunnable(NamedTuple):
@@ -157,13 +163,6 @@ class Rerunnable(NamedTuple):
     rerunnable_id: str
     rerunnable_type: str
     server_url: str
-
-
-def _runnable_delegate_attribute(attribute: str) -> property:
-    def getter(runnable):
-        return getattr(runnable.type, attribute)
-
-    return property(getter)
 
 
 def workflows_from_dockstore_yaml(path):
@@ -265,6 +264,12 @@ def cases(runnable: Runnable) -> List["AbstractTestCase"]:
                 cases.append(ExternalGalaxyToolTestCase(runnable, tool_id, tool_version, i, test_dict))
         return cases
 
+    return definition_to_test_case(tests_path=tests_path, runnable=runnable)
+
+
+def definition_to_test_case(tests_path: str, runnable: Runnable) -> List["AbstractTestCase"]:
+    with open(tests_path) as f:
+        tests_def = yaml.safe_load(f)
     tests_directory = os.path.abspath(os.path.dirname(tests_path))
 
     def normalize_to_tests_path(path: str) -> str:
@@ -274,13 +279,11 @@ def cases(runnable: Runnable) -> List["AbstractTestCase"]:
             absolute_path = path
         return os.path.normpath(absolute_path)
 
-    with open(tests_path) as f:
-        tests_def = yaml.safe_load(f)
-
     if not isinstance(tests_def, list):
         message = TEST_FILE_NOT_LIST_MESSAGE % tests_path
         raise Exception(message)
 
+    cases: List["AbstractTestCase"] = []
     for i, test_def in enumerate(tests_def):
         if "job" not in test_def:
             message = TEST_FIELD_MISSING_MESSAGE % (i + 1, tests_path, "job")
@@ -305,7 +308,6 @@ def cases(runnable: Runnable) -> List["AbstractTestCase"]:
             doc=doc,
         )
         cases.append(case)
-
     return cases
 
 
@@ -434,7 +436,7 @@ class TestCase(AbstractTestCase):
         ]:
             return get_tool_source(self.runnable.path).parse_id()
         else:
-            return os.path.basename(self.runnable.path)
+            return os.path.basename(self.runnable.uri)
 
 
 class ExternalGalaxyToolTestCase(AbstractTestCase):
@@ -587,19 +589,26 @@ class RunResponse(metaclass=abc.ABCMeta):
     def log(self):
         """If engine related log is available, return as text data."""
 
+    @abc.abstractproperty
+    def outputs_dict(self):
+        """Return a dict of output descriptions."""
+
+    def get_output(self, output_id):
+        """Fetch output from engine."""
+        return self.outputs_dict.get(output_id)
+
     def structured_data(self, test_case: Optional[TestCase] = None) -> Dict[str, Any]:
         output_problems = []
-        if isinstance(self, SuccessfulRunResponse) and self.was_successful:
-            outputs_dict = self.outputs_dict
+        if self.was_successful:
             execution_problem = None
             if test_case:
                 for output_id, output_test in test_case.output_expectations.items():
-                    if output_id not in outputs_dict:
+                    output_value = self.get_output(output_id)
+                    if not output_value:
                         message = f"Expected output [{output_id}] not found in results."
                         output_problems.append(message)
                         continue
 
-                    output_value = outputs_dict[output_id]
                     output_problems.extend(test_case._check_output(output_id, output_value, output_test))
             if output_problems:
                 status = "failure"
@@ -656,10 +665,6 @@ class SuccessfulRunResponse(RunResponse, metaclass=abc.ABCMeta):
         """Return `True` to indicate this run was successful."""
         return True
 
-    @abc.abstractproperty
-    def outputs_dict(self):
-        """Return a dict of output descriptions."""
-
 
 class ErrorRunResponse(RunResponse):
     """Description of an error while attempting to execute a Runnable."""
@@ -708,6 +713,10 @@ class ErrorRunResponse(RunResponse):
     def log(self):
         """Return potentially null stored `log` text."""
         return self._log
+
+    @property
+    def outputs_dict(self):
+        return {}
 
     def __str__(self):
         """Print a helpful error description of run."""

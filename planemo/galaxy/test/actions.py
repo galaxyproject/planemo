@@ -14,28 +14,35 @@ from planemo.io import (
     info,
     warn,
 )
+from planemo.output_models import (
+    PlanemoTestReport,
+    validated_test_report,
+)
 from planemo.reports import (
     allure,
     build_report,
 )
-from planemo.test.results import get_dict_value
+from planemo.test.results import (
+    get_dict_value,
+    StructuredData,
+)
 from . import structures as test_structures
 
 NO_XUNIT_REPORT_MESSAGE = (
-    "Cannot locate xUnit report [%s] for tests - " "required to build planemo report and summarize " "tests."
+    "Cannot locate xUnit report [%s] for tests - required to build planemo report and summarize tests."
 )
 NO_JSON_REPORT_MESSAGE = (
-    "Cannot locate JSON report [%s] for tests - " "required to build planemo report and summarize " "tests."
+    "Cannot locate JSON report [%s] for tests - required to build planemo report and summarize tests."
 )
 REPORT_NOT_CHANGED = (
-    "Galaxy failed to update test report [%s] for tests - " "required to build planemo report and summarize " "tests."
+    "Galaxy failed to update test report [%s] for tests - required to build planemo report and summarize tests."
 )
 NO_TESTS_MESSAGE = "No tests were executed - see Galaxy output for details."
 ALL_TESTS_PASSED_MESSAGE = "All %d test(s) executed passed."
 PROBLEM_COUNT_MESSAGE = (
-    "There were problems with %d test(s) - out of %d " "test(s) executed. See %s for detailed breakdown."
+    "There were problems with %d test(s) - out of %d test(s) executed. See %s for detailed breakdown."
 )
-GENERIC_PROBLEMS_MESSAGE = "One or more tests failed. See %s for detailed " "breakdown."
+GENERIC_PROBLEMS_MESSAGE = "One or more tests failed. See %s for detailed breakdown."
 GENERIC_TESTS_PASSED_MESSAGE = "No failing tests encountered."
 TEST_DATA_UPDATED_MESSAGE = "Test data were updated and tests were rerun."
 TEST_DATA_NOT_UPDATED_MESSAGE = "%s Therefore, no test data were updated." % ALL_TESTS_PASSED_MESSAGE
@@ -58,15 +65,23 @@ def handle_reports_and_summary(ctx, structured_data, exit_code=None, kwds=None):
 def merge_reports(input_paths, output_path):
     reports = []
     for path in input_paths:
-        with open(path, encoding="utf-8") as f:
-            reports.append(json.load(f))
+        try:
+            with open(path, encoding="utf-8") as f:
+                reports.append(PlanemoTestReport.model_validate(json.load(f)).model_dump(mode="json"))
+        except (OSError, ValueError) as e:
+            raise click.ClickException("Invalid Planemo test report JSON at %s: %s" % (path, e)) from e
     tests = []
     for report in reports:
         tests.extend(report["tests"])
     tests = sorted(tests, key=lambda k: k["id"])
-    merged_report = {"tests": tests}
+    merged_data = StructuredData(data={"version": "0.1", "tests": tests})
+    merged_data.calculate_summary_data()
+    summary = merged_data.structured_data["summary"]
+    exit_code = EXIT_CODE_GENERIC_FAILURE if summary["num_failures"] or summary["num_errors"] else EXIT_CODE_OK
+    merged_data.set_exit_code(exit_code)
+    merged_report = PlanemoTestReport.model_validate(merged_data.structured_data).model_dump(mode="json")
     with open(output_path, mode="w", encoding="utf-8") as out:
-        out.write(unicodify(json.dumps(merged_report)))
+        out.write(unicodify(json.dumps(merged_report, indent=4, sort_keys=True)))
 
 
 def handle_reports(ctx, structured_data, kwds):
@@ -75,12 +90,13 @@ def handle_reports(ctx, structured_data, kwds):
     structured_report_file = kwds.get("test_output_json", None)
     if structured_report_file:
         try:
+            validated_structured_data = validated_test_report(structured_data)
             with open(structured_report_file, mode="w", encoding="utf-8") as f:
-                f.write(unicodify(json.dumps(structured_data, indent=4, sort_keys=True)))
+                f.write(unicodify(json.dumps(validated_structured_data, indent=4, sort_keys=True)))
         except Exception as e:
             exceptions.append(e)
 
-    for report_type in ["html", "markdown", "text", "xunit", "junit", "allure"]:
+    for report_type in ["html", "markdown", "markdown_minimal", "text", "xunit", "junit", "allure"]:
         try:
             _handle_test_output_file(ctx, report_type, structured_data, kwds)
         except Exception as e:

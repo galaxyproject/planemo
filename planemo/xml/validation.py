@@ -1,4 +1,5 @@
 """Module describing abstractions for validating XML content."""
+
 import abc
 import subprocess
 from collections import namedtuple
@@ -9,7 +10,7 @@ from galaxy.util.commands import which
 try:
     from lxml import etree
 except ImportError:
-    etree = None
+    etree = None  # type: ignore
 
 XMLLINT_COMMAND = "xmllint --noout --schema {0} {1} 2>&1"
 INSTALL_VALIDATOR_MESSAGE = (

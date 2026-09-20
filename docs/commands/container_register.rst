@@ -1,6 +1,6 @@
 
 ``container_register`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``container_register``. This help message can be generated with ``planemo container_register

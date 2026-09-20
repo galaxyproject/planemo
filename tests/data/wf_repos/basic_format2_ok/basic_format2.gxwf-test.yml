@@ -6,3 +6,19 @@
   outputs:
     the_output:
       checksum: 'sha1$7bd92c6cd84285e4fc7215d506bbabfe328acb8f'
+      asserts:
+        - has_size:
+            value: 20M
+            delta: 1M
+        - has_archive_member:
+            path: ".*"
+            n: 34
+            asserts:
+              - has_text:
+                  text: ""
+        - has_archive_member:
+            path: ".*/data/metadata.yml"
+            # children is accepted as well (but asserts is more consistent)
+            children:
+              - has_text:
+                  text: "phred-offset: 33"

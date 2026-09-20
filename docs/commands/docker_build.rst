@@ -1,6 +1,6 @@
 
 ``docker_build`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``docker_build``. This help message can be generated with ``planemo docker_build

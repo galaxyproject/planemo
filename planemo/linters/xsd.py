@@ -1,4 +1,5 @@
 """Tool linting module that lints Galaxy tool against experimental XSD."""
+
 import copy
 import os
 import tempfile

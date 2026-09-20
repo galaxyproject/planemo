@@ -1,4 +1,5 @@
 """Module describing the planemo ``shed_diff`` command."""
+
 import shutil
 import sys
 import tempfile
@@ -17,6 +18,7 @@ from planemo.reports.xunit_handler import handle_report_xunit_kwd
 
 @click.command("shed_diff")
 @options.shed_read_options()
+@options.fail_fast_option()
 @click.option(
     "-o",
     "--output",
@@ -34,7 +36,7 @@ from planemo.reports.xunit_handler import handle_report_xunit_kwd
 @click.option(
     "--raw",
     is_flag=True,
-    help="Do not attempt smart diff of XML to filter out attributes " "populated by the Tool Shed.",
+    help="Do not attempt smart diff of XML to filter out attributes populated by the Tool Shed.",
 )
 @options.report_xunit()
 @command_function

@@ -1,6 +1,6 @@
 
 ``list_invocations`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``list_invocations``. This help message can be generated with ``planemo list_invocations

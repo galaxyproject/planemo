@@ -1,6 +1,6 @@
 
 ``shed_lint`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``shed_lint``. This help message can be generated with ``planemo shed_lint
@@ -29,15 +29,16 @@ help text for mentioned URLs and checks those.
 
       -r, --recursive                 Recursively perform command for nested
                                       repository directories.
-      --fail_fast                     If multiple repositories are specified and an
-                                      error occurs stop immediately instead of
-                                      processing remaining repositories.
+      --fail_fast                     Stop on first job failure.
       --report_level [all|warn|error]
       --fail_level [warn|error]
+      -s, --skip TEXT                 Comma-separated list of lint tests to skip
+                                      (e.g. passing --skip 'citations,xml_order'
+                                      would skip linting of citations and best-
+                                      practice XML ordering.
+      --skip_file FILE                File containing a list of lint tests to skip
       --tools                         Lint tools discovered in the process of
                                       linting repositories.
-      --xsd / --no_xsd                Include tool XSD validation in linting
-                                      process.
       --ensure_metadata               Ensure .shed.yml files contain enough metadata
                                       for each repository to allow automated
                                       creation and/or updates.

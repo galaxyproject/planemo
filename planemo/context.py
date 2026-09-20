@@ -3,6 +3,7 @@
 Abstractions for cross cutting concerns (logging, workspace management,
 etc.).
 """
+
 import abc
 import logging.config
 import os
@@ -53,6 +54,10 @@ class PlanemoContextInterface(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def galaxy_profiles_directory(self):
         """Create a return a directory for storing Galaxy profiles."""
+
+    @abc.abstractproperty
+    def cwltool_cache_directory(self):
+        """Create and return a directory for cwltool to cache computed steps in."""
 
     @abc.abstractmethod
     def cache_download(self, url, destination):
@@ -124,6 +129,12 @@ class PlanemoContext(PlanemoContextInterface):
         """Create a return a directory for storing Galaxy profiles."""
         path = os.path.join(self.workspace, "profiles")
         return self._ensure_directory(path, "Galaxy profiles")
+
+    @property
+    def cwltool_cache_directory(self) -> str:
+        """Create and return a directory for cwltool to cache computed steps in."""
+        path = os.path.join(self.workspace, "cwltool_cache")
+        return self._ensure_directory(path, "cwltool cache")
 
     def cache_download(self, url, destination):
         """Use workspace to cache download of ``url``."""

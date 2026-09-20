@@ -4,7 +4,13 @@ import abc
 import json
 import os
 import tempfile
-from typing import List
+from typing import (
+    Callable,
+    List,
+    Optional,
+)
+
+import click
 
 from planemo.exit_codes import EXIT_CODE_UNSUPPORTED_FILE_TYPE
 from planemo.io import error
@@ -48,14 +54,20 @@ class BaseEngine(Engine):
     def cleanup(self):
         """Default no-op cleanup method."""
 
-    def run(self, runnables, job_paths):
+    def run(self, runnables, job_paths, output_collectors: Optional[List[Callable]] = None):
         """Run a job using a compatible artifact (workflow or tool)."""
         self._check_can_run_all(runnables)
-        run_responses = self._run(runnables, job_paths)
+        run_responses = self._run(runnables, job_paths, output_collectors)
         return run_responses
 
     @abc.abstractmethod
-    def _run(self, runnables, job_path):
+    def _run(
+        self,
+        runnables,
+        job_path,
+        output_collectors: Optional[List[Callable]] = None,
+        test_timeout: Optional[int] = None,
+    ):
         """Run a job using a compatible artifact (workflow or tool) wrapped as a runnable."""
 
     def _check_can_run(self, runnable):
@@ -73,6 +85,38 @@ class BaseEngine(Engine):
         """Test runnable artifacts (workflow or tool)."""
         self._check_can_run_all(runnables)
         test_cases = [t for tl in map(cases, runnables) for t in tl]
+
+        # Filter test cases by specified indices if provided
+        test_indices = self._kwds.get("test_index", ())
+        if any(i < 1 for i in test_indices):
+            raise ValueError("test_index must be 1-based (>= 1)")
+        if test_indices:
+            filtered_test_cases = [tc for i, tc in enumerate(test_cases, start=1) if i in test_indices]
+            if filtered_test_cases:
+                test_cases = filtered_test_cases
+            else:
+                # If no tests match the specified indices, log a warning and use original
+                self._ctx.log(f"Warning: No tests found with indices {test_indices}. Running all tests instead.")
+
+        # Filter test cases to only previously-failed ones when --failed/--lf is set
+        if self._kwds.get("failed"):
+            failed_json = self._kwds.get("failed_json") or self._kwds.get("test_output_json")
+            if not failed_json or not os.path.exists(failed_json):
+                raise click.ClickException(
+                    "--failed/--lf requires a previous test output JSON. "
+                    "Set --failed_json or ensure --test_output_json exists from a prior run."
+                )
+            previous = StructuredData(json_path=failed_json)
+            failed_ids = previous.failed_ids
+            if not failed_ids:
+                self._ctx.log("No failed tests in previous run — nothing to re-run.")
+                empty = StructuredData(data={"version": "0.1", "tests": []})
+                empty.calculate_summary_data()
+                return empty
+            test_cases = [
+                tc for tc in test_cases if hasattr(tc, "_test_id") and f"{tc._test_id}_{tc.index}" in failed_ids
+            ]
+
         test_results = self._collect_test_results(test_cases, test_timeout)
         tests = []
         for test_case, run_response in test_results:
@@ -94,6 +138,7 @@ class BaseEngine(Engine):
         runnables = [test_case.runnable for test_case in test_cases]
         job_paths = []
         tmp_paths = []
+        output_collectors = []
         for test_case in test_cases:
             if test_case.job_path is None:
                 job = test_case.job
@@ -111,8 +156,11 @@ class BaseEngine(Engine):
                 job_paths.append(job_path)
             else:
                 job_paths.append(test_case.job_path)
+            output_collectors.append(
+                lambda run_response, test_case=test_case: test_case.structured_test_data(run_response)
+            )
         try:
-            run_responses = self._run(runnables, job_paths)
+            run_responses = self._run(runnables, job_paths, output_collectors, test_timeout=test_timeout)
         finally:
             for tmp_path in tmp_paths:
                 os.remove(tmp_path)

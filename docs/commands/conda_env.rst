@@ -1,6 +1,6 @@
 
 ``conda_env`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``conda_env``. This help message can be generated with ``planemo conda_env

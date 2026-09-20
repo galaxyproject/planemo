@@ -1,4 +1,5 @@
 """Module describing the planemo ``normalize`` command."""
+
 from xml.etree import ElementTree
 
 import click

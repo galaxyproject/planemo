@@ -4,6 +4,7 @@ cwltool is an executable Python script and library mostly maintained by
 Peter Amstutz and serves the reference implementation for the CWL.
 It can be found at https://github.com/common-workflow-language/cwltool,
 """
+
 import json
 import tempfile
 from typing import (
@@ -33,7 +34,7 @@ from planemo.runnable import (
 if TYPE_CHECKING:
     from planemo.cli import PlanemoCliContext
 
-JSON_PARSE_ERROR_MESSAGE = "Failed to parse JSON from cwltool output [%s] " "in file [%s]. cwltool logs [%s]."
+JSON_PARSE_ERROR_MESSAGE = "Failed to parse JSON from cwltool output [%s] in file [%s]. cwltool logs [%s]."
 
 
 class CwlToolRunResponse(SuccessfulRunResponse):
@@ -62,7 +63,7 @@ class CwlToolRunResponse(SuccessfulRunResponse):
         return None
 
     @property
-    def outputs_dict(self) -> Optional[Dict[str, Any]]:
+    def outputs_dict(self):
         return self._outputs
 
 
@@ -89,6 +90,10 @@ def run_cwltool(
 
     if kwds.get("non_strict_cwl", False):
         args.append("--non-strict")
+
+    if kwds.get("use_cache", False):
+        cache_directory = kwds.get("cwltool_cache_directory") or ctx.cwltool_cache_directory
+        args.extend(["--cachedir", cache_directory])
 
     args.extend([runnable.path, job_path])
     ctx.vlog("Calling cwltool with arguments %s" % args)

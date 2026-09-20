@@ -1,4 +1,5 @@
 """Module contains :class:`CmdTestTestCase` - integration tests for the ``test`` command."""
+
 from .test_utils import (
     CliTestCase,
     run_verbosely,

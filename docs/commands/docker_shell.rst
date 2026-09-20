@@ -1,6 +1,6 @@
 
 ``docker_shell`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``docker_shell``. This help message can be generated with ``planemo docker_shell
