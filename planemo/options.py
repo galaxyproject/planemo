@@ -580,7 +580,19 @@ def mulled_containers_option():
         "--mulled_containers",
         "--biocontainers",
         is_flag=True,
-        help="Test tools against mulled containers (forces --docker). Disables conda resolution unless any conda option has been set explicitly.",
+        help="Test tools against mulled containers. Requires --docker or --singularity; "
+        "--docker is enabled automatically if neither is given. Disables conda resolution "
+        "unless any conda option has been set explicitly.",
+    )
+
+
+def container_resolvers_config_file_option():
+    return planemo_option(
+        "--container_resolvers_config_file",
+        type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True),
+        default=None,
+        use_global_config=True,
+        help="Path to a Galaxy container resolvers configuration file to use instead of Galaxy's default resolvers.",
     )
 
 
@@ -644,7 +656,7 @@ def singularity_extra_volume_option():
         default=None,
         use_global_config=True,
         multiple=True,
-        help=("Extra path to mount if --engine docker or `--biocontainers` or `--singularity`."),
+        help=("Extra path to mount if `--biocontainers` or `--singularity`."),
     )
 
 
@@ -1227,6 +1239,13 @@ def singularity_config_options():
     )
 
 
+def galaxy_singularity_options():
+    return _compose(
+        singularity_enable_option(),
+        singularity_config_options(),
+    )
+
+
 def galaxy_docker_options():
     return _compose(
         docker_enable_option(),
@@ -1475,6 +1494,7 @@ def galaxy_target_options():
         galaxy_email_option(),
         galaxy_docker_options(),
         mulled_containers_option(),
+        container_resolvers_config_file_option(),
         galaxy_startup_timeout_option(),
         # Profile options...
         job_config_option(),
@@ -1529,6 +1549,7 @@ def galaxy_serve_options():
         non_strict_cwl_option(),
         docker_galaxy_image_option(),
         docker_extra_volume_option(),
+        singularity_extra_volume_option(),
         galaxy_config_options(),
         daemon_option(),
         pid_file_option(),
@@ -1728,6 +1749,7 @@ def engine_options():
         cwltool_no_container_option(),
         docker_galaxy_image_option(),
         docker_extra_volume_option(),
+        singularity_extra_volume_option(),
         ignore_dependency_problems_option(),
         shed_install_option(),
         install_tool_dependencies_option(),
@@ -1913,7 +1935,7 @@ def profile_database_options():
         database_type_option(),
         database_source_options(),
         postgres_database_storage_location_option(),
-        singularity_config_options(),
+        galaxy_singularity_options(),
     )
 
 

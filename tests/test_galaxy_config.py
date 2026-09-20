@@ -10,10 +10,14 @@ import yaml
 from click.testing import CliRunner
 
 from planemo.cli import planemo
+from planemo.config import OptionSource
 from planemo.database.postgres_docker import DockerPostgresDatabaseSource
 from planemo.galaxy.config import (
     _all_tool_paths,
     _database_connection,
+    _handle_job_config_file,
+    _handle_kwd_overrides,
+    _handle_mulled_container_kwds,
     _shared_galaxy_properties,
     _shed_config_paths,
     _validate_database_daemon,
@@ -444,3 +448,112 @@ def test_tail_log_directory_skips_empty_logs():
         log_directory = tdc.temp_directory
         open(os.path.join(log_directory, "gunicorn.log"), "w").close()
         assert tail_log_directory(log_directory) == {}
+
+
+def _container_test_context(**sources):
+    """Build a context with explicit option sources for container/conda options."""
+    ctx = create_test_context()
+    defaults = {
+        "docker": OptionSource.default,
+        "singularity": OptionSource.default,
+        "conda_auto_init": OptionSource.default,
+        "conda_auto_install": OptionSource.default,
+    }
+    defaults.update(sources)
+    for name, source in defaults.items():
+        ctx.set_option_source(name, source)
+    return ctx
+
+
+def test_mulled_containers_enables_docker_by_default():
+    """--biocontainers alone falls back to Docker."""
+    kwds = {"mulled_containers": True}
+    _handle_mulled_container_kwds(_container_test_context(), kwds)
+    assert kwds["docker"] is True
+    assert not kwds.get("singularity")
+    assert kwds["no_dependency_resolution"] is True
+
+
+def test_mulled_containers_respects_explicit_singularity():
+    """--biocontainers --singularity must not also turn on Docker."""
+    kwds = {"mulled_containers": True, "singularity": True}
+    _handle_mulled_container_kwds(_container_test_context(singularity=OptionSource.cli), kwds)
+    assert not kwds.get("docker")
+    assert kwds["singularity"] is True
+
+
+def test_mulled_containers_rejects_explicit_no_docker():
+    """--biocontainers --no_docker has no runtime left to fall back to."""
+    kwds = {"mulled_containers": True, "docker": False}
+    ctx = _container_test_context(docker=OptionSource.cli)
+    with pytest.raises(Exception, match="mulled containers together"):
+        _handle_mulled_container_kwds(ctx, kwds)
+
+
+def test_mulled_containers_falls_back_to_docker_when_only_singularity_refused():
+    """--biocontainers --no_singularity still gets Docker, as it did before."""
+    kwds = {"mulled_containers": True, "singularity": False}
+    _handle_mulled_container_kwds(_container_test_context(singularity=OptionSource.cli), kwds)
+    assert kwds["docker"] is True
+
+
+def test_mulled_containers_rejects_both_runtimes_refused():
+    kwds = {"mulled_containers": True, "docker": False, "singularity": False}
+    ctx = _container_test_context(docker=OptionSource.cli, singularity=OptionSource.cli)
+    with pytest.raises(Exception, match="mulled containers together"):
+        _handle_mulled_container_kwds(ctx, kwds)
+
+
+def test_mulled_containers_leaves_conda_options_set_by_user():
+    """An explicit conda option keeps conda resolution enabled."""
+    kwds = {"mulled_containers": True, "conda_prefix": "/tmp/conda"}
+    _handle_mulled_container_kwds(_container_test_context(), kwds)
+    assert "no_dependency_resolution" not in kwds
+
+
+def test_mulled_container_kwds_noop_without_biocontainers():
+    kwds = {}
+    _handle_mulled_container_kwds(_container_test_context(), kwds)
+    assert kwds == {}
+
+
+def _write_job_config(tmp_path, **kwds):
+    _handle_job_config_file(str(tmp_path), "planemo", None, set(), kwds)
+    with open(kwds["job_config_file"]) as fh:
+        return yaml.safe_load(fh)
+
+
+def test_job_config_enables_singularity(tmp_path):
+    """--singularity reaches the generated job configuration."""
+    config = _write_job_config(tmp_path, singularity=True)
+    environment = config["execution"]["environments"][config["execution"]["default"]]
+    assert environment["singularity_enabled"] is True
+    assert not environment.get("docker_enabled")
+
+
+def test_job_config_singularity_extra_volume(tmp_path):
+    """--singularity_extra_volume is appended to the default volumes."""
+    config = _write_job_config(tmp_path, singularity=True, singularity_extra_volume=["/data:ro"])
+    volumes = config["execution"]["environments"][config["execution"]["default"]]["singularity_volumes"]
+    assert volumes.startswith("$defaults")
+    assert "/data" in volumes
+
+
+def test_job_config_docker_unaffected_by_singularity_support(tmp_path):
+    """--docker keeps generating a Docker-enabled destination."""
+    config = _write_job_config(tmp_path, docker=True)
+    environment = config["execution"]["environments"][config["execution"]["default"]]
+    assert environment["docker_enabled"] is True
+    assert not environment.get("singularity_enabled")
+
+
+def test_container_resolvers_config_file_sets_galaxy_property():
+    properties = {}
+    _handle_kwd_overrides(properties, {"container_resolvers_config_file": "/tmp/resolvers.yml"})
+    assert properties["container_resolvers_config_file"] == "/tmp/resolvers.yml"
+
+
+def test_container_resolvers_config_file_absent_by_default():
+    properties = {}
+    _handle_kwd_overrides(properties, {})
+    assert "container_resolvers_config_file" not in properties
