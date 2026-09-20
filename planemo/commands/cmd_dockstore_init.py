@@ -1,15 +1,22 @@
 """Module describing the planemo ``dockstore_init`` command."""
+
 import os
 
 import click
 
 from planemo import options
 from planemo.cli import command_function
-from planemo.workflow_lint import DOCKSTORE_REGISTRY_CONF, generate_dockstore_yaml
+from planemo.io import launch_if_open_flagged
+from planemo.workflow_lint import (
+    DOCKSTORE_REGISTRY_CONF,
+    generate_dockstore_yaml,
+)
 
 
-@click.command('dockstore_init')
+@click.command("dockstore_init")
 @options.optional_project_arg()
+@options.publish_dockstore_option()
+@options.open_file_option()
 @command_function
 def cli(ctx, path=".", **kwds):
     """Initialize a .dockstore.yml configuration file for workflows in directory.
@@ -24,6 +31,7 @@ def cli(ctx, path=".", **kwds):
     """
     # TODO: implement -f semantics
     dockstore_path = os.path.join(path, DOCKSTORE_REGISTRY_CONF)
-    contents = generate_dockstore_yaml(path)
+    contents = generate_dockstore_yaml(path, kwds["publish"])
     with open(dockstore_path, "w") as f:
         f.write(contents)
+    launch_if_open_flagged(dockstore_path, **kwds)

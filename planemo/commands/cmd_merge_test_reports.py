@@ -1,17 +1,20 @@
-"""Module describing the planemo ``test_reports`` command."""
+"""Module describing the planemo ``merge_test_reports`` command."""
+
 import os
 
 import click
 
-from planemo import io
-from planemo import options
+from planemo import (
+    io,
+    options,
+)
 from planemo.cli import command_function
 from planemo.galaxy.test.actions import merge_reports
 
 
-@click.command('merge_test_reports')
+@click.command("merge_test_reports")
 @options.merge_test_json()
-@options.tool_test_json('output_path')
+@options.tool_test_json("output_path")
 @command_function
 def cli(ctx, input_paths, output_path, **kwds):
     """Merge tool_test_output.json files from multiple runs."""

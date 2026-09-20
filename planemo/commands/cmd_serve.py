@@ -1,4 +1,5 @@
 """Module describing the planemo ``serve`` command."""
+
 import click
 
 from planemo import options
@@ -8,7 +9,7 @@ from planemo.runnable import for_paths
 from planemo.tools import uris_to_paths
 
 
-@click.command('serve')
+@click.command("serve")
 @options.optional_tools_arg(multiple=True, allow_uris=True)
 @options.galaxy_serve_options()
 @options.enable_cwl_option()
@@ -20,6 +21,11 @@ def cli(ctx, uris, **kwds):
     The Galaxy tool panel will include just the referenced tool or tools (by
     default all the tools in the current working directory) and the upload
     tool.
+
+    Detached serving with ``--daemon`` does not support
+    ``--database_type postgres_singularity``. Omit ``--daemon`` or use
+    ``--database_connection`` for an independently managed PostgreSQL server.
+    Singularity databases remain supported for foreground serving and tests.
 
     planemo will search parent directories to see if any is a Galaxy instance
     - but one can pick the Galaxy instance to use with the ``--galaxy_root``
@@ -39,5 +45,5 @@ def cli(ctx, uris, **kwds):
     """
     paths = uris_to_paths(ctx, uris)
     runnables = for_paths(paths)
-    kwds['galaxy_skip_client_build'] = kwds.pop("skip_client_build", False)
-    galaxy_serve(ctx, runnables, **kwds)
+    with galaxy_serve(ctx, runnables, **kwds):
+        pass

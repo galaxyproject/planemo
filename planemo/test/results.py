@@ -2,31 +2,36 @@
 
 Is a JSON.
 """
+
 import json
 import os
 
 from planemo.io import error
 
 
-class StructuredData(object):
+class StructuredData:
     """Abstraction around a simple data structure describing test results."""
 
     def __init__(self, json_path=None, data=None):
         """Create a :class:`StructuredData` from a JSON file."""
+
         def data_error():
-            error("An invalid JSON for structured test result data - "
-                  "summary information and planemo reports will be "
-                  "incorrect.")
+            error(
+                "An invalid JSON for structured test result data - "
+                "summary information and planemo reports will be "
+                "incorrect."
+            )
 
         self.json_path = json_path
         structured_data = {}
         structured_data_tests = {}
         if json_path and os.path.exists(json_path) and data is None:
             try:
-                with open(json_path, "r") as output_json_f:
+                with open(json_path) as output_json_f:
                     data = json.load(output_json_f)
             except Exception:
                 data_error()
+
         try:
             structured_data = data
             structured_data_tests = structured_data["tests"]
@@ -65,8 +70,11 @@ class StructuredData(object):
 
         for test in self.structured_data_tests:
             test_data = get_dict_value("data", test)
-            status = get_dict_value("status", test_data)
             num_tests += 1
+            if test_data is None:
+                continue
+            status = normalize_test_status(get_dict_value("status", test_data))
+            test_data["status"] = status
             if status == "skip":
                 num_skips += 1
             elif status == "failure":
@@ -100,7 +108,7 @@ class StructuredData(object):
     @property
     def failed_ids(self):
         """Find set of IDs for failed tests."""
-        ids = set([])
+        ids = set()
         for test_data in self.structured_data_tests:
             if test_data["data"]["status"] == "success":
                 continue
@@ -114,10 +122,17 @@ def get_dict_value(key, data):
     try:
         return data[key]
     except (KeyError, TypeError):
-        raise KeyError("No key [%s] in [%s]" % (key, data))
+        raise KeyError(f"No key [{key}] in [{data}]")
+
+
+def normalize_test_status(status):
+    if status == "skipped":
+        return "skip"
+    return status
 
 
 __all__ = (
     "StructuredData",
     "get_dict_value",
+    "normalize_test_status",
 )

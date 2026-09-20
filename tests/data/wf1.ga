@@ -1,0 +1,70 @@
+{
+    "a_galaxy_workflow": "true",
+    "annotation": "",
+    "format-version": "0.1",
+    "name": "Test Workflow",
+    "steps": {
+        "0": {
+            "annotation": "",
+            "content_id": null,
+            "errors": null,
+            "id": 0,
+            "input_connections": {},
+            "inputs": [
+                {
+                    "description": "",
+                    "name": "input1"
+                }
+            ],
+            "label": "input1",
+            "name": "Input dataset",
+            "outputs": [],
+            "position": {
+                "left": 0,
+                "top": 0
+            },
+            "tool_id": null,
+            "tool_state": "{\"optional\": false}",
+            "tool_version": null,
+            "type": "data_input",
+            "uuid": "f4041474-e3d3-4cba-9af0-ba82ad9c7dec",
+            "workflow_outputs": []
+        },
+        "1": {
+            "annotation": "",
+            "content_id": "cat",
+            "errors": "Tool is not installed",
+            "id": 1,
+            "input_connections": {
+                "input1": {
+                    "id": 0,
+                    "output_name": "output"
+                }
+            },
+            "inputs": [],
+            "label": "first_cat",
+            "name": "cat",
+            "outputs": [],
+            "position": {
+                "left": 10,
+                "top": 10
+            },
+            "post_job_actions": {},
+            "tool_id": "cat",
+            "tool_state": "{\"__page__\": 0}",
+            "tool_version": "None",
+            "type": "tool",
+            "uuid": "4235f0bf-5b19-4165-a3dc-9bc012fba699",
+            "workflow_outputs": [
+                {
+                    "label": "wf_output_1",
+                    "output_name": "out_file1",
+                    "uuid": "619da944-cf9f-4890-bc82-7b1ca1c4898c"
+                }
+            ]
+        }
+    },
+    "tags": [],
+    "uuid": "5bf25b07-a83c-46d5-885d-569ab9803ab4",
+    "version": 0
+}

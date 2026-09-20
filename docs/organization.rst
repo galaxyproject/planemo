@@ -51,5 +51,4 @@ Committers
 - Björn Grüning (@bgruening)
 - Helena Rasche (@hexylena)
 - Nicola Soranzo (@nsoranzo)
-- James Taylor (@jxtx)
 - Marius van den Beek (@mvdbeek)

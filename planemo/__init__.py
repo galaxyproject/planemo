@@ -1,14 +1,12 @@
-# -*- coding: utf-8 -*-
+import importlib.metadata
 
-__version__ = '0.73.0.dev0'
+planemo_metadata = importlib.metadata.metadata("planemo")
 
+__version__ = "0.75.48.dev0"
 
-PROJECT_NAME = "planemo"
-PROJECT_OWNER = PROJECT_USERAME = "galaxyproject"
-PROJECT_AUTHOR = 'Galaxy Project and Community'
-PROJECT_EMAIL = 'jmchilton@gmail.com'
+PROJECT_NAME = planemo_metadata["Name"]
+PROJECT_EMAIL = planemo_metadata["Author-email"].split(" ")[-1]
+PROJECT_AUTHOR = PROJECT_USERNAME = "galaxyproject"
 
 PROJECT_URL = "https://github.com/galaxyproject/planemo"
-RAW_CONTENT_URL = "https://raw.github.com/%s/%s/master/" % (
-    PROJECT_USERAME, PROJECT_NAME
-)
+RAW_CONTENT_URL = f"https://raw.github.com/{PROJECT_USERNAME}/{PROJECT_NAME}/master/"

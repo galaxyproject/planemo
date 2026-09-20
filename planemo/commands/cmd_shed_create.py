@@ -1,16 +1,20 @@
 """Module describing the planemo ``shed_create`` command."""
+
 import sys
 
 import click
 
-from planemo import options
-from planemo import shed
+from planemo import (
+    options,
+    shed,
+)
 from planemo.cli import command_function
 from planemo.io import info
 
 
 @click.command("shed_create")
 @options.shed_publish_options()
+@options.fail_fast_option()
 @options.shed_message_option()
 @options.shed_skip_upload()
 @command_function
@@ -27,9 +31,7 @@ def cli(ctx, paths, **kwds):
             if realized_repository.create(ctx, shed_context):
                 info("Repository created")
                 if not kwds["skip_upload"]:
-                    return shed.upload_repository(
-                        ctx, realized_repository, **kwds
-                    )
+                    return shed.upload_repository(ctx, realized_repository, **kwds)
                 else:
                     return 0
             else:

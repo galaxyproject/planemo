@@ -1,12 +1,16 @@
 """Logic related to linting shed repositories."""
-from __future__ import absolute_import
 
 import os
 import xml.etree.ElementTree as ET
+from pathlib import PurePosixPath
+from typing import TYPE_CHECKING
 
 import yaml
+from bioblend import ConnectionError
 from galaxy.tool_util.lint import lint_tool_source_with
 from galaxy.tool_util.linters.help import rst_invalid
+from galaxy.tool_util.parser.interface import ToolSource
+from galaxy.tool_util.version import parse_version
 from galaxy.util import unicodify
 
 from planemo.io import info
@@ -25,6 +29,7 @@ from planemo.shed import (
     validate_repo_owner,
 )
 from planemo.shed2tap import base
+from planemo.shed.interface import tool_shed_instance
 from planemo.tool_lint import (
     build_tool_lint_args,
     handle_tool_load_error,
@@ -32,6 +37,9 @@ from planemo.tool_lint import (
 from planemo.tools import yield_tool_sources
 from planemo.xml import XSDS_PATH
 
+if TYPE_CHECKING:
+    from planemo.cli import PlanemoCliContext
+    from planemo.shed import RealizedRepository
 
 TOOL_DEPENDENCIES_XSD = os.path.join(XSDS_PATH, "tool_dependencies.xsd")
 REPO_DEPENDENCIES_XSD = os.path.join(XSDS_PATH, "repository_dependencies.xsd")
@@ -52,7 +60,7 @@ SHED_METADATA = [
 ]
 
 
-def lint_repository(ctx, realized_repository, **kwds):
+def lint_repository(ctx: "PlanemoCliContext", realized_repository: "RealizedRepository", **kwds):
     """Lint a realized shed repository.
 
     See :mod:`planemo.shed` for details on constructing a realized
@@ -112,6 +120,10 @@ def lint_repository(ctx, realized_repository, **kwds):
     if kwds["tools"]:
         tools_failed = lint_repository_tools(ctx, realized_repository, lint_ctx, lint_args)
         failed = failed or tools_failed
+
+    lint_ctx.lint("lint_version_bumped", lint_shed_version, realized_repository)
+    lint_ctx.lint("lint_shed_remote_repository_url", lint_shed_remote_repository_url, realized_repository)
+
     if kwds["ensure_metadata"]:
         lint_ctx.lint(
             "lint_shed_metadata",
@@ -121,22 +133,101 @@ def lint_repository(ctx, realized_repository, **kwds):
     return handle_lint_complete(lint_ctx, lint_args, failed=failed)
 
 
-def lint_repository_tools(ctx, realized_repository, lint_ctx, lint_args):
+def lint_repository_tools(ctx: "PlanemoCliContext", realized_repository: "RealizedRepository", lint_ctx, lint_args):
     path = realized_repository.path
-    for (tool_path, tool_source) in yield_tool_sources(ctx, path,
-                                                       recursive=True):
+    for tool_path, tool_source in yield_tool_sources(ctx, path, recursive=True):
         original_path = tool_path.replace(path, realized_repository.real_path)
         info("+Linting tool %s" % original_path)
         if handle_tool_load_error(tool_path, tool_source):
             return True
-        lint_tool_source_with(
-            lint_ctx,
-            tool_source,
-            extra_modules=lint_args["extra_modules"]
+        lint_tool_source_with(lint_ctx, tool_source, extra_modules=lint_args["extra_modules"])
+
+
+def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
+    path = realized_repository.path
+
+    tsi = tool_shed_instance("https://toolshed.g2.bx.psu.edu/")
+
+    for tool_path, tool_source in yield_tool_sources(ctx=None, path=path, recursive=True):
+        if handle_tool_load_error(tool_path, tool_source):
+            continue
+
+        if not isinstance(tool_source, ToolSource):
+            continue
+
+        repo_owner = realized_repository.owner
+        repo_name = realized_repository.name
+        tool_id = tool_source.parse_id()
+        tool_version = parse_version(tool_source.parse_version())
+
+        # check if there is already such a repo (otherwise get_ordered_installable_revisions will log an error for new repos)
+        if len(tsi.repositories.get_repositories(repo_name, repo_owner)) == 0:
+            continue
+
+        try:
+            installable_revisions = tsi.repositories.get_ordered_installable_revisions(repo_name, repo_owner)
+        except ConnectionError:
+            continue
+
+        if len(installable_revisions) == 0:
+            continue
+
+        latest_installable_revision = installable_revisions[-1]
+        repo_info, repo_metadata, _ = tsi.repositories.get_repository_revision_install_info(
+            repo_name, repo_owner, latest_installable_revision
         )
 
+        # no such tool in the TS -> fine to push any version
+        if len(repo_metadata["valid_tools"]) == 0:
+            continue
 
-def lint_expansion(realized_repository, lint_ctx):
+        # case 1 tool per repo
+        if len(repo_metadata["valid_tools"]) == 1:
+            assert repo_metadata["valid_tools"][0]["version"]
+            ts_tool_version = repo_metadata["valid_tools"][0]["version"]
+        # case n tools per repo
+        else:
+            tool = [_ for _ in repo_metadata["valid_tools"] if _["id"] == tool_id]
+            assert len(tool) == 1
+            assert tool[0]["version"]
+            ts_tool_version = tool[0]["version"]
+
+        if tool_version <= parse_version(ts_tool_version):
+            lint_ctx.error(
+                f"{tool_id}: version {tool_version} is less or equal than version of the latest installable revision {ts_tool_version}",
+                "ShedVersion",
+            )
+
+
+def lint_shed_remote_repository_url(realized_repository: "RealizedRepository", lint_ctx):
+    """
+    Check if the remote_repository_url has a common suffix with the path to the repo.
+    Rationale remote_repository_url is supposed to have
+    the form https://gitserver/organisation/tree/main/path where the path in the suffix
+    should be the same as the path to the repository
+    """
+
+    remote_repository_url = realized_repository.config.get("remote_repository_url", "").rstrip(" /")
+    if not remote_repository_url:
+        return
+
+    # rstrip trailing space and slashes just in case they are given in only one of path/url
+    path = PurePosixPath(realized_repository.real_path)
+    path_parts = path.parts
+
+    min_segments = min(2, len(path_parts))
+
+    for i in range(len(path_parts) - min_segments + 1):
+        suffix = "/".join(path_parts[i:])
+        if remote_repository_url.endswith(suffix):
+            # Found a match with at least min_segments
+            return
+
+    # If no match found, issue warning
+    lint_ctx.warn(f"remote_repository_url may be incorrect: expected it to end with a significant part of '{path}'")
+
+
+def lint_expansion(realized_repository: "RealizedRepository", lint_ctx):
     missing = realized_repository.missing
     if missing:
         msg = "Failed to expand inclusions %s" % missing
@@ -145,47 +236,42 @@ def lint_expansion(realized_repository, lint_ctx):
         lint_ctx.info("Included files all found.")
 
 
-def lint_shed_metadata(realized_repository, lint_ctx):
+def lint_shed_metadata(realized_repository: "RealizedRepository", lint_ctx):
     found_all = True
     for key in SHED_METADATA:
         if key not in realized_repository.config:
             found_all = False
-            lint_ctx.warn(
-                "Missing shed metadata field [%s] for repository" % key
-            )
+            lint_ctx.warn("Missing shed metadata field [%s] for repository" % key)
+        if realized_repository.config[key] is None:
+            lint_ctx.warn("shed metadata field [%s] was given, but is empty" % key)
     if found_all:
-        lint_ctx.info(
-            "Found all shed metadata fields required for automated repository "
-            "creation and/or updates."
-        )
+        lint_ctx.info("Found all shed metadata fields required for automated repository creation and/or updates.")
 
 
-def lint_readme(realized_repository, lint_ctx):
+def lint_readme(realized_repository: "RealizedRepository", lint_ctx):
     path = realized_repository.real_path
     readme_rst = os.path.join(path, "README.rst")
     readme = os.path.join(path, "README")
     readme_txt = os.path.join(path, "README.txt")
 
-    readme_found = False
+    readme_found = ""
     for readme in [readme_rst, readme, readme_txt]:
         if os.path.exists(readme):
             readme_found = readme
-
-    readme_md = os.path.join(path, "README.md")
-    if not readme_found and os.path.exists(readme_md):
-        lint_ctx.warn("Tool Shed doesn't render markdown, "
-                      "README.md is invalid readme.")
-        return
 
     if not readme_found:
         # TODO: filter on TYPE and make this a warning if
         # unrestricted repository - need to update iuc standards
         # first though.
-        lint_ctx.info("No README found skipping.")
+        readme_md = os.path.join(path, "README.md")
+        if os.path.exists(readme_md):
+            lint_ctx.info("Found README in Markdown format, which is not rendered by the Tool Shed, skipping")
+        else:
+            lint_ctx.info("No README found, skipping.")
         return
 
     if readme_found.endswith(".rst"):
-        with open(readme_found, "r") as fh:
+        with open(readme_found) as fh:
             readme_text = fh.read()
         invalid_rst = rst_invalid(readme_text)
         if invalid_rst:
@@ -198,7 +284,7 @@ def lint_readme(realized_repository, lint_ctx):
         lint_ctx.info("README found containing plain text.")
 
 
-def lint_tool_dependencies_urls(realized_repository, lint_ctx):
+def lint_tool_dependencies_urls(realized_repository: "RealizedRepository", lint_ctx):
     path = realized_repository.real_path
     tool_dependencies = os.path.join(path, "tool_dependencies.xml")
     if not os.path.exists(tool_dependencies):
@@ -209,7 +295,7 @@ def lint_tool_dependencies_urls(realized_repository, lint_ctx):
     lint_urls(root, lint_ctx)
 
 
-def lint_tool_dependencies_sha256sum(realized_repository, lint_ctx):
+def lint_tool_dependencies_sha256sum(realized_repository: "RealizedRepository", lint_ctx):
     tool_dependencies = os.path.join(realized_repository.real_path, "tool_dependencies.xml")
     if not os.path.exists(tool_dependencies):
         lint_ctx.info("No tool_dependencies.xml, skipping.")
@@ -220,14 +306,14 @@ def lint_tool_dependencies_sha256sum(realized_repository, lint_ctx):
     count = 0
     for action in root.findall(".//action"):
         assert action.tag == "action"
-        if action.attrib.get('type', '') not in ['download_by_url', 'download_file']:
+        if action.attrib.get("type", "") not in ["download_by_url", "download_file"]:
             continue
-        url = action.text.strip()
-        checksum = action.attrib.get('sha256sum', '')
+        url = (action.text or "").strip()
+        checksum = action.attrib.get("sha256sum", "")
         if not checksum:
             lint_ctx.warn("Missing checksum for %s" % url)
         elif len(checksum) != 64 or not set("0123456789abcdef").issuperset(checksum.lower()):
-            lint_ctx.error("Invalid checksum %r for %s" % (checksum, url))
+            lint_ctx.error(f"Invalid checksum {checksum!r} for {url}")
         else:
             # TODO - See planned --verify option to check it matches
             # lint_ctx.info("SHA256 checkum listed for %s" % url)
@@ -236,7 +322,7 @@ def lint_tool_dependencies_sha256sum(realized_repository, lint_ctx):
         lint_ctx.info("Found %i download action(s) with SHA256 checksums" % count)
 
 
-def lint_tool_dependencies_xsd(realized_repository, lint_ctx):
+def lint_tool_dependencies_xsd(realized_repository: "RealizedRepository", lint_ctx):
     path = realized_repository.real_path
     tool_dependencies = os.path.join(path, "tool_dependencies.xml")
     if not os.path.exists(tool_dependencies):
@@ -245,7 +331,7 @@ def lint_tool_dependencies_xsd(realized_repository, lint_ctx):
     lint_xsd(lint_ctx, TOOL_DEPENDENCIES_XSD, tool_dependencies)
 
 
-def lint_tool_dependencies_actions(realized_repository, lint_ctx):
+def lint_tool_dependencies_actions(realized_repository: "RealizedRepository", lint_ctx):
     path = realized_repository.real_path
     tool_dependencies = os.path.join(path, "tool_dependencies.xml")
     if not os.path.exists(tool_dependencies):
@@ -257,6 +343,7 @@ def lint_tool_dependencies_actions(realized_repository, lint_ctx):
     except Exception as e:
         import sys
         import traceback
+
         exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
         traceback.print_exc()
@@ -266,19 +353,17 @@ def lint_tool_dependencies_actions(realized_repository, lint_ctx):
         return
 
 
-def lint_expected_files(realized_repository, lint_ctx):
+def lint_expected_files(realized_repository: "RealizedRepository", lint_ctx):
     if realized_repository.is_package:
         if not os.path.exists(realized_repository.tool_dependencies_path):
-            lint_ctx.warn("Package repository does not contain a "
-                          "tool_dependencies.xml file.")
+            lint_ctx.warn("Package repository does not contain a tool_dependencies.xml file.")
 
     if realized_repository.is_suite:
         if not os.path.exists(realized_repository.repo_dependencies_path):
-            lint_ctx.warn("Suite repository does not contain a "
-                          "repository_dependencies.xml file.")
+            lint_ctx.warn("Suite repository does not contain a repository_dependencies.xml file.")
 
 
-def lint_repository_dependencies(realized_repository, lint_ctx):
+def lint_repository_dependencies(realized_repository: "RealizedRepository", lint_ctx):
     path = realized_repository.real_path
     repo_dependencies = os.path.join(path, "repository_dependencies.xml")
     if not os.path.exists(repo_dependencies):
@@ -287,14 +372,14 @@ def lint_repository_dependencies(realized_repository, lint_ctx):
     lint_xsd(lint_ctx, REPO_DEPENDENCIES_XSD, repo_dependencies)
 
 
-def lint_shed_yaml(realized_repository, lint_ctx):
+def lint_shed_yaml(realized_repository: "RealizedRepository", lint_ctx):
     path = realized_repository.real_path
     shed_yaml = os.path.join(path, ".shed.yml")
     if not os.path.exists(shed_yaml) and realized_repository.repository_type != REPO_TYPE_UNRESTRICTED:
         lint_ctx.error("No .shed.yml file found, skipping.")
         return
     try:
-        with open(shed_yaml, "r") as fh:
+        with open(shed_yaml) as fh:
             yaml.safe_load(fh)
     except Exception as e:
         lint_ctx.error("Failed to parse .shed.yml file [%s]" % unicodify(e))
@@ -303,7 +388,7 @@ def lint_shed_yaml(realized_repository, lint_ctx):
     _lint_shed_contents(lint_ctx, realized_repository)
 
 
-def _lint_shed_contents(lint_ctx, realized_repository):
+def _lint_shed_contents(lint_ctx, realized_repository: "RealizedRepository"):
     config = realized_repository.config
 
     def _lint_if_present(key, func, *args):
@@ -331,18 +416,15 @@ def _validate_repo_type(repo_type, name):
     is_dep = repo_type == "tool_dependency_definition"
     is_suite = repo_type == "repository_suite_definition"
     if is_dep and not name.startswith("package_"):
-        return ("Tool dependency definition repositories should have names "
-                "starting with package_")
+        return "Tool dependency definition repositories should have names starting with package_"
     if is_suite and not name.startswith("suite_"):
-        return ("Repository suite definition repositories should have names "
-                "starting with suite_")
+        return "Repository suite definition repositories should have names starting with suite_"
     if name.startswith("package_") or name.startswith("suite_"):
         if repo_type == "unrestricted":
-            return ("Repository name indicated specialized repository type "
-                    "but repository is listed as unrestricted.")
+            return "Repository name indicated specialized repository type but repository is listed as unrestricted."
 
 
-def _validate_categories(categories, realized_repository):
+def _validate_categories(categories, realized_repository: "RealizedRepository"):
     msg = None
     if len(categories) == 0:
         msg = "Repository should specify one or more categories."
@@ -355,12 +437,9 @@ def _validate_categories(categories, realized_repository):
                 msg = "Categories [%s] unknown." % unknown_categories
         if realized_repository.is_package:
             if "Tool Dependency Packages" not in categories:
-                msg = ("Packages should be placed and should only be placed "
-                       "in the category 'Tool Dependency Packages'.")
+                msg = "Packages should be placed and should only be placed in the category 'Tool Dependency Packages'."
 
     return msg
 
 
-__all__ = (
-    "lint_repository",
-)
+__all__ = ("lint_repository",)

@@ -1,0 +1,5 @@
+- job:
+    data_input:
+      path: ../hello.txt
+      class: File
+  outputs: {}

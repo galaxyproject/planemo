@@ -1,0 +1,41 @@
+#if $keyword:
+    $keyword
+#end if
+
+#for $item in $integers:
+    #if $item:
+        $item
+    #end if
+#end for
+
+$s
+
+#if $foo:
+    --foo '$foo'
+#end if
+
+#for $item in $bar:
+    #if $item:
+        --bar '$item'
+    #end if
+#end for
+
+$true
+
+$false
+
+#for $item in $append:
+    #if $item:
+        --append '$item'
+    #end if
+#end for
+
+#for $item in $nargs2:
+    #if $item:
+        --nargs2 '$item'
+    #end if
+#end for
+
+#if $mode:
+    --mode $mode
+#end if

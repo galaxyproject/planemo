@@ -1,6 +1,6 @@
 
 ``test_reports`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``test_reports``. This help message can be generated with ``planemo test_reports
@@ -20,16 +20,19 @@ from the structured test output (tool_test_output.json).
 **Options**::
 
 
-      --test_output PATH           Output test report (HTML - for humans) defaults
-                                   to tool_test_output.html.
-    
-      --test_output_text PATH      Output test report (Basic text - for display in
-                                   CI)
-    
-      --test_output_markdown PATH  Output test report (Markdown style - for humans &
-                                   computers)
-    
-      --test_output_xunit PATH     Output test report (xunit style - for CI systems
-      --test_output_junit PATH     Output test report (jUnit style - for CI systems
-      --help                       Show this message and exit.
+      --test_output PATH              Output test report (HTML - for humans)
+                                      defaults to tool_test_output.html.
+      --test_output_text PATH         Output test report (Basic text - for display
+                                      in CI)
+      --test_output_markdown PATH     Output test report (Markdown style - for
+                                      humans & computers)
+      --test_output_markdown_minimal PATH
+                                      Output test report (Minimal markdown style -
+                                      jost the table)
+      --test_output_xunit PATH        Output test report (xunit style - for CI
+                                      systems
+      --test_output_junit PATH        Output test report (jUnit style - for CI
+                                      systems
+      --test_output_allure DIRECTORY  Output test allure2 framework resutls
+      --help                          Show this message and exit.
     

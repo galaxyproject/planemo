@@ -1,5 +1,4 @@
 """Module describing the planemo ``profile_delete`` command."""
-from __future__ import print_function
 
 import click
 
@@ -8,7 +7,7 @@ from planemo.cli import command_function
 from planemo.galaxy import profiles
 
 
-@click.command('profile_delete')
+@click.command("profile_delete")
 @options.profile_name_argument()
 @options.profile_database_options()
 @options.docker_config_options()

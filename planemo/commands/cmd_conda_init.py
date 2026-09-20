@@ -1,4 +1,5 @@
 """Module describing the planemo ``conda_init`` command."""
+
 import click
 from galaxy.tool_util.deps import conda_util
 
@@ -6,15 +7,17 @@ from planemo import options
 from planemo.cli import command_function
 from planemo.conda import build_conda_context
 from planemo.exit_codes import EXIT_CODE_ALREADY_EXISTS
-from planemo.io import info, warn
-
+from planemo.io import (
+    info,
+    warn,
+)
 
 MESSAGE_ERROR_ALREADY_EXISTS = "conda_init failed - Conda appears to already be installed at '%s'"
 MESSAGE_ERROR_FAILED = "conda_init failed - failed to install to '%s'"
 MESSAGE_INSTALL_OKAY = "Conda installation succeeded - Conda is available at '%s'"
 
 
-@click.command('conda_init')
+@click.command("conda_init")
 @options.conda_target_options(include_local=False)  # Always use local during init.
 @command_function
 def cli(ctx, **kwds):

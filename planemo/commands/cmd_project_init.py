@@ -1,4 +1,5 @@
 """Module describing the planemo ``project_init`` command."""
+
 import os
 import shutil
 import tempfile
@@ -18,10 +19,7 @@ DOWNLOAD_URL = "%s/galaxyproject/planemo/tar.gz/master" % SOURCE_HOST
 
 @click.command("project_init")
 @options.optional_project_arg(exists=None)
-@click.option(
-    '--template',
-    default=None
-)
+@click.option("--template", default=None)
 @command_function
 def cli(ctx, path, template=None, **kwds):
     """(Experimental) Initialize a new tool project.
@@ -36,7 +34,7 @@ def cli(ctx, path, template=None, **kwds):
         return
 
     tempdir = tempfile.mkdtemp()
-    tar_args = ['-zxf', '-', '--strip-components=2']
+    tar_args = ["-zxf", "-", "--strip-components=2"]
     try:
         untar_to(DOWNLOAD_URL, tar_args=tar_args, dest_dir=tempdir)
         template_dir = os.path.join(tempdir, template)

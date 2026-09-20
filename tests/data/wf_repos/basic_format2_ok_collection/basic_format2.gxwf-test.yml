@@ -1,0 +1,30 @@
+- doc: Simple test
+  job:
+    the_input:
+      class: Collection
+      collection_type: list
+      elements:
+      - identifier: first
+        class: File
+        path: hello.txt
+      - identifier: second
+        class: File
+        path: hello.txt
+  outputs:
+    the_output:
+      element_tests:
+        first:
+          asserts:
+            has_text:
+              text: Hello
+            not_has_text:
+              text: Word
+        second:
+          asserts:
+            - that: has_text
+              text: Hello
+            - that: has_text
+              text: World
+            - that: not_has_text
+              text: Word
+

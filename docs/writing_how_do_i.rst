@@ -32,7 +32,7 @@ Futher reading:
 
 - `bibtex.xml <https://github.com/jmchilton/galaxy/blob/dev/test/functional/tools/bibtex.xml>`__ (test tool with a bunch of random examples)
 - `bwa-mem.xml <https://github.com/jmchilton/bwa-mem/commit/0425264039950bfd9ded06997a08cc8b4ee1ad8f>`__ (BWA-MEM tool by Anton Nekrutenko demonstrating citation of an arXiv article)
-- `macros.xml <https://github.com/galaxyproject/tools-devteam/blob/master/tool_collections/vcflib/macros.xml#L15>`__ (Macros for vcflib tool demonstrating citing a github repository)
+- `macros.xml <https://github.com/galaxyproject/tools-iuc/blob/main/tool_collections/vcflib/macros.xml#L16>`__ (Macros for vcflib tool demonstrating citing a github repository)
 
 --------------------------------------------------
 \.\.\. declare a Docker container for my tool?
@@ -60,25 +60,23 @@ Further reading:
 --------------------------------------------------
 
 Tool parameters support a ``validator`` element (`syntax
-<https://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax#A.3Cvalidator.3E_tag_set>`__)
+<https://docs.galaxyproject.org/en/latest/dev/schema.html#tool-inputs-param-validator>`__)
 to perform validation of a single parameter. More complex validation across
 parameters can be performed using arbitrary Python functions using the
 ``code`` file syntax but this feature should be used sparingly.
 
 Further reading:
 
-- `validator <https://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax#A.3Cvalidator.3E_tag_set>`__
+- `validator <https://docs.galaxyproject.org/en/latest/dev/schema.html#tool-inputs-param-validator>`__
   XML tag syntax on the Galaxy wiki.
-- `fastq_filter.xml <https://github.com/galaxyproject/tools-devteam/blob/master/tool_collections/galaxy_sequence_utils/fastq_filter/fastq_filter.xml>`__
+- `fastq_filter.xml <https://github.com/galaxyproject/tools-iuc/blob/main/tool_collections/galaxy_sequence_utils/fastq_filter/fastq_filter.xml>`__
   (a FASTQ filtering tool demonstrating validator constructs)
-- `gffread.xml <https://github.com/galaxyproject/tools-devteam/blob/master/tool_collections/cufflinks/gffread/gffread.xml>`__
+- `gffread.xml <https://github.com/galaxyproject/tools-iuc/blob/main/tools/gffread/gffread.xml>`__
   (a tool by Jim Johnson demonstrating using regular expressions with ``validator`` tags)
 - `code_file.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/code_file.xml>`__,
   `code_file.py <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/code_file.py>`__
   (test files demonstrating defining a simple constraint in Python across
   two parameters)
-- `deseq2 tool <https://github.com/bgruening/galaxytools/tree/master/tools/deseq2>`__
-  by Björn Grüning demonstrating advanced ``code`` file validation.
 
 -------------------------------------------------
 \.\.\. check input type in command blocks?
@@ -220,7 +218,7 @@ specify tests for the individual output files using the ``extra_files`` element
 demonstrated by the following tool.
 
 - `composite_output.xml <https://github.com/galaxyproject/galaxy/blob/dev/test/functional/tools/composite_output.xml>`__
-- `macs_wrapper.xml <https://github.com/galaxyproject/tools-devteam/blob/master/tools/macs/macs_wrapper.xml>`__
+- `macs2_callpeak.xml <https://github.com/galaxyproject/tools-iuc/blob/main/tools/macs2/macs2_callpeak.xml>`__
 
 ------------------------------------------
 \.\.\. test index (\.loc) data?
@@ -327,3 +325,75 @@ file.
 .. _Docker Hub: https://hub.docker.com/
 .. _Planemo: http://planemo.readthedocs.org/
 .. _Picard: http://broadinstitute.github.io/picard/
+
+----------------------------------------------------------------------------
+\.\.\. test tools against a package or container in a bioconda pull request?
+----------------------------------------------------------------------------
+
+First, obtain the artifacts of the PR by adding this comment:
+``@BiocondaBot please fetch artifacts``. In the reply one finds the links a zip file containing
+the built package and docker image. Download this zip and extract it. For the following let
+``PACKAGES_DIR`` be the absolute path to the directory ``packages`` in the resulting unzipped directory
+and ``IMAGE_ZIP`` be the absolute path to the ``tar.gz`` file in the ``images`` directory in the unzipped directory.
+
+In order to test the tool with the package add the following to the planemo call::
+
+     $ planemo test ... --conda_channels file://PACKAGES_DIR,conda-forge,bioconda,defaults ...
+
+For containerized testing we need to differentiate two cases:
+
+1. the tool has a single requirement (that is fulfilled by the container)
+2. the tool has multiple requirements (in this case a docker image will be built on the fly using package)
+
+For the former case the docker image that has been created by the bioconda CI needs to be loaded::
+
+     $ gzip -dc IMAGE_ZIP | docker load
+
+and a planemo test can then simply use this image::
+
+     $ planemo test ... --biocontainers --no_dependency_resolution --no_conda_auto_init ...
+
+For the later case it suffices to call planemo as follows::
+
+     $ planemo test ... --biocontainers --no_dependency_resolution --no_conda_auto_init --conda_channels file://PACKAGES_DIR,conda-forge,bioconda,defaults ...
+
+--------------------------------------
+\.\.\. interactively debug tool tests?
+--------------------------------------
+
+It can be desirable to interactively debug a tool test. In order to do so, start ``planemo test``
+with the option ``--no_cleanup``. Inspect the output: After Galaxy starts up, the tests commence. At the
+start of each test one finds a message: ``( <TOOL_ID> ) > Test-N``. After some upload jobs, the
+actual tool job is started (it is the last before the next test is executed). There you will find
+a message like ``Built script [/tmp/tmp1zixgse3/job_working_directory/000/3/tool_script.sh]``
+
+In this case ``/tmp/tmp1zixgse3/job_working_directory/000/3/`` is the job dir. It contains some
+files and directories of interest: 
+
+- ``tool_script.sh``: the bash script generated from the tool's ``command`` and ``version_command``
+  tags plus some boiler plate code
+- ``galaxy_3.sh`` (note that the number may be different): a shell script setting up the environment
+  (e.g. paths and environment variables), starting the ``tool_script.sh``, and postprocessing
+  (e.g. error handling and setting metadata)
+- ``working``: the job working directory
+- ``outputs``: a directory containing the job stderr and stdout
+
+For a tool test that uses a conda environment to resolve the requirements one can simply change
+into ``working`` and execute ``../tool_script.sh`` (works as long as no special environment variables
+are used; in this case ``../galaxy_3.sh`` needs to be executed after cleaning the job dir). 
+By editing the tool script one may understand/fix problems in the ``command`` block faster than by
+rerunning ``planemo test`` over and over again.
+
+Alternatively one can change into the ``working`` dir and load the conda environment
+(the code to do so can be found in ``tool_script.sh``: ``. PATH_TO_CONDA_ENV activate``). 
+Afterwards one can execute individual commands, e.g. those found in ``tool_script.sh`` or variants.
+
+For a tool test that uses Docker to to resolve the requirements one needs to execute 
+``../galaxy_3.sh``, because it executes ``docker run ... tool_script.sh`` in order to rerun the job
+(with a possible edited version of the tool script). In order to run the docker container 
+interactively execute the ``docker run .... /bin/bash`` that you find in ``../galaxy_3.sh``
+(i.e. ommitting the call of the ``tool_script.sh``) with added parameter ``-it``. Note that the
+``docker run`` command contains some shell variables (``-v "$_GALAXY_JOB_TMP_DIR:$_GALAXY_JOB_TMP_DIR:rw" -v "$_GALAXY_JOB_HOME_DIR:$_GALAXY_JOB_HOME_DIR:rw"``)
+which ensure that the job's temporary and home directory are available within docker. Ideally
+these shell variables are set to the same values as in ``../galaxy_3.sh``, but often its sufficient
+to remove this part from the ``docker run`` call.

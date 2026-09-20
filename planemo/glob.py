@@ -1,5 +1,4 @@
-from __future__ import absolute_import
-from __future__ import print_function
+from typing import List
 
 NO_GLOB_2 = "glob2 library unavailabile, please install with pip install glob2."
 
@@ -9,12 +8,10 @@ except ImportError:
     _glob = None
 
 
-def glob(*args, **kwds):
+def glob(*args, **kwds) -> List[str]:
     if _glob is None:
         raise Exception(NO_GLOB_2)
     return _glob(*args, **kwds)
 
 
-__all__ = (
-    "glob",
-)
+__all__ = ("glob",)

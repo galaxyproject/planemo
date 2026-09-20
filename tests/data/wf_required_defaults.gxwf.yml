@@ -1,0 +1,12 @@
+class: GalaxyWorkflow
+inputs:
+  needs_value:
+    type: data
+  bool_default_false:
+    type: boolean
+    default: false
+  int_default_zero:
+    type: int
+    default: 0
+outputs: {}
+steps: {}

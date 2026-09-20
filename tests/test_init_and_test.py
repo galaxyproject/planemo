@@ -7,7 +7,6 @@ from .test_utils import (
 
 
 class InitAndTestTestCase(CliTestCase):
-
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch
     def test_init_and_test(self):
@@ -17,7 +16,8 @@ class InitAndTestTestCase(CliTestCase):
             test_cmd = [
                 "test",
                 "--no_dependency_resolution",
-                "--galaxy_branch", target_galaxy_branch(),
-                "basic/cat.xml"
+                "--galaxy_branch",
+                target_galaxy_branch(),
+                "basic/cat.xml",
             ]
             self._check_exit_code(test_cmd)

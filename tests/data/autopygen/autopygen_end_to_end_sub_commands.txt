@@ -1,0 +1,50 @@
+
+#if $subparsers0.subparser_selector:
+    $subparsers0.subparser_selector
+#end if
+
+#if str($subparsers0.subparser_selector) == "foo":
+    #if $subparsers0.keyword:
+        $subparsers0.keyword
+    #end if
+
+    #for $item in $subparsers0.integers:
+        #if $item:
+            $item
+        #end if
+    #end for
+
+    $subparsers0.s
+
+    #if $subparsers0.foo:
+        --foo '$subparsers0.foo'
+    #end if
+
+    #for $item in $subparsers0.bar:
+        #if $item:
+            --bar '$item'
+        #end if
+    #end for
+
+    $subparsers0.true
+#end if
+
+#if str($subparsers0.subparser_selector) == "bar":
+    $subparsers0.false
+
+    #for $item in $subparsers0.append:
+        #if $item:
+            --append '$item'
+        #end if
+    #end for
+
+    #for $item in $subparsers0.nargs2:
+        #if $item:
+            --nargs2 '$item'
+        #end if
+    #end for
+
+    #if $subparsers0.mode:
+        --mode $subparsers0.mode
+    #end if
+#end if

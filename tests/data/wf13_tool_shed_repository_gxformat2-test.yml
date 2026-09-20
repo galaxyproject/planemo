@@ -1,0 +1,30 @@
+- doc: Test for wf13
+  job:
+    pe-fastq:
+      class: Collection
+      collection_type: 'list:paired'
+      elements:
+        - class: Collection
+          type: paired
+          identifier: the dataset
+          elements:
+          - identifier: forward
+            class: File
+            location: https://github.com/GoekeLab/bioinformatics-workflows/raw/master/test_data/reads_1.fq.gz
+          - identifier: reverse
+            class: File
+            location: https://github.com/GoekeLab/bioinformatics-workflows/raw/master/test_data/reads_2.fq.gz
+  outputs:
+    FastQC txt:
+      element_tests:
+        the dataset:
+          elements:
+            forward:
+              asserts:
+                has_text:
+                  text: 'Filename	forward.gz'
+            reverse:
+              asserts:
+                has_text:
+                  text: 'Filename	reverse.gz'
+                    

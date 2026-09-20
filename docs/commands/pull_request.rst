@@ -1,6 +1,6 @@
 
 ``pull_request`` command
-======================================
+========================================
 
 This section is auto-generated from the help text for the planemo command
 ``pull_request``. This help message can be generated with ``planemo pull_request
