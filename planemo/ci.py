@@ -14,7 +14,7 @@ from planemo import (
 from planemo.shed import REPO_METADATA_FILES
 from planemo.tools import (
     is_tool_load_error,
-    yield_tool_sources_on_paths
+    yield_tool_sources_on_paths,
 )
 
 
@@ -76,8 +76,8 @@ def changed_tools(diff_files, ctx, cwd):
         diff_dir = os.path.dirname(diff_file)
         # search for tool files in each non-root parent*
         new_diff_paths = set()
-        while diff_dir != '' and len(new_diff_paths) == 0:
-            for (tool_path, tool_source) in yield_tool_sources_on_paths(ctx, [diff_dir], recursive=True):
+        while diff_dir != "" and len(new_diff_paths) == 0:
+            for tool_path, tool_source in yield_tool_sources_on_paths(ctx, [diff_dir], recursive=True):
                 if is_tool_load_error(tool_source):
                     continue
                 new_diff_paths.add(tool_path)
