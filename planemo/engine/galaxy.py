@@ -149,6 +149,7 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
                             register_job_data=_register_job_data,
                             maxseconds=test_timeout,
                             quiet=not verbose,
+                            use_legacy_api="never" if self._kwds.get("use_async_submission") else "always",
                         )
                     except Exception:
                         pass
