@@ -597,7 +597,9 @@ class RunResponse(metaclass=abc.ABCMeta):
         """Fetch output from engine."""
         return self.outputs_dict.get(output_id)
 
-    def structured_data(self, test_case: Optional[TestCase] = None) -> Dict[str, Any]:
+    def structured_data(
+        self, test_case: Optional[TestCase] = None, runnable: Optional["Runnable"] = None
+    ) -> Dict[str, Any]:
         output_problems = []
         if self.was_successful:
             execution_problem = None
@@ -644,13 +646,15 @@ class RunResponse(metaclass=abc.ABCMeta):
                 test_type=test_case.runnable.type.name,
             )
         else:
-            assert isinstance(self, SuccessfulRunResponse)
+            if runnable is None:
+                assert isinstance(self, SuccessfulRunResponse)
+                runnable = self._runnable
             return dict(
-                id=self._runnable.uri,
+                id=runnable.uri,
                 has_data=True,
                 data=data_dict,
                 doc=None,
-                test_type=self._runnable.type.name,
+                test_type=runnable.type.name,
             )
 
 
