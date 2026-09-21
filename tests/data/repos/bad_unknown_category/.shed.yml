@@ -1,0 +1,6 @@
+name: bad_unknown_category
+owner: iuc
+description: a repository filed under a category the tool shed does not have
+categories:
+ - Text Manipulation
+ - Not A Real Category
