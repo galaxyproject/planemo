@@ -518,7 +518,7 @@ def shed_data_dir_option():
 def tool_dependency_dir_option():
     return planemo_option(
         "--tool_dependency_dir",
-        type=click.Path(exists=True, file_okay=False, dir_okay=True, resolve_path=True),
+        type=click.Path(file_okay=False, dir_okay=True, resolve_path=True),
         default=None,
         use_global_config=True,
         help="Tool dependency dir for Galaxy to target.",
@@ -551,6 +551,8 @@ class EnumType(click.Choice):
         super().__init__([e.value for e in enum])
 
     def convert(self, value, param, ctx):
+        if isinstance(value, self._enum):
+            return value
         return self._enum(super().convert(value, param, ctx))
 
 

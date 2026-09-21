@@ -23,7 +23,10 @@ from planemo.context import (
 )
 from planemo.exit_codes import ExitCodeException
 from planemo.galaxy import profiles
-from .config import OptionSource
+from .config import (
+    convert_option_value,
+    OptionSource,
+)
 
 CONTEXT_SETTINGS = dict(auto_envvar_prefix="PLANEMO")
 COMMAND_ALIASES = {
@@ -155,11 +158,15 @@ def command_function(f: Callable) -> Callable:
 
 
 def _setup_profile_options(ctx: PlanemoCliContext, profile_defaults: Dict[str, Any], kwds: Dict[str, Any]) -> None:
+    click_ctx = click.get_current_context()
+    parameters = {param.name: param for param in click_ctx.command.params if isinstance(param, click.Option)}
     for key, value in profile_defaults.items():
         option_present = key in kwds
         option_cli_specified = option_present and (ctx.get_option_source(key) == OptionSource.cli)
         use_profile_option = not option_present or not option_cli_specified
         if use_profile_option:
+            if key in parameters:
+                value = convert_option_value(click_ctx, parameters[key], value)
             kwds[key] = value
             ctx.set_option_source(key, OptionSource.profile, force=True)
 
