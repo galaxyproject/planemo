@@ -25,11 +25,7 @@ def check_output(runnable, output_properties, test_properties, **kwds):
 
 
 def for_collections(test_properties):
-    return (
-        "element_tests" in test_properties
-        or "elements" in test_properties
-        or test_properties.get("class") == "Collection"
-    )
+    return "element_tests" in test_properties or test_properties.get("class") == "Collection"
 
 
 def _check_output_collection(runnable, output_properties, test_properties, **kwds):
