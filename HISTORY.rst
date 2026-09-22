@@ -15,6 +15,8 @@ History
   to the tools and repositories that own it - fixes #1129.
 * Exit non-zero from ``planemo autoupdate`` when a tool fails to update - fixes
   #1478.
+* Sanitize Galaxy labels, element identifiers and workflow names before using
+  them as filenames in ``workflow_test_init --from_invocation`` - fixes #1629.
 
 
 ---------------------

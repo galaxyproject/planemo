@@ -24,9 +24,12 @@ class ExternalGalaxyCommandsTestCase(CliTestCase):
         ctx.planemo_directory = "/tmp/planemo-test-workspace"
         cat_tool = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
         test_workflow_path = os.path.join(TEST_DATA_DIR, "wf2.ga")
+        slash_workflow_path = os.path.join(TEST_DATA_DIR, "wf_slash_label.ga")
 
         with engine_context(ctx, extra_tools=(cat_tool,)) as galaxy_engine:
-            with galaxy_engine.ensure_runnables_served([for_path(test_workflow_path)]) as config:
+            with galaxy_engine.ensure_runnables_served(
+                [for_path(test_workflow_path), for_path(slash_workflow_path)]
+            ) as config:
                 wfid = config.workflow_id(test_workflow_path)
 
                 # commands to test
@@ -110,6 +113,30 @@ class ExternalGalaxyCommandsTestCase(CliTestCase):
                 assert os.path.exists("TestWorkflow1.ga")
                 assert os.path.exists("TestWorkflow1-tests.yml")
                 self._check_exit_code(test_workflow_test_init_cmd)
+
+                # a "/" in a label must be sanitized out of the downloaded path but kept
+                # as the label in the generated test - fixes #1629
+                slash_wfid = config.workflow_id(slash_workflow_path)
+                self._check_exit_code(
+                    [
+                        "run",
+                        slash_wfid,
+                        os.path.join(TEST_DATA_DIR, "wf_slash_label-job.yml"),
+                        "--profile",
+                        "test_ext_profile",
+                    ]
+                )
+                workflow_test_init_cmd[1] = config.user_gi.workflows.get_invocations(slash_wfid)[0]["id"]
+                self._check_exit_code(workflow_test_init_cmd)
+                assert os.path.exists("SlashLabelWorkflow.ga")
+                with open("SlashLabelWorkflow-tests.yml") as f:
+                    slash_test = yaml.safe_load(f)[0]
+                slash_input_path = slash_test["job"]["Video/Audio Input"]["path"]
+                assert slash_input_path.startswith("test-data/Video_Audio Input.")
+                assert os.path.exists(slash_input_path)
+                slash_output_path = slash_test["outputs"]["Video/Audio Output"]["path"]
+                assert slash_output_path.startswith("test-data/Video_Audio Output.")
+                assert os.path.exists(slash_output_path)
 
                 # test alias and profile deletion
                 result = self._check_exit_code(alias_delete_cmd)
