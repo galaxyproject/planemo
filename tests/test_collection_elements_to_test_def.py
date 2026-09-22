@@ -98,3 +98,31 @@ def test_dataset_collection_element_to_output_test_df():
         definition_style="output",
     )
     assert element_def == {"ERR3485802": {"elements": {"forward": {"path": "test-data/label_forward.fastqsanger"}}}}
+
+
+SLASH_HDA_ELEMENT = dict(HDA_ELEMENT, element_identifier="Video/Audio File")
+
+
+def test_hda_with_slash_in_identifier_to_input_test_def():
+    element_def = _elements_to_test_def(
+        elements=[SLASH_HDA_ELEMENT],
+        test_data_base_path="test-data/label",
+        download_function=lambda *args, **kwargs: None,
+    )
+    assert element_def == [
+        {
+            "class": "File",
+            "identifier": "Video/Audio File",
+            "path": "test-data/label_Video_Audio File.fastqsanger",
+        }
+    ]
+
+
+def test_hda_with_slash_in_identifier_to_output_test_def():
+    element_def = _elements_to_test_def(
+        elements=[SLASH_HDA_ELEMENT],
+        test_data_base_path="test-data/label",
+        download_function=lambda *args, **kwargs: None,
+        definition_style="output",
+    )
+    assert element_def == {"Video/Audio File": {"path": "test-data/label_Video_Audio File.fastqsanger"}}
