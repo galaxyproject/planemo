@@ -13,6 +13,8 @@ History
 * Add ``--extended_git_diff`` to ``ci_find_repos``, ``ci_find_tools`` and
   ``list_repos``, resolving each file changed in ``--changed_in_commit_range``
   to the tools and repositories that own it - fixes #1129.
+* Sanitize Galaxy labels, element identifiers and workflow names before using
+  them as filenames in ``workflow_test_init --from_invocation`` - fixes #1629.
 
 
 ---------------------

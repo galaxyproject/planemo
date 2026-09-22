@@ -1,0 +1,6 @@
+Video/Audio Input:
+  class: File
+  path: hello.txt
+Plain Input:
+  class: File
+  path: hello.txt
