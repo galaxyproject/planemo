@@ -2,7 +2,12 @@
 
 import time
 from io import StringIO
-from typing import Optional
+from typing import (
+    Any,
+    Dict,
+    List,
+    Optional,
+)
 
 from bioblend.galaxy import GalaxyInstance
 from requests.exceptions import RequestException
@@ -116,12 +121,37 @@ def summarize_history(ctx, gi, history_id):
         print("|")
 
 
-def get_invocations(url, key, workflow_id):
-    inv_gi = gi(None, url, key)
-    invocations = inv_gi.workflows.get_invocations(workflow_id)
+def get_invocations(
+    gi: GalaxyInstance,
+    workflow_id: Optional[str],
+    instance: bool = False,
+    max_items: int = 100,
+    items_per_request: int = 20,
+    offset_items: int = 0,
+):
+    if max_items < 0 or offset_items < 0:
+        raise ValueError("max_items and offset_items must be non-negative")
+    if items_per_request <= 0:
+        raise ValueError("items_per_request must be positive")
+
+    invocations: List[Dict[str, Any]] = []
+    while len(invocations) < max_items:
+        limit = min(items_per_request, max_items - len(invocations))
+        request_kwds = {
+            "limit": limit,
+            "offset": len(invocations) + offset_items,
+        }
+        if workflow_id:
+            items = gi.invocations.get_invocations(workflow_id, **request_kwds)
+        else:
+            items = gi.invocations.get_invocations(instance=instance, **request_kwds)
+        if not items:
+            break
+        invocations.extend(items[:limit])
     return {
         invocation["id"]: {
-            "states": inv_gi.invocations.get_invocation_summary(invocation["id"])["states"],
+            "states": gi.invocations.get_invocation_summary(invocation["id"])["states"],
+            "workflow_id": invocation["workflow_id"],
             "history_id": invocation["history_id"],
         }
         for invocation in invocations
