@@ -136,11 +136,6 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
                     verbose = self._ctx.verbose
                     result_index = len(test_results)
                     try:
-                        if verbose:
-                            # TODO: this is pretty hacky, it'd be better to send a stream
-                            # and capture the output information somehow.
-                            interactor.VERBOSE_GALAXY_ERRORS = True
-
                         interactor.verify_tool(
                             tool_id,
                             galaxy_interactor,
