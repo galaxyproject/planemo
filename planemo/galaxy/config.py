@@ -486,7 +486,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
                 or None,  # without 'or None' may raise IOError in galaxy (see #946)
                 integrated_tool_panel_config=("${temp_directory}/integrated_tool_panel_conf.xml"),
                 migrated_tools_config=empty_tool_conf,
-                test_data_dir=test_data_dir,  # TODO: make gx respect this
+                tool_test_data_directories=test_data_dir,
                 shed_tool_data_table_config=shed_tool_data_table_config,
                 shed_data_manager_config_file=shed_data_manager_config_file,
                 outputs_to_working_directory="true",  # this makes Galaxy's files dir RO for dockerized testing
