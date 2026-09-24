@@ -90,6 +90,18 @@ class CmdAutoupdateTestCase(CliTestCase):
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
             assert f"No updates required or made to {xmlfile}." in result.output
 
+    def test_autoupdate_malformed_xml(self):
+        """Test autoupdate exits non-zero when a tool cannot be parsed."""
+        with self._isolate_repo("bad_invalid_tool_xml") as f:
+            tool_path = os.path.realpath(os.path.join(f, "cat.xml"))
+            result = self._check_exit_code(["autoupdate", tool_path], exit_code=1)
+            assert f"Could not update {tool_path} due to malformed xml." in result.output
+
+    def test_autoupdate_no_targets(self):
+        """Test autoupdate on a path containing nothing to update."""
+        with self._isolate() as f:
+            self._check_exit_code(["autoupdate", f], exit_code=2)
+
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_autoupdate_multiple_workflows(self):
         """Test autoupdate command for a workflow is needed."""
@@ -179,3 +191,5 @@ class CmdAutoupdateTestCase(CliTestCase):
             autoupdate_command = ["autoupdate", wf_file]
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
             assert "No newer tool versions were found, so the workflow was not updated." in result.output
+            # a workflow-only autoupdate found a target, so it must not report "no such target"
+            assert result.exit_code == 0
