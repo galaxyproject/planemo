@@ -1,6 +1,8 @@
 import glob
 import os
 
+from galaxy.util.unittest_utils import skip_if_github_down
+
 from .test_utils import (
     CliTestCase,
     PROJECT_TEMPLATES_DIR,
@@ -25,6 +27,7 @@ class LintTestCase(CliTestCase):
         self._check_exit_code(lint_cmd)
 
     @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
+    @skip_if_github_down
     def test_ok_http(self):
         lint_cmd = [
             "lint",
