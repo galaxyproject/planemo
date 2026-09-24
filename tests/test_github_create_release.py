@@ -2,6 +2,7 @@ import os
 import uuid
 
 import pytest
+from galaxy.util.unittest_utils import skip_if_github_down
 
 from planemo import git
 from planemo.github_util import (
@@ -97,6 +98,7 @@ def test_add_dir_contents_to_repo_dry_run():
         )
 
 
+@skip_if_github_down
 def test_git_ls_remote():
     ctx = create_test_context()
     tags_and_commits = git.ls_remote(ctx, "https://github.com/galaxyproject/galaxy")

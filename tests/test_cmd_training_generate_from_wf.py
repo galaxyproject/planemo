@@ -7,6 +7,7 @@ from .test_utils import (
     CliTestCase,
     mark,
     skip_if_environ,
+    skip_if_usegalaxy_eu_down,
     TEST_DATA_DIR,
 )
 
@@ -64,6 +65,7 @@ class CmdTrainingGenerateFromWfTestCase(CliTestCase):
             shutil.rmtree("topics")
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_if_usegalaxy_eu_down
     def test_training_generate_from_wf_command_remote_wf(self):
         """Test training_generate_from_wf command with workflow on running instance."""
         with self._isolate():

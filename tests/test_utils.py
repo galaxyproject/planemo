@@ -62,6 +62,13 @@ CWL_DRAFT3_DIR = os.path.join(PROJECT_TEMPLATES_DIR, "cwl_draft3_spec")
 NON_ZERO_EXIT_CODE = object()
 ZENODO_TEST_RECORD_API_URL = "https://zenodo.org/api/records/1321885"
 skip_if_zenodo_down = skip_if_site_down(ZENODO_TEST_RECORD_API_URL)
+# galaxy-util already exports skip_if_github_down/skip_if_workflowhub_down; define the
+# rest here until the pinned galaxy-util catches up with galaxyproject/galaxy#23685.
+skip_if_dockstore_down = skip_if_site_down("https://dockstore.org/")
+skip_if_quay_down = skip_if_site_down("https://quay.io/")
+skip_if_toolshed_down = skip_if_site_down("https://toolshed.g2.bx.psu.edu/")
+skip_if_testtoolshed_down = skip_if_site_down("https://testtoolshed.g2.bx.psu.edu/")
+skip_if_usegalaxy_eu_down = skip_if_site_down("https://usegalaxy.eu/")
 CWLTOOL_CACHE_ENV_PROP = "PLANEMO_CWLTOOL_CACHE_DIRECTORY"
 
 

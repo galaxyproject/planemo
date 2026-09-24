@@ -13,6 +13,7 @@ from .test_utils import (
     CWL_DRAFT3_DIR,
     mark,
     PROJECT_TEMPLATES_DIR,
+    skip_if_dockstore_down,
     skip_if_environ,
     target_galaxy_branch,
     TEST_DATA_DIR,
@@ -276,6 +277,7 @@ class RunTestCase(CliTestCase):
     )
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch
+    @skip_if_dockstore_down
     def test_run_trs_id(self):
         """Test importing and running a workflow using a TRS ID from GitHub."""
         with self._isolate() as f:
