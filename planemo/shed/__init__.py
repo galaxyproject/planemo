@@ -767,7 +767,10 @@ def for_each_repository(ctx, function, paths, **kwds):
         with _path_on_disk(ctx, path) as raw_path:
             try:
                 for realized_repository in _realize_effective_repositories(ctx, raw_path, **kwds):
-                    ret_codes.append(function(realized_repository))
+                    return_code = function(realized_repository)
+                    ret_codes.append(return_code)
+                    if kwds.get("fail_fast", False) and return_code:
+                        return coalesce_return_codes(ret_codes)
             except RealizationException:
                 error(REALIZAION_PROBLEMS_MESSAGE)
                 return 254
