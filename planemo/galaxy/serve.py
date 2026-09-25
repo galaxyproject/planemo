@@ -35,6 +35,10 @@ def _start_galaxy(ctx, config, command, daemon):
         log_galaxy_command(ctx, command, config.env, action)
         startup_process = config.start_daemon(command)
         return startup_process, startup_process.poll()
+    run_foreground = getattr(config, "run_foreground", None)
+    if run_foreground is not None:
+        log_galaxy_command(ctx, command, config.env, action)
+        return None, run_foreground(command)
     exit_code = run_galaxy_command(ctx, command, config.env, action)
     return None, exit_code
 

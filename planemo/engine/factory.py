@@ -8,6 +8,7 @@ from .cwltool import CwlToolEngine
 from .galaxy import (
     DockerizedManagedGalaxyEngine,
     ExternalGalaxyEngine,
+    InstalledGalaxyEngine,
     LocalManagedGalaxyEngine,
 )
 from .toil import ToilEngine
@@ -18,7 +19,12 @@ UNKNOWN_ENGINE_TYPE_MESSAGE = "Unknown engine type specified [%s]."
 def is_galaxy_engine(**kwds):
     """Return True iff the engine configured is :class:`GalaxyEngine`."""
     engine_type_str = kwds.get("engine", "galaxy")
-    return engine_type_str in ["galaxy", "docker_galaxy", "external_galaxy"]
+    return engine_type_str in [
+        "galaxy",
+        "installed_galaxy",
+        "docker_galaxy",
+        "external_galaxy",
+    ]
 
 
 def build_engine(ctx, **kwds):
@@ -26,6 +32,8 @@ def build_engine(ctx, **kwds):
     engine_type_str = kwds.get("engine", "galaxy")
     if engine_type_str == "galaxy":
         engine_type = LocalManagedGalaxyEngine
+    elif engine_type_str == "installed_galaxy":
+        engine_type = InstalledGalaxyEngine
     elif engine_type_str == "docker_galaxy":
         engine_type = DockerizedManagedGalaxyEngine
     elif engine_type_str == "external_galaxy":

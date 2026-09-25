@@ -1,6 +1,4 @@
 import os
-import signal
-import subprocess
 import tempfile
 import time
 import uuid
@@ -16,6 +14,7 @@ from .test_utils import (
     get_entry_point_target,
     launch_and_wait_for_galaxy,
     mark,
+    planemo_subprocess,
     PROJECT_TEMPLATES_DIR,
     run_verbosely,
     safe_rmtree,
@@ -53,24 +52,17 @@ class UsesServeCommand:
             self._check_exit_code(serve_cmd)
 
     def _run_subprocess(self, serve_cmd):
-        serve_cmd.insert(0, "planemo")
-        stdout_file = tempfile.NamedTemporaryFile(mode="wb+", suffix="_planemo_stdout")
-        popen = subprocess.Popen(
-            serve_cmd, env=os.environ.copy(), stdout=stdout_file, stderr=stdout_file, preexec_fn=os.setsid
-        )
+        managed_process = planemo_subprocess(serve_cmd)
+        popen = managed_process.process
         if popen.poll() is not None:
-            stdout_file.seek(0)
+            managed_process.close()
             raise Exception(
-                f"planemo serve command failed. exit_code: {popen.returncode}, output: {stdout_file.read().decode('utf-8')}"
+                f"planemo serve command failed. exit_code: {popen.returncode}, output: {managed_process.read_output()}"
             )
 
         def cleanup():
-            pgrp = os.getpgid(popen.pid)
-            os.killpg(pgrp, signal.SIGINT)
-            stdout_file.seek(0)
-            print(stdout_file.read().decode("utf-8"))
-            popen.terminate()
-            popen.kill()
+            managed_process.close()
+            print(managed_process.read_output())
 
         self._cleanup_hooks.append(cleanup)
 
