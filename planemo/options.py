@@ -1638,6 +1638,26 @@ def training_generate_tuto_from_wf_options():
     )
 
 
+def lint_doi_option():
+    return planemo_option(
+        "doi",
+        "--doi",
+        is_flag=True,
+        default=False,
+        help="Check validity of DOIs in XML files",
+    )
+
+
+def lint_conda_requirements_option():
+    return planemo_option(
+        "conda_requirements",
+        "--conda_requirements",
+        is_flag=True,
+        default=False,
+        help="Check tool requirements for availability in best practice Conda channels.",
+    )
+
+
 def lint_biocontainers_option():
     return planemo_option(
         "biocontainer",
