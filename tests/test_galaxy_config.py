@@ -3,6 +3,7 @@
 import contextlib
 import json
 import os
+import sys
 from unittest import mock
 
 import pytest
@@ -24,6 +25,8 @@ from planemo.galaxy.config import (
     DATABASE_LOCATION_TEMPLATE,
     galaxy_config,
     get_refgenie_config,
+    installed_galaxy_config,
+    local_galaxy_config,
     tail_log_directory,
     write_galaxy_config,
 )
@@ -325,6 +328,116 @@ def test_tool_evaluation_strategy_default_not_set():
     with TempDirectoryContext() as tdc:
         props = _shared_galaxy_properties(tdc.temp_directory, {}, for_tests=False)
     assert "tool_evaluation_strategy" not in props
+
+
+def test_installed_galaxy_config_uses_gravity_and_cross_process_celery(tmp_path):
+    config_directory = tmp_path / "config"
+    config_directory.mkdir()
+
+    with installed_galaxy_config(
+        create_test_context(),
+        [],
+        config_directory=str(config_directory),
+        host="127.0.0.1",
+        port=8765,
+    ) as config:
+        with open(config.galaxy_config_file) as config_fh:
+            config_data = yaml.safe_load(config_fh)
+
+        properties = config_data["galaxy"]
+        gravity = config_data["gravity"]
+        assert properties["bootstrap_admin_api_key"] == config.master_api_key
+        assert "master_api_key" not in properties
+        assert properties["data_dir"] == str(config_directory / "data")
+        assert properties["amqp_internal_connection"] == (
+            f"sqlalchemy+sqlite:///{config_directory / 'celery_broker.sqlite'}"
+        )
+        assert properties["enable_celery_tasks"] is True
+        assert properties["interactivetools_enable"] is False
+        assert properties["watch_tools"] is False
+        assert properties["celery_conf"] == {
+            "result_backend": f"db+sqlite:///{config_directory / 'celery_results.sqlite'}",
+            "worker_hijack_root_logger": False,
+        }
+        assert gravity["process_manager"] == "multiprocessing"
+        assert gravity["service_command_style"] == "direct"
+        assert gravity["virtualenv"] == sys.prefix
+        assert gravity["gunicorn"] == {
+            "bind": "127.0.0.1:8765",
+            "preload": False,
+            "workers": 1,
+        }
+        assert gravity["celery"] == {
+            "enable": True,
+            "enable_beat": False,
+            "concurrency": 1,
+            "pool": "solo",
+            "queues": "galaxy.internal,galaxy.external",
+        }
+        assert gravity["gx_it_proxy"] == {"enable": False}
+        assert "galaxy_root" not in gravity
+        assert config.env == {
+            "GALAXY_CONFIG_FILE": str(config_directory / "galaxy.yml"),
+            "GRAVITY_STATE_DIR": str(config_directory / "gravity"),
+        }
+        assert config.galaxy_root is None
+        assert config.galaxy_url == "http://127.0.0.1:8765"
+
+
+def test_installed_galaxy_startup_uses_gravity_from_planemo_environment(tmp_path, monkeypatch):
+    config_directory = tmp_path / "config"
+    config_directory.mkdir()
+    bin_directory = tmp_path / "bin"
+    bin_directory.mkdir()
+    python = bin_directory / "python"
+    galaxy = bin_directory / "galaxy"
+    python.touch()
+    galaxy.touch()
+    monkeypatch.setattr("planemo.galaxy.config.sys.executable", str(python))
+
+    with installed_galaxy_config(
+        create_test_context(),
+        [],
+        config_directory=str(config_directory),
+        port=8765,
+    ) as config:
+        command = config.startup_command(create_test_context())
+
+    assert command == (
+        f"{galaxy} --config-file {config_directory / 'galaxy.yml'} " f"--state-dir {config_directory / 'gravity'}"
+    )
+
+
+def test_shared_config_refactor_preserves_checkout_runtime(tmp_path):
+    galaxy_root = tmp_path / "galaxy"
+    galaxy_package = galaxy_root / "lib" / "galaxy"
+    galaxy_package.mkdir(parents=True)
+    (galaxy_package / "version.py").write_text('VERSION = "25.0.1"')
+    config_directory = tmp_path / "config"
+    config_directory.mkdir()
+    test_data = tmp_path / "test-data"
+    test_data.mkdir()
+    ctx = create_test_context()
+
+    with local_galaxy_config(
+        ctx,
+        [],
+        galaxy_root=str(galaxy_root),
+        config_directory=str(config_directory),
+        test_data=str(test_data),
+        disable_gxits=True,
+    ) as config:
+        with open(config.env["GALAXY_CONFIG_FILE"]) as config_fh:
+            config_data = yaml.safe_load(config_fh)
+
+        assert config_data["gravity"]["galaxy_root"] == str(galaxy_root)
+        assert config_data["gravity"]["gx_it_proxy"] == {"enable": False}
+        assert config.env["GALAXY_DEVELOPMENT_ENVIRONMENT"] == "1"
+        dependency_dir = config_directory / "deps"
+        assert config.env["GALAXY_CONFIG_OVERRIDE_TOOL_DEPENDENCY_DIR"] == str(dependency_dir)
+        assert dependency_dir.is_dir()
+        with open(config.env["GALAXY_CONFIG_OVERRIDE_JOB_CONFIG_FILE"]) as job_config_fh:
+            assert "handling" not in yaml.safe_load(job_config_fh)
 
 
 @contextlib.contextmanager

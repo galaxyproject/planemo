@@ -70,14 +70,14 @@ def run_engine_option():
     """Annotate click command as consume the --engine option."""
     return planemo_option(
         "--engine",
-        type=click.Choice(["galaxy", "docker_galaxy", "cwltool", "toil", "external_galaxy"]),
+        type=click.Choice(["galaxy", "installed_galaxy", "docker_galaxy", "cwltool", "toil", "external_galaxy"]),
         default=None,
         use_global_config=True,
         help=(
-            "Select an engine to run or test artifacts such as tools "
-            "and workflows. Defaults to a local Galaxy, but running Galaxy within "
-            "a Docker container or the CWL reference implementation 'cwltool' and "
-            "'toil' be selected."
+            "Select an engine to run or test artifacts such as tools and workflows. "
+            "Defaults to a local Galaxy checkout. 'installed_galaxy' runs the Galaxy "
+            "packages in Planemo's environment through Gravity. Docker, external "
+            "Galaxy, cwltool, and toil engines are also available."
         ),
     )
 
@@ -100,14 +100,15 @@ def serve_engine_option():
     """
     return planemo_option(
         "--engine",
-        type=click.Choice(["galaxy", "docker_galaxy", "external_galaxy"]),
+        type=click.Choice(["galaxy", "installed_galaxy", "docker_galaxy", "external_galaxy"]),
         default="galaxy",
         use_global_config=True,
         use_env_var=True,
         help=(
-            "Select an engine to serve artifacts such as tools "
-            "and workflows. Defaults to a local Galaxy, but running Galaxy within "
-            "a Docker container."
+            "Select an engine to serve artifacts such as tools and workflows. "
+            "Defaults to a local Galaxy checkout. 'installed_galaxy' runs the Galaxy "
+            "packages in Planemo's environment through Gravity; Docker and external "
+            "Galaxy engines are also available."
         ),
     )
 
@@ -242,11 +243,11 @@ def galaxy_cwl_root_option():
     )
 
 
-def galaxy_port_option():
+def galaxy_port_option(default="9090"):
     return planemo_option(
         "--port",
         type=int,
-        default="9090",
+        default=default,
         use_global_config=True,
         help="Port to serve Galaxy on (default is 9090).",
     )
@@ -1443,10 +1444,10 @@ def github_branch():
     )
 
 
-def galaxy_run_options():
+def galaxy_run_options(port_default="9090"):
     return _compose(
         galaxy_target_options(),
-        galaxy_port_option(),
+        galaxy_port_option(default=port_default),
         galaxy_host_option(),
     )
 
@@ -1517,6 +1518,18 @@ def pid_file_option():
 
 def daemon_option():
     return planemo_option("--daemon", is_flag=True, help="Serve Galaxy process as a daemon.")
+
+
+def test_serve_option():
+    return planemo_option(
+        "--serve",
+        is_flag=True,
+        default=False,
+        help=(
+            "After testing with a managed Galaxy engine, keep that Galaxy and its test histories "
+            "available for inspection until interrupted."
+        ),
+    )
 
 
 def profile_option(required=False):
