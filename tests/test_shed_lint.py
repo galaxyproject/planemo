@@ -1,6 +1,14 @@
+import os
+import shutil
 from os.path import join
 
-from .test_utils import CliTestCase
+import responses
+
+from .test_utils import (
+    CliTestCase,
+    skip_if_environ,
+    TEST_TOOLS_DIR,
+)
 
 
 class ShedLintTestCase(CliTestCase):
@@ -50,6 +58,35 @@ class ShedLintTestCase(CliTestCase):
         # realized repository even though shed_lint copies files into a temp dir.
         with self._isolate_repo("single_tool_required_files"):
             self._check_exit_code(["shed_lint", "--tools", "--skip", "shed_remote_repository_url"])
+
+    @responses.activate
+    def test_tool_linting_doi(self):
+        """--doi reaches the tool linters through shed_lint."""
+        responses.add(responses.GET, "https://doi.org/10.1093/bioinformatics/bts573", status=200)
+        # shed_lint's version check queries the main Tool Shed; an empty result makes it a no-op
+        responses.add(responses.GET, "https://toolshed.g2.bx.psu.edu/api/repositories", json=[])
+        skip_remote = ["--skip", "shed_remote_repository_url"]
+        with self._isolate_repo("single_tool_required_files"):
+            result = self._check_exit_code(["shed_lint", "--tools"] + skip_remote)
+            assert "is a valid DOI" not in result.output
+        with self._isolate_repo("single_tool_required_files"):
+            result = self._check_exit_code(["shed_lint", "--tools", "--doi"] + skip_remote)
+            assert "10.1093/bioinformatics/bts573 is a valid DOI" in result.output
+
+    @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
+    def test_tool_linting_conda_requirements(self):
+        """--conda_requirements reaches the tool linters through shed_lint."""
+        skip_remote = ["--skip", "shed_remote_repository_url"]
+        with self._isolate_repo("single_tool_required_files") as f:
+            shutil.copy(os.path.join(TEST_TOOLS_DIR, "bwa_without_requirements.xml"), f)
+            result = self._check_exit_code(["shed_lint", "--tools"] + skip_remote)
+            assert "Conda" not in result.output
+            result = self._check_exit_code(
+                ["shed_lint", "--tools", "--conda_requirements"] + skip_remote,
+                exit_code=self.non_zero_exit_code,
+            )
+            # a usage error would also be non-zero, so pin the linter's own message
+            assert "No valid package requirement tags found to check against Conda." in result.output
 
     def test_invalid_nested(self):
         # Created a nested repository with one good and one
