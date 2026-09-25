@@ -13,6 +13,8 @@ History
 * Add ``--extended_git_diff`` to ``ci_find_repos``, ``ci_find_tools`` and
   ``list_repos``, resolving each file changed in ``--changed_in_commit_range``
   to the tools and repositories that own it - fixes #1129.
+* Exit non-zero from ``planemo autoupdate`` when a tool fails to update - fixes
+  #1478.
 
 
 ---------------------

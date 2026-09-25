@@ -101,23 +101,28 @@ def cli(ctx, paths, **kwds):  # noqa C901
         for tool_path, tool_xml in yield_tool_sources_on_paths(ctx, paths, recursive):
             if tool_path.split("/")[-1] in tools_to_skip:
                 info("Skipping tool %s" % tool_path)
+                # a skipped tool is still a target - don't let it trip assert_at_least_one
+                exit_codes.append(EXIT_CODE_OK)
                 continue
             info("Auto-updating tool %s" % tool_path)
+            failed = False
             try:
                 updated = autoupdate.autoupdate_tool(ctx, tool_path, modified_files=modified_files, **kwds)
                 if updated:
                     modified_files.update(updated)
             except Exception as e:
                 error(f"{tool_path} could not be updated - the following error was raised: {e.__str__()}")
-            if handle_tool_load_error(tool_path, tool_xml):
+                failed = True
+            if handle_tool_load_error(tool_path, tool_xml) or failed:
                 exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
-                continue
             else:
                 exit_codes.append(EXIT_CODE_OK)
 
-    workflows = [
-        r for r in runnables if r.type == RunnableType.galaxy_workflow and r.path.split("/")[-1] not in tools_to_skip
-    ]
+    all_workflows = [r for r in runnables if r.type == RunnableType.galaxy_workflow]
+    workflows = [r for r in all_workflows if r.path.split("/")[-1] not in tools_to_skip]
+    # workflows, skipped ones included, are targets too - record them for assert_at_least_one below
+    exit_codes.extend([EXIT_CODE_OK] * len(all_workflows))
+
     modified_workflows = []
     for workflow in workflows:
         tools_to_update = autoupdate.get_tools_to_update(ctx, workflow, tools_to_skip)
@@ -172,7 +177,7 @@ def cli(ctx, paths, **kwds):  # noqa C901
             kwds["engine"] = "galaxy"
             return_value = test_runnables(ctx, runnables, original_paths=paths, **kwds)
             exit_codes.append(return_value)
-    return coalesce_return_codes(exit_codes, assert_at_least_one=assert_tools)
+    ctx.exit(coalesce_return_codes(exit_codes, assert_at_least_one=assert_tools))
 
 
 def handle_tool_load_error(tool_path: str, tool_xml: XmlToolSource) -> bool:
