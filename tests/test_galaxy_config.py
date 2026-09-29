@@ -300,9 +300,9 @@ def test_gxits_disabled_with_flag():
 
 def test_gxits_infrastructure_url_uses_host_and_port():
     """Test that the galaxy_infrastructure_url uses the configured host and port."""
-    with _test_write_galaxy_config(host="0.0.0.0", port=9999) as (config_data, properties, env):
-        assert properties["galaxy_infrastructure_url"] == "http://0.0.0.0:9999"
-        assert properties["interactivetools_proxy_host"].startswith("0.0.0.0:")
+    with _test_write_galaxy_config(host="example.org", port=9999) as (config_data, properties, env):
+        assert properties["galaxy_infrastructure_url"] == "http://example.org:9999"
+        assert properties["interactivetools_proxy_host"].startswith("example.org:")
 
 
 def test_gxits_infrastructure_url_remaps_127_0_0_1_to_localhost():
@@ -310,6 +310,29 @@ def test_gxits_infrastructure_url_remaps_127_0_0_1_to_localhost():
     with _test_write_galaxy_config(host="127.0.0.1", port=9090) as (config_data, properties, env):
         assert properties["galaxy_infrastructure_url"] == "http://localhost:9090"
         assert properties["interactivetools_proxy_host"].startswith("localhost:")
+
+
+def test_gxits_infrastructure_url_remaps_0_0_0_0_to_localhost():
+    """Test that binding 0.0.0.0 keeps localhost as the advertised infrastructure host.
+
+    The bind address 0.0.0.0 is needed so interactive tool containers can reach
+    Galaxy through the docker bridge, but the browser still resolves the IT subdomain
+    from localhost (e.g. *.interactivetool.localhost instead of *.interactivetool.0.0.0.0).
+    """
+    with _test_write_galaxy_config(host="0.0.0.0", port=9090) as (config_data, properties, env):
+        assert properties["galaxy_infrastructure_url"] == "http://localhost:9090"
+        assert properties["interactivetools_proxy_host"].startswith("localhost:")
+
+
+def test_gxits_infrastructure_url_override_with_infrastructure_host():
+    """Test that --infrastructure_host overrides the advertised infrastructure host."""
+    with _test_write_galaxy_config(host="0.0.0.0", port=9090, infrastructure_host="galaxy.example.org") as (
+        config_data,
+        properties,
+        env,
+    ):
+        assert properties["galaxy_infrastructure_url"] == "http://galaxy.example.org:9090"
+        assert properties["interactivetools_proxy_host"].startswith("galaxy.example.org:")
 
 
 def test_tool_evaluation_strategy_remote_sets_metadata_strategy():
