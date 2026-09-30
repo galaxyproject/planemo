@@ -87,6 +87,10 @@ History
 * Bring in gxformat2 Linting Improvements (add some agent assistance files) (thanks to `@jmchilton`_). `Pull Request 1633`_
 * Harden gxformat2-normalized input/output handling (thanks to `@jmchilton`_). `Pull Request 1642`_
 * Escape rich markup in failed-job error reporting (thanks to `@mvdbeek`_). `Pull Request 1643`_
+* Allow running Galaxy with `--host 0.0.0.0` while keeping `localhost` as the advertised
+  infrastructure GxIT URL (adds `--infrastructure_host` override). This allows interactive
+  tool containers to reach Galaxy through the docker bridge while keeping interactive tool
+  subdomain URLs resolvable by the browser.
 * Add Claude slash command for release workflow (thanks to `@jmchilton`_). `Pull Request 1627`_
 
 * Add structured CLI metadata and output schema exports, validate Planemo JSON
