@@ -3,8 +3,10 @@
 import copy
 import json
 import os
+import tarfile
 
 import pytest
+from galaxy.tool_util.cwl.util import galactic_job_json
 
 from planemo.engine import engine_context
 from planemo.engine.galaxy import log_service_logs_on_failure
@@ -157,14 +159,20 @@ def test_nested_collection_paths_resolve_to_real_test_data():
     assert [element["path"] for element in pair] == [os.path.join(TEST_DATA_DIR, "hello.txt")] * 2
 
 
-def test_composite_data_paths_resolve_to_real_test_data():
-    (job,) = _materialized_jobs(A_COMPOSITE_INPUT_WORKFLOW)
-    paths = [item["path"] for item in job["input1"]["composite_data"]]
-    assert paths == [
-        os.path.join(TEST_DATA_DIR, "Example_Continuous.imzML"),
-        os.path.join(TEST_DATA_DIR, "Example_Continuous.ibd"),
-    ]
-    assert all(os.path.exists(path) for path in paths)
+def test_composite_data_paths_resolve_to_real_test_data(tmp_path):
+    test_case = cases(for_path(A_COMPOSITE_INPUT_WORKFLOW))[0]
+    test_case.tests_directory = str(tmp_path)
+    expected_paths = []
+    for filename in ("Example_Continuous.imzML", "Example_Continuous.ibd"):
+        path = tmp_path / filename
+        path.write_text("composite input")
+        expected_paths.append(str(path))
+    with materialized_job_paths([test_case]) as job_paths:
+        with open(job_paths[0]) as f:
+            job = json.load(f)
+        paths = [item["path"] for item in job["input1"]["composite_data"]]
+        assert paths == expected_paths
+        assert all(os.path.exists(path) for path in paths)
 
 
 def test_remote_inputs_are_left_alone():
@@ -201,3 +209,39 @@ def test_paths_that_are_not_local_test_data_are_left_alone():
         "not_a_file": {"path": "this-is-just-a-parameter-value"},
     }
     assert _absolutize_job_paths(job, TEST_DATA_DIR) == job
+
+
+@pytest.mark.parametrize("path_key", ["path", "location"])
+def test_inline_job_secondary_files_stage_from_original_directory(tmp_path, path_key):
+    source_directory = tmp_path / "source"
+    source_directory.mkdir()
+    (source_directory / "sample.bam").write_text("primary")
+    (source_directory / "sample.bam.bai").write_text("secondary")
+    test_case = cases(for_path(A_COLLECTION_INPUT_WORKFLOW))[0]
+    test_case.tests_directory = str(source_directory)
+    test_case.job = {
+        "input": {
+            "class": "File",
+            "path": "sample.bam",
+            "secondaryFiles": [{path_key: "sample.bam.bai"}],
+        }
+    }
+    original_job = copy.deepcopy(test_case.job)
+    uploads = []
+
+    def upload(upload_target):
+        assert upload_target.path == str(source_directory / "sample.bam")
+        assert os.path.exists(upload_target.path)
+        with tarfile.open(upload_target.secondary_files) as archive:
+            secondary = archive.extractfile("__secondary_files__/sample.bam.bai")
+            assert secondary is not None
+            assert secondary.read() == b"secondary"
+        uploads.append(upload_target)
+        return {"outputs": [{"id": "1"}]}
+
+    with materialized_job_paths([test_case]) as job_paths:
+        with open(job_paths[0]) as f:
+            job = json.load(f)
+        galactic_job_json(job, os.path.dirname(job_paths[0]), upload, lambda *args: {})
+    assert len(uploads) == 1
+    assert test_case.job == original_job

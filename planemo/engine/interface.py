@@ -34,15 +34,14 @@ def _absolute_test_data_path(path: Any, tests_directory: str) -> Any:
     return os.path.abspath(os.path.join(tests_directory, path))
 
 
-def _absolutize_composite_data(file_value: Dict[str, Any], tests_directory: str) -> None:
-    composite_data = file_value.get("composite_data") or []
-    for composite_index, composite_item in enumerate(composite_data):
-        if isinstance(composite_item, dict):
+def _absolutize_file_list_paths(file_values: List[Any], tests_directory: str) -> None:
+    for index, file_value in enumerate(file_values):
+        if isinstance(file_value, dict):
             for path_key in ("path", "location"):
-                if path_key in composite_item:
-                    composite_item[path_key] = _absolute_test_data_path(composite_item[path_key], tests_directory)
-        elif isinstance(composite_item, str):
-            composite_data[composite_index] = _absolute_test_data_path(composite_item, tests_directory)
+                if path_key in file_value:
+                    file_value[path_key] = _absolute_test_data_path(file_value[path_key], tests_directory)
+        elif isinstance(file_value, str):
+            file_values[index] = _absolute_test_data_path(file_value, tests_directory)
 
 
 def _absolutize_nested_job_paths(value: Any, tests_directory: str) -> None:
@@ -54,7 +53,8 @@ def _absolutize_nested_job_paths(value: Any, tests_directory: str) -> None:
             for path_key in ("path", "location"):
                 if path_key in value:
                     value[path_key] = _absolute_test_data_path(value[path_key], tests_directory)
-            _absolutize_composite_data(value, tests_directory)
+            for file_list_key in ("composite_data", "secondaryFiles"):
+                _absolutize_file_list_paths(value.get(file_list_key) or [], tests_directory)
 
         for item in value.values():
             _absolutize_nested_job_paths(item, tests_directory)
