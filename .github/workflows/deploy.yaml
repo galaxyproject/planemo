@@ -16,15 +16,58 @@ jobs:
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip setuptools
-          python3 -m pip install --upgrade build twine
+          python3 -m pip install --upgrade build twine tomlkit
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.10.7"
+      - name: Check generated dependencies
+        run: make check-dependencies VENV=SKIP
       - name: Create and check packages
         run: make dist
       - uses: actions/upload-artifact@v7
         with:
           name: packages
           path: dist/
-  pypi-publish:
+  test_packages:
     needs: [build_packages]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
+        distribution: [planemo, planemo-cli]
+        include:
+          - os: macos-latest
+            python-version: '3.13'
+            distribution: planemo-cli
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.10.7"
+      - uses: actions/download-artifact@v8
+        with:
+          name: packages
+          path: dist
+      - name: Install and exercise the built wheel
+        env:
+          DISTRIBUTION: ${{ matrix.distribution }}
+        run: |
+          uv venv --python python .package-test
+          . .package-test/bin/activate
+          WHEEL=$(python -c 'import os; from pathlib import Path; print(next(Path("dist").glob(os.environ["DISTRIBUTION"].replace("-", "_") + "-*.whl")))')
+          uv pip install "$WHEEL"
+          uv pip check
+          python scripts/check_installed_distribution.py "$DISTRIBUTION"
+  pypi-publish:
+    needs: [build_packages, test_packages]
     name: Upload release to PyPI
     runs-on: ubuntu-latest
     permissions:

@@ -2,6 +2,27 @@
 Installation
 ============
 
+Pinned command-line installation
+===============================
+
+``planemo-cli`` contains the same Planemo code and provides the same ``planemo``
+command, with exact versions of all runtime Python dependencies. Install it in
+an isolated tool environment::
+
+    $ uv tool install planemo-cli
+    $ planemo --version
+
+Upgrade to a newly tested dependency snapshot with::
+
+    $ uv tool upgrade planemo-cli
+
+``planemo`` and ``planemo-cli`` are alternative distributions. Do not install both
+in the same Python environment: they own the same Python package and command.
+Use ``planemo`` when another Python project needs it as a dependency; use
+``planemo-cli`` for a standalone application with pinned dependencies.
+The pins cover Python packages, not Galaxy installations, Conda environments,
+containers, or external services managed by Planemo.
+
 pip_
 ====
 
