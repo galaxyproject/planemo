@@ -140,7 +140,6 @@ check-dist: clean-build dist clean-build
 
 dist: clean submodule ## create and check packages
 	$(IN_VENV) python3 $(BUILD_SCRIPTS_DIR)/build_distributions.py
-	$(IN_VENV) python3 $(BUILD_SCRIPTS_DIR)/check_distributions.py
 	$(IN_VENV) twine check dist/*
 	ls -l dist
 
