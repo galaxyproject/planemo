@@ -3,7 +3,7 @@ Installation
 ============
 
 Pinned command-line installation
-===============================
+================================
 
 ``planemo-cli`` contains the same Planemo code and provides the same ``planemo``
 command, with exact versions of all runtime Python dependencies. Install it in

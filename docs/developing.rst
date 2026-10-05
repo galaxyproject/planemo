@@ -25,15 +25,14 @@ Dependency management and distributions
 =======================================
 
 Declare runtime dependencies in ``pyproject.toml`` under ``project.dependencies``.
-Development requirements live in ``dependency-groups``. ``requirements.txt`` and
-``dev-requirements.txt`` are generated compatibility files for existing scripts.
+Development requirements live in ``dependency-groups``; ``tox.ini`` installs
+them through ``dependency_groups``.
 
 Install a locked development environment with ``uv sync --locked``. To refresh
-dependencies, run ``make update-dependencies`` and review ``uv.lock`` and the
-three generated requirements files. Commit these files together. The CLI pins
-are exported from the runtime dependency closure, without development groups,
-and preserve Python/platform markers. ``make check-dependencies`` verifies the
-lock's dependency declarations and generated files without changing them.
+dependencies, run ``make update-dependencies`` and commit ``uv.lock`` together
+with ``requirements-cli.txt``, the ``planemo-cli`` pins exported from the
+runtime dependency closure. ``make check-dependencies`` verifies both are
+current without changing them.
 
 ``make dist`` builds both ``planemo`` and ``planemo-cli``. The CLI project is
 staged from the normal source distribution, with its distribution name and

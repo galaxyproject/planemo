@@ -6,7 +6,7 @@ Walk me through readying a planemo release. Run each step, check for problems, a
 
 2. **Verify version** - read `planemo/__init__.py` and confirm `__version__` is a `.devN` variant of the intended release. Show me the current version and ask me to confirm the target release version.
 
-3. **Setup venv** - check `.venv` exists. If not, run `make setup-venv`. Confirm dev-requirements are installed.
+3. **Setup venv** - check `.venv` exists. If not, run `make setup-venv`. Confirm the `dev` dependency group is installed.
 
 4. **Check UPSTREAM remote** - the Makefile defaults `UPSTREAM` to `galaxyproject`. Check if `$UPSTREAM` is set in the environment; if not, check if a git remote named `galaxyproject` exists. If it doesn't, check for `origin` or `upstream` remotes pointing to `galaxyproject/planemo` and offer to create a `galaxyproject` alias via `git remote add galaxyproject <url>`. This must be resolved before `make release` can push.
 

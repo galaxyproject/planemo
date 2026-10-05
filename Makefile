@@ -180,9 +180,12 @@ add-history: ## Reformat HISTORY.rst with data from Github's API
 update-extern: ## update external artifacts copied locally
 	sh scripts/update_extern.sh
 
-update-dependencies: ## refresh locked dependencies and generated requirements
-	uv lock --upgrade
-	$(IN_VENV) python3 $(BUILD_SCRIPTS_DIR)/update_dependencies.py
+CLI_REQUIREMENTS_EXPORT=uv export --frozen --no-default-groups --no-emit-project --no-hashes --no-annotate
 
-check-dependencies: ## check generated requirements against the committed lock
-	$(IN_VENV) python3 $(BUILD_SCRIPTS_DIR)/update_dependencies.py --check
+update-dependencies: ## refresh uv.lock and the exported planemo-cli pins
+	uv lock --upgrade
+	$(CLI_REQUIREMENTS_EXPORT) > requirements-cli.txt
+
+check-dependencies: ## check uv.lock and the exported planemo-cli pins are current
+	uv lock --check
+	$(CLI_REQUIREMENTS_EXPORT) | diff -u requirements-cli.txt -
