@@ -31,6 +31,8 @@ them through ``dependency_groups``.
 Install a locked development environment with ``uv sync --locked``. To refresh
 dependencies, run ``make update-dependencies`` and commit ``uv.lock``.
 ``make check-dependencies`` verifies the lock is current without changing it.
+A weekly workflow (``.github/workflows/dependencies.yaml``) runs
+``make update-dependencies`` and opens a pull request with the refreshed lock.
 
 ``make dist`` builds both ``planemo`` and ``planemo-cli`` and requires uv. The
 CLI project is staged from the normal source distribution, with its
