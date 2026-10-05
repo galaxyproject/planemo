@@ -29,14 +29,13 @@ Development requirements live in ``dependency-groups``; ``tox.ini`` installs
 them through ``dependency_groups``.
 
 Install a locked development environment with ``uv sync --locked``. To refresh
-dependencies, run ``make update-dependencies`` and commit ``uv.lock`` together
-with ``requirements-cli.txt``, the ``planemo-cli`` pins exported from the
-runtime dependency closure. ``make check-dependencies`` verifies both are
-current without changing them.
+dependencies, run ``make update-dependencies`` and commit ``uv.lock``.
+``make check-dependencies`` verifies the lock is current without changing it.
 
-``make dist`` builds both ``planemo`` and ``planemo-cli``. The CLI project is
-staged from the normal source distribution, with its distribution name and
-runtime dependency metadata changed. Both wheels have identical code, assets,
+``make dist`` builds both ``planemo`` and ``planemo-cli`` and requires uv. The
+CLI project is staged from the normal source distribution, with its
+distribution name changed and its dependencies pinned to the runtime closure
+exported from ``uv.lock``. Both wheels have identical code, assets,
 versions, and command entry points. Each wheel is built from its own source
 distribution; users do not need uv to rebuild either archive.
 

@@ -40,12 +40,6 @@ def check_distributions(output):
     for requirement in requirements:
         assert len(requirement.specifier) == 1 and next(iter(requirement.specifier)).operator == "==", requirement
         assert canonicalize_name(requirement.name) != "planemo", "CLI must contain its own code"
-    expected_pins = {
-        str(Requirement(line))
-        for line in (Path(__file__).resolve().parents[1] / "requirements-cli.txt").read_text().splitlines()
-        if line and not line.startswith("#")
-    }
-    assert {str(requirement) for requirement in requirements} == expected_pins
     for minor in range(10, 15):
         for system, platform in (("Linux", "linux"), ("Darwin", "darwin"), ("Windows", "win32")):
             environment = dict(
