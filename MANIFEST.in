@@ -1,5 +1,5 @@
 include *.rst LICENSE *.txt
-include scripts/build_distributions.py scripts/update_dependencies.py scripts/check_distributions.py scripts/check_installed_distribution.py
+include scripts/build_distributions.py scripts/check_distributions.py scripts/check_installed_distribution.py
 include planemo/xml/xsd/*
 include planemo_ext/tool_factory_2/*
 include planemo/reports/*
