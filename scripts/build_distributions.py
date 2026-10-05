@@ -11,6 +11,15 @@ from pathlib import Path
 import tomlkit
 
 ROOT = Path(__file__).resolve().parents[1]
+CLI_REQUIREMENTS_EXPORT = [
+    "uv",
+    "export",
+    "--frozen",
+    "--no-default-groups",
+    "--no-emit-project",
+    "--no-hashes",
+    "--no-annotate",
+]
 
 
 def cli_project(source):
@@ -21,6 +30,8 @@ def cli_project(source):
     config["project"]["dynamic"].append("dependencies")
     config["tool"]["setuptools"]["dynamic"]["dependencies"] = {"file": "requirements-cli.txt"}
     path.write_text(tomlkit.dumps(config))
+    with open(source / "requirements-cli.txt", "w") as requirements:
+        subprocess.run(CLI_REQUIREMENTS_EXPORT, cwd=ROOT, stdout=requirements, check=True)
     # Source lists and metadata must be regenerated for the new distribution name.
     for metadata in source.glob("*.egg-info"):
         shutil.rmtree(metadata)
