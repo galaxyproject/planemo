@@ -28,6 +28,18 @@ Declare runtime dependencies in ``pyproject.toml`` under ``project.dependencies`
 Development requirements live in ``dependency-groups``; ``tox.ini`` installs
 them through ``dependency_groups``.
 
+The Python CI matrix tests against ``uv.lock``. It exports all dependency groups
+as constraints and sets ``PLANEMO_TEST_CONSTRAINTS`` so tox applies those pins
+to both its test tools and Planemo's runtime dependencies. Galaxy instances
+started by integration tests manage their dependencies independently. One
+additional quick-test job resolves the latest allowed dependencies to check
+compatibility with the library's unpinned requirements.
+
+To run tox with the same constraints locally::
+
+    uv export --locked --all-groups --no-emit-project --no-hashes --output-file /tmp/planemo-constraints.txt
+    PLANEMO_TEST_CONSTRAINTS=/tmp/planemo-constraints.txt uv run --locked tox -e py310-unit-quick
+
 Install a locked development environment with ``uv sync --locked``. To refresh
 dependencies, run ``make update-dependencies`` and commit ``uv.lock``.
 ``make check-dependencies`` verifies the lock is current without changing it.
