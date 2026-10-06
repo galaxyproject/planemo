@@ -145,23 +145,23 @@ class SimpleParserDiscoveryAndReplacement(Discovery):
             self._replace_parser(node, import_from)
 
     def _replace_parser(self, node: ast.Assign, imported_using_from: bool):
+        assert isinstance(node.value, ast.Call)
         # FIXME TODO currently, passing variables to custom argument parser
         # is not supported
-        if node.value.args or node.value.keywords:  # type: ignore
+        if node.value.args or node.value.keywords:
             logging.warning(
                 "Arguments that are normally passed to argument"
                 " parser will be ignored. Their use is"
                 " not currently supported"
             )
-        node.value.args = []  # type: ignore
-        node.value.keywords = []  # type: ignore
+        node.value.args = []
+        node.value.keywords = []
         if imported_using_from:
             self.custom_parser_def.bases[0] = ast.Name(self.argument_parser_alias, ast.Load())
             node.value.func.id = self.custom_parser_def.name  # type: ignore
             return
 
-        assert type(node.value is ast.Call)
-        node.value.func = ast.Name(self.custom_parser_def.name, ast.Load())  # type: ignore
+        node.value.func = ast.Name(self.custom_parser_def.name, ast.Load())
 
     def report_findings(self) -> Tuple:
         if self.main_parser_name is None:

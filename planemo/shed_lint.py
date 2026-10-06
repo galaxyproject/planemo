@@ -158,7 +158,10 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
         repo_owner = realized_repository.owner
         repo_name = realized_repository.name
         tool_id = tool_source.parse_id()
-        tool_version = parse_version(tool_source.parse_version())
+        version = tool_source.parse_version()
+        if version is None:
+            continue
+        tool_version = parse_version(version)
 
         # check if there is already such a repo (otherwise get_ordered_installable_revisions will log an error for new repos)
         if len(tsi.repositories.get_repositories(repo_name, repo_owner)) == 0:

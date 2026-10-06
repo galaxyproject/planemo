@@ -83,7 +83,7 @@ def get_requirements(
     """
     Get requirements from the XML tree
     """
-    requirements = {}
+    requirements: Dict[str, Dict[str, Optional[str]]] = {}
     main_req = None
     for requirement in xml_tree.iter("requirement"):
         if requirement.attrib.get("version") == "@TOOL_VERSION@":

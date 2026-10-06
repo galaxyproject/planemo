@@ -160,7 +160,7 @@ def lint_workflow_artifacts_on_paths(ctx: "PlanemoCliContext", paths: Iterable[s
         return EXIT_CODE_OK
 
 
-def _lint_workflow_artifacts_on_path(lint_context: WorkflowLintContext, path: str, lint_args: Dict[str, Any]) -> None:
+def _lint_workflow_artifacts_on_path(lint_context: LintContext, path: str, lint_args: Dict[str, Any]) -> None:
     if lint_args["iwc_grade"]:
         if not os.path.isdir(path):
             path = os.path.dirname(path)
@@ -192,7 +192,7 @@ def _lint_workflow_artifacts_on_path(lint_context: WorkflowLintContext, path: st
 
 
 # misspell for pytest
-def _lint_tsts(path: str, lint_context: WorkflowLintContext) -> None:
+def _lint_tsts(path: str, lint_context: LintContext) -> None:
     runnables = for_path(path)
     if not isinstance(runnables, list):
         runnables = [runnables]
@@ -214,7 +214,7 @@ def _lint_tsts(path: str, lint_context: WorkflowLintContext) -> None:
             lint_context.valid(f"Tests appear structurally correct for {runnable.path}")
 
 
-def _lint_structure(path: str, lint_context: WorkflowLintContext) -> None:
+def _lint_structure(path: str, lint_context: LintContext) -> None:
     workflow_dict = _load_workflow_dict(path)
     if workflow_dict.get("class") == "GalaxyWorkflow":
         lint_format2_path(lint_context, path)
@@ -222,13 +222,13 @@ def _lint_structure(path: str, lint_context: WorkflowLintContext) -> None:
         lint_ga_path(lint_context, path)
 
 
-def _lint_schema_validation(path: str, lint_context: WorkflowLintContext) -> None:
+def _lint_schema_validation(path: str, lint_context: LintContext) -> None:
     workflow_dict = _load_workflow_dict(path)
     is_format2 = workflow_dict.get("class") == "GalaxyWorkflow"
     lint_pydantic_validation(lint_context, workflow_dict, format2=is_format2)
 
 
-def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None:
+def _lint_best_practices(path: str, lint_context: LintContext) -> None:
     workflow_dict = _load_workflow_dict(path)
     if workflow_dict.get("class") == "GalaxyWorkflow":
         lint_best_practices_format2(lint_context, workflow_dict)
@@ -241,7 +241,7 @@ def _load_workflow_dict(path: str) -> Dict[str, Any]:
         return ordered_load(f)
 
 
-def _lint_case(path: str, test_case: TestCase, lint_context: WorkflowLintContext) -> bool:
+def _lint_case(path: str, test_case: TestCase, lint_context: LintContext) -> bool:
     test_valid = True
 
     i_labels = input_labels(workflow_path=path)
@@ -305,7 +305,7 @@ def is_valid_output_expectations(lint_context, output_expectations):
 
 
 def _check_test_assertions(
-    lint_context: WorkflowLintContext, assertion_definitions: Optional[Dict[str, Dict[str, Any]]]
+    lint_context: LintContext, assertion_definitions: Optional[Dict[str, Dict[str, Any]]]
 ) -> bool:
     # we are already in Python, not XML, so it is simpler to lint assertions by checking against the
     # Python functions directly, rather than checking against galaxy.xsd as for tool linting
@@ -315,7 +315,7 @@ def _check_test_assertions(
         # Or a list with max of asserts and potentially identical
         # We transform to list:
         assertion_definitions_list = __to_test_assert_list(assertion_definitions)
-        for assertion_description in assertion_definitions_list:
+        for assertion_description in assertion_definitions_list or []:
             function = asserts.assertion_functions.get(f"assert_{assertion_description['tag']}")
             if function is None:
                 lint_context.error(f"Invalid assertion: assert_{assertion_description['tag']} does not exists")
@@ -349,7 +349,7 @@ def _tst_input_valid(
     test_case: TestCase,
     input_id: str,
     input_def: Dict[str, Any],
-    lint_context: WorkflowLintContext,
+    lint_context: LintContext,
 ) -> bool:
     if isinstance(input_def, dict):  # else assume it is a parameter
         clazz = input_def.get("class")
@@ -370,7 +370,7 @@ def _tst_input_valid(
     return True
 
 
-def _lint_dockstore_config(path: str, lint_context: WorkflowLintContext) -> None:
+def _lint_dockstore_config(path: str, lint_context: LintContext) -> None:
     dockstore_yaml = None
     try:
         with open(path) as f:
@@ -409,9 +409,7 @@ def _lint_dockstore_config(path: str, lint_context: WorkflowLintContext) -> None
         workflow_names_in_dockstore.append(workflow_name)
 
 
-def _lint_dockstore_workflow_entry(
-    lint_context: WorkflowLintContext, directory: str, workflow_entry: Dict[str, Any]
-) -> None:
+def _lint_dockstore_workflow_entry(lint_context: LintContext, directory: str, workflow_entry: Dict[str, Any]) -> None:
     if not isinstance(workflow_entry, dict):
         lint_context.error("Invalid YAML contents found in %s, workflow entry not a dict" % DOCKSTORE_REGISTRY_CONF)
         return
@@ -592,7 +590,7 @@ def _iter_tool_steps(wf_dict: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
             yield from _iter_tool_steps(step["run"])
 
 
-def _lint_tool_ids(path: str, lint_context: WorkflowLintContext) -> None:
+def _lint_tool_ids(path: str, lint_context: LintContext) -> None:
     with open(path) as f:
         workflow_dict = ordered_load(f)
     ts = toolshed.ToolShedInstance(url=MAIN_TOOLSHED_URL)
@@ -613,7 +611,7 @@ def _lint_tool_ids(path: str, lint_context: WorkflowLintContext) -> None:
     return None
 
 
-def _lint_tool_versions(path: str, lint_context: WorkflowLintContext) -> None:
+def _lint_tool_versions(path: str, lint_context: LintContext) -> None:
     """Check that each step's tool_version matches the version encoded in its tool_id."""
     with open(path) as f:
         workflow_dict = ordered_load(f)
@@ -636,7 +634,7 @@ def _lint_tool_versions(path: str, lint_context: WorkflowLintContext) -> None:
     return None
 
 
-def _lint_required_files_workflow_dir(path: str, lint_context: WorkflowLintContext) -> None:
+def _lint_required_files_workflow_dir(path: str, lint_context: LintContext) -> None:
     # Check all required files are present
     required_files = ["README.md", "CHANGELOG.md", ".dockstore.yml"]
     for required_file in required_files:
@@ -657,7 +655,7 @@ def _get_changelog_version(path: str) -> str:
     return version
 
 
-def _lint_changelog_version(path: str, lint_context: WorkflowLintContext) -> None:
+def _lint_changelog_version(path: str, lint_context: LintContext) -> None:
     # Check the version can be get from the CHANGELOG.md
     if not os.path.exists(os.path.join(path, "CHANGELOG.md")):
         return
@@ -679,7 +677,7 @@ def _lint_release(path, lint_context):
             lint_context.error(f"The release of workflow {path} does not match the version in the CHANGELOG.")
 
 
-def _lint_dockstore_config_best_practices(path: str, lint_context: WorkflowLintContext) -> None:
+def _lint_dockstore_config_best_practices(path: str, lint_context: LintContext) -> None:
     dockstore_yaml = None
     try:
         with open(path) as f:
@@ -699,7 +697,7 @@ def _lint_dockstore_config_best_practices(path: str, lint_context: WorkflowLintC
 
 
 def _lint_dockstore_workflow_entry_best_practices(
-    lint_context: WorkflowLintContext, directory: str, workflow_entry: Dict[str, Any]
+    lint_context: LintContext, directory: str, workflow_entry: Dict[str, Any]
 ) -> None:
     for recommended_key in ["testParameterFiles", "name"]:
         if recommended_key not in workflow_entry:

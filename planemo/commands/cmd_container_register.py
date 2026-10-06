@@ -116,7 +116,7 @@ def cli(ctx: "PlanemoCliContext", paths, **kwds) -> None:
             ctx.log("Target file '%s' already exists, skipping" % target_filename)
             continue
 
-        if targets_to_mulled_name(conda_targets, hash_func="v2", namespace=kwds["mulled_namespace"]):
+        if targets_to_mulled_name(list(conda_targets), hash_func="v2", namespace=kwds["mulled_namespace"]):
             ctx.vlog("quay repository already exists, skipping")
             continue
 

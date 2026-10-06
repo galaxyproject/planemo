@@ -72,6 +72,7 @@ def run_cwltool(
 ) -> Union[ErrorRunResponse, CwlToolRunResponse]:
     """Translate planemo kwds to cwltool kwds and run cwltool main function."""
     ensure_cwltool_available()
+    assert main is not None
 
     args = []
     if ctx.verbose:

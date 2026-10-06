@@ -25,6 +25,7 @@ jobs:
           - lint
           - lint_docs
           - mypy
+          - pyrefly
           - unit-quick
           #- unit-diagnostic-servebasic
           #- unit-diagnostic-servebasic-gx-2005
@@ -44,6 +45,9 @@ jobs:
             dependencies: locked
           - python-version: '3.13'
             tox-action: mypy
+            dependencies: locked
+          - python-version: '3.13'
+            tox-action: pyrefly
             dependencies: locked
           - python-version: '3.13'
             tox-action: unit-quick

@@ -429,7 +429,7 @@ class TestCase(AbstractTestCase):
         return output_problems
 
     @property
-    def _test_id(self) -> str:
+    def _test_id(self) -> Optional[str]:
         if self.runnable.type in [
             RunnableType.cwl_tool,
             RunnableType.galaxy_tool,
@@ -576,6 +576,7 @@ class RunResponse(metaclass=abc.ABCMeta):
         If successful, response should conform to the SuccessfulRunResponse interface,
         otherwise it will conform to the ErrorRunResponse interface.
         """
+        raise NotImplementedError()
 
     @abc.abstractproperty
     def job_info(self):

@@ -18,12 +18,12 @@ def gi(port: Optional[int] = None, url: Optional[str] = None, key: Optional[str]
     """Return a bioblend ``GalaxyInstance`` for Galaxy on this port."""
     if key is None:
         key = DEFAULT_ADMIN_API_KEY
-    if port is not None and url is not None:
-        raise ValueError("Either port or url parameter needs to be None")
-    if port is None:
-        url = url
-    else:
-        url = f"http://localhost:{int(port)}"
+    if port is not None:
+        if url is not None:
+            raise ValueError("Either port or url parameter needs to be None")
+        url = f"http://localhost:{port}"
+    elif url is None:
+        raise ValueError("Either port or url must be provided")
 
     g = GalaxyInstance(url=url, key=key)
     g.max_get_attempts = 10

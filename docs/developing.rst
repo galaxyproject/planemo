@@ -28,6 +28,12 @@ Declare runtime dependencies in ``pyproject.toml`` under ``project.dependencies`
 Development requirements live in ``dependency-groups``; ``tox.ini`` installs
 them through ``dependency_groups``.
 
+Type check with both mypy and Pyrefly using ``tox -e py310-mypy,py310-pyrefly``.
+Their versions are pinned in the ``typecheck`` dependency group so new checker
+releases can be adopted deliberately. ``pyrefly.toml`` was migrated from
+``mypy.ini`` and uses the same fixture exclusion and missing-import policy;
+keep those settings in sync when editing either configuration.
+
 The Python CI matrix tests against ``uv.lock``. It exports all dependency groups
 as constraints and sets ``PLANEMO_TEST_CONSTRAINTS`` so tox applies those pins
 to both its test tools and Planemo's runtime dependencies. Galaxy instances

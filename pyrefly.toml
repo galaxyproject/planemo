@@ -1,0 +1,5 @@
+# Match mypy.ini's fixture exclusion and missing-import policy; keep them in sync.
+project-includes = ["planemo", "tests"]
+project-excludes = ["tests/data/**"]
+preset = "legacy"
+ignore-missing-imports = ["*"]

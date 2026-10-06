@@ -125,7 +125,7 @@ def _find_similar_commands(name: str, available_commands: List[str]) -> List[str
     return similar
 
 
-class PlanemoCLI(click.MultiCommand):
+class PlanemoCLI(click.Group):
     def list_commands(self, ctx: Context) -> List[str]:
         return list_cmds()
 

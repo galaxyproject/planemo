@@ -134,7 +134,13 @@ lint = [
     "ruff",
 ]
 typecheck = [
-    "mypy",
+    "mypy==2.4.0",
+    "pyrefly==1.3.2",
+    "types-PyYAML",
+    "types-python-dateutil",
+    "types-requests",
+    "types-tabulate",
+    "types-psutil",
 ]
 docs = [
     "docutils",

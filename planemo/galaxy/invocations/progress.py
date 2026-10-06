@@ -116,6 +116,7 @@ class WorkflowProgress(Progress):
             )
 
         if num >= 2:
+            assert self._subworkflows_task is not None
             self.subworkflows_color = self.display.style_ok
             subworkflows_status = f"{self.num_subworkflows_complete}/{self.num_subworkflows} terminal"
             self.update(
@@ -339,7 +340,8 @@ def running_count(job_summary: InvocationJobsSummary) -> int:
     return count_states(job_summary, ["running"])
 
 
-class WorkflowProgressDisplay(Live):
+# Pyrefly 1.3.2 incorrectly infers rich.live.Live as Live | Unknown.
+class WorkflowProgressDisplay(Live):  # pyrefly: ignore [invalid-inheritance]
     def __init__(
         self,
         invocation_id: str,

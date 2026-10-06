@@ -254,7 +254,8 @@ class UploadProgress(Progress):
         return error_lines
 
 
-class UploadProgressDisplay(Live):
+# Pyrefly 1.3.2 incorrectly infers rich.live.Live as Live | Unknown.
+class UploadProgressDisplay(Live):  # pyrefly: ignore [invalid-inheritance]
     """Live display for upload progress with Rich panel."""
 
     def __init__(

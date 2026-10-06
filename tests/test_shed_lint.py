@@ -1,6 +1,18 @@
 from os.path import join
+from types import SimpleNamespace
+from unittest import mock
 
+from planemo.shed_lint import lint_shed_version
 from .test_utils import CliTestCase
+
+
+def test_version_lint_skips_tools_without_a_version(tmp_path):
+    (tmp_path / "tool.xml").write_text('<tool id="unversioned" name="Unversioned"><command>echo hello</command></tool>')
+    repository = SimpleNamespace(path=str(tmp_path), owner="test", name="test")
+    tool_shed = mock.MagicMock()
+    with mock.patch("planemo.shed_lint.tool_shed_instance", return_value=tool_shed):
+        lint_shed_version(repository, mock.MagicMock())
+    tool_shed.repositories.get_repositories.assert_not_called()
 
 
 class ShedLintTestCase(CliTestCase):
