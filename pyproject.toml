@@ -132,6 +132,8 @@ lint = [
     "flake8",
     "isort",
     "ruff",
+]
+typecheck = [
     "mypy",
 ]
 docs = [
@@ -153,6 +155,7 @@ dev = [
     "tox",
     {include-group = "test"},
     {include-group = "lint"},
+    {include-group = "typecheck"},
     {include-group = "docs"},
     {include-group = "release"},
     {include-group = "cwl-test"},

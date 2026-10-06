@@ -43,7 +43,7 @@ distribution; users do not need uv to rebuild either archive.
 
 Both distributions use the Planemo release version and publish on the same tag.
 Dependency-only updates use a new Planemo patch release. Release builds consume
-the committed snapshot and never refresh dependencies automatically. Configure
+the committed ``uv.lock`` and never refresh dependencies automatically. Configure
 a PyPI trusted publisher for ``planemo-cli`` using this repository's existing
 ``deploy.yaml`` workflow before the first tagged release. Artifact installation
 tests must pass before the publishing job runs.

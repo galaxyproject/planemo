@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CLI_REQUIREMENTS_EXPORT = [
     "uv",
     "export",
-    "--frozen",
+    "--locked",
     "--no-default-groups",
     "--no-emit-project",
     "--no-hashes",
@@ -45,7 +45,6 @@ def build_distributions(output):
     if len(sdists) != 1:
         raise RuntimeError("Expected exactly one Planemo source distribution; use a clean output directory")
     with tempfile.TemporaryDirectory(prefix="planemo-cli-build-") as temporary:
-        # This archive was produced immediately above by our own build backend.
         shutil.unpack_archive(str(sdists[0]), temporary)
         source = next(Path(temporary).iterdir())
         cli_project(source)
