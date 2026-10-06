@@ -1371,15 +1371,12 @@ class InstalledGalaxyConfig(BaseManagedGalaxyConfig):
         )
 
     def run_foreground(self, command):
-        """Run Gravity below Planemo and finish its whole group on interruption."""
-        environ = os.environ.copy()
-        environ.update(self.env)
-        process = subprocess.Popen(command, env=environ, shell=True, start_new_session=True)
+        """Tie foreground Gravity to Planemo through the shared process monitor."""
+        process = _start_daemon_monitor(self, command, log_to_file=False)
         try:
             return process.wait()
-        except BaseException:
-            terminate_process_group(process.pid, reap=process.poll)
-            raise
+        finally:
+            self.kill()
 
     def start_daemon(self, command):
         """Run foreground Gravity below Planemo's bounded daemon monitor."""
@@ -1480,19 +1477,20 @@ class DockerGalaxyConfig(BaseManagedGalaxyConfig):
         shutil.rmtree(self.config_directory, CLEANUP_IGNORE_ERRORS)
 
 
-def _start_daemon_monitor(config, command):
+def _start_daemon_monitor(config, command, *, log_to_file=True):
     """Start the shared process-group monitor for a managed Galaxy config."""
     environ = os.environ.copy()
     environ.update(config.env)
     monitor_read_fd, monitor_write_fd = os.pipe()
     try:
-        with open(config.log_file, "ab", buffering=0) as log:
+        with contextlib.ExitStack() as stack:
+            log = stack.enter_context(open(config.log_file, "ab", buffering=0)) if log_to_file else None
             process = subprocess.Popen(
                 [sys.executable, "-m", "planemo.galaxy.daemon_monitor", str(monitor_read_fd), command],
                 env=environ,
                 pass_fds=[monitor_read_fd],
                 stdout=log,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.STDOUT if log_to_file else None,
                 start_new_session=True,
             )
     except BaseException:

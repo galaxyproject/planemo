@@ -157,6 +157,7 @@ def test_installed_foreground_interruption_cleans_process_group(tmp_path):
     config_directory = tmp_path / "config"
     config_directory.mkdir()
     process = Mock(pid=123)
+    process.poll.return_value = None
     process.wait.side_effect = KeyboardInterrupt()
 
     with installed_galaxy_config(
@@ -167,15 +168,19 @@ def test_installed_foreground_interruption_cleans_process_group(tmp_path):
     ) as config:
         with (
             patch("planemo.galaxy.config.subprocess.Popen", return_value=process) as popen,
-            patch("planemo.galaxy.config.terminate_process_group") as terminate,
+            patch("planemo.galaxy.config._shut_down_daemon_monitor") as shutdown,
             pytest.raises(KeyboardInterrupt),
         ):
             config.run_foreground("galaxy command")
 
     popen.assert_called_once()
-    assert popen.call_args.kwargs["shell"] is True
+    assert popen.call_args.args[0][1:3] == ["-m", "planemo.galaxy.daemon_monitor"]
     assert popen.call_args.kwargs["start_new_session"] is True
-    terminate.assert_called_once_with(123, reap=process.poll)
+    assert popen.call_args.kwargs["stdout"] is None
+    assert popen.call_args.kwargs["stderr"] is None
+    assert config._daemon_control_fd is None
+    assert not os.path.exists(config.pid_file)
+    shutdown.assert_called_once_with(process, asked_to_stop=True)
 
 
 def test_installed_test_config_uses_empty_plugin_directories(tmp_path):
