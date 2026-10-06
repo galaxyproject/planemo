@@ -253,6 +253,22 @@ def galaxy_port_option():
     )
 
 
+def infrastructure_host_option():
+    return planemo_option(
+        "--infrastructure_host",
+        type=str,
+        default=None,
+        use_global_config=True,
+        help=(
+            "Hostname to advertise for Galaxy infrastructure and interactive tool URLs. "
+            "When not set this defaults to 'localhost' when Galaxy is bound to 127.0.0.1 "
+            "or 0.0.0.0, and to the bind host otherwise. Set this to a hostname or IP that "
+            "is reachable by both the browser and interactive tool containers when serving "
+            "from a non-local bind address (e.g. --host 0.0.0.0 on a remote machine)."
+        ),
+    )
+
+
 def galaxy_host_option():
     return planemo_option(
         "--host",
@@ -1559,6 +1575,7 @@ def galaxy_serve_options():
         skip_client_build_option(),
         shed_install_option(),
         disable_gxits_option(),
+        infrastructure_host_option(),
     )
 
 
