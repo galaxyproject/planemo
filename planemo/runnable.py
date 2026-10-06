@@ -205,6 +205,8 @@ def for_path(path: str) -> Union[Runnable, List[Runnable]]:
         runnable_type = RunnableType.galaxy_datamanager
     elif looks_like_a_tool_xml(path):
         runnable_type = RunnableType.galaxy_tool
+    elif is_a_yaml_with_class(path, ["GalaxyTool"]):
+        runnable_type = RunnableType.galaxy_tool
     elif is_a_yaml_with_class(path, ["GalaxyWorkflow"]):
         runnable_type = RunnableType.galaxy_workflow
     elif path.endswith(".ga"):
