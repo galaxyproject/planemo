@@ -9,20 +9,15 @@ jobs:
         with:
           persist-credentials: false
           submodules: true
-      - uses: actions/setup-python@v7.0.0
-        with:
-          python-version: '3.14'
-          cache: pip
-      - name: Install dependencies
-        run: |
-          python3 -m pip install --upgrade pip setuptools
-          python3 -m pip install --upgrade build twine tomlkit
       - name: Install uv
         uses: astral-sh/setup-uv@v10.2.0
         with:
           version: "0.10.7"
-      - name: Check generated dependencies
-        run: make check-dependencies VENV=SKIP
+          python-version: '3.14'
+      - name: Install release tools
+        run: uv sync --locked --only-group release
+      - name: Check dependency lock
+        run: make check-dependencies
       - name: Create and check packages
         run: make dist
       - uses: actions/upload-artifact@v7
@@ -76,3 +71,5 @@ jobs:
           path: dist
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
