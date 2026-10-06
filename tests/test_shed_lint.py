@@ -35,6 +35,27 @@ class ShedLintTestCase(CliTestCase):
         with self._isolate_repo("bad_invalid_yaml"):
             self._check_exit_code(["shed_lint", "--skip", "shed_remote_repository_url"], exit_code=254)
 
+    def test_shed_metadata_rejected_by_shed_is_an_error(self):
+        # https://github.com/galaxyproject/planemo/issues/1112: the tool shed
+        # rejects this name with a 400, so CI running --fail_level error -- the
+        # usual way to tolerate style warnings -- must still catch it.
+        with self._isolate_repo("bad_repo_name"):
+            self._check_exit_code(
+                ["shed_lint", "--skip", "shed_remote_repository_url", "--fail_level", "error"], exit_code=1
+            )
+        with self._isolate_repo("bad_unknown_category"):
+            self._check_exit_code(
+                ["shed_lint", "--skip", "shed_remote_repository_url", "--fail_level", "error"], exit_code=1
+            )
+
+    def test_shed_metadata_conventions_stay_warnings(self):
+        # A package outside "Tool Dependency Packages" still uploads fine, so
+        # it must not be promoted alongside the checks above.
+        with self._isolate_repo("bad_package_category"):
+            self._check_exit_code(
+                ["shed_lint", "--skip", "shed_remote_repository_url", "--fail_level", "error"], exit_code=0
+            )
+
     def test_tool_linting(self):
         # Make sure bad_invalid_tool_xml only when used with --tools.
         with self._isolate_repo("bad_invalid_tool_xml"):
