@@ -3289,7 +3289,6 @@ dev = [
     { name = "mypy" },
     { name = "packaging" },
     { name = "pytest" },
-    { name = "pytest-mock" },
     { name = "pytest-timeout" },
     { name = "recommonmark" },
     { name = "responses" },
@@ -3329,7 +3328,6 @@ test = [
     { name = "coverage" },
     { name = "flask" },
     { name = "pytest" },
-    { name = "pytest-mock" },
     { name = "pytest-timeout" },
     { name = "responses" },
     { name = "werkzeug" },
@@ -3379,7 +3377,6 @@ dev = [
     { name = "mypy" },
     { name = "packaging" },
     { name = "pytest" },
-    { name = "pytest-mock" },
     { name = "pytest-timeout" },
     { name = "recommonmark" },
     { name = "responses", specifier = ">=0.23.0" },
@@ -3414,7 +3411,6 @@ test = [
     { name = "coverage" },
     { name = "flask" },
     { name = "pytest" },
-    { name = "pytest-mock" },
     { name = "pytest-timeout" },
     { name = "responses", specifier = ">=0.23.0" },
     { name = "werkzeug" },
@@ -3952,18 +3948,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/e4/47/b9efed96c114afcfa3c9d3fe98a76a1d14c74a9e266d397cf6eb64be5e01/pytest-9.1.1.tar.gz", hash = "sha256:1088fbde8f2b49d95a549a195707afa7a76a3ce9bcadc26b6d71f0ffda5fe313", size = 1636369, upload-time = "2026-06-19T10:58:32.857Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/24/25/1de2678b631f5a49215c6c96fff41ba892b0a34df68d6d80292b1b48aa7f/pytest-9.1.1-py3-none-any.whl", hash = "sha256:37a86b45efb9a47a61a36449063e8e18d0cab3161329fc099eb21783169c4f0c", size = 386536, upload-time = "2026-06-19T10:58:31.347Z" },
-]
-
-[[package]]
-name = "pytest-mock"
-version = "3.16.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pytest" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/7a/7f/6ed29931d5c8cd396e7c0a55412e6cc88020373365c8685985dea53d26d7/pytest_mock-3.16.0.tar.gz", hash = "sha256:5a8395528b8f498205f3718f575228d0edaed7425fff638f87d1a6c3e0383636", size = 35362, upload-time = "2026-09-27T14:57:55.46Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/db/5b/b83a9bf1a3b4ec222f9fa083147ff6816245223da0ab92370e7e056f113f/pytest_mock-3.16.0-py3-none-any.whl", hash = "sha256:007cfeb257801d88d9c0b2a7b5a15a15e73b71968dfd72e7bf8c4a2f8393aec8", size = 10016, upload-time = "2026-09-27T14:57:54.283Z" },
 ]
 
 [[package]]

@@ -16,8 +16,6 @@ jobs:
           python-version: '3.14'
       - name: Install release tools
         run: uv sync --locked --only-group release
-      - name: Check dependency lock
-        run: make check-dependencies
       - name: Create and check packages
         run: make dist
       - uses: actions/upload-artifact@v7
