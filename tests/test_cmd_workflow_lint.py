@@ -33,6 +33,20 @@ class CmdWorkflowLintTestCase(CliTestCase):
         lint_cmd = ["workflow_lint", "--fail_level", "error", repo]
         self._check_exit_code(lint_cmd, exit_code=0)
 
+        # ... unless the IWC profile makes missing tests an error
+        lint_cmd = [
+            "workflow_lint",
+            "--iwc",
+            "--skip",
+            "best_practices,required_files,dockstore_best_practices,release",
+            "--fail_level",
+            "error",
+            repo,
+        ]
+        result = self._runner.invoke(self._cli.planemo, lint_cmd)
+        assert result.exit_code == 1
+        assert "ERROR: Workflow missing test cases." in result.output
+
     def test_workflow_test_linting(self):
         repo = _wf_repo("basic_format2_ok")
         lint_cmd = ["workflow_lint", "--skip", "best_practices", repo]

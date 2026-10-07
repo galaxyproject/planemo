@@ -60,6 +60,10 @@ class WorkflowLintContext(LintContext):
     # from click arguments.
     training_topic = None
 
+    def __init__(self, *args: Any, iwc_grade: bool = False, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.iwc_grade = iwc_grade
+
     def warn(self, message, linter=None, *args, **kwargs):
         # gxformat2 lint rules pass Linter subclasses; galaxy LintMessage expects a name string.
         if isinstance(linter, type):
@@ -150,7 +154,11 @@ def _workflow_name(workflow_path: str) -> str:
 
 def lint_workflow_artifacts_on_paths(ctx: "PlanemoCliContext", paths: Iterable[str], lint_args: Dict[str, Any]) -> int:
     report_level = lint_args["level"]
-    lint_context = WorkflowLintContext(report_level, skip_types=lint_args["skip_types"])
+    lint_context = WorkflowLintContext(
+        report_level,
+        skip_types=lint_args["skip_types"],
+        iwc_grade=lint_args["iwc_grade"],
+    )
     for path in paths:
         _lint_workflow_artifacts_on_path(lint_context, path, lint_args)
 
@@ -199,7 +207,10 @@ def _lint_tsts(path: str, lint_context: WorkflowLintContext) -> None:
     for runnable in runnables:
         test_cases = cases(runnable)
         if len(test_cases) == 0:
-            lint_context.warn("Workflow missing test cases.")
+            if lint_context.iwc_grade:
+                lint_context.error("Workflow missing test cases.")
+            else:
+                lint_context.warn("Workflow missing test cases.")
             return
         all_tests_valid = True
         for test_case in test_cases:
