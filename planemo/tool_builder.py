@@ -27,7 +27,7 @@ REUSING_MACROS_MESSAGE = (
 )
 DEFAULT_CWL_VERSION = "v1.0"
 
-TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}+galaxy0" profile="21.05">
+TOOL_TEMPLATE = """<tool id="{{id}}" name="{{name}}" version="{{version}}+galaxy0" profile="25.0">
 {%- if description %}
     <description>{{ description }}</description>
 {%- endif %}
