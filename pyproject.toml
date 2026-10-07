@@ -121,7 +121,6 @@ max-complexity = 14
 test = [
     "pytest",
     "pytest-timeout",
-    "pytest-mock",
     "coverage",
     "responses>=0.23.0",
     "flask",
