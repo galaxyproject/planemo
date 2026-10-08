@@ -11,9 +11,9 @@ from typing import (
     Any,
     Dict,
     List,
+    Literal,
     Optional,
     Tuple,
-    Type,
     TYPE_CHECKING,
     Union,
 )
@@ -22,12 +22,7 @@ from urllib.parse import urljoin
 import bioblend
 from bioblend.galaxy import GalaxyInstance
 from bioblend.util import attach_file
-
-try:
-    from galaxy.tool_util.client.staging import StagingInterface
-except ImportError:
-    from galaxy.tool_util.client.staging import StagingInterace as StagingInterface
-
+from galaxy.tool_util.client.staging import StagingInterface
 from galaxy.tool_util.cwl.util import (
     invocation_to_output,
     output_to_cwl_json,
@@ -272,7 +267,6 @@ def _execute(  # noqa C901
 
     user_gi = config.user_gi
     admin_gi = config.gi
-    run_response = None
 
     start_datetime = datetime.now()
     try:
@@ -281,7 +275,6 @@ def _execute(  # noqa C901
         ctx.vlog("Problem with staging in data for Galaxy activities...")
         raise
     if runnable.type in [RunnableType.galaxy_tool, RunnableType.cwl_tool]:
-        response_class: Type[GalaxyBaseRunResponse] = GalaxyToolRunResponse
         tool_id = _verified_tool_id(runnable, user_gi)
         inputs_representation = _inputs_representation(runnable)
         run_tool_payload = dict(
@@ -316,8 +309,18 @@ def _execute(  # noqa C901
             if ctx.verbose:
                 summarize_history(ctx, user_gi, history_id)
 
+        run_response = GalaxyToolRunResponse(
+            ctx=ctx,
+            runnable=runnable,
+            user_gi=user_gi,
+            history_id=history_id,
+            log=log_contents_str(config),
+            start_datetime=start_datetime,
+            end_datetime=datetime.now(),
+            **response_kwds,
+        )
+
     elif runnable.type in [RunnableType.galaxy_workflow, RunnableType.cwl_workflow]:
-        response_class = GalaxyWorkflowRunResponse
         workflow_id = config.workflow_id_for_runnable(runnable)
         ctx.vlog(f"Found Galaxy workflow ID [{workflow_id}] for URI [{runnable.uri}]")
         invocation = user_gi.workflows.invoke_workflow(
@@ -345,17 +348,6 @@ def _execute(  # noqa C901
     else:
         raise NotImplementedError()
 
-    if not run_response:
-        run_response = response_class(
-            ctx=ctx,
-            runnable=runnable,
-            user_gi=user_gi,
-            history_id=history_id,
-            log=log_contents_str(config),
-            start_datetime=start_datetime,
-            end_datetime=datetime.now(),
-            **response_kwds,
-        )
     if kwds.get("download_outputs"):
         output_directory = kwds.get("output_directory", None)
         ctx.vlog("collecting outputs from run...")
@@ -440,7 +432,7 @@ def stage_in(
     **kwds,
 ) -> Tuple[Dict[str, Any], str]:
     # only upload objects as files/collections for CWL workflows...
-    tool_or_workflow = "tool" if runnable.type != RunnableType.cwl_workflow else "workflow"
+    tool_or_workflow: Literal["tool", "workflow"] = "tool" if runnable.type != RunnableType.cwl_workflow else "workflow"
     to_posix_lines = runnable.type.is_galaxy_artifact
     simultaneous_uploads = kwds.get("simultaneous_uploads", False)
     user_gi = config.user_gi

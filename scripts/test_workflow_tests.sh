@@ -15,7 +15,7 @@ cd $PROJECT_DIRECTORY
 make dist
 
 # Test against wheel.
-export PLANEMO_TARGET="$PROJECT_DIRECTORY/dist/planemo*whl"
+export PLANEMO_TARGET="$PROJECT_DIRECTORY/dist/planemo-*.whl"
 
 cd $TEMP_DIRECTORY
 ls

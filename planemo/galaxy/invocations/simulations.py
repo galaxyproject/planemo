@@ -77,7 +77,7 @@ class InvocationStep(HasState):
     jobs: Optional[List[Job]]
 
     def __init__(
-        self, jobs: List[Job], invocation: Optional["Invocation"], after: int, states: List[StateWithDuration]
+        self, jobs: Optional[List[Job]], invocation: Optional["Invocation"], after: int, states: List[StateWithDuration]
     ):
         super().__init__(after, states)
         self.id = "step_id"

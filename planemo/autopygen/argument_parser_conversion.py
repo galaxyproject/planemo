@@ -463,7 +463,7 @@ def _determine_nargs(nargs: Union[str, int, None]) -> Union[float, int]:
         return math.inf
     if nargs is None:
         return 0
-    return int(nargs)
+    return nargs
 
 
 def _determine_custom_attributes(

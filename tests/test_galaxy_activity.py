@@ -5,7 +5,11 @@ from unittest import mock
 
 import pytest
 
-from planemo.galaxy.activity import _execute
+from planemo.galaxy.activity import (
+    _execute,
+    GalaxyToolRunResponse,
+    GalaxyWorkflowRunResponse,
+)
 from planemo.runnable import (
     Runnable,
     RunnableType,
@@ -54,3 +58,48 @@ def test_execute_does_not_cache_without_use_cache():
     """A caller that leaves use_cache unset gets no caching - e.g. ``planemo test`` by default."""
     assert _execute_capturing_request(TOOL_RUNNABLE)["use_cached_job"] is False
     assert _execute_capturing_request(WORKFLOW_RUNNABLE)["use_cached_job"] is False
+
+
+def test_execute_tool_constructs_response_from_completed_job():
+    config = mock.MagicMock()
+    api_response = {"jobs": [{"id": "job-id"}]}
+    job_info = {
+        "id": "job-id",
+        "state": "ok",
+        "stdout": "hello",
+        "stderr": "",
+        "command_line": "echo hello",
+        "copied_from_job_id": "cached-job-id",
+    }
+    config.user_gi.tools._post.return_value = api_response
+    config.gi.jobs.show_job.return_value = job_info
+    with mock.patch("planemo.galaxy.activity.stage_in", return_value=({}, "history-id")):
+        with mock.patch("planemo.galaxy.activity._wait_for_job", return_value="ok"):
+            response = _execute(create_test_context(), config, TOOL_RUNNABLE, job_path=None)
+    assert isinstance(response, GalaxyToolRunResponse)
+    assert response.api_run_response == api_response
+    assert response.job_info == {
+        "stdout": "hello",
+        "stderr": "",
+        "command_line": "echo hello",
+        "copied_from_job_id": "cached-job-id",
+    }
+    assert response.was_successful
+
+
+def test_execute_workflow_constructs_invocation_response():
+    config = mock.MagicMock()
+    invocation = {
+        "id": "invocation-id",
+        "workflow_id": "workflow-id",
+        "history_id": "history-id",
+        "state": "new",
+        "steps": [],
+    }
+    config.user_gi.workflows.invoke_workflow.return_value = invocation
+    config.user_gi.invocations.show_invocation.return_value = invocation
+    with mock.patch("planemo.galaxy.activity.stage_in", return_value=({}, "history-id")):
+        response = _execute(create_test_context(), config, WORKFLOW_RUNNABLE, job_path=None, no_wait=True)
+    assert isinstance(response, GalaxyWorkflowRunResponse)
+    assert response.invocation_state == "new"
+    assert response.was_successful

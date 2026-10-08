@@ -24,7 +24,7 @@ DOCS_DIR?=docs
 BUILD_SLIDESHOW?=$(IN_VENV) python3 $(BUILD_SCRIPTS_DIR)/build_slideshow.py
 SLIDESHOW_TO_PDF?=bash -c 'docker run --rm -v `pwd`:/cwd astefanutti/decktape /cwd/$$0 /cwd/`dirname $$0`/`basename -s .html $$0`.pdf'
 
-.PHONY: clean-pyc clean-build docs clean
+.PHONY: clean-pyc clean-build docs clean update-dependencies check-dependencies
 
 help:
 	@egrep '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -55,8 +55,7 @@ install: submodule ## install into Python envirnoment
 	pip install . && cd cwl-runner && pip install .
 
 setup-venv: ## setup a development virtualenv in current directory
-	if [ ! -d $(VENV) ]; then python3 -m venv $(VENV); exit; fi;
-	$(IN_VENV) pip install --upgrade pip && pip install -r dev-requirements.txt -r requirements.txt
+	UV_PROJECT_ENVIRONMENT="$(VENV)" uv sync --locked
 
 setup-git-hook-lint: ## setup precommit hook for linting project
 	cp $(BUILD_SCRIPTS_DIR)/pre-commit-lint .git/hooks/pre-commit
@@ -140,7 +139,7 @@ open-project: ## open project on github
 check-dist: clean-build dist clean-build
 
 dist: clean submodule ## create and check packages
-	$(IN_VENV) python3 -m build
+	$(IN_VENV) python3 $(BUILD_SCRIPTS_DIR)/build_distributions.py
 	$(IN_VENV) twine check dist/*
 	ls -l dist
 
@@ -179,3 +178,9 @@ add-history: ## Reformat HISTORY.rst with data from Github's API
 
 update-extern: ## update external artifacts copied locally
 	sh scripts/update_extern.sh
+
+update-dependencies: ## refresh uv.lock to the latest allowed versions
+	uv lock --upgrade
+
+check-dependencies: ## check uv.lock is current with pyproject.toml
+	uv lock --check

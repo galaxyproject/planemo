@@ -34,7 +34,7 @@ LOAD_ERROR_MESSAGE = "Error loading tool with path %s"
 def uri_to_path(ctx: "PlanemoCliContext", uri: str) -> str:
     """Fetch URI to a local path."""
     fetcher = ToolLocationFetcher()
-    return fetcher.to_tool_path(uri)
+    return os.fspath(fetcher.to_tool_path(uri))
 
 
 def uris_to_paths(ctx, uris):
@@ -101,7 +101,7 @@ def _load_exception_handler(path, exc_info):
     traceback.print_exception(*exc_info, limit=1, file=sys.stderr)
 
 
-def _is_tool_source(ctx: Optional["PlanemoCliContext"], tool_path: str, tool_source: "ToolSource") -> bool:
+def _is_tool_source(ctx: Optional["PlanemoCliContext"], tool_path: str, tool_source: object) -> bool:
     if os.path.basename(tool_path) in SHED_FILES:
         return False
     root = getattr(tool_source, "root", None)

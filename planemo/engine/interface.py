@@ -25,7 +25,7 @@ class Engine(metaclass=abc.ABCMeta):
     """Abstract description of an external process for running tools or workflows."""
 
     @abc.abstractmethod
-    def run(self, path, job_path):
+    def run(self, runnables, job_paths, output_collectors: Optional[List[Callable]] = None):
         """Run a job using a compatible artifact (workflow or tool)."""
 
     @abc.abstractmethod
@@ -33,7 +33,7 @@ class Engine(metaclass=abc.ABCMeta):
         """Release any resources used to run/test with this engine."""
 
     @abc.abstractmethod
-    def test(self, runnables):
+    def test(self, runnables, test_timeout):
         """Test runnable artifacts (workflow or tool)."""
 
 

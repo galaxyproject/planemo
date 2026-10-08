@@ -154,7 +154,7 @@ def test_autogen_subparsers():
 
 def _open_and_read(path: str) -> str:
     file = open(path, "r")
-    result = str(file.read())
+    result = file.read()
     file.close()
 
     return result
