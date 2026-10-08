@@ -174,7 +174,6 @@ def cli(ctx, paths, **kwds):  # noqa C901
             ]
             info(f"Running tests for the following auto-updated tools: {', '.join(modified_paths)}")
             runnables = for_paths(modified_paths + modified_workflows)
-            kwds["engine"] = "galaxy"
             return_value = test_runnables(ctx, runnables, original_paths=paths, **kwds)
             exit_codes.append(return_value)
     ctx.exit(coalesce_return_codes(exit_codes, assert_at_least_one=assert_tools))

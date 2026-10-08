@@ -229,12 +229,13 @@ Planemo documentation for what can actually be reused.
                                       to a directory in the planemo workspace).
       --export_invocation PATH        Export workflow invocation as archive to
                                       specified path.
-      --engine [galaxy|docker_galaxy|cwltool|toil|external_galaxy]
+      --engine [galaxy|installed_galaxy|docker_galaxy|cwltool|toil|external_galaxy]
                                       Select an engine to run or test artifacts such
                                       as tools and workflows. Defaults to a local
-                                      Galaxy, but running Galaxy within a Docker
-                                      container or the CWL reference implementation
-                                      'cwltool' and 'toil' be selected.
+                                      Galaxy checkout. 'installed_galaxy' runs the
+                                      Galaxy packages in Planemo's environment
+                                      through Gravity. Docker, external Galaxy,
+                                      cwltool, and toil engines are also available.
       --non_strict_cwl                Disable strict validation of CWL.
       --no-container, --no_container  If cwltool engine is used, disable Docker
                                       container usage.

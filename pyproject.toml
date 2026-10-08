@@ -69,6 +69,13 @@ dependencies = {file = "requirements.txt"}
 [project.scripts]
 planemo = "planemo.cli:planemo"
 
+[project.optional-dependencies]
+installed_galaxy = [
+    "galaxy-app>=26.1,<26.2",
+    "galaxy-web-apps>=26.1,<26.2",
+    "gravity>=1.2.3",
+]
+
 [tool.black]
 extend-exclude = '^/(docs/standards)/'
 include = '\.pyi?$'

@@ -1,0 +1,20 @@
+class: GalaxyTool
+id: installed_echo
+name: Installed echo
+version: "1.0"
+shell_command: echo "$(inputs.message)" > output.txt
+inputs:
+  - name: message
+    type: text
+outputs:
+  output:
+    from_work_dir: output.txt
+    format: txt
+tests:
+  - inputs:
+      message: hello installed Galaxy
+    outputs:
+      output:
+        asserts:
+          has_text:
+            text: hello installed Galaxy
