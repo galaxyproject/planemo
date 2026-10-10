@@ -36,6 +36,8 @@ from planemo.cli import (
     default=False,
     help="Check validity of URLs in XML files",
 )
+@options.lint_doi_option()
+@options.lint_conda_requirements_option()
 @options.lint_biocontainers_option()
 # @click.option(
 #     "--verify",
