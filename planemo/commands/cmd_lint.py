@@ -20,25 +20,7 @@ from planemo.tool_lint import (
 @options.fail_level_option()
 @options.skip_options()
 @options.recursive_option()
-@click.option(
-    "--urls",
-    is_flag=True,
-    default=False,
-    help="Check validity of URLs in XML files",
-)
-@click.option(
-    "--doi",
-    is_flag=True,
-    default=False,
-    help="Check validity of DOIs in XML files",
-)
-@click.option(
-    "--conda_requirements",
-    is_flag=True,
-    default=False,
-    help="Check tool requirements for availability in best practice Conda channels.",
-)
-@options.lint_biocontainers_option()
+@options.lint_planemo_defined_tool_linters_options()
 # @click.option(
 # "--verify",
 # is_flag=True,
