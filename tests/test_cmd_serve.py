@@ -1,6 +1,7 @@
 import os
 import signal
 import subprocess
+import sys
 import tempfile
 import time
 import uuid
@@ -32,6 +33,7 @@ from .test_utils import (
 
 TEST_HISTORY_NAME = "Cool History 42"
 SERVE_TEST_VERBOSE = True
+PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}"
 
 
 class UsesServeCommand:
@@ -131,9 +133,9 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @skip_if_environ("PLANEMO_SKIP_GALAXY_CLIENT_TESTS")
-    @skip_unless_executable("python3")
-    def test_serve_client_python3(self):
-        extra_args = ["--galaxy_python_version", "3"]
+    @skip_unless_executable(f"python{PYTHON_VERSION}")
+    def test_serve_client_explicit_python_version(self):
+        extra_args = ["--galaxy_python_version", PYTHON_VERSION]
         # Given the client build - give this more time.
         timeout_multiplier = 3
         self._launch_thread_and_wait(
