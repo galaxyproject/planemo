@@ -707,6 +707,10 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                 return output_dict_value
             outputs_dict[runnable_output_id] = output_dict_value
 
+        if output_id:
+            # single-output mode collected nothing - don't clobber the cache
+            return None
+
         self._outputs_dict = outputs_dict
         self._ctx.vlog("collected outputs [%s]" % self._outputs_dict)
 

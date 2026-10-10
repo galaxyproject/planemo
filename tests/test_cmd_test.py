@@ -418,6 +418,29 @@ class CmdTestTestCase(CliTestCase):
             self._check_exit_code(test_command, exit_code=0)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_workflow_test_undefined_output(self):
+        """Test a workflow test naming an output label the workflow does not define."""
+        cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
+        with self._isolate() as test_dir:
+            test_artifact = os.path.join(TEST_DATA_DIR, "wf20_undefined_output.yml")
+            test_command = self._test_command()
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command += [
+                "--no_dependency_resolution",
+                "--extra_tools",
+                cat,
+                test_artifact,
+            ]
+            self._check_exit_code(test_command, exit_code=1)
+            # An uncaught exception also exits 1, so the report is what distinguishes a
+            # reported failure from a crash - a crash writes no report at all.
+            with open(os.path.join(test_dir, "tool_test_output.json")) as test_json:
+                tests_dict = json.load(test_json)
+            data = tests_dict["tests"][0]["data"]
+            assert data["status"] == "failure"
+            assert data["output_problems"] == ["Expected output [wf_output_typo] not found in results."]
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_workflow_test_output_sanitization(self):
         cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
         with self._isolate():

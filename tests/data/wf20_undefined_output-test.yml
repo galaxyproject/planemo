@@ -1,0 +1,8 @@
+- doc: Test naming an output label the workflow does not define - the undefined label
+    must be listed after a real one so the real output is looked up again after it.
+  job: wf1.gxwf-job.yml
+  outputs:
+    wf_output_1:
+      checksum: "sha1$a0b65939670bc2c010f4d5d6a0b3e4e4590fb92b"
+    wf_output_typo:
+      checksum: "sha1$a0b65939670bc2c010f4d5d6a0b3e4e4590fb92b"
