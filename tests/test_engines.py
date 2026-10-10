@@ -1,10 +1,17 @@
 """Unit tests for engines and runnables."""
 
 import os
+from unittest import mock
+
+import pytest
 
 from planemo.engine import engine_context
-from planemo.engine.galaxy import log_service_logs_on_failure
+from planemo.engine.galaxy import (
+    ExternalGalaxyEngine,
+    log_service_logs_on_failure,
+)
 from planemo.runnable import (
+    ExternalGalaxyToolTestCase,
     for_path,
     get_outputs,
     RunnableType,
@@ -92,3 +99,27 @@ def test_service_logs_logged_when_no_result_registered():
     ctx = _RecordingContext()
     log_service_logs_on_failure(ctx, _ConfigWithServiceLogs(), [])
     assert len(ctx.messages) == 1
+
+
+@pytest.mark.parametrize(
+    "kwds,expected",
+    [
+        ({}, "always"),
+        ({"use_async_submission": False}, "always"),
+        ({"use_async_submission": True}, "if_needed"),
+    ],
+)
+def test_use_async_submission_maps_to_use_legacy_api(kwds, expected):
+    ctx = create_test_context()
+    test_case = ExternalGalaxyToolTestCase(
+        for_path(A_GALAXY_TOOL), tool_id="tool", tool_version="1.0", test_index=0, test_dict={}
+    )
+    engine = ExternalGalaxyEngine(ctx, **kwds)
+    with (
+        mock.patch.object(ExternalGalaxyEngine, "ensure_runnables_served") as served,
+        mock.patch("planemo.engine.galaxy.interactor") as interactor,
+        mock.patch("planemo.engine.galaxy.log_service_logs_on_failure"),
+    ):
+        served.return_value.__enter__.return_value = mock.MagicMock()
+        engine._run_test_cases([test_case], test_timeout=None)
+    assert interactor.verify_tool.call_args.kwargs["use_legacy_api"] == expected
