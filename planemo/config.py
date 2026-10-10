@@ -32,13 +32,13 @@ OptionSource = Enum("OptionSource", "cli profile global_config default")
 def _default_callback(
     default: Any,
     use_global_config: bool = False,
-    resolve_path: bool = False,
     extra_global_config_vars: List[str] = [],
 ) -> Callable:
     def callback(ctx, param, value):
         planemo_ctx = ctx.obj
         param_name = param.name
-        if value is not None:
+        # Click represents an omitted repeatable/multi-value option as ().
+        if value is not None and not ((param.multiple or param.nargs != 1) and value == ()):
             result = value
             option_source = OptionSource.cli
         else:
@@ -56,10 +56,20 @@ def _default_callback(
         assert option_source is not None
         assert result is not VALUE_UNSET
 
+        if option_source is not OptionSource.cli:
+            result = convert_option_value(ctx, param, result)
+
         planemo_ctx.set_option_source(param_name, option_source)
         return result
 
     return callback
+
+
+def convert_option_value(ctx: click.Context, param: Option, value: Any) -> Any:
+    """Apply Click's conversion to values sourced outside its parser."""
+    if param.multiple and isinstance(value, str):
+        value = (value,)
+    return param.type_cast_value(ctx, value)
 
 
 def _find_default(
@@ -84,7 +94,6 @@ def planemo_option(*args, **kwargs) -> Callable:
     defaults from ~/.planemo.yml, and tracks how parameters are specified
     using the Planemo Context object.
     """
-    option_type = kwargs.get("type")
     use_global_config = kwargs.pop("use_global_config", False)
     use_env_var = kwargs.pop("use_env_var", False)
     extra_global_config_vars = kwargs.pop("extra_global_config_vars", [])
@@ -98,12 +107,10 @@ def planemo_option(*args, **kwargs) -> Callable:
         outer_callback = kwargs.pop("callback", None)
 
         def callback(ctx, param, value):
-            resolve_path = bool(option_type and getattr(option_type, "resolve_path", False))
             result = _default_callback(
                 default,
                 use_global_config=use_global_config,
                 extra_global_config_vars=extra_global_config_vars,
-                resolve_path=resolve_path,
             )(ctx, param, value)
 
             if outer_callback is not None:
@@ -159,6 +166,7 @@ def read_global_config(config_path: Optional[str]) -> Dict[str, Any]:
 
 
 __all__ = (
+    "convert_option_value",
     "global_config_path",
     "read_global_config",
     "planemo_option",
