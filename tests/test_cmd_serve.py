@@ -100,7 +100,7 @@ class UsesServeCommand:
 
     @property
     def _user_gi(self):
-        admin_gi = api.gi(self._port)
+        admin_gi = api.gi(self._port, key=api.DEFAULT_ADMIN_API_KEY)
         user_api_key = api.user_api_key(admin_gi)
         user_gi = api.gi(self._port, key=user_api_key)
         return user_gi
@@ -231,7 +231,7 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
             tool_data_table_path_2,
         ]
         self._launch_thread_and_wait(self._run, extra_args)
-        admin_gi = api.gi(self._port)
+        admin_gi = api.gi(self._port, key=api.DEFAULT_ADMIN_API_KEY)
         table_contents = admin_gi.tool_data.show_data_table("__dbkeys__")
         assert any("planemo1" in field[0] for field in table_contents["fields"]), table_contents
         assert any("planemo2" in field[0] for field in table_contents["fields"]), table_contents
