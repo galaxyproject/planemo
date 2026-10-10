@@ -293,6 +293,10 @@ def _execute(  # noqa C901
         )
         ctx.vlog("Post to Galaxy tool API with payload [%s]" % run_tool_payload)
         tool_run_response = user_gi.tools._post(run_tool_payload)
+        response_kwds = {
+            "job_info": None,
+            "api_run_response": tool_run_response,
+        }
 
         if not kwds.get("no_wait"):
             job = tool_run_response["jobs"][0]
@@ -308,11 +312,7 @@ def _execute(  # noqa C901
                 raise Exception(msg)
 
             ctx.vlog("Final job state was ok, fetching details for job [%s]" % job_id)
-            job_info = admin_gi.jobs.show_job(job_id)
-            response_kwds = {
-                "job_info": job_info,
-                "api_run_response": tool_run_response,
-            }
+            response_kwds["job_info"] = admin_gi.jobs.show_job(job_id)
             if ctx.verbose:
                 summarize_history(ctx, user_gi, history_id)
 

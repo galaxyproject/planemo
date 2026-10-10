@@ -5,7 +5,10 @@ from unittest import mock
 
 import pytest
 
-from planemo.galaxy.activity import _execute
+from planemo.galaxy.activity import (
+    _execute,
+    GalaxyToolRunResponse,
+)
 from planemo.runnable import (
     Runnable,
     RunnableType,
@@ -54,3 +57,26 @@ def test_execute_does_not_cache_without_use_cache():
     """A caller that leaves use_cache unset gets no caching - e.g. ``planemo test`` by default."""
     assert _execute_capturing_request(TOOL_RUNNABLE)["use_cached_job"] is False
     assert _execute_capturing_request(WORKFLOW_RUNNABLE)["use_cached_job"] is False
+
+
+def test_execute_tool_no_wait_returns_submission_response():
+    config = mock.MagicMock()
+    config.log_contents = ""
+    api_run_response = {
+        "jobs": [{"id": "jobid123"}],
+        "outputs": [],
+        "output_collections": [],
+    }
+    config.user_gi.tools._post.return_value = api_run_response
+
+    with mock.patch("planemo.galaxy.activity.stage_in", return_value=({}, "historyid123")):
+        with mock.patch("planemo.galaxy.activity._wait_for_job") as wait_for_job:
+            response = _execute(create_test_context(), config, TOOL_RUNNABLE, job_path=None, no_wait=True)
+
+    assert isinstance(response, GalaxyToolRunResponse)
+    assert response.was_successful
+    assert response.job_info is None
+    assert response.api_run_response is api_run_response
+    assert response.structured_data()["data"]["status"] == "success"
+    wait_for_job.assert_not_called()
+    config.gi.jobs.show_job.assert_not_called()
