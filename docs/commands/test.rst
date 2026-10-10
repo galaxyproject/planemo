@@ -65,6 +65,13 @@ Planemo documentation.
                                       between requests. Useful when testing against
                                       remote and/or production instances to limit
                                       generated traffic.
+      --use_async_submission / --no_use_async_submission
+                                      Submit tool test jobs to POST /api/jobs
+                                      instead of the legacy POST /api/tools
+                                      endpoint. Only tests that carry a
+                                      validated request (tools with profile >=
+                                      24.2) are submitted this way, all other
+                                      tests fall back to the legacy endpoint.
       --use_cache / --no_use_cache    Reuse cached job results if available. Off by
                                       default - Galaxy replays the outputs of an
                                       equivalent job, so a tool edited without a
