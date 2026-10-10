@@ -12,6 +12,8 @@ from .test_utils import (
     CliTestCase,
     mark,
     skip_if_environ,
+    skip_if_testtoolshed_down,
+    skip_if_toolshed_down,
 )
 
 
@@ -121,6 +123,7 @@ class CmdAutoupdateTestCase(CliTestCase):
             self._check_exit_code(["autoupdate", wf_file, "--skiplist", skiplist], exit_code=0)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_if_toolshed_down
     def test_autoupdate_multiple_workflows(self):
         """Test autoupdate command for a workflow is needed."""
         with (
@@ -156,6 +159,7 @@ class CmdAutoupdateTestCase(CliTestCase):
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @mark.tests_galaxy_branch
+    @skip_if_toolshed_down
     def test_autoupdate_gxformat2_workflow(self):
         with self._isolate_with_test_data("wf_repos/autoupdate_tests") as f:
             wf_file = os.path.join(f, "diff-refactor-test.gxwf.yml")
@@ -174,6 +178,8 @@ class CmdAutoupdateTestCase(CliTestCase):
             assert wf["release"] == "0.1.1"
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_if_toolshed_down
+    @skip_if_testtoolshed_down
     def test_autoupdate_workflow_from_multiple_tool_sheds(self):
         with self._isolate_with_test_data("wf_repos/autoupdate_tests") as f:
             wf_file = os.path.join(f, "wf_autoupdate_test_multiple_repos.ga")
@@ -191,6 +197,7 @@ class CmdAutoupdateTestCase(CliTestCase):
             assert wf["steps"]["0"]["inputs"][0]["description"] == ""
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_if_toolshed_down
     def test_autoupdate_workflow_unexisting_version(self):
         """Test autoupdate command for a workflow where the version of the tool is not in the toolshed."""
         with self._isolate_with_test_data("wf_repos/autoupdate_tests") as f:
@@ -202,6 +209,7 @@ class CmdAutoupdateTestCase(CliTestCase):
             # In future versions it could be great that it gives the last valid version.
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_if_toolshed_down
     def test_autoupdate_workflow_unexisting_tool(self):
         """Test autoupdate command for a workflow where the tool is not in the toolshed."""
         with self._isolate_with_test_data("wf_repos/autoupdate_tests") as f:

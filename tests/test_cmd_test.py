@@ -20,6 +20,8 @@ from .test_utils import (
     PROJECT_TEMPLATES_DIR,
     run_verbosely,
     skip_if_environ,
+    skip_if_quay_down,
+    skip_if_toolshed_down,
     skip_unless_module,
     TEST_DATA_DIR,
     TEST_TOOLS_DIR,
@@ -95,6 +97,7 @@ class CmdTestTestCase(CliTestCase):
                 assert json.load(fh)["summary"]["num_tests"] == 1
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_if_quay_down
     def test_data_manager_docker_mount(self):
         """Test testing a data manager that needs (ro) access to the test-data folder."""
         with self._isolate(), NamedTemporaryFile(prefix="data_manager_test_json") as json_out:
@@ -281,6 +284,8 @@ class CmdTestTestCase(CliTestCase):
             #    raise
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @skip_if_quay_down
+    @skip_if_toolshed_down
     def test_workflow_test_repository_installation_gxformat2(self):
         """Test testing a workflow with collection inputs Galaxy."""
         with self._isolate():
