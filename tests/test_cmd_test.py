@@ -27,6 +27,8 @@ from .test_utils import (
 
 SCHEDULING_WORKFLOWS_PATH = os.path.join(TEST_DATA_DIR, "scheduling_failure_workflows")
 FUNCTIONAL_TEST_TOOLS = os.path.join(TEST_DATA_DIR, "tools", "functional_test_tools")
+EXTERNAL_TEST_DATA_DIR = os.path.join(TEST_DATA_DIR, "external_test_data")
+EXTERNAL_TEST_DATA_TOOL = os.path.join(TEST_DATA_DIR, "tools", "ok_external_test_data.xml")
 FETCH_DATA_DATA_MANAGER_TEST_PATH = "data_manager/data_manager_fetch_genome_dbkeys_all_fasta/data_manager/data_manager_fetch_genome_all_fasta_dbkeys.xml"
 BOWTIE2_DATA_MANAGER_TEST_PATH = (
     "data_manager/data_manager_bowtie2_index_builder/data_manager/bowtie2_index_builder.xml"
@@ -77,6 +79,20 @@ class CmdTestTestCase(CliTestCase):
             test_artifact = os.path.join(TEST_DATA_DIR, "tools", "ok_test_assert_command.xml")
             shutil.copy(test_artifact, tempdir)
             test_command = self._test_command(tempdir, "--no_dependency_resolution")
+            self._check_exit_code(test_command, exit_code=0)
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_test_data_option(self):
+        """Test --test_data locates inputs kept outside the tool's directory."""
+        with self._isolate():
+            test_command = self._test_command()
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command += [
+                "--no_dependency_resolution",
+                "--test_data",
+                EXTERNAL_TEST_DATA_DIR,
+                EXTERNAL_TEST_DATA_TOOL,
+            ]
             self._check_exit_code(test_command, exit_code=0)
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
