@@ -18,6 +18,7 @@ from planemo.lint import (
     handle_lint_complete,
     lint_urls,
     lint_xsd,
+    LintFailed,
     setup_lint,
 )
 from planemo.shed import (
@@ -66,11 +67,19 @@ def lint_repository(ctx: "PlanemoCliContext", realized_repository: "RealizedRepo
     See :mod:`planemo.shed` for details on constructing a realized
     repository data structure.
     """
-    failed = False
     path = realized_repository.real_path
     info("Linting repository %s" % path)
     lint_args = build_tool_lint_args(ctx, **kwds)
     lint_args, lint_ctx = setup_lint(ctx, lint_args=lint_args, **kwds)
+    try:
+        failed = _lint_repository(ctx, realized_repository, lint_ctx, lint_args, **kwds)
+    except LintFailed:
+        failed = True
+    return handle_lint_complete(lint_ctx, lint_args, failed=failed)
+
+
+def _lint_repository(ctx, realized_repository, lint_ctx, lint_args, **kwds):
+    failed = False
     lint_ctx.lint(
         "lint_expansion",
         lint_expansion,
@@ -120,6 +129,8 @@ def lint_repository(ctx: "PlanemoCliContext", realized_repository: "RealizedRepo
     if kwds["tools"]:
         tools_failed = lint_repository_tools(ctx, realized_repository, lint_ctx, lint_args)
         failed = failed or tools_failed
+        if failed and kwds.get("fail_fast", False):
+            raise LintFailed()
 
     lint_ctx.lint("lint_version_bumped", lint_shed_version, realized_repository)
     lint_ctx.lint("lint_shed_remote_repository_url", lint_shed_remote_repository_url, realized_repository)
@@ -130,7 +141,7 @@ def lint_repository(ctx: "PlanemoCliContext", realized_repository: "RealizedRepo
             lint_shed_metadata,
             realized_repository,
         )
-    return handle_lint_complete(lint_ctx, lint_args, failed=failed)
+    return failed
 
 
 def lint_repository_tools(ctx: "PlanemoCliContext", realized_repository: "RealizedRepository", lint_ctx, lint_args):
