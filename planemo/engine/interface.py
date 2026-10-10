@@ -1,6 +1,7 @@
 """Module contianing the :class:`Engine` abstraction."""
 
 import abc
+import contextlib
 import json
 import os
 import tempfile
@@ -41,6 +42,7 @@ class BaseEngine(Engine):
     """Base class providing context and keywords for Engine implementations."""
 
     handled_runnable_types: List[RunnableType] = []
+    can_serve_test_results = False
 
     def __init__(self, ctx, **kwds):
         """Store context and kwds."""
@@ -129,6 +131,17 @@ class BaseEngine(Engine):
         structured_results = StructuredData(data=test_data)
         structured_results.calculate_summary_data()
         return structured_results
+
+    @contextlib.contextmanager
+    def test_context(self, runnables, test_timeout, keep_alive=False):
+        """Run tests while retaining any engine resources needed by the caller."""
+        if keep_alive and not self.can_serve_test_results:
+            raise click.UsageError("--serve is only supported by a managed Galaxy engine.")
+        yield self.test(runnables, test_timeout=test_timeout)
+
+    def serve_test_results(self):
+        """Keep an engine-owned service available for interactive inspection."""
+        raise click.UsageError("--serve is only supported by a managed Galaxy engine.")
 
     def _collect_test_results(self, test_cases, test_timeout):
         run_responses = self._run_test_cases(test_cases, test_timeout)

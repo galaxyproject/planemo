@@ -1,14 +1,27 @@
 """Unit tests for engines and runnables."""
 
+import contextlib
 import os
+from types import SimpleNamespace
+from unittest.mock import (
+    Mock,
+    patch,
+)
 
 from planemo.engine import engine_context
-from planemo.engine.galaxy import log_service_logs_on_failure
+from planemo.engine.galaxy import (
+    DockerizedManagedGalaxyEngine,
+    InstalledGalaxyEngine,
+    LocalManagedGalaxyEngine,
+    log_service_logs_on_failure,
+)
+from planemo.engine.interface import BaseEngine
 from planemo.runnable import (
     for_path,
     get_outputs,
     RunnableType,
 )
+from planemo.test.results import StructuredData
 from .test_utils import (
     create_test_context,
     TEST_DATA_DIR,
@@ -92,3 +105,72 @@ def test_service_logs_logged_when_no_result_registered():
     ctx = _RecordingContext()
     log_service_logs_on_failure(ctx, _ConfigWithServiceLogs(), [])
     assert len(ctx.messages) == 1
+
+
+class _RecordingManagedGalaxyEngine(LocalManagedGalaxyEngine):
+    def __init__(self, ctx, config):
+        super().__init__(ctx)
+        self.config = config
+        self.served = []
+
+    @contextlib.contextmanager
+    def ensure_runnables_served(self, runnables):
+        self.served.append(list(runnables))
+        yield self.config
+
+
+def test_managed_galaxy_engines_can_serve_test_results():
+    assert LocalManagedGalaxyEngine.can_serve_test_results
+    assert InstalledGalaxyEngine.can_serve_test_results
+    assert DockerizedManagedGalaxyEngine.can_serve_test_results
+
+
+def test_managed_test_context_reuses_one_server_until_reporting_finishes():
+    config = SimpleNamespace(galaxy_url="http://127.0.0.1:9090")
+    engine = _RecordingManagedGalaxyEngine(create_test_context(), config)
+    result = StructuredData(data={"version": "0.1", "tests": []})
+    result.calculate_summary_data()
+
+    with patch.object(BaseEngine, "test", return_value=result):
+        with engine.test_context(["one", "two"], test_timeout=17, keep_alive=True) as actual_result:
+            assert actual_result is result
+            with engine._served_config(["one"]) as active_config:
+                assert active_config is config
+
+    assert engine.served == [["one", "two"]]
+
+
+def test_managed_test_server_stops_cleanly_after_interrupt():
+    config = SimpleNamespace(galaxy_url="http://127.0.0.1:9090")
+    engine = _RecordingManagedGalaxyEngine(create_test_context(), config)
+
+    with (
+        patch.object(BaseEngine, "test", return_value=Mock()),
+        patch("planemo.engine.galaxy.sleep_for_serve", side_effect=KeyboardInterrupt) as sleep,
+        engine.test_context([], test_timeout=17, keep_alive=True),
+    ):
+        engine.serve_test_results()
+
+    sleep.assert_called_once_with()
+
+
+def test_embedded_tool_test_histories_are_only_preserved_while_serving():
+    config = SimpleNamespace(
+        galaxy_url="http://127.0.0.1:9090",
+        master_api_key="master-key",
+        user_api_key="user-key",
+        service_log_contents={},
+    )
+    engine = _RecordingManagedGalaxyEngine(create_test_context(), config)
+    test_case = SimpleNamespace(tool_id="cat", test_index=0, tool_version="1.0")
+
+    with patch("planemo.engine.galaxy.interactor.verify_tool") as verify_tool:
+        engine._run_galaxy_tool_test_case(config, test_case, 17, Mock())
+        with (
+            patch.object(BaseEngine, "test", return_value=Mock()),
+            engine.test_context([], test_timeout=17, keep_alive=True),
+        ):
+            engine._run_galaxy_tool_test_case(config, test_case, 17, Mock())
+
+    assert verify_tool.call_args_list[0].kwargs["no_history_cleanup"] is False
+    assert verify_tool.call_args_list[1].kwargs["no_history_cleanup"] is True

@@ -77,11 +77,13 @@ Open a synchronized Galaxy workflow editor.
                                       for security reasons set to 0.0.0.0 to bind
                                       Galaxy to all ports including potentially
                                       publicly accessible ones.
-      --engine [galaxy|docker_galaxy|external_galaxy]
+      --engine [galaxy|installed_galaxy|docker_galaxy|external_galaxy]
                                       Select an engine to serve artifacts such as
                                       tools and workflows. Defaults to a local
-                                      Galaxy, but running Galaxy within a Docker
-                                      container.
+                                      Galaxy checkout. 'installed_galaxy' runs the
+                                      Galaxy packages in Planemo's environment
+                                      through Gravity; Docker and external Galaxy
+                                      engines are also available.
       --non_strict_cwl                Disable strict validation of CWL.
       --docker_galaxy_image TEXT      Docker image identifier for docker-galaxy-
                                       flavor used if engine type is specified as

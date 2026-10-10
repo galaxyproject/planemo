@@ -49,11 +49,13 @@ Create a profile.
                                       Flag to use sudo when running Singularity.
       --singularity_sudo_cmd TEXT     sudo command to use when --singularity_sudo is
                                       enabled (defaults to sudo).
-      --engine [galaxy|docker_galaxy|external_galaxy]
+      --engine [galaxy|installed_galaxy|docker_galaxy|external_galaxy]
                                       Select an engine to serve artifacts such as
                                       tools and workflows. Defaults to a local
-                                      Galaxy, but running Galaxy within a Docker
-                                      container.
+                                      Galaxy checkout. 'installed_galaxy' runs the
+                                      Galaxy packages in Planemo's environment
+                                      through Gravity; Docker and external Galaxy
+                                      engines are also available.
       --docker_cmd TEXT               Command used to launch docker (defaults to
                                       docker).
       --docker_sudo / --no_docker_sudo
@@ -69,4 +71,3 @@ Create a profile.
       --galaxy_user_key TEXT          User key to use with external Galaxy engine.
       --galaxy_admin_key TEXT         Admin key to use with external Galaxy engine.
       --help                          Show this message and exit.
-
