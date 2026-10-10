@@ -1,4 +1,9 @@
-from planemo.galaxy.workflows import _elements_to_test_def
+from unittest import mock
+
+from planemo.galaxy.workflows import (
+    _elements_to_test_def,
+    _job_inputs_template_from_invocation,
+)
 
 HDA_ELEMENT = {
     "id": "e9d955ca403027d5",
@@ -126,3 +131,62 @@ def test_hda_with_slash_in_identifier_to_output_test_def():
         definition_style="output",
     )
     assert element_def == {"Video/Audio File": {"path": "test-data/label_Video_Audio File.fastqsanger"}}
+
+
+def _hda_element(identifier, dataset_id):
+    return dict(HDA_ELEMENT, element_identifier=identifier, object=dict(HDA_ELEMENT["object"], id=dataset_id))
+
+
+def test_labels_sanitizing_to_the_same_filename_get_distinct_paths():
+    downloads = []
+    element_def = _elements_to_test_def(
+        elements=[_hda_element("a/b", "first"), _hda_element("a_b", "second"), _hda_element("a:b", "third")],
+        test_data_base_path="test-data/label",
+        download_function=lambda dataset_id, **kwargs: downloads.append((dataset_id, kwargs["file_path"])),
+    )
+    paths = [element["path"] for element in element_def]
+    assert paths == [
+        "test-data/label_a_b.fastqsanger",
+        "test-data/label_a_b_1.fastqsanger",
+        "test-data/label_a_b_2.fastqsanger",
+    ]
+    assert downloads == list(zip(["first", "second", "third"], paths))
+
+
+def test_same_element_identifier_in_nested_collections_gets_distinct_paths():
+    collections = [dict(COLLECTION_ELEMENT, element_identifier=name) for name in ("sample1", "sample2")]
+    element_def = _elements_to_test_def(
+        elements=collections,
+        test_data_base_path="test-data/label",
+        download_function=lambda *args, **kwargs: None,
+    )
+    paths = [nested["elements"][0]["path"] for nested in element_def]
+    assert paths == ["test-data/label_forward.fastqsanger", "test-data/label_forward_1.fastqsanger"]
+
+
+def test_disambiguated_path_does_not_take_a_path_that_is_already_used():
+    element_def = _elements_to_test_def(
+        elements=[_hda_element("a/b", "1"), _hda_element("a_b_1", "2"), _hda_element("a_b", "3")],
+        test_data_base_path="test-data/label",
+        download_function=lambda *args, **kwargs: None,
+    )
+    paths = [element["path"] for element in element_def]
+    assert len(set(paths)) == 3
+
+
+def test_input_datasets_sanitizing_to_the_same_filename_are_not_overwritten():
+    user_gi = mock.MagicMock()
+    user_gi.invocations.show_invocation.return_value = {
+        "inputs": {
+            "0": {"label": "a/b", "src": "hda", "id": "first"},
+            "1": {"label": "a_b", "src": "hda", "id": "second"},
+        },
+        "input_step_parameters": {},
+    }
+    user_gi.datasets.show_dataset.return_value = {"extension": "txt"}
+    with mock.patch("planemo.galaxy.workflows.gi", return_value=user_gi):
+        template = _job_inputs_template_from_invocation("invocation_id", "http://galaxy.example", "key")
+    assert template["a/b"]["path"] == "test-data/a_b.txt"
+    assert template["a_b"]["path"] == "test-data/a_b_1.txt"
+    downloads = {call.args[0]: call.kwargs["file_path"] for call in user_gi.datasets.download_dataset.call_args_list}
+    assert downloads == {"first": "test-data/a_b.txt", "second": "test-data/a_b_1.txt"}
