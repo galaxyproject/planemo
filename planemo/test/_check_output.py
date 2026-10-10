@@ -25,13 +25,13 @@ def check_output(runnable, output_properties, test_properties, **kwds):
 
 
 def for_collections(test_properties):
-    return "element_tests" in test_properties
+    return "element_tests" in test_properties or test_properties.get("class") == "Collection"
 
 
 def _check_output_collection(runnable, output_properties, test_properties, **kwds):
     data_collection = output_properties
 
-    output_def = TestCollectionOutputDef.from_dict(test_properties)
+    output_def = TestCollectionOutputDef.from_yaml_test_format(test_properties)
 
     def verify_dataset(element, element_attrib, element_outfile):
         if element_outfile:
