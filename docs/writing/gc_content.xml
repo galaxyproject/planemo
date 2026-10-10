@@ -1,6 +1,6 @@
 <tool id="gc_content" name="Compute GC content">
   <description>for each sequence in a file</description>
-  <command>perl '$__tool_directory__/gc_content.pl' '$input' output.tsv</command>
+  <command>python3 '$__tool_directory__/gc_content.py' '$input' output.tsv</command>
   <inputs>
     <param name="input" type="data" format="fasta" label="Source file"/>
   </inputs>
