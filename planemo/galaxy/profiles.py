@@ -19,6 +19,7 @@ from planemo.database import (
     database_source_context,
 )
 from planemo.galaxy.api import test_credentials_valid
+from planemo.io import warn
 from .config import DATABASE_LOCATION_TEMPLATE
 
 PROFILE_OPTIONS_JSON_NAME = "planemo_profile_options.json"
@@ -127,6 +128,11 @@ def _create_profile_local(ctx, profile_directory, profile_name, kwds):
 def _create_profile_external(ctx, profile_directory, profile_name, kwds):
     url = kwds.get("galaxy_url")
     api_key = kwds.get("galaxy_admin_key") or kwds.get("galaxy_user_key")
+    if not api_key:
+        warn(
+            "No --galaxy_user_key or --galaxy_admin_key provided, the profile will access the external Galaxy "
+            "instance anonymously."
+        )
     if test_credentials_valid(url=url, key=api_key, is_admin=kwds.get("galaxy_admin_key")):
         return {
             "galaxy_url": url,

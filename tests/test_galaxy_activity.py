@@ -4,11 +4,13 @@ import os
 from unittest import mock
 
 import pytest
+import responses
 
 from planemo.galaxy.activity import (
     _execute,
     GalaxyToolRunResponse,
 )
+from planemo.galaxy.config import external_galaxy_config
 from planemo.runnable import (
     Runnable,
     RunnableType,
@@ -80,3 +82,26 @@ def test_execute_tool_no_wait_returns_submission_response():
     assert response.structured_data()["data"]["status"] == "success"
     wait_for_job.assert_not_called()
     config.gi.jobs.show_job.assert_not_called()
+
+
+@pytest.mark.parametrize("admin_key", [None, "admin-key"])
+@responses.activate
+def test_execute_tool_fetches_job_details_with_available_credentials(admin_key):
+    ctx = create_test_context()
+    responses.post("https://example.org/api/tools", json={"jobs": [{"id": "jobid123"}], "outputs": []})
+    responses.get("https://example.org/api/jobs/jobid123", json={"state": "ok", "stdout": "tool output"})
+
+    with external_galaxy_config(
+        ctx, [], galaxy_url="https://example.org", galaxy_user_key="user-key", galaxy_admin_key=admin_key
+    ) as config:
+        with (
+            mock.patch("planemo.galaxy.activity.stage_in", return_value=({}, "historyid123")),
+            mock.patch("planemo.galaxy.activity._verified_tool_id", return_value="cat"),
+            mock.patch("planemo.galaxy.activity._wait_for_job", return_value="ok"),
+        ):
+            result = _execute(ctx, config, TOOL_RUNNABLE, job_path=None)
+
+    assert result.was_successful
+    assert result.job_info["stdout"] == "tool output"
+    assert responses.calls[0].request.headers["x-api-key"] == "user-key"
+    assert responses.calls[1].request.headers.get("x-api-key") == (admin_key or "user-key")

@@ -2,8 +2,14 @@
 
 import os
 
+import pytest
+import responses
+
 from planemo.engine import engine_context
-from planemo.engine.galaxy import log_service_logs_on_failure
+from planemo.engine.galaxy import (
+    log_service_logs_on_failure,
+    PlanemoGalaxyInteractorApi,
+)
 from planemo.runnable import (
     for_path,
     get_outputs,
@@ -92,3 +98,44 @@ def test_service_logs_logged_when_no_result_registered():
     ctx = _RecordingContext()
     log_service_logs_on_failure(ctx, _ConfigWithServiceLogs(), [])
     assert len(ctx.messages) == 1
+
+
+@responses.activate
+def test_embedded_test_data_download_with_user_key_only():
+    galaxy_interactor = PlanemoGalaxyInteractorApi(
+        galaxy_url="https://example.org", master_api_key=None, api_key="user-key"
+    )
+    responses.get("https://example.org/api/version", json={"version_major": "25.1"})
+    responses.get("https://example.org/api/tools/cat/test_data_download?filename=input.txt", body="test input")
+
+    assert galaxy_interactor.test_data_download("cat", "input.txt") == b"test input"
+    assert all(call.request.headers["x-api-key"] == "user-key" for call in responses.calls)
+
+
+@responses.activate
+def test_embedded_test_server_path_requires_admin_key():
+    galaxy_interactor = PlanemoGalaxyInteractorApi(
+        galaxy_url="https://example.org", master_api_key=None, api_key="user-key"
+    )
+    responses.get("https://example.org/api/version", json={"version_major": "18.09"})
+
+    with pytest.raises(RuntimeError, match="--galaxy_admin_key") as exc:
+        galaxy_interactor.test_data_download("cat", "input.txt")
+
+    assert "server-side test data paths" in str(exc.value)
+    assert "user-key" not in str(exc.value)
+    assert len(responses.calls) == 1
+
+
+@responses.activate
+def test_embedded_test_server_path_preserves_admin_credentials():
+    galaxy_interactor = PlanemoGalaxyInteractorApi(
+        galaxy_url="https://example.org", master_api_key="admin-key", api_key="user-key"
+    )
+    responses.get(
+        "https://example.org/api/tools/cat/test_data_path?filename=input.txt&tool_version=1.0",
+        json="/galaxy/test-data/input.txt",
+    )
+
+    assert galaxy_interactor.test_data_path("cat", "input.txt", tool_version="1.0") == "/galaxy/test-data/input.txt"
+    assert responses.calls[0].request.headers["x-api-key"] == "admin-key"

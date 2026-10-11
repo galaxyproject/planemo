@@ -271,7 +271,7 @@ def _execute(  # noqa C901
     test_deadline = time.monotonic() + test_timeout if test_timeout is not None else None
 
     user_gi = config.user_gi
-    admin_gi = config.gi
+    job_gi = config.gi if config.master_api_key else user_gi
     run_response = None
 
     start_datetime = datetime.now()
@@ -312,7 +312,7 @@ def _execute(  # noqa C901
                 raise Exception(msg)
 
             ctx.vlog("Final job state was ok, fetching details for job [%s]" % job_id)
-            response_kwds["job_info"] = admin_gi.jobs.show_job(job_id)
+            response_kwds["job_info"] = job_gi.jobs.show_job(job_id)
             if ctx.verbose:
                 summarize_history(ctx, user_gi, history_id)
 

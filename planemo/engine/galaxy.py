@@ -36,6 +36,18 @@ if TYPE_CHECKING:
 INSTALLING_MESSAGE = "Installing repositories - this may take some time..."
 
 
+class PlanemoGalaxyInteractorApi(interactor.GalaxyInteractorApi):
+    """Galaxy test interactor with actionable errors for missing admin credentials."""
+
+    def test_data_path(self, tool_id: str, filename: str, tool_version: Optional[str] = None):
+        if not self.master_api_key:
+            raise RuntimeError(
+                "Resolving server-side test data paths requires a Galaxy admin API key. "
+                "Supply --galaxy_admin_key for this operation."
+            )
+        return super().test_data_path(tool_id, filename, tool_version=tool_version)
+
+
 def log_service_logs_on_failure(ctx: "PlanemoCliContext", config, results: List[Dict[str, Any]]) -> None:
     """Dump logs of services running alongside Galaxy if a test didn't succeed.
 
@@ -122,7 +134,7 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
                     tool_id = test_case.tool_id
                     test_index = test_case.test_index
                     tool_version = test_case.tool_version
-                    galaxy_interactor = interactor.GalaxyInteractorApi(**galaxy_interactor_kwds)
+                    galaxy_interactor = PlanemoGalaxyInteractorApi(**galaxy_interactor_kwds)
 
                     def _register_job_data(job_data):
                         test_results.append(
