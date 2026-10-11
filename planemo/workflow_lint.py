@@ -1,6 +1,7 @@
 import inspect
 import os
 import re
+from datetime import date
 from typing import (
     Any,
     Dict,
@@ -52,6 +53,8 @@ if TYPE_CHECKING:
 
 POTENTIAL_WORKFLOW_FILES = re.compile(r"^.*(\.yml|\.yaml|\.ga)$")
 WORKFLOW_FILE_SUFFIXES = (".gxwf.yml", ".gxwf.yaml", ".ga")
+CHANGELOG_VERSION_HEADING = re.compile(r"^## \[([^]]+)\]")
+DATED_CHANGELOG_VERSION_HEADING = re.compile(r"^## \[[^]]+\] - (\d{4}-\d{2}-\d{2})$")
 DOCKSTORE_REGISTRY_CONF_VERSION = "1.2"
 
 
@@ -644,27 +647,46 @@ def _lint_required_files_workflow_dir(path: str, lint_context: WorkflowLintConte
             lint_context.error(f"The file {required_file} is missing but required.")
 
 
-def _get_changelog_version(path: str) -> str:
-    # Get the version from the CHANGELOG.md
-    version = ""
+def _get_changelog_version_heading(path: str) -> Optional[str]:
     if not os.path.exists(os.path.join(path, "CHANGELOG.md")):
-        return version
+        return None
     with open(os.path.join(path, "CHANGELOG.md"), "r") as f:
         for line in f:
             if line.startswith("## ["):
-                version = line.split("]")[0].replace("## [", "")
-                break
-    return version
+                return line.rstrip("\r\n")
+    return None
+
+
+def _get_changelog_version(path: str) -> str:
+    heading = _get_changelog_version_heading(path)
+    match = CHANGELOG_VERSION_HEADING.match(heading or "")
+    return match.group(1) if match else ""
+
+
+def _valid_changelog_version_heading(heading: Optional[str]) -> bool:
+    dated_heading = DATED_CHANGELOG_VERSION_HEADING.fullmatch(heading or "")
+    if not dated_heading:
+        return False
+    try:
+        date.fromisoformat(dated_heading.group(1))
+    except ValueError:
+        return False
+    return True
 
 
 def _lint_changelog_version(path: str, lint_context: WorkflowLintContext) -> None:
     # Check the version can be get from the CHANGELOG.md
     if not os.path.exists(os.path.join(path, "CHANGELOG.md")):
         return
-    if _get_changelog_version(path) == "":
+    heading = _get_changelog_version_heading(path)
+    if not CHANGELOG_VERSION_HEADING.match(heading or ""):
         lint_context.error(
             "No version found in CHANGELOG. The version should be in a line that starts like '## [version number]'"
         )
+        return
+
+    if not _valid_changelog_version_heading(heading):
+        lint_context.error("The newest CHANGELOG heading must match '## [version] - YYYY-MM-DD' with a valid date.")
 
 
 def _lint_release(path, lint_context):
