@@ -51,7 +51,7 @@ metadata (to handle metadata changes in ``.shed.yml`` files).
                                    'testtoolshed', 'local' (alias for
                                    http://localhost:9009/), an arbitrary url or
                                    mappings defined ~/.planemo.yml.
-      --fail_fast                  Stop on first job failure.
+      --fail_fast                  Stop on first failure.
       -m, --message TEXT           Commit message for tool shed upload.
       --force_repository_creation  If a repository cannot be found for the specified
                                    user/repo name pair, then automatically create
