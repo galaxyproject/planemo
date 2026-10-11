@@ -15,6 +15,7 @@ from planemo.galaxy.workflows import remote_runnable_to_workflow_id
 from planemo.io import (
     info,
     print_table,
+    warn,
 )
 from planemo.runnable_resolve import for_runnable_identifier
 
@@ -84,13 +85,19 @@ def cli(ctx, workflow_identifier, raw, max_items, offset_items, **kwds):
     else:
         workflow_id = None
     gi_client = gi(None, profile["galaxy_url"], profile["galaxy_admin_key"] or profile["galaxy_user_key"])
+    # Galaxy returns every user's invocations to admins unless a user_id is given.
     invocations = get_invocations(
         gi=gi_client,
         workflow_id=workflow_id,
-        instance=True,
+        user_id=gi_client.users.get_current_user()["id"],
         max_items=max_items,
         offset_items=offset_items,
     )
+    if max_items and len(invocations) >= max_items:
+        warn(
+            f"Output was limited to --max-items {max_items}; "
+            "use --max-items and --offset-items to retrieve more invocations."
+        )
     if raw:
         print(json.dumps(invocations, indent=4, sort_keys=True))
         return

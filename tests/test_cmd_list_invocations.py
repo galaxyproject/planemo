@@ -3,11 +3,13 @@
 import json
 from unittest.mock import (
     call,
+    create_autospec,
     Mock,
     patch,
 )
 
 import pytest
+from bioblend.galaxy.invocations import InvocationClient
 
 from planemo.galaxy.api import get_invocations
 from .test_utils import CliTestCase
@@ -21,8 +23,15 @@ def _invocation(number, workflow_id="workflow-1"):
     }
 
 
-def test_get_invocations_limits_final_page():
+def _galaxy_instance():
+    # Spec'd so that calls with kwargs unknown to bioblend raise TypeError.
     gi = Mock()
+    gi.invocations = create_autospec(InvocationClient, instance=True)
+    return gi
+
+
+def test_get_invocations_limits_final_page():
+    gi = _galaxy_instance()
     gi.invocations.get_invocations.side_effect = [
         [_invocation(i) for i in range(20)],
         [_invocation(i) for i in range(20, 25)],
@@ -33,18 +42,18 @@ def test_get_invocations_limits_final_page():
 
     assert len(invocations) == 25
     assert gi.invocations.get_invocations.call_args_list == [
-        call("workflow-1", limit=20, offset=5),
-        call("workflow-1", limit=5, offset=25),
+        call(workflow_id="workflow-1", user_id=None, limit=20, offset=5),
+        call(workflow_id="workflow-1", user_id=None, limit=5, offset=25),
     ]
 
 
-def test_get_invocations_without_workflow_uses_instance_endpoint():
-    gi = Mock()
+def test_get_invocations_without_workflow_is_scoped_to_user():
+    gi = _galaxy_instance()
     gi.invocations.get_invocations.return_value = [_invocation(1)]
     gi.invocations.get_invocation_summary.return_value = {"states": {"ok": 1}}
 
-    assert list(get_invocations(gi, None, instance=True, max_items=1)) == ["invocation-1"]
-    gi.invocations.get_invocations.assert_called_once_with(instance=True, limit=1, offset=0)
+    assert list(get_invocations(gi, None, user_id="user-1", max_items=1)) == ["invocation-1"]
+    gi.invocations.get_invocations.assert_called_once_with(workflow_id=None, user_id="user-1", limit=1, offset=0)
 
 
 @pytest.mark.parametrize(
@@ -57,7 +66,7 @@ def test_get_invocations_without_workflow_uses_instance_endpoint():
 )
 def test_get_invocations_rejects_invalid_pagination(arguments):
     with pytest.raises(ValueError):
-        get_invocations(Mock(), None, **arguments)
+        get_invocations(_galaxy_instance(), None, **arguments)
 
 
 class CmdListInvocationsTestCase(CliTestCase):
@@ -68,6 +77,7 @@ class CmdListInvocationsTestCase(CliTestCase):
             "galaxy_user_key": "test-key",
         }
         galaxy_instance = Mock()
+        galaxy_instance.users.get_current_user.return_value = {"id": "user-1"}
         galaxy_instance.workflows.show_workflow.side_effect = lambda workflow_id, **kwds: {
             "id": workflow_id,
             "name": f"Workflow {workflow_id}",
@@ -103,7 +113,7 @@ class CmdListInvocationsTestCase(CliTestCase):
         get_invocations_mock.assert_called_once_with(
             gi=galaxy_instance,
             workflow_id=None,
-            instance=True,
+            user_id="user-1",
             max_items=100,
             offset_items=0,
         )
@@ -124,7 +134,7 @@ class CmdListInvocationsTestCase(CliTestCase):
         get_invocations_mock.assert_called_once_with(
             gi=galaxy_instance,
             workflow_id="workflow-1",
-            instance=True,
+            user_id="user-1",
             max_items=12,
             offset_items=3,
         )
@@ -151,3 +161,16 @@ class CmdListInvocationsTestCase(CliTestCase):
         assert "2 jobs custom_state" in result.output
         assert "2 invocations found." in result.output
         assert galaxy_instance.workflows.show_workflow.call_count == 2
+
+    def test_warns_when_output_is_truncated(self):
+        invocations = {
+            "invocation-1": {
+                "states": {"ok": 1},
+                "workflow_id": "workflow-1",
+                "history_id": "history-1",
+            }
+        }
+
+        result, _, _ = self._list_invocations(invocations, "--max-items", "1")
+
+        assert "Output was limited to --max-items 1" in result.output

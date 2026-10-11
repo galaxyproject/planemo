@@ -51,6 +51,7 @@ class ExternalGalaxyCommandsTestCase(CliTestCase):
                     "test_ext_profile",
                 ]
                 list_invocs_cmd = ["list_invocations", "test_wf_alias", "--profile", "test_ext_profile"]
+                list_all_invocs_cmd = ["list_invocations", "--profile", "test_ext_profile"]
                 rerun_cmd = ["rerun", "--invocation", "invocation_id", "--profile", "test_ext_profile"]
                 upload_data_cmd = [
                     "upload_data",
@@ -97,6 +98,8 @@ class ExternalGalaxyCommandsTestCase(CliTestCase):
                 result = self._check_exit_code(list_invocs_cmd)
                 assert "2 invocations found." in result.output
                 assert "1 jobs ok" in result.output
+                result = self._check_exit_code(list_all_invocs_cmd)
+                assert "invocations found." in result.output
 
                 # test rerun
                 invocation_id = config.user_gi.workflows.get_invocations(wfid)[0]["id"]

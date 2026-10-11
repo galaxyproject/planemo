@@ -124,7 +124,7 @@ def summarize_history(ctx, gi, history_id):
 def get_invocations(
     gi: GalaxyInstance,
     workflow_id: Optional[str],
-    instance: bool = False,
+    user_id: Optional[str] = None,
     max_items: int = 100,
     items_per_request: int = 20,
     offset_items: int = 0,
@@ -137,14 +137,12 @@ def get_invocations(
     invocations: List[Dict[str, Any]] = []
     while len(invocations) < max_items:
         limit = min(items_per_request, max_items - len(invocations))
-        request_kwds = {
-            "limit": limit,
-            "offset": len(invocations) + offset_items,
-        }
-        if workflow_id:
-            items = gi.invocations.get_invocations(workflow_id, **request_kwds)
-        else:
-            items = gi.invocations.get_invocations(instance=instance, **request_kwds)
+        items = gi.invocations.get_invocations(
+            workflow_id=workflow_id,
+            user_id=user_id,
+            limit=limit,
+            offset=len(invocations) + offset_items,
+        )
         if not items:
             break
         invocations.extend(items[:limit])
