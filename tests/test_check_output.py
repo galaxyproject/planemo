@@ -66,3 +66,16 @@ def test_elements_alias_resolved():
     )
     assert len(problems) == 1
     assert "failed to find identifier 'missing'" in problems[0]
+
+
+def test_collection_expected_but_output_is_dataset():
+    # A dataset has neither "collection_type" nor "elements"; older galaxy-tool-util
+    # raises KeyError for that rather than AssertionError.
+    problems = check_output(
+        None,
+        {"path": "out.txt", "id": "abc"},
+        {"name": "out", "class": "Collection", "collection_type": "list", "element_tests": {}},
+    )
+    assert len(problems) == 1
+    assert "expected to be a collection" in problems[0]
+    assert "out" in problems[0]

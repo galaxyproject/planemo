@@ -43,6 +43,10 @@ def _check_output_collection(runnable, output_properties, test_properties, **kwd
         verify_collection(output_def, data_collection, verify_dataset)
     except AssertionError as e:
         problems.append(unicodify(e))
+    except KeyError as e:
+        # galaxy-tool-util < 26.1 indexes collection keys directly, so a dataset
+        # output tested with ``class: Collection`` raises KeyError instead of AssertionError.
+        problems.append(f"Output '{output_def.name}' is expected to be a collection but has no {e} (is it a dataset?).")
 
     return problems
 
