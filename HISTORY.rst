@@ -8,6 +8,10 @@ History
 ---------------------
 0.75.48.dev0
 ---------------------
+* Use the supplied user API key to retrieve tool job details when no admin key
+  is available, and report missing ``--galaxy_admin_key`` when embedded tests
+  require server-side test data paths. Public test data downloads remain
+  available without an admin key (#1700).
 * Add ``--use_cache`` to ``planemo test``, off by default - follow-up to #1665
   which added it to ``planemo run``.
 * Add ``--doi`` and ``--conda_requirements`` to ``planemo shed_lint`` so
