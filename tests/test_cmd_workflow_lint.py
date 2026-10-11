@@ -257,7 +257,6 @@ class CmdWorkflowLintTestCase(CliTestCase):
         result = self._runner.invoke(self._cli.planemo, lint_cmd)
         assert "All tool ids appear to be valid." in result.output
 
-    @skip_if_toolshed_down
     def test_tool_id_linting_without_tool_shed_repository(self):
         # A tool step without a tool_shed_repository has nothing to validate the
         # tool_id/version against, so the check is skipped even for an otherwise
@@ -270,7 +269,6 @@ class CmdWorkflowLintTestCase(CliTestCase):
         assert "not in the toolshed" not in result.output
         assert "All tool ids appear to be valid." in result.output
 
-    @skip_if_toolshed_down
     def test_tool_version_linting_mismatch(self):
         # tool_id encodes version 1.1.0 but the step's tool_version is 1.0.0.
         workflow_path = "/".join(
@@ -283,7 +281,6 @@ class CmdWorkflowLintTestCase(CliTestCase):
             "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_easyjoin_tool/1.1.0" in result.output
         )
 
-    @skip_if_toolshed_down
     def test_tool_version_linting_match(self):
         # tool_id and tool_version agree in this fixture.
         workflow_path = "/".join((TEST_DATA_DIR, "wf_repos", "autoupdate_tests", "workflow_with_matching_changeset.ga"))

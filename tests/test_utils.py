@@ -23,6 +23,7 @@ from typing import (
 )
 from unittest import (
     skip,
+    SkipTest,
     TestCase,
 )
 
@@ -35,7 +36,7 @@ from galaxy.util import (
     unicodify,
     which,
 )
-from galaxy.util.unittest_utils import skip_if_site_down
+from galaxy.util.unittest_utils import is_site_up
 
 from planemo import (
     cli,
@@ -61,6 +62,27 @@ PROJECT_TEMPLATES_DIR = os.path.join(TEST_DIR, os.path.pardir, "project_template
 CWL_DRAFT3_DIR = os.path.join(PROJECT_TEMPLATES_DIR, "cwl_draft3_spec")
 NON_ZERO_EXIT_CODE = object()
 ZENODO_TEST_RECORD_API_URL = "https://zenodo.org/api/records/1321885"
+
+
+@functools.lru_cache(maxsize=None)
+def _is_site_up(url: str) -> bool:
+    # Cache the probe so an unresponsive site costs one timeout per run, not one per test.
+    return is_site_up(url)
+
+
+def skip_if_site_down(url: str):
+    def method_wrapper(method):
+        @functools.wraps(method)
+        def wrapped_method(*args, **kwargs):
+            if not _is_site_up(url):
+                raise SkipTest(f"Test depends on [{url}] being up and it appears to be down.")
+            return method(*args, **kwargs)
+
+        return wrapped_method
+
+    return method_wrapper
+
+
 skip_if_zenodo_down = skip_if_site_down(ZENODO_TEST_RECORD_API_URL)
 # galaxy-util already exports skip_if_github_down/skip_if_workflowhub_down; define the
 # rest here until the pinned galaxy-util catches up with galaxyproject/galaxy#23685.
@@ -69,6 +91,9 @@ skip_if_quay_down = skip_if_site_down("https://quay.io/")
 skip_if_toolshed_down = skip_if_site_down("https://toolshed.g2.bx.psu.edu/")
 skip_if_testtoolshed_down = skip_if_site_down("https://testtoolshed.g2.bx.psu.edu/")
 skip_if_usegalaxy_eu_down = skip_if_site_down("https://usegalaxy.eu/")
+skip_if_raw_github_down = skip_if_site_down(
+    "https://raw.githubusercontent.com/galaxyproject/planemo/master/tests/data/tools/ok_conditional.xml"
+)
 CWLTOOL_CACHE_ENV_PROP = "PLANEMO_CWLTOOL_CACHE_DIRECTORY"
 
 
