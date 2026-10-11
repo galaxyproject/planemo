@@ -9,22 +9,54 @@ jobs:
         with:
           persist-credentials: false
           submodules: true
-      - uses: actions/setup-python@v7.0.0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.2.0
         with:
+          version: "0.10.7"
           python-version: '3.14'
-          cache: pip
-      - name: Install dependencies
-        run: |
-          python3 -m pip install --upgrade pip setuptools
-          python3 -m pip install --upgrade build twine
+      - name: Install release tools
+        run: uv sync --locked --only-group release
       - name: Create and check packages
         run: make dist
       - uses: actions/upload-artifact@v7
         with:
           name: packages
           path: dist/
-  pypi-publish:
+  test_packages:
     needs: [build_packages]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-latest, python-version: '3.10', wheel: planemo_cli}
+          - {os: ubuntu-latest, python-version: '3.14', wheel: planemo_cli}
+          - {os: macos-latest, python-version: '3.13', wheel: planemo_cli}
+          - {os: ubuntu-latest, python-version: '3.13', wheel: planemo}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.10.7"
+      - uses: actions/download-artifact@v8
+        with:
+          name: packages
+          path: dist
+      - name: Run the built wheel with uvx
+        env:
+          PYTHON_VERSION: ${{ matrix.python-version }}
+          WHEEL: ${{ matrix.wheel }}
+        working-directory: ${{ runner.temp }}
+        run: |
+          planemo() { uvx --python "$PYTHON_VERSION" --from "$(ls "$GITHUB_WORKSPACE"/dist/"$WHEEL"-*.whl)" planemo "$@"; }
+          planemo --version
+          planemo lint "$GITHUB_WORKSPACE/tests/data/tools/ok_conditional.xml"
+          planemo test_reports "$GITHUB_WORKSPACE/tests/data/issue381.json" --test_output report.html
+          test -s report.html
+  pypi-publish:
+    needs: [build_packages, test_packages]
     name: Upload release to PyPI
     runs-on: ubuntu-latest
     permissions:
@@ -37,3 +69,5 @@ jobs:
           path: dist
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true

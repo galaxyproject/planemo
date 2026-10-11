@@ -2,8 +2,51 @@
 Installation
 ============
 
+Command-line installation
+=========================
+
+The recommended way to install Planemo is with uv_ (see the
+`uv installation guide <https://docs.astral.sh/uv/getting-started/installation/>`__)::
+
+    $ uv tool install planemo-cli
+    $ planemo --version
+
+This puts the ``planemo`` command on your ``PATH`` in its own isolated
+environment, so there is no virtual environment to manage yourself. Upgrade it
+with::
+
+    $ uv tool upgrade planemo-cli
+
+To run Planemo once without installing it::
+
+    $ uvx --from planemo-cli planemo --version
+
+``planemo-cli`` is Planemo with every Python dependency pinned to a tested
+version, so new releases of those dependencies can't break your installation.
+The pins cover Python packages only, not the Galaxy instances, Conda
+environments, or containers that Planemo manages.
+
+Installing as a library
+=======================
+
+If another Python project depends on Planemo, or you want Planemo in an existing
+environment alongside other packages, install the ``planemo`` distribution
+instead. It contains the same code and ``planemo`` command, but declares
+version ranges rather than exact pins, so it can share an environment with
+other packages::
+
+    $ pip install planemo
+
+Install either ``planemo`` or ``planemo-cli`` in a given environment, never
+both: they provide the same Python package and command.
+
+Other installation methods
+==========================
+
+The methods below install the ``planemo`` distribution.
+
 pip_
-====
+----
 
 For a traditional Python installation of Planemo, first set up a virtual environment
 for ``planemo`` (this example creates a new one in ``planemo``) and then
@@ -36,7 +79,7 @@ Planemo runs on Python 3.10 or newer. Planemo can be used to run multiple versio
 but please note that the last Galaxy release that fully supports Python 2.7 is 19.09.
 
 Conda_ (Experimental)
-=====================
+---------------------
 
 Another approach for installing Planemo is to use Conda_
 (most easily obtained via the
@@ -53,29 +96,8 @@ Galaxy is known to have issues when running with a Conda Python so this approach
 should be considered experimental for now. If you have problems with it or hacks to
 make it work better - please report them.
 
-uv_
-===
-
-`uv <https://github.com/astral-sh/uv>`__ is a modern Python package manager that can be used to install Planemo.
-Information on installing uv_ can be found at https://docs.astral.sh/uv/getting-started/installation/.
-Once uv_ has been installed and its environment sourced in your shell, you can install Planemo using the following commands:
-
-::
-
-    $ uv tool install planemo 
-
-Installing Planemo as a tool will setup a global shim that manages the Python environment used for Planemo
-without having to manage this yourself like the ``pip`` method described above. The Planemo  executable 
-``planemo`` will just be on your path whenever the uv environment is active.
-
-uv can also be used to upgrade Planemo to the latest version with the following command:
-
-::
-
-    $ uv tool upgrade planemo
-
 rye_
-====
+----
 
 `rye <https://github.com/astral-sh/rye>`__ is another modern Python package manager.
 Information on installing rye_ can be found at https://rye.astral.sh/guide/installation/.
