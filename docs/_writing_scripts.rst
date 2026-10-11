@@ -13,6 +13,9 @@ Consider the following small Python script.
 One can build a tool for this script as follows and place the script in
 the same directory as the tool XML file itself. The special value
 ``$__tool_directory__`` here refers to the directory your tool lives in.
+The ``requirements`` block declares that the tool needs Python, so Galaxy
+can provide an interpreter instead of relying on the one installed on the
+server.
 
 .. literalinclude:: writing/gc_content.xml
    :language: xml
