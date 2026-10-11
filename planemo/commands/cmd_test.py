@@ -46,7 +46,8 @@ from planemo.runnable_resolve import for_runnable_identifiers
 )
 @options.test_use_cache_option()
 @options.cwltool_cache_directory_option()
-@options.galaxy_target_options()
+@options.test_serve_option()
+@options.galaxy_run_options(port_default=None)
 @options.galaxy_config_options()
 @options.test_options()
 @options.engine_options()
@@ -97,6 +98,9 @@ def cli(ctx, uris, **kwds):
             kwds["engine"] = "external_galaxy"
         else:
             kwds["engine"] = "galaxy"
+
+    if kwds["serve"] and kwds["port"] is None:
+        kwds["port"] = 9090
 
     return_value = test_runnables(ctx, runnables, original_paths=uris, **kwds)
 

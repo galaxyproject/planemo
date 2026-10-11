@@ -8,6 +8,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 import traceback
 from concurrent.futures import (
@@ -63,11 +64,86 @@ NON_ZERO_EXIT_CODE = object()
 ZENODO_TEST_RECORD_API_URL = "https://zenodo.org/api/records/1321885"
 skip_if_zenodo_down = skip_if_site_down(ZENODO_TEST_RECORD_API_URL)
 CWLTOOL_CACHE_ENV_PROP = "PLANEMO_CWLTOOL_CACHE_DIRECTORY"
+PLANEMO_CLI_ENTRYPOINT = "from planemo.cli import planemo; planemo()"
+
+
+class _PlanemoSubprocess:
+    def __init__(self, arguments, cwd=None, log_path=None):
+        environment = os.environ.copy()
+        executable_directory = os.path.dirname(sys.executable)
+        existing_path = environment.get("PATH")
+        environment["PATH"] = (
+            os.pathsep.join((executable_directory, existing_path)) if existing_path else executable_directory
+        )
+        if log_path:
+            self._log_fh = open(log_path, "w+")
+        else:
+            self._log_fh = tempfile.NamedTemporaryFile(mode="w+", suffix="_planemo_stdout")
+        try:
+            self.process = subprocess.Popen(
+                [sys.executable, "-c", PLANEMO_CLI_ENTRYPOINT, *arguments],
+                cwd=cwd,
+                env=environment,
+                stdout=self._log_fh,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
+            )
+        except Exception:
+            self._log_fh.close()
+            raise
+        self._closed = False
+        self._output = None
+
+    def read_output(self):
+        if self._output is not None:
+            return self._output
+        self._log_fh.flush()
+        self._log_fh.seek(0)
+        return self._log_fh.read()
+
+    def close(self):
+        if self._closed:
+            return
+        try:
+            if self.process.poll() is None or io.process_group_exists(self.process.pid):
+                io.terminate_process_group(
+                    self.process.pid,
+                    reap=self.process.poll,
+                )
+        finally:
+            try:
+                self._output = self.read_output()
+            finally:
+                self._log_fh.close()
+                self._closed = True
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.close()
+
+
+def planemo_subprocess(arguments, cwd=None, log_path=None):
+    """Start a logged Planemo CLI process in an independently managed group."""
+    return _PlanemoSubprocess(arguments, cwd=cwd, log_path=log_path)
 
 
 def test_sleep_fails_immediately_for_invalid_url():
     with pytest.raises(requests_lib.exceptions.InvalidURL):
         sleep("http://::1:9090")
+
+
+def test_planemo_subprocess_captures_cli_output():
+    with planemo_subprocess(["--help"]) as managed_process:
+        assert managed_process.process.wait(timeout=30) == 0
+        process_output = managed_process.read_output()
+        assert "Usage:" in process_output
+        process_group_id = managed_process.process.pid
+
+    assert not io.process_group_exists(process_group_id)
+    assert managed_process.read_output() == process_output
+    managed_process.close()
 
 
 SIGTERM_IGNORING_PROCESS = """

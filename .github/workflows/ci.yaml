@@ -43,6 +43,8 @@ jobs:
             tox-action: mypy
           - python-version: '3.13'
             tox-action: unit-quick
+          - python-version: '3.13'
+            tox-action: unit-installedgalaxy
     services:
       postgres:
         image: postgres:16
