@@ -20,6 +20,6 @@ Follow the progress of a workflow invocation.
                               [required]
       --galaxy_user_key TEXT  User key to use with external Galaxy engine.
                               [required]
-      --fail_fast             Stop on first job failure.
+      --fail_fast             Stop on first failure.
       --help                  Show this message and exit.
     

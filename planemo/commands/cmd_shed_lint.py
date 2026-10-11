@@ -64,5 +64,5 @@ def cli(ctx: PlanemoCliContext, paths, **kwds):
         return shed_lint.lint_repository(ctx, realized_repository, **kwds)
 
     kwds["fail_on_missing"] = False
-    exit_code = shed.for_each_repository(ctx, lint, paths, **kwds)
+    exit_code = shed.for_each_repository(ctx, lint, paths, stop_on_failure=kwds.get("fail_fast", False), **kwds)
     ctx.exit(exit_code)

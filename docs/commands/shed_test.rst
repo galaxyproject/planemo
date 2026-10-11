@@ -237,7 +237,7 @@ install these artifacts, and run the tool tests for these commands.
                                       output (see output reports for more complete
                                       summary). Set to 'none' to disable completely.
       --test_timeout INTEGER          Maximum runtime of a single test in seconds.
-      --fail_fast                     Stop on first job failure.
+      --fail_fast                     Stop on first failure.
       --skip_dependencies             Do not install shed dependencies as part of
                                       repository installation.
       --help                          Show this message and exit.
