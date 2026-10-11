@@ -27,11 +27,13 @@ Auto-update tool requirements by checking against Conda and updating if newer ve
       --skip_requirements TEXT        Comma-separated list of requirements which
                                       should be not be updated. Default is
                                       python,r-base,perl.
-      --engine [galaxy|docker_galaxy|external_galaxy]
+      --engine [galaxy|installed_galaxy|docker_galaxy|external_galaxy]
                                       Select an engine to serve artifacts such as
                                       tools and workflows. Defaults to a local
-                                      Galaxy, but running Galaxy within a Docker
-                                      container.
+                                      Galaxy checkout. 'installed_galaxy' runs the
+                                      Galaxy packages in Planemo's environment
+                                      through Gravity; Docker and external Galaxy
+                                      engines are also available.
       --paste_test_data_paths / --no_paste_test_data_paths
                                       By default Planemo will use or not use
                                       Galaxy's path paste option to load test data

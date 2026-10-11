@@ -93,6 +93,7 @@ def _create_profile_docker(ctx, profile_directory, profile_name, kwds):
 
 
 def _create_profile_local(ctx, profile_directory, profile_name, kwds):
+    engine = kwds.get("engine") or "galaxy"
     # A profile that named no backend gets its own sqlite file. Standing a postgres
     # server up is only worth it when the user asked for one by name.
     database_type = kwds.get("database_type") or "auto"
@@ -110,7 +111,7 @@ def _create_profile_local(ctx, profile_directory, profile_name, kwds):
 
         stored_options = {
             "database_type": database_type,
-            "engine": "galaxy",
+            "engine": engine,
         }
         if database_source.store_connection_in_profile:
             stored_options["database_connection"] = database_connection
@@ -121,7 +122,7 @@ def _create_profile_local(ctx, profile_directory, profile_name, kwds):
             stored_options.update(database_source.profile_options())
         return stored_options
 
-    return {"database_type": database_type, "database_connection": database_connection, "engine": "galaxy"}
+    return {"database_type": database_type, "database_connection": database_connection, "engine": engine}
 
 
 def _create_profile_external(ctx, profile_directory, profile_name, kwds):
