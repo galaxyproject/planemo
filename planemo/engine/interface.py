@@ -14,7 +14,6 @@ from typing import (
     List,
     Optional,
 )
-from urllib.parse import urlparse
 
 import click
 
@@ -29,7 +28,8 @@ from planemo.test.results import StructuredData
 
 
 def _absolute_test_data_path(path: Any, tests_directory: str) -> Any:
-    if not isinstance(path, str) or os.path.isabs(path) or urlparse(path).scheme or path.startswith("#"):
+    # Only "://" marks a URI, as in Galaxy's abs_path_or_uri - "sample:1.txt" is a relative path.
+    if not isinstance(path, str) or os.path.isabs(path) or "://" in path or path.startswith("#"):
         return path
     return os.path.abspath(os.path.join(tests_directory, path))
 

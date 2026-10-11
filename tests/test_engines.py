@@ -211,6 +211,14 @@ def test_paths_that_are_not_local_test_data_are_left_alone():
     assert _absolutize_job_paths(job, TEST_DATA_DIR) == job
 
 
+def test_relative_paths_containing_a_colon_are_resolved():
+    # Galaxy only treats "://" as a URI, so "sample:1.txt" is a relative path, not a scheme.
+    job = {"input": {"class": "File", "path": "sample:1.txt"}}
+    assert _absolutize_job_paths(job, TEST_DATA_DIR) == {
+        "input": {"class": "File", "path": os.path.join(TEST_DATA_DIR, "sample:1.txt")}
+    }
+
+
 @pytest.mark.parametrize("path_key", ["path", "location"])
 def test_inline_job_secondary_files_stage_from_original_directory(tmp_path, path_key):
     source_directory = tmp_path / "source"
