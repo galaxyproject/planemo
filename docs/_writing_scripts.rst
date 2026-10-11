@@ -5,14 +5,17 @@ Many common bioinformatics applications are available on the `Tool Shed`_
 already and so a common development task is to integrate scripts of
 various complexity into Galaxy.
 
-Consider the following small Perl script.
+Consider the following small Python script.
 
-.. literalinclude:: writing/gc_content.pl
-   :language: perl
+.. literalinclude:: writing/gc_content.py
+   :language: python
 
 One can build a tool for this script as follows and place the script in
 the same directory as the tool XML file itself. The special value
 ``$__tool_directory__`` here refers to the directory your tool lives in.
+The ``requirements`` block declares that the tool needs Python, so Galaxy
+can provide an interpreter instead of relying on the one installed on the
+server.
 
 .. literalinclude:: writing/gc_content.xml
    :language: xml
