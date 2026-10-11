@@ -16,7 +16,8 @@ History
 * Exit non-zero from ``planemo autoupdate`` when a tool fails to update - fixes
   #1478.
 * Sanitize Galaxy labels, element identifiers and workflow names before using
-  them as filenames in ``workflow_test_init --from_invocation`` - fixes #1629.
+  them as filenames in ``workflow_test_init --from_invocation`` and
+  ``workflow_job_init --from_invocation`` - fixes #1629.
 
 
 ---------------------
