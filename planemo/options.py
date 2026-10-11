@@ -252,6 +252,22 @@ def galaxy_port_option():
     )
 
 
+def infrastructure_host_option():
+    return planemo_option(
+        "--infrastructure_host",
+        type=str,
+        default=None,
+        use_global_config=True,
+        help=(
+            "Hostname to advertise for Galaxy infrastructure and interactive tool URLs. "
+            "When not set this defaults to 'localhost' when Galaxy is bound to 127.0.0.1 "
+            "or 0.0.0.0, and to the bind host otherwise. Set this to a hostname or IP that "
+            "is reachable by both the browser and interactive tool containers when serving "
+            "from a non-local bind address (e.g. --host 0.0.0.0 on a remote machine)."
+        ),
+    )
+
+
 def galaxy_host_option():
     return planemo_option(
         "--host",
@@ -580,7 +596,19 @@ def mulled_containers_option():
         "--mulled_containers",
         "--biocontainers",
         is_flag=True,
-        help="Test tools against mulled containers (forces --docker). Disables conda resolution unless any conda option has been set explicitly.",
+        help="Test tools against mulled containers. Requires --docker or --singularity; "
+        "--docker is enabled automatically if neither is given. Disables conda resolution "
+        "unless any conda option has been set explicitly.",
+    )
+
+
+def container_resolvers_config_file_option():
+    return planemo_option(
+        "--container_resolvers_config_file",
+        type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True),
+        default=None,
+        use_global_config=True,
+        help="Path to a Galaxy container resolvers configuration file to use instead of Galaxy's default resolvers.",
     )
 
 
@@ -644,7 +672,7 @@ def singularity_extra_volume_option():
         default=None,
         use_global_config=True,
         multiple=True,
-        help=("Extra path to mount if --engine docker or `--biocontainers` or `--singularity`."),
+        help=("Extra path to mount if `--biocontainers` or `--singularity`."),
     )
 
 
@@ -1227,6 +1255,13 @@ def singularity_config_options():
     )
 
 
+def galaxy_singularity_options():
+    return _compose(
+        singularity_enable_option(),
+        singularity_config_options(),
+    )
+
+
 def galaxy_docker_options():
     return _compose(
         docker_enable_option(),
@@ -1475,6 +1510,7 @@ def galaxy_target_options():
         galaxy_email_option(),
         galaxy_docker_options(),
         mulled_containers_option(),
+        container_resolvers_config_file_option(),
         galaxy_startup_timeout_option(),
         # Profile options...
         job_config_option(),
@@ -1529,6 +1565,7 @@ def galaxy_serve_options():
         non_strict_cwl_option(),
         docker_galaxy_image_option(),
         docker_extra_volume_option(),
+        singularity_extra_volume_option(),
         galaxy_config_options(),
         daemon_option(),
         pid_file_option(),
@@ -1537,6 +1574,7 @@ def galaxy_serve_options():
         skip_client_build_option(),
         shed_install_option(),
         disable_gxits_option(),
+        infrastructure_host_option(),
     )
 
 
@@ -1614,6 +1652,26 @@ def training_fill_data_library_options():
 def training_generate_tuto_from_wf_options():
     return _compose(
         training_topic_name_option(), training_tutorial_name_req_option(), training_tutorial_worflow_option()
+    )
+
+
+def lint_doi_option():
+    return planemo_option(
+        "doi",
+        "--doi",
+        is_flag=True,
+        default=False,
+        help="Check validity of DOIs in XML files",
+    )
+
+
+def lint_conda_requirements_option():
+    return planemo_option(
+        "conda_requirements",
+        "--conda_requirements",
+        is_flag=True,
+        default=False,
+        help="Check tool requirements for availability in best practice Conda channels.",
     )
 
 
@@ -1728,6 +1786,7 @@ def engine_options():
         cwltool_no_container_option(),
         docker_galaxy_image_option(),
         docker_extra_volume_option(),
+        singularity_extra_volume_option(),
         ignore_dependency_problems_option(),
         shed_install_option(),
         install_tool_dependencies_option(),
@@ -1913,7 +1972,7 @@ def profile_database_options():
         database_type_option(),
         database_source_options(),
         postgres_database_storage_location_option(),
-        singularity_config_options(),
+        galaxy_singularity_options(),
     )
 
 
@@ -1922,7 +1981,7 @@ def test_index_option():
 
 
 def fail_fast_option():
-    return planemo_option("--fail_fast", is_flag=True, help="Stop on first job failure.")
+    return planemo_option("--fail_fast", is_flag=True, help="Stop on first failure.")
 
 
 def test_output_options():
@@ -2014,6 +2073,21 @@ def filter_changed_in_commit_option():
     )
 
 
+def filter_extended_git_diff_option():
+    return planemo_option(
+        "--extended_git_diff",
+        is_flag=True,
+        default=False,
+        help=(
+            "Map each file changed in --changed_in_commit_range to the tools and "
+            "repositories that own it: selects a tool whose test-data or helper "
+            "scripts changed, and every repository of a tool collection whose "
+            "shared macros changed. Requires the working directory to be the "
+            "repository root."
+        ),
+    )
+
+
 def ci_chunk_count_option():
     return planemo_option(
         "--chunk_count",
@@ -2049,6 +2123,7 @@ def ci_find_options():
         filter_exclude_option(),
         filter_exclude_from_option(),
         filter_changed_in_commit_option(),
+        filter_extended_git_diff_option(),
         ci_chunk_count_option(),
         ci_chunk_option(),
         ci_output_option(),

@@ -344,6 +344,29 @@ def docker_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         )
 
 
+def _handle_mulled_container_kwds(ctx, kwds):
+    """Reconcile --biocontainers with the container and conda options.
+
+    Mulled containers need a container runtime, so enable Docker unless the user
+    asked for a runtime explicitly. Conda resolution is disabled unless the user
+    configured conda themselves.
+    """
+    if not kwds.get("mulled_containers", False):
+        return
+    if not (kwds.get("docker", False) or kwds.get("singularity", False)):
+        # Neither runtime is on, so Docker is the fallback unless it was refused explicitly.
+        if ctx.get_option_source("docker") != OptionSource.cli:
+            kwds["docker"] = True
+        else:
+            raise Exception("Specified --no_docker and mulled containers together.")
+    conda_default_options = ("conda_auto_init", "conda_auto_install")
+    use_conda_options = ("dependency_resolution", "conda_use_local", "conda_prefix", "conda_exec")
+    if not any(kwds.get(_) for _ in use_conda_options) and all(
+        ctx.get_option_source(_) == OptionSource.default for _ in conda_default_options
+    ):
+        kwds["no_dependency_resolution"] = kwds["no_conda_auto_init"] = True
+
+
 @contextlib.contextmanager
 def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
     """Set up a ``GalaxyConfig`` in an auto-cleaned context."""
@@ -361,20 +384,7 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
         if os.path.isdir(galaxy_root) and install_galaxy:
             raise Exception(f"{galaxy_root} is an existing non-empty directory, cannot install Galaxy again")
 
-    # Duplicate block in docker variant above.
-    if kwds.get("mulled_containers", False):
-        if not kwds.get("docker", False):
-            if ctx.get_option_source("docker") != OptionSource.cli:
-                kwds["docker"] = True
-            else:
-                raise Exception("Specified no docker and mulled containers together.")
-        conda_default_options = ("conda_auto_init", "conda_auto_install")
-        use_conda_options = ("dependency_resolution", "conda_use_local", "conda_prefix", "conda_exec")
-        if not any(kwds.get(_) for _ in use_conda_options) and all(
-            ctx.get_option_source(_) == OptionSource.default for _ in conda_default_options
-        ):
-            # If using mulled_containers and default conda options disable conda resolution
-            kwds["no_dependency_resolution"] = kwds["no_conda_auto_init"] = True
+    _handle_mulled_container_kwds(ctx, kwds)
 
     with _config_directory(ctx, **kwds) as config_directory:
 
@@ -573,10 +583,18 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
                 env["SUPERVISORD_SOCKET"] = nt.name
         host = kwds.get("host", "localhost")
         port = template_args["port"]
-        # Use "localhost" for infrastructure URL when bound to 127.0.0.1,
-        # so that interactive tool subdomain URLs resolve correctly
-        # (e.g. *.interactivetool.localhost instead of *.interactivetool.127.0.0.1).
-        infrastructure_host = "localhost" if host == "127.0.0.1" else host
+        # Use "localhost" for infrastructure URL when bound to 127.0.0.1
+        # or 0.0.0.0, so that interactive tool subdomain URLs resolve correctly
+        # (e.g. *.interactivetool.localhost instead of *.interactivetool.127.0.0.1
+        # or *.interactivetool.0.0.0.0). The bind host (0.0.0.0) is needed so the
+        # interactive tool containers can reach Galaxy via the docker bridge, while
+        # the browser still needs a resolvable name like localhost.
+        # Users serving Galaxy from a non-local bind address (e.g. a remote machine
+        # reachable by other browsers or containers) can override the advertised
+        # hostname with the --infrastructure_host option.
+        infrastructure_host = kwds.get("infrastructure_host") or (
+            "localhost" if host in ("127.0.0.1", "0.0.0.0") else host
+        )
         galaxy_infrastructure_url = f"http://{infrastructure_host}:{port}"
         if kwds.get("disable_gxits"):
             gx_it_proxy_config = {
@@ -1741,6 +1759,7 @@ def _handle_kwd_overrides(properties, kwds):
         "job_config_file",
         "job_metrics_config_file",
         "dependency_resolvers_config_file",
+        "container_resolvers_config_file",
         "vault_config_file",
     ]
     for prop in kwds_gx_properties:

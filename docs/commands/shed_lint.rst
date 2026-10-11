@@ -43,6 +43,9 @@ help text for mentioned URLs and checks those.
                                       for each repository to allow automated
                                       creation and/or updates.
       --urls                          Check validity of URLs in XML files
+      --doi                           Check validity of DOIs in XML files
+      --conda_requirements            Check tool requirements for availability in
+                                      best practice Conda channels.
       --biocontainer, --biocontainers
                                       Check best practice BioContainer namespaces
                                       for a container definition applicable for this

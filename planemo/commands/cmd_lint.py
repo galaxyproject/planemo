@@ -26,18 +26,8 @@ from planemo.tool_lint import (
     default=False,
     help="Check validity of URLs in XML files",
 )
-@click.option(
-    "--doi",
-    is_flag=True,
-    default=False,
-    help="Check validity of DOIs in XML files",
-)
-@click.option(
-    "--conda_requirements",
-    is_flag=True,
-    default=False,
-    help="Check tool requirements for availability in best practice Conda channels.",
-)
+@options.lint_doi_option()
+@options.lint_conda_requirements_option()
 @options.lint_biocontainers_option()
 # @click.option(
 # "--verify",

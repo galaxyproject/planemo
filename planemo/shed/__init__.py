@@ -761,7 +761,13 @@ def find_raw_repositories(ctx, paths, **kwds):
     return raw_repo_objects
 
 
-def for_each_repository(ctx, function, paths, **kwds):
+def for_each_repository(ctx, function, paths, stop_on_failure=False, **kwds):
+    """Apply ``function`` to each repository found on ``paths``.
+
+    ``stop_on_failure`` is opt-in because a non-zero return code does not mean
+    failure for every caller (``shed_diff`` returns 1 for "differences found",
+    ``shed_create`` returns 1 for "already exists").
+    """
     ret_codes = []
     for path in paths:
         with _path_on_disk(ctx, path) as raw_path:
@@ -769,7 +775,7 @@ def for_each_repository(ctx, function, paths, **kwds):
                 for realized_repository in _realize_effective_repositories(ctx, raw_path, **kwds):
                     return_code = function(realized_repository)
                     ret_codes.append(return_code)
-                    if kwds.get("fail_fast", False) and return_code:
+                    if stop_on_failure and return_code:
                         return coalesce_return_codes(ret_codes)
             except RealizationException:
                 error(REALIZAION_PROBLEMS_MESSAGE)

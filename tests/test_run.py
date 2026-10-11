@@ -27,6 +27,28 @@ def _cwl_file(name):
 # of just arbitrarily exercising the code.
 class RunTestCase(CliTestCase):
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
+    def test_run_reports_engine_error(self):
+        with self._isolate() as directory:
+            tool_path = os.path.join(TEST_DATA_DIR, "fail_tool.cwl")
+            job_path = os.path.join(TEST_DATA_DIR, "fail_tool_job.json")
+            result = self._check_exit_code(
+                ["run", "--engine", "cwltool", "--no_container", "--no_use_cache", tool_path, job_path],
+                exit_code=1,
+            )
+
+            assert "Run failed" in result.output
+            with open(os.path.join(directory, "tool_test_output.json")) as test_report:
+                report = PlanemoTestReport.model_validate(json.load(test_report))
+            test_result = report.tests[0]
+            assert test_result.id == tool_path
+            assert test_result.test_type == "cwl_tool"
+            assert test_result.data is not None
+            assert test_result.data.status == "error"
+            assert test_result.data.execution_problem == "Error running cwltool"
+            assert test_result.data.problem_log is not None
+            assert "permanentFail" in test_result.data.problem_log
+
+    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_run_cat_cwltool(self):
         with self._isolate() as f:
             tool_path = _cwl_file("cat1-tool.cwl")
