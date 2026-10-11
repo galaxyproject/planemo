@@ -11,6 +11,7 @@ from planemo.runnable import for_path
 from planemo.training import Training
 from .test_utils import (
     skip_if_environ,
+    skip_if_zenodo_down,
     TEST_DATA_DIR,
 )
 
@@ -179,6 +180,7 @@ def test_training_check_topic_init_tuto() -> None:
     shutil.rmtree("metadata")
 
 
+@skip_if_zenodo_down
 def test_fill_data_library() -> None:
     """Test :func:`planemo.training.fill_data_library`."""
     train = Training(KWDS)
@@ -224,6 +226,7 @@ def test_fill_data_library() -> None:
 
 
 @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+@skip_if_zenodo_down
 def test_generate_tuto_from_wf() -> None:
     """Test :func:`planemo.training.generate_tuto_from_wf`."""
     train = Training(KWDS)

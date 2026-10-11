@@ -1,7 +1,10 @@
 """Tests for the ``training_fill_data_library`` command."""
 
 from .test_cmd_training_generate_from_wf import create_tutorial_dir
-from .test_utils import CliTestCase
+from .test_utils import (
+    CliTestCase,
+    skip_if_zenodo_down,
+)
 
 
 class CmdTrainingFillDataLibraryTestCase(CliTestCase):
@@ -35,6 +38,7 @@ class CmdTrainingFillDataLibraryTestCase(CliTestCase):
             ]
             self._check_exit_code(training_fill_data_library_command, exit_code=0)
 
+    @skip_if_zenodo_down
     def test_training_fill_data_library_command_tutorial_zenodo(self):
         """Test training_fill_data_library command with zenodo link."""
         with self._isolate():

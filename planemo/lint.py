@@ -1,5 +1,7 @@
 """Utilities to help linting various targets."""
 
+import importlib
+import inspect
 import os
 import re
 from typing import (
@@ -27,6 +29,30 @@ REQUEST_TIMEOUT = 5
 BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
 
 
+# Skip names from before the Planemo-specific linters became ``Linter`` classes,
+# mapped to the module that now implements them.
+LEGACY_SKIP_MODULES = {
+    "requirements_in_conda": "planemo.linters.conda_requirements",
+    "tool_urls": "planemo.linters.urls",
+}
+
+
+def _expand_legacy_skip_types(skip_types):
+    """Add the linter class names behind legacy skip names so existing skip lists keep working."""
+    expanded = list(skip_types)
+    for skip_type in skip_types:
+        module_name = LEGACY_SKIP_MODULES.get(skip_type)
+        if module_name is None:
+            continue
+        module = importlib.import_module(module_name)
+        expanded.extend(
+            name
+            for name, value in inspect.getmembers(module, inspect.isclass)
+            if issubclass(value, Linter) and value.__module__ == module_name
+        )
+    return expanded
+
+
 def build_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
     """Handle common report, error, and skip linting arguments."""
     report_level = kwds.get("report_level", "all")
@@ -48,7 +74,8 @@ def build_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
                 skip_types.append(line)
 
     linters = Linter.list_linters()
-    linters.extend(["version_bumped", "requirements_in_conda", "biocontainer_registered", "tool_urls"])
+    linters.extend(["version_bumped", "biocontainer_registered", "doi", "urls", "conda_requirements"])
+    linters.extend(LEGACY_SKIP_MODULES)
     linters.extend(kwds.get("extra_linter_names", []))
     invalid_skip_types = list(set(skip_types) - set(linters))
     if len(invalid_skip_types):
@@ -57,7 +84,7 @@ def build_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
     lint_args: Dict[str, Any] = dict(
         level=report_level,
         fail_level=fail_level,
-        skip_types=skip_types,
+        skip_types=_expand_legacy_skip_types(skip_types),
     )
     return lint_args
 

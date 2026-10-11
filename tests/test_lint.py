@@ -1,5 +1,6 @@
 import glob
 import os
+from unittest import mock
 
 from .test_utils import (
     CliTestCase,
@@ -49,6 +50,19 @@ class LintTestCase(CliTestCase):
         paths = list(map(lambda p: os.path.join(TEST_TOOLS_DIR, p), names))
         self._check_exit_code(["lint"] + paths, exit_code=1)
         self._check_exit_code(["lint", "--skip", "CitationsMissing,XMLOrder"] + paths, exit_code=0)
+
+    def test_skip_legacy_and_module_linter_names(self):
+        conda_tool = os.path.join(TEST_TOOLS_DIR, "bwa_invalid_version.xml")
+        url_tool = os.path.join(TEST_TOOLS_DIR, "url.xml")
+        with mock.patch("planemo.linters.conda_requirements.best_practice_search", return_value=(None, None)):
+            self._check_exit_code(["lint", "--conda_requirements", conda_tool], exit_code=1)
+            # legacy name from before the linter was a class, then the module name
+            self._check_exit_code(["lint", "--conda_requirements", "-s", "requirements_in_conda", conda_tool])
+            self._check_exit_code(["lint", "--conda_requirements", "-s", "conda_requirements", conda_tool])
+        with mock.patch("planemo.linters.urls._validate_url", return_value="Error accessing url"):
+            self._check_exit_code(["lint", "--urls", url_tool], exit_code=1)
+            self._check_exit_code(["lint", "--urls", "-s", "tool_urls", url_tool])
+            self._check_exit_code(["lint", "--urls", "-s", "urls", url_tool])
 
     def test_skips(self):
         fail_citation = os.path.join(TEST_TOOLS_DIR, "fail_citation.xml")

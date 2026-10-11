@@ -10,6 +10,13 @@ History
 ---------------------
 * Add ``--use_cache`` to ``planemo test``, off by default - follow-up to #1665
   which added it to ``planemo run``.
+* Add ``--doi`` and ``--conda_requirements`` to ``planemo shed_lint`` so
+  ``shed_lint --tools`` covers the same checks as ``lint`` - fixes #667.
+* Add ``--extended_git_diff`` to ``ci_find_repos``, ``ci_find_tools`` and
+  ``list_repos``, resolving each file changed in ``--changed_in_commit_range``
+  to the tools and repositories that own it - fixes #1129.
+* Exit non-zero from ``planemo autoupdate`` when a tool fails to update - fixes
+  #1478.
 
 
 ---------------------
@@ -82,6 +89,10 @@ History
 * Bring in gxformat2 Linting Improvements (add some agent assistance files) (thanks to `@jmchilton`_). `Pull Request 1633`_
 * Harden gxformat2-normalized input/output handling (thanks to `@jmchilton`_). `Pull Request 1642`_
 * Escape rich markup in failed-job error reporting (thanks to `@mvdbeek`_). `Pull Request 1643`_
+* Allow running Galaxy with `--host 0.0.0.0` while keeping `localhost` as the advertised
+  infrastructure GxIT URL (adds `--infrastructure_host` override). This allows interactive
+  tool containers to reach Galaxy through the docker bridge while keeping interactive tool
+  subdomain URLs resolvable by the browser.
 * Add Claude slash command for release workflow (thanks to `@jmchilton`_). `Pull Request 1627`_
 
 * Add structured CLI metadata and output schema exports, validate Planemo JSON
