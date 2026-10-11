@@ -57,7 +57,11 @@ def _default_callback(
         assert result is not VALUE_UNSET
 
         if option_source is not OptionSource.cli:
-            result = convert_option_value(ctx, param, result)
+            if option_source is OptionSource.global_config:
+                source = f"the global config file {global_config_path(planemo_ctx.planemo_config)}"
+            else:
+                source = "the option's default"
+            result = convert_option_value(ctx, param, result, source)
 
         planemo_ctx.set_option_source(param_name, option_source)
         return result
@@ -65,11 +69,20 @@ def _default_callback(
     return callback
 
 
-def convert_option_value(ctx: click.Context, param: Option, value: Any) -> Any:
-    """Apply Click's conversion to values sourced outside its parser."""
+def convert_option_value(ctx: click.Context, param: Option, value: Any, source: Optional[str] = None) -> Any:
+    """Apply Click's conversion to values sourced outside its parser.
+
+    ``source`` describes where the value came from and is added to the error
+    message, since the user did not pass the value on the command line.
+    """
     if param.multiple and isinstance(value, str):
         value = (value,)
-    return param.type_cast_value(ctx, value)
+    try:
+        return param.type_cast_value(ctx, value)
+    except click.BadParameter as e:
+        if source:
+            e.message = f"{e.message} (this value was not passed on the command line, it was taken from {source})"
+        raise
 
 
 def _find_default(

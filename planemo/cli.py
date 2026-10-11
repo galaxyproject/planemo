@@ -166,7 +166,7 @@ def _setup_profile_options(ctx: PlanemoCliContext, profile_defaults: Dict[str, A
         use_profile_option = not option_present or not option_cli_specified
         if use_profile_option:
             if key in parameters:
-                value = convert_option_value(click_ctx, parameters[key], value)
+                value = convert_option_value(click_ctx, parameters[key], value, f"profile '{kwds.get('profile')}'")
             kwds[key] = value
             ctx.set_option_source(key, OptionSource.profile, force=True)
 

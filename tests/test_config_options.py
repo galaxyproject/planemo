@@ -95,6 +95,14 @@ def test_configured_paths_are_validated(cli_context, source, path_type, value):
     )
     assert result.exit_code == 2, result.output
     assert "Invalid value for '--path'" in result.output
+    # The user did not pass the value, so the message must say where it came from.
+    expected_source = {
+        "global_config": f"global config file {cli_context.planemo_config}",
+        "default": "the option's default",
+        "profile": "profile 'example'",
+    }[source]
+    assert "not passed on the command line" in result.output
+    assert expected_source in result.output
 
 
 @pytest.mark.parametrize("value", ["first", ["first", "second"]])
