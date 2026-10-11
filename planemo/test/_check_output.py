@@ -33,6 +33,11 @@ def _check_output_collection(runnable, output_properties, test_properties, **kwd
 
     output_def = TestCollectionOutputDef.from_yaml_test_format(test_properties)
 
+    required_keys = ("collection_type", "elements") if output_def.collection_type else ("elements",)
+    for key in required_keys:
+        if key not in data_collection:
+            return [f"Output '{output_def.name}' is expected to be a collection but has no '{key}' (is it a dataset?)."]
+
     def verify_dataset(element, element_attrib, element_outfile):
         if element_outfile:
             element_attrib["path"] = element_outfile
@@ -43,10 +48,6 @@ def _check_output_collection(runnable, output_properties, test_properties, **kwd
         verify_collection(output_def, data_collection, verify_dataset)
     except AssertionError as e:
         problems.append(unicodify(e))
-    except KeyError as e:
-        # galaxy-tool-util < 26.1 indexes collection keys directly, so a dataset
-        # output tested with ``class: Collection`` raises KeyError instead of AssertionError.
-        problems.append(f"Output '{output_def.name}' is expected to be a collection but has no {e} (is it a dataset?).")
 
     return problems
 
