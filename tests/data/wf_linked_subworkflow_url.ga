@@ -1,0 +1,105 @@
+{
+    "a_galaxy_workflow": "true",
+    "annotation": "Parent workflow with a subworkflow step linked via content_source url",
+    "format-version": "0.1",
+    "name": "wf_linked_subworkflow_url",
+    "steps": {
+        "0": {
+            "annotation": "",
+            "content_id": null,
+            "id": 0,
+            "input_connections": {},
+            "inputs": [],
+            "label": "input",
+            "name": "Input dataset",
+            "outputs": [],
+            "position": {
+                "left": 0,
+                "top": 0
+            },
+            "tool_id": null,
+            "tool_state": "{\"optional\": false, \"tag\": null}",
+            "tool_version": null,
+            "type": "data_input",
+            "uuid": "2c1e6d47-73b9-4f9f-8e1c-2a3d7c8d1b01",
+            "workflow_outputs": []
+        },
+        "1": {
+            "annotation": "",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_head_tool/9.3+galaxy1",
+            "id": 1,
+            "input_connections": {
+                "infile": {
+                    "id": 0,
+                    "output_name": "output"
+                }
+            },
+            "inputs": [],
+            "label": "head",
+            "name": "Select first",
+            "outputs": [
+                {
+                    "name": "outfile",
+                    "type": "input"
+                }
+            ],
+            "position": {
+                "left": 250,
+                "top": 0
+            },
+            "post_job_actions": {},
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_head_tool/9.3+galaxy1",
+            "tool_shed_repository": {
+                "changeset_revision": "ddf54b12c295",
+                "name": "text_processing",
+                "owner": "bgruening",
+                "tool_shed": "toolshed.g2.bx.psu.edu"
+            },
+            "tool_state": "{\"infile\": {\"__class__\": \"ConnectedValue\"}, \"__page__\": null}",
+            "tool_version": "9.3+galaxy1",
+            "type": "tool",
+            "uuid": "2c1e6d47-73b9-4f9f-8e1c-2a3d7c8d1b02",
+            "workflow_outputs": [
+                {
+                    "label": "head_output",
+                    "output_name": "outfile",
+                    "uuid": "2c1e6d47-73b9-4f9f-8e1c-2a3d7c8d1b03"
+                }
+            ]
+        },
+        "2": {
+            "annotation": "",
+            "content_source": "url",
+            "content_id": "base64://ewogICAgImFfZ2FsYXh5X3dvcmtmbG93IjogInRydWUiLAogICAgImFubm90YXRpb24iOiAiQ2hpbGQgd29ya2Zsb3cgcmVmZXJlbmNlZCBieSB0aGUgd2ZfbGlua2VkX3N1YndvcmtmbG93XyogZml4dHVyZXMiLAogICAgImZvcm1hdC12ZXJzaW9uIjogIjAuMSIsCiAgICAibmFtZSI6ICJsaW5rZWRfc3Vid29ya2Zsb3dfY2hpbGQiLAogICAgInN0ZXBzIjogewogICAgICAgICIwIjogewogICAgICAgICAgICAiYW5ub3RhdGlvbiI6ICIiLAogICAgICAgICAgICAiY29udGVudF9pZCI6IG51bGwsCiAgICAgICAgICAgICJpZCI6IDAsCiAgICAgICAgICAgICJpbnB1dF9jb25uZWN0aW9ucyI6IHt9LAogICAgICAgICAgICAiaW5wdXRzIjogW10sCiAgICAgICAgICAgICJsYWJlbCI6ICJjaGlsZCBpbnB1dCIsCiAgICAgICAgICAgICJuYW1lIjogIklucHV0IGRhdGFzZXQiLAogICAgICAgICAgICAib3V0cHV0cyI6IFtdLAogICAgICAgICAgICAicG9zaXRpb24iOiB7ImxlZnQiOiAwLCAidG9wIjogMH0sCiAgICAgICAgICAgICJ0b29sX2lkIjogbnVsbCwKICAgICAgICAgICAgInRvb2xfc3RhdGUiOiAie1wib3B0aW9uYWxcIjogZmFsc2UsIFwidGFnXCI6IG51bGx9IiwKICAgICAgICAgICAgInRvb2xfdmVyc2lvbiI6IG51bGwsCiAgICAgICAgICAgICJ0eXBlIjogImRhdGFfaW5wdXQiLAogICAgICAgICAgICAidXVpZCI6ICIxYjBkNWMzNi02MmE4LTRlOGUtOWQwYi0xZjJjNmI3YzBhMDEiLAogICAgICAgICAgICAid29ya2Zsb3dfb3V0cHV0cyI6IFtdCiAgICAgICAgfSwKICAgICAgICAiMSI6IHsKICAgICAgICAgICAgImFubm90YXRpb24iOiAiIiwKICAgICAgICAgICAgImNvbnRlbnRfaWQiOiAidG9vbHNoZWQuZzIuYngucHN1LmVkdS9yZXBvcy9kZXZ0ZWFtL2Zhc3RxYy9mYXN0cWMvMC43MitnYWxheHkxIiwKICAgICAgICAgICAgImlkIjogMSwKICAgICAgICAgICAgImlucHV0X2Nvbm5lY3Rpb25zIjogewogICAgICAgICAgICAgICAgImlucHV0X2ZpbGUiOiB7ImlkIjogMCwgIm91dHB1dF9uYW1lIjogIm91dHB1dCJ9CiAgICAgICAgICAgIH0sCiAgICAgICAgICAgICJpbnB1dHMiOiBbXSwKICAgICAgICAgICAgImxhYmVsIjogImZhc3RxYyIsCiAgICAgICAgICAgICJuYW1lIjogIkZhc3RRQyIsCiAgICAgICAgICAgICJvdXRwdXRzIjogW3sibmFtZSI6ICJ0ZXh0X2ZpbGUiLCAidHlwZSI6ICJ0eHQifV0sCiAgICAgICAgICAgICJwb3NpdGlvbiI6IHsibGVmdCI6IDI1MCwgInRvcCI6IDB9LAogICAgICAgICAgICAicG9zdF9qb2JfYWN0aW9ucyI6IHt9LAogICAgICAgICAgICAidG9vbF9pZCI6ICJ0b29sc2hlZC5nMi5ieC5wc3UuZWR1L3JlcG9zL2RldnRlYW0vZmFzdHFjL2Zhc3RxYy8wLjcyK2dhbGF4eTEiLAogICAgICAgICAgICAidG9vbF9zaGVkX3JlcG9zaXRvcnkiOiB7CiAgICAgICAgICAgICAgICAiY2hhbmdlc2V0X3JldmlzaW9uIjogImU3YjIyMDJiZWZlYSIsCiAgICAgICAgICAgICAgICAibmFtZSI6ICJmYXN0cWMiLAogICAgICAgICAgICAgICAgIm93bmVyIjogImRldnRlYW0iLAogICAgICAgICAgICAgICAgInRvb2xfc2hlZCI6ICJ0b29sc2hlZC5nMi5ieC5wc3UuZWR1IgogICAgICAgICAgICB9LAogICAgICAgICAgICAidG9vbF9zdGF0ZSI6ICJ7XCJpbnB1dF9maWxlXCI6IHtcIl9fY2xhc3NfX1wiOiBcIkNvbm5lY3RlZFZhbHVlXCJ9LCBcIl9fcGFnZV9fXCI6IG51bGx9IiwKICAgICAgICAgICAgInRvb2xfdmVyc2lvbiI6ICIwLjcyK2dhbGF4eTEiLAogICAgICAgICAgICAidHlwZSI6ICJ0b29sIiwKICAgICAgICAgICAgInV1aWQiOiAiMWIwZDVjMzYtNjJhOC00ZThlLTlkMGItMWYyYzZiN2MwYTAyIiwKICAgICAgICAgICAgIndvcmtmbG93X291dHB1dHMiOiBbCiAgICAgICAgICAgICAgICB7ImxhYmVsIjogImNoaWxkX3JlcG9ydCIsICJvdXRwdXRfbmFtZSI6ICJ0ZXh0X2ZpbGUiLCAidXVpZCI6ICIxYjBkNWMzNi02MmE4LTRlOGUtOWQwYi0xZjJjNmI3YzBhMDMifQogICAgICAgICAgICBdCiAgICAgICAgfQogICAgfSwKICAgICJ0YWdzIjogW10sCiAgICAidXVpZCI6ICIxYjBkNWMzNi02MmE4LTRlOGUtOWQwYi0xZjJjNmI3YzBhMDAiLAogICAgInZlcnNpb24iOiAxCn0K",
+            "id": 2,
+            "input_connections": {
+                "child input": {
+                    "id": 0,
+                    "input_subworkflow_step_id": 0,
+                    "output_name": "output"
+                }
+            },
+            "inputs": [],
+            "label": "linked subworkflow",
+            "name": "linked_subworkflow_child",
+            "outputs": [],
+            "position": {
+                "left": 250,
+                "top": 200
+            },
+            "tool_id": null,
+            "type": "subworkflow",
+            "uuid": "2c1e6d47-73b9-4f9f-8e1c-2a3d7c8d1b04",
+            "workflow_outputs": [
+                {
+                    "label": "child_report",
+                    "output_name": "child_report",
+                    "uuid": "2c1e6d47-73b9-4f9f-8e1c-2a3d7c8d1b05"
+                }
+            ]
+        }
+    },
+    "tags": [],
+    "uuid": "2c1e6d47-73b9-4f9f-8e1c-2a3d7c8d1b00",
+    "version": 1
+}

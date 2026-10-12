@@ -29,6 +29,7 @@ from packaging.version import Version
 
 import planemo.conda
 from planemo.galaxy.workflows import (
+    export_workflow_dict,
     get_tool_ids_for_workflow,
     get_toolshed_url_for_tool_id,
 )
@@ -310,6 +311,10 @@ def _update_wf(config: "LocalGalaxyConfig", workflow_id: str, instance: bool = F
     wf = config.user_gi.make_get_request(
         f"{config.user_gi.url}/workflows/{workflow_id}", params={"instance": instance}
     ).json()
+    source_metadata = wf.get("source_metadata") or {}
+    if instance and ("url" in source_metadata or "trs_url" in source_metadata):
+        # linked subworkflow (URL / TRS reference), a pinned version that is updated where it is published
+        return
     for step in wf.get("steps", {}).values():
         if step["type"] == "subworkflow":
             # update subworkflows before the main workflow
@@ -392,7 +397,7 @@ def get_tools_to_update(
 def autoupdate_wf(ctx: "PlanemoCliContext", config: "LocalGalaxyConfig", wf: "Runnable") -> Dict[str, Any]:
     workflow_id = config.workflow_id_for_runnable(wf)
     _update_wf(config, workflow_id)
-    return config.user_gi.workflows.export_workflow_dict(workflow_id)
+    return export_workflow_dict(config.user_gi, workflow_id)
 
 
 def fix_workflow(original_wf: Dict[str, Any], updated_wf: Dict[str, Any]) -> Dict[str, Any]:

@@ -1,0 +1,56 @@
+{
+    "a_galaxy_workflow": "true",
+    "annotation": "Child workflow referenced by the wf_linked_subworkflow_* fixtures",
+    "format-version": "0.1",
+    "name": "linked_subworkflow_child",
+    "steps": {
+        "0": {
+            "annotation": "",
+            "content_id": null,
+            "id": 0,
+            "input_connections": {},
+            "inputs": [],
+            "label": "child input",
+            "name": "Input dataset",
+            "outputs": [],
+            "position": {"left": 0, "top": 0},
+            "tool_id": null,
+            "tool_state": "{\"optional\": false, \"tag\": null}",
+            "tool_version": null,
+            "type": "data_input",
+            "uuid": "1b0d5c36-62a8-4e8e-9d0b-1f2c6b7c0a01",
+            "workflow_outputs": []
+        },
+        "1": {
+            "annotation": "",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.72+galaxy1",
+            "id": 1,
+            "input_connections": {
+                "input_file": {"id": 0, "output_name": "output"}
+            },
+            "inputs": [],
+            "label": "fastqc",
+            "name": "FastQC",
+            "outputs": [{"name": "text_file", "type": "txt"}],
+            "position": {"left": 250, "top": 0},
+            "post_job_actions": {},
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.72+galaxy1",
+            "tool_shed_repository": {
+                "changeset_revision": "e7b2202befea",
+                "name": "fastqc",
+                "owner": "devteam",
+                "tool_shed": "toolshed.g2.bx.psu.edu"
+            },
+            "tool_state": "{\"input_file\": {\"__class__\": \"ConnectedValue\"}, \"__page__\": null}",
+            "tool_version": "0.72+galaxy1",
+            "type": "tool",
+            "uuid": "1b0d5c36-62a8-4e8e-9d0b-1f2c6b7c0a02",
+            "workflow_outputs": [
+                {"label": "child_report", "output_name": "text_file", "uuid": "1b0d5c36-62a8-4e8e-9d0b-1f2c6b7c0a03"}
+            ]
+        }
+    },
+    "tags": [],
+    "uuid": "1b0d5c36-62a8-4e8e-9d0b-1f2c6b7c0a00",
+    "version": 1
+}
