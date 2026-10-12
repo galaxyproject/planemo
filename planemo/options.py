@@ -1686,6 +1686,24 @@ def lint_biocontainers_option():
     )
 
 
+def lint_urls_option():
+    return planemo_option(
+        "--urls",
+        is_flag=True,
+        default=False,
+        help="Check validity of URLs in XML files",
+    )
+
+
+def lint_planemo_defined_tool_linters_options():
+    return _compose(
+        lint_urls_option(),
+        lint_doi_option(),
+        lint_conda_requirements_option(),
+        lint_biocontainers_option(),
+    )
+
+
 def report_level_option():
     return planemo_option(
         "--report_level",

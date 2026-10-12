@@ -20,15 +20,7 @@ from planemo.tool_lint import (
 @options.fail_level_option()
 @options.skip_options()
 @options.recursive_option()
-@click.option(
-    "--urls",
-    is_flag=True,
-    default=False,
-    help="Check validity of URLs in XML files",
-)
-@options.lint_doi_option()
-@options.lint_conda_requirements_option()
-@options.lint_biocontainers_option()
+@options.lint_planemo_defined_tool_linters_options()
 # @click.option(
 # "--verify",
 # is_flag=True,
