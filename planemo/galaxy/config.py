@@ -557,11 +557,28 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
 
 
 def _init_interactivetools_db(path):
-    """Pre-create the gxitproxy SQLite database.
+    """Pre-create the gxitproxy SQLite database and its ``gxitproxy`` table.
 
-    This ensures the file exists so the proxy's file watcher doesn't crash.
+    The Galaxy GxIT proxy stores entry points in a ``gxitproxy`` table. Galaxy
+    only creates that table lazily the first time an entry point is saved (i.e.
+    when an interactive tool's container reports its ports). If a tool run
+    fails before its ports are ever reported, Galaxy's cleanup path still
+    deletes from the table and crashes with ``no such table: gxitproxy``.
+    Pre-creating the table (with the same schema Galaxy uses) makes that
+    cleanup a harmless no-op instead of an error.
     """
     conn = sqlite3.connect(path)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS gxitproxy (
+            key VARCHAR(16) NOT NULL,
+            key_type TEXT NOT NULL,
+            token VARCHAR(32),
+            host TEXT,
+            port INTEGER,
+            info TEXT,
+            PRIMARY KEY (key, key_type)
+        )
+        """)
     conn.commit()
     conn.close()
 

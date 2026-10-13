@@ -21,6 +21,11 @@ from planemo.galaxy.activity import (
 )
 from planemo.galaxy.config import external_galaxy_config
 from planemo.galaxy.serve import serve_daemon
+from planemo.galaxy.test import run_interactive_tool_test
+from planemo.galaxy.test.interactive import (
+    resolve_interactive_inputs,
+    tool_id_for_path,
+)
 from planemo.runnable import (
     DelayedGalaxyToolTestCase,
     ExternalGalaxyToolTestCase,
@@ -28,6 +33,7 @@ from planemo.runnable import (
     Rerunnable,
     RunnableType,
 )
+from planemo.test.results import StructuredData
 from .interface import BaseEngine
 
 if TYPE_CHECKING:
@@ -156,6 +162,48 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
                     log_service_logs_on_failure(self._ctx, config, test_results[result_index:])
 
         return test_results
+
+    def test_interactive(self, runnables, **kwds):
+        """Run the interactive-tool smoke test for the supplied runnables.
+
+        Each runnable must be a Galaxy interactive tool. A managed Galaxy is
+        served with the tools, each tool is launched and its entry points are
+        verified to become active and reachable (optionally asserting on the
+        served content).
+
+        The inputs used to launch each tool are resolved per tool: the inputs
+        of the referenced embedded test case (``--test_index``) form the base
+        and any explicit ``--inputs`` override them. This lets interactive
+        tools that require parameters be tested by reusing a test case.
+        """
+        manual_inputs = kwds.get("inputs")
+        test_index = kwds.get("test_index")
+        expected_content = kwds.get("expect_content")
+        entry_point_timeout = kwds.get("entry_point_timeout", 120)
+        content_timeout = kwds.get("content_timeout", 30)
+        tests = []
+        with self.ensure_runnables_served(runnables) as config:
+            if self._ctx.verbose:
+                self._ctx.log(f"Running Galaxy with API configuration [{config.user_api_config}]")
+            for runnable in runnables:
+                self._ctx.vlog(f"Testing interactive tool [{runnable}].")
+                tool_id = tool_id_for_path(runnable.path)
+                inputs = resolve_interactive_inputs(runnable.path, test_index, manual_inputs)
+                if self._ctx.verbose:
+                    self._ctx.log(f"Running interactive tool [{tool_id}] with inputs [{inputs}].")
+                test_case = run_interactive_tool_test(
+                    config,
+                    tool_id,
+                    inputs=inputs,
+                    expected_content=expected_content,
+                    entry_point_timeout=entry_point_timeout,
+                    content_timeout=content_timeout,
+                )
+                tests.append(test_case)
+        test_data = {"version": "0.1", "tests": tests}
+        structured = StructuredData(data=test_data)
+        structured.calculate_summary_data()
+        return structured
 
 
 class LocalManagedGalaxyEngine(GalaxyEngine):
