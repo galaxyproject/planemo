@@ -13,3 +13,11 @@ def test_runnables(ctx, runnables, original_paths=None, **kwds):
         test_data = engine.test(runnables, test_timeout=kwds.get("test_timeout"))
         ctx.vlog(f"engine.test returning [{test_data}]")
         return handle_reports_and_summary(ctx, test_data.structured_data, kwds=kwds)
+
+
+def test_interactive_runnables(ctx, runnables, **kwds):
+    """Return exit code for interactive-tool tests of the supplied runnables."""
+    with engine_context(ctx, **kwds) as engine:
+        test_data = engine.test_interactive(runnables, **kwds)
+        ctx.vlog(f"engine.test_interactive returning [{test_data}]")
+        return handle_reports_and_summary(ctx, test_data.structured_data, kwds=kwds)

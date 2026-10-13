@@ -3,6 +3,7 @@
 import contextlib
 import json
 import os
+import sqlite3
 from unittest import mock
 
 import pytest
@@ -18,6 +19,7 @@ from planemo.galaxy.config import (
     _handle_job_config_file,
     _handle_kwd_overrides,
     _handle_mulled_container_kwds,
+    _init_interactivetools_db,
     _shared_galaxy_properties,
     _shed_config_paths,
     _validate_database_daemon,
@@ -282,6 +284,29 @@ def test_gxits_sets_galaxy_properties():
         assert properties["interactivetools_proxy_host"] == f"localhost:{gx_it_port}"
         # sessions and interactivetools_map should point to the same file
         assert config_data["gravity"]["gx_it_proxy"]["sessions"] == properties["interactivetools_map"]
+
+
+def test_init_interactivetools_db_creates_gxitproxy_table(tmp_path):
+    """The GxIT proxy map DB must pre-create the ``gxitproxy`` table.
+
+    Galaxy only creates this table lazily when an entry point is first saved
+    (i.e. when a tool's container reports its ports). If a tool run fails
+    before its ports are ever reported, cleanup's DELETE would otherwise crash
+    with ``no such table: gxitproxy``. Pre-creating it makes that cleanup a
+    harmless no-op.
+    """
+    db_path = str(tmp_path / "interactivetools_map.sqlite")
+    _init_interactivetools_db(db_path)
+    conn = sqlite3.connect(db_path)
+    try:
+        tables = [row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")]
+        assert "gxitproxy" in tables
+        # A DELETE against the (empty) table must be a harmless no-op, matching
+        # Galaxy's cleanup path for a tool that never reported its ports.
+        conn.execute("DELETE FROM gxitproxy WHERE key = ? AND key_type = ?", ("abc", "interactivetoolentrypoint"))
+        conn.commit()
+    finally:
+        conn.close()
 
 
 def test_gxits_disabled_with_flag():
