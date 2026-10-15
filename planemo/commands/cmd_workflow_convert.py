@@ -12,6 +12,7 @@ from planemo.engine import (
     engine_context,
     is_galaxy_engine,
 )
+from planemo.galaxy.workflows import export_workflow_dict
 from planemo.io import write_file
 from planemo.runnable import for_path
 
@@ -45,7 +46,7 @@ def cli(ctx, workflow_identifier, output=None, force=False, **kwds):
         with engine_context(ctx, **kwds) as galaxy_engine:
             with galaxy_engine.ensure_runnables_served([runnable]) as config:
                 workflow_id = config.workflow_id(workflow_identifier)
-                output_dict = config.gi.workflows.export_workflow_dict(workflow_id)
+                output_dict = export_workflow_dict(config.gi, workflow_id)
 
                 output_contents = json.dumps(output_dict, ensure_ascii=False, indent=4, sort_keys=True)
                 write_file(output, output_contents, force=force)
