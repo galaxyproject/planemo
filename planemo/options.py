@@ -12,6 +12,7 @@ from galaxy.tool_util.verify.interactor import DEFAULT_TOOL_TEST_WAIT
 from gxjobconfinit.types import Runner
 
 from .config import planemo_option
+from .virtualenv import GALAXY_PYTHON_VERSION_CHOICES
 
 
 def force_option(what="files"):
@@ -189,7 +190,7 @@ def galaxy_python_version():
         "--galaxy_python_version",
         use_global_config=True,
         default=None,
-        type=click.Choice(["3", "3.8", "3.9", "3.10", "3.11", "3.12"]),
+        type=click.Choice(GALAXY_PYTHON_VERSION_CHOICES),
         help="Python version to start Galaxy under",
     )
 
