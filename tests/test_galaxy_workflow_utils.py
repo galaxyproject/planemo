@@ -12,6 +12,7 @@ from planemo.galaxy.workflows import (
     find_tool_ids,
     get_tool_ids_for_workflow,
     output_stubs_for_workflow,
+    parameter_input_labels,
     required_input_labels,
     workflow_has_embedded_user_tools,
 )
@@ -111,6 +112,24 @@ def test_required_input_steps_excludes_falsy_defaults():
     assert "needs_value" in required
     assert "bool_default_false" not in required
     assert "int_default_zero" not in required
+
+
+def test_parameter_input_labels():
+    """Parameter inputs, including multiple-value ones, but not data or collection inputs."""
+    wf_path = os.path.join(TEST_DATA_DIR, "wf_multiple_param_inputs.gxwf.yml")
+    assert parameter_input_labels(workflow_path=wf_path) == ["text_list", "int_list"]
+    wf_path = os.path.join(TEST_DATA_DIR, "wf_param_types.gxwf.yml")
+    assert parameter_input_labels(workflow_path=wf_path) == [
+        "int_param",
+        "int_with_default",
+        "string_param",
+        "bool_param",
+    ]
+
+
+def test_parameter_input_labels_untyped_input_is_data():
+    wf_path = os.path.join(TEST_DATA_DIR, "wf1.gxwf.yml")
+    assert parameter_input_labels(workflow_path=wf_path) == []
 
 
 def test_output_stubs_skip_anonymous_and_empty_labels():
