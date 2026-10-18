@@ -155,16 +155,3 @@ def test_stage_in_passes_lists_to_multiple_value_parameter_inputs_of_remote_work
         job_dict, _ = _stage_in(runnable, config, job_path)
     get_dict.assert_called_once_with(config.user_gi, "workflow1", False)
     assert job_dict == EXPECTED_MULTIPLE_PARAM_JOB_DICT
-
-
-def test_stage_in_stages_all_values_if_workflow_inputs_cannot_be_determined(tmp_path):
-    job_path = _write_multiple_param_job(tmp_path)
-    runnable = Runnable("gxid://workflows/workflow1", RunnableType.galaxy_workflow)
-    config = _staging_config()
-    with mock.patch("planemo.galaxy.activity.get_dict_from_workflow", side_effect=Exception("not found")):
-        job_dict, _ = _stage_in(runnable, config, job_path)
-    assert job_dict == {
-        "text_list": {"src": "hdca", "id": "collection1"},
-        "int_list": {"src": "hdca", "id": "collection1"},
-        "data_list": {"src": "hdca", "id": "collection1"},
-    }

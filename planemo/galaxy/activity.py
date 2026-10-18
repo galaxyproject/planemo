@@ -64,7 +64,6 @@ from planemo.galaxy.workflows import (
     GALAXY_WORKFLOW_INSTANCE_PREFIX,
     parameter_input_labels,
 )
-from planemo.io import warn
 from planemo.runnable import (
     ErrorRunResponse,
     get_outputs,
@@ -459,7 +458,7 @@ def stage_in(
     # (for a multiple-value parameter input) into an uploaded collection, so hold them back.
     parameter_values = {}
     if runnable.type == RunnableType.galaxy_workflow:
-        for label in _workflow_parameter_input_labels(ctx, runnable, config):
+        for label in _workflow_parameter_input_labels(runnable, config):
             if label in job:
                 parameter_values[label] = job.pop(label)
 
@@ -494,19 +493,13 @@ def stage_in(
     return job_dict, history_id
 
 
-def _workflow_parameter_input_labels(
-    ctx: "PlanemoCliContext", runnable: Runnable, config: "BaseGalaxyConfig"
-) -> List[str]:
-    try:
-        if runnable.has_path:
-            return parameter_input_labels(workflow_path=runnable.path)
-        workflow_id = config.workflow_id_for_runnable(runnable)
-        instance = runnable.uri.startswith(GALAXY_WORKFLOW_INSTANCE_PREFIX)
-        workflow = get_dict_from_workflow(config.user_gi, workflow_id, instance)
-        return parameter_input_labels(workflow_dict=workflow)
-    except Exception as e:
-        warn(f"Failed to determine parameter inputs of workflow [{runnable.uri}], staging all job values: {e}")
-        return []
+def _workflow_parameter_input_labels(runnable: Runnable, config: "BaseGalaxyConfig") -> List[str]:
+    if runnable.has_path:
+        return parameter_input_labels(workflow_path=runnable.path)
+    workflow_id = config.workflow_id_for_runnable(runnable)
+    instance = runnable.uri.startswith(GALAXY_WORKFLOW_INSTANCE_PREFIX)
+    workflow = get_dict_from_workflow(config.user_gi, workflow_id, instance)
+    return parameter_input_labels(workflow_dict=workflow)
 
 
 def _file_path_to_name(file_path):
