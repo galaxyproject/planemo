@@ -59,6 +59,8 @@ FAILED_REPOSITORIES_MESSAGE = "Failed to install one or more repositories."
 GALAXY_WORKFLOWS_PREFIX = "gxid://workflows/"
 GALAXY_WORKFLOW_INSTANCE_PREFIX = "gxid://workflow-instance/"
 TRS_WORKFLOWS_PREFIX = "trs://"
+# Workflow input types (and their aliases) that are staged as datasets or collections
+DATA_INPUT_TYPES = {"data", "File", "data_input", "collection", "data_collection", "data_collection_input"}
 MAIN_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
 # Galaxy's default trs_servers_conf, used to resolve trs_server/trs_tool_id/trs_version_id subworkflow references
 TRS_SERVERS = {"dockstore": "https://dockstore.org/api"}
@@ -717,6 +719,19 @@ def input_labels(workflow_path):
         step_id = input_label(step)
         if step_id:
             labels.append(step_id)
+    return labels
+
+
+def parameter_input_labels(workflow_path=None, workflow_dict=None) -> List[str]:
+    """Get labels of the workflow's parameter inputs, i.e. inputs that are neither datasets nor collections."""
+    steps = inputs_normalized(workflow_dict=workflow_dict, workflow_path=workflow_path)
+    labels = []
+    for step in steps:
+        # gxformat2 inputs without a type are data inputs
+        input_type = step.get("type") or "data"
+        input_types = input_type if isinstance(input_type, list) else [input_type]
+        if not any(t in DATA_INPUT_TYPES for t in input_types):
+            labels.append(input_label(step))
     return labels
 
 

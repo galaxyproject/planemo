@@ -1,0 +1,12 @@
+class: GalaxyWorkflow
+doc: Test workflow with multiple-value parameter inputs next to a list collection input
+inputs:
+  text_list:
+    type: [string]
+  int_list:
+    type: [int]
+  data_list:
+    type: collection
+    collection_type: list
+outputs: {}
+steps: {}
