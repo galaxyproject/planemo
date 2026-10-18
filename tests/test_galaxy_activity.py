@@ -143,12 +143,13 @@ def test_stage_in_passes_lists_to_multiple_value_workflow_parameter_inputs(tmp_p
     assert job_dict == EXPECTED_MULTIPLE_PARAM_JOB_DICT
 
 
-def test_stage_in_passes_lists_to_multiple_value_parameter_inputs_of_remote_workflow(tmp_path):
-    """Without a local path, the workflow's inputs are read from Galaxy."""
+@pytest.mark.parametrize("query", ["", "?runnable_path=/does/not/exist.gxwf.yml"])
+def test_stage_in_passes_lists_to_multiple_value_parameter_inputs_of_remote_workflow(tmp_path, query):
+    """A remote workflow's inputs are read from Galaxy, its runnable_path only locates tests."""
     job_path = _write_multiple_param_job(tmp_path)
     with open(MULTIPLE_PARAM_WORKFLOW_RUNNABLE.path) as f:
         workflow = python_to_workflow(yaml.safe_load(f), workflow_directory=TEST_DATA_DIR)
-    runnable = Runnable("gxid://workflows/workflow1", RunnableType.galaxy_workflow)
+    runnable = Runnable(f"gxid://workflows/workflow1{query}", RunnableType.galaxy_workflow)
     config = _staging_config()
     config.workflow_id_for_runnable.return_value = "workflow1"
     with mock.patch("planemo.galaxy.activity.get_dict_from_workflow", return_value=workflow) as get_dict:

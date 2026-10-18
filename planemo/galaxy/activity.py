@@ -494,8 +494,9 @@ def stage_in(
 
 
 def _workflow_parameter_input_labels(runnable: Runnable, config: "BaseGalaxyConfig") -> List[str]:
-    if runnable.has_path:
+    if not runnable.is_remote_workflow_uri:
         return parameter_input_labels(workflow_path=runnable.path)
+    # A remote workflow's runnable_path only locates its tests, read the workflow from Galaxy.
     workflow_id = config.workflow_id_for_runnable(runnable)
     instance = runnable.uri.startswith(GALAXY_WORKFLOW_INSTANCE_PREFIX)
     workflow = get_dict_from_workflow(config.user_gi, workflow_id, instance)
