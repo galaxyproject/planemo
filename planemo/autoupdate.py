@@ -329,15 +329,27 @@ def get_newest_tool_id(tool_ids: List[str]) -> str:
     )[-1]
 
 
+def base_tool_id(tool_id: str) -> str:
+    return tool_id.rsplit("/", 1)[0]
+
+
+def latest_installable_revision(repos: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    revisions = [
+        repo
+        for repo in repos.values()
+        if isinstance(repo, dict) and repo.get("downloadable", True) and not repo.get("malicious")
+    ]
+    if not revisions:
+        return None
+    return max(revisions, key=lambda repo: int(repo["numeric_revision"]))
+
+
 def outdated_tools(  # noqa: C901
     ctx: "PlanemoCliContext", wf_dict: Dict[str, Any], tools_to_skip: List[str]
 ) -> Dict[str, Dict[str, str]]:
     """
     tools_to_skip should be a list of base tool ids.
     """
-
-    def base_tool_id(tool_id: str) -> str:
-        return tool_id.rsplit("/", 1)[0]
 
     def check_tool_step(tool_id: str) -> Dict[str, Dict[str, str]]:
         """
@@ -353,14 +365,18 @@ def outdated_tools(  # noqa: C901
         if len(repos) == 0:
             return repos
         base_id = base_tool_id(tool_id)
-        matching_tool_ids = []
-        for repo in repos.values():
-            if isinstance(repo, dict):
-                for tool in repo.get("tools") or []:
-                    if tool["guid"].startswith(base_id + "/"):
-                        matching_tool_ids.append(tool["guid"])
-                        # there can only be one matching tool id in a repo
-                        break
+        # The autoupdate installs the most recent installable revision and Galaxy then upgrades each
+        # step to the newest version it has, so only the tool in that revision is a candidate. An
+        # older revision can carry a version that sorts higher (2.2.8.3 > 2.2.8+galaxy1).
+        latest_revision = latest_installable_revision(repos)
+        if latest_revision is None:
+            return {}
+        matching_tool_ids = [tool_id]
+        for tool in latest_revision.get("tools") or []:
+            if tool["guid"].startswith(base_id + "/"):
+                matching_tool_ids.append(tool["guid"])
+                # there can only be one matching tool id in a repo
+                break
         updated_tool_id = get_newest_tool_id(matching_tool_ids)
         if tool_id != updated_tool_id:
             return {base_id: {"current": tool_id, "updated": updated_tool_id}}
@@ -398,6 +414,28 @@ def autoupdate_wf(ctx: "PlanemoCliContext", config: "LocalGalaxyConfig", wf: "Ru
     workflow_id = config.workflow_id_for_runnable(wf)
     _update_wf(config, workflow_id)
     return export_workflow_dict(config.user_gi, workflow_id)
+
+
+def updated_tools(original_wf: Dict[str, Any], updated_wf: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
+    """Return the tool updates the refactoring actually made, keyed by base tool id."""
+
+    def tool_ids_by_base_id(wf_dict: Dict[str, Any]) -> DefaultDict[str, List[str]]:
+        tool_ids: DefaultDict[str, List[str]] = collections.defaultdict(list)
+        for tool_id in get_tool_ids_for_workflow(wf_dict):
+            tool_ids[base_tool_id(tool_id)].append(tool_id)
+        return tool_ids
+
+    before = tool_ids_by_base_id(original_wf)
+    after = tool_ids_by_base_id(updated_wf)
+    updates = {}
+    for base_id, tool_ids in after.items():
+        new_tool_ids = [tool_id for tool_id in tool_ids if tool_id not in before.get(base_id, [])]
+        if new_tool_ids and base_id in before:
+            updates[base_id] = {
+                "current": get_newest_tool_id(before[base_id]),
+                "updated": get_newest_tool_id(new_tool_ids),
+            }
+    return updates
 
 
 def fix_workflow(original_wf: Dict[str, Any], updated_wf: Dict[str, Any]) -> Dict[str, Any]:
