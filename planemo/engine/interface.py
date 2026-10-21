@@ -4,6 +4,7 @@ import abc
 import json
 import os
 import tempfile
+from functools import partial
 from typing import (
     Callable,
     List,
@@ -120,7 +121,11 @@ class BaseEngine(Engine):
         test_results = self._collect_test_results(test_cases, test_timeout)
         tests = []
         for test_case, run_response in test_results:
-            test_case_data = test_case.structured_test_data(run_response)
+            test_case_data = getattr(run_response, "collected_test_data", None)
+            if test_case_data is None:
+                # Engine didn't call the output collectors (e.g. cwltool, toil) or the
+                # result is already structured data (embedded Galaxy tool tests).
+                test_case_data = test_case.structured_test_data(run_response)
             tests.append(test_case_data)
         test_data = {
             "version": "0.1",
@@ -156,15 +161,23 @@ class BaseEngine(Engine):
                 job_paths.append(job_path)
             else:
                 job_paths.append(test_case.job_path)
-            output_collectors.append(
-                lambda run_response, test_case=test_case: test_case.structured_test_data(run_response)
-            )
+            output_collectors.append(partial(_collect_test_data, test_case))
         try:
             run_responses = self._run(runnables, job_paths, output_collectors, test_timeout=test_timeout)
         finally:
             for tmp_path in tmp_paths:
                 os.remove(tmp_path)
         return run_responses
+
+
+def _collect_test_data(test_case, run_response):
+    """Build a test's structured data while the engine still serves its outputs.
+
+    Engines call this before shutting down; :meth:`BaseEngine.test` reuses the
+    result instead of fetching outputs from an engine that may be gone.
+    """
+    run_response.collected_test_data = test_case.structured_test_data(run_response)
+    return run_response.collected_test_data
 
 
 __all__ = (
