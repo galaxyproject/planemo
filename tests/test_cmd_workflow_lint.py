@@ -5,6 +5,7 @@ import os
 
 from .test_utils import (
     CliTestCase,
+    skip_if_toolshed_down,
     TEST_DATA_DIR,
 )
 
@@ -215,6 +216,7 @@ class CmdWorkflowLintTestCase(CliTestCase):
         lint_cmd = ["workflow_lint", workflow_path, "--fail_level", "error"]
         self._check_exit_code(lint_cmd, exit_code=0)
 
+    @skip_if_toolshed_down
     def test_tool_id_linting_wrong_version(self):
         workflow_path = "/".join(
             (TEST_DATA_DIR, "wf_repos", "autoupdate_tests", "workflow_with_unexisting_version_of_tool.ga")
@@ -226,12 +228,14 @@ class CmdWorkflowLintTestCase(CliTestCase):
             in result.output
         )
 
+    @skip_if_toolshed_down
     def test_tool_id_linting_wrong_tool(self):
         workflow_path = "/".join((TEST_DATA_DIR, "wf_repos", "autoupdate_tests", "workflow_with_unexisting_tool.ga"))
         lint_cmd = ["workflow_lint", workflow_path]
         result = self._runner.invoke(self._cli.planemo, lint_cmd)
         assert "ERROR: The ToolShed returned an error when searching" in result.output
 
+    @skip_if_toolshed_down
     def test_tool_id_linting_mismatched_changeset(self):
         # tp_easyjoin_tool/1.1.0 is a valid tool version, but the pinned
         # changeset_revision (288462ec2630) only provides version 1.0.0.
@@ -245,6 +249,7 @@ class CmdWorkflowLintTestCase(CliTestCase):
             "is not provided by the pinned changeset_revision 288462ec2630" in result.output
         )
 
+    @skip_if_toolshed_down
     def test_tool_id_linting_matching_changeset(self):
         # tp_easyjoin_tool/1.1.0 is provided by changeset_revision 20344ce0c811.
         workflow_path = "/".join((TEST_DATA_DIR, "wf_repos", "autoupdate_tests", "workflow_with_matching_changeset.ga"))
