@@ -37,6 +37,7 @@ from planemo.io import (
     error,
     info,
 )
+from planemo.tools import parse_tool_version
 from planemo.workflow_lint import find_repos_from_tool_id
 
 if TYPE_CHECKING:
@@ -325,7 +326,7 @@ def _update_wf(config: "LocalGalaxyConfig", workflow_id: str, instance: bool = F
 def get_newest_tool_id(tool_ids: List[str]) -> str:
     return sorted(
         tool_ids,
-        key=lambda n: parse_version(n.split("/")[-1]),
+        key=lambda n: parse_tool_version(n.split("/")[-1]),
     )[-1]
 
 

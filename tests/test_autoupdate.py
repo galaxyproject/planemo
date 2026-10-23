@@ -20,6 +20,14 @@ def test_get_newest_tool_id():
     assert get_newest_tool_id(tool_ids) == tool_ids[0]
 
 
+def test_get_newest_tool_id_galaxy_suffix_is_numeric():
+    tool_ids = [
+        "toolshed.g2.bx.psu.edu/repos/iuc/rgrnastar/rna_star/2.7.8a+galaxy10",
+        "toolshed.g2.bx.psu.edu/repos/iuc/rgrnastar/rna_star/2.7.8a+galaxy9",
+    ]
+    assert get_newest_tool_id(tool_ids) == tool_ids[0]
+
+
 def test_get_toolshed_url_for_tool_id():
     assert get_toolshed_url_for_tool_id("github.com/repos/iuc/tool/1") == "https://github.com"
 

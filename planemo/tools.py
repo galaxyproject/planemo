@@ -4,6 +4,8 @@ import os
 import sys
 import traceback
 from typing import (
+    Any,
+    Callable,
     Iterable,
     Iterator,
     List,
@@ -14,14 +16,32 @@ from typing import (
 )
 
 from galaxy.tool_util import loader_directory
+from galaxy.tool_util import version as galaxy_tool_util_version
 from galaxy.tool_util.fetcher import ToolLocationFetcher
 from galaxy.tool_util.loader_directory import is_tool_load_error
 from galaxy.tool_util.parser.interface import ToolSource
+from galaxy.tool_util.version import parse_version
 
 from planemo.io import (
     error,
     info,
 )
+
+
+def _parse_tool_version(version: str):
+    """Parse a tool version, comparing a ``+galaxy<N>`` suffix numerically (``+galaxy10`` > ``+galaxy9``).
+
+    Same rule as galaxy-tool-util's ``parse_tool_version`` (26.1+), for older galaxy-tool-util releases.
+    """
+    base_version, sep, suffix = version.partition("+galaxy")
+    if sep and suffix:
+        version = f"{base_version}+galaxy.{suffix.lstrip('.')}"
+    return parse_version(version)
+
+
+# galaxy-tool-util gained parse_tool_version after 26.1.1 (galaxyproject/galaxy#24320); fall back to the same rule before.
+parse_tool_version: Callable[[str], Any] = getattr(galaxy_tool_util_version, "parse_tool_version", _parse_tool_version)
+
 
 if TYPE_CHECKING:
     from planemo.cli import PlanemoCliContext
