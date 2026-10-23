@@ -18,7 +18,7 @@ from planemo.io import (
 )
 from planemo.virtualenv import (
     create_command,
-    DEFAULT_PYTHON_VERSION,
+    resolve_python,
 )
 
 if TYPE_CHECKING:
@@ -79,7 +79,8 @@ def locate_galaxy_virtualenv(ctx, kwds: Dict[str, Any], config: Optional["LocalG
         workspace = ctx.workspace
         galaxy_branch = kwds.get("galaxy_branch") or "master"
         shared_venv_path = os.path.join(workspace, "gx_venv")
-        galaxy_python_version = kwds.get("galaxy_python_version") or DEFAULT_PYTHON_VERSION
+        # Name the cache after the interpreter that would actually be used.
+        _, galaxy_python_version, _ = resolve_python(kwds.get("galaxy_python_version") or None)
         shared_venv_path = f"{shared_venv_path}_{galaxy_python_version}"
         if galaxy_branch != "master":
             shared_venv_path = f"{shared_venv_path}_{galaxy_branch}"

@@ -51,6 +51,15 @@ class TestCliMetadata(CliTestCase):
         assert params["test_output_json"]["default"] == "tool_test_output.json"
         assert "--test_output_json" in params["test_output_json"]["opts"]
         assert "cwltool" in params["engine"]["type"]["choices"]
+        assert params["galaxy_python_version"]["type"]["choices"] == [
+            "3.8",
+            "3.9",
+            "3.10",
+            "3.11",
+            "3.12",
+            "3.13",
+            "3.14",
+        ]
 
     def test_cli_metadata_for_run_command(self):
         result = self._check_exit_code(["cli_metadata", "--format", "json", "--command", "run"])
