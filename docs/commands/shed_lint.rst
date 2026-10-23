@@ -29,7 +29,7 @@ help text for mentioned URLs and checks those.
 
       -r, --recursive                 Recursively perform command for nested
                                       repository directories.
-      --fail_fast                     Stop on first job failure.
+      --fail_fast                     Stop on first failure.
       --report_level [all|warn|error]
       --fail_level [warn|error]
       -s, --skip TEXT                 Comma-separated list of lint tests to skip

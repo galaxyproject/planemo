@@ -1999,7 +1999,7 @@ def test_index_option():
 
 
 def fail_fast_option():
-    return planemo_option("--fail_fast", is_flag=True, help="Stop on first job failure.")
+    return planemo_option("--fail_fast", is_flag=True, help="Stop on first failure.")
 
 
 def test_output_options():
