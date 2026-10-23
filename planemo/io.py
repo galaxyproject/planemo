@@ -414,25 +414,6 @@ def tee_captured_output(output):
             sys.stderr.write(message["data"] + "\n")
 
 
-def wait_on(function, desc, timeout=5, polling_backoff=0):
-    """Wait on given function's readiness.
-
-    Grow the polling interval incrementally by the polling_backoff.
-    """
-    delta = 0.25
-    timing = 0
-    while True:
-        if timing > timeout:
-            message = f"Timed out waiting on {desc}."
-            raise Exception(message)
-        timing += delta
-        delta += polling_backoff
-        value = function()
-        if value is not None:
-            return value
-        time.sleep(delta)
-
-
 @contextlib.contextmanager
 def open_file_or_standard_output(path, *args, **kwds):
     """Open file but respect '-' as referring to stdout."""
