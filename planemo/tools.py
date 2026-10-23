@@ -34,7 +34,7 @@ from planemo.io import (
 def _parse_tool_version(version: str) -> Union[LegacyVersion, Version]:
     """Parse a tool version, comparing a ``+galaxy<N>`` suffix numerically (``+galaxy10`` > ``+galaxy9``).
 
-    Same rule as galaxy-tool-util's ``parse_tool_version`` (26.1+), for older galaxy-tool-util releases.
+    Same rule as galaxy-tool-util's ``parse_tool_version``, for releases that lack it.
     """
     base_version, sep, suffix = version.partition("+galaxy")
     if sep and suffix:
@@ -42,7 +42,8 @@ def _parse_tool_version(version: str) -> Union[LegacyVersion, Version]:
     return parse_version(version)
 
 
-# galaxy-tool-util gained parse_tool_version after 26.1.1 (galaxyproject/galaxy#24320); fall back to the same rule before.
+# galaxy-tool-util gained parse_tool_version after 26.1.1 (galaxyproject/galaxy#24320).
+# Drop the fallback once the galaxy-tool-util floor in requirements.txt ships it.
 parse_tool_version: Callable[[str], Union[LegacyVersion, Version]] = getattr(
     galaxy_tool_util_version, "parse_tool_version", _parse_tool_version
 )
