@@ -1,5 +1,6 @@
 import json
 import os
+from types import SimpleNamespace
 
 from galaxy.util import parse_xml_string
 
@@ -61,6 +62,15 @@ def test_find_updated_tool_id_uses_latest_revision():
     }
     assert _find_updated("2.2.8+galaxy1", repos) is None
     assert _find_updated("2.2.8+galaxy0", repos) == f"{COREOGRAPH}/2.2.8+galaxy1"
+
+
+def test_outdated_tools(monkeypatch):
+    repos = {"2:224e0cf4aaeb": _revision(2, "2.2.8+galaxy0"), "3:ee92746d141a": _revision(3, "2.2.8+galaxy1")}
+    monkeypatch.setattr(autoupdate, "find_repos_from_tool_id", lambda tool_id, ts: ("", repos))
+    wf_dict = {"steps": {"0": {"type": "tool", "tool_id": f"{COREOGRAPH}/2.2.8+galaxy0"}}}
+    assert autoupdate.outdated_tools(SimpleNamespace(log=print), wf_dict, []) == {
+        COREOGRAPH: {"current": f"{COREOGRAPH}/2.2.8+galaxy0", "updated": f"{COREOGRAPH}/2.2.8+galaxy1"}
+    }
 
 
 def test_find_updated_tool_id_skips_uninstallable_revision():
