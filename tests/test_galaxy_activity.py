@@ -152,9 +152,8 @@ def test_stage_in_passes_lists_to_multiple_value_parameter_inputs_of_remote_work
     runnable = Runnable(f"gxid://workflows/workflow1{query}", RunnableType.galaxy_workflow)
     config = _staging_config()
     config.workflow_id_for_runnable.return_value = "workflow1"
-    with mock.patch("planemo.galaxy.activity.get_dict_from_workflow", return_value=workflow) as get_dict:
-        job_dict, _ = _stage_in(runnable, config, job_path)
-    get_dict.assert_called_once_with(config.user_gi, "workflow1", False)
+    config.user_gi.workflows._get.return_value = workflow
+    job_dict, _ = _stage_in(runnable, config, job_path)
     assert job_dict == EXPECTED_MULTIPLE_PARAM_JOB_DICT
 
 
