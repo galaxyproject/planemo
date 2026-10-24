@@ -136,6 +136,13 @@ class CmdAutoupdateTestCase(CliTestCase):
             autoupdate_command = ["autoupdate", *targets]
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
             assert "Auto-updating workflow" in result.output
+            # the autoupdate bot builds its changelog from the "->" lines
+            diff_tool = "toolshed.g2.bx.psu.edu/repos/bgruening/diff/diff"
+            predicted, separator, made = result.output.partition("The following tools were updated:")
+            assert separator
+            assert f"{diff_tool}: {diff_tool}/3.6+galaxy1 (newer version {diff_tool}/" in predicted
+            assert not [line for line in predicted.splitlines() if line.startswith(diff_tool) and " -> " in line]
+            assert f"{diff_tool}: {diff_tool}/3.6+galaxy1 -> {diff_tool}/" in made
             for wf_file in targets:
                 with open(wf_file) as g:
                     wf = json.load(g)
