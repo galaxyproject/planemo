@@ -1,4 +1,7 @@
-"""Fail Galaxy tool tests whose stdio or outputs contain one of the test's secrets."""
+"""Fail Galaxy tool tests whose stdio or outputs contain one of the test's secrets.
+
+Best effort: catches plain, base64 and URL-encoded copies, not otherwise transformed ones.
+"""
 
 import base64
 from typing import (
@@ -14,8 +17,12 @@ from urllib.parse import quote
 
 from galaxy.tool_util.verify.interactor import GalaxyInteractorApi
 
-JOB_STREAMS = ("stdout", "stderr", "job_messages")
-MIN_BASE64_NEEDLE = 8
+from planemo.io import warn
+
+_JOB_STREAMS = ("stdout", "stderr", "job_messages")
+# Shorter values would match unrelated text and binary outputs.
+MIN_SECRET_LENGTH = 8
+_URLSAFE_BASE64 = bytes.maketrans(b"+/", b"-_")
 
 
 class Secret(NamedTuple):
@@ -30,10 +37,12 @@ def collect_secrets(test_dict: Optional[Dict[str, Any]], api_key: Optional[str])
     secrets = []
     for credential in (test_dict or {}).get("credentials") or []:
         for secret in credential.get("secrets") or []:
-            if secret.get("value"):
-                secrets.append(
-                    Secret(f"Secret '{secret['name']}' of credentials '{credential['name']}'", secret["value"])
-                )
+            description = f"Secret '{secret['name']}' of credentials '{credential['name']}'"
+            value = secret.get("value") or ""
+            if len(value) < MIN_SECRET_LENGTH:
+                warn(f"{description} is shorter than {MIN_SECRET_LENGTH} characters, not checking it for leaks.")
+                continue
+            secrets.append(Secret(description, value))
     if api_key:
         secrets.append(Secret("The test user's API key", api_key))
     return secrets
@@ -46,30 +55,30 @@ def _base64_needles(raw: bytes) -> Iterator[bytes]:
         encoded = base64.b64encode(b"\0" * offset + raw)
         start = 4 if offset else 0
         end = (offset + len(raw)) // 3 * 4
-        if end - start >= MIN_BASE64_NEEDLE:
-            yield encoded[start:end]
-
-
-def _encodings(value: str) -> Iterator[Tuple[str, bytes]]:
-    raw = value.encode()
-    yield "", raw
-    for needle in _base64_needles(raw):
-        yield " (base64-encoded)", needle
-    url_encoded = quote(value, safe="")
-    if url_encoded != value:
-        yield " (URL-encoded)", url_encoded.encode()
+        if end - start >= MIN_SECRET_LENGTH:
+            needle = encoded[start:end]
+            yield needle
+            yield needle.translate(_URLSAFE_BASE64)
 
 
 def _leak_problems(secrets: List[Secret], location: str, content: bytes) -> Iterator[str]:
+    unwrapped = b"".join(content.split())  # base64 output is often wrapped at 76 columns
     for secret in secrets:
-        for encoding, needle in _encodings(secret.value):
-            if needle in content:
-                yield f"{secret.description} was found{encoding} in {location}."
-                break
+        raw = secret.value.encode()
+        url_encoded = quote(secret.value, safe="").encode()
+        if raw in content:
+            encoding = ""
+        elif any(needle in unwrapped for needle in _base64_needles(raw)):
+            encoding = " (base64-encoded)"
+        elif url_encoded != raw and url_encoded in content:
+            encoding = " (URL-encoded)"
+        else:
+            continue
+        yield f"{secret.description} was found{encoding} in {location}."
 
 
 def _job_texts(job: Dict[str, Any]) -> Iterator[Tuple[str, bytes]]:
-    for stream in JOB_STREAMS:
+    for stream in _JOB_STREAMS:
         if job.get(stream):
             yield f"job {stream}", str(job[stream]).encode()
 
@@ -94,11 +103,16 @@ def check_for_secret_leaks(
     if not secrets or not job:
         return
     problems: List[str] = []
-    for location, content in _job_texts(job):
-        problems.extend(_leak_problems(secrets, location, content))
-    for location, content in _output_texts(galaxy_interactor, job["id"]):
-        problems.extend(_leak_problems(secrets, location, content))
+    status = "failure"
+    try:
+        for location, content in _job_texts(job):
+            problems.extend(_leak_problems(secrets, location, content))
+        for location, content in _output_texts(galaxy_interactor, job["id"]):
+            problems.extend(_leak_problems(secrets, location, content))
+    except Exception as e:
+        problems.append(f"Checking the test for leaked secrets failed: {e}")
+        status = "error"
     if problems:
         job_data.setdefault("output_problems", []).extend(problems)
         if job_data.get("status") == "success":
-            job_data["status"] = "failure"
+            job_data["status"] = status

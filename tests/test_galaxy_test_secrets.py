@@ -6,6 +6,8 @@ import pytest
 
 from planemo.galaxy.test.secrets import (
     _leak_problems,
+    check_for_secret_leaks,
+    collect_secrets,
     Secret,
 )
 
@@ -16,6 +18,14 @@ SECRET = Secret("Secret 'TOKEN' of credentials 'svc'", "fake/token+4c1d2e")
 def test_finds_base64_secret_at_any_alignment(prefix):
     content = base64.b64encode(prefix + SECRET.value.encode() + b" trailing")
     assert list(_leak_problems([SECRET], "job stdout", content)) == [
+        "Secret 'TOKEN' of credentials 'svc' was found (base64-encoded) in job stdout."
+    ]
+
+
+def test_finds_wrapped_and_urlsafe_base64_secret():
+    encoded = base64.urlsafe_b64encode(b"x" * 60 + SECRET.value.encode())
+    wrapped = encoded[:76] + b"\n" + encoded[76:]
+    assert list(_leak_problems([SECRET], "job stdout", wrapped)) == [
         "Secret 'TOKEN' of credentials 'svc' was found (base64-encoded) in job stdout."
     ]
 
@@ -36,3 +46,20 @@ def test_reports_plain_match_once():
 
 def test_ignores_content_without_secret():
     assert list(_leak_problems([SECRET], "job stdout", b"token length 17")) == []
+
+
+def test_skips_short_secrets():
+    test_dict = {"credentials": [{"name": "svc", "secrets": [{"name": "TOKEN", "value": "secret"}]}]}
+    assert collect_secrets(test_dict, None) == []
+
+
+class _FailingInteractor:
+    def job_outputs(self, job_id):
+        raise Exception("Galaxy is down")
+
+
+def test_scan_errors_fail_closed():
+    job_data = {"status": "success", "job": {"id": "1", "stdout": ""}}
+    check_for_secret_leaks(_FailingInteractor(), job_data, [SECRET])
+    assert job_data["status"] == "error"
+    assert job_data["output_problems"] == ["Checking the test for leaked secrets failed: Galaxy is down"]
