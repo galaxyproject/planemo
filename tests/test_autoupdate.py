@@ -91,3 +91,10 @@ def test_updated_tools():
     assert autoupdate.updated_tools(
         _wf(subworkflow_versions=["2.2.8+galaxy0"]), _wf(subworkflow_versions=["2.2.8+galaxy1"])
     ) == {COREOGRAPH: {"current": f"{COREOGRAPH}/2.2.8+galaxy0", "updated": f"{COREOGRAPH}/2.2.8+galaxy1"}}
+
+
+def test_updated_tools_to_version_used_by_another_step():
+    assert autoupdate.updated_tools(_wf("2.2.8+galaxy0", "2.2.8+galaxy1"), _wf("2.2.8+galaxy1", "2.2.8+galaxy1")) == {
+        COREOGRAPH: {"current": f"{COREOGRAPH}/2.2.8+galaxy0", "updated": f"{COREOGRAPH}/2.2.8+galaxy1"}
+    }
+    assert autoupdate.updated_tools(_wf("2.2.8+galaxy0", "2.2.8+galaxy1"), _wf("2.2.8+galaxy0", "2.2.8+galaxy1")) == {}
