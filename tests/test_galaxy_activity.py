@@ -143,17 +143,28 @@ def test_stage_in_passes_lists_to_multiple_value_workflow_parameter_inputs(tmp_p
     assert job_dict == EXPECTED_MULTIPLE_PARAM_JOB_DICT
 
 
-@pytest.mark.parametrize("query", ["", "?runnable_path=/does/not/exist.gxwf.yml"])
-def test_stage_in_passes_lists_to_multiple_value_parameter_inputs_of_remote_workflow(tmp_path, query):
+@pytest.mark.parametrize(
+    "uri, instance",
+    [
+        ("gxid://workflows/workflow1", False),
+        ("gxid://workflows/workflow1?runnable_path=/does/not/exist.gxwf.yml", False),
+        ("gxid://workflow-instance/workflow1", True),
+    ],
+)
+def test_stage_in_passes_lists_to_multiple_value_parameter_inputs_of_remote_workflow(tmp_path, uri, instance):
     """A remote workflow's inputs are read from Galaxy, its runnable_path only locates tests."""
     job_path = _write_multiple_param_job(tmp_path)
     with open(MULTIPLE_PARAM_WORKFLOW_RUNNABLE.path) as f:
         workflow = python_to_workflow(yaml.safe_load(f), workflow_directory=TEST_DATA_DIR)
-    runnable = Runnable(f"gxid://workflows/workflow1{query}", RunnableType.galaxy_workflow)
+
+    def download_workflow(path, params):
+        assert (path, params) == ("workflow1/download", {"instance": instance})
+        return workflow
+
     config = _staging_config()
     config.workflow_id_for_runnable.return_value = "workflow1"
-    config.user_gi.workflows._get.return_value = workflow
-    job_dict, _ = _stage_in(runnable, config, job_path)
+    config.user_gi.workflows._get.side_effect = download_workflow
+    job_dict, _ = _stage_in(Runnable(uri, RunnableType.galaxy_workflow), config, job_path)
     assert job_dict == EXPECTED_MULTIPLE_PARAM_JOB_DICT
 
 
