@@ -79,3 +79,11 @@ def test_scan_errors_fail_closed():
     check_for_secret_leaks(_FailingInteractor(), test_dict, job_data)
     assert job_data["status"] == "error"
     assert job_data["output_problems"] == ["Checking the test for leaked secrets failed: Galaxy is down"]
+
+
+def test_malformed_credentials_fail_closed():
+    job_data = {"status": "success", "job": {"id": "1", "stdout": ""}}
+    test_dict = {"credentials": [{"name": "svc", "secrets": [{"value": SECRET.value}]}]}
+    check_for_secret_leaks(_FailingInteractor(), test_dict, job_data)
+    assert job_data["status"] == "error"
+    assert job_data["output_problems"] == ["Checking the test for leaked secrets failed: 'name'"]
