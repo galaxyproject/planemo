@@ -346,6 +346,25 @@ def latest_installable_revision(repos: Dict[str, Any]) -> Optional[Dict[str, Any
     return max(revisions, key=lambda repo: int(repo["numeric_revision"]))
 
 
+def find_updated_tool_id(tool_id: str, repos: Dict[str, Any]) -> Optional[str]:
+    """Return the newer tool id the autoupdate would upgrade tool_id to, if any."""
+    # The autoupdate installs the most recent installable revision and Galaxy then upgrades each
+    # step to the newest version it has, so only the tool in that revision is a candidate. An
+    # older revision can carry a version that sorts higher (2.2.8.3 > 2.2.8+galaxy1).
+    latest_revision = latest_installable_revision(repos)
+    if latest_revision is None:
+        return None
+    base_id = base_tool_id(tool_id)
+    matching_tool_ids = [tool_id]
+    for tool in latest_revision.get("tools") or []:
+        if tool["guid"].startswith(base_id + "/"):
+            matching_tool_ids.append(tool["guid"])
+            # there can only be one matching tool id in a repo
+            break
+    updated_tool_id = get_newest_tool_id(matching_tool_ids)
+    return updated_tool_id if updated_tool_id != tool_id else None
+
+
 def outdated_tools(  # noqa: C901
     ctx: "PlanemoCliContext", wf_dict: Dict[str, Any], tools_to_skip: List[str]
 ) -> Dict[str, Dict[str, str]]:
@@ -366,22 +385,9 @@ def outdated_tools(  # noqa: C901
             ctx.log(warning_msg)
         if len(repos) == 0:
             return repos
-        base_id = base_tool_id(tool_id)
-        # The autoupdate installs the most recent installable revision and Galaxy then upgrades each
-        # step to the newest version it has, so only the tool in that revision is a candidate. An
-        # older revision can carry a version that sorts higher (2.2.8.3 > 2.2.8+galaxy1).
-        latest_revision = latest_installable_revision(repos)
-        if latest_revision is None:
-            return {}
-        matching_tool_ids = [tool_id]
-        for tool in latest_revision.get("tools") or []:
-            if tool["guid"].startswith(base_id + "/"):
-                matching_tool_ids.append(tool["guid"])
-                # there can only be one matching tool id in a repo
-                break
-        updated_tool_id = get_newest_tool_id(matching_tool_ids)
-        if tool_id != updated_tool_id:
-            return {base_id: {"current": tool_id, "updated": updated_tool_id}}
+        updated_tool_id = find_updated_tool_id(tool_id, repos)
+        if updated_tool_id:
+            return {base_tool_id(tool_id): {"current": tool_id, "updated": updated_tool_id}}
         else:
             return {}
 
