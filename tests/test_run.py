@@ -263,9 +263,16 @@ class RunTestCase(CliTestCase):
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_run_fills_undeclared_replacement_parameter(self):
+        self._run_fills_undeclared_replacement_parameter("wf_undeclared_replacement_parameter.yml")
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_run_fills_undeclared_replacement_parameter_in_subworkflow(self):
+        self._run_fills_undeclared_replacement_parameter("wf_undeclared_replacement_parameter_subworkflow.yml")
+
+    def _run_fills_undeclared_replacement_parameter(self, workflow):
         with self._isolate() as f:
             cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
-            wf = os.path.join(TEST_DATA_DIR, "wf_undeclared_replacement_parameter.yml")
+            wf = os.path.join(TEST_DATA_DIR, workflow)
             job_path = os.path.join(TEST_DATA_DIR, "wf1.gxwf-job.yml")
             output_path = os.path.join(f, "output")
             os.makedirs(output_path)
