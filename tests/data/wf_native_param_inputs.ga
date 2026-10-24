@@ -1,0 +1,84 @@
+{
+    "a_galaxy_workflow": "true",
+    "annotation": "native workflow with multiple-value parameter inputs next to data inputs",
+    "format-version": "0.1",
+    "name": "NativeParamInputs",
+    "steps": {
+        "0": {
+            "annotation": "",
+            "id": 0,
+            "input_connections": {},
+            "inputs": [],
+            "label": "text_list",
+            "name": "parameter_input",
+            "outputs": [],
+            "position": {
+                "left": 0,
+                "top": 0
+            },
+            "tool_id": null,
+            "tool_state": "{\"parameter_type\": \"text\", \"optional\": false, \"multiple\": true}",
+            "tool_version": null,
+            "type": "parameter_input",
+            "uuid": null,
+            "workflow_outputs": []
+        },
+        "1": {
+            "annotation": "",
+            "id": 1,
+            "input_connections": {},
+            "inputs": [],
+            "label": "int_param",
+            "name": "parameter_input",
+            "outputs": [],
+            "position": {
+                "left": 0,
+                "top": 100
+            },
+            "tool_id": null,
+            "tool_state": "{\"parameter_type\": \"integer\", \"optional\": false}",
+            "tool_version": null,
+            "type": "parameter_input",
+            "uuid": null,
+            "workflow_outputs": []
+        },
+        "2": {
+            "annotation": "",
+            "id": 2,
+            "input_connections": {},
+            "inputs": [],
+            "label": "data_input",
+            "name": "data_input",
+            "outputs": [],
+            "position": {
+                "left": 0,
+                "top": 200
+            },
+            "tool_id": null,
+            "tool_state": "{\"optional\": false}",
+            "tool_version": null,
+            "type": "data_input",
+            "uuid": null,
+            "workflow_outputs": []
+        },
+        "3": {
+            "annotation": "",
+            "id": 3,
+            "input_connections": {},
+            "inputs": [],
+            "label": "data_list",
+            "name": "data_collection_input",
+            "outputs": [],
+            "position": {
+                "left": 0,
+                "top": 300
+            },
+            "tool_id": null,
+            "tool_state": "{\"collection_type\": \"list\", \"optional\": false}",
+            "tool_version": null,
+            "type": "data_collection_input",
+            "uuid": null,
+            "workflow_outputs": []
+        }
+    }
+}
