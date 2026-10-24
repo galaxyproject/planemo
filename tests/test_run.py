@@ -262,6 +262,34 @@ class RunTestCase(CliTestCase):
             assert output_files[0].endswith(".txt")
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_run_fills_undeclared_replacement_parameter(self):
+        with self._isolate() as f:
+            cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
+            wf = os.path.join(TEST_DATA_DIR, "wf_undeclared_replacement_parameter.yml")
+            job_path = os.path.join(TEST_DATA_DIR, "wf1.gxwf-job.yml")
+            output_path = os.path.join(f, "output")
+            os.makedirs(output_path)
+            test_cmd = [
+                "run",
+                "--no_dependency_resolution",
+                "--extra_tools",
+                cat,
+                "--download_outputs",
+                "--output_directory",
+                output_path,
+                wf,
+                job_path,
+            ]
+            result = self._check_exit_code(test_cmd)
+            assert (
+                'Workflow uses undeclared parameter ${undeclared}; sending "<DEPRECATED_PARAMETER_UNSET>"'
+                in result.output
+            )
+            (output_file,) = os.listdir(output_path)
+            # Download names are the sanitized dataset name, so ``<`` and ``>`` are dropped.
+            assert output_file.startswith("cat on DEPRECATED_PARAMETER_UNSET__")
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_run_export_invocation(self):
         with self._isolate() as f:
             cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")

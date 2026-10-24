@@ -58,6 +58,7 @@ from planemo.galaxy.upload_progress import (
     _aggregate_job_states,
     UploadProgressDisplay,
 )
+from planemo.io import warn
 from planemo.runnable import (
     ErrorRunResponse,
     get_outputs,
@@ -74,6 +75,10 @@ if TYPE_CHECKING:
     from planemo.runnable import RunnableOutput
 
 DEFAULT_HISTORY_NAME = "CWL Target History"
+INFORMAL_PARAMETER_SENTINEL = "<DEPRECATED_PARAMETER_UNSET>"
+ERR_INFORMAL_PARAMETER_IN_JOB = (
+    "Job file supplies undeclared workflow parameter(s) %s; declare a parameter input with each label instead."
+)
 ERR_NO_SUCH_TOOL = (
     "Failed to find tool with ID [%s] in Galaxy - cannot execute job. "
     "You may need to enable verbose logging and determine why the tool did not load. [%s]"
@@ -109,6 +114,30 @@ def _inputs_representation(runnable):
     else:
         inputs_representation = "galaxy"
     return inputs_representation
+
+
+def informal_replacement_parameters(run_data: Dict[str, Any]) -> List[str]:
+    """Return ``${...}`` names used by workflow steps that no parameter input declares."""
+    steps = run_data.get("steps") or []
+    declared = {step.get("step_label") for step in steps if step.get("step_type") == "parameter_input"}
+    names = {name for step in steps for name in step.get("replacement_parameters") or [] if name not in declared}
+    return sorted(names)
+
+
+def _informal_replacement_params(
+    user_gi: GalaxyInstance, workflow_id: str, history_id: str, job_dict: Dict[str, Any]
+) -> Dict[str, str]:
+    run_data = user_gi.workflows._get(f"{workflow_id}/download", params={"style": "run", "history_id": history_id})
+    names = informal_replacement_parameters(run_data)
+    supplied = [name for name in names if name in job_dict]
+    if supplied:
+        raise Exception(ERR_INFORMAL_PARAMETER_IN_JOB % ", ".join(supplied))
+    for name in names:
+        warn(
+            f'Workflow uses undeclared parameter ${{{name}}}; sending "{INFORMAL_PARAMETER_SENTINEL}". '
+            f"Declare a parameter input labelled {name}."
+        )
+    return {name: INFORMAL_PARAMETER_SENTINEL for name in names}
 
 
 def log_contents_str(config):
@@ -320,9 +349,11 @@ def _execute(  # noqa C901
         response_class = GalaxyWorkflowRunResponse
         workflow_id = config.workflow_id_for_runnable(runnable)
         ctx.vlog(f"Found Galaxy workflow ID [{workflow_id}] for URI [{runnable.uri}]")
+        replacement_params = _informal_replacement_params(user_gi, workflow_id, history_id, job_dict)
         invocation = user_gi.workflows.invoke_workflow(
             workflow_id,
             inputs=job_dict,
+            replacement_params=replacement_params or None,
             history_id=history_id,
             allow_tool_state_corrections=True,
             inputs_by="name",
