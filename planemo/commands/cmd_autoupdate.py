@@ -125,12 +125,12 @@ def cli(ctx, paths, **kwds):  # noqa C901
     exit_codes.extend([EXIT_CODE_OK] * len(all_workflows))
 
     modified_workflows = []
-    outdated_tools = {}
+    predicted_updates = {}
     for workflow in workflows:
         tools_to_update = autoupdate.get_tools_to_update(ctx, workflow, tools_to_skip)
         if tools_to_update:
             modified_workflows.append(workflow)
-            outdated_tools[workflow.path] = tools_to_update
+            predicted_updates[workflow.path] = tools_to_update
             info("The following tools are outdated:")
             # "->" lines are reserved for updates that were made, the autoupdate bot turns them into the changelog
             for tool, versions in tools_to_update.items():
@@ -155,16 +155,16 @@ def cli(ctx, paths, **kwds):  # noqa C901
 
                     with open(workflow.path) as f:
                         original_workflow = yaml.load(f, Loader=yaml.SafeLoader)
-                    updated_tools = autoupdate.updated_tools(original_workflow, updated_workflow)
-                    for tool, versions in outdated_tools[workflow.path].items():
-                        if tool not in updated_tools:
+                    made_updates = autoupdate.updated_tools(original_workflow, updated_workflow)
+                    for tool, versions in predicted_updates[workflow.path].items():
+                        if tool not in made_updates:
                             warn(f"{tool} could not be updated to {versions['updated']}.")
-                    if not updated_tools:
+                    if not made_updates:
                         info(f"No tool was updated, so {workflow.path} was not changed.")
                         continue
                     updated_workflows.append(workflow)
                     info("The following tools were updated:")
-                    for tool, versions in updated_tools.items():
+                    for tool, versions in made_updates.items():
                         info(f"{tool}: {versions['current']} -> {versions['updated']}")
                     edited_workflow = autoupdate.fix_workflow(original_workflow, updated_workflow)
                     with open(workflow.path, "w") as f:
