@@ -43,6 +43,7 @@ from requests.exceptions import HTTPError
 
 from planemo.galaxy.api import (
     export_invocation_as_archive,
+    get_dict_from_workflow,
     retry_on_timeouts,
     summarize_history,
 )
@@ -124,10 +125,14 @@ def informal_replacement_parameters(run_data: Dict[str, Any]) -> List[str]:
     return sorted(names)
 
 
-def _informal_replacement_params(
+def _replacement_params_for_invocation(
     user_gi: GalaxyInstance, workflow_id: str, history_id: str, job_dict: Dict[str, Any]
 ) -> Dict[str, str]:
-    run_data = user_gi.workflows._get(f"{workflow_id}/download", params={"style": "run", "history_id": history_id})
+    try:
+        run_data = get_dict_from_workflow(user_gi, workflow_id, style="run", history_id=history_id)
+    except Exception as e:
+        warn(f"Could not check workflow for undeclared parameters, invoking without them: {e}")
+        return {}
     names = informal_replacement_parameters(run_data)
     supplied = [name for name in names if name in job_dict]
     if supplied:
@@ -349,7 +354,7 @@ def _execute(  # noqa C901
         response_class = GalaxyWorkflowRunResponse
         workflow_id = config.workflow_id_for_runnable(runnable)
         ctx.vlog(f"Found Galaxy workflow ID [{workflow_id}] for URI [{runnable.uri}]")
-        replacement_params = _informal_replacement_params(user_gi, workflow_id, history_id, job_dict)
+        replacement_params = _replacement_params_for_invocation(user_gi, workflow_id, history_id, job_dict)
         invocation = user_gi.workflows.invoke_workflow(
             workflow_id,
             inputs=job_dict,

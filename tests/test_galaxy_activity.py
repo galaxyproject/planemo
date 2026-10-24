@@ -112,6 +112,18 @@ def test_execute_workflow_without_undeclared_parameters_sends_none():
     assert _execute_capturing_request(WORKFLOW_RUNNABLE)["replacement_params"] is None
 
 
+def test_execute_workflow_invokes_without_params_when_run_data_fails():
+    config = mock.MagicMock()
+    config.user_gi.workflows._get.side_effect = Exception("Following tools missing")
+    config.user_gi.workflows.invoke_workflow.side_effect = ExecutionHalted()
+    with mock.patch("planemo.galaxy.activity.stage_in", return_value=({}, "historyid123")):
+        with mock.patch("planemo.galaxy.activity.warn") as warn:
+            with pytest.raises(ExecutionHalted):
+                _execute(create_test_context(), config, WORKFLOW_RUNNABLE, job_path=None)
+    assert config.user_gi.workflows.invoke_workflow.call_args.kwargs["replacement_params"] is None
+    assert "Following tools missing" in warn.call_args.args[0]
+
+
 def test_execute_workflow_rejects_job_supplying_undeclared_parameter():
     config = mock.MagicMock()
     config.user_gi.workflows._get.return_value = RUN_DATA
