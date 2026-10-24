@@ -30,6 +30,11 @@ def test_finds_wrapped_and_urlsafe_base64_secret():
     ]
 
 
+def test_ignores_base64_of_partial_secret():
+    secret = Secret("Secret 'TOKEN' of credentials 'svc'", "abcdefgh")
+    assert list(_leak_problems([secret], "job stdout", base64.b64encode(b"abcdefZZ"))) == []
+
+
 def test_finds_url_encoded_secret():
     content = b"GET /?token=fake%2Ftoken%2B4c1d2e"
     assert list(_leak_problems([SECRET], "job stderr", content)) == [

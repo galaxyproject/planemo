@@ -198,6 +198,11 @@ class CmdTestTestCase(CliTestCase):
             "Secret 'API_TOKEN' of credentials 'leaky_service' was found in job stderr.",
             "Secret 'API_TOKEN' of credentials 'leaky_service' was found in the info of output 'output'.",
         ]
+        collection_leak = tests["leaks_credential_secret_in_collection"]
+        assert collection_leak["status"] == "failure"
+        assert collection_leak["output_problems"] == [
+            "Secret 'API_TOKEN' of credentials 'leaky_service' was found in output 'pair|__part__|forward'."
+        ]
         api_key_leak = tests["leaks_api_key"]
         assert api_key_leak["status"] == "failure"
         assert api_key_leak["output_problems"] == [

@@ -4,6 +4,7 @@ Best effort: catches plain, base64 and URL-encoded copies, not otherwise transfo
 """
 
 import base64
+import binascii
 from typing import (
     Any,
     Dict,
@@ -56,9 +57,27 @@ def _base64_needles(raw: bytes) -> Iterator[bytes]:
         start = 4 if offset else 0
         end = (offset + len(raw)) // 3 * 4
         if end - start >= MIN_SECRET_LENGTH:
-            needle = encoded[start:end]
-            yield needle
-            yield needle.translate(_URLSAFE_BASE64)
+            yield encoded[start:end]
+
+
+def _decodes_to_secret(raw: bytes, encoded: bytes) -> bool:
+    # A needle drops up to two secret bytes at each end, so decode it with the
+    # neighbouring groups to confirm the whole secret is there.
+    for altchars in (None, b"-_"):
+        for needle in _base64_needles(raw):
+            if altchars:
+                needle = needle.translate(_URLSAFE_BASE64)
+            index = encoded.find(needle)
+            while index != -1:
+                for start in (max(index - 4, 0), index):
+                    for end in (index + len(needle) + 4, index + len(needle)):
+                        try:
+                            if raw in base64.b64decode(encoded[start:end], altchars=altchars):
+                                return True
+                        except binascii.Error:
+                            pass
+                index = encoded.find(needle, index + 1)
+    return False
 
 
 def _leak_problems(secrets: List[Secret], location: str, content: bytes) -> Iterator[str]:
@@ -68,7 +87,7 @@ def _leak_problems(secrets: List[Secret], location: str, content: bytes) -> Iter
         url_encoded = quote(secret.value, safe="").encode()
         if raw in content:
             encoding = ""
-        elif any(needle in unwrapped for needle in _base64_needles(raw)):
+        elif _decodes_to_secret(raw, unwrapped):
             encoding = " (base64-encoded)"
         elif url_encoded != raw and url_encoded in content:
             encoding = " (URL-encoded)"
@@ -85,6 +104,8 @@ def _job_texts(job: Dict[str, Any]) -> Iterator[Tuple[str, bytes]]:
 
 def _output_texts(galaxy_interactor: GalaxyInteractorApi, job_id: str) -> Iterator[Tuple[str, bytes]]:
     for output in galaxy_interactor.job_outputs(job_id):
+        if "dataset" not in output:
+            continue  # a collection; its elements are listed as datasets
         dataset_id = output["dataset"]["id"]
         name = output["name"]
         dataset = galaxy_interactor._get(f"datasets/{dataset_id}").json()
