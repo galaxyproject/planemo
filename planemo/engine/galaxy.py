@@ -21,10 +21,7 @@ from planemo.galaxy.activity import (
 )
 from planemo.galaxy.config import external_galaxy_config
 from planemo.galaxy.serve import serve_daemon
-from planemo.galaxy.test.secrets import (
-    check_for_secret_leaks,
-    collect_secrets,
-)
+from planemo.galaxy.test.secrets import check_for_secret_leaks
 from planemo.runnable import (
     DelayedGalaxyToolTestCase,
     ExternalGalaxyToolTestCase,
@@ -129,10 +126,9 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
                     test_index = test_case.test_index
                     tool_version = test_case.tool_version
                     galaxy_interactor = interactor.GalaxyInteractorApi(**galaxy_interactor_kwds)
-                    secrets = collect_secrets(test_case.test_dict, galaxy_interactor.api_key)
 
                     def _register_job_data(job_data):
-                        check_for_secret_leaks(galaxy_interactor, job_data, secrets)
+                        check_for_secret_leaks(galaxy_interactor, test_case.test_dict, job_data)
                         test_results.append(
                             {
                                 "id": tool_id + "-" + str(test_index),

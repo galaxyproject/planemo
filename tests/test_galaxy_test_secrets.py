@@ -5,13 +5,13 @@ import base64
 import pytest
 
 from planemo.galaxy.test.secrets import (
+    _collect_secrets,
     _leak_problems,
+    _Secret,
     check_for_secret_leaks,
-    collect_secrets,
-    Secret,
 )
 
-SECRET = Secret("Secret 'TOKEN' of credentials 'svc'", "fake/token+4c1d2e")
+SECRET = _Secret("Secret 'TOKEN' of credentials 'svc'", "fake/token+4c1d2e")
 
 
 @pytest.mark.parametrize("prefix", [b"", b"a", b"ab"])
@@ -39,7 +39,7 @@ def test_finds_unpadded_base64_secret_ending_the_stream(prefix):
 
 
 def test_ignores_base64_of_partial_secret():
-    secret = Secret("Secret 'TOKEN' of credentials 'svc'", "abcdefgh")
+    secret = _Secret("Secret 'TOKEN' of credentials 'svc'", "abcdefgh")
     assert list(_leak_problems([secret], "job stdout", base64.b64encode(b"abcdefZZ"))) == []
 
 
@@ -63,16 +63,19 @@ def test_ignores_content_without_secret():
 
 def test_skips_short_secrets():
     test_dict = {"credentials": [{"name": "svc", "secrets": [{"name": "TOKEN", "value": "secret"}]}]}
-    assert collect_secrets(test_dict, None) == []
+    assert _collect_secrets(test_dict, None) == []
 
 
 class _FailingInteractor:
+    api_key = None
+
     def job_outputs(self, job_id):
         raise Exception("Galaxy is down")
 
 
 def test_scan_errors_fail_closed():
     job_data = {"status": "success", "job": {"id": "1", "stdout": ""}}
-    check_for_secret_leaks(_FailingInteractor(), job_data, [SECRET])
+    test_dict = {"credentials": [{"name": "svc", "secrets": [{"name": "TOKEN", "value": SECRET.value}]}]}
+    check_for_secret_leaks(_FailingInteractor(), test_dict, job_data)
     assert job_data["status"] == "error"
     assert job_data["output_problems"] == ["Checking the test for leaked secrets failed: Galaxy is down"]

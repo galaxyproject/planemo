@@ -5,6 +5,7 @@ Best effort: catches plain, base64 and URL-encoded copies, not otherwise transfo
 
 import base64
 import re
+from itertools import chain
 from typing import (
     Any,
     Dict,
@@ -22,32 +23,29 @@ from planemo.io import warn
 
 _JOB_STREAMS = ("stdout", "stderr", "job_messages")
 # Shorter values would match unrelated text and binary outputs.
-MIN_SECRET_LENGTH = 8
+_MIN_SECRET_LENGTH = 8
 _TO_STANDARD_BASE64 = bytes.maketrans(b"-_", b"+/")
-# Shorter runs can't encode a MIN_SECRET_LENGTH secret.
-_BASE64_RUN = re.compile(rb"[A-Za-z0-9+/]{%d,}" % MIN_SECRET_LENGTH)
+# Shorter runs can't encode a _MIN_SECRET_LENGTH secret.
+_BASE64_RUN = re.compile(rb"[A-Za-z0-9+/]{%d,}" % _MIN_SECRET_LENGTH)
 
 
-class Secret(NamedTuple):
-    """A secret value a test must not print, with how to name it in a failure."""
-
+class _Secret(NamedTuple):
     description: str
     value: str
 
 
-def collect_secrets(test_dict: Optional[Dict[str, Any]], api_key: Optional[str]) -> List[Secret]:
-    """Collect the ``<secret>`` values of a test's ``<credentials>`` plus the test user's API key."""
+def _collect_secrets(test_dict: Dict[str, Any], api_key: Optional[str]) -> List[_Secret]:
     secrets = []
-    for credential in (test_dict or {}).get("credentials") or []:
+    for credential in test_dict.get("credentials") or []:
         for secret in credential.get("secrets") or []:
             description = f"Secret '{secret['name']}' of credentials '{credential['name']}'"
             value = secret.get("value") or ""
-            if len(value) < MIN_SECRET_LENGTH:
-                warn(f"{description} is shorter than {MIN_SECRET_LENGTH} characters, not checking it for leaks.")
+            if len(value) < _MIN_SECRET_LENGTH:
+                warn(f"{description} is shorter than {_MIN_SECRET_LENGTH} characters, not checking it for leaks.")
                 continue
-            secrets.append(Secret(description, value))
+            secrets.append(_Secret(description, value))
     if api_key:
-        secrets.append(Secret("The test user's API key", api_key))
+        secrets.append(_Secret("The test user's API key", api_key))
     return secrets
 
 
@@ -64,7 +62,7 @@ def _base64_decodings(content: bytes) -> List[bytes]:
     return decodings
 
 
-def _leak_problems(secrets: List[Secret], location: str, content: bytes) -> Iterator[str]:
+def _leak_problems(secrets: List[_Secret], location: str, content: bytes) -> Iterator[str]:
     decodings = _base64_decodings(content)
     for secret in secrets:
         raw = secret.value.encode()
@@ -92,7 +90,9 @@ def _output_texts(galaxy_interactor: GalaxyInteractorApi, job_id: str) -> Iterat
             continue  # a collection; its elements are listed as datasets
         dataset_id = output["dataset"]["id"]
         name = output["name"]
-        dataset = galaxy_interactor._get(f"datasets/{dataset_id}").json()
+        response = galaxy_interactor._get(f"datasets/{dataset_id}")
+        response.raise_for_status()
+        dataset = response.json()
         if dataset.get("misc_info"):
             yield f"the info of output '{name}'", dataset["misc_info"].encode()
         response = galaxy_interactor._get(f"datasets/{dataset_id}/display?raw=true")
@@ -101,18 +101,19 @@ def _output_texts(galaxy_interactor: GalaxyInteractorApi, job_id: str) -> Iterat
 
 
 def check_for_secret_leaks(
-    galaxy_interactor: GalaxyInteractorApi, job_data: Dict[str, Any], secrets: List[Secret]
+    galaxy_interactor: GalaxyInteractorApi, test_dict: Dict[str, Any], job_data: Dict[str, Any]
 ) -> None:
-    """Fail ``job_data`` if a secret shows up in its job's stdio or outputs."""
+    """Fail ``job_data`` if a secret of ``test_dict`` or the API key shows up in its job's stdio or outputs."""
     job = job_data.get("job")
-    if not secrets or not job:
+    if not job:
         return
     problems: List[str] = []
     status = "failure"
     try:
-        for location, content in _job_texts(job):
-            problems.extend(_leak_problems(secrets, location, content))
-        for location, content in _output_texts(galaxy_interactor, job["id"]):
+        secrets = _collect_secrets(test_dict, galaxy_interactor.api_key)
+        if not secrets:
+            return
+        for location, content in chain(_job_texts(job), _output_texts(galaxy_interactor, job["id"])):
             problems.extend(_leak_problems(secrets, location, content))
     except Exception as e:
         problems.append(f"Checking the test for leaked secrets failed: {e}")
