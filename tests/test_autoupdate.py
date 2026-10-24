@@ -111,3 +111,10 @@ def test_find_updated_tool_id_skips_malicious_revision():
 def test_find_updated_tool_id_orders_revisions_numerically():
     repos = {"10:ee92746d141a": _revision(10, "2.2.8+galaxy1"), "9:224e0cf4aaeb": _revision(9, "2.2.8+galaxy0")}
     assert _find_updated("2.2.8+galaxy0", repos) == f"{COREOGRAPH}/2.2.8+galaxy1"
+
+
+def test_updated_tools_from_gxformat2_original():
+    original = {"class": "GalaxyWorkflow", "steps": [{"tool_id": f"{COREOGRAPH}/2.2.8+galaxy0"}]}
+    assert autoupdate.updated_tools(original, _wf("2.2.8+galaxy1")) == {
+        COREOGRAPH: {"current": f"{COREOGRAPH}/2.2.8+galaxy0", "updated": f"{COREOGRAPH}/2.2.8+galaxy1"}
+    }
