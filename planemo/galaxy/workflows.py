@@ -59,8 +59,8 @@ FAILED_REPOSITORIES_MESSAGE = "Failed to install one or more repositories."
 GALAXY_WORKFLOWS_PREFIX = "gxid://workflows/"
 GALAXY_WORKFLOW_INSTANCE_PREFIX = "gxid://workflow-instance/"
 TRS_WORKFLOWS_PREFIX = "trs://"
-# Workflow input types (and their aliases) that are staged as datasets or collections
-DATA_INPUT_TYPES = {"data", "File", "data_input", "collection", "data_collection", "data_collection_input"}
+# Types of inputs_normalized steps that are staged as datasets or collections
+DATA_INPUT_TYPES = {"data", "collection"}
 MAIN_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
 # Galaxy's default trs_servers_conf, used to resolve trs_server/trs_tool_id/trs_version_id subworkflow references
 TRS_SERVERS = {"dockstore": "https://dockstore.org/api"}
