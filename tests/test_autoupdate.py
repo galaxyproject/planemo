@@ -93,3 +93,21 @@ def test_updated_tools_to_version_used_by_another_step():
         COREOGRAPH: {"current": f"{COREOGRAPH}/2.2.8+galaxy0", "updated": f"{COREOGRAPH}/2.2.8+galaxy1"}
     }
     assert autoupdate.updated_tools(_wf("2.2.8+galaxy0", "2.2.8+galaxy1"), _wf("2.2.8+galaxy0", "2.2.8+galaxy1")) == {}
+
+
+def test_find_updated_tool_id_never_downgrades():
+    repos = {"1:57f1260ca94e": _revision(1, "2.2.8.3"), "3:ee92746d141a": _revision(3, "2.2.8+galaxy1")}
+    assert _find_updated("2.2.8.3", repos) is None
+
+
+def test_find_updated_tool_id_skips_malicious_revision():
+    repos = {
+        "2:224e0cf4aaeb": _revision(2, "2.2.8+galaxy0"),
+        "3:ee92746d141a": _revision(3, "2.2.8+galaxy1", malicious=True),
+    }
+    assert _find_updated("2.2.8+galaxy0", repos) is None
+
+
+def test_find_updated_tool_id_orders_revisions_numerically():
+    repos = {"10:ee92746d141a": _revision(10, "2.2.8+galaxy1"), "9:224e0cf4aaeb": _revision(9, "2.2.8+galaxy0")}
+    assert _find_updated("2.2.8+galaxy0", repos) == f"{COREOGRAPH}/2.2.8+galaxy1"
