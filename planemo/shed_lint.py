@@ -3,8 +3,13 @@
 import os
 import xml.etree.ElementTree as ET
 from pathlib import PurePosixPath
-from typing import TYPE_CHECKING
+from typing import (
+    Optional,
+    TYPE_CHECKING,
+)
+from urllib.parse import quote
 
+import requests
 import yaml
 from bioblend import ConnectionError
 from galaxy.tool_util.lint import lint_tool_source_with
@@ -207,11 +212,42 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
             assert tool[0]["version"]
             ts_tool_version = tool[0]["version"]
 
+        if tool_id and tool_version == parse_version(ts_tool_version):
+            # A repository's tools are linted together, so an edit to one tool would otherwise demand
+            # a bump of every unchanged sibling (#1525). Same version, same rendered tool: nothing to bump.
+            published = _published_tool_source(tsi, repo_owner, repo_name, tool_id, ts_tool_version)
+            if published is not None and _same_tool(tool_source.to_string(), published):
+                lint_ctx.info(f"{tool_id}: unchanged since the latest installable revision ({ts_tool_version})")
+                continue
         if tool_version <= parse_version(ts_tool_version):
             lint_ctx.error(
                 f"{tool_id}: version {tool_version} is less or equal than version of the latest installable revision {ts_tool_version}",
                 "ShedVersion",
             )
+
+
+def _published_tool_source(tsi, owner: str, name: str, tool_id: str, version: str) -> Optional[str]:
+    """The Tool Shed's rendered source (macros expanded) for one tool version, or None if unavailable."""
+    trs_id = quote(f"{owner}~{name}~{tool_id}", safe="")
+    url = f"{tsi.base_url.rstrip('/')}/api/tools/{trs_id}/versions/{quote(version, safe='')}/tool_source"
+    try:
+        response = requests.get(url, timeout=60)
+    except requests.RequestException:
+        return None
+    return response.text if response.status_code == 200 else None
+
+
+def _same_tool(local: str, published: str) -> bool:
+    """Whether two rendered tool sources are the same XML, ignoring formatting whitespace."""
+
+    def canonical(xml: str) -> Optional[str]:
+        try:
+            return ET.canonicalize(xml, strip_text=True)
+        except ET.ParseError:
+            return None
+
+    local_canonical = canonical(local)
+    return local_canonical is not None and local_canonical == canonical(published)
 
 
 def lint_shed_remote_repository_url(realized_repository: "RealizedRepository", lint_ctx):
