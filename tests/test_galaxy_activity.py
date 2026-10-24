@@ -169,6 +169,23 @@ def test_stage_in_passes_lists_to_multiple_value_parameter_inputs_of_remote_work
     assert job_dict == EXPECTED_MULTIPLE_PARAM_JOB_DICT
 
 
+@pytest.mark.parametrize(
+    "job, expected",
+    [
+        ({"color_param": "#ff0000"}, {"color_param": "#ff0000"}),
+        ({"data_list": [{"class": "File", "path": "a.txt"}]}, {"data_list": {"src": "hdca", "id": "collection1"}}),
+    ],
+)
+def test_stage_in_without_parameter_lists_skips_workflow_normalization(tmp_path, job, expected):
+    """gxformat2 can't normalize color inputs, so only parameter lists may need it."""
+    (tmp_path / "a.txt").write_text("a\n")
+    job_path = tmp_path / "job.yml"
+    job_path.write_text(yaml.safe_dump(job))
+    runnable = Runnable(os.path.join(TEST_DATA_DIR, "wf_color_param_input.ga"), RunnableType.galaxy_workflow)
+    job_dict, _ = _stage_in(runnable, _staging_config(), str(job_path))
+    assert job_dict == expected
+
+
 def test_execute_workflow_fills_undeclared_parameters_with_sentinel():
     with mock.patch("planemo.galaxy.activity.warn") as warn:
         invoke_kwds = _execute_capturing_request(WORKFLOW_RUNNABLE, run_data=RUN_DATA)
