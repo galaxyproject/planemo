@@ -6,6 +6,7 @@ import re
 import xml.etree.ElementTree as ET
 from typing import (
     Any,
+    Counter,
     DefaultDict,
     Dict,
     List,
@@ -32,6 +33,7 @@ from planemo.galaxy.workflows import (
     export_workflow_dict,
     get_tool_ids_for_workflow,
     get_toolshed_url_for_tool_id,
+    iter_workflow_steps,
 )
 from planemo.io import (
     error,
@@ -329,15 +331,46 @@ def get_newest_tool_id(tool_ids: List[str]) -> str:
     )[-1]
 
 
+def base_tool_id(tool_id: str) -> str:
+    return tool_id.rsplit("/", 1)[0]
+
+
+def latest_installable_revision(repos: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    revisions = [
+        repo
+        for repo in repos.values()
+        if isinstance(repo, dict) and repo.get("downloadable", True) and not repo.get("malicious")
+    ]
+    if not revisions:
+        return None
+    return max(revisions, key=lambda repo: int(repo["numeric_revision"]))
+
+
+def find_updated_tool_id(tool_id: str, repos: Dict[str, Any]) -> Optional[str]:
+    """Return the newer tool id the autoupdate would upgrade tool_id to, if any."""
+    # The autoupdate installs the most recent installable revision and Galaxy then upgrades each
+    # step to the newest version it has, so only the tool in that revision is a candidate. An
+    # older revision can carry a version that sorts higher (2.2.8.3 > 2.2.8+galaxy1).
+    latest_revision = latest_installable_revision(repos)
+    if latest_revision is None:
+        return None
+    base_id = base_tool_id(tool_id)
+    matching_tool_ids = [tool_id]
+    for tool in latest_revision.get("tools") or []:
+        if tool["guid"].startswith(base_id + "/"):
+            matching_tool_ids.append(tool["guid"])
+            # there can only be one matching tool id in a repo
+            break
+    updated_tool_id = get_newest_tool_id(matching_tool_ids)
+    return updated_tool_id if updated_tool_id != tool_id else None
+
+
 def outdated_tools(  # noqa: C901
     ctx: "PlanemoCliContext", wf_dict: Dict[str, Any], tools_to_skip: List[str]
 ) -> Dict[str, Dict[str, str]]:
     """
     tools_to_skip should be a list of base tool ids.
     """
-
-    def base_tool_id(tool_id: str) -> str:
-        return tool_id.rsplit("/", 1)[0]
 
     def check_tool_step(tool_id: str) -> Dict[str, Dict[str, str]]:
         """
@@ -352,18 +385,9 @@ def outdated_tools(  # noqa: C901
             ctx.log(warning_msg)
         if len(repos) == 0:
             return repos
-        base_id = base_tool_id(tool_id)
-        matching_tool_ids = []
-        for repo in repos.values():
-            if isinstance(repo, dict):
-                for tool in repo.get("tools") or []:
-                    if tool["guid"].startswith(base_id + "/"):
-                        matching_tool_ids.append(tool["guid"])
-                        # there can only be one matching tool id in a repo
-                        break
-        updated_tool_id = get_newest_tool_id(matching_tool_ids)
-        if tool_id != updated_tool_id:
-            return {base_id: {"current": tool_id, "updated": updated_tool_id}}
+        updated_tool_id = find_updated_tool_id(tool_id, repos)
+        if updated_tool_id:
+            return {base_tool_id(tool_id): {"current": tool_id, "updated": updated_tool_id}}
         else:
             return {}
 
@@ -398,6 +422,34 @@ def autoupdate_wf(ctx: "PlanemoCliContext", config: "LocalGalaxyConfig", wf: "Ru
     workflow_id = config.workflow_id_for_runnable(wf)
     _update_wf(config, workflow_id)
     return export_workflow_dict(config.user_gi, workflow_id)
+
+
+def updated_tools(original_wf: Dict[str, Any], updated_wf: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
+    """Return the tool updates the refactoring actually made, keyed by base tool id."""
+
+    def tool_ids_by_base_id(wf_dict: Dict[str, Any]) -> DefaultDict[str, Counter[str]]:
+        # counted per step, so an upgrade to a version another step already uses is seen
+        tool_ids: DefaultDict[str, Counter[str]] = collections.defaultdict(collections.Counter)
+        for step in iter_workflow_steps(wf_dict):
+            tool_id = step.get("tool_id")
+            if tool_id and step.get("type", "tool") == "tool":
+                tool_ids[base_tool_id(tool_id)][tool_id] += 1
+        return tool_ids
+
+    before = tool_ids_by_base_id(original_wf)
+    after = tool_ids_by_base_id(updated_wf)
+    updates = {}
+    for base_id, tool_ids in after.items():
+        if base_id not in before:
+            continue
+        grown = list(tool_ids - before[base_id])
+        if grown:
+            shrunk = list(before[base_id] - tool_ids)
+            updates[base_id] = {
+                "current": get_newest_tool_id(shrunk or list(before[base_id])),
+                "updated": get_newest_tool_id(grown),
+            }
+    return updates
 
 
 def fix_workflow(original_wf: Dict[str, Any], updated_wf: Dict[str, Any]) -> Dict[str, Any]:
