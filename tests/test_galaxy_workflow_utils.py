@@ -54,6 +54,11 @@ def test_parameter_input_labels():
     ]
 
 
+def test_parameter_input_labels_native():
+    wf_path = os.path.join(TEST_DATA_DIR, "wf_native_param_inputs.ga")
+    assert parameter_input_labels(workflow_path=wf_path) == ["text_list", "int_param"]
+
+
 def test_parameter_input_labels_untyped_input_is_data():
     wf_path = os.path.join(TEST_DATA_DIR, "wf1.gxwf.yml")
     assert parameter_input_labels(workflow_path=wf_path) == []
