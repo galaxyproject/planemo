@@ -30,6 +30,14 @@ def test_finds_wrapped_and_urlsafe_base64_secret():
     ]
 
 
+@pytest.mark.parametrize("prefix", [b"", b"a", b"ab"])
+def test_finds_unpadded_base64_secret_ending_the_stream(prefix):
+    content = b"jwt=" + base64.urlsafe_b64encode(prefix + SECRET.value.encode()).rstrip(b"=")
+    assert list(_leak_problems([SECRET], "job stdout", content)) == [
+        "Secret 'TOKEN' of credentials 'svc' was found (base64-encoded) in job stdout."
+    ]
+
+
 def test_ignores_base64_of_partial_secret():
     secret = Secret("Secret 'TOKEN' of credentials 'svc'", "abcdefgh")
     assert list(_leak_problems([secret], "job stdout", base64.b64encode(b"abcdefZZ"))) == []

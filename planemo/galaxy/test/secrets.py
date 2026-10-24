@@ -4,7 +4,7 @@ Best effort: catches plain, base64 and URL-encoded copies, not otherwise transfo
 """
 
 import base64
-import binascii
+import re
 from typing import (
     Any,
     Dict,
@@ -23,7 +23,9 @@ from planemo.io import warn
 _JOB_STREAMS = ("stdout", "stderr", "job_messages")
 # Shorter values would match unrelated text and binary outputs.
 MIN_SECRET_LENGTH = 8
-_URLSAFE_BASE64 = bytes.maketrans(b"+/", b"-_")
+_TO_STANDARD_BASE64 = bytes.maketrans(b"-_", b"+/")
+# Shorter runs can't encode a MIN_SECRET_LENGTH secret.
+_BASE64_RUN = re.compile(rb"[A-Za-z0-9+/]{%d,}" % MIN_SECRET_LENGTH)
 
 
 class Secret(NamedTuple):
@@ -49,45 +51,27 @@ def collect_secrets(test_dict: Optional[Dict[str, Any]], api_key: Optional[str])
     return secrets
 
 
-def _base64_needles(raw: bytes) -> Iterator[bytes]:
-    # One needle per alignment of the secret in the encoded stream, keeping only the
-    # characters encoded purely from secret bytes.
-    for offset in range(3):
-        encoded = base64.b64encode(b"\0" * offset + raw)
-        start = 4 if offset else 0
-        end = (offset + len(raw)) // 3 * 4
-        if end - start >= MIN_SECRET_LENGTH:
-            yield encoded[start:end]
-
-
-def _decodes_to_secret(raw: bytes, encoded: bytes) -> bool:
-    # A needle drops up to two secret bytes at each end, so decode it with the
-    # neighbouring groups to confirm the whole secret is there.
-    for altchars in (None, b"-_"):
-        for needle in _base64_needles(raw):
-            if altchars:
-                needle = needle.translate(_URLSAFE_BASE64)
-            index = encoded.find(needle)
-            while index != -1:
-                for start in (max(index - 4, 0), index):
-                    for end in (index + len(needle) + 4, index + len(needle)):
-                        try:
-                            if raw in base64.b64decode(encoded[start:end], altchars=altchars):
-                                return True
-                        except binascii.Error:
-                            pass
-                index = encoded.find(needle, index + 1)
-    return False
+def _base64_decodings(content: bytes) -> List[bytes]:
+    # Decode each base64-alphabet run at all four alignments; one of them lines up with any encoded secret.
+    normalized = b"".join(content.split()).translate(_TO_STANDARD_BASE64)  # output is often wrapped
+    decodings = []
+    for run in _BASE64_RUN.findall(normalized):
+        for offset in range(4):
+            chunk = run[offset:]
+            if len(chunk) % 4 == 1:  # a lone trailing character holds no whole byte
+                chunk = chunk[:-1]
+            decodings.append(base64.b64decode(chunk + b"=" * (-len(chunk) % 4)))
+    return decodings
 
 
 def _leak_problems(secrets: List[Secret], location: str, content: bytes) -> Iterator[str]:
-    unwrapped = b"".join(content.split())  # base64 output is often wrapped at 76 columns
+    decodings = _base64_decodings(content)
     for secret in secrets:
         raw = secret.value.encode()
         url_encoded = quote(secret.value, safe="").encode()
         if raw in content:
             encoding = ""
-        elif _decodes_to_secret(raw, unwrapped):
+        elif any(raw in decoding for decoding in decodings):
             encoding = " (base64-encoded)"
         elif url_encoded != raw and url_encoded in content:
             encoding = " (URL-encoded)"
