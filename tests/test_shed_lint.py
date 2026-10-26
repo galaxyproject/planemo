@@ -137,3 +137,40 @@ class ShedLintTestCase(CliTestCase):
             self._check_exit_code(
                 ["shed_lint", "--skip", "shed_remote_repository_url", "--ensure_metadata"], exit_code=1
             )
+
+    def test_ensure_metadata_missing_field_is_warning(self):
+        # A mandatory field absent from .shed.yml (single_tool has no
+        # long_description) must be reported as a warning instead of crashing
+        # shed_lint with a KeyError.
+        with self._isolate_repo("single_tool"):
+            result = self._check_exit_code(
+                [
+                    "shed_lint",
+                    "--ensure_metadata",
+                    "--fail_level",
+                    "error",
+                    "--skip",
+                    "shed_remote_repository_url",
+                ],
+                exit_code=0,
+            )
+            assert "Missing shed metadata field [long_description] for repository" in result.output
+            assert "Found all shed metadata fields" not in result.output
+
+    def test_ensure_metadata_empty_field_is_warning(self):
+        with self._isolate_repo("single_tool") as f:
+            with open(join(f, ".shed.yml"), "a") as fh:
+                fh.write("long_description:\n")
+            result = self._check_exit_code(
+                [
+                    "shed_lint",
+                    "--ensure_metadata",
+                    "--fail_level",
+                    "error",
+                    "--skip",
+                    "shed_remote_repository_url",
+                ],
+                exit_code=0,
+            )
+            assert "shed metadata field [long_description] was given, but is empty" in result.output
+            assert "Found all shed metadata fields" not in result.output
