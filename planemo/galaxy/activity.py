@@ -607,15 +607,17 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         else:
             raise Exception("Unknown history content type encountered [%s]" % history_content_type)
 
-    def _collect_collection_output(self, runnable_output_id, output_dataset_id, cwl_output):
+    def _collect_collection_output(self, runnable_output_id, output_dataset_id, cwl_output, downloaded_datasets):
         def attach_file_properties(collection, cwl_output):
             elements = collection["elements"]
             assert len(elements) == len(cwl_output)
             for element, cwl_output_element in zip(elements, cwl_output):
                 element["_output_object"] = cwl_output_element
-                if isinstance(cwl_output_element, list):
-                    assert "elements" in element["object"]
+                if element["element_type"] == "dataset_collection":
                     attach_file_properties(element["object"], cwl_output_element)
+                elif element["object"].get("file_ext") == "expression.json":
+                    # CWL conversion parses JSON values; Galaxy assertions need the original file.
+                    element["_output_object"] = downloaded_datasets[element["object"]["id"]]
 
         output_metadata = self._get_metadata("dataset_collection", output_dataset_id)
         if cwl_output is None:
@@ -659,6 +661,8 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             if output_id and runnable_output_id != output_id:
                 continue
 
+            downloaded_datasets = {}
+
             def get_dataset(dataset_details, filename=None):
                 parent_basename = sanitize_filename(dataset_details.get("cwl_file_name") or runnable_output_id)
                 file_ext = dataset_details["file_ext"]
@@ -679,7 +683,10 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                 else:
                     basename = os.path.basename(filename)
 
-                return {"path": destination, "basename": basename}
+                properties = {"path": destination, "basename": basename}
+                if filename is None:
+                    downloaded_datasets[dataset_details["id"]] = properties
+                return properties
 
             is_cwl = self._runnable.type in [RunnableType.cwl_workflow, RunnableType.cwl_tool]
             output_src = self.output_src(runnable_output, ignore_missing_output)
@@ -701,7 +708,9 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             if is_cwl or output_src["src"] == "hda":
                 output_dict_value = cwl_output
             else:
-                output_dict_value = self._collect_collection_output(runnable_output_id, output_dataset_id, cwl_output)
+                output_dict_value = self._collect_collection_output(
+                    runnable_output_id, output_dataset_id, cwl_output, downloaded_datasets
+                )
 
             if output_id:
                 return output_dict_value

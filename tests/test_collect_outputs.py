@@ -1,5 +1,8 @@
 """Tests for output collection in :mod:`planemo.galaxy.activity`."""
 
+import json
+from copy import deepcopy
+from types import SimpleNamespace
 from typing import (
     Any,
     cast,
@@ -10,9 +13,12 @@ from typing import (
 )
 
 import pytest
+from galaxy.tool_util.cwl.util import GalaxyOutput
 
 from planemo.galaxy import activity
 from planemo.galaxy.activity import GalaxyBaseRunResponse
+from planemo.runnable import RunnableType
+from planemo.test._check_output import check_output
 
 if TYPE_CHECKING:
     from bioblend.galaxy import GalaxyInstance
@@ -114,3 +120,112 @@ def test_collect_outputs_unsupported_collection_type(unsupported_collection_resp
     message = str(exc_info.value)
     assert "Read quality reports" in message
     assert "sample_sheet:paired" in message
+
+
+@pytest.mark.parametrize("value", [None, False, 42, "hello", [None, 1], {"answer": 42}])
+@pytest.mark.parametrize("nested", [False, True])
+@pytest.mark.parametrize("cwl", [False, True])
+def test_expression_collection_assertions(monkeypatch, tmp_path, value, nested, cwl):
+    """Collect real expression.json content and verify it without losing its file path."""
+    content = json.dumps(value)
+    dataset = {"id": "expression", "history_content_type": "dataset", "file_ext": "expression.json"}
+    leaf = {"element_identifier": "sample", "element_type": "hda", "object": dataset}
+    collection = {"id": "inner", "collection_type": "list", "elements": [leaf]}
+    element_tests = {"sample": {"asserts": [{"that": "has_text", "text": content}]}}
+    if nested:
+        collection = {
+            "collection_type": "list:list",
+            "elements": [{"element_identifier": "group", "element_type": "dataset_collection", "object": collection}],
+        }
+        element_tests = {"group": {"elements": element_tests}}
+    collection.update(id="collection", history_content_type="dataset_collection")
+
+    class ExpressionResponse(CollectionRunResponse):
+        def to_galaxy_output(self, runnable_output):
+            return GalaxyOutput("history", "dataset_collection", "collection", None)
+
+        def _get_metadata(self, history_content_type, content_id):
+            return deepcopy(collection if history_content_type == "dataset_collection" else dataset)
+
+        def download_output_to(self, ctx, details, directory, filename=None):
+            path = tmp_path / "expression.json"
+            path.write_text(content)
+            return str(path)
+
+    runnable = SimpleNamespace(type=RunnableType.cwl_workflow if cwl else RunnableType.galaxy_workflow, path="test.ga")
+    response = ExpressionResponse(MockContext(), runnable, None, "history", "")
+    monkeypatch.setattr(activity, "get_outputs", lambda *args, **kwds: [MockRunnableOutput("out")])
+    response.collect_outputs(output_directory=str(tmp_path))
+    output = response.outputs_dict["out"]
+    if cwl:
+        assert output == ([[value]] if nested else [value])
+    else:
+        assert check_output(runnable, output, {"name": "out", "element_tests": element_tests}) == []
+        failing_tests = {"sample": {"asserts": [{"that": "has_text", "text": "missing-content"}]}}
+        if nested:
+            failing_tests = {"group": {"elements": failing_tests}}
+        problems = check_output(runnable, output, {"name": "out", "element_tests": failing_tests})
+        assert len(problems) == 1
+        assert "missing-content" in problems[0]
+
+
+@pytest.mark.parametrize("value", [None, False, 42, "hello", [None, 1], {"answer": 42}])
+def test_collection_element_without_file_properties(value):
+    """A malformed element reports an output problem instead of aborting the test run."""
+    output = {
+        "collection_type": "list",
+        "elements": [{"element_identifier": "sample", "element_type": "hda", "object": {}, "_output_object": value}],
+    }
+    tests = {"name": "out", "element_tests": {"sample": {"asserts": [{"that": "has_text", "text": "null"}]}}}
+    problems = check_output(SimpleNamespace(path="test.ga"), output, tests)
+    assert problems == ["Expected file properties for element 'sample' of output collection 'out'"]
+
+
+def test_mixed_collection_assertions(monkeypatch, tmp_path):
+    """Different expression files and an ordinary dataset retain their own content."""
+    contents = {"skipped": "null", "number": "42", "ordinary": "plain text"}
+    datasets = {
+        name: {
+            "id": name,
+            "history_content_type": "dataset",
+            "file_ext": "txt" if name == "ordinary" else "expression.json",
+        }
+        for name in contents
+    }
+    metadata = {
+        "id": "collection",
+        "history_content_type": "dataset_collection",
+        "collection_type": "list",
+        "elements": [
+            {"element_identifier": name, "element_type": "hda", "object": dataset} for name, dataset in datasets.items()
+        ],
+    }
+
+    class MixedResponse(CollectionRunResponse):
+        def to_galaxy_output(self, runnable_output):
+            return GalaxyOutput("history", "dataset_collection", "collection", None)
+
+        def _get_metadata(self, history_content_type, content_id):
+            return deepcopy(metadata if history_content_type == "dataset_collection" else datasets[content_id])
+
+        def _get_extra_files(self, dataset_details):
+            return []
+
+        def download_output_to(self, ctx, details, directory, filename=None):
+            path = tmp_path / details["id"]
+            path.write_text(contents[details["id"]])
+            return str(path)
+
+    runnable = SimpleNamespace(type=RunnableType.galaxy_workflow, path="test.ga")
+    response = MixedResponse(MockContext(), runnable, None, "history", "")
+    monkeypatch.setattr(activity, "get_outputs", lambda *args, **kwds: [MockRunnableOutput("out")])
+    output = response.collect_outputs(output_directory=str(tmp_path), output_id="out")
+    tests = {
+        "name": "out",
+        "element_tests": {
+            name: {"asserts": [{"that": "has_text", "text": content}]} for name, content in contents.items()
+        },
+    }
+    assert check_output(runnable, output, tests) == []
+    tests["element_tests"]["number"]["asserts"][0]["text"] = "null"
+    assert len(check_output(runnable, output, tests)) == 1
