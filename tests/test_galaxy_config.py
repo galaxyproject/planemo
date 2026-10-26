@@ -6,6 +6,7 @@ import os
 from unittest import mock
 
 import pytest
+import responses
 import yaml
 from click.testing import CliRunner
 
@@ -21,6 +22,8 @@ from planemo.galaxy.config import (
     _shared_galaxy_properties,
     _shed_config_paths,
     _validate_database_daemon,
+    BaseGalaxyConfig,
+    BaseManagedGalaxyConfig,
     DATABASE_LOCATION_TEMPLATE,
     galaxy_config,
     get_refgenie_config,
@@ -37,7 +40,69 @@ from .test_utils import (
     create_test_context,
     skip_if_environ,
     TempDirectoryContext,
+    TEST_DATA_DIR,
 )
+
+
+@pytest.mark.parametrize(
+    "managed,embedded,has_role,deleted",
+    [
+        (True, True, False, False),
+        (True, True, True, False),
+        (True, True, True, True),
+        (True, False, False, False),
+        (False, True, False, False),
+    ],
+)
+@responses.activate
+def test_embedded_user_tool_permissions(tmp_path, managed, embedded, has_role, deleted):
+    workflow = os.path.join(TEST_DATA_DIR, "wf_user_tool.gxwf.yml" if embedded else "wf1.gxwf.yml")
+    runnable = for_path(workflow)
+    if managed:
+        config = BaseManagedGalaxyConfig(
+            ctx=mock.Mock(),
+            config_directory=str(tmp_path),
+            env={},
+            test_data_dir=None,
+            port=9090,
+            server_name="test",
+            master_api_key="admin",
+            runnables=[runnable],
+            kwds={},
+        )
+        config._user_api_key = "user"
+    else:
+        config = BaseGalaxyConfig(mock.Mock(), "http://localhost:9090", "admin", "user", [runnable], {})
+    base_url = "http://localhost:9090/api"
+    if managed and embedded:
+        responses.get(f"{base_url}/users/current", json={"id": "u1"})
+        responses.get(
+            f"{base_url}/users/u1/roles", json=[{"type": "user_tool_execute", "id": "role0"}] if has_role else []
+        )
+        if has_role:
+            responses.get(f"{base_url}/roles", json=[] if deleted else [{"id": "role0"}])
+        if not has_role or deleted:
+            responses.post(f"{base_url}/roles", json={"type": "user_tool_execute", "id": "role1"})
+    responses.post(f"{base_url}/workflows/upload", json={"id": "wf1"})
+
+    config.install_workflows()
+
+    role_calls = [call for call in responses.calls if call.request.url.endswith("/roles")]
+    if managed and embedded:
+        assert len(role_calls) == (3 if deleted else 2)
+        if not has_role or deleted:
+            assert json.loads(role_calls[-1].request.body)["role_type"] == "user_tool_execute"
+            assert json.loads(role_calls[-1].request.body)["user_ids"] == ["u1"]
+            assert role_calls[-1].request.headers["x-api-key"] == "admin"
+    else:
+        assert role_calls == []
+    assert config.workflow_id(workflow) == "wf1"
+    assert responses.calls[-1].request.headers["x-api-key"] == "user"
+
+
+def test_beta_formats_enabled_for_both_managed_engines(tmp_path):
+    properties = _shared_galaxy_properties(str(tmp_path), {}, for_tests=False)
+    assert properties["enable_beta_tool_formats"] == "true"
 
 
 @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")

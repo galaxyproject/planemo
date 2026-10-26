@@ -644,20 +644,15 @@ def _raw_dict(path):
 
 def get_tool_ids_for_workflow(wf_dict: Dict[str, Any], tool_ids: Optional[List[str]] = None) -> List[str]:
     tool_ids = [] if tool_ids is None else tool_ids
-    steps = wf_dict["steps"].values() if isinstance(wf_dict["steps"], dict) else wf_dict["steps"]
-    for step in steps:
+    for step in iter_workflow_steps(wf_dict):
         if is_subworkflow_reference(step):
             # Not embedded, find_tool_ids expands linked subworkflows first.
             continue
-        if step.get("type", "tool") == "tool" and not step.get("run", {}).get("class") == "GalaxyWorkflow":
-            tool_id = step["tool_id"]
-            tool_ids.append(tool_id)
-        elif step.get("subworkflow"):  # GA SWF
-            get_tool_ids_for_workflow(step["subworkflow"], tool_ids=tool_ids)
-        elif step.get("run", {}).get("class") == "GalaxyWorkflow":  # gxformat2 SWF
-            get_tool_ids_for_workflow(step["run"], tool_ids=tool_ids)
-        else:
+        if step.get("tool_representation") or isinstance(step.get("run"), dict):
+            # Embedded definitions are imported with the workflow, not installed in the toolbox.
             continue
+        if step.get("type", "tool") == "tool":
+            tool_ids.append(step["tool_id"])
     return list(dict.fromkeys(tool_ids))
 
 
@@ -665,6 +660,16 @@ def find_tool_ids(path):
     """Return the tool ids a workflow needs, including those of linked subworkflows."""
     workflow = expand_linked_subworkflows(_raw_dict(path))
     return get_tool_ids_for_workflow(workflow)
+
+
+def workflow_has_embedded_user_tools(path: str) -> bool:
+    """Whether a local workflow or any of its subworkflows embeds a user-defined tool."""
+    workflow = expand_linked_subworkflows(_raw_dict(path))
+    return any(
+        (step.get("tool_representation") or step.get("run") or {}).get("class") == "GalaxyUserTool"
+        for step in iter_workflow_steps(workflow)
+        if not is_subworkflow_reference(step)
+    )
 
 
 WorkflowOutput = namedtuple("WorkflowOutput", ["order_index", "output_name", "label", "optional"])
