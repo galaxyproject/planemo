@@ -12,6 +12,8 @@ from collections.abc import (
 from functools import lru_cache
 from typing import (
     Any,
+    Final,
+    Literal,
     Protocol,
     runtime_checkable,
     TYPE_CHECKING,
@@ -58,9 +60,10 @@ GALAXY_WORKFLOWS_PREFIX = "gxid://workflows/"
 GALAXY_WORKFLOW_INSTANCE_PREFIX = "gxid://workflow-instance/"
 TRS_WORKFLOWS_PREFIX = "trs://"
 # Kinds of inputs_normalized steps, see input_kind
-DATA_INPUT = "data"
-COLLECTION_INPUT = "collection"
-PARAMETER_INPUT = "parameter"
+InputKind = Literal["data", "collection", "parameter"]
+DATA_INPUT: Final = "data"
+COLLECTION_INPUT: Final = "collection"
+PARAMETER_INPUT: Final = "parameter"
 # Scalar parameter types that job templates fill with a placeholder value
 SCALAR_PARAMETER_TYPES = ("string", "text", "int", "integer", "long", "float", "double", "boolean", "color")
 MAIN_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
@@ -735,7 +738,7 @@ def parameter_input_labels(workflow_path=None, workflow_dict=None) -> list[str]:
     return [input_label(step) for step in steps if input_kind(step.get("type")) == PARAMETER_INPUT]
 
 
-def input_kind(input_type: str | list[str] | None) -> str:
+def input_kind(input_type: str | list[str] | None) -> InputKind:
     """Classify an inputs_normalized step type as DATA_INPUT, COLLECTION_INPUT or PARAMETER_INPUT.
 
     gxformat2 inputs without a type are data inputs.
@@ -743,12 +746,14 @@ def input_kind(input_type: str | list[str] | None) -> str:
     input_type = input_type or DATA_INPUT
     input_types = input_type if isinstance(input_type, list) else [input_type]
     for t in input_types:
-        if t in (DATA_INPUT, COLLECTION_INPUT):
-            return t
+        if t == DATA_INPUT:
+            return DATA_INPUT
+        if t == COLLECTION_INPUT:
+            return COLLECTION_INPUT
     return PARAMETER_INPUT
 
 
-def _template_input_kind(input_type: str | list[str] | None) -> str | None:
+def _template_input_kind(input_type: str | list[str] | None) -> InputKind | None:
     """input_kind for job templates, None for inputs they have no template for (e.g. multiple-value data)."""
     kind = input_kind(input_type)
     if isinstance(input_type, list):
