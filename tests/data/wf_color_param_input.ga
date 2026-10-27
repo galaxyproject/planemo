@@ -1,6 +1,6 @@
 {
     "a_galaxy_workflow": "true",
-    "annotation": "native workflow with a color parameter input next to a list collection input",
+    "annotation": "native workflow with color and directory_uri parameter inputs next to multiple-value text and list collection inputs",
     "format-version": "0.1",
     "name": "ColorParamInput",
     "steps": {
@@ -39,6 +39,44 @@
             "tool_state": "{\"collection_type\": \"list\", \"optional\": false}",
             "tool_version": null,
             "type": "data_collection_input",
+            "uuid": null,
+            "workflow_outputs": []
+        },
+        "2": {
+            "annotation": "",
+            "id": 2,
+            "input_connections": {},
+            "inputs": [],
+            "label": "directory_uri_param",
+            "name": "parameter_input",
+            "outputs": [],
+            "position": {
+                "left": 0,
+                "top": 200
+            },
+            "tool_id": null,
+            "tool_state": "{\"parameter_type\": \"directory_uri\", \"optional\": false}",
+            "tool_version": null,
+            "type": "parameter_input",
+            "uuid": null,
+            "workflow_outputs": []
+        },
+        "3": {
+            "annotation": "",
+            "id": 3,
+            "input_connections": {},
+            "inputs": [],
+            "label": "text_list",
+            "name": "parameter_input",
+            "outputs": [],
+            "position": {
+                "left": 0,
+                "top": 300
+            },
+            "tool_id": null,
+            "tool_state": "{\"parameter_type\": \"text\", \"optional\": false, \"multiple\": true}",
+            "tool_version": null,
+            "type": "parameter_input",
             "uuid": null,
             "workflow_outputs": []
         }
