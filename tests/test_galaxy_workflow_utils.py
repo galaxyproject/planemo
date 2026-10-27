@@ -99,3 +99,10 @@ def test_job_template_input_kinds():
         "data_input": "data",
         "data_list": "collection",
     }
+
+
+def test_job_template_untyped_input_is_data():
+    wf_path = os.path.join(TEST_DATA_DIR, "wf1.gxwf.yml")
+    assert job_template(wf_path) == {"input1": FILE_TEMPLATE}
+    template, _ = job_template_with_metadata(wf_path)
+    assert template == {"input1": FILE_TEMPLATE}

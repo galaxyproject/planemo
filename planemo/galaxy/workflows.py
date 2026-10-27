@@ -746,7 +746,7 @@ def input_kind(input_type: Optional[Union[str, List[str]]]) -> str:
     return PARAMETER_INPUT
 
 
-def _template_input_kind(input_type: Union[str, List[str]]) -> Optional[str]:
+def _template_input_kind(input_type: Optional[Union[str, List[str]]]) -> Optional[str]:
     """input_kind for job templates, None for inputs they have no template for (e.g. multiple-value)."""
     if isinstance(input_type, list):
         return None
@@ -814,7 +814,7 @@ def job_template(workflow_path, **kwds):
     template = {}
     for required_input_step in required_input_steps(workflow_path):
         i_label = input_label(required_input_step)
-        kind = _template_input_kind(required_input_step["type"])
+        kind = _template_input_kind(required_input_step.get("type"))
         if kind == DATA_INPUT:
             template[i_label] = {
                 "class": "File",
@@ -902,7 +902,7 @@ def _build_template_and_metadata_from_inputs(
     metadata: Dict[str, Any] = {}
     for input_step in all_inputs:
         i_label = input_label(input_step)
-        input_type = input_step["type"]
+        input_type = input_step.get("type")
         kind = _template_input_kind(input_type)
         input_doc = input_step.get("doc", "")
         is_optional = input_step.get("optional", False)
