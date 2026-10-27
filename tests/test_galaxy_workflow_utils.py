@@ -4,6 +4,8 @@ import os
 
 from planemo.galaxy.workflows import (
     describe_outputs,
+    job_template,
+    job_template_with_metadata,
     output_stubs_for_workflow,
     parameter_input_labels,
     required_input_labels,
@@ -69,3 +71,31 @@ def test_output_stubs_skip_anonymous_and_empty_labels():
     wf_path = os.path.join(TEST_DATA_DIR, "wf_empty_output_label.gxwf.yml")
     stubs = output_stubs_for_workflow(wf_path)
     assert stubs == {}
+
+
+FILE_TEMPLATE = {"class": "File", "path": "todo_test_data_path.ext"}
+LIST_TEMPLATE = {
+    "class": "Collection",
+    "collection_type": "list",
+    "elements": [{"class": "File", "identifier": "todo_element_name", "path": "todo_test_data_path.ext"}],
+}
+
+
+def test_job_template_input_kinds():
+    """Data, collection and scalar parameter inputs get templates; multiple-value parameters a TODO."""
+    wf_path = os.path.join(TEST_DATA_DIR, "wf_native_param_inputs.ga")
+    expected = {
+        "text_list": {"TODO"},
+        "int_param": "todo_param_value",
+        "data_input": FILE_TEMPLATE,
+        "data_list": LIST_TEMPLATE,
+    }
+    assert job_template(wf_path) == expected
+    template, metadata = job_template_with_metadata(wf_path)
+    assert template == expected
+    assert {label: m["type"] for label, m in metadata.items()} == {
+        "text_list": ["string"],
+        "int_param": "int",
+        "data_input": "data",
+        "data_list": "collection",
+    }

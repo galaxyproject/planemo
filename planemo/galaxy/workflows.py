@@ -17,6 +17,7 @@ from typing import (
     runtime_checkable,
     Tuple,
     TYPE_CHECKING,
+    Union,
 )
 from urllib.parse import (
     quote,
@@ -59,8 +60,12 @@ FAILED_REPOSITORIES_MESSAGE = "Failed to install one or more repositories."
 GALAXY_WORKFLOWS_PREFIX = "gxid://workflows/"
 GALAXY_WORKFLOW_INSTANCE_PREFIX = "gxid://workflow-instance/"
 TRS_WORKFLOWS_PREFIX = "trs://"
-# Types of inputs_normalized steps that are staged as datasets or collections
-DATA_INPUT_TYPES = {"data", "collection"}
+# Kinds of inputs_normalized steps, see input_kind
+DATA_INPUT = "data"
+COLLECTION_INPUT = "collection"
+PARAMETER_INPUT = "parameter"
+# Scalar parameter types that job templates fill with a placeholder value
+SCALAR_PARAMETER_TYPES = ("string", "text", "int", "integer", "long", "float", "double", "boolean", "color")
 MAIN_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
 # Galaxy's default trs_servers_conf, used to resolve trs_server/trs_tool_id/trs_version_id subworkflow references
 TRS_SERVERS = {"dockstore": "https://dockstore.org/api"}
@@ -725,14 +730,30 @@ def input_labels(workflow_path):
 def parameter_input_labels(workflow_path=None, workflow_dict=None) -> List[str]:
     """Get labels of the workflow's parameter inputs, i.e. inputs that are neither datasets nor collections."""
     steps = inputs_normalized(workflow_dict=workflow_dict, workflow_path=workflow_path)
-    labels = []
-    for step in steps:
-        # gxformat2 inputs without a type are data inputs
-        input_type = step.get("type") or "data"
-        input_types = input_type if isinstance(input_type, list) else [input_type]
-        if not any(t in DATA_INPUT_TYPES for t in input_types):
-            labels.append(input_label(step))
-    return labels
+    return [input_label(step) for step in steps if input_kind(step.get("type")) == PARAMETER_INPUT]
+
+
+def input_kind(input_type: Optional[Union[str, List[str]]]) -> str:
+    """Classify an inputs_normalized step type as DATA_INPUT, COLLECTION_INPUT or PARAMETER_INPUT.
+
+    gxformat2 inputs without a type are data inputs.
+    """
+    input_type = input_type or DATA_INPUT
+    input_types = input_type if isinstance(input_type, list) else [input_type]
+    for t in input_types:
+        if t in (DATA_INPUT, COLLECTION_INPUT):
+            return t
+    return PARAMETER_INPUT
+
+
+def _template_input_kind(input_type: Union[str, List[str]]) -> Optional[str]:
+    """input_kind for job templates, None for inputs they have no template for (e.g. multiple-value)."""
+    if isinstance(input_type, list):
+        return None
+    kind = input_kind(input_type)
+    if kind == PARAMETER_INPUT and input_type not in SCALAR_PARAMETER_TYPES:
+        return None
+    return kind
 
 
 def required_input_steps(workflow_path):
@@ -793,13 +814,13 @@ def job_template(workflow_path, **kwds):
     template = {}
     for required_input_step in required_input_steps(workflow_path):
         i_label = input_label(required_input_step)
-        input_type = required_input_step["type"]
-        if input_type == "data":
+        kind = _template_input_kind(required_input_step["type"])
+        if kind == DATA_INPUT:
             template[i_label] = {
                 "class": "File",
                 "path": "todo_test_data_path.ext",
             }
-        elif input_type == "collection":
+        elif kind == COLLECTION_INPUT:
             template[i_label] = {
                 "class": "Collection",
                 "collection_type": "list",
@@ -811,7 +832,7 @@ def job_template(workflow_path, **kwds):
                     }
                 ],
             }
-        elif input_type in ["string", "text", "int", "integer", "long", "float", "double", "boolean", "color"]:
+        elif kind == PARAMETER_INPUT:
             template[i_label] = "todo_param_value"
         else:
             template[i_label] = {
@@ -882,6 +903,7 @@ def _build_template_and_metadata_from_inputs(
     for input_step in all_inputs:
         i_label = input_label(input_step)
         input_type = input_step["type"]
+        kind = _template_input_kind(input_type)
         input_doc = input_step.get("doc", "")
         is_optional = input_step.get("optional", False)
         default_value = input_step.get("default")
@@ -901,19 +923,19 @@ def _build_template_and_metadata_from_inputs(
             "collection_type": collection_type,
         }
 
-        if input_type == "data":
+        if kind == DATA_INPUT:
             template[i_label] = {
                 "class": "File",
                 "path": "todo_test_data_path.ext",
             }
-        elif input_type == "collection":
+        elif kind == COLLECTION_INPUT:
             coll_type = collection_type or "list"
             template[i_label] = {
                 "class": "Collection",
                 "collection_type": coll_type,
                 "elements": _collection_elements_for_type(coll_type),
             }
-        elif input_type in ["string", "text", "int", "integer", "long", "float", "double", "boolean", "color"]:
+        elif kind == PARAMETER_INPUT:
             # Use default value if available, otherwise use placeholder or false for booleans
             if has_default:
                 template[i_label] = default_value
