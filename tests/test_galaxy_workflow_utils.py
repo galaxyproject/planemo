@@ -82,10 +82,10 @@ LIST_TEMPLATE = {
 
 
 def test_job_template_input_kinds():
-    """Data, collection and scalar parameter inputs get templates; multiple-value parameters a TODO."""
+    """Data, collection and parameter inputs get templates; multiple-value parameters a list."""
     wf_path = os.path.join(TEST_DATA_DIR, "wf_native_param_inputs.ga")
     expected = {
-        "text_list": {"TODO"},
+        "text_list": ["todo_param_value"],
         "int_param": "todo_param_value",
         "data_input": FILE_TEMPLATE,
         "data_list": LIST_TEMPLATE,

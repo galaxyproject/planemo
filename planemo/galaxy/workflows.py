@@ -747,13 +747,19 @@ def input_kind(input_type: Optional[Union[str, List[str]]]) -> str:
 
 
 def _template_input_kind(input_type: Optional[Union[str, List[str]]]) -> Optional[str]:
-    """input_kind for job templates, None for inputs they have no template for (e.g. multiple-value)."""
-    if isinstance(input_type, list):
-        return None
+    """input_kind for job templates, None for inputs they have no template for (e.g. multiple-value data)."""
     kind = input_kind(input_type)
-    if kind == PARAMETER_INPUT and input_type not in SCALAR_PARAMETER_TYPES:
+    if isinstance(input_type, list):
+        if kind != PARAMETER_INPUT or not all(t in SCALAR_PARAMETER_TYPES for t in input_type):
+            return None
+    elif kind == PARAMETER_INPUT and input_type not in SCALAR_PARAMETER_TYPES:
         return None
     return kind
+
+
+def _multiple_if_list(value: Any, input_type: Optional[Union[str, List[str]]]) -> Any:
+    """Wrap a template value in a list for a multiple-value (list type) input."""
+    return [value] if isinstance(input_type, list) else value
 
 
 def required_input_steps(workflow_path):
@@ -833,7 +839,7 @@ def job_template(workflow_path, **kwds):
                 ],
             }
         elif kind == PARAMETER_INPUT:
-            template[i_label] = "todo_param_value"
+            template[i_label] = _multiple_if_list("todo_param_value", required_input_step.get("type"))
         else:
             template[i_label] = {
                 "TODO",  # Does this work yet?
@@ -939,10 +945,10 @@ def _build_template_and_metadata_from_inputs(
             # Use default value if available, otherwise use placeholder or false for booleans
             if has_default:
                 template[i_label] = default_value
-            elif input_type == "boolean":
-                template[i_label] = False
             else:
-                template[i_label] = "todo_param_value"
+                scalar_type = input_type[0] if isinstance(input_type, list) else input_type
+                placeholder = False if scalar_type == "boolean" else "todo_param_value"
+                template[i_label] = _multiple_if_list(placeholder, input_type)
         else:
             template[i_label] = {
                 "TODO",  # Does this work yet?
