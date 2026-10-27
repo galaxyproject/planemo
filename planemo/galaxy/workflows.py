@@ -15,6 +15,7 @@ from typing import (
     Optional,
     Protocol,
     runtime_checkable,
+    Set,
     Tuple,
     TYPE_CHECKING,
 )
@@ -48,6 +49,7 @@ from gxformat2.options import (
     default_url_resolver,
     TRS_URL_REGEX,
 )
+from pathvalidate import sanitize_filename
 
 from planemo.galaxy.api import (
     get_dict_from_workflow,
@@ -1029,11 +1031,36 @@ def rewrite_job_file(input_file, output_file, job):
         yaml.dump(job_contents, f)
 
 
+def _safe_filename(label: str) -> str:
+    """Make a Galaxy label, element identifier or workflow name safe as a filename.
+
+    Galaxy allows characters in these that cannot appear in a path component -
+    ``/`` most notably. ``platform="universal"`` so generated filenames don't vary
+    with the operating system that generated them.
+    """
+    return sanitize_filename(label, replacement_text="_", platform="universal") or "unnamed"
+
+
+def _unique_path(base: str, ext: str, used_paths: Set[str]) -> str:
+    """Return ``base.ext``, or ``base_1.ext``, ``base_2.ext``... if sanitizing made it collide.
+
+    Distinct labels can sanitize to the same filename (``a/b`` and ``a_b``), and downloading
+    both to one path would silently overwrite the first with the second.
+    """
+    path = f"{base}.{ext}"
+    suffix = 0
+    while path in used_paths:
+        suffix += 1
+        path = f"{base}_{suffix}.{ext}"
+    used_paths.add(path)
+    return path
+
+
 def get_workflow_from_invocation_id(invocation_id, galaxy_url, galaxy_api_key):
     user_gi = gi(url=galaxy_url, key=galaxy_api_key)
     workflow_id = user_gi.invocations.show_invocation(invocation_id)["workflow_id"]
     workflow = get_dict_from_workflow(user_gi, workflow_id, instance=True)
-    workflow_name = "-".join(workflow["name"].split())
+    workflow_name = _safe_filename("-".join(workflow["name"].split()))
     with open(f"{workflow_name}.ga", "w") as workflow_out:
         json.dump(workflow, workflow_out, ensure_ascii=False, indent=4)
     return workflow_name
@@ -1044,7 +1071,10 @@ def _elements_to_test_def(
     test_data_base_path: str,
     download_function: Callable,
     definition_style: str = "input",
+    used_paths: Optional[Set[str]] = None,
 ):
+    if used_paths is None:
+        used_paths = set()
     element_test_def = []
     output_element_test_def = {}
     if definition_style == "output":
@@ -1056,6 +1086,7 @@ def _elements_to_test_def(
                 test_data_base_path,
                 download_function,
                 definition_style=definition_style,
+                used_paths=used_paths,
             )
             test_def = {}
             if definition_style == "input":
@@ -1068,7 +1099,9 @@ def _elements_to_test_def(
                 output_element_test_def[element["element_identifier"]] = {"elements": nested_elements}
         elif element["element_type"] == "hda":
             ext = element["object"]["file_ext"]
-            path = f"{test_data_base_path}_{element['element_identifier']}.{ext}"
+            path = _unique_path(
+                f"{test_data_base_path}_{_safe_filename(element['element_identifier'])}", ext, used_paths
+            )
             download_function(
                 element["object"]["id"],
                 use_default_filename=False,
@@ -1093,15 +1126,17 @@ def _job_inputs_template_from_invocation(invocation_id, galaxy_url, galaxy_api_k
     user_gi = gi(url=galaxy_url, key=galaxy_api_key)
     invocation = user_gi.invocations.show_invocation(invocation_id)
     template = {}
+    used_paths: Set[str] = set()
     for input_step in invocation["inputs"].values():
+        label = input_step["label"]
+        base_path = f"test-data/{_safe_filename(label)}"
         if input_step["src"] == "hda":
             ext = user_gi.datasets.show_dataset(input_step["id"])["extension"]
-            user_gi.datasets.download_dataset(
-                input_step["id"], use_default_filename=False, file_path=f"test-data/{input_step['label']}.{ext}"
-            )
-            template[input_step["label"]] = {
+            path = _unique_path(base_path, ext, used_paths)
+            user_gi.datasets.download_dataset(input_step["id"], use_default_filename=False, file_path=path)
+            template[label] = {
                 "class": "File",
-                "path": f"test-data/{input_step['label']}.{ext}",
+                "path": path,
                 "filetype": ext,
             }
         elif input_step["src"] == "hdca":
@@ -1111,11 +1146,12 @@ def _job_inputs_template_from_invocation(invocation_id, galaxy_url, galaxy_api_k
                 "collection_type": collection["collection_type"],
                 "elements": _elements_to_test_def(
                     collection["elements"],
-                    test_data_base_path=f"test-data/{input_step['label']}",
+                    test_data_base_path=base_path,
                     download_function=user_gi.datasets.download_dataset,
+                    used_paths=used_paths,
                 ),
             }
-            template[input_step["label"]] = test_def
+            template[label] = test_def
     for param, param_step in invocation["input_step_parameters"].items():
         template[param] = param_step["parameter_value"]
 
@@ -1126,19 +1162,20 @@ def _job_outputs_template_from_invocation(invocation_id, galaxy_url, galaxy_api_
     user_gi = gi(url=galaxy_url, key=galaxy_api_key)
     invocation = user_gi.invocations.show_invocation(invocation_id)
     outputs = {}
+    used_paths: Set[str] = set()
     for label, output in invocation["outputs"].items():
         ext = user_gi.datasets.show_dataset(output["id"])["extension"]
-        user_gi.datasets.download_dataset(
-            output["id"], use_default_filename=False, file_path=f"test-data/{label}.{ext}"
-        )
-        outputs[label] = {"path": f"test-data/{label}.{ext}"}
+        path = _unique_path(f"test-data/{_safe_filename(label)}", ext, used_paths)
+        user_gi.datasets.download_dataset(output["id"], use_default_filename=False, file_path=path)
+        outputs[label] = {"path": path}
     for label, output in invocation["output_collections"].items():
         collection = user_gi.dataset_collections.show_dataset_collection(output["id"])
         element_tests = _elements_to_test_def(
             collection["elements"],
-            test_data_base_path=f"test-data/{label}",
+            test_data_base_path=f"test-data/{_safe_filename(label)}",
             download_function=user_gi.datasets.download_dataset,
             definition_style="outputs",
+            used_paths=used_paths,
         )
         outputs[label] = {"element_tests": element_tests}
     return outputs
