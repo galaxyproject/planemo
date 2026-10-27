@@ -6,6 +6,8 @@ from unittest import mock
 import pytest
 import yaml
 from gxformat2.converter import python_to_workflow
+from gxformat2.normalize import inputs_normalized
+from pydantic import ValidationError
 
 from planemo.galaxy.activity import (
     _execute,
@@ -27,6 +29,21 @@ WORKFLOW_RUNNABLE = Runnable(os.path.join(TEST_DATA_DIR, "wf2.ga"), RunnableType
 MULTIPLE_PARAM_WORKFLOW_RUNNABLE = Runnable(
     os.path.join(TEST_DATA_DIR, "wf_multiple_param_inputs.gxwf.yml"), RunnableType.galaxy_workflow
 )
+COLOR_PARAM_WORKFLOW_RUNNABLE = Runnable(
+    os.path.join(TEST_DATA_DIR, "wf_color_param_input.ga"), RunnableType.galaxy_workflow
+)
+
+
+def _gxformat2_normalizes_color_and_directory_uri_inputs():
+    steps = {
+        str(i): {"id": i, "label": t, "type": "parameter_input", "tool_state": {"parameter_type": t}, "inputs": []}
+        for i, t in enumerate(["color", "directory_uri"])
+    }
+    try:
+        inputs_normalized(workflow_dict={"a_galaxy_workflow": "true", "format-version": "0.1", "steps": steps})
+    except ValidationError:
+        return False
+    return True
 
 
 class ExecutionHalted(Exception):
@@ -180,6 +197,20 @@ def test_stage_in_without_parameter_lists_skips_workflow_normalization(tmp_path,
     (tmp_path / "a.txt").write_text("a\n")
     job_path = tmp_path / "job.yml"
     job_path.write_text(yaml.safe_dump(job))
-    runnable = Runnable(os.path.join(TEST_DATA_DIR, "wf_color_param_input.ga"), RunnableType.galaxy_workflow)
-    job_dict, _ = _stage_in(runnable, _staging_config(), str(job_path))
+    job_dict, _ = _stage_in(COLOR_PARAM_WORKFLOW_RUNNABLE, _staging_config(), str(job_path))
     assert job_dict == expected
+
+
+@pytest.mark.xfail(
+    not _gxformat2_normalizes_color_and_directory_uri_inputs(),
+    raises=ValidationError,
+    strict=True,
+    reason="gxformat2 can't normalize native color and directory_uri inputs (galaxyproject/gxformat2#202)",
+)
+def test_stage_in_passes_parameter_lists_next_to_color_and_directory_uri_inputs(tmp_path):
+    (tmp_path / "a.txt").write_text("a\n")
+    job_path = tmp_path / "job.yml"
+    params = {"text_list": ["a", "b"], "color_param": "#ff0000", "directory_uri_param": "gxfiles://dropbox/out"}
+    job_path.write_text(yaml.safe_dump({**params, "data_list": [{"class": "File", "path": "a.txt"}]}))
+    job_dict, _ = _stage_in(COLOR_PARAM_WORKFLOW_RUNNABLE, _staging_config(), str(job_path))
+    assert job_dict == {**params, "data_list": {"src": "hdca", "id": "collection1"}}
