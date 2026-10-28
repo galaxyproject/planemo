@@ -4,7 +4,6 @@ import os
 import sys
 import traceback
 from typing import (
-    Any,
     Callable,
     Iterable,
     Iterator,
@@ -20,7 +19,11 @@ from galaxy.tool_util import version as galaxy_tool_util_version
 from galaxy.tool_util.fetcher import ToolLocationFetcher
 from galaxy.tool_util.loader_directory import is_tool_load_error
 from galaxy.tool_util.parser.interface import ToolSource
-from galaxy.tool_util.version import parse_version
+from galaxy.tool_util.version import (
+    LegacyVersion,
+    parse_version,
+)
+from packaging.version import Version
 
 from planemo.io import (
     error,
@@ -28,10 +31,10 @@ from planemo.io import (
 )
 
 
-def _parse_tool_version(version: str):
+def _parse_tool_version(version: str) -> Union[LegacyVersion, Version]:
     """Parse a tool version, comparing a ``+galaxy<N>`` suffix numerically (``+galaxy10`` > ``+galaxy9``).
 
-    Same rule as galaxy-tool-util's ``parse_tool_version`` (26.1+), for older galaxy-tool-util releases.
+    Same rule as galaxy-tool-util's ``parse_tool_version``, for releases that lack it.
     """
     base_version, sep, suffix = version.partition("+galaxy")
     if sep and suffix:
@@ -39,8 +42,11 @@ def _parse_tool_version(version: str):
     return parse_version(version)
 
 
-# galaxy-tool-util gained parse_tool_version after 26.1.1 (galaxyproject/galaxy#24320); fall back to the same rule before.
-parse_tool_version: Callable[[str], Any] = getattr(galaxy_tool_util_version, "parse_tool_version", _parse_tool_version)
+# galaxy-tool-util gained parse_tool_version after 26.1.1 (galaxyproject/galaxy#24320).
+# Drop the fallback once the galaxy-tool-util floor in requirements.txt ships it.
+parse_tool_version: Callable[[str], Union[LegacyVersion, Version]] = getattr(
+    galaxy_tool_util_version, "parse_tool_version", _parse_tool_version
+)
 
 
 if TYPE_CHECKING:

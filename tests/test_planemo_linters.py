@@ -1,7 +1,9 @@
+from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
 
+import pytest
 from galaxy.tool_util.lint import (
     lint_tool_source_with_modules,
     LintContext,
@@ -16,6 +18,7 @@ from planemo.linters import (
     urls,
 )
 from planemo.shed_lint import (
+    lint_shed_version,
     lint_tool_dependencies_urls,
     REPOSITORY_LINTER_NAMES,
 )
@@ -247,3 +250,63 @@ def test_biocontainer_linter_reports_missing_container_once():
             "BiocontainerMissing",
         )
     ]
+
+
+SHED_VERSION_TOOL = """<tool id="shed_version_tool" name="Shed Version Tool" version="1.0+galaxy10">
+    <command>echo hi</command>
+    <inputs />
+    <outputs />
+</tool>
+"""
+
+
+@dataclass
+class _ShedRepository:
+    path: str
+    owner: str = "iuc"
+    name: str = "shed_version"
+
+
+class _FakeShedRepositories:
+    def __init__(self, ts_version):
+        self.ts_version = ts_version
+
+    def get_repositories(self, name, owner):
+        return [{"name": name, "owner": owner}]
+
+    def get_ordered_installable_revisions(self, name, owner):
+        return ["abc123"]
+
+    def get_repository_revision_install_info(self, name, owner, revision):
+        return {}, {"valid_tools": [{"id": "shed_version_tool", "version": self.ts_version}]}, {}
+
+
+class _FakeToolShed:
+    def __init__(self, ts_version):
+        self.repositories = _FakeShedRepositories(ts_version)
+
+
+@pytest.mark.parametrize(
+    "ts_version, expected",
+    [
+        ("1.0+galaxy9", []),
+        (
+            "1.0+galaxy10",
+            [
+                (
+                    "error",
+                    "shed_version_tool: version 1.0+galaxy10 is less or equal than version of the latest installable revision 1.0+galaxy10",
+                    "ShedVersion",
+                )
+            ],
+        ),
+    ],
+)
+def test_shed_version_compares_galaxy_suffix_numerically(tmp_path, ts_version, expected):
+    (tmp_path / "shed_version_tool.xml").write_text(SHED_VERSION_TOOL)
+    lint_ctx = LintContext("all")
+
+    with mock.patch("planemo.shed_lint.tool_shed_instance", return_value=_FakeToolShed(ts_version)):
+        lint_ctx.lint("shed_version", lint_shed_version, _ShedRepository(str(tmp_path)))
+
+    assert _messages(lint_ctx) == expected

@@ -175,7 +175,7 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
         repo_owner = realized_repository.owner
         repo_name = realized_repository.name
         tool_id = tool_source.parse_id()
-        tool_version = parse_tool_version(tool_source.parse_version())
+        tool_version = tool_source.parse_version()
 
         # check if there is already such a repo (otherwise get_ordered_installable_revisions will log an error for new repos)
         if len(tsi.repositories.get_repositories(repo_name, repo_owner)) == 0:
@@ -209,7 +209,7 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
             assert tool[0]["version"]
             ts_tool_version = tool[0]["version"]
 
-        if tool_version <= parse_tool_version(ts_tool_version):
+        if parse_tool_version(tool_version) <= parse_tool_version(ts_tool_version):
             lint_ctx.error(
                 f"{tool_id}: version {tool_version} is less or equal than version of the latest installable revision {ts_tool_version}",
                 "ShedVersion",
