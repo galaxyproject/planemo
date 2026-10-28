@@ -17,6 +17,10 @@ History
   to the tools and repositories that own it - fixes #1129.
 * Exit non-zero from ``planemo autoupdate`` when a tool fails to update - fixes
   #1478.
+* Fix a ``KeyError`` crash in ``planemo shed_lint --ensure_metadata`` when a
+  repository's ``.shed.yml`` omits a metadata field such as
+  ``long_description``; missing and empty fields are now both reported as
+  warnings.
 
 
 ---------------------
