@@ -23,6 +23,13 @@ def _cwl_file(name):
     return os.path.normpath(os.path.join(CWL_DRAFT3_DIR, name))
 
 
+def _galaxy_release_before(version):
+    branch = target_galaxy_branch()
+    if not branch.startswith("release_"):
+        return False
+    return tuple(int(p) for p in branch[len("release_") :].split(".")) < version
+
+
 # TODO: Improve these tests so they actually check something instead
 # of just arbitrarily exercising the code.
 class RunTestCase(CliTestCase):
@@ -326,6 +333,27 @@ class RunTestCase(CliTestCase):
             with zipfile.ZipFile(export_path, "r") as zip_ref:
                 # Should contain some files for a valid RO-Crate
                 assert len(zip_ref.namelist()) > 0
+
+    @pytest.mark.skipif(
+        _galaxy_release_before((24, 2)),
+        reason="Galaxy releases before 24.2 don't accept lists for multiple-value parameter inputs.",
+    )
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    @mark.tests_galaxy_branch
+    def test_run_multiple_value_parameter_inputs(self):
+        with self._isolate():
+            wf = os.path.join(TEST_DATA_DIR, "wf_multiple_param_inputs.gxwf.yml")
+            job_path = os.path.join(TEST_DATA_DIR, "wf_multiple_param_inputs-job.yml")
+            test_cmd = [
+                "--verbose",
+                "run",
+                "--no_dependency_resolution",
+                "--galaxy_branch",
+                target_galaxy_branch(),
+                wf,
+                job_path,
+            ]
+            self._check_exit_code(test_cmd)
 
     @pytest.mark.skipif(
         target_galaxy_branch() == "release_22.05",

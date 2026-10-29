@@ -10,13 +10,16 @@ from typing import (
     Any,
     Callable,
     Dict,
+    Final,
     Iterator,
     List,
+    Literal,
     Optional,
     Protocol,
     runtime_checkable,
     Tuple,
     TYPE_CHECKING,
+    Union,
 )
 from urllib.parse import (
     quote,
@@ -59,6 +62,13 @@ FAILED_REPOSITORIES_MESSAGE = "Failed to install one or more repositories."
 GALAXY_WORKFLOWS_PREFIX = "gxid://workflows/"
 GALAXY_WORKFLOW_INSTANCE_PREFIX = "gxid://workflow-instance/"
 TRS_WORKFLOWS_PREFIX = "trs://"
+# Kinds of inputs_normalized steps, see input_kind
+InputKind = Literal["data", "collection", "parameter"]
+DATA_INPUT: Final = "data"
+COLLECTION_INPUT: Final = "collection"
+PARAMETER_INPUT: Final = "parameter"
+# Scalar parameter types that job templates fill with a placeholder value
+SCALAR_PARAMETER_TYPES = ("string", "text", "int", "integer", "long", "float", "double", "boolean", "color")
 MAIN_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
 # Galaxy's default trs_servers_conf, used to resolve trs_server/trs_tool_id/trs_version_id subworkflow references
 TRS_SERVERS = {"dockstore": "https://dockstore.org/api"}
@@ -725,6 +735,43 @@ def input_labels(workflow_path):
     return labels
 
 
+def parameter_input_labels(workflow_path=None, workflow_dict=None) -> List[str]:
+    """Get labels of the workflow's parameter inputs, i.e. inputs that are neither datasets nor collections."""
+    steps = inputs_normalized(workflow_dict=workflow_dict, workflow_path=workflow_path)
+    return [input_label(step) for step in steps if input_kind(step.get("type")) == PARAMETER_INPUT]
+
+
+def input_kind(input_type: Optional[Union[str, List[str]]]) -> InputKind:
+    """Classify an inputs_normalized step type as DATA_INPUT, COLLECTION_INPUT or PARAMETER_INPUT.
+
+    gxformat2 inputs without a type are data inputs.
+    """
+    input_type = input_type or DATA_INPUT
+    input_types = input_type if isinstance(input_type, list) else [input_type]
+    for t in input_types:
+        if t == DATA_INPUT:
+            return DATA_INPUT
+        if t == COLLECTION_INPUT:
+            return COLLECTION_INPUT
+    return PARAMETER_INPUT
+
+
+def _template_input_kind(input_type: Optional[Union[str, List[str]]]) -> Optional[InputKind]:
+    """input_kind for job templates, None for inputs they have no template for (e.g. multiple-value data)."""
+    kind = input_kind(input_type)
+    if isinstance(input_type, list):
+        if kind != PARAMETER_INPUT or not all(t in SCALAR_PARAMETER_TYPES for t in input_type):
+            return None
+    elif kind == PARAMETER_INPUT and input_type not in SCALAR_PARAMETER_TYPES:
+        return None
+    return kind
+
+
+def _multiple_if_list(value: Any, input_type: Optional[Union[str, List[str]]]) -> Any:
+    """Wrap a template value in a list for a multiple-value (list type) input."""
+    return [value] if isinstance(input_type, list) else value
+
+
 def required_input_steps(workflow_path):
     try:
         steps = inputs_normalized(workflow_path=workflow_path)
@@ -783,13 +830,13 @@ def job_template(workflow_path, **kwds):
     template = {}
     for required_input_step in required_input_steps(workflow_path):
         i_label = input_label(required_input_step)
-        input_type = required_input_step["type"]
-        if input_type == "data":
+        kind = _template_input_kind(required_input_step.get("type"))
+        if kind == DATA_INPUT:
             template[i_label] = {
                 "class": "File",
                 "path": "todo_test_data_path.ext",
             }
-        elif input_type == "collection":
+        elif kind == COLLECTION_INPUT:
             template[i_label] = {
                 "class": "Collection",
                 "collection_type": "list",
@@ -801,8 +848,8 @@ def job_template(workflow_path, **kwds):
                     }
                 ],
             }
-        elif input_type in ["string", "text", "int", "integer", "long", "float", "double", "boolean", "color"]:
-            template[i_label] = "todo_param_value"
+        elif kind == PARAMETER_INPUT:
+            template[i_label] = _multiple_if_list("todo_param_value", required_input_step.get("type"))
         else:
             template[i_label] = {
                 "TODO",  # Does this work yet?
@@ -871,7 +918,8 @@ def _build_template_and_metadata_from_inputs(
     metadata: Dict[str, Any] = {}
     for input_step in all_inputs:
         i_label = input_label(input_step)
-        input_type = input_step["type"]
+        input_type = input_step.get("type")
+        kind = _template_input_kind(input_type)
         input_doc = input_step.get("doc", "")
         is_optional = input_step.get("optional", False)
         default_value = input_step.get("default")
@@ -891,26 +939,26 @@ def _build_template_and_metadata_from_inputs(
             "collection_type": collection_type,
         }
 
-        if input_type == "data":
+        if kind == DATA_INPUT:
             template[i_label] = {
                 "class": "File",
                 "path": "todo_test_data_path.ext",
             }
-        elif input_type == "collection":
+        elif kind == COLLECTION_INPUT:
             coll_type = collection_type or "list"
             template[i_label] = {
                 "class": "Collection",
                 "collection_type": coll_type,
                 "elements": _collection_elements_for_type(coll_type),
             }
-        elif input_type in ["string", "text", "int", "integer", "long", "float", "double", "boolean", "color"]:
+        elif kind == PARAMETER_INPUT:
             # Use default value if available, otherwise use placeholder or false for booleans
             if has_default:
                 template[i_label] = default_value
-            elif input_type == "boolean":
-                template[i_label] = False
             else:
-                template[i_label] = "todo_param_value"
+                scalar_type = input_type[0] if isinstance(input_type, list) else input_type
+                placeholder = False if scalar_type == "boolean" else "todo_param_value"
+                template[i_label] = _multiple_if_list(placeholder, input_type)
         else:
             template[i_label] = {
                 "TODO",  # Does this work yet?
