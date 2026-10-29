@@ -31,6 +31,7 @@ from typing import (
 )
 
 import click
+import requests
 from cryptography.fernet import Fernet
 from galaxy.tool_util.deps import docker_util
 from galaxy.util.commands import argv_to_str
@@ -94,6 +95,7 @@ from .workflows import (
     import_workflow,
     import_workflow_from_trs,
     install_shed_repos,
+    install_timeout_message,
     MAIN_TOOLSHED_URL,
 )
 
@@ -968,8 +970,11 @@ class BaseGalaxyConfig(GalaxyInterface):
         admin_gi.timeout = self.shed_install_timeout
         return admin_gi.toolShed
 
-    def install_repo(self, *args, **kwds):
-        self._install_tool_shed_client.install_repository_revision(*args, **kwds)
+    def install_repo(self, **kwds):
+        try:
+            self._install_tool_shed_client.install_repository_revision(**kwds)
+        except requests.exceptions.Timeout as e:
+            raise Exception(install_timeout_message(self.shed_install_timeout, **kwds)) from e
 
     @property
     def tool_shed_client(self):

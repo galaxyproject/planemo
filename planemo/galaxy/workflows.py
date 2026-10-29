@@ -494,12 +494,15 @@ class _TimeoutInstallRepositoryManager(shed_tools.InstallRepositoryManager):
         try:
             return super().install_repository_revision(repository, log)
         except requests.exceptions.Timeout:
-            error(
-                f"Timed out after {self.gi.timeout} seconds installing repository "
-                f"{repository['owner']}/{repository['name']} at revision {repository['changeset_revision']} "
-                f"from {repository['tool_shed_url']}."
-            )
+            error(install_timeout_message(self.gi.timeout, **repository))
             return "error"
+
+
+def install_timeout_message(timeout, owner, name, changeset_revision, tool_shed_url, **kwds) -> str:
+    return (
+        f"Timed out after {timeout} seconds installing repository {owner}/{name} "
+        f"at revision {changeset_revision} from {tool_shed_url}."
+    )
 
 
 def _install_shed_repos_from_tools_info(

@@ -27,8 +27,8 @@ REPOSITORY = {
 
 
 @contextlib.contextmanager
-def _fake_galaxy(hang_get=False):
-    """A Galaxy whose repository install request (and optionally every GET) never returns."""
+def _fake_galaxy(hang_get=False, hang_names=("rgi",)):
+    """A Galaxy whose install requests for ``hang_names`` (and optionally every GET) never return."""
     release = threading.Event()
 
     class Handler(BaseHTTPRequestHandler):
@@ -39,7 +39,11 @@ def _fake_galaxy(hang_get=False):
                 self._json([])
 
         def do_POST(self):
-            release.wait()
+            payload = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+            if payload["name"] in hang_names:
+                release.wait()
+            else:
+                self._json([])
 
         def _json(self, value):
             body = json.dumps(value).encode()
@@ -91,11 +95,17 @@ def test_hung_install_timeout_ignored_with_dependency_problems(hanging_galaxy):
     assert installed == []
 
 
+def test_hung_install_does_not_block_remaining_repositories(hanging_galaxy):
+    other = dict(REPOSITORY, name="other", changeset_revision="0123456789ab")
+    installed, _ = _install_shed_repos_from_tools_info(
+        [dict(REPOSITORY), other], hanging_galaxy, True, install_timeout=1
+    )
+    assert [r["name"] for r in installed] == ["other"]
+
+
 def test_shed_test_install_repo_times_out(hanging_galaxy):
-    with pytest.raises(requests.exceptions.Timeout):
-        _shed_test_config(hanging_galaxy).install_repo(
-            REPOSITORY["tool_shed_url"], REPOSITORY["name"], REPOSITORY["owner"], REPOSITORY["changeset_revision"]
-        )
+    with pytest.raises(Exception, match="card/rgi at revision 84bd24ac33fd"):
+        _shed_test_config(hanging_galaxy).install_repo(**REPOSITORY)
 
 
 def test_shed_test_install_status_poll_times_out():
