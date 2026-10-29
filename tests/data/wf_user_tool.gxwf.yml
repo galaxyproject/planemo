@@ -1,0 +1,20 @@
+class: GalaxyWorkflow
+name: Embedded user tool
+outputs:
+  result:
+    outputSource: hello/output
+steps:
+  hello:
+    run:
+      class: GalaxyUserTool
+      id: hello
+      name: Hello
+      version: '0.1'
+      container: busybox:1.36.1
+      shell_command: echo hello > output.txt
+      inputs: []
+      outputs:
+        - name: output
+          type: data
+          format: txt
+          from_work_dir: output.txt

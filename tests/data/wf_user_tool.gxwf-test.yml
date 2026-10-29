@@ -1,0 +1,7 @@
+- doc: Execute a workflow with an embedded user tool as the managed test user.
+  job: {}
+  outputs:
+    result:
+      asserts:
+        has_text:
+          text: hello
