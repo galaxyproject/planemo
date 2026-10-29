@@ -923,6 +923,18 @@ def shed_install_option():
     )
 
 
+def shed_install_timeout_option():
+    return planemo_option(
+        "--shed_install_timeout",
+        type=click.IntRange(1),
+        default=None,
+        help=(
+            "Seconds to wait for Galaxy to install each Tool Shed repository before "
+            "treating the install as failed. Defaults to one hour."
+        ),
+    )
+
+
 def install_tool_dependencies_option():
     return planemo_option(
         "--install_tool_dependencies/--no_install_tool_dependencies",
@@ -1573,6 +1585,7 @@ def galaxy_serve_options():
         install_prebuilt_client_option(),
         skip_client_build_option(),
         shed_install_option(),
+        shed_install_timeout_option(),
         disable_gxits_option(),
         infrastructure_host_option(),
     )
@@ -1807,6 +1820,7 @@ def engine_options():
         singularity_extra_volume_option(),
         ignore_dependency_problems_option(),
         shed_install_option(),
+        shed_install_timeout_option(),
         install_tool_dependencies_option(),
         install_resolver_dependencies_option(),
         install_repository_dependencies_option(),

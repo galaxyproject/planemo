@@ -53,8 +53,12 @@ from planemo.galaxy.api import (
     get_dict_from_workflow,
     gi,
 )
-from planemo.io import warn
+from planemo.io import (
+    error,
+    warn,
+)
 
+DEFAULT_TOOL_INSTALL_TIMEOUT = 60 * 60 * 1
 FAILED_REPOSITORIES_MESSAGE = "Failed to install one or more repositories."
 GALAXY_WORKFLOWS_PREFIX = "gxid://workflows/"
 GALAXY_WORKFLOW_INSTANCE_PREFIX = "gxid://workflow-instance/"
@@ -478,6 +482,26 @@ def load_shed_repos(runnable):
     return tools
 
 
+class _TimeoutInstallRepositoryManager(shed_tools.InstallRepositoryManager):
+    """Count a repository install that outlives the client timeout as errored.
+
+    Ephemeris only recovers from a 504 or an aborted connection; a request that
+    simply never returns raises ``requests.exceptions.Timeout``, which would
+    otherwise escape and abort the remaining installs without naming the repository.
+    """
+
+    def install_repository_revision(self, repository, log):
+        try:
+            return super().install_repository_revision(repository, log)
+        except requests.exceptions.Timeout:
+            error(
+                f"Timed out after {self.gi.timeout} seconds installing repository "
+                f"{repository['owner']}/{repository['name']} at revision {repository['changeset_revision']} "
+                f"from {repository['tool_shed_url']}."
+            )
+            return "error"
+
+
 def _install_shed_repos_from_tools_info(
     tools_info: List[Dict[str, Any]],
     admin_gi: "GalaxyInstance",
@@ -486,29 +510,35 @@ def _install_shed_repos_from_tools_info(
     install_resolver_dependencies: bool = True,
     install_repository_dependencies: bool = True,
     install_most_recent_revision: bool = False,
+    install_timeout: float = DEFAULT_TOOL_INSTALL_TIMEOUT,
 ) -> Tuple[Optional[List[Any]], Optional[List[Any]]]:
     """Common logic for installing tool shed repositories from a tools_info list."""
     if not tools_info:
         return None, None
 
-    install_tool_manager = shed_tools.InstallRepositoryManager(admin_gi)
-    install_results = install_tool_manager.install_repositories(
-        tools_info,
-        default_install_tool_dependencies=install_tool_dependencies,
-        default_install_resolver_dependencies=install_resolver_dependencies,
-        default_install_repository_dependencies=install_repository_dependencies,
-    )
-    if install_most_recent_revision:  # for workflow autoupdates we also need the most recent tool versions
-        update_results = install_tool_manager.update_repositories(
+    install_tool_manager = _TimeoutInstallRepositoryManager(admin_gi)
+    previous_timeout = admin_gi.timeout
+    admin_gi.timeout = install_timeout
+    try:
+        install_results = install_tool_manager.install_repositories(
             tools_info,
             default_install_tool_dependencies=install_tool_dependencies,
             default_install_resolver_dependencies=install_resolver_dependencies,
             default_install_repository_dependencies=install_repository_dependencies,
         )
-        install_results.errored_repositories.extend(update_results.errored_repositories)
-        updated_repos = update_results.installed_repositories
-    else:
-        updated_repos = None
+        if install_most_recent_revision:  # for workflow autoupdates we also need the most recent tool versions
+            update_results = install_tool_manager.update_repositories(
+                tools_info,
+                default_install_tool_dependencies=install_tool_dependencies,
+                default_install_resolver_dependencies=install_resolver_dependencies,
+                default_install_repository_dependencies=install_repository_dependencies,
+            )
+            install_results.errored_repositories.extend(update_results.errored_repositories)
+            updated_repos = update_results.installed_repositories
+        else:
+            updated_repos = None
+    finally:
+        admin_gi.timeout = previous_timeout
 
     if install_results.errored_repositories:
         if ignore_dependency_problems:
@@ -526,6 +556,7 @@ def install_shed_repos(
     install_resolver_dependencies=True,
     install_repository_dependencies=True,
     install_most_recent_revision=False,
+    install_timeout=DEFAULT_TOOL_INSTALL_TIMEOUT,
 ):
     tools_info = load_shed_repos(runnable)
     return _install_shed_repos_from_tools_info(
@@ -536,6 +567,7 @@ def install_shed_repos(
         install_resolver_dependencies,
         install_repository_dependencies,
         install_most_recent_revision,
+        install_timeout,
     )
 
 
@@ -548,6 +580,7 @@ def install_shed_repos_for_workflow_id(
     install_resolver_dependencies: bool = True,
     install_repository_dependencies: bool = True,
     install_most_recent_revision: bool = False,
+    install_timeout: float = DEFAULT_TOOL_INSTALL_TIMEOUT,
 ) -> Tuple[Optional[List[Any]], Optional[List[Any]]]:
     """Install tool shed repositories for a workflow that's already in Galaxy.
 
@@ -595,6 +628,7 @@ def install_shed_repos_for_workflow_id(
                 install_resolver_dependencies,
                 install_repository_dependencies,
                 install_most_recent_revision,
+                install_timeout,
             )
         finally:
             # Clean up tool list file

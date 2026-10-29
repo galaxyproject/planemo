@@ -88,6 +88,7 @@ from .api import (
 from .distro_tools import DISTRO_TOOLS_ID_TO_PATH
 from .run import setup_venv
 from .workflows import (
+    DEFAULT_TOOL_INSTALL_TIMEOUT,
     find_tool_ids,
     GalaxyTrsImporter,
     import_workflow,
@@ -183,7 +184,6 @@ COMMAND_STARTUP_COMMAND = "./scripts/common_startup.sh ${COMMON_STARTUP_ARGS}"
 
 CLEANUP_IGNORE_ERRORS = True
 DEFAULT_GALAXY_BRAND = "Configured by Planemo"
-DEFAULT_TOOL_INSTALL_TIMEOUT = 60 * 60 * 1
 SERVICE_LOG_TAIL_LINES = 100
 UNINITIALIZED = object()
 
@@ -957,8 +957,16 @@ class BaseGalaxyConfig(GalaxyInterface):
         assert self.galaxy_url
         return gi(url=self.galaxy_url, key=key)
 
+    @property
+    def shed_install_timeout(self):
+        return self._kwds.get("shed_install_timeout") or DEFAULT_TOOL_INSTALL_TIMEOUT
+
     def install_repo(self, *args, **kwds):
-        self.tool_shed_client.install_repository_revision(*args, **kwds)
+        self.gi.timeout = self.shed_install_timeout
+        try:
+            self.tool_shed_client.install_repository_revision(*args, **kwds)
+        finally:
+            self.gi.timeout = None
 
     @property
     def tool_shed_client(self):
@@ -978,7 +986,7 @@ class BaseGalaxyConfig(GalaxyInterface):
             ready = all(map(status_ready, repos))
             return ready or None
 
-        wait_on(ready, "galaxy tool installation", timeout=DEFAULT_TOOL_INSTALL_TIMEOUT)
+        wait_on(ready, "galaxy tool installation", timeout=self.shed_install_timeout)
 
     def install_workflows(self):
         for runnable in self.runnables:
@@ -1010,6 +1018,7 @@ class BaseGalaxyConfig(GalaxyInterface):
                     self._kwds.get("install_resolver_dependencies", True),
                     self._kwds.get("install_repository_dependencies", True),
                     self._kwds.get("install_most_recent_revision", False),
+                    self.shed_install_timeout,
                 )
                 self.installed_repos[runnable.uri], self.updated_repos[runnable.uri] = workflow_repos
             return
@@ -1025,6 +1034,7 @@ class BaseGalaxyConfig(GalaxyInterface):
                 self._kwds.get("install_resolver_dependencies", True),
                 self._kwds.get("install_repository_dependencies", True),
                 self._kwds.get("install_most_recent_revision", False),
+                self.shed_install_timeout,
             )
             self.installed_repos[runnable.path], self.updated_repos[runnable.path] = workflow_repos
         default_from_path = self._kwds.get("workflows_from_path", False)
