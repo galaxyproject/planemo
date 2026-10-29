@@ -12,6 +12,7 @@ OPEN_RESOURCE=bash -c 'open $$0 || xdg-open $$0'
 IN_VENV=if [ "$(VENV)" != "SKIP" ] && [ -f $(VENV)/bin/activate ]; then . $(VENV)/bin/activate; fi;
 # TODO: add this upstream as a remote if it doesn't already exist.
 UPSTREAM?=galaxyproject
+UPSTREAM_REPO?=galaxyproject/planemo
 SOURCE_DIR?=planemo
 SOURCE_DOC_EXCLUDE=$(SOURCE_DIR)/cwl/cwl2script
 BUILD_SCRIPTS_DIR=scripts
@@ -161,6 +162,25 @@ commit-version: ## Update version and history, commit and add tag
 
 new-version: ## Mint a new version
 	$(IN_VENV) python3 $(BUILD_SCRIPTS_DIR)/new_version.py $(SOURCE_DIR) --patch
+
+check-release: ## pre-release checklist: venv, clean tree, upstream remote, history entries, lint
+	@echo "==> checking $(VENV) exists"
+	@test -d $(VENV) || \
+		(echo "ERROR: $(VENV) does not exist; run 'make setup-venv'"; exit 1)
+	@echo "==> checking working tree is clean"
+	@test -z "$$(git status --porcelain)" || \
+		(echo "ERROR: working tree has uncommitted changes or untracked files"; git status --short; exit 1)
+	@echo "==> checking UPSTREAM remote '$(UPSTREAM)' points to $(UPSTREAM_REPO)"
+	@git remote get-url $(UPSTREAM) 2>/dev/null | grep -q "$(UPSTREAM_REPO)" || \
+		(echo "ERROR: remote '$(UPSTREAM)' missing or not pointing to $(UPSTREAM_REPO)."; \
+		 echo "  Fix:      git remote add $(UPSTREAM) git@github.com:$(UPSTREAM_REPO).git"; \
+		 echo "  Or fork:  make check-release UPSTREAM=<name> UPSTREAM_REPO=<owner>/<repo>"; exit 1)
+	@echo "==> checking HISTORY.rst has entries under current .devN header"
+	@$(IN_VENV) python3 $(BUILD_SCRIPTS_DIR)/check_history_entries.py
+	@echo "==> make clean && make lint"
+	@$(MAKE) clean
+	@$(MAKE) lint
+	@echo "==> check-release OK"
 
 release-local: commit-version new-version
 
