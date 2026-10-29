@@ -457,7 +457,7 @@ def stage_in(
     # Galaxy takes workflow parameter values as they are, but staging would turn a list
     # (for a multiple-value parameter input) into an uploaded collection, so hold them back.
     parameter_values = {}
-    if runnable.type == RunnableType.galaxy_workflow and _has_parameter_list(job):
+    if runnable.type == RunnableType.galaxy_workflow:
         for label in _workflow_parameter_input_labels(runnable, config):
             if label in job:
                 parameter_values[label] = job.pop(label)
@@ -491,13 +491,6 @@ def stage_in(
 
     job_dict.update(parameter_values)
     return job_dict, history_id
-
-
-def _has_parameter_list(job: Dict[str, Any]) -> bool:
-    """Whether a job value may be a list for a multiple-value parameter, i.e. not a list of Files."""
-    return any(
-        isinstance(value, list) and (not value or not all(isinstance(e, dict) for e in value)) for value in job.values()
-    )
 
 
 def _workflow_parameter_input_labels(runnable: Runnable, config: "BaseGalaxyConfig") -> List[str]:
