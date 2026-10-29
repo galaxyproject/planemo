@@ -1,0 +1,5 @@
+class: GalaxyWorkflow
+inputs:
+  the_input: {}
+outputs: {}
+steps: {}
