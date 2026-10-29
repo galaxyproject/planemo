@@ -16,8 +16,19 @@ from requests.exceptions import RequestException
 DEFAULT_ADMIN_API_KEY = "test_key"
 
 
-def get_dict_from_workflow(gi: GalaxyInstance, workflow_id: str, instance: bool = False):
-    return gi.workflows._get(f"{workflow_id}/download", params={"instance": instance})
+def get_dict_from_workflow(
+    gi: GalaxyInstance,
+    workflow_id: str,
+    instance: bool = False,
+    style: Optional[str] = None,
+    history_id: Optional[str] = None,
+):
+    params: Dict[str, Any] = {"instance": instance}
+    if style is not None:
+        params["style"] = style
+    if history_id is not None:
+        params["history_id"] = history_id
+    return gi.workflows._get(f"{workflow_id}/download", params=params)
 
 
 def gi(port: Optional[int] = None, url: Optional[str] = None, key: Optional[str] = None) -> GalaxyInstance:
