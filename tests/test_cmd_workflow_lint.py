@@ -3,6 +3,11 @@
 import glob
 import os
 
+import pytest
+import yaml
+from click.testing import CliRunner
+
+from planemo.cli import planemo
 from .test_utils import (
     CliTestCase,
     TEST_DATA_DIR,
@@ -367,3 +372,34 @@ class CmdWorkflowLintTestCase(CliTestCase):
 
 def _wf_repo(rel_path):
     return os.path.join(TEST_DATA_DIR, "wf_repos", rel_path)
+
+
+@pytest.mark.parametrize("suffix", [".ga", ".gxwf.yml"])
+def test_structural_warning_reporting_and_failure(tmp_path, suffix):
+    if suffix == ".ga":
+        workflow = {
+            "a_galaxy_workflow": "true",
+            "format-version": "0.1",
+            "steps": {"0": {"type": "data_input", "label": "input"}},
+        }
+        warning = "Workflow contained no outputs"
+    else:
+        workflow = {
+            "class": "GalaxyWorkflow",
+            "inputs": {},
+            "steps": {"cat": {"tool_id": "cat1", "errors": "broken step"}},
+        }
+        warning = "tool step contains error indicated during Galaxy export"
+    path = tmp_path / f"warnings{suffix}"
+    path.write_text(yaml.safe_dump(workflow))
+    skip = "schema_validation,best_practices,tests,tool_ids,tool_versions,linked_subworkflows"
+    args = ["workflow_lint", str(path), "--skip", skip]
+    runner = CliRunner()
+    for report_level, fail_level, exit_code in [("all", "warn", 1), ("error", "warn", 1), ("error", "error", 0)]:
+        result = runner.invoke(planemo, args + ["--report_level", report_level, "--fail_level", fail_level])
+        assert result.exit_code == exit_code, result.output
+        assert (warning in result.output) == (report_level == "all")
+        assert "Traceback" not in result.output
+    result = runner.invoke(planemo, args + ["--skip", skip + ",structure"])
+    assert result.exit_code == 0, result.output
+    assert warning not in result.output
