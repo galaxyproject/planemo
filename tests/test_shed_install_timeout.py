@@ -8,8 +8,10 @@ from http.server import (
 )
 
 import pytest
+import requests
 
 from planemo.galaxy.api import gi
+from planemo.galaxy.config import BaseGalaxyConfig
 from planemo.galaxy.workflows import (
     _install_shed_repos_from_tools_info,
     FAILED_REPOSITORIES_MESSAGE,
@@ -69,3 +71,14 @@ def test_hung_install_times_out(hanging_galaxy, capsys):
 def test_hung_install_timeout_ignored_with_dependency_problems(hanging_galaxy):
     installed, _ = _install_shed_repos_from_tools_info([dict(REPOSITORY)], hanging_galaxy, True, install_timeout=1)
     assert installed == []
+
+
+def test_shed_test_install_repo_times_out(hanging_galaxy):
+    config = BaseGalaxyConfig.__new__(BaseGalaxyConfig)
+    config.galaxy_url = hanging_galaxy.base_url
+    config.master_api_key = "admin"
+    config._kwds = {"shed_install_timeout": 1}
+    with pytest.raises(requests.exceptions.Timeout):
+        config.install_repo(
+            REPOSITORY["tool_shed_url"], REPOSITORY["name"], REPOSITORY["owner"], REPOSITORY["changeset_revision"]
+        )

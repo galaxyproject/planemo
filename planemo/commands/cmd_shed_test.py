@@ -20,6 +20,7 @@ from planemo.runnable_resolve import install_args_list_to_runnables
 @options.galaxy_target_options()
 @options.galaxy_config_options()
 @options.test_options()
+@options.shed_install_timeout_option()
 @click.option(
     "--skip_dependencies", is_flag=True, help="Do not install shed dependencies as part of repository installation."
 )

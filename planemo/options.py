@@ -929,8 +929,8 @@ def shed_install_timeout_option():
         type=click.IntRange(1),
         default=None,
         help=(
-            "Seconds to wait for Galaxy to install each Tool Shed repository before "
-            "treating the install as failed. Defaults to one hour."
+            "Seconds to wait for each Galaxy API request made while installing Tool Shed "
+            "repositories before treating the install as failed. Defaults to one hour."
         ),
     )
 
