@@ -110,6 +110,11 @@ Before you submit a pull request, check that it meets these guidelines:
    https://github.com/galaxyproject/planemo/actions
    and make sure that the tests pass for all supported Python versions.
 
+Committers may merge their own pull requests under the project's
+`merge policy <https://planemo.readthedocs.io/en/latest/organization.html#merging-pull-requests>`__.
+Contributors without commit access should wait for a committer to review and
+merge their pull requests.
+
 Tips
 ----
 
