@@ -612,7 +612,7 @@ class RunResponse(metaclass=abc.ABCMeta):
             if test_case:
                 for output_id, output_test in test_case.output_expectations.items():
                     output_value = self.get_output(output_id)
-                    if not output_value:
+                    if output_value is None:
                         message = f"Expected output [{output_id}] not found in results."
                         output_problems.append(message)
                         continue
