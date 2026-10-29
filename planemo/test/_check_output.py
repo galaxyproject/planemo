@@ -36,7 +36,12 @@ def _check_output_collection(runnable, output_properties, test_properties, **kwd
     def verify_dataset(element, element_attrib, element_outfile):
         if element_outfile:
             element_attrib["path"] = element_outfile
-        _verify_output_file(runnable, element["_output_object"], element_attrib)
+        output_object = element["_output_object"]
+        assert isinstance(output_object, dict) and "path" in output_object, (
+            f"Expected file properties for element '{element['element_identifier']}' "
+            f"of output collection '{output_def.name}'"
+        )
+        _verify_output_file(runnable, output_object, element_attrib)
 
     problems = []
     try:

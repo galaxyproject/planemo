@@ -8,6 +8,7 @@ from typing import (
     List,
     Optional,
 )
+from uuid import uuid4
 
 from bioblend.galaxy import GalaxyInstance
 from requests.exceptions import RequestException
@@ -15,8 +16,19 @@ from requests.exceptions import RequestException
 DEFAULT_ADMIN_API_KEY = "test_key"
 
 
-def get_dict_from_workflow(gi: GalaxyInstance, workflow_id: str, instance: bool = False):
-    return gi.workflows._get(f"{workflow_id}/download", params={"instance": instance})
+def get_dict_from_workflow(
+    gi: GalaxyInstance,
+    workflow_id: str,
+    instance: bool = False,
+    style: Optional[str] = None,
+    history_id: Optional[str] = None,
+):
+    params: Dict[str, Any] = {"instance": instance}
+    if style is not None:
+        params["style"] = style
+    if history_id is not None:
+        params["history_id"] = history_id
+    return gi.workflows._get(f"{workflow_id}/download", params=params)
 
 
 def gi(port: Optional[int] = None, url: Optional[str] = None, key: Optional[str] = None) -> GalaxyInstance:
@@ -76,6 +88,29 @@ def user_api_key(admin_gi):
             )
             user_id = user_response["id"]
     return users.create_user_apikey(user_id)
+
+
+def ensure_user_tool_execute(admin_gi: GalaxyInstance, user_gi: GalaxyInstance) -> None:
+    """Authorize a managed test user to import and run embedded user tools."""
+    user_id = user_gi.users.get_current_user()["id"]
+    roles = admin_gi.users._get(id=f"{user_id}/roles")
+    role_ids = {role["id"] for role in roles if role["type"] == "user_tool_execute"}
+    # Older Galaxy user-role responses include deleted roles, which cannot authorize execution.
+    if role_ids and any(role["id"] in role_ids for role in admin_gi.roles.get_roles()):
+        return
+    # BioBlend's create_role does not expose Galaxy's role_type parameter.
+    role = admin_gi.roles._post(
+        {
+            "name": f"planemo-user-tools-{uuid4()}",
+            "description": "Run embedded user tools in Planemo-managed workflows",
+            "role_type": "user_tool_execute",
+            "user_ids": [user_id],
+        }
+    )
+    if role.get("type") != "user_tool_execute":
+        raise RuntimeError(
+            "Embedded GalaxyUserTool workflows require a Galaxy version supporting user_tool_execute roles."
+        )
 
 
 def summarize_history(ctx, gi, history_id):

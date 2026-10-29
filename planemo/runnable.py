@@ -561,6 +561,10 @@ class CwlWorkflowOutput(RunnableOutput):
 class RunResponse(metaclass=abc.ABCMeta):
     """Description of an attempt for an engine to execute a Runnable."""
 
+    # Structured test data built while the engine was still running (see
+    # BaseEngine._run_test_cases), reused so results never need the engine afterwards.
+    collected_test_data: Optional[Dict[str, Any]] = None
+
     @property
     def start_datetime(self) -> None:
         """Start datetime of run."""
@@ -608,7 +612,7 @@ class RunResponse(metaclass=abc.ABCMeta):
             if test_case:
                 for output_id, output_test in test_case.output_expectations.items():
                     output_value = self.get_output(output_id)
-                    if not output_value:
+                    if output_value is None:
                         message = f"Expected output [{output_id}] not found in results."
                         output_problems.append(message)
                         continue

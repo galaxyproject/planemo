@@ -1,6 +1,7 @@
 import inspect
 import os
 import re
+from contextlib import contextmanager
 from typing import (
     Any,
     Dict,
@@ -16,7 +17,10 @@ import requests
 import yaml
 from bioblend import toolshed
 from bioblend.toolshed import ToolShedInstance
-from galaxy.tool_util.lint import LintContext
+from galaxy.tool_util.lint import (
+    LintContext,
+    LintMessage,
+)
 from galaxy.tool_util.loader_directory import EXCLUDE_WALK_DIRS
 from galaxy.tool_util.parser.yaml import __to_test_assert_list
 from galaxy.tool_util.verify import asserts
@@ -28,6 +32,7 @@ from gxformat2.lint import (
     lint_ga_path,
     lint_pydantic_validation,
 )
+from gxformat2.linting import LintContext as GxFormat2LintContext
 from gxformat2.options import TRS_URL_REGEX
 from gxformat2.yaml import ordered_load
 
@@ -62,21 +67,40 @@ LINKED_SUBWORKFLOW_KEYS = ("content_source", "content_id", "trs_server", "trs_to
 UNPINNED_TRS_VERSIONS = {"main", "master", "develop", "dev", "latest"}
 
 
+class WorkflowLintMessage(LintMessage):
+    """Render a gxformat2 diagnostic with its workflow JSON Pointer."""
+
+    def __init__(self, level, message, linter=None, json_pointer=""):
+        super().__init__(level, message, linter)
+        self.json_pointer = json_pointer
+
+    def __str__(self):
+        message = super().__str__()
+        if self.json_pointer:
+            message += f" [{self.json_pointer}]"
+        return message
+
+
 class WorkflowLintContext(LintContext):
     # Setup training topic for linting - probably should pass this through
     # from click arguments.
     training_topic = None
 
-    def warn(self, message, linter=None, *args, **kwargs):
-        # gxformat2 lint rules pass Linter subclasses; galaxy LintMessage expects a name string.
-        if isinstance(linter, type):
-            linter = linter.__name__
-        super().warn(message, linter, *args, **kwargs)
-
-    def error(self, message, linter=None, *args, **kwargs):
-        if isinstance(linter, type):
-            linter = linter.__name__
-        super().error(message, linter, *args, **kwargs)
+    @contextmanager
+    def gxformat2_context(self) -> Iterator[GxFormat2LintContext]:
+        """Collect gxformat2's nested diagnostics in Planemo's reporting context."""
+        # gxformat2 owns child contexts, shared message lists and pointer escaping.
+        # Galaxy's context owns skip/report/fail levels and resets its message list
+        # between lint phases, so the two contexts must not share mutable state.
+        context = GxFormat2LintContext(training_topic=self.training_topic)
+        try:
+            yield context
+        finally:
+            for level, messages in (("error", context.error_messages), ("warning", context.warn_messages)):
+                for message in messages:
+                    self.message_list.append(
+                        WorkflowLintMessage(level, str(message), message.linter, message.json_pointer)
+                    )
 
 
 def build_wf_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
@@ -224,27 +248,30 @@ def _lint_tsts(path: str, lint_context: WorkflowLintContext) -> None:
 
 def _lint_structure(path: str, lint_context: WorkflowLintContext) -> None:
     workflow_dict = _load_workflow_dict(path)
-    if workflow_dict.get("class") == "GalaxyWorkflow":
-        # lint_format2_path would re-read the file and fetch linked subworkflows
-        nf2 = _try_build_nf2(lint_context, workflow_dict)
-        if nf2 is not None:
-            lint_format2(lint_context, nf2, raw_dict=workflow_dict)
-    else:
-        lint_ga_path(lint_context, path)
+    with lint_context.gxformat2_context() as context:
+        if workflow_dict.get("class") == "GalaxyWorkflow":
+            # lint_format2_path would re-read the file and fetch linked subworkflows
+            nf2 = _try_build_nf2(context, workflow_dict)
+            if nf2 is not None:
+                lint_format2(context, nf2, raw_dict=workflow_dict)
+        else:
+            lint_ga_path(context, path)
 
 
 def _lint_schema_validation(path: str, lint_context: WorkflowLintContext) -> None:
     workflow_dict = _load_workflow_dict(path)
     is_format2 = workflow_dict.get("class") == "GalaxyWorkflow"
-    lint_pydantic_validation(lint_context, workflow_dict, format2=is_format2)
+    with lint_context.gxformat2_context() as context:
+        lint_pydantic_validation(context, workflow_dict, format2=is_format2)
 
 
 def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None:
     workflow_dict = _load_workflow_dict(path)
-    if workflow_dict.get("class") == "GalaxyWorkflow":
-        lint_best_practices_format2(lint_context, workflow_dict)
-    else:
-        lint_best_practices_ga(lint_context, workflow_dict)
+    with lint_context.gxformat2_context() as context:
+        if workflow_dict.get("class") == "GalaxyWorkflow":
+            lint_best_practices_format2(context, workflow_dict)
+        else:
+            lint_best_practices_ga(context, workflow_dict)
 
 
 def _load_workflow_dict(path: str) -> Dict[str, Any]:

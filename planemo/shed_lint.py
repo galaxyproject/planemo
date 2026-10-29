@@ -10,7 +10,6 @@ from bioblend import ConnectionError
 from galaxy.tool_util.lint import lint_tool_source_with
 from galaxy.tool_util.linters.help import rst_invalid
 from galaxy.tool_util.parser.interface import ToolSource
-from galaxy.tool_util.version import parse_version
 from galaxy.util import unicodify
 
 from planemo.io import info
@@ -34,7 +33,10 @@ from planemo.tool_lint import (
     build_tool_lint_args,
     handle_tool_load_error,
 )
-from planemo.tools import yield_tool_sources
+from planemo.tools import (
+    parse_tool_version,
+    yield_tool_sources,
+)
 from planemo.xml import XSDS_PATH
 
 if TYPE_CHECKING:
@@ -173,7 +175,7 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
         repo_owner = realized_repository.owner
         repo_name = realized_repository.name
         tool_id = tool_source.parse_id()
-        tool_version = parse_version(tool_source.parse_version())
+        tool_version = tool_source.parse_version()
 
         # check if there is already such a repo (otherwise get_ordered_installable_revisions will log an error for new repos)
         if len(tsi.repositories.get_repositories(repo_name, repo_owner)) == 0:
@@ -207,7 +209,7 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
             assert tool[0]["version"]
             ts_tool_version = tool[0]["version"]
 
-        if tool_version <= parse_version(ts_tool_version):
+        if parse_tool_version(tool_version) <= parse_tool_version(ts_tool_version):
             lint_ctx.error(
                 f"{tool_id}: version {tool_version} is less or equal than version of the latest installable revision {ts_tool_version}",
                 "ShedVersion",
@@ -257,7 +259,8 @@ def lint_shed_metadata(realized_repository: "RealizedRepository", lint_ctx):
         if key not in realized_repository.config:
             found_all = False
             lint_ctx.warn("Missing shed metadata field [%s] for repository" % key)
-        if realized_repository.config[key] is None:
+        elif realized_repository.config[key] is None:
+            found_all = False
             lint_ctx.warn("shed metadata field [%s] was given, but is empty" % key)
     if found_all:
         lint_ctx.info("Found all shed metadata fields required for automated repository creation and/or updates.")

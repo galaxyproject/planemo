@@ -10,6 +10,7 @@ from gxformat2.converter import python_to_workflow
 from planemo.galaxy.activity import (
     _execute,
     GalaxyToolRunResponse,
+    INFORMAL_PARAMETER_SENTINEL,
     stage_in,
 )
 from planemo.runnable import (
@@ -36,9 +37,19 @@ class ExecutionHalted(Exception):
     """Raised to stop ``_execute`` once the request of interest was captured."""
 
 
-def _execute_capturing_request(runnable, **kwds):
+RUN_DATA = {
+    "steps": [
+        {"step_type": "parameter_input", "step_label": "declared", "replacement_parameters": []},
+        {"step_type": "tool", "step_label": "cat", "replacement_parameters": ["undeclared", "declared"]},
+        {"step_type": "subworkflow", "step_label": "sub", "replacement_parameters": ["nested"]},
+    ]
+}
+
+
+def _execute_capturing_request(runnable, run_data=None, **kwds):
     """Run ``_execute`` far enough to capture the request it makes of Galaxy."""
     config = mock.MagicMock()
+    config.user_gi.workflows._get.return_value = run_data or {"steps": []}
     config.user_gi.tools._post.side_effect = ExecutionHalted()
     config.user_gi.workflows.invoke_workflow.side_effect = ExecutionHalted()
     with mock.patch("planemo.galaxy.activity.stage_in", return_value=({}, "historyid123")):
@@ -193,3 +204,43 @@ def test_stage_in_passes_parameter_lists_next_to_color_and_directory_uri_inputs(
     job_path.write_text(yaml.safe_dump({**params, "data_list": [{"class": "File", "path": "a.txt"}]}))
     job_dict, _ = _stage_in(COLOR_PARAM_WORKFLOW_RUNNABLE, _staging_config(), str(job_path))
     assert job_dict == {**params, "data_list": {"src": "hdca", "id": "collection1"}}
+
+
+def test_execute_workflow_fills_undeclared_parameters_with_sentinel():
+    with mock.patch("planemo.galaxy.activity.warn") as warn:
+        invoke_kwds = _execute_capturing_request(WORKFLOW_RUNNABLE, run_data=RUN_DATA)
+    assert invoke_kwds["replacement_params"] == {
+        "nested": INFORMAL_PARAMETER_SENTINEL,
+        "undeclared": INFORMAL_PARAMETER_SENTINEL,
+    }
+    warned = [call.args[0] for call in warn.call_args_list]
+    assert warned == [
+        f'Workflow uses undeclared parameter ${{{name}}}; sending "{INFORMAL_PARAMETER_SENTINEL}". '
+        f"Declare a parameter input labelled {name}."
+        for name in ("nested", "undeclared")
+    ]
+
+
+def test_execute_workflow_without_undeclared_parameters_sends_none():
+    assert _execute_capturing_request(WORKFLOW_RUNNABLE)["replacement_params"] is None
+
+
+def test_execute_workflow_invokes_without_params_when_run_data_fails():
+    config = mock.MagicMock()
+    config.user_gi.workflows._get.side_effect = Exception("Following tools missing")
+    config.user_gi.workflows.invoke_workflow.side_effect = ExecutionHalted()
+    with mock.patch("planemo.galaxy.activity.stage_in", return_value=({}, "historyid123")):
+        with mock.patch("planemo.galaxy.activity.warn") as warn:
+            with pytest.raises(ExecutionHalted):
+                _execute(create_test_context(), config, WORKFLOW_RUNNABLE, job_path=None)
+    assert config.user_gi.workflows.invoke_workflow.call_args.kwargs["replacement_params"] is None
+    assert "Following tools missing" in warn.call_args.args[0]
+
+
+def test_execute_workflow_rejects_job_supplying_undeclared_parameter():
+    config = mock.MagicMock()
+    config.user_gi.workflows._get.return_value = RUN_DATA
+    with mock.patch("planemo.galaxy.activity.stage_in", return_value=({"undeclared": "x"}, "historyid123")):
+        with pytest.raises(Exception, match=r"undeclared workflow parameter\(s\) undeclared;"):
+            _execute(create_test_context(), config, WORKFLOW_RUNNABLE, job_path=None)
+    config.user_gi.workflows.invoke_workflow.assert_not_called()
