@@ -961,11 +961,15 @@ class BaseGalaxyConfig(GalaxyInterface):
     def shed_install_timeout(self):
         return self._kwds.get("shed_install_timeout") or DEFAULT_TOOL_INSTALL_TIMEOUT
 
-    def install_repo(self, *args, **kwds):
-        # ``self.gi`` builds a new client on each access, so set the timeout on one we keep.
+    @property
+    def _install_tool_shed_client(self):
+        # ``self.gi`` builds a new client on each access, so set the timeout on the one we return.
         admin_gi = self.gi
         admin_gi.timeout = self.shed_install_timeout
-        admin_gi.toolShed.install_repository_revision(*args, **kwds)
+        return admin_gi.toolShed
+
+    def install_repo(self, *args, **kwds):
+        self._install_tool_shed_client.install_repository_revision(*args, **kwds)
 
     @property
     def tool_shed_client(self):
@@ -980,8 +984,10 @@ class BaseGalaxyConfig(GalaxyInterface):
                 return True
             raise Exception(f"Error installing repo status is {status}")
 
+        tool_shed_client = self._install_tool_shed_client
+
         def ready():
-            repos = self.tool_shed_client.get_repositories()
+            repos = tool_shed_client.get_repositories()
             ready = all(map(status_ready, repos))
             return ready or None
 

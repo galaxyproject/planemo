@@ -1,5 +1,6 @@
 """Tool Shed repository installs must give up on a Galaxy that never answers."""
 
+import contextlib
 import json
 import threading
 from http.server import (
@@ -25,14 +26,17 @@ REPOSITORY = {
 }
 
 
-@pytest.fixture
-def hanging_galaxy():
-    """A Galaxy whose repository install request never returns."""
+@contextlib.contextmanager
+def _fake_galaxy(hang_get=False):
+    """A Galaxy whose repository install request (and optionally every GET) never returns."""
     release = threading.Event()
 
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
-            self._json([])
+            if hang_get:
+                release.wait()
+            else:
+                self._json([])
 
         def do_POST(self):
             release.wait()
@@ -59,6 +63,20 @@ def hanging_galaxy():
         server.server_close()
 
 
+@pytest.fixture
+def hanging_galaxy():
+    with _fake_galaxy() as admin_gi:
+        yield admin_gi
+
+
+def _shed_test_config(admin_gi):
+    config = BaseGalaxyConfig.__new__(BaseGalaxyConfig)
+    config.galaxy_url = admin_gi.base_url
+    config.master_api_key = "admin"
+    config._kwds = {"shed_install_timeout": 1}
+    return config
+
+
 def test_hung_install_times_out(hanging_galaxy, capsys):
     with pytest.raises(Exception, match=FAILED_REPOSITORIES_MESSAGE):
         _install_shed_repos_from_tools_info([dict(REPOSITORY)], hanging_galaxy, False, install_timeout=1)
@@ -74,11 +92,13 @@ def test_hung_install_timeout_ignored_with_dependency_problems(hanging_galaxy):
 
 
 def test_shed_test_install_repo_times_out(hanging_galaxy):
-    config = BaseGalaxyConfig.__new__(BaseGalaxyConfig)
-    config.galaxy_url = hanging_galaxy.base_url
-    config.master_api_key = "admin"
-    config._kwds = {"shed_install_timeout": 1}
     with pytest.raises(requests.exceptions.Timeout):
-        config.install_repo(
+        _shed_test_config(hanging_galaxy).install_repo(
             REPOSITORY["tool_shed_url"], REPOSITORY["name"], REPOSITORY["owner"], REPOSITORY["changeset_revision"]
         )
+
+
+def test_shed_test_install_status_poll_times_out():
+    with _fake_galaxy(hang_get=True) as admin_gi:
+        with pytest.raises(requests.exceptions.Timeout):
+            _shed_test_config(admin_gi).wait_for_all_installed()
