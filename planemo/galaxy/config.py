@@ -31,6 +31,7 @@ from typing import (
 )
 
 import click
+import requests
 from cryptography.fernet import Fernet
 from galaxy.tool_util.deps import docker_util
 from galaxy.util.commands import argv_to_str
@@ -89,11 +90,13 @@ from .api import (
 from .distro_tools import DISTRO_TOOLS_ID_TO_PATH
 from .run import setup_venv
 from .workflows import (
+    DEFAULT_TOOL_INSTALL_TIMEOUT,
     find_tool_ids,
     GalaxyTrsImporter,
     import_workflow,
     import_workflow_from_trs,
     install_shed_repos,
+    install_timeout_message,
     MAIN_TOOLSHED_URL,
     workflow_has_embedded_user_tools,
 )
@@ -185,7 +188,6 @@ COMMAND_STARTUP_COMMAND = "./scripts/common_startup.sh ${COMMON_STARTUP_ARGS}"
 
 CLEANUP_IGNORE_ERRORS = True
 DEFAULT_GALAXY_BRAND = "Configured by Planemo"
-DEFAULT_TOOL_INSTALL_TIMEOUT = 60 * 60 * 1
 SERVICE_LOG_TAIL_LINES = 100
 UNINITIALIZED = object()
 
@@ -959,8 +961,22 @@ class BaseGalaxyConfig(GalaxyInterface):
         assert self.galaxy_url
         return gi(url=self.galaxy_url, key=key)
 
-    def install_repo(self, *args, **kwds):
-        self.tool_shed_client.install_repository_revision(*args, **kwds)
+    @property
+    def shed_install_timeout(self):
+        return self._kwds.get("shed_install_timeout") or DEFAULT_TOOL_INSTALL_TIMEOUT
+
+    @property
+    def _install_tool_shed_client(self):
+        # ``self.gi`` builds a new client on each access, so set the timeout on the one we return.
+        admin_gi = self.gi
+        admin_gi.timeout = self.shed_install_timeout
+        return admin_gi.toolShed
+
+    def install_repo(self, **kwds):
+        try:
+            self._install_tool_shed_client.install_repository_revision(**kwds)
+        except requests.exceptions.Timeout as e:
+            raise Exception(install_timeout_message(self.shed_install_timeout, **kwds)) from e
 
     @property
     def tool_shed_client(self):
@@ -975,12 +991,14 @@ class BaseGalaxyConfig(GalaxyInterface):
                 return True
             raise Exception(f"Error installing repo status is {status}")
 
+        tool_shed_client = self._install_tool_shed_client
+
         def ready():
-            repos = self.tool_shed_client.get_repositories()
+            repos = tool_shed_client.get_repositories()
             ready = all(map(status_ready, repos))
             return ready or None
 
-        wait_on(ready, "galaxy tool installation", timeout=DEFAULT_TOOL_INSTALL_TIMEOUT)
+        wait_on(ready, "galaxy tool installation", timeout=self.shed_install_timeout)
 
     def install_workflows(self):
         for runnable in self.runnables:
@@ -1012,6 +1030,7 @@ class BaseGalaxyConfig(GalaxyInterface):
                     self._kwds.get("install_resolver_dependencies", True),
                     self._kwds.get("install_repository_dependencies", True),
                     self._kwds.get("install_most_recent_revision", False),
+                    self.shed_install_timeout,
                 )
                 self.installed_repos[runnable.uri], self.updated_repos[runnable.uri] = workflow_repos
             return
@@ -1027,6 +1046,7 @@ class BaseGalaxyConfig(GalaxyInterface):
                 self._kwds.get("install_resolver_dependencies", True),
                 self._kwds.get("install_repository_dependencies", True),
                 self._kwds.get("install_most_recent_revision", False),
+                self.shed_install_timeout,
             )
             self.installed_repos[runnable.path], self.updated_repos[runnable.path] = workflow_repos
         default_from_path = self._kwds.get("workflows_from_path", False)
