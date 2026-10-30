@@ -1,9 +1,14 @@
 import os
 import shutil
 from os.path import join
+from types import SimpleNamespace
+from unittest.mock import MagicMock
 
+import pytest
 import responses
+from galaxy.tool_util.parser import get_tool_source
 
+from planemo import shed_lint
 from .test_utils import (
     CliTestCase,
     skip_if_environ,
@@ -175,3 +180,37 @@ class ShedLintTestCase(CliTestCase):
             )
             assert "shed metadata field [long_description] was given, but is empty" in result.output
             assert "Found all shed metadata fields" not in result.output
+
+
+@pytest.mark.parametrize(
+    "published_tools,version,errors",
+    [
+        ([], "1.0", 0),
+        ([{"id": "other", "version": "9.0"}], "1.0", 0),
+        ([{"id": "other", "version": "9.0"}, {"id": "another", "version": "8.0"}], "1.0", 0),
+        ([{"id": "new_tool", "version": "1.0"}], "1.0", 1),
+        ([{"id": "other", "version": "9.0"}, {"id": "new_tool", "version": "1.0"}], "0.9", 1),
+        ([{"id": "other", "version": "9.0"}, {"id": "new_tool", "version": "1.0"}], "1.1", 0),
+    ],
+)
+def test_version_lint_matches_tool_identity(tmp_path, monkeypatch, published_tools, version, errors):
+    tool_path = tmp_path / "tool.xml"
+    tool_path.write_text(f'<tool id="new_tool" name="New tool" version="{version}"/>')
+    source = get_tool_source(str(tool_path))
+    monkeypatch.setattr(shed_lint, "yield_tool_sources", lambda **kwds: [(str(tool_path), source)])
+    shed = MagicMock()
+    shed.repositories.get_repositories.return_value = [{"id": "repository"}]
+    shed.repositories.get_ordered_installable_revisions.return_value = ["revision"]
+    shed.repositories.get_repository_revision_install_info.return_value = (
+        {},
+        {"valid_tools": published_tools},
+        {},
+    )
+    monkeypatch.setattr(shed_lint, "tool_shed_instance", lambda url: shed)
+    lint_ctx = MagicMock()
+    repo = SimpleNamespace(path=str(tmp_path), owner="iuc", name="suite")
+    shed_lint.lint_shed_version(repo, lint_ctx)
+    assert lint_ctx.error.call_count == errors
+    if errors:
+        assert lint_ctx.error.call_args.args[1] == "ShedVersion"
+        assert "new_tool" in lint_ctx.error.call_args.args[0]
