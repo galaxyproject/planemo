@@ -194,20 +194,14 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
             repo_name, repo_owner, latest_installable_revision
         )
 
-        # no such tool in the TS -> fine to push any version
-        if len(repo_metadata["valid_tools"]) == 0:
+        # A repository revision may contain other tools but not this new tool.
+        # Compare versions only against metadata for the same tool ID.
+        matching_tools = [tool for tool in repo_metadata["valid_tools"] if tool["id"] == tool_id]
+        if not matching_tools:
             continue
-
-        # case 1 tool per repo
-        if len(repo_metadata["valid_tools"]) == 1:
-            assert repo_metadata["valid_tools"][0]["version"]
-            ts_tool_version = repo_metadata["valid_tools"][0]["version"]
-        # case n tools per repo
-        else:
-            tool = [_ for _ in repo_metadata["valid_tools"] if _["id"] == tool_id]
-            assert len(tool) == 1
-            assert tool[0]["version"]
-            ts_tool_version = tool[0]["version"]
+        assert len(matching_tools) == 1
+        assert matching_tools[0]["version"]
+        ts_tool_version = matching_tools[0]["version"]
 
         if parse_tool_version(tool_version) <= parse_tool_version(ts_tool_version):
             lint_ctx.error(
