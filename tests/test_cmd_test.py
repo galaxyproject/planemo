@@ -27,6 +27,7 @@ from .test_utils import (
 
 SCHEDULING_WORKFLOWS_PATH = os.path.join(TEST_DATA_DIR, "scheduling_failure_workflows")
 FUNCTIONAL_TEST_TOOLS = os.path.join(TEST_DATA_DIR, "tools", "functional_test_tools")
+SECRET_LEAK_TOOLS = os.path.join(TEST_DATA_DIR, "tools", "secret_leak_tools")
 EXTERNAL_TEST_DATA_DIR = os.path.join(TEST_DATA_DIR, "external_test_data")
 EXTERNAL_TEST_DATA_TOOL = os.path.join(TEST_DATA_DIR, "tools", "ok_external_test_data.xml")
 FETCH_DATA_DATA_MANAGER_TEST_PATH = "data_manager/data_manager_fetch_genome_dbkeys_all_fasta/data_manager/data_manager_fetch_genome_all_fasta_dbkeys.xml"
@@ -179,6 +180,46 @@ class CmdTestTestCase(CliTestCase):
                 assert (
                     "Timed out after" in tool_test_json["tests"][0]["data"]["output_problems"][0]
                 ), "Time out did not happen"
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_fails_tests_that_leak_secrets(self):
+        """Test a test fails when its credential secret or API key shows up in stdio or outputs."""
+        with self._isolate(), NamedTemporaryFile(prefix="secret_leak_test_json") as json_out:
+            test_command = self._test_command("--test_output_json", json_out.name)
+            test_command = self.append_profile_argument_if_needed(test_command)
+            test_command += ["--no_dependency_resolution", SECRET_LEAK_TOOLS]
+            self._check_exit_code(test_command, exit_code=1)
+            with open(json_out.name) as fh:
+                tests = {t["data"]["tool_id"]: t["data"] for t in json.load(fh)["tests"]}
+        assert tests["credential_secret_unprinted"]["status"] == "success"
+        credential_leak = tests["leaks_credential_secret"]
+        assert credential_leak["status"] == "failure"
+        assert credential_leak["output_problems"] == [
+            "Secret 'API_TOKEN' of credentials 'leaky_service' was found in job stderr.",
+            "Secret 'API_TOKEN' of credentials 'leaky_service' was found in the info of output 'output'.",
+        ]
+        collection_leak = tests["leaks_credential_secret_in_collection"]
+        assert collection_leak["status"] == "failure"
+        assert collection_leak["output_problems"] == [
+            "Secret 'API_TOKEN' of credentials 'leaky_service' was found in output 'pair|__part__|forward'."
+        ]
+        assert tests["credential_secret_unprinted_on_failure"]["status"] == "success"
+        failure_leak = tests["leaks_credential_secret_on_failure"]
+        assert failure_leak["status"] == "failure"
+        assert failure_leak["output_problems"] == [
+            "Secret 'API_TOKEN' of credentials 'leaky_service' was found in job stderr.",
+            "Secret 'API_TOKEN' of credentials 'leaky_service' was found in the info of output 'output'.",
+        ]
+        discovered_leak = tests["leaks_credential_secret_in_discovered_dataset"]
+        assert discovered_leak["status"] == "failure"
+        assert discovered_leak["output_problems"] == [
+            "Secret 'API_TOKEN' of credentials 'leaky_service' was found in output '__new_primary_file_parts|a__'."
+        ]
+        api_key_leak = tests["leaks_api_key"]
+        assert api_key_leak["status"] == "failure"
+        assert api_key_leak["output_problems"] == [
+            "The test user's API key was found (base64-encoded) in output 'output'."
+        ]
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_test_index(self):
