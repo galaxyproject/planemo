@@ -1,12 +1,14 @@
 """Unit tests for engines and runnables."""
 
+import contextlib
 import os
+import types
 
 import bioblend
 
 from planemo.engine import engine_context
+from planemo.engine import galaxy as galaxy_engine
 from planemo.engine.galaxy import log_service_logs_on_failure
-from planemo.engine.interface import BaseEngine
 from planemo.runnable import (
     for_path,
     get_outputs,
@@ -129,30 +131,35 @@ class _ShutDownRunResponse(SuccessfulRunResponse):
         return self._outputs.get(output_id)
 
 
-class _ShutDownEngine(BaseEngine):
-    """Calls the output collectors while running, like GalaxyEngine, then shuts down."""
+class _StubGalaxyEngine(galaxy_engine.GalaxyEngine):
+    """Real GalaxyEngine._run; the serving context stops every response's Galaxy on exit."""
 
-    handled_runnable_types = [RunnableType.galaxy_workflow]
-
-    def __init__(self, ctx, outputs, **kwds):
+    def __init__(self, ctx, **kwds):
         super().__init__(ctx, **kwds)
-        self._outputs = outputs
+        self.responses = []
 
-    def _run(self, runnables, job_paths, output_collectors=None, test_timeout=None):
-        run_responses = [_ShutDownRunResponse(runnable, self._outputs) for runnable in runnables]
-        for run_response, collect_output in zip(run_responses, output_collectors or []):
-            collect_output(run_response)
-        for run_response in run_responses:
+    @contextlib.contextmanager
+    def ensure_runnables_served(self, runnables):
+        # _run logs user_api_config when verbose (PLANEMO_TEST_VERBOSE=1)
+        yield types.SimpleNamespace(user_api_config=None)
+        for run_response in self.responses:
             run_response.engine_running = False
-        return run_responses
 
 
-def test_test_results_do_not_need_engine_after_shutdown(tmp_path):
-    """Structured test data is built while the engine runs, not rebuilt after it has shut down."""
+def test_test_results_do_not_need_engine_after_shutdown(tmp_path, monkeypatch):
+    """Structured test data is built while Galaxy serves outputs, not rebuilt after it has stopped."""
     output_path = tmp_path / "wf_output_1.txt"
     output_path.write_text("Hello World!\n")
+    outputs = {"wf_output_1": {"path": str(output_path)}}
+    engine = _StubGalaxyEngine(create_test_context())
+
+    def fake_execute(ctx, config, runnable, job_path, **kwds):
+        run_response = _ShutDownRunResponse(runnable, outputs)
+        engine.responses.append(run_response)
+        return run_response
+
+    monkeypatch.setattr(galaxy_engine, "execute", fake_execute)
     runnable = for_path(os.path.join(TEST_DATA_DIR, "wf20_undefined_output.yml"))
-    engine = _ShutDownEngine(create_test_context(), outputs={"wf_output_1": {"path": str(output_path)}})
 
     structured_results = engine.test([runnable], test_timeout=None)
 
