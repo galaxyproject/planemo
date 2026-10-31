@@ -45,7 +45,7 @@ from planemo.runnable_resolve import for_runnable_identifiers
     default="0",
 )
 @options.test_use_cache_option()
-@options.test_use_async_submission_option()
+@options.test_tool_submission_api_option()
 @options.cwltool_cache_directory_option()
 @options.galaxy_target_options()
 @options.galaxy_config_options()

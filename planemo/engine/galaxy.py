@@ -35,6 +35,13 @@ if TYPE_CHECKING:
 
 INSTALLING_MESSAGE = "Installing repositories - this may take some time..."
 
+# --tool_submission_api choice -> galaxy-tool-util's use_legacy_api
+USE_LEGACY_API: Dict[str, "interactor.UseLegacyApiT"] = {
+    "legacy": "always",
+    "auto": "if_needed",
+    "jobs": "never",
+}
+
 
 def log_service_logs_on_failure(ctx: "PlanemoCliContext", config, results: List[Dict[str, Any]]) -> None:
     """Dump logs of services running alongside Galaxy if a test didn't succeed.
@@ -151,7 +158,7 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
                             register_job_data=_register_job_data,
                             maxseconds=test_timeout,
                             quiet=not verbose,
-                            use_legacy_api="if_needed" if self._kwds.get("use_async_submission") else "always",
+                            use_legacy_api=USE_LEGACY_API[self._kwds.get("tool_submission_api") or "legacy"],
                         )
                     except Exception:
                         pass

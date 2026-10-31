@@ -171,11 +171,12 @@ def test_test_results_do_not_need_engine_after_shutdown(tmp_path):
     "kwds,expected",
     [
         ({}, "always"),
-        ({"use_async_submission": False}, "always"),
-        ({"use_async_submission": True}, "if_needed"),
+        ({"tool_submission_api": "legacy"}, "always"),
+        ({"tool_submission_api": "auto"}, "if_needed"),
+        ({"tool_submission_api": "jobs"}, "never"),
     ],
 )
-def test_use_async_submission_maps_to_use_legacy_api(kwds, expected):
+def test_tool_submission_api_maps_to_use_legacy_api(kwds, expected):
     ctx = create_test_context()
     test_case = ExternalGalaxyToolTestCase(
         for_path(A_GALAXY_TOOL), tool_id="tool", tool_version="1.0", test_index=0, test_dict={}

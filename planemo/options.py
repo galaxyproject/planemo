@@ -379,18 +379,19 @@ def test_use_cache_option():
     )
 
 
-def test_use_async_submission_option():
+def test_tool_submission_api_option():
     return planemo_option(
-        "--use_async_submission/--no_use_async_submission",
-        is_flag=True,
-        default=False,
+        "--tool_submission_api",
+        type=click.Choice(["legacy", "auto", "jobs"]),
+        default="legacy",
         help=(
-            "Submit tool test jobs to POST /api/jobs instead of the legacy POST /api/tools "
-            "endpoint. Only applies to tests embedded in a tool's <tests> block, and only "
-            "to tests for which the Galaxy server provides a structured request - other "
-            "tests are submitted to the legacy endpoint. Galaxy 26.1 and newer build a "
-            "request for tools of any profile; older releases only for tools with "
-            "profile >= 24.2."
+            "Galaxy API endpoint to submit tool test jobs to. 'legacy' (the default) "
+            "uses POST /api/tools. 'jobs' uses POST /api/jobs and fails a test if the "
+            "Galaxy server provides no structured request for it. 'auto' uses POST "
+            "/api/jobs where a request is available and POST /api/tools otherwise. "
+            "Galaxy 26.1 and newer build a request for tools of any profile; older "
+            "releases only for tools with profile >= 24.2. Only applies to tests "
+            "embedded in a tool's <tests> block."
         ),
     )
 
