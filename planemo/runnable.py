@@ -205,6 +205,8 @@ def for_path(path: str) -> Union[Runnable, List[Runnable]]:
         runnable_type = RunnableType.galaxy_datamanager
     elif looks_like_a_tool_xml(path):
         runnable_type = RunnableType.galaxy_tool
+    elif is_a_yaml_with_class(path, ["GalaxyTool"]):
+        runnable_type = RunnableType.galaxy_tool
     elif is_a_yaml_with_class(path, ["GalaxyWorkflow"]):
         runnable_type = RunnableType.galaxy_workflow
     elif path.endswith(".ga"):
@@ -559,6 +561,10 @@ class CwlWorkflowOutput(RunnableOutput):
 class RunResponse(metaclass=abc.ABCMeta):
     """Description of an attempt for an engine to execute a Runnable."""
 
+    # Structured test data built while the engine was still running (see
+    # BaseEngine._run_test_cases), reused so results never need the engine afterwards.
+    collected_test_data: Optional[Dict[str, Any]] = None
+
     @property
     def start_datetime(self) -> None:
         """Start datetime of run."""
@@ -597,14 +603,16 @@ class RunResponse(metaclass=abc.ABCMeta):
         """Fetch output from engine."""
         return self.outputs_dict.get(output_id)
 
-    def structured_data(self, test_case: Optional[TestCase] = None) -> Dict[str, Any]:
+    def structured_data(
+        self, test_case: Optional[TestCase] = None, runnable: Optional["Runnable"] = None
+    ) -> Dict[str, Any]:
         output_problems = []
         if self.was_successful:
             execution_problem = None
             if test_case:
                 for output_id, output_test in test_case.output_expectations.items():
                     output_value = self.get_output(output_id)
-                    if not output_value:
+                    if output_value is None:
                         message = f"Expected output [{output_id}] not found in results."
                         output_problems.append(message)
                         continue
@@ -644,13 +652,15 @@ class RunResponse(metaclass=abc.ABCMeta):
                 test_type=test_case.runnable.type.name,
             )
         else:
-            assert isinstance(self, SuccessfulRunResponse)
+            if runnable is None:
+                assert isinstance(self, SuccessfulRunResponse)
+                runnable = self._runnable
             return dict(
-                id=self._runnable.uri,
+                id=runnable.uri,
                 has_data=True,
                 data=data_dict,
                 doc=None,
-                test_type=self._runnable.type.name,
+                test_type=runnable.type.name,
             )
 
 

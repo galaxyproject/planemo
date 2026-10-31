@@ -92,6 +92,36 @@ class CmdAutoupdateTestCase(CliTestCase):
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
             assert f"No updates required or made to {xmlfile}." in result.output
 
+    def test_autoupdate_malformed_xml(self):
+        """Test autoupdate exits non-zero when a tool cannot be parsed."""
+        with self._isolate_repo("bad_invalid_tool_xml") as f:
+            tool_path = os.path.realpath(os.path.join(f, "cat.xml"))
+            result = self._check_exit_code(["autoupdate", tool_path], exit_code=1)
+            assert f"Could not update {tool_path} due to malformed xml." in result.output
+
+    def test_autoupdate_no_targets(self):
+        """Test autoupdate on a path containing nothing to update."""
+        with self._isolate() as f:
+            self._check_exit_code(["autoupdate", f], exit_code=2)
+
+    def test_autoupdate_skiplist_only_tool(self):
+        """Test autoupdate on a repo whose only tool is skiplisted."""
+        with self._isolate_repo("single_tool") as f:
+            skiplist = os.path.join(f, "skiplist.txt")
+            with open(skiplist, "w") as handle:
+                handle.write("cat.xml\n")
+            result = self._check_exit_code(["autoupdate", f, "--skiplist", skiplist], exit_code=0)
+            assert "Skipping tool" in result.output
+
+    def test_autoupdate_skiplist_only_workflow(self):
+        """Test autoupdate on a path whose only workflow is skiplisted."""
+        with self._isolate_with_test_data("wf_repos/autoupdate_tests") as f:
+            wf_file = os.path.join(f, "workflow_with_unexisting_tool.ga")
+            skiplist = os.path.join(f, "skiplist.txt")
+            with open(skiplist, "w") as handle:
+                handle.write("workflow_with_unexisting_tool.ga\n")
+            self._check_exit_code(["autoupdate", wf_file, "--skiplist", skiplist], exit_code=0)
+
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @skip_if_toolshed_down
     def test_autoupdate_multiple_workflows(self):
@@ -109,6 +139,13 @@ class CmdAutoupdateTestCase(CliTestCase):
             autoupdate_command = ["autoupdate", *targets]
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
             assert "Auto-updating workflow" in result.output
+            # the autoupdate bot builds its changelog from the "->" lines
+            diff_tool = "toolshed.g2.bx.psu.edu/repos/bgruening/diff/diff"
+            predicted, separator, made = result.output.partition("The following tools were updated:")
+            assert separator
+            assert f"{diff_tool}: {diff_tool}/3.6+galaxy1 (newer version {diff_tool}/" in predicted
+            assert not [line for line in predicted.splitlines() if line.startswith(diff_tool) and " -> " in line]
+            assert f"{diff_tool}: {diff_tool}/3.6+galaxy1 -> {diff_tool}/" in made
             for wf_file in targets:
                 with open(wf_file) as g:
                     wf = json.load(g)
@@ -187,3 +224,5 @@ class CmdAutoupdateTestCase(CliTestCase):
             autoupdate_command = ["autoupdate", wf_file]
             result = self._runner.invoke(self._cli.planemo, autoupdate_command)
             assert "No newer tool versions were found, so the workflow was not updated." in result.output
+            # a workflow-only autoupdate found a target, so it must not report "no such target"
+            assert result.exit_code == 0

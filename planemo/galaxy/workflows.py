@@ -1,5 +1,6 @@
 """Utilities for Galaxy workflows."""
 
+import copy
 import json
 import os
 import tempfile
@@ -9,6 +10,7 @@ from typing import (
     Any,
     Callable,
     Dict,
+    Iterator,
     List,
     Optional,
     Protocol,
@@ -18,6 +20,7 @@ from typing import (
 )
 from urllib.parse import (
     quote,
+    unquote,
     urlparse,
 )
 
@@ -39,6 +42,12 @@ from gxformat2.normalize import (
     inputs_normalized,
     outputs_normalized,
 )
+from gxformat2.normalized import expanded_native
+from gxformat2.options import (
+    ConversionOptions,
+    default_url_resolver,
+    TRS_URL_REGEX,
+)
 
 from planemo.galaxy.api import (
     get_dict_from_workflow,
@@ -51,6 +60,8 @@ GALAXY_WORKFLOWS_PREFIX = "gxid://workflows/"
 GALAXY_WORKFLOW_INSTANCE_PREFIX = "gxid://workflow-instance/"
 TRS_WORKFLOWS_PREFIX = "trs://"
 MAIN_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
+# Galaxy's default trs_servers_conf, used to resolve trs_server/trs_tool_id/trs_version_id subworkflow references
+TRS_SERVERS = {"dockstore": "https://dockstore.org/api"}
 
 
 def parse_trs_id(trs_id: str) -> Optional[Dict[str, str]]:
@@ -347,14 +358,104 @@ def get_toolshed_url_for_tool_id(tool_id: str) -> Optional[str]:
     return None
 
 
+def linked_subworkflow_url(step: Dict[str, Any]) -> Optional[str]:
+    """Return the URL a linked (not embedded) subworkflow step references, or ``None``.
+
+    Galaxy >= 26.1 accepts subworkflow steps that reference external content via
+    ``content_source: url|trs_url`` and ``content_id``, via ``trs_server``,
+    ``trs_tool_id`` and ``trs_version_id``, or (gxformat2) via ``run: <url>``.
+    """
+    run = step.get("run")
+    if isinstance(run, str):
+        # a run string without a scheme is a local @import, which gets embedded on conversion
+        return run if "://" in run else None
+    if step.get("type") != "subworkflow" or step.get("subworkflow"):
+        return None
+    content_id = step.get("content_id")
+    if content_id and (
+        step.get("content_source") in ("url", "trs_url") or content_id.startswith(("http://", "https://", "base64://"))
+    ):
+        return content_id
+    trs_server_url = TRS_SERVERS.get(step.get("trs_server") or "")
+    if trs_server_url and step.get("trs_tool_id") and step.get("trs_version_id"):
+        return f"{trs_server_url}/ga4gh/trs/v2/tools/{step['trs_tool_id']}/versions/{step['trs_version_id']}"
+    return None
+
+
+def is_subworkflow_reference(step: Dict[str, Any]) -> bool:
+    """Whether a step references its subworkflow (URL, TRS, local path or id) rather than embedding it."""
+    run = step.get("run")
+    if run is not None:
+        return isinstance(run, str)
+    return step.get("type") == "subworkflow" and not step.get("subworkflow")
+
+
+def iter_workflow_steps(workflow: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
+    """Yield the steps of a native or gxformat2 workflow dict, recursing into embedded subworkflows."""
+    steps = workflow.get("steps") or {}
+    for step in steps.values() if isinstance(steps, dict) else steps:
+        yield step
+        run = step.get("run")
+        if isinstance(step.get("subworkflow"), dict):
+            yield from iter_workflow_steps(step["subworkflow"])
+        elif isinstance(run, dict) and run.get("class") == "GalaxyWorkflow":
+            yield from iter_workflow_steps(run)
+
+
+def resolve_workflow_url(url: str) -> Dict[str, Any]:
+    """Fetch the workflow a linked subworkflow step references.
+
+    gxformat2's default resolver requests TRS URLs verbatim, which fails for
+    Dockstore ids (the unquoted ``#`` starts a URL fragment) and hits the TRS
+    version rather than the descriptor endpoint, so handle TRS URLs here the way Galaxy does.
+    """
+    match = TRS_URL_REGEX.match(url)
+    if match:
+        tool_id = quote(unquote(match["tool_id"]), safe="")
+        descriptor_url = (
+            f"{match['trs_base_url']}/ga4gh/trs/v2/tools/{tool_id}/versions/{match['version_id']}/GALAXY/descriptor"
+        )
+        response = requests.get(descriptor_url, timeout=30)
+        response.raise_for_status()
+        workflow = yaml.safe_load(response.json()["content"])
+    else:
+        workflow = default_url_resolver(url)
+    _set_linked_content_ids(workflow)
+    return workflow
+
+
+def _set_linked_content_ids(workflow: Dict[str, Any]) -> None:
+    # gxformat2 only expands content_id URLs, so normalize trs_server/trs_tool_id/trs_version_id references to that
+    for step in iter_workflow_steps(workflow):
+        url = linked_subworkflow_url(step)
+        if url and "run" not in step:
+            step["content_id"] = url
+
+
+def expand_linked_subworkflows(workflow: Dict[str, Any]) -> Dict[str, Any]:
+    """Return a native workflow dict with linked subworkflows (recursively) embedded.
+
+    Workflows without linked subworkflows are returned unchanged.
+    """
+    if not any(linked_subworkflow_url(step) for step in iter_workflow_steps(workflow)):
+        return workflow
+    workflow = copy.deepcopy(workflow)
+    _set_linked_content_ids(workflow)
+    return expanded_native(workflow, ConversionOptions(url_resolver=resolve_workflow_url)).to_dict()
+
+
 def load_shed_repos(runnable):
     if runnable.type.name != "galaxy_workflow":
         return []
     path = runnable.path
+    # ephemeris and the walk below only see embedded subworkflows, so embed linked ones first
+    workflow = expand_linked_subworkflows(_raw_dict(path))
     if path.endswith(".ga"):
-        with tempfile.NamedTemporaryFile() as out:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".ga") as wf_file, tempfile.NamedTemporaryFile() as out:
+            json.dump(workflow, wf_file)
+            wf_file.flush()
             generate_tool_list_from_ga_workflow_files.generate_tool_list_from_workflow(
-                [path], "Tools from workflows", out.name
+                [wf_file.name], "Tools from workflows", out.name
             )
             with open(out.name) as f:
                 tools = yaml.safe_load(f)["tools"]
@@ -362,13 +463,8 @@ def load_shed_repos(runnable):
     else:
         # It'd be better to just infer this from the tool shed ID somehow than
         # require explicit annotation like this... I think?
-        with open(path) as f:
-            workflow = yaml.safe_load(f)
-        steps = workflow["steps"]
-        if isinstance(steps, dict):
-            steps = steps.values()
         tools = []
-        for step in steps:
+        for step in iter_workflow_steps(workflow):
             repository = step.get("tool_shed_repository")
             if repository:
                 repository["tool_panel_section_label"] = "Tools from workflows"
@@ -510,6 +606,18 @@ def install_shed_repos_for_workflow_id(
             os.unlink(wf_path)
 
 
+def export_workflow_dict(gi: "GalaxyInstance", workflow_id: str) -> Dict[str, Any]:
+    """Export a workflow, keeping linked subworkflows as references instead of embedding them.
+
+    Galaxy < 26.1 ignores ``preserve_external_subworkflow_links`` (and has no linked subworkflows).
+    """
+    response = gi.make_get_request(
+        f"{gi.url}/workflows/{workflow_id}/download", params={"preserve_external_subworkflow_links": "true"}
+    )
+    response.raise_for_status()
+    return response.json()
+
+
 def import_workflow(path, user_gi, from_path=False):
     """Import a workflow path to specified Galaxy instance."""
     if not from_path:
@@ -536,23 +644,32 @@ def _raw_dict(path):
 
 def get_tool_ids_for_workflow(wf_dict: Dict[str, Any], tool_ids: Optional[List[str]] = None) -> List[str]:
     tool_ids = [] if tool_ids is None else tool_ids
-    steps = wf_dict["steps"].values() if isinstance(wf_dict["steps"], dict) else wf_dict["steps"]
-    for step in steps:
-        if step.get("type", "tool") == "tool" and not step.get("run", {}).get("class") == "GalaxyWorkflow":
-            tool_id = step["tool_id"]
-            tool_ids.append(tool_id)
-        elif step.get("type") == "subworkflow":  # GA SWF
-            get_tool_ids_for_workflow(step["subworkflow"], tool_ids=tool_ids)
-        elif step.get("run", {}).get("class") == "GalaxyWorkflow":  # gxformat2 SWF
-            get_tool_ids_for_workflow(step["run"], tool_ids=tool_ids)
-        else:
+    for step in iter_workflow_steps(wf_dict):
+        if is_subworkflow_reference(step):
+            # Not embedded, find_tool_ids expands linked subworkflows first.
             continue
+        if step.get("tool_representation") or isinstance(step.get("run"), dict):
+            # Embedded definitions are imported with the workflow, not installed in the toolbox.
+            continue
+        if step.get("type", "tool") == "tool":
+            tool_ids.append(step["tool_id"])
     return list(dict.fromkeys(tool_ids))
 
 
 def find_tool_ids(path):
-    workflow = _raw_dict(path)
+    """Return the tool ids a workflow needs, including those of linked subworkflows."""
+    workflow = expand_linked_subworkflows(_raw_dict(path))
     return get_tool_ids_for_workflow(workflow)
+
+
+def workflow_has_embedded_user_tools(path: str) -> bool:
+    """Whether a local workflow or any of its subworkflows embeds a user-defined tool."""
+    workflow = expand_linked_subworkflows(_raw_dict(path))
+    return any(
+        (step.get("tool_representation") or step.get("run") or {}).get("class") == "GalaxyUserTool"
+        for step in iter_workflow_steps(workflow)
+        if not is_subworkflow_reference(step)
+    )
 
 
 WorkflowOutput = namedtuple("WorkflowOutput", ["order_index", "output_name", "label", "optional"])

@@ -43,6 +43,7 @@ from requests.exceptions import HTTPError
 
 from planemo.galaxy.api import (
     export_invocation_as_archive,
+    get_dict_from_workflow,
     retry_on_timeouts,
     summarize_history,
 )
@@ -58,6 +59,7 @@ from planemo.galaxy.upload_progress import (
     _aggregate_job_states,
     UploadProgressDisplay,
 )
+from planemo.io import warn
 from planemo.runnable import (
     ErrorRunResponse,
     get_outputs,
@@ -74,6 +76,10 @@ if TYPE_CHECKING:
     from planemo.runnable import RunnableOutput
 
 DEFAULT_HISTORY_NAME = "CWL Target History"
+INFORMAL_PARAMETER_SENTINEL = "<DEPRECATED_PARAMETER_UNSET>"
+ERR_INFORMAL_PARAMETER_IN_JOB = (
+    "Job file supplies undeclared workflow parameter(s) %s; declare a parameter input with each label instead."
+)
 ERR_NO_SUCH_TOOL = (
     "Failed to find tool with ID [%s] in Galaxy - cannot execute job. "
     "You may need to enable verbose logging and determine why the tool did not load. [%s]"
@@ -109,6 +115,34 @@ def _inputs_representation(runnable):
     else:
         inputs_representation = "galaxy"
     return inputs_representation
+
+
+def informal_replacement_parameters(run_data: Dict[str, Any]) -> List[str]:
+    """Return ``${...}`` names used by workflow steps that no parameter input declares."""
+    steps = run_data.get("steps") or []
+    declared = {step.get("step_label") for step in steps if step.get("step_type") == "parameter_input"}
+    names = {name for step in steps for name in step.get("replacement_parameters") or [] if name not in declared}
+    return sorted(names)
+
+
+def _replacement_params_for_invocation(
+    user_gi: GalaxyInstance, workflow_id: str, history_id: str, job_dict: Dict[str, Any]
+) -> Dict[str, str]:
+    try:
+        run_data = get_dict_from_workflow(user_gi, workflow_id, style="run", history_id=history_id)
+    except Exception as e:
+        warn(f"Could not check workflow for undeclared parameters, invoking without them: {e}")
+        return {}
+    names = informal_replacement_parameters(run_data)
+    supplied = [name for name in names if name in job_dict]
+    if supplied:
+        raise Exception(ERR_INFORMAL_PARAMETER_IN_JOB % ", ".join(supplied))
+    for name in names:
+        warn(
+            f'Workflow uses undeclared parameter ${{{name}}}; sending "{INFORMAL_PARAMETER_SENTINEL}". '
+            f"Declare a parameter input labelled {name}."
+        )
+    return {name: INFORMAL_PARAMETER_SENTINEL for name in names}
 
 
 def log_contents_str(config):
@@ -293,6 +327,10 @@ def _execute(  # noqa C901
         )
         ctx.vlog("Post to Galaxy tool API with payload [%s]" % run_tool_payload)
         tool_run_response = user_gi.tools._post(run_tool_payload)
+        response_kwds = {
+            "job_info": None,
+            "api_run_response": tool_run_response,
+        }
 
         if not kwds.get("no_wait"):
             job = tool_run_response["jobs"][0]
@@ -308,11 +346,7 @@ def _execute(  # noqa C901
                 raise Exception(msg)
 
             ctx.vlog("Final job state was ok, fetching details for job [%s]" % job_id)
-            job_info = admin_gi.jobs.show_job(job_id)
-            response_kwds = {
-                "job_info": job_info,
-                "api_run_response": tool_run_response,
-            }
+            response_kwds["job_info"] = admin_gi.jobs.show_job(job_id)
             if ctx.verbose:
                 summarize_history(ctx, user_gi, history_id)
 
@@ -320,9 +354,11 @@ def _execute(  # noqa C901
         response_class = GalaxyWorkflowRunResponse
         workflow_id = config.workflow_id_for_runnable(runnable)
         ctx.vlog(f"Found Galaxy workflow ID [{workflow_id}] for URI [{runnable.uri}]")
+        replacement_params = _replacement_params_for_invocation(user_gi, workflow_id, history_id, job_dict)
         invocation = user_gi.workflows.invoke_workflow(
             workflow_id,
             inputs=job_dict,
+            replacement_params=replacement_params or None,
             history_id=history_id,
             allow_tool_state_corrections=True,
             inputs_by="name",
@@ -607,15 +643,17 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         else:
             raise Exception("Unknown history content type encountered [%s]" % history_content_type)
 
-    def _collect_collection_output(self, runnable_output_id, output_dataset_id, cwl_output):
+    def _collect_collection_output(self, runnable_output_id, output_dataset_id, cwl_output, downloaded_datasets):
         def attach_file_properties(collection, cwl_output):
             elements = collection["elements"]
             assert len(elements) == len(cwl_output)
             for element, cwl_output_element in zip(elements, cwl_output):
                 element["_output_object"] = cwl_output_element
-                if isinstance(cwl_output_element, list):
-                    assert "elements" in element["object"]
+                if element["element_type"] == "dataset_collection":
                     attach_file_properties(element["object"], cwl_output_element)
+                elif element["object"].get("file_ext") == "expression.json":
+                    # CWL conversion parses JSON values; Galaxy assertions need the original file.
+                    element["_output_object"] = downloaded_datasets[element["object"]["id"]]
 
         output_metadata = self._get_metadata("dataset_collection", output_dataset_id)
         if cwl_output is None:
@@ -659,6 +697,8 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             if output_id and runnable_output_id != output_id:
                 continue
 
+            downloaded_datasets = {}
+
             def get_dataset(dataset_details, filename=None):
                 parent_basename = sanitize_filename(dataset_details.get("cwl_file_name") or runnable_output_id)
                 file_ext = dataset_details["file_ext"]
@@ -679,7 +719,10 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
                 else:
                     basename = os.path.basename(filename)
 
-                return {"path": destination, "basename": basename}
+                properties = {"path": destination, "basename": basename}
+                if filename is None:
+                    downloaded_datasets[dataset_details["id"]] = properties
+                return properties
 
             is_cwl = self._runnable.type in [RunnableType.cwl_workflow, RunnableType.cwl_tool]
             output_src = self.output_src(runnable_output, ignore_missing_output)
@@ -701,11 +744,17 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
             if is_cwl or output_src["src"] == "hda":
                 output_dict_value = cwl_output
             else:
-                output_dict_value = self._collect_collection_output(runnable_output_id, output_dataset_id, cwl_output)
+                output_dict_value = self._collect_collection_output(
+                    runnable_output_id, output_dataset_id, cwl_output, downloaded_datasets
+                )
 
             if output_id:
                 return output_dict_value
             outputs_dict[runnable_output_id] = output_dict_value
+
+        if output_id:
+            # single-output mode collected nothing - don't clobber the cache
+            return None
 
         self._outputs_dict = outputs_dict
         self._ctx.vlog("collected outputs [%s]" % self._outputs_dict)

@@ -122,6 +122,7 @@ CURRENT_CATEGORIES = [
     "Data Export",
     "Data Managers",
     "Data Source",
+    "Digital Humanities",
     "Ecology",
     "Entomology",
     "Epigenetics",

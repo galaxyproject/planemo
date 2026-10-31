@@ -252,6 +252,22 @@ def galaxy_port_option():
     )
 
 
+def infrastructure_host_option():
+    return planemo_option(
+        "--infrastructure_host",
+        type=str,
+        default=None,
+        use_global_config=True,
+        help=(
+            "Hostname to advertise for Galaxy infrastructure and interactive tool URLs. "
+            "When not set this defaults to 'localhost' when Galaxy is bound to 127.0.0.1 "
+            "or 0.0.0.0, and to the bind host otherwise. Set this to a hostname or IP that "
+            "is reachable by both the browser and interactive tool containers when serving "
+            "from a non-local bind address (e.g. --host 0.0.0.0 on a remote machine)."
+        ),
+    )
+
+
 def galaxy_host_option():
     return planemo_option(
         "--host",
@@ -1558,6 +1574,7 @@ def galaxy_serve_options():
         skip_client_build_option(),
         shed_install_option(),
         disable_gxits_option(),
+        infrastructure_host_option(),
     )
 
 
@@ -1638,6 +1655,26 @@ def training_generate_tuto_from_wf_options():
     )
 
 
+def lint_doi_option():
+    return planemo_option(
+        "doi",
+        "--doi",
+        is_flag=True,
+        default=False,
+        help="Check validity of DOIs in XML files",
+    )
+
+
+def lint_conda_requirements_option():
+    return planemo_option(
+        "conda_requirements",
+        "--conda_requirements",
+        is_flag=True,
+        default=False,
+        help="Check tool requirements for availability in best practice Conda channels.",
+    )
+
+
 def lint_biocontainers_option():
     return planemo_option(
         "biocontainer",
@@ -1646,6 +1683,24 @@ def lint_biocontainers_option():
         is_flag=True,
         default=False,
         help="Check best practice BioContainer namespaces for a container definition applicable for this tool.",
+    )
+
+
+def lint_urls_option():
+    return planemo_option(
+        "--urls",
+        is_flag=True,
+        default=False,
+        help="Check validity of URLs in XML files",
+    )
+
+
+def lint_planemo_defined_tool_linters_options():
+    return _compose(
+        lint_urls_option(),
+        lint_doi_option(),
+        lint_conda_requirements_option(),
+        lint_biocontainers_option(),
     )
 
 
