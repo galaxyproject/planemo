@@ -118,6 +118,8 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
                         "master_api_key": config.master_api_key,
                         "api_key": config.user_api_key,
                         "keep_outputs_dir": self._kwds.get("test_data_target_dir"),
+                        # consulted only if the tool's own directory doesn't hold the file
+                        "test_data": [self._kwds["test_data"]] if self._kwds.get("test_data") else [],
                     }
                     tool_id = test_case.tool_id
                     test_index = test_case.test_index

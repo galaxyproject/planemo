@@ -1,0 +1,2 @@
+This file deliberately lives outside any test-data directory so it is only
+reachable via the --test_data option.

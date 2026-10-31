@@ -2,11 +2,18 @@
 
 import os
 
+import pytest
+
+# Match normal startup before importing runnable, which imports Galaxy configuration.
+from planemo.galaxy import galaxy_config  # noqa: F401
 from planemo.runnable import (
     cases,
     for_path,
+    Runnable,
+    RunnableType,
     SuccessfulRunResponse,
 )
+from planemo.runnable import TestCase as RunnableTestCase
 from .test_utils import TEST_DATA_DIR
 
 
@@ -53,6 +60,44 @@ def test_file_case_checker():
     }
     sd = test_case.structured_test_data(MockRunResponse(bad_outputs_dict))
     assert sd["data"]["status"] == "failure"
+
+
+@pytest.fixture
+def value_test_case():
+    return RunnableTestCase(
+        runnable=Runnable("test.ga", RunnableType.galaxy_workflow),
+        tests_directory=".",
+        output_expectations={},
+        job_path=None,
+        job={},
+        index=0,
+        doc="Check a workflow parameter output",
+    )
+
+
+@pytest.mark.parametrize("value", [False, 0, 0.0, "", [], True, 1, "text", [1]])
+def test_parameter_output_matches(value_test_case, value):
+    value_test_case.output_expectations = {"output": value}
+    report = value_test_case.structured_test_data(MockRunResponse({"output": value}))
+    assert report["data"]["status"] == "success"
+
+
+@pytest.mark.parametrize("value,expected", [(False, True), (0, 1), (0.0, 1.0), ("", "text"), ([], [1])])
+def test_falsy_parameter_output_mismatch(value_test_case, value, expected):
+    value_test_case.output_expectations = {"output": expected}
+    report = value_test_case.structured_test_data(MockRunResponse({"output": value}))
+    assert report["data"]["status"] == "failure"
+    assert report["data"]["output_problems"] == [
+        f"Output [output] value [{value}] does not match expected value [{expected}]."
+    ]
+
+
+@pytest.mark.parametrize("outputs", [{}, {"output": None}])
+def test_missing_parameter_output(value_test_case, outputs):
+    value_test_case.output_expectations = {"output": False}
+    report = value_test_case.structured_test_data(MockRunResponse(outputs))
+    assert report["data"]["status"] == "failure"
+    assert report["data"]["output_problems"] == ["Expected output [output] not found in results."]
 
 
 class MockRunResponse(SuccessfulRunResponse):

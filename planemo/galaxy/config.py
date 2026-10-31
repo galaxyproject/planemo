@@ -82,6 +82,7 @@ from planemo.runnable import (
 from planemo.shed import tool_shed_url
 from .api import (
     DEFAULT_ADMIN_API_KEY,
+    ensure_user_tool_execute,
     gi,
     user_api_key,
 )
@@ -94,6 +95,7 @@ from .workflows import (
     import_workflow_from_trs,
     install_shed_repos,
     MAIN_TOOLSHED_URL,
+    workflow_has_embedded_user_tools,
 )
 
 if TYPE_CHECKING:
@@ -475,7 +477,6 @@ def local_galaxy_config(ctx, runnables, for_tests=False, **kwds):
                 citation_cache_data_dir="${temp_directory}/citations/data",
                 citation_cache_lock_dir="${temp_directory}/citations/lock",
                 database_auto_migrate="true",
-                enable_beta_tool_formats="true",
                 id_secret="${id_secret}",
                 log_level="${log_level}",
                 debug="${debug}",
@@ -583,10 +584,18 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
                 env["SUPERVISORD_SOCKET"] = nt.name
         host = kwds.get("host", "localhost")
         port = template_args["port"]
-        # Use "localhost" for infrastructure URL when bound to 127.0.0.1,
-        # so that interactive tool subdomain URLs resolve correctly
-        # (e.g. *.interactivetool.localhost instead of *.interactivetool.127.0.0.1).
-        infrastructure_host = "localhost" if host == "127.0.0.1" else host
+        # Use "localhost" for infrastructure URL when bound to 127.0.0.1
+        # or 0.0.0.0, so that interactive tool subdomain URLs resolve correctly
+        # (e.g. *.interactivetool.localhost instead of *.interactivetool.127.0.0.1
+        # or *.interactivetool.0.0.0.0). The bind host (0.0.0.0) is needed so the
+        # interactive tool containers can reach Galaxy via the docker bridge, while
+        # the browser still needs a resolvable name like localhost.
+        # Users serving Galaxy from a non-local bind address (e.g. a remote machine
+        # reachable by other browsers or containers) can override the advertised
+        # hostname with the --infrastructure_host option.
+        infrastructure_host = kwds.get("infrastructure_host") or (
+            "localhost" if host in ("127.0.0.1", "0.0.0.0") else host
+        )
         galaxy_infrastructure_url = f"http://{infrastructure_host}:{port}"
         if kwds.get("disable_gxits"):
             gx_it_proxy_config = {
@@ -743,6 +752,7 @@ def _shared_galaxy_properties(config_directory, kwds, for_tests):
         "use_cached_dependency_manager": str(kwds.get("conda_auto_install", False)),
         "brand": kwds.get("galaxy_brand", DEFAULT_GALAXY_BRAND),
         "strict_cwl_validation": str(not kwds.get("non_strict_cwl", False)),
+        "enable_beta_tool_formats": "true",
     }
     if kwds.get("no_cleanup", False):
         properties["cleanup_job"] = "never"
@@ -1078,6 +1088,15 @@ class BaseGalaxyConfig(GalaxyInterface):
 
 
 class BaseManagedGalaxyConfig(BaseGalaxyConfig):
+    def _install_workflow(self, runnable):
+        if (
+            runnable.type == RunnableType.galaxy_workflow
+            and runnable.has_path
+            and workflow_has_embedded_user_tools(runnable.path)
+        ):
+            ensure_user_tool_execute(self.gi, self.user_gi)
+        super()._install_workflow(runnable)
+
     def __init__(
         self,
         ctx,

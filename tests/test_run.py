@@ -27,6 +27,28 @@ def _cwl_file(name):
 # of just arbitrarily exercising the code.
 class RunTestCase(CliTestCase):
     @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
+    def test_run_reports_engine_error(self):
+        with self._isolate() as directory:
+            tool_path = os.path.join(TEST_DATA_DIR, "fail_tool.cwl")
+            job_path = os.path.join(TEST_DATA_DIR, "fail_tool_job.json")
+            result = self._check_exit_code(
+                ["run", "--engine", "cwltool", "--no_container", "--no_use_cache", tool_path, job_path],
+                exit_code=1,
+            )
+
+            assert "Run failed" in result.output
+            with open(os.path.join(directory, "tool_test_output.json")) as test_report:
+                report = PlanemoTestReport.model_validate(json.load(test_report))
+            test_result = report.tests[0]
+            assert test_result.id == tool_path
+            assert test_result.test_type == "cwl_tool"
+            assert test_result.data is not None
+            assert test_result.data.status == "error"
+            assert test_result.data.execution_problem == "Error running cwltool"
+            assert test_result.data.problem_log is not None
+            assert "permanentFail" in test_result.data.problem_log
+
+    @skip_if_environ("PLANEMO_SKIP_CWLTOOL_TESTS")
     def test_run_cat_cwltool(self):
         with self._isolate() as f:
             tool_path = _cwl_file("cat1-tool.cwl")
@@ -238,6 +260,41 @@ class RunTestCase(CliTestCase):
             print(f"Files in {output_path}:", output_files)
             assert len(output_files) == 1
             assert output_files[0].endswith(".txt")
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_run_fills_undeclared_replacement_parameter(self):
+        self._run_fills_undeclared_replacement_parameter("wf_undeclared_replacement_parameter.yml")
+
+    @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
+    def test_run_fills_undeclared_replacement_parameter_in_subworkflow(self):
+        self._run_fills_undeclared_replacement_parameter("wf_undeclared_replacement_parameter_subworkflow.yml")
+
+    def _run_fills_undeclared_replacement_parameter(self, workflow):
+        with self._isolate() as f:
+            cat = os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml")
+            wf = os.path.join(TEST_DATA_DIR, workflow)
+            job_path = os.path.join(TEST_DATA_DIR, "wf1.gxwf-job.yml")
+            output_path = os.path.join(f, "output")
+            os.makedirs(output_path)
+            test_cmd = [
+                "run",
+                "--no_dependency_resolution",
+                "--extra_tools",
+                cat,
+                "--download_outputs",
+                "--output_directory",
+                output_path,
+                wf,
+                job_path,
+            ]
+            result = self._check_exit_code(test_cmd)
+            assert (
+                'Workflow uses undeclared parameter ${undeclared}; sending "<DEPRECATED_PARAMETER_UNSET>"'
+                in result.output
+            )
+            (output_file,) = os.listdir(output_path)
+            # Download names are the sanitized dataset name, so ``<`` and ``>`` are dropped.
+            assert output_file.startswith("cat on DEPRECATED_PARAMETER_UNSET__")
 
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     def test_run_export_invocation(self):

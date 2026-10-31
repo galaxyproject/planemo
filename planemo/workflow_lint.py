@@ -1,6 +1,7 @@
 import inspect
 import os
 import re
+from contextlib import contextmanager
 from typing import (
     Any,
     Dict,
@@ -16,17 +17,23 @@ import requests
 import yaml
 from bioblend import toolshed
 from bioblend.toolshed import ToolShedInstance
-from galaxy.tool_util.lint import LintContext
+from galaxy.tool_util.lint import (
+    LintContext,
+    LintMessage,
+)
 from galaxy.tool_util.loader_directory import EXCLUDE_WALK_DIRS
 from galaxy.tool_util.parser.yaml import __to_test_assert_list
 from galaxy.tool_util.verify import asserts
 from gxformat2.lint import (
+    _try_build_nf2,
     lint_best_practices_format2,
     lint_best_practices_ga,
-    lint_format2_path,
+    lint_format2,
     lint_ga_path,
     lint_pydantic_validation,
 )
+from gxformat2.linting import LintContext as GxFormat2LintContext
+from gxformat2.options import TRS_URL_REGEX
 from gxformat2.yaml import ordered_load
 
 from planemo.exit_codes import (
@@ -35,6 +42,9 @@ from planemo.exit_codes import (
 )
 from planemo.galaxy.workflows import (
     input_labels,
+    is_subworkflow_reference,
+    iter_workflow_steps,
+    linked_subworkflow_url,
     MAIN_TOOLSHED_URL,
     output_labels,
     required_input_labels,
@@ -53,6 +63,22 @@ if TYPE_CHECKING:
 POTENTIAL_WORKFLOW_FILES = re.compile(r"^.*(\.yml|\.yaml|\.ga)$")
 WORKFLOW_FILE_SUFFIXES = (".gxwf.yml", ".gxwf.yaml", ".ga")
 DOCKSTORE_REGISTRY_CONF_VERSION = "1.2"
+LINKED_SUBWORKFLOW_KEYS = ("content_source", "content_id", "trs_server", "trs_tool_id", "trs_version_id", "run")
+UNPINNED_TRS_VERSIONS = {"main", "master", "develop", "dev", "latest"}
+
+
+class WorkflowLintMessage(LintMessage):
+    """Render a gxformat2 diagnostic with its workflow JSON Pointer."""
+
+    def __init__(self, level, message, linter=None, json_pointer=""):
+        super().__init__(level, message, linter)
+        self.json_pointer = json_pointer
+
+    def __str__(self):
+        message = super().__str__()
+        if self.json_pointer:
+            message += f" [{self.json_pointer}]"
+        return message
 
 
 class WorkflowLintContext(LintContext):
@@ -64,16 +90,21 @@ class WorkflowLintContext(LintContext):
         super().__init__(*args, **kwargs)
         self.iwc_grade = iwc_grade
 
-    def warn(self, message, linter=None, *args, **kwargs):
-        # gxformat2 lint rules pass Linter subclasses; galaxy LintMessage expects a name string.
-        if isinstance(linter, type):
-            linter = linter.__name__
-        super().warn(message, linter, *args, **kwargs)
-
-    def error(self, message, linter=None, *args, **kwargs):
-        if isinstance(linter, type):
-            linter = linter.__name__
-        super().error(message, linter, *args, **kwargs)
+    @contextmanager
+    def gxformat2_context(self) -> Iterator[GxFormat2LintContext]:
+        """Collect gxformat2's nested diagnostics in Planemo's reporting context."""
+        # gxformat2 owns child contexts, shared message lists and pointer escaping.
+        # Galaxy's context owns skip/report/fail levels and resets its message list
+        # between lint phases, so the two contexts must not share mutable state.
+        context = GxFormat2LintContext(training_topic=self.training_topic)
+        try:
+            yield context
+        finally:
+            for level, messages in (("error", context.error_messages), ("warning", context.warn_messages)):
+                for message in messages:
+                    self.message_list.append(
+                        WorkflowLintMessage(level, str(message), message.linter, message.json_pointer)
+                    )
 
 
 def build_wf_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
@@ -194,6 +225,7 @@ def _lint_workflow_artifacts_on_path(lint_context: WorkflowLintContext, path: st
             lint_context.lint("lint_tests", _lint_tsts, potential_workflow_artifact_path)
             lint_context.lint("lint_tool_ids", _lint_tool_ids, potential_workflow_artifact_path)
             lint_context.lint("lint_tool_versions", _lint_tool_versions, potential_workflow_artifact_path)
+            lint_context.lint("lint_linked_subworkflows", _lint_linked_subworkflows, potential_workflow_artifact_path)
         else:
             # Allow linting ro crates and such also
             pass
@@ -227,29 +259,46 @@ def _lint_tsts(path: str, lint_context: WorkflowLintContext) -> None:
 
 def _lint_structure(path: str, lint_context: WorkflowLintContext) -> None:
     workflow_dict = _load_workflow_dict(path)
-    if workflow_dict.get("class") == "GalaxyWorkflow":
-        lint_format2_path(lint_context, path)
-    else:
-        lint_ga_path(lint_context, path)
+    with lint_context.gxformat2_context() as context:
+        if workflow_dict.get("class") == "GalaxyWorkflow":
+            # lint_format2_path would re-read the file and fetch linked subworkflows
+            nf2 = _try_build_nf2(context, workflow_dict)
+            if nf2 is not None:
+                lint_format2(context, nf2, raw_dict=workflow_dict)
+        else:
+            lint_ga_path(context, path)
 
 
 def _lint_schema_validation(path: str, lint_context: WorkflowLintContext) -> None:
     workflow_dict = _load_workflow_dict(path)
     is_format2 = workflow_dict.get("class") == "GalaxyWorkflow"
-    lint_pydantic_validation(lint_context, workflow_dict, format2=is_format2)
+    with lint_context.gxformat2_context() as context:
+        lint_pydantic_validation(context, workflow_dict, format2=is_format2)
 
 
 def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None:
     workflow_dict = _load_workflow_dict(path)
-    if workflow_dict.get("class") == "GalaxyWorkflow":
-        lint_best_practices_format2(lint_context, workflow_dict)
-    else:
-        lint_best_practices_ga(lint_context, workflow_dict)
+    with lint_context.gxformat2_context() as context:
+        if workflow_dict.get("class") == "GalaxyWorkflow":
+            lint_best_practices_format2(context, workflow_dict)
+        else:
+            lint_best_practices_ga(context, workflow_dict)
 
 
 def _load_workflow_dict(path: str) -> Dict[str, Any]:
+    """Load a workflow for gxformat2's linters, dropping linked subworkflow references.
+
+    Linked subworkflows are published (and linted) on their own. Dropping the
+    references keeps gxformat2 from fetching them during expansion and from
+    flagging Galaxy's ``content_source``/``trs_*`` step keys in its strict schema.
+    """
     with open(path) as f:
-        return ordered_load(f)
+        workflow_dict = ordered_load(f)
+    for step in iter_workflow_steps(workflow_dict):
+        if linked_subworkflow_url(step) or ("run" not in step and is_subworkflow_reference(step)):
+            for key in LINKED_SUBWORKFLOW_KEYS:
+                step.pop(key, None)
+    return workflow_dict
 
 
 def _lint_case(path: str, test_case: TestCase, lint_context: WorkflowLintContext) -> bool:
@@ -595,9 +644,12 @@ def _iter_tool_steps(wf_dict: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
     if isinstance(steps, dict):
         steps = steps.values()
     for step in steps:
+        if is_subworkflow_reference(step):
+            # Not embedded, a linked subworkflow is linted where it is published.
+            continue
         if step.get("type", "tool") == "tool" and not step.get("run", {}).get("class") == "GalaxyWorkflow":
             yield step
-        elif step.get("type") == "subworkflow":  # GA SWF
+        elif step.get("subworkflow"):  # GA SWF
             yield from _iter_tool_steps(step["subworkflow"])
         elif step.get("run", {}).get("class") == "GalaxyWorkflow":  # gxformat2 SWF
             yield from _iter_tool_steps(step["run"])
@@ -645,6 +697,38 @@ def _lint_tool_versions(path: str, lint_context: WorkflowLintContext) -> None:
     if not failed:
         lint_context.valid("Tool versions appear to match tool ids.")
     return None
+
+
+def _lint_linked_subworkflows(path: str, lint_context: LintContext) -> None:
+    """Check that linked subworkflow steps reference content Galaxy can resolve, pinned to a version."""
+    with open(path) as f:
+        workflow_dict = ordered_load(f)
+    for step in iter_workflow_steps(workflow_dict):
+        url = linked_subworkflow_url(step)
+        if url is None:
+            if "run" not in step and is_subworkflow_reference(step):
+                lint_context.error(
+                    f"Subworkflow step {step.get('label') or step.get('id')} neither embeds a subworkflow "
+                    "nor references one by URL, TRS URL or trs_server/trs_tool_id/trs_version_id."
+                )
+            continue
+        match = TRS_URL_REGEX.match(url)
+        if match:
+            version = match["version_id"]
+            if version in UNPINNED_TRS_VERSIONS:
+                lint_context.warn(
+                    f"Linked subworkflow {url} references TRS version '{version}', "
+                    "which looks like a branch rather than a pinned release."
+                )
+            else:
+                lint_context.valid(f"Linked subworkflow {url} is pinned to TRS version '{version}'.")
+        elif step.get("content_source") == "trs_url" or "/ga4gh/trs/" in url:
+            lint_context.error(
+                f"Linked subworkflow {url} is not a valid TRS URL, "
+                "expected <server>/ga4gh/trs/v2/tools/<tool_id>/versions/<version>."
+            )
+        elif not url.startswith("base64://"):
+            lint_context.info(f"Linked subworkflow {url} is not a TRS URL, its content is not pinned to a version.")
 
 
 def _lint_required_files_workflow_dir(path: str, lint_context: WorkflowLintContext) -> None:

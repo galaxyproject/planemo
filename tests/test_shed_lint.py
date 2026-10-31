@@ -1,6 +1,14 @@
+import os
+import shutil
 from os.path import join
 
-from .test_utils import CliTestCase
+import responses
+
+from .test_utils import (
+    CliTestCase,
+    skip_if_environ,
+    TEST_TOOLS_DIR,
+)
 
 
 class ShedLintTestCase(CliTestCase):
@@ -35,6 +43,27 @@ class ShedLintTestCase(CliTestCase):
         with self._isolate_repo("bad_invalid_yaml"):
             self._check_exit_code(["shed_lint", "--skip", "shed_remote_repository_url"], exit_code=254)
 
+    def test_shed_metadata_rejected_by_shed_is_an_error(self):
+        # https://github.com/galaxyproject/planemo/issues/1112: the tool shed
+        # rejects this name with a 400, so CI running --fail_level error -- the
+        # usual way to tolerate style warnings -- must still catch it.
+        with self._isolate_repo("bad_repo_name"):
+            self._check_exit_code(
+                ["shed_lint", "--skip", "shed_remote_repository_url", "--fail_level", "error"], exit_code=1
+            )
+        with self._isolate_repo("bad_unknown_category"):
+            self._check_exit_code(
+                ["shed_lint", "--skip", "shed_remote_repository_url", "--fail_level", "error"], exit_code=1
+            )
+
+    def test_shed_metadata_conventions_stay_warnings(self):
+        # A package outside "Tool Dependency Packages" still uploads fine, so
+        # it must not be promoted alongside the checks above.
+        with self._isolate_repo("bad_package_category"):
+            self._check_exit_code(
+                ["shed_lint", "--skip", "shed_remote_repository_url", "--fail_level", "error"], exit_code=0
+            )
+
     def test_tool_linting(self):
         # Make sure bad_invalid_tool_xml only when used with --tools.
         with self._isolate_repo("bad_invalid_tool_xml"):
@@ -50,6 +79,35 @@ class ShedLintTestCase(CliTestCase):
         # realized repository even though shed_lint copies files into a temp dir.
         with self._isolate_repo("single_tool_required_files"):
             self._check_exit_code(["shed_lint", "--tools", "--skip", "shed_remote_repository_url"])
+
+    @responses.activate
+    def test_tool_linting_doi(self):
+        """--doi reaches the tool linters through shed_lint."""
+        responses.add(responses.GET, "https://doi.org/10.1093/bioinformatics/bts573", status=200)
+        # shed_lint's version check queries the main Tool Shed; an empty result makes it a no-op
+        responses.add(responses.GET, "https://toolshed.g2.bx.psu.edu/api/repositories", json=[])
+        skip_remote = ["--skip", "shed_remote_repository_url"]
+        with self._isolate_repo("single_tool_required_files"):
+            result = self._check_exit_code(["shed_lint", "--tools"] + skip_remote)
+            assert "is a valid DOI" not in result.output
+        with self._isolate_repo("single_tool_required_files"):
+            result = self._check_exit_code(["shed_lint", "--tools", "--doi"] + skip_remote)
+            assert "10.1093/bioinformatics/bts573 is a valid DOI" in result.output
+
+    @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
+    def test_tool_linting_conda_requirements(self):
+        """--conda_requirements reaches the tool linters through shed_lint."""
+        skip_remote = ["--skip", "shed_remote_repository_url"]
+        with self._isolate_repo("single_tool_required_files") as f:
+            shutil.copy(os.path.join(TEST_TOOLS_DIR, "bwa_without_requirements.xml"), f)
+            result = self._check_exit_code(["shed_lint", "--tools"] + skip_remote)
+            assert "Conda" not in result.output
+            result = self._check_exit_code(
+                ["shed_lint", "--tools", "--conda_requirements"] + skip_remote,
+                exit_code=self.non_zero_exit_code,
+            )
+            # a usage error would also be non-zero, so pin the linter's own message
+            assert "No valid package requirement tags found to check against Conda." in result.output
 
     def test_invalid_nested(self):
         # Created a nested repository with one good and one
@@ -76,6 +134,44 @@ class ShedLintTestCase(CliTestCase):
         with self._isolate_repo("single_tool"):
             self._check_exit_code(["shed_lint", "--skip", "shed_remote_repository_url"])
         with self._isolate_repo("single_tool_exclude"):
-            self._check_exit_code(
+            result = self._check_exit_code(
                 ["shed_lint", "--skip", "shed_remote_repository_url", "--ensure_metadata"], exit_code=1
             )
+            assert "Missing shed metadata field [long_description] for repository" in result.output
+
+    def test_ensure_metadata_missing_field_is_warning(self):
+        # A mandatory field absent from .shed.yml (single_tool has no
+        # long_description) must be reported as a warning instead of crashing
+        # shed_lint with a KeyError.
+        with self._isolate_repo("single_tool"):
+            result = self._check_exit_code(
+                [
+                    "shed_lint",
+                    "--ensure_metadata",
+                    "--fail_level",
+                    "error",
+                    "--skip",
+                    "shed_remote_repository_url",
+                ],
+                exit_code=0,
+            )
+            assert "Missing shed metadata field [long_description] for repository" in result.output
+            assert "Found all shed metadata fields" not in result.output
+
+    def test_ensure_metadata_empty_field_is_warning(self):
+        with self._isolate_repo("single_tool") as f:
+            with open(join(f, ".shed.yml"), "a") as fh:
+                fh.write("long_description:\n")
+            result = self._check_exit_code(
+                [
+                    "shed_lint",
+                    "--ensure_metadata",
+                    "--fail_level",
+                    "error",
+                    "--skip",
+                    "shed_remote_repository_url",
+                ],
+                exit_code=0,
+            )
+            assert "shed metadata field [long_description] was given, but is empty" in result.output
+            assert "Found all shed metadata fields" not in result.output

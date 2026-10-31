@@ -10,7 +10,6 @@ from bioblend import ConnectionError
 from galaxy.tool_util.lint import lint_tool_source_with
 from galaxy.tool_util.linters.help import rst_invalid
 from galaxy.tool_util.parser.interface import ToolSource
-from galaxy.tool_util.version import parse_version
 from galaxy.util import unicodify
 
 from planemo.io import info
@@ -34,7 +33,10 @@ from planemo.tool_lint import (
     build_tool_lint_args,
     handle_tool_load_error,
 )
-from planemo.tools import yield_tool_sources
+from planemo.tools import (
+    parse_tool_version,
+    yield_tool_sources,
+)
 from planemo.xml import XSDS_PATH
 
 if TYPE_CHECKING:
@@ -59,6 +61,21 @@ SHED_METADATA = [
     "categories",
 ]
 
+REPOSITORY_LINTER_NAMES = [
+    "expansion",
+    "expected_files",
+    "tool_dependencies_xsd",
+    "tool_dependencies_sha256sum",
+    "tool_dependencies_actions",
+    "repository_dependencies",
+    "shed_yaml",
+    "readme",
+    "urls",
+    "version_bumped",
+    "shed_remote_repository_url",
+    "shed_metadata",
+]
+
 
 def lint_repository(ctx: "PlanemoCliContext", realized_repository: "RealizedRepository", **kwds):
     """Lint a realized shed repository.
@@ -69,7 +86,7 @@ def lint_repository(ctx: "PlanemoCliContext", realized_repository: "RealizedRepo
     failed = False
     path = realized_repository.real_path
     info("Linting repository %s" % path)
-    lint_args = build_tool_lint_args(ctx, **kwds)
+    lint_args = build_tool_lint_args(ctx, extra_linter_names=REPOSITORY_LINTER_NAMES, **kwds)
     lint_args, lint_ctx = setup_lint(ctx, lint_args=lint_args, **kwds)
     lint_ctx.lint(
         "lint_expansion",
@@ -158,7 +175,7 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
         repo_owner = realized_repository.owner
         repo_name = realized_repository.name
         tool_id = tool_source.parse_id()
-        tool_version = parse_version(tool_source.parse_version())
+        tool_version = tool_source.parse_version()
 
         # check if there is already such a repo (otherwise get_ordered_installable_revisions will log an error for new repos)
         if len(tsi.repositories.get_repositories(repo_name, repo_owner)) == 0:
@@ -192,7 +209,7 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
             assert tool[0]["version"]
             ts_tool_version = tool[0]["version"]
 
-        if tool_version <= parse_version(ts_tool_version):
+        if parse_tool_version(tool_version) <= parse_tool_version(ts_tool_version):
             lint_ctx.error(
                 f"{tool_id}: version {tool_version} is less or equal than version of the latest installable revision {ts_tool_version}",
                 "ShedVersion",
@@ -242,7 +259,8 @@ def lint_shed_metadata(realized_repository: "RealizedRepository", lint_ctx):
         if key not in realized_repository.config:
             found_all = False
             lint_ctx.warn("Missing shed metadata field [%s] for repository" % key)
-        if realized_repository.config[key] is None:
+        elif realized_repository.config[key] is None:
+            found_all = False
             lint_ctx.warn("shed metadata field [%s] was given, but is empty" % key)
     if found_all:
         lint_ctx.info("Found all shed metadata fields required for automated repository creation and/or updates.")
@@ -382,7 +400,7 @@ def lint_shed_yaml(realized_repository: "RealizedRepository", lint_ctx):
         with open(shed_yaml) as fh:
             yaml.safe_load(fh)
     except Exception as e:
-        lint_ctx.warn("Failed to parse .shed.yml file [%s]" % unicodify(e))
+        lint_ctx.error("Failed to parse .shed.yml file [%s]" % unicodify(e))
         return
     lint_ctx.info(".shed.yml found and appears to be valid YAML.")
     _lint_shed_contents(lint_ctx, realized_repository)
@@ -391,50 +409,58 @@ def lint_shed_yaml(realized_repository: "RealizedRepository", lint_ctx):
 def _lint_shed_contents(lint_ctx, realized_repository: "RealizedRepository"):
     config = realized_repository.config
 
-    def _lint_if_present(key, func, *args):
+    def _lint_if_present(key, func, *args, fatal=False):
+        """Report ``func``'s complaint about ``config[key]``, if there is one.
+
+        ``fatal`` marks metadata the tool shed itself refuses to accept. Those
+        must be errors so that CI running ``--fail_level error`` -- the usual
+        way to tolerate style warnings -- still catches them. Conventions stay
+        warnings.
+        """
         value = config.get(key, None)
         if value is not None:
             msg = func(value, *args)
             if msg:
-                lint_ctx.warn(msg)
+                (lint_ctx.error if fatal else lint_ctx.warn)(msg)
 
-    _lint_if_present("owner", validate_repo_owner)
-    _lint_if_present("name", validate_repo_name)
-    _lint_if_present("type", _validate_repo_type, config["name"])
-    _lint_if_present("categories", _validate_categories, realized_repository)
+    _lint_if_present("owner", validate_repo_owner, fatal=True)
+    _lint_if_present("name", validate_repo_name, fatal=True)
+    _lint_if_present("type", _validate_repo_type, fatal=True)
+    _lint_if_present("type", _validate_repo_type_conventions, config["name"])
+    _lint_if_present("categories", _validate_categories, fatal=True)
+    _lint_if_present("categories", _validate_category_conventions, realized_repository)
 
 
-def _validate_repo_type(repo_type, name):
+def _validate_repo_type(repo_type):
+    """Repository types the tool shed does not know about."""
     if repo_type not in VALID_REPOSITORY_TYPES:
         return "Invalid repository type specified [%s]" % repo_type
 
-    is_dep = repo_type == "tool_dependency_definition"
-    is_suite = repo_type == "repository_suite_definition"
+
+def _validate_repo_type_conventions(repo_type, name):
+    is_dep = repo_type == REPO_TYPE_TOOL_DEP
+    is_suite = repo_type == REPO_TYPE_SUITE
     if is_dep and not name.startswith("package_"):
         return "Tool dependency definition repositories should have names starting with package_"
     if is_suite and not name.startswith("suite_"):
         return "Repository suite definition repositories should have names starting with suite_"
     if name.startswith("package_") or name.startswith("suite_"):
-        if repo_type == "unrestricted":
+        if repo_type == REPO_TYPE_UNRESTRICTED:
             return "Repository name indicated specialized repository type but repository is listed as unrestricted."
 
 
-def _validate_categories(categories, realized_repository: "RealizedRepository"):
-    msg = None
-    if len(categories) == 0:
-        msg = "Repository should specify one or more categories."
-    else:
-        for category in categories:
-            unknown_categories = []
-            if category not in CURRENT_CATEGORIES:
-                unknown_categories.append(category)
-            if unknown_categories:
-                msg = "Categories [%s] unknown." % unknown_categories
-        if realized_repository.is_package:
-            if "Tool Dependency Packages" not in categories:
-                msg = "Packages should be placed and should only be placed in the category 'Tool Dependency Packages'."
+def _validate_categories(categories):
+    """Categories the tool shed cannot resolve -- ``find_category_ids`` raises on these."""
+    unknown_categories = [c for c in categories if c not in CURRENT_CATEGORIES]
+    if unknown_categories:
+        return "Categories [%s] unknown." % unknown_categories
 
-    return msg
+
+def _validate_category_conventions(categories, realized_repository: "RealizedRepository"):
+    if len(categories) == 0:
+        return "Repository should specify one or more categories."
+    if realized_repository.is_package and "Tool Dependency Packages" not in categories:
+        return "Packages should be placed and should only be placed in the category 'Tool Dependency Packages'."
 
 
 __all__ = ("lint_repository",)

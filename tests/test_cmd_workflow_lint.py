@@ -365,6 +365,19 @@ class CmdWorkflowLintTestCase(CliTestCase):
         lint_cmd = ["workflow_lint", "--iwc", "--skip", "release", repo]
         self._check_exit_code(lint_cmd, exit_code=0)
 
+    def test_linked_subworkflow_linting(self):
+        # Linked subworkflows are linted where they are published, so linting the parent
+        # must neither fetch them nor flag Galaxy's content_source step key.
+        for name in (
+            "wf_linked_subworkflow_url.ga",
+            "wf_linked_subworkflow_trs.ga",
+            "wf_linked_subworkflow_url.gxwf.yml",
+        ):
+            workflow_path = os.path.join(TEST_DATA_DIR, name)
+            lint_cmd = ["workflow_lint", "--skip", "tests,tool_ids,best_practices", workflow_path]
+            result = self._check_exit_code(lint_cmd, exit_code=0)
+            assert "Schema validation" not in result.output
+
 
 def _wf_repo(rel_path):
     return os.path.join(TEST_DATA_DIR, "wf_repos", rel_path)

@@ -28,6 +28,7 @@ from planemo.io import (
     coalesce_return_codes,
     error,
     info,
+    warn,
 )
 from planemo.runnable import (
     for_paths,
@@ -101,31 +102,39 @@ def cli(ctx, paths, **kwds):  # noqa C901
         for tool_path, tool_xml in yield_tool_sources_on_paths(ctx, paths, recursive):
             if tool_path.split("/")[-1] in tools_to_skip:
                 info("Skipping tool %s" % tool_path)
+                # a skipped tool is still a target - don't let it trip assert_at_least_one
+                exit_codes.append(EXIT_CODE_OK)
                 continue
             info("Auto-updating tool %s" % tool_path)
+            failed = False
             try:
                 updated = autoupdate.autoupdate_tool(ctx, tool_path, modified_files=modified_files, **kwds)
                 if updated:
                     modified_files.update(updated)
             except Exception as e:
                 error(f"{tool_path} could not be updated - the following error was raised: {e.__str__()}")
-            if handle_tool_load_error(tool_path, tool_xml):
+                failed = True
+            if handle_tool_load_error(tool_path, tool_xml) or failed:
                 exit_codes.append(EXIT_CODE_GENERIC_FAILURE)
-                continue
             else:
                 exit_codes.append(EXIT_CODE_OK)
 
-    workflows = [
-        r for r in runnables if r.type == RunnableType.galaxy_workflow and r.path.split("/")[-1] not in tools_to_skip
-    ]
+    all_workflows = [r for r in runnables if r.type == RunnableType.galaxy_workflow]
+    workflows = [r for r in all_workflows if r.path.split("/")[-1] not in tools_to_skip]
+    # workflows, skipped ones included, are targets too - record them for assert_at_least_one below
+    exit_codes.extend([EXIT_CODE_OK] * len(all_workflows))
+
     modified_workflows = []
+    predicted_updates = {}
     for workflow in workflows:
         tools_to_update = autoupdate.get_tools_to_update(ctx, workflow, tools_to_skip)
         if tools_to_update:
             modified_workflows.append(workflow)
+            predicted_updates[workflow.path] = tools_to_update
             info("The following tools are outdated:")
+            # "->" lines are reserved for updates that were made, the autoupdate bot turns them into the changelog
             for tool, versions in tools_to_update.items():
-                info(f"{tool}: {versions['current']} -> {versions['updated']}")
+                info(f"{tool}: {versions['current']} (newer version {versions['updated']})")
         else:
             info("No newer tool versions were found, so the workflow was not updated.")
 
@@ -137,6 +146,7 @@ def cli(ctx, paths, **kwds):  # noqa C901
             kwds["install_repository_dependencies"] = False
             kwds["shed_install"] = True
 
+        updated_workflows = []
         with engine_context(ctx, **kwds) as galaxy_engine:
             with galaxy_engine.ensure_runnables_served(modified_workflows) as config:
                 for workflow in modified_workflows:
@@ -145,6 +155,17 @@ def cli(ctx, paths, **kwds):  # noqa C901
 
                     with open(workflow.path) as f:
                         original_workflow = yaml.load(f, Loader=yaml.SafeLoader)
+                    made_updates = autoupdate.updated_tools(original_workflow, updated_workflow)
+                    for tool, versions in predicted_updates[workflow.path].items():
+                        if tool not in made_updates:
+                            warn(f"{tool} could not be updated to {versions['updated']}.")
+                    if not made_updates:
+                        info(f"No tool was updated, so {workflow.path} was not changed.")
+                        continue
+                    updated_workflows.append(workflow)
+                    info("The following tools were updated:")
+                    for tool, versions in made_updates.items():
+                        info(f"{tool}: {versions['current']} -> {versions['updated']}")
                     edited_workflow = autoupdate.fix_workflow(original_workflow, updated_workflow)
                     with open(workflow.path, "w") as f:
                         if workflow.path.endswith(".ga"):
@@ -159,6 +180,7 @@ def cli(ctx, paths, **kwds):  # noqa C901
                             f"The workflow release number has been updated from "
                             f"{original_workflow.get('release')} to {edited_workflow.get('release')}."
                         )
+        modified_workflows = updated_workflows
 
     if kwds["test"]:
         if not modified_files and not modified_workflows:
@@ -172,7 +194,7 @@ def cli(ctx, paths, **kwds):  # noqa C901
             kwds["engine"] = "galaxy"
             return_value = test_runnables(ctx, runnables, original_paths=paths, **kwds)
             exit_codes.append(return_value)
-    return coalesce_return_codes(exit_codes, assert_at_least_one=assert_tools)
+    ctx.exit(coalesce_return_codes(exit_codes, assert_at_least_one=assert_tools))
 
 
 def handle_tool_load_error(tool_path: str, tool_xml: XmlToolSource) -> bool:
