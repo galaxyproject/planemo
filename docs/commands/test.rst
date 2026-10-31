@@ -74,6 +74,16 @@ Planemo documentation.
                                       tests embedded in a tool's <tests> block run
                                       through the Galaxy test interactor, which
                                       ignores this.
+      --use_async_submission / --no_use_async_submission
+                                      Submit tool test jobs to POST /api/jobs
+                                      instead of the legacy POST /api/tools
+                                      endpoint. Only applies to tests embedded in a
+                                      tool's <tests> block, and only to tests for
+                                      which the Galaxy server provides a structured
+                                      request - other tests are submitted to the
+                                      legacy endpoint. Galaxy 26.1 and newer build a
+                                      request for tools of any profile; older
+                                      releases only for tools with profile >= 24.2.
       --cwltool_cache_directory DIRECTORY
                                       Directory the cwltool engine caches computed
                                       steps in when --use_cache is enabled (defaults

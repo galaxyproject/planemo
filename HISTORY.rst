@@ -21,6 +21,10 @@ History
   repository's ``.shed.yml`` omits a metadata field such as
   ``long_description``; missing and empty fields are now both reported as
   warnings.
+* Add ``--use_async_submission`` to ``planemo test`` and ``planemo shed_test``
+  to submit tool tests to Galaxy's ``POST /api/jobs`` endpoint, falling back
+  to the legacy ``POST /api/tools`` endpoint for tests without a structured
+  request. Requires ``galaxy-tool-util`` 26.0 or newer.
 
 
 ---------------------
