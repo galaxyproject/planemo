@@ -312,6 +312,7 @@ class CmdWorkflowLintTestCase(CliTestCase):
         result = self._runner.invoke(self._cli.planemo, lint_cmd)
         assert "ERROR: Invalid assertion in tests: assert_has_line missing a required argument: 'line'" in result.output
 
+    @skip_if_toolshed_down
     def test_workflow_linting_iwc(self):
         # Check the output of workflow_lint --iwc on a basic workflow with .dockstore
         for repo in [

@@ -2,6 +2,7 @@ import json
 import os
 
 from galaxy.util import parse_xml_string
+from galaxy.util.unittest_utils import skip_if_github_down
 
 from planemo.autoupdate import get_newest_tool_id
 from planemo.galaxy.config import get_shed_tools_conf_string_for_tool_ids
@@ -9,7 +10,10 @@ from planemo.galaxy.workflows import (
     get_tool_ids_for_workflow,
     get_toolshed_url_for_tool_id,
 )
-from .test_utils import TEST_DATA_DIR
+from .test_utils import (
+    skip_if_testtoolshed_down,
+    TEST_DATA_DIR,
+)
 
 
 def test_get_newest_tool_id():
@@ -20,10 +24,12 @@ def test_get_newest_tool_id():
     assert get_newest_tool_id(tool_ids) == tool_ids[0]
 
 
+@skip_if_github_down
 def test_get_toolshed_url_for_tool_id():
     assert get_toolshed_url_for_tool_id("github.com/repos/iuc/tool/1") == "https://github.com"
 
 
+@skip_if_testtoolshed_down
 def test_get_shed_tools_conf_string_for_workflow():
     test_artifact = os.path.join(TEST_DATA_DIR, "wf_same_name_outputs.ga")
     with open(test_artifact) as wf:

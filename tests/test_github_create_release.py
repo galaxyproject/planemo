@@ -42,6 +42,7 @@ def test_changelog_in_repo():
         assert changelog_in_repo(test_dir) == EXPECTED_FRAGMENT
 
 
+@skip_if_github_down
 def test_get_or_create_repo_with_existing_repo():
     ctx = create_test_context()
     ctx._global_config = {"github": {"access_token": "ABCDEFG"}}
@@ -105,6 +106,7 @@ def test_git_ls_remote():
     assert "refs/heads/release_20.09" in tags_and_commits
 
 
+@skip_if_github_down
 def test_assert_is_new_version_raises_exception():
     with pytest.raises(Exception) as excinfo:
         assert_new_version(None, version="v20.05", owner="galaxyproject", repo="galaxy")
