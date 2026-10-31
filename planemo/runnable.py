@@ -475,16 +475,17 @@ def _tests_path(runnable: Runnable) -> Optional[str]:
     if not runnable.is_single_artifact:
         raise NotImplementedError("Tests for directories are not yet implemented.")
 
-    runnable_path = runnable.path
-    base, _ = os.path.splitext(runnable_path)
-
-    for test_suffix in TEST_SUFFIXES:
-        for test_extension in TEST_EXTENSIONS:
-            test_path = base + test_suffix + test_extension
-            if os.path.exists(test_path):
-                return test_path
+    for test_path in candidate_test_paths(runnable.path):
+        if os.path.exists(test_path):
+            return test_path
 
     return None
+
+
+def candidate_test_paths(runnable_path: str) -> List[str]:
+    """Return the test file paths checked for a runnable, in order of preference."""
+    base, _ = os.path.splitext(runnable_path)
+    return [base + test_suffix + test_extension for test_suffix in TEST_SUFFIXES for test_extension in TEST_EXTENSIONS]
 
 
 def get_outputs(runnable: Runnable, gi: Optional[GalaxyInstance] = None) -> List["RunnableOutput"]:
