@@ -177,6 +177,23 @@ class ShedLintTestCase(CliTestCase):
             assert not isinstance(r.exception, RuntimeError)
             assert "Traceback" not in r.output
 
+            # The warning that stops the run is shown even when --report_level
+            # would otherwise hide it.
+            hidden_level_result = self._check_exit_code(
+                [
+                    "shed_lint",
+                    "-r",
+                    "--fail_fast",
+                    "--report_level",
+                    "error",
+                    "--skip",
+                    "version_bumped",
+                ],
+                exit_code=1,
+            )
+            assert "WARNING: Failed to expand inclusions" in hidden_level_result.output
+            assert f"Linting repository {realpath(good_repo)}" not in hidden_level_result.output
+
     def test_fail_fast_while_linting_tools(self):
         # A repository can contain multiple tools, so stopping repository
         # traversal alone is not sufficient to implement --fail_fast.

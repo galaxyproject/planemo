@@ -11,7 +11,10 @@ from urllib.request import urlopen
 
 import requests
 from galaxy.tool_util.lint import LintContext as GalaxyLintContext
-from galaxy.tool_util.lint import Linter
+from galaxy.tool_util.lint import (
+    Linter,
+    LintLevel,
+)
 
 from planemo.io import error
 from planemo.shed import find_urls_for_xml
@@ -33,12 +36,25 @@ class PlanemoLintContext(GalaxyLintContext):
     def __init__(self, *args, fail_fast=False, fail_level="warn", **kwds):
         super().__init__(*args, **kwds)
         self.fail_fast = fail_fast
-        self.fail_level = fail_level
+        self.fail_level = LintLevel[fail_level.upper()] if isinstance(fail_level, str) else fail_level
 
     def lint(self, *args, **kwds):
+        previous_message_count = len(self.message_list)
         super().lint(*args, **kwds)
         if self.fail_fast and self.failed(self.fail_level):
+            # Galaxy only prints messages at or above the report level, so a
+            # failure below it would otherwise stop the run without saying why.
+            for message in self.message_list[previous_message_count:]:
+                if self._is_unreported_failure(message):
+                    print(f"{message}")
             raise LintFailed()
+
+    def _is_unreported_failure(self, message):
+        if message.level == "error":
+            return self.level >= LintLevel.SILENT
+        if message.level == "warning":
+            return self.level > LintLevel.WARN and self.fail_level <= LintLevel.WARN
+        return False
 
 
 def build_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
