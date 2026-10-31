@@ -379,6 +379,22 @@ def test_use_cache_option():
     )
 
 
+def test_use_async_submission_option():
+    return planemo_option(
+        "--use_async_submission/--no_use_async_submission",
+        is_flag=True,
+        default=False,
+        help=(
+            "Submit tool test jobs to POST /api/jobs instead of the legacy POST /api/tools "
+            "endpoint. Only applies to tests embedded in a tool's <tests> block, and only "
+            "to tests for which the Galaxy server provides a structured request - other "
+            "tests are submitted to the legacy endpoint. Galaxy 26.1 and newer build a "
+            "request for tools of any profile; older releases only for tools with "
+            "profile >= 24.2."
+        ),
+    )
+
+
 def run_output_json_option():
     return planemo_option(
         "output_json",

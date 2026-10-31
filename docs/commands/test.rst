@@ -65,13 +65,6 @@ Planemo documentation.
                                       between requests. Useful when testing against
                                       remote and/or production instances to limit
                                       generated traffic.
-      --use_async_submission / --no_use_async_submission
-                                      Submit tool test jobs to POST /api/jobs
-                                      instead of the legacy POST /api/tools
-                                      endpoint. Only tests that carry a
-                                      validated request (tools with profile >=
-                                      24.2) are submitted this way, all other
-                                      tests fall back to the legacy endpoint.
       --use_cache / --no_use_cache    Reuse cached job results if available. Off by
                                       default - Galaxy replays the outputs of an
                                       equivalent job, so a tool edited without a
@@ -81,6 +74,16 @@ Planemo documentation.
                                       tests embedded in a tool's <tests> block run
                                       through the Galaxy test interactor, which
                                       ignores this.
+      --use_async_submission / --no_use_async_submission
+                                      Submit tool test jobs to POST /api/jobs
+                                      instead of the legacy POST /api/tools
+                                      endpoint. Only applies to tests embedded in a
+                                      tool's <tests> block, and only to tests for
+                                      which the Galaxy server provides a structured
+                                      request - other tests are submitted to the
+                                      legacy endpoint. Galaxy 26.1 and newer build a
+                                      request for tools of any profile; older
+                                      releases only for tools with profile >= 24.2.
       --cwltool_cache_directory DIRECTORY
                                       Directory the cwltool engine caches computed
                                       steps in when --use_cache is enabled (defaults

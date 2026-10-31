@@ -238,6 +238,16 @@ install these artifacts, and run the tool tests for these commands.
                                       summary). Set to 'none' to disable completely.
       --test_timeout INTEGER          Maximum runtime of a single test in seconds.
       --fail_fast                     Stop on first job failure.
+      --use_async_submission / --no_use_async_submission
+                                      Submit tool test jobs to POST /api/jobs
+                                      instead of the legacy POST /api/tools
+                                      endpoint. Only applies to tests embedded in a
+                                      tool's <tests> block, and only to tests for
+                                      which the Galaxy server provides a structured
+                                      request - other tests are submitted to the
+                                      legacy endpoint. Galaxy 26.1 and newer build a
+                                      request for tools of any profile; older
+                                      releases only for tools with profile >= 24.2.
       --skip_dependencies             Do not install shed dependencies as part of
                                       repository installation.
       --help                          Show this message and exit.
