@@ -274,7 +274,7 @@ Planemo documentation.
                                       output (see output reports for more complete
                                       summary). Set to 'none' to disable completely.
       --test_timeout INTEGER          Maximum runtime of a single test in seconds.
-      --fail_fast                     Stop on first job failure.
+      --fail_fast                     Stop on first failure.
       --engine [galaxy|docker_galaxy|cwltool|toil|external_galaxy]
                                       Select an engine to run or test artifacts such
                                       as tools and workflows. Defaults to a local

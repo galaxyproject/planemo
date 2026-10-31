@@ -42,7 +42,7 @@ logged into and explored interactively.
                                       'testtoolshed', 'local' (alias for
                                       http://localhost:9009/), an arbitrary url or
                                       mappings defined ~/.planemo.yml.
-      --fail_fast                     Stop on first job failure.
+      --fail_fast                     Stop on first failure.
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
       --galaxy_python_version [3|3.8|3.9|3.10|3.11|3.12]

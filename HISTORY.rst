@@ -8,6 +8,11 @@ History
 ---------------------
 0.75.48.dev0
 ---------------------
+* Fix ``shed_lint --fail_fast`` to stop linting and repository traversal at
+  the configured failure level. At the default ``--fail_level warn``, the first
+  warning stops the run; use ``--fail_level error`` to continue past warnings
+  and stop at the first error. The message that stops the run is shown even
+  when ``--report_level`` would hide it (#1710).
 * Add ``--use_cache`` to ``planemo test``, off by default - follow-up to #1665
   which added it to ``planemo run``.
 * Add ``--doi`` and ``--conda_requirements`` to ``planemo shed_lint`` so

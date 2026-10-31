@@ -13,9 +13,10 @@ from typing import (
 from urllib.request import urlopen
 
 import requests
+from galaxy.tool_util.lint import LintContext as GalaxyLintContext
 from galaxy.tool_util.lint import (
-    LintContext,
     Linter,
+    LintLevel,
 )
 
 from planemo.io import error
@@ -51,6 +52,37 @@ def _expand_legacy_skip_types(skip_types):
             if issubclass(value, Linter) and value.__module__ == module_name
         )
     return expanded
+
+
+class LintFailed(Exception):
+    """Signal that a lint context has reached its configured failure level."""
+
+
+class PlanemoLintContext(GalaxyLintContext):
+    """Galaxy lint context that can stop after its first failing linter."""
+
+    def __init__(self, *args, fail_fast=False, fail_level="warn", **kwds):
+        super().__init__(*args, **kwds)
+        self.fail_fast = fail_fast
+        self.fail_level = LintLevel[fail_level.upper()] if isinstance(fail_level, str) else fail_level
+
+    def lint(self, *args, **kwds):
+        previous_message_count = len(self.message_list)
+        super().lint(*args, **kwds)
+        if self.fail_fast and self.failed(self.fail_level):
+            # Galaxy only prints messages at or above the report level, so a
+            # failure below it would otherwise stop the run without saying why.
+            for message in self.message_list[previous_message_count:]:
+                if self._is_unreported_failure(message):
+                    print(f"{message}")
+            raise LintFailed()
+
+    def _is_unreported_failure(self, message):
+        if message.level == "error":
+            return self.level >= LintLevel.SILENT
+        if message.level == "warning":
+            return self.level > LintLevel.WARN and self.fail_level <= LintLevel.WARN
+        return False
 
 
 def build_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
@@ -92,7 +124,12 @@ def build_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
 def setup_lint(ctx, **kwds):
     """Prepare lint_args and lint_ctx to begin linting a target."""
     lint_args = kwds.get("lint_args", None) or build_lint_args(ctx, **kwds)
-    lint_ctx = LintContext(level=lint_args["level"], skip_types=lint_args["skip_types"])
+    lint_ctx = PlanemoLintContext(
+        level=lint_args["level"],
+        skip_types=lint_args["skip_types"],
+        fail_fast=kwds.get("fail_fast", False),
+        fail_level=lint_args["fail_level"],
+    )
     return lint_args, lint_ctx
 
 

@@ -63,7 +63,7 @@ Auto-update tool requirements by checking against Conda and updating if newer ve
                                       output (see output reports for more complete
                                       summary). Set to 'none' to disable completely.
       --test_timeout INTEGER          Maximum runtime of a single test in seconds.
-      --fail_fast                     Stop on first job failure.
+      --fail_fast                     Stop on first failure.
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
       --galaxy_python_version [3|3.8|3.9|3.10|3.11|3.12]

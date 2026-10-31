@@ -305,6 +305,6 @@ Planemo documentation for what can actually be reused.
                                       output (see output reports for more complete
                                       summary). Set to 'none' to disable completely.
       --test_timeout INTEGER          Maximum runtime of a single test in seconds.
-      --fail_fast                     Stop on first job failure.
+      --fail_fast                     Stop on first failure.
       --help                          Show this message and exit.
 
