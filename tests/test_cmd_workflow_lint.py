@@ -34,6 +34,44 @@ class CmdWorkflowLintTestCase(CliTestCase):
         lint_cmd = ["workflow_lint", "--fail_level", "error", repo]
         self._check_exit_code(lint_cmd, exit_code=0)
 
+        # ... unless the IWC profile makes missing tests an error
+        lint_cmd = [
+            "workflow_lint",
+            "--iwc",
+            "--skip",
+            "best_practices,required_files,dockstore_best_practices,release",
+            "--fail_level",
+            "error",
+            repo,
+        ]
+        result = self._runner.invoke(self._cli.planemo, lint_cmd)
+        assert result.exit_code == 1
+        assert (
+            "ERROR: Workflow missing test cases. No test file found, expected 0_basic_format2-tests.yml "
+            "next to the workflow." in result.output
+        )
+
+    def test_missing_test_cases_message(self):
+        with self._isolate_with_test_data("wf_repos/from_format2/0_basic_format2") as f:
+            os.rename(os.path.join(f, "0_basic_format2.yml"), os.path.join(f, "example.gxwf.yml"))
+            # Only the last extension is replaced, so this file is not discovered.
+            with open(os.path.join(f, "example-tests.yml"), "w") as fh:
+                fh.write("[]\n")
+            lint_cmd = ["workflow_lint", "--skip", "best_practices", f]
+            result = self._runner.invoke(self._cli.planemo, lint_cmd)
+            assert (
+                "WARNING: Workflow missing test cases. No test file found, expected example.gxwf-tests.yml "
+                "next to the workflow." in result.output
+            )
+
+            with open(os.path.join(f, "example.gxwf-tests.yml"), "w") as fh:
+                fh.write("[]\n")
+            result = self._runner.invoke(self._cli.planemo, lint_cmd)
+            assert (
+                "WARNING: Workflow missing test cases. Test file example.gxwf-tests.yml defines no tests."
+                in result.output
+            )
+
     def test_workflow_test_linting(self):
         repo = _wf_repo("basic_format2_ok")
         lint_cmd = ["workflow_lint", "--skip", "best_practices", repo]

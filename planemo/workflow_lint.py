@@ -52,6 +52,7 @@ from planemo.galaxy.workflows import (
 )
 from planemo.lint import build_lint_args
 from planemo.runnable import (
+    candidate_test_paths,
     cases,
     for_path,
     TestCase,
@@ -88,6 +89,10 @@ class WorkflowLintContext(LintContext):
     # Setup training topic for linting - probably should pass this through
     # from click arguments.
     training_topic = None
+
+    def __init__(self, *args: Any, iwc_grade: bool = False, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.iwc_grade = iwc_grade
 
     @contextmanager
     def gxformat2_context(self) -> Iterator[GxFormat2LintContext]:
@@ -184,9 +189,13 @@ def _workflow_name(workflow_path: str) -> str:
 
 def lint_workflow_artifacts_on_paths(ctx: "PlanemoCliContext", paths: Iterable[str], lint_args: Dict[str, Any]) -> int:
     report_level = lint_args["level"]
-    lint_context = WorkflowLintContext(report_level, skip_types=lint_args["skip_types"])
+    lint_context = WorkflowLintContext(
+        report_level,
+        skip_types=lint_args["skip_types"],
+        iwc_grade=lint_args["iwc_grade"],
+    )
     for path in paths:
-        _lint_workflow_artifacts_on_path(lint_context, path, lint_args)
+        _lint_workflow_artifacts_on_path(lint_context, path)
 
     if lint_context.failed(lint_args["fail_level"]):
         return EXIT_CODE_GENERIC_FAILURE
@@ -194,8 +203,8 @@ def lint_workflow_artifacts_on_paths(ctx: "PlanemoCliContext", paths: Iterable[s
         return EXIT_CODE_OK
 
 
-def _lint_workflow_artifacts_on_path(lint_context: WorkflowLintContext, path: str, lint_args: Dict[str, Any]) -> None:
-    if lint_args["iwc_grade"]:
+def _lint_workflow_artifacts_on_path(lint_context: WorkflowLintContext, path: str) -> None:
+    if lint_context.iwc_grade:
         if not os.path.isdir(path):
             path = os.path.dirname(path)
         lint_context.lint("lint_required_files", _lint_required_files_workflow_dir, path)
@@ -204,7 +213,7 @@ def _lint_workflow_artifacts_on_path(lint_context: WorkflowLintContext, path: st
     for potential_workflow_artifact_path in find_potential_workflow_files(path):
         if os.path.basename(potential_workflow_artifact_path) == DOCKSTORE_REGISTRY_CONF:
             lint_context.lint("lint_dockstore", _lint_dockstore_config, potential_workflow_artifact_path)
-            if lint_args["iwc_grade"]:
+            if lint_context.iwc_grade:
                 lint_context.lint(
                     "lint_dockstore_best_practices",
                     _lint_dockstore_config_best_practices,
@@ -214,7 +223,7 @@ def _lint_workflow_artifacts_on_path(lint_context: WorkflowLintContext, path: st
         elif looks_like_a_workflow(potential_workflow_artifact_path):
             lint_context.lint("lint_structure", _lint_structure, potential_workflow_artifact_path)
             lint_context.lint("lint_schema_validation", _lint_schema_validation, potential_workflow_artifact_path)
-            if lint_args["iwc_grade"]:
+            if lint_context.iwc_grade:
                 lint_context.lint("lint_release", _lint_release, potential_workflow_artifact_path)
             lint_context.lint("lint_best_practices", _lint_best_practices, potential_workflow_artifact_path)
             lint_context.lint("lint_tests", _lint_tsts, potential_workflow_artifact_path)
@@ -234,7 +243,11 @@ def _lint_tsts(path: str, lint_context: WorkflowLintContext) -> None:
     for runnable in runnables:
         test_cases = cases(runnable)
         if len(test_cases) == 0:
-            lint_context.warn("Workflow missing test cases.")
+            message = _missing_test_cases_message(runnable.path)
+            if lint_context.iwc_grade:
+                lint_context.error(message)
+            else:
+                lint_context.warn(message)
             return
         all_tests_valid = True
         for test_case in test_cases:
@@ -247,6 +260,17 @@ def _lint_tsts(path: str, lint_context: WorkflowLintContext) -> None:
 
         if all_tests_valid:
             lint_context.valid(f"Tests appear structurally correct for {runnable.path}")
+
+
+def _missing_test_cases_message(workflow_path: str) -> str:
+    candidates = candidate_test_paths(workflow_path)
+    existing = next((candidate for candidate in candidates if os.path.exists(candidate)), None)
+    if existing:
+        return f"Workflow missing test cases. Test file {os.path.basename(existing)} defines no tests."
+    return (
+        "Workflow missing test cases. No test file found, expected "
+        f"{os.path.basename(candidates[0])} next to the workflow."
+    )
 
 
 def _lint_structure(path: str, lint_context: WorkflowLintContext) -> None:
