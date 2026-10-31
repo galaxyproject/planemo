@@ -2,6 +2,7 @@
 
 import contextlib
 import os
+import types
 
 import bioblend
 
@@ -139,7 +140,8 @@ class _StubGalaxyEngine(galaxy_engine.GalaxyEngine):
 
     @contextlib.contextmanager
     def ensure_runnables_served(self, runnables):
-        yield None
+        # _run logs user_api_config when verbose (PLANEMO_TEST_VERBOSE=1)
+        yield types.SimpleNamespace(user_api_config=None)
         for run_response in self.responses:
             run_response.engine_running = False
 
