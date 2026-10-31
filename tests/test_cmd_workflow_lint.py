@@ -366,7 +366,7 @@ class CmdWorkflowLintTestCase(CliTestCase):
 
     def test_iwc_changelog_heading_requires_iso_date(self):
         lint_cmd = ["workflow_lint", "--iwc", "--skip", "required_files", "."]
-        error_message = "The newest CHANGELOG heading must match '## [version] - YYYY-MM-DD' with a valid date."
+        error_message = "The newest CHANGELOG heading must match '## [version] - YYYY-MM-DD' with a valid date"
 
         with self._isolate():
             for heading in (
@@ -374,6 +374,7 @@ class CmdWorkflowLintTestCase(CliTestCase):
                 "## [1.5] 2026-07-06",
                 "## [1.5] - not a date",
                 "## [1.5] - 2026-02-30",
+                "## [1.5] \u2013 2026-07-06",
             ):
                 with open("CHANGELOG.md", "w") as changelog:
                     changelog.write(f"# Changelog\n\n{heading}\n")
@@ -381,10 +382,12 @@ class CmdWorkflowLintTestCase(CliTestCase):
                 result = self._runner.invoke(self._cli.planemo, lint_cmd)
                 assert result.exit_code == 1
                 assert error_message in result.output
+                assert f"found {heading!r}." in result.output
 
             with open("CHANGELOG.md", "w") as changelog:
-                changelog.write("# Changelog\n\n## [1.5] - 2026-07-06\n")
+                changelog.write("# Changelog\n\n## [1.5] - 2026-07-06 \n")
 
+            # Trailing whitespace is invisible in most editors, so it is not an error.
             self._check_exit_code(lint_cmd, exit_code=0)
 
             with open("CHANGELOG.md", "w") as changelog:

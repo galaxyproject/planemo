@@ -64,7 +64,7 @@ if TYPE_CHECKING:
 POTENTIAL_WORKFLOW_FILES = re.compile(r"^.*(\.yml|\.yaml|\.ga)$")
 WORKFLOW_FILE_SUFFIXES = (".gxwf.yml", ".gxwf.yaml", ".ga")
 CHANGELOG_VERSION_HEADING = re.compile(r"^## \[([^]]+)\]")
-DATED_CHANGELOG_VERSION_HEADING = re.compile(r"^## \[[^]]+\] - (\d{4}-\d{2}-\d{2})$")
+DATED_CHANGELOG_VERSION_HEADING = re.compile(r"## \[[^]]+\] - (\d{4}-\d{2}-\d{2})")
 DOCKSTORE_REGISTRY_CONF_VERSION = "1.2"
 LINKED_SUBWORKFLOW_KEYS = ("content_source", "content_id", "trs_server", "trs_tool_id", "trs_version_id", "run")
 UNPINNED_TRS_VERSIONS = {"main", "master", "develop", "dev", "latest"}
@@ -737,7 +737,7 @@ def _get_changelog_version_heading(path: str) -> Optional[str]:
     with open(os.path.join(path, "CHANGELOG.md"), "r") as f:
         for line in f:
             if line.startswith("## ["):
-                return line.rstrip("\r\n")
+                return line.rstrip()
     return None
 
 
@@ -770,7 +770,10 @@ def _lint_changelog_version(path: str, lint_context: WorkflowLintContext) -> Non
         return
 
     if not _valid_changelog_version_heading(heading):
-        lint_context.error("The newest CHANGELOG heading must match '## [version] - YYYY-MM-DD' with a valid date.")
+        lint_context.error(
+            "The newest CHANGELOG heading must match '## [version] - YYYY-MM-DD' with a valid date, "
+            f"found {heading!r}."
+        )
 
 
 def _lint_release(path, lint_context):
