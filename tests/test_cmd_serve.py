@@ -20,6 +20,7 @@ from .test_utils import (
     run_verbosely,
     safe_rmtree,
     skip_if_environ,
+    skip_if_quay_down,
     skip_unless_environ,
     skip_unless_executable,
     target_galaxy_branch,
@@ -156,6 +157,7 @@ class ServeTestCase(CliTestCase, UsesServeCommand):
     @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
     @skip_unless_executable("docker")
     @mark.tests_galaxy_branch
+    @skip_if_quay_down
     def test_serve_interactivetool(self):
         self._serve_artifact = os.path.join(TEST_TOOLS_DIR, "interactivetool_simple.xml")
         extra_args = [
