@@ -576,6 +576,11 @@ def write_galaxy_config(galaxy_root, properties, env, kwds, template_args, confi
     else:
         env["GALAXY_CONFIG_FILE"] = config_join("galaxy.yml")
         env["GRAVITY_STATE_DIR"] = config_join("gravity")
+        # Gravity refuses to run as root unless it manages Galaxy through
+        # systemd, which containers lack. GRAVITY_SKIP_SYSTEMD (gravity >= 1.2.1)
+        # makes it treat root like any other user. Leave a user's own value alone.
+        if os.geteuid() == 0 and "GRAVITY_SKIP_SYSTEMD" not in os.environ:
+            env["GRAVITY_SKIP_SYSTEMD"] = "1"
         use_multiprocessing = gravity_supports_multiprocessing(galaxy_root)
         if use_multiprocessing:
             env.pop("SUPERVISORD_SOCKET", None)
