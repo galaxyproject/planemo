@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from unittest import mock
 
 import pytest
+import requests
 import responses
 from galaxy.tool_util.lint import (
     lint_tool_source_with_modules,
@@ -457,4 +458,8 @@ def test_shed_tool_source_requests_published_source():
     # e.g. a Tool Shed that does not provide the endpoint (< 26.1) or unknown tools
     with responses.RequestsMock() as rsps:
         rsps.add(responses.GET, url, status=404)
+        assert shed_tool_source(tsi, "iuc", "shed_version", "shed_version_tool", "1.0+galaxy10") is None
+
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.GET, url, body=requests.Timeout())
         assert shed_tool_source(tsi, "iuc", "shed_version", "shed_version_tool", "1.0+galaxy10") is None

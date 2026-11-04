@@ -4,6 +4,7 @@ import json
 from typing import Optional
 from urllib.parse import quote
 
+import requests
 from bioblend.toolshed import ToolShedInstance
 from galaxy.util import unicodify
 
@@ -11,6 +12,8 @@ from planemo.io import untar_to
 
 REPOSITORY_DOWNLOAD_TEMPLATE = "%s/repository/download?repository_id=%s&changeset_revision=default&file_type=gz"
 TOOL_SOURCE_URL = "%s/api/tools/%s/versions/%s/tool_source"
+# bioblend's default is no timeout; the Tool Shed clones the repository per request
+TOOL_SOURCE_TIMEOUT = 30
 
 
 def tool_shed_instance(
@@ -109,8 +112,8 @@ def shed_tool_source(tsi, owner, name, tool_id, tool_version):
     trs_tool_id = quote(f"{owner}~{name}~{tool_id}", safe="")
     url = TOOL_SOURCE_URL % (tsi.base_url.rstrip("/"), trs_tool_id, quote(tool_version, safe=""))
     try:
-        response = tsi.make_get_request(url)
-    except Exception:
+        response = tsi.make_get_request(url, timeout=TOOL_SOURCE_TIMEOUT)
+    except requests.RequestException:
         return None
     if response.status_code != 200:
         return None
