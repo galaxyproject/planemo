@@ -181,7 +181,8 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx, shed_
 
     A version is considered released if the latest installable revision of the
     repository in the Tool Shed contains the tool with the same version and an
-    identical (expanded) tool source.
+    identical (expanded) tool source. Other repository files (scripts, data
+    tables, test data) are not compared.
     """
     path = realized_repository.path
     repo_owner = realized_repository.owner
@@ -235,8 +236,8 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx, shed_
                 continue
             if ts_tool_source == tool_source.to_string():
                 lint_ctx.info(
-                    f"{tool_id}: tool source unchanged since installable revision {ts_tool_version}, "
-                    "no version bump needed.",
+                    f"{tool_id}: tool XML unchanged since installable revision {ts_tool_version}, "
+                    "no version bump needed (other repository files are not compared).",
                     "ShedVersion",
                 )
                 continue

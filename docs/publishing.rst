@@ -128,9 +128,12 @@ before uploading new contents to the tool shed.
 before they are published (``version_bumped``). To do so it compares the tool
 source with the one published in the latest installable revision of the
 repository - tools that were not touched, e.g. the other tools of a multi tool
-repository, therefore need no version bump. This comparison needs a Tool Shed
-deployed from Galaxy 26.1 or newer, which provides the required tool source API
-endpoint.
+repository, therefore need no version bump. Only the tool XML (with macros
+expanded) is compared: a change confined to other repository files, such as a
+wrapper script, a data table or ``.loc.sample`` file, or test data, is not
+detected and still requires bumping the version by hand. This comparison needs
+a Tool Shed deployed from Galaxy 26.1 or newer, which provides the required
+tool source API endpoint.
 
 Once tools and required dependency files have been published to the tool shed,
 the actual shed dependencies can be automatically installed and tool 

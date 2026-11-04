@@ -357,7 +357,8 @@ def test_shed_version_unchanged_tool_source_needs_no_bump(tmp_path):
     assert _messages(lint_ctx) == [
         (
             "info",
-            "shed_version_tool: tool source unchanged since installable revision 1.0+galaxy10, no version bump needed.",
+            "shed_version_tool: tool XML unchanged since installable revision 1.0+galaxy10, "
+            "no version bump needed (other repository files are not compared).",
             "ShedVersion",
         )
     ]
@@ -412,7 +413,8 @@ def test_shed_version_untouched_tools_of_multi_tool_repository_are_clean(tmp_pat
     assert _messages(lint_ctx) == [
         (
             "info",
-            "shed_version_tool: tool source unchanged since installable revision 1.0+galaxy10, no version bump needed.",
+            "shed_version_tool: tool XML unchanged since installable revision 1.0+galaxy10, "
+            "no version bump needed (other repository files are not compared).",
             "ShedVersion",
         )
     ]
