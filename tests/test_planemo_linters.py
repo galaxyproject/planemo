@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from unittest import mock
 
 import pytest
+import responses
 from galaxy.tool_util.lint import (
     lint_tool_source_with_modules,
     LintContext,
@@ -16,6 +17,10 @@ from planemo.linters import (
     conda_requirements,
     doi,
     urls,
+)
+from planemo.shed.interface import (
+    shed_tool_source,
+    tool_shed_instance,
 )
 from planemo.shed_lint import (
     lint_shed_version,
@@ -267,9 +272,17 @@ class _ShedRepository:
     name: str = "shed_version"
 
 
+SHED_VERSION_OTHER_TOOL = """<tool id="shed_version_other_tool" name="Shed Version Other Tool" version="2.0">
+    <command>echo bye</command>
+    <inputs />
+    <outputs />
+</tool>
+"""
+
+
 class _FakeShedRepositories:
-    def __init__(self, ts_version):
-        self.ts_version = ts_version
+    def __init__(self, valid_tools):
+        self.valid_tools = valid_tools
 
     def get_repositories(self, name, owner):
         return [{"name": name, "owner": owner}]
@@ -278,12 +291,29 @@ class _FakeShedRepositories:
         return ["abc123"]
 
     def get_repository_revision_install_info(self, name, owner, revision):
-        return {}, {"valid_tools": [{"id": "shed_version_tool", "version": self.ts_version}]}, {}
+        return {}, {"valid_tools": [dict(tool) for tool in self.valid_tools]}, {}
 
 
 class _FakeToolShed:
-    def __init__(self, ts_version):
-        self.repositories = _FakeShedRepositories(ts_version)
+    def __init__(self, valid_tools=None):
+        if valid_tools is None:
+            valid_tools = [{"id": "shed_version_tool", "version": "1.0+galaxy10"}]
+        self.repositories = _FakeShedRepositories(valid_tools)
+
+
+def _lint_shed_version(tmp_path, tool_xmls=None, ts_tool_source=None, valid_tools=None):
+    tool_xmls = tool_xmls if tool_xmls is not None else {"shed_version_tool.xml": SHED_VERSION_TOOL}
+    for name, tool_xml in tool_xmls.items():
+        (tmp_path / name).write_text(tool_xml)
+    lint_ctx = LintContext("all")
+
+    with (
+        mock.patch("planemo.shed_lint.tool_shed_instance", return_value=_FakeToolShed(valid_tools)),
+        mock.patch("planemo.shed_lint.shed_tool_source", return_value=ts_tool_source) as shed_source,
+    ):
+        lint_ctx.lint("shed_version", lint_shed_version, _ShedRepository(str(tmp_path)))
+
+    return lint_ctx, shed_source
 
 
 @pytest.mark.parametrize(
@@ -303,10 +333,128 @@ class _FakeToolShed:
     ],
 )
 def test_shed_version_compares_galaxy_suffix_numerically(tmp_path, ts_version, expected):
-    (tmp_path / "shed_version_tool.xml").write_text(SHED_VERSION_TOOL)
-    lint_ctx = LintContext("all")
-
-    with mock.patch("planemo.shed_lint.tool_shed_instance", return_value=_FakeToolShed(ts_version)):
-        lint_ctx.lint("shed_version", lint_shed_version, _ShedRepository(str(tmp_path)))
+    # the published source differs from the local one, so a bump is required
+    lint_ctx, shed_source = _lint_shed_version(
+        tmp_path,
+        ts_tool_source='<tool id="shed_version_tool" name="Shed Version Tool" version="1.0+galaxy10"/>',
+        valid_tools=[{"id": "shed_version_tool", "version": ts_version}],
+    )
 
     assert _messages(lint_ctx) == expected
+    if expected == []:
+        # a bumped version needs no comparison with the published source
+        shed_source.assert_not_called()
+
+
+def test_shed_version_unchanged_tool_source_needs_no_bump(tmp_path):
+    # e.g. another tool of a multi tool repository was bumped: this tool was not
+    # touched, so it must be neither bumped nor reported.
+    (tmp_path / "shed_version_tool.xml").write_text(SHED_VERSION_TOOL)
+    published_source = get_tool_source(str(tmp_path / "shed_version_tool.xml")).to_string()
+    lint_ctx, shed_source = _lint_shed_version(tmp_path, ts_tool_source=published_source)
+
+    assert _messages(lint_ctx) == [
+        (
+            "info",
+            "shed_version_tool: tool source unchanged since installable revision 1.0+galaxy10, no version bump needed.",
+            "ShedVersion",
+        )
+    ]
+    shed_source.assert_called_once()
+
+
+def test_shed_version_changed_tool_source_needs_bump(tmp_path):
+    lint_ctx, _ = _lint_shed_version(
+        tmp_path, ts_tool_source='<tool id="shed_version_tool" name="Shed Version Tool" version="1.0+galaxy10"/>'
+    )
+
+    assert _messages(lint_ctx) == [
+        (
+            "error",
+            "shed_version_tool: version 1.0+galaxy10 is less or equal than version of the latest installable revision 1.0+galaxy10",
+            "ShedVersion",
+        )
+    ]
+
+
+def test_shed_version_unfetchable_tool_source_is_an_error(tmp_path):
+    lint_ctx, _ = _lint_shed_version(tmp_path, ts_tool_source=None)
+
+    assert _messages(lint_ctx) == [
+        (
+            "error",
+            "shed_version_tool: could not fetch the tool source published with version 1.0+galaxy10 "
+            "from the Tool Shed, cannot check whether a version bump is needed.",
+            "ShedVersion",
+        )
+    ]
+
+
+def test_shed_version_untouched_tools_of_multi_tool_repository_are_clean(tmp_path):
+    (tmp_path / "shed_version_tool.xml").write_text(SHED_VERSION_TOOL)
+    published_source = get_tool_source(str(tmp_path / "shed_version_tool.xml")).to_string()
+
+    lint_ctx, _ = _lint_shed_version(
+        tmp_path,
+        tool_xmls={
+            "shed_version_tool.xml": SHED_VERSION_TOOL,
+            # this tool is bumped and must not be reported
+            "shed_version_other_tool.xml": SHED_VERSION_OTHER_TOOL,
+        },
+        ts_tool_source=published_source,
+        valid_tools=[
+            {"id": "shed_version_tool", "version": "1.0+galaxy10"},
+            {"id": "shed_version_other_tool", "version": "1.0"},
+        ],
+    )
+
+    assert _messages(lint_ctx) == [
+        (
+            "info",
+            "shed_version_tool: tool source unchanged since installable revision 1.0+galaxy10, no version bump needed.",
+            "ShedVersion",
+        )
+    ]
+
+
+def test_shed_version_new_tool_in_existing_repository_is_clean(tmp_path):
+    # the previous implementation asserted here, because the tool is not part of
+    # the latest installable revision of the repository yet
+    lint_ctx, shed_source = _lint_shed_version(tmp_path, valid_tools=[{"id": "some_other_tool", "version": "1.0"}])
+
+    assert _messages(lint_ctx) == [
+        ("info", "shed_version_tool: not yet published in shed_version, no version check needed.", "ShedVersion")
+    ]
+    shed_source.assert_not_called()
+
+
+def test_shed_version_downgrade_is_an_error_without_source_comparison(tmp_path):
+    lint_ctx, shed_source = _lint_shed_version(
+        tmp_path, tool_xmls={"shed_version_tool.xml": SHED_VERSION_TOOL.replace("1.0+galaxy10", "1.0+galaxy9")}
+    )
+
+    assert _messages(lint_ctx) == [
+        (
+            "error",
+            "shed_version_tool: version 1.0+galaxy9 is less or equal than version of the latest installable revision 1.0+galaxy10",
+            "ShedVersion",
+        )
+    ]
+    shed_source.assert_not_called()
+
+
+def test_shed_tool_source_requests_published_source():
+    tsi = tool_shed_instance("https://toolshed.g2.bx.psu.edu")
+    url = (
+        "https://toolshed.g2.bx.psu.edu/api/tools/iuc~shed_version~shed_version_tool"
+        "/versions/1.0%2Bgalaxy10/tool_source"
+    )
+
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.GET, url, body="<tool/>", status=200, headers={"language": "xml"})
+        assert shed_tool_source(tsi, "iuc", "shed_version", "shed_version_tool", "1.0+galaxy10") == "<tool/>"
+
+    # e.g. a Tool Shed that does not provide the endpoint (< 26.1) or unknown tools
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.GET, url, status=404)
+        assert shed_tool_source(tsi, "iuc", "shed_version", "shed_version_tool", "1.0+galaxy10") is None

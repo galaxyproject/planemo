@@ -124,6 +124,14 @@ Modified artifacts can be uploaded using the following command.
 The ``--check_diff`` option here will ensure there are significant differnces
 before uploading new contents to the tool shed.
 
+``shed_lint`` checks that tools modified in a repository have a new version
+before they are published (``version_bumped``). To do so it compares the tool
+source with the one published in the latest installable revision of the
+repository - tools that were not touched, e.g. the other tools of a multi tool
+repository, therefore need no version bump. This comparison needs a Tool Shed
+deployed from Galaxy 26.1 or newer, which provides the required tool source API
+endpoint.
+
 Once tools and required dependency files have been published to the tool shed,
 the actual shed dependencies can be automatically installed and tool 
 tests ran using the command::
