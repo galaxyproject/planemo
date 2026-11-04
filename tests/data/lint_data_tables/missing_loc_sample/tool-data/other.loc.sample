@@ -1,0 +1,2 @@
+# value	name	path
+foo	Bar	${__HERE__}/bar.obo

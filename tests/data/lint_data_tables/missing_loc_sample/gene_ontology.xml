@@ -1,0 +1,28 @@
+<tool id="gene_ontology" name="Gene ontology" version="0.1.0" profile="23.0">
+    <description>annotate things with gene ontology terms</description>
+    <requirements>
+        <requirement type="package" version="1.2.3">seqtk</requirement>
+    </requirements>
+    <command detect_errors="exit_code"><![CDATA[
+        seqtk seq '$input' > '$output'
+    ]]></command>
+    <inputs>
+        <param name="input" type="data" format="fasta" label="Input FASTA file" />
+        <param name="ontology" type="select" label="Gene ontology">
+            <options from_data_table="gene_ontology">
+                <filter type="sort_by" column="2" />
+            </options>
+        </param>
+    </inputs>
+    <outputs>
+        <data name="output" format="fasta" />
+    </outputs>
+    <tests>
+        <test>
+            <param name="input" value="input.fasta" ftype="fasta" />
+            <param name="ontology" value="go" />
+            <output name="output" file="output.fasta" ftype="fasta" />
+        </test>
+    </tests>
+</tool>
+

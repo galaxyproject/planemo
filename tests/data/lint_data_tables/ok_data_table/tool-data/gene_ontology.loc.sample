@@ -1,0 +1,2 @@
+# value	name	path
+go	Gene Ontology	${__HERE__}/gene_ontology.obo

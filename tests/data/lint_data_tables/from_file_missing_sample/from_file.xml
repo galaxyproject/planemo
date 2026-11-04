@@ -1,0 +1,21 @@
+<tool id="from_file" name="From file" version="0.1.0" profile="23.0">
+    <description>read a data file directly</description>
+    <requirements>
+        <requirement type="package" version="1.2.3">seqtk</requirement>
+    </requirements>
+    <command detect_errors="exit_code"><![CDATA[
+        seqtk seq '$input' > '$output'
+    ]]></command>
+    <inputs>
+        <param name="input" type="data" format="fasta" label="Input FASTA file" />
+        <param name="builds" type="select" label="Genome build">
+            <options from_file="tool-data/builds.loc">
+                <column name="name" index="0" />
+                <column name="value" index="1" />
+            </options>
+        </param>
+    </inputs>
+    <outputs>
+        <data name="output" format="fasta" />
+    </outputs>
+</tool>

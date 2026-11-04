@@ -28,6 +28,14 @@ planemo.linters.doi module
    :show-inheritance:
    :undoc-members:
 
+planemo.linters.tool\_data\_tables module
+-----------------------------------------
+
+.. automodule:: planemo.linters.tool_data_tables
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 planemo.linters.urls module
 ---------------------------
 

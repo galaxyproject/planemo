@@ -8,6 +8,9 @@ History
 ---------------------
 0.75.48.dev0
 ---------------------
+* Add a ``tool_data_tables`` linter module, enabled for ``planemo lint`` and
+  ``shed_lint --tools``, checking that the sample files the Tool Shed needs to
+  set metadata exist.
 * Fix ``shed_lint --fail_fast`` to stop linting and repository traversal at
   the configured failure level. At the default ``--fail_level warn``, the first
   warning stops the run; use ``--fail_level error`` to continue past warnings

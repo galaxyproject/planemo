@@ -10,6 +10,7 @@ from galaxy.tool_util.lint import lint_tool_source
 import planemo.linters.biocontainer_registered
 import planemo.linters.conda_requirements
 import planemo.linters.doi
+import planemo.linters.tool_data_tables
 import planemo.linters.urls
 import planemo.linters.xsd
 from planemo.exit_codes import (
@@ -58,7 +59,9 @@ def lint_tools_on_path(ctx, paths, lint_args, **kwds):
 
 
 def _lint_extra_modules(**kwds):
-    linters = []
+    # The tool data table linters only inspect the repository of the tool and
+    # never access the network, so they are always enabled.
+    linters = [planemo.linters.tool_data_tables]
 
     if kwds.get("doi", False):
         linters.append(planemo.linters.doi)

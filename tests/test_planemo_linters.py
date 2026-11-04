@@ -15,6 +15,7 @@ from planemo.linters import (
     biocontainer_registered,
     conda_requirements,
     doi,
+    tool_data_tables,
     urls,
 )
 from planemo.shed_lint import (
@@ -22,8 +23,10 @@ from planemo.shed_lint import (
     lint_tool_dependencies_urls,
     REPOSITORY_LINTER_NAMES,
 )
+from planemo.tool_lint import _lint_extra_modules
 from .test_utils import (
     PROJECT_TEMPLATES_DIR,
+    TEST_DATA_DIR,
     TEST_REPOS_DIR,
     TEST_TOOLS_DIR,
 )
@@ -310,3 +313,100 @@ def test_shed_version_compares_galaxy_suffix_numerically(tmp_path, ts_version, e
         lint_ctx.lint("shed_version", lint_shed_version, _ShedRepository(str(tmp_path)))
 
     assert _messages(lint_ctx) == expected
+
+
+DATA_TABLE_FIXTURES_DIR = Path(TEST_DATA_DIR) / "lint_data_tables"
+
+
+def _lint_data_table_tool(case, name):
+    tool_source = _tool_source(DATA_TABLE_FIXTURES_DIR / case, name)
+    lint_ctx = LintContext("all")
+    lint_tool_source_with_modules(lint_ctx, tool_source, [tool_data_tables])
+    return lint_ctx
+
+
+def _lint_levels_linters_messages(lint_ctx):
+    return [(level, linter, message) for level, message, linter in _messages(lint_ctx)]
+
+
+def test_data_table_linter_accepts_repository_with_sample_files():
+    lint_ctx = _lint_data_table_tool("ok_data_table", "gene_ontology.xml")
+
+    assert lint_ctx.message_list == []
+
+
+def test_data_table_linter_requires_data_table_config_sample():
+    lint_ctx = _lint_data_table_tool("missing_conf", "gene_ontology.xml")
+
+    [(level, linter, message)] = _lint_levels_linters_messages(lint_ctx)
+    assert (level, linter) == ("error", "ToolDataTableConfSampleMissing")
+    assert "tool_data_table_conf.xml.sample" in message
+    assert "[gene_ontology]" in message
+
+
+def test_data_table_linter_requires_index_file_sample():
+    lint_ctx = _lint_data_table_tool("missing_loc_sample", "gene_ontology.xml")
+
+    [(level, linter, message)] = _lint_levels_linters_messages(lint_ctx)
+    assert (level, linter) == ("error", "ToolDataTableIndexSampleMissing")
+    assert "gene_ontology.loc.sample" in message
+
+
+def test_data_table_linter_reports_unparsable_config_sample():
+    lint_ctx = _lint_data_table_tool("invalid_conf", "gene_ontology.xml")
+
+    [(level, linter, message)] = _lint_levels_linters_messages(lint_ctx)
+    assert (level, linter) == ("error", "ToolDataTableConfSampleInvalid")
+    assert "tool_data_table_conf.xml.sample" in message
+
+
+def test_data_table_linter_warns_about_config_naming_sample_file():
+    lint_ctx = _lint_data_table_tool("conf_refers_to_sample", "gene_ontology.xml")
+
+    [(level, linter, message)] = _lint_levels_linters_messages(lint_ctx)
+    assert (level, linter) == ("warning", "ToolDataTableConfRefersToSample")
+    assert "names the sample file gene_ontology.loc.sample instead of the data file" in message
+    assert "installing this repository creates gene_ontology.loc" in message
+
+
+def test_data_table_linter_warns_about_from_file_without_sample():
+    lint_ctx = _lint_data_table_tool("from_file_missing_sample", "from_file.xml")
+
+    [(level, linter, message)] = _lint_levels_linters_messages(lint_ctx)
+    assert (level, linter) == ("warning", "ToolDataTableFromFileSampleMissing")
+    assert "builds.loc.sample" in message
+
+
+def test_data_table_linter_ignores_tables_of_galaxy_or_other_repositories():
+    # Tables declared by Galaxy itself or by another repository need no entry
+    # in the data table configuration of this repository and the Tool Shed does
+    # not require sample files for them either.
+    lint_ctx = _lint_data_table_tool("table_from_other_repo", "all_fasta.xml")
+
+    assert lint_ctx.message_list == []
+
+
+def test_data_table_linter_can_be_skipped_by_module_name():
+    tool_source = _tool_source(DATA_TABLE_FIXTURES_DIR / "missing_loc_sample", "gene_ontology.xml")
+    lint_ctx = LintContext("all", skip_types=["tool_data_tables"])
+
+    lint_tool_source_with_modules(lint_ctx, tool_source, [tool_data_tables])
+
+    assert lint_ctx.message_list == []
+
+
+def test_data_table_linter_skip_names_are_valid():
+    ctx = mock.Mock(global_config={})
+
+    with mock.patch("planemo.lint.error") as error:
+        lint_args = build_lint_args(
+            ctx,
+            skip=["tool_data_tables", "ToolDataTableIndexSampleMissing", "ToolDataTableConfRefersToSample"],
+        )
+
+    error.assert_not_called()
+    assert "ToolDataTableIndexSampleMissing" in lint_args["skip_types"]
+
+
+def test_data_table_linter_is_enabled_by_default():
+    assert tool_data_tables in _lint_extra_modules()
