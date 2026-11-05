@@ -8,29 +8,78 @@ History
 ---------------------
 0.75.48.dev0
 ---------------------
+* Support linked (URL / TRS) subworkflows in workflows (thanks to `@mvdbeek`_). `Pull Request 1742`_
+* Run embedded user tools in Planemo-managed workflows (thanks to `@jmchilton`_). `Pull Request 1763`_
+* Recognize YAML GalaxyTool definitions as runnable tools (thanks to `@jmchilton`_). `Pull Request 1735`_
+* List invocations across all workflows (thanks to `@jmchilton`_). `Pull Request 1703`_
+* Add ``--use_cache`` to ``planemo test``, off by default - follow-up to #1665
+  which added it to ``planemo run`` (thanks to `@jmchilton`_). `Pull Request 1702`_
+* Add ``--doi`` and ``--conda_requirements`` to ``planemo shed_lint`` so
+  ``shed_lint --tools`` covers the same checks as ``lint`` - fixes #667
+  (thanks to `@jmchilton`_). `Pull Request 1729`_
+* Add ``--extended_git_diff`` to ``ci_find_repos``, ``ci_find_tools`` and
+  ``list_repos``, resolving each file changed in ``--changed_in_commit_range``
+  to the tools and repositories that own it - fixes #1129
+  (thanks to `@bernt-matthias`_). `Pull Request 1130`_
+* Extended container support (thanks to `@bernt-matthias`_). `Pull Request 1363`_
+* Modernize Planemo-specific tool linters (thanks to `@jmchilton`_). `Pull Request 1706`_
+* Require workflow tests under the IWC lint profile (thanks to `@jmchilton`_). `Pull Request 1695`_
+* Validate dates in IWC changelog headings (thanks to `@jmchilton`_). `Pull Request 1697`_
+* Fill undeclared workflow replacement parameters with a sentinel and warn (thanks to `@jmchilton`_). `Pull Request 1755`_
+* Add 'Digital Humanities' to category list (thanks to `@Sch-Da`_). `Pull Request 1741`_
+* raise report level for some shed linting (thanks to `@bernt-matthias`_). `Pull Request 1111`_
 * Set ``GRAVITY_SKIP_SYSTEMD=1`` for Galaxy when planemo runs as root, so
   ``planemo test`` and ``planemo serve`` work as root in containers against
   Galaxy releases that pin gravity >= 1.2.1 (e.g. 26.0) without patching
-  gravity. A
-  ``GRAVITY_SKIP_SYSTEMD`` already in the environment is left alone.
+  gravity. A ``GRAVITY_SKIP_SYSTEMD`` already in the environment is left alone
+  (thanks to `@mvdbeek`_). `Pull Request 1778`_
 * Fix ``shed_lint --fail_fast`` to stop linting and repository traversal at
   the configured failure level. At the default ``--fail_level warn``, the first
   warning stops the run; use ``--fail_level error`` to continue past warnings
   and stop at the first error. The message that stops the run is shown even
-  when ``--report_level`` would hide it (#1710).
-* Add ``--use_cache`` to ``planemo test``, off by default - follow-up to #1665
-  which added it to ``planemo run``.
-* Add ``--doi`` and ``--conda_requirements`` to ``planemo shed_lint`` so
-  ``shed_lint --tools`` covers the same checks as ``lint`` - fixes #667.
-* Add ``--extended_git_diff`` to ``ci_find_repos``, ``ci_find_tools`` and
-  ``list_repos``, resolving each file changed in ``--changed_in_commit_range``
-  to the tools and repositories that own it - fixes #1129.
+  when ``--report_level`` would hide it (thanks to `@jmchilton`_). `Pull Request 1710`_
 * Exit non-zero from ``planemo autoupdate`` when a tool fails to update - fixes
-  #1478.
+  #1478 (thanks to `@jmchilton`_). `Pull Request 1727`_
 * Fix a ``KeyError`` crash in ``planemo shed_lint --ensure_metadata`` when a
   repository's ``.shed.yml`` omits a metadata field such as
   ``long_description``; missing and empty fields are now both reported as
-  warnings.
+  warnings (thanks to `@bernt-matthias`_). `Pull Request 1756`_
+* Compare +galaxyN tool versions numerically in shed_lint and autoupdate (thanks to `@richard-burhans`_). `Pull Request 1751`_
+* Only report workflow autoupdates Galaxy actually made (thanks to `@mvdbeek`_). `Pull Request 1747`_
+* Fix workflow lint context integration with gxformat2 (thanks to `@mvdbeek`_). `Pull Request 1770`_
+* Fix expression.json collection element assertions (thanks to `@jmchilton`_). `Pull Request 1760`_
+* Preserve false and other falsy workflow test outputs (thanks to `@jmchilton`_). `Pull Request 1761`_
+* Build planemo test results while Galaxy is still running (thanks to `@mvdbeek`_). `Pull Request 1748`_
+* Don't wipe collected outputs when a test names an undefined output (thanks to `@jmchilton`_). `Pull Request 1728`_
+* Report standalone engine errors without crashing (thanks to `@jmchilton`_). `Pull Request 1713`_
+* Fix no-wait Galaxy tool execution (thanks to `@jmchilton`_). `Pull Request 1712`_
+* Make --test_data resolve tool test inputs (thanks to `@jmchilton`_). `Pull Request 1725`_
+* Keep localhost as advertised GxIT URL when binding 0.0.0.0 (thanks to `@paulzierep`_). `Pull Request 1730`_
+* Fix Dockstore names for Galaxy workflow suffixes (thanks to `@jmchilton`_). `Pull Request 1696`_
+* Honor Galaxy test timeouts across uploads and workflows (thanks to `@jmchilton`_). `Pull Request 1687`_
+* Various fixes for targeting postgres in singularity (rebase) (thanks to `@jmchilton`_). `Pull Request 1679`_
+* Fix job_config_init profile wiring and legacy version default (thanks to `@jmchilton`_). `Pull Request 1685`_
+* Remove python_template_version from template (thanks to `@bernt-matthias`_). `Pull Request 1736`_
+* Document running Planemo workflows on Slurm clusters (rebase + fixes) (thanks to `@jmchilton`_). `Pull Request 1683`_
+* Document both galaxy.json tool-provided metadata formats (thanks to `@jmchilton`_). `Pull Request 1716`_
+* Improve docs with regards to running and testing workflows (thanks to `@wm75`_). `Pull Request 1426`_
+* Sync planemo and planemo virtual appliance docs (thanks to `@bernt-matthias`_). `Pull Request 1386`_
+* Replace Perl documentation example with Python (thanks to `@jmchilton`_). `Pull Request 1709`_
+* Add check-release and document GitHub release step (thanks to `@jmchilton`_). `Pull Request 1773`_
+* Use galaxy.util.wait.wait_on (thanks to `@jmchilton`_). `Pull Request 1711`_
+* Drop dead interactor.VERBOSE_GALAXY_ERRORS assignment (thanks to `@jmchilton`_). `Pull Request 1684`_
+* Make last-failed tests import-order independent (thanks to `@jmchilton`_). `Pull Request 1688`_
+* add assertion that autoupdate does not modify input description (thanks to `@bernt-matthias`_). `Pull Request 1451`_
+* Skip Zenodo-dependent tests when the API is unavailable (thanks to `@jmchilton`_). `Pull Request 1698`_
+* Skip tests relying on quay.io, the Tool Sheds, Dockstore and usegalaxy.eu when they are down (thanks to `@jmchilton`_). `Pull Request 1726`_
+* Exercise real GalaxyEngine._run in post-shutdown test results test (thanks to `@jmchilton`_). `Pull Request 1753`_
+* Bump astral-sh/setup-uv from 10.0.0 to 10.0.1 in the actions group. `Pull Request 1689`_
+* Bump zizmorcore/zizmor-action from 0.6.2 to 0.6.3 in the actions group. `Pull Request 1699`_
+* Bump the actions group with 2 updates. `Pull Request 1717`_
+* Bump astral-sh/setup-uv from 10.1.0 to 10.2.0 in the actions group. `Pull Request 1732`_
+* Bump astral-sh/setup-uv from 10.2.0 to 10.3.0 in the actions group. `Pull Request 1749`_
+* Bump the actions group with 3 updates. `Pull Request 1766`_
+* Bump the actions group with 2 updates. `Pull Request 1779`_
 
 
 ---------------------
@@ -2463,6 +2512,60 @@ History
   tools - and more experimental features involving Docker and Homebrew. 7d07782_
 
 .. github_links
+.. _Pull Request 1685: https://github.com/galaxyproject/planemo/pull/1685
+.. _Pull Request 1688: https://github.com/galaxyproject/planemo/pull/1688
+.. _Pull Request 1689: https://github.com/galaxyproject/planemo/pull/1689
+.. _Pull Request 1687: https://github.com/galaxyproject/planemo/pull/1687
+.. _Pull Request 1699: https://github.com/galaxyproject/planemo/pull/1699
+.. _Pull Request 1696: https://github.com/galaxyproject/planemo/pull/1696
+.. _Pull Request 1683: https://github.com/galaxyproject/planemo/pull/1683
+.. _Pull Request 1679: https://github.com/galaxyproject/planemo/pull/1679
+.. _Pull Request 1702: https://github.com/galaxyproject/planemo/pull/1702
+.. _Pull Request 1716: https://github.com/galaxyproject/planemo/pull/1716
+.. _Pull Request 1717: https://github.com/galaxyproject/planemo/pull/1717
+.. _Pull Request 1698: https://github.com/galaxyproject/planemo/pull/1698
+.. _Pull Request 1363: https://github.com/galaxyproject/planemo/pull/1363
+.. _Pull Request 1426: https://github.com/galaxyproject/planemo/pull/1426
+.. _Pull Request 1451: https://github.com/galaxyproject/planemo/pull/1451
+.. _Pull Request 1386: https://github.com/galaxyproject/planemo/pull/1386
+.. _Pull Request 1130: https://github.com/galaxyproject/planemo/pull/1130
+.. _Pull Request 1727: https://github.com/galaxyproject/planemo/pull/1727
+.. _Pull Request 1730: https://github.com/galaxyproject/planemo/pull/1730
+.. _Pull Request 1732: https://github.com/galaxyproject/planemo/pull/1732
+.. _Pull Request 1111: https://github.com/galaxyproject/planemo/pull/1111
+.. _Pull Request 1736: https://github.com/galaxyproject/planemo/pull/1736
+.. _Pull Request 1735: https://github.com/galaxyproject/planemo/pull/1735
+.. _Pull Request 1712: https://github.com/galaxyproject/planemo/pull/1712
+.. _Pull Request 1713: https://github.com/galaxyproject/planemo/pull/1713
+.. _Pull Request 1728: https://github.com/galaxyproject/planemo/pull/1728
+.. _Pull Request 1729: https://github.com/galaxyproject/planemo/pull/1729
+.. _Pull Request 1706: https://github.com/galaxyproject/planemo/pull/1706
+.. _Pull Request 1703: https://github.com/galaxyproject/planemo/pull/1703
+.. _Pull Request 1725: https://github.com/galaxyproject/planemo/pull/1725
+.. _Pull Request 1741: https://github.com/galaxyproject/planemo/pull/1741
+.. _Pull Request 1742: https://github.com/galaxyproject/planemo/pull/1742
+.. _Pull Request 1749: https://github.com/galaxyproject/planemo/pull/1749
+.. _Pull Request 1748: https://github.com/galaxyproject/planemo/pull/1748
+.. _Pull Request 1756: https://github.com/galaxyproject/planemo/pull/1756
+.. _Pull Request 1751: https://github.com/galaxyproject/planemo/pull/1751
+.. _Pull Request 1766: https://github.com/galaxyproject/planemo/pull/1766
+.. _Pull Request 1770: https://github.com/galaxyproject/planemo/pull/1770
+.. _Pull Request 1760: https://github.com/galaxyproject/planemo/pull/1760
+.. _Pull Request 1761: https://github.com/galaxyproject/planemo/pull/1761
+.. _Pull Request 1763: https://github.com/galaxyproject/planemo/pull/1763
+.. _Pull Request 1747: https://github.com/galaxyproject/planemo/pull/1747
+.. _Pull Request 1755: https://github.com/galaxyproject/planemo/pull/1755
+.. _Pull Request 1753: https://github.com/galaxyproject/planemo/pull/1753
+.. _Pull Request 1710: https://github.com/galaxyproject/planemo/pull/1710
+.. _Pull Request 1709: https://github.com/galaxyproject/planemo/pull/1709
+.. _Pull Request 1711: https://github.com/galaxyproject/planemo/pull/1711
+.. _Pull Request 1726: https://github.com/galaxyproject/planemo/pull/1726
+.. _Pull Request 1697: https://github.com/galaxyproject/planemo/pull/1697
+.. _Pull Request 1695: https://github.com/galaxyproject/planemo/pull/1695
+.. _Pull Request 1684: https://github.com/galaxyproject/planemo/pull/1684
+.. _Pull Request 1773: https://github.com/galaxyproject/planemo/pull/1773
+.. _Pull Request 1778: https://github.com/galaxyproject/planemo/pull/1778
+.. _Pull Request 1779: https://github.com/galaxyproject/planemo/pull/1779
 .. _Pull Request 1467: https://github.com/galaxyproject/planemo/pull/1467
 .. _Pull Request 1486: https://github.com/galaxyproject/planemo/pull/1486
 .. _Pull Request 1682: https://github.com/galaxyproject/planemo/pull/1682
@@ -3560,3 +3663,5 @@ History
 .. _@dannon: https://github.com/dannon
 .. _@RZ9082: https://github.com/RZ9082
 .. _@guerler: https://github.com/guerler
+.. _@richard-burhans: https://github.com/richard-burhans
+.. _@Sch-Da: https://github.com/Sch-Da
