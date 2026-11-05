@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 from os.path import (
     join,
@@ -10,6 +11,7 @@ from shutil import (
 )
 
 import responses
+from galaxy.tool_util.parser import get_tool_source
 
 from planemo import shed
 from .test_utils import (
@@ -101,6 +103,51 @@ class ShedLintTestCase(CliTestCase):
         with self._isolate_repo("single_tool_required_files"):
             result = self._check_exit_code(["shed_lint", "--tools", "--doi"] + skip_remote)
             assert "10.1093/bioinformatics/bts573 is a valid DOI" in result.output
+
+    def test_shed_version_skips_unchanged_tools(self):
+        with self._isolate_repo("single_tool") as f, responses.RequestsMock() as rsps:
+            cat, cat2 = self._shed_version_tools(f, rsps)
+            self._mock_tool_source(rsps, "cat", body=cat)
+            self._mock_tool_source(rsps, "cat2", body=cat2.replace("tail-to-head", "head-to-tail"))
+            result = self._check_exit_code(["shed_lint", "--skip", "shed_remote_repository_url"], exit_code=1)
+            assert "cat: tool XML unchanged since installable revision 1.0+galaxy1" in result.output
+            assert "cat: version" not in result.output
+            assert "cat2: version 1.0+galaxy1 is less or equal" in result.output
+
+    def test_shed_version_errors_when_published_source_unavailable(self):
+        with self._isolate_repo("single_tool") as f, responses.RequestsMock() as rsps:
+            self._shed_version_tools(f, rsps)
+            self._mock_tool_source(rsps, "cat", status=404)
+            self._mock_tool_source(rsps, "cat2", status=404)
+            result = self._check_exit_code(["shed_lint", "--skip", "shed_remote_repository_url"], exit_code=1)
+            assert "unchanged since" not in result.output
+            for tool_id in ("cat", "cat2"):
+                assert f"{tool_id}: could not fetch the tool source published with version 1.0+galaxy1" in result.output
+
+    def _shed_version_tools(self, repo, rsps):
+        """Write cat and cat2 at 1.0+galaxy1, publish both on the mocked main Tool Shed, return their sources."""
+        cat_path = join(repo, "cat.xml")
+        cat2_path = join(repo, "cat2.xml")
+        with open(cat_path) as fh:
+            cat = fh.read().replace('version="1.0"', 'version="1.0+galaxy1"')
+        with open(cat_path, "w") as fh:
+            fh.write(cat)
+        with open(cat2_path, "w") as fh:
+            fh.write(cat.replace('id="cat"', 'id="cat2"'))
+        api = "https://toolshed.g2.bx.psu.edu/api/repositories"
+        rsps.add(responses.GET, re.compile(re.escape(api) + r"\?"), json=[{"name": "single_tool", "owner": "iuc"}])
+        rsps.add(responses.GET, re.compile(re.escape(api + "/get_ordered_installable_revisions")), json=["abc123"])
+        valid_tools = [{"id": "cat", "version": "1.0+galaxy1"}, {"id": "cat2", "version": "1.0+galaxy1"}]
+        rsps.add(
+            responses.GET,
+            re.compile(re.escape(api + "/get_repository_revision_install_info")),
+            json=[{}, {"valid_tools": valid_tools}, {}],
+        )
+        return get_tool_source(cat_path).to_string(), get_tool_source(cat2_path).to_string()
+
+    def _mock_tool_source(self, rsps, tool_id, body="", status=200):
+        url = f"https://toolshed.g2.bx.psu.edu/api/tools/iuc~single_tool~{tool_id}/versions/1.0%2Bgalaxy1/tool_source"
+        rsps.add(responses.GET, url, body=body, status=status)
 
     @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
     def test_tool_linting_conda_requirements(self):

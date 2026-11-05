@@ -8,6 +8,13 @@ History
 ---------------------
 0.75.48.dev0
 ---------------------
+* ``shed_lint``'s ``version_bumped`` linter compares the tool XML (macros
+  expanded, other repository files are not compared) with the one published
+  in the Tool Shed (requires a Tool Shed >= 26.1 and the
+  ``tool_source`` endpoint added in galaxyproject/galaxy#21794). An unchanged
+  tool of a repository whose other tools were bumped needs no version bump
+  anymore - fixes #1613. Tools that are not published yet are skipped instead
+  of failing an assertion.
 * Set ``GRAVITY_SKIP_SYSTEMD=1`` for Galaxy when planemo runs as root, so
   ``planemo test`` and ``planemo serve`` work as root in containers against
   Galaxy releases that pin gravity >= 1.2.1 (e.g. 26.0) without patching

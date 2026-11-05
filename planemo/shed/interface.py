@@ -2,13 +2,18 @@
 
 import json
 from typing import Optional
+from urllib.parse import quote
 
+import requests
 from bioblend.toolshed import ToolShedInstance
 from galaxy.util import unicodify
 
 from planemo.io import untar_to
 
 REPOSITORY_DOWNLOAD_TEMPLATE = "%s/repository/download?repository_id=%s&changeset_revision=default&file_type=gz"
+TOOL_SOURCE_URL = "%s/api/tools/%s/versions/%s/tool_source"
+# bioblend's default is no timeout; the Tool Shed clones the repository per request
+TOOL_SOURCE_TIMEOUT = 30
 
 
 def tool_shed_instance(
@@ -90,6 +95,29 @@ def download_tar(tsi, repo_id, destination, to_directory):
         untar_to(download_url, tar_args=tar_args, dest_dir=destination)
     else:
         untar_to(download_url, path=destination)
+
+
+def shed_tool_source(tsi, owner, name, tool_id, tool_version):
+    """Fetch the tool source published for a tool version in a Tool Shed.
+
+    The Tool Shed returns the expanded tool document (macros are expanded, which
+    makes it comparable to ``ToolSource.to_string()`` of a local tool) and the
+    source language in a header. Requires a Tool Shed >= 26.1, which gained the
+    ``tool_source`` endpoint in https://github.com/galaxyproject/galaxy/pull/21794.
+
+    Returns ``None`` if the Tool Shed cannot provide the tool source (endpoint
+    missing, unknown tool or version, connection or HTTP error), so that callers
+    can report the missing comparison instead of silently skipping it.
+    """
+    trs_tool_id = quote(f"{owner}~{name}~{tool_id}", safe="")
+    url = TOOL_SOURCE_URL % (tsi.base_url.rstrip("/"), trs_tool_id, quote(tool_version, safe=""))
+    try:
+        response = tsi.make_get_request(url, timeout=TOOL_SOURCE_TIMEOUT)
+    except requests.RequestException:
+        return None
+    if response.status_code != 200:
+        return None
+    return response.text
 
 
 def _user(tsi):

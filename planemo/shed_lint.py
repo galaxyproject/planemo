@@ -29,7 +29,10 @@ from planemo.shed import (
     validate_repo_owner,
 )
 from planemo.shed2tap import base
-from planemo.shed.interface import tool_shed_instance
+from planemo.shed.interface import (
+    shed_tool_source,
+    tool_shed_instance,
+)
 from planemo.tool_lint import (
     build_tool_lint_args,
     handle_tool_load_error,
@@ -46,6 +49,8 @@ if TYPE_CHECKING:
 
 TOOL_DEPENDENCIES_XSD = os.path.join(XSDS_PATH, "tool_dependencies.xsd")
 REPO_DEPENDENCIES_XSD = os.path.join(XSDS_PATH, "repository_dependencies.xsd")
+
+DEFAULT_SHED_URL = "https://toolshed.g2.bx.psu.edu/"
 
 
 VALID_REPOSITORY_TYPES = [
@@ -171,10 +176,28 @@ def lint_repository_tools(ctx: "PlanemoCliContext", realized_repository: "Realiz
         lint_tool_source_with(lint_ctx, tool_source, extra_modules=lint_args["extra_modules"])
 
 
-def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
-    path = realized_repository.path
+def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx, shed_url: str = DEFAULT_SHED_URL):
+    """Check that changed tool sources got a new version.
 
-    tsi = tool_shed_instance("https://toolshed.g2.bx.psu.edu/")
+    A version is considered released if the latest installable revision of the
+    repository in the Tool Shed contains the tool with the same version and an
+    identical (expanded) tool source. Other repository files (scripts, data
+    tables, test data) are not compared.
+    """
+    path = realized_repository.path
+    repo_owner = realized_repository.owner
+    repo_name = realized_repository.name
+
+    tsi = tool_shed_instance(shed_url)
+
+    try:
+        # check if there is already such a repo (otherwise get_ordered_installable_revisions will log an error for new repos)
+        if len(tsi.repositories.get_repositories(repo_name, repo_owner)) == 0:
+            return
+        ts_tool_versions = _shed_tool_versions(tsi, repo_owner, repo_name)
+    except ConnectionError:
+        lint_ctx.error(f"{repo_owner}/{repo_name}: failed to query the Tool Shed, tool versions not checked.")
+        return
 
     for tool_path, tool_source in yield_tool_sources(ctx=None, path=path, recursive=True):
         if handle_tool_load_error(tool_path, tool_source):
@@ -183,48 +206,63 @@ def lint_shed_version(realized_repository: "RealizedRepository", lint_ctx):
         if not isinstance(tool_source, ToolSource):
             continue
 
-        repo_owner = realized_repository.owner
-        repo_name = realized_repository.name
         tool_id = tool_source.parse_id()
         tool_version = tool_source.parse_version()
+        if not tool_id or not tool_version:
+            # id and version are required by the tool schema, other linters report them
+            continue
+        ts_tool_version = ts_tool_versions.get(tool_id)
 
-        # check if there is already such a repo (otherwise get_ordered_installable_revisions will log an error for new repos)
-        if len(tsi.repositories.get_repositories(repo_name, repo_owner)) == 0:
+        # no such tool in the latest installable revision -> fine to push any version
+        if ts_tool_version is None:
+            lint_ctx.info(f"{tool_id}: not yet published in {repo_name}, no version check needed.", "ShedVersion")
             continue
 
-        try:
-            installable_revisions = tsi.repositories.get_ordered_installable_revisions(repo_name, repo_owner)
-        except ConnectionError:
+        if parse_tool_version(tool_version) > parse_tool_version(ts_tool_version):
+            # version is bumped -> nothing to complain about, no need to ask the Tool Shed
             continue
 
-        if len(installable_revisions) == 0:
-            continue
+        if parse_tool_version(tool_version) == parse_tool_version(ts_tool_version):
+            # The version is unchanged, which is only fine if the tool source is
+            # unchanged as well (e.g. another tool of the same repository was
+            # bumped). Compare with the source published in the Tool Shed.
+            ts_tool_source = shed_tool_source(tsi, repo_owner, repo_name, tool_id, ts_tool_version)
+            if ts_tool_source is None:
+                lint_ctx.error(
+                    f"{tool_id}: could not fetch the tool source published with version {ts_tool_version} "
+                    "from the Tool Shed, cannot check whether a version bump is needed.",
+                    "ShedVersion",
+                )
+                continue
+            if ts_tool_source == tool_source.to_string():
+                lint_ctx.info(
+                    f"{tool_id}: tool XML unchanged since installable revision {ts_tool_version}, "
+                    "no version bump needed (other repository files are not compared).",
+                    "ShedVersion",
+                )
+                continue
 
-        latest_installable_revision = installable_revisions[-1]
-        repo_info, repo_metadata, _ = tsi.repositories.get_repository_revision_install_info(
-            repo_name, repo_owner, latest_installable_revision
+        lint_ctx.error(
+            f"{tool_id}: version {tool_version} is less or equal than version of the latest installable revision {ts_tool_version}",
+            "ShedVersion",
         )
 
-        # no such tool in the TS -> fine to push any version
-        if len(repo_metadata["valid_tools"]) == 0:
-            continue
 
-        # case 1 tool per repo
-        if len(repo_metadata["valid_tools"]) == 1:
-            assert repo_metadata["valid_tools"][0]["version"]
-            ts_tool_version = repo_metadata["valid_tools"][0]["version"]
-        # case n tools per repo
-        else:
-            tool = [_ for _ in repo_metadata["valid_tools"] if _["id"] == tool_id]
-            assert len(tool) == 1
-            assert tool[0]["version"]
-            ts_tool_version = tool[0]["version"]
+def _shed_tool_versions(tsi, repo_owner: str, repo_name: str) -> dict:
+    """Map tool ids to the versions published in the latest installable revision."""
+    installable_revisions = tsi.repositories.get_ordered_installable_revisions(repo_name, repo_owner)
+    if len(installable_revisions) == 0:
+        return {}
 
-        if parse_tool_version(tool_version) <= parse_tool_version(ts_tool_version):
-            lint_ctx.error(
-                f"{tool_id}: version {tool_version} is less or equal than version of the latest installable revision {ts_tool_version}",
-                "ShedVersion",
-            )
+    latest_installable_revision = installable_revisions[-1]
+    _, repo_metadata, _ = tsi.repositories.get_repository_revision_install_info(
+        repo_name, repo_owner, latest_installable_revision
+    )
+    return {
+        ts_tool["id"]: ts_tool["version"]
+        for ts_tool in repo_metadata["valid_tools"]
+        if ts_tool.get("id") and ts_tool.get("version")
+    }
 
 
 def lint_shed_remote_repository_url(realized_repository: "RealizedRepository", lint_ctx):
