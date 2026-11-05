@@ -6,6 +6,11 @@ History
 .. to_doc
 
 ---------------------
+0.75.49.dev0
+---------------------
+
+
+---------------------
 0.75.48 (2026-11-05)
 ---------------------
 * Support linked (URL / TRS) subworkflows in workflows (thanks to `@mvdbeek`_). `Pull Request 1742`_
