@@ -72,6 +72,32 @@ class ShedLintTestCase(CliTestCase):
                 ["shed_lint", "--skip", "shed_remote_repository_url", "--fail_level", "error"], exit_code=0
             )
 
+    def test_shed_yaml_missing_name_and_unknown_keys_warn(self):
+        skip_remote = ["--skip", "shed_remote_repository_url"]
+        with self._isolate_repo("single_tool") as f:
+            shed_yml = join(f, ".shed.yml")
+            with open(shed_yml) as fh:
+                lines = fh.readlines()
+            # drop the name and misspell it instead, as in tools-iuc's pdfimages
+            lines = [line for line in lines if not line.startswith("name:")] + ['ename: "single_tool"\n']
+            with open(shed_yml, "w") as fh:
+                fh.writelines(lines)
+            r = self._check_exit_code(["shed_lint"] + skip_remote, exit_code=1)
+            assert ".shed.yml has no 'name'" in r.output
+            assert "Unknown keys in .shed.yml: ename." in r.output
+            # warnings only: the directory-name fallback is valid
+            self._check_exit_code(["shed_lint", "--fail_level", "error"] + skip_remote)
+        # a repositories config needs no top-level name
+        with self._isolate_repo("single_tool") as f:
+            shed_yml = join(f, ".shed.yml")
+            with open(shed_yml) as fh:
+                lines = [line for line in fh if not line.startswith("name:")]
+            with open(shed_yml, "w") as fh:
+                fh.writelines(lines + ["repositories:\n", "  single_tool:\n", "    include: ['**']\n"])
+            r = self._check_exit_code(["shed_lint"] + skip_remote)
+            assert "has no 'name'" not in r.output
+            assert "Unknown keys" not in r.output
+
     def test_tool_linting(self):
         # Make sure bad_invalid_tool_xml only when used with --tools.
         with self._isolate_repo("bad_invalid_tool_xml"):
