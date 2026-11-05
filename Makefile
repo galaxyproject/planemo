@@ -17,6 +17,8 @@ SOURCE_DIR?=planemo
 SOURCE_DOC_EXCLUDE=$(SOURCE_DIR)/cwl/cwl2script
 BUILD_SCRIPTS_DIR=scripts
 VERSION?=$(shell python3 $(BUILD_SCRIPTS_DIR)/print_version_for_release.py $(SOURCE_DIR))
+# Evaluate once, so push-release still sees the released version after new-version bumps it.
+VERSION:=$(VERSION)
 DOC_URL?=https://planemo.readthedocs.org
 PROJECT_URL?=https://github.com/galaxyproject/planemo
 PROJECT_NAME?=planemo
@@ -182,16 +184,16 @@ check-release: ## pre-release checklist: venv, clean tree, upstream remote, hist
 	@$(MAKE) lint
 	@echo "==> check-release OK"
 
-release-local: commit-version new-version
+release-local: commit-version check-dist new-version
 
 release-brew: ## Mint a new homebrew release
 	bash $(BUILD_SCRIPTS_DIR)/update_planemo_recipe.bash $(VERSION)
 
-push-release: ## Push a tagged release to github
-	git push $(UPSTREAM) master
-	git push --tags $(UPSTREAM)
+# Push only the release tag: GitHub fires no tag events when more than three tags are pushed at once.
+push-release: ## Push master and the release tag to github
+	git push --atomic $(UPSTREAM) master refs/tags/$(VERSION)
 
-release: release-local check-dist push-release ## package, review, and upload a release
+release: check-release release-local push-release ## check, tag, package, and push a release
 
 add-history: ## Reformat HISTORY.rst with data from Github's API
 	$(IN_VENV) pip install . --no-deps
