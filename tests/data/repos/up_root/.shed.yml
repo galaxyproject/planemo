@@ -1,6 +1,6 @@
 name: up_root
 owner: iuc
-descrption: A dummy tool for Planemo include testing
+description: A dummy tool for Planemo include testing
 long_description: |
   The purpose of this tool is to test advanced include settings
   in the Planemo .shed.yml file which can be used to support a
