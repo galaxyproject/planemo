@@ -15,6 +15,11 @@ History
   tool of a repository whose other tools were bumped needs no version bump
   anymore - fixes #1613. Tools that are not published yet are skipped instead
   of failing an assertion.
+* Set ``GRAVITY_SKIP_SYSTEMD=1`` for Galaxy when planemo runs as root, so
+  ``planemo test`` and ``planemo serve`` work as root in containers against
+  Galaxy releases that pin gravity >= 1.2.1 (e.g. 26.0) without patching
+  gravity. A
+  ``GRAVITY_SKIP_SYSTEMD`` already in the environment is left alone.
 * Fix ``shed_lint --fail_fast`` to stop linting and repository traversal at
   the configured failure level. At the default ``--fail_level warn``, the first
   warning stops the run; use ``--fail_level error`` to continue past warnings
