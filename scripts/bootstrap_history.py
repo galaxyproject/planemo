@@ -109,6 +109,16 @@ def generate_acknowledgements():
     return acknowledgements
 
 
+def add_contributor_targets(history, acknowledgements):
+    """Append link targets for credited logins HISTORY.rst doesn't define yet."""
+    for login in sorted(set(re.findall(r"`@([^`]+)`_", "\n".join(acknowledgements)))):
+        if f"\n.. _@{login}:" not in history:
+            target = f".. _@{login}: https://github.com/{login}"
+            print(target)
+            history = history.rstrip("\n") + f"\n{target}\n"
+    return history
+
+
 def main(argv):
     history_path = os.path.join(PROJECT_DIRECTORY, "HISTORY.rst")
     with open(history_path, encoding="utf-8") as fh:
@@ -136,6 +146,8 @@ def main(argv):
                 elif ack.startswith(".."):
                     print(ack)
                     history = extend(".. github_links", ack)
+
+            history = add_contributor_targets(history, acknowledgements)
 
             with open(history_path, "w", encoding="utf-8") as fh:
                 fh.write(history)
@@ -196,6 +208,7 @@ def main(argv):
 
     to_doc = wrap(to_doc)
     history = extend(".. to_doc", to_doc)
+    history = add_contributor_targets(history, [message])
     with open(history_path, "w", encoding="utf-8") as fh:
         fh.write(history)
 

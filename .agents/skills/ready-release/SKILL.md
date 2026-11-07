@@ -11,11 +11,11 @@ Walk me through readying a planemo release. The full process is documented in `d
 
 2. **Setup venv** - if `.venv` is missing, run `make setup-venv`.
 
-3. **Populate changelog** - run `make add-history`, show me the new `HISTORY.rst` entries (flag any that duplicate hand-written entries), pause so I can edit, then commit the result (`make check-release` requires a clean tree).
+3. **Populate changelog** - run `GH_TOKEN=$(gh auth token) make add-history`, show me the new `HISTORY.rst` entries (flag any that duplicate hand-written entries), pause so I can edit, then commit the result (`make check-release` requires a clean tree).
 
 4. **Pre-release checks** - run `make check-release`. If it fails, stop and report. Do not work around failures; fix the underlying issue.
 
-5. **Release** - after I confirm, run `make release`. This pushes `master` and the tag to `UPSTREAM`, and the tag publishes to PyPI.
+5. **Release** - `git fetch`; if `UPSTREAM` master moved, rebase and add HISTORY entries for the new merges. After I confirm, run `make release`. It reruns `make check-release`, then pushes `master` and the release tag to `UPSTREAM`, and the tag publishes to PyPI. If it fails after tagging, stop and follow the recovery bullet in `docs/developing.rst`; don't rerun `make release` or a bare `make push-release`.
 
 6. **Verify publish** - watch the tag's `Deploy` workflow run and confirm the version on PyPI.
 
