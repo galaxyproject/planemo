@@ -25,13 +25,22 @@ release (it notifies contributors).
 * Review and commit outstanding changes.
 * ``make check-release`` verifies the working tree is clean, the ``UPSTREAM``
   remote points to ``UPSTREAM_REPO`` (defaults: ``galaxyproject`` /
-  ``galaxyproject/planemo``), ``HISTORY.rst`` has entries under the current
-  ``.devN`` section, and ``make clean && make lint`` pass.
+  ``galaxyproject/planemo``), you are on ``master`` and it contains
+  ``UPSTREAM`` master, ``HISTORY.rst`` has entries under the current ``.devN``
+  section, ``make clean && make lint`` pass, and ``make check-dist`` builds
+  packages whose README/HISTORY pass ``twine check``.
 * If ``UPSTREAM`` master moved since ``make add-history``, rebase and add
   entries for the newly merged PRs.
 * ``make release`` reruns ``make check-release``, then updates version and
   history, commits, tags, checks the release packages, mints a new version and
   pushes master and the release tag (only) upstream.
+* If ``make release`` fails after tagging: when only the push failed, rerun it
+  with ``make push-release VERSION=<released version>``, plus the same
+  ``UPSTREAM=...`` you gave ``make release`` if any (plain
+  ``make push-release`` would use the next ``.dev0`` version). Otherwise delete
+  the tag (``git tag -d <released version>``), drop the ``Version
+  <released version>`` commit and the ``Starting work on ...`` commit if it
+  was made, fix the problem and rerun ``make release``.
 * The new tag should automatically push the new release to PyPI via the
   workflow defined in ``.github/workflows/deploy.yaml``.
   If this didn't work, you can ``git checkout`` the tag and push to PyPI by

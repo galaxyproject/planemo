@@ -16,9 +16,9 @@ UPSTREAM_REPO?=galaxyproject/planemo
 SOURCE_DIR?=planemo
 SOURCE_DOC_EXCLUDE=$(SOURCE_DIR)/cwl/cwl2script
 BUILD_SCRIPTS_DIR=scripts
-VERSION?=$(shell python3 $(BUILD_SCRIPTS_DIR)/print_version_for_release.py $(SOURCE_DIR))
-# Evaluate once, so push-release still sees the released version after new-version bumps it.
-VERSION:=$(VERSION)
+# Computed on first use, then fixed: targets that don't need it never run the script,
+# and push-release still sees the released version after new-version bumps it.
+VERSION?=$(eval VERSION:=$$(shell $(IN_VENV) python3 $(BUILD_SCRIPTS_DIR)/print_version_for_release.py $(SOURCE_DIR)))$(VERSION)
 DOC_URL?=https://planemo.readthedocs.org
 PROJECT_URL?=https://github.com/galaxyproject/planemo
 PROJECT_NAME?=planemo
@@ -28,6 +28,10 @@ BUILD_SLIDESHOW?=$(IN_VENV) python3 $(BUILD_SCRIPTS_DIR)/build_slideshow.py
 SLIDESHOW_TO_PDF?=bash -c 'docker run --rm -v `pwd`:/cwd astefanutti/decktape /cwd/$$0 /cwd/`dirname $$0`/`basename -s .html $$0`.pdf'
 
 .PHONY: clean-pyc clean-build docs clean
+
+# Prerequisites run in the order listed (release depends on this: check-release must finish
+# before commit-version tags), even under -j or a -j inherited through MAKEFLAGS.
+.NOTPARALLEL:
 
 help:
 	@egrep '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -165,7 +169,7 @@ commit-version: ## Update version and history, commit and add tag
 new-version: ## Mint a new version
 	$(IN_VENV) python3 $(BUILD_SCRIPTS_DIR)/new_version.py $(SOURCE_DIR) --patch
 
-check-release: ## pre-release checklist: venv, clean tree, upstream remote, history entries, lint
+check-release: ## pre-release checklist: venv, branch, clean tree, upstream remote and master, history entries, lint, packages
 	@echo "==> checking $(VENV) exists"
 	@test -d $(VENV) || \
 		(echo "ERROR: $(VENV) does not exist; run 'make setup-venv'"; exit 1)
@@ -177,11 +181,20 @@ check-release: ## pre-release checklist: venv, clean tree, upstream remote, hist
 		(echo "ERROR: remote '$(UPSTREAM)' missing or not pointing to $(UPSTREAM_REPO)."; \
 		 echo "  Fix:      git remote add $(UPSTREAM) git@github.com:$(UPSTREAM_REPO).git"; \
 		 echo "  Or fork:  make check-release UPSTREAM=<name> UPSTREAM_REPO=<owner>/<repo>"; exit 1)
+	@echo "==> checking current branch is master"
+	@test "$$(git symbolic-ref --short -q HEAD)" = master || \
+		(echo "ERROR: not on master; release from master, since push-release pushes the local master branch"; exit 1)
+	@echo "==> checking master contains $(UPSTREAM)/master"
+	@git fetch -q $(UPSTREAM) master
+	@git merge-base --is-ancestor FETCH_HEAD HEAD || \
+		(echo "ERROR: $(UPSTREAM) master has commits missing locally; rebase and add HISTORY.rst entries for them"; exit 1)
 	@echo "==> checking HISTORY.rst has entries under current .devN header"
 	@$(IN_VENV) python3 $(BUILD_SCRIPTS_DIR)/check_history_entries.py
 	@echo "==> make clean && make lint"
 	@$(MAKE) clean
 	@$(MAKE) lint
+	@echo "==> make check-dist (README/HISTORY render, before anything is tagged)"
+	@$(MAKE) check-dist
 	@echo "==> check-release OK"
 
 release-local: commit-version check-dist new-version

@@ -208,6 +208,7 @@ def main(argv):
 
     to_doc = wrap(to_doc)
     history = extend(".. to_doc", to_doc)
+    history = add_contributor_targets(history, [message])
     with open(history_path, "w", encoding="utf-8") as fh:
         fh.write(history)
 

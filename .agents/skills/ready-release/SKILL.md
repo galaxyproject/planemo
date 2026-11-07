@@ -15,7 +15,7 @@ Walk me through readying a planemo release. The full process is documented in `d
 
 4. **Pre-release checks** - run `make check-release`. If it fails, stop and report. Do not work around failures; fix the underlying issue.
 
-5. **Release** - `git fetch`; if `UPSTREAM` master moved, rebase and add HISTORY entries for the new merges. After I confirm, run `make release`. It reruns `make check-release`, then pushes `master` and the release tag to `UPSTREAM`, and the tag publishes to PyPI.
+5. **Release** - `git fetch`; if `UPSTREAM` master moved, rebase and add HISTORY entries for the new merges. After I confirm, run `make release`. It reruns `make check-release`, then pushes `master` and the release tag to `UPSTREAM`, and the tag publishes to PyPI. If it fails after tagging, stop and follow the recovery bullet in `docs/developing.rst`; don't rerun `make release` or a bare `make push-release`.
 
 6. **Verify publish** - watch the tag's `Deploy` workflow run and confirm the version on PyPI.
 
