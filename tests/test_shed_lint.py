@@ -84,7 +84,7 @@ class ShedLintTestCase(CliTestCase):
                 fh.writelines(lines)
             r = self._check_exit_code(["shed_lint"] + skip_remote, exit_code=1)
             assert ".shed.yml has no 'name'" in r.output
-            assert "Unknown keys in .shed.yml: ename." in r.output
+            assert "Planemo ignores unknown keys in .shed.yml: ename." in r.output
             # warnings only: the directory-name fallback is valid
             self._check_exit_code(["shed_lint", "--fail_level", "error"] + skip_remote)
         # a repositories config needs no top-level name
@@ -96,7 +96,30 @@ class ShedLintTestCase(CliTestCase):
                 fh.writelines(lines + ["repositories:\n", "  single_tool:\n", "    include: ['**']\n"])
             r = self._check_exit_code(["shed_lint"] + skip_remote)
             assert "has no 'name'" not in r.output
-            assert "Unknown keys" not in r.output
+            assert "unknown keys" not in r.output
+        # an empty repositories key still falls back to the directory name
+        with self._isolate_repo("single_tool") as f:
+            shed_yml = join(f, ".shed.yml")
+            with open(shed_yml) as fh:
+                lines = [line for line in fh if not line.startswith("name:")]
+            with open(shed_yml, "w") as fh:
+                fh.writelines(lines + ["repositories:\n"])
+            r = self._check_exit_code(["shed_lint"] + skip_remote, exit_code=1)
+            assert ".shed.yml has no 'name'" in r.output
+
+    def test_shed_yaml_unknown_keys_warn_once_per_file(self):
+        # two repositories realized from one .shed.yml: the file is checked once
+        with self._isolate_repo("single_tool") as f:
+            shed_yml = join(f, ".shed.yml")
+            with open(shed_yml) as fh:
+                lines = [line for line in fh if not line.startswith("name:")]
+            repositories = ["repositories:\n", "  single_tool_a:\n", "    include: ['**']\n"]
+            repositories += ["  single_tool_b:\n", "    include: ['**']\n", "maintainer: someone\n"]
+            with open(shed_yml, "w") as fh:
+                fh.writelines(lines + repositories)
+            r = self._check_exit_code(["shed_lint", "--skip", "shed_remote_repository_url"], exit_code=1)
+            assert r.output.count("Linting repository") == 2
+            assert r.output.count("Planemo ignores unknown keys in .shed.yml: maintainer.") == 1
 
     def test_tool_linting(self):
         # Make sure bad_invalid_tool_xml only when used with --tools.

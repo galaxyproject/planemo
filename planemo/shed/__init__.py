@@ -1004,7 +1004,7 @@ class RawRepositoryDirectory:
     def realizations(self, ctx, parent_directory, **kwds):
         names = self._repo_names()
 
-        for name in names:
+        for index, name in enumerate(names):
             directory = os.path.join(parent_directory, self._hash(name), name)
             multiple = self.multiple or len(names) > 1
             if not os.path.exists(directory):
@@ -1012,9 +1012,9 @@ class RawRepositoryDirectory:
             r_kwds = kwds.copy()
             if "name" in r_kwds:
                 del r_kwds["name"]
-            yield self._realize_to(ctx, directory, name, multiple, **r_kwds)
+            yield self._realize_to(ctx, directory, name, multiple, index == 0, **r_kwds)
 
-    def _realize_to(self, ctx, directory, name, multiple, **kwds):
+    def _realize_to(self, ctx, directory, name, multiple, first_in_directory, **kwds):
         fail_on_missing = kwds.get("fail_on_missing", True)
         ignore_list = []
         config = self._realize_config(name)
@@ -1049,6 +1049,7 @@ class RawRepositoryDirectory:
             config=config,
             multiple=multiple,
             missing=missing,
+            first_in_directory=first_in_directory,
         )
 
     def _repo_names(self):
@@ -1196,13 +1197,19 @@ class RealizedFile:
 
 
 class RealizedRepository:
-    def __init__(self, realized_path, real_path, config, multiple, missing):
+    def __init__(self, realized_path, real_path, config, multiple, missing, first_in_directory=True):
         self.path = realized_path
         self.real_path = real_path
         self.config = config
         self.name = config["name"]
         self.multiple = multiple
         self.missing = missing
+        # A .shed.yml with ``repositories``, ``auto_tool_repositories`` or
+        # ``suite`` produces several RealizedRepository objects that all share
+        # the same real_path. This is True only for the first of them, so that
+        # shed_lint reports problems in the .shed.yml file itself once, not
+        # once per repository.
+        self.first_in_directory = first_in_directory
 
     @property
     def owner(self):
