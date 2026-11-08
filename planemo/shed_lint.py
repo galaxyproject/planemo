@@ -62,6 +62,22 @@ SHED_METADATA = [
     "categories",
 ]
 
+# Top-level .shed.yml keys Planemo reads. ``maintainers`` is not read by
+# Planemo but is a common convention in tools-iuc and galaxytools.
+SHED_YAML_KEYS = {
+    "name",
+    "owner",
+    "type",
+    "include",
+    "exclude",
+    "ignore",
+    "repositories",
+    "auto_tool_repositories",
+    "suite",
+    "maintainers",
+    *SHED_METADATA,
+}
+
 REPOSITORY_LINTER_NAMES = [
     "expansion",
     "expected_files",
@@ -409,12 +425,30 @@ def lint_shed_yaml(realized_repository: "RealizedRepository", lint_ctx):
         return
     try:
         with open(shed_yaml) as fh:
-            yaml.safe_load(fh)
+            raw_config = yaml.safe_load(fh)
     except Exception as e:
         lint_ctx.error("Failed to parse .shed.yml file [%s]" % unicodify(e))
         return
     lint_ctx.info(".shed.yml found and appears to be valid YAML.")
+    if isinstance(raw_config, dict) and realized_repository.first_in_directory:
+        _lint_raw_shed_yaml(lint_ctx, raw_config)
     _lint_shed_contents(lint_ctx, realized_repository)
+
+
+def _lint_raw_shed_yaml(lint_ctx, raw_config):
+    # Checked before expansion: realized_repository.config already has a name
+    # filled in from the directory, so a missing one can only be seen here.
+    # Same truthiness as _expand_raw_config: ``repositories:`` left empty or
+    # ``auto_tool_repositories: false`` still means one repository named
+    # after the directory.
+    single_repository = not any(raw_config.get(key) for key in ("repositories", "auto_tool_repositories", "suite"))
+    if single_repository and not raw_config.get("name"):
+        lint_ctx.warn(
+            ".shed.yml has no 'name'. Planemo uses the directory name, but other tools reading .shed.yml may not."
+        )
+    unknown_keys = sorted(str(key) for key in raw_config if key not in SHED_YAML_KEYS)
+    if unknown_keys:
+        lint_ctx.warn("Planemo ignores unknown keys in .shed.yml: %s." % ", ".join(unknown_keys))
 
 
 def _lint_shed_contents(lint_ctx, realized_repository: "RealizedRepository"):
