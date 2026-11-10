@@ -1695,12 +1695,23 @@ def lint_urls_option():
     )
 
 
+def lint_security_option():
+    return planemo_option(
+        "security",
+        "--security",
+        is_flag=True,
+        default=False,
+        help="Check tools for unsafe uses of user-controlled values in commands (informational).",
+    )
+
+
 def lint_planemo_defined_tool_linters_options():
     return _compose(
         lint_urls_option(),
         lint_doi_option(),
         lint_conda_requirements_option(),
         lint_biocontainers_option(),
+        lint_security_option(),
     )
 
 

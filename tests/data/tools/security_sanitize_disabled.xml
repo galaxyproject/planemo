@@ -1,0 +1,31 @@
+<tool id="security_sanitize_disabled" name="Security Sanitizer Disabled Fixture" version="1.0">
+    <description>fixture for the planemo security linter</description>
+    <options sanitize="false"/>
+    <command><![CDATA[
+echo '$free_text' '$permissive_text' > '$output1';
+    ]]></command>
+    <inputs>
+        <param name="free_text" type="text" label="Free text">
+            <sanitizer sanitize="false"/>
+        </param>
+        <param name="permissive_text" type="text" label="Permissive text">
+            <sanitizer>
+                <valid initial="string.printable"/>
+            </sanitizer>
+        </param>
+    </inputs>
+    <outputs>
+        <data name="output1" format="txt"/>
+    </outputs>
+    <tests>
+        <test expect_failure="true">
+            <param name="free_text" value="a"/>
+        </test>
+    </tests>
+    <help>
+        Fixture tool exercising sanitizer findings for the security linter.
+    </help>
+    <citations>
+        <citation type="doi">10.5072/planemo-fixture</citation>
+    </citations>
+</tool>

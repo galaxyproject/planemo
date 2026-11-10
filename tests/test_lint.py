@@ -104,6 +104,23 @@ class LintTestCase(CliTestCase):
         lint_cmd = ["lint", "--doi", fail_doi]
         self._check_exit_code(lint_cmd, exit_code=1)
 
+    def test_lint_security(self):
+        # Security findings are informational, lint still succeeds with them.
+        security_tool = os.path.join(TEST_TOOLS_DIR, "security_raw_identifier.xml")
+        lint_cmd = ["lint", "--security", security_tool]
+        result = self._check_exit_code(lint_cmd)
+        assert "SecurityRawIdentifier" in result.output
+        assert "SecurityRawCollectionName" in result.output
+        # Plain lint does not report the security findings.
+        plain_result = self._check_exit_code(["lint", security_tool])
+        assert "SecurityRawIdentifier" not in plain_result.output
+        assert "SecurityRawCollectionName" not in plain_result.output
+        # The whole module can be skipped by name.
+        lint_cmd = ["lint", "--security", "-s", "security", security_tool]
+        skipped_result = self._check_exit_code(lint_cmd)
+        assert "SecurityRawIdentifier" not in skipped_result.output
+        assert "SecurityRawCollectionName" not in skipped_result.output
+
     @skip_if_environ("PLANEMO_SKIP_SLOW_TESTS")
     def test_lint_conda_requirements_empty(self):
         bwa_no_reqs = os.path.join(TEST_TOOLS_DIR, "bwa_without_requirements.xml")
