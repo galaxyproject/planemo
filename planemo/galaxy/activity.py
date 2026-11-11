@@ -20,6 +20,7 @@ from typing import (
 from urllib.parse import urljoin
 
 import bioblend
+import yaml
 from bioblend.galaxy import GalaxyInstance
 from bioblend.util import attach_file
 
@@ -55,6 +56,7 @@ from planemo.galaxy.invocations.api import (
 from planemo.galaxy.invocations.polling import PollingTrackerImpl
 from planemo.galaxy.invocations.polling import wait_for_invocation_and_jobs as polling_wait_for_invocation_and_jobs
 from planemo.galaxy.invocations.progress import WorkflowProgressDisplay
+from planemo.galaxy.test_data_mirrors import hash_mirrors
 from planemo.galaxy.upload_progress import (
     _aggregate_job_states,
     UploadProgressDisplay,
@@ -499,12 +501,20 @@ def stage_in(
             upload_progress,
             deadline=deadline,
         )
+        job_kwds: Dict[str, Any] = {"job_path": job_path}
+        test_data_mirrors = kwds.get("test_data_mirror")
+        # only the fetch API sends declared hashes to Galaxy, which then verifies mirror copies
+        if test_data_mirrors and job_path is not None and psi.use_fetch_api:
+            with open(job_path) as fh:
+                job = yaml.safe_load(fh)
+            hash_mirrors(tuple(test_data_mirrors)).rewrite_job(job)
+            job_kwds = {"job": job, "job_dir": os.path.dirname(os.path.abspath(job_path))}
         job_dict, datasets = psi.stage(
             tool_or_workflow,
             history_id=history_id,
-            job_path=job_path,
             use_path_paste=config.use_path_paste,
             to_posix_lines=to_posix_lines,
+            **job_kwds,
         )
         psi.wait_for_uploads(kwds.get("check_uploads_ok", True))
 
