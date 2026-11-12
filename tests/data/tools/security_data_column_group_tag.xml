@@ -1,11 +1,14 @@
 <tool id="security_data_column_group_tag" name="Security Column And Tag Fixture" version="1.0">
     <description>fixture for the planemo security linter</description>
     <command><![CDATA[
---tag '$tagvalue' --column '$columnvalue' > '$output1';
+--tag '$tagvalue.value' --column '$columnvalue' > '$output1';
+#for $column in $columnvalue:
+--column '$column'
+#end for
     ]]></command>
     <inputs>
         <param name="tagvalue" type="group_tag" data_ref="collection1" label="Tag"/>
-        <param name="columnvalue" type="data_column" data_ref="input1" label="Column"/>
+        <param name="columnvalue" type="data_column" data_ref="input1" multiple="true" label="Column"/>
         <param name="input1" type="data" format="txt" label="Input dataset"/>
         <param name="collection1" type="data_collection" collection_type="list" optional="true" label="List collection"/>
     </inputs>

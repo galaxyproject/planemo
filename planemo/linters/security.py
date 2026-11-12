@@ -120,7 +120,10 @@ _LOOP_VAR = re.compile(r"\$?([A-Za-z_]\w*)")
 # same sanitization.
 _SANITIZED_PARAM_TYPES = frozenset(("text", "select", "hidden"))
 
-# Types whose values are never sanitized by Galaxy when interpolated.
+# Select-like types whose plain placeholder (``$p``) Galaxy sanitizes, but
+# whose raw value can still be read: through ``.value`` or another attribute,
+# by iterating a multiple param, or in a Python expression. Galaxy only strips
+# whitespace from tags, so a group tag can hold any shell metacharacter.
 _RAW_VALUE_PARAM_TYPES = frozenset(("data_column", "group_tag"))
 
 Emit = Callable[[str, str, str, Any], None]
@@ -146,11 +149,14 @@ class _LoopScope(NamedTuple):
 
     ``bindings`` also holds the variables of every loop whose body started
     earlier, so the latest scope started at a position gives every binding in
-    effect there (see ``_loop_bindings``).
+    effect there (see ``_loop_bindings``). ``depths`` counts, for each bound
+    variable, how many loops separate it from the expression in ``bindings``:
+    1 for an element of a collection, 2 for an element of that element.
     """
 
     start: int
     bindings: Dict[str, str]
+    depths: Dict[str, int]
 
 
 def _parse_name_from_argument(argument: Optional[str]) -> Optional[str]:
@@ -199,30 +205,48 @@ def _resolve_loop_expr(expr: str, loops: Dict[str, str]) -> str:
     return f"{target}.{rest}" if rest and target else target
 
 
-def _for_header(text: str, pos: int, header_end: int, earlier: Dict[str, str]) -> Tuple[Dict[str, str], int]:
-    """Bindings declared by the ``#for`` header at ``pos`` and where its body starts.
+def _loop_depth(expr: str, loops: Dict[str, str], depths: Dict[str, int]) -> int:
+    """How many loops separate ``expr`` from the expression it resolves to.
 
-    ``earlier`` are the loop bindings in effect at the header. The result
+    A bare loop variable has the depth of its binding. Any attribute access
+    (``$r.coll`` for a repeat ``$r``) reaches a parameter again, at depth 0.
+    """
+    head, _, rest = expr.strip().partition(".")
+    return depths.get(head, 0) if head in loops and not rest else 0
+
+
+def _for_header(text: str, pos: int, header_end: int, earlier: _LoopScope) -> _LoopScope:
+    """Bindings declared by the ``#for`` header at ``pos``, from where its body starts.
+
+    ``earlier`` holds the loop bindings in effect at the header. The result
     extends them, and iterated expressions are resolved against them, so
     bindings always refer to parameters. Variables of loop forms that are not
     recognized are bound to an unknown ("") expression, which still shadows
     an earlier binding of the same name.
     """
-    bindings = dict(earlier)
+    bindings = dict(earlier.bindings)
+    depths = dict(earlier.depths)
+
+    def bind(name: str, expr: str) -> None:
+        bindings[name] = _resolve_loop_expr(expr, earlier.bindings)
+        depths[name] = _loop_depth(expr, earlier.bindings, earlier.depths) + 1
+
     targets = _FOR_TARGETS.match(text, pos)
     if targets:
-        bindings.update((name, "") for name in _LOOP_VAR.findall(targets.group(1)))
+        for name in _LOOP_VAR.findall(targets.group(1)):
+            bindings[name] = ""
+            depths.pop(name, None)
         header_end = targets.end()
     enumerate_match = _FOR_ENUMERATE.match(text, pos)
     simple_match = _FOR_SIMPLE.match(text, pos)
     if enumerate_match:
         bindings[enumerate_match.group(1)] = "__index__"
-        bindings[enumerate_match.group(2)] = _resolve_loop_expr(enumerate_match.group(3), earlier)
+        bind(enumerate_match.group(2), enumerate_match.group(3))
         header_end = enumerate_match.end()
     elif simple_match:
-        bindings[simple_match.group(1)] = _resolve_loop_expr(simple_match.group(2), earlier)
+        bind(simple_match.group(1), simple_match.group(2))
         header_end = simple_match.end()
-    return bindings, header_end
+    return _LoopScope(header_end, bindings, depths)
 
 
 def _cheetah_comment_spans(text: str) -> List[Tuple[int, int]]:
@@ -261,9 +285,8 @@ def _loop_bindings(text: str) -> List[_LoopScope]:
     for token in _FOR_TOKEN.finditer(text):
         if _in_spans(token.start(), comments):
             continue
-        earlier = scopes[-1].bindings if scopes else {}
-        bindings, body_start = _for_header(text, token.start(), token.end(), earlier)
-        scopes.append(_LoopScope(body_start, bindings))
+        earlier = scopes[-1] if scopes else _LoopScope(0, {}, {})
+        scopes.append(_for_header(text, token.start(), token.end(), earlier))
     return scopes
 
 
@@ -277,20 +300,24 @@ def _scope_at(scopes: List[_LoopScope], pos: int) -> Optional[_LoopScope]:
     return latest
 
 
-def _loops_at(scopes: List[_LoopScope], pos: int) -> Dict[str, str]:
-    """Loop bindings in effect at ``pos``."""
-    scope = _scope_at(scopes, pos)
-    return scope.bindings if scope else {}
+def _is_collection(expr: str, params: Dict[str, _ParamInfo], scope: Optional[_LoopScope]) -> bool:
+    """True if the Cheetah expression may be a dataset collection.
 
-
-def _expr_type(expr: str, params: Dict[str, _ParamInfo], loops: Dict[str, str]) -> Optional[str]:
-    """Best-effort static type of a Cheetah expression, or None if unknown.
-
-    ``loops`` are the loop bindings in effect where the expression appears
-    (see ``_loops_at``).
+    ``scope`` is the loop scope in effect where the expression appears (see
+    ``_scope_at``). A ``data_collection`` parameter is a collection. Each loop
+    over it goes one level down its ``collection_type``: the elements of a
+    ``list`` are datasets, those of a ``list:paired`` are ``paired``
+    collections. Without a ``collection_type`` the input may be nested, so
+    every level may be a collection.
     """
+    loops = scope.bindings if scope else {}
+    depths = scope.depths if scope else {}
     param = params.get(_resolve_loop_expr(expr, loops))
-    return param.type if param else None
+    if param is None or param.type != "data_collection":
+        return False
+    depth = _loop_depth(expr, loops, depths)
+    collection_types = [kind.strip() for kind in (param.node.get("collection_type") or "").split(",")]
+    return depth == 0 or any(not kind or kind.count(":") >= depth for kind in collection_types)
 
 
 def _mark(raw_flow: List[bool], unquoted: List[bool], start: int, end: int, value: bool) -> None:
@@ -722,21 +749,29 @@ def _in_spans(pos: int, spans: List[Tuple[int, int]]) -> bool:
     return any(start <= pos < end for start, end in spans)
 
 
-def _reference_patterns(dotted: str, loops: Dict[str, str]) -> List[str]:
-    """Regexes matching how a parameter value can be referenced in a template."""
-    patterns = [
-        r"\$" + re.escape(dotted) + r"(?!\w)",
-        r"\$\{" + re.escape(dotted) + r"\}",
-    ]
+def _reference_paths(dotted: str, loops: Dict[str, str]) -> List[str]:
+    """Regexes of the dotted paths that name a parameter, directly or through a loop variable."""
+    paths = [re.escape(dotted)]
     for var, expr in loops.items():
         if expr == dotted:
-            patterns.append(r"\$" + re.escape(var) + r"(?!\w)")
-            patterns.append(r"\$\{" + re.escape(var) + r"\}")
+            paths.append(re.escape(var))
         elif expr and dotted.startswith(expr + "."):
-            suffix = re.escape(dotted[len(expr) + 1 :])
-            patterns.append(r"\$" + re.escape(var) + r"\." + suffix + r"(?!\w)")
-            patterns.append(r"\$\{" + re.escape(var) + r"\." + suffix + r"\}")
+            paths.append(re.escape(var) + r"\." + re.escape(dotted[len(expr) + 1 :]))
+    return paths
+
+
+def _reference_patterns(dotted: str, loops: Dict[str, str]) -> List[str]:
+    """Regexes matching how a parameter value can be referenced in a template."""
+    patterns = []
+    for path in _reference_paths(dotted, loops):
+        patterns.append(r"\$" + path + r"(?!\w)")
+        patterns.append(r"\$\{" + path + r"\}")
     return patterns
+
+
+def _attribute_patterns(dotted: str, loops: Dict[str, str]) -> List[str]:
+    """Regexes matching an attribute, call or subscript on a parameter (``$p.value``, ``${p[0]}``)."""
+    return [r"\$[{(]?\s*" + path + r"(?:\s*\.\s*[A-Za-z_]|\s*[(\[])" for path in _reference_paths(dotted, loops)]
 
 
 def _preset_chars(name: str) -> str:
@@ -1085,7 +1120,7 @@ def _raw_flow_checks(scan: _CommandScan, params: Dict[str, _ParamInfo], emit: Em
         emit("raw_identifier", base, message, node)
     for match in _COLLECTION_NAME.finditer(text):
         base = match.group(1)
-        if _expr_type(base, params, _loops_at(scopes, match.start())) != "data_collection":
+        if not _is_collection(base, params, _scope_at(scopes, match.start())):
             continue
         if not raw_flow[match.start()] or _in_spans(match.start(), cleaning):
             continue
@@ -1096,7 +1131,7 @@ def _raw_flow_checks(scan: _CommandScan, params: Dict[str, _ParamInfo], emit: Em
         emit("raw_collection_name", base, message, node)
     for match in _COLLECTION_KEYS.finditer(text):
         base = match.group(1)
-        if _expr_type(base, params, _loops_at(scopes, match.start())) != "data_collection":
+        if not _is_collection(base, params, _scope_at(scopes, match.start())):
             continue
         if not raw_flow[match.start()] or _in_spans(match.start(), cleaning):
             continue
@@ -1107,19 +1142,56 @@ def _raw_flow_checks(scan: _CommandScan, params: Dict[str, _ParamInfo], emit: Em
         emit("raw_collection_keys", base, message, node)
 
 
+_STR_CALL_OPEN = re.compile(r"(?<![\w.])str\(\s*$")
+_CALL_CLOSE = re.compile(r"\s*\)")
+
+
+def _expression_spans(text: str) -> List[Tuple[int, int]]:
+    """Spans of the outermost Cheetah placeholders whose body is a Python expression."""
+    spans: List[Tuple[int, int]] = []
+    pos = text.find("$")
+    while pos != -1:
+        end = None if pos > 0 and text[pos - 1] == "\\" else _placeholder_end(text, pos)
+        if end is not None:
+            spans.append((pos, end))
+        pos = text.find("$", end if end is not None else pos + 1)
+    return spans
+
+
+def _raw_reads(scan: _CommandScan, dotted: str) -> List[int]:
+    """Positions where a template reads the raw value of a select-like parameter.
+
+    Galaxy sanitizes a plain ``$p`` or ``${p}`` rendered as text, and
+    ``str($p)`` anywhere, since both call the wrapper's ``__str__``. Any other
+    read is raw: an attribute such as ``.value``, a use inside a Python
+    expression (``${",".join($p)}``) and a use on a directive line, where
+    ``#for`` iterates the raw values and ``#set`` may alias them.
+    """
+    text = scan.text
+    expressions = _expression_spans(text)
+    positions = {match.start() for match in _find_reference(dotted, scan.scopes, text, _attribute_patterns)}
+    for match in _find_reference(dotted, scan.scopes, text):
+        pos = match.start()
+        if _STR_CALL_OPEN.search(text, max(0, pos - 32), pos) and _CALL_CLOSE.match(text, match.end()):
+            continue
+        in_expression = any(start < pos < end for start, end in expressions)
+        if in_expression or not (scan.quoted[pos] or scan.unquoted[pos]):
+            positions.add(pos)
+    return sorted(pos for pos in positions if scan.raw_flow[pos] and not _in_spans(pos, scan.cleaning))
+
+
 def _param_usage_checks(scan: _CommandScan, params: Dict[str, _ParamInfo], emit: Emit) -> None:
     """Flag parameter values that reach the command unsafely."""
-    text, raw_flow, unquoted, cleaning = scan.text, scan.raw_flow, scan.unquoted, scan.cleaning
+    text, unquoted, cleaning = scan.text, scan.unquoted, scan.cleaning
     for dotted, param_info in params.items():
         if param_info.type in _RAW_VALUE_PARAM_TYPES:
-            for match in _find_reference(dotted, scan.scopes, text):
-                if raw_flow[match.start()] and not _in_spans(match.start(), cleaning):
-                    message = (
-                        f"Value of {param_info.type} param '{dotted}' is not sanitized and reaches the command "
-                        f"({_location(text, match.start())}); clean the value before interpolating it"
-                    )
-                    emit(param_info.type, dotted, message, scan.node)
-                    break
+            for pos in _raw_reads(scan, dotted)[:1]:
+                message = (
+                    f"Raw value of {param_info.type} param '{dotted}' reaches the command "
+                    f"({_location(text, pos)}); Galaxy sanitizes only a plain placeholder, not .value, iterated "
+                    "values or Python expressions: clean the value before interpolating it"
+                )
+                emit(param_info.type, dotted, message, scan.node)
         elif param_info.type == "text" and not _has_safe_validator(param_info.node):
             for match in _find_reference(dotted, scan.scopes, text):
                 if unquoted[match.start()] and not _in_spans(match.start(), cleaning):
@@ -1132,18 +1204,24 @@ def _param_usage_checks(scan: _CommandScan, params: Dict[str, _ParamInfo], emit:
                     break
 
 
-def _find_reference(dotted: str, scopes: List[_LoopScope], text: str) -> List[Any]:
+def _find_reference(
+    dotted: str,
+    scopes: List[_LoopScope],
+    text: str,
+    patterns: Callable[[str, Dict[str, str]], List[str]] = _reference_patterns,
+) -> List[Any]:
     """All matches of the possible template references to a parameter, in order.
 
     A reference through a loop variable only counts where that variable is
     bound to the parameter, so each region of the template (before the first
     loop body, or from the start of one loop body to the start of the next)
-    is searched with the bindings in effect there.
+    is searched with the bindings in effect there. ``patterns`` builds the
+    regexes of a reference from the parameter and those bindings.
     """
     matches: List[Any] = []
     for scope in [None, *scopes]:
         loops = scope.bindings if scope else {}
-        for pattern in _reference_patterns(dotted, loops):
+        for pattern in patterns(dotted, loops):
             matches.extend(match for match in re.finditer(pattern, text) if _scope_at(scopes, match.start()) is scope)
     matches.sort(key=lambda match: match.start())
     return matches
@@ -1208,7 +1286,7 @@ class SecurityRawCollectionName(Linter):
 
 
 class SecurityGroupTag(Linter):
-    """Group tag values interpolated into a command."""
+    """Raw group tag values (``.value``, iteration) interpolated into a command."""
 
     @classmethod
     def lint(cls, tool_source: "ToolSource", lint_ctx: "LintContext") -> None:
@@ -1218,7 +1296,7 @@ class SecurityGroupTag(Linter):
 
 
 class SecurityDataColumn(Linter):
-    """Data column (sample sheet) values interpolated into a command."""
+    """Raw data column values (``.value``, iteration) interpolated into a command."""
 
     @classmethod
     def lint(cls, tool_source: "ToolSource", lint_ctx: "LintContext") -> None:

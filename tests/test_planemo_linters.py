@@ -324,14 +324,16 @@ def test_security_linter_flags_column_and_tag_values():
     assert _messages(lint_ctx) == [
         (
             "info",
-            "Value of data_column param 'columnvalue' is not sanitized and reaches the command (line 2 of <command>); "
-            "clean the value before interpolating it",
+            "Raw value of data_column param 'columnvalue' reaches the command (line 3 of <command>); Galaxy "
+            "sanitizes only a plain placeholder, not .value, iterated values or Python expressions: clean the "
+            "value before interpolating it",
             "SecurityDataColumn",
         ),
         (
             "info",
-            "Value of group_tag param 'tagvalue' is not sanitized and reaches the command (line 2 of <command>); "
-            "clean the value before interpolating it",
+            "Raw value of group_tag param 'tagvalue' reaches the command (line 2 of <command>); Galaxy "
+            "sanitizes only a plain placeholder, not .value, iterated values or Python expressions: clean the "
+            "value before interpolating it",
             "SecurityGroupTag",
         ),
     ]
@@ -377,7 +379,7 @@ SECURITY_LOOP_TOOL = """<tool id="security_loop_scope" name="Security Loop Scope
 {command}
     ]]></command>
     <inputs>
-        <param name="coll" type="data_collection" collection_type="list"/>
+        <param name="coll" type="data_collection" collection_type="list:paired"/>
         <repeat name="rep" title="r">
             <param name="txt" type="text"/>
         </repeat>
@@ -511,11 +513,16 @@ def test_security_loop_bindings_persist_after_their_loop():
 
     scopes = security._loop_bindings(text)
 
-    assert security._loops_at(scopes, text.index("$a\n")) == {}
-    assert security._loops_at(scopes, text.index("## end")) == {"a": "coll"}
-    assert security._loops_at(scopes, text.index("$b\n")) == {"a": "coll", "b": "coll"}
-    assert security._loops_at(scopes, text.index("$a\n#end for")) == {"a": "coll", "b": "coll"}
-    assert security._loops_at(scopes, text.rindex("$a")) == {"a": "coll", "b": "coll"}
+    def bindings_at(pos):
+        scope = security._scope_at(scopes, pos)
+        return (scope.bindings, scope.depths) if scope else None
+
+    both = ({"a": "coll", "b": "coll"}, {"a": 1, "b": 2})
+    assert bindings_at(text.index("$a\n")) is None
+    assert bindings_at(text.index("## end")) == ({"a": "coll"}, {"a": 1})
+    assert bindings_at(text.index("$b\n")) == both
+    assert bindings_at(text.index("$a\n#end for")) == both
+    assert bindings_at(text.rindex("$a")) == both
 
 
 SECURITY_TEMPLATE_TOOL = """<tool id="security_template_tool" name="Security Template Tool" version="1.0">
@@ -957,7 +964,7 @@ def test_security_linter_binds_loop_variables_without_dollar(tmp_path):
     messages = _lint_template_tool(
         tmp_path,
         "#for i in $coll:\necho '$i.name';\n#end for",
-        '<param name="coll" type="data_collection" collection_type="list"/>',
+        '<param name="coll" type="data_collection" collection_type="list:paired"/>',
     )
 
     assert messages == [
@@ -975,7 +982,7 @@ def test_security_linter_binds_enumerate_variables_without_dollar(tmp_path):
     messages = _lint_template_tool(
         tmp_path,
         "#for n, i in enumerate($coll):\necho '$i.name' $n;\n#end for",
-        '<param name="coll" type="data_collection" collection_type="list"/>',
+        '<param name="coll" type="data_collection" collection_type="list:paired"/>',
     )
 
     assert messages == [
@@ -1455,3 +1462,125 @@ def test_shed_version_compares_galaxy_suffix_numerically(tmp_path, ts_version, e
         lint_ctx.lint("shed_version", lint_shed_version, _ShedRepository(str(tmp_path)))
 
     assert _messages(lint_ctx) == expected
+
+
+TAG_PARAM = '<param name="tag" type="group_tag" data_ref="coll" multiple="true"/>'
+TAG_INPUTS = '<param name="coll" type="data_collection" collection_type="list"/>' + TAG_PARAM
+
+
+def _raw_tag_message(line, name):
+    return (
+        "info",
+        f"Raw value of group_tag param '{name}' reaches the command (line {line} of <command>); Galaxy sanitizes "
+        "only a plain placeholder, not .value, iterated values or Python expressions: clean the value before "
+        "interpolating it",
+        "SecurityGroupTag",
+    )
+
+
+@pytest.mark.parametrize(
+    "command, inputs, expected",
+    [
+        # Galaxy renders the plain placeholder through to_param_dict_string,
+        # which sanitizes it.
+        pytest.param("echo '$tag'", TAG_INPUTS, None, id="plain-placeholder"),
+        pytest.param("echo '${tag}'", TAG_INPUTS, None, id="plain-brace-placeholder"),
+        pytest.param("#if $tag.value == 'x':\necho hi;\n#end if", TAG_INPUTS, None, id="condition"),
+        pytest.param("echo '$tag.value'", TAG_INPUTS, (2, "tag"), id="value-attribute"),
+        pytest.param("echo '${tag.value}'", TAG_INPUTS, (2, "tag"), id="value-attribute-in-braces"),
+        pytest.param("#for $t in $tag:\necho '$t';\n#end for", TAG_INPUTS, (2, "tag"), id="iterated"),
+        pytest.param("echo '${\",\".join($tag)}'", TAG_INPUTS, (2, "tag"), id="python-expression"),
+        pytest.param("#set $v = $tag.value\necho '$v';", TAG_INPUTS, (2, "tag"), id="alias"),
+        # str() calls the wrapper's __str__, which sanitizes like the placeholder.
+        pytest.param("#set $v = str($tag)\necho '$v';", TAG_INPUTS, None, id="str-in-directive"),
+        pytest.param("echo '${str( $tag ) + \"x\"}'", TAG_INPUTS, None, id="str-in-expression"),
+        pytest.param("#set $v = str($tag.value)\necho '$v';", TAG_INPUTS, (2, "tag"), id="str-of-value"),
+        pytest.param("#set $v = mystr($tag)\necho '$v';", TAG_INPUTS, (2, "tag"), id="other-call"),
+        pytest.param(
+            "#for $r in $rep:\necho '$r.tag';\n#end for",
+            f'<repeat name="rep" title="r">{TAG_INPUTS}</repeat>',
+            None,
+            id="plain-placeholder-through-repeat",
+        ),
+        pytest.param(
+            "#for $r in $rep:\necho '$r.tag.value';\n#end for",
+            f'<repeat name="rep" title="r">{TAG_INPUTS}</repeat>',
+            (3, "rep.tag"),
+            id="value-attribute-through-repeat",
+        ),
+    ],
+)
+def test_security_linter_flags_only_raw_reads_of_group_tag(tmp_path, command, inputs, expected):
+    messages = _lint_template_tool(tmp_path, command, inputs)
+    assert messages == ([] if expected is None else [_raw_tag_message(*expected)])
+
+
+def _collection_name_message(base, line):
+    return (
+        "info",
+        f"${base}.name is the raw element identifier of the collection (line {line} of <command>); consider "
+        f"${base}.safe_element_identifier (Galaxy 26.2+) or clean it before interpolating",
+        "SecurityRawCollectionName",
+    )
+
+
+def _collection_param(collection_type):
+    attribute = "" if collection_type is None else f' collection_type="{collection_type}"'
+    return f'<param name="coll" type="data_collection"{attribute}/>'
+
+
+@pytest.mark.parametrize(
+    "collection_type, command, expected",
+    [
+        # The collection's own name is its raw identifier, whatever its type.
+        pytest.param("list", "echo '$coll.name';", ("coll", 2), id="collection-itself"),
+        # Iterating a flat collection yields datasets, whose name Galaxy sanitizes.
+        pytest.param("list", "#for $i in $coll:\necho '$i.name';\n#end for", None, id="list-element"),
+        pytest.param("paired", "#for $i in $coll:\necho '$i.name';\n#end for", None, id="paired-element"),
+        pytest.param("list", "#for $i in $coll:\necho '$i.keys()';\n#end for", None, id="list-element-keys"),
+        # Iterating a nested collection yields sub-collections, whose name is raw.
+        pytest.param("list:paired", "#for $i in $coll:\necho '$i.name';\n#end for", ("i", 3), id="sub-collection"),
+        pytest.param(
+            "list,list:paired", "#for $i in $coll:\necho '$i.name';\n#end for", ("i", 3), id="any-nested-alternative"
+        ),
+        # Without a collection_type the input accepts nested collections too.
+        pytest.param(None, "#for $i in $coll:\necho '$i.name';\n#end for", ("i", 3), id="unknown-type"),
+        pytest.param(
+            "list:paired",
+            "#for $i in $coll:\n#for $j in $i:\necho '$j.name';\n#end for\n#end for",
+            None,
+            id="dataset-of-sub-collection",
+        ),
+        pytest.param(
+            "list:list:paired",
+            "#for $i in $coll:\n#for $j in $i:\necho '$j.name';\n#end for\n#end for",
+            ("j", 4),
+            id="sub-sub-collection",
+        ),
+        pytest.param(
+            "list:paired",
+            "#for $n, $i in enumerate($coll):\necho '$i.name' $n;\n#end for",
+            ("i", 3),
+            id="enumerated-sub-collection",
+        ),
+        pytest.param(
+            "list", "#for $n, $i in enumerate($coll):\necho '$i.name' $n;\n#end for", None, id="enumerated-dataset"
+        ),
+    ],
+)
+def test_security_linter_flags_name_of_collections_only(tmp_path, collection_type, command, expected):
+    messages = _lint_template_tool(tmp_path, command, _collection_param(collection_type))
+    assert messages == ([] if expected is None else [_collection_name_message(*expected)])
+
+
+def test_security_linter_flags_keys_of_sub_collection(tmp_path):
+    messages = _lint_template_tool(
+        tmp_path, "#for $i in $coll:\necho '$i.keys()';\n#end for", _collection_param("list:list")
+    )
+    assert messages == [
+        (
+            "info",
+            "$i.keys() returns raw element identifiers (line 3 of <command>); clean each key before interpolating it",
+            "SecurityRawCollectionName",
+        )
+    ]

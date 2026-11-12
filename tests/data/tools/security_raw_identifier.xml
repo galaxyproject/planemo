@@ -13,7 +13,7 @@ tool --name "$k";
     <inputs>
         <param name="input1" type="data" format="txt" label="Input dataset"/>
         <param name="collection1" type="data_collection" collection_type="list" optional="true" label="List collection"/>
-        <param name="collection2" type="data_collection" collection_type="paired" optional="true" label="Paired collection"/>
+        <param name="collection2" type="data_collection" collection_type="list:paired" optional="true" label="List of pairs"/>
     </inputs>
     <outputs>
         <data name="out" format="txt"/>
