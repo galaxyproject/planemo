@@ -20,6 +20,7 @@ from typing import (
 from urllib.parse import urljoin
 
 import bioblend
+import yaml
 from bioblend.galaxy import GalaxyInstance
 from bioblend.util import attach_file
 
@@ -58,6 +59,10 @@ from planemo.galaxy.invocations.progress import WorkflowProgressDisplay
 from planemo.galaxy.upload_progress import (
     _aggregate_job_states,
     UploadProgressDisplay,
+)
+from planemo.galaxy.workflows import (
+    GALAXY_WORKFLOW_INSTANCE_PREFIX,
+    parameter_input_labels,
 )
 from planemo.io import warn
 from planemo.runnable import (
@@ -482,6 +487,16 @@ def stage_in(
     user_gi = config.user_gi
     history_id = _history_id(user_gi, **kwds)
 
+    with open(job_path) as f:
+        job = yaml.safe_load(f) or {}
+    # Galaxy takes workflow parameter values as they are, but staging would turn a list
+    # (for a multiple-value parameter input) into an uploaded collection, so hold them back.
+    parameter_values = {}
+    if runnable.type == RunnableType.galaxy_workflow:
+        for label in _workflow_parameter_input_labels(runnable, config):
+            if label in job:
+                parameter_values[label] = job.pop(label)
+
     # Create upload progress display context manager (or nullcontext if disabled)
     progress_context: Union[UploadProgressDisplay, contextlib.nullcontext]
     if sys.stdout.isatty():
@@ -502,13 +517,25 @@ def stage_in(
         job_dict, datasets = psi.stage(
             tool_or_workflow,
             history_id=history_id,
-            job_path=job_path,
+            job=job,
+            job_dir=os.path.dirname(os.path.abspath(job_path)),
             use_path_paste=config.use_path_paste,
             to_posix_lines=to_posix_lines,
         )
         psi.wait_for_uploads(kwds.get("check_uploads_ok", True))
 
+    job_dict.update(parameter_values)
     return job_dict, history_id
+
+
+def _workflow_parameter_input_labels(runnable: Runnable, config: "BaseGalaxyConfig") -> List[str]:
+    if not runnable.is_remote_workflow_uri:
+        return parameter_input_labels(workflow_path=runnable.path)
+    # A remote workflow's runnable_path only locates its tests, read the workflow from Galaxy.
+    workflow_id = config.workflow_id_for_runnable(runnable)
+    instance = runnable.uri.startswith(GALAXY_WORKFLOW_INSTANCE_PREFIX)
+    workflow = get_dict_from_workflow(config.user_gi, workflow_id, instance)
+    return parameter_input_labels(workflow_dict=workflow)
 
 
 def _file_path_to_name(file_path):
