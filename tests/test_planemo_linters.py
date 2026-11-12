@@ -262,24 +262,24 @@ def test_security_linter_flags_raw_identifier():
     assert _messages(lint_ctx) == [
         (
             "info",
-            "$collection1.name is the raw element identifier of the collection; consider "
+            "$collection1.name is the raw element identifier of the collection (line 3 of <command>); consider "
             "$collection1.safe_element_identifier (Galaxy 26.2+) or clean it before interpolating",
             "SecurityRawCollectionName",
         ),
         (
             "info",
-            "$pair.name is the raw element identifier of the collection; consider "
+            "$pair.name is the raw element identifier of the collection (line 5 of <command>); consider "
             "$pair.safe_element_identifier (Galaxy 26.2+) or clean it before interpolating",
             "SecurityRawCollectionName",
         ),
         (
             "info",
-            "$collection1.keys() returns raw element identifiers; clean each key before interpolating it",
+            "$collection1.keys() returns raw element identifiers (line 7 of <command>); clean each key before interpolating it",
             "SecurityRawCollectionName",
         ),
         (
             "info",
-            r"Raw value of $collection1.element_identifier reaches the command; consider "
+            r"Raw value of $collection1.element_identifier reaches the command (line 2 of <command>); consider "
             r"$collection1.safe_element_identifier (Galaxy 26.2+) or clean it, e.g. "
             r"re.sub(r'[^\w.-]', '_', ...), before interpolating",
             "SecurityRawIdentifier",
@@ -296,8 +296,8 @@ def test_security_linter_flags_disabled_sanitization():
     assert _messages(lint_ctx) == [
         (
             "info",
-            "Sanitizer for param 'permissive_text' allows shell metacharacters "
-            "('\"#$&';<>\\`|'); restrict the valid characters or clean the value at use",
+            "Sanitizer for param 'permissive_text' allows shell metacharacters (''') and the value is used "
+            "inside single quotes (line 2 of <command>); restrict the valid characters or clean the value at use",
             "SecurityPermissiveSanitizer",
         ),
         (
@@ -324,13 +324,13 @@ def test_security_linter_flags_column_and_tag_values():
     assert _messages(lint_ctx) == [
         (
             "info",
-            "Value of data_column param 'columnvalue' is not sanitized and reaches the command; "
+            "Value of data_column param 'columnvalue' is not sanitized and reaches the command (line 2 of <command>); "
             "clean the value before interpolating it",
             "SecurityDataColumn",
         ),
         (
             "info",
-            "Value of group_tag param 'tagvalue' is not sanitized and reaches the command; "
+            "Value of group_tag param 'tagvalue' is not sanitized and reaches the command (line 2 of <command>); "
             "clean the value before interpolating it",
             "SecurityGroupTag",
         ),
@@ -347,7 +347,7 @@ def test_security_linter_flags_unquoted_text():
     assert _messages(lint_ctx) == [
         (
             "info",
-            "Value of text param 'textparam' is interpolated unquoted in the command; default "
+            "Value of text param 'textparam' is interpolated unquoted in the command (line 2 of <command>); default "
             "sanitization still allows spaces, quote it or restrict the valid characters",
             "SecurityUnquotedParam",
         ),
@@ -395,35 +395,41 @@ def _lint_loop_tool(tmp_path, command):
 
 
 @pytest.mark.parametrize(
-    "command",
+    "command, name_line, txt_line",
     [
         pytest.param(
             "#for $i in $coll:\necho '${i.name}';\n#end for\n#for $i in $rep:\ntool --opt $i.txt;\n#end for",
+            3,
+            6,
             id="collection-loop-then-repeat-loop",
         ),
         pytest.param(
             "#for $i in $rep:\ntool --opt $i.txt;\n#end for\n#for $i in $coll:\necho '${i.name}';\n#end for",
+            6,
+            3,
             id="repeat-loop-then-collection-loop",
         ),
         pytest.param(
             "#for $n, $i in enumerate($coll):\necho '${i.name}' $n;\n#end for\n"
             "#for $i in $rep:\ntool --opt $i.txt;\n#end for",
+            3,
+            6,
             id="enumerate-loop-then-repeat-loop",
         ),
     ],
 )
-def test_security_linter_scopes_loop_variables_to_their_body(tmp_path, command):
+def test_security_linter_scopes_loop_variables_to_their_body(tmp_path, command, name_line, txt_line):
     assert _lint_loop_tool(tmp_path, command) == [
         (
             "info",
-            "$i.name is the raw element identifier of the collection; consider "
-            "$i.safe_element_identifier (Galaxy 26.2+) or clean it before interpolating",
+            f"$i.name is the raw element identifier of the collection (line {name_line} of <command>); "
+            "consider $i.safe_element_identifier (Galaxy 26.2+) or clean it before interpolating",
             "SecurityRawCollectionName",
         ),
         (
             "info",
-            "Value of text param 'rep.txt' is interpolated unquoted in the command; default "
-            "sanitization still allows spaces, quote it or restrict the valid characters",
+            f"Value of text param 'rep.txt' is interpolated unquoted in the command (line {txt_line} of "
+            "<command>); default sanitization still allows spaces, quote it or restrict the valid characters",
             "SecurityUnquotedParam",
         ),
     ]
@@ -432,34 +438,38 @@ def test_security_linter_scopes_loop_variables_to_their_body(tmp_path, command):
 # Cheetah compiles #for into a Python for, so a loop variable keeps its last
 # value after #end for, until a later loop binds the same name again.
 @pytest.mark.parametrize(
-    "command",
+    "command, name_line",
     [
         pytest.param(
             "#for $i in $coll:\necho hi;\n#end for\necho '$i.name';",
+            5,
             id="reference-after-loop",
         ),
         pytest.param(
             "#for $i in $coll:\necho hi;\n#end for\n#for $j in $rep:\necho hi;\n#end for\necho '$i.name';",
+            8,
             id="reference-after-loop-of-another-variable",
         ),
         pytest.param(
             "#for $i in $rep:\necho hi;\n#end for\n#for $i in $coll:\necho hi;\n#end for\necho '$i.name';",
+            8,
             id="later-loop-rebinds-the-name",
         ),
         pytest.param(
             # After the inner #end for, $i holds the last collection element,
             # not the outer repeat, so $i.txt no longer reaches rep.txt.
             "#for $i in $rep:\n#for $i in $coll:\necho '${i.name}';\n#end for\ntool --opt $i.txt;\n#end for",
+            4,
             id="inner-loop-shadows-outer-variable",
         ),
     ],
 )
-def test_security_linter_keeps_loop_variable_bound_after_its_loop(tmp_path, command):
+def test_security_linter_keeps_loop_variable_bound_after_its_loop(tmp_path, command, name_line):
     assert _lint_loop_tool(tmp_path, command) == [
         (
             "info",
-            "$i.name is the raw element identifier of the collection; consider "
-            "$i.safe_element_identifier (Galaxy 26.2+) or clean it before interpolating",
+            f"$i.name is the raw element identifier of the collection (line {name_line} of <command>); "
+            "consider $i.safe_element_identifier (Galaxy 26.2+) or clean it before interpolating",
             "SecurityRawCollectionName",
         ),
     ]
@@ -552,7 +562,7 @@ def test_security_linter_ignores_if_conditions_but_not_bodies(tmp_path):
     assert messages == [
         (
             "info",
-            "Value of text param 'txt' is interpolated unquoted in the command; default "
+            "Value of text param 'txt' is interpolated unquoted in the command (line 3 of <command>); default "
             "sanitization still allows spaces, quote it or restrict the valid characters",
             "SecurityUnquotedParam",
         ),
@@ -570,7 +580,7 @@ def test_security_linter_cheetah_line_comment_silences_only_its_line(tmp_path):
     assert messages == [
         (
             "info",
-            "Value of text param 'txt' is interpolated unquoted in the command; default "
+            "Value of text param 'txt' is interpolated unquoted in the command (line 3 of <command>); default "
             "sanitization still allows spaces, quote it or restrict the valid characters",
             "SecurityUnquotedParam",
         ),
@@ -589,7 +599,7 @@ def test_security_linter_block_comment_is_inert(tmp_path):
     assert messages == [
         (
             "info",
-            "Value of text param 'txt' is interpolated unquoted in the command; default "
+            "Value of text param 'txt' is interpolated unquoted in the command (line 3 of <command>); default "
             "sanitization still allows spaces, quote it or restrict the valid characters",
             "SecurityUnquotedParam",
         ),
@@ -607,7 +617,7 @@ def test_security_linter_only_treats_word_boundary_hash_as_comment(tmp_path):
     assert messages == [
         (
             "info",
-            "Value of text param 'txt' is interpolated unquoted in the command; default "
+            "Value of text param 'txt' is interpolated unquoted in the command (line 2 of <command>); default "
             "sanitization still allows spaces, quote it or restrict the valid characters",
             "SecurityUnquotedParam",
         ),
@@ -626,7 +636,7 @@ def test_security_linter_bash_comment_silences_rest_of_line_only(tmp_path):
     assert messages == [
         (
             "info",
-            "Value of text param 'txt' is interpolated unquoted in the command; default "
+            "Value of text param 'txt' is interpolated unquoted in the command (line 3 of <command>); default "
             "sanitization still allows spaces, quote it or restrict the valid characters",
             "SecurityUnquotedParam",
         ),
@@ -644,7 +654,7 @@ def test_security_linter_flags_brace_reference(tmp_path):
     assert messages == [
         (
             "info",
-            "Value of text param 'txt' is interpolated unquoted in the command; default "
+            "Value of text param 'txt' is interpolated unquoted in the command (line 2 of <command>); default "
             "sanitization still allows spaces, quote it or restrict the valid characters",
             "SecurityUnquotedParam",
         ),
@@ -663,7 +673,7 @@ def test_security_linter_flags_shlex_quote_inside_quotes(tmp_path):
     assert messages == [
         (
             "info",
-            r"Raw value of $coll.element_identifier reaches the command; consider "
+            r"Raw value of $coll.element_identifier reaches the command (line 2 of <command>); consider "
             r"$coll.safe_element_identifier (Galaxy 26.2+) or clean it, e.g. "
             r"re.sub(r'[^\w.-]', '_', ...), before interpolating",
             "SecurityRawIdentifier",
@@ -698,7 +708,7 @@ def test_security_linter_binds_enumerate_variables(tmp_path):
     assert messages == [
         (
             "info",
-            "$i.name is the raw element identifier of the collection; consider "
+            "$i.name is the raw element identifier of the collection (line 3 of <command>); consider "
             "$i.safe_element_identifier (Galaxy 26.2+) or clean it before interpolating",
             "SecurityRawCollectionName",
         ),
@@ -717,7 +727,7 @@ def test_security_linter_derives_param_name_from_argument(tmp_path):
     assert messages == [
         (
             "info",
-            "Value of text param 'my_opt' is interpolated unquoted in the command; default "
+            "Value of text param 'my_opt' is interpolated unquoted in the command (line 2 of <command>); default "
             "sanitization still allows spaces, quote it or restrict the valid characters",
             "SecurityUnquotedParam",
         ),
@@ -739,8 +749,8 @@ def test_security_linter_flags_valid_character_that_is_also_mapped(tmp_path):
     assert messages == [
         (
             "info",
-            "Sanitizer for param 'txt' allows shell metacharacters ('''); restrict the valid "
-            "characters or clean the value at use",
+            "Sanitizer for param 'txt' allows shell metacharacters (''') and the value is used inside "
+            "single quotes (line 2 of <command>); restrict the valid characters or clean the value at use",
             "SecurityPermissiveSanitizer",
         ),
     ]
@@ -760,8 +770,8 @@ def test_security_linter_flags_mapping_target_metacharacter(tmp_path):
     assert messages == [
         (
             "info",
-            "Sanitizer for param 'txt' allows shell metacharacters ('''); restrict the valid "
-            "characters or clean the value at use",
+            "Sanitizer for param 'txt' allows shell metacharacters (''') and the value is used inside "
+            "single quotes (line 2 of <command>); restrict the valid characters or clean the value at use",
             "SecurityPermissiveSanitizer",
         ),
     ]
@@ -781,8 +791,8 @@ def test_security_linter_flags_dangerous_invalid_char_despite_mapping(tmp_path):
     assert messages == [
         (
             "info",
-            "invalid_char for param 'txt' contains a shell metacharacter; invalid input characters "
-            "are rewritten to it",
+            "invalid_char for param 'txt' contains a shell metacharacter and the value is used inside "
+            "single quotes (line 2 of <command>); invalid input characters are rewritten to it",
             "SecurityPermissiveSanitizer",
         ),
     ]
@@ -812,7 +822,7 @@ def test_security_linter_flags_validator_with_whitespace_escape(tmp_path):
     assert messages == [
         (
             "info",
-            "Value of text param 'txt' is interpolated unquoted in the command; default "
+            "Value of text param 'txt' is interpolated unquoted in the command (line 2 of <command>); default "
             "sanitization still allows spaces, quote it or restrict the valid characters",
             "SecurityUnquotedParam",
         ),
@@ -831,7 +841,7 @@ def test_security_linter_flags_unsafe_re_sub_class(tmp_path):
     assert messages == [
         (
             "info",
-            r"Raw value of $coll.element_identifier reaches the command; consider "
+            r"Raw value of $coll.element_identifier reaches the command (line 2 of <command>); consider "
             r"$coll.safe_element_identifier (Galaxy 26.2+) or clean it, e.g. "
             r"re.sub(r'[^\w.-]', '_', ...), before interpolating",
             "SecurityRawIdentifier",
@@ -854,7 +864,7 @@ def test_security_linter_cheetah_comments_inside_quotes_do_not_flip_quote_state(
     assert messages == [
         (
             "info",
-            "Value of text param 'txt' is interpolated unquoted in the command; default "
+            "Value of text param 'txt' is interpolated unquoted in the command (line 5 of <command>); default "
             "sanitization still allows spaces, quote it or restrict the valid characters",
             "SecurityUnquotedParam",
         ),
@@ -870,7 +880,7 @@ def test_security_linter_cheetah_comments_inside_quotes_do_not_flip_quote_state(
     assert messages == [
         (
             "info",
-            "Value of text param 'txt' is interpolated unquoted in the command; default "
+            "Value of text param 'txt' is interpolated unquoted in the command (line 5 of <command>); default "
             "sanitization still allows spaces, quote it or restrict the valid characters",
             "SecurityUnquotedParam",
         ),
@@ -890,7 +900,7 @@ def test_security_linter_comment_apostrophe_keeps_shlex_quote_untrusted(tmp_path
     assert messages == [
         (
             "info",
-            r"Raw value of $coll.element_identifier reaches the command; consider "
+            r"Raw value of $coll.element_identifier reaches the command (line 5 of <command>); consider "
             r"$coll.safe_element_identifier (Galaxy 26.2+) or clean it, e.g. "
             r"re.sub(r'[^\w.-]', '_', ...), before interpolating",
             "SecurityRawIdentifier",
@@ -911,7 +921,7 @@ def test_security_linter_directive_line_inside_quotes_does_not_flip_quote_state(
     assert messages == [
         (
             "info",
-            "Value of text param 'txt' is interpolated unquoted in the command; default "
+            "Value of text param 'txt' is interpolated unquoted in the command (line 5 of <command>); default "
             "sanitization still allows spaces, quote it or restrict the valid characters",
             "SecurityUnquotedParam",
         ),
@@ -953,7 +963,7 @@ def test_security_linter_binds_loop_variables_without_dollar(tmp_path):
     assert messages == [
         (
             "info",
-            "$i.name is the raw element identifier of the collection; consider "
+            "$i.name is the raw element identifier of the collection (line 3 of <command>); consider "
             "$i.safe_element_identifier (Galaxy 26.2+) or clean it before interpolating",
             "SecurityRawCollectionName",
         ),
@@ -971,7 +981,7 @@ def test_security_linter_binds_enumerate_variables_without_dollar(tmp_path):
     assert messages == [
         (
             "info",
-            "$i.name is the raw element identifier of the collection; consider "
+            "$i.name is the raw element identifier of the collection (line 3 of <command>); consider "
             "$i.safe_element_identifier (Galaxy 26.2+) or clean it before interpolating",
             "SecurityRawCollectionName",
         ),
@@ -999,7 +1009,7 @@ def test_security_linter_midword_cheetah_comment_silences_its_line(tmp_path):
     assert messages == [
         (
             "info",
-            "Value of text param 'txt' is interpolated unquoted in the command; default "
+            "Value of text param 'txt' is interpolated unquoted in the command (line 3 of <command>); default "
             "sanitization still allows spaces, quote it or restrict the valid characters",
             "SecurityUnquotedParam",
         ),
@@ -1011,16 +1021,16 @@ def test_security_linter_flags_mapping_target_metacharacter_from_safe_source(tmp
     # emits its target verbatim for values that are not in the valid set.
     messages = _lint_template_tool(
         tmp_path,
-        "echo '$txt'",
+        'echo "$txt"',
         '<param name="txt" type="text"><sanitizer><mapping initial="none">'
-        '<add source="@" target=";"/></mapping></sanitizer></param>',
+        '<add source="@" target="$"/></mapping></sanitizer></param>',
     )
 
     assert messages == [
         (
             "info",
-            "Sanitizer for param 'txt' allows shell metacharacters (';'); restrict the valid "
-            "characters or clean the value at use",
+            "Sanitizer for param 'txt' allows shell metacharacters ('$') and the value is used inside "
+            "double quotes (line 2 of <command>); restrict the valid characters or clean the value at use",
             "SecurityPermissiveSanitizer",
         ),
     ]
@@ -1038,8 +1048,8 @@ def test_security_linter_flags_multicharacter_invalid_char(tmp_path):
     assert messages == [
         (
             "info",
-            "invalid_char for param 'txt' contains a shell metacharacter; invalid input "
-            "characters are rewritten to it",
+            "invalid_char for param 'txt' contains a shell metacharacter and the value is used inside "
+            "single quotes (line 2 of <command>); invalid input characters are rewritten to it",
             "SecurityPermissiveSanitizer",
         ),
     ]
@@ -1057,7 +1067,7 @@ def test_security_linter_flags_re_sub_with_trailing_anchor(tmp_path):
     assert messages == [
         (
             "info",
-            r"Raw value of $coll.element_identifier reaches the command; consider "
+            r"Raw value of $coll.element_identifier reaches the command (line 2 of <command>); consider "
             r"$coll.safe_element_identifier (Galaxy 26.2+) or clean it, e.g. "
             r"re.sub(r'[^\w.-]', '_', ...), before interpolating",
             "SecurityRawIdentifier",
@@ -1079,7 +1089,7 @@ def test_security_linter_bash_comment_apostrophe_keeps_shlex_quote_untrusted(tmp
     assert messages == [
         (
             "info",
-            r"Raw value of $coll.element_identifier reaches the command; consider "
+            r"Raw value of $coll.element_identifier reaches the command (line 3 of <command>); consider "
             r"$coll.safe_element_identifier (Galaxy 26.2+) or clean it, e.g. "
             r"re.sub(r'[^\w.-]', '_', ...), before interpolating",
             "SecurityRawIdentifier",
@@ -1096,6 +1106,295 @@ def test_security_linter_accepts_unquoted_shlex_quote(tmp_path):
     )
 
     assert messages == []
+
+
+# The common IUC sanitizer: every printable character except the single quote.
+PRINTABLE_NO_QUOTE_PARAM = (
+    '<param name="txt" type="hidden"><sanitizer>'
+    '<valid initial="string.printable"><remove value="&apos;"/></valid>'
+    "</sanitizer></param>"
+)
+
+
+# The full set of metacharacters minus the single quote, which the sanitizer removes.
+FULL_SET = "('\"#$&;<>\\`|') and the value is used "
+
+
+@pytest.mark.parametrize(
+    "command, expected",
+    [
+        pytest.param("echo '$txt'", None, id="single-quotes-only-need-the-quote"),
+        pytest.param(
+            'echo "$txt"',
+            "('\"$\\`') and the value is used inside double quotes (line 2 of <command>)",
+            id="double-quotes-need-expansion-characters",
+        ),
+        pytest.param(
+            "echo $txt",
+            "('\"#$&;<>\\`|') and the value is used unquoted (line 2 of <command>)",
+            id="unquoted-needs-every-metacharacter",
+        ),
+        pytest.param(
+            "#set $v = $txt\necho '$v'",
+            "('\"#$&;<>\\`|') and the value is used in a Cheetah directive (line 2 of <command>)",
+            id="directive-use-can-flow-anywhere",
+        ),
+        pytest.param(
+            "echo '$txt'\necho \"$txt\"",
+            "('\"$\\`') and the value is used inside double quotes (line 3 of <command>)",
+            id="location-is-the-first-unsafe-use",
+        ),
+        pytest.param(
+            'echo "${txt}"\necho "$txt"',
+            "('\"$\\`') and the value is used inside double quotes (line 2 of <command>)",
+            id="location-is-the-first-use-whatever-its-form",
+        ),
+        pytest.param("echo hi", None, id="value-not-used-in-command"),
+        pytest.param("#if $txt == 'a':\necho hi\n#end if", None, id="condition-is-not-rendered"),
+        pytest.param("echo $( re.sub(r'[^\\w.-]', '_', str($txt)) )", None, id="cleaned-value"),
+        pytest.param(
+            "sh -c 'echo $txt'",
+            FULL_SET + "in a string that another shell or interpreter parses again (line 2 of <command>)",
+            id="sh-c-parses-its-argument-again",
+        ),
+        pytest.param(
+            'echo "\\$(cat $txt)"',
+            FULL_SET + "in a string that another shell or interpreter parses again (line 2 of <command>)",
+            id="command-substitution-parses-again",
+        ),
+        pytest.param(
+            "python -c '\nprint(\"$txt\")\n'",
+            FULL_SET + "in a string that another shell or interpreter parses again (line 3 of <command>)",
+            id="inline-script-opened-on-an-earlier-line",
+        ),
+        pytest.param(
+            "perl -n\n-e '$txt'",
+            FULL_SET + "in a string that another shell or interpreter parses again (line 3 of <command>)",
+            id="interpreter-named-on-an-earlier-line-of-the-command",
+        ),
+        pytest.param(
+            "python -c 'print(1)' && echo '$txt'",
+            None,
+            id="interpreter-of-a-previous-command-does-not-count",
+        ),
+        pytest.param(
+            'echo "${txt.strip()}"',
+            FULL_SET + "in a form the linter cannot follow (line 2 of <command>)",
+            id="unrecognized-reference-gets-the-full-set",
+        ),
+        pytest.param(
+            "echo '$getVar(\"txt\")'",
+            FULL_SET + "in a form the linter cannot follow (line 2 of <command>)",
+            id="lookup-by-name-gets-the-full-set",
+        ),
+        pytest.param(
+            "#if $txt: echo $txt",
+            FULL_SET + "unquoted (line 2 of <command>)",
+            id="one-line-condition-renders-its-body",
+        ),
+        pytest.param(
+            "echo #if $txt then $txt else ''#",
+            FULL_SET + "in a Cheetah directive (line 2 of <command>)",
+            id="inline-condition-renders-its-value",
+        ),
+        pytest.param(
+            'echo don\'t\necho "$txt"',
+            FULL_SET + "in a template whose quotes do not balance (line 3 of <command>)",
+            id="unbalanced-quotes-get-the-full-set",
+        ),
+    ],
+)
+def test_security_linter_permissive_sanitizer_depends_on_use(tmp_path, command, expected):
+    # Only characters that can escape the shell context of a use are reported.
+    messages = _lint_template_tool(tmp_path, command, PRINTABLE_NO_QUOTE_PARAM)
+
+    if expected is None:
+        assert messages == []
+    else:
+        assert messages == [
+            (
+                "info",
+                f"Sanitizer for param 'txt' allows shell metacharacters {expected}; restrict the valid "
+                "characters or clean the value at use",
+                "SecurityPermissiveSanitizer",
+            ),
+        ]
+
+
+def test_security_linter_does_not_report_newline(tmp_path):
+    # Galaxy replaces every newline of the rendered command line with a space
+    # before running it, so a newline in a value is plain whitespace.
+    messages = _lint_template_tool(
+        tmp_path,
+        "tool --opt $txt",
+        '<param name="txt" type="hidden"><sanitizer><valid initial="default"><add value="&#10;"/></valid>'
+        "</sanitizer></param>",
+    )
+
+    assert messages == []
+
+
+def test_security_linter_ignores_invalid_char_safe_in_its_context(tmp_path):
+    # A single quote cannot end a double-quoted string.
+    messages = _lint_template_tool(
+        tmp_path,
+        'echo "$txt"',
+        '<param name="txt" type="text"><sanitizer invalid_char="&apos;"/></param>',
+    )
+
+    assert messages == []
+
+
+@pytest.mark.parametrize(
+    "line",
+    ['#elif $c == "it\'s":', "#continue it's", "#except it's", "#finally it's", "#super it's", "#@decorator it's"],
+)
+def test_security_linter_directive_inside_quotes_does_not_flip_quote_state(tmp_path, line):
+    # Cheetah processes these directives even inside shell quotes, so the
+    # apostrophe on their line never reaches the shell and the quote closes on
+    # the next line.
+    messages = _lint_template_tool(
+        tmp_path,
+        f"echo 'start\n{line}\n' && tool $txt",
+        '<param name="txt" type="text"/><param name="c" type="text"/>',
+    )
+
+    assert messages == [
+        (
+            "info",
+            "Value of text param 'txt' is interpolated unquoted in the command (line 4 of <command>); default "
+            "sanitization still allows spaces, quote it or restrict the valid characters",
+            "SecurityUnquotedParam",
+        ),
+    ]
+
+
+def test_security_linter_bare_at_sign_is_not_a_directive(tmp_path):
+    # '#@' only starts a Cheetah decorator when an identifier follows it, so
+    # here the apostrophe is shell text and closes the quote.
+    messages = _lint_template_tool(
+        tmp_path,
+        "echo 'start\n#@ it's\n' && tool $txt",
+        '<param name="txt" type="text"/>',
+    )
+
+    assert messages == []
+
+
+def test_security_linter_skips_quotes_inside_cheetah_placeholders(tmp_path):
+    # The quotes in ${t.replace('"', '')} are Python code that Cheetah
+    # evaluates, so '$txt' stays inside single quotes.
+    messages = _lint_template_tool(
+        tmp_path,
+        "echo \"${t.replace('\"', '')}\" '$txt'",
+        PRINTABLE_NO_QUOTE_PARAM + '<param name="t" type="text"/>',
+    )
+
+    assert messages == []
+
+
+def test_security_linter_reports_the_characters_of_the_worst_use(tmp_path):
+    # ';' is harmless in the double-quoted use but not in the unquoted one, so
+    # the unquoted use is the one reported, with the characters unsafe there.
+    messages = _lint_template_tool(
+        tmp_path,
+        'echo "$txt"\ntool $txt',
+        '<param name="txt" type="hidden"><sanitizer><valid initial="default">'
+        '<add value="&quot;"/><add value=";"/></valid></sanitizer></param>',
+    )
+
+    assert messages == [
+        (
+            "info",
+            "Sanitizer for param 'txt' allows shell metacharacters ('\";') and the value is used unquoted "
+            "(line 3 of <command>); restrict the valid characters or clean the value at use",
+            "SecurityPermissiveSanitizer",
+        ),
+    ]
+
+
+def test_security_linter_reports_alias_of_a_conditional(tmp_path):
+    # An alias of the conditional hides the reference from the linter, so the
+    # use gets the full set instead of being dropped.
+    messages = _lint_template_tool(
+        tmp_path,
+        "#set $r = $cond\necho '$r.txt'",
+        '<conditional name="cond"><param name="sel" type="select"><option value="a">a</option></param>'
+        '<when value="a">' + PRINTABLE_NO_QUOTE_PARAM + "</when></conditional>",
+    )
+
+    assert messages == [
+        (
+            "info",
+            "Sanitizer for param 'cond.txt' allows shell metacharacters ('\"#$&;<>\\`|') and the value is used "
+            "in a form the linter cannot follow (line 3 of <command>); restrict the valid characters or clean "
+            "the value at use",
+            "SecurityPermissiveSanitizer",
+        ),
+    ]
+
+
+def test_security_linter_reference_to_another_param_is_not_an_unknown_use(tmp_path):
+    # $txt is the top-level param, recognized as such, so it is not taken for
+    # an unrecognized use of cond.txt, whose only use is single-quoted.
+    messages = _lint_template_tool(
+        tmp_path,
+        "echo '$cond.txt' \"$txt\"",
+        '<conditional name="cond"><param name="sel" type="select"><option value="a">a</option></param>'
+        '<when value="a">' + PRINTABLE_NO_QUOTE_PARAM + '</when></conditional><param name="txt" type="text"/>',
+    )
+
+    assert messages == []
+
+
+def test_security_linter_escaped_dollar_is_not_a_placeholder(tmp_path):
+    # \$( is a literal $( for Cheetah, so its parenthesis does not hide the
+    # quote that closes the single-quoted string.
+    messages = _lint_template_tool(tmp_path, "echo '\\$(x';\necho \"$txt\" ')'", PRINTABLE_NO_QUOTE_PARAM)
+
+    assert messages == [
+        (
+            "info",
+            "Sanitizer for param 'txt' allows shell metacharacters ('\"$\\`') and the value is used inside "
+            "double quotes (line 3 of <command>); restrict the valid characters or clean the value at use",
+            "SecurityPermissiveSanitizer",
+        ),
+    ]
+
+
+CONFIGFILE_TOOL = """<tool id="configfile_tool" name="Configfile Tool" version="1.0">
+    <command><![CDATA[
+Rscript '$script'
+    ]]></command>
+    <configfiles>
+        <configfile name="script"><![CDATA[
+groups <- c($txt)
+        ]]></configfile>
+    </configfiles>
+    <inputs>
+{inputs}
+    </inputs>
+    <outputs />
+</tool>
+"""
+
+
+def test_security_linter_reports_use_in_configfile(tmp_path):
+    # A configfile can be a script in any language that the command runs, so
+    # a value used there gets the full set.
+    (tmp_path / "configfile_tool.xml").write_text(CONFIGFILE_TOOL.format(inputs=PRINTABLE_NO_QUOTE_PARAM))
+    lint_ctx = LintContext("all")
+    lint_tool_source_with_modules(lint_ctx, _tool_source(tmp_path, "configfile_tool.xml"), [security])
+
+    assert _messages(lint_ctx) == [
+        (
+            "info",
+            "Sanitizer for param 'txt' allows shell metacharacters ('\"#$&;<>\\`|') and the value is used "
+            'in a configfile (line 2 of <configfile name="script">); restrict the valid characters or clean '
+            "the value at use",
+            "SecurityPermissiveSanitizer",
+        ),
+    ]
 
 
 SHED_VERSION_TOOL = """<tool id="shed_version_tool" name="Shed Version Tool" version="1.0+galaxy10">

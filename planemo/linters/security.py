@@ -14,6 +14,18 @@ offers the ``safe_element_identifier`` accessor (`Galaxy PR #23735
 cleaning a value with ``re.sub(r'[^\\w.-]', '_', ...)`` before interpolating
 it is the recommended fallback.
 
+Sanitizer findings report the shell metacharacters that can escape the
+context of the value's worst use. Only a use in a plain shell string narrows
+the set: inside single quotes only ``'`` is reported, inside double quotes
+``"``, ``$``, a backtick and a backslash. Every other use gets the full set:
+unquoted uses, Cheetah directive lines, strings that another shell or
+interpreter parses again (``sh -c``, ``eval``, ``\\$(...)``, ``python -c``,
+awk programs...), ``<configfile>`` contents, references the linter cannot
+follow, and templates whose quotes do not balance. A value that never
+reaches a rendered template is not reported. Line numbers are counted from
+the ``<command>`` (or ``<configfile>``) tag after macro expansion and after
+XML comments are removed, so they can differ from the source file.
+
 Each check can be skipped individually (e.g. ``--skip SecurityRawIdentifier``)
 and the whole module can be skipped with ``--skip security``.
 """
@@ -32,6 +44,7 @@ from typing import (
     TYPE_CHECKING,
 )
 
+from Cheetah.Parser import directiveNamesAndParsers
 from galaxy.tool_util.lint import Linter
 from galaxy.util import mapped_chars
 
@@ -44,8 +57,10 @@ if TYPE_CHECKING:
 lint_tool_types = ["*"]
 
 # Shell metacharacters that are dangerous when they survive sanitization and
-# reach a <command>. Galaxy's default sanitization removes or rewrites all of
-# these, so they only survive when sanitization is disabled or reconfigured.
+# reach a <command> unquoted. Galaxy's default sanitization removes or rewrites
+# all of these, so they only survive when sanitization is disabled or
+# reconfigured. A newline is not one: Galaxy replaces every newline of the
+# rendered command line with a space before running it.
 SHELL_DANGEROUS_CHARS = "'\"$;|&`\\<>#"
 
 # Characters that are safe to keep in a value interpolated into a shell
@@ -72,53 +87,17 @@ _FALSE_VALUES = frozenset(("false", "f", "no", "n", "off", "0"))
 # Cheetah directives that evaluate a condition without rendering it, so raw
 # values on such lines do not flow into the rendered command.
 _CONDITION_DIRECTIVES = frozenset(("if", "elif", "while", "unless"))
+# Cheetah's inline condition (``#if $c then $a else $b#``) renders a value.
+_INLINE_CONDITION = re.compile(r"[^\n]*?\bthen\b")
 
-# Directive names Cheetah recognizes (Cheetah's Parser.directiveNamesAndParsers).
-# A ``#`` followed by any other word is passed through literally and can then
-# start a bash comment in the rendered command.
-_CHEETAH_DIRECTIVE_NAMES = (
-    "compiler-settings",
-    "errorCatcher",
-    "defmacro",
-    "implements",
-    "breakpoint",
-    "assert",
-    "capture",
-    "closure",
-    "extends",
-    "filter",
-    "import",
-    "include",
-    "silent",
-    "return",
-    "unless",
-    "repeat",
-    "while",
-    "yield",
-    "block",
-    "break",
-    "cache",
-    "call",
-    "else",
-    "pass",
-    "raise",
-    "slurp",
-    "stop",
-    "attr",
-    "echo",
-    "from",
-    "raw",
-    "set",
-    "try",
-    "call",
-    "def",
-    "del",
-    "end",
-    "for",
-    "if",
-    "arg",
+# Directive names Cheetah recognizes. A ``#`` followed by any other word is
+# passed through literally and can then start a bash comment in the rendered
+# command. ``#@`` (a decorator) is a directive only when an identifier
+# follows it.
+_CHEETAH_DIRECTIVE_NAMES = sorted((name for name in directiveNamesAndParsers if name != "@"), key=len, reverse=True)
+_DIRECTIVE = re.compile(
+    r"#(?:(?:" + "|".join(map(re.escape, _CHEETAH_DIRECTIVE_NAMES)) + r")(?![A-Za-z0-9_@-])|@(?=[A-Za-z_]))"
 )
-_DIRECTIVE = re.compile(r"#(" + "|".join(_CHEETAH_DIRECTIVE_NAMES) + r")(?![A-Za-z0-9_@-])")
 _CLEANING_CALL = re.compile(r"\b(?:re\.sub|shlex\.quote)\s*\(")
 _RAW_IDENTIFIER = re.compile(r"\$(?:\(|\{)?\s*\$?\s*([A-Za-z_][\w.]*)\s*\.\s*element_identifier\b")
 _COLLECTION_NAME = re.compile(r"\$(?:\(|\{)?\s*\$?\s*([A-Za-z_][\w.]*)\s*\.\s*name\b")
@@ -331,16 +310,56 @@ def _apply_hash(text: str, pos: int, raw_flow: List[bool], unquoted: List[bool])
     line_end = _line_end(text, pos)
     directive = _DIRECTIVE.match(text, pos)
     if directive is not None:
-        if directive.group(0)[1:] in _CONDITION_DIRECTIVES:
-            _mark(raw_flow, unquoted, pos, line_end, False)
+        end = _directive_end(text, pos)
+        inline = _INLINE_CONDITION.match(text, directive.end(), end) is not None
+        if directive.group(0)[1:] in _CONDITION_DIRECTIVES and not inline:
+            _mark(raw_flow, unquoted, pos, end, False)
         else:
             # Other Cheetah directives (``#set``, ``#for``, ``#echo``...) are
             # not rendered, but can flow raw values into the command.
-            for offset in range(pos, line_end):
+            for offset in range(pos, end):
                 unquoted[offset] = False
-        return line_end
+        return end
     # A bash comment makes the rest of its line inert.
     _mark(raw_flow, unquoted, pos, line_end, False)
+    return line_end
+
+
+def _directive_end(text: str, pos: int) -> int:
+    """End of the Cheetah directive starting at ``pos``.
+
+    A directive normally runs to the end of its line, but the one-line form of
+    a condition (``#if $x: echo $x``) renders the text after its colon, so the
+    directive ends just past that colon. The colon is the last one outside
+    strings and brackets, and only counts when text other than a comment
+    follows it.
+    """
+    line_end = _line_end(text, pos)
+    directive = _DIRECTIVE.match(text, pos)
+    if directive is None or directive.group(0)[1:] not in _CONDITION_DIRECTIVES:
+        return line_end
+    quote: Optional[str] = None
+    depth = 0
+    colon = -1
+    for index in range(directive.end(), line_end):
+        char = text[index]
+        if quote is not None:
+            if char == quote:
+                quote = None
+        elif char in "'\"":
+            quote = char
+        elif char in "([{":
+            depth += 1
+        elif char in ")]}":
+            depth -= 1
+        elif text.startswith("##", index):
+            break
+        elif char == ":" and depth == 0:
+            colon = index
+    if colon != -1:
+        rest = text[colon + 1 : line_end].strip()
+        if rest and not rest.startswith("##"):
+            return colon + 1
     return line_end
 
 
@@ -350,8 +369,18 @@ def _line_end(text: str, pos: int) -> int:
     return len(text) if end == -1 else end
 
 
-def _quoted_positions(text: str) -> List[bool]:
-    """True for each position inside a single- or double-quoted span.
+def _quoted_positions(text: str) -> Tuple[List[str], List[int], bool]:
+    """The quote enclosing each position, where that quoted span opens, and balance.
+
+    The first list holds ``'``, ``"``, or ``""`` when unquoted, so it is
+    truthy exactly for positions inside a quoted span. The second holds the
+    position of the opening quote (-1 when unquoted). The flag is False when
+    a quote is still open at the end, which means the quote model is wrong
+    somewhere in the template.
+
+    The bodies of Cheetah placeholders with brackets (``${...}``,
+    ``$t.replace('"', '')``) are Python code, so their quotes are skipped and
+    the body takes the shell context of the placeholder.
 
     Cheetah removes ``##`` lines and ``#*`` blocks wherever they appear and
     processes its directives everywhere too, so those spans are skipped
@@ -361,8 +390,10 @@ def _quoted_positions(text: str) -> List[bool]:
     outside quotes: inside quotes it is literal text.
     """
     size = len(text)
-    quoted = [False] * size
+    quoted = [""] * size
+    opens = [-1] * size
     in_single = in_double = False
+    opened = -1
     pos = 0
     while pos < size:
         if text.startswith("##", pos):
@@ -373,9 +404,20 @@ def _quoted_positions(text: str) -> List[bool]:
             pos = size if block_end == -1 else block_end + 2
             continue
         char = text[pos]
+        if char == "$" and (pos == 0 or text[pos - 1] != "\\"):
+            # ``\$`` is Cheetah's escape for a literal ``$``, not a placeholder.
+            placeholder_end = _placeholder_end(text, pos)
+            if placeholder_end is not None:
+                kind = "'" if in_single else ('"' if in_double else "")
+                for index in range(pos, placeholder_end):
+                    quoted[index] = kind
+                    opens[index] = opened if kind else -1
+                pos = placeholder_end
+                continue
         if in_single or in_double:
-            quoted[pos] = True
             close = "'" if in_single else '"'
+            quoted[pos] = close
+            opens[pos] = opened
             if char == close:
                 in_single = in_double = False
             elif in_double and char == "\\":
@@ -384,27 +426,26 @@ def _quoted_positions(text: str) -> List[bool]:
             elif char == "#" and (pos == 0 or text[pos - 1] in " \t\n;|&(") and _DIRECTIVE.match(text, pos) is not None:
                 # A Cheetah directive is processed even inside quotes, so its
                 # content never reaches the shell and cannot close the quote.
-                pos = _line_end(text, pos)
+                pos = _directive_end(text, pos)
                 continue
             pos += 1
             continue
         if char in "'\"":
             in_single = char == "'"
             in_double = char == '"'
+            opened = pos
         elif char == "\\":
             pos = min(pos + 2, size)
             continue
         elif char == "#" and (pos == 0 or text[pos - 1] in " \t\n;|&("):
             # A directive or bash comment: its content never reaches the shell.
-            pos = _line_end(text, pos)
+            pos = _directive_end(text, pos)
             continue
         pos += 1
-    return quoted
+    return quoted, opens, not (in_single or in_double)
 
 
-def _scan_command(
-    text: str, quoted: List[bool], cleaning_spans: List[Tuple[int, int]]
-) -> Tuple[List[bool], List[bool]]:
+def _scan_command(text: str, quoted: List[str], cleaning_spans: List[Tuple[int, int]]) -> Tuple[List[bool], List[bool]]:
     """Classify each position of a ``<command>`` template.
 
     Returns two boolean lists: ``raw_flow`` (a value interpolated at this
@@ -459,7 +500,9 @@ def _scan_command(
 
 
 def _matching_paren(text: str, opener: int) -> Optional[int]:
-    """Index of the parenthesis closing the one at ``opener``, else None."""
+    """Index of the bracket closing the ``(``, ``[`` or ``{`` at ``opener``, else None."""
+    open_char = text[opener]
+    close_char = {"(": ")", "[": "]", "{": "}"}[open_char]
     depth = 0
     quote: Optional[str] = None
     pos = opener
@@ -473,14 +516,48 @@ def _matching_paren(text: str, opener: int) -> Optional[int]:
                 quote = None
         elif char in "'\"":
             quote = char
-        elif char == "(":
+        elif char == open_char:
             depth += 1
-        elif char == ")":
+        elif char == close_char:
             depth -= 1
             if depth == 0:
                 return pos
         pos += 1
     return None
+
+
+_PLACEHOLDER_NAME = re.compile(r"[A-Za-z_][\w.]*")
+_PLACEHOLDER_ATTRIBUTE = re.compile(r"\.[A-Za-z_]\w*")
+
+
+def _placeholder_end(text: str, pos: int) -> Optional[int]:
+    """End of a Cheetah placeholder at ``pos`` whose body has brackets, else None.
+
+    ``${...}``, ``$(...)`` and calls or subscripts such as ``$t.replace('"', '')``
+    or ``$cond['x']`` are Python expressions: Cheetah evaluates them, so the
+    quotes inside never reach the shell. Plain ``$name.attr`` has no quotes and
+    is not skipped.
+    """
+    start = pos + 1
+    if start < len(text) and text[start] in "{(":
+        close = _matching_paren(text, start)
+        return None if close is None else close + 1
+    name = _PLACEHOLDER_NAME.match(text, start)
+    if name is None:
+        return None
+    end = name.end()
+    while end < len(text):
+        if text[end] in "([":
+            close = _matching_paren(text, end)
+            if close is None:
+                break
+            end = close + 1
+            continue
+        attribute = _PLACEHOLDER_ATTRIBUTE.match(text, end)
+        if attribute is None or end == name.end():
+            break
+        end = attribute.end()
+    return end if end > name.end() else None
 
 
 def _matching_quote(text: str, opener: int) -> Optional[int]:
@@ -620,7 +697,7 @@ def _re_sub_whitelist(text: str, start: int, end: int) -> bool:
     return "\\" not in replacement and all(char in SAFE_FILENAME_CHARS for char in replacement)
 
 
-def _cleaning_spans(text: str, quoted: List[bool]) -> List[Tuple[int, int]]:
+def _cleaning_spans(text: str, quoted: List[str]) -> List[Tuple[int, int]]:
     """Spans of arguments passed to recognized shell-safe cleaning helpers."""
     spans: List[Tuple[int, int]] = []
     for match in _CLEANING_CALL.finditer(text):
@@ -761,8 +838,181 @@ def _has_safe_validator(param_el: Any) -> bool:
     return False
 
 
-def _param_sanitizer_checks(params: Dict[str, _ParamInfo], emit: Emit) -> None:
-    """Find disabled or too permissive parameter sanitization."""
+# Contexts a parameter value can be used in, with the characters that let
+# the value escape each of them. Inside single quotes only a quote ends the
+# string; inside double quotes expansions still run. Every other context gets
+# the full set: unquoted uses, Cheetah directive lines (``#set`` can flow the
+# value anywhere), strings that another shell or interpreter parses again,
+# ``<configfile>`` contents (which may be any language), and references the
+# linter cannot follow.
+_SINGLE, _DOUBLE, _UNQUOTED, _DIRECTIVE_LINE, _REPARSED, _CONFIGFILE, _UNKNOWN, _UNBALANCED = (
+    "'",
+    '"',
+    "",
+    "#",
+    "reparsed",
+    "configfile",
+    "unknown",
+    "unbalanced",
+)
+_CONTEXT_UNSAFE_CHARS = {
+    _SINGLE: "'",
+    _DOUBLE: '"$`\\',
+}
+_CONTEXT_LABELS = {
+    _SINGLE: "inside single quotes",
+    _DOUBLE: "inside double quotes",
+    _UNQUOTED: "unquoted",
+    _DIRECTIVE_LINE: "in a Cheetah directive",
+    _REPARSED: "in a string that another shell or interpreter parses again",
+    _CONFIGFILE: "in a configfile",
+    _UNKNOWN: "in a form the linter cannot follow",
+    _UNBALANCED: "in a template whose quotes do not balance",
+}
+
+# Text before a quoted use (from the start of the shell command where the
+# quote opens) that makes the quoted string code for a second parser: command substitution,
+# ``eval``, ``sh -c`` and the like, inline interpreter scripts, awk programs.
+_REPARSING = re.compile(
+    r"\\\$\(|`|\beval\b|\b(?:ba|da|k|z)?sh\b[^\n]*?\s-\w*c\b"
+    r"|\b(?:python[\d.]*|perl|ruby|node|Rscript|R)\b[^\n]*?\s-\w*[ce]\b|\b[gmn]?awk\b"
+)
+
+
+class _CommandScan(NamedTuple):
+    """Classification of one ``<command>`` or ``<configfile>`` template."""
+
+    text: str
+    node: Any
+    label: str
+    configfile: bool
+    quoted: List[str]
+    opens: List[int]
+    balanced: bool
+    raw_flow: List[bool]
+    unquoted: List[bool]
+    cleaning: List[Tuple[int, int]]
+    scopes: List[_LoopScope]
+
+
+class _Use(NamedTuple):
+    """One place where a parameter value reaches a rendered template."""
+
+    context: str
+    location: str
+
+
+def _scan(text: str, node: Any, label: str = "<command>", configfile: bool = False) -> _CommandScan:
+    """Classify a template once for all checks."""
+    quoted, opens, balanced = _quoted_positions(text)
+    cleaning = _cleaning_spans(text, quoted)
+    raw_flow, unquoted = _scan_command(text, quoted, cleaning)
+    return _CommandScan(
+        text, node, label, configfile, quoted, opens, balanced, raw_flow, unquoted, cleaning, _loop_bindings(text)
+    )
+
+
+def _location(text: str, pos: int, label: str = "<command>") -> str:
+    """Human-readable position of ``pos``; line 1 is the line of the template's tag."""
+    return f"line {text.count(chr(10), 0, pos) + 1} of {label}"
+
+
+def _command_start(scan: _CommandScan, pos: int) -> int:
+    """Start of the shell command containing ``pos``.
+
+    Galaxy joins the lines of the rendered command before running it, so a
+    command runs back to the last unquoted ``;``, ``|`` or ``&``, across lines.
+    """
+    start = pos
+    while start > 0 and not (scan.text[start - 1] in ";|&" and not scan.quoted[start - 1]):
+        start -= 1
+    return start
+
+
+def _context(scan: _CommandScan, pos: int) -> str:
+    """Context of a rendered reference at ``pos``."""
+    if scan.configfile:
+        return _CONFIGFILE
+    if scan.quoted[pos]:
+        if not scan.balanced:
+            return _UNBALANCED
+        if _REPARSING.search(scan.text, _command_start(scan, scan.opens[pos]), pos):
+            return _REPARSED
+        return scan.quoted[pos]
+    return _UNQUOTED if scan.unquoted[pos] else _DIRECTIVE_LINE
+
+
+def _mention_pattern(dotted: str) -> "re.Pattern[str]":
+    """Loose matches of anything that may refer to the parameter ``dotted``.
+
+    This catches the forms ``_find_reference`` does not resolve, such as
+    ``${x.strip()}``, an alias (``#set $r = $cond`` then ``$r.x``) or a
+    lookup by name (``$cond['x']``, ``$getVar('x')``).
+    """
+    leaf = re.escape(dotted.rsplit(".", 1)[-1])
+    return re.compile(r"\$\{?\s*(?:[A-Za-z_][\w.]*\.)?" + leaf + r"(?!\w)|(['\"])" + leaf + r"\1")
+
+
+def _uses(dotted: str, scans: List[_CommandScan], references: Callable[[_CommandScan], Set[int]]) -> List[_Use]:
+    """Where a parameter's value reaches the rendered templates, in order.
+
+    References that do not render (comments, condition directives) or that
+    are passed through a recognized cleaning helper are left out. A rendered
+    mention of the parameter that is not one of the recognized references
+    (``references`` gives the positions of all of them, for any parameter)
+    counts as a use in an unknown context.
+    """
+    uses: List[_Use] = []
+    for scan in scans:
+        found = set()
+        for match in _find_reference(dotted, scan.scopes, scan.text):
+            pos = match.start()
+            found.add(pos)
+            if scan.raw_flow[pos] and not _in_spans(pos, scan.cleaning):
+                uses.append(_Use(_context(scan, pos), _location(scan.text, pos, scan.label)))
+        for match in _mention_pattern(dotted).finditer(scan.text):
+            pos = match.start()
+            if pos in found or not scan.raw_flow[pos] or _in_spans(pos, scan.cleaning) or pos in references(scan):
+                continue
+            uses.append(_Use(_UNKNOWN, _location(scan.text, pos, scan.label)))
+    return uses
+
+
+def _show_chars(chars: Set[str]) -> str:
+    """Characters for a message."""
+    return "".join(sorted(chars))
+
+
+def _worst_use(chars: Set[str], uses: List[_Use]) -> Tuple[Set[str], Optional[_Use]]:
+    """The use where most of ``chars`` are unsafe (the first on ties), with those characters."""
+    worst: Set[str] = set()
+    worst_use: Optional[_Use] = None
+    for use in uses:
+        unsafe = set(_CONTEXT_UNSAFE_CHARS.get(use.context, SHELL_DANGEROUS_CHARS))
+        here = {char for char in chars if char in unsafe}
+        if len(here) > len(worst):
+            worst, worst_use = here, use
+    return worst, worst_use
+
+
+def _param_sanitizer_checks(params: Dict[str, _ParamInfo], scans: List[_CommandScan], emit: Emit) -> None:
+    """Find disabled or too permissive parameter sanitization.
+
+    A permissive sanitizer or a dangerous ``invalid_char`` is reported with
+    the characters that can escape the context of its worst use. Only uses
+    in a plain single- or double-quoted shell string narrow the set; values
+    that never reach a rendered template are not reported.
+    """
+    reference_cache: Dict[int, Set[int]] = {}
+
+    def references(scan: _CommandScan) -> Set[int]:
+        key = id(scan)
+        if key not in reference_cache:
+            reference_cache[key] = {
+                match.start() for name in params for match in _find_reference(name, scan.scopes, scan.text)
+            }
+        return reference_cache[key]
+
     for dotted, param_info in params.items():
         if param_info.type not in _SANITIZED_PARAM_TYPES or not _param_is_sanitized(param_info.node, param_info.type):
             continue
@@ -785,54 +1035,51 @@ def _param_sanitizer_checks(params: Dict[str, _ParamInfo], emit: Emit) -> None:
         # target, and anything else becomes ``invalid_char`` -- all three
         # outputs are emitted verbatim -- so simulate that order instead of
         # assuming that mapped characters are gone.
-        surviving = sorted(
-            {
-                *(c for c in SHELL_DANGEROUS_CHARS if c in valid_chars),
-                *(
-                    d
-                    for source, target in mapping.items()
-                    if source not in valid_chars
-                    for d in target
-                    if d in SHELL_DANGEROUS_CHARS
-                ),
-            }
-        )
-        if surviving:
+        surviving = {
+            *(c for c in SHELL_DANGEROUS_CHARS if c in valid_chars),
+            *(
+                d
+                for source, target in mapping.items()
+                if source not in valid_chars
+                for d in target
+                if d in SHELL_DANGEROUS_CHARS
+            ),
+        }
+        invalid_chars = set(sanitizer_el.get("invalid_char", "X"))
+        if not (surviving | invalid_chars) & set(SHELL_DANGEROUS_CHARS):
+            continue
+        uses = _uses(dotted, scans, references)
+        unsafe, use = _worst_use(surviving, uses)
+        if use is not None:
             emit(
                 "permissive_sanitizer",
                 dotted,
-                f"Sanitizer for param '{dotted}' allows shell metacharacters ('{''.join(surviving)}'); "
-                "restrict the valid characters or clean the value at use",
+                f"Sanitizer for param '{dotted}' allows shell metacharacters ('{_show_chars(unsafe)}') and the "
+                f"value is used {_CONTEXT_LABELS[use.context]} ({use.location}); restrict the valid "
+                "characters or clean the value at use",
                 sanitizer_el,
             )
-        invalid_char = sanitizer_el.get("invalid_char", "X")
-        if any(c in SHELL_DANGEROUS_CHARS for c in invalid_char):
+        unsafe, use = _worst_use(invalid_chars, uses)
+        if use is not None:
             emit(
                 "dangerous_invalid_char",
                 dotted,
-                f"invalid_char for param '{dotted}' contains a shell metacharacter; invalid input "
-                "characters are rewritten to it",
+                f"invalid_char for param '{dotted}' contains a shell metacharacter and the value is used "
+                f"{_CONTEXT_LABELS[use.context]} ({use.location}); invalid input characters are rewritten to it",
                 sanitizer_el,
             )
 
 
-def _raw_flow_checks(
-    text: str,
-    params: Dict[str, _ParamInfo],
-    scopes: List[_LoopScope],
-    raw_flow: List[bool],
-    cleaning: List[Tuple[int, int]],
-    node: Any,
-    emit: Emit,
-) -> None:
+def _raw_flow_checks(scan: _CommandScan, params: Dict[str, _ParamInfo], emit: Emit) -> None:
     """Flag raw collection identifiers and names that reach the command."""
+    text, scopes, raw_flow, cleaning, node = scan.text, scan.scopes, scan.raw_flow, scan.cleaning, scan.node
     for match in _RAW_IDENTIFIER.finditer(text):
         base = match.group(1)
         if not raw_flow[match.start()] or _in_spans(match.start(), cleaning):
             continue
         message = (
-            f"Raw value of ${base}.element_identifier reaches the command; consider "
-            f"${base}.safe_element_identifier (Galaxy 26.2+) or clean it, e.g. "
+            f"Raw value of ${base}.element_identifier reaches the command ({_location(text, match.start())}); "
+            f"consider ${base}.safe_element_identifier (Galaxy 26.2+) or clean it, e.g. "
             "re.sub(r'[^\\w.-]', '_', ...), before interpolating"
         )
         emit("raw_identifier", base, message, node)
@@ -843,8 +1090,8 @@ def _raw_flow_checks(
         if not raw_flow[match.start()] or _in_spans(match.start(), cleaning):
             continue
         message = (
-            f"${base}.name is the raw element identifier of the collection; consider "
-            f"${base}.safe_element_identifier (Galaxy 26.2+) or clean it before interpolating"
+            f"${base}.name is the raw element identifier of the collection ({_location(text, match.start())}); "
+            f"consider ${base}.safe_element_identifier (Galaxy 26.2+) or clean it before interpolating"
         )
         emit("raw_collection_name", base, message, node)
     for match in _COLLECTION_KEYS.finditer(text):
@@ -853,54 +1100,40 @@ def _raw_flow_checks(
             continue
         if not raw_flow[match.start()] or _in_spans(match.start(), cleaning):
             continue
-        message = f"${base}.keys() returns raw element identifiers; clean each key before interpolating it"
+        message = (
+            f"${base}.keys() returns raw element identifiers ({_location(text, match.start())}); clean each "
+            "key before interpolating it"
+        )
         emit("raw_collection_keys", base, message, node)
 
 
-def _param_usage_checks(
-    text: str,
-    params: Dict[str, _ParamInfo],
-    scopes: List[_LoopScope],
-    raw_flow: List[bool],
-    unquoted: List[bool],
-    cleaning: List[Tuple[int, int]],
-    node: Any,
-    emit: Emit,
-) -> None:
+def _param_usage_checks(scan: _CommandScan, params: Dict[str, _ParamInfo], emit: Emit) -> None:
     """Flag parameter values that reach the command unsafely."""
+    text, raw_flow, unquoted, cleaning = scan.text, scan.raw_flow, scan.unquoted, scan.cleaning
     for dotted, param_info in params.items():
         if param_info.type in _RAW_VALUE_PARAM_TYPES:
-            message = (
-                f"Value of {param_info.type} param '{dotted}' is not sanitized and reaches the command; "
-                "clean the value before interpolating it"
-            )
-            for match in _find_reference(dotted, scopes, text):
+            for match in _find_reference(dotted, scan.scopes, text):
                 if raw_flow[match.start()] and not _in_spans(match.start(), cleaning):
-                    emit(param_info.type, dotted, message, node)
+                    message = (
+                        f"Value of {param_info.type} param '{dotted}' is not sanitized and reaches the command "
+                        f"({_location(text, match.start())}); clean the value before interpolating it"
+                    )
+                    emit(param_info.type, dotted, message, scan.node)
                     break
         elif param_info.type == "text" and not _has_safe_validator(param_info.node):
-            message = (
-                f"Value of text param '{dotted}' is interpolated unquoted in the command; default "
-                "sanitization still allows spaces, quote it or restrict the valid characters"
-            )
-            for match in _find_reference(dotted, scopes, text):
+            for match in _find_reference(dotted, scan.scopes, text):
                 if unquoted[match.start()] and not _in_spans(match.start(), cleaning):
-                    emit("unquoted_param", dotted, message, node)
+                    message = (
+                        f"Value of text param '{dotted}' is interpolated unquoted in the command "
+                        f"({_location(text, match.start())}); default sanitization still allows spaces, quote "
+                        "it or restrict the valid characters"
+                    )
+                    emit("unquoted_param", dotted, message, scan.node)
                     break
-
-
-def _command_checks(text: str, node: Any, params: Dict[str, _ParamInfo], emit: Emit) -> None:
-    """Analyze one ``<command>`` template for raw value flows."""
-    quoted = _quoted_positions(text)
-    cleaning = _cleaning_spans(text, quoted)
-    scopes = _loop_bindings(text)
-    raw_flow, unquoted = _scan_command(text, quoted, cleaning)
-    _raw_flow_checks(text, params, scopes, raw_flow, cleaning, node, emit)
-    _param_usage_checks(text, params, scopes, raw_flow, unquoted, cleaning, node, emit)
 
 
 def _find_reference(dotted: str, scopes: List[_LoopScope], text: str) -> List[Any]:
-    """All matches of the possible template references to a parameter.
+    """All matches of the possible template references to a parameter, in order.
 
     A reference through a loop variable only counts where that variable is
     bound to the parameter, so each region of the template (before the first
@@ -912,6 +1145,7 @@ def _find_reference(dotted: str, scopes: List[_LoopScope], text: str) -> List[An
         loops = scope.bindings if scope else {}
         for pattern in _reference_patterns(dotted, loops):
             matches.extend(match for match in re.finditer(pattern, text) if _scope_at(scopes, match.start()) is scope)
+    matches.sort(key=lambda match: match.start())
     return matches
 
 
@@ -932,12 +1166,22 @@ def _security_checks(tool_source: "ToolSource") -> List[SecurityCheck]:
                 checks.append(SecurityCheck(linter=linter, message=message, node=node))
 
         params = _index_params(root)
-        _tool_sanitize_off(root, emit)
-        _param_sanitizer_checks(params, emit)
+        scans = []
         for command_element in root.findall("command"):
             text = "".join(command_element.itertext())
             if text.strip():
-                _command_checks(text, command_element, params, emit)
+                scans.append(_scan(text, command_element))
+        command_scans = list(scans)
+        for configfile_element in root.findall("configfiles/configfile"):
+            text = "".join(configfile_element.itertext())
+            if text.strip():
+                label = f"<configfile name=\"{configfile_element.get('name', '')}\">"
+                scans.append(_scan(text, configfile_element, label, configfile=True))
+        _tool_sanitize_off(root, emit)
+        _param_sanitizer_checks(params, scans, emit)
+        for scan in command_scans:
+            _raw_flow_checks(scan, params, emit)
+            _param_usage_checks(scan, params, emit)
         return checks
 
     return cached_lint_result(tool_source, "security", calculate)
