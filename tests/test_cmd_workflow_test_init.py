@@ -19,6 +19,15 @@ class CmdWorkflowTestInitTestCase(CliTestCase):
             job = test_config[0]["job"]
             assert isinstance(job, dict)
 
+    def test_untyped_input(self):
+        """A format2 input without a type is a data input."""
+        with self._isolate_with_test_data("") as f:
+            init_cmd = ["workflow_test_init", "wf_untyped_input.gxwf.yml"]
+            self._check_exit_code(init_cmd)
+            with open(os.path.join(f, "wf_untyped_input.gxwf_tests.yml")) as stream:
+                test_config = yaml.safe_load(stream)
+            assert test_config[0]["job"] == {"the_input": {"class": "File", "path": "todo_test_data_path.ext"}}
+
     def test_init_split_test(self):
         with self._isolate_with_test_data("wf_repos/from_format2/0_basic_native") as f:
             init_cmd = ["workflow_test_init", "--split_test", "0_basic_native.yml"]
