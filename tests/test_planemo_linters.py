@@ -1213,7 +1213,12 @@ FULL_SET = "('\"#$&;<>\\`|') and the value is used "
 )
 def test_security_linter_permissive_sanitizer_depends_on_use(tmp_path, command, expected):
     # Only characters that can escape the shell context of a use are reported.
-    messages = _lint_template_tool(tmp_path, command, PRINTABLE_NO_QUOTE_PARAM)
+    # (Raw reads such as ${txt.strip()} have their own check.)
+    messages = [
+        message
+        for message in _lint_template_tool(tmp_path, command, PRINTABLE_NO_QUOTE_PARAM)
+        if message[2] != "SecurityRawParamValue"
+    ]
 
     if expected is None:
         assert messages == []
@@ -1290,11 +1295,12 @@ def test_security_linter_bare_at_sign_is_not_a_directive(tmp_path):
 
 def test_security_linter_skips_quotes_inside_cheetah_placeholders(tmp_path):
     # The quotes in ${t.replace('"', '')} are Python code that Cheetah
-    # evaluates, so '$txt' stays inside single quotes.
+    # evaluates, so '$txt' stays inside single quotes. (The validator keeps
+    # the raw read of t safe.)
     messages = _lint_template_tool(
         tmp_path,
         "echo \"${t.replace('\"', '')}\" '$txt'",
-        PRINTABLE_NO_QUOTE_PARAM + '<param name="t" type="text"/>',
+        PRINTABLE_NO_QUOTE_PARAM + '<param name="t" type="text"><validator type="regex">^[\\w]+$</validator></param>',
     )
 
     assert messages == []
@@ -1584,3 +1590,212 @@ def test_security_linter_flags_keys_of_sub_collection(tmp_path):
             "SecurityRawCollectionName",
         )
     ]
+
+
+TEXT_PARAM = '<param name="txt" type="text"/>'
+
+
+def _raw_text_message(line, ptype="text", where="the command", label="<command>"):
+    return (
+        "info",
+        f"Raw value of {ptype} param 'txt' reaches {where} (line {line} of {label}); .value and string "
+        "methods such as .strip() bypass Galaxy's sanitization: use the plain placeholder, clean the value, "
+        "or restrict it with a regex validator",
+        "SecurityRawParamValue",
+    )
+
+
+@pytest.mark.parametrize(
+    "command, inputs, line",
+    [
+        # The plain placeholder goes through to_param_dict_string, which sanitizes.
+        pytest.param("echo '$txt'", TEXT_PARAM, None, id="plain-placeholder"),
+        pytest.param("echo '${str($txt)}'", TEXT_PARAM, None, id="str-call"),
+        pytest.param("#if $txt.strip():\necho hi;\n#end if", TEXT_PARAM, None, id="condition"),
+        # InputValueWrapper.__getattr__ returns attributes of the raw value.
+        pytest.param("echo '$txt.value'", TEXT_PARAM, 2, id="value-attribute"),
+        pytest.param("echo '${txt.strip()}'", TEXT_PARAM, 2, id="string-method"),
+        pytest.param("#for $t in $txt.split():\necho '$t';\n#end for", TEXT_PARAM, 2, id="split-loop"),
+        pytest.param(
+            "#set $s = $txt.replace('\"', '\\\\\"')\necho \"$s\";", TEXT_PARAM, 2, id="replace-is-no-cleaning"
+        ),
+        pytest.param("#set $s = '%s' % $txt.value\necho '$s';", TEXT_PARAM, 2, id="formatted-value"),
+        pytest.param(
+            "#set $s = re.sub(r'[^\\w.-]', '_', $txt.value)\necho '$s';", TEXT_PARAM, None, id="cleaned-value"
+        ),
+        pytest.param(
+            "echo '$txt.value'",
+            '<param name="txt" type="text"><validator type="regex">^[\\w.-]+$</validator></param>',
+            None,
+            id="safe-validator",
+        ),
+        pytest.param(
+            "echo '$txt.value'",
+            '<param name="txt" type="text"><validator type="regex">[\\w.-]+</validator></param>',
+            2,
+            id="unanchored-validator",
+        ),
+        pytest.param("echo '$num.value'", '<param name="num" type="integer"/>', None, id="integer"),
+    ],
+)
+def test_security_linter_flags_raw_reads_of_text(tmp_path, command, inputs, line):
+    messages = _lint_template_tool(tmp_path, command, inputs)
+    assert messages == ([] if line is None else [_raw_text_message(line)])
+
+
+def test_security_linter_flags_raw_reads_of_hidden(tmp_path):
+    messages = _lint_template_tool(tmp_path, "echo '${txt.strip()}'", '<param name="txt" type="hidden"/>')
+    assert messages == [_raw_text_message(2, ptype="hidden")]
+
+
+def test_security_linter_raw_read_of_unsanitized_text_is_reported_once(tmp_path):
+    # Sanitization is off anyway: the sanitizer finding covers the raw read.
+    messages = _lint_template_tool(
+        tmp_path, "echo '$txt.value'", '<param name="txt" type="text"><sanitizer sanitize="false"/></param>'
+    )
+    assert [linter for _, _, linter in messages] == ["SecuritySanitizerDisabled"]
+
+
+def _raw_identifier_message(base, line, label="<command>", where="the command"):
+    return (
+        "info",
+        f"Raw value of {base}.element_identifier reaches {where} (line {line} of {label}); consider "
+        f"{base}.safe_element_identifier (Galaxy 26.2+) or clean it, e.g. re.sub(r'[^\\w.-]', '_', ...), "
+        "before interpolating",
+        "SecurityRawIdentifier",
+    )
+
+
+@pytest.mark.parametrize(
+    "command, expected",
+    [
+        # Inside Python code (directives, ${...}) a loop variable needs no $.
+        pytest.param(
+            "#set $names = \",\".join([str(e.element_identifier).replace(',', '_') for e in $coll])\necho '$names';",
+            ("e", 2),
+            id="comprehension-in-directive",
+        ),
+        pytest.param(
+            "echo '${\",\".join(e.element_identifier for e in $coll)}'", ("e", 2), id="generator-in-placeholder"
+        ),
+        pytest.param(
+            "#for e in $coll:\n#set $n = e.element_identifier\necho '$n';\n#end for", ("e", 3), id="bare-loop-variable"
+        ),
+        # Outside Python code a bare name is literal text.
+        pytest.param("echo e.element_identifier", None, id="literal-text"),
+        pytest.param(
+            "#set $names = [re.sub(r'[^\\w.-]', '_', e.element_identifier) for e in $coll]\necho '$names';",
+            None,
+            id="cleaned",
+        ),
+    ],
+)
+def test_security_linter_flags_bare_identifiers_in_python_code(tmp_path, command, expected):
+    messages = _lint_template_tool(tmp_path, command, _collection_param("list"))
+    assert messages == ([] if expected is None else [_raw_identifier_message(*expected)])
+
+
+def test_security_linter_flags_bare_name_of_sub_collection(tmp_path):
+    messages = _lint_template_tool(
+        tmp_path, "#for e in $coll:\n#set $n = e.name\necho '$n';\n#end for", _collection_param("list:paired")
+    )
+    assert messages == [_collection_name_message("e", 3)]
+
+
+CONFIGFILE_TEMPLATE_TOOL = """<tool id="configfile_template" name="Configfile Template" version="1.0">
+    <command><![CDATA[
+Rscript '$script'
+    ]]></command>
+    <configfiles>
+        <configfile name="script"><![CDATA[
+{configfile}
+        ]]></configfile>
+    </configfiles>
+    <inputs>
+{inputs}
+    </inputs>
+    <outputs />
+</tool>
+"""
+
+SCRIPT_LABEL = '<configfile name="script">'
+
+
+def _lint_configfile_tool(tmp_path, configfile, inputs):
+    (tmp_path / "configfile_template.xml").write_text(
+        CONFIGFILE_TEMPLATE_TOOL.format(configfile=configfile, inputs=inputs)
+    )
+    lint_ctx = LintContext("all")
+    lint_tool_source_with_modules(lint_ctx, _tool_source(tmp_path, "configfile_template.xml"), [security])
+    return _messages(lint_ctx)
+
+
+@pytest.mark.parametrize(
+    "configfile, expected",
+    [
+        pytest.param('names <- c("$coll.element_identifier")', ("$coll", 2), id="r-string"),
+        # A configfile is not a shell script: '#' does not silence the rest of
+        # the line, and shlex.quote does not make a value safe in it.
+        pytest.param("# sample: $coll.element_identifier", ("$coll", 2), id="hash-line"),
+        pytest.param("x = $shlex.quote($coll.element_identifier)", ("$coll", 2), id="shlex-quote"),
+        pytest.param("#set $n = re.sub(r'[^\\w.-]', '_', $coll.element_identifier)\nname <- '$n'", None, id="cleaned"),
+    ],
+)
+def test_security_linter_flags_raw_identifiers_in_configfiles(tmp_path, configfile, expected):
+    messages = _lint_configfile_tool(tmp_path, configfile, _collection_param("list"))
+    if expected is None:
+        assert messages == []
+    else:
+        base, line = expected
+        assert messages == [_raw_identifier_message(base, line, label=SCRIPT_LABEL, where="a configfile")]
+
+
+def test_security_linter_flags_collection_name_in_configfile(tmp_path):
+    messages = _lint_configfile_tool(tmp_path, "label <- '$coll.name'", _collection_param("list"))
+    assert messages == [
+        (
+            "info",
+            f"$coll.name is the raw element identifier of the collection (line 2 of {SCRIPT_LABEL}); consider "
+            "$coll.safe_element_identifier (Galaxy 26.2+) or clean it before interpolating",
+            "SecurityRawCollectionName",
+        )
+    ]
+
+
+def test_security_linter_flags_raw_reads_in_configfile(tmp_path):
+    messages = _lint_configfile_tool(tmp_path, "label <- '${txt.strip()}'", TEXT_PARAM)
+    assert messages == [_raw_text_message(2, where="a configfile", label=SCRIPT_LABEL)]
+
+
+def test_security_linter_attribute_naming_a_child_param_is_no_raw_read(tmp_path):
+    # 'x' is a text param in one branch and a conditional in the other, so
+    # $c.x.y navigates to a child param, not to an attribute of a raw value.
+    inputs = (
+        '<conditional name="c"><param name="mode" type="select">'
+        '<option value="a">a</option><option value="b">b</option></param>'
+        '<when value="a"><param name="x" type="text"/></when>'
+        '<when value="b"><conditional name="x"><param name="y" type="select"><option value="1">1</option></param>'
+        '<when value="1"/></conditional></when></conditional>'
+    )
+    messages = _lint_template_tool(tmp_path, "echo '$c.x.y' '$c.x'", inputs)
+    assert messages == []
+
+
+def test_security_linter_labels_configfile_by_filename(tmp_path):
+    tool = CONFIGFILE_TEMPLATE_TOOL.format(
+        configfile="name <- '$coll.element_identifier'", inputs=_collection_param("list")
+    )
+    (tmp_path / "configfile_template.xml").write_text(tool.replace('name="script"', 'filename="script.R"'))
+    lint_ctx = LintContext("all")
+    lint_tool_source_with_modules(lint_ctx, _tool_source(tmp_path, "configfile_template.xml"), [security])
+    assert _messages(lint_ctx) == [
+        _raw_identifier_message("$coll", 2, label='<configfile filename="script.R">', where="a configfile")
+    ]
+
+
+def test_security_linter_raw_read_with_tool_sanitize_off_is_reported_once(tmp_path):
+    tool = SECURITY_TEMPLATE_TOOL.format(command="echo '$txt.value'", inputs=TEXT_PARAM)
+    (tmp_path / "template_tool.xml").write_text(tool.replace("<inputs>", '<options sanitize="false"/>\n    <inputs>'))
+    lint_ctx = LintContext("all")
+    lint_tool_source_with_modules(lint_ctx, _tool_source(tmp_path, "template_tool.xml"), [security])
+    assert [linter for _, _, linter in _messages(lint_ctx)] == ["SecurityToolSanitizeOff"]

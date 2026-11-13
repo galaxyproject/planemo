@@ -26,6 +26,20 @@ reaches a rendered template is not reported. Line numbers are counted from
 the ``<command>`` (or ``<configfile>``) tag after macro expansion and after
 XML comments are removed, so they can differ from the source file.
 
+Galaxy sanitizes a parameter when its plain placeholder (``$p``) is
+rendered. Other reads return the raw value and are reported: ``.value`` and
+string methods such as ``.strip()`` on a ``text`` or ``hidden`` param, and
+``.value``, iteration or Python expressions on a ``group_tag`` or
+``data_column`` param. Raw identifiers, collection names and raw reads are
+looked for in ``<command>`` and in ``<configfile>`` contents; inside Python
+code (directives, ``${...}``) a bare loop variable such as ``x`` in
+``[x.element_identifier for x in $coll]`` counts too.
+
+Known limits: cleaning is only credited for ``re.sub`` with a safe
+whitelist class (and ``shlex.quote`` in an unquoted command argument). A
+``#def`` helper that cleans its argument is not followed, and ``json.dumps``
+is not credited in a configfile, whose language the linter does not know.
+
 Each check can be skipped individually (e.g. ``--skip SecurityRawIdentifier``)
 and the whole module can be skipped with ``--skip security``.
 """
@@ -36,6 +50,7 @@ from typing import (
     Any,
     Callable,
     Dict,
+    Iterator,
     List,
     NamedTuple,
     Optional,
@@ -99,9 +114,12 @@ _DIRECTIVE = re.compile(
     r"#(?:(?:" + "|".join(map(re.escape, _CHEETAH_DIRECTIVE_NAMES)) + r")(?![A-Za-z0-9_@-])|@(?=[A-Za-z_]))"
 )
 _CLEANING_CALL = re.compile(r"\b(?:re\.sub|shlex\.quote)\s*\(")
-_RAW_IDENTIFIER = re.compile(r"\$(?:\(|\{)?\s*\$?\s*([A-Za-z_][\w.]*)\s*\.\s*element_identifier\b")
-_COLLECTION_NAME = re.compile(r"\$(?:\(|\{)?\s*\$?\s*([A-Za-z_][\w.]*)\s*\.\s*name\b")
-_COLLECTION_KEYS = re.compile(r"\$(?:\(|\{)?\s*\$?\s*([A-Za-z_][\w.]*)\s*\.\s*keys\s*\(\s*\)?")
+# A reference starts with ``$``, or is a bare name, which only refers to a
+# variable inside Python code (a directive or a ``${...}`` expression).
+_REFERENCE_START = r"(?:\$(?:\(|\{)?\s*\$?\s*|(?<![\w$.]))"
+_RAW_IDENTIFIER = re.compile(_REFERENCE_START + r"([A-Za-z_][\w.]*)\s*\.\s*element_identifier\b")
+_COLLECTION_NAME = re.compile(_REFERENCE_START + r"([A-Za-z_][\w.]*)\s*\.\s*name\b")
+_COLLECTION_KEYS = re.compile(_REFERENCE_START + r"([A-Za-z_][\w.]*)\s*\.\s*keys\s*\(\s*\)?")
 # Cheetah does not require the ``$`` on a loop variable, so both forms bind.
 _FOR_SIMPLE = re.compile(r"#\s*for\s+\$?([A-Za-z_]\w*)\s+in\s+\$([A-Za-z_][\w.]*)")
 _FOR_ENUMERATE = re.compile(
@@ -125,6 +143,11 @@ _SANITIZED_PARAM_TYPES = frozenset(("text", "select", "hidden"))
 # by iterating a multiple param, or in a Python expression. Galaxy only strips
 # whitespace from tags, so a group tag can hold any shell metacharacter.
 _RAW_VALUE_PARAM_TYPES = frozenset(("data_column", "group_tag"))
+
+# Types wrapped in ``InputValueWrapper``, whose ``__getattr__`` returns the
+# attributes of the raw value: ``$p.value`` and string methods such as
+# ``$p.strip()`` bypass the sanitization that ``$p`` gets.
+_RAW_ATTRIBUTE_PARAM_TYPES = frozenset(("text", "hidden"))
 
 Emit = Callable[[str, str, str, Any], None]
 
@@ -472,12 +495,16 @@ def _quoted_positions(text: str) -> Tuple[List[str], List[int], bool]:
     return quoted, opens, not (in_single or in_double)
 
 
-def _scan_command(text: str, quoted: List[str], cleaning_spans: List[Tuple[int, int]]) -> Tuple[List[bool], List[bool]]:
-    """Classify each position of a ``<command>`` template.
+def _scan_command(
+    text: str, quoted: List[str], cleaning_spans: List[Tuple[int, int]], configfile: bool = False
+) -> Tuple[List[bool], List[bool]]:
+    """Classify each position of a ``<command>`` or ``<configfile>`` template.
 
     Returns two boolean lists: ``raw_flow`` (a value interpolated at this
     position reaches the shell, quoted or not) and ``unquoted`` (the position
-    is also outside quotes, Cheetah directives, and shell comments).
+    is also outside quotes, Cheetah directives, and shell comments). A
+    configfile can be in any language, so a ``#`` that starts no Cheetah
+    directive is not taken as a comment there.
     """
     size = len(text)
     raw_flow: List[bool] = [True] * size
@@ -515,7 +542,7 @@ def _scan_command(text: str, quoted: List[str], cleaning_spans: List[Tuple[int, 
         if quoted[pos]:
             pos += 1
             continue
-        if word_boundary and char == "#":
+        if word_boundary and char == "#" and not configfile:
             # A bash comment makes the rest of its line inert; inside quotes
             # it is literal text and was handled above.
             pos = _apply_hash(text, pos, raw_flow, unquoted)
@@ -724,7 +751,7 @@ def _re_sub_whitelist(text: str, start: int, end: int) -> bool:
     return "\\" not in replacement and all(char in SAFE_FILENAME_CHARS for char in replacement)
 
 
-def _cleaning_spans(text: str, quoted: List[str]) -> List[Tuple[int, int]]:
+def _cleaning_spans(text: str, quoted: List[str], configfile: bool = False) -> List[Tuple[int, int]]:
     """Spans of arguments passed to recognized shell-safe cleaning helpers."""
     spans: List[Tuple[int, int]] = []
     for match in _CLEANING_CALL.finditer(text):
@@ -735,8 +762,9 @@ def _cleaning_spans(text: str, quoted: List[str]) -> List[Tuple[int, int]]:
         if match.group(0).startswith("shlex"):
             # shlex.quote only makes a value shell-safe when the call itself is
             # outside quotes: inside quotes its output (which contains quotes)
-            # breaks out of the surrounding context.
-            if quoted[open_pos]:
+            # breaks out of the surrounding context. A configfile need not be
+            # a shell script at all.
+            if configfile or quoted[open_pos]:
                 continue
         elif not _re_sub_whitelist(text, open_pos + 1, close_pos):
             continue
@@ -928,6 +956,7 @@ class _CommandScan(NamedTuple):
     unquoted: List[bool]
     cleaning: List[Tuple[int, int]]
     scopes: List[_LoopScope]
+    python: List[Tuple[int, int]]
 
 
 class _Use(NamedTuple):
@@ -940,10 +969,21 @@ class _Use(NamedTuple):
 def _scan(text: str, node: Any, label: str = "<command>", configfile: bool = False) -> _CommandScan:
     """Classify a template once for all checks."""
     quoted, opens, balanced = _quoted_positions(text)
-    cleaning = _cleaning_spans(text, quoted)
-    raw_flow, unquoted = _scan_command(text, quoted, cleaning)
+    cleaning = _cleaning_spans(text, quoted, configfile)
+    raw_flow, unquoted = _scan_command(text, quoted, cleaning, configfile)
     return _CommandScan(
-        text, node, label, configfile, quoted, opens, balanced, raw_flow, unquoted, cleaning, _loop_bindings(text)
+        text,
+        node,
+        label,
+        configfile,
+        quoted,
+        opens,
+        balanced,
+        raw_flow,
+        unquoted,
+        cleaning,
+        _loop_bindings(text),
+        _python_spans(text),
     )
 
 
@@ -1105,45 +1145,70 @@ def _param_sanitizer_checks(params: Dict[str, _ParamInfo], scans: List[_CommandS
             )
 
 
-def _raw_flow_checks(scan: _CommandScan, params: Dict[str, _ParamInfo], emit: Emit) -> None:
-    """Flag raw collection identifiers and names that reach the command."""
-    text, scopes, raw_flow, cleaning, node = scan.text, scan.scopes, scan.raw_flow, scan.cleaning, scan.node
-    for match in _RAW_IDENTIFIER.finditer(text):
-        base = match.group(1)
-        if not raw_flow[match.start()] or _in_spans(match.start(), cleaning):
+def _target(scan: _CommandScan) -> str:
+    """How messages name the template of ``scan``."""
+    return "a configfile" if scan.configfile else "the command"
+
+
+def _raw_matches(scan: _CommandScan, pattern: "re.Pattern[str]") -> Iterator[Tuple["re.Match[str]", str]]:
+    """Rendered, uncleaned matches of ``pattern``, with the base written as in the template.
+
+    A bare base (without ``$``) only counts inside Python code.
+    """
+    for match in pattern.finditer(scan.text):
+        pos = match.start()
+        bare = scan.text[pos] != "$"
+        if bare and not _in_spans(pos, scan.python):
             continue
+        if not scan.raw_flow[pos] or _in_spans(pos, scan.cleaning):
+            continue
+        yield match, ("" if bare else "$") + match.group(1)
+
+
+def _raw_flow_checks(scan: _CommandScan, params: Dict[str, _ParamInfo], emit: Emit) -> None:
+    """Flag raw collection identifiers and names that reach a template."""
+    text, scopes, node = scan.text, scan.scopes, scan.node
+    for match, written in _raw_matches(scan, _RAW_IDENTIFIER):
         message = (
-            f"Raw value of ${base}.element_identifier reaches the command ({_location(text, match.start())}); "
-            f"consider ${base}.safe_element_identifier (Galaxy 26.2+) or clean it, e.g. "
-            "re.sub(r'[^\\w.-]', '_', ...), before interpolating"
+            f"Raw value of {written}.element_identifier reaches {_target(scan)} "
+            f"({_location(text, match.start(), scan.label)}); consider {written}.safe_element_identifier "
+            "(Galaxy 26.2+) or clean it, e.g. re.sub(r'[^\\w.-]', '_', ...), before interpolating"
         )
-        emit("raw_identifier", base, message, node)
-    for match in _COLLECTION_NAME.finditer(text):
+        emit("raw_identifier", match.group(1), message, node)
+    for match, written in _raw_matches(scan, _COLLECTION_NAME):
         base = match.group(1)
         if not _is_collection(base, params, _scope_at(scopes, match.start())):
             continue
-        if not raw_flow[match.start()] or _in_spans(match.start(), cleaning):
-            continue
         message = (
-            f"${base}.name is the raw element identifier of the collection ({_location(text, match.start())}); "
-            f"consider ${base}.safe_element_identifier (Galaxy 26.2+) or clean it before interpolating"
+            f"${base}.name is the raw element identifier of the collection "
+            f"({_location(text, match.start(), scan.label)}); consider ${base}.safe_element_identifier "
+            "(Galaxy 26.2+) or clean it before interpolating"
         )
         emit("raw_collection_name", base, message, node)
-    for match in _COLLECTION_KEYS.finditer(text):
+    for match, written in _raw_matches(scan, _COLLECTION_KEYS):
         base = match.group(1)
         if not _is_collection(base, params, _scope_at(scopes, match.start())):
             continue
-        if not raw_flow[match.start()] or _in_spans(match.start(), cleaning):
-            continue
         message = (
-            f"${base}.keys() returns raw element identifiers ({_location(text, match.start())}); clean each "
-            "key before interpolating it"
+            f"${base}.keys() returns raw element identifiers ({_location(text, match.start(), scan.label)}); "
+            "clean each key before interpolating it"
         )
         emit("raw_collection_keys", base, message, node)
 
 
 _STR_CALL_OPEN = re.compile(r"(?<![\w.])str\(\s*$")
 _CALL_CLOSE = re.compile(r"\s*\)")
+
+
+def _python_spans(text: str) -> List[Tuple[int, int]]:
+    """Spans of Python code: Cheetah directives and ``${...}``-style expressions."""
+    spans = _expression_spans(text)
+    comments = _cheetah_comment_spans(text)
+    for match in _DIRECTIVE.finditer(text):
+        pos = match.start()
+        if (pos == 0 or text[pos - 1] in " \t\n;|&(") and not _in_spans(pos, comments):
+            spans.append((pos, _directive_end(text, pos)))
+    return spans
 
 
 def _expression_spans(text: str) -> List[Tuple[int, int]]:
@@ -1158,7 +1223,7 @@ def _expression_spans(text: str) -> List[Tuple[int, int]]:
     return spans
 
 
-def _raw_reads(scan: _CommandScan, dotted: str) -> List[int]:
+def _raw_reads(scan: _CommandScan, dotted: str, params: Dict[str, _ParamInfo]) -> List[int]:
     """Positions where a template reads the raw value of a select-like parameter.
 
     Galaxy sanitizes a plain ``$p`` or ``${p}`` rendered as text, and
@@ -1169,7 +1234,7 @@ def _raw_reads(scan: _CommandScan, dotted: str) -> List[int]:
     """
     text = scan.text
     expressions = _expression_spans(text)
-    positions = {match.start() for match in _find_reference(dotted, scan.scopes, text, _attribute_patterns)}
+    positions = set(_raw_attribute_reads(scan, dotted, params))
     for match in _find_reference(dotted, scan.scopes, text):
         pos = match.start()
         if _STR_CALL_OPEN.search(text, max(0, pos - 32), pos) and _CALL_CLOSE.match(text, match.end()):
@@ -1180,19 +1245,74 @@ def _raw_reads(scan: _CommandScan, dotted: str) -> List[int]:
     return sorted(pos for pos in positions if scan.raw_flow[pos] and not _in_spans(pos, scan.cleaning))
 
 
-def _param_usage_checks(scan: _CommandScan, params: Dict[str, _ParamInfo], emit: Emit) -> None:
-    """Flag parameter values that reach the command unsafely."""
-    text, unquoted, cleaning = scan.text, scan.unquoted, scan.cleaning
+_ATTRIBUTE_NAME = re.compile(r"[A-Za-z_]\w*")
+
+
+def _child_names(dotted: str, params: Dict[str, _ParamInfo]) -> Set[str]:
+    """Names under ``dotted`` in the param tree.
+
+    A name can be a text param in one ``<when>`` and a group in another, so
+    ``$c.x.y`` may navigate to a child param rather than read an attribute.
+    """
+    prefix = dotted + "."
+    return {name[len(prefix) :].split(".", 1)[0] for name in params if name.startswith(prefix)}
+
+
+def _raw_attribute_reads(scan: _CommandScan, dotted: str, params: Dict[str, _ParamInfo]) -> List[int]:
+    """Positions where a template reads an attribute of a text param's raw value."""
+    children = _child_names(dotted, params)
+    positions = []
+    for match in _find_reference(dotted, scan.scopes, scan.text, _attribute_patterns):
+        attribute = _ATTRIBUTE_NAME.match(scan.text, match.end() - 1)
+        if attribute is not None and attribute.group(0) in children:
+            continue
+        if scan.raw_flow[match.start()] and not _in_spans(match.start(), scan.cleaning):
+            positions.append(match.start())
+    return positions
+
+
+def _sanitization_off(param_el: Any) -> bool:
+    """True if a ``<sanitizer sanitize="false"/>`` disables sanitization of the param."""
+    sanitizer_el = param_el.find("sanitizer")
+    return sanitizer_el is not None and not _bool_value(sanitizer_el.get("sanitize", "true"), True)
+
+
+def _param_raw_read_checks(
+    scan: _CommandScan, params: Dict[str, _ParamInfo], emit: Emit, sanitize_off: bool = False
+) -> None:
+    """Flag reads of a parameter's raw, unsanitized value.
+
+    Parameters whose sanitization is disabled are left to the sanitizer
+    checks, which already report that every read is raw.
+    """
+    text = scan.text
     for dotted, param_info in params.items():
         if param_info.type in _RAW_VALUE_PARAM_TYPES:
-            for pos in _raw_reads(scan, dotted)[:1]:
+            for pos in _raw_reads(scan, dotted, params)[:1]:
                 message = (
-                    f"Raw value of {param_info.type} param '{dotted}' reaches the command "
-                    f"({_location(text, pos)}); Galaxy sanitizes only a plain placeholder, not .value, iterated "
-                    "values or Python expressions: clean the value before interpolating it"
+                    f"Raw value of {param_info.type} param '{dotted}' reaches {_target(scan)} "
+                    f"({_location(text, pos, scan.label)}); Galaxy sanitizes only a plain placeholder, not "
+                    ".value, iterated values or Python expressions: clean the value before interpolating it"
                 )
                 emit(param_info.type, dotted, message, scan.node)
-        elif param_info.type == "text" and not _has_safe_validator(param_info.node):
+        elif param_info.type in _RAW_ATTRIBUTE_PARAM_TYPES:
+            if sanitize_off or _sanitization_off(param_info.node) or _has_safe_validator(param_info.node):
+                continue
+            for pos in _raw_attribute_reads(scan, dotted, params)[:1]:
+                message = (
+                    f"Raw value of {param_info.type} param '{dotted}' reaches {_target(scan)} "
+                    f"({_location(text, pos, scan.label)}); .value and string methods such as .strip() bypass "
+                    "Galaxy's sanitization: use the plain placeholder, clean the value, or restrict it with a "
+                    "regex validator"
+                )
+                emit("raw_param_value", dotted, message, scan.node)
+
+
+def _param_usage_checks(scan: _CommandScan, params: Dict[str, _ParamInfo], emit: Emit) -> None:
+    """Flag text parameter values interpolated unquoted in the command."""
+    text, unquoted, cleaning = scan.text, scan.unquoted, scan.cleaning
+    for dotted, param_info in params.items():
+        if param_info.type == "text" and not _has_safe_validator(param_info.node):
             for match in _find_reference(dotted, scan.scopes, text):
                 if unquoted[match.start()] and not _in_spans(match.start(), cleaning):
                     message = (
@@ -1253,12 +1373,16 @@ def _security_checks(tool_source: "ToolSource") -> List[SecurityCheck]:
         for configfile_element in root.findall("configfiles/configfile"):
             text = "".join(configfile_element.itertext())
             if text.strip():
-                label = f"<configfile name=\"{configfile_element.get('name', '')}\">"
+                attribute = "name" if configfile_element.get("name") else "filename"
+                label = f"<configfile {attribute}=\"{configfile_element.get(attribute, '')}\">"
                 scans.append(_scan(text, configfile_element, label, configfile=True))
         _tool_sanitize_off(root, emit)
         _param_sanitizer_checks(params, scans, emit)
-        for scan in command_scans:
+        sanitize_off = any(not _bool_value(el.get("sanitize", "true"), True) for el in root.findall("options"))
+        for scan in scans:
             _raw_flow_checks(scan, params, emit)
+            _param_raw_read_checks(scan, params, emit, sanitize_off)
+        for scan in command_scans:
             _param_usage_checks(scan, params, emit)
         return checks
 
@@ -1302,6 +1426,16 @@ class SecurityDataColumn(Linter):
     def lint(cls, tool_source: "ToolSource", lint_ctx: "LintContext") -> None:
         for check in _security_checks(tool_source):
             if check.linter == "data_column":
+                lint_ctx.info(check.message, linter=cls.name(), node=check.node)
+
+
+class SecurityRawParamValue(Linter):
+    """Raw text values (``.value``, string methods) interpolated into a command or configfile."""
+
+    @classmethod
+    def lint(cls, tool_source: "ToolSource", lint_ctx: "LintContext") -> None:
+        for check in _security_checks(tool_source):
+            if check.linter == "raw_param_value":
                 lint_ctx.info(check.message, linter=cls.name(), node=check.node)
 
 
