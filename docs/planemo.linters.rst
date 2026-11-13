@@ -28,10 +28,26 @@ planemo.linters.doi module
    :show-inheritance:
    :undoc-members:
 
+planemo.linters.security module
+-------------------------------
+
+.. automodule:: planemo.linters.security
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 planemo.linters.urls module
 ---------------------------
 
 .. automodule:: planemo.linters.urls
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+planemo.linters.util module
+---------------------------
+
+.. automodule:: planemo.linters.util
    :members:
    :show-inheritance:
    :undoc-members:

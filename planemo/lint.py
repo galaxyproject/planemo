@@ -106,7 +106,7 @@ def build_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
                 skip_types.append(line)
 
     linters = Linter.list_linters()
-    linters.extend(["version_bumped", "biocontainer_registered", "doi", "urls", "conda_requirements"])
+    linters.extend(["version_bumped", "biocontainer_registered", "doi", "urls", "conda_requirements", "security"])
     linters.extend(LEGACY_SKIP_MODULES)
     linters.extend(kwds.get("extra_linter_names", []))
     invalid_skip_types = list(set(skip_types) - set(linters))

@@ -10,6 +10,7 @@ from galaxy.tool_util.lint import lint_tool_source
 import planemo.linters.biocontainer_registered
 import planemo.linters.conda_requirements
 import planemo.linters.doi
+import planemo.linters.security
 import planemo.linters.urls
 import planemo.linters.xsd
 from planemo.exit_codes import (
@@ -68,6 +69,9 @@ def _lint_extra_modules(**kwds):
 
     if kwds.get("conda_requirements", False):
         linters.append(planemo.linters.conda_requirements)
+
+    if kwds.get("security", False):
+        linters.append(planemo.linters.security)
 
     if kwds.get("biocontainer", False):
         linters.append(planemo.linters.biocontainer_registered)

@@ -1,0 +1,32 @@
+<tool id="security_raw_identifier" name="Security Raw Identifier Fixture" version="1.0">
+    <description>fixture for the planemo security linter</description>
+    <command><![CDATA[
+ln -s '$collection1.element_identifier' 'out/$( re.sub(r'[^\w.-]', '_', $collection1.element_identifier) )';
+echo "$collection1.name";
+#for $pair in $collection2:
+cp '$pair.forward' 'out/${pair.name}';
+#end for
+#for $k in $collection1.keys():
+tool --name "$k";
+#end for
+    ]]></command>
+    <inputs>
+        <param name="input1" type="data" format="txt" label="Input dataset"/>
+        <param name="collection1" type="data_collection" collection_type="list" optional="true" label="List collection"/>
+        <param name="collection2" type="data_collection" collection_type="list:paired" optional="true" label="List of pairs"/>
+    </inputs>
+    <outputs>
+        <data name="out" format="txt"/>
+    </outputs>
+    <tests>
+        <test expect_failure="true">
+            <param name="input1" value="1.bed"/>
+        </test>
+    </tests>
+    <help>
+        Fixture tool exercising raw identifier findings for the security linter.
+    </help>
+    <citations>
+        <citation type="doi">10.5072/planemo-fixture</citation>
+    </citations>
+</tool>
