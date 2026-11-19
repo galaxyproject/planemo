@@ -2,11 +2,17 @@ import json
 import os
 from types import SimpleNamespace
 
+import pytest
+import responses
 from galaxy.util import parse_xml_string
 from galaxy.util.unittest_utils import skip_if_github_down
 
 from planemo import autoupdate
-from planemo.autoupdate import get_newest_tool_id
+from planemo.autoupdate import (
+    check_anaconda_api,
+    get_newest_tool_id,
+    get_requirements,
+)
 from planemo.galaxy.config import get_shed_tools_conf_string_for_tool_ids
 from planemo.galaxy.workflows import (
     get_tool_ids_for_workflow,
@@ -142,3 +148,48 @@ def test_updated_tools_from_gxformat2_original():
     assert autoupdate.updated_tools(original, _wf("2.2.8+galaxy1")) == {
         COREOGRAPH: {"current": f"{COREOGRAPH}/2.2.8+galaxy0", "updated": f"{COREOGRAPH}/2.2.8+galaxy1"}
     }
+
+
+ANACONDA_PACKAGE_URL = "https://api.anaconda.org/package"
+
+
+def _anaconda_file(version, subdir="linux-64", labels=("main",)):
+    return {"version": version, "labels": list(labels), "attrs": {"subdir": subdir}}
+
+
+@responses.activate
+def test_check_anaconda_api():
+    responses.add(responses.GET, f"{ANACONDA_PACKAGE_URL}/conda-forge/meryl", status=404)
+    responses.add(
+        responses.GET,
+        f"{ANACONDA_PACKAGE_URL}/bioconda/meryl",
+        json={
+            "files": [
+                _anaconda_file("1.3"),
+                _anaconda_file("1.4.2", subdir="noarch"),
+                _anaconda_file("2013", labels=("broken", "cf201901")),
+                _anaconda_file("1.5", subdir="osx-64"),
+            ]
+        },
+    )
+    # the name is looked up in lower case, like conda does; channel names are stripped
+    assert check_anaconda_api("Meryl", ["conda-forge", " bioconda", ""]) == "1.4.2"
+
+
+@responses.activate
+def test_check_anaconda_api_not_found():
+    responses.add(responses.GET, f"{ANACONDA_PACKAGE_URL}/bioconda/nonexistent", status=404)
+    with pytest.raises(Exception, match="No conda package found for nonexistent"):
+        check_anaconda_api("nonexistent", ["bioconda"])
+
+
+def test_get_requirements_strips_names():
+    xml_tree = parse_xml_string("""<tool><requirements>
+            <requirement type="package" version="@TOOL_VERSION@">
+                pharokka
+            </requirement>
+            <requirement type="package" version="1.35"> tar </requirement>
+        </requirements></tool>""").getroottree()
+    requirements, main_req = get_requirements(xml_tree)
+    assert main_req == "pharokka"
+    assert list(requirements) == ["tar"]
