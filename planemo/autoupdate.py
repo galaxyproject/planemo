@@ -1,7 +1,6 @@
 """Autoupdate older conda dependencies in the requirements section."""
 
 import collections
-import itertools
 import re
 import xml.etree.ElementTree as ET
 from typing import (
@@ -90,11 +89,13 @@ def get_requirements(
     requirements = {}
     main_req = None
     for requirement in xml_tree.iter("requirement"):
+        # the package name may be wrapped over several lines
+        name = (requirement.text or "").strip()
         if requirement.attrib.get("version") == "@TOOL_VERSION@":
-            main_req = requirement.text
+            main_req = name
         else:
-            assert requirement.text
-            requirements[requirement.text] = {
+            assert name
+            requirements[name] = {
                 "tag": ET.tostring(requirement, encoding="unicode").strip(),
                 "text": requirement.attrib.get("version"),
             }
@@ -117,18 +118,36 @@ def check_conda(package_name: str, ctx: "PlanemoCliContext", **kwds) -> str:
     """
     conda_context = planemo.conda.build_conda_context(ctx, **kwds)
     if not conda_context.is_conda_installed():
-        # check directly via Anaconda API
-        r = requests.get("https://api.anaconda.org/search", params={"name": package_name})
-        search_results = itertools.chain.from_iterable(
-            n["versions"] for n in r.json() if n["name"] == package_name and n["owner"] in kwds["conda_ensure_channels"]
-        )
-        return sorted(search_results, key=parse_version, reverse=True)[0]
+        return check_anaconda_api(package_name, kwds["conda_ensure_channels"].split(","))
 
     target = conda_util.CondaTarget(package_name)
     best_search_results = conda_util.best_search_result(target, conda_context=conda_context)
     if best_search_results[0] is None:
         raise Exception(f"No conda package found for {package_name}")
     return best_search_results[0]["version"]
+
+
+def check_anaconda_api(package_name: str, channels: List[str]) -> str:
+    """
+    Get the most up-to-date version of a package from the Anaconda API, for use without conda.
+
+    Only count builds that conda on a linux-64 host would install: labelled ``main``
+    (not e.g. ``broken``) and built for linux-64 or noarch.
+    """
+    versions: List[str] = []
+    for channel in filter(None, (c.strip() for c in channels)):
+        r = requests.get(f"https://api.anaconda.org/package/{channel}/{package_name.lower()}", timeout=60)
+        if r.status_code == 404:
+            continue
+        r.raise_for_status()
+        versions.extend(
+            f["version"]
+            for f in r.json()["files"]
+            if "main" in f["labels"] and f["attrs"].get("subdir") in ("linux-64", "noarch")
+        )
+    if not versions:
+        raise Exception(f"No conda package found for {package_name}")
+    return max(versions, key=parse_version)
 
 
 def update_xml(
