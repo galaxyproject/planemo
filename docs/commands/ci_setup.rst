@@ -61,9 +61,15 @@ Useful for populating a CI cache.
       --docker_run_extra_arguments TEXT
                                       Extra arguments to pass to docker run.
       --mulled_containers, --biocontainers
-                                      Test tools against mulled containers (forces
-                                      --docker). Disables conda resolution unless
-                                      any conda option has been set explicitly.
+                                      Test tools against mulled containers. Requires
+                                      --docker or --singularity; --docker is enabled
+                                      automatically if neither is given. Disables
+                                      conda resolution unless any conda option has
+                                      been set explicitly.
+      --container_resolvers_config_file FILE
+                                      Path to a Galaxy container resolvers
+                                      configuration file to use instead of Galaxy's
+                                      default resolvers.
       --galaxy_startup_timeout INTEGER RANGE
                                       Wait for galaxy to start before assuming
                                       Galaxy did not start.  [x>=1]
