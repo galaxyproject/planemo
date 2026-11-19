@@ -635,6 +635,17 @@ def test_job_config_docker_unaffected_by_singularity_support(tmp_path):
     assert not environment.get("singularity_enabled")
 
 
+def test_job_config_tpv_config_file(tmp_path):
+    """--tpv_config_file generates a TPV configuration the job config references."""
+    tpv_config_file = tmp_path / "local_tpv.yml"
+    tpv_config_file.write_text("tools:\n  default:\n    cores: 1\n")
+    config = _write_job_config(tmp_path, docker=True, tpv_config_file=(str(tpv_config_file),))
+    environment = config["execution"]["environments"]["tpv"]
+    assert environment["runner"] == "dynamic_tpv"
+    assert str(tpv_config_file.resolve()) in environment["tpv_configs"]
+    assert (tmp_path / "planemo_tpv.yml").exists()
+
+
 def test_container_resolvers_config_file_sets_galaxy_property():
     properties = {}
     _handle_kwd_overrides(properties, {"container_resolvers_config_file": "/tmp/resolvers.yml"})
