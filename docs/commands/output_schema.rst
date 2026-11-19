@@ -23,11 +23,11 @@ Available schemas:
     invocation-download-manifest: output from `planemo invocation_download --output_json PATH`.
     run-outputs: output from `planemo run --output_json PATH`.
     test-report: output from test report JSON writers such as `planemo test --test_output_json PATH`.
-
+    
 **Options**::
 
 
       --schema [cli-command-metadata|cli-metadata|invocation-download-manifest|run-outputs|test-report]
                                       Only export one schema.
       --help                          Show this message and exit.
-
+    

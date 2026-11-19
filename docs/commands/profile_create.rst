@@ -43,6 +43,8 @@ Create a profile.
       --postgres-storage-location, --postgres_storage_location DIRECTORY
                                       Storage path for PostgreSQL data managed
                                       through Singularity.
+      --singularity / --no_singularity
+                                      Run Galaxy tools in Singularity if enabled.
       --singularity_cmd TEXT          Command used to execute singularity (defaults
                                       to 'singularity').
       --singularity_sudo / --no_singularity_sudo
@@ -69,4 +71,4 @@ Create a profile.
       --galaxy_user_key TEXT          User key to use with external Galaxy engine.
       --galaxy_admin_key TEXT         Admin key to use with external Galaxy engine.
       --help                          Show this message and exit.
-
+    

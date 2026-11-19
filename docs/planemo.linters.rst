@@ -36,6 +36,14 @@ planemo.linters.urls module
    :show-inheritance:
    :undoc-members:
 
+planemo.linters.util module
+---------------------------
+
+.. automodule:: planemo.linters.util
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 planemo.linters.xsd module
 --------------------------
 

@@ -53,4 +53,4 @@ Initialize an small Galaxy job config file for hosted workflow runs.
                                       (defaults to the newest Galaxy the generator
                                       knows).
       --help                          Show this message and exit.
-
+    

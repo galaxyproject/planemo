@@ -85,7 +85,7 @@ def test_galaxy_workflow_collection_output_fail():
 
 
 @skip_if_environ("PLANEMO_SKIP_GALAXY_TESTS")
-# @mark.tests_galaxy_branch only works >= 20.09 or newer
+@mark.tests_galaxy_branch
 def test_galaxy_workflow_tags():
     with NamedTemporaryFile(prefix="data_manager_test_json") as json_out:
         ctx = create_test_context()
@@ -96,7 +96,7 @@ def test_galaxy_workflow_tags():
             "engine": "galaxy",
             "no_dependency_resolution": True,
             "paste_test_data_paths": False,
-            "galaxy_branch": "dev",
+            "galaxy_branch": target_galaxy_branch(),
             "extra_tools": [collection_cat_list],
             "test_output_json": json_out.name,
         }
