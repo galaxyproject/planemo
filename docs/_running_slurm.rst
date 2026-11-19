@@ -1,3 +1,5 @@
+.. _writing_slurm:
+
 Running workflows on a server or Slurm cluster
 ==============================================
 

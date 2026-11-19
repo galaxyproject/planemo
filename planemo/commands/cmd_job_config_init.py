@@ -4,15 +4,12 @@ import os
 import sys
 
 import click
-from gxjobconfinit import (
-    build_job_config,
-    ConfigArgs,
-)
 from gxjobconfinit.generate import DevelopmentContext
 
 from planemo import options
 from planemo.cli import command_function
 from planemo.galaxy.config import get_all_tool_path_from_kwds
+from planemo.galaxy.job_conf import write_job_config
 from planemo.io import (
     info,
     launch_if_open_flagged,
@@ -22,6 +19,7 @@ from planemo.runnable import for_paths
 from planemo.tools import uris_to_paths
 
 SUCCESS_MESSAGE = "Wrote configuration template to %s, please open with editor to customize if needed."
+TPV_SUCCESS_MESSAGE = "Wrote TPV configuration to %s, layer your own configuration on top of it with --tpv_config_file."
 
 
 @click.command("job_config_init")
@@ -43,9 +41,8 @@ def cli(ctx, uris, **kwds):
         kwds.get("test_data", None),
         tool_paths,
     )
-    init_config = ConfigArgs.from_dict(**kwds)
-    job_config = build_job_config(init_config, dev_context)
-    with open(config_path, "w") as f:
-        f.write(job_config)
-        info(SUCCESS_MESSAGE % config_path)
+    written = write_job_config(config_path, kwds, dev_context)
+    info(SUCCESS_MESSAGE % config_path)
+    for tpv_config_path in written[1:]:
+        info(TPV_SUCCESS_MESSAGE % tpv_config_path)
     launch_if_open_flagged(config_path, **kwds)

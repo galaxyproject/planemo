@@ -36,8 +36,6 @@ from galaxy.tool_util.deps import docker_util
 from galaxy.util.commands import argv_to_str
 from galaxy.util.wait import wait_on
 from gxjobconfinit.generate import (
-    build_job_config,
-    ConfigArgs,
     create_docker_volumes,
     DevelopmentContext,
 )
@@ -59,6 +57,10 @@ from planemo.galaxy.workflows import (
     install_shed_repos_for_workflow_id,
     remote_runnable_to_workflow_id,
     TRS_WORKFLOWS_PREFIX,
+)
+from planemo.galaxy.job_conf import (
+    tpv_install_command,
+    write_job_config,
 )
 from planemo.io import (
     communicate,
@@ -1401,6 +1403,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         return shell_join(
             cd_to_galaxy_command,
             setup_venv_command,
+            tpv_install_command(kwds),
             run_script,
         )
 
@@ -1705,13 +1708,11 @@ def _handle_job_config_file(
         job_workers = kwds.pop("job_workers", None)
         if job_workers is not None:
             kwds["local_workers"] = job_workers
-        init_config = ConfigArgs.from_dict(**kwds)
-        conf_contents = build_job_config(init_config, dev_context)
         job_config_file = os.path.join(
             config_directory,
             "job_conf.yml",
         )
-        write_file(job_config_file, conf_contents)
+        write_job_config(job_config_file, kwds, dev_context)
     kwds["job_config_file"] = job_config_file
 
 

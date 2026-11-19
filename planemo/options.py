@@ -226,6 +226,20 @@ def tpv_option():
     )
 
 
+def tpv_config_file_option():
+    return planemo_option(
+        "--tpv_config_file",
+        type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True),
+        multiple=True,
+        default=(),
+        help=(
+            "TPV (Total Perspective Vortex) configuration layered on top of the generated "
+            "one, e.g. to map individual tools to destinations with a different Docker "
+            "network. Implies --tpv. Can be specified multiple times."
+        ),
+    )
+
+
 def galaxy_cwl_root_option():
     return planemo_option(
         "--cwl_galaxy_root",
@@ -1515,6 +1529,8 @@ def galaxy_target_options():
         # Profile options...
         job_config_option(),
         job_workers_option(),
+        tpv_option(),
+        tpv_config_file_option(),
         tool_dependency_dir_option(),
         tool_data_path_option(),
     )
@@ -2464,6 +2480,7 @@ def job_config_init_options():
         extra_tools_option(),
         test_data_option(),
         tpv_option(),
+        tpv_config_file_option(),
         runner_target_option(),
         galaxy_version_option(),
     )
