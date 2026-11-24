@@ -23,10 +23,6 @@ from tempfile import (
 )
 from typing import (
     Any,
-    Dict,
-    List,
-    Optional,
-    Set,
     TYPE_CHECKING,
 )
 
@@ -233,7 +229,7 @@ def read_log(ctx, log_path, e: threading.Event):
             log_fh.close()
 
 
-def tail_log_directory(log_directory: str, lines: int = SERVICE_LOG_TAIL_LINES) -> Dict[str, str]:
+def tail_log_directory(log_directory: str, lines: int = SERVICE_LOG_TAIL_LINES) -> dict[str, str]:
     """Map each ``.log`` file in ``log_directory`` to the tail of its contents."""
     if not os.path.isdir(log_directory):
         return {}
@@ -654,7 +650,7 @@ def gravity_supports_multiprocessing(galaxy_root):
     return get_galaxy_version(galaxy_root) >= MINIMUM_MULTIPROCESSING_GALAXY_VERSION
 
 
-def _expand_paths(galaxy_root: Optional[str], extra_tools: List[str]) -> List[str]:
+def _expand_paths(galaxy_root: str | None, extra_tools: list[str]) -> list[str]:
     """Replace $GALAXY_FUNCTION_TEST_TOOLS with actual path."""
     if galaxy_root:
         extra_tools = [
@@ -664,7 +660,7 @@ def _expand_paths(galaxy_root: Optional[str], extra_tools: List[str]) -> List[st
     return extra_tools
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def get_galaxy_version(galaxy_root):
     """Return the parsed version of the Galaxy checkout at ``galaxy_root``.
 
@@ -697,15 +693,15 @@ def get_refgenie_config(galaxy_root, refgenie_dir):
     return REFGENIE_CONFIG_TEMPLATE % (config_version, refgenie_dir)
 
 
-def get_all_tool_path_from_kwds(runnables: List["Runnable"], **kwds) -> Set[str]:
+def get_all_tool_path_from_kwds(runnables: list["Runnable"], **kwds) -> set[str]:
     galaxy_root = kwds.get("galaxy_root")
     extra_tools = kwds.get("extra_tools")
     return _all_tool_paths(runnables, galaxy_root, extra_tools)
 
 
 def _all_tool_paths(
-    runnables: List["Runnable"], galaxy_root: Optional[str] = None, extra_tools: Optional[List[str]] = None
-) -> Set[str]:
+    runnables: list["Runnable"], galaxy_root: str | None = None, extra_tools: list[str] | None = None
+) -> set[str]:
     extra_tools = extra_tools or []
     all_tool_paths = {
         r.path
@@ -727,11 +723,11 @@ def _all_tool_paths(
     return all_tool_paths
 
 
-def get_workflow_runnables(runnables: List["Runnable"]) -> List["Runnable"]:
+def get_workflow_runnables(runnables: list["Runnable"]) -> list["Runnable"]:
     return [r for r in runnables if r.type == RunnableType.galaxy_workflow and r.has_path]
 
 
-def get_tool_ids_for_runnables(runnables) -> List[str]:
+def get_tool_ids_for_runnables(runnables) -> list[str]:
     tool_ids = []
     for r in get_workflow_runnables(runnables):
         tool_ids.extend(find_tool_ids(r.path))
@@ -1083,7 +1079,7 @@ class BaseGalaxyConfig(GalaxyInterface):
         return self._target_user_config
 
     @property
-    def service_log_contents(self) -> Dict[str, str]:
+    def service_log_contents(self) -> dict[str, str]:
         """Tails of logs for services running alongside the Galaxy web process.
 
         Galaxy's own log covers only the web process - uploads for instance run
@@ -1301,7 +1297,7 @@ class LocalGalaxyConfig(BaseManagedGalaxyConfig):
         return self.env["GRAVITY_STATE_DIR"]
 
     @property
-    def service_log_contents(self) -> Dict[str, str]:
+    def service_log_contents(self) -> dict[str, str]:
         if self.use_multiprocessing:
             # Multiprocessing services inherit the foreground process's
             # stdout/stderr, which start_daemon redirects to the main log.
@@ -1448,8 +1444,8 @@ def _validate_database_daemon(kwds):
 @contextlib.contextmanager
 def _database_connection(
     database_location: str,
-    database_connection: Optional[str] = None,
-    database_type: Optional[str] = None,
+    database_connection: str | None = None,
+    database_type: str | None = None,
     **kwds,
 ):
     """Yield the ``database_connection`` a managed Galaxy should run against."""
@@ -1505,7 +1501,7 @@ def _find_test_data(runnables, **kwds):
     return None
 
 
-def _find_tool_data_table(runnables, test_data_dir, **kwds) -> Optional[List[str]]:
+def _find_tool_data_table(runnables, test_data_dir, **kwds) -> list[str] | None:
     tool_data_table = kwds.get("tool_data_table", None)
     if tool_data_table:
         return [os.path.abspath(table_path) for table_path in tool_data_table]
@@ -1544,20 +1540,20 @@ def _search_tool_path_for(path, target, extra_paths=None):
     return None
 
 
-def get_tool_sheds_conf_for_runnables(runnables: Optional[List["Runnable"]]) -> Optional[str]:
+def get_tool_sheds_conf_for_runnables(runnables: list["Runnable"] | None) -> str | None:
     if runnables:
         tool_ids = get_tool_ids_for_runnables(runnables)
         return get_shed_tools_conf_string_for_tool_ids(tool_ids)
     return None
 
 
-def get_shed_tools_conf_string_for_tool_ids(tool_ids: List[str]) -> str:
-    tool_shed_urls = set(get_toolshed_url_for_tool_id(tool_id) for tool_id in tool_ids if tool_id)
+def get_shed_tools_conf_string_for_tool_ids(tool_ids: list[str]) -> str:
+    tool_shed_urls = {get_toolshed_url_for_tool_id(tool_id) for tool_id in tool_ids if tool_id}
     # always add main toolshed
     tool_shed_urls.add(MAIN_TOOLSHED_URL)
-    cleaned_tool_shed_urls = set(_ for _ in tool_shed_urls if _ is not None)
+    cleaned_tool_shed_urls = {_ for _ in tool_shed_urls if _ is not None}
     TOOL_SHEDS_CONF_TEMPLATE = Template("""<tool_sheds>${tool_shed_lines}</tool_sheds>""")
-    tool_sheds: List[str] = []
+    tool_sheds: list[str] = []
     # sort tool_shed_urls from shortest to longest, as https://github.com/galaxyproject/galaxy/blob/c7cb47a1b18ccd5b39075a705bbd2f34572755fe/lib/galaxy/util/tool_shed/tool_shed_registry.py#L106-L118
     # has a bug where a toolshed that is an exact substring of another registered toolshed would wrongly be selected.
     for shed_url in sorted(cleaned_tool_shed_urls, key=lambda url: len(url)):
@@ -1600,8 +1596,7 @@ def _install_galaxy(ctx, galaxy_root, env, kwds):
 def _install_galaxy_via_download(ctx, galaxy_root, env, kwds):
     branch = _galaxy_branch(kwds)
     source = _galaxy_source(kwds)
-    if source.startswith("https://github.com/"):
-        source = source[len("https://github.com/") :]
+    source = source.removeprefix("https://github.com/")
     untar_to(
         f"https://codeload.github.com/{source}/tar.gz/{branch}",
         tar_args=["--strip-components", "1", "-xvzf", "-", "galaxy-" + branch.replace("/", "-")],
@@ -1692,9 +1687,9 @@ def _build_env_for_galaxy(properties, template_args):
 def _handle_job_config_file(
     config_directory: str,
     server_name: str,
-    test_data_dir: Optional[str],
-    all_tool_paths: Set[str],
-    kwds: Dict[str, Any],
+    test_data_dir: str | None,
+    all_tool_paths: set[str],
+    kwds: dict[str, Any],
 ):
     job_config_file = kwds.get("job_config_file", None)
     if not job_config_file:

@@ -1,16 +1,11 @@
 """Module defines abstractions for configuring Planemo."""
 
 import os
+from collections.abc import Callable
 from enum import Enum
 from typing import (
     Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Tuple,
     TYPE_CHECKING,
-    Union,
 )
 
 import click
@@ -21,7 +16,7 @@ if TYPE_CHECKING:
     from planemo.cli import PlanemoCliContext
 
 PLANEMO_CONFIG_ENV_PROP = "PLANEMO_GLOBAL_CONFIG_PATH"
-DEFAULT_CONFIG: Dict[str, Any] = {}
+DEFAULT_CONFIG: dict[str, Any] = {}
 
 VALUE_UNSET = object()
 
@@ -33,7 +28,7 @@ def _default_callback(
     default: Any,
     use_global_config: bool = False,
     resolve_path: bool = False,
-    extra_global_config_vars: List[str] = [],
+    extra_global_config_vars: list[str] = [],
 ) -> Callable:
     def callback(ctx, param, value):
         planemo_ctx = ctx.obj
@@ -63,8 +58,8 @@ def _default_callback(
 
 
 def _find_default(
-    ctx: "PlanemoCliContext", param: Option, use_global_config: bool, extra_global_config_vars: List[str]
-) -> Union[Tuple[Any, OptionSource], Tuple[object, None]]:
+    ctx: "PlanemoCliContext", param: Option, use_global_config: bool, extra_global_config_vars: list[str]
+) -> tuple[Any, OptionSource] | tuple[object, None]:
     if use_global_config:
         global_config = ctx.global_config
         global_config_keys = [f"default_{param.name}"] + extra_global_config_vars
@@ -142,14 +137,14 @@ def planemo_option(*args, **kwargs) -> Callable:
     return decorator
 
 
-def global_config_path(config_path: Optional[str] = None) -> str:
+def global_config_path(config_path: str | None = None) -> str:
     if not config_path:
         planemo_config_env_prop = os.environ.get(PLANEMO_CONFIG_ENV_PROP, "~/.planemo.yml")
         config_path = os.path.expanduser(planemo_config_env_prop)
     return config_path
 
 
-def read_global_config(config_path: Optional[str]) -> Dict[str, Any]:
+def read_global_config(config_path: str | None) -> dict[str, Any]:
     config_path = global_config_path(config_path)
     if not os.path.exists(config_path):
         return DEFAULT_CONFIG

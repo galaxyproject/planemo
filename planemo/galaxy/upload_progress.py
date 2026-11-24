@@ -3,11 +3,6 @@
 from io import StringIO
 from typing import (
     Any,
-    Dict,
-    List,
-    Optional,
-    Set,
-    Union,
 )
 
 from rich.console import (
@@ -34,11 +29,11 @@ UPLOAD_JOB_TERMINAL_STATES = JOB_ERROR_STATES + ["ok", "skipped", "paused"]
 class UploadJobsSummary:
     """Summary of upload job states."""
 
-    def __init__(self, states: Optional[Dict[str, int]] = None):
-        self.states: Dict[str, int] = states or {}
+    def __init__(self, states: dict[str, int] | None = None):
+        self.states: dict[str, int] = states or {}
 
 
-def count_states(job_summary: Optional[UploadJobsSummary], query_states: List[str]) -> int:
+def count_states(job_summary: UploadJobsSummary | None, query_states: list[str]) -> int:
     """Count jobs in specific states."""
     count = 0
     if job_summary and job_summary.states:
@@ -47,7 +42,7 @@ def count_states(job_summary: Optional[UploadJobsSummary], query_states: List[st
     return count
 
 
-def job_count(job_summary: Optional[UploadJobsSummary]) -> int:
+def job_count(job_summary: UploadJobsSummary | None) -> int:
     """Count total jobs across all states."""
     count = 0
     if job_summary and job_summary.states:
@@ -81,7 +76,7 @@ class UploadProgress(Progress):
         self.num_running: int = 0
         self.num_errors: int = 0
         self.num_paused: int = 0
-        self.printed_job_errors: Set[str] = set()  # Track printed job errors by job ID
+        self.printed_job_errors: set[str] = set()  # Track printed job errors by job ID
 
         self.display = display
         self.uploads_color: str = self.display.style_initializing
@@ -142,8 +137,8 @@ class UploadProgress(Progress):
 
         # Format status message
         jobs_status = ""
-        jobs_total: Optional[int] = self.job_count
-        jobs_completed: Optional[int] = self.jobs_completed
+        jobs_total: int | None = self.job_count
+        jobs_completed: int | None = self.jobs_completed
 
         if self.job_count == 0:
             jobs_completed = None
@@ -221,7 +216,7 @@ class UploadProgress(Progress):
             error_msg = f"Failed to collect upload job error details: {e}"
             upload_progress_display.console.print(error_msg)
 
-    def _format_job_error_details(self, job_id: str, job_details: Dict[str, Any]) -> List[str]:
+    def _format_job_error_details(self, job_id: str, job_details: dict[str, Any]) -> list[str]:
         """Format error details for a single failed upload job.
 
         Args:
@@ -260,8 +255,8 @@ class UploadProgressDisplay(Live):
     def __init__(
         self,
         history_id: str,
-        display_configuration: Optional[DisplayConfiguration] = None,
-        galaxy_url: Optional[str] = None,
+        display_configuration: DisplayConfiguration | None = None,
+        galaxy_url: str | None = None,
     ):
         """Initialize upload progress display.
 
@@ -276,12 +271,12 @@ class UploadProgressDisplay(Live):
         self.display = display
         self.upload_progress = UploadProgress(display)
         self.console = Console()
-        self._upload_job_ids: Set[str] = set()
+        self._upload_job_ids: set[str] = set()
 
         # Initialize with auto_refresh=False for manual control
         super().__init__(self._panel(), console=self.console, auto_refresh=False)
 
-    def get_history_ui_link(self) -> Optional[str]:
+    def get_history_ui_link(self) -> str | None:
         """Get the Galaxy UI link for the history.
 
         Returns:
@@ -303,7 +298,7 @@ class UploadProgressDisplay(Live):
         title = f"[{self.display.style_header}]Uploading to History <[link={history_link}]{self.history_id}[/link]>"
 
         # Create group with progress bar and optional job state breakdown
-        renderables: List[Union[UploadProgress, str]] = [self.upload_progress]
+        renderables: list[UploadProgress | str] = [self.upload_progress]
 
         # Add job state breakdown if configured
         if self.display.include_job_state_breakdown and self.upload_progress.job_count > 0:
@@ -313,7 +308,7 @@ class UploadProgressDisplay(Live):
 
         return Panel(content, title=title, expand=True)
 
-    def update_jobs(self, upload_jobs: List[Dict[str, Any]], job_summary: UploadJobsSummary):
+    def update_jobs(self, upload_jobs: list[dict[str, Any]], job_summary: UploadJobsSummary):
         """Update progress display with current upload job states.
 
         Args:
@@ -333,7 +328,7 @@ class UploadProgressDisplay(Live):
         self.refresh()
 
 
-def _aggregate_job_states(upload_jobs: List[Dict[str, Any]], gi) -> UploadJobsSummary:
+def _aggregate_job_states(upload_jobs: list[dict[str, Any]], gi) -> UploadJobsSummary:
     """Poll all upload jobs and aggregate their states.
 
     Args:
@@ -343,7 +338,7 @@ def _aggregate_job_states(upload_jobs: List[Dict[str, Any]], gi) -> UploadJobsSu
     Returns:
         UploadJobsSummary with aggregated state counts
     """
-    states: Dict[str, int] = {}
+    states: dict[str, int] = {}
 
     for upload_job in upload_jobs:
         job_id = upload_job.get("id")

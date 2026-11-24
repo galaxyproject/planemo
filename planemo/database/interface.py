@@ -1,7 +1,6 @@
 """Describe the interface classes of the planemo.database package."""
 
 import abc
-from typing import Optional
 
 
 class DatabaseConfigurationError(ValueError):
@@ -34,7 +33,7 @@ class DatabaseSource(metaclass=abc.ABCMeta):
         """Return identifiers associated with database source."""
 
     @abc.abstractmethod
-    def sqlalchemy_url(self, identifier) -> Optional[str]:
+    def sqlalchemy_url(self, identifier) -> str | None:
         """Return a URL string for use by sqlalchemy."""
 
     def start(self):

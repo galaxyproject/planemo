@@ -69,7 +69,7 @@ def merge_reports(input_paths, output_path):
             with open(path, encoding="utf-8") as f:
                 reports.append(PlanemoTestReport.model_validate(json.load(f)).model_dump(mode="json"))
         except (OSError, ValueError) as e:
-            raise click.ClickException("Invalid Planemo test report JSON at %s: %s" % (path, e)) from e
+            raise click.ClickException("Invalid Planemo test report JSON at {}: {}".format(path, e)) from e
     tests = []
     for report in reports:
         tests.extend(report["tests"])

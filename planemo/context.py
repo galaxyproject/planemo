@@ -12,8 +12,6 @@ import sys
 import traceback
 from typing import (
     Any,
-    Dict,
-    Optional,
     TYPE_CHECKING,
 )
 from urllib.request import urlopen
@@ -67,17 +65,17 @@ class PlanemoContextInterface(metaclass=abc.ABCMeta):
 class PlanemoContext(PlanemoContextInterface):
     """Implementation of ``PlanemoContextInterface``"""
 
-    planemo_directory: Optional[str]
+    planemo_directory: str | None
 
     def __init__(self) -> None:
         """Construct a Context object using execution environment."""
         self.home = os.getcwd()
-        self._global_config: Optional[Dict] = None
+        self._global_config: dict | None = None
         # Will be set by planemo CLI driver
         self.verbose = False
-        self.planemo_config: Optional[str] = None
+        self.planemo_config: str | None = None
         self.planemo_directory = None
-        self.option_source: Dict[str, "OptionSource"] = {}
+        self.option_source: dict[str, "OptionSource"] = {}
 
     def set_option_source(self, param_name: str, option_source: "OptionSource", force: bool = False) -> None:
         """Specify how an option was set."""
@@ -91,7 +89,7 @@ class PlanemoContext(PlanemoContextInterface):
         return self.option_source[param_name]
 
     @property
-    def global_config(self) -> Dict[str, Any]:
+    def global_config(self) -> dict[str, Any]:
         """Read Planemo's global configuration.
 
         As defined most simply by ~/.planemo.yml.

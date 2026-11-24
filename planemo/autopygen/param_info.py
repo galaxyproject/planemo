@@ -2,10 +2,6 @@ import dataclasses
 import enum
 from typing import (
     Any,
-    Dict,
-    List,
-    Optional,
-    Union,
 )
 
 from planemo.autopygen.source_file_parsing.constants import WARNING_STRING
@@ -59,10 +55,10 @@ class ParamInfo:
     section: str
     section_label: str
     default_val: Any
-    custom_attributes: Dict[str, str]
+    custom_attributes: dict[str, str]
 
-    nargs: Union[float, int] = 0
-    help: Optional[str] = None
+    nargs: float | int = 0
+    help: str | None = None
     optional: bool = False
-    choices: Optional[List[Any]] = None
-    format: Optional[str] = None
+    choices: list[Any] | None = None
+    format: str | None = None

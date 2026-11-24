@@ -4,9 +4,6 @@ import time
 from io import StringIO
 from typing import (
     Any,
-    Dict,
-    List,
-    Optional,
 )
 from uuid import uuid4
 
@@ -20,10 +17,10 @@ def get_dict_from_workflow(
     gi: GalaxyInstance,
     workflow_id: str,
     instance: bool = False,
-    style: Optional[str] = None,
-    history_id: Optional[str] = None,
+    style: str | None = None,
+    history_id: str | None = None,
 ):
-    params: Dict[str, Any] = {"instance": instance}
+    params: dict[str, Any] = {"instance": instance}
     if style is not None:
         params["style"] = style
     if history_id is not None:
@@ -31,7 +28,7 @@ def get_dict_from_workflow(
     return gi.workflows._get(f"{workflow_id}/download", params=params)
 
 
-def gi(port: Optional[int] = None, url: Optional[str] = None, key: Optional[str] = None) -> GalaxyInstance:
+def gi(port: int | None = None, url: str | None = None, key: str | None = None) -> GalaxyInstance:
     """Return a bioblend ``GalaxyInstance`` for Galaxy on this port."""
     if key is None:
         key = DEFAULT_ADMIN_API_KEY
@@ -158,8 +155,8 @@ def summarize_history(ctx, gi, history_id):
 
 def get_invocations(
     gi: GalaxyInstance,
-    workflow_id: Optional[str],
-    user_id: Optional[str] = None,
+    workflow_id: str | None,
+    user_id: str | None = None,
     max_items: int = 100,
     items_per_request: int = 20,
     offset_items: int = 0,
@@ -169,7 +166,7 @@ def get_invocations(
     if items_per_request <= 0:
         raise ValueError("items_per_request must be positive")
 
-    invocations: List[Dict[str, Any]] = []
+    invocations: list[dict[str, Any]] = []
     while len(invocations) < max_items:
         limit = min(items_per_request, max_items - len(invocations))
         items = gi.invocations.get_invocations(

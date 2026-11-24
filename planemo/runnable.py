@@ -2,6 +2,7 @@
 
 import abc
 import os
+from collections.abc import Iterable
 from enum import (
     auto,
     Enum,
@@ -9,12 +10,8 @@ from enum import (
 from pathlib import Path
 from typing import (
     Any,
-    Dict,
-    Iterable,
-    List,
     NamedTuple,
     Optional,
-    Union,
 )
 from urllib.parse import urlparse
 
@@ -137,7 +134,7 @@ class Runnable(NamedTuple):
         return self.test_data_search_path
 
     @property
-    def data_manager_conf_path(self) -> Optional[str]:
+    def data_manager_conf_path(self) -> str | None:
         """Path of a Galaxy data manager configuration for runnable or None."""
         if self.type.name in ["galaxy_datamanager"]:
             return os.path.join(os.path.dirname(self.path), os.pardir, "data_manager_conf.xml")
@@ -178,7 +175,7 @@ def workflows_from_dockstore_yaml(path):
     return workflows
 
 
-def workflow_dir_runnables(path: str) -> List[Runnable]:
+def workflow_dir_runnables(path: str) -> list[Runnable]:
     dockstore_path = os.path.join(path, DOCKSTORE_REGISTRY_CONF)
     if os.path.exists(dockstore_path):
         return [
@@ -187,11 +184,11 @@ def workflow_dir_runnables(path: str) -> List[Runnable]:
     return []
 
 
-def tool_dir_runnables(path: str) -> List[Runnable]:
+def tool_dir_runnables(path: str) -> list[Runnable]:
     return for_paths(tool_path for tool_path, _ in yield_tool_sources_on_paths(ctx=None, paths=[path]))
 
 
-def for_path(path: str) -> Union[Runnable, List[Runnable]]:
+def for_path(path: str) -> Runnable | list[Runnable]:
     """Produce a class:`Runnable` for supplied path."""
     runnable_type = None
     if os.path.isdir(path):
@@ -230,7 +227,7 @@ def for_path(path: str) -> Union[Runnable, List[Runnable]]:
     return Runnable(path, runnable_type)
 
 
-def for_paths(paths: Iterable[str]) -> List[Runnable]:
+def for_paths(paths: Iterable[str]) -> list[Runnable]:
     """Return a specialized list of Runnable objects for paths."""
     runnables = []
     for path in paths:
@@ -249,9 +246,9 @@ def for_uri(uri: str) -> Runnable:
     return runnable
 
 
-def cases(runnable: Runnable) -> List["AbstractTestCase"]:
+def cases(runnable: Runnable) -> list["AbstractTestCase"]:
     """Build a `list` of :class:`TestCase` objects for specified runnable."""
-    cases: List["AbstractTestCase"] = []
+    cases: list["AbstractTestCase"] = []
 
     tests_path = _tests_path(runnable)
     if tests_path is None:
@@ -269,7 +266,7 @@ def cases(runnable: Runnable) -> List["AbstractTestCase"]:
     return definition_to_test_case(tests_path=tests_path, runnable=runnable)
 
 
-def definition_to_test_case(tests_path: str, runnable: Runnable) -> List["AbstractTestCase"]:
+def definition_to_test_case(tests_path: str, runnable: Runnable) -> list["AbstractTestCase"]:
     with open(tests_path) as f:
         tests_def = yaml.safe_load(f)
     tests_directory = os.path.abspath(os.path.dirname(tests_path))
@@ -285,7 +282,7 @@ def definition_to_test_case(tests_path: str, runnable: Runnable) -> List["Abstra
         message = TEST_FILE_NOT_LIST_MESSAGE % tests_path
         raise Exception(message)
 
-    cases: List["AbstractTestCase"] = []
+    cases: list["AbstractTestCase"] = []
     for i, test_def in enumerate(tests_def):
         if "job" not in test_def:
             message = TEST_FIELD_MISSING_MESSAGE % (i + 1, tests_path, "job")
@@ -349,11 +346,11 @@ class TestCase(AbstractTestCase):
         self,
         runnable: Runnable,
         tests_directory: str,
-        output_expectations: Dict[str, Any],
-        job_path: Optional[str],
-        job: Optional[Dict],
+        output_expectations: dict[str, Any],
+        job_path: str | None,
+        job: dict | None,
         index: int,
-        doc: Optional[str],
+        doc: str | None,
     ) -> None:
         """Construct TestCase object from required attributes."""
         self.runnable = runnable
@@ -367,7 +364,7 @@ class TestCase(AbstractTestCase):
     def __repr__(self) -> str:
         return f"TestCase ({self.doc}) for runnable ({self.runnable}) with job ({self.job}) and expected outputs ({self.output_expectations}) in directory ({self.tests_directory}) with id ({self.index})"
 
-    def structured_test_data(self, run_response: "RunResponse") -> Dict[str, Any]:
+    def structured_test_data(self, run_response: "RunResponse") -> dict[str, Any]:
         """Check a test case against outputs dictionary."""
         return run_response.structured_data(self)
 
@@ -380,12 +377,12 @@ class TestCase(AbstractTestCase):
             return self.job
 
     @property
-    def input_ids(self) -> List[str]:
+    def input_ids(self) -> list[str]:
         """Labels of inputs specified in test description."""
         return list(self._job.keys())
 
     @property
-    def tested_output_ids(self) -> List[str]:
+    def tested_output_ids(self) -> list[str]:
         """Labels of outputs checked in test description."""
         return list(self.output_expectations.keys())
 
@@ -394,7 +391,7 @@ class TestCase(AbstractTestCase):
         output_id: str,
         output_value: Any,
         output_test: Any,
-    ) -> List[str]:
+    ) -> list[str]:
         output_problems = []
         if not isinstance(output_test, dict):
             if output_test != output_value:
@@ -447,9 +444,9 @@ class ExternalGalaxyToolTestCase(AbstractTestCase):
     def __init__(
         self,
         runnable: Runnable,
-        tool_id: Optional[str],
-        tool_version: Optional[str],
-        test_index: Optional[int],
+        tool_id: str | None,
+        tool_version: str | None,
+        test_index: int | None,
         test_dict: Any,
     ) -> None:
         """Construct TestCase object from required attributes."""
@@ -459,7 +456,7 @@ class ExternalGalaxyToolTestCase(AbstractTestCase):
         self.test_index = test_index
         self.test_dict = test_dict
 
-    def structured_test_data(self, run_response: Dict[str, Any]) -> Dict[str, Any]:
+    def structured_test_data(self, run_response: dict[str, Any]) -> dict[str, Any]:
         """Just return the structured_test_data generated from galaxy-tool-util for this test variant."""
         return run_response
 
@@ -471,7 +468,7 @@ class DelayedGalaxyToolTestCase(ExternalGalaxyToolTestCase):
         super().__init__(runnable, tool_id=None, tool_version=None, test_index=None, test_dict=None)
 
 
-def _tests_path(runnable: Runnable) -> Optional[str]:
+def _tests_path(runnable: Runnable) -> str | None:
     if not runnable.is_single_artifact:
         raise NotImplementedError("Tests for directories are not yet implemented.")
 
@@ -482,13 +479,13 @@ def _tests_path(runnable: Runnable) -> Optional[str]:
     return None
 
 
-def candidate_test_paths(runnable_path: str) -> List[str]:
+def candidate_test_paths(runnable_path: str) -> list[str]:
     """Return the test file paths checked for a runnable, in order of preference."""
     base, _ = os.path.splitext(runnable_path)
     return [base + test_suffix + test_extension for test_suffix in TEST_SUFFIXES for test_extension in TEST_EXTENSIONS]
 
 
-def get_outputs(runnable: Runnable, gi: Optional[GalaxyInstance] = None) -> List["RunnableOutput"]:
+def get_outputs(runnable: Runnable, gi: GalaxyInstance | None = None) -> list["RunnableOutput"]:
     """Return a list of :class:`RunnableOutput` objects for this runnable.
 
     Supply bioblend user Galaxy instance object (as gi) if additional context
@@ -538,7 +535,7 @@ class GalaxyWorkflowOutput(RunnableOutput):
     def __init__(self, workflow_output: WorkflowOutput) -> None:
         self._workflow_output = workflow_output
 
-    def get_id(self) -> Optional[str]:
+    def get_id(self) -> str | None:
         return self._workflow_output.label
 
     def is_optional(self):
@@ -564,7 +561,7 @@ class RunResponse(metaclass=abc.ABCMeta):
 
     # Structured test data built while the engine was still running (see
     # BaseEngine._run_test_cases), reused so results never need the engine afterwards.
-    collected_test_data: Optional[Dict[str, Any]] = None
+    collected_test_data: dict[str, Any] | None = None
 
     @property
     def start_datetime(self) -> None:
@@ -605,8 +602,8 @@ class RunResponse(metaclass=abc.ABCMeta):
         return self.outputs_dict.get(output_id)
 
     def structured_data(
-        self, test_case: Optional[TestCase] = None, runnable: Optional["Runnable"] = None
-    ) -> Dict[str, Any]:
+        self, test_case: TestCase | None = None, runnable: Optional["Runnable"] = None
+    ) -> dict[str, Any]:
         output_problems = []
         if self.was_successful:
             execution_problem = None
@@ -626,7 +623,7 @@ class RunResponse(metaclass=abc.ABCMeta):
         else:
             execution_problem = getattr(self, "error_message", None)
             status = "error"
-        data_dict: Dict[str, Any] = dict(status=status)
+        data_dict: dict[str, Any] = dict(status=status)
         if status != "success":
             data_dict["output_problems"] = output_problems
             data_dict["execution_problem"] = execution_problem

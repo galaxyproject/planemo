@@ -7,9 +7,6 @@ import ast
 import builtins
 from typing import (
     Any,
-    List,
-    Set,
-    Tuple,
 )
 
 from .constants import STD_LIB_MODULE_NAMES
@@ -22,9 +19,9 @@ class UnknownNamesDiscovery(CustomVisitor):
     are necessary for correct argument parser init
     """
 
-    def __init__(self, known_names: Set[str]):
+    def __init__(self, known_names: set[str]):
         self.known_names = known_names
-        self.unknown_names: Set[str] = set()
+        self.unknown_names: set[str] = set()
 
     def visit_Name(self, node: ast.Name) -> Any:
         if node.id not in self.known_names:
@@ -43,7 +40,7 @@ class UnknownNamesDiscovery(CustomVisitor):
 
         self.generic_visit(node)
 
-    def report_findings(self) -> Tuple:
+    def report_findings(self) -> tuple:
         return (self.unknown_names,)
 
 
@@ -52,11 +49,11 @@ class UnknownNameInit(CustomVisitor):
     Class used to initialize unknown names
     """
 
-    def __init__(self, unknown_names: Set[str]):
+    def __init__(self, unknown_names: set[str]):
         self.unknown_names = unknown_names
-        self.class_definitions: List[ast.ClassDef] = []
-        self.variable_definitions: List[ast.Assign] = []
-        self.new_known_names: Set[str] = set()
+        self.class_definitions: list[ast.ClassDef] = []
+        self.variable_definitions: list[ast.Assign] = []
+        self.new_known_names: set[str] = set()
 
     # assignment of variables
     def visit_Assign(self, node: ast.Assign) -> Any:
@@ -73,11 +70,11 @@ class UnknownNameInit(CustomVisitor):
             self.class_definitions.append(node)
             self.new_known_names.add(node.name)
 
-    def report_findings(self) -> Tuple:
+    def report_findings(self) -> tuple:
         return self.variable_definitions, self.class_definitions, self.new_known_names
 
 
-def _insert_into_actions(actions: List[ast.stmt], assignments: List[ast.Assign], class_defs: List[ast.ClassDef]):
+def _insert_into_actions(actions: list[ast.stmt], assignments: list[ast.Assign], class_defs: list[ast.ClassDef]):
     def find_end_of_imports():
         index = 0
         for item in actions:
@@ -111,8 +108,8 @@ def _insert_into_actions(actions: List[ast.stmt], assignments: List[ast.Assign],
 
 
 def initialize_variables_in_module(
-    original_module: ast.Module, parser_name: str, actions: List[ast.stmt], imported_names: Set[str]
-) -> Tuple[List[ast.stmt], Set[str]]:
+    original_module: ast.Module, parser_name: str, actions: list[ast.stmt], imported_names: set[str]
+) -> tuple[list[ast.stmt], set[str]]:
     """
     Function used to initialize variables that have constant values
 
@@ -132,7 +129,7 @@ def initialize_variables_in_module(
     -------
     List containing newly extracted actions and new unknown names
     """
-    builtin_names = [e for e in builtins.__dict__]
+    builtin_names = [*builtins.__dict__]
     lib_modules = STD_LIB_MODULE_NAMES
 
     # this is a set of all known names, basically the things that are already

@@ -7,9 +7,6 @@ import ast
 import logging
 from typing import (
     Any,
-    List,
-    Set,
-    Tuple,
 )
 
 from planemo.autopygen.source_file_parsing.constants import WARNING_STRING
@@ -31,12 +28,12 @@ class UnknownNamesRemoval(ast.NodeVisitor):
 
     """
 
-    def __init__(self, unknown: Set[str]):
+    def __init__(self, unknown: set[str]):
         self.unknown = unknown
 
     # currently able to resolve add_argument calls containing unknown names,
     # and list comprehension assignment
-    def _reach_top(self, node: ast.Name) -> Tuple[ast.Call, ast.Name]:
+    def _reach_top(self, node: ast.Name) -> tuple[ast.Call, ast.Name]:
         current = node
         parent = current.parent  # type: ignore
 
@@ -99,7 +96,7 @@ class UnknownNamesRemoval(ast.NodeVisitor):
             )
 
 
-def handle_local_module_names(actions: List[ast.stmt], unknown_names: Set[str]) -> ast.Module:
+def handle_local_module_names(actions: list[ast.stmt], unknown_names: set[str]) -> ast.Module:
     """
     Function used to remove assignments and list comprehensions which can't be
     resolved

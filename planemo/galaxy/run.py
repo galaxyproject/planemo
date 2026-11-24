@@ -5,7 +5,6 @@ import shlex
 import string
 from typing import (
     Any,
-    Dict,
     Optional,
     TYPE_CHECKING,
 )
@@ -48,7 +47,7 @@ CACHED_VIRTUAL_ENV_COMMAND = "if [ -d .venv ]; then GALAXY_VIRTUAL_ENV=.venv; el
 UNCACHED_VIRTUAL_ENV_COMMAND = "GALAXY_VIRTUAL_ENV=.venv"
 
 
-def setup_venv(ctx, kwds: Dict[str, Any], config: Optional["LocalGalaxyConfig"] = None):
+def setup_venv(ctx, kwds: dict[str, Any], config: Optional["LocalGalaxyConfig"] = None):
     if kwds.get("skip_venv", False):
         return ""
 
@@ -70,7 +69,7 @@ def setup_venv(ctx, kwds: Dict[str, Any], config: Optional["LocalGalaxyConfig"] 
     )
 
 
-def locate_galaxy_virtualenv(ctx, kwds: Dict[str, Any], config: Optional["LocalGalaxyConfig"] = None):
+def locate_galaxy_virtualenv(ctx, kwds: dict[str, Any], config: Optional["LocalGalaxyConfig"] = None):
     virtual_env_locs = []
     if os.environ.get("GALAXY_VIRTUAL_ENV"):
         venv_command = ""

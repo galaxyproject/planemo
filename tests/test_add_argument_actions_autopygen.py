@@ -1,14 +1,5 @@
 import ast
 import os
-import sys
-from typing import (
-    Dict,
-    Optional,
-    Set,
-    Tuple,
-)
-
-import pytest
 
 from planemo.autopygen.argument_parser_conversion import (
     command_from_decoy,
@@ -115,7 +106,6 @@ def test_version():
     assert_equal(param_info.param_type.is_version, True)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 8), reason="Extend command is supported from python 3.8")
 def test_extend():
     inputs, _, _ = extract_xml("extend")
     expected = (
@@ -191,23 +181,22 @@ def test_version_command():
     assert_equal(command, "")
 
 
-@pytest.mark.skipif(sys.version_info < (3, 8), reason="Extend command is supported from python 3.8")
 def test_extend_command():
     command = extract_command("extend")
     assert_equal(command, REPEAT_COMMAND_TEXT_DATA)
 
 
-def extract_xml(func_name: str) -> Tuple[str, str, Optional[ParamInfo]]:
+def extract_xml(func_name: str) -> tuple[str, str, ParamInfo | None]:
     module = _prepare_test_module(func_name)
     parser = obtain_parser(module)
 
     if parser is None:
         return "", "", None
 
-    data_inputs: Dict[str, str] = dict()
-    reserved_names: Set[str] = set()
-    name_map: Dict[str, str] = dict()
-    section_map: Dict[str, str] = dict()
+    data_inputs: dict[str, str] = dict()
+    reserved_names: set[str] = set()
+    name_map: dict[str, str] = dict()
+    section_map: dict[str, str] = dict()
 
     auto_inputs, auto_outputs, version_command_param = xml_from_decoy(
         parser, data_inputs, reserved_names, name_map, section_map
@@ -220,10 +209,10 @@ def extract_command(func_name: str) -> str:
     module = _prepare_test_module(func_name)
     parser = obtain_parser(module)
 
-    data_inputs: Dict[str, str] = dict()
-    reserved_names: Set[str] = set()
-    name_map: Dict[str, str] = dict()
-    section_map: Dict[str, str] = dict()
+    data_inputs: dict[str, str] = dict()
+    reserved_names: set[str] = set()
+    name_map: dict[str, str] = dict()
+    section_map: dict[str, str] = dict()
 
     if parser is None:
         return ""

@@ -2,7 +2,6 @@
 
 from typing import (
     Any,
-    Dict,
 )
 
 import click
@@ -51,7 +50,7 @@ def cli(ctx, **kwds):
     tool_builder.write_tool_description(ctx, tool_description, **kwds)
 
 
-def _validate_kwds(kwds: Dict[str, Any]) -> int:
+def _validate_kwds(kwds: dict[str, Any]) -> int:
     def not_exclusive(x, y):
         if kwds.get(x) and kwds.get(y):
             io.error(f"Can only specify one of --{x} and --{y}")

@@ -4,9 +4,6 @@ import os
 import subprocess
 import urllib.parse
 from typing import (
-    Dict,
-    List,
-    Optional,
     TYPE_CHECKING,
 )
 
@@ -18,14 +15,14 @@ if TYPE_CHECKING:
     from planemo.cli import PlanemoCliContext
 
 
-def git_env_for(path: str) -> Dict[str, str]:
+def git_env_for(path: str) -> dict[str, str]:
     """Setup env dictionary to target specified git repo with git commands."""
     env = os.environ.copy()
     env.update({"GIT_WORK_DIR": path, "GIT_DIR": os.path.join(path, ".git")})
     return env
 
 
-def ls_remote(ctx: "PlanemoCliContext", remote_repo: str) -> Dict[str, str]:
+def ls_remote(ctx: "PlanemoCliContext", remote_repo: str) -> dict[str, str]:
     """Return a dictionary with refs as key and commits as value."""
     commits_and_refs = io.communicate(
         ["git", "ls-remote", remote_repo],
@@ -52,8 +49,8 @@ def commit(ctx: "PlanemoCliContext", repo_path: str, message: str = "") -> None:
 def push(
     ctx: "PlanemoCliContext",
     repo_path: str,
-    to: Optional[str] = None,
-    branch: Optional[str] = None,
+    to: str | None = None,
+    branch: str | None = None,
     force: bool = False,
 ) -> None:
     env = git_env_for(repo_path)
@@ -92,9 +89,9 @@ def command_clone(
     src: str,
     dest: str,
     mirror: bool = False,
-    branch: Optional[str] = None,
-    depth: Optional[int] = None,
-) -> List[str]:
+    branch: str | None = None,
+    depth: int | None = None,
+) -> list[str]:
     """Produce a command-line string to clone a repository.
 
     Take in ``ctx`` to allow more configurability down the road.
@@ -112,7 +109,7 @@ def command_clone(
     return cmd
 
 
-def diff(ctx: "PlanemoCliContext", directory: str, range: str) -> List[str]:
+def diff(ctx: "PlanemoCliContext", directory: str, range: str) -> list[str]:
     """Produce a list of diff-ed files for commit range."""
     cmd = f"cd '{directory}' && git diff --name-only '{range}' --"
     stdout, _ = io.communicate(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -143,7 +140,7 @@ def is_rev_dirty(ctx: "PlanemoCliContext", directory: str) -> bool:
     return io.shell(["git", "diff", "--quiet"], cwd=directory) != 0
 
 
-def rev_if_git(ctx: "PlanemoCliContext", directory: str) -> Optional[str]:
+def rev_if_git(ctx: "PlanemoCliContext", directory: str) -> str | None:
     """Determine git revision (or ``None``)."""
     try:
         the_rev = rev(ctx, directory)

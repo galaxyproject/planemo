@@ -1,7 +1,6 @@
 from os.path import basename
 from typing import (
     Any,
-    Dict,
     TYPE_CHECKING,
 )
 
@@ -33,7 +32,7 @@ if TYPE_CHECKING:
 LINTING_TOOL_MESSAGE = "Linting tool %s"
 
 
-def build_tool_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
+def build_tool_lint_args(ctx: "PlanemoCliContext", **kwds) -> dict[str, Any]:
     lint_args = build_lint_args(ctx, **kwds)
     extra_modules = _lint_extra_modules(**kwds)
     lint_args["extra_modules"] = extra_modules

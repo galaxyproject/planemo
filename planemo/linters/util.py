@@ -1,6 +1,6 @@
+from collections.abc import Callable
 from typing import (
     Any,
-    Callable,
     Dict,
     Optional,
     TYPE_CHECKING,

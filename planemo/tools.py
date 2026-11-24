@@ -3,15 +3,14 @@
 import os
 import sys
 import traceback
-from typing import (
+from collections.abc import (
     Callable,
     Iterable,
     Iterator,
-    List,
+)
+from typing import (
     Optional,
-    Tuple,
     TYPE_CHECKING,
-    Union,
 )
 
 from galaxy.tool_util import loader_directory
@@ -31,7 +30,7 @@ from planemo.io import (
 )
 
 
-def _parse_tool_version(version: str) -> Union[LegacyVersion, Version]:
+def _parse_tool_version(version: str) -> LegacyVersion | Version:
     """Parse a tool version, comparing a ``+galaxy<N>`` suffix numerically (``+galaxy10`` > ``+galaxy9``).
 
     Same rule as galaxy-tool-util's ``parse_tool_version``, for releases that lack it.
@@ -44,7 +43,7 @@ def _parse_tool_version(version: str) -> Union[LegacyVersion, Version]:
 
 # galaxy-tool-util gained parse_tool_version after 26.1.1 (galaxyproject/galaxy#24320).
 # Drop the fallback once the galaxy-tool-util floor in requirements.txt ships it.
-parse_tool_version: Callable[[str], Union[LegacyVersion, Version]] = getattr(
+parse_tool_version: Callable[[str], LegacyVersion | Version] = getattr(
     galaxy_tool_util_version, "parse_tool_version", _parse_tool_version
 )
 
@@ -79,7 +78,7 @@ def yield_tool_sources_on_paths(
     recursive: bool = False,
     yield_load_errors: bool = True,
     exclude_deprecated: bool = False,
-) -> Iterator[Tuple[str, Union[ToolSource, object]]]:
+) -> Iterator[tuple[str, ToolSource | object]]:
     """Walk paths and yield ToolSource objects discovered."""
     for path in paths:
         for tool_path, tool_source in yield_tool_sources(ctx, path, recursive, yield_load_errors):
@@ -90,7 +89,7 @@ def yield_tool_sources_on_paths(
 
 def yield_tool_sources(
     ctx: Optional["PlanemoCliContext"], path: str, recursive: bool = False, yield_load_errors: bool = True
-) -> Iterator[Tuple[str, Union[ToolSource, object]]]:
+) -> Iterator[tuple[str, ToolSource | object]]:
     """Walk single path and yield ToolSource objects discovered."""
     tools = load_tool_sources_from_path(
         path,
@@ -112,7 +111,7 @@ def yield_tool_sources(
 
 def load_tool_sources_from_path(
     path: str, recursive: bool, register_load_errors: bool = False
-) -> List[Tuple[str, Union[ToolSource, object]]]:
+) -> list[tuple[str, ToolSource | object]]:
     """Generate a list for tool sources found down specified path."""
     return loader_directory.load_tool_sources_from_path(
         path,

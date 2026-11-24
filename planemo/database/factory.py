@@ -1,7 +1,6 @@
 """Create a DatabaseSource from supplied planemo configuration."""
 
 import contextlib
-from typing import Optional
 
 from .interface import DatabaseSource
 from .postgres import LocalPostgresDatabaseSource
@@ -29,7 +28,7 @@ def is_managed_database_type(database_type):
 
 
 def create_database_source(
-    profile_directory: Optional[str] = None, for_database_commands: bool = False, **kwds
+    profile_directory: str | None = None, for_database_commands: bool = False, **kwds
 ) -> DatabaseSource:
     """Return a :class:`planemo.database.interface.DatabaseSource` for configuration."""
     database_type = kwds.get("database_type", "auto")
@@ -49,7 +48,7 @@ def create_database_source(
 
 
 def started_database_source(
-    profile_directory: Optional[str] = None, for_database_commands: bool = False, **kwds
+    profile_directory: str | None = None, for_database_commands: bool = False, **kwds
 ) -> DatabaseSource:
     """Construct and start a :class:`planemo.database.interface.DatabaseSource`."""
     database_source = create_database_source(
@@ -62,7 +61,7 @@ def started_database_source(
 
 
 @contextlib.contextmanager
-def database_source_context(profile_directory: Optional[str] = None, for_database_commands: bool = False, **kwds):
+def database_source_context(profile_directory: str | None = None, for_database_commands: bool = False, **kwds):
     """Yield a started database source and stop it when doing so preserves its data."""
     database_source = started_database_source(
         profile_directory=profile_directory,

@@ -1,7 +1,5 @@
 import time
 from typing import (
-    List,
-    Optional,
     Protocol,
 )
 
@@ -23,8 +21,8 @@ class PollingTrackerImpl(PollingTracker):
     def __init__(
         self,
         polling_backoff: int,
-        timeout: Optional[float] = None,
-        deadline: Optional[float] = None,
+        timeout: float | None = None,
+        deadline: float | None = None,
         timeout_message: str = "Timed out while polling Galaxy.",
     ):
         self.polling_backoff = polling_backoff
@@ -97,7 +95,7 @@ def _poll_subworkflow(
 def _check_for_errors(
     ctx,
     invocation_id: str,
-    exception: Optional[Exception],
+    exception: Exception | None,
     invocation,
     invocation_jobs,
     invocation_api: InvocationApi,
@@ -139,7 +137,7 @@ def wait_for_invocation_and_jobs(
 
     last_invocation = None
     last_invocation_jobs = None
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
     while not _is_polling_complete(workflow_progress_display):
         # Poll main workflow
@@ -215,7 +213,7 @@ def workflow_in_error_message(
     invocation_api: InvocationApi,
     workflow_progress_display: WorkflowProgressDisplay,
     fail_fast=False,
-) -> Optional[str]:
+) -> str | None:
     """Return an error message if workflow is in an error state."""
 
     invocation_state = "new" if not last_invocation else last_invocation["state"]
@@ -249,8 +247,8 @@ def workflow_in_error_message(
     return error_message
 
 
-def summary_job_state(job_states_summary: Optional[InvocationJobsSummary], fail_fast: bool = False):
-    states = {state for state in (job_states_summary or {"states": {}})["states"]}
+def summary_job_state(job_states_summary: InvocationJobsSummary | None, fail_fast: bool = False):
+    states = {*(job_states_summary or {"states": {}})["states"]}
     if not fail_fast:
         current_non_terminal_states = NON_TERMINAL_JOB_STATES.intersection(states)
         if current_non_terminal_states:
@@ -266,7 +264,7 @@ def summary_job_state(job_states_summary: Optional[InvocationJobsSummary], fail_
         return "ok"
 
 
-def subworkflow_invocation_ids(invocation_api: InvocationApi, invocation_id: str) -> List[str]:
+def subworkflow_invocation_ids(invocation_api: InvocationApi, invocation_id: str) -> list[str]:
     invocation = invocation_api.get_invocation(invocation_id)
     subworkflow_invocation_ids = []
     for step in invocation["steps"]:

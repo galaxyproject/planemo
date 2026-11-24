@@ -5,8 +5,6 @@ import os
 from tempfile import NamedTemporaryFile
 from typing import (
     Any,
-    Dict,
-    List,
 )
 from unittest.mock import MagicMock
 
@@ -20,14 +18,14 @@ from .test_utils import create_test_context
 # ---------------------------------------------------------------------------
 
 
-def _make_json(tests: List[Dict[str, Any]]) -> str:
+def _make_json(tests: list[dict[str, Any]]) -> str:
     tmp = NamedTemporaryFile(suffix=".json", delete=False, mode="w")
     json.dump({"version": "0.1", "tests": tests}, tmp)
     tmp.close()
     return tmp.name
 
 
-def _test_entry(test_id: str, status: str) -> Dict[str, Any]:
+def _test_entry(test_id: str, status: str) -> dict[str, Any]:
     return {"id": test_id, "has_data": True, "data": {"status": status}}
 
 

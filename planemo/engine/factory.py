@@ -1,7 +1,7 @@
 """Module contains factory method for building class:`Engine` objects."""
 
 import contextlib
-from typing import Generator
+from collections.abc import Generator
 
 from planemo.engine.interface import BaseEngine
 from .cwltool import CwlToolEngine

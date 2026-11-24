@@ -9,10 +9,7 @@ import json
 import tempfile
 from typing import (
     Any,
-    Dict,
-    Optional,
     TYPE_CHECKING,
-    Union,
 )
 
 from galaxy.tool_util.cwl.cwltool_deps import (
@@ -44,7 +41,7 @@ class CwlToolRunResponse(SuccessfulRunResponse):
         self,
         runnable: "Runnable",
         log: str,
-        outputs: Optional[Dict[str, Any]] = None,
+        outputs: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(runnable=runnable)
         self._log = log
@@ -69,7 +66,7 @@ class CwlToolRunResponse(SuccessfulRunResponse):
 
 def run_cwltool(
     ctx: "PlanemoCliContext", runnable: "Runnable", job_path: str, **kwds
-) -> Union[ErrorRunResponse, CwlToolRunResponse]:
+) -> ErrorRunResponse | CwlToolRunResponse:
     """Translate planemo kwds to cwltool kwds and run cwltool main function."""
     ensure_cwltool_available()
 

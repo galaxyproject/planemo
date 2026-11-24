@@ -2,12 +2,9 @@
 
 import abc
 import contextlib
+from collections.abc import Callable
 from typing import (
     Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
     TYPE_CHECKING,
 )
 
@@ -36,7 +33,7 @@ if TYPE_CHECKING:
 INSTALLING_MESSAGE = "Installing repositories - this may take some time..."
 
 
-def log_service_logs_on_failure(ctx: "PlanemoCliContext", config, results: List[Dict[str, Any]]) -> None:
+def log_service_logs_on_failure(ctx: "PlanemoCliContext", config, results: list[dict[str, Any]]) -> None:
     """Dump logs of services running alongside Galaxy if a test didn't succeed.
 
     Galaxy's own log covers only the web process, but uploads run in Celery - so
@@ -68,8 +65,8 @@ class GalaxyEngine(BaseEngine, metaclass=abc.ABCMeta):
         self,
         runnables,
         job_paths,
-        output_collectors: Optional[List[Callable]] = None,
-        test_timeout: Optional[int] = None,
+        output_collectors: list[Callable] | None = None,
+        test_timeout: int | None = None,
     ):
         """Run job in Galaxy."""
         results = []

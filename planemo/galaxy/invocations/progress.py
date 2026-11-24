@@ -1,11 +1,5 @@
 import random
 from io import StringIO
-from typing import (
-    Dict,
-    List,
-    Optional,
-    Set,
-)
 
 from rich.console import Group
 from rich.live import Live
@@ -31,38 +25,38 @@ from .progress_display import DisplayConfiguration
 # Types for various invocation responses
 class InvocationStep(TypedDict, total=False):
     id: str
-    state: Optional[str]
-    subworkflow_invocation_id: Optional[str]
+    state: str | None
+    subworkflow_invocation_id: str | None
 
 
 class Invocation(TypedDict, total=False):
     id: str
     state: str
-    steps: List[InvocationStep]
+    steps: list[InvocationStep]
 
 
 class InvocationJobsSummary(TypedDict, total=False):
-    states: Dict[str, int]
+    states: dict[str, int]
 
 
 class WorkflowProgress(Progress):
     _jobs_task: TaskID
     _steps_task: TaskID
-    _subworkflows_task: Optional[TaskID] = None
+    _subworkflows_task: TaskID | None = None
 
     def __init__(self, display: DisplayConfiguration):
         self.invocation_state: str = "new"
-        self.step_count: Optional[int] = None
-        self.job_count: Optional[int] = 0
-        self.jobs_completed: Optional[int] = None
-        self.step_states: Dict[str, int] = {}
+        self.step_count: int | None = None
+        self.job_count: int | None = 0
+        self.jobs_completed: int | None = None
+        self.step_states: dict[str, int] = {}
         self.num_ok: int = 0
         self.num_new: int = 0
         self.num_queued: int = 0
         self.num_running: int = 0
         self.num_errors: int = 0
         self.num_paused: int = 0
-        self.printed_job_errors: Set[str] = set()  # Track printed job errors by job ID
+        self.printed_job_errors: set[str] = set()  # Track printed job errors by job ID
 
         self.num_subworkflows: int = 0
         self.num_subworkflows_complete: int = 0
@@ -162,7 +156,7 @@ class WorkflowProgress(Progress):
         self.jobs_completed = self.num_ok + self.num_errors
         self.num_paused = count_states(job_state_summary, ["paused"])
         self.jobs_terminal_count = self.jobs_completed + self.num_paused
-        jobs_total: Optional[int] = self.job_count
+        jobs_total: int | None = self.job_count
         if self.num_errors > 0:
             self.jobs_color = self.display.style_error
         elif self.job_count > 0:
@@ -249,10 +243,10 @@ class WorkflowProgress(Progress):
                             job_errors = self._format_job_error_details(job_id, job_details)
                             new_error_lines.extend(job_errors)
                         except Exception as e:
-                            ctx.vlog("Failed to get details for job {}: {}".format(job_id, e))
+                            ctx.vlog(f"Failed to get details for job {job_id}: {e}")
 
             except Exception as e:
-                ctx.vlog("Failed to get failed jobs: {}".format(e))
+                ctx.vlog(f"Failed to get failed jobs: {e}")
                 return
 
             # Print any new errors found
@@ -260,7 +254,7 @@ class WorkflowProgress(Progress):
                 workflow_progress_display.console.print("\n".join(new_error_lines))
 
         except Exception as e:
-            error_msg = "❌ Failed to collect failed job details: {}".format(escape(str(e)))
+            error_msg = f"❌ Failed to collect failed job details: {escape(str(e))}"
             workflow_progress_display.console.print(error_msg)
 
     def _format_job_error_details(self, job_id, job_details):
@@ -272,29 +266,29 @@ class WorkflowProgress(Progress):
         command_line = job_details.get("command_line")
         tool_id = job_details.get("tool_id")
 
-        error_lines.append("❌ Failed job {}:".format(escape(str(job_id))))
+        error_lines.append(f"❌ Failed job {escape(str(job_id))}:")
         if tool_id:
-            error_lines.append("   Tool ID: {}".format(escape(tool_id)))
+            error_lines.append(f"   Tool ID: {escape(tool_id)}")
         if exit_code is not None:
-            error_lines.append("   Exit code: {}".format(exit_code))
+            error_lines.append(f"   Exit code: {exit_code}")
         if command_line:
-            error_lines.append("   Command line: {}".format(escape(command_line)))
+            error_lines.append(f"   Command line: {escape(command_line)}")
         if stdout:
             error_lines.append("   Stdout:")
             for line in stdout.split("\n"):
                 if line.strip():
-                    error_lines.append("     {}".format(escape(line)))
+                    error_lines.append(f"     {escape(line)}")
         if stderr:
             error_lines.append("   Stderr:")
             for line in stderr.split("\n"):
                 if line.strip():
-                    error_lines.append("     {}".format(escape(line)))
+                    error_lines.append(f"     {escape(line)}")
         error_lines.append("")  # Empty line for spacing
         return error_lines
 
 
 # converted from Galaxy TypeScript (see util.ts next to WorkflowInvocationState.vue)
-def count_states(job_summary: Optional[InvocationJobsSummary], query_states: list[str]) -> int:
+def count_states(job_summary: InvocationJobsSummary | None, query_states: list[str]) -> int:
     count = 0
     states = job_summary.get("states") if job_summary else None
     if states:
@@ -303,7 +297,7 @@ def count_states(job_summary: Optional[InvocationJobsSummary], query_states: lis
     return count
 
 
-def job_count(job_summary: Optional[InvocationJobsSummary]) -> int:
+def job_count(job_summary: InvocationJobsSummary | None) -> int:
     states = job_summary.get("states") if job_summary else None
     count = 0
     if states:
@@ -343,13 +337,13 @@ class WorkflowProgressDisplay(Live):
     def __init__(
         self,
         invocation_id: str,
-        display_configuration: Optional[DisplayConfiguration] = None,
-        galaxy_url: Optional[str] = None,
+        display_configuration: DisplayConfiguration | None = None,
+        galaxy_url: str | None = None,
     ):
-        self.subworkflow_invocation_ids_seen: Set[str] = set()
-        self.subworkflow_invocation_ids_completed: Set[str] = set()
-        self.subworkflow_invocation_id: Optional[str] = None
-        self.new_steps: List[str] = []
+        self.subworkflow_invocation_ids_seen: set[str] = set()
+        self.subworkflow_invocation_ids_completed: set[str] = set()
+        self.subworkflow_invocation_id: str | None = None
+        self.new_steps: list[str] = []
         self.invocation_id = invocation_id
         display = display_configuration or DisplayConfiguration()
         self.galaxy_url = galaxy_url
@@ -359,9 +353,9 @@ class WorkflowProgressDisplay(Live):
         super().__init__(self._panel(), auto_refresh=False)
 
     def _register_subworkflow_invocation_ids_from(self, invocation: Invocation):
-        subworkflow_invocation_ids: List[str] = []
+        subworkflow_invocation_ids: list[str] = []
         steps = invocation.get("steps") or []
-        new_steps: List[str] = []
+        new_steps: list[str] = []
         for step in steps:
             if step["state"] == "new":
                 new_steps.append(step["id"])
@@ -371,7 +365,7 @@ class WorkflowProgressDisplay(Live):
         self.new_steps = new_steps
         self._register_subworkflow_invocation_ids(subworkflow_invocation_ids)
 
-    def _register_subworkflow_invocation_ids(self, ids: List[str]):
+    def _register_subworkflow_invocation_ids(self, ids: list[str]):
         for invocation_id in ids:
             self.subworkflow_invocation_ids_seen.add(invocation_id)
 

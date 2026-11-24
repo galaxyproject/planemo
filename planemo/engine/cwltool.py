@@ -1,10 +1,6 @@
 """Module contianing the :class:`CwlToolEngine` implementation of :class:`Engine`."""
 
-from typing import (
-    Callable,
-    List,
-    Optional,
-)
+from collections.abc import Callable
 
 from planemo import cwl
 from planemo.runnable import RunnableType
@@ -23,8 +19,8 @@ class CwlToolEngine(BaseEngine):
         self,
         runnables,
         job_paths,
-        output_collectors: Optional[List[Callable]] = None,
-        test_timeout: Optional[int] = None,
+        output_collectors: list[Callable] | None = None,
+        test_timeout: int | None = None,
     ):
         """Run CWL job using cwltool."""
         results = []
