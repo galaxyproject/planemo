@@ -234,7 +234,8 @@ class CmdWorkflowLintTestCase(CliTestCase):
         result = self._runner.invoke(self._cli.planemo, lint_cmd)
 
         warnings = [
-            'Creator identifier "0000-0002-1825-0097" should be a fully qualified URI, for example "https://orcid.org/0000-0002-1825-0097".',
+            # gxformat2 0.30.0 changed the rest of this message
+            'Creator identifier "0000-0002-1825-0097" should be a fully qualified URI',
         ]
 
         for warning in warnings:
