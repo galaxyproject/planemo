@@ -112,7 +112,7 @@ def check_conda(package_name: str, ctx: "PlanemoCliContext", **kwds) -> str:
     """
     conda_context = planemo.conda.build_conda_context(ctx, **kwds)
     if not conda_context.is_conda_installed():
-        return check_anaconda_api(package_name, kwds["conda_ensure_channels"].split(","))
+        return check_anaconda_api(package_name, kwds.get("conda_ensure_channels", "").split(","))
 
     target = conda_util.CondaTarget(package_name)
     best_search_results = conda_util.best_search_result(target, conda_context=conda_context)
