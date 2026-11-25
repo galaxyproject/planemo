@@ -4,7 +4,6 @@ import sys
 import tarfile
 import zipfile
 from ftplib import all_errors as FTPErrors  # tuple of exceptions
-from typing import List
 from urllib.error import URLError
 from urllib.request import urlretrieve
 from xml.etree import ElementTree
@@ -297,7 +296,7 @@ class ActionPackage:
 
 
 class BaseAction:
-    _keys: List[str] = []
+    _keys: list[str] = []
     action_type: str
 
     def __repr__(self):
@@ -656,7 +655,7 @@ class ChmodAction(BaseAction):
 
 class MakeInstallAction(BaseAction):
     action_type = "make_install"
-    _keys = []  # type: List[str]
+    _keys: list[str] = []
 
     def __init__(self, elem):
         pass

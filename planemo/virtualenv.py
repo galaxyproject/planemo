@@ -2,14 +2,13 @@
 
 import os
 import sys
-from typing import Optional
 
 from galaxy.util.commands import which
 
 DEFAULT_PYTHON_VERSION = os.environ.get("PLANEMO_DEFAULT_PYTHON_VERSION", "3")
 
 
-def create_command(virtualenv_path: str, galaxy_python_version: Optional[str] = None) -> str:
+def create_command(virtualenv_path: str, galaxy_python_version: str | None = None) -> str:
     """If virtualenv is on Planemo's path use it, otherwise use the planemo
     subcommand virtualenv to create the virtualenv.
     """

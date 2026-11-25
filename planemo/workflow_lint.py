@@ -1,16 +1,14 @@
 import inspect
 import os
 import re
+from collections.abc import (
+    Iterable,
+    Iterator,
+)
 from contextlib import contextmanager
 from datetime import date
 from typing import (
     Any,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Tuple,
     TYPE_CHECKING,
 )
 
@@ -111,7 +109,7 @@ class WorkflowLintContext(LintContext):
                     )
 
 
-def build_wf_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
+def build_wf_lint_args(ctx: "PlanemoCliContext", **kwds) -> dict[str, Any]:
     lint_args = build_lint_args(ctx, **kwds)
     lint_args["iwc_grade"] = kwds.get("iwc", False)
     return lint_args
@@ -122,7 +120,7 @@ def generate_dockstore_yaml(directory: str, publish: bool = True) -> str:
     all_workflow_paths = list(find_workflow_descriptions(directory))
     for workflow_path in all_workflow_paths:
         test_parameter_path = f"{workflow_path.rsplit('.', 1)[0]}-tests.yml"
-        workflow_entry: Dict[str, Any] = {
+        workflow_entry: dict[str, Any] = {
             # TODO: support CWL
             "name": "main" if len(all_workflow_paths) == 1 else _workflow_name(workflow_path),
             "subclass": "Galaxy",
@@ -187,7 +185,7 @@ def _workflow_name(workflow_path: str) -> str:
     return basename
 
 
-def lint_workflow_artifacts_on_paths(ctx: "PlanemoCliContext", paths: Iterable[str], lint_args: Dict[str, Any]) -> int:
+def lint_workflow_artifacts_on_paths(ctx: "PlanemoCliContext", paths: Iterable[str], lint_args: dict[str, Any]) -> int:
     report_level = lint_args["level"]
     lint_context = WorkflowLintContext(
         report_level,
@@ -301,7 +299,7 @@ def _lint_best_practices(path: str, lint_context: WorkflowLintContext) -> None:
             lint_best_practices_ga(context, workflow_dict)
 
 
-def _load_workflow_dict(path: str) -> Dict[str, Any]:
+def _load_workflow_dict(path: str) -> dict[str, Any]:
     """Load a workflow for gxformat2's linters, dropping linked subworkflow references.
 
     Linked subworkflows are published (and linted) on their own. Dropping the
@@ -381,7 +379,7 @@ def is_valid_output_expectations(lint_context, output_expectations):
 
 
 def _check_test_assertions(
-    lint_context: WorkflowLintContext, assertion_definitions: Optional[Dict[str, Dict[str, Any]]]
+    lint_context: WorkflowLintContext, assertion_definitions: dict[str, dict[str, Any]] | None
 ) -> bool:
     # we are already in Python, not XML, so it is simpler to lint assertions by checking against the
     # Python functions directly, rather than checking against galaxy.xsd as for tool linting
@@ -424,7 +422,7 @@ def _check_test_assertions(
 def _tst_input_valid(
     test_case: TestCase,
     input_id: str,
-    input_def: Dict[str, Any],
+    input_def: dict[str, Any],
     lint_context: WorkflowLintContext,
 ) -> bool:
     if isinstance(input_def, dict):  # else assume it is a parameter
@@ -486,7 +484,7 @@ def _lint_dockstore_config(path: str, lint_context: WorkflowLintContext) -> None
 
 
 def _lint_dockstore_workflow_entry(
-    lint_context: WorkflowLintContext, directory: str, workflow_entry: Dict[str, Any]
+    lint_context: WorkflowLintContext, directory: str, workflow_entry: dict[str, Any]
 ) -> None:
     if not isinstance(workflow_entry, dict):
         lint_context.error("Invalid YAML contents found in %s, workflow entry not a dict" % DOCKSTORE_REGISTRY_CONF)
@@ -546,7 +544,7 @@ def find_workflow_descriptions(directory: str) -> Iterator[str]:
             yield potential_workflow_artifact_path
 
 
-def find_potential_workflow_files(directory: str) -> List[str]:
+def find_potential_workflow_files(directory: str) -> list[str]:
     """Return a list of potential workflow files in a directory."""
     if not os.path.exists(directory):
         raise ValueError(f"Directory not found {directory}")
@@ -564,7 +562,7 @@ def find_potential_workflow_files(directory: str) -> List[str]:
     return matches
 
 
-def find_repos_from_tool_id(tool_id: str, ts: ToolShedInstance) -> Tuple[str, Dict[str, Any]]:
+def find_repos_from_tool_id(tool_id: str, ts: ToolShedInstance) -> tuple[str, dict[str, Any]]:
     """
     Return a string which indicates what failed and dict with all revisions for a given tool id
     """
@@ -584,8 +582,8 @@ def find_repos_from_tool_id(tool_id: str, ts: ToolShedInstance) -> Tuple[str, Di
 
 
 def assert_valid_tool_id_in_tool_shed(
-    tool_id: str, ts: ToolShedInstance, changeset_revision: Optional[str] = None
-) -> Optional[str]:
+    tool_id: str, ts: ToolShedInstance, changeset_revision: str | None = None
+) -> str | None:
     if "/repos" not in tool_id:
         return None
     warning_msg, repos = find_repos_from_tool_id(tool_id, ts)
@@ -608,7 +606,7 @@ def assert_valid_tool_id_in_tool_shed(
     return None
 
 
-def _assert_tool_id_in_changeset(tool_id: str, changeset_revision: str, repos: Dict[str, Any]) -> Optional[str]:
+def _assert_tool_id_in_changeset(tool_id: str, changeset_revision: str, repos: dict[str, Any]) -> str | None:
     """Check that the pinned ``changeset_revision`` actually provides ``tool_id``.
 
     When a native ``.ga`` workflow references a tool it also pins a
@@ -654,7 +652,7 @@ def _assert_tool_id_in_changeset(tool_id: str, changeset_revision: str, repos: D
     return message
 
 
-def _iter_tool_steps(wf_dict: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
+def _iter_tool_steps(wf_dict: dict[str, Any]) -> Iterator[dict[str, Any]]:
     """Yield every tool step in a workflow, recursing into subworkflows."""
     steps = wf_dict.get("steps", {})
     if isinstance(steps, dict):
@@ -755,10 +753,10 @@ def _lint_required_files_workflow_dir(path: str, lint_context: WorkflowLintConte
             lint_context.error(f"The file {required_file} is missing but required.")
 
 
-def _get_changelog_version_heading(path: str) -> Optional[str]:
+def _get_changelog_version_heading(path: str) -> str | None:
     if not os.path.exists(os.path.join(path, "CHANGELOG.md")):
         return None
-    with open(os.path.join(path, "CHANGELOG.md"), "r") as f:
+    with open(os.path.join(path, "CHANGELOG.md")) as f:
         for line in f:
             if line.startswith("## ["):
                 return line.rstrip()
@@ -771,7 +769,7 @@ def _get_changelog_version(path: str) -> str:
     return match.group(1) if match else ""
 
 
-def _valid_changelog_version_heading(heading: Optional[str]) -> bool:
+def _valid_changelog_version_heading(heading: str | None) -> bool:
     dated_heading = DATED_CHANGELOG_VERSION_HEADING.fullmatch(heading or "")
     if not dated_heading:
         return False
@@ -795,8 +793,7 @@ def _lint_changelog_version(path: str, lint_context: WorkflowLintContext) -> Non
 
     if not _valid_changelog_version_heading(heading):
         lint_context.error(
-            "The newest CHANGELOG heading must match '## [version] - YYYY-MM-DD' with a valid date, "
-            f"found {heading!r}."
+            f"The newest CHANGELOG heading must match '## [version] - YYYY-MM-DD' with a valid date, found {heading!r}."
         )
 
 
@@ -832,7 +829,7 @@ def _lint_dockstore_config_best_practices(path: str, lint_context: WorkflowLintC
 
 
 def _lint_dockstore_workflow_entry_best_practices(
-    lint_context: WorkflowLintContext, directory: str, workflow_entry: Dict[str, Any]
+    lint_context: WorkflowLintContext, directory: str, workflow_entry: dict[str, Any]
 ) -> None:
     for recommended_key in ["testParameterFiles", "name"]:
         if recommended_key not in workflow_entry:

@@ -6,8 +6,6 @@ import os
 import re
 from typing import (
     Any,
-    Dict,
-    Optional,
     TYPE_CHECKING,
 )
 from urllib.request import urlopen
@@ -85,7 +83,7 @@ class PlanemoLintContext(GalaxyLintContext):
         return False
 
 
-def build_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
+def build_lint_args(ctx: "PlanemoCliContext", **kwds) -> dict[str, Any]:
     """Handle common report, error, and skip linting arguments."""
     report_level = kwds.get("report_level", "all")
     fail_level = kwds.get("fail_level", "warn")
@@ -113,7 +111,7 @@ def build_lint_args(ctx: "PlanemoCliContext", **kwds) -> Dict[str, Any]:
     if len(invalid_skip_types):
         error(f"Unknown linter type(s) {invalid_skip_types} in list of linters to be skipped. Known linters {linters}")
 
-    lint_args: Dict[str, Any] = dict(
+    lint_args: dict[str, Any] = dict(
         level=report_level,
         fail_level=fail_level,
         skip_types=_expand_legacy_skip_types(skip_types),
@@ -155,7 +153,7 @@ def lint_xsd(lint_ctx, schema_path, path):
         lint_ctx.info("File validates against XML schema.")
 
 
-def _validate_doi_url(url) -> Optional[str]:
+def _validate_doi_url(url) -> str | None:
     """Validate DOI URL by checking CrossRef API."""
     match = re.match("https?://doi.org/(.*)$", url)
     if match is None:
@@ -166,7 +164,7 @@ def _validate_doi_url(url) -> Optional[str]:
     return _validate_http_url(xref_url)
 
 
-def _validate_http_url(url, user_agent=None) -> Optional[str]:
+def _validate_http_url(url, user_agent=None) -> str | None:
     """Validate HTTP/HTTPS URL."""
     headers = {"User-Agent": user_agent, "Accept": "*/*"} if user_agent else None
     r = None
@@ -187,7 +185,7 @@ def _validate_http_url(url, user_agent=None) -> Optional[str]:
         return f"Error '{e}' accessing {url}"
 
 
-def _validate_other_url(url) -> Optional[str]:
+def _validate_other_url(url) -> str | None:
     """Validate non-HTTP URLs."""
     try:
         with urlopen(url) as handle:
@@ -197,7 +195,7 @@ def _validate_other_url(url) -> Optional[str]:
         return f"Error '{e}' accessing {url}"
 
 
-def validate_url(url, user_agent=None) -> Optional[str]:
+def validate_url(url, user_agent=None) -> str | None:
     """Return an error message when a URL cannot be validated."""
     if re.match("https?://doi.org/(.*)$", url):
         return _validate_doi_url(url)

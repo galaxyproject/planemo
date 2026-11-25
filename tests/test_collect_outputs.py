@@ -6,9 +6,6 @@ from types import SimpleNamespace
 from typing import (
     Any,
     cast,
-    Dict,
-    List,
-    Optional,
     TYPE_CHECKING,
 )
 
@@ -25,7 +22,7 @@ if TYPE_CHECKING:
 
     from planemo.cli import PlanemoCliContext
 
-SAMPLE_SHEET_COLLECTION_METADATA: Dict[str, Any] = {
+SAMPLE_SHEET_COLLECTION_METADATA: dict[str, Any] = {
     "id": "e9d955ca403027d5",
     "model_class": "HistoryDatasetCollectionAssociation",
     "history_content_type": "dataset_collection",
@@ -76,10 +73,10 @@ class CollectionRunResponse(GalaxyBaseRunResponse):
     def to_galaxy_output(self, runnable_output):
         return None
 
-    def output_src(self, output, ignore_missing_outputs: Optional[bool] = False) -> Dict[str, str]:
+    def output_src(self, output, ignore_missing_outputs: bool | None = False) -> dict[str, str]:
         return {"src": "hdca", "id": "e9d955ca403027d5"}
 
-    def _get_metadata(self, history_content_type: str, content_id: str) -> Dict[str, Any]:
+    def _get_metadata(self, history_content_type: str, content_id: str) -> dict[str, Any]:
         assert history_content_type == "dataset_collection"
         return dict(SAMPLE_SHEET_COLLECTION_METADATA)
 
@@ -88,7 +85,7 @@ class CollectionRunResponse(GalaxyBaseRunResponse):
 def unsupported_collection_response(monkeypatch) -> CollectionRunResponse:
     """A response where output_to_cwl_json returns None, as it does for sample_sheet."""
 
-    def mock_get_outputs(runnable, gi=None) -> List[MockRunnableOutput]:
+    def mock_get_outputs(runnable, gi=None) -> list[MockRunnableOutput]:
         return [MockRunnableOutput("Read quality reports")]
 
     # Mirrors galaxy-tool-util's output_to_cwl_json, which falls through to a bare

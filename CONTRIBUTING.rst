@@ -106,7 +106,7 @@ Before you submit a pull request, check that it meets these guidelines:
 
 1. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring.
-2. The pull request should work for Python >=3.10. Check
+2. The pull request should work for Python >=3.11. Check
    https://github.com/galaxyproject/planemo/actions
    and make sure that the tests pass for all supported Python versions.
 
@@ -115,15 +115,15 @@ Tips
 
 To run a subset of tests::
 
-    % make tox ENV=py310-unit ARGS='--tests tests/test_shed_upload.py'
+    % make tox ENV=py311-unit ARGS='--tests tests/test_shed_upload.py'
 
-This will use Tox_ to run the specified tests using Python 3.10. ``ENV`` here
+This will use Tox_ to run the specified tests using Python 3.11. ``ENV`` here
 can be used to specify a different supported Python version (e.g. ``py311`` or
 ``py312``).
 
 Even more granularity is also possible by specifying specific test methods.::
 
-    make tox ENV=py310-unit ARGS='--tests tests/test_shed_upload.py:ShedUploadTestCase.test_tar_from_git'
+    make tox ENV=py311-unit ARGS='--tests tests/test_shed_upload.py:ShedUploadTestCase.test_tar_from_git'
 
 
 ``tox`` can be used to run tests directly also (use ``. .venv/bin/activate``
@@ -131,7 +131,7 @@ to ensure it is on your ``PATH``).
 
 ::
 
-    tox -e py310-unit -- --tests tests/test_shed_upload.py
+    tox -e py311-unit -- --tests tests/test_shed_upload.py
 
 Tox_ itself is configured to wrap pytest_. One can skip Tox_ and run
 ``pytest`` directly.
@@ -147,23 +147,23 @@ Tox_ is a tool to automate testing across different Python versions. The
 ``tox`` executable can be supplied with a ``-e`` argument to specify a
 testing environment. Planemo defines the following environments:
 
-``py310-lint``
-    Lint the planemo code using Python 3.10.
+``py311-lint``
+    Lint the planemo code using Python 3.11.
 
-``py310-lint_docs``
+``py311-lint_docs``
     Lint the docs reStructuredText.
 
-``py310-lint_docstrings``
+``py311-lint_docstrings``
     Lint the project Python docstrings (doesn't pass currently).
 
-``py310-unit-quick``
-    Run the fastest unit tests (with least external dependencies) on Python 3.10.
+``py311-unit-quick``
+    Run the fastest unit tests (with least external dependencies) on Python 3.11.
 
-``py310-unit-nonredundant-noclientbuild-gx-250``
+``py311-unit-nonredundant-noclientbuild-gx-250``
     Run tests that are marked as targeting a Galaxy branch and test against Galaxy 25.0.
     Skip tests that are marked as redundant or that require a Galaxy client build.
 
-``py310-unit-gx-dev``
+``py311-unit-gx-dev``
     Run tests that are marked as targeting a Galaxy branch and test against Galaxy's dev branch.
 
 Pre-commit Hooks

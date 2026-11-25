@@ -2,9 +2,7 @@
 
 from typing import (
     Any,
-    List,
     NamedTuple,
-    Optional,
     TYPE_CHECKING,
 )
 
@@ -23,12 +21,12 @@ class DoiCheck(NamedTuple):
     citation: Any
     publication_id: str
     doiless_publication_id: str
-    status_code: Optional[int]
-    error: Optional[str]
+    status_code: int | None
+    error: str | None
 
 
-def _doi_checks(tool_source: "ToolSource") -> List[DoiCheck]:
-    def calculate() -> List[DoiCheck]:
+def _doi_checks(tool_source: "ToolSource") -> list[DoiCheck]:
+    def calculate() -> list[DoiCheck]:
         tool_xml = getattr(tool_source, "xml_tree", None)
         if not tool_xml:
             return []

@@ -2,9 +2,7 @@
 
 from typing import (
     Any,
-    List,
     NamedTuple,
-    Optional,
     TYPE_CHECKING,
 )
 
@@ -25,11 +23,11 @@ if TYPE_CHECKING:
 class URLCheck(NamedTuple):
     url: str
     help_node: Any
-    error: Optional[str]
+    error: str | None
 
 
-def _url_checks(tool_source: "ToolSource") -> List[URLCheck]:
-    def calculate() -> List[URLCheck]:
+def _url_checks(tool_source: "ToolSource") -> list[URLCheck]:
+    def calculate() -> list[URLCheck]:
         tool_xml = getattr(tool_source, "xml_tree", None)
         if not tool_xml:
             return []

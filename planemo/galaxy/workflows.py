@@ -5,17 +5,15 @@ import json
 import os
 import tempfile
 from collections import namedtuple
+from collections.abc import (
+    Callable,
+    Iterator,
+)
 from functools import lru_cache
 from typing import (
     Any,
-    Callable,
-    Dict,
-    Iterator,
-    List,
-    Optional,
     Protocol,
     runtime_checkable,
-    Tuple,
     TYPE_CHECKING,
 )
 from urllib.parse import (
@@ -64,7 +62,7 @@ MAIN_TOOLSHED_URL = "https://toolshed.g2.bx.psu.edu"
 TRS_SERVERS = {"dockstore": "https://dockstore.org/api"}
 
 
-def parse_trs_id(trs_id: str) -> Optional[Dict[str, str]]:
+def parse_trs_id(trs_id: str) -> dict[str, str] | None:
     """Parse a TRS ID into a full TRS URL.
 
     Args:
@@ -168,7 +166,7 @@ def parse_trs_id(trs_id: str) -> Optional[Dict[str, str]]:
     return {"trs_url": trs_url}
 
 
-def parse_trs_uri(trs_uri: str) -> Optional[Dict[str, str]]:
+def parse_trs_uri(trs_uri: str) -> dict[str, str] | None:
     """Parse a TRS URI into a full TRS URL.
 
     Args:
@@ -193,7 +191,7 @@ def parse_trs_uri(trs_uri: str) -> Optional[Dict[str, str]]:
 class TrsImporter(Protocol):
     """Interface for importing workflows from TRS."""
 
-    def import_from_trs(self, trs_url: str) -> Dict[str, Any]:
+    def import_from_trs(self, trs_url: str) -> dict[str, Any]:
         """Import a workflow from a TRS URL.
 
         Args:
@@ -216,7 +214,7 @@ class GalaxyTrsImporter:
         """
         self._gi = gi
 
-    def import_from_trs(self, trs_url: str) -> Dict[str, Any]:
+    def import_from_trs(self, trs_url: str) -> dict[str, Any]:
         """Import a workflow from a TRS URL via Galaxy API.
 
         Args:
@@ -230,7 +228,7 @@ class GalaxyTrsImporter:
         return self._gi.workflows._post(url=url, payload=trs_payload)
 
 
-def import_workflow_from_trs(trs_uri: str, importer: TrsImporter) -> Dict[str, Any]:
+def import_workflow_from_trs(trs_uri: str, importer: TrsImporter) -> dict[str, Any]:
     """Import a workflow from a TRS endpoint.
 
     Args:
@@ -277,7 +275,7 @@ def _encode_trs_url(trs_url: str) -> str:
     return f"{DOCKSTORE_TRS_BASE}{quote(tool_id_and_version, safe='')}"
 
 
-def _find_primary_descriptor(files: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+def _find_primary_descriptor(files: list[dict[str, Any]]) -> dict[str, Any] | None:
     """Find the primary descriptor file from a list of TRS files."""
     for f in files:
         if f.get("file_type") == "PRIMARY_DESCRIPTOR":
@@ -288,7 +286,7 @@ def _find_primary_descriptor(files: List[Dict[str, Any]]) -> Optional[Dict[str, 
     return files[0] if files else None
 
 
-def fetch_workflow_from_trs(trs_id: str) -> Dict[str, Any]:
+def fetch_workflow_from_trs(trs_id: str) -> dict[str, Any]:
     """Fetch a workflow definition directly from a TRS endpoint.
 
     Args:
@@ -331,7 +329,7 @@ def fetch_workflow_from_trs(trs_id: str) -> Dict[str, Any]:
 
 
 @lru_cache(maxsize=None)
-def guess_tool_shed_url(tool_shed_fqdn: str) -> Optional[str]:
+def guess_tool_shed_url(tool_shed_fqdn: str) -> str | None:
     if tool_shed_fqdn in MAIN_TOOLSHED_URL:
         return MAIN_TOOLSHED_URL
     else:
@@ -350,7 +348,7 @@ def guess_tool_shed_url(tool_shed_fqdn: str) -> Optional[str]:
     return None
 
 
-def get_toolshed_url_for_tool_id(tool_id: str) -> Optional[str]:
+def get_toolshed_url_for_tool_id(tool_id: str) -> str | None:
     components = tool_id.split("/repos")
     if len(components) > 1:
         tool_shed_fqdn = components[0]
@@ -358,7 +356,7 @@ def get_toolshed_url_for_tool_id(tool_id: str) -> Optional[str]:
     return None
 
 
-def linked_subworkflow_url(step: Dict[str, Any]) -> Optional[str]:
+def linked_subworkflow_url(step: dict[str, Any]) -> str | None:
     """Return the URL a linked (not embedded) subworkflow step references, or ``None``.
 
     Galaxy >= 26.1 accepts subworkflow steps that reference external content via
@@ -382,7 +380,7 @@ def linked_subworkflow_url(step: Dict[str, Any]) -> Optional[str]:
     return None
 
 
-def is_subworkflow_reference(step: Dict[str, Any]) -> bool:
+def is_subworkflow_reference(step: dict[str, Any]) -> bool:
     """Whether a step references its subworkflow (URL, TRS, local path or id) rather than embedding it."""
     run = step.get("run")
     if run is not None:
@@ -390,7 +388,7 @@ def is_subworkflow_reference(step: Dict[str, Any]) -> bool:
     return step.get("type") == "subworkflow" and not step.get("subworkflow")
 
 
-def iter_workflow_steps(workflow: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
+def iter_workflow_steps(workflow: dict[str, Any]) -> Iterator[dict[str, Any]]:
     """Yield the steps of a native or gxformat2 workflow dict, recursing into embedded subworkflows."""
     steps = workflow.get("steps") or {}
     for step in steps.values() if isinstance(steps, dict) else steps:
@@ -402,7 +400,7 @@ def iter_workflow_steps(workflow: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
             yield from iter_workflow_steps(run)
 
 
-def resolve_workflow_url(url: str) -> Dict[str, Any]:
+def resolve_workflow_url(url: str) -> dict[str, Any]:
     """Fetch the workflow a linked subworkflow step references.
 
     gxformat2's default resolver requests TRS URLs verbatim, which fails for
@@ -424,7 +422,7 @@ def resolve_workflow_url(url: str) -> Dict[str, Any]:
     return workflow
 
 
-def _set_linked_content_ids(workflow: Dict[str, Any]) -> None:
+def _set_linked_content_ids(workflow: dict[str, Any]) -> None:
     # gxformat2 only expands content_id URLs, so normalize trs_server/trs_tool_id/trs_version_id references to that
     for step in iter_workflow_steps(workflow):
         url = linked_subworkflow_url(step)
@@ -432,7 +430,7 @@ def _set_linked_content_ids(workflow: Dict[str, Any]) -> None:
             step["content_id"] = url
 
 
-def expand_linked_subworkflows(workflow: Dict[str, Any]) -> Dict[str, Any]:
+def expand_linked_subworkflows(workflow: dict[str, Any]) -> dict[str, Any]:
     """Return a native workflow dict with linked subworkflows (recursively) embedded.
 
     Workflows without linked subworkflows are returned unchanged.
@@ -479,14 +477,14 @@ def load_shed_repos(runnable):
 
 
 def _install_shed_repos_from_tools_info(
-    tools_info: List[Dict[str, Any]],
+    tools_info: list[dict[str, Any]],
     admin_gi: "GalaxyInstance",
     ignore_dependency_problems: bool,
     install_tool_dependencies: bool = False,
     install_resolver_dependencies: bool = True,
     install_repository_dependencies: bool = True,
     install_most_recent_revision: bool = False,
-) -> Tuple[Optional[List[Any]], Optional[List[Any]]]:
+) -> tuple[list[Any] | None, list[Any] | None]:
     """Common logic for installing tool shed repositories from a tools_info list."""
     if not tools_info:
         return None, None
@@ -548,7 +546,7 @@ def install_shed_repos_for_workflow_id(
     install_resolver_dependencies: bool = True,
     install_repository_dependencies: bool = True,
     install_most_recent_revision: bool = False,
-) -> Tuple[Optional[List[Any]], Optional[List[Any]]]:
+) -> tuple[list[Any] | None, list[Any] | None]:
     """Install tool shed repositories for a workflow that's already in Galaxy.
 
     This is used for TRS workflows that are imported via Galaxy's TRS API.
@@ -606,7 +604,7 @@ def install_shed_repos_for_workflow_id(
             os.unlink(wf_path)
 
 
-def export_workflow_dict(gi: "GalaxyInstance", workflow_id: str) -> Dict[str, Any]:
+def export_workflow_dict(gi: "GalaxyInstance", workflow_id: str) -> dict[str, Any]:
     """Export a workflow, keeping linked subworkflows as references instead of embedding them.
 
     Galaxy < 26.1 ignores ``preserve_external_subworkflow_links`` (and has no linked subworkflows).
@@ -642,7 +640,7 @@ def _raw_dict(path):
     return workflow
 
 
-def get_tool_ids_for_workflow(wf_dict: Dict[str, Any], tool_ids: Optional[List[str]] = None) -> List[str]:
+def get_tool_ids_for_workflow(wf_dict: dict[str, Any], tool_ids: list[str] | None = None) -> list[str]:
     tool_ids = [] if tool_ids is None else tool_ids
     for step in iter_workflow_steps(wf_dict):
         if is_subworkflow_reference(step):
@@ -857,8 +855,8 @@ def _collection_elements_for_type(collection_type):
 
 
 def _build_template_and_metadata_from_inputs(
-    all_inputs: List[Dict[str, Any]],
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    all_inputs: list[dict[str, Any]],
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """Build job template and metadata from normalized workflow inputs.
 
     Args:
@@ -867,8 +865,8 @@ def _build_template_and_metadata_from_inputs(
     Returns:
         Tuple of (template_dict, metadata_dict)
     """
-    template: Dict[str, Any] = {}
-    metadata: Dict[str, Any] = {}
+    template: dict[str, Any] = {}
+    metadata: dict[str, Any] = {}
     for input_step in all_inputs:
         i_label = input_label(input_step)
         input_type = input_step["type"]
@@ -918,7 +916,7 @@ def _build_template_and_metadata_from_inputs(
     return template, metadata
 
 
-def _job_template_with_metadata_from_dict(workflow_dict: Dict[str, Any]):
+def _job_template_with_metadata_from_dict(workflow_dict: dict[str, Any]):
     """Generate job template and metadata from a workflow dictionary.
 
     This handles both GA format (.ga) and gxformat2 format workflows.
@@ -1045,7 +1043,7 @@ def get_workflow_from_invocation_id(invocation_id, galaxy_url, galaxy_api_key):
 
 
 def _elements_to_test_def(
-    elements: List[Dict[str, Any]],
+    elements: list[dict[str, Any]],
     test_data_base_path: str,
     download_function: Callable,
     definition_style: str = "input",

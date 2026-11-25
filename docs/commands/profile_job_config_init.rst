@@ -53,4 +53,4 @@ Initialize a Galaxy job configuration for specified profile.
                                       (defaults to the newest Galaxy the generator
                                       knows).
       --help                          Show this message and exit.
-
+    

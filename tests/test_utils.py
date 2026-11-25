@@ -10,6 +10,7 @@ import subprocess
 import sys
 import time
 import traceback
+from collections.abc import Callable
 from concurrent.futures import (
     as_completed,
     ThreadPoolExecutor,
@@ -17,9 +18,6 @@ from concurrent.futures import (
 from tempfile import mkdtemp
 from typing import (
     Any,
-    Callable,
-    List,
-    Optional,
 )
 from unittest import (
     skip,
@@ -64,7 +62,7 @@ NON_ZERO_EXIT_CODE = object()
 ZENODO_TEST_RECORD_API_URL = "https://zenodo.org/api/records/1321885"
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def _is_site_up(url: str) -> bool:
     # Cache the probe so an unresponsive site costs one timeout per run, not one per test.
     return is_site_up(url)
@@ -162,7 +160,7 @@ class CliTestCase(TestCase):
         self._runner = CliRunner()
         self._home = mkdtemp()
         self._old_config = os.environ.get(PLANEMO_CONFIG_ENV_PROP, None)
-        self._cleanup_hooks: List[Callable] = []
+        self._cleanup_hooks: list[Callable] = []
         self._port = None
         os.environ[PLANEMO_CONFIG_ENV_PROP] = self.planemo_yaml_path
         # The whole workspace cannot be isolated - it caches the Galaxy repository and
@@ -560,7 +558,7 @@ def wait_for_proxied_content(target_url: str, timeout: int = 30) -> str:
     the Host header set to the full subdomain hostname.
     """
     end = time.time() + timeout
-    last_error: Optional[Exception] = None
+    last_error: Exception | None = None
     while time.time() < end:
         try:
             scheme, rest = target_url.split("://", 1)

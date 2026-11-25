@@ -11,8 +11,6 @@ Example of the comments:
 Elements can be nested
 """
 
-from typing import List
-
 from planemo.autopygen.param_info import (
     ParamDataType,
     ParamInfo,
@@ -62,7 +60,7 @@ def create_flag(
 def create_element_with_body(
     kind: str,
     head: str,
-    body: List[str],
+    body: list[str],
     comment: str,
     depth: int,
     indent: int = DEFAULT_INDENT,

@@ -1,6 +1,5 @@
 import argparse
 import ast
-from typing import Optional
 
 
 class DecoyParser(argparse.ArgumentParser):
@@ -38,8 +37,7 @@ class DecoyParser(argparse.ArgumentParser):
             self.subsections = []
 
         def get_actions_recursive(self):
-            for action in self.actions:
-                yield action
+            yield from self.actions
 
             for subsection in self.subsections:
                 yield from subsection.get_actions_recursive()
@@ -105,8 +103,8 @@ class DecoyParser(argparse.ArgumentParser):
         return mock_subparser
 
 
-def obtain_class_def() -> Optional[ast.ClassDef]:
-    file = open(__file__, "r")
+def obtain_class_def() -> ast.ClassDef | None:
+    file = open(__file__)
     module = ast.parse(file.read())
     file.close()
     return next((item for item in module.body if type(item) is ast.ClassDef and item.name == "DecoyParser"), None)

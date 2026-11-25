@@ -43,6 +43,8 @@ Delete a profile.
       --postgres-storage-location, --postgres_storage_location DIRECTORY
                                       Storage path for PostgreSQL data managed
                                       through Singularity.
+      --singularity / --no_singularity
+                                      Run Galaxy tools in Singularity if enabled.
       --singularity_cmd TEXT          Command used to execute singularity (defaults
                                       to 'singularity').
       --singularity_sudo / --no_singularity_sudo
@@ -60,4 +62,4 @@ Delete a profile.
       --docker_run_extra_arguments TEXT
                                       Extra arguments to pass to docker run.
       --help                          Show this message and exit.
-
+    

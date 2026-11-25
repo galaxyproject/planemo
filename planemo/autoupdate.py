@@ -4,17 +4,11 @@ import collections
 import itertools
 import re
 import xml.etree.ElementTree as ET
+from collections import Counter
 from typing import (
     Any,
-    Counter,
     DefaultDict,
-    Dict,
-    List,
-    Optional,
-    Set,
-    Tuple,
     TYPE_CHECKING,
-    Union,
 )
 from xml.etree.ElementTree import (
     Element,
@@ -71,7 +65,7 @@ def bump_version(version_str: str) -> str:
         return ".".join(map(str, base_version))
 
 
-def find_macros(xml_tree: "ElementTree[Element[str]]") -> List[Any]:
+def find_macros(xml_tree: "ElementTree[Element[str]]") -> list[Any]:
     """
     Get macros from the XML tree
     """
@@ -83,7 +77,7 @@ def find_macros(xml_tree: "ElementTree[Element[str]]") -> List[Any]:
 
 def get_requirements(
     xml_tree: "ElementTree[Element[str]]",
-) -> Tuple[Dict[str, Dict[str, Optional[str]]], Optional[str]]:
+) -> tuple[dict[str, dict[str, str | None]], str | None]:
     """
     Get requirements from the XML tree
     """
@@ -101,7 +95,7 @@ def get_requirements(
     return requirements, main_req
 
 
-def get_tokens(xml_tree: "ElementTree[Element[str]]") -> Dict[str, Dict[str, Optional[str]]]:
+def get_tokens(xml_tree: "ElementTree[Element[str]]") -> dict[str, dict[str, str | None]]:
     """
     Get tokens from the XML tree
     """
@@ -134,8 +128,8 @@ def check_conda(package_name: str, ctx: "PlanemoCliContext", **kwds) -> str:
 def update_xml(
     tool_path: str,
     xml_tree: "ElementTree[Element[str]]",
-    tags_to_update: List[Dict[str, str]],
-    wrapper_version_token: Optional[Union[int, str]],
+    tags_to_update: list[dict[str, str]],
+    wrapper_version_token: int | str | None,
     is_macro: bool = False,
 ) -> None:
     """
@@ -171,8 +165,8 @@ def update_xml(
 
 
 def create_requirement_dict(
-    xml_files: Dict[str, "ElementTree[Element[str]]"], skip_reqs: List[str]
-) -> Tuple[Dict[str, Dict[str, Dict[str, Optional[str]]]], Optional[Tuple[str, str]]]:
+    xml_files: dict[str, "ElementTree[Element[str]]"], skip_reqs: list[str]
+) -> tuple[dict[str, dict[str, dict[str, str | None]]], tuple[str, str] | None]:
     """
     Create dict with requirements and find main requirement
     """
@@ -191,14 +185,12 @@ def create_requirement_dict(
 
 
 def create_token_dict(
-    ctx: "PlanemoCliContext", xml_files: Dict[str, "ElementTree[Element[str]]"], main_req: Tuple[str, str], **kwds
-) -> Tuple[
-    Dict[str, Dict[str, Dict[str, Optional[str]]]], DefaultDict[str, List[Dict[str, str]]], Optional[str], Optional[str]
-]:
+    ctx: "PlanemoCliContext", xml_files: dict[str, "ElementTree[Element[str]]"], main_req: tuple[str, str], **kwds
+) -> tuple[dict[str, dict[str, dict[str, str | None]]], DefaultDict[str, list[dict[str, str]]], str | None, str | None]:
     """
     Create dict with relevant tokens and check conda requirements for main
     """
-    tokens: Dict[str, Dict[str, Dict[str, Optional[str]]]] = {}
+    tokens: dict[str, dict[str, dict[str, str | None]]] = {}
     current_main_req, updated_main_req = None, None
     xml_to_update = collections.defaultdict(list)
     for k, v in xml_files.items():
@@ -217,14 +209,14 @@ def create_token_dict(
 
 def perform_required_update(
     ctx: "PlanemoCliContext",
-    xml_files: Dict[str, "ElementTree[Element[str]]"],
+    xml_files: dict[str, "ElementTree[Element[str]]"],
     tool_path: str,
-    requirements: Dict[str, Dict[str, Dict[str, Optional[str]]]],
-    tokens: Dict[str, Dict[str, Dict[str, Optional[str]]]],
-    xml_to_update: DefaultDict[str, List[Dict[str, str]]],
-    wrapper_version_token: Optional[Union[int, str]],
+    requirements: dict[str, dict[str, dict[str, str | None]]],
+    tokens: dict[str, dict[str, dict[str, str | None]]],
+    xml_to_update: DefaultDict[str, list[dict[str, str]]],
+    wrapper_version_token: int | str | None,
     **kwds,
-) -> Set[str]:
+) -> set[str]:
     """
     Carry out the update, if requirements are out-of-date
     """
@@ -253,7 +245,7 @@ def perform_required_update(
     return set(xml_files)
 
 
-def autoupdate_tool(ctx: "PlanemoCliContext", tool_path: str, modified_files: Set[Any], **kwds) -> Optional[Set[str]]:
+def autoupdate_tool(ctx: "PlanemoCliContext", tool_path: str, modified_files: set[Any], **kwds) -> set[str] | None:
     """
     Autoupdate an XML file
     """
@@ -325,7 +317,7 @@ def _update_wf(config: "LocalGalaxyConfig", workflow_id: str, instance: bool = F
     config.user_gi.workflows.refactor_workflow(wf["id"], actions=[{"action_type": "upgrade_all_steps"}])
 
 
-def get_newest_tool_id(tool_ids: List[str]) -> str:
+def get_newest_tool_id(tool_ids: list[str]) -> str:
     return sorted(
         tool_ids,
         key=lambda n: parse_tool_version(n.split("/")[-1]),
@@ -336,7 +328,7 @@ def base_tool_id(tool_id: str) -> str:
     return tool_id.rsplit("/", 1)[0]
 
 
-def latest_installable_revision(repos: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+def latest_installable_revision(repos: dict[str, Any]) -> dict[str, Any] | None:
     revisions = [
         repo
         for repo in repos.values()
@@ -347,7 +339,7 @@ def latest_installable_revision(repos: Dict[str, Any]) -> Optional[Dict[str, Any
     return max(revisions, key=lambda repo: int(repo["numeric_revision"]))
 
 
-def find_updated_tool_id(tool_id: str, repos: Dict[str, Any]) -> Optional[str]:
+def find_updated_tool_id(tool_id: str, repos: dict[str, Any]) -> str | None:
     """Return the newer tool id the autoupdate would upgrade tool_id to, if any."""
     # The autoupdate installs the most recent installable revision and Galaxy then upgrades each
     # step to the newest version it has, so only the tool in that revision is a candidate. An
@@ -367,13 +359,13 @@ def find_updated_tool_id(tool_id: str, repos: Dict[str, Any]) -> Optional[str]:
 
 
 def outdated_tools(  # noqa: C901
-    ctx: "PlanemoCliContext", wf_dict: Dict[str, Any], tools_to_skip: List[str]
-) -> Dict[str, Dict[str, str]]:
+    ctx: "PlanemoCliContext", wf_dict: dict[str, Any], tools_to_skip: list[str]
+) -> dict[str, dict[str, str]]:
     """
     tools_to_skip should be a list of base tool ids.
     """
 
-    def check_tool_step(tool_id: str) -> Dict[str, Dict[str, str]]:
+    def check_tool_step(tool_id: str) -> dict[str, dict[str, str]]:
         """
         Return a dict with current and newest tool version, in case they don't match.
         """
@@ -392,7 +384,7 @@ def outdated_tools(  # noqa: C901
         else:
             return {}
 
-    def outdated_tools_rec(wf_dict: Dict[str, Any]) -> None:
+    def outdated_tools_rec(wf_dict: dict[str, Any]) -> None:
         tool_ids = get_tool_ids_for_workflow(wf_dict)
         for tool_id in tool_ids:
             base_id = base_tool_id(tool_id)
@@ -400,7 +392,7 @@ def outdated_tools(  # noqa: C901
                 outdated_tool_dict.update(check_tool_step(tool_id))
                 checked_tools.append(base_id)
 
-    outdated_tool_dict: Dict[str, Dict[str, str]] = {}
+    outdated_tool_dict: dict[str, dict[str, str]] = {}
     # Initialize the list of tools already checked with a copy of tools_to_skip
     checked_tools = tools_to_skip.copy()
     outdated_tools_rec(wf_dict)
@@ -408,8 +400,8 @@ def outdated_tools(  # noqa: C901
 
 
 def get_tools_to_update(
-    ctx: "PlanemoCliContext", workflow: "Runnable", tools_to_skip: List[str]
-) -> Dict[str, Dict[str, str]]:
+    ctx: "PlanemoCliContext", workflow: "Runnable", tools_to_skip: list[str]
+) -> dict[str, dict[str, str]]:
     # before we run the autoupdate, we check the tools against the toolshed to see if there
     # are any new versions. This saves spinning up Galaxy and installing the tools if there
     # is nothing to do, and also allows us to collect a list of the tools which need updating
@@ -419,16 +411,16 @@ def get_tools_to_update(
     return outdated_tools(ctx, wf_dict, tools_to_skip)
 
 
-def autoupdate_wf(ctx: "PlanemoCliContext", config: "LocalGalaxyConfig", wf: "Runnable") -> Dict[str, Any]:
+def autoupdate_wf(ctx: "PlanemoCliContext", config: "LocalGalaxyConfig", wf: "Runnable") -> dict[str, Any]:
     workflow_id = config.workflow_id_for_runnable(wf)
     _update_wf(config, workflow_id)
     return export_workflow_dict(config.user_gi, workflow_id)
 
 
-def updated_tools(original_wf: Dict[str, Any], updated_wf: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
+def updated_tools(original_wf: dict[str, Any], updated_wf: dict[str, Any]) -> dict[str, dict[str, str]]:
     """Return the tool updates the refactoring actually made, keyed by base tool id."""
 
-    def tool_ids_by_base_id(wf_dict: Dict[str, Any]) -> DefaultDict[str, Counter[str]]:
+    def tool_ids_by_base_id(wf_dict: dict[str, Any]) -> DefaultDict[str, Counter[str]]:
         # counted per step, so an upgrade to a version another step already uses is seen
         tool_ids: DefaultDict[str, Counter[str]] = collections.defaultdict(collections.Counter)
         for step in iter_workflow_steps(wf_dict):
@@ -453,7 +445,7 @@ def updated_tools(original_wf: Dict[str, Any], updated_wf: Dict[str, Any]) -> Di
     return updates
 
 
-def fix_workflow(original_wf: Dict[str, Any], updated_wf: Dict[str, Any]) -> Dict[str, Any]:
+def fix_workflow(original_wf: dict[str, Any], updated_wf: dict[str, Any]) -> dict[str, Any]:
     # the Galaxy refactor action can't do everything right now... some manual fixes here
     # * bump release number if present
     # check release; bump if it exists

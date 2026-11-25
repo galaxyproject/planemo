@@ -1,8 +1,4 @@
 from time import sleep
-from typing import (
-    List,
-    Optional,
-)
 
 import pytest
 
@@ -200,7 +196,7 @@ def test_polling_terminates_with_new_step_and_paused_job():
 
 
 def run_workflow_simulation(
-    yaml_str: str, display_configuration: Optional[DisplayConfiguration] = None, fail_fast: bool = False
+    yaml_str: str, display_configuration: DisplayConfiguration | None = None, fail_fast: bool = False
 ):
     simulation = parse_workflow_simulation_from_string(yaml_str)
     invocation_id = simulation.id
@@ -273,12 +269,12 @@ class SimulatedApi(InvocationApi):
         assert invocation, f"Simulation has no invocation_id {invocation_id}"
         return invocation.get_api_invocation()
 
-    def get_invocation_summary(self, invocation_id: str, state: Optional[str] = None) -> InvocationJobsSummary:
+    def get_invocation_summary(self, invocation_id: str, state: str | None = None) -> InvocationJobsSummary:
         invocation = self._simulation.get_invocation_by_id(invocation_id)
         assert invocation, f"Simulation has no invocation_id {invocation_id}"
         return invocation.get_api_jobs_summary()
 
-    def get_invocation_jobs(self, invocation_id: str, state: Optional[str] = None) -> List[Job]:
+    def get_invocation_jobs(self, invocation_id: str, state: str | None = None) -> list[Job]:
         """Return mock list of jobs for invocation, filtered by state if provided."""
         if state == "error":
             return [

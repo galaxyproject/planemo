@@ -3,11 +3,9 @@
 import functools
 import os
 import sys
+from collections.abc import Callable
 from typing import (
     Any,
-    Callable,
-    Dict,
-    List,
 )
 
 import click
@@ -58,7 +56,7 @@ pass_context = click.make_pass_decorator(PlanemoCliContext, ensure=True)
 cmd_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), "commands"))
 
 
-def list_cmds() -> List[str]:
+def list_cmds() -> list[str]:
     """List planemo commands from commands folder."""
     rv = []
     for filename in os.listdir(cmd_folder):
@@ -99,7 +97,7 @@ def name_to_command(name: str) -> Command:
     return mod.cli
 
 
-def _find_similar_commands(name: str, available_commands: List[str]) -> List[str]:
+def _find_similar_commands(name: str, available_commands: list[str]) -> list[str]:
     """Find commands similar to the given name using simple string matching."""
     similar = []
 
@@ -126,7 +124,7 @@ def _find_similar_commands(name: str, available_commands: List[str]) -> List[str
 
 
 class PlanemoCLI(click.MultiCommand):
-    def list_commands(self, ctx: Context) -> List[str]:
+    def list_commands(self, ctx: Context) -> list[str]:
         return list_cmds()
 
     def get_command(self, ctx: Context, name: str) -> Command:
@@ -154,7 +152,7 @@ def command_function(f: Callable) -> Callable:
     return pass_context(handle_blended_options)
 
 
-def _setup_profile_options(ctx: PlanemoCliContext, profile_defaults: Dict[str, Any], kwds: Dict[str, Any]) -> None:
+def _setup_profile_options(ctx: PlanemoCliContext, profile_defaults: dict[str, Any], kwds: dict[str, Any]) -> None:
     for key, value in profile_defaults.items():
         option_present = key in kwds
         option_cli_specified = option_present and (ctx.get_option_source(key) == OptionSource.cli)

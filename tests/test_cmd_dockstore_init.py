@@ -1,7 +1,6 @@
 """Tests for the ``dockstore_init`` command."""
 
 import os
-from typing import Optional
 
 import yaml
 
@@ -54,7 +53,7 @@ class CmdDockstoreInitTestCase(CliTestCase):
             }
             assert actual_names == expected_names
 
-    def run_dockstore_init(self, publish: Optional[bool] = None):
+    def run_dockstore_init(self, publish: bool | None = None):
         with self._isolate_with_test_data("wf_repos/from_format2/0_basic_native") as f:
             init_cmd = ["dockstore_init"]
             expect_published = True

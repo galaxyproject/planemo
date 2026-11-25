@@ -38,7 +38,7 @@ def cli(ctx, path, **kwds):
             report_data = json.load(f)
         PlanemoTestReport.model_validate(report_data)
     except (OSError, ValueError) as e:
-        raise click.ClickException("Invalid Planemo test report JSON at %s: %s" % (path, e)) from e
+        raise click.ClickException("Invalid Planemo test report JSON at {}: {}".format(path, e)) from e
 
     test_data = StructuredData(data=report_data)
     test_data.calculate_summary_data()

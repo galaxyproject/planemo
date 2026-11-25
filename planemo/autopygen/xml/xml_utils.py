@@ -1,8 +1,3 @@
-from typing import (
-    List,
-    Optional,
-)
-
 from lxml import etree
 
 from planemo.autopygen.param_info import (
@@ -50,7 +45,7 @@ def repeat(param_info: ParamInfo) -> etree._Element:
     return formatted_xml_elem("repeat", attributes, body=[inner])
 
 
-def param(param_info: ParamInfo, body: Optional[List[etree._Element]] = None):
+def param(param_info: ParamInfo, body: list[etree._Element] | None = None):
     attributes = {"argument": param_info.argument, "type": str(param_info.type), "format": param_info.format}
 
     if (
@@ -83,7 +78,7 @@ def param(param_info: ParamInfo, body: Optional[List[etree._Element]] = None):
 
 
 def formatted_xml_elem(
-    name, attributes, text: Optional[str] = None, body: Optional[List[etree._Element]] = None
+    name, attributes, text: str | None = None, body: list[etree._Element] | None = None
 ) -> etree._Element:
     element = etree.Element(name, attributes)
     element.text = text

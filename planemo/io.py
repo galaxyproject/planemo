@@ -11,12 +11,11 @@ import subprocess
 import sys
 import tempfile
 import time
+from collections.abc import Callable
 from io import StringIO
 from sys import platform as _platform
 from typing import (
     Any,
-    Callable,
-    Optional,
 )
 from xml.sax.saxutils import escape
 
@@ -283,7 +282,7 @@ def process_group_exists(pgid: int) -> bool:
     return True
 
 
-def _wait_for_process_group_exit(pgid: int, timeout: float, reap: Optional[Callable[[], Any]]) -> bool:
+def _wait_for_process_group_exit(pgid: int, timeout: float, reap: Callable[[], Any] | None) -> bool:
     deadline = time.monotonic() + timeout
     while True:
         if reap is not None:
@@ -295,9 +294,7 @@ def _wait_for_process_group_exit(pgid: int, timeout: float, reap: Optional[Calla
         time.sleep(TERMINATION_POLL_INTERVAL)
 
 
-def terminate_process_group(
-    pgid: int, timeout: Optional[float] = None, reap: Optional[Callable[[], Any]] = None
-) -> bool:
+def terminate_process_group(pgid: int, timeout: float | None = None, reap: Callable[[], Any] | None = None) -> bool:
     """SIGTERM a process group, escalating to SIGKILL if it outlives ``timeout``.
 
     ``pgid`` is a process group ID rather than a PID. A process started with

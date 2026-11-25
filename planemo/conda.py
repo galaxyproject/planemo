@@ -6,18 +6,11 @@ The extend galaxy-tool-util's features with planemo specific idioms.
 import collections
 import os
 import threading
+from collections.abc import Iterable
 from copy import deepcopy
 from typing import (
     Any,
-    Dict,
-    FrozenSet,
-    Iterable,
-    List,
-    Optional,
-    Set,
-    Tuple,
     TYPE_CHECKING,
-    Union,
 )
 
 from galaxy.tool_util.deps import conda_util
@@ -90,13 +83,13 @@ def build_conda_context(ctx: "PlanemoCliContext", **kwds) -> CondaContext:
 
 def collect_conda_targets(
     ctx, paths: Iterable[str], recursive: bool = False, found_tool_callback=None
-) -> Set[CondaTarget]:
+) -> set[CondaTarget]:
     """Load CondaTarget objects from supplied artifact sources.
 
     If a tool contains more than one requirement, the requirements will each
     appear once in the output.
     """
-    conda_targets: Set[CondaTarget] = set()
+    conda_targets: set[CondaTarget] = set()
     real_paths = []
     for path in paths:
         # case: path is not a path, but a comma separated list of target strings
@@ -116,7 +109,7 @@ def collect_conda_targets(
 
 def collect_conda_target_lists(
     ctx: "PlanemoCliContext", paths: Iterable[str], recursive: bool = False, found_tool_callback=None
-) -> List[FrozenSet[CondaTarget]]:
+) -> list[frozenset[CondaTarget]]:
     """Load CondaTarget lists from supplied artifact sources.
 
     If a tool contains more than one requirement, the requirements will all
@@ -130,13 +123,13 @@ def collect_conda_target_lists(
 
 def collect_conda_target_lists_and_tool_paths(
     ctx: "PlanemoCliContext", paths: Iterable[str], recursive: bool = False, found_tool_callback=None
-) -> Tuple[List[FrozenSet[CondaTarget]], List[List[str]]]:
+) -> tuple[list[frozenset[CondaTarget]], list[list[str]]]:
     """Load CondaTarget lists from supplied artifact sources.
 
     If a tool contains more than one requirement, the requirements will all
     appear together as one list element of the output list.
     """
-    conda_target_sets: Set[FrozenSet[CondaTarget]] = set()
+    conda_target_sets: set[frozenset[CondaTarget]] = set()
     tool_paths = collections.defaultdict(list)
     for tool_path, tool_source in yield_tool_sources_on_paths(ctx, paths, recursive=recursive, yield_load_errors=False):
         try:
@@ -165,8 +158,8 @@ best_practice_search_first = threading.local()
 
 
 def best_practice_search(
-    conda_target: CondaTarget, conda_context: Optional[CondaContext] = None, platform: Optional[str] = None
-) -> Union[Tuple[None, None], Tuple[Dict[str, Any], bool]]:
+    conda_target: CondaTarget, conda_context: CondaContext | None = None, platform: str | None = None
+) -> tuple[None, None] | tuple[dict[str, Any], bool]:
     # Call it in offline mode after the first time.
     try:
         best_practice_search_first.previously_called

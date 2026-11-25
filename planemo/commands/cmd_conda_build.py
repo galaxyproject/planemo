@@ -1,7 +1,6 @@
 """Module describing the planemo ``conda_build`` command."""
 
 from typing import (
-    Tuple,
     TYPE_CHECKING,
 )
 
@@ -20,7 +19,7 @@ if TYPE_CHECKING:
 @options.conda_target_options(include_local=False)  # No reason to expose local, we have to use it.
 @options.recipe_arg(multiple=True)
 @command_function
-def cli(ctx: "PlanemoCliContext", paths: Tuple[str], **kwds) -> None:
+def cli(ctx: "PlanemoCliContext", paths: tuple[str], **kwds) -> None:
     """Perform conda build with Planemo's conda."""
     # Force conda_use_local for building...
     kwds["conda_use_local"] = True

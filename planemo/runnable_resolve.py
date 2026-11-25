@@ -1,7 +1,6 @@
 import os
 from typing import (
     Any,
-    Dict,
 )
 
 import requests
@@ -20,7 +19,7 @@ from .runnable import (
 )
 
 
-def for_runnable_identifier(ctx, runnable_identifier, kwds: Dict[str, Any]):
+def for_runnable_identifier(ctx, runnable_identifier, kwds: dict[str, Any]):
     """Convert URI, path, or alias into Runnable."""
     # could be a URI, path, or alias
     current_profile = kwds.get("profile")
@@ -62,7 +61,7 @@ def for_runnable_identifier(ctx, runnable_identifier, kwds: Dict[str, Any]):
     return runnable
 
 
-def for_runnable_identifiers(ctx, runnable_identifiers, kwds: Dict[str, Any]):
+def for_runnable_identifiers(ctx, runnable_identifiers, kwds: dict[str, Any]):
     """Convert lists of URIs, paths, and/or aliases into Runnables."""
     runnables = []
     for r in runnable_identifiers:

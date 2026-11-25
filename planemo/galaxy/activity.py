@@ -9,13 +9,8 @@ import traceback
 from datetime import datetime
 from typing import (
     Any,
-    Dict,
-    List,
     Optional,
-    Tuple,
-    Type,
     TYPE_CHECKING,
-    Union,
 )
 from urllib.parse import urljoin
 
@@ -117,7 +112,7 @@ def _inputs_representation(runnable):
     return inputs_representation
 
 
-def informal_replacement_parameters(run_data: Dict[str, Any]) -> List[str]:
+def informal_replacement_parameters(run_data: dict[str, Any]) -> list[str]:
     """Return ``${...}`` names used by workflow steps that no parameter input declares."""
     steps = run_data.get("steps") or []
     declared = {step.get("step_label") for step in steps if step.get("step_type") == "parameter_input"}
@@ -126,8 +121,8 @@ def informal_replacement_parameters(run_data: Dict[str, Any]) -> List[str]:
 
 
 def _replacement_params_for_invocation(
-    user_gi: GalaxyInstance, workflow_id: str, history_id: str, job_dict: Dict[str, Any]
-) -> Dict[str, str]:
+    user_gi: GalaxyInstance, workflow_id: str, history_id: str, job_dict: dict[str, Any]
+) -> dict[str, str]:
     try:
         run_data = get_dict_from_workflow(user_gi, workflow_id, style="run", history_id=history_id)
     except Exception as e:
@@ -161,7 +156,7 @@ class PlanemoStagingInterface(StagingInterface):
         version_major: str,
         simultaneous_uploads: bool,
         upload_progress_display: Optional["UploadProgressDisplay"] = None,
-        deadline: Optional[float] = None,
+        deadline: float | None = None,
     ) -> None:
         self._ctx = ctx
         self._user_gi = user_gi
@@ -170,9 +165,9 @@ class PlanemoStagingInterface(StagingInterface):
         self._simultaneous_uploads = simultaneous_uploads
         self._upload_progress_display = upload_progress_display
         self._deadline = deadline
-        self._upload_jobs: List[Dict[str, Any]] = []
+        self._upload_jobs: list[dict[str, Any]] = []
 
-    def _post(self, api_path: str, payload: Dict[str, Any], files_attached: bool = False) -> Dict[str, Any]:
+    def _post(self, api_path: str, payload: dict[str, Any], files_attached: bool = False) -> dict[str, Any]:
         # Keep the files_attached argument because StagingInterface._post() had
         # it until Galaxy 22.05.
         url = urljoin(self._user_gi.url, "api/" + api_path)
@@ -186,7 +181,7 @@ class PlanemoStagingInterface(StagingInterface):
     def _attach_file(self, path):
         return attach_file(path)
 
-    def _handle_job(self, job_response: Dict[str, Any]) -> None:
+    def _handle_job(self, job_response: dict[str, Any]) -> None:
         # Track upload jobs for later waiting
         self._upload_jobs.append(job_response)
 
@@ -315,7 +310,7 @@ def _execute(  # noqa C901
         ctx.vlog("Problem with staging in data for Galaxy activities...")
         raise
     if runnable.type in [RunnableType.galaxy_tool, RunnableType.cwl_tool]:
-        response_class: Type[GalaxyBaseRunResponse] = GalaxyToolRunResponse
+        response_class: type[GalaxyBaseRunResponse] = GalaxyToolRunResponse
         tool_id = _verified_tool_id(runnable, user_gi)
         inputs_representation = _inputs_representation(runnable)
         run_tool_payload = dict(
@@ -420,8 +415,8 @@ def invocation_to_run_response(
     start_datetime=None,
     log=None,
     fail_fast=False,
-    timeout: Optional[float] = None,
-    deadline: Optional[float] = None,
+    timeout: float | None = None,
+    deadline: float | None = None,
 ):
     start_datetime = start_datetime or datetime.now()
     invocation_id = invocation["id"]
@@ -472,9 +467,9 @@ def stage_in(
     runnable: Runnable,
     config: "BaseGalaxyConfig",
     job_path: str,
-    deadline: Optional[float] = None,
+    deadline: float | None = None,
     **kwds,
-) -> Tuple[Dict[str, Any], str]:
+) -> tuple[dict[str, Any], str]:
     # only upload objects as files/collections for CWL workflows...
     tool_or_workflow = "tool" if runnable.type != RunnableType.cwl_workflow else "workflow"
     to_posix_lines = runnable.type.is_galaxy_artifact
@@ -483,7 +478,7 @@ def stage_in(
     history_id = _history_id(user_gi, **kwds)
 
     # Create upload progress display context manager (or nullcontext if disabled)
-    progress_context: Union[UploadProgressDisplay, contextlib.nullcontext]
+    progress_context: UploadProgressDisplay | contextlib.nullcontext
     if sys.stdout.isatty():
         progress_context = UploadProgressDisplay(history_id, galaxy_url=user_gi.base_url)
     else:
@@ -577,8 +572,8 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
         user_gi: GalaxyInstance,
         history_id,
         log,
-        start_datetime: Optional[datetime] = None,
-        end_datetime: Optional[datetime] = None,
+        start_datetime: datetime | None = None,
+        end_datetime: datetime | None = None,
         successful: bool = True,
     ) -> None:
         super().__init__(runnable=runnable)
@@ -589,7 +584,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
 
         self._job_info = None
 
-        self._outputs_dict: Dict[str, Optional[str]] = {}
+        self._outputs_dict: dict[str, str | None] = {}
         self._start_datetime = start_datetime
         self._end_datetime = end_datetime
         self._successful = successful
@@ -619,7 +614,7 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
     def outputs_dict(self):
         return self._outputs_dict
 
-    def output_src(self, output: "RunnableOutput", ignore_missing_outputs: Optional[bool] = False) -> Dict[str, str]:
+    def output_src(self, output: "RunnableOutput", ignore_missing_outputs: bool | None = False) -> dict[str, str]:
         return {}
 
     def _get_extra_files(self, dataset_details):
@@ -673,11 +668,11 @@ class GalaxyBaseRunResponse(SuccessfulRunResponse):
 
     def collect_outputs(
         self,
-        output_directory: Optional[str] = None,
-        ignore_missing_output: Optional[bool] = False,
-        output_id: Optional[str] = None,
+        output_directory: str | None = None,
+        ignore_missing_output: bool | None = False,
+        output_id: str | None = None,
     ):
-        outputs_dict: Dict[str, Optional[str]] = {}
+        outputs_dict: dict[str, str | None] = {}
         # TODO: rather than creating a directory just use
         # Galaxy paths if they are available in this
         # configuration.
@@ -862,7 +857,7 @@ class GalaxyToolRunResponse(GalaxyBaseRunResponse):
         output_id = runnable_output.get_id()
         return tool_response_to_output(self.api_run_response, self._history_id, output_id)
 
-    def output_src(self, output, ignore_missing_outputs: Optional[bool] = False):
+    def output_src(self, output, ignore_missing_outputs: bool | None = False):
         outputs = self.api_run_response["outputs"]
         output_collections = self.api_run_response["output_collections"]
         output_id = output.get_id()
@@ -918,7 +913,7 @@ class GalaxyWorkflowRunResponse(GalaxyBaseRunResponse):
         self._ctx.vlog("checking for output in invocation [%s]" % self._invocation)
         return invocation_to_output(self._invocation, self._history_id, output_id)
 
-    def output_src(self, output, ignore_missing_outputs: Optional[bool] = False):
+    def output_src(self, output, ignore_missing_outputs: bool | None = False):
         invocation = self._invocation
         # Use newer workflow outputs API.
 
@@ -1019,12 +1014,12 @@ def _history_id(gi, **kwds) -> str:
 def wait_for_invocation_and_jobs(
     ctx,
     invocation_id: str,
-    history_id: Optional[str],
+    history_id: str | None,
     user_gi: GalaxyInstance,
     polling_backoff: int,
     fail_fast: bool = False,
-    timeout: Optional[float] = None,
-    deadline: Optional[float] = None,
+    timeout: float | None = None,
+    deadline: float | None = None,
 ):
     polling_tracker = PollingTrackerImpl(
         polling_backoff,
@@ -1068,8 +1063,8 @@ def _wait_for_history(ctx, gi, history_id, polling_backoff=0):
 def _wait_for_job(
     gi,
     job_id,
-    timeout: Optional[float] = None,
-    deadline: Optional[float] = None,
+    timeout: float | None = None,
+    deadline: float | None = None,
 ):
     def state_func():
         return gi.jobs.show_job(job_id, full_details=True)
@@ -1085,8 +1080,8 @@ def _wait_for_job(
 def _wait_on_state(
     state_func,
     polling_backoff=0,
-    timeout: Optional[float] = None,
-    deadline: Optional[float] = None,
+    timeout: float | None = None,
+    deadline: float | None = None,
     timeout_message: str = "Timed out while polling Galaxy.",
 ):
     def get_state():
@@ -1096,7 +1091,7 @@ def _wait_on_state(
         if not response:
             # invocation may not have any attached jobs, that's fine
             return "ok"
-        current_states = set(item["state"] for item in response)
+        current_states = {item["state"] for item in response}
         current_non_terminal_states = NON_TERMINAL_JOB_STATES.intersection(current_states)
         # Mix of "error"-ish terminal job, dataset, invocation terminal states, so we can use this for whatever we throw at it
         hierarchical_fail_states = [

@@ -1,9 +1,7 @@
 """Ensure a best-practice BioContainer is registered for a tool."""
 
 from typing import (
-    List,
     NamedTuple,
-    Optional,
     TYPE_CHECKING,
 )
 
@@ -29,8 +27,8 @@ lint_tool_types = ["*"]
 
 
 class BiocontainerCheck(NamedTuple):
-    targets: List["CondaTarget"]
-    name: Optional[str]
+    targets: list["CondaTarget"]
+    name: str | None
 
 
 def _biocontainer_check(tool_source: "ToolSource") -> BiocontainerCheck:
@@ -72,7 +70,7 @@ class BiocontainerValid(Linter):
             )
 
 
-def mulled_container_name(namespace: str, targets: List["CondaTarget"]) -> Optional[str]:
+def mulled_container_name(namespace: str, targets: list["CondaTarget"]) -> str | None:
     name = targets_to_mulled_name(targets=targets, hash_func="v2", namespace=namespace)
     if name:
         return f"quay.io/{namespace}/{name}"

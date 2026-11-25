@@ -1,7 +1,6 @@
 """Module describing the planemo ``rerun`` command."""
 
 from typing import (
-    Tuple,
     TYPE_CHECKING,
 )
 
@@ -48,7 +47,7 @@ if TYPE_CHECKING:
     nargs=-1,
 )
 @command_function
-def cli(ctx: "PlanemoCliContext", rerunnable_ids: Tuple[str], use_cache: bool = True, **kwds) -> None:
+def cli(ctx: "PlanemoCliContext", rerunnable_ids: tuple[str], use_cache: bool = True, **kwds) -> None:
     """
     Planemo command for rerunning failed jobs on an external Galaxy server.
     Supply a list of history, invocation or job IDs, identifying the ID type using the

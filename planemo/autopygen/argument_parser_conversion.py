@@ -12,12 +12,6 @@ import uuid
 from argparse import ArgumentParser
 from typing import (
     Any,
-    Dict,
-    List,
-    Optional,
-    Set,
-    Tuple,
-    Union,
 )
 
 from lxml import etree
@@ -50,7 +44,7 @@ from planemo.autopygen.xml.xml_utils import (
 DEFAULT_XML_INDENT = 4
 
 
-def obtain_and_convert_parser(path: str) -> Optional[DecoyParser]:
+def obtain_and_convert_parser(path: str) -> DecoyParser | None:
     """
     Function parses python source code located at 'path',
     extracts initialized argument parser from the source file and returns it
@@ -73,7 +67,7 @@ def obtain_and_convert_parser(path: str) -> Optional[DecoyParser]:
     return obtain_parser(tree)
 
 
-def obtain_and_convert_parser_from_str(text: str) -> Optional[ArgumentParser]:
+def obtain_and_convert_parser_from_str(text: str) -> ArgumentParser | None:
     """
     Function parses python source code stored in text and
     extracts argument parser
@@ -92,7 +86,7 @@ def obtain_and_convert_parser_from_str(text: str) -> Optional[ArgumentParser]:
     return obtain_parser(tree)
 
 
-def obtain_parser(tree: ast.Module) -> Optional[DecoyParser]:
+def obtain_parser(tree: ast.Module) -> DecoyParser | None:
     try:
         actions, name, known_names = get_parser_init_and_actions(tree)
 
@@ -105,7 +99,7 @@ def obtain_parser(tree: ast.Module) -> Optional[DecoyParser]:
 
     ast.fix_missing_locations(result_module)
     compiled_module = compile(result_module, filename="<parser>", mode="exec")
-    namespace: Dict[Any, Any] = {}
+    namespace: dict[Any, Any] = {}
     try:
         exec(compiled_module, namespace)
     except Exception as e:
@@ -130,12 +124,12 @@ def transform_section_name(section_name: str) -> str:
 
 def generate_xml_from_section(
     section: DecoyParser.Section,
-    data_inputs: Dict[str, str],
-    reserved_names: Set[str],
-    name_map: Dict[str, str],
-    section_map: Dict[str, str],
+    data_inputs: dict[str, str],
+    reserved_names: set[str],
+    name_map: dict[str, str],
+    section_map: dict[str, str],
     dont_wrap_in_section: bool = False,
-) -> Tuple[List[etree._Element], List[Any], Optional[ParamInfo]]:
+) -> tuple[list[etree._Element], list[Any], ParamInfo | None]:
     sub_params = []
     sub_outputs = []
     version_command = None
@@ -187,10 +181,10 @@ def generate_xml_from_section(
 
 def _command_recursion(
     section: DecoyParser.Section,
-    data_inputs: Dict[str, str],
-    reserved_names: Set[str],
-    name_map: Dict[str, str],
-    section_map: Dict[str, str],
+    data_inputs: dict[str, str],
+    reserved_names: set[str],
+    name_map: dict[str, str],
+    section_map: dict[str, str],
     namespace: str,
     depth: int,
 ):
@@ -213,14 +207,14 @@ def _command_recursion(
 
 
 def _sub_parsers_conditionals(
-    parsers: List[DecoyParser],
+    parsers: list[DecoyParser],
     index: int,
-    data_inputs: Dict[str, str],
-    reserved_names: Set[str],
-    name_map: Dict[str, str],
-    section_map: Dict[str, str],
+    data_inputs: dict[str, str],
+    reserved_names: set[str],
+    name_map: dict[str, str],
+    section_map: dict[str, str],
     found_version_comm: bool = False,
-) -> Tuple[List[Any], List[Any], Optional[ParamInfo]]:
+) -> tuple[list[Any], list[Any], ParamInfo | None]:
     result = []
     result_outputs = []
     version_command = None
@@ -250,7 +244,7 @@ def _sub_parsers_conditionals(
     return [result_inputs], result_outputs, version_command
 
 
-def xml_to_string(nodes: List[etree._Element], indent: int):
+def xml_to_string(nodes: list[etree._Element], indent: int):
     def set_indent_and_convert(node: etree._Element) -> str:
         etree.indent(node, " " * DEFAULT_XML_INDENT)
         return etree.tostring(node, encoding="unicode", pretty_print=True)
@@ -261,12 +255,12 @@ def xml_to_string(nodes: List[etree._Element], indent: int):
 
 def xml_from_decoy(
     parser: DecoyParser,
-    data_inputs: Dict[str, str],
-    reserved_names: Set[str],
-    name_map: Dict[str, str],
-    section_map: Dict[str, str],
+    data_inputs: dict[str, str],
+    reserved_names: set[str],
+    name_map: dict[str, str],
+    section_map: dict[str, str],
     dont_wrap_default_section: bool = True,
-) -> Tuple[List[Any], List[Any], Optional[ParamInfo]]:
+) -> tuple[list[Any], list[Any], ParamInfo | None]:
     input_params, outputs_list, version_command = generate_xml_from_section(
         parser.default_section, data_inputs, reserved_names, name_map, section_map, dont_wrap_default_section
     )
@@ -289,10 +283,10 @@ def xml_from_decoy(
 
 def command_from_decoy(
     parser: DecoyParser,
-    data_inputs: Dict[str, str],
-    reserved_names: Set[str],
-    name_map: Dict[str, str],
-    section_map: Dict[str, str],
+    data_inputs: dict[str, str],
+    reserved_names: set[str],
+    name_map: dict[str, str],
+    section_map: dict[str, str],
     depth: int = 0,
     starting_namespace: str = "",
     skip_default_namespace: bool = False,
@@ -355,10 +349,10 @@ def command_from_decoy(
 
 def obtain_param_info(
     action: DecoyParser.Action,
-    data_inputs: Dict[str, str],
-    reserved_names: Set[str],
-    name_map: Dict[str, str],
-    section_map: Dict[str, str],
+    data_inputs: dict[str, str],
+    reserved_names: set[str],
+    name_map: dict[str, str],
+    section_map: dict[str, str],
 ) -> ParamInfo:
     name = action.argument.lstrip("-").replace("-", "_")
     argument = action.argument
@@ -400,7 +394,7 @@ def obtain_param_info(
     )
 
 
-def update_name_map(name: str, name_map: Dict[str, str], reserved_names: Set[str]):
+def update_name_map(name: str, name_map: dict[str, str], reserved_names: set[str]):
     """
     Updates names that are equal to one of the values in 'reserved_names'
     Doesn't change names already present in the mapping
@@ -422,7 +416,7 @@ def update_name_map(name: str, name_map: Dict[str, str], reserved_names: Set[str
     name_map[old_name] = name
 
 
-def _determine_param_type(action: DecoyParser.Action, nargs: Union[int, float]):
+def _determine_param_type(action: DecoyParser.Action, nargs: int | float):
     param_flags = ParamTypeFlags()
     # TODO add output
     param_flags.is_selection = action.kwargs.get("choices", None) is not None
@@ -436,7 +430,7 @@ def _determine_param_type(action: DecoyParser.Action, nargs: Union[int, float]):
 
 
 def _determine_type(
-    action: DecoyParser.Action, data_inputs: Dict[str, str], name: str, type_, param_type_flags: ParamTypeFlags
+    action: DecoyParser.Action, data_inputs: dict[str, str], name: str, type_, param_type_flags: ParamTypeFlags
 ) -> ParamDataType:
     if action.kwargs.get("choices", []):
         return ParamDataType.SELECT
@@ -456,7 +450,7 @@ def _determine_type(
     return ParamDataType.UNDEFINED
 
 
-def _determine_nargs(nargs: Union[str, int, None]) -> Union[float, int]:
+def _determine_nargs(nargs: str | int | None) -> float | int:
     if isinstance(nargs, str):
         if nargs == "?":
             return 1
@@ -467,9 +461,9 @@ def _determine_nargs(nargs: Union[str, int, None]) -> Union[float, int]:
 
 
 def _determine_custom_attributes(
-    param_type: ParamTypeFlags, type_: ParamDataType, nargs: Union[float, int]
-) -> Dict[str, str]:
-    flags: Dict[str, str] = dict()
+    param_type: ParamTypeFlags, type_: ParamDataType, nargs: float | int
+) -> dict[str, str]:
+    flags: dict[str, str] = dict()
 
     if type_ == ParamDataType.DATA and nargs > 1:
         flags["multiple"] = "true"

@@ -92,10 +92,8 @@ def _trs_id_to_job_filename(trs_id: str) -> str:
     """
     # Strip common prefixes
     identifier = trs_id
-    if identifier.startswith(DOCKSTORE_TRS_BASE):
-        identifier = identifier[len(DOCKSTORE_TRS_BASE) :]
-    if identifier.startswith(TRS_WORKFLOWS_PREFIX):
-        identifier = identifier[len(TRS_WORKFLOWS_PREFIX) :]
+    identifier = identifier.removeprefix(DOCKSTORE_TRS_BASE)
+    identifier = identifier.removeprefix(TRS_WORKFLOWS_PREFIX)
     if identifier.startswith("#"):
         identifier = identifier[1:]
 

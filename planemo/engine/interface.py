@@ -4,12 +4,8 @@ import abc
 import json
 import os
 import tempfile
+from collections.abc import Callable
 from functools import partial
-from typing import (
-    Callable,
-    List,
-    Optional,
-)
 
 import click
 
@@ -41,7 +37,7 @@ class Engine(metaclass=abc.ABCMeta):
 class BaseEngine(Engine):
     """Base class providing context and keywords for Engine implementations."""
 
-    handled_runnable_types: List[RunnableType] = []
+    handled_runnable_types: list[RunnableType] = []
 
     def __init__(self, ctx, **kwds):
         """Store context and kwds."""
@@ -55,7 +51,7 @@ class BaseEngine(Engine):
     def cleanup(self):
         """Default no-op cleanup method."""
 
-    def run(self, runnables, job_paths, output_collectors: Optional[List[Callable]] = None):
+    def run(self, runnables, job_paths, output_collectors: list[Callable] | None = None):
         """Run a job using a compatible artifact (workflow or tool)."""
         self._check_can_run_all(runnables)
         run_responses = self._run(runnables, job_paths, output_collectors)
@@ -66,8 +62,8 @@ class BaseEngine(Engine):
         self,
         runnables,
         job_path,
-        output_collectors: Optional[List[Callable]] = None,
-        test_timeout: Optional[int] = None,
+        output_collectors: list[Callable] | None = None,
+        test_timeout: int | None = None,
     ):
         """Run a job using a compatible artifact (workflow or tool) wrapped as a runnable."""
 

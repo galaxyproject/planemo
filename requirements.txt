@@ -21,5 +21,4 @@ pyyaml
 rich>=12.3.0
 ruamel.yaml
 virtualenv
-stdlib-list; python_version < '3.10'
 tabulate

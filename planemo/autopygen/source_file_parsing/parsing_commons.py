@@ -6,8 +6,6 @@ import abc
 import ast
 from typing import (
     Any,
-    List,
-    Tuple,
 )
 
 
@@ -19,7 +17,7 @@ class CustomAST(ast.stmt):
 
 class CustomVisitor(ast.NodeVisitor, abc.ABC):
     @abc.abstractmethod
-    def report_findings(self) -> Tuple:
+    def report_findings(self) -> tuple:
         pass
 
     def visit_and_report(self, source: ast.Module):
@@ -28,7 +26,7 @@ class CustomVisitor(ast.NodeVisitor, abc.ABC):
 
 
 class Discovery(CustomVisitor, abc.ABC):
-    def __init__(self, actions: List[ast.stmt]):
+    def __init__(self, actions: list[ast.stmt]):
         self.actions = actions
 
 
@@ -39,7 +37,7 @@ def add_parents(tree):
 
 
 def create_module_tree_from_path(path: str) -> ast.Module:
-    with open(path, mode="r", encoding="utf-8") as file:
+    with open(path, encoding="utf-8") as file:
         tree = ast.parse(file.read())
         add_parents(tree)
         return tree

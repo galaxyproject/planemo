@@ -4,7 +4,6 @@ import os
 import subprocess
 import time
 from tempfile import mkdtemp
-from typing import Optional
 
 from galaxy.util.commands import shell_process
 
@@ -89,7 +88,7 @@ class SingularityPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource
         "singularity_sudo_cmd",
     )
 
-    def __init__(self, profile_directory: Optional[str] = None, **kwds):
+    def __init__(self, profile_directory: str | None = None, **kwds):
         """Construct a postgres database source from planemo configuration."""
 
         singularity_cmd = kwds.get("singularity_cmd") or "singularity"
@@ -218,7 +217,7 @@ class SingularityPostgresDatabaseSource(ExecutesPostgresSqlMixin, DatabaseSource
 
     def sqlalchemy_url(self, identifier):
         """Return URL for PostgreSQL connection via Unix socket."""
-        return "postgresql://%s:%s@/%s?host=%s" % (
+        return "postgresql://{}:{}@/{}?host={}".format(
             self.database_user,
             self.database_password,
             identifier,

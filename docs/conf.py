@@ -55,6 +55,12 @@ import planemo as project_module
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions += ["sphinx.ext.autodoc", "sphinx.ext.viewcode"]
 
+# Sphinx 9's new autodoc breaks pydantic models with extra="allow"
+# (https://github.com/sphinx-doc/sphinx/issues/14337); drop once that is fixed.
+autodoc_use_legacy_class_based = True
+# Sphinx 9 resolves ``type`` in inherited click signatures to planemo attributes named ``type``
+suppress_warnings = ["ref.python"]
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 

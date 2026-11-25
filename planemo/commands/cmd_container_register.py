@@ -2,10 +2,7 @@
 
 import os
 import string
-from typing import (
-    Iterable,
-    List,
-)
+from collections.abc import Iterable
 
 import click
 from galaxy.tool_util.deps.container_resolvers.mulled import targets_to_mulled_name
@@ -247,7 +244,7 @@ def to_target_str(targets: Iterable[CondaTarget]) -> str:
     return ",".join(target_strings)
 
 
-def open_prs(ctx: "PlanemoCliContext") -> List:
+def open_prs(ctx: "PlanemoCliContext") -> list:
     repo = get_repository_object(ctx, REGISTRY_REPOSITORY)
-    prs = [pr for pr in repo.get_pulls()]
+    prs = [*repo.get_pulls()]
     return prs

@@ -18,7 +18,7 @@ Open a synchronized Galaxy workflow editor.
 
       --galaxy_root DIRECTORY         Root of development galaxy directory to
                                       execute command with.
-      --galaxy_python_version [3|3.8|3.9|3.10|3.11|3.12]
+      --galaxy_python_version [3|3.10|3.11|3.12|3.13|3.14]
                                       Python version to start Galaxy under
       --extra_tools PATH              Extra tool sources to include in Galaxy's tool
                                       panel (file or directory). These will not be
@@ -57,9 +57,15 @@ Open a synchronized Galaxy workflow editor.
       --docker_run_extra_arguments TEXT
                                       Extra arguments to pass to docker run.
       --mulled_containers, --biocontainers
-                                      Test tools against mulled containers (forces
-                                      --docker). Disables conda resolution unless
-                                      any conda option has been set explicitly.
+                                      Test tools against mulled containers. Requires
+                                      --docker or --singularity; --docker is enabled
+                                      automatically if neither is given. Disables
+                                      conda resolution unless any conda option has
+                                      been set explicitly.
+      --container_resolvers_config_file FILE
+                                      Path to a Galaxy container resolvers
+                                      configuration file to use instead of Galaxy's
+                                      default resolvers.
       --galaxy_startup_timeout INTEGER RANGE
                                       Wait for galaxy to start before assuming
                                       Galaxy did not start.  [x>=1]
@@ -89,6 +95,9 @@ Open a synchronized Galaxy workflow editor.
                                       quay.io/bgruening/galaxy.
       --docker_extra_volume PATH      Extra path to mount if --engine docker or
                                       `--biocontainers` or `--docker`.
+      --singularity_extra_volume PATH
+                                      Extra path to mount if `--biocontainers` or
+                                      `--singularity`.
       --test_data DIRECTORY           test-data directory to for specified tool(s).
       --tool_data_table PATH          tool_data_table_conf.xml file to for specified
                                       tool(s).
@@ -158,6 +167,8 @@ Open a synchronized Galaxy workflow editor.
       --postgres-storage-location, --postgres_storage_location DIRECTORY
                                       Storage path for PostgreSQL data managed
                                       through Singularity.
+      --singularity / --no_singularity
+                                      Run Galaxy tools in Singularity if enabled.
       --singularity_cmd TEXT          Command used to execute singularity (defaults
                                       to 'singularity').
       --singularity_sudo / --no_singularity_sudo
@@ -219,5 +230,14 @@ Open a synchronized Galaxy workflow editor.
                                       and so this can disabled by calling planemo
                                       with --no_shed_install.
       --disable_gxits                 Configure Galaxy to disable interactive tools.
+      --infrastructure_host TEXT      Hostname to advertise for Galaxy
+                                      infrastructure and interactive tool URLs. When
+                                      not set this defaults to 'localhost' when
+                                      Galaxy is bound to 127.0.0.1 or 0.0.0.0, and
+                                      to the bind host otherwise. Set this to a
+                                      hostname or IP that is reachable by both the
+                                      browser and interactive tool containers when
+                                      serving from a non-local bind address (e.g.
+                                      --host 0.0.0.0 on a remote machine).
       --help                          Show this message and exit.
-
+    

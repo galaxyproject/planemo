@@ -2,9 +2,7 @@
 
 from typing import (
     Any,
-    List,
     NamedTuple,
-    Optional,
     TYPE_CHECKING,
 )
 
@@ -32,12 +30,12 @@ lint_tool_types = ["*"]
 
 class CondaCheck(NamedTuple):
     target: "CondaTarget"
-    best_hit: Optional[Any]
-    exact: Optional[bool]
+    best_hit: Any | None
+    exact: bool | None
 
 
-def _conda_checks(tool_source: "ToolSource") -> List[CondaCheck]:
-    def calculate() -> List[CondaCheck]:
+def _conda_checks(tool_source: "ToolSource") -> list[CondaCheck]:
+    def calculate() -> list[CondaCheck]:
         checks = []
         for conda_target in tool_source_conda_targets(tool_source):
             best_hit, exact = best_practice_search(conda_target)

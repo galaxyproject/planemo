@@ -1,7 +1,7 @@
 """Module describing the planemo ``autoupdate`` command."""
 
 import json
-from typing import Callable
+from collections.abc import Callable
 
 import click
 import yaml

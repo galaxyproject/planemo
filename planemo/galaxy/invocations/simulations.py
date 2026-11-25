@@ -2,8 +2,6 @@
 
 from collections import deque
 from typing import (
-    Dict,
-    List,
     Optional,
 )
 from uuid import uuid4
@@ -42,12 +40,12 @@ class StateWithDuration(Ticks):
 
 
 class HasState(Ticks):
-    final: Optional[str]
+    final: str | None
 
-    def __init__(self, after: int, states: List[StateWithDuration]):
+    def __init__(self, after: int, states: list[StateWithDuration]):
         self.after = after or 0
         self.states = deque(states)
-        self.final_state: Optional[str] = None
+        self.final_state: str | None = None
 
     def tick_when_active(self) -> None:
         if self.final_state is not None:
@@ -74,10 +72,10 @@ Job = HasState
 
 class InvocationStep(HasState):
     invocation: Optional["Invocation"]
-    jobs: Optional[List[Job]]
+    jobs: list[Job] | None
 
     def __init__(
-        self, jobs: List[Job], invocation: Optional["Invocation"], after: int, states: List[StateWithDuration]
+        self, jobs: list[Job], invocation: Optional["Invocation"], after: int, states: list[StateWithDuration]
     ):
         super().__init__(after, states)
         self.id = "step_id"
@@ -93,12 +91,12 @@ class InvocationStep(HasState):
             self.invocation.tick()
 
     @property
-    def active_jobs(self) -> List[Job]:
+    def active_jobs(self) -> list[Job]:
         return [j for j in (self.jobs or []) if j.active]
 
 
 class Invocation(HasState):
-    def __init__(self, steps: List[InvocationStep], after: int, states: List[StateWithDuration]):
+    def __init__(self, steps: list[InvocationStep], after: int, states: list[StateWithDuration]):
         self.id = str(uuid4())[:8]
         self.steps = steps
         super().__init__(after, states)
@@ -109,7 +107,7 @@ class Invocation(HasState):
             step.tick()
 
     @property
-    def active_steps(self) -> List[InvocationStep]:
+    def active_steps(self) -> list[InvocationStep]:
         return [s for s in self.steps if s.active]
 
     def get_invocation_by_id(self, invocation_id: str) -> Optional["Invocation"]:
@@ -133,7 +131,7 @@ class Invocation(HasState):
         return self.steps[index].invocation
 
     def get_api_invocation(self) -> InvocationResponse:
-        steps: List[InvocationStepResponse] = []
+        steps: list[InvocationStepResponse] = []
         for step in self.active_steps:
             api_step: InvocationStepResponse = {
                 "id": step.id,
@@ -157,7 +155,7 @@ class Invocation(HasState):
                     "state": job.state,
                 }
                 job_states.append(api_job)
-        by_state: Dict[str, int] = {}
+        by_state: dict[str, int] = {}
         for job_state in job_states:
             state = job_state["state"]
             if state not in by_state:
@@ -209,7 +207,7 @@ def parse_after_from(simulation_object: dict) -> int:
     return simulation_object.get("after", 0)
 
 
-def parse_states_from(simulation_object: dict) -> List[StateWithDuration]:
+def parse_states_from(simulation_object: dict) -> list[StateWithDuration]:
     if "states" in simulation_object:
         states = simulation_object["states"]
         states_with_duration = []
