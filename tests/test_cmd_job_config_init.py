@@ -56,6 +56,17 @@ class CmdJobConfigInitTestCase(CliTestCase):
             assert config["execution"]["default"] == "tpv"
             assert config["execution"]["environments"]["tpv"]["runner"] == "dynamic_tpv"
 
+    def test_job_config_init_tpv_config_file(self):
+        with self._isolate_with_test_data("wf_repos/from_format2/0_basic_native"):
+            with open("user.tpv.yml", "w") as fh:
+                fh.write("tools:\n  tool1:\n    params:\n      docker_run_extra_arguments: --net none\n")
+            init_cmd = ["job_config_init", "--docker", "--tpv_config_file", "user.tpv.yml"]
+            self._check_exit_code(init_cmd)
+            with open("job_conf.yml") as fh:
+                config = yaml.safe_load(fh)
+            assert config["execution"]["default"] == "tpv"
+            assert config["execution"]["environments"]["tpv"]["tpv_configs"][-1] == os.path.abspath("user.tpv.yml")
+
     def test_job_config_init_24_2(self):
         with self._isolate_with_test_data("wf_repos/from_format2/0_basic_native"):
             init_cmd = ["job_config_init", "--tpv", "--runner", "drmaa", "--galaxy_version", "24.2"]

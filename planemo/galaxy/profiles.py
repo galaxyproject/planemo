@@ -9,16 +9,13 @@ import os
 import shutil
 
 import click
-from gxjobconfinit import (
-    build_job_config,
-    ConfigArgs,
-)
 
 from planemo.database import (
     database_source_class,
     database_source_context,
 )
 from planemo.galaxy.api import test_credentials_valid
+from planemo.galaxy.job_conf import write_job_config
 from .config import DATABASE_LOCATION_TEMPLATE
 
 PROFILE_OPTIONS_JSON_NAME = "planemo_profile_options.json"
@@ -255,10 +252,7 @@ def initialize_job_config(ctx, profile_name, **kwds):
     if os.path.exists(job_config_path):
         raise click.ClickException(f"File '{job_config_path}' already exists, exiting.")
 
-    init_config = ConfigArgs.from_dict(**kwds)
-    job_config = build_job_config(init_config)
-    with open(job_config_path, "w") as f:
-        f.write(job_config)
+    write_job_config(job_config_path, kwds)
 
     config, profile_config_path = _load_profile_to_json(ctx, profile_name)
     config["job_config_file"] = os.path.abspath(job_config_path)
