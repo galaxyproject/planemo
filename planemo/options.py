@@ -865,6 +865,24 @@ def simultaneous_upload_option():
     )
 
 
+def test_data_mirror_option():
+    return planemo_option(
+        "--test_data_mirror",
+        multiple=True,
+        use_env_var=True,
+        help=(
+            "Base URL of a mirror that serves remote test data by content hash, at "
+            "<mirror>/<md5|sha1|sha256|sha512>/<first 2 hex chars of hash>/<hash>, e.g. "
+            "https://depot.galaxyproject.org/iwc-test-data/. Inputs with a remote location "
+            "and declared hashes are fetched from the first mirror that has them, and from "
+            "their original location otherwise; Galaxy verifies the hashes and must be able "
+            "to reach the mirror. Applies to inputs staged from job files (workflow tests and "
+            "planemo run), not to Galaxy tool tests. May be given more than once; the "
+            "PLANEMO_TEST_DATA_MIRROR environment variable takes space-separated URLs."
+        ),
+    )
+
+
 def check_uploads_ok_option():
     return planemo_option(
         "--check_uploads_ok/--no_check_uploads_ok",
@@ -1481,6 +1499,7 @@ def galaxy_config_options():
         conda_auto_init_option(),
         simultaneous_upload_option(),
         check_uploads_ok_option(),
+        test_data_mirror_option(),
         # Profile options...
         profile_option(),
         profile_database_options(),
