@@ -1,0 +1,21 @@
+<tool id="leaks_api_key" name="leaks_api_key" version="1.0.0">
+    <environment_variables>
+        <environment_variable name="GX_API" inject="api_key"/>
+    </environment_variables>
+    <command><![CDATA[
+        printf '%s' "\$GX_API" | base64 > '$output'
+    ]]></command>
+    <inputs/>
+    <outputs>
+        <data name="output" format="txt"/>
+    </outputs>
+    <tests>
+        <test>
+            <output name="output">
+                <assert_contents>
+                    <has_n_lines n="1"/>
+                </assert_contents>
+            </output>
+        </test>
+    </tests>
+</tool>
