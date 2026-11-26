@@ -31,14 +31,32 @@ the project's goals, especially those that require a high level of trust.
 
 The BDFN will add committers as he or she see fits, usually after a few
 successful pull requests. Committers may commit directly or merge pull
-requests at their discretion, but everyone (including the BDFN) should open
-pull requests for larger changes.
+requests, including their own, at their discretion. Everyone (including the
+BDFN) should open pull requests for larger changes.
 
 In order to encourage a shared sense of ownership and openness, any committer
 may decide at any time to request a open governance model for the project be
 established and the BDFN must replace this informal policy with a more formal
 one and work with the project committers to establish a consensus on these
 procedures.
+
+Merging pull requests
+=====================
+
+Committers may merge their own pull requests without another committer's
+approval or a fixed waiting period. Before merging, check that lint and the
+tests covering the change pass, review the CI results, and resolve outstanding
+review concerns. Investigate relevant CI failures before merging.
+
+Ask another committer for review when a change has broad impact, changes
+established behavior in a potentially disruptive way, or would benefit from
+expertise you do not have. When you request review, wait for that feedback
+before merging. If another committer asks for discussion or changes, reach
+agreement before merging.
+
+Pull requests from contributors without commit access need a committer to
+review and merge them. Committers remain responsible for the changes they
+merge and for addressing regressions afterward.
 
 Committers
 ==============================
