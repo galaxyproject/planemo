@@ -1,0 +1,31 @@
+<tool id="security_clean_tool" name="Security Clean Tool Fixture" version="1.0">
+    <description>fixture for the planemo security linter</description>
+    <command><![CDATA[
+cp '$input1' '$output1';
+ln -s '$input1' 'out/$( re.sub(r'[^\w.-]', '_', $input1.element_identifier) )';
+echo '$textparam' '$( re.sub('[^\w.-]', '_', $collection1.name) )' '$choice';
+    ]]></command>
+    <inputs>
+        <param name="input1" type="data" format="txt" label="Input dataset"/>
+        <param name="collection1" type="data_collection" collection_type="list" optional="true" label="List collection"/>
+        <param name="textparam" type="text" label="Quoted text"/>
+        <param name="choice" type="select" label="Choice">
+            <option value="a">A</option>
+            <option value="b">B</option>
+        </param>
+    </inputs>
+    <outputs>
+        <data name="output1" format="txt"/>
+    </outputs>
+    <tests>
+        <test expect_failure="true">
+            <param name="input1" value="1.bed"/>
+        </test>
+    </tests>
+    <help>
+        Fixture tool that the security linter must stay quiet about.
+    </help>
+    <citations>
+        <citation type="doi">10.5072/planemo-fixture</citation>
+    </citations>
+</tool>

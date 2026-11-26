@@ -50,5 +50,7 @@ help text for mentioned URLs and checks those.
                                       Check best practice BioContainer namespaces
                                       for a container definition applicable for this
                                       tool.
+      --security                      Check tools for unsafe uses of user-controlled
+                                      values in commands (informational).
       --help                          Show this message and exit.
     

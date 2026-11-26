@@ -1,0 +1,26 @@
+<tool id="security_unquoted_param" name="Security Unquoted Param Fixture" version="1.0">
+    <description>fixture for the planemo security linter</description>
+    <command><![CDATA[
+--text $textparam --checked $checked_text > '$output1';
+    ]]></command>
+    <inputs>
+        <param name="textparam" type="text" label="Unquoted text"/>
+        <param name="checked_text" type="text" label="Restricted text">
+            <validator type="regex">^[A-Za-z0-9_-]+$</validator>
+        </param>
+    </inputs>
+    <outputs>
+        <data name="output1" format="txt"/>
+    </outputs>
+    <tests>
+        <test expect_failure="true">
+            <param name="textparam" value="a"/>
+        </test>
+    </tests>
+    <help>
+        Fixture tool exercising the unquoted text parameter finding for the security linter.
+    </help>
+    <citations>
+        <citation type="doi">10.5072/planemo-fixture</citation>
+    </citations>
+</tool>
