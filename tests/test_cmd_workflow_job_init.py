@@ -192,3 +192,15 @@ class CmdWorkflowJobInitTestCase(CliTestCase):
                 content = stream.read()
             assert "doc: First line of docs. Second line of docs." in content
             assert "doc: ['First line of docs." not in content
+
+    def test_untyped_input(self):
+        """A format2 input without a type is a data input."""
+        with self._isolate_with_test_data("") as f:
+            init_cmd = ["workflow_job_init", "wf_untyped_input.gxwf.yml"]
+            self._check_exit_code(init_cmd)
+            job_path = os.path.join(f, "wf_untyped_input.gxwf_job.yml")
+            with open(job_path) as stream:
+                content = stream.read()
+            assert "# type: data" in content
+            job = yaml.safe_load(content)
+            assert job == {"the_input": {"class": "File", "path": "todo_test_data_path.ext"}}

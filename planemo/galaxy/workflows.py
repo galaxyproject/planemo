@@ -751,6 +751,11 @@ def input_label(input_step):
     return step_id
 
 
+def normalized_input_type(input_step):
+    """Get the type of a step returned from inputs_normalized; untyped inputs are data."""
+    return input_step.get("type") or "data"
+
+
 def output_labels(workflow_path):
     outputs = outputs_normalized(workflow_path=workflow_path)
     return [o["id"] for o in outputs]
@@ -781,7 +786,7 @@ def job_template(workflow_path, **kwds):
     template = {}
     for required_input_step in required_input_steps(workflow_path):
         i_label = input_label(required_input_step)
-        input_type = required_input_step["type"]
+        input_type = normalized_input_type(required_input_step)
         if input_type == "data":
             template[i_label] = {
                 "class": "File",
@@ -869,7 +874,7 @@ def _build_template_and_metadata_from_inputs(
     metadata: dict[str, Any] = {}
     for input_step in all_inputs:
         i_label = input_label(input_step)
-        input_type = input_step["type"]
+        input_type = normalized_input_type(input_step)
         input_doc = input_step.get("doc", "")
         is_optional = input_step.get("optional", False)
         default_value = input_step.get("default")
