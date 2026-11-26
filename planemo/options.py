@@ -2047,6 +2047,74 @@ def test_options():
     return _compose(paste_test_data_paths_option(), test_output_options(), fail_fast_option())
 
 
+def interactive_test_options():
+    """Options for the ``test_interactive`` command (report outputs + GxIT specifics)."""
+    return _compose(
+        test_report_options(),
+        planemo_option(
+            "--test_output_json",
+            type=click.Path(file_okay=True, resolve_path=True),
+            use_global_config=True,
+            help=("Output test report (planemo json) defaults to tool_test_output.json."),
+            default="tool_test_output.json",
+        ),
+        planemo_option(
+            "--summary",
+            type=click.Choice(["none", "minimal", "compact"]),
+            default="minimal",
+            help=(
+                "Summary style printed to planemo's standard output (see "
+                "output reports for more complete summary). Set to 'none' "
+                "to disable completely."
+            ),
+        ),
+        planemo_option(
+            "--expect_content",
+            type=click.STRING,
+            default=None,
+            help=(
+                "Expected content served by the (first) entry point. When set, "
+                "the served content must match this exactly for the test to pass. "
+                "When omitted, the test only checks that the entry point becomes "
+                "active and responds."
+            ),
+        ),
+        planemo_option(
+            "--inputs",
+            type=click.STRING,
+            default=None,
+            help=(
+                "JSON object of tool inputs to run the interactive tool with "
+                '(e.g. \'{"param": "value"}\'). Values here override those from '
+                "--test_index. Defaults to no inputs."
+            ),
+        ),
+        planemo_option(
+            "--test_index",
+            type=int,
+            default=None,
+            help=(
+                "Run the interactive tool with the inputs of the referenced embedded "
+                "test case (counting starts at 1). Useful for interactive tools that "
+                "require parameters: the test case's <param> values are used as the "
+                "tool inputs so the tool can actually start."
+            ),
+        ),
+        planemo_option(
+            "--entry_point_timeout",
+            type=int,
+            default=120,
+            help="Seconds to wait for the interactive tool's entry point(s) to become active.",
+        ),
+        planemo_option(
+            "--content_timeout",
+            type=int,
+            default=30,
+            help="Seconds to wait for content to be served through the GxIT proxy.",
+        ),
+    )
+
+
 def _compose(*functions):
     def compose2(f, g):
         return lambda x: f(g(x))
