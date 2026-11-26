@@ -25,13 +25,18 @@ def check_output(runnable, output_properties, test_properties, **kwds):
 
 
 def for_collections(test_properties):
-    return "element_tests" in test_properties
+    return "element_tests" in test_properties or test_properties.get("class") == "Collection"
 
 
 def _check_output_collection(runnable, output_properties, test_properties, **kwds):
     data_collection = output_properties
 
-    output_def = TestCollectionOutputDef.from_dict(test_properties)
+    output_def = TestCollectionOutputDef.from_yaml_test_format(test_properties)
+
+    required_keys = ("collection_type", "elements") if output_def.collection_type else ("elements",)
+    for key in required_keys:
+        if key not in data_collection:
+            return [f"Output '{output_def.name}' is expected to be a collection but has no '{key}' (is it a dataset?)."]
 
     def verify_dataset(element, element_attrib, element_outfile):
         if element_outfile:
