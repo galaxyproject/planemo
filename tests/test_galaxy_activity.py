@@ -4,11 +4,14 @@ import os
 from unittest import mock
 
 import pytest
+import yaml
+from gxformat2.converter import python_to_workflow
 
 from planemo.galaxy.activity import (
     _execute,
     GalaxyToolRunResponse,
     INFORMAL_PARAMETER_SENTINEL,
+    stage_in,
 )
 from planemo.runnable import (
     Runnable,
@@ -22,6 +25,12 @@ from .test_utils import (
 
 TOOL_RUNNABLE = Runnable(os.path.join(PROJECT_TEMPLATES_DIR, "demo", "cat.xml"), RunnableType.galaxy_tool)
 WORKFLOW_RUNNABLE = Runnable(os.path.join(TEST_DATA_DIR, "wf2.ga"), RunnableType.galaxy_workflow)
+MULTIPLE_PARAM_WORKFLOW_RUNNABLE = Runnable(
+    os.path.join(TEST_DATA_DIR, "wf_multiple_param_inputs.gxwf.yml"), RunnableType.galaxy_workflow
+)
+COLOR_PARAM_WORKFLOW_RUNNABLE = Runnable(
+    os.path.join(TEST_DATA_DIR, "wf_color_param_input.ga"), RunnableType.galaxy_workflow
+)
 
 
 class ExecutionHalted(Exception):
@@ -91,6 +100,110 @@ def test_execute_tool_no_wait_returns_submission_response():
     assert response.structured_data()["data"]["status"] == "success"
     wait_for_job.assert_not_called()
     config.gi.jobs.show_job.assert_not_called()
+
+
+def _staging_config():
+    """A config whose Galaxy answers dataset uploads and collection creation."""
+
+    def make_post_request(url, payload, files_attached=False):
+        if url.endswith("/tools/fetch"):
+            return {"outputs": [{"id": "dataset1", "src": "hda"}], "jobs": [{"id": "job1"}]}
+        elif url.endswith("/dataset_collections"):
+            return {"id": "collection1"}
+        raise AssertionError(f"Unexpected POST to {url}")
+
+    config = mock.MagicMock()
+    config.version_major = "25.0"
+    config.use_path_paste = True
+    config.user_gi.url = "http://localhost:8080/api"
+    config.user_gi.make_post_request.side_effect = make_post_request
+    return config
+
+
+def _write_multiple_param_job(tmp_path):
+    (tmp_path / "a.txt").write_text("a\n")
+    job_path = tmp_path / "job.yml"
+    job_path.write_text(
+        yaml.safe_dump(
+            {
+                "text_list": ["curated_consensus", "--ex2"],
+                "int_list": [1, 2],
+                "data_list": [{"class": "File", "path": "a.txt"}],
+            }
+        )
+    )
+    return str(job_path)
+
+
+def _stage_in(runnable, config, job_path):
+    with mock.patch("planemo.galaxy.activity._wait_for_job"):
+        return stage_in(
+            create_test_context(), runnable, config, job_path, history_id="history1", check_uploads_ok=False
+        )
+
+
+EXPECTED_MULTIPLE_PARAM_JOB_DICT = {
+    "text_list": ["curated_consensus", "--ex2"],
+    "int_list": [1, 2],
+    # a list given to a data input is still uploaded as a list collection
+    "data_list": {"src": "hdca", "id": "collection1"},
+}
+
+
+def test_stage_in_passes_lists_to_multiple_value_workflow_parameter_inputs(tmp_path):
+    job_path = _write_multiple_param_job(tmp_path)
+    job_dict, history_id = _stage_in(MULTIPLE_PARAM_WORKFLOW_RUNNABLE, _staging_config(), job_path)
+    assert history_id == "history1"
+    assert job_dict == EXPECTED_MULTIPLE_PARAM_JOB_DICT
+
+
+@pytest.mark.parametrize(
+    "uri, instance",
+    [
+        ("gxid://workflows/workflow1", False),
+        ("gxid://workflows/workflow1?runnable_path=/does/not/exist.gxwf.yml", False),
+        ("gxid://workflow-instance/workflow1", True),
+    ],
+)
+def test_stage_in_passes_lists_to_multiple_value_parameter_inputs_of_remote_workflow(tmp_path, uri, instance):
+    """A remote workflow's inputs are read from Galaxy, its runnable_path only locates tests."""
+    job_path = _write_multiple_param_job(tmp_path)
+    with open(MULTIPLE_PARAM_WORKFLOW_RUNNABLE.path) as f:
+        workflow = python_to_workflow(yaml.safe_load(f), workflow_directory=TEST_DATA_DIR)
+
+    def download_workflow(path, params):
+        assert (path, params) == ("workflow1/download", {"instance": instance})
+        return workflow
+
+    config = _staging_config()
+    config.workflow_id_for_runnable.return_value = "workflow1"
+    config.user_gi.workflows._get.side_effect = download_workflow
+    job_dict, _ = _stage_in(Runnable(uri, RunnableType.galaxy_workflow), config, job_path)
+    assert job_dict == EXPECTED_MULTIPLE_PARAM_JOB_DICT
+
+
+@pytest.mark.parametrize(
+    "job, expected",
+    [
+        ({"color_param": "#ff0000"}, {"color_param": "#ff0000"}),
+        ({"data_list": [{"class": "File", "path": "a.txt"}]}, {"data_list": {"src": "hdca", "id": "collection1"}}),
+    ],
+)
+def test_stage_in_color_workflow_without_parameter_lists(tmp_path, job, expected):
+    (tmp_path / "a.txt").write_text("a\n")
+    job_path = tmp_path / "job.yml"
+    job_path.write_text(yaml.safe_dump(job))
+    job_dict, _ = _stage_in(COLOR_PARAM_WORKFLOW_RUNNABLE, _staging_config(), str(job_path))
+    assert job_dict == expected
+
+
+def test_stage_in_passes_parameter_lists_next_to_color_and_directory_uri_inputs(tmp_path):
+    (tmp_path / "a.txt").write_text("a\n")
+    job_path = tmp_path / "job.yml"
+    params = {"text_list": ["a", "b"], "color_param": "#ff0000", "directory_uri_param": "gxfiles://dropbox/out"}
+    job_path.write_text(yaml.safe_dump({**params, "data_list": [{"class": "File", "path": "a.txt"}]}))
+    job_dict, _ = _stage_in(COLOR_PARAM_WORKFLOW_RUNNABLE, _staging_config(), str(job_path))
+    assert job_dict == {**params, "data_list": {"src": "hdca", "id": "collection1"}}
 
 
 def test_execute_workflow_fills_undeclared_parameters_with_sentinel():

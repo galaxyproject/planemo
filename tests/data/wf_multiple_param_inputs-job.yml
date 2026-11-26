@@ -1,0 +1,9 @@
+text_list:
+  - curated_consensus
+  - --ex2
+int_list:
+  - 1
+  - 2
+data_list:
+  - class: File
+    path: hello.txt
