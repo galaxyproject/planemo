@@ -410,7 +410,8 @@ def lint_tool_data_tables(realized_repository: "RealizedRepository", lint_ctx):
     Galaxy splits each line of a .loc file at the table's separator (TAB by
     default). A line with fewer fields than the table's columns is skipped
     by Galaxy with only a log warning, and a line with more fields (often a
-    double TAB used for alignment) loads with empty or shifted values.
+    double TAB used for alignment) loads with empty or shifted values. Both
+    are reported as errors.
     """
     path = realized_repository.real_path
     table_configs = [
@@ -496,7 +497,7 @@ def _lint_loc_file(loc_path, repo_path, table_name, num_columns, separator, comm
                     hint = f" (are fields separated by {wrong_separator} instead of {separator_name}s?)"
                 lint_ctx.error(f"{message}; Galaxy will skip this line{hint}.")
             else:
-                lint_ctx.warn(f"{message}; extra fields (e.g. repeated TABs) shift or empty values.")
+                lint_ctx.error(f"{message}; extra fields (e.g. repeated TABs) give empty or shifted values.")
 
 
 WRONG_SEPARATORS = [

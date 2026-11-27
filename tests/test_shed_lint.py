@@ -349,16 +349,12 @@ class ShedLintTestCase(CliTestCase):
             assert "tool-data/test_table.loc.sample line 8 has 1 TAB-separated field(s)" in result.output
             assert "separated by commas instead of TABs" in result.output
 
-    def test_tool_data_tables_extra_fields_is_warning(self):
+    def test_tool_data_tables_extra_fields_is_error(self):
         # Repeated TABs used for alignment load as empty, shifted values.
         with self._isolate_repo("single_tool") as f:
             _write_data_table_repo(f, [], ["hg38\t\t\tHuman hg38\t\ta_path"])
-            self._check_exit_code(
-                ["shed_lint", "--fail_level", "error", "--skip", "shed_remote_repository_url"],
-                exit_code=0,
-            )
             result = self._check_exit_code(
-                ["shed_lint", "--fail_level", "warn", "--skip", "shed_remote_repository_url"],
+                ["shed_lint", "--fail_level", "error", "--skip", "shed_remote_repository_url"],
                 exit_code=1,
             )
             assert "test-data/test_table.loc line 1 has 6 TAB-separated field(s)" in result.output
