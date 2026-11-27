@@ -91,6 +91,7 @@ REPOSITORY_LINTER_NAMES = [
     "version_bumped",
     "shed_remote_repository_url",
     "shed_metadata",
+    "tool_data_tables",
 ]
 
 
@@ -151,6 +152,11 @@ def _lint_repository(ctx, realized_repository, lint_ctx, lint_args, **kwds):
     lint_ctx.lint(
         "lint_readme",
         lint_readme,
+        realized_repository,
+    )
+    lint_ctx.lint(
+        "lint_tool_data_tables",
+        lint_tool_data_tables,
         realized_repository,
     )
     if kwds["urls"]:
@@ -396,6 +402,123 @@ def lint_tool_dependencies_actions(realized_repository: "RealizedRepository", li
         msg = template % unicodify(e)
         lint_ctx.warn(msg)
         return
+
+
+def lint_tool_data_tables(realized_repository: "RealizedRepository", lint_ctx):
+    """Check that .loc files used by the repository's data tables are well formed.
+
+    Galaxy splits each line of a .loc file at the table's separator (TAB by
+    default). A line with fewer fields than the table's columns is skipped
+    by Galaxy with only a log warning, and a line with more fields (often a
+    double TAB used for alignment) loads with empty or shifted values. Both
+    are reported as errors.
+    """
+    path = realized_repository.real_path
+    table_configs = [
+        os.path.join(path, name)
+        for name in ("tool_data_table_conf.xml.sample", "tool_data_table_conf.xml.test")
+        if os.path.exists(os.path.join(path, name))
+    ]
+    if not table_configs:
+        lint_ctx.info("No tool_data_table_conf.xml.sample or .test file found, skipping.")
+        return
+    checked = set()
+    for table_config in table_configs:
+        try:
+            root = ET.parse(table_config).getroot()
+        except ET.ParseError as e:
+            lint_ctx.error(f"Failed to parse {os.path.basename(table_config)} [{unicodify(e)}]")
+            continue
+        for table in root.iter("table"):
+            if table.get("type", "tabular") != "tabular":
+                continue
+            name = table.get("name")
+            num_columns = _data_table_num_columns(table)
+            if num_columns is None:
+                lint_ctx.warn(f"Data table '{name}' in {os.path.basename(table_config)} does not define any columns.")
+                continue
+            separator = table.get("separator", "\t")
+            comment_char = table.get("comment_char", "#")
+            for file_el in table.iter("file"):
+                for loc_path in _loc_file_candidates(path, file_el.get("path")):
+                    key = (loc_path, name)
+                    if key in checked:
+                        continue
+                    checked.add(key)
+                    _lint_loc_file(loc_path, path, name, num_columns, separator, comment_char, lint_ctx)
+
+
+def _data_table_num_columns(table):
+    columns = table.find("columns")
+    if columns is not None and columns.text and columns.text.strip():
+        return len([c for c in columns.text.split(",") if c.strip()])
+    indexes = [int(c.get("index")) for c in table.findall("column") if (c.get("index") or "").isdigit()]
+    if indexes:
+        return max(indexes) + 1
+    return None
+
+
+def _loc_file_candidates(repo_path, file_path):
+    """Return the .loc files in the repository that a data table <file path> refers to."""
+    if not file_path:
+        return []
+    if "${__HERE__}" in file_path:
+        candidates = [file_path.replace("${__HERE__}", repo_path)]
+    else:
+        # Paths like tool-data/foo.loc are relative to Galaxy's tool data
+        # directory; the repository ships foo.loc.sample in tool-data/.
+        base = os.path.join(repo_path, "tool-data", os.path.basename(file_path))
+        candidates = [base, base + ".sample"]
+    return [os.path.normpath(c) for c in candidates if os.path.isfile(c)]
+
+
+def _lint_loc_file(loc_path, repo_path, table_name, num_columns, separator, comment_char, lint_ctx):
+    rel_path = os.path.relpath(loc_path, repo_path)
+    separator_name = "TAB" if separator == "\t" else repr(separator)
+    with open(loc_path, errors="replace") as fh:
+        for line_number, line in enumerate(fh, start=1):
+            if line.lstrip().startswith(comment_char):
+                continue
+            line = line.rstrip("\n\r")
+            if not line:
+                continue
+            num_fields = len(line.split(separator))
+            if num_fields == num_columns:
+                continue
+            location = f"{rel_path} line {line_number}"
+            message = (
+                f"{location} has {num_fields} {separator_name}-separated field(s), "
+                f"data table '{table_name}' has {num_columns} column(s)"
+            )
+            if num_fields < num_columns:
+                hint = ""
+                wrong_separator = _guess_wrong_separator(line, separator, num_columns)
+                if wrong_separator:
+                    hint = f" (are fields separated by {wrong_separator} instead of {separator_name}s?)"
+                lint_ctx.error(f"{message}; Galaxy will skip this line{hint}.")
+            else:
+                lint_ctx.error(f"{message}; extra fields (e.g. repeated TABs) give empty or shifted values.")
+
+
+WRONG_SEPARATORS = [
+    ("\t", "TABs"),
+    (",", "commas"),
+    (";", "semicolons"),
+    ("|", "pipes"),
+    (None, "spaces"),  # any run of whitespace
+]
+
+
+def _guess_wrong_separator(line, separator, num_columns):
+    """Name a separator that would split ``line`` into enough fields, if any."""
+    for candidate, name in WRONG_SEPARATORS:
+        if candidate == separator:
+            continue
+        if candidate is None and separator == " ":
+            continue
+        if len(line.split(candidate)) >= num_columns:
+            return name
+    return None
 
 
 def lint_expected_files(realized_repository: "RealizedRepository", lint_ctx):

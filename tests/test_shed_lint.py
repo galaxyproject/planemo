@@ -324,3 +324,66 @@ class ShedLintTestCase(CliTestCase):
             )
             assert "shed metadata field [long_description] was given, but is empty" in result.output
             assert "Found all shed metadata fields" not in result.output
+
+    def test_tool_data_tables_valid(self):
+        with self._isolate_repo("single_tool") as f:
+            _write_data_table_repo(f, ["hg38\tHuman hg38\t/data/hg38.len"], ["dm6\tFly dm6\t/data/dm6.len"])
+            result = self._check_exit_code(
+                ["shed_lint", "--fail_level", "warn", "--skip", "shed_remote_repository_url"],
+                exit_code=0,
+            )
+            assert "data table 'test_table'" not in result.output
+
+    def test_tool_data_tables_too_few_fields_is_error(self):
+        # Galaxy skips lines with fewer fields than columns, e.g. a stray
+        # character or values separated by spaces instead of TABs.
+        with self._isolate_repo("single_tool") as f:
+            _write_data_table_repo(f, ["hg38 Human_hg38 /data/hg38.len", "s", "dm6,Fly dm6,/data/dm6.len"], [])
+            result = self._check_exit_code(
+                ["shed_lint", "--fail_level", "error", "--skip", "shed_remote_repository_url"],
+                exit_code=1,
+            )
+            assert "tool-data/test_table.loc.sample line 6 has 1 TAB-separated field(s)" in result.output
+            assert "separated by spaces instead of TABs" in result.output
+            assert "tool-data/test_table.loc.sample line 7 has 1 TAB-separated field(s)" in result.output
+            assert "tool-data/test_table.loc.sample line 8 has 1 TAB-separated field(s)" in result.output
+            assert "separated by commas instead of TABs" in result.output
+
+    def test_tool_data_tables_extra_fields_is_error(self):
+        # Repeated TABs used for alignment load as empty, shifted values.
+        with self._isolate_repo("single_tool") as f:
+            _write_data_table_repo(f, [], ["hg38\t\t\tHuman hg38\t\ta_path"])
+            result = self._check_exit_code(
+                ["shed_lint", "--fail_level", "error", "--skip", "shed_remote_repository_url"],
+                exit_code=1,
+            )
+            assert "test-data/test_table.loc line 1 has 6 TAB-separated field(s)" in result.output
+
+    def test_tool_data_tables_skip(self):
+        with self._isolate_repo("single_tool") as f:
+            _write_data_table_repo(f, ["s"], [])
+            self._check_exit_code(
+                ["shed_lint", "--skip", "shed_remote_repository_url,tool_data_tables"],
+                exit_code=0,
+            )
+
+
+def _write_data_table_repo(path, sample_lines, test_lines):
+    """Add a 3-column data table with a .loc.sample and a test .loc to a repository."""
+    table = """<tables>
+    <table name="test_table" comment_char="#">
+        <columns>value, name, len_path</columns>
+        <file path="%s" />
+    </table>
+</tables>
+"""
+    with open(join(path, "tool_data_table_conf.xml.sample"), "w") as fh:
+        fh.write(table % "tool-data/test_table.loc")
+    with open(join(path, "tool_data_table_conf.xml.test"), "w") as fh:
+        fh.write(table % "${__HERE__}/test-data/test_table.loc")
+    os.makedirs(join(path, "tool-data"), exist_ok=True)
+    header = "#This is a sample file.\n#\n#<value>\t\t<name>\t\t<len_path>\n#\n#\n"
+    with open(join(path, "tool-data", "test_table.loc.sample"), "w") as fh:
+        fh.write(header + "".join(f"{line}\n" for line in sample_lines))
+    with open(join(path, "test-data", "test_table.loc"), "w") as fh:
+        fh.write("".join(f"{line}\n" for line in test_lines))
